@@ -13,6 +13,11 @@ class WebUIDataSource;
 
 namespace settings {
 
+#if defined(OS_CHROMEOS)
+// Strings specific to cr-network elements. Also used by NetworkUI and OobeUI.
+void AddCrNetworkStrings(content::WebUIDataSource* html_source);
+#endif  // OS_CHROMEOS
+
 // Adds the strings needed by the settings page to |html_source|. This function
 // causes |html_source| to expose a strings.js file from its source which
 // contains a mapping from string's name to its translated value.

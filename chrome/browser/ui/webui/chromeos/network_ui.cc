@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/device_state.h"
@@ -177,33 +178,6 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "favoriteNetworksLabel",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_FAVORITE_NETWORKS));
-
-  localized_strings->SetString(
-      "networkConnected",
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED));
-  localized_strings->SetString(
-      "networkConnecting",
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING));
-  localized_strings->SetString(
-      "networkDisabled",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_NETWORK_DISABLED));
-  localized_strings->SetString(
-      "networkNotConnected",
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED));
-  localized_strings->SetString(
-      "OncTypeCellular", l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_CELLULAR));
-  localized_strings->SetString(
-      "OncTypeEthernet", l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET));
-  localized_strings->SetString("OncTypeVPN",
-                               l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_VPN));
-  localized_strings->SetString(
-      "OncTypeWiFi", l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIFI));
-  localized_strings->SetString(
-      "OncTypeWimax", l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIMAX));
-  localized_strings->SetString(
-      "vpnNameTemplate",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_SECTION_THIRD_PARTY_VPN_NAME_TEMPLATE));
 }
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)
@@ -219,6 +193,8 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUINetworkHost);
   html->AddLocalizedStrings(localized_strings);
+
+  settings::AddCrNetworkStrings(html);
 
   html->SetJsonPath("strings.js");
   html->AddResourcePath("network_ui.css", IDR_NETWORK_UI_CSS);

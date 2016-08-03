@@ -637,20 +637,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"internetPageTitle", IDS_SETTINGS_INTERNET},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},
       {"internetKnownNetworksPageTitle", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS},
-      // Required by cr_network_list_network_item.js. TODO(stevenjb): Add to
-      // settings_strings.grdp or provide an alternative translation method.
-      // crbug.com/512214.
-      {"networkConnected", IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED},
-      {"networkConnecting", IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING},
-      {"networkDisabled", IDS_OPTIONS_SETTINGS_NETWORK_DISABLED},
-      {"networkNotConnected", IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED},
-      {"OncTypeCellular", IDS_NETWORK_TYPE_CELLULAR},
-      {"OncTypeEthernet", IDS_NETWORK_TYPE_ETHERNET},
-      {"OncTypeVPN", IDS_NETWORK_TYPE_VPN},
-      {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
-      {"OncTypeWiMAX", IDS_NETWORK_TYPE_WIMAX},
-      {"vpnNameTemplate",
-       IDS_OPTIONS_SETTINGS_SECTION_THIRD_PARTY_VPN_NAME_TEMPLATE},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -1321,6 +1307,26 @@ void AddWebContentStrings(content::WebUIDataSource* html_source) {
 
 }  // namespace
 
+#if defined(OS_CHROMEOS)
+void AddCrNetworkStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"networkConnecting", IDS_SETTINGS_INTERNET_NETWORK_CONNECTING},
+      {"networkDisabled", IDS_SETTINGS_INTERNET_NETWORK_DISABLED},
+      {"networkNotConnected", IDS_SETTINGS_INTERNET_NETWORK_NOT_CONNECTED},
+      {"networkListItemConnected",
+       IDS_SETTINGS_INTERNET_NETWORK_LIST_ITEM_CONNECTED},
+      {"OncTypeCellular", IDS_SETTINGS_NETWORK_TYPE_CELLULAR},
+      {"OncTypeEthernet", IDS_SETTINGS_NETWORK_TYPE_ETHERNET},
+      {"OncTypeVPN", IDS_SETTINGS_NETWORK_TYPE_VPN},
+      {"OncTypeWiFi", IDS_SETTINGS_NETWORK_TYPE_WIFI},
+      {"OncTypeWiMAX", IDS_SETTINGS_NETWORK_TYPE_WIMAX},
+      {"vpnNameTemplate", IDS_SETTINGS_THIRD_PARTY_VPN_NAME_TEMPLATE},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+}
+#endif  // OS_CHROMEOS
+
 void AddLocalizedStrings(content::WebUIDataSource* html_source,
                          Profile* profile) {
   AddCommonStrings(html_source, profile);
@@ -1350,6 +1356,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #if defined(OS_CHROMEOS)
   AddEasyUnlockStrings(html_source);
   AddInternetStrings(html_source);
+  AddCrNetworkStrings(html_source);
 #endif
   AddLanguagesStrings(html_source);
 #if defined(OS_CHROMEOS)

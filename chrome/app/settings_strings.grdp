@@ -813,6 +813,39 @@
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS" desc="Name of the settings page which displays the list of known networks.">
       Known Networks
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CONNECTING" desc="Settings > Internet, text in network summary when the primary network is connecting.">
+      Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_DISABLED" desc="Settings > Internet, text in network summary when the network type is connected">
+      Disabled
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_NOT_CONNECTED" desc="Settings > Internet, text in network summary when there is no network for the type.">
+      No network
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_LIST_ITEM_CONNECTED" desc="Settings > Internet, text to show in a network list item that is connected.">
+      connected
+    </message>
+    <message name="IDS_SETTINGS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
+      Ethernet
+    </message>
+    <message name="IDS_SETTINGS_NETWORK_TYPE_WIFI" desc="The wifi network type.">
+      Wi-Fi
+    </message>
+    <message name="IDS_SETTINGS_NETWORK_TYPE_WIMAX" desc="The wimax network type.">
+      WiMAX
+    </message>
+    <message name="IDS_SETTINGS_NETWORK_TYPE_BLUETOOTH" desc="The bluetooth network type.">
+      Bluetooth
+    </message>
+    <message name="IDS_SETTINGS_NETWORK_TYPE_CELLULAR" desc="The cellular network type.">
+      Cellular
+    </message>
+    <message name="IDS_SETTINGS_NETWORK_TYPE_VPN" desc="The vpn network type.">
+      VPN
+    </message>
+    <message name="IDS_SETTINGS_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
+      <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
+    </message>
   </if>
 
   <!-- On Startup Page -->

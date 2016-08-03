@@ -57,8 +57,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/network_ui.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
+#include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_constants.h"
@@ -341,9 +341,10 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   content::URLDataSource::Add(profile, about_source);
 
   // Set up the chrome://oobe/ source.
-  content::WebUIDataSource::Add(profile,
-                                CreateOobeUIDataSource(localized_strings,
-                                                       display_type_));
+  content::WebUIDataSource* html_source =
+      CreateOobeUIDataSource(localized_strings, display_type_);
+  content::WebUIDataSource::Add(profile, html_source);
+  settings::AddCrNetworkStrings(html_source);
 
   // Set up the chrome://userimage/ source.
   options::UserImageSource* user_image_source =
@@ -493,8 +494,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
   localized_strings->SetString("newOobeUI", UseMDOobe() ? "on" : "off");
-
-  NetworkUI::GetLocalizedStrings(localized_strings);
 }
 
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {

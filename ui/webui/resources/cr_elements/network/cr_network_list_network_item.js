@@ -39,7 +39,7 @@ function getText(text, opt_args) {
  */
 function getConnectionStateText(state, name) {
   if (state == CrOnc.ConnectionState.CONNECTED)
-    return getText('networkConnected', [name]);
+    return name;
   if (state == CrOnc.ConnectionState.CONNECTING)
     return getText('networkConnecting', [name]);
   if (state == CrOnc.ConnectionState.NOT_CONNECTED)
@@ -79,7 +79,7 @@ Polymer({
     networkState: {
       type: Object,
       value: null,
-      observer: 'networkStateChanged_'
+      observer: 'networkStateChanged_',
     },
 
     /**
@@ -94,7 +94,7 @@ Polymer({
     listItemType: {
       type: String,
       value: 'none',
-      observer: 'networkStateChanged_'
+      observer: 'networkStateChanged_',
     },
 
     /**
@@ -125,21 +125,27 @@ Polymer({
     if (this.isListItem_(this.listItemType)) {
       this.$.itemName.textContent = name;
       this.$.itemName.classList.toggle('connected', !isDisconnected);
+      if (!isDisconnected) {
+        this.$.networkStateText.textContent =
+            getText('networkListItemConnected');
+        this.$.networkStateText.classList.toggle('connected', true);
+      }
       return;
     }
+
     if (network.Name && network.ConnectionState) {
       this.$.itemName.textContent = getText('OncType' + network.Type);
       this.$.itemName.classList.toggle('connected', false);
       this.$.networkStateText.textContent =
           getConnectionStateText(network.ConnectionState, name);
-      this.$.networkStateText.classList.toggle('connected', !isDisconnected);
+      this.$.networkStateText.classList.toggle('connected', false);
       return;
     }
+
     this.$.itemName.textContent = getText('OncType' + network.Type);
     this.$.itemName.classList.toggle('connected', false);
     this.$.networkStateText.textContent = getText('networkDisabled');
     this.$.networkStateText.classList.toggle('connected', false);
-
     if (network.Type == CrOnc.Type.CELLULAR) {
       if (!network.GUID)
         this.$.networkStateText.textContent = getText('networkDisabled');
@@ -153,8 +159,8 @@ Polymer({
    */
   sharedIcon_: function(networkState) {
     var source = (networkState && networkState.Source) || '';
-    var isShared = (source == CrOnc.Source.DEVICE ||
-                    source == CrOnc.Source.DEVICE_POLICY);
+    var isShared =
+        (source == CrOnc.Source.DEVICE || source == CrOnc.Source.DEVICE_POLICY);
     return isShared ? 'cr:check' : '';
   },
 
@@ -206,12 +212,11 @@ Polymer({
   isPolicyManaged_: function(networkState) {
     var source = (networkState && networkState.Source) || '';
     var isPolicyManaged = source == CrOnc.Source.USER_POLICY ||
-                          source == CrOnc.Source.DEVICE_POLICY;
+        source == CrOnc.Source.DEVICE_POLICY;
     return isPolicyManaged;
   },
 
   /**
-   * @param {string} listItemType The list item type.
    * @return {boolean} True if the the list item type is not 'none'.
    * @private
    */
@@ -220,7 +225,6 @@ Polymer({
   },
 
   /**
-   * @param {string} listItemType The list item type.
    * @param {string} type The type to match against.
    * @return {boolean} True if the the list item type matches |type|.
    * @private
@@ -229,20 +233,18 @@ Polymer({
     return listItemType == type;
   },
 
-  /**
-   * @param {boolean} showButtons this.showButtons property
-   * @param {string} listItemType this.listItemType property
-   * @private
-   */
+  /** @private */
+  isStateVisible_(networkState, listItemType) {
+    return !this.isListItem_(listItemType) ||
+        networkState.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED;
+  },
+
+  /** @private */
   isSettingsButtonVisible_: function(showButtons, listItemType) {
     return showButtons && this.isListItemType_(listItemType, 'visible');
   },
 
-  /**
-   * @param {boolean} showButtons this.showButtons property
-   * @param {string} listItemType this.listItemType property
-   * @private
-   */
+  /** @private */
   areKnownButtonsVisible_: function(showButtons, listItemType) {
     return showButtons && this.isListItemType_(listItemType, 'known');
   },

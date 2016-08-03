@@ -16,17 +16,18 @@
         </cr-network-icon>
       </div>
       <div id="divText" class="layout horizontal flex">
-        <span id="itemName"></span>
-        <span id="networkStateText" hidden$="[[isListItem_(listItemType)]]">
-        </span>
+        <div id="itemName"></div>
+        <div id="networkStateText"
+            hidden$="[[!isStateVisible_(networkState, listItemType)]]">
+        </div>
       </div>
       <div class="buttons"
-          hidden$="[[!isSettingsButtonVisible_(showButtons,listItemType)]]">
+          hidden$="[[!isSettingsButtonVisible_(showButtons, listItemType)]]">
         <paper-icon-button icon="cr:settings" on-tap="fireShowDetails_">
         </paper-icon-button>
       </div>
       <div class="known buttons"
-          hidden$="[[!areKnownButtonsVisible_(showButtons,listItemType)]]">
+          hidden$="[[!areKnownButtonsVisible_(showButtons, listItemType)]]">
         <paper-icon-button icon="[[sharedIcon_(networkState)]]" disabled>
         </paper-icon-button>
         <paper-icon-button icon="[[preferredIcon_(networkState)]]"
