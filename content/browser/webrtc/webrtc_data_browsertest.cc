@@ -21,17 +21,17 @@ namespace content {
 
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_WebRtcBrowserDataTest DISABLED_WebRtcBrowserDataTest
+#define MAYBE_WebRtcDataBrowserTest DISABLED_WebRtcDataBrowserTest
 #else
-#define MAYBE_WebRtcBrowserDataTest WebRtcBrowserDataTest
+#define MAYBE_WebRtcDataBrowserTest WebRtcDataBrowserTest
 #endif
 
 // This class tests the scenario when permission to access mic or camera is
 // granted.
-class MAYBE_WebRtcBrowserDataTest : public WebRtcContentBrowserTest {
+class MAYBE_WebRtcDataBrowserTest : public WebRtcContentBrowserTest {
  public:
-  MAYBE_WebRtcBrowserDataTest() {}
-  ~MAYBE_WebRtcBrowserDataTest() override {}
+  MAYBE_WebRtcDataBrowserTest() {}
+  ~MAYBE_WebRtcDataBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTest::SetUpCommandLine(command_line);
@@ -47,14 +47,14 @@ class MAYBE_WebRtcBrowserDataTest : public WebRtcContentBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest, CanSetupLegacyCall) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest, CanSetupLegacyCall) {
   MakeTypicalPeerConnectionCall("callWithLegacySdp();");
 }
 
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel.
 // TODO(mallinath) - Remove this test after rtp based data channel is disabled.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest, CallWithDataOnly) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest, CallWithDataOnly) {
   MakeTypicalPeerConnectionCall("callWithDataOnly();");
 }
 
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest, CallWithDataOnly) {
 #else
 #define MAYBE_CallWithSctpDataOnly CallWithSctpDataOnly
 #endif
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest,
                        MAYBE_CallWithSctpDataOnly) {
   MakeTypicalPeerConnectionCall("callWithSctpDataOnly();");
 }
@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest,
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and audio and video tracks.
 // TODO(mallinath) - Remove this test after rtp based data channel is disabled.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest, CallWithDataAndMedia) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest, CallWithDataAndMedia) {
   MakeTypicalPeerConnectionCall("callWithDataAndMedia();");
 }
 
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest, CallWithDataAndMedia) {
 #else
 #define MAYBE_CallWithSctpDataAndMedia CallWithSctpDataAndMedia
 #endif
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest,
                        MAYBE_CallWithSctpDataAndMedia) {
   MakeTypicalPeerConnectionCall("callWithSctpDataAndMedia();");
 }
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest,
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and later add an audio and video track.
 // Doesn't work, therefore disabled: https://crbug.com/293252.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserDataTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest,
                        DISABLED_CallWithDataAndLaterAddMedia) {
   MakeTypicalPeerConnectionCall("callWithDataAndLaterAddMedia();");
 }

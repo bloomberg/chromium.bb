@@ -21,17 +21,17 @@ namespace content {
 
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_WebRtcBrowserAudioTest DISABLED_WebRtcBrowserAudioTest
+#define MAYBE_WebRtcAudioBrowserTest DISABLED_WebRtcAudioBrowserTest
 #else
-#define MAYBE_WebRtcBrowserAudioTest WebRtcBrowserAudioTest
+#define MAYBE_WebRtcAudioBrowserTest WebRtcAudioBrowserTest
 #endif
 
 // This class tests the scenario when permission to access mic or camera is
 // granted.
-class MAYBE_WebRtcBrowserAudioTest : public WebRtcContentBrowserTest {
+class MAYBE_WebRtcAudioBrowserTest : public WebRtcContentBrowserTest {
  public:
-  MAYBE_WebRtcBrowserAudioTest() {}
-  ~MAYBE_WebRtcBrowserAudioTest() override {}
+  MAYBE_WebRtcAudioBrowserTest() {}
+  ~MAYBE_WebRtcAudioBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTest::SetUpCommandLine(command_line);
@@ -62,55 +62,55 @@ class MAYBE_WebRtcBrowserAudioTest : public WebRtcContentBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
                        CanMakeVideoCallAndThenRenegotiateToAudio) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndRenegotiateToAudio({audio: true, video:true}, {audio: true});");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
                        EstablishAudioVideoCallAndEnsureAudioIsPlaying) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndEnsureAudioIsPlaying({audio:true, video:true});");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
                        EstablishAudioOnlyCallAndEnsureAudioIsPlaying) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndEnsureAudioIsPlaying({audio:true});");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
                        EstablishIsac16KCallAndEnsureAudioIsPlaying) {
   MakeAudioDetectingPeerConnectionCall(
       "callWithIsac16KAndEnsureAudioIsPlaying({audio:true});");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
                        EstablishAudioVideoCallAndVerifyRemoteMutingWorks) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndEnsureRemoteAudioTrackMutingWorks();");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
                        EstablishAudioVideoCallAndVerifyLocalMutingWorks) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndEnsureLocalAudioTrackMutingWorks();");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
                        EnsureLocalVideoMuteDoesntMuteAudio) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndEnsureLocalVideoMutingDoesntMuteAudio();");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
                        EnsureRemoteVideoMuteDoesntMuteAudio) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndEnsureRemoteVideoMutingDoesntMuteAudio();");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
                        EstablishAudioVideoCallAndVerifyUnmutingWorks) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndEnsureAudioTrackUnmutingWorks();");
