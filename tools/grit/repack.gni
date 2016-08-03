@@ -2,11 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-declare_args() {
-  # Absolute path to a resource whitelist (generated using
-  # //tools/resources/find_used_resources.py).
-  repack_whitelist = ""
-}
+import("//tools/grit/grit_rule.gni")
 
 # This file defines a template to invoke grit repack in a consistent manner.
 #
@@ -41,11 +37,11 @@ template("repack") {
     ]
 
     args = []
-    if (repack_whitelist != "") {
-      assert(
-          repack_whitelist == rebase_path(repack_whitelist),
-          "repack_whitelist must be an absolute path. Current value is $repack_whitelist")
-      args += [ "--whitelist=$repack_whitelist" ]
+    if (defined(invoker.repack_whitelist)) {
+      inputs += [ invoker.repack_whitelist ]
+      _rebased_whitelist = rebase_path(invoker.repack_whitelist)
+      args += [ "--whitelist=$_rebased_whitelist" ]
+      args += [ "--suppress-removed-key-output" ]
     }
     args += [ rebase_path(invoker.output, root_build_dir) ]
     args += rebase_path(invoker.sources, root_build_dir)
