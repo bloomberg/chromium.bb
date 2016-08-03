@@ -384,6 +384,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // shorten the TTL of the prerendered page.
   void SourceNavigatedAway(PrerenderData* prerender_data);
 
+  // Same as base::SysInfo::IsLowEndDevice(), overridden in tests.
+  virtual bool IsLowEndDevice() const;
+
  private:
   friend class PrerenderBrowserTest;
   friend class PrerenderContents;

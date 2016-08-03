@@ -216,7 +216,13 @@ class UnitTestPrerenderManager : public PrerenderManager {
     prerender_contents_map_.erase(std::make_pair(child_id, route_id));
   }
 
+  void SetIsLowEndDevice(bool is_low_end_device) {
+    is_low_end_device_ = is_low_end_device;
+  }
+
  private:
+  bool IsLowEndDevice() const override { return is_low_end_device_; }
+
   DummyPrerenderContents* SetNextPrerenderContents(
       std::unique_ptr<DummyPrerenderContents> prerender_contents) {
     CHECK(!next_prerender_contents_);
@@ -244,6 +250,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
   Time time_;
   TimeTicks time_ticks_;
   std::unique_ptr<PrerenderContents> next_prerender_contents_;
+  bool is_low_end_device_;
 };
 
 class RestorePrerenderMode {
@@ -310,6 +317,8 @@ class PrerenderTest : public testing::Test {
             new PrerenderLinkManager(prerender_manager_.get())),
         last_prerender_id_(0),
         field_trial_list_(nullptr) {
+    prerender_manager()->SetIsLowEndDevice(false);
+
     // Enable omnibox prerendering.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kPrerenderFromOmnibox,
@@ -435,6 +444,29 @@ TEST_F(PrerenderTest, OfflinePrerenderIgnoresThirdPartyCookiesPref) {
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
   EXPECT_EQ(prerender_contents, prerender_handle->contents());
   EXPECT_EQ(ORIGIN_OFFLINE, prerender_handle->contents()->origin());
+}
+
+TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
+  GURL url("http://www.google.com/");
+  ASSERT_TRUE(PrerenderManager::IsPrerenderingPossible());
+  prerender_manager()->SetIsLowEndDevice(true);
+  EXPECT_FALSE(AddSimplePrerender(url));
+}
+
+TEST_F(PrerenderTest, OfflinePrerenderPossibleOnLowEndDevice) {
+  GURL url("http://www.google.com/");
+  ASSERT_TRUE(PrerenderManager::IsPrerenderingPossible());
+
+  prerender_manager()->SetIsLowEndDevice(true);
+
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
+  std::unique_ptr<PrerenderHandle> prerender_handle(
+      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize));
+  EXPECT_TRUE(prerender_handle);
+  EXPECT_TRUE(prerender_handle->IsPrerendering());
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
 }
 
 TEST_F(PrerenderTest, FoundTest) {

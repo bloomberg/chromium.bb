@@ -20,6 +20,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -844,6 +845,10 @@ void PrerenderManager::SourceNavigatedAway(PrerenderData* prerender_data) {
   }
 }
 
+bool PrerenderManager::IsLowEndDevice() const {
+  return base::SysInfo::IsLowEndDevice();
+}
+
 std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     Origin origin,
     const GURL& url_arg,
@@ -851,6 +856,11 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     const gfx::Size& size,
     SessionStorageNamespace* session_storage_namespace) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Allow only Requests for offlining on low end devices, the lifetime of
+  // those prerenders is managed by the offliner.
+  if (IsLowEndDevice() && origin != ORIGIN_OFFLINE)
+    return nullptr;
 
   if ((origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN ||
        origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) &&
