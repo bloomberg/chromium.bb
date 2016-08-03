@@ -17,7 +17,6 @@
 #include "components/sync/protocol/sync.pb.h"
 
 namespace arc {
-// TODO(lgcheng@) change VLOG(1) to VLOG(2).
 
 namespace {
 
@@ -134,8 +133,8 @@ syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
         CreateSyncItemFromSyncData(sync_data));
     const std::string& package_name = sync_item->package_name;
     if (!ContainsKey(local_package_set, package_name)) {
-      InstallPackage(sync_item.get());
       pending_install_items_[package_name] = std::move(sync_item);
+      InstallPackage(pending_install_items_[package_name].get());
     } else {
       // TODO(lgcheng@) may need to handle update exsiting package here.
       sync_items_[package_name] = std::move(sync_item);
@@ -163,9 +162,6 @@ syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
 
 void ArcPackageSyncableService::StopSyncing(syncer::ModelType type) {
   DCHECK_EQ(type, syncer::ARC_PACKAGE);
-
-  // TODO(lgcheng@) Remove this log.
-  VLOG(1) << "Stop Syncing.";
 
   sync_processor_.reset();
   sync_error_handler_.reset();
@@ -220,7 +216,7 @@ bool ArcPackageSyncableService::SyncStarted() {
   if (sync_processor_.get())
     return true;
   if (flare_.is_null()) {
-    VLOG(1) << this << ": SyncStarted: Flare.";
+    VLOG(2) << this << ": SyncStarted: Flare.";
     flare_ = sync_start_util::GetFlareForSyncableService(profile_->GetPath());
     flare_.Run(syncer::ARC_PACKAGE);
   }
@@ -232,8 +228,6 @@ void ArcPackageSyncableService::OnPackageRemoved(
     const std::string& package_name) {
   SyncItemMap::iterator delete_iter =
       pending_uninstall_items_.find(package_name);
-  // TODO(lgcheng@) Remove this log.
-  VLOG(1) << "Package Removed:" << package_name;
 
   // Pending uninstall item. Confirm uninstall.
   if (delete_iter != pending_uninstall_items_.end()) {
@@ -248,11 +242,9 @@ void ArcPackageSyncableService::OnPackageRemoved(
   }
 
   if (!SyncStarted()) {
-    VLOG(1) << "Request to send sync change when sync service is not started.";
+    VLOG(2) << "Request to send sync change when sync service is not started.";
     return;
   }
-  // TODO(lgcheng@) Remove this log.
-  VLOG(1) << "Sync change: Package Removed:" << package_name;
 
   SyncChange sync_change(FROM_HERE, SyncChange::ACTION_DELETE,
                          GetSyncDataFromSyncItem(iter->second.get()));
@@ -265,8 +257,6 @@ void ArcPackageSyncableService::OnPackageRemoved(
 void ArcPackageSyncableService::OnPackageInstalled(
     const mojom::ArcPackageInfo& package_info) {
   const std::string& package_name = package_info.package_name;
-  // TODO(lgcheng@) Remove this log.
-  VLOG(1) << "Package Installed:" << package_name;
 
   if (!package_info.sync)
     return;
@@ -293,8 +283,6 @@ void ArcPackageSyncableService::OnPackageInstalled(
 void ArcPackageSyncableService::OnPackageModified(
     const mojom::ArcPackageInfo& package_info) {
   const std::string& package_name = package_info.package_name;
-  // TODO(lgcheng@) Remove this log.
-  VLOG(1) << "Package Updated:" << package_name;
 
   if (!package_info.sync)
     return;
@@ -314,16 +302,13 @@ void ArcPackageSyncableService::SendSyncChange(
   const std::string& package_name = package_info.package_name;
 
   if (!SyncStarted()) {
-    VLOG(1) << "Request to send sync change when sync service is not started.";
+    VLOG(2) << "Request to send sync change when sync service is not started.";
     return;
   }
 
   std::unique_ptr<ArcSyncItem> sync_item = base::MakeUnique<ArcSyncItem>(
       package_info.package_name, package_info.package_version,
       package_info.last_backup_android_id, package_info.last_backup_time);
-
-  // TODO(lgcheng@) Remove this log.
-  VLOG(1) << "Sync change: Package Added/Updated:" << package_name;
 
   SyncChange sync_change(FROM_HERE, sync_change_type,
                          GetSyncDataFromSyncItem(sync_item.get()));
@@ -357,8 +342,8 @@ bool ArcPackageSyncableService::ProcessSyncItemSpecifics(
 
   std::unique_ptr<ArcSyncItem> sync_item(
       CreateSyncItemFromSyncSpecifics(specifics));
-  InstallPackage(sync_item.get());
   pending_install_items_[package_name] = std::move(sync_item);
+  InstallPackage(pending_install_items_[package_name].get());
   return true;
 }
 
@@ -380,8 +365,8 @@ bool ArcPackageSyncableService::DeleteSyncItemSpecifics(
 
   SyncItemMap::iterator iter = sync_items_.find(package_name);
   if (iter != sync_items_.end()) {
-    UninstallPackage(iter->second.get());
     pending_uninstall_items_[package_name] = std::move(iter->second);
+    UninstallPackage(pending_uninstall_items_[package_name].get());
     sync_items_.erase(iter);
     return true;
   }

@@ -11,6 +11,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 
+bool ArcAppListPrefsFactory::is_sync_test_ = false;
+
 // static
 ArcAppListPrefs* ArcAppListPrefsFactory::GetForBrowserContext(
     content::BrowserContext* context) {
@@ -21,6 +23,11 @@ ArcAppListPrefs* ArcAppListPrefsFactory::GetForBrowserContext(
 // static
 ArcAppListPrefsFactory* ArcAppListPrefsFactory::GetInstance() {
   return base::Singleton<ArcAppListPrefsFactory>::get();
+}
+
+// static
+void ArcAppListPrefsFactory::SetFactoryForSyncTest() {
+  is_sync_test_ = true;
 }
 
 ArcAppListPrefsFactory::ArcAppListPrefsFactory()
@@ -37,6 +44,13 @@ KeyedService* ArcAppListPrefsFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   if (!arc::ArcAuthService::IsAllowedForProfile(profile))
     return nullptr;
+
+  if (is_sync_test_) {
+    sync_test_app_instance_holders_[context].reset(
+        new arc::InstanceHolder<arc::mojom::AppInstance>());
+    return ArcAppListPrefs::Create(
+        profile, sync_test_app_instance_holders_[context].get());
+  }
 
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
   if (!bridge_service)

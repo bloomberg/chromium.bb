@@ -175,6 +175,7 @@ void FakeAppInstance::CanHandleResolution(
 }
 
 void FakeAppInstance::UninstallPackage(const mojo::String& package_name) {
+  app_host_->OnPackageRemoved(package_name);
 }
 
 void FakeAppInstance::GetTaskInfo(int32_t task_id,
@@ -205,7 +206,9 @@ void FakeAppInstance::SetNotificationsEnabled(const mojo::String& package_name,
                                               bool enabled) {
 }
 
-void FakeAppInstance::InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) {}
+void FakeAppInstance::InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) {
+  app_host_->OnPackageAdded(std::move(arcPackageInfo));
+}
 
 void FakeAppInstance::LaunchIntent(
     const mojo::String& intent_uri,

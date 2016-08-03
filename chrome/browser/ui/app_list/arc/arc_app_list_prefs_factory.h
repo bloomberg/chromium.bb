@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_LIST_PREFS_FACTORY_H_
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "components/arc/common/app.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class ArcAppListPrefs;
@@ -20,6 +23,8 @@ class ArcAppListPrefsFactory : public BrowserContextKeyedServiceFactory {
 
   static ArcAppListPrefsFactory* GetInstance();
 
+  static void SetFactoryForSyncTest();
+
  private:
   friend struct base::DefaultSingletonTraits<ArcAppListPrefsFactory>;
 
@@ -30,6 +35,13 @@ class ArcAppListPrefsFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
+
+  static bool is_sync_test_;
+
+  mutable std::unordered_map<
+      content::BrowserContext*,
+      std::unique_ptr<arc::InstanceHolder<arc::mojom::AppInstance>>>
+      sync_test_app_instance_holders_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppListPrefsFactory);
 };

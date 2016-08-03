@@ -29,6 +29,10 @@ namespace extensions {
 class ExtensionGarbageCollectorChromeOSUnitTest;
 }
 
+namespace arc {
+class SyncArcPackageHelper;
+}
+
 namespace ash {
 namespace test {
 class MultiUserWindowManagerChromeOSTest;
@@ -160,6 +164,7 @@ class ProfileHelper
   friend class ProfileListChromeOSTest;
   friend class SessionStateDelegateChromeOSTest;
   friend class SystemTrayDelegateChromeOSTest;
+  friend class arc::SyncArcPackageHelper;
   friend class ash::test::MultiUserWindowManagerChromeOSTest;
   friend class ::ArcAppTest;
   friend class ::test::BrowserFinderChromeOSTest;
