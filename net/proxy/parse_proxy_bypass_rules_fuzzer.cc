@@ -12,5 +12,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::ProxyBypassRules rules;
   std::string input(data, data + size);
   rules.ParseFromString(input);
+  rules.ParseFromStringUsingSuffixMatching(input);
   return 0;
 }
