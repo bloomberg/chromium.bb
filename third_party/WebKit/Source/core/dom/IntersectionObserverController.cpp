@@ -59,7 +59,12 @@ void IntersectionObserverController::handleEvent(IdleDeadline*)
 
 void IntersectionObserverController::deliverIntersectionObservations()
 {
-    if (getExecutionContext()->activeDOMObjectsAreSuspended()) {
+    ExecutionContext* context = getExecutionContext();
+    if (!context) {
+        m_pendingIntersectionObservers.clear();
+        return;
+    }
+    if (context->activeDOMObjectsAreSuspended()) {
         m_callbackFiredWhileSuspended = true;
         return;
     }
