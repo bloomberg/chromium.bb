@@ -90,9 +90,9 @@ void SharedWorkerMessageFilter::OnCreateWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     ViewHostMsg_CreateWorker_Reply* reply) {
   reply->route_id = GetNextRoutingID();
-  SharedWorkerServiceImpl::GetInstance()->CreateWorker(
+  reply->error = SharedWorkerServiceImpl::GetInstance()->CreateWorker(
       params, reply->route_id, this, resource_context_,
-      WorkerStoragePartitionId(partition_), &reply->error);
+      WorkerStoragePartitionId(partition_));
   if (CreateWorkerErrorIsFatal(reply->error))
     reply->route_id = MSG_ROUTING_NONE;
 }

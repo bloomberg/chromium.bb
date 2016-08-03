@@ -50,12 +50,12 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   void RemoveObserver(WorkerServiceObserver* observer) override;
 
   // These methods correspond to worker related IPCs.
-  void CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
-                    int route_id,
-                    SharedWorkerMessageFilter* filter,
-                    ResourceContext* resource_context,
-                    const WorkerStoragePartitionId& partition_id,
-                    blink::WebWorkerCreationError* creation_error);
+  blink::WebWorkerCreationError CreateWorker(
+      const ViewHostMsg_CreateWorker_Params& params,
+      int route_id,
+      SharedWorkerMessageFilter* filter,
+      ResourceContext* resource_context,
+      const WorkerStoragePartitionId& partition_id);
   void ForwardToWorker(const IPC::Message& message,
                        SharedWorkerMessageFilter* filter);
   void DocumentDetached(unsigned long long document_id,
@@ -119,10 +119,13 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   // Reserves the render process to create Shared Worker. This reservation
   // procedure will be executed on UI thread and
   // RenderProcessReservedCallback() or RenderProcessReserveFailedCallback()
-  // will be called on IO thread.
-  void ReserveRenderProcessToCreateWorker(
-      std::unique_ptr<SharedWorkerPendingInstance> pending_instance,
-      blink::WebWorkerCreationError* creation_error);
+  // will be called on IO thread. Returns blink::WebWorkerCreationErrorNone or
+  // blink::WebWorkerCreationErrorSecureContextMismatch on success.
+  // (SecureContextMismatch is used for UMA and should be handled as success.
+  // See CreateWorkerErrorIsFatal() in shared_worker_message_filter.cc for
+  // details.)
+  blink::WebWorkerCreationError ReserveRenderProcessToCreateWorker(
+      std::unique_ptr<SharedWorkerPendingInstance> pending_instance);
 
   // Called after the render process is reserved to create Shared Worker in it.
   void RenderProcessReservedCallback(int pending_instance_id,
