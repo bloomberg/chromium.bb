@@ -20,12 +20,6 @@ green received gotpointercapture
 green received pointermove
 green received mousemove
     **** Move to grey box & jiggle ***** 
-green received pointerout
-green received pointerleave
-grey received pointerleave
-green received mouseout
-green received mouseleave
-grey received mouseleave
 green received pointermove
 green received mousemove
 green received pointermove
@@ -38,28 +32,22 @@ green received mousemove
 green received pointermove
 green received mousemove
     **** Move back to green & again to blue & mouse release ***** 
-green received pointerover
-grey received pointerenter
-green received pointerenter
-green received mouseover
-grey received mouseenter
-green received mouseenter
 green received pointermove
 green received mousemove
-green received pointerout
-green received pointerleave
-grey received pointerleave
-green received mouseout
-green received mouseleave
-grey received mouseleave
 green received pointermove
 green received mousemove
 green received pointerup
 green received mouseup
-    **** Jiggle in blue box ***** 
 green received lostpointercapture
+    **** Jiggle in blue box ***** 
+green received pointerout
+green received pointerleave
+grey received pointerleave
 blue received pointerover
 blue received pointerenter
+green received mouseout
+green received mouseleave
+grey received mouseleave
 blue received mouseover
 blue received mouseenter
 blue received pointermove
@@ -87,12 +75,6 @@ green received gotpointercapture
 green received pointermove
 green received mousemove
     **** Move to grey box & jiggle ***** 
-green received pointerout
-green received pointerleave
-grey received pointerleave
-green received mouseout
-green received mouseleave
-grey received mouseleave
 green received pointermove
 green received mousemove
 green received pointermove
@@ -104,8 +86,14 @@ green received mousemove
 green received pointermove
 green received mousemove
 green received lostpointercapture
+green received pointerout
+green received pointerleave
+grey received pointerleave
 blue received pointerover
 blue received pointerenter
+green received mouseout
+green received mouseleave
+grey received mouseleave
 blue received mouseover
 blue received mouseenter
 blue received pointermove
@@ -133,12 +121,6 @@ green received gotpointercapture
 green received pointermove
 green received mousemove
     **** Move to grey box & jiggle ***** 
-green received pointerout
-green received pointerleave
-grey received pointerleave
-green received mouseout
-green received mouseleave
-grey received mouseleave
 green received pointermove
 green received mousemove
 green received pointermove
@@ -148,12 +130,18 @@ green received pointermove
     **** Release Pointer Capture  ***** 
 green received mousemove
 green received lostpointercapture
+green received pointermove
+green received mousemove
+green received pointerout
+green received pointerleave
+grey received pointerleave
 blue received pointerover
 blue received pointerenter
+green received mouseout
+green received mouseleave
+grey received mouseleave
 blue received mouseover
 blue received mouseenter
-blue received pointermove
-blue received mousemove
 blue received pointermove
 blue received mousemove
     **** Move back to green & again to blue & mouse release ***** 
@@ -209,12 +197,6 @@ green received gotpointercapture
 green received pointermove
 green received mousemove
     **** Move to grey box & jiggle ***** 
-green received pointerout
-green received pointerleave
-grey received pointerleave
-green received mouseout
-green received mouseleave
-grey received mouseleave
 green received pointermove
 green received mousemove
 green received pointermove
@@ -224,12 +206,12 @@ green received pointermove
     **** Remove Element ***** 
 grey received mousemove
 document received lostpointercapture
+green received pointermove
+green received mousemove
 blue received pointerover
 blue received pointerenter
 blue received mouseover
 blue received mouseenter
-blue received pointermove
-blue received mousemove
 blue received pointermove
 blue received mousemove
     **** Move back to green & again to blue & mouse release ***** 

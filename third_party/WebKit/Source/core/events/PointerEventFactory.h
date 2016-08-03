@@ -75,6 +75,8 @@ public:
     // properties if exists otherwise s_invalidId.
     int getPointerEventId(const WebPointerProperties&) const;
 
+    static const int s_mouseId;
+
 private:
     typedef WTF::UnsignedWithZeroKeyHashTraits<int> UnsignedHash;
     typedef struct IncomingId : public std::pair<int, int> {
@@ -101,7 +103,6 @@ private:
     void setBubblesAndCancelable(PointerEventInit&, const AtomicString& type);
 
     static const int s_invalidId;
-    static const int s_mouseId;
 
     int m_currentId;
     HashMap<IncomingId, int, WTF::PairHash<int, int>, WTF::PairHashTraits<UnsignedHash, UnsignedHash>> m_pointerIncomingIdMapping;

@@ -28,11 +28,16 @@ public:
     ~PointerEventManager();
     DECLARE_TRACE();
 
+    // Sends the mouse pointer events and the boundary events
+    // that it may cause. It also sends the compat mouse events
+    // and sets the newNodeUnderMouse if the capturing is set
+    // in this function.
     WebInputEventResult sendMousePointerEvent(
-        Node*, const AtomicString& type,
+        Node* target, const AtomicString& type,
         int clickCount, const PlatformMouseEvent&,
         Node* relatedTarget,
-        Node* lastNodeUnderMouse);
+        Node* lastNodeUnderMouse,
+        Node** newNodeUnderMouse);
 
     WebInputEventResult handleTouchEvents(
         const PlatformTouchEvent&);
@@ -64,6 +69,9 @@ public:
 
     // Returns whether there is any touch on the screen.
     bool isAnyTouchActive() const;
+
+    // TODO(crbug.com/625843): This can be hidden when mouse refactoring in EventHandler is done.
+    EventTarget* getMouseCapturingNode();
 
     // Returns true if the primary pointerdown corresponding to the given
     // |uniqueTouchEventId| was canceled. Also drops stale ids from
@@ -115,24 +123,19 @@ private:
         const PlatformMouseEvent& = PlatformMouseEvent(),
         bool sendMouseEvent = false);
     void setNodeUnderPointer(PointerEvent*,
-        EventTarget*, bool sendEvent = true);
+        EventTarget*);
 
     // Processes the assignment of |m_pointerCaptureTarget| from |m_pendingPointerCaptureTarget|
     // and sends the got/lostpointercapture events, as per the spec:
     // https://w3c.github.io/pointerevents/#process-pending-pointer-capture
-    // Returns whether the pointer capture is changed. When pointer capture is changed,
-    // this function will take care of boundary events.
-    bool processPendingPointerCapture(
-        PointerEvent*,
-        EventTarget*,
-        const PlatformMouseEvent& = PlatformMouseEvent(),
-        bool sendMouseEvent = false);
+    void processPendingPointerCapture(PointerEvent*);
 
     // Processes the capture state of a pointer, updates node under
     // pointer, and sends corresponding boundary events for pointer if
     // setPointerPosition is true. It also sends corresponding boundary events
     // for mouse if sendMouseEvent is true.
-    void processCaptureAndPositionOfPointerEvent(
+    // Returns the target that the pointer event is supposed to be fired at.
+    EventTarget* processCaptureAndPositionOfPointerEvent(
         PointerEvent*,
         EventTarget* hitTestTarget,
         EventTarget* lastNodeUnderMouse = nullptr,
@@ -151,6 +154,10 @@ private:
         PointerEvent*,
         bool checkForListener = false);
     void releasePointerCapture(int);
+    // Returns true if capture target and pending capture target were different.
+    bool getPointerCaptureState(int pointerId,
+        EventTarget** pointerCaptureTarget,
+        EventTarget** pendingPointerCaptureTarget);
 
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |PointerEventManager::clear()|.

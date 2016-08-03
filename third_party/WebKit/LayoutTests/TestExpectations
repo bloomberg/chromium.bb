@@ -891,6 +891,11 @@ crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html 
 # Broken on Win10
 crbug.com/632217 [ Win10 ] svg/W3C-SVG-1.1/filters-composite-02-b.svg [ Failure ]
 
+# These are the failing tests because Chrome implements the changes proposed to the spec.
+crbug.com/630671 imported/wpt/pointerevents/pointerevent_capture_suppressing_mouse-manual.html [ Skip ]
+crbug.com/630671 imported/wpt/pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual.html [ Skip ]
+crbug.com/630671 imported/wpt/pointerevents/pointerevent_setpointercapture_relatedtarget-manual.html [ Skip ]
+
 # These fail in the leak detector: http://crbug.com/612924#c4
 crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html [ Skip ]
 crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_pointerout_after_pointercancel_touch-manual.html [ Skip ]

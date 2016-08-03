@@ -1404,18 +1404,21 @@ MouseEventWithHitTestResults EventHandler::prepareMouseEvent(const HitTestReques
 Node* EventHandler::updateMouseEventTargetNode(Node* targetNode,
     const PlatformMouseEvent& mouseEvent)
 {
-    Node* result = targetNode;
+    Node* newNodeUnderMouse = targetNode;
 
     // If we're capturing, we always go right to that node.
-    if (m_capturingMouseEventsNode) {
-        result = m_capturingMouseEventsNode.get();
+    if (EventTarget* mousePointerCapturingNode = m_pointerEventManager.getMouseCapturingNode()) {
+        newNodeUnderMouse = mousePointerCapturingNode->toNode();
+        DCHECK(newNodeUnderMouse);
+    } else if (m_capturingMouseEventsNode) {
+        newNodeUnderMouse = m_capturingMouseEventsNode.get();
     } else {
         // If the target node is a text node, dispatch on the parent node - rdar://4196646
-        if (result && result->isTextNode())
-            result = FlatTreeTraversal::parent(*result);
+        if (newNodeUnderMouse && newNodeUnderMouse->isTextNode())
+            newNodeUnderMouse = FlatTreeTraversal::parent(*newNodeUnderMouse);
     }
     Node* lastNodeUnderMouse = m_nodeUnderMouse;
-    m_nodeUnderMouse = result;
+    m_nodeUnderMouse = newNodeUnderMouse;
 
     PaintLayer* layerForLastNode = layerForNode(lastNodeUnderMouse);
     PaintLayer* layerForNodeUnderMouse = layerForNode(m_nodeUnderMouse.get());
@@ -1505,9 +1508,12 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
     if (mouseEvent.getSyntheticEventType() == PlatformMouseEvent::FromTouch)
         return dispatchMouseEvent(mouseEventType, m_nodeUnderMouse, clickCount, mouseEvent);
 
-    return m_pointerEventManager.sendMousePointerEvent(
+    Node* newNodeUnderMouse = nullptr;
+    const auto& eventResult = m_pointerEventManager.sendMousePointerEvent(
         m_nodeUnderMouse, mouseEventType, clickCount, mouseEvent, nullptr,
-        lastNodeUnderMouse);
+        lastNodeUnderMouse, &newNodeUnderMouse);
+    m_nodeUnderMouse = newNodeUnderMouse;
+    return eventResult;
 }
 
 void EventHandler::setClickNode(Node* node)
