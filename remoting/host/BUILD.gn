@@ -1278,21 +1278,26 @@ if (enable_me2me_host) {
         _official_build = "0"
       }
 
-      _generated_files = rebase_path(
-              [
-                "$root_out_dir/remote_assistance_host.exe",
-                "$root_out_dir/remote_security_key.exe",
-                "$root_out_dir/remoting_core.dll",
-                "$root_out_dir/remoting_desktop.exe",
-                "$root_out_dir/remoting_host.exe",
-                "$root_out_dir/remoting_native_messaging_host.exe",
-                "$root_out_dir/remoting_start_host.exe",
-                "$root_gen_dir/remoting/CREDITS.txt",
-                "$root_out_dir/remoting/com.google.chrome.remote_assistance.json",
-                "$root_out_dir/remoting/com.google.chrome.remote_desktop.json",
-                "$root_out_dir/icudtl.dat",
-              ],
-              root_build_dir)
+      # Due to GN build issue http://crbug.com/633650, we need to actively set
+      # inputs parameter to tell GN to depend on these files. So change to each
+      # following files will trigger this target to be rebuilt.
+      # TODO(zijiehe): Remove inputs parameter once bug 633650 has been
+      # addressed.
+      inputs = [
+        "$root_out_dir/remote_assistance_host.exe",
+        "$root_out_dir/remote_security_key.exe",
+        "$root_out_dir/remoting_core.dll",
+        "$root_out_dir/remoting_desktop.exe",
+        "$root_out_dir/remoting_host.exe",
+        "$root_out_dir/remoting_native_messaging_host.exe",
+        "$root_out_dir/remoting_start_host.exe",
+        "$root_gen_dir/remoting/CREDITS.txt",
+        "$root_out_dir/remoting/com.google.chrome.remote_assistance.json",
+        "$root_out_dir/remoting/com.google.chrome.remote_desktop.json",
+        "$root_out_dir/icudtl.dat",
+      ]
+
+      _generated_files = rebase_path(inputs, root_build_dir)
       _extra_files = []
 
       args =
