@@ -10,10 +10,12 @@ import static org.junit.Assert.assertTrue;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.browsing_data.UrlFilters;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
@@ -24,6 +26,7 @@ import org.robolectric.annotation.Config;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -203,7 +206,7 @@ public class WebappRegistryTest {
 
         // A copy of the expected set needs to be made as the SharedPreferences is using the copy
         // that was paassed to it.
-        final Set<String> secondExpected = new HashSet<String>(expected);
+        final Set<String> secondExpected = new HashSet<>(expected);
         secondExpected.add("second");
 
         callback = new FetchCallback(secondExpected);
@@ -218,7 +221,8 @@ public class WebappRegistryTest {
     @Feature({"Webapp"})
     public void testUnregisterRunsCallback() throws Exception {
         CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.unregisterAllWebapps(Robolectric.application, callback);
+        WebappRegistry.unregisterWebappsForUrls(
+                Robolectric.application, new UrlFilters.AllUrls(), callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
 
@@ -228,10 +232,38 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testUnregisterClearsRegistry() throws Exception {
-        addWebappsToRegistry("test");
+        Map<String, String> apps = new HashMap<>();
+        apps.put("webapp1", "http://example.com/index.html");
+        apps.put("webapp2", "https://www.google.com/foo/bar");
+        apps.put("webapp3", "https://www.chrome.com");
 
+        for (Map.Entry<String, String> app : apps.entrySet()) {
+            WebappRegistry.registerWebapp(Robolectric.application, app.getKey(),
+                    new FetchStorageCallback(createShortcutIntent(app.getValue())));
+        }
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
+        // Partial deletion.
         CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.unregisterAllWebapps(Robolectric.application, callback);
+        WebappRegistry.unregisterWebappsForUrls(
+                Robolectric.application,
+                new UrlFilters.OneUrl("http://example.com/index.html"), callback);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
+        assertTrue(callback.getCallbackCalled());
+        Set<String> registeredWebapps = getRegisteredWebapps();
+        assertEquals(2, registeredWebapps.size());
+        for (String appName : apps.keySet()) {
+            assertEquals(!TextUtils.equals(appName, "webapp1"),
+                         registeredWebapps.contains(appName));
+        }
+
+        // Full deletion.
+        callback = new CallbackRunner();
+        WebappRegistry.unregisterWebappsForUrls(
+                Robolectric.application, new UrlFilters.AllUrls(), callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
 
@@ -242,16 +274,44 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testUnregisterClearsWebappDataStorage() throws Exception {
-        addWebappsToRegistry("test");
-        SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
-                WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "test", Context.MODE_PRIVATE);
-        webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, 100L).apply();
+        Map<String, String> apps = new HashMap<>();
+        apps.put("webapp1", "http://example.com/index.html");
+        apps.put("webapp2", "https://www.google.com/foo/bar");
+        apps.put("webapp3", "https://www.chrome.com");
 
-        WebappRegistry.unregisterAllWebapps(Robolectric.application, null);
+        for (Map.Entry<String, String> app : apps.entrySet()) {
+            WebappRegistry.registerWebapp(Robolectric.application, app.getKey(),
+                    new FetchStorageCallback(createShortcutIntent(app.getValue())));
+        }
         BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
 
-        Map<String, ?> actual = webAppPrefs.getAll();
-        assertTrue(actual.isEmpty());
+        for (String appName : apps.keySet()) {
+            SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+                    WebappDataStorage.SHARED_PREFS_FILE_PREFIX + appName, Context.MODE_PRIVATE);
+            webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, 100L).apply();
+        }
+
+        // Partial deletion.
+        WebappRegistry.unregisterWebappsForUrls(
+                Robolectric.application,
+                new UrlFilters.OneUrl("http://example.com/index.html"), null);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        for (String appName : apps.keySet()) {
+            SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+                    WebappDataStorage.SHARED_PREFS_FILE_PREFIX + appName, Context.MODE_PRIVATE);
+            assertEquals(TextUtils.equals(appName, "webapp1"), webAppPrefs.getAll().isEmpty());
+        }
+
+        // Full deletion.
+        WebappRegistry.unregisterWebappsForUrls(
+                Robolectric.application, new UrlFilters.AllUrls(), null);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        for (String appName : apps.keySet()) {
+            SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+                    WebappDataStorage.SHARED_PREFS_FILE_PREFIX + appName, Context.MODE_PRIVATE);
+            assertTrue(webAppPrefs.getAll().isEmpty());
+        }
     }
 
     @Test
@@ -270,7 +330,7 @@ public class WebappRegistryTest {
 
         Set<String> actual = mSharedPreferences.getStringSet(
                 WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
-        assertEquals(new HashSet<String>(Arrays.asList("oldWebapp")), actual);
+        assertEquals(new HashSet<>(Arrays.asList("oldWebapp")), actual);
 
         long actualLastUsed = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
                 WebappDataStorage.LAST_USED_INVALID);
@@ -302,7 +362,7 @@ public class WebappRegistryTest {
 
         Set<String> actual = mSharedPreferences.getStringSet(
                 WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
-        assertEquals(new HashSet<String>(Arrays.asList("recentWebapp")), actual);
+        assertEquals(new HashSet<>(Arrays.asList("recentWebapp")), actual);
 
         long actualLastUsed = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
                 WebappDataStorage.LAST_USED_INVALID);
@@ -679,7 +739,7 @@ public class WebappRegistryTest {
     }
 
     private Set<String> addWebappsToRegistry(String... webapps) {
-        final Set<String> expected = new HashSet<String>(Arrays.asList(webapps));
+        final Set<String> expected = new HashSet<>(Arrays.asList(webapps));
         mSharedPreferences.edit().putStringSet(WebappRegistry.KEY_WEBAPP_SET, expected).apply();
         return expected;
     }

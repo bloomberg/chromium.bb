@@ -9,18 +9,29 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/callback.h"
+#include "chrome/browser/android/browsing_data/url_filter_bridge.h"
 #include "chrome/browser/io_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/WebappRegistry_jni.h"
 
-void WebappRegistry::UnregisterWebapps(const base::Closure& callback) {
+void WebappRegistry::UnregisterWebappsForUrls(
+    const base::Callback<bool(const GURL&)>& url_filter,
+    const base::Closure& callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  // TODO(msramek): Consider implementing a wrapper class that will call and
+  // destroy this closure from Java, eliminating the need for
+  // OnWebappsUnregistered() and OnClearedWebappHistory() callbacks.
   uintptr_t callback_pointer = reinterpret_cast<uintptr_t>(
       new base::Closure(callback));
 
-  Java_WebappRegistry_unregisterAllWebapps(
+  // We will destroy |filter_bridge| from its Java counterpart before calling
+  // back OnWebappsUnregistered().
+  UrlFilterBridge* filter_bridge = new UrlFilterBridge(url_filter);
+
+  Java_WebappRegistry_unregisterWebappsForUrls(
       env,
       base::android::GetApplicationContext(),
+      filter_bridge->j_bridge().obj(),
       callback_pointer);
 }
 

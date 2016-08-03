@@ -310,7 +310,9 @@ class TestWebappRegistry : public WebappRegistry {
  public:
   TestWebappRegistry() : WebappRegistry() { }
 
-  void UnregisterWebapps(const base::Closure& callback) override {
+  void UnregisterWebappsForUrls(
+      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::Closure& callback) override {
     // Mocks out a JNI call and runs the callback as a delayed task.
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, callback,
                                    base::TimeDelta::FromMilliseconds(10));

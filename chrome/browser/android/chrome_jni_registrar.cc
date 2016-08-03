@@ -22,6 +22,7 @@
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/bottombar/overlay_panel_content.h"
 #include "chrome/browser/android/browsing_data/browsing_data_counter_bridge.h"
+#include "chrome/browser/android/browsing_data/url_filter_bridge.h"
 #include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/compositor/compositor_view.h"
@@ -397,6 +398,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"TtsPlatformImpl", TtsPlatformImplAndroid::Register},
     {"UmaSessionStats", RegisterUmaSessionStats},
     {"UpdatePasswordInfoBar", UpdatePasswordInfoBar::Register},
+    {"UrlFilterBridge", UrlFilterBridge::Register},
     {"UrlUtilities", RegisterUrlUtilities},
     {"UsbChooserDialogAndroid", UsbChooserDialogAndroid::Register},
     {"Variations", variations::android::RegisterVariations},

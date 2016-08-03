@@ -10,6 +10,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 
+class GURL;
+
 // WebappRegistry is the C++ counterpart of
 // org.chromium.chrome.browser.webapp's WebappRegistry in Java.
 // All methods in this class which make JNI calls should be declared virtual and
@@ -23,8 +25,10 @@ class WebappRegistry {
   // Registers JNI hooks.
   static bool RegisterWebappRegistry(JNIEnv* env);
 
-  // Cleans up data stored by web apps.
-  virtual void UnregisterWebapps(const base::Closure& callback);
+  // Cleans up data stored by web apps on URLs matching |url_filter|.
+  virtual void UnregisterWebappsForUrls(
+      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::Closure& callback);
 
   // Removes history data (last used time and URLs) stored by web apps, whilst
   // leaving other data intact.

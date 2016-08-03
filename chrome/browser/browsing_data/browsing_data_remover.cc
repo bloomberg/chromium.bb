@@ -977,7 +977,8 @@ void BrowsingDataRemover::RemoveImpl(
     // Clear all data associated with registered webapps. The webapp_registry
     // makes a JNI call into a Java-side AsyncTask, so don't wait for the reply.
     waiting_for_clear_webapp_data_ = true;
-    webapp_registry_->UnregisterWebapps(
+    webapp_registry_->UnregisterWebappsForUrls(
+        filter,
         base::Bind(&BrowsingDataRemover::OnClearedWebappData,
                    weak_ptr_factory_.GetWeakPtr()));
   }
