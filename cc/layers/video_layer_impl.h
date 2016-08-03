@@ -66,6 +66,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   VideoFrameExternalResources::ResourceType frame_resource_type_;
   float frame_resource_offset_;
   float frame_resource_multiplier_;
+  uint32_t frame_bits_per_channel_;
 
   struct FrameResource {
     FrameResource(ResourceId id,

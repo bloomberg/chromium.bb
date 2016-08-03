@@ -152,7 +152,8 @@ VideoFrameExternalResources::VideoFrameExternalResources()
     : type(NONE),
       read_lock_fences_enabled(false),
       offset(0.0f),
-      multiplier(1.0f) {}
+      multiplier(1.0f),
+      bits_per_channel(8) {}
 
 VideoFrameExternalResources::VideoFrameExternalResources(
     const VideoFrameExternalResources& other) = default;
@@ -374,6 +375,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   }
 
   VideoFrameExternalResources external_resources;
+
+  external_resources.bits_per_channel = bits_per_channel;
 
   if (software_compositor) {
     DCHECK_EQ(plane_resources.size(), 1u);

@@ -23,6 +23,8 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   static const size_t kVPlaneResourceIdIndex = 2;
   static const size_t kAPlaneResourceIdIndex = 3;
 
+  enum : uint32_t { kMinBitsPerChannel = 8, kMaxBitsPerChannel = 24 };
+
   enum ColorSpace {
     REC_601,  // SDTV standard with restricted "studio swing" color range.
     REC_709,  // HDTV standard with restricted "studio swing" color range.
@@ -52,7 +54,8 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               unsigned a_plane_resource_id,
               ColorSpace color_space,
               float offset,
-              float multiplier);
+              float multiplier,
+              uint32_t bits_per_channel);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -72,7 +75,8 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               unsigned a_plane_resource_id,
               ColorSpace color_space,
               float offset,
-              float multiplier);
+              float multiplier,
+              uint32_t bits_per_channel);
 
   gfx::RectF ya_tex_coord_rect;
   gfx::RectF uv_tex_coord_rect;
@@ -81,6 +85,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   ColorSpace color_space;
   float resource_offset = 0.0f;
   float resource_multiplier = 1.0f;
+  uint32_t bits_per_channel = 8;
 
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 

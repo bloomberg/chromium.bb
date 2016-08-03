@@ -2345,19 +2345,17 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
       1.164f, 1.164f, 1.164f, 0.0f, -0.213f, 2.112f, 1.793f, -0.533f, 0.0f,
   };
 
-  // These values map to 16, 128, and 128 respectively, and are computed
-  // as a fraction over 256 (e.g. 16 / 256 = 0.0625).
   // They are used in the YUV to RGBA conversion formula:
   //   Y - 16   : Gives 16 values of head and footroom for overshooting
   //   U - 128  : Turns unsigned U into signed U [-128,127]
   //   V - 128  : Turns unsigned V into signed V [-128,127]
   float yuv_adjust_constrained[3] = {
-      -0.0625f, -0.5f, -0.5f,
+      -16.f, -128.f, -128.f,
   };
 
   // Same as above, but without the head and footroom.
   float yuv_adjust_full[3] = {
-      0.0f, -0.5f, -0.5f,
+      0.0f, -128.f, -128.f,
   };
 
   float* yuv_to_rgb = NULL;
@@ -2381,12 +2379,20 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   float yuv_to_rgb_multiplied[9];
   float yuv_adjust_with_offset[3];
 
+  // Formula according to BT.601-7 section 2.5.3.
+  DCHECK_LE(YUVVideoDrawQuad::kMinBitsPerChannel, quad->bits_per_channel);
+  DCHECK_LE(quad->bits_per_channel, YUVVideoDrawQuad::kMaxBitsPerChannel);
+  float adjustment_multiplier = (1 << (quad->bits_per_channel - 8)) * 1.0f /
+                                ((1 << quad->bits_per_channel) - 1);
+
   for (int i = 0; i < 9; ++i)
     yuv_to_rgb_multiplied[i] = yuv_to_rgb[i] * quad->resource_multiplier;
 
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i) {
     yuv_adjust_with_offset[i] =
-        yuv_adjust[i] / quad->resource_multiplier - quad->resource_offset;
+        yuv_adjust[i] * adjustment_multiplier / quad->resource_multiplier -
+        quad->resource_offset;
+  }
 
   // The transform and vertex data are used to figure out the extents that the
   // un-antialiased quad should have and which vertex this is and the float

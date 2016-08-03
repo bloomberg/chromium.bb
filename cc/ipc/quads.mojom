@@ -94,6 +94,7 @@ struct YUVVideoQuadState {
   YUVColorSpace color_space;
   float resource_offset;
   float resource_multiplier;
+  uint32 bits_per_channel;
 };
 
 enum Material {

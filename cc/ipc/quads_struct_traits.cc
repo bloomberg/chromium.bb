@@ -298,6 +298,11 @@ bool StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad>::Read(
     return false;
   quad->resource_offset = data.resource_offset();
   quad->resource_multiplier = data.resource_multiplier();
+  quad->bits_per_channel = data.bits_per_channel();
+  if (quad->bits_per_channel < cc::YUVVideoDrawQuad::kMinBitsPerChannel ||
+      quad->bits_per_channel > cc::YUVVideoDrawQuad::kMaxBitsPerChannel) {
+    return false;
+  }
   return true;
 }
 

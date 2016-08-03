@@ -389,6 +389,12 @@ struct StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad> {
     return quad->resource_multiplier;
   }
 
+  static uint32_t bits_per_channel(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->bits_per_channel;
+  }
+
   static bool Read(cc::mojom::YUVVideoQuadStateDataView data,
                    cc::DrawQuad* out);
 };

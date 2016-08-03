@@ -293,7 +293,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
                    gfx::RectF(.0f, .0f, 50.0f, 50.0f), gfx::Size(100, 100),
                    gfx::Size(50, 50), plane_resources[0], plane_resources[1],
                    plane_resources[2], plane_resources[3], color_space, 0.0,
-                   1.0);
+                   1.0, 8);
 }
 
 }  // namespace cc

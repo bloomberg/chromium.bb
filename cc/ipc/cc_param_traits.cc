@@ -877,6 +877,71 @@ void ParamTraits<cc::TextureDrawQuad::OverlayResources>::Log(
   l->append("])");
 }
 
+void ParamTraits<cc::YUVVideoDrawQuad>::GetSize(base::PickleSizer* s,
+                                                const param_type& p) {
+  ParamTraits<cc::DrawQuad>::GetSize(s, p);
+  GetParamSize(s, p.ya_tex_coord_rect);
+  GetParamSize(s, p.uv_tex_coord_rect);
+  GetParamSize(s, p.ya_tex_size);
+  GetParamSize(s, p.uv_tex_size);
+  GetParamSize(s, p.color_space);
+  GetParamSize(s, p.resource_offset);
+  GetParamSize(s, p.resource_multiplier);
+  GetParamSize(s, p.bits_per_channel);
+}
+
+void ParamTraits<cc::YUVVideoDrawQuad>::Write(base::Pickle* m,
+                                              const param_type& p) {
+  ParamTraits<cc::DrawQuad>::Write(m, p);
+  WriteParam(m, p.ya_tex_coord_rect);
+  WriteParam(m, p.uv_tex_coord_rect);
+  WriteParam(m, p.ya_tex_size);
+  WriteParam(m, p.uv_tex_size);
+  WriteParam(m, p.color_space);
+  WriteParam(m, p.resource_offset);
+  WriteParam(m, p.resource_multiplier);
+  WriteParam(m, p.bits_per_channel);
+}
+
+bool ParamTraits<cc::YUVVideoDrawQuad>::Read(const base::Pickle* m,
+                                             base::PickleIterator* iter,
+                                             param_type* p) {
+  return ParamTraits<cc::DrawQuad>::Read(m, iter, p) &&
+         ReadParam(m, iter, &p->ya_tex_coord_rect) &&
+         ReadParam(m, iter, &p->uv_tex_coord_rect) &&
+         ReadParam(m, iter, &p->ya_tex_size) &&
+         ReadParam(m, iter, &p->uv_tex_size) &&
+         ReadParam(m, iter, &p->color_space) &&
+         ReadParam(m, iter, &p->resource_offset) &&
+         ReadParam(m, iter, &p->resource_multiplier) &&
+         ReadParam(m, iter, &p->bits_per_channel) &&
+         p->bits_per_channel >= cc::YUVVideoDrawQuad::kMinBitsPerChannel &&
+         p->bits_per_channel <= cc::YUVVideoDrawQuad::kMaxBitsPerChannel;
+}
+
+void ParamTraits<cc::YUVVideoDrawQuad>::Log(const param_type& p,
+                                            std::string* l) {
+  l->append("(");
+  ParamTraits<cc::DrawQuad>::Log(p, l);
+  l->append(", ");
+  LogParam(p.ya_tex_coord_rect, l);
+  l->append(", ");
+  LogParam(p.uv_tex_coord_rect, l);
+  l->append(", ");
+  LogParam(p.ya_tex_size, l);
+  l->append(", ");
+  LogParam(p.uv_tex_size, l);
+  l->append(", ");
+  LogParam(p.color_space, l);
+  l->append(", ");
+  LogParam(p.resource_offset, l);
+  l->append(", ");
+  LogParam(p.resource_multiplier, l);
+  l->append(", ");
+  LogParam(p.bits_per_channel, l);
+  l->append("])");
+}
+
 }  // namespace IPC
 
 // Generate param traits size methods.

@@ -268,10 +268,17 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
 
   YUVVideoDrawQuad* yuv_quad =
       render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
+  uint32_t bits_per_channel = 8;
+  if (video_frame->format() == media::PIXEL_FORMAT_YUV420P10 ||
+      video_frame->format() == media::PIXEL_FORMAT_YUV422P10 ||
+      video_frame->format() == media::PIXEL_FORMAT_YUV444P10) {
+    bits_per_channel = 10;
+  }
+
   yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
                    ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
                    uv_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space, 0.0f, 1.0f);
+                   color_space, 0.0f, 1.0f, bits_per_channel);
 }
 
 // Upshift video frame to 10 bit.
@@ -525,7 +532,7 @@ void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
   yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
                    ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
                    uv_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space, 0.0f, 1.0f);
+                   color_space, 0.0f, 1.0f, 8);
 }
 
 typedef ::testing::Types<GLRenderer,

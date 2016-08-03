@@ -67,6 +67,7 @@ class CC_EXPORT VideoFrameExternalResources {
   // After a lookup, subtract offset and multiply by multiplier.
   float offset;
   float multiplier;
+  uint32_t bits_per_channel;
 
   VideoFrameExternalResources();
   VideoFrameExternalResources(const VideoFrameExternalResources& other);

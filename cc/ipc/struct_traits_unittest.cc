@@ -880,6 +880,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   const YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
   const float resource_offset = 1337.5f;
   const float resource_multiplier = 1234.6f;
+  const uint32_t bits_per_channel = 13;
 
   SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
   YUVVideoDrawQuad* quad =
@@ -888,7 +889,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
                ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size, uv_tex_size,
                y_plane_resource_id, u_plane_resource_id, v_plane_resource_id,
                a_plane_resource_id, color_space, resource_offset,
-               resource_multiplier);
+               resource_multiplier, bits_per_channel);
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   std::unique_ptr<RenderPass> output;
@@ -914,6 +915,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   EXPECT_EQ(color_space, out_quad->color_space);
   EXPECT_EQ(resource_offset, out_quad->resource_offset);
   EXPECT_EQ(resource_multiplier, out_quad->resource_multiplier);
+  EXPECT_EQ(bits_per_channel, out_quad->bits_per_channel);
 }
 
 }  // namespace cc

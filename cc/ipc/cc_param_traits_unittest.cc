@@ -190,6 +190,7 @@ class CCParamTraitsTest : public testing::Test {
     EXPECT_EQ(a->v_plane_resource_id(), b->v_plane_resource_id());
     EXPECT_EQ(a->a_plane_resource_id(), b->a_plane_resource_id());
     EXPECT_EQ(a->color_space, b->color_space);
+    EXPECT_EQ(a->bits_per_channel, b->bits_per_channel);
   }
 
   void Compare(const TransferableResource& a, const TransferableResource& b) {
@@ -250,7 +251,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   int arbitrary_context_id1 = 12;
   int arbitrary_context_id2 = 57;
   int arbitrary_context_id3 = -503;
-  int arbitrary_int = 5;
+  int arbitrary_int = 13;
   SkColor arbitrary_color = SkColorSetARGB(25, 36, 47, 58);
   SkXfermode::Mode arbitrary_blend_mode1 = SkXfermode::kScreen_Mode;
   SkXfermode::Mode arbitrary_blend_mode2 = SkXfermode::kLighten_Mode;
@@ -389,7 +390,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       arbitrary_rect1_inside_rect1, arbitrary_bool1, arbitrary_rectf1,
       arbitrary_rectf2, arbitrary_size1, arbitrary_size2, arbitrary_resourceid1,
       arbitrary_resourceid2, arbitrary_resourceid3, arbitrary_resourceid4,
-      arbitrary_color_space, arbitrary_float1, arbitrary_float2);
+      arbitrary_color_space, arbitrary_float1, arbitrary_float2, arbitrary_int);
   pass_cmp->CopyFromAndAppendDrawQuad(yuvvideo_in,
                                       yuvvideo_in->shared_quad_state);
 
