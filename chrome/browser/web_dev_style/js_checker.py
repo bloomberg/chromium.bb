@@ -55,6 +55,11 @@ class JSChecker(object):
     return self.RegexCheck(i, line, r"\* (@inheritDoc)",
         "@inheritDoc is deprecated, use @override instead")
 
+  def PolymerLocalIdCheck(self, i, line):
+    """Checks for use of element.$.localId."""
+    return self.RegexCheck(i, line, r"(?<!this)(\.\$)[\[\.]",
+        "Please only use this.$.localId, not element.$.localId")
+
   def WrapperTypeCheck(self, i, line):
     """Check for wrappers (new String()) instead of builtins (string)."""
     return self.RegexCheck(i, line,
@@ -228,6 +233,7 @@ class JSChecker(object):
             self.EndJsDocCommentCheck(i, line),
             self.ExtraDotInGenericCheck(i, line),
             self.InheritDocCheck(i, line),
+            self.PolymerLocalIdCheck(i, line),
             self.WrapperTypeCheck(i, line),
             self.VarNameCheck(i, line),
         ])

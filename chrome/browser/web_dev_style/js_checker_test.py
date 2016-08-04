@@ -240,6 +240,38 @@ class JsCheckerTest(SuperMoxTestBase):
     for line in lines:
       self.ShouldPassInheritDocCheck(line)
 
+  def ShouldFailPolymerLocalIdCheck(self, line):
+    """Checks that element.$.localId check marks |line| as a style error."""
+    error = self.checker.PolymerLocalIdCheck(1, line)
+    self.assertNotEqual('', error,
+        msg='Should be flagged as a style error: ' + line)
+    self.assertTrue('.$' in test_util.GetHighlight(line, error))
+
+  def ShouldPassPolymerLocalIdCheck(self, line):
+    """Checks that element.$.localId check doesn't mark |line| as a style
+       error."""
+    self.assertEqual('', self.checker.PolymerLocalIdCheck(1, line),
+        msg='Should not be flagged as a style error: ' + line)
+
+  def testPolymerLocalIdFails(self):
+    lines = [
+        "cat.$.dog",
+        "thing1.$.thing2",
+        "element.$.localId",
+        "element.$['fancy-hyphenated-id']",
+    ]
+    for line in lines:
+      self.ShouldFailPolymerLocalIdCheck(line)
+
+  def testPolymerLocalIdPasses(self):
+    lines = [
+        "this.$.id",
+        "this.$.localId",
+        "this.$['fancy-id']",
+    ]
+    for line in lines:
+      self.ShouldPassPolymerLocalIdCheck(line)
+
   def ShouldFailWrapperTypeCheck(self, line):
     """Checks that the use of wrapper types (i.e. new Number(), @type {Number})
        is a style error.
