@@ -206,7 +206,8 @@ bool NavigationHandleImpl::IsSamePage() {
 }
 
 const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
-   return response_headers_.get();
+  DCHECK_GE(state_, WILL_REDIRECT_REQUEST);
+  return response_headers_.get();
 }
 
 bool NavigationHandleImpl::HasCommitted() {

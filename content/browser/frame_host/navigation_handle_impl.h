@@ -98,6 +98,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsSamePage() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;
+  const net::HttpResponseHeaders* GetResponseHeaders() override;
   void Resume() override;
   void CancelDeferredNavigation(
       NavigationThrottle::ThrottleCheckResult result) override;
@@ -122,12 +123,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   NavigatorDelegate* GetDelegate() const;
 
   RequestContextType GetRequestContextType() const;
-
-  // Returns the response headers for the request or nullptr if there are none.
-  // This should only be accessed after a redirect was encountered or after the
-  // navigation is ready to commit. The headers returned should not be modified,
-  // as modifications will not be reflected in the network stack.
-  const net::HttpResponseHeaders* GetResponseHeaders();
 
   // Get the unique id from the NavigationEntry associated with this
   // NavigationHandle. Note that a synchronous, renderer-initiated navigation

@@ -15,6 +15,10 @@
 
 class GURL;
 
+namespace net {
+class HttpResponseHeaders;
+}  // namespace net
+
 namespace content {
 class NavigationData;
 class NavigationThrottle;
@@ -149,6 +153,12 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Whether the navigation resulted in an error page.
   virtual bool IsErrorPage() = 0;
+
+  // Returns the response headers for the request or nullptr if there are none.
+  // This should only be accessed after a redirect was encountered or after the
+  // navigation is ready to commit. The headers returned should not be modified,
+  // as modifications will not be reflected in the network stack.
+  virtual const net::HttpResponseHeaders* GetResponseHeaders() = 0;
 
   // Resumes a navigation that was previously deferred by a NavigationThrottle.
   virtual void Resume() = 0;

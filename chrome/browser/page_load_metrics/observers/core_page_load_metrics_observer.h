@@ -97,6 +97,7 @@ class CorePageLoadMetricsObserver
 
   ui::PageTransition transition_;
   bool initiated_by_user_gesture_;
+  bool was_no_store_main_resource_;
 
   DISALLOW_COPY_AND_ASSIGN(CorePageLoadMetricsObserver);
 };

@@ -12,6 +12,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
+#include "net/http/http_response_headers.h"
 #include "ui/base/page_transition_types.h"
 
 namespace {
@@ -120,6 +121,9 @@ const char kBackgroundHistogramParseBlockedOnScriptLoadDocumentWrite[] =
     "PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite."
     "Background";
 
+const char kHistogramFirstContentfulPaintNoStore[] =
+    "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.NoStore";
+
 const char kHistogramLoadTypeFirstContentfulPaintReload[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
     "Reload";
@@ -129,6 +133,9 @@ const char kHistogramLoadTypeFirstContentfulPaintReloadByGesture[] =
 const char kHistogramLoadTypeFirstContentfulPaintForwardBack[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
     "ForwardBackNavigation";
+const char kHistogramLoadTypeFirstContentfulPaintForwardBackNoStore[] =
+    "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
+    "ForwardBackNavigation.NoStore";
 const char kHistogramLoadTypeFirstContentfulPaintNewNavigation[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
     "NewNavigation";
@@ -138,6 +145,9 @@ const char kHistogramLoadTypeParseStartReload[] =
 const char kHistogramLoadTypeParseStartForwardBack[] =
     "PageLoad.ParseTiming.NavigationToParseStart.LoadType."
     "ForwardBackNavigation";
+const char kHistogramLoadTypeParseStartForwardBackNoStore[] =
+    "PageLoad.ParseTiming.NavigationToParseStart.LoadType."
+    "ForwardBackNavigation.NoStore";
 const char kHistogramLoadTypeParseStartNewNavigation[] =
     "PageLoad.ParseTiming.NavigationToParseStart.LoadType.NewNavigation";
 
@@ -165,7 +175,8 @@ const char kRapporMetricsNameCoarseTiming[] =
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
     : transition_(ui::PAGE_TRANSITION_LINK),
-      initiated_by_user_gesture_(false) {}
+      initiated_by_user_gesture_(false),
+      was_no_store_main_resource_(false) {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
 
@@ -173,6 +184,12 @@ void CorePageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   transition_ = navigation_handle->GetPageTransition();
   initiated_by_user_gesture_ = navigation_handle->HasUserGesture();
+  const net::HttpResponseHeaders* headers =
+      navigation_handle->GetResponseHeaders();
+  if (headers) {
+    was_no_store_main_resource_ =
+        headers->HasHeaderValue("cache-control", "no-store");
+  }
 }
 
 void CorePageLoadMetricsObserver::OnDomContentLoadedEventStart(
@@ -277,6 +294,11 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
         internal::kHistogramParseStartToFirstContentfulPaint,
         timing.first_contentful_paint.value() - timing.parse_start.value());
 
+    if (was_no_store_main_resource_) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintNoStore,
+                          timing.first_contentful_paint.value());
+    }
+
     switch (GetPageLoadType(transition_)) {
       case LOAD_TYPE_RELOAD:
         PAGE_LOAD_HISTOGRAM(
@@ -292,6 +314,12 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
         PAGE_LOAD_HISTOGRAM(
             internal::kHistogramLoadTypeFirstContentfulPaintForwardBack,
             timing.first_contentful_paint.value());
+        if (was_no_store_main_resource_) {
+          PAGE_LOAD_HISTOGRAM(
+              internal::
+                  kHistogramLoadTypeFirstContentfulPaintForwardBackNoStore,
+              timing.first_contentful_paint.value());
+        }
         break;
       case LOAD_TYPE_NEW_NAVIGATION:
         PAGE_LOAD_HISTOGRAM(
@@ -327,6 +355,11 @@ void CorePageLoadMetricsObserver::OnParseStart(
       case LOAD_TYPE_FORWARD_BACK:
         PAGE_LOAD_HISTOGRAM(internal::kHistogramLoadTypeParseStartForwardBack,
                             timing.parse_start.value());
+        if (was_no_store_main_resource_) {
+          PAGE_LOAD_HISTOGRAM(
+              internal::kHistogramLoadTypeParseStartForwardBackNoStore,
+              timing.parse_start.value());
+        }
         break;
       case LOAD_TYPE_NEW_NAVIGATION:
         PAGE_LOAD_HISTOGRAM(internal::kHistogramLoadTypeParseStartNewNavigation,

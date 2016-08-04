@@ -100068,6 +100068,16 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="PageLoad.AbortTiming.UnknownNavigation.BeforeCommit"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadMetricsCacheInfo" separator=".">
+  <suffix name="NoStore" label="Main resource had cache-control: no-store"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType.ForwardBackNavigation"/>
+  <affected-histogram
+      name="PageLoad.ParseTiming.NavigationToParseStart.LoadType.ForwardBackNavigation"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadMetricsClients" separator="."
     ordering="prefix">
   <affected-histogram
