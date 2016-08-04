@@ -104,11 +104,6 @@ final class JavaCronetEngine extends CronetEngine {
     }
 
     @Override
-    public int getEffectiveConnectionType() {
-        return EffectiveConnectionType.EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-    }
-
-    @Override
     public void configureNetworkQualityEstimatorForTesting(
             boolean useLocalHostRequests, boolean useSmallerResponses) {}
 

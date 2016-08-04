@@ -20,7 +20,6 @@ import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.net.BidirectionalStream;
 import org.chromium.net.CronetEngine;
-import org.chromium.net.EffectiveConnectionType;
 import org.chromium.net.NetworkQualityRttListener;
 import org.chromium.net.NetworkQualityThroughputListener;
 import org.chromium.net.RequestFinishedInfo;
@@ -77,14 +76,6 @@ public class CronetUrlRequestContext extends CronetEngine {
      * on any thread.
      */
     private final Object mFinishedListenerLock = new Object();
-
-    /**
-     * Current effective connection type as computed by the network quality
-     * estimator.
-     */
-    @GuardedBy("mNetworkQualityLock")
-    private int mEffectiveConnectionType =
-            EffectiveConnectionType.EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
     @GuardedBy("mNetworkQualityLock")
     private final ObserverList<NetworkQualityRttListener> mRttListenerList =
@@ -269,17 +260,6 @@ public class CronetUrlRequestContext extends CronetEngine {
         return nativeGetHistogramDeltas();
     }
 
-    @Override
-    public int getEffectiveConnectionType() {
-        if (!mNetworkQualityEstimatorEnabled) {
-            throw new IllegalStateException("Network quality estimator must be enabled");
-        }
-        synchronized (mNetworkQualityLock) {
-            checkHaveAdapter();
-            return mEffectiveConnectionType;
-        }
-    }
-
     @VisibleForTesting
     @Override
     public void configureNetworkQualityEstimatorForTesting(
@@ -453,17 +433,6 @@ public class CronetUrlRequestContext extends CronetEngine {
         }
         Thread.currentThread().setName("ChromiumNet");
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onEffectiveConnectionTypeChanged(int effectiveConnectionType) {
-        synchronized (mNetworkQualityLock) {
-            // Convert the enum returned by the network quality estimator to an enum of type
-            // EffectiveConnectionType.
-            mEffectiveConnectionType =
-                    EffectiveConnectionType.getEffectiveConnectionType(effectiveConnectionType);
-        }
     }
 
     @SuppressWarnings("unused")
