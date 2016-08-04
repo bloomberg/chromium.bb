@@ -167,7 +167,9 @@ var FilesTooltip = Polymer({
     this.style.top = `${Math.round(top)}px`;
 
     var left = rect.left + rect.width / 2 - this.offsetWidth / 2;
-    if (left + this.offsetWidth > document.body.offsetWidth)
+    if (left < 0)
+      left = 0;
+    if (left > document.body.offsetWidth - this.offsetWidth)
       left = document.body.offsetWidth - this.offsetWidth;
     this.style.left = `${Math.round(left)}px`;
 
