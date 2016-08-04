@@ -153,9 +153,9 @@ ArcAuthService* ArcAuthService::Get() {
 // static
 void ArcAuthService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // TODO(dspaid): Add a syncable default preference so that new
-  // devices get the last opt-in preference.
-  registry->RegisterBooleanPref(prefs::kArcEnabled, false);
+  registry->RegisterBooleanPref(
+      prefs::kArcEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kArcSignedIn, false);
   registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, true);
   registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, true);
