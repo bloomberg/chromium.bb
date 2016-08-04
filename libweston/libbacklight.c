@@ -48,6 +48,7 @@ static long backlight_get(struct backlight *backlight, char *node)
 {
 	char buffer[100];
 	char *path;
+	char *end;
 	int fd;
 	long value, ret;
 
@@ -65,8 +66,15 @@ static long backlight_get(struct backlight *backlight, char *node)
 		goto out;
 	}
 
-	value = strtol(buffer, NULL, 10);
+	errno = 0;
+	value = strtol(buffer, &end, 10);
+	if (errno != 0 || end == buffer || *end != '\0') {
+		ret = -1;
+		goto out;
+	}
+
 	ret = value;
+
 out:
 	if (fd >= 0)
 		close(fd);

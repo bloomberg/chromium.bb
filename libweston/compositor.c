@@ -4628,8 +4628,9 @@ weston_environment_get_fd(const char *env)
 	e = getenv(env);
 	if (!e)
 		return -1;
+	errno = 0;
 	fd = strtol(e, &end, 10);
-	if (*end != '\0')
+	if (errno != 0 || end == e || *end != '\0')
 		return -1;
 
 	flags = fcntl(fd, F_GETFD);

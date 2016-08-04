@@ -1699,8 +1699,9 @@ int main(int argc, char *argv[])
 	server_socket = getenv("WAYLAND_SERVER_SOCKET");
 	if (server_socket) {
 		weston_log("Running with single client\n");
+		errno = 0;
 		fd = strtol(server_socket, &end, 10);
-		if (*end != '\0')
+		if (errno != 0 || end == server_socket || *end != '\0')
 			fd = -1;
 	} else {
 		fd = -1;

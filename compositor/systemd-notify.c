@@ -146,7 +146,7 @@ module_init(struct weston_compositor *compositor,
 
 	errno = 0;
 	watchdog_time_conv = strtol(watchdog_time_env, &tail, 10);
-	if ((errno != 0) || (*tail != '\0'))
+	if (errno != 0 || tail == watchdog_time_env || *tail != '\0')
 		return 0;
 
 	/* Convert 'WATCHDOG_USEC' to milliseconds and notify
