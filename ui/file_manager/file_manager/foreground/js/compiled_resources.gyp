@@ -118,6 +118,7 @@
           './progress_center_item_group.js',
           './quick_view_controller.js',
           './quick_view_model.js',
+          './quick_view_uma.js',
           './scan_controller.js',
           './search_controller.js',
           './sort_menu_controller.js',

@@ -12,12 +12,13 @@
  * @param {!QuickViewModel} quickViewModel
  * @param {!TaskController} taskController
  * @param {!cr.ui.ListSelectionModel} fileListSelectionModel
+ * @param {!QuickViewUma} quickViewUma
  *
  * @constructor
  */
 function QuickViewController(
     quickView, metadataModel, selectionHandler, listContainer, quickViewModel,
-    taskController, fileListSelectionModel) {
+    taskController, fileListSelectionModel, quickViewUma) {
   /**
    * @type {!FilesQuickView}
    * @private
@@ -29,6 +30,12 @@ function QuickViewController(
    * @private
    */
   this.quickViewModel_ = quickViewModel;
+
+  /**
+   * @type {!QuickViewUma}
+   * @private
+   */
+  this.quickViewUma_ = quickViewUma;
 
   /**
    * @type {!MetadataModel}
@@ -139,6 +146,7 @@ QuickViewController.prototype.display_ = function() {
   this.updateQuickView_().then(function() {
     if (!this.quickView_.isOpened()) {
       this.quickView_.open();
+      this.quickViewUma_.onOpened(this.entries_[0]);
     }
   }.bind(this));
 };
@@ -173,6 +181,7 @@ QuickViewController.prototype.updateQuickView_ = function() {
   var entry =
       (/** @type {!FileEntry} */ (this.quickViewModel_.getSelectedEntry()));
   assert(entry);
+  this.quickViewUma_.onEntryChanged(entry);
   return this.metadataModel_.get([entry], ['thumbnailUrl', 'externalFileUrl'])
       .then(this.onMetadataLoaded_.bind(this, entry));
 };

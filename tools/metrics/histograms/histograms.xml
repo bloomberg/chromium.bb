@@ -16730,6 +16730,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.QuickView.FileType" enum="ViewFileType">
+  <owner>oka@google.com</owner>
+  <summary>File types that were tried to be opened with quick view.</summary>
+</histogram>
+
+<histogram name="FileBrowser.QuickView.VolumeType" enum="FileManagerVolumeType">
+  <owner>oka@google.com</owner>
+  <summary>The volume type where quick view is opened.</summary>
+</histogram>
+
 <histogram name="FileBrowser.SuggestApps.Close"
     enum="SuggestAppsDialogCloseReason">
   <owner>joshwoodward@google.com</owner>

@@ -235,9 +235,8 @@ FileTasks.prototype.openSuggestAppsDialog = function(
  *
  * @const
  * @type {Array<string>}
- * @private
  */
-FileTasks.UMA_INDEX_KNOWN_EXTENSIONS_ = Object.freeze([
+FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   'other', '.3ga', '.3gp', '.aac', '.alac', '.asf', '.avi', '.bmp', '.csv',
   '.doc', '.docx', '.flac', '.gif', '.jpeg', '.jpg', '.log', '.m3u', '.m3u8',
   '.m4a', '.m4v', '.mid', '.mkv', '.mov', '.mp3', '.mp4', '.mpg', '.odf',
@@ -277,11 +276,11 @@ FileTasks.recordViewingFileTypeUMA_ = function(entries) {
   for (var i = 0; i < entries.length; i++) {
     var entry = entries[i];
     var extension = FileType.getExtension(entry).toLowerCase();
-    if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS_.indexOf(extension) < 0) {
+    if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
       extension = 'other';
     }
     metrics.recordEnum(
-        'ViewingFileType', extension, FileTasks.UMA_INDEX_KNOWN_EXTENSIONS_);
+        'ViewingFileType', extension, FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
   }
 };
 

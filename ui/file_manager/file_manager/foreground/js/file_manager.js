@@ -266,6 +266,12 @@ function FileManager() {
   this.columnVisibilityController_ = null;
 
   /**
+   * @type {QuickViewUma}
+   * @private
+   */
+  this.quickViewUma_ = null;
+
+  /**
    * @type {QuickViewController}
    * @private
    */
@@ -557,12 +563,15 @@ FileManager.prototype = /** @struct */ {
       chrome.commandLinePrivate.hasSwitch(
           'disable-files-quick-view', function(disabled) {
             if (!disabled) {
+              this.quickViewUma_ =
+                  new QuickViewUma(assert(this.volumeManager_));
               this.quickViewController_ = new QuickViewController(
                   quickView, assert(this.metadataModel_),
                   assert(this.selectionHandler_),
                   assert(this.ui_.listContainer), assert(this.quickViewModel_),
                   assert(this.taskController_),
-                  fileListSelectionModel);
+                  fileListSelectionModel,
+                  assert(this.quickViewUma_));
               this.metadataBoxController_ = new MetadataBoxController(
                   this.metadataModel_, quickView.getFilesMetadataBox(),
                   quickView, this.quickViewModel_, this.fileMetadataFormatter_);
