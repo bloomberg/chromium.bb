@@ -555,6 +555,15 @@ function update(modifiers, normModifiers) {
 
     classes.push('keyboard-overlay-key-background');
 
+    if ((shortcutId == 'keyboardOverlayGoBack' ||
+         shortcutId == 'keyboardOverlayGoForward') &&
+        !loadTimeData.getBoolean('backspaceGoesBackFeatureEnabled')) {
+      // If the "backspace key goes back" experiment is not enabled, then we
+      // clear the shortcuts for Backspace and Shift+Backspace to go back or
+      // forward respectively.
+      shortcutId = null;
+    }
+
     if (shortcutId) {
       classes.push('is-shortcut');
       classes.push('keyboard-overlay-shortcut-key-background');

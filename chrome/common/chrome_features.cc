@@ -28,6 +28,12 @@ const base::Feature kBackgroundModeAllowRestart{
     "BackgroundModeAllowRestart", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
+// Enables the Backspace key to navigate back in the browser, as well as
+// Shift+Backspace to navigate forward.
+const base::Feature kBackspaceGoesBackFeature {
+  "BackspaceGoesBack", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 // Experiment to disable small cross-origin content. (http://crbug.com/608886)
 const base::Feature kBlockSmallContent{"BlockSmallPluginContent",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

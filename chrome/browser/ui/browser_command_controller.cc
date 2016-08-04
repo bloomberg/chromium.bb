@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
@@ -114,10 +115,6 @@ bool HasInternalURL(const NavigationEntry* entry) {
 }  // namespace
 
 namespace chrome {
-
-const base::Feature kBackspaceGoesBackFeature {
-  "BackspaceGoesBack", base::FEATURE_DISABLED_BY_DEFAULT
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, public:
@@ -318,7 +315,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
   switch (id) {
     // Navigation commands
     case IDC_BACKSPACE_BACK:
-      if (base::FeatureList::IsEnabled(kBackspaceGoesBackFeature))
+      if (base::FeatureList::IsEnabled(features::kBackspaceGoesBackFeature))
         GoBack(browser_, disposition);
       else
         browser_->window()->MaybeShowNewBackShortcutBubble(false);
@@ -328,7 +325,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       GoBack(browser_, disposition);
       break;
     case IDC_BACKSPACE_FORWARD:
-      if (base::FeatureList::IsEnabled(kBackspaceGoesBackFeature))
+      if (base::FeatureList::IsEnabled(features::kBackspaceGoesBackFeature))
         GoForward(browser_, disposition);
       else
         browser_->window()->MaybeShowNewBackShortcutBubble(true);
