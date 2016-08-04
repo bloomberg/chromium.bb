@@ -8,18 +8,63 @@
 
 namespace ui {
 
-InputDeviceClient::InputDeviceClient() : binding_(this) {
-  InputDeviceManager::SetInstance(this);
-}
+InputDeviceClient::InputDeviceClient() : InputDeviceClient(true) {}
 
 InputDeviceClient::~InputDeviceClient() {
-  InputDeviceManager::ClearInstance();
+  if (is_input_device_manager_)
+    InputDeviceManager::ClearInstance();
 }
 
 void InputDeviceClient::Connect(mojom::InputDeviceServerPtr server) {
   DCHECK(server.is_bound());
+  server->AddObserver(GetIntefacePtr());
+}
 
-  server->AddObserver(binding_.CreateInterfacePtrAndBind());
+const std::vector<ui::InputDevice>& InputDeviceClient::GetKeyboardDevices()
+    const {
+  return keyboard_devices_;
+}
+
+const std::vector<ui::TouchscreenDevice>&
+InputDeviceClient::GetTouchscreenDevices() const {
+  return touchscreen_devices_;
+}
+
+const std::vector<ui::InputDevice>& InputDeviceClient::GetMouseDevices() const {
+  return mouse_devices_;
+}
+
+const std::vector<ui::InputDevice>& InputDeviceClient::GetTouchpadDevices()
+    const {
+  return touchpad_devices_;
+}
+
+bool InputDeviceClient::AreDeviceListsComplete() const {
+  return device_lists_complete_;
+}
+
+bool InputDeviceClient::AreTouchscreensEnabled() const {
+  // TODO(kylechar): This obviously isn't right. We either need to pass this
+  // state around or modify the interface.
+  return true;
+}
+
+void InputDeviceClient::AddObserver(ui::InputDeviceEventObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void InputDeviceClient::RemoveObserver(ui::InputDeviceEventObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+InputDeviceClient::InputDeviceClient(bool is_input_device_manager)
+    : binding_(this), is_input_device_manager_(is_input_device_manager) {
+  if (is_input_device_manager_)
+    InputDeviceManager::SetInstance(this);
+}
+
+mojom::InputDeviceObserverMojoPtr InputDeviceClient::GetIntefacePtr() {
+  return binding_.CreateInterfacePtrAndBind();
 }
 
 void InputDeviceClient::OnKeyboardDeviceConfigurationChanged(
@@ -70,43 +115,6 @@ void InputDeviceClient::OnDeviceListsComplete(
     FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
                       OnDeviceListsComplete());
   }
-}
-
-void InputDeviceClient::AddObserver(ui::InputDeviceEventObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void InputDeviceClient::RemoveObserver(ui::InputDeviceEventObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-const std::vector<ui::InputDevice>& InputDeviceClient::GetKeyboardDevices()
-    const {
-  return keyboard_devices_;
-}
-
-const std::vector<ui::TouchscreenDevice>&
-InputDeviceClient::GetTouchscreenDevices() const {
-  return touchscreen_devices_;
-}
-
-const std::vector<ui::InputDevice>& InputDeviceClient::GetMouseDevices() const {
-  return mouse_devices_;
-}
-
-const std::vector<ui::InputDevice>& InputDeviceClient::GetTouchpadDevices()
-    const {
-  return touchpad_devices_;
-}
-
-bool InputDeviceClient::AreDeviceListsComplete() const {
-  return device_lists_complete_;
-}
-
-bool InputDeviceClient::AreTouchscreensEnabled() const {
-  // TODO(kylechar): This obviously isn't right. We either need to pass this
-  // state around or modify the interface.
-  return true;
 }
 
 }  // namespace ui

@@ -21,12 +21,15 @@ component("devices") {
 
   defines = [ "EVENTS_DEVICES_IMPLEMENTATION" ]
 
+  public_deps = [
+    "//ui/gfx",
+  ]
+
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//skia",
     "//ui/display",
-    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 }

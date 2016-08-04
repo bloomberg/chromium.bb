@@ -47,7 +47,12 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   void AddObserver(ui::InputDeviceEventObserver* observer) override;
   void RemoveObserver(ui::InputDeviceEventObserver* observer) override;
 
- private:
+ protected:
+  // Default constructor registers as InputDeviceManager. Can be subclassed in
+  // tests to avoid this.
+  explicit InputDeviceClient(bool is_input_device_manager);
+  mojom::InputDeviceObserverMojoPtr GetIntefacePtr();
+
   // mojom::InputDeviceObserverMojo:
   void OnKeyboardDeviceConfigurationChanged(
       const std::vector<ui::InputDevice>& devices) override;
@@ -63,7 +68,10 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
       const std::vector<ui::InputDevice>& mouse_devices,
       const std::vector<ui::InputDevice>& touchpad_devices) override;
 
+ private:
   mojo::Binding<mojom::InputDeviceObserverMojo> binding_;
+
+  bool is_input_device_manager_;
 
   // Holds the list of input devices and signal that we have received the lists
   // after initialization.

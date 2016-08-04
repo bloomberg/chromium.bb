@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 source_set("input_devices") {
   sources = [
     "input_device_server.cc",
@@ -10,12 +12,32 @@ source_set("input_devices") {
 
   deps = [
     "//base",
-    "//services/shell/public/cpp:sources",
-    "//skia",
+    "//services/shell/public/cpp",
     "//ui/events/devices",
   ]
 
   public_deps = [
     "//services/ui/public/interfaces/input_devices",
+  ]
+}
+
+test("input_device_unittests") {
+  testonly = true
+
+  sources = [
+    "input_device_unittests.cc",
+  ]
+
+  deps = [
+    ":input_devices",
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk/test:run_all_unittests",
+    "//services/shell/public/cpp",
+    "//services/shell/public/cpp:service_test_support",
+    "//services/ui/public/cpp/input_devices",
+    "//services/ui/public/interfaces/input_devices",
+    "//testing/gtest",
+    "//ui/events/devices",
   ]
 }

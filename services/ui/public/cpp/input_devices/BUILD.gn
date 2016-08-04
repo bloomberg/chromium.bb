@@ -10,8 +10,7 @@ source_set("input_devices") {
 
   deps = [
     "//base",
-    "//services/shell/public/cpp:sources",
-    "//skia",
+    "//services/shell/public/cpp",
     "//ui/events/devices",
   ]
 

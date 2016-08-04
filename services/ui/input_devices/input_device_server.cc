@@ -34,7 +34,7 @@ bool InputDeviceServer::IsRegisteredAsObserver() const {
 }
 
 void InputDeviceServer::AddInterface(shell::Connection* connection) {
-  DCHECK(manager_);
+  DCHECK(IsRegisteredAsObserver());
   connection->AddInterface<mojom::InputDeviceServer>(this);
 }
 
