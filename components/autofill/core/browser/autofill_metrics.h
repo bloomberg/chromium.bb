@@ -513,6 +513,7 @@ class AutofillMetrics {
 
   static void LogCardUploadDecisionMetric(CardUploadDecisionMetric metric);
   static void LogCreditCardInfoBarMetric(InfoBarMetric metric);
+  static void LogCreditCardFillingInfoBarMetric(InfoBarMetric metric);
   static void LogSaveCardPromptMetric(SaveCardPromptMetric metric,
                                       bool is_uploading,
                                       bool is_reshow);

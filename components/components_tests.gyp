@@ -1500,6 +1500,7 @@
         }],
         ['OS == "android"', {
           'sources': [
+            'autofill/core/browser/autofill_assistant_unittest.cc',
             'data_usage/android/traffic_stats_amortizer_unittest.cc',
             'invalidation/impl/invalidation_logger_unittest.cc',
             'invalidation/impl/invalidation_service_android_unittest.cc',

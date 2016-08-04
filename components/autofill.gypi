@@ -252,6 +252,14 @@
           'sources': [
             'autofill/core/browser/keyboard_accessory_metrics_logger.h',
             'autofill/core/browser/keyboard_accessory_metrics_logger.mm',
+        ],
+        }],
+        ['OS=="android"', {
+          'sources': [
+            'autofill/core/browser/autofill_assistant.cc',
+            'autofill/core/browser/autofill_assistant.h',
+            'autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.cc',
+            'autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h',
           ],
         }],
         ['OS=="ios" or OS=="android"', {
@@ -296,6 +304,7 @@
         '../testing/gtest.gyp:gtest',
         'autofill_core_common',
         'autofill_core_browser',
+        'infobars',
         'os_crypt',
         'pref_registry',
         'prefs/prefs.gyp:prefs',

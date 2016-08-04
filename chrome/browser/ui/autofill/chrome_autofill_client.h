@@ -58,6 +58,8 @@ class ChromeAutofillClient
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       const base::Closure& callback) override;
+  void ConfirmCreditCardFillAssist(const CreditCard& card,
+                                   const base::Closure& callback) override;
   void LoadRiskData(
       const base::Callback<void(const std::string&)>& callback) override;
   bool HasCreditCardScanFeature() override;

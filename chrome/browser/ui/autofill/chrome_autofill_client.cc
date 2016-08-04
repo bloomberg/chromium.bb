@@ -14,7 +14,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -62,6 +61,9 @@
 #if defined(OS_ANDROID)
 #include "base/android/context_utils.h"
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
+#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/android/infobars/autofill_credit_card_filling_infobar.h"
+#include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
 #include "components/infobars/core/infobar.h"
@@ -208,6 +210,22 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
   controller->ShowBubbleForUpload(card, std::move(legal_message), callback);
+#endif
+}
+
+void ChromeAutofillClient::ConfirmCreditCardFillAssist(
+    const CreditCard& card,
+    const base::Closure& callback) {
+#if defined(OS_ANDROID)
+  auto infobar_delegate =
+      base::MakeUnique<AutofillCreditCardFillingInfoBarDelegateMobile>(
+          card, callback);
+  auto* raw_delegate = infobar_delegate.get();
+  if (InfoBarService::FromWebContents(web_contents())->AddInfoBar(
+          base::MakeUnique<AutofillCreditCardFillingInfoBar>(
+              std::move(infobar_delegate)))) {
+    raw_delegate->set_was_shown();
+  }
 #endif
 }
 

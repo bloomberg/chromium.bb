@@ -2120,6 +2120,7 @@
       'android/java/src/org/chromium/chrome/browser/WebContentsFactory.java',
       'android/java/src/org/chromium/chrome/browser/infobar/AppBannerInfoBarAndroid.java',
       'android/java/src/org/chromium/chrome/browser/infobar/AppBannerInfoBarDelegateAndroid.java',
+      'android/java/src/org/chromium/chrome/browser/infobar/AutofillCreditCardFillingInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/AutofillSaveCardInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/ConfirmInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/DataReductionPromoInfoBarDelegate.java',

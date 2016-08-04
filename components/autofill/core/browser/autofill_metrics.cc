@@ -265,6 +265,13 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) {
 }
 
 // static
+void AutofillMetrics::LogCreditCardFillingInfoBarMetric(InfoBarMetric metric) {
+  DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardFillingInfoBar", metric,
+                            NUM_INFO_BAR_METRICS);
+}
+
+// static
 void AutofillMetrics::LogSaveCardPromptMetric(SaveCardPromptMetric metric,
                                               bool is_uploading,
                                               bool is_reshow) {

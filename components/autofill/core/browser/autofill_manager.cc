@@ -208,6 +208,9 @@ AutofillManager::AutofillManager(
       user_did_accept_upload_prompt_(false),
       external_delegate_(NULL),
       test_delegate_(NULL),
+#if defined(OS_ANDROID)
+      autofill_assistant_(this),
+#endif
       weak_ptr_factory_(this) {
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     download_manager_.reset(new AutofillDownloadManager(driver, this));
@@ -1285,6 +1288,9 @@ void AutofillManager::Reset() {
       new AutofillMetrics::FormEventLogger(false /* is_for_credit_card */));
   credit_card_form_event_logger_.reset(
       new AutofillMetrics::FormEventLogger(true /* is_for_credit_card */));
+#if defined(OS_ANDROID)
+  autofill_assistant_.Reset();
+#endif
   has_logged_autofill_enabled_ = false;
   has_logged_address_suggestions_count_ = false;
   did_show_suggestions_ = false;
@@ -1324,6 +1330,9 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       unmasking_query_id_(-1),
       external_delegate_(NULL),
       test_delegate_(NULL),
+#if defined(OS_ANDROID)
+      autofill_assistant_(this),
+#endif
       weak_ptr_factory_(this) {
   DCHECK(driver_);
   DCHECK(client_);
@@ -1771,6 +1780,21 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     KeyboardAccessoryMetricsLogger::OnFormsLoaded();
 #endif
   }
+
+#if defined(OS_ANDROID)
+  // When a credit card form is parsed and conditions are met, show an infobar
+  // prompt for credit card assisted filling. Upon accepting the infobar, the
+  // form will automatically be filled with the user's information through this
+  // class' FillCreditCardForm().
+  if (autofill_assistant_.CanShowCreditCardAssist(form_structures_.get())) {
+    const std::vector<CreditCard*> cards =
+        personal_data_->GetCreditCardsToSuggest();
+    // Expired cards are last in the sorted order, so if the first one is
+    // expired, they all are.
+    if (!cards.empty() && !cards.front()->IsExpired(base::Time::Now()))
+      autofill_assistant_.ShowAssistForCreditCard(*cards.front());
+  }
+#endif
 
   // For the |non_queryable_forms|, we have all the field type info we're ever
   // going to get about them.  For the other forms, we'll wait until we get a

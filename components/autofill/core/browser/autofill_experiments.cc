@@ -19,6 +19,8 @@
 
 namespace autofill {
 
+const base::Feature kAutofillCreditCardAssist{
+    "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillProfileCleanup{"AutofillProfileCleanup",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardSigninPromo{
@@ -41,6 +43,10 @@ bool IsAutofillProfileCleanupEnabled() {
 
 bool IsAutofillCreditCardSigninPromoEnabled() {
   return base::FeatureList::IsEnabled(kAutofillCreditCardSigninPromo);
+}
+
+bool IsAutofillCreditCardAssistEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillCreditCardAssist);
 }
 
 int GetCreditCardSigninPromoImpressionLimit() {

@@ -132,6 +132,11 @@ class AutofillClient {
       std::unique_ptr<base::DictionaryValue> legal_message,
       const base::Closure& callback) = 0;
 
+  // Will show an infobar to get user consent for Credit Card assistive filling.
+  // Will run |callback| on success.
+  virtual void ConfirmCreditCardFillAssist(const CreditCard& card,
+                                           const base::Closure& callback) = 0;
+
   // Gathers risk data and provides it to |callback|.
   virtual void LoadRiskData(
       const base::Callback<void(const std::string&)>& callback) = 0;

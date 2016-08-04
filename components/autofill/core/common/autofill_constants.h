@@ -32,6 +32,10 @@ const size_t kRequiredFieldsForUpload = 3;
 // upload the form to and request predictions from the Autofill servers.
 const size_t kRequiredFieldsForFormsWithOnlyPasswordFields = 2;
 
+// Special query id used between the browser and the renderer when the action
+// is initiated from the browser.
+const int kNoQueryId = -1;
+
 // Options bitmask values for AutofillHostMsg_ShowPasswordSuggestions IPC
 enum ShowPasswordSuggestionsOptions {
   SHOW_ALL = 1 << 0 /* show all credentials, not just ones matching username */,

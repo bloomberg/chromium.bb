@@ -32,6 +32,10 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 
+#if defined(OS_ANDROID)
+#include "components/autofill/core/browser/autofill_assistant.h"
+#endif
+
 // This define protects some debugging code (see DumpAutofillData). This
 // is here to make it easier to delete this code when the test is complete,
 // and to prevent adding the code on mobile where there is no desktop (the
@@ -251,7 +255,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
 
- protected:
   // Exposed for testing.
   AutofillExternalDelegate* external_delegate() {
     return external_delegate_;
@@ -534,6 +537,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   // Delegate used in test to get notifications on certain events.
   AutofillManagerTestDelegate* test_delegate_;
+
+#if defined(OS_ANDROID)
+  AutofillAssistant autofill_assistant_;
+#endif
 
   base::WeakPtrFactory<AutofillManager> weak_ptr_factory_;
 

@@ -13522,6 +13522,14 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
       </if>
 
+      <!-- Strings for controlling credit card assist feature in about:flags. -->
+      <message name="IDS_FLAGS_CREDIT_CARD_ASSIST_NAME" desc="The name of about:flags option to enable the credit card assisted filling.">
+        Credit Card Assisted Filling
+      </message>
+      <message name="IDS_FLAGS_CREDIT_CARD_ASSIST_DESCRIPTION" desc="The description of about:flags option to enable the credit card assisted filling..">
+        Enable assisted credit card filling on certain sites.
+      </message>
+
       <!-- Strings for controlling credit card scanning feature in about:flags. -->
       <message name="IDS_FLAGS_CREDIT_CARD_SCAN_NAME" desc="The name of about:flags option to enable scanning of credit cards using device camera.">
         Credit card scanning

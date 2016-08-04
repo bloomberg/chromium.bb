@@ -119,7 +119,7 @@ base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
                                        ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
-                                       : IDS_AUTOFILL_SAVE_CARD_PROMPT_DENY);
+                                       : IDS_NO_THANKS);
 }
 
 bool SaveCardBubbleViews::ShouldDefaultButtonBeBlue() const {

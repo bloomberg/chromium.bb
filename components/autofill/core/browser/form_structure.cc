@@ -290,6 +290,14 @@ std::ostream& operator<<(
   return out;
 }
 
+bool IsCreditCardExpirationType(ServerFieldType type) {
+  return type == CREDIT_CARD_EXP_MONTH ||
+         type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
+         type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
+         type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+         type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
@@ -575,6 +583,22 @@ bool FormStructure::IsAutofillable() const {
     return false;
 
   return ShouldBeParsed();
+}
+
+bool FormStructure::IsCompleteCreditCardForm() const {
+  bool found_cc_number = false;
+  bool found_cc_expiration = false;
+  for (const AutofillField* field : fields_) {
+    ServerFieldType type = field->Type().GetStorableType();
+    if (!found_cc_expiration && IsCreditCardExpirationType(type)) {
+      found_cc_expiration = true;
+    } else if (!found_cc_number && type == CREDIT_CARD_NUMBER) {
+      found_cc_number = true;
+    }
+    if (found_cc_expiration && found_cc_number)
+      return true;
+  }
+  return false;
 }
 
 void FormStructure::UpdateAutofillCount() {

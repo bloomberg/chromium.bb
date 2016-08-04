@@ -99,6 +99,11 @@ class FormStructure {
   // auto-fillable, like google/yahoo/msn search, etc.
   bool IsAutofillable() const;
 
+  // Returns whether |this| form represents a complete Credit Card form, which
+  // consists in having at least a credit card number field and an expiration
+  // field.
+  bool IsCompleteCreditCardForm() const;
+
   // Resets |autofill_count_| and counts the number of auto-fillable fields.
   // This is used when we receive server data for form fields.  At that time,
   // we may have more known fields than just the number of fields we matched

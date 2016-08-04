@@ -2755,6 +2755,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The Autofill credit card info bar was denied.</summary>
 </histogram>
 
+<histogram name="Autofill.CreditCardFillingInfoBar"
+    enum="AutofillCreditCardInfoBar">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The relative frequency with which users accept, deny, or ignore the Autofill
+    credit card assisted filling infobar prompt.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.CreditCardInfoBar" enum="AutofillCreditCardInfoBar">
   <owner>isherman@chromium.org</owner>
   <summary>
@@ -80742,6 +80751,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="62" label="WINDOWS_DESKTOP_SEARCH_INFOBAR_DELEGATE"/>
   <int value="63" label="UPDATE_PASSWORD_INFOBAR_DELEGATE"/>
   <int value="64" label="DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="65" label="AUTOFILL_CC_ASSIST_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse" type="int">

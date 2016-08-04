@@ -359,6 +359,7 @@
       '../tools/json_schema_compiler/test/simple_api_unittest.cc',
     ],
     'chrome_unit_tests_android_sources': [
+      'browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc',
       'browser/autofill/autofill_save_card_infobar_delegate_mobile_unittest.cc',
       'browser/password_manager/account_chooser_dialog_android_unittest.cc',
       'browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc',

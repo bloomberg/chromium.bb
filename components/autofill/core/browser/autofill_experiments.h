@@ -19,6 +19,7 @@ class PrefService;
 
 namespace autofill {
 
+extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillProfileCleanup;
 extern const base::Feature kAutofillCreditCardSigninPromo;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
@@ -38,6 +39,9 @@ bool IsAutofillProfileCleanupEnabled();
 
 // Returns whether the Autofill credit card signin promo should be shown.
 bool IsAutofillCreditCardSigninPromoEnabled();
+
+// Returns whether the Autofill credit card assist infobar should be shown.
+bool IsAutofillCreditCardAssistEnabled();
 
 // Returns the maximum number of impressions of the credit card signin promo, or
 // 0 if there are no limits.

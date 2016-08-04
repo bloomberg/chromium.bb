@@ -97,7 +97,7 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16(button == BUTTON_OK
                                        ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
-                                       : IDS_AUTOFILL_SAVE_CARD_PROMPT_DENY);
+                                       : IDS_NO_THANKS);
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::Accept() {

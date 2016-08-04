@@ -429,6 +429,8 @@
       'browser/ui/android/context_menu_helper.h',
       'browser/ui/android/infobars/app_banner_infobar_android.cc',
       'browser/ui/android/infobars/app_banner_infobar_android.h',
+      'browser/ui/android/infobars/autofill_credit_card_filling_infobar.cc',
+      'browser/ui/android/infobars/autofill_credit_card_filling_infobar.h',
       'browser/ui/android/infobars/autofill_save_card_infobar.cc',
       'browser/ui/android/infobars/autofill_save_card_infobar.h',
       'browser/ui/android/infobars/confirm_infobar.cc',

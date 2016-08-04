@@ -605,6 +605,129 @@ TEST_F(FormStructureTest, StripCommonNamePrefix_SmallPrefix) {
   EXPECT_EQ(ADDRESS_HOME_LINE3, form_structure->field(2)->heuristic_type());
 }
 
+TEST_F(FormStructureTest, IsCompleteCreditCardForm_Minimal) {
+  std::unique_ptr<FormStructure> form_structure;
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("card_number");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Expiration");
+  field.name = ASCIIToUTF16("cc_exp");
+  form.fields.push_back(field);
+
+  // Another field to reach the minimum 3.
+  field.label = ASCIIToUTF16("Zip");
+  field.name = ASCIIToUTF16("zip");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  EXPECT_TRUE(form_structure->IsCompleteCreditCardForm());
+}
+
+TEST_F(FormStructureTest, IsCompleteCreditCardForm_Full) {
+  std::unique_ptr<FormStructure> form_structure;
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Name on Card");
+  field.name = ASCIIToUTF16("name_on_card");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("card_number");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Exp Month");
+  field.name = ASCIIToUTF16("ccmonth");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Exp Year");
+  field.name = ASCIIToUTF16("ccyear");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Verification");
+  field.name = ASCIIToUTF16("verification");
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name = ASCIIToUTF16("Submit");
+  field.form_control_type = "submit";
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  EXPECT_TRUE(form_structure->IsCompleteCreditCardForm());
+}
+
+// A form with only the credit card number is not considered sufficient.
+TEST_F(FormStructureTest, IsCompleteCreditCardForm_OnlyCCNumber) {
+  std::unique_ptr<FormStructure> form_structure;
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("card_number");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  EXPECT_FALSE(form_structure->IsCompleteCreditCardForm());
+}
+
+// A form with only the credit card number is not considered sufficient.
+TEST_F(FormStructureTest, IsCompleteCreditCardForm_AddressForm) {
+  std::unique_ptr<FormStructure> form_structure;
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = base::string16();
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = base::string16();
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = base::string16();
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = base::string16();
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = base::string16();
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = base::string16();
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Zip code");
+  field.name = base::string16();
+  form.fields.push_back(field);
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  EXPECT_FALSE(form_structure->IsCompleteCreditCardForm());
+}
+
 // Verify that we can correctly process the 'autocomplete' attribute for phone
 // number types (especially phone prefixes and suffixes).
 TEST_F(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {

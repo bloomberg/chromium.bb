@@ -468,7 +468,7 @@ void AutofillAgent::FirstUserGestureObservedInTab() {
 }
 
 void AutofillAgent::FillForm(int32_t id, const FormData& form) {
-  if (id != autofill_query_id_)
+  if (id != autofill_query_id_ && id != kNoQueryId)
     return;
 
   was_query_node_autofilled_ = element_.isAutofilled();

@@ -284,7 +284,7 @@ void SaveCardBubbleViewBridge::Hide() {
 
   // Cancel button.
   base::scoped_nsobject<NSButton> cancelButton([SaveCardBubbleViewCocoa
-      makeButton:l10n_util::GetNSString(IDS_AUTOFILL_SAVE_CARD_PROMPT_DENY)]);
+      makeButton:l10n_util::GetNSString(IDS_NO_THANKS)]);
   [cancelButton setTarget:self];
   [cancelButton setAction:@selector(onCancelButton:)];
   [cancelButton setKeyEquivalent:@"\e"];

@@ -242,6 +242,12 @@ void AwAutofillClient::ConfirmSaveCreditCardToCloud(
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ConfirmCreditCardFillAssist(
+    const autofill::CreditCard& card,
+    const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::LoadRiskData(
     const base::Callback<void(const std::string&)>& callback) {
   NOTIMPLEMENTED();

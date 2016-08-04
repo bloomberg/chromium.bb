@@ -109,6 +109,12 @@ void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
           true, card, std::move(legal_message), callback))));
 }
 
+void AutofillClientIOS::ConfirmCreditCardFillAssist(
+    const CreditCard& card,
+    const base::Closure& callback) {
+  NOTREACHED();
+}
+
 void AutofillClientIOS::LoadRiskData(
     const base::Callback<void(const std::string&)>& callback) {
   callback.Run(ios::GetChromeBrowserProvider()->GetRiskData());
