@@ -609,8 +609,22 @@ static_library("test_support_sync_api") {
   ]
 }
 
-# GYP version: sync/sync_tests.gypi:sync_unit_tests
+# TODO(maxbogue): Remove this dummy target once bots are updated.
 test("sync_unit_tests") {
+  testonly = true
+  sources = [
+    "base/immutable_unittest.cc",
+  ]
+  deps = [
+    ":sync",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//testing/gtest",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
   sources = [
     "api/attachments/attachment_id_unittest.cc",
     "api/attachments/attachment_metadata_unittest.cc",
@@ -712,7 +726,6 @@ test("sync_unit_tests") {
     ":test_support_sync_core",
     ":test_support_sync_core_impl",
     "//base",
-    "//base/test:run_all_unittests",
     "//components/sync",
     "//components/sync/protocol",
     "//google_apis",

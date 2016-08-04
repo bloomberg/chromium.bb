@@ -110,7 +110,6 @@
         '../ppapi/ppapi_internal.gyp:ppapi_unittests',
         '../sandbox/sandbox.gyp:sandbox_linux_unittests',
         '../sql/sql.gyp:sql_unittests',
-        '../components/sync.gyp:sync_unit_tests',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
         '../ui/base/ui_base_tests.gyp:ui_base_unittests',
         '../url/url.gyp:url_unittests',
@@ -153,7 +152,6 @@
               #   SoundsManagerTest.Play
               # Disable AudioStreamHandlerTest.ConsecutivePlayRequests (b/16539293)
               'media_unittests --gtest_filter=-AudioOutputControllerTest.PlayDivertSwitchDeviceRevertClose:AudioOutputControllerTest.PlaySwitchDeviceClose:AudioStreamHandlerTest.Play:AudioStreamHandlerTest.ConsecutivePlayRequests:PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM:PipelineIntegrationTest.BasicPlayback_VideoOnly_VP9_WebM:PipelineIntegrationTest.BasicPlayback_VP9*:PipelineIntegrationTest.P444_VP9_WebM:PipelineIntegrationTest.BasicPlayback_VP8A*:OpusAudioDecoderTest/AudioDecoderTest.ProduceAudioSamples/0:SoundsManagerTest.Play',
-              'sync_unit_tests --gtest_filter=-SyncHttpBridgeTest.*',
               # DoAppendUTF8Invalid fails because of dcheck_always_on flag in Eng builds
               'url_unittests --gtest_filter=-URLCanonTest.DoAppendUTF8Invalid',
             ],
@@ -262,7 +260,6 @@
             '../media/midi/midi.gyp:midi_unittests_apk',
             '../net/net.gyp:net_unittests_apk',
             '../sql/sql.gyp:sql_unittests_apk',
-            '../components/sync.gyp:sync_unit_tests_apk',
             '../ui/events/events_unittests.gyp:events_unittests_apk',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
           ],
