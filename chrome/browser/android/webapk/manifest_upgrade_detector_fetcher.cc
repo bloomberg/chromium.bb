@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/webapk/manifest_upgrade_detector.h"
+#include "chrome/browser/android/webapk/manifest_upgrade_detector_fetcher.h"
 
 #include <jni.h>
 
@@ -11,7 +11,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
-#include "jni/ManifestUpgradeDetector_jni.h"
+#include "jni/ManifestUpgradeDetectorFetcher_jni.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
@@ -29,75 +29,71 @@ bool IsInScope(const GURL& url, const GURL& scope) {
 
 jlong Initialize(JNIEnv* env,
                  const JavaParamRef<jobject>& obj,
-                 const JavaParamRef<jobject>& java_web_contents,
                  const JavaParamRef<jstring>& java_scope_url,
                  const JavaParamRef<jstring>& java_web_manifest_url) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
   GURL scope(base::android::ConvertJavaStringToUTF8(env, java_scope_url));
   GURL web_manifest_url(base::android::ConvertJavaStringToUTF8(
       env, java_web_manifest_url));
-  ManifestUpgradeDetector* manifest_upgrade_detector =
-      new ManifestUpgradeDetector(env, obj, web_contents, scope,
-                                  web_manifest_url);
-  return reinterpret_cast<intptr_t>(manifest_upgrade_detector);
+  ManifestUpgradeDetectorFetcher* fetcher =
+      new ManifestUpgradeDetectorFetcher(env, obj, scope, web_manifest_url);
+  return reinterpret_cast<intptr_t>(fetcher);
 }
 
-ManifestUpgradeDetector::ManifestUpgradeDetector(
+ManifestUpgradeDetectorFetcher::ManifestUpgradeDetectorFetcher(
     JNIEnv* env,
     jobject obj,
-    content::WebContents* web_contents,
     const GURL& scope,
     const GURL& web_manifest_url)
-    : content::WebContentsObserver(web_contents),
-      started_(false),
+    : content::WebContentsObserver(nullptr),
       scope_(scope),
       web_manifest_url_(web_manifest_url),
       weak_ptr_factory_(this) {
   java_ref_.Reset(env, obj);
 }
 
-ManifestUpgradeDetector::~ManifestUpgradeDetector() {
+ManifestUpgradeDetectorFetcher::~ManifestUpgradeDetectorFetcher() {
 }
 
 // static
-bool ManifestUpgradeDetector::Register(JNIEnv* env) {
+bool ManifestUpgradeDetectorFetcher::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ManifestUpgradeDetector::ReplaceWebContents(
+void ManifestUpgradeDetectorFetcher::ReplaceWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jweb_contents) {
+    const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
+      content::WebContents::FromJavaWebContents(java_web_contents);
   content::WebContentsObserver::Observe(web_contents);
 }
 
-void ManifestUpgradeDetector::Destroy(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {
+void ManifestUpgradeDetectorFetcher::Destroy(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void ManifestUpgradeDetector::Start(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj) {
-  started_ = true;
+void ManifestUpgradeDetectorFetcher::Start(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& java_web_contents) {
+  ReplaceWebContents(env, obj, java_web_contents);
 }
 
-void ManifestUpgradeDetector::DidFinishLoad(
+void ManifestUpgradeDetectorFetcher::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
   if (render_frame_host->GetParent())
     return;
-  if (!started_ || !IsInScope(validated_url, scope_))
+  if (!IsInScope(validated_url, scope_))
     return;
 
   web_contents()->GetManifest(
-      base::Bind(&ManifestUpgradeDetector::OnDidGetManifest,
+      base::Bind(&ManifestUpgradeDetectorFetcher::OnDidGetManifest,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ManifestUpgradeDetector::OnDidGetManifest(
+void ManifestUpgradeDetectorFetcher::OnDidGetManifest(
     const GURL& manifest_url,
     const content::Manifest& manifest) {
   // If the manifest is empty, it means the current WebContents doesn't
@@ -111,8 +107,6 @@ void ManifestUpgradeDetector::OnDidGetManifest(
   if (manifest.IsEmpty() || web_manifest_url_ != manifest_url)
     return;
 
-  started_ = false;
-
   ShortcutInfo info(GURL::EmptyGURL());
   info.UpdateFromManifest(manifest);
   info.manifest_url = manifest_url;
@@ -120,7 +114,7 @@ void ManifestUpgradeDetector::OnDidGetManifest(
   OnDataAvailable(info);
 }
 
-void ManifestUpgradeDetector::OnDataAvailable(const ShortcutInfo& info) {
+void ManifestUpgradeDetectorFetcher::OnDataAvailable(const ShortcutInfo& info) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> java_url =
@@ -132,7 +126,7 @@ void ManifestUpgradeDetector::OnDataAvailable(const ShortcutInfo& info) {
   ScopedJavaLocalRef<jstring> java_short_name =
       base::android::ConvertUTF16ToJavaString(env, info.short_name);
 
-  Java_ManifestUpgradeDetector_onDataAvailable(
+  Java_ManifestUpgradeDetectorFetcher_onDataAvailable(
       env, java_ref_.obj(),
       java_url.obj(),
       java_scope.obj(),

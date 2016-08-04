@@ -94,7 +94,7 @@
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/android/warmup_manager.h"
 #include "chrome/browser/android/web_contents_factory.h"
-#include "chrome/browser/android/webapk/manifest_upgrade_detector.h"
+#include "chrome/browser/android/webapk/manifest_upgrade_detector_fetcher.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_dialog_helper.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -271,7 +271,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"LaunchMetrics", metrics::RegisterLaunchMetrics},
     {"LayerTitleCache", chrome::android::RegisterLayerTitleCache},
     {"LogoBridge", RegisterLogoBridge},
-    {"ManifestUpgradeDetector", ManifestUpgradeDetector::Register},
+    {"ManifestUpgradeDetectorFetcher",
+     ManifestUpgradeDetectorFetcher::Register},
     {"MediaDrmCredentialManager",
      MediaDrmCredentialManager::RegisterMediaDrmCredentialManager},
     {"MostVisitedSites", MostVisitedSitesBridge::Register},

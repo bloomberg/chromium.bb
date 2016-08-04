@@ -11,29 +11,22 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.WebContents;
 
 /**
- * This class interacts with C++ to detect whether resources in web manifest of a WebAPK have been
- * updated.
+ * This class checks whether the WebAPK needs to be re-installed and sends a request to re-install
+ * the WebAPK if it needs to be re-installed.
  */
-public class ManifestUpgradeDetector extends EmptyTabObserver {
+public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.Callback {
     /**
      * The names of <meta-data> in the WebAPK's AndroidManifest.xml whose values are needed to
      * determine whether a WebAPK needs to be upgraded but which are not present in
      * {@link WebappInfo}. The names must stay in sync with
      * {@linkorg.chromium.webapk.lib.runtime_library.HostBrowserLauncher}.
      */
-    private static final String META_DATA_START_URL = "org.chromium.webapk.shell_apk.startUrl";
+    public static final String META_DATA_START_URL = "org.chromium.webapk.shell_apk.startUrl";
 
-    /** Pointer to the native side ManifestUpgradeDetector. */
-    private long mNativePointer;
-
-    /** The tab that is being observed. */
+    /** The WebAPK's tab. */
     private final Tab mTab;
 
     private WebappInfo mWebappInfo;
@@ -41,26 +34,15 @@ public class ManifestUpgradeDetector extends EmptyTabObserver {
     private String mStartUrl;
 
     /**
-     * A flag for whether metadata is set via {@link set*ForTesting()}, rather than set
-     * from WebAPK's AndroidManifest.xml.
+     * Fetches the WebAPK's Web Manifest from the web.
      */
-    private boolean mOverrideMetadataForTesting = false;
+    private ManifestUpgradeDetectorFetcher mFetcher;
 
     private static final String TAG = "cr_UpgradeDetector";
 
     public ManifestUpgradeDetector(Tab tab, WebappInfo info) {
         mTab = tab;
         mWebappInfo = info;
-    }
-
-    @VisibleForTesting
-    public void setOverrideMetadataForTesting(boolean overrideMetadataForTesting) {
-        mOverrideMetadataForTesting = overrideMetadataForTesting;
-    }
-
-    @VisibleForTesting
-    public void setStartUrlForTesting(String startUrl) {
-        mStartUrl = startUrl;
     }
 
     /**
@@ -72,21 +54,23 @@ public class ManifestUpgradeDetector extends EmptyTabObserver {
             return;
         }
 
-        if (mNativePointer != 0) return;
+        if (mFetcher != null) return;
 
         getMetaDataFromAndroidManifest();
-        mNativePointer = nativeInitialize(mTab.getWebContents(),
-                mWebappInfo.scopeUri().toString(), mWebappInfo.webManifestUri().toString());
+        mFetcher = createFetcher(
+                mTab, mWebappInfo.scopeUri().toString(), mWebappInfo.webManifestUri().toString());
+        mFetcher.start(this);
+    }
 
-        mTab.addObserver(this);
-        nativeStart(mNativePointer);
+    /**
+     * Creates ManifestUpgradeDataFetcher.
+     */
+    protected ManifestUpgradeDetectorFetcher createFetcher(Tab tab, String scopeUrl,
+            String manifestUrl) {
+        return new ManifestUpgradeDetectorFetcher(tab, scopeUrl, manifestUrl);
     }
 
     private void getMetaDataFromAndroidManifest() {
-        if (mOverrideMetadataForTesting) {
-            // The metadata are set via {@link set*ForTesting()}.
-            return;
-        }
         try {
             ApplicationInfo appinfo =
                     ContextUtils.getApplicationContext().getPackageManager().getApplicationInfo(
@@ -101,54 +85,38 @@ public class ManifestUpgradeDetector extends EmptyTabObserver {
      * Puts the object in a state where it is safe to be destroyed.
      */
     public void destroy() {
-        if (mNativePointer != 0) {
-            nativeDestroy(mNativePointer);
+        if (mFetcher != null) {
+            mFetcher.destroy();
         }
-        mNativePointer = 0;
-    }
-
-    @Override
-    public void onWebContentsSwapped(Tab tab, boolean didStartLoad,
-            boolean didFinishLoad) {
-        updatePointers();
-    }
-
-    @Override
-    public void onContentChanged(Tab tab) {
-        updatePointers();
-    }
-
-    /**
-     * Updates which WebContents the native ManifestUpgradeDetector is monitoring.
-     */
-    private void updatePointers() {
-        nativeReplaceWebContents(mNativePointer, mTab.getWebContents());
+        mFetcher = null;
     }
 
     /**
      * Called when the updated Web Manifest has been fetched.
      */
-    @CalledByNative
-    private void onDataAvailable(String startUrl, String scope, String name, String shortName,
+    @Override
+    public void onGotManifestData(String startUrl, String scopeUrl, String name, String shortName,
             int displayMode, int orientation, long themeColor, long backgroundColor) {
-        mTab.removeObserver(this);
-        destroy();
+        mFetcher.destroy();
+        mFetcher = null;
 
         // TODO(hanxi): crbug.com/627824. Validate whether the new WebappInfo is
         // WebAPK-compatible.
         final WebappInfo newInfo = WebappInfo.create(mWebappInfo.id(), startUrl,
-                scope, mWebappInfo.encodedIcon(), name, shortName, displayMode, orientation,
+                scopeUrl, mWebappInfo.encodedIcon(), name, shortName, displayMode, orientation,
                 mWebappInfo.source(), themeColor, backgroundColor, mWebappInfo.isIconGenerated(),
                 mWebappInfo.webApkPackageName(), mWebappInfo.webManifestUri().toString());
         if (requireUpgrade(newInfo)) {
             upgrade();
         }
+
+        onComplete();
     }
 
     /**
      * Checks whether the WebAPK needs to be upgraded provided the new Web Manifest info.
      */
-    protected boolean requireUpgrade(WebappInfo newInfo) {
+    private boolean requireUpgrade(WebappInfo newInfo) {
         boolean scopeMatch = mWebappInfo.scopeUri().equals(newInfo.scopeUri());
         if (!scopeMatch) {
             // Sometimes the scope doesn't match due to a missing "/" at the end of the scope URL.
@@ -173,12 +141,7 @@ public class ManifestUpgradeDetector extends EmptyTabObserver {
         return false;
     }
 
-    private void upgrade() {}
+    protected void upgrade() {}
 
-    private native long nativeInitialize(WebContents webContents, String scope,
-            String webManifestUrl);
-    private native void nativeReplaceWebContents(long nativeManifestUpgradeDetector,
-            WebContents webContents);
-    private native void nativeDestroy(long nativeManifestUpgradeDetector);
-    private native void nativeStart(long nativeManifestUpgradeDetector);
+    protected void onComplete() {}
 }
