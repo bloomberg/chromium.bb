@@ -513,4 +513,12 @@
     downstream = 0,
     upstream = 1
   };
+
+  // Compares two nodes in an accessibility tree in pre-order traversal.
+  enum AXTreeOrder {
+    undefined,  // Not in the same tree, or other error.
+    before,     // First node is before the second one.
+    equal,      // Nodes are the same.
+    after       // First node is after the second one.
+  };
 };

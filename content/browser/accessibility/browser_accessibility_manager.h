@@ -320,6 +320,13 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
                                         int* child_index1,
                                         int* child_index2);
 
+  // Sets |out_is_before| to true if |object1| comes before |object2|
+  // in tree order (pre-order traversal), and false if the objects are the
+  // same or not in the same tree.
+  static ui::AXTreeOrder CompareNodes(
+      const BrowserAccessibility& object1,
+      const BrowserAccessibility& object2);
+
   static std::vector<const BrowserAccessibility*> FindTextOnlyObjectsInRange(
       const BrowserAccessibility& start_object,
       const BrowserAccessibility& end_object);
@@ -331,6 +338,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // If start and end offsets are greater than the text's length, returns all
   // the text.
   static base::string16 GetTextForRange(
+      const BrowserAccessibility& start_object,
+      int start_offset,
+      const BrowserAccessibility& end_object,
+      int end_offset);
+
+  static gfx::Rect GetLocalBoundsForRange(
       const BrowserAccessibility& start_object,
       int start_offset,
       const BrowserAccessibility& end_object,
