@@ -167,7 +167,7 @@ void ImageBitmapFactories::didFinishLoading(ImageBitmapLoader* loader)
 }
 
 ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(ImageBitmapFactories& factory, Optional<IntRect> cropRect, ScriptState* scriptState, const ImageBitmapOptions& options)
-    : m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
+    : m_loader(FileReaderLoader::create(FileReaderLoader::ReadAsArrayBuffer, this))
     , m_factory(&factory)
     , m_resolver(ScriptPromiseResolver::create(scriptState))
     , m_cropRect(cropRect)
@@ -177,7 +177,7 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(ImageBitmapFactories&
 
 void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* context, Blob* blob)
 {
-    m_loader.start(context, blob->blobDataHandle());
+    m_loader->start(context, blob->blobDataHandle());
 }
 
 DEFINE_TRACE(ImageBitmapFactories)
@@ -195,7 +195,7 @@ void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
 
 void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
 {
-    DOMArrayBuffer* arrayBuffer = m_loader.arrayBufferResult();
+    DOMArrayBuffer* arrayBuffer = m_loader->arrayBufferResult();
     if (!arrayBuffer) {
         rejectPromise();
         return;

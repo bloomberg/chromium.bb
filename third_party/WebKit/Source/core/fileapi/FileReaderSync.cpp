@@ -46,39 +46,39 @@ DOMArrayBuffer* FileReaderSync::readAsArrayBuffer(ExecutionContext* executionCon
 {
     ASSERT(blob);
 
-    FileReaderLoader loader(FileReaderLoader::ReadAsArrayBuffer, nullptr);
-    startLoading(executionContext, loader, *blob, exceptionState);
+    std::unique_ptr<FileReaderLoader> loader = FileReaderLoader::create(FileReaderLoader::ReadAsArrayBuffer, nullptr);
+    startLoading(executionContext, *loader, *blob, exceptionState);
 
-    return loader.arrayBufferResult();
+    return loader->arrayBufferResult();
 }
 
 String FileReaderSync::readAsBinaryString(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
     ASSERT(blob);
 
-    FileReaderLoader loader(FileReaderLoader::ReadAsBinaryString, 0);
-    startLoading(executionContext, loader, *blob, exceptionState);
-    return loader.stringResult();
+    std::unique_ptr<FileReaderLoader> loader = FileReaderLoader::create(FileReaderLoader::ReadAsBinaryString, nullptr);
+    startLoading(executionContext, *loader, *blob, exceptionState);
+    return loader->stringResult();
 }
 
 String FileReaderSync::readAsText(ExecutionContext* executionContext, Blob* blob, const String& encoding, ExceptionState& exceptionState)
 {
     ASSERT(blob);
 
-    FileReaderLoader loader(FileReaderLoader::ReadAsText, nullptr);
-    loader.setEncoding(encoding);
-    startLoading(executionContext, loader, *blob, exceptionState);
-    return loader.stringResult();
+    std::unique_ptr<FileReaderLoader> loader = FileReaderLoader::create(FileReaderLoader::ReadAsText, nullptr);
+    loader->setEncoding(encoding);
+    startLoading(executionContext, *loader, *blob, exceptionState);
+    return loader->stringResult();
 }
 
 String FileReaderSync::readAsDataURL(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
     ASSERT(blob);
 
-    FileReaderLoader loader(FileReaderLoader::ReadAsDataURL, nullptr);
-    loader.setDataType(blob->type());
-    startLoading(executionContext, loader, *blob, exceptionState);
-    return loader.stringResult();
+    std::unique_ptr<FileReaderLoader> loader = FileReaderLoader::create(FileReaderLoader::ReadAsDataURL, nullptr);
+    loader->setDataType(blob->type());
+    startLoading(executionContext, *loader, *blob, exceptionState);
+    return loader->stringResult();
 }
 
 void FileReaderSync::startLoading(ExecutionContext* executionContext, FileReaderLoader& loader, const Blob& blob, ExceptionState& exceptionState)

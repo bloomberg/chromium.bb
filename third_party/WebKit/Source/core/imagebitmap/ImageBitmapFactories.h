@@ -40,6 +40,7 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/IntRect.h"
+#include <memory>
 
 class SkImage;
 
@@ -101,7 +102,7 @@ private:
         void didFinishLoading() override;
         void didFail(FileError::ErrorCode) override;
 
-        FileReaderLoader m_loader;
+        std::unique_ptr<FileReaderLoader> m_loader;
         Member<ImageBitmapFactories> m_factory;
         Member<ScriptPromiseResolver> m_resolver;
         Optional<IntRect> m_cropRect;

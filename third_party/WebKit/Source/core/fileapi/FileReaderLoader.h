@@ -69,7 +69,6 @@ public:
         return wrapUnique(new FileReaderLoader(readType, client));
     }
 
-    FileReaderLoader(ReadType, FileReaderLoaderClient*);
     ~FileReaderLoader() override;
 
     void start(ExecutionContext*, PassRefPtr<BlobDataHandle>);
@@ -106,6 +105,8 @@ public:
     void setDataType(const String& dataType) { m_dataType = dataType; }
 
 private:
+    FileReaderLoader(ReadType, FileReaderLoaderClient*);
+
     void startInternal(ExecutionContext&, const Stream*, PassRefPtr<BlobDataHandle>);
     void cleanup();
 

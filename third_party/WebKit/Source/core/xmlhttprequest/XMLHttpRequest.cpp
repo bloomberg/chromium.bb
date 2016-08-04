@@ -165,7 +165,7 @@ public:
 
     void cancel()
     {
-        m_loader.cancel();
+        m_loader->cancel();
     }
 
     DEFINE_INLINE_TRACE()
@@ -176,13 +176,13 @@ public:
 private:
     BlobLoader(XMLHttpRequest* xhr, PassRefPtr<BlobDataHandle> handle)
         : m_xhr(xhr)
-        , m_loader(FileReaderLoader::ReadByClient, this)
+        , m_loader(FileReaderLoader::create(FileReaderLoader::ReadByClient, this))
     {
-        m_loader.start(m_xhr->getExecutionContext(), handle);
+        m_loader->start(m_xhr->getExecutionContext(), handle);
     }
 
     Member<XMLHttpRequest> m_xhr;
-    FileReaderLoader m_loader;
+    std::unique_ptr<FileReaderLoader> m_loader;
 };
 
 XMLHttpRequest* XMLHttpRequest::create(ScriptState* scriptState)

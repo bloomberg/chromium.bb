@@ -123,9 +123,9 @@ class PresentationConnection::BlobLoader final : public GarbageCollectedFinalize
 public:
     BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle, PresentationConnection* PresentationConnection)
         : m_PresentationConnection(PresentationConnection)
-        , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
+        , m_loader(FileReaderLoader::create(FileReaderLoader::ReadAsArrayBuffer, this))
     {
-        m_loader.start(m_PresentationConnection->getExecutionContext(), blobDataHandle);
+        m_loader->start(m_PresentationConnection->getExecutionContext(), blobDataHandle);
     }
     ~BlobLoader() override { }
 
@@ -134,7 +134,7 @@ public:
     void didReceiveData() override { }
     void didFinishLoading() override
     {
-        m_PresentationConnection->didFinishLoadingBlob(m_loader.arrayBufferResult());
+        m_PresentationConnection->didFinishLoadingBlob(m_loader->arrayBufferResult());
     }
     void didFail(FileError::ErrorCode errorCode) override
     {
@@ -143,7 +143,7 @@ public:
 
     void cancel()
     {
-        m_loader.cancel();
+        m_loader->cancel();
     }
 
     DEFINE_INLINE_TRACE()
@@ -153,7 +153,7 @@ public:
 
 private:
     Member<PresentationConnection> m_PresentationConnection;
-    FileReaderLoader m_loader;
+    std::unique_ptr<FileReaderLoader> m_loader;
 };
 
 PresentationConnection::PresentationConnection(LocalFrame* frame, const String& id, const String& url)

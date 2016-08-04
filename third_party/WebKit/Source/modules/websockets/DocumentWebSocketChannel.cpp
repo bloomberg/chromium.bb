@@ -80,7 +80,7 @@ public:
 
 private:
     Member<DocumentWebSocketChannel> m_channel;
-    FileReaderLoader m_loader;
+    std::unique_ptr<FileReaderLoader> m_loader;
 };
 
 class DocumentWebSocketChannel::Message : public GarbageCollectedFinalized<DocumentWebSocketChannel::Message> {
@@ -110,21 +110,21 @@ public:
 
 DocumentWebSocketChannel::BlobLoader::BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle, DocumentWebSocketChannel* channel)
     : m_channel(channel)
-    , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
+    , m_loader(FileReaderLoader::create(FileReaderLoader::ReadAsArrayBuffer, this))
 {
-    m_loader.start(channel->getExecutionContext(), blobDataHandle);
+    m_loader->start(channel->getExecutionContext(), blobDataHandle);
 }
 
 void DocumentWebSocketChannel::BlobLoader::cancel()
 {
-    m_loader.cancel();
+    m_loader->cancel();
     // didFail will be called immediately.
     // |this| is deleted here.
 }
 
 void DocumentWebSocketChannel::BlobLoader::didFinishLoading()
 {
-    m_channel->didFinishLoadingBlob(m_loader.arrayBufferResult());
+    m_channel->didFinishLoadingBlob(m_loader->arrayBufferResult());
     // |this| is deleted here.
 }
 
