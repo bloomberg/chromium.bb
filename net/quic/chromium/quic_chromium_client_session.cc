@@ -875,18 +875,6 @@ void QuicChromiumClientSession::OnConnectionClosed(
             "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveTLPCount",
             connection()->sent_packet_manager().GetConsecutiveTlpCount());
       }
-      if (connection()->sent_packet_manager().HasUnackedPackets()) {
-        UMA_HISTOGRAM_TIMES(
-            "Net.QuicSession.LocallyTimedOutWithOpenStreams."
-            "TimeSinceLastReceived.UnackedPackets",
-            NetworkActivityMonitor::GetInstance()->GetTimeSinceLastReceived());
-      } else {
-        UMA_HISTOGRAM_TIMES(
-            "Net.QuicSession.LocallyTimedOutWithOpenStreams."
-            "TimeSinceLastReceived.NoUnackedPackets",
-            NetworkActivityMonitor::GetInstance()->GetTimeSinceLastReceived());
-      }
-
     } else {
       UMA_HISTOGRAM_COUNTS(
           "Net.QuicSession.ConnectionClose.NumOpenStreams.HandshakeTimedOut",
