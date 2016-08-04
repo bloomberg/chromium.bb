@@ -488,7 +488,7 @@ are declared in build/common.gypi.
         &amp;Edit
       </message>
       <if expr="is_macosx">
-        <message name="IDS_ACCNAME_TAB" desc="A generic description of a tab button's role">
+        <message name="IDS_ACCNAME_TAB" desc="A generic description of a tab button's role" meaning="UI element">
           Tab
         </message>
       </if>

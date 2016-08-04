@@ -1107,7 +1107,7 @@
       <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'status' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_STATUS_BRL">
         sts
       </message>
-      <message desc="Describes an element with the ARIA role tab." name="IDS_CHROMEVOX_ROLE_TAB">
+      <message desc="Describes an element with the ARIA role tab." name="IDS_CHROMEVOX_ROLE_TAB" meaning="UI element">
         Tab
       </message>
       <message desc="This is an ARIA widget role name shown on a braille display. If the translation is longer than 5 characters, try to abbreviate it according to local conventions, and when doing so, if reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TAB_BRL">
