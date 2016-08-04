@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//chrome/common/features.gni")
 
 assert(enable_extensions)
 
@@ -109,6 +108,13 @@ static_library("extensions") {
     "//url",
   ]
 
+  if (enable_task_manager) {
+    sources += rebase_path(
+            gypi_values.chrome_browser_extensions_task_manager_enabled_sources,
+            ".",
+            "//chrome")
+  }
+
   if (is_chromeos) {
     sources +=
         rebase_path(gypi_values.chrome_browser_extensions_chromeos_sources,
@@ -134,19 +140,31 @@ static_library("extensions") {
                     "//chrome")
   }
 
-  # chromeos uses its own global_shortcut_listener, _x11 is not necessary.
-  if (is_chromeos || !use_x11) {
-    sources -= [
-      "global_shortcut_listener_x11.cc",
-      "global_shortcut_listener_x11.h",
+  if (enable_service_discovery) {
+    sources += rebase_path(
+            gypi_values.chrome_browser_extensions_service_discovery_sources,
+            ".",
+            "//chrome")
+  }
+
+  if (use_ash) {
+    sources += [
+      "api/tabs/ash_panel_contents.cc",
+      "api/tabs/ash_panel_contents.h",
+    ]
+    deps += [ "//ash" ]
+  }
+
+  if (use_aura) {
+    deps += [
+      "//ui/keyboard",
+      "//ui/keyboard:keyboard_with_content",
+      "//ui/keyboard:resources",
     ]
   }
 
-  if (is_chromeos && use_ozone) {
-    sources -= [ "global_shortcut_listener_chromeos.cc" ]
-  }
-  if (!use_ozone) {
-    sources -= [ "global_shortcut_listener_ozone.cc" ]
+  if (toolkit_views) {
+    deps += [ "//ui/views" ]
   }
 
   if (is_linux) {
@@ -170,6 +188,30 @@ static_library("extensions") {
               ".",
               "//chrome")
     }
+  }
+
+  if (enable_webrtc) {
+    sources += [ "api/webrtc_logging_private/webrtc_logging_private_api.cc" ]
+  } else {
+    sources +=
+        [ "api/webrtc_logging_private/webrtc_logging_private_api_stub.cc" ]
+  }
+
+  if (use_brlapi) {
+    deps += [ "//build/linux/libbrlapi" ]
+    sources += rebase_path(gypi_values.chrome_browser_extensions_brlapi_sources,
+                           ".",
+                           "//chrome")
+  } else {
+    sources += [ "api/braille_display_private/braille_controller_stub.cc" ]
+  }
+
+  # chromeos uses its own global_shortcut_listener, _x11 is not necessary.
+  if (is_chromeos || !use_x11) {
+    sources -= [
+      "global_shortcut_listener_x11.cc",
+      "global_shortcut_listener_x11.h",
+    ]
   }
 
   if (is_win || is_mac) {
@@ -203,57 +245,10 @@ static_library("extensions") {
                     "//chrome")
   }
 
-  if (enable_hotwording) {
-    defines += [ "ENABLE_HOTWORDING" ]
+  if (is_chromeos && use_ozone) {
+    sources -= [ "global_shortcut_listener_chromeos.cc" ]
   }
-
-  if (enable_service_discovery) {
-    sources += rebase_path(
-            gypi_values.chrome_browser_extensions_service_discovery_sources,
-            ".",
-            "//chrome")
-  }
-
-  if (enable_task_manager) {
-    sources += rebase_path(
-            gypi_values.chrome_browser_extensions_task_manager_enabled_sources,
-            ".",
-            "//chrome")
-  }
-
-  if (enable_webrtc) {
-    sources += [ "api/webrtc_logging_private/webrtc_logging_private_api.cc" ]
-  } else {
-    sources +=
-        [ "api/webrtc_logging_private/webrtc_logging_private_api_stub.cc" ]
-  }
-
-  if (toolkit_views) {
-    deps += [ "//ui/views" ]
-  }
-
-  if (use_ash) {
-    sources += [
-      "api/tabs/ash_panel_contents.cc",
-      "api/tabs/ash_panel_contents.h",
-    ]
-    deps += [ "//ash" ]
-  }
-
-  if (use_aura) {
-    deps += [
-      "//ui/keyboard",
-      "//ui/keyboard:keyboard_with_content",
-      "//ui/keyboard:resources",
-    ]
-  }
-
-  if (use_brlapi) {
-    deps += [ "//build/linux/libbrlapi" ]
-    sources += rebase_path(gypi_values.chrome_browser_extensions_brlapi_sources,
-                           ".",
-                           "//chrome")
-  } else {
-    sources += [ "api/braille_display_private/braille_controller_stub.cc" ]
+  if (!use_ozone) {
+    sources -= [ "global_shortcut_listener_ozone.cc" ]
   }
 }
