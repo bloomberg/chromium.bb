@@ -44,6 +44,7 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('android')
+@benchmark.Disabled('android-webview')  # http://crbug.com/622300
 class PowerToughAdCases(perf_benchmark.PerfBenchmark):
   """Android power test with tough ad pages."""
   test = power.Power
