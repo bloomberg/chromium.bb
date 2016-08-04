@@ -45,7 +45,7 @@ function testFunction()
 
 function testFunctionTimeout()
 {
-    var functions = [doTestPromiseConstructor, doTestSettledPromisesResolved, doTestSettledPromisesRejected, doTestChainedPromises, doTestChainedPromisesJSON];
+    var functions = [doTestPromiseConstructor, doTestSettledPromisesResolved, doTestSettledPromisesRejected];
     for (var i = 0; i < functions.length; ++i)
         functions[i]();
 }
@@ -93,38 +93,9 @@ async function doTestSettledPromisesRejected()
     }
 }
 
-async function doTestChainedPromises()
-{
-    try {
-        await timeoutPromise(1);
-        debugger;
-        await timeoutPromise(2);
-        debugger;
-        await 3;
-        debugger;
-        await settledPromise(4);
-        debugger;
-        thenCallback(await timeoutPromise(5));
-    } catch (e) {
-        errorCallback(e);
-    }
-}
-
-async function doTestChainedPromisesJSON()
-{
-    try {
-        let one = await timeoutPromise(1);
-        let stringify = await JSON.stringify(one);
-        let parse = await JSON.parse(stringify);
-        thenCallback(parse);
-    } catch (e) {
-        errorCallback(e);
-    }
-}
-
 var test = function()
 {
-    var totalDebuggerStatements = 10;
+    var totalDebuggerStatements = 4;
     var maxAsyncCallStackDepth = 5;
     InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
 }

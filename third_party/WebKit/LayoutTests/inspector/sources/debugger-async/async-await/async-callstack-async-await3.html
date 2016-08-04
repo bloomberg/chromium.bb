@@ -45,7 +45,7 @@ function testFunction()
 
 function testFunctionTimeout()
 {
-    var functions = [doTestChainedPromises, doTestChainedPromisesJSON];
+    var functions = [doTestPromiseAll, doTestThrowFromChain, doTestRejectFromChain, doTestPromiseResolve, doTestPromiseReject];
     for (var i = 0; i < functions.length; ++i)
         functions[i]();
 }
@@ -60,30 +60,71 @@ function errorCallback(error)
     debugger;
 }
 
-async function doTestChainedPromises()
+async function doTestPromiseAll()
 {
     try {
-        await timeoutPromise(1);
-        debugger;
-        await timeoutPromise(2);
-        debugger;
-        await 3;
-        debugger;
-        await settledPromise(4);
-        debugger;
-        thenCallback(await timeoutPromise(5));
+        let all = await Promise.all([11, 22, 33, 44, 55].map(timeoutPromise));
+        thenCallback(all);
     } catch (e) {
         errorCallback(e);
     }
 }
 
-async function doTestChainedPromisesJSON()
+async function throwFromChain()
+{
+    await timeoutPromise(1);
+    await timeoutPromise(2);
+    await settledPromise(3);
+    throw Error("thrown from 4");
+    await timeoutPromise(5);
+    debugger;
+}
+
+async function doTestThrowFromChain()
 {
     try {
-        let one = await timeoutPromise(1);
-        let stringify = await JSON.stringify(one);
-        let parse = await JSON.parse(stringify);
-        thenCallback(parse);
+        let result = await throwFromChain();
+        thencallback(result);
+    } catch (e) {
+        errorCallback(e);
+    }
+}
+
+async function rejectFromChain()
+{
+    await timeoutPromise(1);
+    await timeoutPromise(2);
+    await timeoutPromise(3);
+    await timeoutPromise(new Error(4));
+    throw new Error("thrown from rejectFromChain");
+    debugger;
+}
+
+async function doTestRejectFromChain()
+{
+    try {
+        let result = await rejectFromChain();
+        thenCallback(result);
+    } catch (e) {
+        errorCallback(e);
+    }
+}
+
+async function doTestPromiseResolve()
+{
+    try {
+        let result = await Promise.resolve(1);
+        thenCallback(result);
+    } catch (e) {
+        errorCallback(e);
+    }
+}
+
+async function doTestPromiseReject()
+{
+    try {
+        let result = await Promise.reject(new Error("2"))
+        thenCallback(result);
     } catch (e) {
         errorCallback(e);
     }
@@ -91,7 +132,7 @@ async function doTestChainedPromisesJSON()
 
 var test = function()
 {
-    var totalDebuggerStatements = 6;
+    var totalDebuggerStatements = 5;
     var maxAsyncCallStackDepth = 5;
     InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
 }
