@@ -10,6 +10,8 @@ using page_load_metrics::UserAbortType;
 
 namespace internal {
 
+const char kHistogramAbortClientRedirectBeforeCommit[] =
+    "PageLoad.AbortTiming.ClientRedirect.BeforeCommit";
 const char kHistogramAbortForwardBackBeforeCommit[] =
     "PageLoad.AbortTiming.ForwardBackNavigation.BeforeCommit";
 const char kHistogramAbortReloadBeforeCommit[] =
@@ -23,6 +25,8 @@ const char kHistogramAbortCloseBeforeCommit[] =
 const char kHistogramAbortOtherBeforeCommit[] =
     "PageLoad.AbortTiming.Other.BeforeCommit";
 
+const char kHistogramAbortClientRedirectBeforePaint[] =
+    "PageLoad.AbortTiming.ClientRedirect.AfterCommit.BeforePaint";
 const char kHistogramAbortForwardBackBeforePaint[] =
     "PageLoad.AbortTiming.ForwardBackNavigation.AfterCommit.BeforePaint";
 const char kHistogramAbortReloadBeforePaint[] =
@@ -34,6 +38,8 @@ const char kHistogramAbortStopBeforePaint[] =
 const char kHistogramAbortCloseBeforePaint[] =
     "PageLoad.AbortTiming.Close.AfterCommit.BeforePaint";
 
+const char kHistogramAbortClientRedirectDuringParse[] =
+    "PageLoad.AbortTiming.ClientRedirect.DuringParse";
 const char kHistogramAbortForwardBackDuringParse[] =
     "PageLoad.AbortTiming.ForwardBackNavigation.DuringParse";
 const char kHistogramAbortReloadDuringParse[] =
@@ -58,6 +64,10 @@ void RecordAbortBeforeCommit(UserAbortType abort_type,
       return;
     case UserAbortType::ABORT_FORWARD_BACK:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackBeforeCommit,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_CLIENT_REDIRECT:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortClientRedirectBeforeCommit,
                           time_to_abort);
       return;
     case UserAbortType::ABORT_NEW_NAVIGATION:
@@ -95,6 +105,10 @@ void RecordAbortAfterCommitBeforePaint(UserAbortType abort_type,
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackBeforePaint,
                           time_to_abort);
       return;
+    case UserAbortType::ABORT_CLIENT_REDIRECT:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortClientRedirectBeforePaint,
+                          time_to_abort);
+      return;
     case UserAbortType::ABORT_NEW_NAVIGATION:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationBeforePaint,
                           time_to_abort);
@@ -127,6 +141,10 @@ void RecordAbortDuringParse(UserAbortType abort_type,
       return;
     case UserAbortType::ABORT_FORWARD_BACK:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackDuringParse,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_CLIENT_REDIRECT:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortClientRedirectDuringParse,
                           time_to_abort);
       return;
     case UserAbortType::ABORT_NEW_NAVIGATION:

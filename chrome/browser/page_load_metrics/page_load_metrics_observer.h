@@ -27,6 +27,11 @@ enum UserAbortType {
   // The user presses the back/forward button.
   ABORT_FORWARD_BACK,
 
+  // The navigation is replaced with a navigation with the qualifier
+  // ui::PAGE_TRANSITION_CLIENT_REDIRECT, which is caused by Javascript, or the
+  // meta refresh tag.
+  ABORT_CLIENT_REDIRECT,
+
   // If the navigation is replaced by a new navigation. This includes link
   // clicks, typing in the omnibox (not a reload), and form submissions.
   ABORT_NEW_NAVIGATION,

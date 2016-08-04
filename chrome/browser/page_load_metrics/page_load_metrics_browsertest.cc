@@ -348,3 +348,32 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AbortMultiple) {
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramAbortNewNavigationBeforeCommit, 2);
 }
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       AbortClientRedirect) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL first_url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), first_url);
+
+  GURL second_url(embedded_test_server()->GetURL("/title2.html"));
+  chrome::NavigateParams params(browser(), second_url,
+                                ui::PAGE_TRANSITION_LINK);
+  content::TestNavigationManager manager(
+      browser()->tab_strip_model()->GetActiveWebContents(), second_url);
+  chrome::Navigate(&params);
+  EXPECT_TRUE(manager.WaitForWillStartRequest());
+
+  {
+    content::TestNavigationManager reload_manager(
+        browser()->tab_strip_model()->GetActiveWebContents(), first_url);
+    EXPECT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "window.location.reload();"));
+  }
+
+  manager.WaitForNavigationFinished();
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramAbortClientRedirectBeforeCommit, 1);
+}

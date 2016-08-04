@@ -191,6 +191,9 @@ void RecordAppBackgroundPageLoadCompleted(bool completed_after_background) {
 // TODO(csharrison): Add a case for client side redirects, which is what JS
 // initiated window.location / window.history navigations get set to.
 UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
+  if (transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
+    return ABORT_CLIENT_REDIRECT;
+  }
   if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD))
     return ABORT_RELOAD;
   if (transition & ui::PAGE_TRANSITION_FORWARD_BACK)
@@ -334,6 +337,12 @@ void PageLoadTracker::LogAbortChainHistograms(
       UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeForwardBack,
                            aborted_chain_size_);
       return;
+    // TODO(csharrison): Refactor this code so it is based on the WillStart*
+    // code path instead of the committed load code path. Then, for every abort
+    // chain, log a histogram of the counts of each of these metrics. For now,
+    // merge client redirects with new navigations, which was (basically) the
+    // previous behavior.
+    case ABORT_CLIENT_REDIRECT:
     case ABORT_NEW_NAVIGATION:
       UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeNewNavigation,
                            aborted_chain_size_);

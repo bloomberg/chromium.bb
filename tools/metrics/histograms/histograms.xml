@@ -37778,6 +37778,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.AbortTiming.ClientRedirect" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    This metric is still experimental and not yet ready to be relied upon.
+    Measures the time from navigation start to the time the page load was
+    aborted by a client side redirect (Javascript navigation).
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.AbortTiming.Close" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -99965,6 +99974,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="AfterPaint.BeforeInteraction"/>
   <suffix name="AfterPaint.Before1sDelayedInteraction"/>
   <suffix name="DuringParse"/>
+  <affected-histogram name="PageLoad.AbortTiming.ClientRedirect"/>
   <affected-histogram name="PageLoad.AbortTiming.Close"/>
   <affected-histogram name="PageLoad.AbortTiming.ForwardBackNavigation"/>
   <affected-histogram name="PageLoad.AbortTiming.NewNavigation"/>
