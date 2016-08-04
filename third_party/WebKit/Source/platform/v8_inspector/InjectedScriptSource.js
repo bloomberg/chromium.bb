@@ -463,7 +463,7 @@ InjectedScript.prototype = {
 
         var skipGetOwnPropertyNames;
         try {
-            skipGetOwnPropertyNames = InjectedScriptHost.isTypedArray(object) && object.length > 500000;
+            skipGetOwnPropertyNames = InjectedScriptHost.subtype(object) === "typedarray" && object.length > 500000;
         } catch (e) {
         }
 
@@ -611,7 +611,7 @@ InjectedScript.prototype = {
             return "Proxy";
 
         var className = InjectedScriptHost.internalConstructorName(obj);
-        if (subtype === "array") {
+        if (subtype === "array" || subtype === "typedarray") {
             if (typeof obj.length === "number")
                 className += "[" + obj.length + "]";
             return className;
@@ -913,7 +913,7 @@ InjectedScript.RemoteObject.prototype = {
                 continue;
 
             // Ignore length property of array.
-            if (this.subtype === "array" && name === "length")
+            if ((this.subtype === "array" || this.subtype === "typedarray") && name === "length")
                 continue;
 
             // Ignore size property of map, set.

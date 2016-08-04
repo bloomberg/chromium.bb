@@ -24,7 +24,6 @@ public:
 private:
     static void internalConstructorNameCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void formatAccessorsAsProperties(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void isTypedArrayCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void subtypeCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void getInternalPropertiesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void objectHasOwnPropertyCallback(const v8::FunctionCallbackInfo<v8::Value>&);

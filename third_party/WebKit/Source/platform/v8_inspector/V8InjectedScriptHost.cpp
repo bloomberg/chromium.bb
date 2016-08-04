@@ -46,7 +46,6 @@ v8::Local<v8::Object> V8InjectedScriptHost::create(v8::Local<v8::Context> contex
     v8::Local<v8::External> debuggerExternal = v8::External::New(isolate, inspector);
     setFunctionProperty(context, injectedScriptHost, "internalConstructorName", V8InjectedScriptHost::internalConstructorNameCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "formatAccessorsAsProperties", V8InjectedScriptHost::formatAccessorsAsProperties, debuggerExternal);
-    setFunctionProperty(context, injectedScriptHost, "isTypedArray", V8InjectedScriptHost::isTypedArrayCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "subtype", V8InjectedScriptHost::subtypeCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "getInternalProperties", V8InjectedScriptHost::getInternalPropertiesCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "objectHasOwnProperty", V8InjectedScriptHost::objectHasOwnPropertyCallback, debuggerExternal);
@@ -77,14 +76,6 @@ void V8InjectedScriptHost::formatAccessorsAsProperties(const v8::FunctionCallbac
     info.GetReturnValue().Set(unwrapInspector(info)->client()->formatAccessorsAsProperties(info[0]));
 }
 
-void V8InjectedScriptHost::isTypedArrayCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 1)
-        return;
-
-    info.GetReturnValue().Set(info[0]->IsTypedArray());
-}
-
 void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
@@ -99,8 +90,12 @@ void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Va
             return;
         }
     }
-    if (value->IsArray() || value->IsTypedArray() || value->IsArgumentsObject()) {
+    if (value->IsArray() || value->IsArgumentsObject()) {
         info.GetReturnValue().Set(toV8StringInternalized(isolate, "array"));
+        return;
+    }
+    if (value->IsTypedArray()) {
+        info.GetReturnValue().Set(toV8StringInternalized(isolate, "typedarray"));
         return;
     }
     if (value->IsDate()) {
@@ -133,6 +128,10 @@ void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Va
     }
     if (value->IsProxy()) {
         info.GetReturnValue().Set(toV8StringInternalized(isolate, "proxy"));
+        return;
+    }
+    if (value->IsPromise()) {
+        info.GetReturnValue().Set(toV8StringInternalized(isolate, "promise"));
         return;
     }
     String16 subtype = unwrapInspector(info)->client()->valueSubtype(value);
