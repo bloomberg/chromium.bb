@@ -7854,7 +7854,8 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
           context_provider, TestContextProvider::CreateWorker(),
           FakeOutputSurface::Create3d(context_provider), nullptr, nullptr,
           RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
-          true /* synchronous_composite */));
+          true /* synchronous_composite */,
+          false /* force_disable_reclaim_resources */));
 
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
 

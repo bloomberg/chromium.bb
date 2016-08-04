@@ -73,21 +73,21 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
     }
   }
 
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     if (TestEnded() || CleanUpStarted())
       return;
     draw_timer_.NextLap();
     if (draw_timer_.HasTimeLimitExpired()) {
-      CleanUpAndEndTest(impl);
+      CleanUpAndEndTest();
       return;
     }
     if (!begin_frame_driven_drawing_)
-      impl->SetNeedsRedraw();
+      host_impl->SetNeedsRedraw();
     if (full_damage_each_frame_)
-      impl->SetFullRootLayerDamage();
+      host_impl->SetFullRootLayerDamage();
   }
 
-  virtual void CleanUpAndEndTest(LayerTreeHostImpl* host_impl) { EndTest(); }
+  virtual void CleanUpAndEndTest() { EndTest(); }
 
   virtual bool CleanUpStarted() { return false; }
 
@@ -253,17 +253,11 @@ TEST_F(ScrollingLayerTreePerfTest, LongScrollablePageThreaded) {
   RunTest(CompositorMode::THREADED, false);
 }
 
-static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
-                                 bool lost_resource) {}
-
 // Simulates main-thread scrolling on each frame.
 class BrowserCompositorInvalidateLayerTreePerfTest
     : public LayerTreeHostPerfTestJsonReader {
  public:
-  BrowserCompositorInvalidateLayerTreePerfTest()
-      : LayerTreeHostPerfTestJsonReader(),
-        next_fence_sync_(1),
-        clean_up_started_(false) {}
+  BrowserCompositorInvalidateLayerTreePerfTest() = default;
 
   void BuildTree() override {
     LayerTreeHostPerfTestJsonReader::BuildTree();
@@ -285,7 +279,9 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     gpu_mailbox.SetName(
         reinterpret_cast<const int8_t*>(name_stream.str().c_str()));
     std::unique_ptr<SingleReleaseCallback> callback =
-        SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+        SingleReleaseCallback::Create(base::Bind(
+            &BrowserCompositorInvalidateLayerTreePerfTest::ReleaseMailbox,
+            base::Unretained(this)));
 
     gpu::SyncToken next_sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                                    gpu::CommandBufferId::FromUnsafeValue(1),
@@ -295,6 +291,8 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     next_fence_sync_++;
 
     tab_contents_->SetTextureMailbox(mailbox, std::move(callback));
+    ++sent_mailboxes_count_;
+    tab_contents_->SetNeedsDisplay();
   }
 
   void DidCommit() override {
@@ -303,7 +301,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     layer_tree_host()->SetNeedsCommit();
   }
 
-  void CleanUpAndEndTest(LayerTreeHostImpl* host_impl) override {
+  void CleanUpAndEndTest() override {
     clean_up_started_ = true;
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -314,15 +312,25 @@ class BrowserCompositorInvalidateLayerTreePerfTest
 
   void CleanUpAndEndTestOnMainThread() {
     tab_contents_->SetTextureMailbox(TextureMailbox(), nullptr);
-    EndTest();
+    // ReleaseMailbox will end the test when we get the last mailbox back.
+  }
+
+  void ReleaseMailbox(const gpu::SyncToken& sync_token, bool lost_resource) {
+    ++released_mailboxes_count_;
+    if (released_mailboxes_count_ == sent_mailboxes_count_) {
+      DCHECK(CleanUpStarted());
+      EndTest();
+    }
   }
 
   bool CleanUpStarted() override { return clean_up_started_; }
 
  private:
   scoped_refptr<TextureLayer> tab_contents_;
-  uint64_t next_fence_sync_;
-  bool clean_up_started_;
+  uint64_t next_fence_sync_ = 1;
+  bool clean_up_started_ = false;
+  int sent_mailboxes_count_ = 0;
+  int released_mailboxes_count_ = 0;
 };
 
 TEST_F(BrowserCompositorInvalidateLayerTreePerfTest, DenseBrowserUIThreaded) {

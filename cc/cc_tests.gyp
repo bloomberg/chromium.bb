@@ -176,8 +176,6 @@
       'test/begin_frame_args_test.h',
       'test/begin_frame_source_test.cc',
       'test/begin_frame_source_test.h',
-      'test/failure_output_surface.cc',
-      'test/failure_output_surface.h',
       'test/fake_channel_impl.cc',
       'test/fake_channel_impl.h',
       'test/fake_client_picture_cache.cc',

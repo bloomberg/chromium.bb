@@ -36,6 +36,9 @@ class TestContextProvider : public ContextProvider {
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestWebGraphicsContext3D> context);
   static scoped_refptr<TestContextProvider> Create(
+      std::unique_ptr<TestWebGraphicsContext3D> context,
+      std::unique_ptr<TestContextSupport> support);
+  static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
 
   bool BindToCurrentThread() override;
@@ -57,10 +60,11 @@ class TestContextProvider : public ContextProvider {
   // InitializeOnCurrentThread on the context returned from this method.
   TestWebGraphicsContext3D* UnboundTestContext3d();
 
-  TestContextSupport* support() { return &support_; }
+  TestContextSupport* support() { return support_.get(); }
 
  protected:
   explicit TestContextProvider(
+      std::unique_ptr<TestContextSupport> support,
       std::unique_ptr<TestGLES2Interface> gl,
       std::unique_ptr<TestWebGraphicsContext3D> context);
   ~TestContextProvider() override;
@@ -68,11 +72,10 @@ class TestContextProvider : public ContextProvider {
  private:
   void OnLostContext();
 
-  TestContextSupport support_;
-
+  std::unique_ptr<TestContextSupport> support_;
   std::unique_ptr<TestWebGraphicsContext3D> context3d_;
   std::unique_ptr<TestGLES2Interface> context_gl_;
-  bool bound_;
+  bool bound_ = false;
 
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
