@@ -14,11 +14,6 @@ declare_args() {
   # Denotes the type of Cast product. This is #defined as CAST_PRODUCT_TYPE in
   # version.h. This is an integer in the range [0-4].
   cast_product_type = 0
-
-  # If true, IS_CAST_DEBUG_BUILD() will evaluate to 1 in version.h. Otherwise,
-  # it will evaluate to 0. Overriding this when is_debug=false is useful for
-  # doing engineering builds.
-  cast_is_debug = is_debug
 }
 
 assert(cast_product_type >= 0 && cast_product_type <= 4)

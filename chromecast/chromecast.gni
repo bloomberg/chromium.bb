@@ -17,6 +17,11 @@ declare_args() {
   # than any value the builder may assign to prevent attempted automatic updates
   # when the default value is used.
   cast_build_incremental = "999999"
+
+  # If true, IS_CAST_DEBUG_BUILD() will evaluate to 1 in version.h. Otherwise,
+  # it will evaluate to 0. Overriding this when is_debug=false is useful for
+  # doing engineering builds.
+  cast_is_debug = is_debug
 }
 
 declare_args() {
