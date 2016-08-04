@@ -191,8 +191,8 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node)
     if (!node->isConnected() || document().isDetached())
         return;
 
-    TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
     DCHECK(!isXSLStyleSheet(*node));
+    TreeScope& treeScope = node->treeScope();
     TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     DCHECK(collection);
     collection->addStyleSheetCandidateNode(node);

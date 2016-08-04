@@ -133,7 +133,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
 
 bool HTMLLinkElement::shouldLoadLink()
 {
-    return isConnected();
+    return isInDocumentTree() || (isConnected() && m_relAttribute.isStyleSheet());
 }
 
 bool HTMLLinkElement::loadLink(const String& type, const String& as, const String& media, const KURL& url)
@@ -143,8 +143,7 @@ bool HTMLLinkElement::loadLink(const String& type, const String& as, const Strin
 
 LinkResource* HTMLLinkElement::linkResourceToProcess()
 {
-    bool visible = isConnected() && !isInShadowTree();
-    if (!visible) {
+    if (!shouldLoadLink()) {
         ASSERT(!linkStyle() || !linkStyle()->hasSheet());
         return nullptr;
     }
@@ -203,8 +202,9 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
     logAddElementIfIsolatedWorldAndInDocument("link", relAttr, hrefAttr);
     if (!insertionPoint->isConnected())
         return InsertionDone;
-
-    if (isInShadowTree()) {
+    DCHECK(isConnected());
+    if (!shouldLoadLink()) {
+        DCHECK(isInShadowTree());
         String message = "HTML element <link> is ignored in shadow tree.";
         document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
         return InsertionDone;
@@ -222,15 +222,15 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
 
 void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
 {
-    // Store the result of isInShadowTree() here before Node::removedFrom(..) clears the flags.
-    bool wasInShadowTree = isInShadowTree();
+    // Store the result of isConnected() here before Node::removedFrom(..) clears the flags.
+    bool wasConnected = isConnected();
     HTMLElement::removedFrom(insertionPoint);
     if (!insertionPoint->isConnected())
         return;
 
     m_linkLoader->released();
 
-    if (wasInShadowTree) {
+    if (!wasConnected) {
         ASSERT(!linkStyle() || !linkStyle()->hasSheet());
         return;
     }
@@ -440,8 +440,8 @@ enum StyleSheetCacheStatus {
 
 void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* cachedStyleSheet)
 {
-    if (!m_owner->isInDocumentTree()) {
-        // While the stylesheet is asynchronously loading, the owner can be moved out of a document tree.
+    if (!m_owner->isConnected()) {
+        // While the stylesheet is asynchronously loading, the owner can be disconnected from a document.
         // In that case, cancel any processing on the loaded content.
         m_loading = false;
         removePendingSheet();
@@ -658,7 +658,7 @@ void LinkStyle::process()
         m_loading = true;
 
         String title = m_owner->title();
-        if (!title.isEmpty() && !m_owner->isAlternate() && m_disabledState != EnabledViaScript)
+        if (!title.isEmpty() && !m_owner->isAlternate() && m_disabledState != EnabledViaScript && m_owner->isInDocumentTree())
             document().styleEngine().setPreferredStylesheetSetNameIfNotSet(title);
 
         bool mediaQueryMatches = true;

@@ -88,8 +88,12 @@ bool StyleSheetCandidate::canBeActivated(const String& currentPreferrableName) c
     if (!sheet || sheet->disabled() || !sheet->isCSSStyleSheet())
         return false;
 
-    if (sheet->ownerNode() && sheet->ownerNode()->isInShadowTree())
-        return true;
+    if (sheet->ownerNode() && sheet->ownerNode()->isInShadowTree()) {
+        if (isCSSStyle())
+            return true;
+        if (isHTMLLink() && !isImport())
+            return !isAlternate();
+    }
 
     const AtomicString& title = this->title();
     if (!isEnabledViaScript() && !title.isEmpty() && title != currentPreferrableName)

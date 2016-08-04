@@ -51,9 +51,6 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine& engine, Sty
         StyleSheetCandidate candidate(*n);
         DCHECK(!candidate.isXSL());
 
-        if (!candidate.isCSSStyle())
-            continue;
-
         StyleSheet* sheet = candidate.sheet();
         if (!sheet)
             continue;

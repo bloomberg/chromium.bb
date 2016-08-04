@@ -227,10 +227,10 @@ void StyleResolver::removePendingAuthorStyleSheets(const HeapVector<Member<CSSSt
 
 void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet)
 {
-    ASSERT(!cssSheet.disabled());
-    ASSERT(cssSheet.ownerDocument());
-    ASSERT(cssSheet.ownerNode());
-    ASSERT(isHTMLStyleElement(cssSheet.ownerNode()) || isSVGStyleElement(cssSheet.ownerNode()) || cssSheet.ownerNode()->treeScope() == cssSheet.ownerDocument());
+    DCHECK(!cssSheet.disabled());
+    DCHECK(cssSheet.ownerDocument());
+    DCHECK(cssSheet.ownerNode());
+    DCHECK(isHTMLStyleElement(cssSheet.ownerNode()) || isSVGStyleElement(cssSheet.ownerNode()) || cssSheet.ownerNode()->isConnected());
 
     if (cssSheet.mediaQueries() && !m_medium->eval(cssSheet.mediaQueries(), &m_viewportDependentMediaQueryResults, &m_deviceDependentMediaQueryResults))
         return;
