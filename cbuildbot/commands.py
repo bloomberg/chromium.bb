@@ -517,7 +517,20 @@ def GetFirmwareVersions(buildroot, board):
 
 
 def BuildImage(buildroot, board, images_to_build, version=None,
-               rootfs_verification=True, extra_env=None, disk_layout=None):
+               builder_path=None, rootfs_verification=True, extra_env=None,
+               disk_layout=None):
+  """Run the script which builds images.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board of the image.
+    images_to_build: The images to be built.
+    version: The version of image.
+    builder_path: The path of the builder to build the image.
+    rootfs_verification: Whether to enable the rootfs verification.
+    extra_env: A dictionary of environmental variables to set during generation.
+    disk_layout: The disk layout.
+  """
 
   # Default to base if images_to_build is passed empty.
   if not images_to_build:
@@ -525,7 +538,10 @@ def BuildImage(buildroot, board, images_to_build, version=None,
 
   version_str = '--version=%s' % (version or '')
 
-  cmd = ['./build_image', '--board=%s' % board, '--replace', version_str]
+  builder_path_str = '--builder_path=%s' % (builder_path or '')
+
+  cmd = ['./build_image', '--board=%s' % board, '--replace', version_str,
+         builder_path_str]
 
   if not rootfs_verification:
     cmd += ['--noenable_rootfs_verification']

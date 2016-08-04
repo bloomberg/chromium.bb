@@ -369,11 +369,13 @@ class BuildImageStage(BuildPackagesStage):
       version = '%s-afdo-generate' % version
 
     rootfs_verification = self._run.config.rootfs_verification
+    builder_path = '/'.join([self._bot_id, self.version])
     commands.BuildImage(self._build_root,
                         self._current_board,
                         sorted(images_to_build),
                         rootfs_verification=rootfs_verification,
                         version=version,
+                        builder_path=builder_path,
                         disk_layout=disk_layout,
                         extra_env=self._portage_extra_env)
 

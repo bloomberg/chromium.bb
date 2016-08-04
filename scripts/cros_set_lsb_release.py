@@ -43,6 +43,7 @@ LSB_KEY_BUILD_NUMBER = 'CHROMEOS_RELEASE_BUILD_NUMBER'
 LSB_KEY_CHROME_MILESTONE = 'CHROMEOS_RELEASE_CHROME_MILESTONE'
 LSB_KEY_PATCH_NUMBER = 'CHROMEOS_RELEASE_PATCH_NUMBER'
 LSB_KEY_VERSION = 'CHROMEOS_RELEASE_VERSION'
+LSB_KEY_BUILDER_PATH = 'CHROMEOS_RELEASE_BUILDER_PATH'
 LSB_KEY_GOOGLE_RELEASE = 'GOOGLE_RELEASE'
 LSB_KEY_APPID_RELEASE = 'CHROMEOS_RELEASE_APPID'
 LSB_KEY_APPID_BOARD = 'CHROMEOS_BOARD_APPID'
@@ -61,6 +62,8 @@ def _ParseArguments(argv):
                       help='The sysroot to install the lsb-release file into.')
   parser.add_argument('--version_string', required=True,
                       help='The image\'s version string.')
+  parser.add_argument('--builder_path', default=None,
+                      help='The image\'s builder path.')
   parser.add_argument('--auserver', default=None,
                       help='The auserver url to use.')
   parser.add_argument('--devserver', default=None,
@@ -128,6 +131,11 @@ def main(argv):
   if opts.arc_version is not None:
     fields.update({
         LSB_KEY_ARC_VERSION: opts.arc_version,
+    })
+
+  if opts.builder_path is not None:
+    fields.update({
+        LSB_KEY_BUILDER_PATH: opts.builder_path,
     })
 
   if opts.official:
