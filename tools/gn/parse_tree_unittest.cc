@@ -47,7 +47,7 @@ TEST(ParseTree, Accessor) {
   const int64_t kBValue = 42;
   err = Err();
   setup.scope()
-      ->GetMutableValue("a", false)
+      ->GetMutableValue("a", Scope::SEARCH_NESTED, false)
       ->scope_value()
       ->SetValue("b", Value(nullptr, kBValue), nullptr);
   result = accessor.Execute(setup.scope(), &err);

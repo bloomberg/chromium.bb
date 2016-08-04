@@ -95,7 +95,8 @@ Value RunForEach(Scope* scope,
   if (old_loop_value_ptr) {
     // Put back old value. Use the copy we made, rather than use the pointer,
     // which will probably point to the new value now in the scope.
-    scope->SetValue(loop_var, old_loop_value, old_loop_value.origin());
+    scope->SetValue(loop_var, std::move(old_loop_value),
+                    old_loop_value.origin());
   } else {
     // Loop variable was undefined before loop, delete it.
     scope->RemoveIdentifier(loop_var);

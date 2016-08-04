@@ -58,6 +58,7 @@ class Parser {
   std::unique_ptr<ParseNode> ParseExpression(int precedence);
 
   // |PrefixFunc|s used in parsing expressions.
+  std::unique_ptr<ParseNode> Block(Token token);
   std::unique_ptr<ParseNode> Literal(Token token);
   std::unique_ptr<ParseNode> Name(Token token);
   std::unique_ptr<ParseNode> Group(Token token);
@@ -85,7 +86,10 @@ class Parser {
 
   std::unique_ptr<ParseNode> ParseFile();
   std::unique_ptr<ParseNode> ParseStatement();
-  std::unique_ptr<BlockNode> ParseBlock();
+  // Expects to be passed the token corresponding to the '{' and that the
+  // current token is the one following the '{'.
+  std::unique_ptr<BlockNode> ParseBlock(Token being_brace,
+                                        BlockNode::ResultMode result_mode);
   std::unique_ptr<ParseNode> ParseCondition();
 
   // Generates a pre- and post-order traversal of the tree.

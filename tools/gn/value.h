@@ -43,9 +43,11 @@ class Value {
   Value(const ParseNode* origin, std::unique_ptr<Scope> scope);
 
   Value(const Value& other);
+  Value(Value&& other);
   ~Value();
 
   Value& operator=(const Value& other);
+  Value& operator=(Value&& other) = default;
 
   Type type() const { return type_; }
 

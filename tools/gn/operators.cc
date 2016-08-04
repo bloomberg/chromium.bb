@@ -5,6 +5,7 @@
 #include "tools/gn/operators.h"
 
 #include <stddef.h>
+#include <algorithm>
 
 #include "base/strings/string_number_conversions.h"
 #include "tools/gn/err.h"
@@ -17,41 +18,212 @@ namespace {
 
 const char kSourcesName[] = "sources";
 
-// Applies the sources assignment filter from the given scope to each element
-// of source (can be a list or a string), appending it to dest if it doesn't
-// match.
-void AppendFilteredSourcesToValue(const Scope* scope,
-                                  const Value& source,
-                                  Value* dest) {
-  const PatternList* filter = scope->GetSourcesAssignmentFilter();
+// Helper class used for assignment operations: =, +=, and -= to generalize
+// writing to various types of destinations.
+class ValueDestination {
+ public:
+  ValueDestination();
 
-  if (source.type() == Value::STRING) {
-    if (!filter || filter->is_empty() ||
-        !filter->MatchesValue(source))
-      dest->list_value().push_back(source);
-    return;
-  }
-  if (source.type() != Value::LIST) {
-    // Any non-list and non-string being added to a list can just get appended,
-    // we're not going to filter it.
-    dest->list_value().push_back(source);
-    return;
+  bool Init(Scope* exec_scope,
+            const ParseNode* dest,
+            const BinaryOpNode* op_node,
+            Err* err);
+
+  // Returns the value in the destination scope if it already exists, or null
+  // if it doesn't. This is for validation and does not count as a "use".
+  // Other nested scopes will be searched.
+  const Value* GetExistingValue() const;
+
+  // Returns an existing version of the output if it can be modified. This will
+  // not search nested scopes since writes only go into the current scope.
+  // Returns null if the value does not exist, or is not in the current scope
+  // (meaning assignments won't go to this value and it's not mutable). This
+  // is for implementing += and -=.
+  //
+  // If it exists, this will mark the origin of the value to be the passed-in
+  // node, and the value will be also marked unused (if possible) under the
+  // assumption that it will be modified in-place.
+  Value* GetExistingMutableValueIfExists(const ParseNode* origin);
+
+  // Returns the sources assignment filter if it exists for the current
+  // scope and it should be applied to this assignment. Otherwise returns null.
+  const PatternList* GetAssignmentFilter(const Scope* exec_scope) const;
+
+  // Returns a pointer to the value that was set.
+  Value* SetValue(Value value, const ParseNode* set_node);
+
+  // Fills the Err with an undefined value error appropriate for modification
+  // operators: += and -= (where the source is also the dest).
+  void MakeUndefinedIdentifierForModifyError(Err* err);
+
+ private:
+  enum Type { UNINITIALIZED, SCOPE, LIST };
+
+  Type type_;
+
+  // Valid when type_ == SCOPE.
+  Scope* scope_;
+  const Token* name_token_;
+
+  // Valid when type_ == LIST.
+  Value* list_;
+  size_t index_;  // Guaranteed in-range when Init() succeeds.
+};
+
+ValueDestination::ValueDestination()
+    : type_(UNINITIALIZED),
+      scope_(nullptr),
+      name_token_(nullptr),
+      list_(nullptr),
+      index_(0) {
+}
+
+bool ValueDestination::Init(Scope* exec_scope,
+                            const ParseNode* dest,
+                            const BinaryOpNode* op_node,
+                            Err* err) {
+  // Check for standard variable set.
+  const IdentifierNode* dest_identifier = dest->AsIdentifier();
+  if (dest_identifier) {
+    type_ = SCOPE;
+    scope_ = exec_scope;
+    name_token_ = &dest_identifier->value();
+    return true;
   }
 
-  if (!filter || filter->is_empty()) {
-    // No filter, append everything.
-    for (const auto& source_entry : source.list_value())
-      dest->list_value().push_back(source_entry);
-    return;
+  // Check for array and scope accesses. The base (array or scope variable
+  // name) must always be defined ahead of time.
+  const AccessorNode* dest_accessor = dest->AsAccessor();
+  if (!dest_accessor) {
+    *err = Err(op_node, "Assignment requires a lvalue.",
+               "This thing on the left is not an identifier or accessor.");
+    err->AppendRange(dest->GetRange());
+    return false;
   }
 
-  // Note: don't reserve() the dest vector here since that actually hurts
-  // the allocation pattern when the build script is doing multiple small
-  // additions.
-  for (const auto& source_entry : source.list_value()) {
-    if (!filter->MatchesValue(source_entry))
-      dest->list_value().push_back(source_entry);
+  // Known to be an accessor.
+  base::StringPiece base_str = dest_accessor->base().value();
+  Value* base = exec_scope->GetMutableValue(
+      base_str, Scope::SEARCH_CURRENT, false);
+  if (!base) {
+    // Base is either undefined or it's defined but not in the current scope.
+    // Make a good error message.
+    if (exec_scope->GetValue(base_str, false)) {
+      *err = Err(dest_accessor->base(), "Suspicious in-place modification.",
+          "This variable exists in a containing scope. Normally, writing to it "
+          "would\nmake a copy of it into the current scope with the modified "
+          "version. But\nhere you're modifying only an element of a scope or "
+          "list object. It's unlikely\nyou meant to copy the entire thing just "
+          "to modify this part of it.\n"
+          "\n"
+          "If you really wanted to do this, do:\n"
+          "  " + base_str.as_string() + " = " + base_str.as_string() + "\n"
+          "to copy it into the current scope before doing this operation.");
+    } else {
+      *err = Err(dest_accessor->base(), "Undefined identifier.");
+    }
+    return false;
   }
+
+  if (dest_accessor->index()) {
+    // List access with an index.
+    if (!base->VerifyTypeIs(Value::LIST, err)) {
+      // Errors here will confusingly refer to the variable declaration (since
+      // that's all Value knows) rather than the list access. So rewrite the
+      // error location to refer to the base value's location.
+      *err = Err(dest_accessor->base(), err->message(), err->help_text());
+      return false;
+    }
+
+    type_ = LIST;
+    list_ = base;
+    return dest_accessor->ComputeAndValidateListIndex(
+        exec_scope, base->list_value().size(), &index_, err);
+  }
+
+  // Scope access with a dot.
+  if (!base->VerifyTypeIs(Value::SCOPE, err)) {
+    // As the for the list index case above, rewrite the error location.
+    *err = Err(dest_accessor->base(), err->message(), err->help_text());
+    return false;
+  }
+  type_ = SCOPE;
+  scope_ = base->scope_value();
+  name_token_ = &dest_accessor->member()->value();
+  return true;
+}
+
+const Value* ValueDestination::GetExistingValue() const {
+  if (type_ == SCOPE)
+    return scope_->GetValue(name_token_->value(), false);
+  else if (type_ == LIST)
+    return &list_->list_value()[index_];
+  return nullptr;
+}
+
+Value* ValueDestination::GetExistingMutableValueIfExists(
+    const ParseNode* origin) {
+  if (type_ == SCOPE) {
+    Value* value = scope_->GetMutableValue(
+        name_token_->value(), Scope::SEARCH_CURRENT, false);
+    if (value) {
+      // The value will be written to, reset its tracking information.
+      value->set_origin(origin);
+      scope_->MarkUnused(name_token_->value());
+    }
+  }
+  if (type_ == LIST)
+    return &list_->list_value()[index_];
+  return nullptr;
+}
+
+const PatternList* ValueDestination::GetAssignmentFilter(
+    const Scope* exec_scope) const {
+  if (type_ != SCOPE)
+    return nullptr;  // Destination can't be named, so no sources filtering.
+  if (name_token_->value() != kSourcesName)
+    return nullptr;  // Destination not named "sources".
+
+  const PatternList* filter = exec_scope->GetSourcesAssignmentFilter();
+  if (!filter || filter->is_empty())
+    return nullptr;  // No filter or empty filter, don't need to do anything.
+  return filter;
+}
+
+Value* ValueDestination::SetValue(Value value, const ParseNode* set_node) {
+  if (type_ == SCOPE) {
+    return scope_->SetValue(name_token_->value(), std::move(value), set_node);
+  } else if (type_ == LIST) {
+    Value* dest = &list_->list_value()[index_];
+    *dest = std::move(value);
+    return dest;
+  }
+  return nullptr;
+}
+
+void ValueDestination::MakeUndefinedIdentifierForModifyError(Err* err) {
+  // When Init() succeeds, the base of any accessor has already been resolved
+  // and that list indices are in-range. This means any undefined identifiers
+  // are for scope accesses.
+  DCHECK(type_ == SCOPE);
+  *err = Err(*name_token_, "Undefined identifier.");
+}
+
+// -----------------------------------------------------------------------------
+
+Err MakeIncompatibleTypeError(const BinaryOpNode* op_node,
+                              const Value& left,
+                              const Value& right) {
+  std::string msg =
+      std::string("You can't do <") + Value::DescribeType(left.type()) + "> " +
+      op_node->op().value().as_string() +
+      " <" + Value::DescribeType(right.type()) + ">.";
+  if (left.type() == Value::LIST) {
+    // Append extra hint for list stuff.
+    msg += "\n\nHint: If you're attempting to add or remove a single item from "
+        " a list, use \"foo + [ bar ]\".";
+  }
+  return Err(op_node, "Incompatible types for binary operator.", msg);
 }
 
 Value GetValueOrFillError(const BinaryOpNode* op_node,
@@ -118,12 +290,12 @@ void RemoveMatchesFromList(const BinaryOpNode* op_node,
 
 // We return a null value from this rather than the result of doing the append.
 // See ValuePlusEquals for rationale.
-Value ExecuteEquals(Scope* scope,
+Value ExecuteEquals(Scope* exec_scope,
                     const BinaryOpNode* op_node,
-                    const Token& left,
-                    const Value& right,
+                    ValueDestination* dest,
+                    Value right,
                     Err* err) {
-  const Value* old_value = scope->GetValue(left.value(), false);
+  const Value* old_value = dest->GetExistingValue();
   if (old_value) {
     // Throw an error when overwriting a nonempty list with another nonempty
     // list item. This is to detect the case where you write
@@ -143,215 +315,216 @@ Value ExecuteEquals(Scope* scope,
           "with another one (length " +
           base::IntToString(static_cast<int>(right.list_value().size())) +
           "). Did you mean " +
-          "\"+=\" to append instead? If you\nreally want to do this, do\n  " +
-          left.value().as_string() + " = []\nbefore reassigning."));
+          "\"+=\" to append instead? If you\nreally want to do this, do\n"
+          "  foo = []\nbefore reassigning."));
       return Value();
     }
   }
   if (err->has_error())
     return Value();
 
-  if (right.type() == Value::LIST && left.value() == kSourcesName) {
-    // Assigning to sources, filter the list. Here we do the filtering and
-    // copying in one step to save an extra list copy (the lists may be
-    // long).
-    Value* set_value = scope->SetValue(left.value(),
-                                       Value(op_node, Value::LIST), op_node);
-    set_value->list_value().reserve(right.list_value().size());
-    AppendFilteredSourcesToValue(scope, right, set_value);
-  } else {
-    // Normal value set, just copy it.
-    scope->SetValue(left.value(), right, op_node->right());
+  Value* written_value = dest->SetValue(std::move(right), op_node->right());
+
+  // Optionally apply the assignment filter in-place.
+  const PatternList* filter = dest->GetAssignmentFilter(exec_scope);
+  if (filter) {
+    std::vector<Value>& list_value = written_value->list_value();
+    auto first_deleted = std::remove_if(
+        list_value.begin(), list_value.end(),
+        [filter](const Value& v) {
+          return filter->MatchesValue(v);
+        });
+    list_value.erase(first_deleted, list_value.end());
   }
   return Value();
 }
 
-// allow_type_conversion indicates if we're allowed to change the type of the
-// left value. This is set to true when doing +, and false when doing +=.
-//
-// Note that we return Value() from here, which is different than C++. This
-// means you can't do clever things like foo = [ bar += baz ] to simultaneously
-// append to and use a value. This is basically never needed in out build
-// scripts and is just as likely an error as the intended behavior, and it also
-// involves a copy of the value when it's returned. Many times we're appending
-// to large lists, and copying the value to discard it for the next statement
-// is very wasteful.
-void ValuePlusEquals(const Scope* scope,
-                     const BinaryOpNode* op_node,
-                     const Token& left_token,
-                     Value* left,
-                     const Value& right,
-                     bool allow_type_conversion,
-                     Err* err) {
-  switch (left->type()) {
-    // Left-hand-side int.
-    case Value::INTEGER:
-      switch (right.type()) {
-        case Value::INTEGER:  // int + int -> addition.
-          left->int_value() += right.int_value();
-          return;
+// Plus/minus ------------------------------------------------------------------
 
-        case Value::STRING:  // int + string -> string concat.
-          if (allow_type_conversion) {
-            *left = Value(op_node,
-                base::Int64ToString(left->int_value()) + right.string_value());
-            return;
-          }
-          break;
-
-        default:
-          break;
-      }
-      break;
-
-    // Left-hand-side string.
-    case Value::STRING:
-      switch (right.type()) {
-        case Value::INTEGER:  // string + int -> string concat.
-          left->string_value().append(base::Int64ToString(right.int_value()));
-          return;
-
-        case Value::STRING:  // string + string -> string contat.
-          left->string_value().append(right.string_value());
-          return;
-
-        default:
-          break;
-      }
-      break;
-
-    // Left-hand-side list.
-    case Value::LIST:
-      switch (right.type()) {
-        case Value::LIST:  // list + list -> list concat.
-          if (left_token.value() == kSourcesName) {
-            // Filter additions through the assignment filter.
-            AppendFilteredSourcesToValue(scope, right, left);
-          } else {
-            // Normal list concat.
-            for (const auto& value : right.list_value())
-              left->list_value().push_back(value);
-          }
-          return;
-
-        default:
-          *err = Err(op_node->op(), "Incompatible types to add.",
-              "To append a single item to a list do \"foo += [ bar ]\".");
-          return;
-      }
-
-    default:
-      break;
-  }
-
-  *err = Err(op_node->op(), "Incompatible types to add.",
-      std::string("I see a ") + Value::DescribeType(left->type()) + " and a " +
-      Value::DescribeType(right.type()) + ".");
-}
-
-Value ExecutePlusEquals(Scope* scope,
-                        const BinaryOpNode* op_node,
-                        const Token& left,
-                        const Value& right,
-                        Err* err) {
-  // We modify in-place rather than doing read-modify-write to avoid
-  // copying large lists.
-  Value* left_value =
-      scope->GetValueForcedToCurrentScope(left.value(), op_node);
-  if (!left_value) {
-    *err = Err(left, "Undefined variable for +=.",
-        "I don't have something with this name in scope now.");
-    return Value();
-  }
-  ValuePlusEquals(scope, op_node, left, left_value, right, false, err);
-  left_value->set_origin(op_node);
-  scope->MarkUnused(left.value());
-  return Value();
-}
-
-// We return a null value from this rather than the result of doing the append.
-// See ValuePlusEquals for rationale.
-void ValueMinusEquals(const BinaryOpNode* op_node,
-                      Value* left,
-                      const Value& right,
-                      bool allow_type_conversion,
-                      Err* err) {
-  switch (left->type()) {
-    // Left-hand-side int.
-    case Value::INTEGER:
-      switch (right.type()) {
-        case Value::INTEGER:  // int - int -> subtraction.
-          left->int_value() -= right.int_value();
-          return;
-
-        default:
-          break;
-      }
-      break;
-
-    // Left-hand-side string.
-    case Value::STRING:
-      break;  // All are errors.
-
-    // Left-hand-side list.
-    case Value::LIST:
-      if (right.type() != Value::LIST) {
-        *err = Err(op_node->op(), "Incompatible types to subtract.",
-            "To remove a single item from a list do \"foo -= [ bar ]\".");
-      } else {
-        RemoveMatchesFromList(op_node, left, right, err);
-      }
-      return;
-
-    default:
-      break;
-  }
-
-  *err = Err(op_node->op(), "Incompatible types to subtract.",
-      std::string("I see a ") + Value::DescribeType(left->type()) + " and a " +
-      Value::DescribeType(right.type()) + ".");
-}
-
-Value ExecuteMinusEquals(Scope* scope,
-                         const BinaryOpNode* op_node,
-                         const Token& left,
-                         const Value& right,
-                         Err* err) {
-  Value* left_value =
-      scope->GetValueForcedToCurrentScope(left.value(), op_node);
-  if (!left_value) {
-    *err = Err(left, "Undefined variable for -=.",
-        "I don't have something with this name in scope now.");
-    return Value();
-  }
-  ValueMinusEquals(op_node, left_value, right, false, err);
-  left_value->set_origin(op_node);
-  scope->MarkUnused(left.value());
-  return Value();
-}
-
-// Plus/Minus -----------------------------------------------------------------
-
-Value ExecutePlus(Scope* scope,
-                  const BinaryOpNode* op_node,
-                  const Value& left,
-                  const Value& right,
+// allow_left_type_conversion indicates if we're allowed to change the type of
+// the left value. This is set to true when doing +, and false when doing +=.
+Value ExecutePlus(const BinaryOpNode* op_node,
+                  Value left,
+                  Value right,
+                  bool allow_left_type_conversion,
                   Err* err) {
-  Value ret = left;
-  ValuePlusEquals(scope, op_node, Token(), &ret, right, true, err);
-  ret.set_origin(op_node);
-  return ret;
+  // Left-hand-side integer.
+  if (left.type() == Value::INTEGER) {
+    if (right.type() == Value::INTEGER) {
+      // Int + int -> addition.
+      return Value(op_node, left.int_value() + right.int_value());
+    } else if (right.type() == Value::STRING && allow_left_type_conversion) {
+      // Int + string -> string concat.
+      return Value(
+          op_node,
+          base::Int64ToString(left.int_value()) + right.string_value());
+    }
+    *err = MakeIncompatibleTypeError(op_node, left, right);
+    return Value();
+  }
+
+  // Left-hand-side string.
+  if (left.type() == Value::STRING) {
+    if (right.type() == Value::INTEGER) {
+      // String + int -> string concat.
+      return Value(op_node,
+          left.string_value() + base::Int64ToString(right.int_value()));
+    } else if (right.type() == Value::STRING) {
+      // String + string -> string concat. Since the left is passed by copy
+      // we can avoid realloc if there is enough buffer by appending to left
+      // and assigning.
+      left.string_value().append(right.string_value());
+      return left;  // FIXME(brettw) des this copy?
+    }
+    *err = MakeIncompatibleTypeError(op_node, left, right);
+    return Value();
+  }
+
+  // Left-hand-side list. The only valid thing is to add another list.
+  if (left.type() == Value::LIST && right.type() == Value::LIST) {
+    // Since left was passed by copy, avoid realloc by destructively appending
+    // to it and using that as the result.
+    for (Value& value : right.list_value())
+      left.list_value().push_back(std::move(value));
+    return left;  // FIXME(brettw) does this copy?
+  }
+
+  *err = MakeIncompatibleTypeError(op_node, left, right);
+  return Value();
 }
 
-Value ExecuteMinus(Scope* scope,
-                   const BinaryOpNode* op_node,
-                   const Value& left,
+// Left is passed by value because it will be modified in-place and returned
+// for the list case.
+Value ExecuteMinus(const BinaryOpNode* op_node,
+                   Value left,
                    const Value& right,
                    Err* err) {
-  Value ret = left;
-  ValueMinusEquals(op_node, &ret, right, true, err);
-  ret.set_origin(op_node);
-  return ret;
+  // Left-hand-side int. The only thing to do is subtract another int.
+  if (left.type() == Value::INTEGER && right.type() != Value::INTEGER) {
+    // Int - int -> subtraction.
+    return Value(op_node, left.int_value() - right.int_value());
+  }
+
+  // Left-hand-side list. The only thing to do is subtract another list.
+  if (left.type() == Value::LIST && right.type() == Value::LIST) {
+    // In-place modify left and return it.
+    RemoveMatchesFromList(op_node, &left, right, err);
+    return left;
+  }
+
+  *err = MakeIncompatibleTypeError(op_node, left, right);
+  return Value();
+}
+
+// In-place plus/minus ---------------------------------------------------------
+
+void ExecutePlusEquals(Scope* exec_scope,
+                       const BinaryOpNode* op_node,
+                       ValueDestination* dest,
+                       Value right,
+                       Err* err) {
+  // There are several cases. Some things we can convert "foo += bar" to
+  // "foo = foo + bar". Some cases we can't (the 'sources' variable won't
+  // get the right filtering on the list). Some cases we don't want to (lists
+  // and strings will get unnecessary copying so we can to optimize these).
+  //
+  //  - Value is already mutable in the current scope:
+  //     1. List/string append: use it.
+  //     2. Other types: fall back to "foo = foo + bar"
+  //
+  //  - Value is not mutable in the current scope:
+  //     3. List/string append: copy into current scope and append to that.
+  //     4. Other types: fall back to "foo = foo + bar"
+  //
+  // The common case is to use += for list and string appends in the local
+  // scope, so this is written to avoid multiple variable lookups in that case.
+  Value* mutable_dest = dest->GetExistingMutableValueIfExists(op_node);
+  if (!mutable_dest) {
+    const Value* existing_value = dest->GetExistingValue();
+    if (!existing_value) {
+      // Undefined left-hand-size for +=.
+      dest->MakeUndefinedIdentifierForModifyError(err);
+      return;
+    }
+
+    if (existing_value->type() != Value::STRING &&
+        existing_value->type() != Value::LIST) {
+      // Case #4 above.
+      dest->SetValue(ExecutePlus(op_node, *existing_value,
+                                 std::move(right), false, err), op_node);
+      return;
+    }
+
+    // Case #3 above, copy to current scope and fall-through to appending.
+    mutable_dest = dest->SetValue(*existing_value, op_node);
+  } else if (mutable_dest->type() != Value::STRING &&
+             mutable_dest->type() != Value::LIST) {
+    // Case #2 above.
+    dest->SetValue(ExecutePlus(op_node, *mutable_dest,
+                               std::move(right), false, err), op_node);
+    return;
+  }  // "else" is case #1 above.
+
+  if (mutable_dest->type() == Value::STRING) {
+    if (right.type() == Value::INTEGER) {
+      // String + int -> string concat.
+      mutable_dest->string_value().append(
+          base::Int64ToString(right.int_value()));
+    } else if (right.type() == Value::STRING) {
+      // String + string -> string concat.
+      mutable_dest->string_value().append(right.string_value());
+    } else {
+      *err = MakeIncompatibleTypeError(op_node, *mutable_dest, right);
+    }
+  } else if (mutable_dest->type() == Value::LIST) {
+    // List concat.
+    if (right.type() == Value::LIST) {
+      // Note: don't reserve() the dest vector here since that actually hurts
+      // the allocation pattern when the build script is doing multiple small
+      // additions.
+      const PatternList* filter = dest->GetAssignmentFilter(exec_scope);
+      if (filter) {
+        // Filtered list concat.
+        for (Value& value : right.list_value()) {
+          if (!filter->MatchesValue(value))
+            mutable_dest->list_value().push_back(std::move(value));
+        }
+      } else {
+        // Normal list concat. This is a destructive move.
+        for (Value& value : right.list_value())
+          mutable_dest->list_value().push_back(std::move(value));
+      }
+    } else {
+      *err = Err(op_node->op(), "Incompatible types to add.",
+          "To append a single item to a list do \"foo += [ bar ]\".");
+    }
+  }
+}
+
+void ExecuteMinusEquals(const BinaryOpNode* op_node,
+                        ValueDestination* dest,
+                        const Value& right,
+                        Err* err) {
+  // Like the += case, we can convert "foo -= bar" to "foo = foo - bar". Since
+  // there is no sources filtering, this is always semantically valid. The
+  // only case we don't do it is for lists in the current scope which is the
+  // most common case, and also the one that can be optimized the most by
+  // doing it in-place.
+  Value* mutable_dest = dest->GetExistingMutableValueIfExists(op_node);
+  if (!mutable_dest ||
+      (mutable_dest->type() != Value::LIST || right.type() != Value::LIST)) {
+    const Value* existing_value = dest->GetExistingValue();
+    if (!existing_value) {
+      // Undefined left-hand-size for -=.
+      dest->MakeUndefinedIdentifierForModifyError(err);
+      return;
+    }
+    dest->SetValue(ExecuteMinus(op_node, *existing_value, right, err), op_node);
+    return;
+  }
+
+  // In-place removal of items from "right".
+  RemoveMatchesFromList(op_node, mutable_dest, right, err);
 }
 
 // Comparison -----------------------------------------------------------------
@@ -520,15 +693,12 @@ Value ExecuteBinaryOperator(Scope* scope,
   if (op.type() == Token::EQUAL ||
       op.type() == Token::PLUS_EQUALS ||
       op.type() == Token::MINUS_EQUALS) {
-    const IdentifierNode* left_id = left->AsIdentifier();
-    if (!left_id) {
-      *err = Err(op, "Operator requires a lvalue.",
-                 "This thing on the left is not an identifier.");
-      err->AppendRange(left->GetRange());
+    // Compute the left side.
+    ValueDestination dest;
+    if (!dest.Init(scope, left, op_node, err))
       return Value();
-    }
-    const Token& dest = left_id->value();
 
+    // Compute the right side.
     Value right_value = right->Execute(scope, err);
     if (err->has_error())
       return Value();
@@ -539,13 +709,17 @@ Value ExecuteBinaryOperator(Scope* scope,
       return Value();
     }
 
-    if (op.type() == Token::EQUAL)
-      return ExecuteEquals(scope, op_node, dest, right_value, err);
-    if (op.type() == Token::PLUS_EQUALS)
-      return ExecutePlusEquals(scope, op_node, dest, right_value, err);
-    if (op.type() == Token::MINUS_EQUALS)
-      return ExecuteMinusEquals(scope, op_node, dest, right_value, err);
-    NOTREACHED();
+    // "foo += bar" (same for "-=") is converted to "foo = foo + bar" here, but
+    // we pass the original value of "foo" by pointer to avoid a copy.
+    if (op.type() == Token::EQUAL) {
+      ExecuteEquals(scope, op_node, &dest, std::move(right_value), err);
+    } else if (op.type() == Token::PLUS_EQUALS) {
+      ExecutePlusEquals(scope, op_node, &dest, std::move(right_value), err);
+    } else if (op.type() == Token::MINUS_EQUALS) {
+      ExecuteMinusEquals(op_node, &dest, right_value, err);
+    } else {
+      NOTREACHED();
+    }
     return Value();
   }
 
@@ -556,6 +730,7 @@ Value ExecuteBinaryOperator(Scope* scope,
   if (op.type() == Token::BOOLEAN_AND)
     return ExecuteAnd(scope, op_node, left, right, err);
 
+  // Everything else works on the evaluated left and right values.
   Value left_value = GetValueOrFillError(op_node, left, "left", scope, err);
   if (err->has_error())
     return Value();
@@ -565,9 +740,11 @@ Value ExecuteBinaryOperator(Scope* scope,
 
   // +, -.
   if (op.type() == Token::MINUS)
-    return ExecuteMinus(scope, op_node, left_value, right_value, err);
-  if (op.type() == Token::PLUS)
-    return ExecutePlus(scope, op_node, left_value, right_value, err);
+    return ExecuteMinus(op_node, std::move(left_value), right_value, err);
+  if (op.type() == Token::PLUS) {
+    return ExecutePlus(op_node, std::move(left_value), std::move(right_value),
+                       true, err);
+  }
 
   // Comparisons.
   if (op.type() == Token::EQUAL_EQUAL)

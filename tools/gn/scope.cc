@@ -66,6 +66,11 @@ Scope::Scope(const Scope* parent)
 Scope::~Scope() {
 }
 
+void Scope::DetachFromContaining() {
+  const_containing_ = nullptr;
+  mutable_containing_ = nullptr;
+}
+
 const Value* Scope::GetValue(const base::StringPiece& ident,
                              bool counts_as_used) {
   // First check for programmatically-provided values.
@@ -91,6 +96,7 @@ const Value* Scope::GetValue(const base::StringPiece& ident,
 }
 
 Value* Scope::GetMutableValue(const base::StringPiece& ident,
+                              SearchNested search_mode,
                               bool counts_as_used) {
   // Don't do programmatic values, which are not mutable.
   RecordMap::iterator found = values_.find(ident);
@@ -100,25 +106,10 @@ Value* Scope::GetMutableValue(const base::StringPiece& ident,
     return &found->second.value;
   }
 
-  // Search in the parent mutable scope, but not const one.
-  if (mutable_containing_)
-    return mutable_containing_->GetMutableValue(ident, counts_as_used);
-  return nullptr;
-}
-
-Value* Scope::GetValueForcedToCurrentScope(const base::StringPiece& ident,
-                                           const ParseNode* set_node) {
-  RecordMap::iterator found = values_.find(ident);
-  if (found != values_.end())
-    return &found->second.value;  // Already have in the current scope.
-
-  // Search in the parent scope.
-  if (containing()) {
-    const Value* in_containing = containing()->GetValue(ident);
-    if (in_containing) {
-      // Promote to current scope.
-      return SetValue(ident, *in_containing, set_node);
-    }
+  // Search in the parent mutable scope if requested, but not const one.
+  if (search_mode == SEARCH_NESTED && mutable_containing_) {
+    return mutable_containing_->GetMutableValue(
+        ident, Scope::SEARCH_NESTED, counts_as_used);
   }
   return nullptr;
 }
@@ -144,10 +135,10 @@ const Value* Scope::GetValue(const base::StringPiece& ident) const {
 }
 
 Value* Scope::SetValue(const base::StringPiece& ident,
-                       const Value& v,
+                       Value v,
                        const ParseNode* set_node) {
   Record& r = values_[ident];  // Clears any existing value.
-  r.value = v;
+  r.value = std::move(v);
   r.value.set_origin(set_node);
   return &r.value;
 }

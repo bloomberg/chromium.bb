@@ -183,7 +183,8 @@ Value RunForwardVariablesFrom(Scope* scope,
   }
 
   // Extract the source scope.
-  Value* value = scope->GetMutableValue(identifier->value().value(), true);
+  Value* value = scope->GetMutableValue(
+      identifier->value().value(), Scope::SEARCH_NESTED, true);
   if (!value) {
     *err = Err(identifier, "Undefined identifier.");
     return Value();

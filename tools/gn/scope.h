@@ -45,6 +45,13 @@ class Scope {
   // Holds an owning list of Items.
   typedef ScopedVector<Item> ItemVector;
 
+  // A flag to indicate whether a function should recurse into nested scopes,
+  // or only operate on the current scope.
+  enum SearchNested {
+    SEARCH_NESTED,
+    SEARCH_CURRENT
+  };
+
   // Allows code to provide values for built-in variables. This class will
   // automatically register itself on construction and deregister itself on
   // destruction.
@@ -114,6 +121,10 @@ class Scope {
     return mutable_containing_ ? mutable_containing_ : const_containing_;
   }
 
+  // Clears any references to containing scopes. This scope will now be
+  // self-sufficient.
+  void DetachFromContaining();
+
   // Returns NULL if there's no such value.
   //
   // counts_as_used should be set if the variable is being read in a way that
@@ -121,6 +132,16 @@ class Scope {
   const Value* GetValue(const base::StringPiece& ident,
                         bool counts_as_used);
   const Value* GetValue(const base::StringPiece& ident) const;
+
+  // If the value exists in the current scope, destrictively moves it into the
+  // return value. If it exists in a containing scope, copies it.
+  //
+  // This is for implementing modify-write operations where we want to read
+  // the existing value and plan to immediately overwrite it. If the value is
+  // in a containing scope, we never want to touch it (all writes go to the
+  // current scope), but if it's in the current scope, avoid the copy since it
+  // will be overwritten anyway.
+  //Value DestructiveMoveOut(const base::StringPiece& ident);
 
   // Returns the requested value as a mutable one if possible. If the value
   // is not found in a mutable scope, then returns null. Note that the value
@@ -144,17 +165,9 @@ class Scope {
   //    }
   // The 6 should get set on the nested scope rather than modify the value
   // in the outer one.
-  Value* GetMutableValue(const base::StringPiece& ident, bool counts_as_used);
-
-  // Same as GetValue, but if the value exists in a parent scope, we'll copy
-  // it to the current scope. If the return value is non-null, the value is
-  // guaranteed to be set in the current scope. Generatlly this will be used
-  // if the calling code is planning on modifying the value in-place.
-  //
-  // Since this is used when doing read-modifies, we never count this access
-  // as reading the variable, since we assume it will be written to.
-  Value* GetValueForcedToCurrentScope(const base::StringPiece& ident,
-                                      const ParseNode* set_node);
+  Value* GetMutableValue(const base::StringPiece& ident,
+                         SearchNested search_mode,
+                         bool counts_as_used);
 
   // Returns the StringPiece used to identify the value. This string piece
   // will have the same contents as "ident" passed in, but may point to a
@@ -168,7 +181,7 @@ class Scope {
   // errors later. Returns a pointer to the value in the current scope (a copy
   // is made for storage).
   Value* SetValue(const base::StringPiece& ident,
-                  const Value& v,
+                  Value v,
                   const ParseNode* set_node);
 
   // Removes the value with the given identifier if it exists on the current

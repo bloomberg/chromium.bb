@@ -262,10 +262,12 @@ TEST(Scope, GetMutableValue) {
 
   // Check getting root scope values.
   EXPECT_TRUE(mutable_scope2.GetValue(kOnConst, true));
-  EXPECT_FALSE(mutable_scope2.GetMutableValue(kOnConst, true));
+  EXPECT_FALSE(mutable_scope2.GetMutableValue(
+      kOnConst, Scope::SEARCH_NESTED, true));
 
   // Test reading a value from scope 1.
-  Value* mutable1_result = mutable_scope2.GetMutableValue(kOnMutable1, false);
+  Value* mutable1_result = mutable_scope2.GetMutableValue(
+      kOnMutable1, Scope::SEARCH_NESTED, false);
   ASSERT_TRUE(mutable1_result);
   EXPECT_TRUE(*mutable1_result == value);
 
@@ -273,13 +275,15 @@ TEST(Scope, GetMutableValue) {
   // used in the previous step).
   Err err;
   EXPECT_FALSE(mutable_scope1.CheckForUnusedVars(&err));
-  mutable1_result = mutable_scope2.GetMutableValue(kOnMutable1, true);
+  mutable1_result = mutable_scope2.GetMutableValue(
+      kOnMutable1, Scope::SEARCH_NESTED, true);
   EXPECT_TRUE(mutable1_result);
   err = Err();
   EXPECT_TRUE(mutable_scope1.CheckForUnusedVars(&err));
 
   // Test reading a value from scope 2.
-  Value* mutable2_result = mutable_scope2.GetMutableValue(kOnMutable2, true);
+  Value* mutable2_result = mutable_scope2.GetMutableValue(
+      kOnMutable2, Scope::SEARCH_NESTED, true);
   ASSERT_TRUE(mutable2_result);
   EXPECT_TRUE(*mutable2_result == value);
 }

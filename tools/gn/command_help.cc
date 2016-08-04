@@ -62,7 +62,7 @@ void PrintToplevelHelp() {
   PrintShortHelp("all: Print all the help at once");
   PrintShortHelp("buildargs: How build arguments work.");
   PrintShortHelp("dotfile: Info about the toplevel .gn file.");
-  PrintShortHelp("grammar: Formal grammar for GN build files.");
+  PrintShortHelp("grammar: Language and grammar for GN build files.");
   PrintShortHelp(
       "input_conversion: Processing input from exec_script and read_file.");
   PrintShortHelp("label_pattern: Matching more than one label.");

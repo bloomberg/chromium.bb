@@ -160,6 +160,15 @@ class AccessorNode : public ParseNode {
 
   void SetNewLocation(int line_number);
 
+  // Evaluates the index for list accessor operations and range checks it
+  // against the max length of the list. If the index is OK, sets
+  // |*computed_index| and returns true. Otherwise sets the |*err| and returns
+  // false.
+  bool ComputeAndValidateListIndex(Scope* scope,
+                                   size_t max_len,
+                                   size_t* computed_index,
+                                   Err* err) const;
+
  private:
   Value ExecuteArrayAccess(Scope* scope, Err* err) const;
   Value ExecuteScopeAccess(Scope* scope, Err* err) const;
@@ -212,7 +221,18 @@ class BinaryOpNode : public ParseNode {
 
 class BlockNode : public ParseNode {
  public:
-  BlockNode();
+  // How Execute manages the scopes and results.
+  enum ResultMode {
+    // Creates a new scope for the execution of this block and returns it as
+    // a Value from Execute().
+    RETURNS_SCOPE,
+
+    // Executes in the context of the calling scope (variables set will go
+    // into the invoking scope) and Execute will return an empty Value.
+    DISCARDS_RESULT
+  };
+
+  BlockNode(ResultMode result_mode);
   ~BlockNode() override;
 
   const BlockNode* AsBlock() const override;
@@ -227,6 +247,8 @@ class BlockNode : public ParseNode {
   void set_end(std::unique_ptr<EndNode> e) { end_ = std::move(e); }
   const EndNode* End() const { return end_.get(); }
 
+  ResultMode result_mode() const { return result_mode_; }
+
   const std::vector<std::unique_ptr<ParseNode>>& statements() const {
     return statements_;
   }
@@ -235,6 +257,8 @@ class BlockNode : public ParseNode {
   }
 
  private:
+  const ResultMode result_mode_;
+
   // Tokens corresponding to { and }, if any (may be NULL). The end is stored
   // in a custom parse node so that it can have comments hung off of it.
   Token begin_token_;

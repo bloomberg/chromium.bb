@@ -73,6 +73,8 @@ Value::Value(const Value& other)
     scope_value_ = other.scope_value_->MakeClosure();
 }
 
+Value::Value(Value&& other) = default;
+
 Value::~Value() {
 }
 

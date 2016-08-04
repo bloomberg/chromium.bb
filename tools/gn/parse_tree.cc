@@ -172,12 +172,6 @@ void AccessorNode::Print(std::ostream& out, int indent) const {
 }
 
 Value AccessorNode::ExecuteArrayAccess(Scope* scope, Err* err) const {
-  Value index_value = index_->Execute(scope, err);
-  if (err->has_error())
-    return Value();
-  if (!index_value.VerifyTypeIs(Value::INTEGER, err))
-    return Value();
-
   const Value* base_value = scope->GetValue(base_.value(), true);
   if (!base_value) {
     *err = MakeErrorDescribing("Undefined identifier.");
@@ -186,29 +180,11 @@ Value AccessorNode::ExecuteArrayAccess(Scope* scope, Err* err) const {
   if (!base_value->VerifyTypeIs(Value::LIST, err))
     return Value();
 
-  int64_t index_int = index_value.int_value();
-  if (index_int < 0) {
-    *err = Err(index_->GetRange(), "Negative array subscript.",
-        "You gave me " + base::Int64ToString(index_int) + ".");
+  size_t index = 0;
+  if (!ComputeAndValidateListIndex(scope, base_value->list_value().size(),
+                                   &index, err))
     return Value();
-  }
-  size_t index_sizet = static_cast<size_t>(index_int);
-  if (index_sizet >= base_value->list_value().size()) {
-    *err =
-        Err(index_->GetRange(), "Array subscript out of range.",
-            "You gave me " + base::Int64ToString(index_int) +
-                " but I was expecting something from 0 to " +
-                base::Int64ToString(
-                    static_cast<int64_t>(base_value->list_value().size()) - 1) +
-                ", inclusive.");
-    return Value();
-  }
-
-  // Doing this assumes that there's no way in the language to do anything
-  // between the time the reference is created and the time that the reference
-  // is used. If there is, this will crash! Currently, this is just used for
-  // array accesses where this "shouldn't" happen.
-  return base_value->list_value()[index_sizet];
+  return base_value->list_value()[index];
 }
 
 Value AccessorNode::ExecuteScopeAccess(Scope* scope, Err* err) const {
@@ -222,7 +198,8 @@ Value AccessorNode::ExecuteScopeAccess(Scope* scope, Err* err) const {
   const Value* result = nullptr;
 
   // Look up the value in the scope named by "base_".
-  Value* mutable_base_value = scope->GetMutableValue(base_.value(), true);
+  Value* mutable_base_value = scope->GetMutableValue(
+      base_.value(), Scope::SEARCH_NESTED, true);
   if (mutable_base_value) {
     // Common case: base value is mutable so we can track variable accesses
     // for unused value warnings.
@@ -259,6 +236,35 @@ void AccessorNode::SetNewLocation(int line_number) {
       Location(old.file(), line_number, old.column_number(), old.byte()));
 }
 
+bool AccessorNode::ComputeAndValidateListIndex(Scope* scope,
+                                               size_t max_len,
+                                               size_t* computed_index,
+                                               Err* err) const {
+  Value index_value = index_->Execute(scope, err);
+  if (err->has_error())
+    return false;
+  if (!index_value.VerifyTypeIs(Value::INTEGER, err))
+    return false;
+
+  int64_t index_int = index_value.int_value();
+  if (index_int < 0) {
+    *err = Err(index_->GetRange(), "Negative array subscript.",
+        "You gave me " + base::Int64ToString(index_int) + ".");
+    return false;
+  }
+  size_t index_sizet = static_cast<size_t>(index_int);
+  if (index_sizet >= max_len) {
+    *err = Err(index_->GetRange(), "Array subscript out of range.",
+        "You gave me " + base::Int64ToString(index_int) +
+        " but I was expecting something from 0 to " +
+        base::SizeTToString(max_len) + ", inclusive.");
+    return false;
+  }
+
+  *computed_index = index_sizet;
+  return true;
+}
+
 // BinaryOpNode ---------------------------------------------------------------
 
 BinaryOpNode::BinaryOpNode() {
@@ -293,7 +299,7 @@ void BinaryOpNode::Print(std::ostream& out, int indent) const {
 
 // BlockNode ------------------------------------------------------------------
 
-BlockNode::BlockNode() {
+BlockNode::BlockNode(ResultMode result_mode) : result_mode_(result_mode) {
 }
 
 BlockNode::~BlockNode() {
@@ -303,18 +309,46 @@ const BlockNode* BlockNode::AsBlock() const {
   return this;
 }
 
-Value BlockNode::Execute(Scope* scope, Err* err) const {
+Value BlockNode::Execute(Scope* enclosing_scope, Err* err) const {
+  std::unique_ptr<Scope> nested_scope;  // May be null.
+
+  Scope* execution_scope;  // Either the enclosing_scope or nested_scope.
+  if (result_mode_ == RETURNS_SCOPE) {
+    // Create a nested scope to save the values for returning.
+    nested_scope.reset(new Scope(enclosing_scope));
+    execution_scope = nested_scope.get();
+  } else {
+    // Use the enclosing scope. Modifications will go into this also (for
+    // example, if conditions and loops).
+    execution_scope = enclosing_scope;
+  }
+
   for (size_t i = 0; i < statements_.size() && !err->has_error(); i++) {
     // Check for trying to execute things with no side effects in a block.
+    //
+    // A BlockNode here means that somebody has a free-floating { }.
+    // Technically this can have side effects since it could generated targets,
+    // but we don't want to allow this since it creates ambiguity when
+    // immediately following a function call that takes no block. By not
+    // allowing free-floating blocks that aren't passed anywhere or assigned to
+    // anything, this ambiguity is resolved.
     const ParseNode* cur = statements_[i].get();
     if (cur->AsList() || cur->AsLiteral() || cur->AsUnaryOp() ||
-        cur->AsIdentifier()) {
+        cur->AsIdentifier() || cur->AsBlock()) {
       *err = cur->MakeErrorDescribing(
           "This statement has no effect.",
           "Either delete it or do something with the result.");
       return Value();
     }
-    cur->Execute(scope, err);
+    cur->Execute(execution_scope, err);
+  }
+
+  if (result_mode_ == RETURNS_SCOPE) {
+    // Clear the reference to the containing scope. This will be passed in
+    // a value whose lifetime will not be related to the enclosing_scope passed
+    // to this function.
+    nested_scope->DetachFromContaining();
+    return Value(this, std::move(nested_scope));
   }
   return Value();
 }

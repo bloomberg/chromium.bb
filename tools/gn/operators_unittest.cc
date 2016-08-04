@@ -35,6 +35,30 @@ std::unique_ptr<ListNode> ListWithLiteral(const Token& token) {
   return list;
 }
 
+// This parse node is for passing to tests. It returns a canned value for
+// Execute().
+class TestParseNode : public ParseNode {
+ public:
+  TestParseNode(const Value& v) : value_(v) {
+  }
+
+  Value Execute(Scope* scope, Err* err) const override {
+    return value_;
+  }
+  LocationRange GetRange() const override {
+    return LocationRange();
+  }
+  Err MakeErrorDescribing(const std::string& msg,
+                          const std::string& help) const override {
+    return Err(this, msg);
+  }
+  void Print(std::ostream& out, int indent) const override {
+  }
+
+ private:
+  Value value_;
+};
+
 }  // namespace
 
 TEST(Operators, SourcesAppend) {
@@ -156,6 +180,56 @@ TEST(Operators, ListAppend) {
   node.set_right(std::unique_ptr<ParseNode>(new LiteralNode(twelve)));
   ExecuteBinaryOperator(setup.scope(), &node, node.left(), node.right(), &err);
   EXPECT_TRUE(err.has_error());
+}
+
+TEST(Operators, ListRemove) {
+  Err err;
+  TestWithScope setup;
+
+  const char foo_str[] = "foo";
+  const char bar_str[] = "bar";
+  Value test_list(nullptr, Value::LIST);
+  test_list.list_value().push_back(Value(nullptr, foo_str));
+  test_list.list_value().push_back(Value(nullptr, bar_str));
+  test_list.list_value().push_back(Value(nullptr, foo_str));
+
+  // Set up "var" with an the test list.
+  const char var_str[] = "var";
+  setup.scope()->SetValue(var_str, test_list, nullptr);
+
+  // Set up the operator.
+  BinaryOpNode node;
+  const char token_value[] = "-=";
+  Token op(Location(), Token::MINUS_EQUALS, token_value);
+  node.set_op(op);
+
+  // Do -= on the var.
+  Token identifier_token(Location(), Token::IDENTIFIER, var_str);
+  node.set_left(
+      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+
+  // Subtract a list consisting of "foo".
+  Value foo_list(nullptr, Value::LIST);
+  foo_list.list_value().push_back(Value(nullptr, foo_str));
+  std::unique_ptr<ParseNode> outer_list(new TestParseNode(foo_list));
+  node.set_right(std::move(outer_list));
+
+  Value result = ExecuteBinaryOperator(
+      setup.scope(), &node, node.left(), node.right(), &err);
+  EXPECT_FALSE(err.has_error());
+
+  // -= returns an empty value to reduce the possibility of writing confusing
+  // cases like foo = bar += 1.
+  EXPECT_EQ(Value::NONE, result.type());
+
+  // The "var" variable should have been updated. Both instances of "foo" are
+  // deleted.
+  const Value* new_value = setup.scope()->GetValue(var_str);
+  ASSERT_TRUE(new_value);
+  ASSERT_EQ(Value::LIST, new_value->type());
+  ASSERT_EQ(1u, new_value->list_value().size());
+  ASSERT_EQ(Value::STRING, new_value->list_value()[0].type());
+  EXPECT_EQ("bar", new_value->list_value()[0].string_value());
 }
 
 TEST(Operators, ShortCircuitAnd) {

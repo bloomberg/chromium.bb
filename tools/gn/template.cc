@@ -80,8 +80,8 @@ Value Template::Invoke(Scope* scope,
   // be avoided.
   template_scope.SetValue(variables::kInvoker,
                           Value(nullptr, std::unique_ptr<Scope>()), invocation);
-  Value* invoker_value =
-      template_scope.GetMutableValue(variables::kInvoker, false);
+  Value* invoker_value = template_scope.GetMutableValue(
+      variables::kInvoker, Scope::SEARCH_NESTED, false);
   invoker_value->SetScopeValue(std::move(invocation_scope));
   template_scope.set_source_dir(scope->GetSourceDir());
 
@@ -108,7 +108,8 @@ Value Template::Invoke(Scope* scope,
   // to overwrite the value of "invoker" and free the Scope owned by the
   // value. So we need to look it up again and don't do anything if it doesn't
   // exist.
-  invoker_value = template_scope.GetMutableValue(variables::kInvoker, false);
+  invoker_value = template_scope.GetMutableValue(
+      variables::kInvoker, Scope::SEARCH_NESTED, false);
   if (invoker_value && invoker_value->type() == Value::SCOPE) {
     if (!invoker_value->scope_value()->CheckForUnusedVars(err))
       return Value();
