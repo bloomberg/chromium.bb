@@ -194,6 +194,13 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     DISALLOW_COPY_AND_ASSIGN(CachedState);
   };
 
+  // Used to filter server ids for partial config deletion.
+  class ServerIdFilter {
+   public:
+    // Returns true if |server_id| matches the filter.
+    virtual bool Matches(const QuicServerId& server_id) const = 0;
+  };
+
   explicit QuicCryptoClientConfig(
       std::unique_ptr<ProofVerifier> proof_verifier);
   ~QuicCryptoClientConfig();
@@ -202,8 +209,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // CachedState currently exists, it will be created and cached.
   CachedState* LookupOrCreate(const QuicServerId& server_id);
 
-  // Delete all CachedState objects from cached_states_.
-  void ClearCachedStates();
+  // Delete CachedState objects whose server ids match |filter| from
+  // cached_states.
+  void ClearCachedStates(const ServerIdFilter& filter);
 
   // FillInchoateClientHello sets |out| to be a CHLO message that elicits a
   // source-address token or SCFG from a server. If |cached| is non-nullptr, the

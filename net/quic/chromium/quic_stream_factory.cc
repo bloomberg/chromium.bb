@@ -54,6 +54,8 @@
 #include "net/socket/socket_performance_watcher_factory.h"
 #include "net/ssl/token_binding.h"
 #include "net/udp/udp_client_socket.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 using std::min;
 using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
@@ -166,6 +168,28 @@ QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options,
   config.SetConnectionOptionsToSend(connection_options);
   return config;
 }
+
+// An implementation of QuicCryptoClientConfig::ServerIdFilter that wraps
+// an |origin_filter|.
+class ServerIdOriginFilter : public QuicCryptoClientConfig::ServerIdFilter {
+ public:
+  ServerIdOriginFilter(const base::Callback<bool(const GURL&)> origin_filter)
+      : origin_filter_(origin_filter) {}
+
+  bool Matches(const QuicServerId& server_id) const override {
+    if (origin_filter_.is_null())
+      return true;
+
+    GURL url(base::StringPrintf("%s%s%s:%d", url::kHttpsScheme,
+                                url::kStandardSchemeSeparator,
+                                server_id.host().c_str(), server_id.port()));
+    DCHECK(url.is_valid());
+    return origin_filter_.Run(url);
+  }
+
+ private:
+  const base::Callback<bool(const GURL&)> origin_filter_;
+};
 
 }  // namespace
 
@@ -1413,8 +1437,10 @@ std::unique_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
   return std::move(list);
 }
 
-void QuicStreamFactory::ClearCachedStatesInCryptoConfig() {
-  crypto_config_.ClearCachedStates();
+void QuicStreamFactory::ClearCachedStatesInCryptoConfig(
+    const base::Callback<bool(const GURL&)>& origin_filter) {
+  ServerIdOriginFilter filter(origin_filter);
+  crypto_config_.ClearCachedStates(filter);
 }
 
 void QuicStreamFactory::OnIPAddressChanged() {

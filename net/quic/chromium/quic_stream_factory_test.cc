@@ -7,6 +7,8 @@
 #include <ostream>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -46,6 +48,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -4874,6 +4877,53 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
   EXPECT_EQ(QuicServerId(origin2_, privacy_mode_), session2->server_id());
 
   EXPECT_TRUE(AllDataConsumed());
+}
+
+// This test verifies that QuicStreamFactory::ClearCachedStatesInCryptoConfig
+// correctly transform an origin filter to a ServerIdFilter. Whether the
+// deletion itself works correctly is tested in QuicCryptoClientConfigTest.
+TEST_P(QuicStreamFactoryTest, ClearCachedStatesInCryptoConfig) {
+  Initialize();
+  QuicCryptoClientConfig* crypto_config =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get());
+
+  struct TestCase {
+    TestCase(const std::string& host,
+             int port,
+             PrivacyMode privacy_mode,
+             QuicCryptoClientConfig* crypto_config)
+        : server_id(host, port, privacy_mode),
+          state(crypto_config->LookupOrCreate(server_id)) {
+      vector<string> certs(1);
+      certs[0] = "cert";
+      state->SetProof(certs, "cert_sct", "chlo_hash", "signature");
+      state->set_source_address_token("TOKEN");
+      state->SetProofValid();
+
+      EXPECT_FALSE(state->certs().empty());
+    }
+
+    QuicServerId server_id;
+    QuicCryptoClientConfig::CachedState* state;
+  } test_cases[] = {
+      TestCase("www.google.com", 443, privacy_mode_, crypto_config),
+      TestCase("www.example.com", 443, privacy_mode_, crypto_config),
+      TestCase("www.example.com", 4433, privacy_mode_, crypto_config)};
+
+  // Clear cached states for the origin https://www.example.com:4433.
+  GURL origin("https://www.example.com:4433");
+  factory_->ClearCachedStatesInCryptoConfig(
+      base::Bind(&GURL::operator==, base::Unretained(&origin)));
+  EXPECT_FALSE(test_cases[0].state->certs().empty());
+  EXPECT_FALSE(test_cases[1].state->certs().empty());
+  EXPECT_TRUE(test_cases[2].state->certs().empty());
+
+  // Clear all cached states.
+  factory_->ClearCachedStatesInCryptoConfig(
+      base::Callback<bool(const GURL&)>());
+  EXPECT_TRUE(test_cases[0].state->certs().empty());
+  EXPECT_TRUE(test_cases[1].state->certs().empty());
+  EXPECT_TRUE(test_cases[2].state->certs().empty());
 }
 
 }  // namespace test

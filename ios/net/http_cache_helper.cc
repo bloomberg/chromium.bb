@@ -19,6 +19,7 @@
 #include "net/quic/chromium/quic_stream_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -55,7 +56,7 @@ void ClearHttpCacheOnIOThread(
   // Clear QUIC server information from memory and the disk cache.
   http_cache->GetSession()
       ->quic_stream_factory()
-      ->ClearCachedStatesInCryptoConfig();
+      ->ClearCachedStatesInCryptoConfig(base::Callback<bool(const GURL&)>());
 
   // Clear SDCH dictionary state.
   net::SdchManager* sdch_manager =

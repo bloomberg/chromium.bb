@@ -400,10 +400,11 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
   return cached;
 }
 
-void QuicCryptoClientConfig::ClearCachedStates() {
+void QuicCryptoClientConfig::ClearCachedStates(const ServerIdFilter& filter) {
   for (CachedStateMap::const_iterator it = cached_states_.begin();
        it != cached_states_.end(); ++it) {
-    it->second->Clear();
+    if (filter.Matches(it->first))
+      it->second->Clear();
   }
 }
 

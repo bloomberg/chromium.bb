@@ -155,7 +155,7 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         // Clear QUIC server information from memory and the disk cache.
         http_cache->GetSession()
             ->quic_stream_factory()
-            ->ClearCachedStatesInCryptoConfig();
+            ->ClearCachedStatesInCryptoConfig(url_predicate_);
 
         // Clear SDCH dictionary state.
         net::SdchManager* sdch_manager =
