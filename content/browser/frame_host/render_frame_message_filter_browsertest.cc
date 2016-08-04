@@ -39,6 +39,12 @@ std::string GetCookieFromJS(RenderFrameHost* frame) {
   return cookie;
 }
 
+mojom::RenderFrameMessageFilter* GetFilterForProcess(
+    RenderProcessHost* process) {
+  return static_cast<RenderProcessHostImpl*>(process)
+      ->render_frame_message_filter_for_testing();
+}
+
 }  // namespace
 
 class RenderFrameMessageFilterBrowserTest : public ContentBrowserTest {
@@ -190,18 +196,18 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
 
   EXPECT_NE(iframe->GetProcess(), main_frame->GetProcess());
 
-  // Try to get cross-site cookies from the subframe's process and wait for it
-  // to be killed.
-  std::string response;
-  FrameHostMsg_GetCookies illegal_get_cookies(
-      iframe->GetRoutingID(), GURL("http://127.0.0.1/"),
-      GURL("http://127.0.0.1/"), &response);
-
   RenderProcessHostWatcher iframe_killed(
       iframe->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
-  IPC::IpcSecurityTestUtil::PwnMessageReceived(
-      iframe->GetProcess()->GetChannel(), illegal_get_cookies);
+  // Try to get cross-site cookies from the subframe's process and wait for it
+  // to be killed.
+  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(
+      FROM_HERE,
+      base::Bind([] (RenderFrameHost* frame) {
+        GetFilterForProcess(frame->GetProcess())->GetCookies(
+            frame->GetRoutingID(), GURL("http://127.0.0.1/"),
+            GURL("http://127.0.0.1/"), base::Bind([] (mojo::String) {}));
+      }, iframe));
 
   iframe_killed.Wait();
 
@@ -218,15 +224,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
       tab->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
-  RenderProcessHostImpl* process =
-      static_cast<RenderProcessHostImpl*>(tab->GetMainFrame()->GetProcess());
   BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(
       FROM_HERE,
-      base::Bind(
-          &mojom::RenderFrameMessageFilter::SetCookie,
-          base::Unretained(process->render_frame_message_filter_for_testing()),
-          tab->GetMainFrame()->GetRoutingID(), GURL("https://baz.com/"),
-          GURL("https://baz.com/"), "pwn=ed"));
+      base::Bind([] (RenderFrameHost* frame) {
+        GetFilterForProcess(frame->GetProcess())->SetCookie(
+            frame->GetRoutingID(), GURL("https://baz.com/"),
+            GURL("https://baz.com/"), "pwn=ed");
+      }, main_frame));
 
   main_frame_killed.Wait();
 

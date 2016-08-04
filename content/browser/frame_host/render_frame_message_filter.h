@@ -80,10 +80,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter
 
   void OnCreateChildFrame(const FrameHostMsg_CreateChildFrame_Params& params,
                           int* new_render_frame_id);
-  void OnGetCookies(int render_frame_id,
-                    const GURL& url,
-                    const GURL& first_party_for_cookies,
-                    IPC::Message* reply_msg);
   void OnCookiesEnabled(int render_frame_id,
                         const GURL& url,
                         const GURL& first_party_for_cookies,
@@ -93,13 +89,8 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   void CheckPolicyForCookies(int render_frame_id,
                              const GURL& url,
                              const GURL& first_party_for_cookies,
-                             IPC::Message* reply_msg,
+                             const GetCookiesCallback& callback,
                              const net::CookieList& cookie_list);
-
-  // Writes the cookies to reply messages, and sends the message.
-  // Callback functions for getting cookies from cookie store.
-  void SendGetCookiesResponse(IPC::Message* reply_msg,
-                              const std::string& cookies);
 
   void OnDownloadUrl(int render_view_id,
                      int render_frame_id,
@@ -122,6 +113,10 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                  const GURL& url,
                  const GURL& first_party_for_cookies,
                  const mojo::String& cookie) override;
+  void GetCookies(int render_frame_id,
+                  const GURL& url,
+                  const GURL& first_party_for_cookies,
+                  const GetCookiesCallback& callback) override;
 
 
 #if defined(ENABLE_PLUGINS)

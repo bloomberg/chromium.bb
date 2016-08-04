@@ -233,7 +233,6 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameMessageFilter, message)
     IPC_MESSAGE_HANDLER(FrameHostMsg_CreateChildFrame, OnCreateChildFrame)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_GetCookies, OnGetCookies)
     IPC_MESSAGE_HANDLER(FrameHostMsg_CookiesEnabled, OnCookiesEnabled)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DownloadUrl, OnDownloadUrl)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SaveImageFromDataURL,
@@ -308,46 +307,6 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
                  params.frame_owner_properties, *new_routing_id));
 }
 
-void RenderFrameMessageFilter::OnGetCookies(int render_frame_id,
-                                            const GURL& url,
-                                            const GURL& first_party_for_cookies,
-                                            IPC::Message* reply_msg) {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::RFMF_GET_COOKIES_BAD_ORIGIN);
-    delete reply_msg;
-    return;
-  }
-
-  // If we crash here, figure out what URL the renderer was requesting.
-  // http://crbug.com/99242
-  char url_buf[128];
-  base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
-  base::debug::Alias(url_buf);
-
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-
-  net::CookieOptions options;
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          url, first_party_for_cookies,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    // TODO(mkwst): This check ought to further distinguish between frames
-    // initiated in a strict or lax same-site context.
-    options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  } else {
-    options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
-  }
-
-  context->cookie_store()->GetCookieListWithOptionsAsync(
-      url, options,
-      base::Bind(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
-                 render_frame_id, url, first_party_for_cookies, reply_msg));
-}
-
 void RenderFrameMessageFilter::OnCookiesEnabled(
     int render_frame_id,
     const GURL& url,
@@ -365,7 +324,7 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
     int render_frame_id,
     const GURL& url,
     const GURL& first_party_for_cookies,
-    IPC::Message* reply_msg,
+    const GetCookiesCallback& callback,
     const net::CookieList& cookie_list) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
   // Check the policy for get cookies, and pass cookie_list to the
@@ -374,18 +333,10 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
       GetContentClient()->browser()->AllowGetCookie(
           url, first_party_for_cookies, cookie_list, resource_context_,
           render_process_id_, render_frame_id)) {
-    SendGetCookiesResponse(reply_msg,
-                           net::CookieStore::BuildCookieLine(cookie_list));
+    callback.Run(net::CookieStore::BuildCookieLine(cookie_list));
   } else {
-    SendGetCookiesResponse(reply_msg, std::string());
+    callback.Run(std::string());
   }
-}
-
-void RenderFrameMessageFilter::SendGetCookiesResponse(
-    IPC::Message* reply_msg,
-    const std::string& cookies) {
-  FrameHostMsg_GetCookies::WriteReplyParams(reply_msg, cookies);
-  Send(reply_msg);
 }
 
 void RenderFrameMessageFilter::OnDownloadUrl(
@@ -462,6 +413,39 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
     context->cookie_store()->SetCookieWithOptionsAsync(
         url, cookie, options, net::CookieStore::SetCookiesCallback());
   }
+}
+
+void RenderFrameMessageFilter::GetCookies(int render_frame_id,
+                                          const GURL& url,
+                                          const GURL& first_party_for_cookies,
+                                          const GetCookiesCallback& callback) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::RFMF_GET_COOKIES_BAD_ORIGIN);
+    callback.Run(std::string());
+    return;
+  }
+
+  net::CookieOptions options;
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          url, first_party_for_cookies,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    // TODO(mkwst): This check ought to further distinguish between frames
+    // initiated in a strict or lax same-site context.
+    options.set_same_site_cookie_mode(
+        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  } else {
+    options.set_same_site_cookie_mode(
+        net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
+  }
+
+  net::URLRequestContext* context = GetRequestContextForURL(url);
+  context->cookie_store()->GetCookieListWithOptionsAsync(
+      url, options,
+      base::Bind(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
+                 render_frame_id, url, first_party_for_cookies, callback));
 }
 
 #if defined(ENABLE_PLUGINS)
