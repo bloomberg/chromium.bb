@@ -96,6 +96,9 @@ alert is fired. Some of these alerts are expected:
      you didn't see the announcement, double check in the speed infra chat.
      Ideally these will be associated with the bug for the bot turndown, but
      it's okay to mark them invalid if you can't find the bug.
+     You can check the
+     [recipe](https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/chromium_tests/chromium_perf.py)
+     to find a corresponding bot name for waterfall with one for dashboard.
 
 If there doesn't seem to be a valid reason for the alert, file a bug on it
 using the perf dashboard, and cc [the owner](http://go/perf-owners). Then do
