@@ -1971,10 +1971,12 @@ CGFloat BookmarkRightMargin() {
       [BookmarkButtonCell buttonCellWithText:text
                                        image:image
                               menuController:contextMenuController_];
-  if (ui::MaterialDesignController::IsModeMaterial())
+  if (ui::MaterialDesignController::IsModeMaterial()) {
     [cell setTag:kMaterialStandardButtonTypeWithLimitedClickFeedback];
-  else
+    [cell setHighlightsBy:NSNoCellMask];
+  } else {
     [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
+  }
 
   // Note: a quirk of setting a cell's text color is that it won't work
   // until the cell is associated with a button, so we can't theme the cell yet.
