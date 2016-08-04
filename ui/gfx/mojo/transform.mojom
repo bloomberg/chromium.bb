@@ -6,6 +6,6 @@ module gfx.mojom;
 
 // See ui/gfx/transform.h.
 struct Transform {
-  // Row major order.
+  // Column major order.
   array<float, 16> matrix;
 };

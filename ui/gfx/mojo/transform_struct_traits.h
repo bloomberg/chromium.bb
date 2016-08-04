@@ -5,26 +5,34 @@
 #ifndef UI_GFX_MOJO_TRANSFORM_STRUCT_TRAITS_H_
 #define UI_GFX_MOJO_TRANSFORM_STRUCT_TRAITS_H_
 
+#include "mojo/public/cpp/bindings/array_traits.h"
 #include "ui/gfx/mojo/transform.mojom.h"
 #include "ui/gfx/transform.h"
 
 namespace mojo {
 
 template <>
+struct ArrayTraits<SkMatrix44> {
+  using Element = float;
+
+  static size_t GetSize(const SkMatrix44& input) { return 16; }
+
+  static float GetAt(const SkMatrix44& input, size_t index) {
+    return input.getFloat(static_cast<int>(index % 4),
+                          static_cast<int>(index / 4));
+  }
+};
+
+template <>
 struct StructTraits<gfx::mojom::Transform, gfx::Transform> {
-  static mojo::Array<float> matrix(const gfx::Transform& transform) {
-    std::vector<float> storage(16);
-    transform.matrix().asRowMajorf(&storage[0]);
-    mojo::Array<float> matrix;
-    matrix.Swap(&storage);
-    return matrix;
+  static const SkMatrix44& matrix(const gfx::Transform& transform) {
+    return transform.matrix();
   }
 
   static bool Read(gfx::mojom::TransformDataView data, gfx::Transform* out) {
-    mojo::Array<float> matrix;
-    if (!data.ReadMatrix(&matrix))
-      return false;
-    out->matrix().setRowMajorf(&matrix.storage()[0]);
+    ArrayDataView<float> matrix;
+    data.GetMatrixDataView(&matrix);
+    out->matrix().setColMajorf(matrix.data());
     return true;
   }
 };

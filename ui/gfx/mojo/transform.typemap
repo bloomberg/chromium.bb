@@ -5,5 +5,8 @@
 mojom = "//ui/gfx/mojo/transform.mojom"
 public_headers = [ "//ui/gfx/transform.h" ]
 traits_headers = [ "//ui/gfx/mojo/transform_struct_traits.h" ]
-public_deps = [ "//ui/gfx" ]
+public_deps = [
+  "//mojo/public/cpp/bindings",
+  "//ui/gfx",
+]
 type_mappings = [ "gfx.mojom.Transform=gfx::Transform" ]
