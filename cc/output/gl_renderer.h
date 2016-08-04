@@ -532,6 +532,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // overlay resource. This means the GLRenderer needs its own ResourcePool.
   std::unique_ptr<ResourcePool> overlay_resource_pool_;
 
+  // If true, draw a green border after compositing a texture quad using GL.
+  bool gl_composited_texture_quad_border_;
   BoundGeometry bound_geometry_;
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };

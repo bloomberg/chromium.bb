@@ -396,6 +396,8 @@ GLRenderer::GLRenderer(RendererClient* client,
       highp_threshold_min_(highp_threshold_min),
       highp_threshold_cache_(0),
       use_sync_query_(false),
+      gl_composited_texture_quad_border_(
+          settings->gl_composited_texture_quad_border),
       bound_geometry_(NO_BINDING) {
   DCHECK(gl_);
   DCHECK(context_support_);
@@ -2554,6 +2556,28 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
                     6 * static_cast<int>(draw_cache_.matrix_data.size()),
                     GL_UNSIGNED_SHORT, 0);
 
+  // Draw the border if requested.
+  if (gl_composited_texture_quad_border_) {
+    // When we draw the composited borders we have one flush per quad.
+    DCHECK_EQ(1u, draw_cache_.matrix_data.size());
+    SetBlendEnabled(false);
+    const DebugBorderProgram* program = GetDebugBorderProgram();
+    DCHECK(program && (program->initialized() || IsContextLost()));
+    SetUseProgram(program->program());
+
+    gl_->UniformMatrix4fv(
+        program->vertex_shader().matrix_location(), 1, false,
+        reinterpret_cast<float*>(&draw_cache_.matrix_data.front()));
+
+    gl_->Uniform4f(program->fragment_shader().color_location(), 0.0f, 1.0f,
+                   0.0f, 1.0f);
+
+    gl_->LineWidth(3.0f);
+    // The indices for the line are stored in the same array as the triangle
+    // indices.
+    gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
+  }
+
   // Clear the cache.
   draw_cache_.program_id = -1;
   draw_cache_.uv_xform_data.resize(0);
@@ -2678,6 +2702,8 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
     PrepareGeometry(CLIPPED_BINDING);
     clipped_geometry_->InitializeCustomQuadWithUVs(scaled_region, uv);
     FlushTextureQuadCache(CLIPPED_BINDING);
+  } else if (gl_composited_texture_quad_border_) {
+    FlushTextureQuadCache(SHARED_BINDING);
   }
 }
 

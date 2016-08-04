@@ -21,6 +21,7 @@ RendererSettings::RendererSettings()
       should_clear_root_render_pass(true),
       disable_display_vsync(false),
       release_overlay_resources_after_gpu_query(false),
+      gl_composited_texture_quad_border(false),
       refresh_rate(60.0),
       highp_threshold_min(0),
       texture_id_allocation_chunk_size(64),

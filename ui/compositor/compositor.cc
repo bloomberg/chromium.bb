@@ -130,6 +130,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
 #elif defined(OS_MACOSX)
   settings.renderer_settings.release_overlay_resources_after_gpu_query = true;
 #endif
+  settings.renderer_settings.gl_composited_texture_quad_border =
+      command_line->HasSwitch(cc::switches::kGlCompositedTextureQuadBorder);
 
   // These flags should be mirrored by renderer versions in content/renderer/.
   settings.initial_debug_state.show_debug_borders =

@@ -31,6 +31,8 @@ class CC_EXPORT RendererSettings {
   bool should_clear_root_render_pass;
   bool disable_display_vsync;
   bool release_overlay_resources_after_gpu_query;
+  bool gl_composited_texture_quad_border;
+
   double refresh_rate;
   int highp_threshold_min;
   size_t texture_id_allocation_chunk_size;

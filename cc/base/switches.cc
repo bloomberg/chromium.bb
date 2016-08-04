@@ -55,6 +55,11 @@ const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";
 const char kUIShowCompositedLayerBorders[] = "ui-show-layer-borders";
 
+// Renders a green border around GL composited texture quads to help
+// debug and study overlay support.
+const char kGlCompositedTextureQuadBorder[] =
+    "gl-composited-texture-quad-border";
+
 // Draws a heads-up-display showing Frames Per Second as well as GPU memory
 // usage. If you also use --enable-logging=stderr --vmodule="head*=1" then FPS
 // will also be output to the console log.
