@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/chrome_features.h"
+#include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 
@@ -26,6 +27,12 @@ bool IsQuickUnlockEnabled() {
           ->IsEnterpriseManaged()) {
     return false;
   }
+
+  // TODO(jdufault): Disable PIN for supervised users until we allow the owner
+  // to set the PIN. See crbug.com/632797.
+  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
+  if (user && user->IsSupervised())
+    return false;
 
   // Enable quick unlock only if the switch is present.
   return base::FeatureList::IsEnabled(features::kQuickUnlockPin);
