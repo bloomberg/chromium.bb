@@ -17,10 +17,8 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
-#include "ui/gl/init/gl_surface_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace gl {
 namespace init {
@@ -62,34 +60,6 @@ scoped_refptr<GLSurface> CreateDefaultOffscreenGLSurface(
   return nullptr;
 }
 
-// TODO(kylechar): Remove when all implementations are switched over.
-scoped_refptr<GLSurface> CreateViewGLSurfaceOld(gfx::AcceleratedWidget window) {
-  switch (GetGLImplementation()) {
-    case kGLImplementationEGLGLES2:
-      DCHECK_NE(window, gfx::kNullAcceleratedWidget);
-      return CreateViewGLSurfaceOzone(window);
-    default:
-      NOTREACHED();
-  }
-  return nullptr;
-}
-
-// TODO(kylechar): Remove when all implementations are switched over.
-scoped_refptr<GLSurface> CreateOffscreenGLSurfaceOld(const gfx::Size& size) {
-  switch (GetGLImplementation()) {
-    case kGLImplementationEGLGLES2:
-      if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
-          (size.width() == 0 && size.height() == 0)) {
-        return InitializeGLSurface(new SurfacelessEGL(size));
-      } else {
-        return InitializeGLSurface(new PbufferGLSurfaceEGL(size));
-      }
-    default:
-      NOTREACHED();
-  }
-  return nullptr;
-}
-
 }  // namespace
 
 std::vector<GLImplementation> GetAllowedGLImplementations() {
@@ -121,11 +91,10 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
     case kGLImplementationEGLGLES2:
       return InitializeGLContext(new GLContextEGL(share_group),
                                  compatible_surface, gpu_preference);
-
     default:
       NOTREACHED();
-      return nullptr;
   }
+  return nullptr;
 }
 
 scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
@@ -133,10 +102,6 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
 
   if (HasDefaultImplementation(GetGLImplementation()))
     return CreateDefaultViewGLSurface(window);
-
-  // TODO(kylechar): This is deprecated, remove when possible.
-  if (!GetSurfaceFactory()->UseNewSurfaceAPI())
-    return CreateViewGLSurfaceOld(window);
 
   return GetSurfaceFactory()->CreateViewGLSurface(GetGLImplementation(),
                                                   window);
@@ -155,10 +120,6 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
 
   if (HasDefaultImplementation(GetGLImplementation()))
     return CreateDefaultOffscreenGLSurface(size);
-
-  // TODO(kylechar): This is deprecated, remove when possible.
-  if (!GetSurfaceFactory()->UseNewSurfaceAPI())
-    return CreateOffscreenGLSurfaceOld(size);
 
   return GetSurfaceFactory()->CreateOffscreenGLSurface(GetGLImplementation(),
                                                        size);

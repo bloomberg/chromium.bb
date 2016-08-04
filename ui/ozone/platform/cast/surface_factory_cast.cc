@@ -167,10 +167,6 @@ void SurfaceFactoryCast::OnOverlayScheduled(const gfx::Rect& display_bounds) {
   overlay_bounds_ = display_bounds;
 }
 
-bool SurfaceFactoryCast::UseNewSurfaceAPI() {
-  return true;
-}
-
 scoped_refptr<gl::GLSurface> SurfaceFactoryCast::CreateViewGLSurface(
     gl::GLImplementation implementation,
     gfx::AcceleratedWidget widget) {

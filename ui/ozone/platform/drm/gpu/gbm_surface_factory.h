@@ -33,7 +33,6 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
   GbmSurfaceless* GetSurface(gfx::AcceleratedWidget widget) const;
 
   // SurfaceFactoryOzone:
-  bool UseNewSurfaceAPI() override;
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
       gl::GLImplementation implementation,
       gfx::AcceleratedWidget widget) override;

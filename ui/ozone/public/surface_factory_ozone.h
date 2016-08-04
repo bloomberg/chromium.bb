@@ -27,7 +27,6 @@ namespace ui {
 
 class NativePixmap;
 class SurfaceOzoneCanvas;
-class SurfaceOzoneEGL;
 
 // The Ozone interface allows external implementations to hook into Chromium to
 // provide a system specific implementation. The Ozone interface supports two
@@ -71,10 +70,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // display connection for the native display.
   virtual intptr_t GetNativeDisplay();
 
-  // Checks if platform uses the new surface creation API.
-  // TODO(kylechar): Delete when using all implementations use new surface API.
-  virtual bool UseNewSurfaceAPI();
-
   // Creates a GL surface that renders directly to a view for the specified GL
   // implementation.
   virtual scoped_refptr<gl::GLSurface> CreateViewGLSurface(
@@ -82,7 +77,9 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
       gfx::AcceleratedWidget widget);
 
   // Creates a GL surface that renders directly into a window with surfaceless
-  // semantics for the specified GL implementation.
+  // semantics for the specified GL implementation. The surface is not backed
+  // by any buffers and is used for overlay-only displays. This will return
+  // nullptr if surfaceless mode unsupported.
   virtual scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
       gl::GLImplementation implementation,
       gfx::AcceleratedWidget widget);
@@ -92,20 +89,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   virtual scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
       gl::GLImplementation implementation,
       const gfx::Size& size);
-
-  // Create SurfaceOzoneEGL for the specified gfx::AcceleratedWidget.
-  //
-  // Note: When used from content, this is called in the GPU process. The
-  // platform must support creation of SurfaceOzoneEGL from the GPU process
-  // using only the handle contained in gfx::AcceleratedWidget.
-  virtual std::unique_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
-      gfx::AcceleratedWidget widget);
-
-  // Create an EGL surface that isn't backed by any buffers, and is used
-  // for overlay-only displays. This will return NULL if this mode is
-  // not supported.
-  virtual std::unique_ptr<SurfaceOzoneEGL> CreateSurfacelessEGLSurfaceForWidget(
-      gfx::AcceleratedWidget widget);
 
   // Create SurfaceOzoneCanvas for the specified gfx::AcceleratedWidget.
   //

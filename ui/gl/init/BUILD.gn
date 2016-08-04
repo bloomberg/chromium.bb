@@ -60,8 +60,6 @@ component("init") {
     sources += [
       "gl_factory_ozone.cc",
       "gl_initializer_ozone.cc",
-      "gl_surface_ozone.cc",
-      "gl_surface_ozone.h",
     ]
 
     deps += [ "//ui/ozone" ]

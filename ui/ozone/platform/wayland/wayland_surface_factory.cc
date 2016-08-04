@@ -17,7 +17,6 @@
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
 
 #if defined(USE_WAYLAND_EGL)
 #include "ui/ozone/platform/wayland/gl_surface_wayland.h"

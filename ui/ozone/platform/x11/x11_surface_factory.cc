@@ -125,10 +125,6 @@ X11SurfaceFactory::X11SurfaceFactory() {}
 
 X11SurfaceFactory::~X11SurfaceFactory() {}
 
-bool X11SurfaceFactory::UseNewSurfaceAPI() {
-  return true;
-}
-
 scoped_refptr<gl::GLSurface> X11SurfaceFactory::CreateViewGLSurface(
     gl::GLImplementation implementation,
     gfx::AcceleratedWidget widget) {

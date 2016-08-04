@@ -20,7 +20,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
+#include "ui/ozone/public/swap_completion_callback.h"
 
 namespace base {
 struct FileDescriptor;

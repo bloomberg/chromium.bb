@@ -9,22 +9,15 @@
 #include "base/command_line.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
 
-SurfaceFactoryOzone::SurfaceFactoryOzone() {
-}
+SurfaceFactoryOzone::SurfaceFactoryOzone() {}
 
-SurfaceFactoryOzone::~SurfaceFactoryOzone() {
-}
+SurfaceFactoryOzone::~SurfaceFactoryOzone() {}
 
 intptr_t SurfaceFactoryOzone::GetNativeDisplay() {
   return 0;
-}
-
-bool SurfaceFactoryOzone::UseNewSurfaceAPI() {
-  return true;
 }
 
 scoped_refptr<gl::GLSurface> SurfaceFactoryOzone::CreateViewGLSurface(
@@ -43,17 +36,6 @@ SurfaceFactoryOzone::CreateSurfacelessViewGLSurface(
 scoped_refptr<gl::GLSurface> SurfaceFactoryOzone::CreateOffscreenGLSurface(
     gl::GLImplementation implementation,
     const gfx::Size& size) {
-  return nullptr;
-}
-
-std::unique_ptr<SurfaceOzoneEGL> SurfaceFactoryOzone::CreateEGLSurfaceForWidget(
-    gfx::AcceleratedWidget widget) {
-  return nullptr;
-}
-
-std::unique_ptr<SurfaceOzoneEGL>
-SurfaceFactoryOzone::CreateSurfacelessEGLSurfaceForWidget(
-    gfx::AcceleratedWidget widget) {
   return nullptr;
 }
 

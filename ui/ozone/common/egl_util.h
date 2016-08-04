@@ -6,7 +6,6 @@
 #define UI_OZONE_COMMON_EGL_UTIL_H_
 
 #include "ui/ozone/public/surface_factory_ozone.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
 
@@ -23,10 +22,6 @@ bool LoadEGLGLES2Bindings(
     const char* gles_library_name);
 
 void* /* EGLConfig */ ChooseEGLConfig(void* /* EGLConfig */ display,
-                                      const int32_t* attributes);
-
-// TODO(kylechar): This is deprecated, delete when all callers are gone.
-void* /* EGLConfig */ ChooseEGLConfig(const EglConfigCallbacks& egl,
                                       const int32_t* attributes);
 
 }  // namespace ui

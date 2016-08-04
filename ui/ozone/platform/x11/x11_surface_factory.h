@@ -20,7 +20,6 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
   ~X11SurfaceFactory() override;
 
   // SurfaceFactoryOzone:
-  bool UseNewSurfaceAPI() override;
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
       gl::GLImplementation implementation,
       gfx::AcceleratedWidget widget) override;

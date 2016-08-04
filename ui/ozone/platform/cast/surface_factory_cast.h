@@ -30,7 +30,6 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   ~SurfaceFactoryCast() override;
 
   // SurfaceFactoryOzone implementation:
-  bool UseNewSurfaceAPI() override;
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
       gl::GLImplementation implementation,
       gfx::AcceleratedWidget widget) override;

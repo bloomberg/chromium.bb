@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
+#include "ui/ozone/public/swap_completion_callback.h"
 
 namespace ui {
 

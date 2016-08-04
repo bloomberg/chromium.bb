@@ -54,10 +54,6 @@ GbmSurfaceless* GbmSurfaceFactory::GetSurface(
   return it->second;
 }
 
-bool GbmSurfaceFactory::UseNewSurfaceAPI() {
-  return true;
-}
-
 scoped_refptr<gl::GLSurface> GbmSurfaceFactory::CreateViewGLSurface(
     gl::GLImplementation implementation,
     gfx::AcceleratedWidget widget) {

@@ -16,7 +16,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
+#include "ui/ozone/public/swap_completion_callback.h"
 
 class SkBitmap;
 
