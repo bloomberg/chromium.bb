@@ -60,7 +60,6 @@ class BaseTestCase(unittest.TestCase):
         # we can make the default port also a "test" port.
         self.original_port_factory_get = self.tool.port_factory.get
         test_port = self.tool.port_factory.get('test')
-        self._build_data = {}
 
         def get_test_port(port_name=None, options=None, **kwargs):
             if not port_name:
@@ -91,28 +90,21 @@ class BaseTestCase(unittest.TestCase):
         self.tool.filesystem.written_files = {}
 
     def _setup_mock_build_data(self):
-        data = LayoutTestResults({
-            "tests": {
-                "userscripts": {
-                    "first-test.html": {
-                        "expected": "PASS",
-                        "actual": "IMAGE+TEXT"
-                    },
-                    "second-test.html": {
-                        "expected": "FAIL",
-                        "actual": "IMAGE+TEXT"
+        for builder in ['MOCK Win7', 'MOCK Win7 (dbg)', 'MOCK Mac10.11']:
+            self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
+                "tests": {
+                    "userscripts": {
+                        "first-test.html": {
+                            "expected": "PASS",
+                            "actual": "IMAGE+TEXT"
+                        },
+                        "second-test.html": {
+                            "expected": "FAIL",
+                            "actual": "IMAGE+TEXT"
+                        }
                     }
                 }
-            }
-        })
-
-        def build_data():
-            self._build_data = {}
-            for builder in ['MOCK Win7', 'MOCK Win7 (dbg)', 'MOCK Mac10.11']:
-                self._build_data[Build(builder)] = data
-            return self._build_data
-
-        self.command.build_data = build_data
+            }))
 
 class TestCopyExistingBaselinesInternal(BaseTestCase):
     command_constructor = CopyExistingBaselinesInternal
@@ -373,20 +365,16 @@ class TestRebaselineJson(BaseTestCase):
     def test_rebaseline_test_passes_on_all_builders(self):
         self._setup_mock_build_data()
 
-        def build_data():
-            self._build_data[Build('MOCK Win7')] = LayoutTestResults({
-                "tests": {
-                    "userscripts": {
-                        "first-test.html": {
-                            "expected": "NEEDSREBASELINE",
-                            "actual": "PASS"
-                        }
+        self.tool.buildbot.set_results(Build('MOCK Win7'), LayoutTestResults({
+            "tests": {
+                "userscripts": {
+                    "first-test.html": {
+                        "expected": "NEEDSREBASELINE",
+                        "actual": "PASS"
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }
+        }))
 
         options = MockOptions(optimize=True, verbose=True, results_directory=None)
 
@@ -405,15 +393,16 @@ class TestRebaselineJson(BaseTestCase):
         self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
-        self.assertEqual(self.tool.executive.calls,
-                         [
-                             [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                               '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
-                             [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                               '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
-                             [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt,png',
-                               'userscripts/first-test.html', '--verbose']]
-                         ])
+        self.assertEqual(
+            self.tool.executive.calls,
+            [
+                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
+                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
+                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
+                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
+                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt,png',
+                  'userscripts/first-test.html', '--verbose']]
+            ])
 
     def test_rebaseline_debug(self):
         self._setup_mock_build_data()
@@ -436,19 +425,20 @@ class TestRebaselineJson(BaseTestCase):
 
     def test_no_optimize(self):
         self._setup_mock_build_data()
+        print self.tool.buildbot._canned_results
 
         options = MockOptions(optimize=False, verbose=True, results_directory=None)
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7 (dbg)"): ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         # Note that we have only one run_in_parallel() call
         self.assertEqual(
             self.tool.executive.calls,
             [
                 [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7 (dbg)', '--test', 'userscripts/first-test.html', '--verbose']],
+                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
                 [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7 (dbg)', '--test', 'userscripts/first-test.html', '--verbose']]
+                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']]
             ])
 
     def test_results_directory(self):
@@ -641,8 +631,8 @@ class TestRebaselineExpectations(BaseTestCase):
 
         self.tool.executive = MockExecutive2()
 
-        def build_data():
-            self._build_data[Build('MOCK Mac10.11')] = self._build_data[Build('MOCK Mac10.10')] = LayoutTestResults({
+        for builder in ['MOCK Mac10.10', 'MOCK Mac10.11']:
+            self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
                 "tests": {
                     "userscripts": {
                         "another-test.html": {
@@ -655,10 +645,7 @@ class TestRebaselineExpectations(BaseTestCase):
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }))
 
         self._write("userscripts/another-test.html", "Dummy test contents")
         self._write("userscripts/images.svg", "Dummy test contents")
@@ -698,8 +685,8 @@ class TestRebaselineExpectations(BaseTestCase):
 
         self.tool.executive = MockExecutive2()
 
-        def build_data():
-            self._build_data[Build('MOCK Mac10.10')] = self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
+        for builder in ['MOCK Mac10.10', 'MOCK Mac10.11']:
+            self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
                 "tests": {
                     "userscripts": {
                         "reftest-text.html": {
@@ -716,10 +703,7 @@ class TestRebaselineExpectations(BaseTestCase):
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }))
 
         self._write("userscripts/reftest-text.html", "Dummy test contents")
         self._write("userscripts/reftest-text-expected.html", "Dummy test contents")
@@ -785,8 +769,8 @@ class TestRebaselineExpectations(BaseTestCase):
     def test_rebaseline_test_passes_everywhere(self):
         test_port = self.tool.port_factory.get('test')
 
-        def build_data():
-            self._build_data[Build('MOCK Mac10.10')] = self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
+        for builder in ['MOCK Mac10.10', 'MOCK Mac10.11']:
+            self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -798,10 +782,7 @@ class TestRebaselineExpectations(BaseTestCase):
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }))
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ Rebaseline ]
@@ -825,37 +806,33 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
 """)
 
     def test_rebaseline_missing(self):
-        def build_data():
-            self._build_data[Build('MOCK Mac10.10')] = LayoutTestResults({
-                "tests": {
-                    "fast": {
-                        "dom": {
-                            "missing-text.html": {
-                                "expected": "PASS",
-                                "actual": "MISSING",
-                                "is_unexpected": True,
-                                "is_missing_text": True
-                            },
-                            "missing-text-and-image.html": {
-                                "expected": "PASS",
-                                "actual": "MISSING",
-                                "is_unexpected": True,
-                                "is_missing_text": True,
-                                "is_missing_image": True
-                            },
-                            "missing-image.html": {
-                                "expected": "PASS",
-                                "actual": "MISSING",
-                                "is_unexpected": True,
-                                "is_missing_image": True
-                            }
+        self.tool.buildbot.set_results(Build('MOCK Mac10.10'), LayoutTestResults({
+            "tests": {
+                "fast": {
+                    "dom": {
+                        "missing-text.html": {
+                            "expected": "PASS",
+                            "actual": "MISSING",
+                            "is_unexpected": True,
+                            "is_missing_text": True
+                        },
+                        "missing-text-and-image.html": {
+                            "expected": "PASS",
+                            "actual": "MISSING",
+                            "is_unexpected": True,
+                            "is_missing_text": True,
+                            "is_missing_image": True
+                        },
+                        "missing-image.html": {
+                            "expected": "PASS",
+                            "actual": "MISSING",
+                            "is_unexpected": True,
+                            "is_missing_image": True
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }
+        }))
 
         self._write('fast/dom/missing-text.html', "Dummy test contents")
         self._write('fast/dom/missing-text-and-image.html', "Dummy test contents")

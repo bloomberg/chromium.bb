@@ -36,7 +36,6 @@ class TestAutoRebaseline(BaseTestCase):
             "MOCK Win7": {"port_name": "test-win-win7", "specifiers": ["Win7", "Release"]},
             "MOCK Win7 (dbg)": {"port_name": "test-win-win7", "specifiers": ["Win7", "Debug"]},
         })
-
         self.command.latest_revision_processed_on_all_bots = lambda: 9000
         self.command.bot_revision_data = lambda scm: [{"builder": "MOCK Win7", "revision": "9000"}]
 
@@ -144,33 +143,50 @@ TBR=foo@chromium.org
 
         test_port = self.tool.port_factory.get('test')
 
-        def build_data():
-            # Have prototype-chocolate only fail on "MOCK Mac10.11".
-            self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
-                "tests": {
-                    "fast": {
-                        "dom": {
-                            "prototype-taco.html": {
-                                "expected": "PASS",
-                                "actual": "PASS TEXT",
-                                "is_unexpected": True
-                            },
-                            "prototype-chocolate.html": {
-                                "expected": "FAIL",
-                                "actual": "PASS"
-                            },
-                            "prototype-strawberry.html": {
-                                "expected": "PASS",
-                                "actual": "IMAGE PASS",
-                                "is_unexpected": True
-                            }
+        # Have prototype-chocolate only fail on "MOCK Mac10.11",
+        # and pass on "Mock Mac10.10".
+        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), LayoutTestResults({
+            "tests": {
+                "fast": {
+                    "dom": {
+                        "prototype-taco.html": {
+                            "expected": "PASS",
+                            "actual": "PASS TEXT",
+                            "is_unexpected": True
+                        },
+                        "prototype-chocolate.html": {
+                            "expected": "FAIL",
+                            "actual": "PASS"
+                        },
+                        "prototype-strawberry.html": {
+                            "expected": "PASS",
+                            "actual": "IMAGE PASS",
+                            "is_unexpected": True
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }
+        }))
+        self.tool.buildbot.set_results(Build('MOCK Mac10.10'), LayoutTestResults({
+            "tests": {
+                "fast": {
+                    "dom": {
+                        "prototype-taco.html": {
+                            "expected": "PASS",
+                            "actual": "PASS",
+                        },
+                        "prototype-chocolate.html": {
+                            "expected": "FAIL",
+                            "actual": "FAIL"
+                        },
+                        "prototype-strawberry.html": {
+                            "expected": "PASS",
+                            "actual": "PASS",
+                        }
+                    }
+                }
+            }
+        }))
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 crbug.com/24182 [ Debug ] path/to/norebaseline.html [ Rebaseline ]
@@ -243,27 +259,20 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        original_build_data = self.command.build_data
-
-        def build_data():
-            original_build_data()
-            # Have prototype-chocolate only fail on "MOCK Mac10.11".
-            self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
-                "tests": {
-                    "fast": {
-                        "dom": {
-                            "prototype-taco.html": {
-                                "expected": "PASS",
-                                "actual": "PASS TEXT",
-                                "is_unexpected": True
-                            }
+        # Have prototype-chocolate only fail on "MOCK Mac10.11".
+        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), LayoutTestResults({
+            "tests": {
+                "fast": {
+                    "dom": {
+                        "prototype-taco.html": {
+                            "expected": "PASS",
+                            "actual": "PASS TEXT",
+                            "is_unexpected": True
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }
+        }))
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -282,14 +291,10 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
         self._execute_with_mock_options()
 
         self.assertEqual(self.tool.executive.calls, [
-            [
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html'],
-            ],
-            [
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html'],
-            ],
+            [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
+              '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html']],
+            [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
+              '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html']],
             [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']],
             ['git', 'cl', 'upload', '-f'],
         ])
@@ -303,8 +308,8 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        def build_data():
-            self._build_data[Build('MOCK Mac10.10')] = self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
+        for builder in ['MOCK Mac10.10', 'MOCK Mac10.11']:
+            self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -316,10 +321,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }))
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -357,23 +359,19 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        def build_data():
-            self._build_data[Build('MOCK Win')] = LayoutTestResults({
-                "tests": {
-                    "fast": {
-                        "dom": {
-                            "prototype-taco.html": {
-                                "expected": "FAIL",
-                                "actual": "PASS",
-                                "is_unexpected": True
-                            }
+        self.tool.buildbot.set_results(Build('MOCK Win7'), LayoutTestResults({
+            "tests": {
+                "fast": {
+                    "dom": {
+                        "prototype-taco.html": {
+                            "expected": "FAIL",
+                            "actual": "PASS",
+                            "is_unexpected": True
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }
+        }))
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -413,23 +411,19 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        def build_data():
-            self._build_data[Build('MOCK Win')] = LayoutTestResults({
-                "tests": {
-                    "fast": {
-                        "dom": {
-                            "prototype-taco.html": {
-                                "expected": "FAIL",
-                                "actual": "PASS",
-                                "is_unexpected": True
-                            }
+        self.tool.buildbot.set_results(Build('MOCK Win7'), LayoutTestResults({
+            "tests": {
+                "fast": {
+                    "dom": {
+                        "prototype-taco.html": {
+                            "expected": "FAIL",
+                            "actual": "PASS",
+                            "is_unexpected": True
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }
+        }))
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -442,7 +436,6 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
         self.tool.builders = BuilderList({
             "MOCK Win7": {"port_name": "test-win-win7", "specifiers": ["Win7", "Release"]},
         })
-
         old_branch_name = self.tool.scm().current_branch_or_ref
         try:
             self.command.tree_status = lambda: 'open'
@@ -470,8 +463,8 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        def build_data():
-            self._build_data[Build('MOCK Mac10.10')] = self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
+        for builder in ['MOCK Mac10.10', 'MOCK Mac10.11']:
+            self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -483,10 +476,7 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
                         }
                     }
                 }
-            })
-            return self._build_data
-
-        self.command.build_data = build_data
+            }))
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]

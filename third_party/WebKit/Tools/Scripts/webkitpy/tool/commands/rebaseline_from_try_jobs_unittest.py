@@ -121,14 +121,14 @@ class RebaselineFromTryJobsTest(BaseTestCase):
 
         self.command._rebaseline(
             self.command_options(issue=11112222),
-            {"fast/dom/prototype-taco.html": {Build("MOCK Try Win", 5000): ["txt", "png"]}},
-            skip_checking_actual_results=True)
+            {"fast/dom/prototype-taco.html": {Build("MOCK Try Win", 5000): ["txt", "png"]}})
 
         self.assertEqual(
             self.tool.executive.calls,
             [
-                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
+                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
                   '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']],
-                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']]
+                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
+                  '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']],
+                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']]
             ])

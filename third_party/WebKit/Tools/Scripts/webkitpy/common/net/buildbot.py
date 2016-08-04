@@ -87,6 +87,10 @@ class BuildBot(object):
     def latest_layout_test_results(self, builder_name):
         return self.fetch_layout_test_results(self.accumulated_results_url_base(builder_name))
 
+    @memoized
+    def fetch_results(self, build):
+        return self.fetch_layout_test_results(self.results_url(build.builder_name, build.build_number))
+
     def fetch_layout_test_results(self, results_url):
         """Returns a LayoutTestResults object for results fetched from a given URL."""
         # FIXME: This should cache that the result was a 404 and stop hitting the network.

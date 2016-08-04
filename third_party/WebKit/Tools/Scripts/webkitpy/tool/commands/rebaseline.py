@@ -233,27 +233,17 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     def __init__(self, options=None):
         super(AbstractParallelRebaselineCommand, self).__init__(options=options)
 
-    @memoized
-    def build_data(self):
-        """Returns a map of Build objects to LayoutTestResult objects.
-
-        The Build objects are the latest builds for the release builders,
-        and LayoutTestResult objects for results fetched from archived layout
-        test results.
-        """
-        build_to_results = {}
-        for builder_name in self._release_builders():
-            builder_results = self._tool.buildbot.latest_layout_test_results(builder_name)
-            if builder_results:
-                build_to_results[Build(builder_name)] = builder_results
-            else:
-                raise Exception("No result for builder %s." % builder_name)
-        return build_to_results
-
-    # The release builders cycle much faster than the debug ones and cover all the platforms.
     def _release_builders(self):
+        """Returns a list of builder names for continuous release builders.
+
+        The release builders cycle much faster than the debug ones and cover all the platforms.
+        """
         release_builders = []
         for builder_name in self._tool.builders.all_continuous_builder_names():
+            # TODO(qyearsley): Remove this check. Explicitly excluding ASAN builders
+            # should be unnecessary, since there are no ASAN builders listed in
+            # webkitpy/common/config/builders.py. If we do want to keep this check,
+            # then we should probably also explicitly exclude MSAN builders.
             if 'ASAN' in builder_name:
                 continue
             port = self._tool.port_factory.get_from_builder_name(builder_name)
@@ -304,7 +294,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         # of some class, then this could be replaced with  a method on that class.
         return [b.builder_name for b in builds]
 
-    def _rebaseline_commands(self, test_prefix_list, options, skip_checking_actual_results=False):
+    def _rebaseline_commands(self, test_prefix_list, options):
         path_to_webkit_patch = self._tool.path()
         cwd = self._tool.scm().checkout_root
         copy_baseline_commands = []
@@ -316,14 +306,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             for test in port.tests([test_prefix]):
                 builders_to_fetch_from = self._builders_to_fetch_from(self._builder_names(test_prefix_list[test_prefix]))
                 for build in sorted(test_prefix_list[test_prefix]):
-                    # TODO(qyearsley): Remove the parameter skip_checking_actual_results
-                    # and instead refactor the existing code so that this is not necessary.
                     builder, build_number = build.builder_name, build.build_number
-
                     if builder not in builders_to_fetch_from:
                         break
-                    if skip_checking_actual_results:
-                        actual_failures_suffixes = test_prefix_list[test_prefix][build]
                     else:
                         actual_failures_suffixes = self._suffixes_for_actual_failures(
                             test, build, test_prefix_list[test_prefix][build])
@@ -466,7 +451,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             self._tool.scm().add_list(files_to_add)
         return lines_to_remove
 
-    def _rebaseline(self, options, test_prefix_list, skip_checking_actual_results=False):
+    def _rebaseline(self, options, test_prefix_list):
         """Downloads new baselines in parallel, then updates expectations files
         and optimizes baselines.
 
@@ -484,10 +469,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 "some/other.html" but only from builder-1.
                 TODO(qyearsley): Replace test_prefix_list everywhere with some
                 sort of class that contains the same data.
-            skip_checking_actual_results: If True, then the lists of suffixes
-                to rebaseline from |test_prefix_list| will be used directly;
-                if False, then the list of suffixes will filtered to include
-                suffixes with mismatches in actual results.
         """
         for test, builds_to_check in sorted(test_prefix_list.items()):
             _log.info("Rebaselining %s", test)
@@ -495,7 +476,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 _log.debug("  %s: %s", build, ",".join(suffixes))
 
         copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(
-            test_prefix_list, options, skip_checking_actual_results)
+            test_prefix_list, options)
         lines_to_remove = {}
 
         self._run_in_parallel_and_update_scm(copy_baseline_commands)
@@ -527,10 +508,13 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         Returns:
             A set of file suffix strings.
         """
-        if build not in self.build_data():
+        results = self._tool.buildbot.fetch_results(build)
+        if not results:
+            _log.debug('No results found for build %s', build)
             return set()
-        test_result = self.build_data()[build].result_for_test(test)
+        test_result = results.result_for_test(test)
         if not test_result:
+            _log.debug('No test result for test %s in build %s', test, build)
             return set()
         return set(existing_suffixes) & TestExpectations.suffixes_for_test_result(test_result)
 

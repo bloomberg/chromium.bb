@@ -33,5 +33,18 @@ from webkitpy.common.net.layouttestresults_unittest import LayoutTestResultsTest
 
 class MockBuildBot(BuildBot):
 
+    def __init__(self):
+        super(MockBuildBot, self).__init__()
+        # Dict of Build to canned LayoutTestResults.
+        self._canned_results = {}
+
     def fetch_layout_test_results(self, _):
         return LayoutTestResults.results_from_string(LayoutTestResultsTest.example_full_results_json)
+
+    def set_results(self, build, results):
+        self._canned_results[build] = results
+
+    def fetch_results(self, build):
+        return self._canned_results.get(
+            build,
+            LayoutTestResults.results_from_string(LayoutTestResultsTest.example_full_results_json))

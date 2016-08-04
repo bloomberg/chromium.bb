@@ -64,7 +64,8 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
     def bot_revision_data(self, scm):
         revisions = []
-        for result in self.build_data().values():
+        for builder_name in self._release_builders():
+            result = self._tool.buildbot.fetch_results(Build(builder_name))
             if result.run_was_interrupted():
                 _log.error("Can't rebaseline because the latest run on %s exited early.", result.builder_name())
                 return []
