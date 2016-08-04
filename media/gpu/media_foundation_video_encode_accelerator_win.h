@@ -62,6 +62,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Holds output buffers coming from the encoder.
   class EncodeOutput;
 
+  // Creates an hardware encoder backed IMFTransform instance on |encoder_|.
+  bool CreateHardwareEncoderMFT();
+
   // Initializes and allocates memory for input and output samples.
   bool InitializeInputOutputSamples();
 

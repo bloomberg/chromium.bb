@@ -81,7 +81,7 @@ MediaFoundationVideoEncodeAccelerator::MediaFoundationVideoEncodeAccelerator()
 
 MediaFoundationVideoEncodeAccelerator::
     ~MediaFoundationVideoEncodeAccelerator() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   DCHECK(!encoder_thread_.IsRunning());
@@ -90,12 +90,17 @@ MediaFoundationVideoEncodeAccelerator::
 
 VideoEncodeAccelerator::SupportedProfiles
 MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
-  DVLOG(3) << __FUNCTION__;
+  TRACE_EVENT0("gpu,startup",
+               "MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles");
+  DVLOG(3) << __func__;
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   SupportedProfiles profiles;
-  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
-    DLOG(ERROR) << "Windows versions earlier than 8 are not supported.";
+  const bool rv = CreateHardwareEncoderMFT();
+  encoder_.Release();
+  if (!rv) {
+    DVLOG(1)
+        << "Hardware encode acceleration is not available on this platform.";
     return profiles;
   }
 
@@ -116,8 +121,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
     VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
     Client* client) {
-  DVLOG(3) << __FUNCTION__
-           << ": input_format=" << VideoPixelFormatToString(format)
+  DVLOG(3) << __func__ << ": input_format=" << VideoPixelFormatToString(format)
            << ", input_visible_size=" << input_visible_size.ToString()
            << ", output_profile=" << output_profile
            << ", initial_bitrate=" << initial_bitrate;
@@ -134,13 +138,6 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  for (const wchar_t* mfdll : kMediaFoundationVideoEncoderDLLs) {
-    if (!::GetModuleHandle(mfdll)) {
-      DLOG(ERROR) << mfdll << " is required for encoding";
-      return false;
-    }
-  }
-
   encoder_thread_.init_com_with_mta(false);
   if (!encoder_thread_.Start()) {
     DLOG(ERROR) << "Failed spawning encoder thread.";
@@ -148,25 +145,10 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
   }
   encoder_thread_task_runner_ = encoder_thread_.task_runner();
 
-  InitializeMediaFoundation();
-
-  uint32_t flags = MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_SORTANDFILTER;
-  MFT_REGISTER_TYPE_INFO input_info;
-  input_info.guidMajorType = MFMediaType_Video;
-  input_info.guidSubtype = MFVideoFormat_NV12;
-  MFT_REGISTER_TYPE_INFO output_info;
-  output_info.guidMajorType = MFMediaType_Video;
-  output_info.guidSubtype = MFVideoFormat_H264;
-
-  base::win::ScopedCoMem<CLSID> CLSIDs;
-  uint32_t count = 0;
-  HRESULT hr = MFTEnum(MFT_CATEGORY_VIDEO_ENCODER, flags, NULL, &output_info,
-                       NULL, &CLSIDs, &count);
-  RETURN_ON_HR_FAILURE(hr, "Couldn't enumerate hardware encoder", false);
-  RETURN_ON_FAILURE((count > 0), "No HW encoder found", false);
-  DVLOG(3) << "HW encoder(s) found: " << count;
-  hr = encoder_.CreateInstance(CLSIDs[0]);
-  RETURN_ON_HR_FAILURE(hr, "Couldn't activate hardware encoder", false);
+  if (!CreateHardwareEncoderMFT()) {
+    DLOG(ERROR) << "Failed creating a hardware encoder MFT.";
+    return false;
+  }
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
@@ -195,7 +177,8 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  hr = encoder_->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL);
+  HRESULT hr =
+      encoder_->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL);
   RETURN_ON_HR_FAILURE(hr, "Couldn't set ProcessMessage", false);
 
   client_task_runner_->PostTask(
@@ -208,7 +191,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
 void MediaFoundationVideoEncodeAccelerator::Encode(
     const scoped_refptr<VideoFrame>& frame,
     bool force_keyframe) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   encoder_thread_task_runner_->PostTask(
@@ -219,7 +202,7 @@ void MediaFoundationVideoEncodeAccelerator::Encode(
 
 void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     const BitstreamBuffer& buffer) {
-  DVLOG(3) << __FUNCTION__ << ": buffer size=" << buffer.size();
+  DVLOG(3) << __func__ << ": buffer size=" << buffer.size();
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   if (buffer.size() < bitstream_buffer_size_) {
@@ -249,7 +232,7 @@ void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
     uint32_t bitrate,
     uint32_t framerate) {
-  DVLOG(3) << __FUNCTION__ << ": bitrate=" << bitrate
+  DVLOG(3) << __func__ << ": bitrate=" << bitrate
            << ": framerate=" << framerate;
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
@@ -261,7 +244,7 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
 }
 
 void MediaFoundationVideoEncodeAccelerator::Destroy() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // Cancel all callbacks.
@@ -282,6 +265,44 @@ void MediaFoundationVideoEncodeAccelerator::Destroy() {
 void MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization() {
   for (const wchar_t* mfdll : kMediaFoundationVideoEncoderDLLs)
     ::LoadLibrary(mfdll);
+}
+
+bool MediaFoundationVideoEncodeAccelerator::CreateHardwareEncoderMFT() {
+  DVLOG(3) << __func__;
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+
+  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+    DVLOG(ERROR) << "Windows versions earlier than 8 are not supported.";
+    return false;
+  }
+
+  for (const wchar_t* mfdll : kMediaFoundationVideoEncoderDLLs) {
+    if (!::GetModuleHandle(mfdll)) {
+      DVLOG(ERROR) << mfdll << " is required for encoding";
+      return false;
+    }
+  }
+
+  InitializeMediaFoundation();
+
+  uint32_t flags = MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_SORTANDFILTER;
+  MFT_REGISTER_TYPE_INFO input_info;
+  input_info.guidMajorType = MFMediaType_Video;
+  input_info.guidSubtype = MFVideoFormat_NV12;
+  MFT_REGISTER_TYPE_INFO output_info;
+  output_info.guidMajorType = MFMediaType_Video;
+  output_info.guidSubtype = MFVideoFormat_H264;
+
+  base::win::ScopedCoMem<CLSID> CLSIDs;
+  uint32_t count = 0;
+  HRESULT hr = MFTEnum(MFT_CATEGORY_VIDEO_ENCODER, flags, &input_info,
+                       &output_info, NULL, &CLSIDs, &count);
+  RETURN_ON_HR_FAILURE(hr, "Couldn't enumerate hardware encoder", false);
+  RETURN_ON_FAILURE((count > 0), "No HW encoder found", false);
+  DVLOG(3) << "HW encoder(s) found: " << count;
+  hr = encoder_.CreateInstance(CLSIDs[0]);
+  RETURN_ON_HR_FAILURE(hr, "Couldn't activate hardware encoder", false);
+  return true;
 }
 
 bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples() {
@@ -383,7 +404,7 @@ void MediaFoundationVideoEncodeAccelerator::NotifyError(
 void MediaFoundationVideoEncodeAccelerator::EncodeTask(
     const scoped_refptr<VideoFrame>& frame,
     bool force_keyframe) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   base::win::ScopedComPtr<IMFMediaBuffer> input_buffer;
@@ -430,7 +451,7 @@ void MediaFoundationVideoEncodeAccelerator::EncodeTask(
 }
 
 void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
@@ -493,7 +514,7 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
 
 void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
     std::unique_ptr<BitstreamBufferRef> buffer_ref) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   // If there is already EncodeOutput waiting, copy its output first.
@@ -512,7 +533,7 @@ void MediaFoundationVideoEncodeAccelerator::ReturnBitstreamBuffer(
     std::unique_ptr<EncodeOutput> encode_output,
     std::unique_ptr<MediaFoundationVideoEncodeAccelerator::BitstreamBufferRef>
         buffer_ref) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   memcpy(buffer_ref->shm->memory(), encode_output->memory(),
@@ -527,7 +548,7 @@ void MediaFoundationVideoEncodeAccelerator::ReturnBitstreamBuffer(
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     uint32_t bitrate,
     uint32_t framerate) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   frame_rate_ = framerate ? framerate : 1;
@@ -550,7 +571,7 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
 }
 
 void MediaFoundationVideoEncodeAccelerator::DestroyTask() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   // Cancel all encoder thread callbacks.
