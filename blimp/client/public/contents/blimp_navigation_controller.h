@@ -26,6 +26,15 @@ class BlimpNavigationController {
   // provided |url|.
   virtual void LoadURL(const GURL& url) = 0;
 
+  // Reloads the current entry.
+  virtual void Reload() = 0;
+
+  // Navigation relative to the "current entry".
+  virtual bool CanGoBack() const = 0;
+  virtual bool CanGoForward() const = 0;
+  virtual void GoBack() = 0;
+  virtual void GoForward() = 0;
+
   // Retrieves the URL of the currently selected item in the navigation list.
   virtual const GURL& GetURL() = 0;
 

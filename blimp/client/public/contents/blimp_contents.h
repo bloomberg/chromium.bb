@@ -15,10 +15,12 @@ namespace client {
 class BlimpContentsObserver;
 class BlimpNavigationController;
 
-// BlimpContents is the core class in //blimp/client/core. It renders web pages
-// from an engine in a rectangular area.
-// It enables callers to control the blimp engine through the use of the
-// navigation controller.
+// BlimpContents is the core class in blimp client which is responsible for
+// rendering web pages in a rectangular area. The interaction with between the
+// client and engine is encapsulated behind this interface through the use of
+// the navigation controller. Each BlimpContents has exactly one
+// BlimpNavigationController which can be used to load URLs, navigate
+// backwards/forward etc. See blimp_navigation_controller.h for more details.
 class BlimpContents : public base::SupportsUserData {
  public:
   // Retrives the navigation controller that controls all navigation related

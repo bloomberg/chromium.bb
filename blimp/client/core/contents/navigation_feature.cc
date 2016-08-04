@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/navigation_feature.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 
 #include <map>
 #include <string>
@@ -35,7 +35,7 @@ void NavigationFeature::SetDelegate(int tab_id,
 }
 
 void NavigationFeature::RemoveDelegate(int tab_id) {
-  DelegateMap::iterator it = delegates_.find(tab_id);
+  auto it = delegates_.find(tab_id);
   if (it != delegates_.end())
     delegates_.erase(it);
 }
@@ -127,8 +127,7 @@ void NavigationFeature::ProcessMessage(
       }
 
       if (details.has_page_load_completed()) {
-        delegate->OnPageLoadStatusUpdate(tab_id,
-                                         details.page_load_completed());
+        delegate->OnPageLoadStatusUpdate(tab_id, details.page_load_completed());
       }
     } break;
     case NavigationMessage::LOAD_URL:
@@ -146,7 +145,8 @@ void NavigationFeature::ProcessMessage(
 
 NavigationFeature::NavigationFeatureDelegate* NavigationFeature::FindDelegate(
     const int tab_id) {
-  DelegateMap::const_iterator it = delegates_.find(tab_id);
+  base::SmallMap<std::map<int, NavigationFeatureDelegate*>>::const_iterator it =
+      delegates_.find(tab_id);
   if (it != delegates_.end())
     return it->second;
   return nullptr;

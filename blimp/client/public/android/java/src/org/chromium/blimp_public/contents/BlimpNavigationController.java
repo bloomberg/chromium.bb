@@ -26,4 +26,32 @@ public interface BlimpNavigationController {
      * Retrieves the URL of the currently selected item in the navigation list.
      */
     String getUrl();
+
+    /**
+     * @return Whether back navigation is possible from the "current entry".
+     */
+    boolean canGoBack();
+
+    /**
+     * @return Whether forward navigation is possible from the "current entry".
+     */
+    boolean canGoForward();
+
+    /**
+     * Goes to the navigation entry before the current one.
+     */
+    void goBack();
+
+    /**
+     * Goes to the navigation entry following the current one.
+     */
+    void goForward();
+
+    /**
+     * Reload the current page. If |checkForRepost| is true and the current entry has POST data the
+     * user is prompted to see if they really want to reload the page. In nearly all cases pass in
+     * true.
+     * @param checkForRepost Prompts the user if they want to reload the page.
+     */
+    public void reload(boolean checkForRepost);
 }

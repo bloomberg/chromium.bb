@@ -17,8 +17,8 @@ class BlimpNavigationControllerDelegate {
  public:
   virtual ~BlimpNavigationControllerDelegate() = default;
 
-  // Invoked whenever a new URL has been loaded.
-  virtual void NotifyURLLoaded(const GURL& url) = 0;
+  // Informs the delegate that navigation state has changed.
+  virtual void OnNavigationStateChanged() = 0;
 
  protected:
   BlimpNavigationControllerDelegate() {}

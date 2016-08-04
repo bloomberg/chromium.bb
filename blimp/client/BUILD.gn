@@ -25,6 +25,7 @@ source_set("session") {
     ":compositor",
     "//base",
     "//blimp/client/core/compositor",
+    "//blimp/client/core/contents",
     "//blimp/client/core/session",
     "//blimp/common",
     "//blimp/common/proto",
@@ -92,8 +93,6 @@ source_set("feature") {
   sources = [
     "feature/ime_feature.cc",
     "feature/ime_feature.h",
-    "feature/navigation_feature.cc",
-    "feature/navigation_feature.h",
     "feature/render_widget_feature.cc",
     "feature/render_widget_feature.h",
     "feature/settings_feature.cc",
@@ -126,8 +125,6 @@ source_set("test_support") {
   sources = [
     "feature/mock_ime_feature_delegate.cc",
     "feature/mock_ime_feature_delegate.h",
-    "feature/mock_navigation_feature_delegate.cc",
-    "feature/mock_navigation_feature_delegate.h",
     "feature/mock_render_widget_feature_delegate.cc",
     "feature/mock_render_widget_feature_delegate.h",
     "session/test_client_session.cc",
@@ -197,7 +194,6 @@ source_set("feature_unit_tests") {
 
   sources = [
     "feature/compositor/blimp_compositor_manager_unittest.cc",
-    "feature/navigation_feature_unittest.cc",
     "feature/render_widget_feature_unittest.cc",
     "feature/tab_control_feature_unittest.cc",
   ]
@@ -258,6 +254,7 @@ if (is_linux && !is_chromeos && use_x11) {
 
     public_configs = [ "//build/config/linux:x11" ]
     public_deps = [
+      "//blimp/client/core/contents",
       "//ui/events/platform/x11",
     ]
   }
@@ -413,7 +410,6 @@ if (is_android) {
     java_files = [
       "app/android/javatests/src/org/chromium/blimp/auth/MockTokenSource.java",
       "app/android/javatests/src/org/chromium/blimp/auth/RetryingTokenSourceTest.java",
-      "app/android/javatests/src/org/chromium/blimp/core/contents/BlimpContentsTest.java",
       "app/android/javatests/src/org/chromium/blimp/core/settings/BlimpPreferencesTest.java",
       "app/android/javatests/src/org/chromium/blimp/core/settings/MockPreferences.java",
       "app/android/javatests/src/org/chromium/blimp/BlimpNativeInstrumentationTestCase.java",
@@ -427,13 +423,13 @@ if (is_android) {
       "//base",
       "//blimp/client:compositor",
       "//blimp/client/core",
+      "//blimp/client/core/contents",
       "//blimp/client/core/session:session",
       "//blimp/client/public:public_headers",
       "//blimp/common",
       "//blimp/common/proto",
       "//blimp/net",
       "//components/safe_json/android:safe_json_jni_headers",
-      "//components/url_formatter",
       "//components/version_info",
       "//net",
       "//skia",

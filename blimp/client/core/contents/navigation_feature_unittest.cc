@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/navigation_feature.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 
 #include <memory>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "blimp/client/feature/mock_navigation_feature_delegate.h"
+#include "blimp/client/core/contents/mock_navigation_feature_delegate.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/test_common.h"
@@ -16,7 +16,6 @@
 #include "net/base/test_completion_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 using testing::_;

@@ -681,6 +681,7 @@ source_set("browser_tests") {
     "//blimp/client:session",
     "//blimp/client:test_support",
     "//blimp/client/core:switches",
+    "//blimp/client/core/contents:test_support",
     "//blimp/client/core/session",
     "//blimp/common",
     "//blimp/engine:app",

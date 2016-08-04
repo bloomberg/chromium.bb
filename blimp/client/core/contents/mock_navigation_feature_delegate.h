@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_MOCK_NAVIGATION_FEATURE_DELEGATE_H_
-#define BLIMP_CLIENT_FEATURE_MOCK_NAVIGATION_FEATURE_DELEGATE_H_
+#ifndef BLIMP_CLIENT_CORE_CONTENTS_MOCK_NAVIGATION_FEATURE_DELEGATE_H_
+#define BLIMP_CLIENT_CORE_CONTENTS_MOCK_NAVIGATION_FEATURE_DELEGATE_H_
 
 #include <string>
 
-#include "blimp/client/feature/navigation_feature.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class GURL;
@@ -32,4 +32,4 @@ class MockNavigationFeatureDelegate
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_MOCK_NAVIGATION_FEATURE_DELEGATE_H_
+#endif  // BLIMP_CLIENT_CORE_CONTENTS_MOCK_NAVIGATION_FEATURE_DELEGATE_H_

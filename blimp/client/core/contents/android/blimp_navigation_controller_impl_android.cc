@@ -61,5 +61,35 @@ BlimpNavigationControllerImplAndroid::GetURL(JNIEnv* env, jobject jobj) {
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
+jboolean BlimpNavigationControllerImplAndroid::CanGoBack(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return blimp_navigation_controller_impl_->CanGoBack();
+}
+
+jboolean BlimpNavigationControllerImplAndroid::CanGoForward(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return blimp_navigation_controller_impl_->CanGoForward();
+}
+
+void BlimpNavigationControllerImplAndroid::GoBack(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  blimp_navigation_controller_impl_->GoBack();
+}
+
+void BlimpNavigationControllerImplAndroid::GoForward(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  blimp_navigation_controller_impl_->GoForward();
+}
+
+void BlimpNavigationControllerImplAndroid::Reload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  blimp_navigation_controller_impl_->Reload();
+}
+
 }  // namespace client
 }  // namespace blimp

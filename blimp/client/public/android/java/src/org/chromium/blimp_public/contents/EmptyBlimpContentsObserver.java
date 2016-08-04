@@ -11,5 +11,5 @@ package org.chromium.blimp_public.contents;
  */
 public class EmptyBlimpContentsObserver implements BlimpContentsObserver {
     @Override
-    public void onUrlUpdated(String url) {}
+    public void onNavigationStateChanged() {}
 }

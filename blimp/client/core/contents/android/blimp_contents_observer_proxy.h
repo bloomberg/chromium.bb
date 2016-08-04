@@ -28,7 +28,7 @@ class BlimpContentsObserverProxy : public BlimpContentsObserver {
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // BlimpContentsObserver implementation.
-  void OnURLUpdated(const GURL& url) override;
+  void OnNavigationStateChanged() override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

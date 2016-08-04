@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/mock_navigation_feature_delegate.h"
+#include "blimp/client/core/contents/mock_navigation_feature_delegate.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"

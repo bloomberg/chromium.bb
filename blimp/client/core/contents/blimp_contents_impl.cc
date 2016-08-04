@@ -22,7 +22,8 @@ const char kBlimpContentsImplAndroidKey[] = "blimp_contents_impl_android";
 #endif  // OS_ANDROID
 }
 
-BlimpContentsImpl::BlimpContentsImpl() : navigation_controller_(this) {}
+BlimpContentsImpl::BlimpContentsImpl()
+    : navigation_controller_(this, nullptr) {}
 
 BlimpContentsImpl::~BlimpContentsImpl() {}
 
@@ -58,8 +59,9 @@ void BlimpContentsImpl::RemoveObserver(BlimpContentsObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void BlimpContentsImpl::NotifyURLLoaded(const GURL& url) {
-  FOR_EACH_OBSERVER(BlimpContentsObserver, observers_, OnURLUpdated(url));
+void BlimpContentsImpl::OnNavigationStateChanged() {
+  FOR_EACH_OBSERVER(BlimpContentsObserver, observers_,
+                    OnNavigationStateChanged());
 }
 
 }  // namespace client

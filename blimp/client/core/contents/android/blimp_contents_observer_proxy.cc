@@ -47,14 +47,10 @@ void BlimpContentsObserverProxy::Destroy(
   delete this;
 }
 
-void BlimpContentsObserverProxy::OnURLUpdated(const GURL& url) {
+void BlimpContentsObserverProxy::OnNavigationStateChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> obj(java_obj_);
-  base::android::ScopedJavaLocalRef<jstring> jstring_url(
-      base::android::ConvertUTF8ToJavaString(env, url.spec()));
-
-  Java_BlimpContentsObserverProxy_onUrlUpdated(env, obj.obj(),
-                                               jstring_url.obj());
+  Java_BlimpContentsObserverProxy_onNavigationStateChanged(env,
+                                                           java_obj_.obj());
 }
 
 }  // namespace client

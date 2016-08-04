@@ -16,12 +16,21 @@ source_set("contents") {
     "blimp_navigation_controller_delegate.h",
     "blimp_navigation_controller_impl.cc",
     "blimp_navigation_controller_impl.h",
+    "navigation_feature.cc",
+    "navigation_feature.h",
   ]
 
   public_deps = [
     "//base",
     "//blimp/client/public:public_headers",
+    "//blimp/net",
+    "//net:net",
     "//url",
+  ]
+
+  deps = [
+    "//blimp/common",
+    "//components/url_formatter",
   ]
 
   if (is_android) {
@@ -38,10 +47,30 @@ source_set("contents") {
       "android/blimp_navigation_controller_impl_android.h",
     ]
 
-    deps = [
-      ":jni_headers",
-    ]
+    deps += [ ":jni_headers" ]
   }
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_navigation_feature.cc",
+    "fake_navigation_feature.h",
+    "mock_navigation_feature_delegate.cc",
+    "mock_navigation_feature_delegate.h",
+  ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//url",
+  ]
+
+  public_deps = [
+    "//blimp/client/core/contents",
+    "//testing/gmock",
+  ]
 }
 
 source_set("unit_tests") {
@@ -52,12 +81,17 @@ source_set("unit_tests") {
   sources = [
     "blimp_contents_impl_unittest.cc",
     "blimp_navigation_controller_impl_unittest.cc",
+    "navigation_feature_unittest.cc",
   ]
 
   deps = [
     ":contents",
+    ":test_support",
     "//base",
     "//blimp/client/public:public_headers",
+    "//blimp/common",
+    "//blimp/net:test_support",
+    "//net:test_support",
     "//testing/gtest",
     "//url",
   ]

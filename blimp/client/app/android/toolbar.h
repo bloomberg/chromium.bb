@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "blimp/client/feature/navigation_feature.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 
 class GURL;
 class SkBitmap;

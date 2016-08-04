@@ -6,9 +6,11 @@
 #define BLIMP_CLIENT_CORE_CONTENTS_BLIMP_NAVIGATION_CONTROLLER_IMPL_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/public/contents/blimp_navigation_controller.h"
 #include "url/gurl.h"
+
+class SkBitmap;
 
 namespace blimp {
 namespace client {
@@ -16,23 +18,38 @@ namespace client {
 class BlimpContentsObserver;
 class BlimpNavigationControllerDelegate;
 
-// BlimpContentsImpl is the implementation of the core class in
-// //blimp/client/core, the BlimpContents.
-// The BlimpNavigationControllerImpl is the implementation part of
-// BlimpNavigationController. It maintains the back-forward list for a
-// BlimpContentsImpl and manages all navigation within that list.
-class BlimpNavigationControllerImpl : public BlimpNavigationController {
+class BlimpNavigationControllerImpl
+    : public BlimpNavigationController,
+      public NavigationFeature::NavigationFeatureDelegate {
  public:
-  explicit BlimpNavigationControllerImpl(
-      BlimpNavigationControllerDelegate* delegate);
+  // The life time of |feature| must remain valid throughout |this|.
+  BlimpNavigationControllerImpl(BlimpNavigationControllerDelegate* delegate,
+                                NavigationFeature* feature);
   ~BlimpNavigationControllerImpl() override;
+
+  // For testing only.
+  void SetNavigationFeatureForTesting(NavigationFeature* feature);
 
   // BlimpNavigationController implementation.
   void LoadURL(const GURL& url) override;
+  void Reload() override;
+  bool CanGoBack() const override;
+  bool CanGoForward() const override;
+  void GoBack() override;
+  void GoForward() override;
   const GURL& GetURL() override;
 
  private:
-  void NotifyDelegateURLLoaded(const GURL& url);
+  // NavigationFeatureDelegate implementation.
+  void OnUrlChanged(int tab_id, const GURL& url) override;
+  void OnFaviconChanged(int tab_id, const SkBitmap& favicon) override;
+  void OnTitleChanged(int tab_id, const std::string& title) override;
+  void OnLoadingChanged(int tab_id, bool loading) override;
+  void OnPageLoadStatusUpdate(int tab_id, bool completed) override;
+
+  // The |navigation_feature_| is responsible for sending and receiving the
+  // navigation state to the server over the proto channel.
+  NavigationFeature* navigation_feature_;
 
   // The delegate contains functionality required for the navigation controller
   // to function correctly. It is also invoked on relevant state changes of the
@@ -41,9 +58,6 @@ class BlimpNavigationControllerImpl : public BlimpNavigationController {
 
   // The currently active URL.
   GURL current_url_;
-
-  // TODO(shaktisahu): Remove this after integration with NavigationFeature.
-  base::WeakPtrFactory<BlimpNavigationControllerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpNavigationControllerImpl);
 };

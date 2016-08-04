@@ -49,6 +49,41 @@ public class BlimpNavigationControllerImpl implements BlimpNavigationController 
         return nativeGetURL(mNativeBlimpNavigationControllerImplAndroid);
     }
 
+    @Override
+    public boolean canGoBack() {
+        if (mNativeBlimpNavigationControllerImplAndroid == 0) return false;
+        return nativeCanGoBack(mNativeBlimpNavigationControllerImplAndroid);
+    }
+
+    @Override
+    public boolean canGoForward() {
+        if (mNativeBlimpNavigationControllerImplAndroid == 0) return false;
+        return nativeCanGoForward(mNativeBlimpNavigationControllerImplAndroid);
+    }
+
+    @Override
+    public void goBack() {
+        if (mNativeBlimpNavigationControllerImplAndroid == 0) return;
+        nativeGoBack(mNativeBlimpNavigationControllerImplAndroid);
+    }
+
+    @Override
+    public void goForward() {
+        if (mNativeBlimpNavigationControllerImplAndroid == 0) return;
+        nativeGoForward(mNativeBlimpNavigationControllerImplAndroid);
+    }
+
+    @Override
+    public void reload(boolean checkForRepost) {
+        if (mNativeBlimpNavigationControllerImplAndroid == 0) return;
+        nativeReload(mNativeBlimpNavigationControllerImplAndroid);
+    }
+
+    private native void nativeGoBack(long nativeBlimpNavigationControllerImplAndroid);
+    private native void nativeGoForward(long nativeBlimpNavigationControllerImplAndroid);
+    private native void nativeReload(long nativeBlimpNavigationControllerImplAndroid);
+    private native boolean nativeCanGoBack(long nativeBlimpNavigationControllerImplAndroid);
+    private native boolean nativeCanGoForward(long nativeBlimpNavigationControllerImplAndroid);
     private native void nativeLoadURL(long nativeBlimpNavigationControllerImplAndroid, String url);
     private native String nativeGetURL(long nativeBlimpNavigationControllerImplAndroid);
 }

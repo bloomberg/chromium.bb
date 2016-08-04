@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_NAVIGATION_FEATURE_H_
-#define BLIMP_CLIENT_FEATURE_NAVIGATION_FEATURE_H_
+#ifndef BLIMP_CLIENT_CORE_CONTENTS_NAVIGATION_FEATURE_H_
+#define BLIMP_CLIENT_CORE_CONTENTS_NAVIGATION_FEATURE_H_
 
 #include <map>
 #include <string>
@@ -48,21 +48,23 @@ class NavigationFeature : public BlimpMessageProcessor {
   void SetDelegate(int tab_id, NavigationFeatureDelegate* delegate);
   void RemoveDelegate(int tab_id);
 
-  void NavigateToUrlText(int tab_id, const std::string& url_text);
-  void Reload(int tab_id);
-  void GoForward(int tab_id);
-  void GoBack(int tab_id);
+  // Virtual for testing.
+  virtual void NavigateToUrlText(int tab_id, const std::string& url_text);
+  virtual void Reload(int tab_id);
+  virtual void GoForward(int tab_id);
+  virtual void GoBack(int tab_id);
 
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
- private:
+ protected:
+  // Finds the NavigationFeatureDelegate for a |tab_id|, protected for unit
+  // tests.
   NavigationFeatureDelegate* FindDelegate(const int tab_id);
 
-  typedef base::SmallMap<std::map<int, NavigationFeatureDelegate*>> DelegateMap;
-
-  DelegateMap delegates_;
+ private:
+  base::SmallMap<std::map<int, NavigationFeatureDelegate*>> delegates_;
 
   // Used to send BlimpMessage::NAVIGATION messages to the engine.
   std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
@@ -73,4 +75,4 @@ class NavigationFeature : public BlimpMessageProcessor {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_NAVIGATION_FEATURE_H_
+#endif  // BLIMP_CLIENT_CORE_CONTENTS_NAVIGATION_FEATURE_H_

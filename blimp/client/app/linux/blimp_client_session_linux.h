@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "blimp/client/app/linux/blimp_display_manager.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/feature/ime_feature.h"
-#include "blimp/client/feature/navigation_feature.h"
 #include "blimp/client/session/blimp_client_session.h"
 
 namespace ui {

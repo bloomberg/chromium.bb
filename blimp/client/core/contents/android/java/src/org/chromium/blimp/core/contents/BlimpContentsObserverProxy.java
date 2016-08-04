@@ -42,9 +42,9 @@ class BlimpContentsObserverProxy implements BlimpContentsObserver {
 
     @Override
     @CalledByNative
-    public void onUrlUpdated(String url) {
+    public void onNavigationStateChanged() {
         for (BlimpContentsObserver observer : mObservers) {
-            observer.onUrlUpdated(url);
+            observer.onNavigationStateChanged();
         }
     }
 

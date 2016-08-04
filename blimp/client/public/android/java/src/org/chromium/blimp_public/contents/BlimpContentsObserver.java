@@ -12,8 +12,7 @@ package org.chromium.blimp_public.contents;
  */
 public interface BlimpContentsObserver {
     /**
-     * Invoked when the URL of the BlimpContents is changes.
-     * @param url the new URL.
+     * Invoked when the BlimpContents's navigation state is changed.
      */
-    void onUrlUpdated(String url);
+    void onNavigationStateChanged();
 }

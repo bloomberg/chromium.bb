@@ -4,39 +4,85 @@
 
 #include "blimp/client/core/contents/blimp_navigation_controller_impl.h"
 
-#include "base/bind.h"
-#include "base/location.h"
-#include "base/memory/ref_counted.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_delegate.h"
+
+namespace {
+// TODO(shaktisahu): NavigationFeature currently needs a tab_id. Remove this
+// later when it is fully integrated with BlimpClientContext.
+const int kDummyTabId = 0;
+}  // namespace
 
 namespace blimp {
 namespace client {
 
 BlimpNavigationControllerImpl::BlimpNavigationControllerImpl(
-    BlimpNavigationControllerDelegate* delegate)
-    : delegate_(delegate), weak_ptr_factory_(this) {}
+    BlimpNavigationControllerDelegate* delegate,
+    NavigationFeature* feature)
+    : navigation_feature_(feature), delegate_(delegate) {
+  if (navigation_feature_)
+    navigation_feature_->SetDelegate(kDummyTabId, this);
+}
 
 BlimpNavigationControllerImpl::~BlimpNavigationControllerImpl() = default;
 
+void BlimpNavigationControllerImpl::SetNavigationFeatureForTesting(
+    NavigationFeature* feature) {
+  navigation_feature_ = feature;
+  navigation_feature_->SetDelegate(kDummyTabId, this);
+}
+
 void BlimpNavigationControllerImpl::LoadURL(const GURL& url) {
   current_url_ = url;
-  // Temporary trick to ensure that the delegate is not invoked before this
-  // method has finished executing. This enables tests to test the
-  // asynchronous nature of the API.
-  // TODO(shaktisahu): Remove this after integration with NavigationFeature.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&BlimpNavigationControllerImpl::NotifyDelegateURLLoaded,
-                 weak_ptr_factory_.GetWeakPtr(), url));
+  navigation_feature_->NavigateToUrlText(kDummyTabId, current_url_.spec());
+}
+
+void BlimpNavigationControllerImpl::Reload() {
+  navigation_feature_->Reload(kDummyTabId);
+}
+
+bool BlimpNavigationControllerImpl::CanGoBack() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool BlimpNavigationControllerImpl::CanGoForward() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void BlimpNavigationControllerImpl::GoBack() {
+  navigation_feature_->GoBack(kDummyTabId);
+}
+
+void BlimpNavigationControllerImpl::GoForward() {
+  navigation_feature_->GoForward(kDummyTabId);
 }
 
 const GURL& BlimpNavigationControllerImpl::GetURL() {
   return current_url_;
 }
 
-void BlimpNavigationControllerImpl::NotifyDelegateURLLoaded(const GURL& url) {
-  delegate_->NotifyURLLoaded(url);
+void BlimpNavigationControllerImpl::OnUrlChanged(int tab_id, const GURL& url) {
+  delegate_->OnNavigationStateChanged();
+}
+
+void BlimpNavigationControllerImpl::OnFaviconChanged(int tab_id,
+                                                     const SkBitmap& favicon) {
+  delegate_->OnNavigationStateChanged();
+}
+
+void BlimpNavigationControllerImpl::OnTitleChanged(int tab_id,
+                                                   const std::string& title) {
+  delegate_->OnNavigationStateChanged();
+}
+
+void BlimpNavigationControllerImpl::OnLoadingChanged(int tab_id, bool loading) {
+  delegate_->OnNavigationStateChanged();
+}
+
+void BlimpNavigationControllerImpl::OnPageLoadStatusUpdate(int tab_id,
+                                                           bool completed) {
+  delegate_->OnNavigationStateChanged();
 }
 
 }  // namespace client

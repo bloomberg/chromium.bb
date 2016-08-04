@@ -26,8 +26,6 @@ class BlimpContentsImplAndroid;
 class BlimpContentsObserver;
 class BlimpNavigationController;
 
-// BlimpContentsImpl is the implementation of the core class in
-// //blimp/client/core, the BlimpContents.
 class BlimpContentsImpl : public BlimpContents,
                           public BlimpNavigationControllerDelegate {
  public:
@@ -45,7 +43,7 @@ class BlimpContentsImpl : public BlimpContents,
   void RemoveObserver(BlimpContentsObserver* observer) override;
 
   // BlimpNavigationControllerDelegate implementation.
-  void NotifyURLLoaded(const GURL& url) override;
+  void OnNavigationStateChanged() override;
 
  private:
   // Handles the back/forward list and loading URLs.

@@ -11,8 +11,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/app/blimp_startup.h"
 #include "blimp/client/app/linux/blimp_client_session_linux.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/core/session/assignment_source.h"
-#include "blimp/client/feature/navigation_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
 #include "ui/gfx/x/x11_connection.h"
 

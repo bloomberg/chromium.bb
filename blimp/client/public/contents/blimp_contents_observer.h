@@ -17,8 +17,8 @@ class BlimpContentsObserver {
  public:
   virtual ~BlimpContentsObserver() = default;
 
-  // Invoked when the URL of the BlimpContents is changes.
-  virtual void OnURLUpdated(const GURL& url) {}
+  // Invoked when the navigation state of the BlimpContents has changed.
+  virtual void OnNavigationStateChanged() {}
 
  protected:
   BlimpContentsObserver() {}

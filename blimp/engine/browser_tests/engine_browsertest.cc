@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
+#include "blimp/client/core/contents/mock_navigation_feature_delegate.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/core/session/assignment_source.h"
 #include "blimp/client/feature/ime_feature.h"
 #include "blimp/client/feature/mock_ime_feature_delegate.h"
-#include "blimp/client/feature/mock_navigation_feature_delegate.h"
 #include "blimp/client/feature/mock_render_widget_feature_delegate.h"
-#include "blimp/client/feature/navigation_feature.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
 #include "blimp/client/session/test_client_session.h"
