@@ -57,6 +57,8 @@ GLXContext CreateContextAttribs(Display* display,
   // When creating a context with glXCreateContextAttribsARB, a variety of X11
   // errors can be generated. To prevent these errors from crashing our process,
   // we simply ignore them and only look if the GLXContext was created.
+  // Sync to ensure any errors generated are processed.
+  XSync(display, False);
   auto old_error_handler = XSetErrorHandler(IgnoreX11Errors);
   GLXContext context =
       glXCreateContextAttribsARB(display, config, share, True, attribs.data());
