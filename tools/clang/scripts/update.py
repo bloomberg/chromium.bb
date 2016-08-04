@@ -470,19 +470,13 @@ def UpdateClang(args):
   ldflags = []
 
   base_cmake_args = ['-GNinja',
+                     '-DCMAKE_BUILD_TYPE=Release',
                      '-DLLVM_ENABLE_ASSERTIONS=ON',
                      '-DLLVM_ENABLE_THREADS=OFF',
                      '-DLLVM_ENABLE_TIMESTAMPS=OFF',
                      # Statically link MSVCRT to avoid DLL dependencies.
                      '-DLLVM_USE_CRT_RELEASE=MT',
                      ]
-
-  if use_head_revision:
-    # For ToT builds, which are used to catch compiler bugs early, enable debug
-    # info for better backtraces when crashing.
-    base_cmake_args += ['-DCMAKE_BUILD_TYPE=RelWithDebInfo']
-  else:
-    base_cmake_args += ['-DCMAKE_BUILD_TYPE=Release']
 
   binutils_incdir = ''
   if sys.platform.startswith('linux'):
@@ -658,13 +652,11 @@ def UpdateClang(args):
     # If any Chromium tools were built, install those now.
     RunCommand(['ninja', 'cr-install'], msvc_arch='x64')
 
-  if not use_head_revision:
-    # Strip the binaries to save size, except for ToT builds.
-    if sys.platform == 'darwin':
-      # See http://crbug.com/256342
-      RunCommand(['strip', '-x', os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')])
-    elif sys.platform.startswith('linux'):
-      RunCommand(['strip', os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')])
+  if sys.platform == 'darwin':
+    # See http://crbug.com/256342
+    RunCommand(['strip', '-x', os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')])
+  elif sys.platform.startswith('linux'):
+    RunCommand(['strip', os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')])
 
   # TODO(thakis): Check that `clang --version` matches VERSION.
 
