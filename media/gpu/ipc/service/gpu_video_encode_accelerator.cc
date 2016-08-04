@@ -36,6 +36,7 @@
 #elif defined(OS_MACOSX)
 #include "media/gpu/vt_video_encode_accelerator_mac.h"
 #elif defined(OS_WIN)
+#include "base/feature_list.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/media_foundation_video_encode_accelerator_win.h"
 #endif
@@ -212,8 +213,7 @@ GpuVideoEncodeAccelerator::CreateVEAFps(
   create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateVTVEA);
 #endif
 #if defined(OS_WIN)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMFH264Encoding)) {
+  if (base::FeatureList::IsEnabled(kMediaFoundationH264Encoding)) {
     create_vea_fps.push_back(
         &GpuVideoEncodeAccelerator::CreateMediaFoundationVEA);
   }

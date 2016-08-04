@@ -55,9 +55,6 @@ const char kUseGpuMemoryBuffersForCapture[] =
 // for details.
 const char kEnableExclusiveAudio[] = "enable-exclusive-audio";
 
-// Enables H264 HW encode acceleration using Media Foundation for Windows.
-const char kEnableMFH264Encoding[] = "enable-mf-h264-encoding";
-
 // Force the use of MediaFoundation for video capture. This is only supported in
 // Windows 7 and above. Used, like |kForceDirectShowVideoCapture|, to
 // troubleshoot problems in Windows platforms.
@@ -137,6 +134,12 @@ const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
 }  // namespace switches
 
 namespace media {
+
+#if defined(OS_WIN)
+// Enables H264 HW encode acceleration using Media Foundation for Windows.
+const base::Feature kMediaFoundationH264Encoding{
+    "MediaFoundationH264Encoding", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN)
 
 #if defined(ENABLE_PLUGINS)
 // Let flash join and be controlled by media session, only valid when

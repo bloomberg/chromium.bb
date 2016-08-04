@@ -37,7 +37,6 @@ MEDIA_EXPORT extern const char kUseGpuMemoryBuffersForCapture[];
 
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
-MEDIA_EXPORT extern const char kEnableMFH264Encoding[];
 MEDIA_EXPORT extern const char kForceMediaFoundationVideoCapture[];
 MEDIA_EXPORT extern const char kForceWaveAudio[];
 MEDIA_EXPORT extern const char kTrySupportedChannelLayouts[];
@@ -77,6 +76,10 @@ namespace media {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
+
+#if defined(OS_WIN)
+MEDIA_EXPORT extern const base::Feature kMediaFoundationH264Encoding;
+#endif  // defined(OS_WIN)
 
 #if defined(ENABLE_PLUGINS)
 MEDIA_EXPORT extern const base::Feature kFlashJoinsMediaSession;
