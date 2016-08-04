@@ -30,12 +30,6 @@ function doWhenReady(readyTest, readyCallback) {
  * @polymerBehavior Polymer.MainPageBehavior
  */
 var MainPageBehaviorImpl = {
-  /**
-   * @type {string} Selector to get the sections. Derived elements
-   *     must override.
-   */
-  sectionSelector: '',
-
   /** @type {?Element} The scrolling container. */
   scroller: null,
 
@@ -55,7 +49,7 @@ var MainPageBehaviorImpl = {
    */
   toggleOtherSectionsHidden_: function(sectionName, hidden) {
     var sections = Polymer.dom(this.root).querySelectorAll(
-        this.sectionSelector);
+        'settings-section');
     for (var section of sections)
       section.hidden = hidden && (section.section != sectionName);
   },

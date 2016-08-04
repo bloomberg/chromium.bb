@@ -55,13 +55,6 @@ Polymer({
   /** @private {?settings.LifetimeBrowserProxy} */
   lifetimeBrowserProxy_: null,
 
-  /**
-   * @type {string} Selector to get the sections.
-   * TODO(michaelpg): replace duplicate docs with @override once b/24294625
-   * is fixed.
-   */
-  sectionSelector: 'settings-section',
-
   /** @override */
   attached: function() {
     this.aboutBrowserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();

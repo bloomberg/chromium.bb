@@ -42,13 +42,6 @@ Polymer({
 
   },
 
-  /**
-   * @type {string} Selector to get the sections.
-   * TODO(michaelpg): replace duplicate docs with @override once b/24294625
-   * is fixed.
-   */
-  sectionSelector: 'settings-section',
-
   onResetDone_: function() {
     this.showResetProfileBanner_ = false;
   },
