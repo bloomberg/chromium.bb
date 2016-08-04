@@ -43,6 +43,7 @@
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/offline_pages/offline_page_feature.h"
@@ -1890,9 +1891,10 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"enable-ntp-snippets", IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME,
      IDS_FLAGS_ENABLE_NTP_SNIPPETS_DESCRIPTION, kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(chrome::android::kNTPSnippetsFeature,
-                                        kNTPSnippetsFeatureVariations,
-                                        ntp_snippets::kStudyName)},
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         ntp_snippets::kContentSuggestionsFeature,
+         kNTPSnippetsFeatureVariations,
+         ntp_snippets::kStudyName)},
     {"enable-ntp-offline-page-suggestions",
      IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_DESCRIPTION, kOsAndroid,

@@ -24,6 +24,8 @@ static_library("ntp_snippets") {
     "content_suggestions_provider.h",
     "content_suggestions_service.cc",
     "content_suggestions_service.h",
+    "features.cc",
+    "features.h",
     "ntp_snippet.cc",
     "ntp_snippet.h",
     "ntp_snippets_constants.cc",

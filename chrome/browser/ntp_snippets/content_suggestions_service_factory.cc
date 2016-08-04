@@ -21,6 +21,7 @@
 #include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/ntp_snippets_database.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
@@ -95,13 +96,12 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   // Create the ContentSuggestionsService.
-  State enabled = State::DISABLED;
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(chrome::android::kNTPSnippetsFeature))
-    enabled = State::ENABLED;
-#endif  // OS_ANDROID
-  ContentSuggestionsService* service = new ContentSuggestionsService(enabled);
-  if (enabled == State::DISABLED)
+  State state =
+      base::FeatureList::IsEnabled(ntp_snippets::kContentSuggestionsFeature)
+          ? State::ENABLED
+          : State::DISABLED;
+  ContentSuggestionsService* service = new ContentSuggestionsService(state);
+  if (state == State::DISABLED)
     return service;
 
 // Create the OfflinePageSuggestionsProvider.

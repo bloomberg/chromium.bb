@@ -21,6 +21,7 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/switches.h"
 #include "content/public/browser/web_ui.h"
@@ -230,7 +231,7 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   SendHosts();
 
   SendBoolean("flag-snippets", base::FeatureList::IsEnabled(
-                                   chrome::android::kNTPSnippetsFeature));
+                                   ntp_snippets::kContentSuggestionsFeature));
 
   SendBoolean("flag-offline-page-suggestions",
               base::FeatureList::IsEnabled(

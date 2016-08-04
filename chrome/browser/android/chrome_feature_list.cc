@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/common/chrome_features.h"
+#include "components/ntp_snippets/features.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/common/content_features.h"
@@ -35,11 +36,11 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAllBookmarksFeature,
     &kAndroidPayIntegrationV1,
     &kImportantSitesInCBD,
+    &ntp_snippets::kContentSuggestionsFeature,
     &kNTPFakeOmniboxTextFeature,
     &kNTPMaterialDesign,
     &kNTPOfflinePagesFeature,
     &kNTPOfflinePageSuggestionsFeature,
-    &kNTPSnippetsFeature,
     &kNTPToolbarFeature,
     &kPhysicalWebFeature,
     &kPhysicalWebIgnoreOtherClientsFeature,
@@ -65,9 +66,6 @@ const base::Feature kNTPMaterialDesign{"NTPMaterialDesign",
 
 const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNTPSnippetsFeature{"NTPSnippets",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPOfflinePageSuggestionsFeature{
     "NTPOfflinePageSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
