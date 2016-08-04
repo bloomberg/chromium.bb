@@ -43,7 +43,7 @@ SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
 }
 
 void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
-  bool expired_previous_decision;
+  bool expired_previous_decision = false;
   // First we check if we know the policy for this error.
   DCHECK(handler->ssl_info().is_valid());
   SSLHostStateDelegate::CertJudgment judgment =
