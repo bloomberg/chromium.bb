@@ -28,7 +28,6 @@
 #define WorkerEventQueue_h
 
 #include "core/events/EventQueue.h"
-#include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 
 namespace blink {
@@ -50,13 +49,13 @@ public:
 
 private:
     explicit WorkerEventQueue(ExecutionContext*);
+    bool removeEvent(Event*);
+    void dispatchEvent(Event*, ExecutionContext*);
 
     Member<ExecutionContext> m_executionContext;
     bool m_isClosed;
 
-    class EventDispatcherTask;
-    using EventTaskMap = HeapHashMap<Member<Event>, EventDispatcherTask*>;
-    EventTaskMap m_eventTaskMap;
+    HeapHashSet<Member<Event>> m_pendingEvents;
 };
 
 } // namespace blink
