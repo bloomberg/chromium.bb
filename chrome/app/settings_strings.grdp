@@ -723,6 +723,36 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS" desc="In Printing Settings, the title of the CUPS printers setting section.">
       Printers
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer.">
+      Add Printer
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_DETAILS" desc="Text for the drop down menu which allows the user to see the printer details.">
+      Details
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE" desc="Text for the drop down menu which allows the user to remove the selected printer.">
+      Remove
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL" desc="The placeholder text in the printer search field.">
+      printer name
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_TITLE" desc="Text for the title of the Add Printer dialog.">
+      Add Printer
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE" desc="Text for the title of the Printer Details subpage.">
+      Printer details
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_NAME" desc="Lable for the CUPS printer name in the printer details page.">
+      Name
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_MODEL" desc="Lable for the CUPS printer model in the printer details page.">
+      Model
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_CANCEL" desc="Text for the button which cancels adding a CUPS printer.">
+      Cancel
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_ADD" desc="Text for the button which allows the user to add a CUPS printer.">
+      Add
+    </message>
   </if>
   <message name="IDS_SETTINGS_PRINTING_CLOUD_PRINTERS" desc="In Printing Settings, the title of the google cloud printers setting section.">
     Google Cloud Print

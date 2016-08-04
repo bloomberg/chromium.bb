@@ -2049,6 +2049,8 @@
       'browser/ui/webui/settings/chromeos/accessibility_handler.h',
       'browser/ui/webui/settings/chromeos/change_picture_handler.cc',
       'browser/ui/webui/settings/chromeos/change_picture_handler.h',
+      'browser/ui/webui/settings/chromeos/cups_printers_handler.cc',
+      'browser/ui/webui/settings/chromeos/cups_printers_handler.h',
       'browser/ui/webui/settings/chromeos/device_keyboard_handler.cc',
       'browser/ui/webui/settings/chromeos/device_keyboard_handler.h',
       'browser/ui/webui/settings/chromeos/device_pointer_handler.cc',

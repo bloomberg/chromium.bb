@@ -17,12 +17,28 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /** @type {!Array<!CupsPrinterInfo>} */
+    cupsPrinters: {
+      type: Array,
+      notify: true,
+    },
+  },
+
+  listeners: {
+    'show-cups-printer-details': 'onShowCupsPrinterDetailsPage_',
   },
 
 <if expr="chromeos">
   /** @private */
   onTapCupsPrinters_: function() {
     settings.navigateTo(settings.Route.CUPS_PRINTERS);
+  },
+
+  /** @private */
+  onShowCupsPrinterDetailsPage_: function(event) {
+    settings.navigateTo(settings.Route.CUPS_PRINTER_DETAIL);
+    this.$.arraySelector.select(event.detail);
   },
 </if>
 

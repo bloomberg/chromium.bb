@@ -243,6 +243,8 @@ cr.define('settings', function() {
   r.CLOUD_PRINTERS = r.PRINTING.createChild('/cloudPrinters', 'cloud-printers');
 <if expr="chromeos">
   r.CUPS_PRINTERS = r.PRINTING.createChild('/cupsPrinters', 'cups-printers');
+  r.CUPS_PRINTER_DETAIL = r.CUPS_PRINTERS.createChild(
+      '/cupsPrinterDetails', 'cups-printer-details-page');
 </if>
 
   r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');

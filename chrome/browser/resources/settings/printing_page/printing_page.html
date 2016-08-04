@@ -3,19 +3,23 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/printing_page/cloud_printers.html">
-<if expr="chromeos">
-<link rel="import" href="/printing_page/cups_printers.html">
-</if>
 <link rel="import" href="/route.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
 <link rel="import" href="/settings_page/settings_subpage.html">
 <link rel="import" href="/settings_shared_css.html">
+<if expr="chromeos">
+<link rel="import" href="/printing_page/cups_printer_details_page.html">
+<link rel="import" href="/printing_page/cups_printers.html">
+</if>
 
 <dom-module id="settings-printing-page">
   <template>
     <style include="settings-shared"></style>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="printing">
+      <array-selector id="arraySelector" items="{{cupsPrinters}}"
+          selected="{{detailPrinter_}}">
+      </array-selector>
       <neon-animatable id="main">
 <if expr="chromeos">
         <div id="cupsPrinters" class="settings-box first"
@@ -33,7 +37,14 @@
 <if expr="chromeos">
       <template is="dom-if" name="cups-printers">
         <settings-subpage page-title="$i18n{cupsPrintersTitle}">
-          <settings-cups-printers></settings-cups-printers>
+          <settings-cups-printers printers="{{cupsPrinters}}">
+          </settings-cups-printers>
+        </settings-subpage>
+      </template>
+      <template is="dom-if" name="cups-printer-details-page" restamp>
+        <settings-subpage page-title="$i18n{printerDetailsTitle}">
+          <settings-cups-printer-details-page printer="{{detailPrinter_}}">
+          </settings-cups-printer-details-page>
         </settings-subpage>
       </template>
 </if>

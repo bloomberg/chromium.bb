@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
@@ -87,6 +88,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   AddSettingsPageUIHandler(new chromeos::settings::AccessibilityHandler(
       web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::ChangePictureHandler());
+  AddSettingsPageUIHandler(new chromeos::settings::CupsPrintersHandler());
   AddSettingsPageUIHandler(new chromeos::settings::KeyboardHandler(web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::PointerHandler());
 #else
