@@ -27,7 +27,7 @@ async_test(function(test) {
         .then(function(pushSubscription) {
             assert_unreached('Subscription must not succeed after permission is denied.');
         }, function(e) {
-            assert_equals(e.name, 'PermissionDeniedError');
+            assert_equals(e.name, 'NotAllowedError');
             assert_regexp_match(e.message, /permission denied/);
             return service_worker_unregister_and_done(test, workerScope);
         })

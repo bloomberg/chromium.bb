@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   RequestAndDenyPermission();
 
   ASSERT_TRUE(RunScript("documentSubscribePush()", &script_result));
-  EXPECT_EQ("PermissionDeniedError - Registration failed - permission denied",
+  EXPECT_EQ("NotAllowedError - Registration failed - permission denied",
             script_result);
 }
 
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTestEmptySubscriptionOptions,
   RequestAndAcceptPermission();
 
   ASSERT_TRUE(RunScript("documentSubscribePush()", &script_result));
-  EXPECT_EQ("PermissionDeniedError - Registration failed - permission denied",
+  EXPECT_EQ("NotAllowedError - Registration failed - permission denied",
             script_result);
 }
 
@@ -1086,7 +1086,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PermissionStateSaysDenied) {
   RequestAndDenyPermission();
 
   ASSERT_TRUE(RunScript("documentSubscribePush()", &script_result));
-  EXPECT_EQ("PermissionDeniedError - Registration failed - permission denied",
+  EXPECT_EQ("NotAllowedError - Registration failed - permission denied",
             script_result);
 
   ASSERT_TRUE(RunScript("permissionState()", &script_result));

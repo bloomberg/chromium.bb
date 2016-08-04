@@ -183,7 +183,7 @@ void PushProvider::OnSubscribeFromWorkerError(int request_id,
 
   blink::WebPushError::ErrorType error_type =
       status == PUSH_REGISTRATION_STATUS_PERMISSION_DENIED
-          ? blink::WebPushError::ErrorTypePermissionDenied
+          ? blink::WebPushError::ErrorTypeNotAllowed
           : blink::WebPushError::ErrorTypeAbort;
 
   callbacks->onError(blink::WebPushError(
