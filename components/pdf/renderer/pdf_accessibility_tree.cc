@@ -65,6 +65,9 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
 
 void PdfAccessibilityTree::SetAccessibilityDocInfo(
     const PP_PrivateAccessibilityDocInfo& doc_info) {
+  if (!GetRenderAccessibility())
+    return;
+
   doc_info_ = doc_info;
   doc_node_ = CreateNode(ui::AX_ROLE_GROUP);
 }
