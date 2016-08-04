@@ -144,15 +144,11 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   "document.getElementById('password_field').value = 'trash';";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_password));
 
-  // Call the API with a delay to trigger the notification to the client. The
-  // delay ensures that parsing password forms won't happen again after the API
-  // call making the test flaky.
+  // Call the API to trigger the notification to the client.
   ASSERT_TRUE(content::ExecuteScript(
       RenderViewHost(),
-      "setTimeout( function() {"
-        "navigator.credentials.get({password: true})"
-        ".then(cred => window.location = '/password/done.html');"
-      "}, 1000)"));
+      "navigator.credentials.get({password: true})"
+      ".then(cred => window.location = '/password/done.html');"));
 
   NavigationObserver observer(WebContents());
   observer.SetPathToWaitFor("/password/done.html");
@@ -160,31 +156,23 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   std::unique_ptr<BubbleObserver> prompt_observer(
       new BubbleObserver(WebContents()));
-  // The autofill password manager shouldn't react to the successful login.
+  // The autofill password manager shouldn't react to the successful login
+  // because it was suppressed when the site got the credential back.
   EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
   NavigateToFile("/password/password_form.html");
 
-  // Postpone a submit event for 1 second. Even for the static html page Chrome
-  // continues to parse and recreate the PasswordFormManager instances after the
-  // page load. Calling the API before this would make the test flaky. Clicking
-  // on the button emulates server analysing the credential and then saving and
-  // navigating to the landing page.
   ASSERT_TRUE(content::ExecuteScript(
       RenderViewHost(),
       "document.getElementById('input_submit_button').addEventListener('click',"
       "function(event) {"
-        "setTimeout( function() {"
-          "var c = new PasswordCredential({ id: 'user', password: 'API' });"
-          "navigator.credentials.store(c);"
-          "document.getElementById('testform').submit();"
-        "}, 1000 );"
-        "event.preventDefault();"
+        "var c = new PasswordCredential({ id: 'user', password: 'API' });"
+        "navigator.credentials.store(c);"
       "});"));
-  // Fill the password and click the button to submit the page later. The API
-  // should suppress the autofill password manager.
+  // Fill the password and click the button to submit the page. The API should
+  // suppress the autofill password manager.
   NavigationObserver form_submit_observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(
       RenderViewHost(),
@@ -232,21 +220,12 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
 
   NavigateToFile("/password/password_form.html");
 
-  // Postpone a submit event for 1 second. Even for the static html page Chrome
-  // continues to parse and recreate the PasswordFormManager instances after the
-  // page load. Calling the API before this would make the test flaky. Clicking
-  // on the button emulates server analysing the credential and then saving and
-  // navigating to the landing page.
   ASSERT_TRUE(content::ExecuteScript(
       RenderViewHost(),
       "document.getElementById('input_submit_button').addEventListener('click',"
       "function(event) {"
-        "setTimeout( function() {"
-          "var c = new PasswordCredential({ id: 'user', password: 'API' });"
-          "navigator.credentials.store(c);"
-          "document.getElementById('testform').submit();"
-        "}, 1000 );"
-        "event.preventDefault();"
+        "var c = new PasswordCredential({ id: 'user', password: 'API' });"
+        "navigator.credentials.store(c);"
       "});"));
   // Fill the new password and click the button to submit the page later. The
   // API should suppress the autofill password manager and overwrite the
