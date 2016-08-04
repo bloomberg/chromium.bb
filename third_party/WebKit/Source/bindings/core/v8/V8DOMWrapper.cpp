@@ -62,11 +62,8 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Loca
         // V8PerContextData::createWrapperFromCache, though there is no need to
         // cache resulting objects or their constructors.
         const DOMWrapperWorld& world = DOMWrapperWorld::world(scope.context());
-        if (!type->domTemplate(isolate, world)->InstanceTemplate()->NewInstance(scope.context()).ToLocal(&wrapper)) {
-            // Nothing to do.
-        }
+        wrapper = type->domTemplate(isolate, world)->InstanceTemplate()->NewInstance(scope.context()).ToLocalChecked();
     }
-
     return wrapper;
 }
 

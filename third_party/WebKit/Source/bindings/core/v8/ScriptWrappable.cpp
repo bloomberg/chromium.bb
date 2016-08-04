@@ -24,9 +24,7 @@ v8::Local<v8::Object> ScriptWrappable::wrap(v8::Isolate* isolate, v8::Local<v8::
     ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
+    DCHECK(!wrapper.IsEmpty());
     wrapperTypeInfo->installConditionallyEnabledProperties(wrapper, isolate);
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }

@@ -5850,9 +5850,7 @@ v8::Local<v8::Object> Document::wrap(v8::Isolate* isolate, v8::Local<v8::Object>
     }
 
     v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
+    DCHECK(!wrapper.IsEmpty());
     wrapperType->installConditionallyEnabledProperties(wrapper, isolate);
     return associateWithWrapper(isolate, wrapperType, wrapper);
 }

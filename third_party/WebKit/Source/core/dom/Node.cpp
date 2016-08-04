@@ -2364,9 +2364,7 @@ v8::Local<v8::Object> Node::wrap(v8::Isolate* isolate, v8::Local<v8::Object> cre
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
 
     v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
+    DCHECK(!wrapper.IsEmpty());
     wrapperType->installConditionallyEnabledProperties(wrapper, isolate);
     return associateWithWrapper(isolate, wrapperType, wrapper);
 }
