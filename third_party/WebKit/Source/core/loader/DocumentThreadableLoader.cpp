@@ -353,9 +353,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
 DocumentThreadableLoader::~DocumentThreadableLoader()
 {
     CHECK(!m_client);
-
-    // TODO(oilpan): Remove this once DocumentThreadableLoader is once again a ResourceOwner.
-    clearResource();
+    DCHECK(!m_resource);
 }
 
 void DocumentThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
@@ -420,10 +418,6 @@ void DocumentThreadableLoader::setDefersLoading(bool value)
 void DocumentThreadableLoader::clear()
 {
     m_client = nullptr;
-
-    if (!m_async)
-        return;
-
     m_timeoutTimer.stop();
     m_requestStartedSeconds = 0.0;
     clearResource();
@@ -804,13 +798,10 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
     }
 
     ThreadableLoaderClient* client = m_client;
-    m_client = nullptr;
-    // Don't clear the resource as the client may need to access the downloaded
-    // file which will be released when the resource is destoryed.
-    if (m_async) {
-        m_timeoutTimer.stop();
-        m_requestStartedSeconds = 0.0;
-    }
+    // Protect the resource in |didFinishLoading| in order not to release the
+    // downloaded file.
+    Persistent<Resource> resource = m_resource;
+    clear();
     client->didFinishLoading(identifier, finishTime);
     // |this| may be dead here in async mode.
 }
