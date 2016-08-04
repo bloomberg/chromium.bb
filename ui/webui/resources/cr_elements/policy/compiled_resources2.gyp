@@ -14,6 +14,7 @@
     {
       'target_name': 'cr_policy_pref_behavior',
       'dependencies': [
+        '<(EXTERNS_GYP):settings_private',
         'cr_policy_indicator_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

@@ -4,6 +4,15 @@
 {
   'targets': [
     {
+      'target_name': 'controlled_button',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_pref_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        'pref_control_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'pref_control_behavior',
       'dependencies': [
         '../prefs/compiled_resources2.gyp:prefs_types',

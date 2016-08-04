@@ -641,7 +641,7 @@ TEST_F('CrSettingsRouteTest', 'All', function() {
 /**
  * @constructor
  * @extends {SettingsPageBrowserTest}
-*/
+ */
 function CrSettingsNonExistentRouteTest() {}
 
 CrSettingsNonExistentRouteTest.prototype = {
@@ -724,5 +724,26 @@ CrSettingsMainPageTest.prototype = {
 
 TEST_F('CrSettingsMainPageTest', 'All', function() {
   settings_main_page.registerTests();
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrControlledButtonTest() {}
+
+CrControlledButtonTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/controls/controlled_button.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'controlled_button_tests.js',
+  ]),
+};
+
+TEST_F('CrControlledButtonTest', 'All', function() {
   mocha.run();
 });
