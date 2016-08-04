@@ -44,13 +44,14 @@
 #include <string.h>
 #include <errno.h>
 
+#include "shared/string-helpers.h"
+
 static long backlight_get(struct backlight *backlight, char *node)
 {
 	char buffer[100];
 	char *path;
-	char *end;
-	int fd;
-	long value, ret;
+	int fd, value;
+	long ret;
 
 	if (asprintf(&path, "%s/%s", backlight->path, node) < 0)
 		return -ENOMEM;
@@ -66,9 +67,7 @@ static long backlight_get(struct backlight *backlight, char *node)
 		goto out;
 	}
 
-	errno = 0;
-	value = strtol(buffer, &end, 10);
-	if (errno != 0 || end == buffer || *end != '\0') {
+	if (!safe_strtoint(buffer, &value)) {
 		ret = -1;
 		goto out;
 	}

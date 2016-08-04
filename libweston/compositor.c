@@ -58,6 +58,7 @@
 #include "presentation-time-server-protocol.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
+#include "shared/string-helpers.h"
 #include "shared/timespec-util.h"
 #include "git-version.h"
 #include "version.h"
@@ -4622,15 +4623,11 @@ compositor_bind(struct wl_client *client,
 WL_EXPORT int
 weston_environment_get_fd(const char *env)
 {
-	char *e, *end;
+	char *e;
 	int fd, flags;
 
 	e = getenv(env);
-	if (!e)
-		return -1;
-	errno = 0;
-	fd = strtol(e, &end, 10);
-	if (errno != 0 || end == e || *end != '\0')
+	if (!e || !safe_strtoint(e, &fd))
 		return -1;
 
 	flags = fcntl(fd, F_GETFD);

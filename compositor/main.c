@@ -52,6 +52,7 @@
 #include "compositor.h"
 #include "../shared/os-compatibility.h"
 #include "../shared/helpers.h"
+#include "../shared/string-helpers.h"
 #include "git-version.h"
 #include "version.h"
 #include "weston.h"
@@ -1580,7 +1581,7 @@ int main(int argc, char *argv[])
 	char *modules = NULL;
 	char *option_modules = NULL;
 	char *log = NULL;
-	char *server_socket = NULL, *end;
+	char *server_socket = NULL;
 	int32_t idle_time = -1;
 	int32_t help = 0;
 	char *socket_name = NULL;
@@ -1699,9 +1700,7 @@ int main(int argc, char *argv[])
 	server_socket = getenv("WAYLAND_SERVER_SOCKET");
 	if (server_socket) {
 		weston_log("Running with single client\n");
-		errno = 0;
-		fd = strtol(server_socket, &end, 10);
-		if (errno != 0 || end == server_socket || *end != '\0')
+		if (!safe_strtoint(server_socket, &fd))
 			fd = -1;
 	} else {
 		fd = -1;

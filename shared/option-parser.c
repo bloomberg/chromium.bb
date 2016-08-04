@@ -33,6 +33,7 @@
 #include <errno.h>
 
 #include "config-parser.h"
+#include "string-helpers.h"
 
 static int
 handle_option(const struct weston_option *option, char *value)
@@ -41,9 +42,7 @@ handle_option(const struct weston_option *option, char *value)
 
 	switch (option->type) {
 	case WESTON_OPTION_INTEGER:
-		errno = 0;
-		* (int32_t *) option->data = strtol(value, &p, 10);
-		if (errno != 0 || p == value || *p != '\0')
+		if (!safe_strtoint(value, option->data))
 			return 0;
 		return 1;
 	case WESTON_OPTION_UNSIGNED_INTEGER:

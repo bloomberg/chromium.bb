@@ -25,12 +25,13 @@
 
 #include "config.h"
 
-#include <errno.h>
 #include <stdlib.h>
 #include <systemd/sd-daemon.h>
 #include <sys/socket.h>
 #include <wayland-server.h>
+
 #include "shared/helpers.h"
+#include "shared/string-helpers.h"
 #include "shared/zalloc.h"
 #include "compositor.h"
 
@@ -116,7 +117,6 @@ WL_EXPORT int
 module_init(struct weston_compositor *compositor,
 	    int *argc, char *argv[])
 {
-	char *tail;
 	char *watchdog_time_env;
 	struct wl_event_loop *loop;
 	long watchdog_time_conv;
@@ -140,13 +140,10 @@ module_init(struct weston_compositor *compositor,
 	 * by systemd to transfer 'WatchdogSec' watchdog timeout
 	 * setting from service file.*/
 	watchdog_time_env = getenv("WATCHDOG_USEC");
-
 	if (!watchdog_time_env)
 		return 0;
 
-	errno = 0;
-	watchdog_time_conv = strtol(watchdog_time_env, &tail, 10);
-	if (errno != 0 || tail == watchdog_time_env || *tail != '\0')
+	if (!safe_strtoint(watchdog_time_env, &watchdog_time_conv))
 		return 0;
 
 	/* Convert 'WATCHDOG_USEC' to milliseconds and notify

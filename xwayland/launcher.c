@@ -39,6 +39,7 @@
 #include "xwayland.h"
 #include "xwayland-api.h"
 #include "shared/helpers.h"
+#include "shared/string-helpers.h"
 #include "compositor/weston.h"
 
 static int
@@ -147,7 +148,7 @@ bind_to_unix_socket(int display)
 static int
 create_lockfile(int display, char *lockfile, size_t lsize)
 {
-	char pid[16], *end;
+	char pid[16];
 	int fd, size;
 	pid_t other;
 
@@ -165,9 +166,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 			return -1;
 		}
 
-		errno = 0;
-		other = strtol(pid, &end, 10);
-		if (errno != 0 || end == pid || *end != '\0') {
+		if (!safe_strtoint(pid, &other)) {
 			weston_log("can't parse lock file %s\n",
 				lockfile);
 			close(fd);

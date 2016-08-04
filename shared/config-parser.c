@@ -41,6 +41,7 @@
 #include <wayland-util.h>
 #include "config-parser.h"
 #include "helpers.h"
+#include "string-helpers.h"
 
 struct weston_config_entry {
 	char *key;
@@ -161,7 +162,6 @@ weston_config_section_get_int(struct weston_config_section *section,
 			      int32_t *value, int32_t default_value)
 {
 	struct weston_config_entry *entry;
-	char *end;
 
 	entry = config_section_get_entry(section, key);
 	if (entry == NULL) {
@@ -170,11 +170,8 @@ weston_config_section_get_int(struct weston_config_section *section,
 		return -1;
 	}
 
-	errno = 0;
-	*value = strtol(entry->value, &end, 10);
-	if (errno != 0 || end == entry->value || *end != '\0') {
+	if (!safe_strtoint(entry->value, value)) {
 		*value = default_value;
-		errno = EINVAL;
 		return -1;
 	}
 
