@@ -196,7 +196,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
       string::npos,
       post_interceptor_->GetRequests()[0].find(
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
-          "brand=\"TEST\" ap=\"some_ap\"><updatecheck /><ping rd=\"-2\" "));
+          "brand=\"TEST\" ap=\"some_ap\"><updatecheck/><ping rd=\"-2\" "));
   EXPECT_NE(string::npos,
             post_interceptor_->GetRequests()[0].find(
                 "<packages><package fp=\"fp1\"/></packages></app>"));
@@ -235,7 +235,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
       string::npos,
       post_interceptor_->GetRequests()[0].find(
           "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
-          "brand=\"TEST\"><updatecheck /><ping rd=\"-2\" "));
+          "brand=\"TEST\"><updatecheck/><ping rd=\"-2\" "));
   EXPECT_NE(string::npos,
             post_interceptor_->GetRequests()[0].find(
                 "<packages><package fp=\"fp1\"/></packages></app>"));
@@ -262,7 +262,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
       string::npos,
       post_interceptor_->GetRequests()[0].find(
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
-          "<updatecheck /><ping rd=\"-2\" "));
+          "<updatecheck/><ping rd=\"-2\" "));
   EXPECT_NE(string::npos,
             post_interceptor_->GetRequests()[0].find(
                 "<packages><package fp=\"fp1\"/></packages></app>"));
@@ -347,7 +347,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
       string::npos,
       post_interceptor_->GetRequests()[0].find(
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
-          "brand=\"TEST\"><updatecheck /><ping rd=\"-2\" "));
+          "brand=\"TEST\"><updatecheck/><ping rd=\"-2\" "));
   EXPECT_NE(string::npos,
             post_interceptor_->GetRequests()[0].find(
                 "<packages><package fp=\"fp1\"/></packages></app>"));
@@ -413,6 +413,86 @@ TEST_F(UpdateCheckerTest, UpdateCheckDateLastRollCall) {
                               "<ping rd=\"-2\" ping_freshness="));
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
                               "<ping rd=\"3383\" ping_freshness="));
+}
+
+TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+
+  config_->SetBrand("");
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+
+  CrxUpdateItem item(BuildCrxUpdateItem());
+
+  // Tests the scenario where:
+  //  * the component does not support group policies.
+  //  * the component updates are disabled.
+  // Expects the group policy to be ignored and the update check to not
+  // include the "updatedisabled" attribute.
+  EXPECT_FALSE(item.component.supports_group_policy_enable_component_updates);
+  config_->SetEnabledComponentUpdates(false);
+  std::vector<CrxUpdateItem*> items_to_check;
+  items_to_check.push_back(&item);
+  update_checker_->CheckForUpdates(
+      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                                     base::Unretained(this)));
+  RunThreads();
+  EXPECT_NE(
+      string::npos,
+      post_interceptor_->GetRequests()[0].find(
+          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+          "<updatecheck/>"));
+
+  // Tests the scenario where:
+  //  * the component supports group policies.
+  //  * the component updates are disabled.
+  // Expects the update check to include the "updatedisabled" attribute.
+  item.component.supports_group_policy_enable_component_updates = true;
+  config_->SetEnabledComponentUpdates(false);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  update_checker_->CheckForUpdates(
+      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                                     base::Unretained(this)));
+  RunThreads();
+  EXPECT_NE(
+      string::npos,
+      post_interceptor_->GetRequests()[1].find(
+          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+          "<updatecheck updatedisabled=\"true\"/>"));
+
+  // Tests the scenario where:
+  //  * the component does not support group policies.
+  //  * the component updates are enabled.
+  // Expects the update check to not include the "updatedisabled" attribute.
+  item.component.supports_group_policy_enable_component_updates = false;
+  config_->SetEnabledComponentUpdates(true);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  update_checker_->CheckForUpdates(
+      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                                     base::Unretained(this)));
+  RunThreads();
+  EXPECT_NE(
+      string::npos,
+      post_interceptor_->GetRequests()[2].find(
+          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+          "<updatecheck/>"));
+
+  // Tests the scenario where:
+  //  * the component supports group policies.
+  //  * the component updates are enabled.
+  // Expects the update check to not include the "updatedisabled" attribute.
+  item.component.supports_group_policy_enable_component_updates = true;
+  config_->SetEnabledComponentUpdates(true);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  update_checker_->CheckForUpdates(
+      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                                     base::Unretained(this)));
+  RunThreads();
+  EXPECT_NE(
+      string::npos,
+      post_interceptor_->GetRequests()[3].find(
+          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+          "<updatecheck/>"));
 }
 
 }  // namespace update_client

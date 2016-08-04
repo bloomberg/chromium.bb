@@ -40,6 +40,7 @@ class Action {
 
   enum class ServiceError {
     ERROR_WAIT = 1,
+    ERROR_UPDATE_DISABLED = 2,
   };
 
   using Callback = base::Callback<void(int error)>;

@@ -29,7 +29,8 @@ TestConfigurator::TestConfigurator(
       brand_("TEST"),
       initial_time_(0),
       ondemand_time_(0),
-      use_cup_signing_(false),
+      enabled_cup_signing_(false),
+      enabled_component_updates_(false),
       context_(new net::TestURLRequestContextGetter(network_task_runner)) {}
 
 TestConfigurator::~TestConfigurator() {
@@ -112,7 +113,7 @@ bool TestConfigurator::EnabledDeltas() const {
 }
 
 bool TestConfigurator::EnabledComponentUpdates() const {
-  return true;
+  return enabled_component_updates_;
 }
 
 bool TestConfigurator::EnabledBackgroundDownloader() const {
@@ -120,7 +121,7 @@ bool TestConfigurator::EnabledBackgroundDownloader() const {
 }
 
 bool TestConfigurator::EnabledCupSigning() const {
-  return use_cup_signing_;
+  return enabled_cup_signing_;
 }
 
 void TestConfigurator::SetBrand(const std::string& brand) {
@@ -135,8 +136,13 @@ void TestConfigurator::SetInitialDelay(int seconds) {
   initial_time_ = seconds;
 }
 
-void TestConfigurator::SetEnabledCupSigning(bool use_cup_signing) {
-  use_cup_signing_ = use_cup_signing;
+void TestConfigurator::SetEnabledCupSigning(bool enabled_cup_signing) {
+  enabled_cup_signing_ = enabled_cup_signing;
+}
+
+void TestConfigurator::SetEnabledComponentUpdates(
+    bool enabled_component_updates) {
+  enabled_component_updates_ = enabled_component_updates;
 }
 
 void TestConfigurator::SetDownloadPreference(

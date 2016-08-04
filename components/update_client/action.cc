@@ -127,6 +127,19 @@ void ActionImpl::UpdateCrx() {
 
   item->update_begin = base::TimeTicks::Now();
 
+  if (item->component.supports_group_policy_enable_component_updates &&
+      !update_context_->config->EnabledComponentUpdates()) {
+    item->error_category =
+        static_cast<int>(Action::ErrorCategory::kServiceError);
+    item->error_code =
+        static_cast<int>(Action::ServiceError::ERROR_UPDATE_DISABLED);
+    item->extra_code1 = 0;
+    ChangeItemState(item, CrxUpdateItem::State::kNoUpdate);
+
+    UpdateCrxComplete(item);
+    return;
+  }
+
   std::unique_ptr<Action> update_action(
       CanTryDiffUpdate(item, update_context_->config)
           ? ActionUpdateDiff::Create()

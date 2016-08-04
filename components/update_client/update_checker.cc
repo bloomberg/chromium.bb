@@ -86,13 +86,19 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
       base::StringAppendF(&app, " brand=\"%s\"", brand.c_str());
     if (item->on_demand)
       base::StringAppendF(&app, " installsource=\"ondemand\"");
-
-    for (const auto& attr : installer_attributes)
+    for (const auto& attr : installer_attributes) {
       base::StringAppendF(&app, " %s=\"%s\"", attr.first.c_str(),
                           attr.second.c_str());
-
+    }
     base::StringAppendF(&app, ">");
-    base::StringAppendF(&app, "<updatecheck />");
+
+    base::StringAppendF(&app, "<updatecheck");
+    if (item->component.supports_group_policy_enable_component_updates &&
+        !config.EnabledComponentUpdates()) {
+      base::StringAppendF(&app, " updatedisabled=\"true\"");
+    }
+    base::StringAppendF(&app, "/>");
+
     base::StringAppendF(&app, "<ping rd=\"%d\" ping_freshness=\"%s\" />",
                         metadata->GetDateLastRollCall(item->id),
                         metadata->GetPingFreshness(item->id).c_str());

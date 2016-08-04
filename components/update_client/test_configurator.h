@@ -86,6 +86,7 @@ class TestConfigurator : public Configurator {
   void SetInitialDelay(int seconds);
   void SetDownloadPreference(const std::string& download_preference);
   void SetEnabledCupSigning(bool use_cup_signing);
+  void SetEnabledComponentUpdates(bool enabled_component_updates);
   void SetUpdateCheckUrl(const GURL& url);
   void SetPingUrl(const GURL& url);
 
@@ -100,7 +101,8 @@ class TestConfigurator : public Configurator {
   int initial_time_;
   int ondemand_time_;
   std::string download_preference_;
-  bool use_cup_signing_;
+  bool enabled_cup_signing_;
+  bool enabled_component_updates_;
   GURL update_check_url_;
   GURL ping_url_;
 
