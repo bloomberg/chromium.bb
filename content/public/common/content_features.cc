@@ -141,6 +141,11 @@ const base::Feature kWebRtcEcdsaDefault {"WebRTC-EnableWebRtcEcdsa",
 // https://wicg.github.io/webusb
 const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Make sendBeacon throw for a Blob with a non simple type.
+const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
+    "SendBeaconThrowForBlobWithNonSimpleType",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Allow videos to autoplay without a user gesture if muted.
 const base::Feature kAutoplayMutedVideos{"AutoplayMutedVideos",

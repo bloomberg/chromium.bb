@@ -105,14 +105,18 @@ bool FetchUtils::isSimpleHeader(const AtomicString& name, const AtomicString& va
         || equalIgnoringCase(name, "save-data"))
         return true;
 
-    if (equalIgnoringCase(name, "content-type")) {
-        AtomicString mimeType = extractMIMETypeFromMediaType(value);
-        return equalIgnoringCase(mimeType, "application/x-www-form-urlencoded")
-            || equalIgnoringCase(mimeType, "multipart/form-data")
-            || equalIgnoringCase(mimeType, "text/plain");
-    }
+    if (equalIgnoringCase(name, "content-type"))
+        return isSimpleContentType(value);
 
     return false;
+}
+
+bool FetchUtils::isSimpleContentType(const AtomicString& mediaType)
+{
+    AtomicString mimeType = extractMIMETypeFromMediaType(mediaType);
+    return equalIgnoringCase(mimeType, "application/x-www-form-urlencoded")
+        || equalIgnoringCase(mimeType, "multipart/form-data")
+        || equalIgnoringCase(mimeType, "text/plain");
 }
 
 bool FetchUtils::isSimpleRequest(const String& method, const HTTPHeaderMap& headerMap)

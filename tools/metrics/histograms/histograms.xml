@@ -77804,6 +77804,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1482" label="MultipleOriginsInTimingAllowOrigin"/>
   <int value="1483" label="StarInTimingAllowOrigin"/>
   <int value="1484" label="SVGSMILAdditiveAnimation"/>
+  <int value="1485" label="SendBeaconWithNonSimpleContentType"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

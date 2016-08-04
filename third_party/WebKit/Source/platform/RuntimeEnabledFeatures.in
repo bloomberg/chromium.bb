@@ -245,3 +245,4 @@ Worklet status=experimental
 WeakMemoryCache
 DoNotUnlockSharedBuffer
 ParseHTMLOnMainThread status=test
+SendBeaconThrowForBlobWithNonSimpleType status=experimental

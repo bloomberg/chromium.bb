@@ -18,6 +18,7 @@ class CORE_EXPORT FetchUtils {
 public:
     static bool isSimpleMethod(const String& method);
     static bool isSimpleHeader(const AtomicString& name, const AtomicString& value);
+    static bool isSimpleContentType(const AtomicString& mediaType);
     static bool isSimpleRequest(const String& method, const HTTPHeaderMap&);
     static bool isForbiddenMethod(const String& method);
     static bool isUsefulMethod(const String& method) { return !isForbiddenMethod(method); }

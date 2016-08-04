@@ -1411,3 +1411,12 @@ crbug.com/541703 http/tests/security/xss-eval.html [ Skip ]
 crbug.com/634019 [ Win7 Debug Mac10.11 Retina ] virtual/asyncawait/inspector/sources/debugger-async/async-await/async-callstack-async-await1.html [ Pass Timeout ]
 
 crbug.com/634073 [ Win7 ] transforms/2d/hindi-rotated.html [ Pass Failure ]
+
+# This test breaks when the feature introduced in the bug is enabled. We keep
+# this tested without the feature by using the virtual test. See
+# virtual/stable/http/tests/navigation/beacon-cross-origin-redirect-blob-expected.txt
+crbug.com/490015 http/tests/navigation/beacon-cross-origin-redirect-blob.html [ Skip ]
+# This test doesn't need to be run with the stable release mode.
+crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simple-type.html [ Skip ]
+# This test fails with the stable release mode.
+crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]

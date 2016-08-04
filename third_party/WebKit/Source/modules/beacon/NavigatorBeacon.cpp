@@ -9,6 +9,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/fetch/FetchUtils.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -111,16 +112,25 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator
     int bytes = 0;
     bool allowed;
 
-    if (data.isArrayBufferView())
+    if (data.isArrayBufferView()) {
         allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, data.getAsArrayBufferView(), bytes);
-    else if (data.isBlob())
-        allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, data.getAsBlob(), bytes);
-    else if (data.isString())
+    } else if (data.isBlob()) {
+        Blob* blob = data.getAsBlob();
+        if (!FetchUtils::isSimpleContentType(AtomicString(blob->type()))) {
+            UseCounter::count(context, UseCounter::SendBeaconWithNonSimpleContentType);
+            if (RuntimeEnabledFeatures::sendBeaconThrowForBlobWithNonSimpleTypeEnabled()) {
+                exceptionState.throwSecurityError("sendBeacon() with a Blob whose type is not CORS-safelisted MIME type is disallowed experimentally. See http://crbug.com/490015 for details.");
+                return false;
+            }
+        }
+        allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, blob, bytes);
+    } else if (data.isString()) {
         allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, data.getAsString(), bytes);
-    else if (data.isFormData())
+    } else if (data.isFormData()) {
         allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, data.getAsFormData(), bytes);
-    else
+    } else {
         allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, String(), bytes);
+    }
 
     return impl.beaconResult(context, allowed, bytes);
 }

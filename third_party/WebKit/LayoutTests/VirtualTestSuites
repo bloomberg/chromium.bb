@@ -69,6 +69,11 @@
   },
   {
     "prefix": "stable",
+    "base": "http/tests/navigation",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "stable",
     "base": "animations-unprefixed",
     "args": ["--stable-release-mode"]
   },

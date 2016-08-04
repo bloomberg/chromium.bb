@@ -119,6 +119,7 @@ public:
     BLINK_EXPORT static void forceOverlayFullscreenVideo(bool);
     BLINK_EXPORT static void enableAutoplayMutedVideos(bool);
     BLINK_EXPORT static void enableCanvas2dDynamicRenderingModeSwitching(bool);
+    BLINK_EXPORT static void enableSendBeaconThrowForBlobWithNonSimpleType(bool);
 private:
     WebRuntimeFeatures();
 };

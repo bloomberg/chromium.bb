@@ -345,4 +345,9 @@ void WebRuntimeFeatures::enableAutoplayMutedVideos(bool enable)
     RuntimeEnabledFeatures::setAutoplayMutedVideosEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableSendBeaconThrowForBlobWithNonSimpleType(bool enable)
+{
+    RuntimeEnabledFeatures::setSendBeaconThrowForBlobWithNonSimpleTypeEnabled(enable);
+}
+
 } // namespace blink
