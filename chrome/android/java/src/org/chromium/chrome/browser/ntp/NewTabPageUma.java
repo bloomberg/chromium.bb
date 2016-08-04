@@ -90,6 +90,25 @@ public class NewTabPageUma {
     /** The number of possible actions. */
     private static final int NUM_SNIPPETS_ACTIONS = 7;
 
+    /** Possible ways to follow the link provided by a snippet.
+     * Do not remove or change existing values other than NUM_OPEN_SNIPPET_METHODS. */
+    @IntDef({OPEN_SNIPPET_METHODS_PLAIN_CLICK, OPEN_SNIPPET_METHODS_NEW_WINDOW,
+            OPEN_SNIPPET_METHODS_NEW_TAB, OPEN_SNIPPET_METHODS_INCOGNITO,
+            OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE, NUM_OPEN_SNIPPET_METHODS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OpenSnippetMethod {}
+    /** The article was opened taking over the tab. */
+    public static final int OPEN_SNIPPET_METHODS_PLAIN_CLICK = 0;
+    /** The article was opened in a new window. */
+    public static final int OPEN_SNIPPET_METHODS_NEW_WINDOW = 1;
+    /** The article was opened in a new tab, */
+    public static final int OPEN_SNIPPET_METHODS_NEW_TAB = 2;
+    /** The article was opened in an incognito tab. */
+    public static final int OPEN_SNIPPET_METHODS_INCOGNITO = 3;
+    /** The article was saved to be viewed offline. */
+    public static final int OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE = 4;
+    /** The number of ways an article can be viewed. */
+    public static final int NUM_OPEN_SNIPPET_METHODS = 5;
     /**
      * Records an action taken by the user on the NTP.
      * @param action One of the ACTION_* values defined in this class.
@@ -160,6 +179,15 @@ public class NewTabPageUma {
     public static void recordSnippetAction(@SnippetsAction int action) {
         RecordHistogram.recordEnumeratedHistogram(
                 "NewTabPage.Snippets.Interactions", action, NUM_SNIPPETS_ACTIONS);
+    }
+
+    /**
+     * Records how the article linked from a snippet was viewed.
+     * @param method method key, one of {@link OpenSnippetMethod}'s values.
+     */
+    public static void recordOpenSnippetMethod(@OpenSnippetMethod int method) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "NewTabPage.Snippets.OpenMethod", method, NUM_OPEN_SNIPPET_METHODS);
     }
 
     /**

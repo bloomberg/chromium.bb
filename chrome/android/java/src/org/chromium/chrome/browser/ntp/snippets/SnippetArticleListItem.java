@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.graphics.Bitmap;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 
@@ -88,10 +87,17 @@ public class SnippetArticleListItem implements NewTabPageListItem {
 
     /** Tracks click on this NTP snippet in UMA. */
     public void trackClick() {
-        RecordUserAction.record("MobileNTP.Snippets.Click");
+        // To compare against NewTabPage.Snippets.CardShown for each position.
         RecordHistogram.recordSparseSlowlyHistogram("NewTabPage.Snippets.CardClicked", mPosition);
+        // To compare against all snippets actions.
         NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_CLICKED);
+        // To compare how the user views the article linked to from a snippet (eg. as opposed to
+        // opening in a new tab).
+        NewTabPageUma.recordOpenSnippetMethod(NewTabPageUma.OPEN_SNIPPET_METHODS_PLAIN_CLICK);
+        // To see how users left the NTP.
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
+        // To see whether users click on more recent snippets and whether our suggestion algorithm
+        // is accurate.
         recordAgeAndScore("NewTabPage.Snippets.CardClicked");
     }
 
@@ -110,7 +116,7 @@ public class SnippetArticleListItem implements NewTabPageListItem {
         return mImpressionTracked;
     }
 
-    private void recordAgeAndScore(String histogramPrefix) {
+    public void recordAgeAndScore(String histogramPrefix) {
         // Track how the (approx.) position relates to age / score of the snippet that is clicked.
         int ageInMinutes =
                 (int) ((System.currentTimeMillis() - mPublishTimestampMilliseconds) / 60000L);

@@ -35358,6 +35358,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </obsolete>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.CardLongPressed" units="index">
+  <owner>peconn@chromium.org</owner>
+  <summary>
+    Android: The position of a snippet card when it is long pressed, analagous
+    to NewTabPage.Snippets.CardClicked.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.CardLongPressedAge" units="minutes">
+  <owner>peconn@chromium.org</owner>
+  <summary>
+    Android: The time difference between when a snippet card is long pressed and
+    when its content was published. Analagous to
+    NewTabPage.Snippets.CardClickedAge.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.CardLongPressedScoreNew" units="score">
+  <owner>peconn@chromium.org</owner>
+  <summary>
+    Android: The relevance score of an interest card that is long pressed,
+    analagous to NewTabPage.Snippets.CardClickedScoreNew.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.Snippets.CardShown">
   <owner>knn@chromium.org</owner>
   <summary>
@@ -35506,6 +35531,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of snippets that we discard per fetch due to having incomplete
     data.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.OpenMethod" enum="SnippetOpenMethod">
+  <owner>peconn@chromium.org</owner>
+  <summary>
+    Android: A histogram detailing how the articles linked from snippets are
+    opened (eg, plain click, open in new tab, open in incognito).
   </summary>
 </histogram>
 
@@ -91628,6 +91661,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="TAB_CLOSE_ALL_UNDO"/>
 </enum>
 
+<enum name="SnippetOpenMethod" type="int">
+  <int value="0" label="Plain click"/>
+  <int value="1" label="New Window"/>
+  <int value="2" label="New Tab"/>
+  <int value="3" label="Incognito Tab"/>
+  <int value="4" label="Save for Offline"/>
+</enum>
+
 <enum name="SnippetsInteractions" type="int">
   <int value="0" label="Snippets were shown to the user"/>
   <int value="1" label="User scrolled through the snippets"/>
@@ -100290,6 +100331,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="NewTabPage.Snippets.CardClickedAge"/>
   <affected-histogram name="NewTabPage.Snippets.CardClickedScore"/>
   <affected-histogram name="NewTabPage.Snippets.CardClickedScoreNew"/>
+  <affected-histogram name="NewTabPage.Snippets.CardLongPressedAge"/>
+  <affected-histogram name="NewTabPage.Snippets.CardLongPressedScoreNew"/>
   <affected-histogram name="NewTabPage.Snippets.CardShownAge"/>
   <affected-histogram name="NewTabPage.Snippets.CardShownScore"/>
   <affected-histogram name="NewTabPage.Snippets.CardShownScoreNew"/>

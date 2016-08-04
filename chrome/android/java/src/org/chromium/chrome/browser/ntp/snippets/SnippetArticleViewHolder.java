@@ -24,11 +24,13 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
@@ -148,6 +150,10 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
     @Override
     protected void createContextMenu(ContextMenu menu) {
+        RecordHistogram.recordSparseSlowlyHistogram(
+                "NewTabPage.Snippets.CardLongPressed", mArticle.mPosition);
+        mArticle.recordAgeAndScore("NewTabPage.Snippets.CardLongPressed");
+
         // Create a context menu akin to the one shown for MostVisitedItems.
         if (mNewTabPageManager.isOpenInNewWindowEnabled()) {
             addContextMenuItem(menu, ID_OPEN_IN_NEW_WINDOW, R.string.contextmenu_open_in_new_tab);
@@ -172,18 +178,26 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
+        // The UMA is used to compare how the user views the article linked from a snippet.
         switch (item.getItemId()) {
             case ID_OPEN_IN_NEW_WINDOW:
+                NewTabPageUma.recordOpenSnippetMethod(
+                        NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_WINDOW);
                 mNewTabPageManager.openUrlInNewWindow(mArticle.mUrl);
                 return true;
             case ID_OPEN_IN_NEW_TAB:
+                NewTabPageUma.recordOpenSnippetMethod(
+                        NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_TAB);
                 mNewTabPageManager.openUrlInNewTab(mArticle.mUrl, false);
                 return true;
             case ID_OPEN_IN_INCOGNITO_TAB:
+                NewTabPageUma.recordOpenSnippetMethod(
+                        NewTabPageUma.OPEN_SNIPPET_METHODS_INCOGNITO);
                 mNewTabPageManager.openUrlInNewTab(mArticle.mUrl, true);
                 return true;
             case ID_REMOVE:
                 assert isDismissable() : "Context menu should not be shown for peeking card.";
+                // UMA is recorded during dismissal.
                 dismiss();
                 return true;
             default:

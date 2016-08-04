@@ -9170,6 +9170,7 @@ should be able to be added at any place in this file.
   <description>
     Android: User clicked on a snippet card into the host website.
   </description>
+  <obsolete>Deprecated as of 8/2016</obsolete>
 </action>
 
 <action name="MobileNTP.Snippets.Scrolled">
