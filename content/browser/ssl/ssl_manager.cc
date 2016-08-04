@@ -15,7 +15,6 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_policy.h"
-#include "content/browser/ssl/ssl_request_info.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/browser_context.h"
@@ -144,32 +143,16 @@ void SSLManager::DidRunInsecureContent(const GURL& security_origin) {
 void SSLManager::DidLoadFromMemoryCache(
     const LoadFromMemoryCacheDetails& details) {
   // Simulate loading this resource through the usual path.
-  // Note that we specify SUB_RESOURCE as the resource type as WebCore only
-  // caches sub-resources.
-  // This resource must have been loaded with no filtering because filtered
-  // resouces aren't cachable.
-  scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
-      details.url,
-      RESOURCE_TYPE_SUB_RESOURCE,
-      details.cert_id,
-      details.cert_status));
-
-  // Simulate loading this resource through the usual path.
-  policy()->OnRequestStarted(info.get());
+  policy()->OnRequestStarted(details.url, details.cert_id, details.cert_status);
 }
 
 void SSLManager::DidStartResourceResponse(
     const ResourceRequestDetails& details) {
-  scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
-      details.url,
-      details.resource_type,
-      details.ssl_cert_id,
-      details.ssl_cert_status));
-
   // Notify our policy that we started a resource request.  Ideally, the
   // policy should have the ability to cancel the request, but we can't do
   // that yet.
-  policy()->OnRequestStarted(info.get());
+  policy()->OnRequestStarted(details.url, details.ssl_cert_id,
+                             details.ssl_cert_status);
 }
 
 void SSLManager::DidReceiveResourceRedirect(

@@ -19,7 +19,6 @@ namespace content {
 class NavigationEntryImpl;
 class SSLCertErrorHandler;
 class SSLPolicyBackend;
-class SSLRequestInfo;
 class WebContents;
 
 // SSLPolicy
@@ -38,8 +37,11 @@ class SSLPolicy {
   void DidRunInsecureContent(NavigationEntryImpl* entry,
                              const GURL& security_origin);
 
-  // We have started a resource request with the given info.
-  void OnRequestStarted(SSLRequestInfo* info);
+  // We have started a resource request for |url| with the given |cert_id| and
+  // |cert_status|.
+  void OnRequestStarted(const GURL& url,
+                        int cert_id,
+                        net::CertStatus cert_status);
 
   // Update the SSL information in |entry| to match the current state.
   // |web_contents| is the WebContents associated with this entry.

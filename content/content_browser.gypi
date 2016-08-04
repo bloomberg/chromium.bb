@@ -1475,8 +1475,6 @@
       'browser/ssl/ssl_policy.h',
       'browser/ssl/ssl_policy_backend.cc',
       'browser/ssl/ssl_policy_backend.h',
-      'browser/ssl/ssl_request_info.cc',
-      'browser/ssl/ssl_request_info.h',
       'browser/startup_task_runner.cc',
       'browser/startup_task_runner.h',
       'browser/storage_partition_impl.cc',

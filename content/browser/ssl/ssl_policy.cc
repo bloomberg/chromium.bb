@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
-#include "content/browser/ssl/ssl_request_info.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
@@ -118,9 +117,11 @@ void SSLPolicy::DidRunInsecureContent(NavigationEntryImpl* entry,
                                    site_instance->GetProcess()->GetID());
 }
 
-void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
-  if (info->ssl_cert_id() && info->url().SchemeIsCryptographic() &&
-      !net::IsCertStatusError(info->ssl_cert_status())) {
+void SSLPolicy::OnRequestStarted(const GURL& url,
+                                 int cert_id,
+                                 net::CertStatus cert_status) {
+  if (cert_id && url.SchemeIsCryptographic() &&
+      !net::IsCertStatusError(cert_status)) {
     // If the scheme is https: or wss: *and* the security info for the
     // cert has been set (i.e. the cert id is not 0) and the cert did
     // not have any errors, revoke any previous decisions that
@@ -128,11 +129,11 @@ void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
     // isn't known if the connection was actually a valid connection or if it
     // had a cert error.
     SSLGoodCertSeenEvent event = NO_PREVIOUS_EXCEPTION;
-    if (backend_->HasAllowException(info->url().host())) {
+    if (backend_->HasAllowException(url.host())) {
       // If there's no certificate error, a good certificate has been seen, so
       // clear out any exceptions that were made by the user for bad
       // certificates.
-      backend_->RevokeUserAllowExceptions(info->url().host());
+      backend_->RevokeUserAllowExceptions(url.host());
       event = HAD_PREVIOUS_EXCEPTION;
     }
     UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.good_cert_seen", event,
