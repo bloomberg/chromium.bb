@@ -106,10 +106,14 @@ V4DecodeResult V4RiceDecoder::DecodeBytes(const int32 first_value,
   if (result != DECODE_SUCCESS) {
     return result;
   }
-
   out->reserve((num_entries + 1) * 4);
+
+  // Cast to unsigned since we don't look at the sign bit as a sign bit.
+  // first_value should have been an unsigned to begin with but proto don't
+  // allow that.
+  uint32_t first_value_unsigned = static_cast<uint32_t>(first_value);
+  base::CheckedNumeric<uint32_t> last_value(first_value_unsigned);
   char bytes[4];
-  base::CheckedNumeric<uint32_t> last_value(first_value);
   GetBytesFromUInt32(last_value.ValueOrDie(), bytes);
   out->append(bytes, 4);
 

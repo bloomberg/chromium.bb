@@ -133,7 +133,16 @@ enum ApplyUpdateResult {
 
   // One of more index(es) in removals field of the response is greater than
   // the number of hash prefixes currently in the (old) store.
-  REMOVALS_INDEX_TOO_LARGE = 7,
+  REMOVALS_INDEX_TOO_LARGE_FAILURE = 7,
+
+  // Failed to decode the Rice-encoded additions/removals field.
+  RICE_DECODING_FAILURE = 8,
+
+  // Compression type other than RAW and RICE for additions.
+  UNEXPECTED_COMPRESSION_TYPE_ADDITIONS_FAILURE = 9,
+
+  // Compression type other than RAW and RICE for removals.
+  UNEXPECTED_COMPRESSION_TYPE_REMOVALS_FAILURE = 10,
 
   // Memory space for histograms is determined by the max.  ALWAYS
   // ADD NEW VALUES BEFORE THIS ONE.
@@ -238,6 +247,11 @@ class V4Store {
                            TestHashPrefixExistsInMapWithDifferentSizes);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
                            TestHashPrefixDoesNotExistInMapWithDifferentSizes);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestAdditionsWithRiceEncodingFailsWithInvalidInput);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestAdditionsWithRiceEncodingSucceeds);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds);
+  friend class V4StoreTest;
 
   // If |prefix_size| is within expected range, and |raw_hashes| is not invalid,
   // then it sets |raw_hashes| as the value at key |prefix_size| in
@@ -286,6 +300,20 @@ class V4Store {
                                 const HashPrefixMap& additions_map,
                                 const ::google::protobuf::RepeatedField<
                                     ::google::protobuf::int32>* raw_removals);
+
+  // Processes the FULL_UPDATE |response| from the server and updates the
+  // V4Store in |new_store| and writes it to disk. If processing the |response|
+  // succeeds, it returns APPLY_UPDATE_SUCCESS.
+  ApplyUpdateResult ProcessFullUpdate(
+      std::unique_ptr<ListUpdateResponse> response,
+      const std::unique_ptr<V4Store>& new_store);
+
+  // Processes the PARTIAL_UPDATE |response| from the server and updates the
+  // V4Store in |new_store|. If processing the |response| succeeds, it returns
+  // APPLY_UPDATE_SUCCESS.
+  ApplyUpdateResult ProcessPartialUpdate(
+      std::unique_ptr<ListUpdateResponse> response,
+      const std::unique_ptr<V4Store>& new_store);
 
   // Reads the state of the store from the file on disk and returns the reason
   // for the failure or reports success.

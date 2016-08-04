@@ -5,9 +5,11 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
+#include "components/safe_browsing_db/v4_rice.h"
 #include "components/safe_browsing_db/v4_store.h"
 #include "components/safe_browsing_db/v4_store.pb.h"
 
@@ -39,6 +41,18 @@ void RecordApplyUpdateResult(ApplyUpdateResult result) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4ApplyUpdateResult", result,
                             APPLY_UPDATE_RESULT_MAX);
 }
+
+void RecordDecodeAdditionsResult(V4DecodeResult result) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4DecodeAdditionsResult", result,
+                            DECODE_RESULT_MAX);
+}
+
+void RecordDecodeRemovalsResult(V4DecodeResult result) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4DecodeRemovalsResult", result,
+                            DECODE_RESULT_MAX);
+}
+
+// TODO(vakh): Collect and record the metrics for time taken to process updates.
 
 void RecordApplyUpdateResultWhenReadingFromDisk(ApplyUpdateResult result) {
   UMA_HISTOGRAM_ENUMERATION(
@@ -99,6 +113,68 @@ bool V4Store::Reset() {
   return true;
 }
 
+ApplyUpdateResult V4Store::ProcessFullUpdate(
+    std::unique_ptr<ListUpdateResponse> response,
+    const std::unique_ptr<V4Store>& new_store) {
+  HashPrefixMap hash_prefix_map;
+  ApplyUpdateResult apply_update_result =
+      UpdateHashPrefixMapFromAdditions(response->additions(), &hash_prefix_map);
+  if (apply_update_result == APPLY_UPDATE_SUCCESS) {
+    new_store->hash_prefix_map_ = hash_prefix_map;
+    RecordStoreWriteResult(new_store->WriteToDisk(std::move(response)));
+  }
+  return apply_update_result;
+}
+
+ApplyUpdateResult V4Store::ProcessPartialUpdate(
+    std::unique_ptr<ListUpdateResponse> response,
+    const std::unique_ptr<V4Store>& new_store) {
+  // TODO(vakh):
+  // 1. Done: Merge the old store and the new update in new_store.
+  // 2. Create a ListUpdateResponse containing RICE encoded hash-prefixes and
+  // response_type as FULL_UPDATE, and write that to disk.
+  // 3. Remove this if condition after completing 1. and 2.
+
+  const RepeatedField<int32>* raw_removals = nullptr;
+  RepeatedField<int32> rice_removals;
+  size_t removals_size = response->removals_size();
+  DCHECK_LE(removals_size, 1u);
+  if (removals_size == 1) {
+    const ThreatEntrySet& removal = response->removals().Get(0);
+    const CompressionType compression_type = removal.compression_type();
+    if (compression_type == RAW) {
+      raw_removals = &removal.raw_indices().indices();
+    } else if (compression_type == RICE) {
+      DCHECK(removal.has_rice_indices());
+
+      const RiceDeltaEncoding& rice_indices = removal.rice_indices();
+      V4DecodeResult decode_result = V4RiceDecoder::DecodeIntegers(
+          rice_indices.first_value(), rice_indices.rice_parameter(),
+          rice_indices.num_entries(), rice_indices.encoded_data(),
+          &rice_removals);
+      RecordDecodeRemovalsResult(decode_result);
+      if (decode_result != DECODE_SUCCESS) {
+        return RICE_DECODING_FAILURE;
+      } else {
+        raw_removals = &rice_removals;
+      }
+    } else {
+      NOTREACHED() << "Unexpected compression_type type: " << compression_type;
+      return UNEXPECTED_COMPRESSION_TYPE_REMOVALS_FAILURE;
+    }
+  }
+
+  HashPrefixMap hash_prefix_map;
+  ApplyUpdateResult apply_update_result =
+      UpdateHashPrefixMapFromAdditions(response->additions(), &hash_prefix_map);
+
+  if (apply_update_result == APPLY_UPDATE_SUCCESS) {
+    apply_update_result =
+        new_store->MergeUpdate(hash_prefix_map_, hash_prefix_map, raw_removals);
+  }
+  return apply_update_result;
+}
+
 void V4Store::ApplyUpdate(
     std::unique_ptr<ListUpdateResponse> response,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
@@ -106,39 +182,12 @@ void V4Store::ApplyUpdate(
   std::unique_ptr<V4Store> new_store(
       new V4Store(this->task_runner_, this->store_path_));
   new_store->state_ = response->new_client_state();
-  // TODO(vakh):
-  // 1. Done: Merge the old store and the new update in new_store.
-  // 2. Create a ListUpdateResponse containing RICE encoded hash-prefixes and
-  // response_type as FULL_UPDATE, and write that to disk.
-  // 3. Remove this if condition after completing 1. and 2.
-  HashPrefixMap hash_prefix_map;
+
   ApplyUpdateResult apply_update_result;
   if (response->response_type() == ListUpdateResponse::PARTIAL_UPDATE) {
-    const RepeatedField<int32>* raw_removals = nullptr;
-    size_t removals_size = response->removals_size();
-    DCHECK_LE(removals_size, 1u);
-    if (removals_size == 1) {
-      const ThreatEntrySet& removal = response->removals().Get(0);
-      // TODO(vakh): Allow other compression types.
-      // See: https://bugs.chromium.org/p/chromium/issues/detail?id=624567
-      DCHECK_EQ(RAW, removal.compression_type());
-      raw_removals = &removal.raw_indices().indices();
-    }
-
-    apply_update_result = UpdateHashPrefixMapFromAdditions(
-        response->additions(), &hash_prefix_map);
-    if (apply_update_result == APPLY_UPDATE_SUCCESS) {
-      apply_update_result = new_store->MergeUpdate(
-          hash_prefix_map_, hash_prefix_map, raw_removals);
-    }
-    // TODO(vakh): Generate the updated ListUpdateResponse to write to disk.
+    apply_update_result = ProcessPartialUpdate(std::move(response), new_store);
   } else if (response->response_type() == ListUpdateResponse::FULL_UPDATE) {
-    apply_update_result = UpdateHashPrefixMapFromAdditions(
-        response->additions(), &hash_prefix_map);
-    if (apply_update_result == APPLY_UPDATE_SUCCESS) {
-      new_store->hash_prefix_map_ = hash_prefix_map;
-      RecordStoreWriteResult(new_store->WriteToDisk(std::move(response)));
-    }
+    apply_update_result = ProcessFullUpdate(std::move(response), new_store);
   } else {
     apply_update_result = UNEXPECTED_RESPONSE_TYPE_FAILURE;
     NOTREACHED() << "Unexpected response type: " << response->response_type();
@@ -161,21 +210,46 @@ ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(
     const RepeatedPtrField<ThreatEntrySet>& additions,
     HashPrefixMap* additions_map) {
   for (const auto& addition : additions) {
-    // TODO(vakh): Allow other compression types.
-    // See: https://bugs.chromium.org/p/chromium/issues/detail?id=624567
-    DCHECK_EQ(RAW, addition.compression_type());
+    ApplyUpdateResult apply_update_result = APPLY_UPDATE_SUCCESS;
+    const CompressionType compression_type = addition.compression_type();
+    if (compression_type == RAW) {
+      DCHECK(addition.has_raw_hashes());
+      DCHECK(addition.raw_hashes().has_raw_hashes());
 
-    DCHECK(addition.has_raw_hashes());
-    DCHECK(addition.raw_hashes().has_raw_hashes());
+      apply_update_result =
+          AddUnlumpedHashes(addition.raw_hashes().prefix_size(),
+                            addition.raw_hashes().raw_hashes(), additions_map);
+    } else if (compression_type == RICE) {
+      DCHECK(addition.has_rice_hashes());
 
-    PrefixSize prefix_size = addition.raw_hashes().prefix_size();
-    ApplyUpdateResult result = AddUnlumpedHashes(
-        prefix_size, addition.raw_hashes().raw_hashes(), additions_map);
-    if (result != APPLY_UPDATE_SUCCESS) {
+      const RiceDeltaEncoding& rice_hashes = addition.rice_hashes();
+      std::string raw_hashes;
+      V4DecodeResult decode_result = V4RiceDecoder::DecodeBytes(
+          rice_hashes.first_value(), rice_hashes.rice_parameter(),
+          rice_hashes.num_entries(), rice_hashes.encoded_data(), &raw_hashes);
+      RecordDecodeAdditionsResult(decode_result);
+      if (decode_result != DECODE_SUCCESS) {
+        return RICE_DECODING_FAILURE;
+      } else {
+        // Rice-Golomb encoding is used to send compressed compressed 4-byte
+        // hash prefixes. Hash prefixes longer than 4 bytes will not be
+        // compressed, and will be served in raw format instead.
+        // Source: https://developers.google.com/safe-browsing/v4/compression
+        const PrefixSize kPrefixSize = 4;
+        apply_update_result =
+            AddUnlumpedHashes(kPrefixSize, raw_hashes, additions_map);
+      }
+    } else {
+      NOTREACHED() << "Unexpected compression_type type: " << compression_type;
+      return UNEXPECTED_COMPRESSION_TYPE_ADDITIONS_FAILURE;
+    }
+
+    if (apply_update_result != APPLY_UPDATE_SUCCESS) {
       // If there was an error in updating the map, discard the update entirely.
-      return result;
+      return apply_update_result;
     }
   }
+
   return APPLY_UPDATE_SUCCESS;
 }
 
@@ -337,7 +411,7 @@ ApplyUpdateResult V4Store::MergeUpdate(
 
   return (!raw_removals || removals_iter == raw_removals->end())
              ? APPLY_UPDATE_SUCCESS
-             : REMOVALS_INDEX_TOO_LARGE;
+             : REMOVALS_INDEX_TOO_LARGE_FAILURE;
 }
 
 StoreReadResult V4Store::ReadFromDisk() {
@@ -418,7 +492,6 @@ StoreWriteResult V4Store::WriteToDisk(
   DCHECK_EQ(file_format_string.size(), written);
 
   if (!base::Move(new_filename, store_path_)) {
-    DVLOG(1) << "store_path_: " << store_path_.value();
     return UNABLE_TO_RENAME_FAILURE;
   }
 

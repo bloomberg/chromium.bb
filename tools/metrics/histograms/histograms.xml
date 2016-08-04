@@ -48011,6 +48011,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.V4DecodeAdditionsResult"
+    enum="SafeBrowsingV4DecodeResult">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Track the result of decoding the Rice-encoded list of additions of 4-byte
+    hash prefixes. This is logged once per store, per update containing
+    Rice-encoded additions.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.V4DecodeRemovalsResult"
+    enum="SafeBrowsingV4DecodeResult">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Track the result of decoding the Rice-encoded list of indexes of hash
+    prefixes to remove since the last update. This is logged once per store, per
+    update containing Rice-encoded removals.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.V4FullHashCacheResult"
     enum="SafeBrowsingV4FullHashCacheResult">
   <owner>kcarattini@chromium.org</owner>
@@ -48024,7 +48044,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SafeBrowsing.V4StoreReadResult"
-    enum="SafeBrowsingStoreReadResult">
+    enum="SafeBrowsingV4StoreReadResult">
   <owner>vakh@chromium.org</owner>
   <summary>
     Track the parsing results of reading the SafeBrowsing V4 store file from
@@ -48041,7 +48061,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SafeBrowsing.V4StoreWriteResult"
-    enum="SafeBrowsingStoreWriteResult">
+    enum="SafeBrowsingV4StoreWriteResult">
   <owner>vakh@chromium.org</owner>
   <summary>
     Track the results of writing the SafeBrowsing V4 store file to disk.
@@ -89836,25 +89856,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="NO_STATE_ERROR"/>
 </enum>
 
-<enum name="SafeBrowsingStoreReadResult" type="int">
-  <int value="0" label="READ_SUCCESS"/>
-  <int value="1" label="UNEXPECTED_READ_FAILURE"/>
-  <int value="2" label="FILE_UNREADABLE_FAILURE"/>
-  <int value="3" label="FILE_EMPTY_FAILURE"/>
-  <int value="4" label="PROTO_PARSING_FAILURE"/>
-  <int value="5" label="UNEXPECTED_MAGIC_NUMBER_FAILURE"/>
-  <int value="6" label="FILE_VERSION_TOO_LOW_FAILURE"/>
-  <int value="7" label="HASH_PREFIX_INFO_MISSING_FAILURE"/>
-</enum>
-
-<enum name="SafeBrowsingStoreWriteResult" type="int">
-  <int value="0" label="WRITE_SUCCESS"/>
-  <int value="1" label="UNEXPECTED_WRITE_FAILURE"/>
-  <int value="2" label="INVALID_RESPONSE_TYPE_FAILURE"/>
-  <int value="3" label="UNEXPECTED_BYTES_WRITTEN_FAILURE"/>
-  <int value="4" label="UNABLE_TO_RENAME_FAILURE"/>
-</enum>
-
 <enum name="SafeBrowsingV4ApplyUpdateResult" type="int">
   <int value="0" label="APPLY_UPDATE_SUCCESS"/>
   <int value="1" label="UNEXPECTED_APPLY_UPDATE_FAILURE"/>
@@ -89863,6 +89864,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="ADDITIONS_SIZE_UNEXPECTED_FAILURE"/>
   <int value="5" label="ADDITIONS_HAS_EXISTING_PREFIX_FAILURE"/>
   <int value="6" label="UNEXPECTED_RESPONSE_TYPE_FAILURE"/>
+  <int value="7" label="REMOVALS_INDEX_TOO_LARGE_FAILURE"/>
+  <int value="8" label="RICE_DECODING_FAILURE"/>
+  <int value="9" label="UNEXPECTED_COMPRESSION_TYPE_ADDITIONS_FAILURE"/>
+  <int value="10" label="UNEXPECTED_COMPRESSION_TYPE_REMOVALS_FAILURE"/>
+</enum>
+
+<enum name="SafeBrowsingV4DecodeResult" type="int">
+  <int value="0" label="DECODE_SUCCESS"/>
+  <int value="1" label="DECODE_NO_MORE_ENTRIES_FAILURE"/>
+  <int value="2" label="DECODE_REQUESTED_TOO_MANY_BITS_FAILURE"/>
+  <int value="3" label="DECODE_RAN_OUT_OF_BITS_FAILURE"/>
+  <int value="4" label="NUM_ENTRIES_NEGATIVE_FAILURE"/>
+  <int value="5" label="RICE_PARAMETER_NON_POSITIVE_FAILURE"/>
+  <int value="6" label="ENCODED_DATA_UNEXPECTED_EMPTY_FAILURE"/>
+  <int value="7" label="DECODED_INTEGER_OVERFLOW_FAILURE"/>
 </enum>
 
 <enum name="SafeBrowsingV4FullHashCacheResult" type="int">
@@ -89885,6 +89901,25 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="BACKOFF_ERROR"/>
   <int value="5" label="MIN_WAIT_DURATION_ERROR"/>
   <int value="6" label="ALREADY_PENDING_ERROR"/>
+</enum>
+
+<enum name="SafeBrowsingV4StoreReadResult" type="int">
+  <int value="0" label="READ_SUCCESS"/>
+  <int value="1" label="UNEXPECTED_READ_FAILURE"/>
+  <int value="2" label="FILE_UNREADABLE_FAILURE"/>
+  <int value="3" label="FILE_EMPTY_FAILURE"/>
+  <int value="4" label="PROTO_PARSING_FAILURE"/>
+  <int value="5" label="UNEXPECTED_MAGIC_NUMBER_FAILURE"/>
+  <int value="6" label="FILE_VERSION_TOO_LOW_FAILURE"/>
+  <int value="7" label="HASH_PREFIX_INFO_MISSING_FAILURE"/>
+</enum>
+
+<enum name="SafeBrowsingV4StoreWriteResult" type="int">
+  <int value="0" label="WRITE_SUCCESS"/>
+  <int value="1" label="UNEXPECTED_WRITE_FAILURE"/>
+  <int value="2" label="INVALID_RESPONSE_TYPE_FAILURE"/>
+  <int value="3" label="UNEXPECTED_BYTES_WRITTEN_FAILURE"/>
+  <int value="4" label="UNABLE_TO_RENAME_FAILURE"/>
 </enum>
 
 <enum name="SavePasswordPromptResponseType" type="int">

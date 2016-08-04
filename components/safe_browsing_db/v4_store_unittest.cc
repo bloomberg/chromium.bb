@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -16,6 +17,7 @@
 namespace safe_browsing {
 
 using ::google::protobuf::RepeatedField;
+using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::int32;
 
 class V4StoreTest : public PlatformTest {
@@ -51,6 +53,14 @@ class V4StoreTest : public PlatformTest {
     file_format.SerializeToString(&file_format_string);
     base::WriteFile(store_path_, file_format_string.data(),
                     file_format_string.size());
+  }
+
+  void UpdatedStoreReadyAfterRiceRemovals(bool* called_back,
+                                          std::unique_ptr<V4Store> new_store) {
+    *called_back = true;
+    EXPECT_EQ(2u, new_store->hash_prefix_map_.size());
+    EXPECT_EQ("22222", new_store->hash_prefix_map_[5]);
+    EXPECT_EQ("abcd", new_store->hash_prefix_map_[4]);
   }
 
   base::ScopedTempDir temp_dir_;
@@ -339,7 +349,7 @@ TEST_F(V4StoreTest, TestMergeUpdatesFailsWhenRemovalsIndexTooLarge) {
   // old_store: ["2222"]
   raw_removals.Add(1);
   EXPECT_EQ(
-      REMOVALS_INDEX_TOO_LARGE,
+      REMOVALS_INDEX_TOO_LARGE_FAILURE,
       store.MergeUpdate(prefix_map_old, prefix_map_additions, &raw_removals));
 }
 
@@ -611,6 +621,81 @@ TEST_F(V4StoreTest, TestHashPrefixDoesNotExistInMapWithDifferentSizes) {
   store.hash_prefix_map_[5] = "11111hhhhh";
   FullHash full_hash = "22222222222222222222222222222222";
   EXPECT_TRUE(store.GetMatchingHashPrefix(full_hash).empty());
+}
+
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+// This test hits a NOTREACHED so it is a release mode only test.
+TEST_F(V4StoreTest, TestAdditionsWithRiceEncodingFailsWithInvalidInput) {
+  RepeatedPtrField<ThreatEntrySet> additions;
+  ThreatEntrySet* addition = additions.Add();
+  addition->set_compression_type(RICE);
+  addition->mutable_rice_hashes()->set_num_entries(-1);
+  HashPrefixMap additions_map;
+  EXPECT_EQ(RICE_DECODING_FAILURE, V4Store::UpdateHashPrefixMapFromAdditions(
+                                       additions, &additions_map));
+}
+#endif
+
+TEST_F(V4StoreTest, TestAdditionsWithRiceEncodingSucceeds) {
+  RepeatedPtrField<ThreatEntrySet> additions;
+  ThreatEntrySet* addition = additions.Add();
+  addition->set_compression_type(RICE);
+  RiceDeltaEncoding* rice_hashes = addition->mutable_rice_hashes();
+  rice_hashes->set_first_value(5);
+  rice_hashes->set_num_entries(3);
+  rice_hashes->set_rice_parameter(28);
+  // The following value is hand-crafted by getting inspiration from:
+  // https://goto.google.com/testlargenumbersriceencoded
+  // The value listed at that place fails the "integer overflow" check so I
+  // modified it until the decoder parsed it successfully.
+  rice_hashes->set_encoded_data(
+      "\xbf\xa8\x3f\xfb\xf\xf\x5e\x27\xe6\xc3\x1d\xc6\x38");
+  HashPrefixMap additions_map;
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS, V4Store::UpdateHashPrefixMapFromAdditions(
+                                      additions, &additions_map));
+  EXPECT_EQ(1u, additions_map.size());
+  EXPECT_EQ(std::string("\x5\0\0\0V\x7F\xF6o\xCEo1\x81\fL\x93\xAD", 16),
+            additions_map[4]);
+}
+
+TEST_F(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds) {
+  HashPrefixMap prefix_map_old;
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            V4Store::AddUnlumpedHashes(4, "1111abcdefgh", &prefix_map_old));
+  HashPrefixMap prefix_map_additions;
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            V4Store::AddUnlumpedHashes(5, "22222bcdef", &prefix_map_additions));
+
+  V4Store store(task_runner_, store_path_);
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr));
+
+  // At this point, the store map looks like this:
+  // 4: 1111abcdefgh
+  // 5: 22222bcdef
+  // sorted: 1111, 22222, abcd, bcdef, efgh
+  // We'll now try to delete hashes at indexes 0, 3 and 4 in the sorted list.
+
+  std::unique_ptr<ListUpdateResponse> lur(new ListUpdateResponse);
+  lur->set_response_type(ListUpdateResponse::PARTIAL_UPDATE);
+  ThreatEntrySet* removal = lur->add_removals();
+  removal->set_compression_type(RICE);
+  RiceDeltaEncoding* rice_indices = removal->mutable_rice_indices();
+  rice_indices->set_first_value(0);
+  rice_indices->set_num_entries(2);
+  rice_indices->set_rice_parameter(2);
+  rice_indices->set_encoded_data("\x16");
+
+  bool called_back = false;
+  UpdatedStoreReadyCallback store_ready_callback =
+      base::Bind(&V4StoreTest::UpdatedStoreReadyAfterRiceRemovals,
+                 base::Unretained(this), &called_back);
+  store.ApplyUpdate(std::move(lur), task_runner_, store_ready_callback);
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // This ensures that the callback was called.
+  EXPECT_TRUE(called_back);
 }
 
 }  // namespace safe_browsing
