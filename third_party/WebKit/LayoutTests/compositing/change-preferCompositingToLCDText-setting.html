@@ -1,24 +1,24 @@
 <!DOCTYPE HTML>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <style>
 #scroller {
     overflow: scroll;
     height: 300px;
     width: 300px;
-    background-color: red;
+    background-color: rgba(255,0,0,0.5); /* Force non-promotion due to background opacity */;
 }
 
 #scrolled {
     height: 1000px;
     width: 250px;
-    background-color: green;
+    background-color: rgba(0,128,0,0.5); /* Force non-promotion due to background opacity */;
 }
 </style>
 
 <script>
-jsTestIsAsync = true;
 
-description('This test checks that changes to the compositor\'s settings are applied correctly.');
+var t = async_test("Check that the preferCompositingToLCDText flag results in compositing");
 
 function isUsingCompositedScrolling(layer) {
     layer = layer || JSON.parse(window.internals.layerTreeAsText(document));
@@ -34,21 +34,18 @@ function isUsingCompositedScrolling(layer) {
 }
 
 window.onload = function() {
-    if (!window.internals) {
-        testFailed('This test requires window.internals');
-        return;
-    }
+  t.step(function() {
+    assert_not_equals(window.internals, null, 'This test requires window.internals');
+
     window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
     var stateBefore = isUsingCompositedScrolling();
     window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
     var stateAfter = isUsingCompositedScrolling();
 
-    if (!stateBefore && stateAfter) {
-        testPassed('Composited scrolling became enabled.');
-    } else {
-        testFailed('Composited scrolling did not become enabled: ' + stateBefore + ", " + stateAfter);
-    }
-    finishJSTest();
+    assert_false(stateBefore, 'Composited scrolling began disabled');
+    assert_true(stateAfter, 'Composited scrolling became enabled');
+    t.done();
+  });
 };
 </script>
 

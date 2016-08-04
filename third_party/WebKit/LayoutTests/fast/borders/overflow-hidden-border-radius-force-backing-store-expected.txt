@@ -25,7 +25,8 @@
                   "children": [
                     {
                       "name": "LayoutBlockFlow DIV id='content'",
-                      "bounds": [285, 1000]
+                      "bounds": [285, 1000],
+                      "drawsContent": true
                     }
                   ]
                 }
