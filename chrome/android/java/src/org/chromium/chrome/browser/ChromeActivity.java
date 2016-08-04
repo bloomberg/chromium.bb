@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.blimp.ChromeBlimpClientContextDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -94,6 +95,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -231,6 +233,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     // See enableHardwareAcceleration()
     private boolean mSetWindowHWA;
+
+    // Chrome delegate that includes functionalities needed by Blimp client.
+    private ChromeBlimpClientContextDelegate mBlimpClientContextDelegate;
 
     /**
      * @param The {@link AppMenuHandlerFactory} for creating {@link mAppMenuHandler}
@@ -854,6 +859,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             manager.removeTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
         }
 
+        if (mBlimpClientContextDelegate != null) {
+            mBlimpClientContextDelegate.destroy();
+            mBlimpClientContextDelegate = null;
+        }
+
         super.onDestroy();
     }
 
@@ -921,6 +931,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
         DownloadManagerService.getDownloadManagerService(
                 getApplicationContext()).onActivityLaunched();
+
+        mBlimpClientContextDelegate = ChromeBlimpClientContextDelegate
+                .createAndSetDelegateForContext(Profile.getLastUsedProfile().getOriginalProfile());
+
         super.finishNativeInitialization();
     }
 

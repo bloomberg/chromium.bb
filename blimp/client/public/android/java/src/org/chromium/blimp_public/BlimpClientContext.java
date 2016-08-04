@@ -33,4 +33,10 @@ public interface BlimpClientContext {
      * @param callback Chrome layer callbacks that passed to Blimp.
      */
     void attachBlimpPreferences(PreferenceFragment fragment, BlimpSettingsCallbacks callback);
+
+    /**
+     * Set the {@link BlimpClientContextDelegate}, functions in this interface should be used in
+     * Java Blimp code only.
+     */
+    void setDelegate(BlimpClientContextDelegate delegate);
 }

@@ -10,6 +10,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.core.settings.AboutBlimpPreferences;
 import org.chromium.blimp_public.BlimpClientContext;
+import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.blimp_public.BlimpSettingsCallbacks;
 import org.chromium.blimp_public.contents.BlimpContents;
 
@@ -19,6 +20,26 @@ import org.chromium.blimp_public.contents.BlimpContents;
  */
 @JNINamespace("blimp::client")
 public class BlimpClientContextImpl implements BlimpClientContext {
+
+    // Delegate that contains functions Blimp needed in the embedder.
+    private BlimpClientContextDelegate mDelegate;
+
+    /**
+     * Get embedder delegate which provides necessary functionality and callbacks.
+     *
+     * The delegate is created through JNI in early startup.
+     *
+     * @return BlimpClientContextDelegate, which contains functions we need in embedder.
+     */
+    public BlimpClientContextDelegate getDelegate() {
+        return mDelegate;
+    }
+
+    @Override
+    public void setDelegate(BlimpClientContextDelegate delegate) {
+        mDelegate = delegate;
+    }
+
     @CalledByNative
     private static BlimpClientContextImpl create(long nativeBlimpClientContextImplAndroid) {
         return new BlimpClientContextImpl(nativeBlimpClientContextImplAndroid);

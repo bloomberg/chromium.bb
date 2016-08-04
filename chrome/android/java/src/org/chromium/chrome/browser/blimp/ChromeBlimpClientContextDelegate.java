@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.blimp;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -16,7 +17,7 @@ import org.chromium.chrome.browser.profiles.Profile;
  * it, call {@link ChromeBlimpClientContextDelegate#createAndSetDelegateForContext(Profile)}.
  * When the delegate should be deleted, a call to {@link #destroy} is required.
  */
-public class ChromeBlimpClientContextDelegate {
+public class ChromeBlimpClientContextDelegate implements BlimpClientContextDelegate {
     /**
      * Creates a new ChromeBlimpClientContextDelegate that is owned by the caller. It automatically
      * attaches itself as the sole delegate for the BlimpClientContext attached to the given
@@ -38,7 +39,11 @@ public class ChromeBlimpClientContextDelegate {
     private long mNativeChromeBlimpClientContextDelegateAndroid;
 
     private ChromeBlimpClientContextDelegate(Profile profile) {
+        // Create native delegate object.
         mNativeChromeBlimpClientContextDelegateAndroid = nativeInit(profile);
+
+        // Set ourselves as the Java delegate object.
+        BlimpClientContextFactory.getBlimpClientContextForProfile(profile).setDelegate(this);
     }
 
     @CalledByNative

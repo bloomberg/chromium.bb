@@ -72,6 +72,7 @@ if (is_android) {
       "android/java/src/org/chromium/blimp_public/contents/BlimpNavigationController.java",
       "android/java/src/org/chromium/blimp_public/contents/EmptyBlimpContentsObserver.java",
       "android/java/src/org/chromium/blimp_public/BlimpClientContext.java",
+      "android/java/src/org/chromium/blimp_public/BlimpClientContextDelegate.java",
       "android/java/src/org/chromium/blimp_public/BlimpSettingsCallbacks.java",
     ]
   }
