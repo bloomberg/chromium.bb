@@ -86,12 +86,6 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // if they are not.
     switches::kUnsafelyTreatInsecureOriginAsSecure,
 
-    // This flag enables Web Bluetooth. Since the UI for Web Bluetooth is
-    // not yet implemented, websites could take control over paired devices
-    // without the users knowledge, so we need to show a warning for when
-    // the flag is enabled.
-    switches::kEnableWebBluetooth,
-
     // This flag disables WebUSB's CORS-like checks for origin to device
     // communication, allowing any origin to ask the user for permission to
     // connect to a device. It is intended for manufacturers testing their
