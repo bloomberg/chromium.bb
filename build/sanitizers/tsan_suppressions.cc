@@ -270,6 +270,11 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/633145
 "race:third_party/libjpeg_turbo/simd/jsimd_x86_64.c\n"
 
+// Intentional test-only race for otherwise untestable code, won't fix.
+// http://crbug.com/634383
+"race:ThreadTest_StartTwiceNonJoinableNotAllowed_Test::TestBody\n"
+"race:ThreadTest_StartWithOptions_NonJoinable_Test::TestBody\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
