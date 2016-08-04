@@ -111,7 +111,7 @@ void V0CustomElement::define(Element* element, V0CustomElementDefinition* defini
         break;
 
     case Element::V0WaitingForUpgrade:
-        element->setCustomElementDefinition(definition);
+        element->v0SetCustomElementDefinition(definition);
         V0CustomElementScheduler::scheduleCallback(definition->callbacks(), element, V0CustomElementLifecycleCallbacks::CreatedCallback);
         break;
     }
@@ -120,7 +120,7 @@ void V0CustomElement::define(Element* element, V0CustomElementDefinition* defini
 void V0CustomElement::attributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
-    V0CustomElementScheduler::scheduleAttributeChangedCallback(element->customElementDefinition()->callbacks(), element, name, oldValue, newValue);
+    V0CustomElementScheduler::scheduleAttributeChangedCallback(element->v0CustomElementDefinition()->callbacks(), element, name, oldValue, newValue);
 }
 
 void V0CustomElement::didAttach(Element* element, const Document& document)
@@ -128,7 +128,7 @@ void V0CustomElement::didAttach(Element* element, const Document& document)
     DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
     if (!document.domWindow())
         return;
-    V0CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, V0CustomElementLifecycleCallbacks::AttachedCallback);
+    V0CustomElementScheduler::scheduleCallback(element->v0CustomElementDefinition()->callbacks(), element, V0CustomElementLifecycleCallbacks::AttachedCallback);
 }
 
 void V0CustomElement::didDetach(Element* element, const Document& document)
@@ -136,7 +136,7 @@ void V0CustomElement::didDetach(Element* element, const Document& document)
     DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
     if (!document.domWindow())
         return;
-    V0CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, V0CustomElementLifecycleCallbacks::DetachedCallback);
+    V0CustomElementScheduler::scheduleCallback(element->v0CustomElementDefinition()->callbacks(), element, V0CustomElementLifecycleCallbacks::DetachedCallback);
 }
 
 void V0CustomElement::wasDestroyed(Element* element)

@@ -33,3 +33,13 @@ function assert_throws_dom_exception(global_context, code, func, description) {
   }, description);
   assert_true(exception instanceof global_context.DOMException, 'DOMException on the appropriate window');
 }
+
+function assert_array_equals_callback_invocations(actual, expected, description) {
+  assert_equals(actual.length, expected.length);
+  for (let len=actual.length, i=0; i<len; ++i) {
+    let callback = expected[i][0];
+    assert_equals(actual[i][0], expected[i][0], callback + ' callback should be invoked');
+    assert_equals(actual[i][1], expected[i][1], callback + ' should be invoked on the element ' + expected[i][1]);
+    assert_array_equals(actual[i][2], expected[i][2], callback + ' should be invoked with the arguments ' + expected[i][2]);
+  }
+}

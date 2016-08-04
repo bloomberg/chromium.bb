@@ -156,9 +156,11 @@ bool ScriptCustomElementDefinitionBuilder::rememberOriginalProperties()
     // CustomElementDefinition is built, even if JS changes them afterwards.
     const String kConnectedCallback = "connectedCallback";
     const String kDisconnectedCallback = "disconnectedCallback";
+    const String kAdoptedCallback = "adoptedCallback";
     const String kAttributeChangedCallback = "attributeChangedCallback";
     return callableForName(kConnectedCallback, m_connectedCallback)
         && callableForName(kDisconnectedCallback, m_disconnectedCallback)
+        && callableForName(kAdoptedCallback, m_adoptedCallback)
         && callableForName(kAttributeChangedCallback, m_attributeChangedCallback)
         && (m_attributeChangedCallback.IsEmpty() || retrieveObservedAttributes());
 }
@@ -174,6 +176,7 @@ CustomElementDefinition* ScriptCustomElementDefinitionBuilder::build(
         m_prototype,
         m_connectedCallback,
         m_disconnectedCallback,
+        m_adoptedCallback,
         m_attributeChangedCallback,
         m_observedAttributes);
 }

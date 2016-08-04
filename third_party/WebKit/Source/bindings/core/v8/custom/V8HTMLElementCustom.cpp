@@ -12,6 +12,7 @@
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -63,7 +64,7 @@ void V8HTMLElement::constructorCustom(
             *window->document());
         // TODO(davaajav): write this as one call to setCustomElementState instead of two
         element->setCustomElementState(CustomElementState::Undefined);
-        element->setCustomElementState(CustomElementState::Custom);
+        element->setCustomElementDefinition(definition);
     } else {
         element = definition->constructionStack().last();
         if (element) {

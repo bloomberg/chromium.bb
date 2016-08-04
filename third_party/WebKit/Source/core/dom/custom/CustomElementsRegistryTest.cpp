@@ -290,6 +290,7 @@ public:
         Constructor,
         ConnectedCallback,
         DisconnectedCallback,
+        AdoptedCallback,
         AttributeChangedCallback,
     };
     Vector<MethodType> m_logs;
@@ -316,6 +317,7 @@ public:
 
     bool hasConnectedCallback() const override { return true; }
     bool hasDisconnectedCallback() const override { return true; }
+    bool hasAdoptedCallback() const override {return true;}
 
     void runConnectedCallback(Element* element) override
     {
@@ -326,6 +328,12 @@ public:
     void runDisconnectedCallback(Element* element) override
     {
         m_logs.append(DisconnectedCallback);
+        EXPECT_EQ(element, m_element);
+    }
+
+    void runAdoptedCallback(Element* element) override
+    {
+        m_logs.append(AdoptedCallback);
         EXPECT_EQ(element, m_element);
     }
 

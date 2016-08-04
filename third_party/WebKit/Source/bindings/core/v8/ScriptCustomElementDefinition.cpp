@@ -106,6 +106,7 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
     const v8::Local<v8::Object>& prototype,
     const v8::Local<v8::Function>& connectedCallback,
     const v8::Local<v8::Function>& disconnectedCallback,
+    const v8::Local<v8::Function>& adoptedCallback,
     const v8::Local<v8::Function>& attributeChangedCallback,
     const HashSet<AtomicString>& observedAttributes)
 {
@@ -117,6 +118,7 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
             prototype,
             connectedCallback,
             disconnectedCallback,
+            adoptedCallback,
             attributeChangedCallback,
             observedAttributes);
 
@@ -130,11 +132,12 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
 
     // We add the prototype and callbacks here to keep them alive. We use the
     // name as the key because it is unique per-registry.
-    v8::Local<v8::Array> array = v8::Array::New(scriptState->isolate(), 4);
+    v8::Local<v8::Array> array = v8::Array::New(scriptState->isolate(), 5);
     keepAlive(array, 0, prototype, definition->m_prototype, scriptState);
     keepAlive(array, 1, connectedCallback, definition->m_connectedCallback, scriptState);
     keepAlive(array, 2, disconnectedCallback, definition->m_disconnectedCallback, scriptState);
-    keepAlive(array, 3, attributeChangedCallback, definition->m_attributeChangedCallback, scriptState);
+    keepAlive(array, 3, adoptedCallback, definition->m_adoptedCallback, scriptState);
+    keepAlive(array, 4, attributeChangedCallback, definition->m_attributeChangedCallback, scriptState);
     map->Set(scriptState->context(), nameValue, array).ToLocalChecked();
 
     return definition;
@@ -147,6 +150,7 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     const v8::Local<v8::Object>& prototype,
     const v8::Local<v8::Function>& connectedCallback,
     const v8::Local<v8::Function>& disconnectedCallback,
+    const v8::Local<v8::Function>& adoptedCallback,
     const v8::Local<v8::Function>& attributeChangedCallback,
     const HashSet<AtomicString>& observedAttributes)
     : CustomElementDefinition(descriptor, observedAttributes)
@@ -230,11 +234,10 @@ bool ScriptCustomElementDefinition::runConstructor(Element* element)
     if (tryCatch.HasCaught())
         return false;
 
-    // To report InvalidStateError Exception, when the constructor returns some differnt object
+    // To report InvalidStateError Exception, when the constructor returns some different object
     if (result != element) {
         const String& message = "custom element constructors must call super() first and must "
             "not return a different object";
-
         std::unique_ptr<SourceLocation> location = SourceLocation::fromFunction(constructor().As<v8::Function>());
         v8::Local<v8::Value> exception =  V8ThrowException::createDOMException(
             m_scriptState->isolate(),
@@ -302,6 +305,11 @@ bool ScriptCustomElementDefinition::hasDisconnectedCallback() const
     return !m_disconnectedCallback.isEmpty();
 }
 
+bool ScriptCustomElementDefinition::hasAdoptedCallback() const
+{
+    return !m_adoptedCallback.isEmpty();
+}
+
 void ScriptCustomElementDefinition::runCallback(
     v8::Local<v8::Function> callback,
     Element* element, int argc, v8::Local<v8::Value> argv[])
@@ -341,6 +349,15 @@ void ScriptCustomElementDefinition::runDisconnectedCallback(Element* element)
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     runCallback(m_disconnectedCallback.newLocal(isolate), element);
+}
+
+void ScriptCustomElementDefinition::runAdoptedCallback(Element* element)
+{
+    if (!m_scriptState->contextIsValid())
+        return;
+    ScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+    runCallback(m_adoptedCallback.newLocal(isolate), element);
 }
 
 void ScriptCustomElementDefinition::runAttributeChangedCallback(

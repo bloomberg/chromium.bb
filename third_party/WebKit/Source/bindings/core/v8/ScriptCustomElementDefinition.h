@@ -35,6 +35,7 @@ public:
         const v8::Local<v8::Object>& prototype,
         const v8::Local<v8::Function>& connectedCallback,
         const v8::Local<v8::Function>& disconnectedCallback,
+        const v8::Local<v8::Function>& adoptedCallback,
         const v8::Local<v8::Function>& attributeChangedCallback,
         const HashSet<AtomicString>& observedAttributes);
 
@@ -54,9 +55,11 @@ public:
 
     bool hasConnectedCallback() const override;
     bool hasDisconnectedCallback() const override;
+    bool hasAdoptedCallback() const override;
 
     void runConnectedCallback(Element*) override;
     void runDisconnectedCallback(Element*) override;
+    void runAdoptedCallback(Element*) override;
     void runAttributeChangedCallback(Element*, const QualifiedName&,
         const AtomicString& oldValue, const AtomicString& newValue) override;
 
@@ -68,6 +71,7 @@ private:
         const v8::Local<v8::Object>& prototype,
         const v8::Local<v8::Function>& connectedCallback,
         const v8::Local<v8::Function>& disconnectedCallback,
+        const v8::Local<v8::Function>& adoptedCallback,
         const v8::Local<v8::Function>& attributeChangedCallback,
         const HashSet<AtomicString>& observedAttributes);
 
@@ -84,6 +88,7 @@ private:
     ScopedPersistent<v8::Object> m_prototype;
     ScopedPersistent<v8::Function> m_connectedCallback;
     ScopedPersistent<v8::Function> m_disconnectedCallback;
+    ScopedPersistent<v8::Function> m_adoptedCallback;
     ScopedPersistent<v8::Function> m_attributeChangedCallback;
 };
 

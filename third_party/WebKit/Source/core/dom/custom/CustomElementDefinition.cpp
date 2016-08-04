@@ -7,6 +7,7 @@
 #include "core/dom/Attr.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementAdoptedCallbackReaction.h"
 #include "core/dom/custom/CustomElementAttributeChangedCallbackReaction.h"
 #include "core/dom/custom/CustomElementConnectedCallbackReaction.h"
 #include "core/dom/custom/CustomElementDisconnectedCallbackReaction.h"
@@ -127,7 +128,7 @@ void CustomElementDefinition::upgrade(Element* element)
         return;
     }
 
-    element->setCustomElementState(CustomElementState::Custom);
+    element->setCustomElementDefinition(this);
 }
 
 bool CustomElementDefinition::hasAttributeChangedCallback(
@@ -157,6 +158,12 @@ void CustomElementDefinition::enqueueDisconnectedCallback(Element* element)
 {
     CustomElement::enqueue(element,
         new CustomElementDisconnectedCallbackReaction(this));
+}
+
+void CustomElementDefinition::enqueueAdoptedCallback(Element* element)
+{
+    CustomElement::enqueue(element,
+        new CustomElementAdoptedCallbackReaction(this));
 }
 
 void CustomElementDefinition::enqueueAttributeChangedCallback(Element* element,

@@ -32,6 +32,7 @@
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/PseudoElementData.h"
+#include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/V0CustomElementDefinition.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
@@ -125,8 +126,12 @@ public:
     void decrementCompositorProxiedProperties(uint32_t properties);
     CompositorProxiedPropertySet* proxiedPropertyCounts() const { return m_proxiedProperties.get(); }
 
-    void setCustomElementDefinition(V0CustomElementDefinition* definition) { m_customElementDefinition = definition; }
-    V0CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
+    void v0SetCustomElementDefinition(V0CustomElementDefinition* definition) { m_v0CustomElementDefinition = definition; }
+    V0CustomElementDefinition* v0CustomElementDefinition() const { return m_v0CustomElementDefinition.get(); }
+
+    void setCustomElementDefinition(CustomElementDefinition* definition) { m_customElementDefinition = definition; }
+    CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
+
 
     AttrNodeList& ensureAttrNodeList();
     AttrNodeList* attrNodeList() { return m_attrNodeList.get(); }
@@ -172,7 +177,9 @@ private:
     Member<ResizeObserverDataMap> m_resizeObserverData;
 
     RefPtr<ComputedStyle> m_computedStyle;
-    Member<V0CustomElementDefinition> m_customElementDefinition;
+    // TODO(davaajav):remove this field when v0 custom elements are deprecated
+    Member<V0CustomElementDefinition> m_v0CustomElementDefinition;
+    Member<CustomElementDefinition> m_customElementDefinition;
 
     Member<PseudoElementData> m_pseudoElementData;
 

@@ -49,7 +49,7 @@ class CSSStyleDeclaration;
 class ClientRect;
 class ClientRectList;
 class CompositorMutation;
-class V0CustomElementDefinition;
+class CustomElementDefinition;
 class DOMStringMap;
 class DOMTokenList;
 class Dictionary;
@@ -72,6 +72,7 @@ class ShadowRoot;
 class ShadowRootInit;
 class StylePropertySet;
 class StylePropertyMap;
+class V0CustomElementDefinition;
 
 enum SpellcheckAttributeState {
     SpellcheckAttributeTrue,
@@ -517,8 +518,11 @@ public:
     void clearHasPendingResources() { clearElementFlag(HasPendingResources); }
     virtual void buildPendingResource() { }
 
-    void setCustomElementDefinition(V0CustomElementDefinition*);
-    V0CustomElementDefinition* customElementDefinition() const;
+    void v0SetCustomElementDefinition(V0CustomElementDefinition*);
+    V0CustomElementDefinition* v0CustomElementDefinition() const;
+
+    void setCustomElementDefinition(CustomElementDefinition*);
+    CustomElementDefinition* customElementDefinition() const;
 
     bool containsFullScreenElement() const { return hasElementFlag(ContainsFullScreenElement); }
     void setContainsFullScreenElement(bool);

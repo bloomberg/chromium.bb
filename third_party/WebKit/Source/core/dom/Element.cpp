@@ -1941,15 +1941,30 @@ void Element::setNeedsCompositingUpdate()
     layoutObject->layer()->updateSelfPaintingLayer();
 }
 
-void Element::setCustomElementDefinition(V0CustomElementDefinition* definition)
+void Element::v0SetCustomElementDefinition(V0CustomElementDefinition* definition)
 {
     if (!hasRareData() && !definition)
         return;
-    DCHECK(!customElementDefinition());
-    ensureElementRareData().setCustomElementDefinition(definition);
+    DCHECK(!v0CustomElementDefinition());
+    ensureElementRareData().v0SetCustomElementDefinition(definition);
 }
 
-V0CustomElementDefinition* Element::customElementDefinition() const
+V0CustomElementDefinition* Element::v0CustomElementDefinition() const
+{
+    if (hasRareData())
+        return elementRareData()->v0CustomElementDefinition();
+    return nullptr;
+}
+
+void Element::setCustomElementDefinition(CustomElementDefinition* definition)
+{
+    DCHECK(definition);
+    DCHECK(!customElementDefinition());
+    ensureElementRareData().setCustomElementDefinition(definition);
+    this->setCustomElementState(CustomElementState::Custom);
+}
+
+CustomElementDefinition* Element::customElementDefinition() const
 {
     if (hasRareData())
         return elementRareData()->customElementDefinition();

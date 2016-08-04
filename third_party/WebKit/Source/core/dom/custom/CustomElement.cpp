@@ -25,7 +25,6 @@ CustomElementsRegistry* CustomElement::registry(const Element& element)
 {
     return registry(element.document());
 }
-
 CustomElementsRegistry* CustomElement::registry(const Document& document)
 {
     if (LocalDOMWindow* window = document.domWindow())
@@ -36,9 +35,7 @@ CustomElementsRegistry* CustomElement::registry(const Document& document)
 static CustomElementDefinition* definitionForElementWithoutCheck(const Element& element)
 {
     DCHECK_EQ(element.getCustomElementState(), CustomElementState::Custom);
-    if (CustomElementsRegistry* registry = CustomElement::registry(element))
-        return registry->definitionForName(element.localName());
-    return nullptr;
+    return element.customElementDefinition();
 }
 
 CustomElementDefinition* CustomElement::definitionForElement(const Element* element)
@@ -218,6 +215,13 @@ void CustomElement::enqueueDisconnectedCallback(Element* element)
         definition->enqueueDisconnectedCallback(element);
 }
 
+void CustomElement::enqueueAdoptedCallback(Element* element)
+{
+    DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
+    CustomElementDefinition* definition = definitionForElementWithoutCheck(*element);
+    if (definition->hasAdoptedCallback())
+        definition->enqueueAdoptedCallback(element);
+}
 
 void CustomElement::enqueueAttributeChangedCallback(Element* element,
     const QualifiedName& name,

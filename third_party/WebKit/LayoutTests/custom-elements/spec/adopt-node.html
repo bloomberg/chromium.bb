@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<title>Custom Elements: adopt node</title>
+<link rel="help" href="https://dom.spec.whatwg.org/#concept-node-adopt">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/custom-elements-helpers.js"></script>
+<body>
+<script>
+'use strict'
+
+// 3.2 For each inclusiveDescendant in node’s shadow-including inclusive descendants that is a custom 
+// element, enqueue a custom element callback reaction with inclusiveDescendant,
+// callback name "adoptedCallback", and an empty argument list.
+promise_test((t) => {
+  return Promise.all([
+    create_window_in_test(t),
+    create_window_in_test(t)])
+    .then(([w1, w2]) => {
+      let invocations = [];
+      class X extends w1.HTMLElement {
+        adoptedCallback() { invocations.push(['adopted', this, []]); }
+      }
+      w1.customElements.define('a-a', X);
+      let a = w1.document.createElement('a-a');
+      w2.document.adoptNode(a);
+      assert_array_equals_callback_invocations(invocations, [ ['adopted', a, []] ]);
+    });
+}, 'adopting a custom element to the different document should enqueue an adoptedCallback reaction');
+</script>
+</body>

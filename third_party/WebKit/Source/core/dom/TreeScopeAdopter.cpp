@@ -25,8 +25,10 @@
 #include "core/dom/TreeScopeAdopter.h"
 
 #include "core/dom/Attr.h"
+#include "core/dom/Node.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/custom/CustomElement.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
@@ -127,6 +129,11 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDoc
     }
 
     oldDocument.moveNodeIteratorsToNewDocument(node, newDocument);
+
+    if (node.getCustomElementState() == CustomElementState::Custom) {
+        Element& element = toElement(node);
+        CustomElement::enqueueAdoptedCallback(&element);
+    }
 
     if (node.isShadowRoot())
         toShadowRoot(node).setDocument(newDocument);

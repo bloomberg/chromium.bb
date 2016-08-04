@@ -56,17 +56,20 @@ public:
 
     virtual bool hasConnectedCallback() const = 0;
     virtual bool hasDisconnectedCallback() const = 0;
+    virtual bool hasAdoptedCallback() const = 0;
     bool hasAttributeChangedCallback(const QualifiedName&) const;
     bool hasStyleAttributeChangedCallback() const;
 
     virtual void runConnectedCallback(Element*) = 0;
     virtual void runDisconnectedCallback(Element*) = 0;
+    virtual void runAdoptedCallback(Element*) = 0;
     virtual void runAttributeChangedCallback(Element*, const QualifiedName&,
         const AtomicString& oldValue, const AtomicString& newValue) = 0;
 
     void enqueueUpgradeReaction(Element*);
     void enqueueConnectedCallback(Element*);
     void enqueueDisconnectedCallback(Element*);
+    void enqueueAdoptedCallback(Element*);
     void enqueueAttributeChangedCallback(Element*, const QualifiedName&,
         const AtomicString& oldValue, const AtomicString& newValue);
 

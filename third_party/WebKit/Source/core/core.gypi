@@ -2662,6 +2662,8 @@
             'dom/custom/CEReactionsScope.h',
             'dom/custom/CustomElement.cpp',
             'dom/custom/CustomElement.h',
+            'dom/custom/CustomElementAdoptedCallbackReaction.cpp',
+            'dom/custom/CustomElementAdoptedCallbackReaction.h',
             'dom/custom/CustomElementAttributeChangedCallbackReaction.cpp',
             'dom/custom/CustomElementAttributeChangedCallbackReaction.h',
             'dom/custom/CustomElementConnectedCallbackReaction.cpp',

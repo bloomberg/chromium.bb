@@ -52,6 +52,7 @@ private:
     v8::Local<v8::Object> m_prototype;
     v8::Local<v8::Function> m_connectedCallback;
     v8::Local<v8::Function> m_disconnectedCallback;
+    v8::Local<v8::Function> m_adoptedCallback;
     v8::Local<v8::Function> m_attributeChangedCallback;
     HashSet<AtomicString> m_observedAttributes;
     ExceptionState& m_exceptionState;
