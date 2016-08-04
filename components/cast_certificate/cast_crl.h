@@ -14,6 +14,10 @@
 #include "base/time/time.h"
 #include "net/cert/internal/parsed_certificate.h"
 
+namespace net {
+class TrustStore;
+}
+
 namespace cast_certificate {
 
 // This class represents the CRL information parsed from the binary proto.
@@ -40,7 +44,7 @@ class CastCRL {
 };
 
 // Parses and verifies the CRL used to verify the revocation status of
-// Cast device certificates.
+// Cast device certificates, using the built-in Cast CRL trust anchors.
 //
 // Inputs:
 // * |crl_proto| is a serialized cast_certificate.CrlBundle proto.
@@ -53,11 +57,11 @@ std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
 
 // Exposed only for testing, not for use in production code.
 //
-// Replaces trusted root certificates into the CastCRLTrustStore.
-//
-// Output:
-// Returns true if successful, false if nothing is changed.
-bool SetCRLTrustAnchorForTest(const std::string& cert) WARN_UNUSED_RESULT;
+// This is an overloaded version of ParseAndVerifyCRL that allows
+// the input of a custom TrustStore.
+std::unique_ptr<CastCRL> ParseAndVerifyCRLForTest(const std::string& crl_proto,
+                                                  const base::Time& time,
+                                                  net::TrustStore* trust_store);
 
 }  // namespace cast_certificate
 

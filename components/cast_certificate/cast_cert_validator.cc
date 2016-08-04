@@ -251,14 +251,14 @@ net::ParseCertificateOptions GetCertParsingOptions() {
   return options;
 }
 
-}  // namespace
-
+// Verifies a cast device certficate given a chain of DER-encoded certificates.
 bool VerifyDeviceCert(const std::vector<std::string>& certs,
                       const base::Time& time,
                       std::unique_ptr<CertVerificationContext>* context,
                       CastDeviceCertPolicy* policy,
                       const CastCRL* crl,
-                      CRLPolicy crl_policy) {
+                      CRLPolicy crl_policy,
+                      net::TrustStore* trust_store) {
   if (certs.empty())
     return false;
 
@@ -290,7 +290,7 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
   if (!net::der::EncodeTimeAsGeneralizedTime(time, &verification_time))
     return false;
   net::CertPathBuilder::Result result;
-  net::CertPathBuilder path_builder(target_cert.get(), &CastTrustStore::Get(),
+  net::CertPathBuilder path_builder(target_cert.get(), trust_store,
                                     signature_policy.get(), verification_time,
                                     &result);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
@@ -322,23 +322,35 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
   return true;
 }
 
+}  // namespace
+
+bool VerifyDeviceCert(const std::vector<std::string>& certs,
+                      const base::Time& time,
+                      std::unique_ptr<CertVerificationContext>* context,
+                      CastDeviceCertPolicy* policy,
+                      const CastCRL* crl,
+                      CRLPolicy crl_policy) {
+  return VerifyDeviceCert(certs, time, context, policy, crl, crl_policy,
+                          &CastTrustStore::Get());
+}
+
+bool VerifyDeviceCertForTest(const std::vector<std::string>& certs,
+                             const base::Time& time,
+                             std::unique_ptr<CertVerificationContext>* context,
+                             CastDeviceCertPolicy* policy,
+                             const CastCRL* crl,
+                             CRLPolicy crl_policy,
+                             net::TrustStore* trust_store) {
+  return VerifyDeviceCert(certs, time, context, policy, crl, crl_policy,
+                          trust_store);
+}
+
 std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
     const base::StringPiece& spki) {
   // Use a bogus CommonName, since this is just exposed for testing signature
   // verification by unittests.
   return base::WrapUnique(
       new CertVerificationContextImpl(net::der::Input(spki), "CommonName"));
-}
-
-bool SetTrustAnchorForTest(const std::string& cert) {
-  scoped_refptr<net::ParsedCertificate> anchor(
-      net::ParsedCertificate::CreateFromCertificateCopy(
-          cert, GetCertParsingOptions()));
-  if (!anchor)
-    return false;
-  CastTrustStore::Get().Clear();
-  CastTrustStore::Get().AddTrustedCertificate(std::move(anchor));
-  return true;
 }
 
 }  // namespace cast_certificate

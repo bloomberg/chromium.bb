@@ -62,13 +62,12 @@ class CastCRLTrustStore {
 
   CastCRLTrustStore() {
     // Initialize the trust store with the root certificate.
-    // TODO(ryanchung): Add official Cast CRL Root here
-    // scoped_refptr<net::ParsedCertificate> root = net::ParsedCertificate::
-    //     net::ParsedCertificate::CreateFromCertificateData(
-    //         kCastCRLRootCaDer, sizeof(kCastCRLRootCaDer),
-    //         net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE, {});
-    // CHECK(root);
-    // store_.AddTrustedCertificate(std::move(root));
+    scoped_refptr<net::ParsedCertificate> root =
+        net::ParsedCertificate::CreateFromCertificateData(
+            kCastCRLRootCaDer, sizeof(kCastCRLRootCaDer),
+            net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE, {});
+    CHECK(root);
+    store_.AddTrustedCertificate(std::move(root));
   }
 
   net::TrustStore store_;
@@ -101,6 +100,7 @@ std::unique_ptr<net::SignaturePolicy> CreateCastSignaturePolicy() {
 bool VerifyCRL(const Crl& crl,
                const TbsCrl& tbs_crl,
                const base::Time& time,
+               net::TrustStore* trust_store,
                net::der::GeneralizedTime* overall_not_after) {
   // Verify the trust of the CRL authority.
   scoped_refptr<net::ParsedCertificate> parsed_cert =
@@ -136,9 +136,9 @@ bool VerifyCRL(const Crl& crl,
     return false;
   }
   net::CertPathBuilder::Result result;
-  net::CertPathBuilder path_builder(
-      parsed_cert.get(), &CastCRLTrustStore::Get(), signature_policy.get(),
-      verification_time, &result);
+  net::CertPathBuilder path_builder(parsed_cert.get(), trust_store,
+                                    signature_policy.get(), verification_time,
+                                    &result);
   net::CompletionStatus rv = path_builder.Run(base::Closure());
   DCHECK_EQ(rv, net::CompletionStatus::SYNC);
   if (!result.is_success() || result.paths.empty() ||
@@ -298,10 +298,11 @@ bool CastCRLImpl::CheckRevocation(
   return true;
 }
 
-}  // namespace
-
+// Parses and verifies the CRL used to verify the revocation status of
+// Cast device certificates.
 std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
-                                           const base::Time& time) {
+                                           const base::Time& time,
+                                           net::TrustStore* trust_store) {
   CrlBundle crl_bundle;
   if (!crl_bundle.ParseFromString(crl_proto)) {
     LOG(ERROR) << "CRL - Binary could not be parsed.";
@@ -317,7 +318,7 @@ std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
       continue;
     }
     net::der::GeneralizedTime overall_not_after;
-    if (!VerifyCRL(crl, tbs_crl, time, &overall_not_after)) {
+    if (!VerifyCRL(crl, tbs_crl, time, trust_store, &overall_not_after)) {
       LOG(ERROR) << "CRL - Verification failed.";
       return nullptr;
     }
@@ -327,14 +328,18 @@ std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
   return nullptr;
 }
 
-bool SetCRLTrustAnchorForTest(const std::string& cert) {
-  scoped_refptr<net::ParsedCertificate> anchor(
-      net::ParsedCertificate::CreateFromCertificateCopy(cert, {}));
-  if (!anchor)
-    return false;
-  CastCRLTrustStore::Get().Clear();
-  CastCRLTrustStore::Get().AddTrustedCertificate(std::move(anchor));
-  return true;
+}  // namespace
+
+std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
+                                           const base::Time& time) {
+  return ParseAndVerifyCRL(crl_proto, time, &CastCRLTrustStore::Get());
+}
+
+std::unique_ptr<CastCRL> ParseAndVerifyCRLForTest(
+    const std::string& crl_proto,
+    const base::Time& time,
+    net::TrustStore* trust_store) {
+  return ParseAndVerifyCRL(crl_proto, time, trust_store);
 }
 
 }  // namespace cast_certificate

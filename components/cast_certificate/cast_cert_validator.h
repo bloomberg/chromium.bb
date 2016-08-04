@@ -14,6 +14,9 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 
+namespace net {
+class TrustStore;
+}
 namespace cast_certificate {
 
 class CastCRL;
@@ -59,7 +62,8 @@ class CertVerificationContext {
   DISALLOW_COPY_AND_ASSIGN(CertVerificationContext);
 };
 
-// Verifies a cast device certficate given a chain of DER-encoded certificates.
+// Verifies a cast device certficate given a chain of DER-encoded certificates,
+// using the built-in Cast trust anchors.
 //
 // Inputs:
 //
@@ -95,6 +99,18 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
                       const CastCRL* crl,
                       CRLPolicy crl_policy) WARN_UNUSED_RESULT;
 
+// Exposed only for testing, not for use in production code.
+//
+// This is an overloaded version of VerifyDeviceCert that allows
+// the input of a custom TrustStore.
+bool VerifyDeviceCertForTest(const std::vector<std::string>& certs,
+                             const base::Time& time,
+                             std::unique_ptr<CertVerificationContext>* context,
+                             CastDeviceCertPolicy* policy,
+                             const CastCRL* crl,
+                             CRLPolicy crl_policy,
+                             net::TrustStore* trust_store) WARN_UNUSED_RESULT;
+
 // Exposed only for unit-tests, not for use in production code.
 // Production code would get a context from VerifyDeviceCert().
 //
@@ -102,12 +118,6 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
 // The common name will be hardcoded to some test value.
 std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
     const base::StringPiece& spki);
-
-// Exposed only for testing, not for use in production code.
-//
-// Replaces trusted root certificates in the CastTrustStore.
-// Returns true if successful, false if nothing is changed.
-bool SetTrustAnchorForTest(const std::string& cert) WARN_UNUSED_RESULT;
 
 }  // namespace cast_certificate
 

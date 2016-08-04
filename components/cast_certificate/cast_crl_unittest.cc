@@ -7,10 +7,26 @@
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 #include "components/cast_certificate/cast_crl.h"
 #include "components/cast_certificate/proto/test_suite.pb.h"
+#include "net/cert/internal/trust_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cast_certificate {
 namespace {
+
+// Creates a trust store using the test roots encoded in the PEM file at |path|.
+std::unique_ptr<net::TrustStore> CreateTrustStoreFromFile(
+    const std::string& path) {
+  std::unique_ptr<net::TrustStore> trust_store(new net::TrustStore());
+  const auto trusted_test_roots =
+      cast_certificate::testing::ReadCertificateChainFromFile(path);
+  for (const auto& trusted_root : trusted_test_roots) {
+    scoped_refptr<net::ParsedCertificate> anchor(
+        net::ParsedCertificate::CreateFromCertificateCopy(trusted_root, {}));
+    EXPECT_TRUE(anchor);
+    trust_store->AddTrustedCertificate(std::move(anchor));
+  }
+  return trust_store;
+}
 
 // Converts uint64_t unix timestamp in seconds to base::Time.
 base::Time ConvertUnixTimestampSeconds(uint64_t time) {
@@ -28,11 +44,19 @@ enum TestStepResult {
 // and chains up to a trust anchor.
 bool TestVerifyCertificate(TestStepResult expected_result,
                            const std::vector<std::string>& certificate_chain,
-                           const base::Time& time) {
+                           const base::Time& time,
+                           net::TrustStore* cast_trust_store) {
   std::unique_ptr<CertVerificationContext> context;
   CastDeviceCertPolicy policy;
-  bool result = VerifyDeviceCert(certificate_chain, time, &context, &policy,
-                                 nullptr, CRLPolicy::CRL_OPTIONAL);
+  int result;
+  if (cast_trust_store != nullptr) {
+    result = VerifyDeviceCertForTest(certificate_chain, time, &context, &policy,
+                                     nullptr, CRLPolicy::CRL_OPTIONAL,
+                                     cast_trust_store);
+  } else {
+    result = VerifyDeviceCert(certificate_chain, time, &context, &policy,
+                              nullptr, CRLPolicy::CRL_OPTIONAL);
+  }
   if (expected_result != RESULT_SUCCESS) {
     EXPECT_FALSE(result);
     return !result;
@@ -46,8 +70,14 @@ bool TestVerifyCertificate(TestStepResult expected_result,
 // The validity of the CRL is also checked at the specified time.
 bool TestVerifyCRL(TestStepResult expected_result,
                    const std::string& crl_bundle,
-                   const base::Time& time) {
-  std::unique_ptr<CastCRL> crl = ParseAndVerifyCRL(crl_bundle, time);
+                   const base::Time& time,
+                   net::TrustStore* crl_trust_store) {
+  std::unique_ptr<CastCRL> crl;
+  if (crl_trust_store != nullptr) {
+    crl = ParseAndVerifyCRLForTest(crl_bundle, time, crl_trust_store);
+  } else {
+    crl = ParseAndVerifyCRL(crl_bundle, time);
+  }
   if (expected_result != RESULT_SUCCESS) {
     EXPECT_EQ(crl, nullptr);
     return crl == nullptr;
@@ -66,10 +96,16 @@ bool TestVerifyRevocation(TestStepResult expected_result,
                           const std::string& crl_bundle,
                           const base::Time& crl_time,
                           const base::Time& cert_time,
-                          bool crl_required) {
+                          bool crl_required,
+                          net::TrustStore* cast_trust_store,
+                          net::TrustStore* crl_trust_store) {
   std::unique_ptr<CastCRL> crl;
   if (!crl_bundle.empty()) {
-    crl = ParseAndVerifyCRL(crl_bundle, crl_time);
+    if (crl_trust_store != nullptr) {
+      crl = ParseAndVerifyCRLForTest(crl_bundle, crl_time, crl_trust_store);
+    } else {
+      crl = ParseAndVerifyCRL(crl_bundle, crl_time);
+    }
     EXPECT_NE(crl.get(), nullptr);
   }
 
@@ -78,8 +114,15 @@ bool TestVerifyRevocation(TestStepResult expected_result,
   CRLPolicy crl_policy = CRLPolicy::CRL_REQUIRED;
   if (!crl_required)
     crl_policy = CRLPolicy::CRL_OPTIONAL;
-  int result = VerifyDeviceCert(certificate_chain, cert_time, &context, &policy,
-                                crl.get(), crl_policy);
+  int result;
+  if (cast_trust_store != nullptr) {
+    result =
+        VerifyDeviceCertForTest(certificate_chain, cert_time, &context, &policy,
+                                crl.get(), crl_policy, cast_trust_store);
+  } else {
+    result = VerifyDeviceCert(certificate_chain, cert_time, &context, &policy,
+                              crl.get(), crl_policy);
+  }
   if (expected_result != RESULT_SUCCESS) {
     EXPECT_FALSE(result);
     return !result;
@@ -90,21 +133,17 @@ bool TestVerifyRevocation(TestStepResult expected_result,
 
 // Runs a single test case.
 bool RunTest(const DeviceCertTest& test_case) {
-  bool use_test_trust_anchors = test_case.use_test_trust_anchors();
-  if (use_test_trust_anchors) {
-    const auto crl_test_root =
-        cast_certificate::testing::ReadCertificateChainFromFile(
-            "certificates/cast_crl_test_root_ca.pem");
-    EXPECT_EQ(crl_test_root.size(), 1u);
-    EXPECT_TRUE(SetCRLTrustAnchorForTest(crl_test_root[0]));
-    const auto cast_test_root =
-        cast_certificate::testing::ReadCertificateChainFromFile(
-            "certificates/cast_test_root_ca.pem");
-    EXPECT_EQ(cast_test_root.size(), 1u);
-    EXPECT_TRUE(SetTrustAnchorForTest(cast_test_root[0]));
-  }
+  std::unique_ptr<net::TrustStore> crl_trust_store;
+  std::unique_ptr<net::TrustStore> cast_trust_store;
+  if (test_case.use_test_trust_anchors()) {
+    crl_trust_store =
+        CreateTrustStoreFromFile("certificates/cast_crl_test_root_ca.pem");
+    cast_trust_store =
+        CreateTrustStoreFromFile("certificates/cast_test_root_ca.pem");
 
-  VerificationResult expected_result = test_case.expected_result();
+    EXPECT_TRUE(crl_trust_store.get());
+    EXPECT_TRUE(cast_trust_store.get());
+  }
 
   std::vector<std::string> certificate_chain;
   for (auto const& cert : test_case.der_cert_path()) {
@@ -121,38 +160,49 @@ bool RunTest(const DeviceCertTest& test_case) {
     crl_verification_time = cert_verification_time;
 
   std::string crl_bundle = test_case.crl_bundle();
-  switch (expected_result) {
+  switch (test_case.expected_result()) {
     case PATH_VERIFICATION_FAILED:
       return TestVerifyCertificate(RESULT_FAIL, certificate_chain,
-                                   cert_verification_time);
+                                   cert_verification_time,
+                                   cast_trust_store.get());
       break;
     case CRL_VERIFICATION_FAILED:
-      return TestVerifyCRL(RESULT_FAIL, crl_bundle, crl_verification_time);
+      return TestVerifyCRL(RESULT_FAIL, crl_bundle, crl_verification_time,
+                           crl_trust_store.get());
       break;
     case REVOCATION_CHECK_FAILED_WITHOUT_CRL:
       return TestVerifyCertificate(RESULT_SUCCESS, certificate_chain,
-                                   cert_verification_time) &&
-             TestVerifyCRL(RESULT_FAIL, crl_bundle, crl_verification_time) &&
+                                   cert_verification_time,
+                                   cast_trust_store.get()) &&
+             TestVerifyCRL(RESULT_FAIL, crl_bundle, crl_verification_time,
+                           crl_trust_store.get()) &&
              TestVerifyRevocation(RESULT_FAIL, certificate_chain, crl_bundle,
                                   crl_verification_time, cert_verification_time,
-                                  true);
+                                  true, cast_trust_store.get(),
+                                  crl_trust_store.get());
       break;
     case REVOCATION_CHECK_FAILED:
       return TestVerifyCertificate(RESULT_SUCCESS, certificate_chain,
-                                   cert_verification_time) &&
-             TestVerifyCRL(RESULT_SUCCESS, crl_bundle, crl_verification_time) &&
+                                   cert_verification_time,
+                                   cast_trust_store.get()) &&
+             TestVerifyCRL(RESULT_SUCCESS, crl_bundle, crl_verification_time,
+                           crl_trust_store.get()) &&
              TestVerifyRevocation(RESULT_FAIL, certificate_chain, crl_bundle,
                                   crl_verification_time, cert_verification_time,
-                                  false);
+                                  false, cast_trust_store.get(),
+                                  crl_trust_store.get());
       break;
     case SUCCESS:
-      return (crl_bundle.empty() || TestVerifyCRL(RESULT_SUCCESS, crl_bundle,
-                                                  crl_verification_time)) &&
+      return (crl_bundle.empty() ||
+              TestVerifyCRL(RESULT_SUCCESS, crl_bundle, crl_verification_time,
+                            crl_trust_store.get())) &&
              TestVerifyCertificate(RESULT_SUCCESS, certificate_chain,
-                                   cert_verification_time) &&
+                                   cert_verification_time,
+                                   cast_trust_store.get()) &&
              TestVerifyRevocation(RESULT_SUCCESS, certificate_chain, crl_bundle,
                                   crl_verification_time, cert_verification_time,
-                                  !crl_bundle.empty());
+                                  !crl_bundle.empty(), cast_trust_store.get(),
+                                  crl_trust_store.get());
       break;
     case UNSPECIFIED:
       return false;
