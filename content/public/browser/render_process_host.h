@@ -18,7 +18,6 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
-#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;

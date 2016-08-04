@@ -33,7 +33,6 @@ class CommandLine;
 
 namespace shell {
 class InterfaceProvider;
-class InterfaceRegistry;
 }
 
 namespace content {
