@@ -189,6 +189,9 @@ bool VpxPesParser::ParsePesOptionalHeader(PesOptionalHeader* header) {
       return false;
     }
 
+    header->pts = (pes_file_data_[offset] & 0xe) << 29 |
+                  ((ReadUint16(&pes_file_data_[offset + 1]) & ~1) << 14) |
+                  (ReadUint16(&pes_file_data_[offset + 3]) >> 1);
     offset += 5;
     bytes_left -= 5;
   }

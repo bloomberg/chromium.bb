@@ -54,6 +54,10 @@ bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
 // Writes |val| to |fileptr| and returns true upon success.
 bool WriteUint8(std::uint8_t val, std::FILE* fileptr);
 
+// Reads 2 bytes from |buf| and returns them as a uint16_t. Returns 0 when |buf|
+// is a nullptr.
+std::uint16_t ReadUint16(const std::uint8_t* buf);
+
 }  // namespace libwebm
 
 #endif  // LIBWEBM_COMMON_LIBWEBM_UTIL_H_

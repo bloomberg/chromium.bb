@@ -83,4 +83,10 @@ bool WriteUint8(std::uint8_t val, std::FILE* fileptr) {
   return (std::fputc(val, fileptr) == val);
 }
 
+std::uint16_t ReadUint16(const std::uint8_t* buf) {
+  if (buf == nullptr)
+    return 0;
+  return ((buf[0] << 8) | buf[1]);
+}
+
 }  // namespace libwebm
