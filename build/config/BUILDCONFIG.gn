@@ -79,7 +79,7 @@ if (current_os == "") {
 #   config in foo's public_configs. This will propagate that define to all the
 #   targets depending on foo. (3) When foo is not enabled, just make it expand
 #   to an empty group (or whatever's appropriate for the "off" state of your
-#   feature.
+#   feature).
 #
 # - If a semi-random set of targets need to know about a define: (1) In the
 #   lowest level of the build that knows about this feature, add a declare_args
@@ -111,11 +111,6 @@ if (current_os == "") {
 #   even if the value is overridden, which is wasteful. See first bullet.
 
 declare_args() {
-  # Component build. Setting to true compiles targets declared as "components"
-  # as shared libraries loaded dynamically. This speeds up development time.
-  # When false, components will be linked statically.
-  is_component_build = false
-
   # Set to enable the official build level of optimization. This has nothing
   # to do with branding, but enables an additional level of optimization above
   # release (!is_debug). This might be better expressed as a tri-state
@@ -143,6 +138,13 @@ declare_args() {
   host_toolchain = ""
 
   # DON'T ADD MORE FLAGS HERE. Read the comment above.
+}
+
+declare_args() {
+  # Component build. Setting to true compiles targets declared as "components"
+  # as shared libraries loaded dynamically. This speeds up development time.
+  # When false, components will be linked statically.
+  is_component_build = is_debug && current_os != "ios"
 }
 
 assert(!(is_debug && is_official_build), "Can't do official debug builds")
