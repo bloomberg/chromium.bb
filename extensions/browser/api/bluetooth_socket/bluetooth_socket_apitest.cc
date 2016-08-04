@@ -137,13 +137,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, DISABLED_Connect) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(_LIBCPP_VERSION)
-// This test fails in libc++ builds, see http://crbug.com/392205.
-#define MAYBE_Listen DISABLED_Listen
-#else
-#define MAYBE_Listen Listen
-#endif
-IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, MAYBE_Listen) {
+IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser_context());
 

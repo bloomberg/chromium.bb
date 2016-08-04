@@ -7,25 +7,32 @@ var clientAddress = '11:12:13:14:15:16';
 
 function testListen() {
   chrome.test.assertEq(2, sockets.length);
+  var serverSocket = sockets[0], clientSocket = sockets[1];
+
+  // In case the sockets don't come back to us in order.
+  if (sockets[0].socketId != serverSocketId) {
+    serverSocket = sockets[1];
+    clientSocket = sockets[0];
+  }
 
   // First socket should be the listening one.
-  chrome.test.assertEq(serverSocketId, sockets[0].socketId);
-  chrome.test.assertEq(false, sockets[0].persistent);
-  chrome.test.assertEq('MyServiceName', sockets[0].name);
-  chrome.test.assertEq(false, sockets[0].paused);
-  chrome.test.assertEq(false, sockets[0].connected);
-  chrome.test.assertEq(undefined, sockets[0].address);
-  chrome.test.assertEq(uuid, sockets[0].uuid);
+  chrome.test.assertEq(serverSocketId, serverSocket.socketId);
+  chrome.test.assertEq(false, serverSocket.persistent);
+  chrome.test.assertEq('MyServiceName', serverSocket.name);
+  chrome.test.assertEq(false, serverSocket.paused);
+  chrome.test.assertEq(false, serverSocket.connected);
+  chrome.test.assertEq(undefined, serverSocket.address);
+  chrome.test.assertEq(uuid, serverSocket.uuid);
 
   // Second socket should be the client one, which unlike the server should
   // be created paused.
-  chrome.test.assertEq(clientSocketId, sockets[1].socketId);
-  chrome.test.assertEq(false, sockets[1].persistent);
-  chrome.test.assertEq(undefined, sockets[1].name);
-  chrome.test.assertEq(true, sockets[1].paused);
-  chrome.test.assertEq(true, sockets[1].connected);
-  chrome.test.assertEq(clientAddress, sockets[1].address);
-  chrome.test.assertEq(uuid, sockets[1].uuid);
+  chrome.test.assertEq(clientSocketId, clientSocket.socketId);
+  chrome.test.assertEq(false, clientSocket.persistent);
+  chrome.test.assertEq(undefined, clientSocket.name);
+  chrome.test.assertEq(true, clientSocket.paused);
+  chrome.test.assertEq(true, clientSocket.connected);
+  chrome.test.assertEq(clientAddress, clientSocket.address);
+  chrome.test.assertEq(uuid, clientSocket.uuid);
 
   chrome.test.succeed();
 }
