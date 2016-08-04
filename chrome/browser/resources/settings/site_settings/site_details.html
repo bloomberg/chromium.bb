@@ -12,50 +12,27 @@
 <dom-module id="site-details">
   <template>
     <style include="settings-shared">
-      :host {
-        -webkit-margin-start: 4px;
-        display: block;
-      }
-
-      .origin-box {
-        margin-bottom: 20px;
-      }
-
-      .origin {
-        -webkit-margin-start: 10px;
-        font-weight: 500;
-      }
-
-      .reset-button {
-        -webkit-margin-start: 15px;
-      }
-
       #storage {
         -webkit-padding-end: 0;
       }
-
-      .website-icon {
-        background-repeat: no-repeat;
-        background-size: contain;
-        height: 16px;
-        width: 16px;
-      }
     </style>
-    <div class="settings-box block">
-      <div class="horizontal layout origin-box">
-        <div class="website-icon"
-            style$="[[computeSiteIcon(site.originForDisplay)]]"></div>
-        <div class="origin flex">[[site.originForDisplay]]</div>
+    <div id="usage" hidden$="[[!storedData_]]">
+      <div class="settings-box first">
+        <h2>$i18n{siteSettingsUsage}</h2>
       </div>
-      <h2 id="usage" hidden$="[[!storedData_]]">$i18n{siteSettingsUsage}</h2>
-      <paper-item id="storage" hidden$="[[!storedData_]]">
-        <div class="flex">[[storedData_]]</div>
-        <paper-icon-button icon="settings:delete"
-            on-tap="onClearStorage_"
-            alt="$i18n{siteSettingsDelete}"></paper-icon-button>
-      </paper-item>
+      <div class="list-frame">
+        <paper-item id="storage" hidden$="[[!storedData_]]">
+          <div class="flex">[[storedData_]]</div>
+          <paper-icon-button icon="settings:delete"
+              on-tap="onClearStorage_"
+              alt="$i18n{siteSettingsDelete}"></paper-icon-button>
+        </paper-item>
+      </div>
+    </div>
+    <div class="settings-box">
       <h2>$i18n{siteSettingsPermissions}</h2>
-
+    </div>
+    <div class="list-frame">
       <site-details-permission site="[[site]]" id="cookies"
           category="{{ContentSettingsTypes.COOKIES}}">
       </site-details-permission>
@@ -96,9 +73,9 @@
           category="{{ContentSettingsTypes.FULLSCREEN}}">
       </site-details-permission>
 
-      <paper-button on-tap="onClearAndReset_" raised class="reset-button">
+      <div on-tap="onClearAndReset_" raised class="list-item list-button">
         $i18n{siteSettingsClearAndReset}
-      </paper-button>
+      </div>
     </div>
     <website-usage-private-api id="usageApi"
         website-data-usage="{{storedData_}}"

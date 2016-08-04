@@ -1104,9 +1104,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_CATEGORY" desc="Name of the settings page which allows users to modify a specific category under site settings.">
     Permission Category
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_DETAILS" desc="Name of the settings page which allows users to modify details about a particular site.">
-    Site Details
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALL_SITES" desc="Label for the all sites site settings.">
     All sites
   </message>
@@ -1294,7 +1291,7 @@
     Permissions
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLEAR_BUTTON" desc="The Clear and Reset button, used to clear all permissions and storage for a given site.">
-    Clear &amp; Reset
+    Clear and reset
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_DELETE" desc="Label for the trashcan icon used to delete storage on the Site Details page.">
     Delete

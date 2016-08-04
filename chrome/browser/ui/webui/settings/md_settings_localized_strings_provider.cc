@@ -1116,8 +1116,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"siteSettingsCategoryNotifications",
        IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS},
       {"siteSettingsCategoryPopups", IDS_SETTINGS_SITE_SETTINGS_POPUPS},
-      {"siteSettingsSiteDetailsPageTitle",
-       IDS_SETTINGS_SITE_SETTINGS_SITE_DETAILS},
       {"siteSettingsAllSites", IDS_SETTINGS_SITE_SETTINGS_ALL_SITES},
       {"siteSettingsAutomaticDownloads",
        IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOADS},
