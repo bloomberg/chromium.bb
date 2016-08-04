@@ -46,8 +46,4 @@ class PersonalDataManagerFactory : public BrowserStateKeyedServiceFactory {
 
 }  // namespace autofill
 
-// TODO(crbug.com/513344): Remove this typedef once downstream code has
-// been fixed to use the fully namespaced name.
-using PersonalDataManagerFactory = autofill::PersonalDataManagerFactory;
-
 #endif  // IOS_CHROME_BROWSER_AUTOFILL_PERSONAL_DATA_MANAGER_FACTORY_H_
