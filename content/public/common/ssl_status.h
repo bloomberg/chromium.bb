@@ -5,9 +5,12 @@
 #ifndef CONTENT_PUBLIC_COMMON_SSL_STATUS_H_
 #define CONTENT_PUBLIC_COMMON_SSL_STATUS_H_
 
+#include <vector>
+
 #include "content/common/content_export.h"
 #include "content/public/common/security_style.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/sct_status_flags.h"
 
 namespace net {
 class SSLInfo;
@@ -46,9 +49,7 @@ struct CONTENT_EXPORT SSLStatus {
            key_exchange_info == status.key_exchange_info &&
            connection_status == status.connection_status &&
            content_status == status.content_status &&
-           num_unknown_scts == status.num_unknown_scts &&
-           num_invalid_scts == status.num_invalid_scts &&
-           num_valid_scts == status.num_valid_scts &&
+           sct_statuses == status.sct_statuses &&
            pkp_bypassed == status.pkp_bypassed;
   }
 
@@ -61,10 +62,10 @@ struct CONTENT_EXPORT SSLStatus {
   int connection_status;
   // A combination of the ContentStatusFlags above.
   int content_status;
-  // Signed Certificate Timestamps (SCTs) of Certificate Transparency (CT).
-  uint32_t num_unknown_scts;
-  uint32_t num_invalid_scts;
-  uint32_t num_valid_scts;
+  // The validation statuses of the Signed Certificate Timestamps (SCTs)
+  // of Certificate Transparency (CT) that were served with the
+  // main resource.
+  std::vector<net::ct::SCTVerifyStatus> sct_statuses;
   // True if PKP was bypassed due to a local trust anchor.
   bool pkp_bypassed;
 };

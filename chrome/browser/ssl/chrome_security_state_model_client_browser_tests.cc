@@ -38,8 +38,11 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/sct_status_flags.h"
+#include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/ssl/signed_certificate_timestamp_and_status.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
@@ -1113,6 +1116,143 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
     EXPECT_NE(l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
               explanation.summary);
   }
+}
+
+// After AddSCTUrlHandler() is called, requests to this hostname
+// will be served with Signed Certificate Timestamps.
+const char kMockHostnameWithSCTs[] = "example-scts.test";
+
+// URLRequestJobWithSCTs mocks a connection that includes a set of dummy
+// SCTs with these statuses.
+const std::vector<net::ct::SCTVerifyStatus> kTestSCTStatuses{
+    net::ct::SCT_STATUS_OK, net::ct::SCT_STATUS_LOG_UNKNOWN,
+    net::ct::SCT_STATUS_OK};
+
+// A URLRequestMockHTTPJob that mocks a TLS connection with SCTs
+// attached to it. The SCTs will have verification statuses
+// |kTestSCTStatuses|.
+class URLRequestJobWithSCTs : public net::URLRequestMockHTTPJob {
+ public:
+  URLRequestJobWithSCTs(net::URLRequest* request,
+                        net::NetworkDelegate* network_delegate,
+                        const base::FilePath& file_path,
+                        scoped_refptr<net::X509Certificate> cert,
+                        scoped_refptr<base::TaskRunner> task_runner)
+      : net::URLRequestMockHTTPJob(request,
+                                   network_delegate,
+                                   file_path,
+                                   task_runner),
+        cert_(std::move(cert)) {}
+
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
+    net::URLRequestMockHTTPJob::GetResponseInfo(info);
+    for (const auto& status : kTestSCTStatuses) {
+      scoped_refptr<net::ct::SignedCertificateTimestamp> dummy_sct =
+          new net::ct::SignedCertificateTimestamp();
+      info->ssl_info.signed_certificate_timestamps.push_back(
+          net::SignedCertificateTimestampAndStatus(dummy_sct, status));
+    }
+    info->ssl_info.cert = cert_;
+  }
+
+ protected:
+  ~URLRequestJobWithSCTs() override {}
+
+ private:
+  const scoped_refptr<net::X509Certificate> cert_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestJobWithSCTs);
+};
+
+// A URLRequestInterceptor that handles requests with
+// URLRequestJobWithSCTs jobs.
+class URLRequestWithSCTsInterceptor : public net::URLRequestInterceptor {
+ public:
+  URLRequestWithSCTsInterceptor(
+      const base::FilePath& base_path,
+      scoped_refptr<base::SequencedWorkerPool> worker_pool,
+      scoped_refptr<net::X509Certificate> cert)
+      : base_path_(base_path),
+        worker_pool_(std::move(worker_pool)),
+        cert_(std::move(cert)) {}
+
+  ~URLRequestWithSCTsInterceptor() override {}
+
+  // net::URLRequestInterceptor:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return new URLRequestJobWithSCTs(
+        request, network_delegate, base_path_, cert_,
+        worker_pool_->GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+  }
+
+ private:
+  const base::FilePath base_path_;
+  const scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+  const scoped_refptr<net::X509Certificate> cert_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestWithSCTsInterceptor);
+};
+
+// Installs a handler to serve HTTPS requests to |kMockHostnameWithSCTs|
+// with connections that have SCTs.
+void AddSCTUrlHandler(const base::FilePath& base_path,
+                      scoped_refptr<net::X509Certificate> cert,
+                      scoped_refptr<base::SequencedWorkerPool> worker_pool) {
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  filter->AddHostnameInterceptor(
+      "https", kMockHostnameWithSCTs,
+      std::unique_ptr<net::URLRequestInterceptor>(
+          new URLRequestWithSCTsInterceptor(base_path, worker_pool, cert)));
+}
+
+class BrowserTestURLRequestWithSCTs : public InProcessBrowserTest {
+ public:
+  BrowserTestURLRequestWithSCTs() : InProcessBrowserTest(), cert_(nullptr) {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    cert_ =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+    ASSERT_TRUE(cert_);
+  }
+
+  void SetUpOnMainThread() override {
+    base::FilePath serve_file;
+    PathService::Get(chrome::DIR_TEST_DATA, &serve_file);
+    serve_file = serve_file.Append(FILE_PATH_LITERAL("title1.html"));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &AddSCTUrlHandler, serve_file, cert_,
+            make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
+  }
+
+ private:
+  scoped_refptr<net::X509Certificate> cert_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserTestURLRequestWithSCTs);
+};
+
+// Tests that, when Signed Certificate Timestamps (SCTs) are served on a
+// connection, the SCTs verification statuses are exposed on the
+// SecurityInfo.
+IN_PROC_BROWSER_TEST_F(BrowserTestURLRequestWithSCTs,
+                       SecurityInfoWithSCTsAttached) {
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string("https://") + kMockHostnameWithSCTs));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  ASSERT_TRUE(model_client);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model_client->GetSecurityInfo();
+  EXPECT_EQ(SecurityStateModel::SECURE, security_info.security_level);
+  EXPECT_EQ(kTestSCTStatuses, security_info.sct_verify_statuses);
 }
 
 }  // namespace

@@ -5331,13 +5331,8 @@ TEST_F(NavigationControllerTest, RendererNavigateBogusSecurityInfo) {
             observer.details().ssl_status.connection_status);
   EXPECT_EQ(default_ssl_status.content_status,
             observer.details().ssl_status.content_status);
-  EXPECT_EQ(default_ssl_status.num_unknown_scts,
-            observer.details().ssl_status.num_unknown_scts);
-  EXPECT_EQ(default_ssl_status.num_invalid_scts,
-            observer.details().ssl_status.num_invalid_scts);
-  EXPECT_EQ(default_ssl_status.num_valid_scts,
-            observer.details().ssl_status.num_valid_scts);
-
+  EXPECT_EQ(default_ssl_status.sct_statuses,
+            observer.details().ssl_status.sct_statuses);
   EXPECT_EQ(1, main_test_rfh()->GetProcess()->bad_msg_count());
 }
 

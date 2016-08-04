@@ -18,9 +18,7 @@ void SetTestStatus(SSLStatus* status) {
   status->security_bits = 80;
   status->key_exchange_info = 23;
   status->connection_status = net::SSL_CONNECTION_VERSION_TLS1_2;
-  status->num_unknown_scts = 0;
-  status->num_invalid_scts = 0;
-  status->num_valid_scts = 1;
+  status->sct_statuses.push_back(net::ct::SCT_STATUS_OK);
 }
 
 bool SSLStatusAreEqual(const SSLStatus& a, const SSLStatus &b) {
@@ -37,9 +35,7 @@ std::ostream& operator<<(std::ostream& os, const SSLStatus& status) {
             << "\nKey exchange info: " << status.key_exchange_info
             << "\nConnection status: " << status.connection_status
             << "\nContent Status: " << status.content_status
-            << "\nNumber of unknown SCTs: " << status.num_unknown_scts
-            << "\nNumber of invalid SCTs: " << status.num_invalid_scts
-            << "\nNumber of valid SCTs: " << status.num_valid_scts;
+            << "\nNumber of SCTs: " << status.sct_statuses.size();
 }
 
 // Test that a valid serialized SSLStatus returns true on
@@ -107,6 +103,48 @@ TEST(SSLStatusSerializationTest, DeserializeBogusSecurityStyle) {
   SSLStatus invalid_deserialized;
   ASSERT_FALSE(DeserializeSecurityInfo(serialized, &invalid_deserialized));
   EXPECT_PRED2(SSLStatusAreEqual, SSLStatus(), invalid_deserialized);
+}
+
+// Serialize a status with an empty |sct_statuses| field and test that
+// deserializing works.
+TEST(SSLStatusSerializationTest, DeserializeEmptySCTStatuses) {
+  SSLStatus status;
+  SetTestStatus(&status);
+  status.sct_statuses.clear();
+  std::string serialized = SerializeSecurityInfo(status);
+
+  SSLStatus deserialized;
+  ASSERT_TRUE(DeserializeSecurityInfo(serialized, &deserialized));
+  EXPECT_PRED2(SSLStatusAreEqual, status, deserialized);
+}
+
+// Serialize a status with multiple different |sct_statuses| and test that
+// deserializing works.
+TEST(SSLStatusSerializationTest, DeserializeMultipleSCTStatuses) {
+  SSLStatus status;
+  SetTestStatus(&status);
+  status.sct_statuses.push_back(net::ct::SCT_STATUS_LOG_UNKNOWN);
+  status.sct_statuses.push_back(net::ct::SCT_STATUS_LOG_UNKNOWN);
+  status.sct_statuses.push_back(net::ct::SCT_STATUS_OK);
+  status.sct_statuses.push_back(net::ct::SCT_STATUS_INVALID);
+  std::string serialized = SerializeSecurityInfo(status);
+
+  SSLStatus deserialized;
+  ASSERT_TRUE(DeserializeSecurityInfo(serialized, &deserialized));
+  EXPECT_PRED2(SSLStatusAreEqual, status, deserialized);
+}
+
+// Serialize a status with a bad SCTVerifyStatus value and test that
+// deserializing it fails.
+TEST(SSLStatusSerializationTest, DeserializeBogusSCTVerifyStatus) {
+  SSLStatus status;
+  SetTestStatus(&status);
+  status.sct_statuses.push_back(static_cast<net::ct::SCTVerifyStatus>(100));
+  std::string serialized = SerializeSecurityInfo(status);
+
+  SSLStatus deserialized;
+  ASSERT_FALSE(DeserializeSecurityInfo(serialized, &deserialized));
+  EXPECT_PRED2(SSLStatusAreEqual, SSLStatus(), deserialized);
 }
 
 }  // namespace
