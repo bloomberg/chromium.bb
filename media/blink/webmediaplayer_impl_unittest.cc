@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -18,6 +19,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/test_helpers.h"
 #include "media/blink/mock_webframeclient.h"
 #include "media/blink/webmediaplayer_delegate.h"
@@ -32,6 +34,10 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
+
+using ::testing::InSequence;
+using ::testing::Return;
+using ::testing::_;
 
 namespace media {
 
@@ -84,6 +90,23 @@ class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   DISALLOW_COPY_AND_ASSIGN(DummyWebMediaPlayerClient);
 };
 
+class MockWebMediaPlayerDelegate
+    : public WebMediaPlayerDelegate,
+      public base::SupportsWeakPtr<MockWebMediaPlayerDelegate> {
+ public:
+  MockWebMediaPlayerDelegate() = default;
+  ~MockWebMediaPlayerDelegate() = default;
+
+  // WebMediaPlayerDelegate implementation.
+  MOCK_METHOD1(AddObserver, int(Observer*));
+  MOCK_METHOD1(RemoveObserver, void(int));
+  MOCK_METHOD5(DidPlay, void(int, bool, bool, bool, base::TimeDelta));
+  MOCK_METHOD2(DidPause, void(int, bool));
+  MOCK_METHOD1(PlayerGone, void(int));
+  MOCK_METHOD0(IsHidden, bool());
+  MOCK_METHOD0(IsPlayingBackgroundVideo, bool());
+};
+
 class WebMediaPlayerImplTest : public testing::Test {
  public:
   WebMediaPlayerImplTest()
@@ -99,8 +122,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     media_thread_.StartAndWaitForTesting();
 
     wmpi_.reset(new WebMediaPlayerImpl(
-        web_local_frame_, &client_, nullptr,
-        base::WeakPtr<WebMediaPlayerDelegate>(),
+        web_local_frame_, &client_, nullptr, delegate_.AsWeakPtr(),
         base::WrapUnique(new DefaultRendererFactory(
             media_log_, nullptr, DefaultRendererFactory::GetGpuFactoriesCB())),
         url_index_,
@@ -181,6 +203,18 @@ class WebMediaPlayerImplTest : public testing::Test {
     return wmpi_->UpdatePlayState_ComputePlayState(false, false, false);
   }
 
+  void SetupForResumingBackgroundVideo() {
+#if !defined(OS_ANDROID)
+    // Need to enable media suspend to test resuming background videos.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableMediaSuspend);
+#endif  // !defined(OS_ANDROID)
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(kResumeBackgroundVideo.name, "");
+    base::FeatureList::ClearInstanceForTesting();
+    base::FeatureList::SetInstance(std::move(feature_list));
+  }
+
   // "Renderer" thread.
   base::MessageLoop message_loop_;
 
@@ -202,6 +236,8 @@ class WebMediaPlayerImplTest : public testing::Test {
   // The client interface used by |wmpi_|. Just a dummy for now, but later we
   // may want a mock or intelligent fake.
   DummyWebMediaPlayerClient client_;
+
+  MockWebMediaPlayerDelegate delegate_;
 
   // The WebMediaPlayerImpl instance under test.
   std::unique_ptr<WebMediaPlayerImpl> wmpi_;
@@ -283,7 +319,11 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_AfterFutureData) {
   EXPECT_FALSE(state.is_suspended);
 
   state = ComputeBackgroundedPlayState();
-  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+
+  if (base::FeatureList::IsEnabled(kResumeBackgroundVideo))
+    EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  else
+    EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
   EXPECT_TRUE(state.is_suspended);
 
@@ -311,7 +351,10 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Playing) {
   EXPECT_FALSE(state.is_suspended);
 
   state = ComputeBackgroundedPlayState();
-  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  if (base::FeatureList::IsEnabled(kResumeBackgroundVideo))
+    EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  else
+    EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
   EXPECT_TRUE(state.is_suspended);
 
@@ -337,7 +380,10 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_PlayingThenUnderflow) {
 
   // Background suspend should still be possible during underflow.
   state = ComputeBackgroundedPlayState();
-  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  if (base::FeatureList::IsEnabled(kResumeBackgroundVideo))
+    EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  else
+    EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
   EXPECT_TRUE(state.is_suspended);
 
@@ -500,6 +546,43 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
 
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
   ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->naturalSize());
+}
+
+// Audible backgrounded videos are not suspended if delegate_ allows it.
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_BackgroundedVideoPlaying) {
+  WebMediaPlayerImpl::PlayState state;
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+
+  SetupForResumingBackgroundVideo();
+
+  EXPECT_CALL(delegate_, IsPlayingBackgroundVideo())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(delegate_, IsHidden()).WillRepeatedly(Return(true));
+
+  SetPaused(false);
+  state = ComputeBackgroundedPlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
+}
+
+// Backgrounding audible videos should suspend them and report as paused, not
+// gone.
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_BackgroundedVideoPaused) {
+  WebMediaPlayerImpl::PlayState state;
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+
+  SetupForResumingBackgroundVideo();
+
+  EXPECT_CALL(delegate_, IsPlayingBackgroundVideo()).WillOnce(Return(false));
+  EXPECT_CALL(delegate_, IsHidden()).WillRepeatedly(Return(true));
+
+  state = ComputeBackgroundedPlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_TRUE(state.is_suspended);
 }
 
 }  // namespace media

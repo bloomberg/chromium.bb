@@ -63,7 +63,24 @@ class MediaSessionVisibilityBrowserTest
     media_session_state_callback_subscription_.reset();
   }
 
+  void EnableDisableResumingBackgroundVideos(bool enable) {
+    std::string enabled_features;
+    std::string disabled_features;
+    if (enable)
+      enabled_features = media::kResumeBackgroundVideo.name;
+    else
+      disabled_features = media::kResumeBackgroundVideo.name;
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(
+        enabled_features, disabled_features);
+    base::FeatureList::ClearInstanceForTesting();
+    base::FeatureList::SetInstance(std::move(feature_list));
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnableDisableResumingBackgroundVideos(false);
+
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
 #if !defined(OS_ANDROID)
@@ -145,6 +162,24 @@ class MediaSessionVisibilityBrowserTest
     web_contents_->WasHidden();
     LOG(INFO) << "Waiting for Session to be inactive";
     WaitForMediaSessionState(MediaSession::State::INACTIVE);
+
+    LOG(INFO) << "Test succeeded";
+  }
+
+  void TestSessionSuspendedWhenHiddenWhilePlaying() {
+    LoadTestPage();
+
+    LOG(INFO) << "Starting player";
+    ClearMediaSessionStateLoopRunners();
+    RunScript(kStartPlayerScript);
+    LOG(INFO) << "Waiting for Session to be active";
+    WaitForMediaSessionState(MediaSession::State::ACTIVE);
+
+    LOG(INFO) << "Hiding the tab";
+    ClearMediaSessionStateLoopRunners();
+    web_contents_->WasHidden();
+    LOG(INFO) << "Waiting for Session to be suspended";
+    WaitForMediaSessionState(MediaSession::State::SUSPENDED);
 
     LOG(INFO) << "Test succeeded";
   }
@@ -239,6 +274,20 @@ INCLUDE_TEST_FROM_BASE_CLASS(
     MediaSessionVisibilityBrowserTest_UnifiedPipeline_SuspendOnHide,
     TestSessionInactiveWhenHiddenWhilePlaying)
 
+IN_PROC_BROWSER_TEST_F(
+    MediaSessionVisibilityBrowserTest_UnifiedPipeline_SuspendOnHide,
+    TestSessionSuspendedWhenHiddenWhilePlaying) {
+  EnableDisableResumingBackgroundVideos(true);
+  TestSessionSuspendedWhenHiddenWhilePlaying();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    MediaSessionVisibilityBrowserTest_UnifiedPipeline_SuspendOnHide,
+    TestSessionSuspendedWhenHiddenAfterContentPause) {
+  EnableDisableResumingBackgroundVideos(true);
+  TestSessionSuspendedWhenHiddenAfterContentPause();
+}
+
 // UnifiedPipeline + NosuspendOnHide
 class MediaSessionVisibilityBrowserTest_UnifiedPipeline_NosuspendOnHide :
       public MediaSessionVisibilityBrowserTest {
@@ -256,6 +305,13 @@ INCLUDE_TEST_FROM_BASE_CLASS(
 INCLUDE_TEST_FROM_BASE_CLASS(
     MediaSessionVisibilityBrowserTest_UnifiedPipeline_NosuspendOnHide,
     TestSessionActiveWhenHiddenWhilePlaying)
+
+IN_PROC_BROWSER_TEST_F(
+    MediaSessionVisibilityBrowserTest_UnifiedPipeline_NosuspendOnHide,
+    TestSessionActiveWhenHiddenWhilePlayingWithResume) {
+  EnableDisableResumingBackgroundVideos(true);
+  TestSessionActiveWhenHiddenWhilePlaying();
+}
 
 #if defined(OS_ANDROID)
 // AndroidPipeline + SuspendOnHide

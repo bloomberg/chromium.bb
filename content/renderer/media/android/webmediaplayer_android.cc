@@ -374,11 +374,16 @@ bool WebMediaPlayerAndroid::IsLocalResource() {
 void WebMediaPlayerAndroid::play() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMediaSuspend) &&
-      hasVideo() && player_manager_->render_frame()->IsHidden()) {
-    is_play_pending_ = true;
-    return;
+  if (hasVideo() && player_manager_->render_frame()->IsHidden()) {
+    bool can_video_play_in_background =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableMediaSuspend) ||
+        (IsBackgroundVideoCandidate() &&
+            delegate_ && delegate_->IsPlayingBackgroundVideo());
+    if (!can_video_play_in_background) {
+      is_play_pending_ = true;
+      return;
+    }
   }
   is_play_pending_ = false;
 
@@ -1511,6 +1516,13 @@ void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {
 }
 
 void WebMediaPlayerAndroid::OnHidden() {
+  // Pause audible video preserving its session.
+  if (hasVideo() && IsBackgroundVideoCandidate() && !paused()) {
+    Pause(false);
+    is_play_pending_ = true;
+    return;
+  }
+
   OnSuspendRequested(false);
 }
 
@@ -1528,8 +1540,10 @@ void WebMediaPlayerAndroid::OnSuspendRequested(bool must_suspend) {
 
   // If we're idle or playing video, pause and release resources; audio only
   // players are allowed to continue unless indicated otherwise by the call.
-  if (must_suspend || (paused() && playback_completed_) || hasVideo())
+  if (must_suspend || (paused() && playback_completed_) ||
+      (hasVideo() && !IsBackgroundVideoCandidate())) {
     SuspendAndReleaseResources();
+  }
 }
 
 void WebMediaPlayerAndroid::OnPlay() {
@@ -1681,6 +1695,18 @@ void WebMediaPlayerAndroid::ReportHLSMetrics() const {
   UMA_HISTOGRAM_ENUMERATION(
       "Media.Android.IsHttpLiveStreamingMediaPredictionResult",
       result, PREDICTION_RESULT_MAX);
+}
+
+bool WebMediaPlayerAndroid::IsBackgroundVideoCandidate() const {
+  DCHECK(hasVideo());
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMediaSuspend)) {
+    return false;
+  }
+
+  return base::FeatureList::IsEnabled(media::kResumeBackgroundVideo) &&
+      hasAudio() && !isRemote() && delegate_ && delegate_->IsHidden();
 }
 
 }  // namespace content

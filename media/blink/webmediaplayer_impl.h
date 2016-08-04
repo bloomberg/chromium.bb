@@ -327,7 +327,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //   - network_state_, ready_state_,
   //   - is_idle_, must_suspend_,
   //   - paused_, ended_,
-  //   - pending_suspend_resume_cycle_.
+  //   - pending_suspend_resume_cycle_,
   void UpdatePlayState();
 
   // Methods internal to UpdatePlayState().

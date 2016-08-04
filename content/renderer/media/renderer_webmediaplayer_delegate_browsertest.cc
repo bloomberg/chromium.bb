@@ -61,6 +61,22 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
  protected:
   IPC::TestSink& test_sink() { return render_thread_->sink(); }
 
+  bool HasPlayingVideo(int delegate_id) {
+    return delegate_manager_->playing_videos_.count(delegate_id);
+  }
+
+  void SetPlayingBackgroundVideo(bool is_playing) {
+    delegate_manager_->is_playing_background_video_ = is_playing;
+  }
+
+  void CallOnMediaDelegatePlay(int delegate_id) {
+    delegate_manager_->OnMediaDelegatePlay(delegate_id);
+  }
+
+  void CallOnMediaDelegatePause(int delegate_id) {
+    delegate_manager_->OnMediaDelegatePause(delegate_id);
+  }
+
   std::unique_ptr<RendererWebMediaPlayerDelegate> delegate_manager_;
 
  private:
@@ -270,5 +286,85 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesIgnoresSuspendRequest) {
   EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
   delegate_manager_->RemoveObserver(delegate_id_1);
 }
+
+TEST_F(RendererWebMediaPlayerDelegateTest, PlayingVideosSet) {
+  MockWebMediaPlayerDelegateObserver observer;
+  int delegate_id = delegate_manager_->AddObserver(&observer);
+  EXPECT_FALSE(HasPlayingVideo(delegate_id));
+
+  // Playing a local video adds it to the set.
+  delegate_manager_->DidPlay(delegate_id, true, true, false, base::TimeDelta());
+  EXPECT_TRUE(HasPlayingVideo(delegate_id));
+
+  // Pause doesn't remove the video from the set.
+  delegate_manager_->DidPause(delegate_id, false);
+  EXPECT_TRUE(HasPlayingVideo(delegate_id));
+
+  // Reaching the end removes the video from the set.
+  delegate_manager_->DidPause(delegate_id, true);
+  EXPECT_FALSE(HasPlayingVideo(delegate_id));
+
+  // Removing the player removes the video from the set.
+  delegate_manager_->DidPlay(delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->PlayerGone(delegate_id);
+  EXPECT_FALSE(HasPlayingVideo(delegate_id));
+
+  // Playing a remote video removes it from the set.
+  delegate_manager_->DidPlay(delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, true, base::TimeDelta());
+  EXPECT_FALSE(HasPlayingVideo(delegate_id));
+
+  // Playing a local video without audio adds it to the set (because of WMPA).
+  delegate_manager_->DidPlay(
+      delegate_id, true, false, false, base::TimeDelta());
+  EXPECT_TRUE(HasPlayingVideo(delegate_id));
+
+  // Playing a local audio removes it from the set.
+  delegate_manager_->DidPlay(
+      delegate_id, false, true, false, base::TimeDelta());
+  EXPECT_FALSE(HasPlayingVideo(delegate_id));
+
+  // Removing the observer also removes the video from the set.
+  delegate_manager_->DidPlay(delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->RemoveObserver(delegate_id);
+  EXPECT_FALSE(HasPlayingVideo(delegate_id));
+}
+
+TEST_F(RendererWebMediaPlayerDelegateTest, IsPlayingBackgroundVideo) {
+  MockWebMediaPlayerDelegateObserver observer;
+  int delegate_id = delegate_manager_->AddObserver(&observer);
+  EXPECT_FALSE(delegate_manager_->IsPlayingBackgroundVideo());
+
+  // Showing the frame always clears the flag.
+  SetPlayingBackgroundVideo(true);
+  delegate_manager_->WasShown();
+  EXPECT_FALSE(delegate_manager_->IsPlayingBackgroundVideo());
+
+  // Pausing anything other than a local playing video doesn't affect the flag.
+  SetPlayingBackgroundVideo(true);
+  CallOnMediaDelegatePause(delegate_id);
+  EXPECT_TRUE(delegate_manager_->IsPlayingBackgroundVideo());
+
+  // Pausing a currently playing video does clears the flag.
+  delegate_manager_->DidPlay(
+      delegate_id, true, true, false, base::TimeDelta());
+  CallOnMediaDelegatePause(delegate_id);
+  EXPECT_FALSE(delegate_manager_->IsPlayingBackgroundVideo());
+
+  // TODO(avayvod): this test can't mock IsHidden() method.
+  // Just test that the value changes or doesn't depending on whether the video
+  // is currently playing.
+  bool old_value = !delegate_manager_->IsHidden();
+  SetPlayingBackgroundVideo(old_value);
+  delegate_manager_->DidPause(delegate_id, true);
+  CallOnMediaDelegatePlay(delegate_id);
+  EXPECT_EQ(old_value, delegate_manager_->IsPlayingBackgroundVideo());
+
+  delegate_manager_->DidPlay(
+      delegate_id, true, true, false, base::TimeDelta());
+  CallOnMediaDelegatePlay(delegate_id);
+  EXPECT_NE(old_value, delegate_manager_->IsPlayingBackgroundVideo());
+}
+
 
 }  // namespace media

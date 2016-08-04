@@ -115,6 +115,10 @@ bool IsBackgroundedSuspendEnabled() {
 #endif
 }
 
+bool IsResumeBackgroundVideosEnabled() {
+  return base::FeatureList::IsEnabled(kResumeBackgroundVideo);
+}
+
 bool IsNetworkStateError(blink::WebMediaPlayer::NetworkState state) {
   bool result = state == blink::WebMediaPlayer::NetworkStateFormatError ||
                 state == blink::WebMediaPlayer::NetworkStateNetworkError ||
@@ -386,7 +390,6 @@ void WebMediaPlayerImpl::play() {
     return;
   }
 #endif
-
   paused_ = false;
   is_idle_ = false;
   pipeline_.SetPlaybackRate(playback_rate_);
@@ -1160,6 +1163,7 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
 
 void WebMediaPlayerImpl::OnHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+
   UpdatePlayState();
 
   // Schedule suspended playing media to be paused if the user doesn't come back
@@ -1171,6 +1175,7 @@ void WebMediaPlayerImpl::OnShown() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   must_suspend_ = false;
   background_pause_timer_.Stop();
+
   UpdatePlayState();
 }
 
@@ -1605,7 +1610,15 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
 
   // Background suspend is not enabled for audio-only players unless paused,
   // though in the case of audio-only the session should be kept.
-  bool background_suspended = is_backgrounded && have_metadata && hasVideo();
+  // Videos are not suspended if the user resumed the playback via the remote
+  // controls earlier and it's still playing.
+  bool is_backgrounded_video = is_backgrounded && have_metadata && hasVideo();
+  bool can_play_backgrounded = is_backgrounded_video && !is_remote &&
+                               hasAudio() && IsResumeBackgroundVideosEnabled();
+  bool is_background_playing =
+      delegate_ && delegate_->IsPlayingBackgroundVideo();
+  bool background_suspended = is_backgrounded_video &&
+                              !(can_play_backgrounded && is_background_playing);
 
   // The |paused_| state is not reliable until we |have_future_data|.
   bool background_pause_suspended =
@@ -1650,11 +1663,20 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // TODO(sandersd): If Blink told us the paused state sooner, we could create
   // the media session sooner.
   bool can_play = !has_error && !is_remote && have_future_data;
-  bool has_session = can_play && !must_suspend_ && !background_suspended;
+  bool has_session_playing =
+      can_play && !must_suspend_ && !background_suspended;
+
+  // |has_session_suspended| means the player is suspended from the media
+  // element point of view but paused and can be resumed from the delegate point
+  // of view. Therefore it behaves like |paused_| for the delegate.
+  bool has_session_suspended = can_play && !must_suspend_ &&
+                               background_suspended && can_play_backgrounded;
+
+  bool has_session = has_session_playing || has_session_suspended;
 
   if (!has_session) {
     result.delegate_state = DelegateState::GONE;
-  } else if (paused_) {
+  } else if (paused_ || has_session_suspended) {
     if (seeking() || overlay_enabled_) {
       result.delegate_state = DelegateState::PAUSED_BUT_NOT_IDLE;
     } else if (ended_) {

@@ -76,6 +76,8 @@ class FakeWebMediaPlayerDelegate
 
   bool IsHidden() override { return is_hidden_; }
 
+  bool IsPlayingBackgroundVideo() override { return false; }
+
   void set_hidden(bool is_hidden) { is_hidden_ = is_hidden; }
 
  private:

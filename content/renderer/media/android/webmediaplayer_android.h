@@ -324,6 +324,9 @@ class WebMediaPlayerAndroid
   // |defer_load_cb_| is null this is called immediately.
   void DoLoad(LoadType load_type, const blink::WebURL& url, CORSMode cors_mode);
 
+  // Returns if this video can be resumed in the background.
+  bool IsBackgroundVideoCandidate() const;
+
   blink::WebFrame* const frame_;
 
   blink::WebMediaPlayerClient* const client_;

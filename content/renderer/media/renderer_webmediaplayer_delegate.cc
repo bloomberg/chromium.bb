@@ -32,6 +32,7 @@ void RendererWebMediaPlayerDelegate::RemoveObserver(int delegate_id) {
   DCHECK(id_map_.Lookup(delegate_id));
   id_map_.Remove(delegate_id);
   RemoveIdleDelegate(delegate_id);
+  playing_videos_.erase(delegate_id);
 }
 
 void RendererWebMediaPlayerDelegate::DidPlay(int delegate_id,
@@ -41,6 +42,10 @@ void RendererWebMediaPlayerDelegate::DidPlay(int delegate_id,
                                              base::TimeDelta duration) {
   DCHECK(id_map_.Lookup(delegate_id));
   has_played_media_ = true;
+  if (has_video && !is_remote)
+    playing_videos_.insert(delegate_id);
+  else
+    playing_videos_.erase(delegate_id);
   RemoveIdleDelegate(delegate_id);
   Send(new MediaPlayerDelegateHostMsg_OnMediaPlaying(
       routing_id(), delegate_id, has_video, has_audio, is_remote, duration));
@@ -50,6 +55,8 @@ void RendererWebMediaPlayerDelegate::DidPause(int delegate_id,
                                               bool reached_end_of_stream) {
   DCHECK(id_map_.Lookup(delegate_id));
   AddIdleDelegate(delegate_id);
+  if (reached_end_of_stream)
+    playing_videos_.erase(delegate_id);
   Send(new MediaPlayerDelegateHostMsg_OnMediaPaused(routing_id(), delegate_id,
                                                     reached_end_of_stream));
 }
@@ -57,6 +64,7 @@ void RendererWebMediaPlayerDelegate::DidPause(int delegate_id,
 void RendererWebMediaPlayerDelegate::PlayerGone(int delegate_id) {
   DCHECK(id_map_.Lookup(delegate_id));
   RemoveIdleDelegate(delegate_id);
+  playing_videos_.erase(delegate_id);
   Send(new MediaPlayerDelegateHostMsg_OnMediaDestroyed(routing_id(),
                                                        delegate_id));
 }
@@ -65,12 +73,17 @@ bool RendererWebMediaPlayerDelegate::IsHidden() {
   return render_frame()->IsHidden();
 }
 
+bool RendererWebMediaPlayerDelegate::IsPlayingBackgroundVideo() {
+  return is_playing_background_video_;
+}
+
 void RendererWebMediaPlayerDelegate::WasHidden() {
   for (IDMap<Observer>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
     it.GetCurrentValue()->OnHidden();
 }
 
 void RendererWebMediaPlayerDelegate::WasShown() {
+  is_playing_background_video_ = false;
   for (IDMap<Observer>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
     it.GetCurrentValue()->OnShown();
 }
@@ -100,14 +113,20 @@ void RendererWebMediaPlayerDelegate::SetIdleCleanupParamsForTesting(
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(int delegate_id) {
   Observer* observer = id_map_.Lookup(delegate_id);
-  if (observer)
+  if (observer) {
+    if (playing_videos_.find(delegate_id) != playing_videos_.end())
+      is_playing_background_video_ = false;
     observer->OnPause();
+  }
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int delegate_id) {
   Observer* observer = id_map_.Lookup(delegate_id);
-  if (observer)
+  if (observer) {
+    if (playing_videos_.find(delegate_id) != playing_videos_.end())
+      is_playing_background_video_ = IsHidden();
     observer->OnPlay();
+  }
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegateSuspendAllMediaPlayers() {

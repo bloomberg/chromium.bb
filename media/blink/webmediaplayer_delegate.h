@@ -68,6 +68,10 @@ class WebMediaPlayerDelegate {
   // Returns whether the render frame is currently hidden.
   virtual bool IsHidden() = 0;
 
+  // Returns whether there's a video playing in background within the render
+  // frame.
+  virtual bool IsPlayingBackgroundVideo() = 0;
+
  protected:
   virtual ~WebMediaPlayerDelegate() {}
 };
