@@ -143,7 +143,7 @@
 #include "base/mac/foundation_util.h"
 #endif
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
 #include "content/browser/web_contents/web_contents_view_mus.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "ui/aura/mus/mus_util.h"
@@ -1545,7 +1545,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   WebContentsViewDelegate* delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
   if (MojoShellConnection::GetForProcess() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMusInRenderer)) {

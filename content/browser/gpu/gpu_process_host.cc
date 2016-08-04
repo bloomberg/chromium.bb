@@ -62,6 +62,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/runner/common/client_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
@@ -88,10 +89,6 @@
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 #include "content/browser/gpu/gpu_surface_tracker.h"
-#endif
-
-#if defined(MOJO_SHELL_CLIENT)
-#include "services/shell/runner/common/client_util.h"
 #endif
 
 namespace content {
@@ -315,9 +312,7 @@ bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
 
 // static
 GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
-#if defined(MOJO_SHELL_CLIENT)
   DCHECK(!shell::ShellIsRemote());
-#endif
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Don't grant further access to GPU if it is not allowed.

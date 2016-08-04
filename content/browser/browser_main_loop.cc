@@ -277,7 +277,7 @@ static void SetUpGLibLogHandler() {
 }
 #endif  // defined(USE_GLIB)
 
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#if defined(USE_AURA)
 void WaitForMojoShellInitialize() {
   // TODO(rockot): Remove this. http://crbug.com/594852.
   base::RunLoop wait_loop;
@@ -285,7 +285,7 @@ void WaitForMojoShellInitialize() {
       wait_loop.QuitClosure());
   wait_loop.Run();
 }
-#endif  // defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#endif  // defined(USE_AURA)
 
 void OnStoppedStartupTracing(const base::FilePath& trace_file) {
   VLOG(0) << "Completed startup tracing to " << trace_file.value();
@@ -1196,7 +1196,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
           ->task_runner()));
 
   mojo_shell_context_.reset(new MojoShellContext);
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#if defined(USE_AURA)
   // TODO(rockot): Remove the blocking wait for init.
   // http://crbug.com/594852.
   if (shell::ShellIsRemote() && MojoShellConnection::GetForProcess()) {
@@ -1243,11 +1243,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
   ImageTransportFactory::Initialize();
 #if defined(USE_AURA)
-  bool use_mus_in_renderer = false;
-#if defined (MOJO_SHELL_CLIENT)
-  use_mus_in_renderer = base::CommandLine::ForCurrentProcess()->HasSwitch(
+  bool use_mus_in_renderer = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseMusInRenderer);
-#endif  // defined(MOJO_SHELL_CLIENT);
   if (aura::Env::GetInstance() && !use_mus_in_renderer) {
     aura::Env::GetInstance()->set_context_factory(GetContextFactory());
   }

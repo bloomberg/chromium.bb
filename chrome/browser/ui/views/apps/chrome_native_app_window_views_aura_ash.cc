@@ -20,21 +20,18 @@
 #include "ash/wm/window_state_aura.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(MOJO_SHELL_CLIENT)
-#include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/interfaces/window_manager.mojom.h"
-#include "ui/aura/mus/mus_util.h"
-#include "ui/gfx/skia_util.h"
-#endif
 
 using extensions::AppWindow;
 
@@ -148,11 +145,9 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
         ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                  ash::kShellWindowId_ImeWindowParentContainer);
   }
-#if defined(MOJO_SHELL_CLIENT)
   init_params->mus_properties
       [ui::mojom::WindowManager::kRemoveStandardFrame_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);
-#endif
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
@@ -330,7 +325,6 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   ChromeNativeAppWindowViewsAura::UpdateDraggableRegions(regions);
 
-#if defined(MOJO_SHELL_CLIENT)
   SkRegion* draggable_region = GetDraggableRegion();
   // Set the NativeAppWindow's draggable region on the mus window.
   if (draggable_region && !draggable_region->isEmpty() && widget() &&
@@ -349,5 +343,4 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
     GetMusWindow(widget()->GetNativeWindow())
         ->SetClientArea(insets, std::move(additional_client_regions));
   }
-#endif
 }

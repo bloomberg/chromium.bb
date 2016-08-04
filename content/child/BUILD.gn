@@ -34,10 +34,7 @@ target(link_target_type, "child") {
                         ".",
                         "//content")
 
-  configs += [
-    "//build/config:precompiled_headers",
-    "//content/public/common:mojo_shell_client",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
     "//gpu/ipc/client:client",

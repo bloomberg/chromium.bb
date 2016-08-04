@@ -40,8 +40,6 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
 
 #if defined(USE_AURA)
   std::unique_ptr<wm::WMState> wm_state_;
-#endif
-#if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
   std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 
   // Subscribes to updates about input-devices.

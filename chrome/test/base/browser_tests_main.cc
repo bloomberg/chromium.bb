@@ -8,12 +8,12 @@
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
 #include "chrome/test/base/mash_browser_tests_main.h"
 #endif
 
 int main(int argc, char** argv) {
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
   int exit_code = 0;
   if (RunMashBrowserTests(argc, argv, &exit_code))
     return exit_code;

@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
@@ -41,10 +42,6 @@
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
-#endif
-
-#if defined(MOJO_SHELL_CLIENT)
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 #endif
 
 namespace chrome {
@@ -106,10 +103,8 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
 }
 
 void InitializeMash() {
-#if defined(MOJO_SHELL_CLIENT)
   DCHECK(!ash::Shell::HasInstance());
   ChromeLauncherControllerMus::CreateInstance()->Init();
-#endif
 }
 
 void CloseAsh() {

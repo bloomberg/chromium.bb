@@ -133,8 +133,6 @@ source_set("chromeos") {
     "//v8",
   ]
 
-  defines = [ "MOJO_SHELL_CLIENT" ]
-
   sources = rebase_path(gypi_values.browser_chromeos_sources, ".", "//chrome") +
             rebase_path(gypi_values.browser_chromeos_extension_sources,
                         ".",
@@ -169,7 +167,7 @@ source_set("chromeos") {
   }
 
   if (use_cras) {
-    defines += [ "USE_CRAS" ]
+    defines = [ "USE_CRAS" ]
   }
 
   if (ui_compositor_image_transport) {

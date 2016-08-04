@@ -49,15 +49,12 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
-#include "ui/wm/core/window_modality_controller.h"
-#endif
-
-#if defined(MOJO_SHELL_CLIENT)
 #include "chrome/browser/ui/views/tabs/window_finder_mus.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/runner/common/client_util.h"
+#include "ui/aura/env.h"
+#include "ui/aura/window.h"
+#include "ui/wm/core/window_modality_controller.h"
 #endif
 
 using base::UserMetricsAction;
@@ -231,7 +228,7 @@ TabDragController::TabDragController()
       weak_factory_(this) {
   instance_ = this;
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
   content::MojoShellConnection* mojo_shell_connection =
       content::MojoShellConnection::GetForProcess();
   if (mojo_shell_connection && shell::ShellIsRemote())

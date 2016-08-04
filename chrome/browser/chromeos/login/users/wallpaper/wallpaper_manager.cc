@@ -13,6 +13,7 @@
 #include "ash/common/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "ash/sysui/public/interfaces/wallpaper.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
@@ -65,10 +66,6 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
-
-#if defined(MOJO_SHELL_CLIENT)
-#include "ash/sysui/public/interfaces/wallpaper.mojom.h"
-#endif
 
 using content::BrowserThread;
 using wallpaper::WallpaperManagerBase;
@@ -180,7 +177,6 @@ void SetKnownUserWallpaperFilesId(
                                           wallpaper_files_id.id());
 }
 
-#if defined(MOJO_SHELL_CLIENT)
 ash::sysui::mojom::WallpaperLayout WallpaperLayoutToMojo(
     wallpaper::WallpaperLayout layout) {
   switch (layout) {
@@ -199,12 +195,10 @@ ash::sysui::mojom::WallpaperLayout WallpaperLayoutToMojo(
   NOTREACHED();
   return ash::sysui::mojom::WallpaperLayout::CENTER;
 }
-#endif
 
 // A helper to set the wallpaper image for Ash and Mash.
 void SetWallpaper(const gfx::ImageSkia& image,
                   wallpaper::WallpaperLayout layout) {
-#if defined(MOJO_SHELL_CLIENT)
   if (chrome::IsRunningInMash()) {
     shell::Connector* connector =
         content::MojoShellConnection::GetForProcess()->GetConnector();
@@ -214,7 +208,6 @@ void SetWallpaper(const gfx::ImageSkia& image,
                                        WallpaperLayoutToMojo(layout));
     return;
   }
-#endif
   // Avoid loading unnecessary wallpapers in tests without a shell instance.
   if (ash::Shell::HasInstance()) {
     ash::Shell::GetInstance()

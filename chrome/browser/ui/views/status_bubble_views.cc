@@ -43,7 +43,7 @@
 #include "ash/wm/window_state_aura.h"
 #endif
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #endif
@@ -607,7 +607,7 @@ void StatusBubbleViews::Init() {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = frame->GetNativeView();
     params.context = frame->GetNativeWindow();
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
     params.mus_properties
         [ui::mojom::WindowManager::kWindowIgnoredByShelf_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(true);

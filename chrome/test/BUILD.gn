@@ -900,8 +900,6 @@ static_library("browser_tests_runner") {
       "//chrome/app:mojo_manifests",
       "//mash/session",
     ]
-
-    defines = [ "MOJO_SHELL_CLIENT" ]
   }
 }
 

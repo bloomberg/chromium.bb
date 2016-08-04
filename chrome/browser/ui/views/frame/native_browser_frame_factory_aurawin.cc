@@ -4,20 +4,14 @@
 
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 
-#include "ash/shell.h"
-#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
-
-#if defined(MOJO_SHELL_CLIENT)
 #include "chrome/browser/ui/views/frame/browser_frame_mus.h"
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
 #include "services/shell/runner/common/client_util.h"
-#endif
 
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
-#if defined(MOJO_SHELL_CLIENT)
   if (shell::ShellIsRemote())
     return new BrowserFrameMus(browser_frame, browser_view);
-#endif
   return new DesktopBrowserFrameAura(browser_frame, browser_view);
 }

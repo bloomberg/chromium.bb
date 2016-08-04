@@ -48,10 +48,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif  // OS_WIN
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-#include "services/shell/runner/common/client_util.h"  // nogncheck
-#include "services/ui/common/gpu_service.h"            // nogncheck
-#endif
 
 namespace content {
 

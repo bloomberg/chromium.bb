@@ -9,19 +9,16 @@
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(USE_AURA)
-#include "ui/display/screen.h"
-#include "ui/views/widget/desktop_aura/desktop_screen.h"
-#include "ui/wm/core/wm_state.h"
-#endif
-
-#if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
 #include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
+#include "ui/display/screen.h"
 #include "ui/views/mus/window_manager_connection.h"
-#endif
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
+#include "ui/wm/core/wm_state.h"
+#endif  // defined(USE_AURA)
 
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
 }
@@ -50,7 +47,7 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 }
 
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
-#if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
   content::MojoShellConnection* mojo_shell_connection =
       content::MojoShellConnection::GetForProcess();
   if (mojo_shell_connection && shell::ShellIsRemote()) {
@@ -64,6 +61,6 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
         mojo_shell_connection->GetConnector(),
         mojo_shell_connection->GetIdentity());
   }
-#endif  // defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
+#endif  // defined(USE_AURA)
   ChromeBrowserMainExtraParts::PreProfileInit();
 }

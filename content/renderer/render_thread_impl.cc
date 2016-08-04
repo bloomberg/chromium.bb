@@ -200,7 +200,7 @@
 #include "v8/src/third_party/vtune/v8-vtune.h"
 #endif
 
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#if defined(USE_AURA)
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
@@ -642,7 +642,7 @@ void RenderThreadImpl::Init(
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
   if (IsRunningInMash())
     ui::GpuService::Initialize(GetMojoShellConnection()->GetConnector());
 #endif
@@ -718,7 +718,7 @@ void RenderThreadImpl::Init(
 
   AddFilter((new ServiceWorkerContextMessageFilter())->GetFilter());
 
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#if defined(USE_AURA)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMusInRenderer)) {
     CreateRenderWidgetWindowTreeClientFactory(GetMojoShellConnection());
@@ -1802,7 +1802,7 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
                                     ChildProcess::current()->GetShutDownEvent(),
                                     gpu_memory_buffer_manager());
   } else {
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#if defined(USE_AURA)
     gpu_channel_ = ui::GpuService::GetInstance()->EstablishGpuChannelSync();
 #else
     NOTREACHED();
@@ -1822,7 +1822,7 @@ RenderThreadImpl::CreateCompositorOutputSurface(
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     use_software = true;
 
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#if defined(USE_AURA)
   if (GetMojoShellConnection() && !use_software &&
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
     RenderWidgetMusConnection* connection =

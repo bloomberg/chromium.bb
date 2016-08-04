@@ -11,6 +11,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/public/interfaces/container.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -87,6 +88,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "media/audio/sounds/sounds_manager.h"
+#include "services/ui/public/cpp/property_type_converters.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -106,11 +108,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
-
-#if defined(MOJO_SHELL_CLIENT)
-#include "ash/public/interfaces/container.mojom.h"
-#include "services/ui/public/cpp/property_type_converters.h"
-#endif
 
 namespace {
 
@@ -1141,13 +1138,9 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
         ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                  ash::kShellWindowId_LockScreenContainer);
   } else {
-#if defined(MOJO_SHELL_CLIENT)
     params.mus_properties[ash::mojom::kWindowContainer_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<int32_t>(ash::mojom::Container::LOGIN_WINDOWS));
-#else
-    NOTREACHED();
-#endif
   }
   login_window_ = new views::Widget;
   params.delegate = new LoginWidgetDelegate(login_window_);

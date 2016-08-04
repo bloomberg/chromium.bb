@@ -5,7 +5,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_mus.h"
 #include "services/shell/runner/common/client_util.h"
 #endif
@@ -27,7 +27,7 @@ namespace chrome {
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view) {
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
   if (shell::ShellIsRemote()) {
     BrowserNonClientFrameViewMus* frame_view =
         new BrowserNonClientFrameViewMus(frame, browser_view);

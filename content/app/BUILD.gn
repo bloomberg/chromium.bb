@@ -15,7 +15,6 @@ template("implement_content_app") {
   extra_configs = [
     "//build/config/compiler:wexit_time_destructors",
     "//content:content_implementation",
-    "//content/public/common:mojo_shell_client",
     "//v8:external_startup_data",
   ]
 

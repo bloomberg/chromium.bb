@@ -191,6 +191,7 @@
 #include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#include "chrome/browser/chromeos/chrome_interface_factory.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
@@ -201,15 +202,12 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
 #include "components/user_manager/user_manager.h"
-#if defined(MOJO_SHELL_CLIENT)
-#include "chrome/browser/chromeos/chrome_interface_factory.h"
-#include "chrome/browser/ui/ash/ash_util.h"
-#endif  // MOJO_SHELL_CLIENT
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
@@ -2846,12 +2844,10 @@ void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
   apps->insert(std::make_pair("mojo:media", app_info));
 #endif
 #if defined(OS_CHROMEOS)
-#if defined(MOJO_SHELL_CLIENT)
   if (chrome::IsRunningInMash()) {
     content::MojoShellConnection::GetForProcess()->AddConnectionFilter(
         base::MakeUnique<chromeos::ChromeInterfaceFactory>());
   }
-#endif  // MOJO_SHELL_CLIENT
 #endif  // OS_CHROMEOS
 }
 

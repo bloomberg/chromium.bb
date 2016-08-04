@@ -620,7 +620,6 @@ split_static_library("browser") {
       "//ui/compositor",
       "//ui/views/mus",
     ]
-    defines += [ "MOJO_SHELL_CLIENT" ]
   }
   if (ui_compositor_image_transport) {
     deps += [ "//ui/gl" ]

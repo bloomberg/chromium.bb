@@ -8,12 +8,9 @@
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/shell/runner/common/client_util.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
-
-#if defined(MOJO_SHELL_CLIENT)
-#include "services/shell/runner/common/client_util.h"
-#endif
 
 namespace chromeos {
 namespace system {
@@ -23,11 +20,7 @@ namespace {
 InputDeviceSettings* g_instance = nullptr;
 
 std::unique_ptr<ui::InputController> CreateStubInputControllerIfNecessary() {
-#if defined(MOJO_SHELL_CLIENT)
   return shell::ShellIsRemote() ? ui::CreateStubInputController() : nullptr;
-#else
-  return nullptr;
-#endif
 }
 
 // InputDeviceSettings for Linux without X11 (a.k.a. Ozone).

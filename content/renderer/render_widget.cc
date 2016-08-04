@@ -92,7 +92,7 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #endif  // defined(OS_POSIX)
 
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #endif
@@ -199,7 +199,7 @@ bool IsDateTimeInput(ui::TextInputType type) {
 
 content::RenderWidgetInputHandlerDelegate* GetRenderWidgetInputHandlerDelegate(
     content::RenderWidget* widget) {
-#if defined(MOJO_SHELL_CLIENT)
+#if defined(USE_AURA)
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   if (content::MojoShellConnection::GetForProcess() &&
       cmdline.HasSwitch(switches::kUseMusInRenderer)) {
