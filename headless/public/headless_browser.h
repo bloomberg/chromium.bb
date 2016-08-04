@@ -131,6 +131,9 @@ struct HeadlessBrowser::Options {
   // If empty, default directory (where the binary is located) will be used.
   base::FilePath user_data_dir;
 
+  // Run a browser context in an incognito mode. Enabled by default.
+  bool incognito_mode;
+
   // Reminder: when adding a new field here, do not forget to add it to
   // HeadlessBrowserContextOptions (where appropriate).
  private:
@@ -160,6 +163,7 @@ class HeadlessBrowser::Options::Builder {
   Builder& SetHostResolverRules(const std::string& host_resolver_rules);
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);
+  Builder& SetIncognitoMode(bool incognito_mode);
 
   Options Build();
 

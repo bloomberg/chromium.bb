@@ -160,7 +160,7 @@ base::FilePath HeadlessBrowserContextImpl::GetPath() const {
 }
 
 bool HeadlessBrowserContextImpl::IsOffTheRecord() const {
-  return false;
+  return context_options_->incognito_mode();
 }
 
 content::ResourceContext* HeadlessBrowserContextImpl::GetResourceContext() {
@@ -339,6 +339,12 @@ HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetUserDataDir(
     const base::FilePath& user_data_dir) {
   options_->user_data_dir_ = user_data_dir;
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::SetIncognitoMode(bool incognito_mode) {
+  options_->incognito_mode_ = incognito_mode;
   return *this;
 }
 

@@ -219,6 +219,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
       browser()
           ->CreateBrowserContextBuilder()
           .SetUserDataDir(user_data_dir.path())
+          .SetIncognitoMode(false)
           .Build();
 
   HeadlessWebContents* web_contents =
@@ -232,6 +233,38 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
   // If it is not the case, more complex page may be needed.
   // ServiceWorkers may be a good option.
   EXPECT_FALSE(base::IsDirectoryEmpty(user_data_dir.path()));
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, IncognitoMode) {
+  // We do not want to bother with posting tasks to create a temp dir.
+  // Just allow IO from main thread for now.
+  base::ThreadRestrictions::SetIOAllowed(true);
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  base::ScopedTempDir user_data_dir;
+  ASSERT_TRUE(user_data_dir.CreateUniqueTempDir());
+
+  // Newly created temp directory should be empty.
+  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.path()));
+
+  HeadlessBrowserContext* browser_context =
+      browser()
+          ->CreateBrowserContextBuilder()
+          .SetUserDataDir(user_data_dir.path())
+          .SetIncognitoMode(true)
+          .Build();
+
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
+          .Build();
+
+  EXPECT_TRUE(WaitForLoad(web_contents));
+
+  // Similar to test above, but now we are in incognito mode,
+  // so nothing should be written to this directory.
+  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.path()));
 }
 
 }  // namespace headless

@@ -38,6 +38,9 @@ class HeadlessBrowserContextOptions {
   // See HeadlessBrowser::Options::user_data_dir.
   const base::FilePath& user_data_dir() const;
 
+  // Set HeadlessBrowser::Options::incognito_mode.
+  bool incognito_mode() const;
+
   // Custom network protocol handlers. These can be used to override URL
   // fetching for different network schemes.
   const ProtocolHandlerMap& protocol_handlers() const;
@@ -56,6 +59,7 @@ class HeadlessBrowserContextOptions {
   base::Optional<std::string> host_resolver_rules_;
   base::Optional<gfx::Size> window_size_;
   base::Optional<base::FilePath> user_data_dir_;
+  base::Optional<bool> incognito_mode_;
 
   ProtocolHandlerMap protocol_handlers_;
 

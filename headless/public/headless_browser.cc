@@ -27,7 +27,8 @@ Options::Options(int argc, const char** argv)
       disable_sandbox(false),
       gl_implementation("osmesa"),
       user_agent(content::BuildUserAgentFromProduct(kProductName)),
-      window_size(kDefaultWindowSize) {}
+      window_size(kDefaultWindowSize),
+      incognito_mode(true) {}
 
 Options::Options(Options&& options) = default;
 
@@ -88,6 +89,11 @@ Builder& Builder::SetUserDataDir(const base::FilePath& user_data_dir) {
 
 Builder& Builder::SetWindowSize(const gfx::Size& window_size) {
   options_.window_size = window_size;
+  return *this;
+}
+
+Builder& Builder::SetIncognitoMode(bool incognito_mode) {
+  options_.incognito_mode = incognito_mode;
   return *this;
 }
 

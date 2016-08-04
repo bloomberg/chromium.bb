@@ -101,6 +101,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& SetHostResolverRules(const std::string& host_resolver_rules);
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);
+  Builder& SetIncognitoMode(bool incognito_mode);
 
   HeadlessBrowserContext* Build();
 

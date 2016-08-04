@@ -349,6 +349,7 @@ int main(int argc, const char** argv) {
   if (command_line.HasSwitch(headless::switches::kUserDataDir)) {
     builder.SetUserDataDir(
         command_line.GetSwitchValuePath(headless::switches::kUserDataDir));
+    builder.SetIncognitoMode(false);
   }
 
   return HeadlessBrowserMain(
