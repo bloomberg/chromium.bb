@@ -244,6 +244,12 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
             << ": " << error.code << ")";
     return;
   }
+
+  if (!IsGattConnected()) {
+    // Don't create services if the device disconnected.
+    return;
+  }
+
   for (CBService* cb_service in GetPeripheral().services) {
     BluetoothRemoteGattServiceMac* gatt_service =
         GetBluetoothRemoteGattService(cb_service);
@@ -276,6 +282,12 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
             << ": " << error.code << ")";
     return;
   }
+
+  if (!IsGattConnected()) {
+    // Don't create characteristics if the device disconnected.
+    return;
+  }
+
   BluetoothRemoteGattServiceMac* gatt_service =
       GetBluetoothRemoteGattService(cb_service);
   DCHECK(gatt_service);

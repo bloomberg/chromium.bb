@@ -31,6 +31,7 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   void InitWithFakeAdapter() override;
   bool DenyPermission() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
+  void RememberDeviceForSubsequentAction(BluetoothDevice* device) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
   void SimulateGattConnectionError(BluetoothDevice* device,
                                    BluetoothDevice::ConnectErrorCode) override;

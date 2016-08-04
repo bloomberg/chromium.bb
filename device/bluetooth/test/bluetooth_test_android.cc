@@ -86,6 +86,16 @@ BluetoothDevice* BluetoothTestAndroid::SimulateLowEnergyDevice(
   return observer.last_device();
 }
 
+void BluetoothTestAndroid::RememberDeviceForSubsequentAction(
+    BluetoothDevice* device) {
+  BluetoothDeviceAndroid* device_android =
+      static_cast<BluetoothDeviceAndroid*>(device);
+
+  Java_FakeBluetoothDevice_rememberDeviceForSubsequentAction(
+      base::android::AttachCurrentThread(),
+      device_android->GetJavaObject().obj());
+}
+
 void BluetoothTestAndroid::SimulateLocationServicesOff() {
   Java_Fakes_setLocationServicesState(
       AttachCurrentThread(), true /* hasPermission */, false /* isEnabled */);
@@ -134,17 +144,19 @@ void BluetoothTestAndroid::SimulateGattDisconnection(BluetoothDevice* device) {
 void BluetoothTestAndroid::SimulateGattServicesDiscovered(
     BluetoothDevice* device,
     const std::vector<std::string>& uuids) {
-  BluetoothDeviceAndroid* device_android =
-      static_cast<BluetoothDeviceAndroid*>(device);
-  JNIEnv* env = base::android::AttachCurrentThread();
+  BluetoothDeviceAndroid* device_android = nullptr;
+  if (device) {
+    device_android = static_cast<BluetoothDeviceAndroid*>(device);
+  }
 
   // Join UUID strings into a single string.
   std::ostringstream uuids_space_delimited;
   std::copy(uuids.begin(), uuids.end(),
             std::ostream_iterator<std::string>(uuids_space_delimited, " "));
 
+  JNIEnv* env = base::android::AttachCurrentThread();
   Java_FakeBluetoothDevice_servicesDiscovered(
-      env, device_android->GetJavaObject().obj(),
+      env, device_android ? device_android->GetJavaObject().obj() : nullptr,
       0,  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
       base::android::ConvertUTF8ToJavaString(env, uuids_space_delimited.str())
           .obj());
@@ -152,11 +164,14 @@ void BluetoothTestAndroid::SimulateGattServicesDiscovered(
 
 void BluetoothTestAndroid::SimulateGattServicesDiscoveryError(
     BluetoothDevice* device) {
-  BluetoothDeviceAndroid* device_android =
-      static_cast<BluetoothDeviceAndroid*>(device);
+  BluetoothDeviceAndroid* device_android = nullptr;
+  if (device) {
+    device_android = static_cast<BluetoothDeviceAndroid*>(device);
+  }
 
   Java_FakeBluetoothDevice_servicesDiscovered(
-      AttachCurrentThread(), device_android->GetJavaObject().obj(),
+      AttachCurrentThread(),
+      device_android ? device_android->GetJavaObject().obj() : nullptr,
       0x00000101,  // android.bluetooth.BluetoothGatt.GATT_FAILURE
       nullptr);
 }

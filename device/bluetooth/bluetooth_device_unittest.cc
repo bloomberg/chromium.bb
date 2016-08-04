@@ -590,6 +590,117 @@ TEST_F(BluetoothTest, GattServices_ObserversCalls) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 
+#if defined(OS_ANDROID)
+// macOS: Not applicable: This can never happen because when
+// the device gets destroyed the CBPeripheralDelegate is also destroyed
+// and no more events are dispatched.
+TEST_F(BluetoothTest, GattServicesDiscovered_AfterDeleted) {
+  // Tests that we don't crash if services are discovered after
+  // the device object is deleted.
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  ResetEventCounts();
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+  RememberDeviceForSubsequentAction(device);
+  DeleteDevice(device);
+
+  std::vector<std::string> services;
+  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
+  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(nullptr /* use remembered device */, services);
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// macOS: Not applicable: This can never happen because when
+// the device gets destroyed the CBPeripheralDelegate is also destroyed
+// and no more events are dispatched.
+TEST_F(BluetoothTest, GattServicesDiscoveredError_AfterDeleted) {
+  // Tests that we don't crash if there was an error discoverying services
+  // after the device object is deleted.
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  ResetEventCounts();
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+  RememberDeviceForSubsequentAction(device);
+  DeleteDevice(device);
+
+  SimulateGattServicesDiscoveryError(nullptr /* use remembered device */);
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+TEST_F(BluetoothTest, GattServicesDiscovered_AfterDisconnection) {
+  // Tests that we don't crash there was an error discovering services after
+  // the device disconnects.
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  ResetEventCounts();
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+  SimulateGattDisconnection(device);
+
+  std::vector<std::string> services;
+  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
+  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(device, services);
+
+  EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
+  EXPECT_EQ(0u, device->GetGattServices().size());
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+TEST_F(BluetoothTest, GattServicesDiscoveredError_AfterDisconnection) {
+  // Tests that we don't crash if services are discovered after
+  // the device disconnects.
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  ResetEventCounts();
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+  SimulateGattDisconnection(device);
+
+  SimulateGattServicesDiscoveryError(device);
+  EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
+  EXPECT_EQ(0u, device->GetGattServices().size());
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+
 #if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(BluetoothTest, GetGattServices_and_GetGattService) {
   if (!PlatformSupportsLowEnergy()) {

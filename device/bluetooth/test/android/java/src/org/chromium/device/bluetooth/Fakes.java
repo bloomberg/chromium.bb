@@ -302,12 +302,20 @@ class Fakes {
         final FakeBluetoothGatt mGatt;
         private Wrappers.BluetoothGattCallbackWrapper mGattCallback;
 
+        static FakeBluetoothDevice sRememberedDevice;
+
         public FakeBluetoothDevice(FakeBluetoothAdapter adapter, String address, String name) {
             super(null);
             mAdapter = adapter;
             mAddress = address;
             mName = name;
             mGatt = new FakeBluetoothGatt(this);
+        }
+
+        // Implements BluetoothTestAndroid::RememberDeviceForSubsequentAction.
+        @CalledByNative("FakeBluetoothDevice")
+        private static void rememberDeviceForSubsequentAction(ChromeBluetoothDevice chromeDevice) {
+            sRememberedDevice = (FakeBluetoothDevice) chromeDevice.mDevice;
         }
 
         // Create a call to onConnectionStateChange on the |chrome_device| using parameters
@@ -326,7 +334,13 @@ class Fakes {
         @CalledByNative("FakeBluetoothDevice")
         private static void servicesDiscovered(
                 ChromeBluetoothDevice chromeDevice, int status, String uuidsSpaceDelimited) {
-            FakeBluetoothDevice fakeDevice = (FakeBluetoothDevice) chromeDevice.mDevice;
+            if (chromeDevice == null && sRememberedDevice == null) {
+                throw new IllegalArgumentException("rememberDevice wasn't called previously.");
+            }
+
+            FakeBluetoothDevice fakeDevice = (chromeDevice == null)
+                    ? sRememberedDevice
+                    : (FakeBluetoothDevice) chromeDevice.mDevice;
 
             if (status == android.bluetooth.BluetoothGatt.GATT_SUCCESS) {
                 fakeDevice.mGatt.mServices.clear();

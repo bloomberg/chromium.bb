@@ -179,6 +179,11 @@ final class ChromeBluetoothDevice {
                 @Override
                 public void run() {
                     if (mNativeBluetoothDeviceAndroid != 0) {
+                        // When the device disconnects is deletes
+                        // mBluetoothGatt, so we need to check it's not null.
+                        if (mBluetoothGatt == null) {
+                            return;
+                        }
                         // TODO(crbug.com/576906): Update or replace existing GATT objects if they
                         //                         change after initial discovery.
                         for (Wrappers.BluetoothGattServiceWrapper service :

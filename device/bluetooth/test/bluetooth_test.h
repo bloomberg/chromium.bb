@@ -112,6 +112,13 @@ class BluetoothTestBase : public testing::Test {
   // name kTestDeviceName, no advertised UUIDs and address kTestDeviceAddress3.
   virtual BluetoothDevice* SimulateClassicDevice();
 
+  // Remembers |device|'s platform specific object to be used in a
+  // subsequent call to methods such as SimulateGattServicesDiscovered that
+  // accept a nullptr value to select this remembered characteristic. This
+  // enables tests where the platform attempts to reference device
+  // objects after the Chrome objects have been deleted, e.g. with DeleteDevice.
+  virtual void RememberDeviceForSubsequentAction(BluetoothDevice* device) {}
+
   // Simulates success of implementation details of CreateGattConnection.
   virtual void SimulateGattConnection(BluetoothDevice* device) {}
 
