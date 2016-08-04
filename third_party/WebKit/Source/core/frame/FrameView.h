@@ -405,9 +405,6 @@ public:
     // host window in the window's coordinate space.
     HostWindow* getHostWindow() const;
 
-    // Returns a clip rect in host window coordinates. Used to clip the blit on a scroll.
-    IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
-
     typedef HeapHashSet<Member<Widget>> ChildrenWidgetSet;
 
     // Functions for child manipulation and inspection.
@@ -627,7 +624,7 @@ protected:
     bool scrollContentsFastPath(const IntSize& scrollDelta);
 
     // Scroll the content by invalidating everything.
-    void scrollContentsSlowPath(const IntRect& updateRect);
+    void scrollContentsSlowPath();
 
     // These functions are used to create/destroy scrollbars.
     void setHasHorizontalScrollbar(bool);
@@ -756,8 +753,6 @@ private:
     void adjustScrollbarOpacity();
     void adjustScrollPositionFromUpdateScrollbars();
     bool visualViewportSuppliesScrollbars() const;
-
-    IntRect rectToCopyOnScroll() const;
 
     bool isFrameViewScrollbar(const Widget* child) const { return horizontalScrollbar() == child || verticalScrollbar() == child; }
 

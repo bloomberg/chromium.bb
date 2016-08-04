@@ -1456,7 +1456,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
     return true;
 }
 
-void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
+void FrameView::scrollContentsSlowPath()
 {
     TRACE_EVENT0("blink", "FrameView::scrollContentsSlowPath");
     // We need full invalidation during slow scrolling. For slimming paint, full invalidation
@@ -1487,8 +1487,6 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
             return;
         }
     }
-
-    getHostWindow()->invalidateRect(updateRect);
 }
 
 void FrameView::restoreScrollbar()
@@ -2178,15 +2176,6 @@ void FrameView::updateCounters()
 
         toLayoutCounter(layoutObject)->updateCounter();
     }
-}
-
-IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) const
-{
-    ASSERT(m_frame->view() == this);
-
-    LayoutRect clipRect(LayoutPoint(), LayoutSize(visibleContentSize(scrollbarInclusion)));
-    layoutViewItem().mapToVisualRectInAncestorSpace(&layoutView()->containerForPaintInvalidation(), clipRect);
-    return enclosingIntRect(clipRect);
 }
 
 bool FrameView::shouldUseIntegerScrollOffset() const
@@ -3654,19 +3643,6 @@ void FrameView::adjustScrollPositionFromUpdateScrollbars()
     }
 }
 
-IntRect FrameView::rectToCopyOnScroll() const
-{
-    IntRect scrollViewRect = convertToRootFrame(IntRect((shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar()) ? verticalScrollbar()->width() : 0, 0, visibleWidth(), visibleHeight()));
-    if (hasOverlayScrollbars()) {
-        int verticalScrollbarWidth = (verticalScrollbar() && !hasLayerForVerticalScrollbar()) ? verticalScrollbar()->width() : 0;
-        int horizontalScrollbarHeight = (horizontalScrollbar() && !hasLayerForHorizontalScrollbar()) ? horizontalScrollbar()->height() : 0;
-
-        scrollViewRect.setWidth(scrollViewRect.width() - verticalScrollbarWidth);
-        scrollViewRect.setHeight(scrollViewRect.height() - horizontalScrollbarHeight);
-    }
-    return scrollViewRect;
-}
-
 void FrameView::scrollContentsIfNeeded()
 {
     if (m_pendingScrollDelta.isZero())
@@ -3685,12 +3661,8 @@ void FrameView::scrollContents(const IntSize& scrollDelta)
 
     TRACE_EVENT0("blink", "FrameView::scrollContents");
 
-    IntRect clipRect = windowClipRect();
-    IntRect updateRect = clipRect;
-    updateRect.intersect(rectToCopyOnScroll());
-
     if (!scrollContentsFastPath(-scrollDelta))
-        scrollContentsSlowPath(updateRect);
+        scrollContentsSlowPath();
 
     // This call will move children with native widgets (plugins) and invalidate them as well.
     frameRectsChanged();
