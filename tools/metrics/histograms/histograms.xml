@@ -41430,6 +41430,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFinish_ContentPrefetcher" units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     PLT.BeginToFinish, but for pages which contained prefetch links.
@@ -41437,6 +41440,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFinish_ContentPrefetcherReferrer" units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     PLT.BeginToFinish, but for pages which were referred to by pages which
@@ -41465,6 +41471,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequest"
     units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>vabr@chromium.org</owner>
   <summary>
     The PLT.BeginToFinish histogram for pages loaded by following a link, after
@@ -41524,6 +41533,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequest"
     units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>vabr@chromium.org</owner>
   <summary>
     The PLT.BeginToFinish histogram for pages reloaded by JavaScript or by
@@ -41583,6 +41595,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequest"
     units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>vabr@chromium.org</owner>
   <summary>
     The PLT.BeginToFinish histogram for pages loads initiated by back/forward
@@ -41638,6 +41653,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFinish_NormalLoad_ExtensionWebRequest" units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>vabr@chromium.org</owner>
   <summary>
     The PLT.BeginToFinish histogram for pages loaded by entering a URL or a
@@ -41673,6 +41691,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFinish_SpdyProxy" units="ms">
+  <obsolete>
+    Use PLT.PT_BeginToFinish_DataReductionProxy instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>PLT.BeginToFinish, but for pages fetched over a SPDY proxy.</summary>
 </histogram>
@@ -41697,6 +41718,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFinishDoc_ContentPrefetcher" units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     PLT.BeginToFinishDoc, but for pages which contained prefetch links.
@@ -41704,6 +41728,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFinishDoc_ContentPrefetcherReferrer" units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     PLT.BeginToFinishDoc, but for pages which were referred to by pages which
@@ -41712,6 +41739,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFinishDoc_SpdyProxy" units="ms">
+  <obsolete>
+    Use PLT.PT_BeginToFinishDoc_DataReductionProxy instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     PLT.BeginToFinshDoc, but for pages fetched over a SPDY proxy.
