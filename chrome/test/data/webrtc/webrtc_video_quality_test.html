@@ -21,12 +21,11 @@
         <video id="local-view" autoplay="autoplay"></video>
       </td>
       <td>
-        <!-- startFrameCapture() takes 3 parameters:
+        <!-- startFrameCapture() takes 2 parameters:
              1. reference to remote video tag.
-             2. fps: fps at which we would like to sample.
-             3. duration: The duration of the capturing. -->
+             2. duration: The duration of the capturing. -->
         <video id="remote-view" autoplay="autoplay"
-            onplay="startFrameCapture(this, 30, 5)"></video>
+            onplay="startFrameCapture(this, 5)"></video>
       </td>
     </tr>
   </table>
