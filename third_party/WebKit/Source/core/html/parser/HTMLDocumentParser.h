@@ -69,6 +69,7 @@ class TokenizedChunkQueue;
 
 class HTMLDocumentParser :  public ScriptableDocumentParser, private HTMLScriptRunnerHost {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
+    USING_PRE_FINALIZER(HTMLDocumentParser, dispose);
 public:
     static HTMLDocumentParser* create(HTMLDocument& document, ParserSynchronizationPolicy backgroundParsingPolicy)
     {
@@ -76,6 +77,9 @@ public:
     }
     ~HTMLDocumentParser() override;
     DECLARE_VIRTUAL_TRACE();
+
+    // TODO(alexclarke): Remove when background parser goes away.
+    void dispose();
 
     // Exposed for HTMLParserScheduler
     void resumeParsingAfterYield();

@@ -129,9 +129,14 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document, ParserContentPolicy c
     , m_triedLoadingLinkHeaders(false)
 {
     ASSERT(shouldUseThreading() || (m_token && m_tokenizer));
+    ThreadState::current()->registerPreFinalizer(this);
 }
 
 HTMLDocumentParser::~HTMLDocumentParser()
+{
+}
+
+void HTMLDocumentParser::dispose()
 {
     // In Oilpan, HTMLDocumentParser can die together with Document, and
     // detach() is not called in this case.
@@ -721,6 +726,7 @@ void HTMLDocumentParser::startBackgroundParser()
     ASSERT(document());
     m_haveBackgroundParser = true;
 
+    // TODO(alexclarke): Remove WebFrameScheduler::setDocumentParsingInBackground when background parser goes away.
     if (document()->frame() && document()->frame()->frameScheduler())
         document()->frame()->frameScheduler()->setDocumentParsingInBackground(true);
 
