@@ -18,15 +18,18 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
@@ -143,7 +146,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
 
 @interface AvatarButtonController (Private)
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent;
-- (void)updateErrorStatus:(BOOL)hasError;
+- (void)setErrorStatus:(BOOL)hasError;
 - (void)dealloc;
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
 @end
@@ -163,11 +166,6 @@ NSImage* GetImageFromResourceID(int resourceId) {
         [[CustomThemeButtonCell alloc] initWithThemedWindow:isThemedWindow_]);
     [avatarButton setCell:cell.get()];
 
-    // Check if the account already has an authentication error.
-    SigninErrorController* errorController =
-        profiles::GetSigninErrorController(browser->profile());
-    hasError_ = errorController && errorController->HasError();
-
     [avatarButton setWantsLayer:YES];
     [self setView:avatarButton];
 
@@ -180,6 +178,9 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [avatarButton setAction:@selector(buttonClicked:)];
     [avatarButton setRightAction:@selector(buttonRightClicked:)];
 
+    // Check if the account already has an authentication or sync error and
+    // initialize the avatar button UI.
+    hasError_ = profileObserver_->HasAvatarError();
     [self updateAvatarButtonAndLayoutParent:NO];
 
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
@@ -260,12 +261,15 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [button setImage:GetImageFromResourceID(IDR_AVATAR_NATIVE_BUTTON_AVATAR)];
     [button setImagePosition:NSImageOnly];
   } else if (hasError_) {
-    [button setDefaultImage:GetImageFromResourceID(
-        IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR)];
+    NSImage* errorIcon =
+        switches::IsMaterialDesignUserMenu()
+            ? NSImageFromImageSkia(gfx::CreateVectorIcon(
+                  gfx::VectorIconId::SYNC_PROBLEM, 13, gfx::kGoogleRed700))
+            : GetImageFromResourceID(IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR);
+    [button setDefaultImage:errorIcon];
     [button setHoverImage:nil];
     [button setPressedImage:nil];
-    [button setImage:GetImageFromResourceID(
-        IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR)];
+    [button setImage:errorIcon];
     [button setImagePosition:NSImageRight];
   } else {
     [button setDefaultImage:nil];
@@ -296,7 +300,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
   }
 }
 
-- (void)updateErrorStatus:(BOOL)hasError {
+- (void)setErrorStatus:(BOOL)hasError {
   hasError_ = hasError;
   [self updateAvatarButtonAndLayoutParent:YES];
 }

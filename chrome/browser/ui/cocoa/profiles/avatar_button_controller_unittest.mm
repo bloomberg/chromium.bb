@@ -26,7 +26,7 @@
 
 // Defined in the AvatarButtonController implementation.
 @interface AvatarButtonController (ExposedForTesting)
-- (void)updateErrorStatus:(BOOL)hasError;
+- (void)setErrorStatus:(BOOL)hasError;
 @end
 
 // Subclassing AvatarButtonController to be able to control the state of
@@ -102,7 +102,7 @@ TEST_F(AvatarButtonControllerTest, ProfileButtonWithErrorShown) {
   testing_profile_manager()->CreateTestingProfile("batman");
 
   EXPECT_EQ(0, [button() image].size.width);
-  [controller() updateErrorStatus:true];
+  [controller() setErrorStatus:true];
 
   ASSERT_FALSE([view() isHidden]);
   EXPECT_NSEQ(@"Person 1", [button() title]);

@@ -32,6 +32,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -51,6 +53,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -931,10 +934,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // Builds the regular profile chooser view.
 - (void)buildProfileChooserViewWithProfileView:(NSView*)currentProfileView
                                   tutorialView:(NSView*)tutorialView
+                                 syncErrorView:(NSView*)syncErrorView
                                  otherProfiles:(NSArray*)otherProfiles
                                      atYOffset:(CGFloat)yOffset
                                    inContainer:(NSView*)container
-                                   showLock:(bool)showLock;
+                                      showLock:(bool)showLock;
 
 // Builds the profile chooser view.
 - (NSView*)buildProfileChooserView;
@@ -956,6 +960,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                  hasCloseButton:(BOOL)hasCloseButton
                      linkAction:(SEL)linkAction
                    buttonAction:(SEL)buttonAction;
+
+// Builds a header for signin and sync error surfacing on the user menu.
+- (NSView*)buildSyncErrorViewIfNeeded;
+- (NSView*)buildSyncErrorViewWithContent:(int)contentStringId
+                          buttonStringId:(int)buttonStringId
+                            buttonAction:(SEL)buttonAction;
 
 // Builds a tutorial card to introduce an upgrade user to the new avatar menu if
 // needed. |tutorial_shown| indicates if the tutorial has already been shown in
@@ -1165,9 +1175,30 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL];
 }
 
+- (IBAction)showSignoutView:(id)sender {
+  chrome::ShowSettingsSubPage(browser_, chrome::kSignOutSubPage);
+}
+
+- (IBAction)showSignoutSigninView:(id)sender {
+  if (ProfileSyncServiceFactory::GetForProfile(browser_->profile()))
+    ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+  SigninManagerFactory::GetForProfile(browser_->profile())
+      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+                signin_metrics::SignoutDelete::IGNORE_METRIC);
+  [self showSigninUIForMode:profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN];
+}
+
 - (IBAction)showAccountReauthenticationView:(id)sender {
   DCHECK(!isGuestSession_);
   [self showSigninUIForMode:profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH];
+}
+
+- (IBAction)showUpdateChromeView:(id)sender {
+  chrome::OpenUpdateChromeDialog(browser_);
+}
+
+- (IBAction)showSyncPassphraseSetupView:(id)sender {
+  chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
 }
 
 - (IBAction)removeAccount:(id)sender {
@@ -1404,10 +1435,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (void)buildProfileChooserViewWithProfileView:(NSView*)currentProfileView
                                   tutorialView:(NSView*)tutorialView
+                                 syncErrorView:(NSView*)syncErrorView
                                  otherProfiles:(NSArray*)otherProfiles
                                      atYOffset:(CGFloat)yOffset
                                    inContainer:(NSView*)container
-                                   showLock:(bool)showLock {
+                                      showLock:(bool)showLock {
   if (switches::IsMaterialDesignUserMenu())
     yOffset += kRelatedControllVerticalSpacing;
 
@@ -1451,13 +1483,22 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   if (viewMode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
-    NSView* currentProfileAccountsView = [self
-        createCurrentProfileAccountsView:NSMakeRect(0, yOffset,
-                                                    GetFixedMenuWidth(), 0)];
-    [container addSubview:currentProfileAccountsView];
-    yOffset = NSMaxY([currentProfileAccountsView frame]);
+    const AvatarMenu::Item& item =
+        avatarMenu_->GetItemAt(avatarMenu_->GetActiveProfileIndex());
+    if (item.signed_in) {
+      NSView* currentProfileAccountsView = [self
+          createCurrentProfileAccountsView:NSMakeRect(0, yOffset,
+                                                      GetFixedMenuWidth(), 0)];
+      [container addSubview:currentProfileAccountsView];
+      yOffset = NSMaxY([currentProfileAccountsView frame]);
 
-    yOffset = [self addSeparatorToContainer:container atYOffset: yOffset];
+      yOffset = [self addSeparatorToContainer:container atYOffset:yOffset];
+    } else {
+      // This is the case when the user selects the sign out option in the user
+      // menu upon encountering unrecoverable errors. Afterwards, the profile
+      // chooser view is shown instead of the account management view.
+      viewMode_ = profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
+    }
   }
 
   // Active profile card.
@@ -1469,6 +1510,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [currentProfileView setFrameOrigin:NSMakePoint(0, yOffset)];
     [container addSubview:currentProfileView];
     yOffset = NSMaxY([currentProfileView frame]) + verticalSpacing;
+  }
+
+  if (syncErrorView) {
+    yOffset = [self addSeparatorToContainer:container atYOffset:yOffset];
+    [syncErrorView setFrameOrigin:NSMakePoint(0, yOffset)];
+    [container addSubview:syncErrorView];
+    yOffset = NSMaxY([syncErrorView frame]);
   }
 
   if (tutorialView) {
@@ -1488,6 +1536,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[NSView alloc] initWithFrame:NSZeroRect]);
 
   NSView* tutorialView = nil;
+  NSView* syncErrorView = nil;
   NSView* currentProfileView = nil;
   base::scoped_nsobject<NSMutableArray> otherProfiles(
       [[NSMutableArray alloc] init]);
@@ -1507,7 +1556,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   for (int i = avatarMenu_->GetNumberOfItems() - 1; i >= 0; --i) {
     const AvatarMenu::Item& item = avatarMenu_->GetItemAt(i);
     if (item.active) {
-      if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+      if (switches::IsMaterialDesignUserMenu()) {
+        syncErrorView = [self buildSyncErrorViewIfNeeded];
+      } else if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
         tutorialView = [self buildTutorialViewIfNeededForItem:item];
       }
       currentProfileView =
@@ -1537,10 +1588,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   } else {
     [self buildProfileChooserViewWithProfileView:currentProfileView
                                     tutorialView:tutorialView
+                                   syncErrorView:syncErrorView
                                    otherProfiles:otherProfiles.get()
                                        atYOffset:yOffset
                                      inContainer:container
-                                     showLock:showLock];
+                                        showLock:showLock];
   }
 
   return container.autorelease();
@@ -1800,6 +1852,93 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   [container setFrameSize:NSMakeSize(GetFixedMenuWidth(), yOffset)];
   [container setFrameOrigin:NSZeroPoint];
+  return container.autorelease();
+}
+
+- (NSView*)buildSyncErrorViewIfNeeded {
+  int contentStringId, buttonStringId;
+  SEL buttonAction;
+  sync_ui_util::AvatarSyncErrorType error =
+      sync_ui_util::GetMessagesForAvatarSyncError(
+          browser_->profile(), &contentStringId, &buttonStringId);
+  switch (error) {
+    case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
+      buttonAction = @selector(showSignoutView:);
+      break;
+    case sync_ui_util::UNRECOVERABLE_ERROR:
+      buttonAction = @selector(showSignoutSigninView:);
+      break;
+    case sync_ui_util::AUTH_ERROR:
+      buttonAction = @selector(showAccountReauthenticationView:);
+      break;
+    case sync_ui_util::UPGRADE_CLIENT_ERROR:
+      buttonAction = @selector(showUpdateChromeView:);
+      break;
+    case sync_ui_util::PASSPHRASE_ERROR:
+      buttonAction = @selector(showSyncPassphraseSetupView:);
+      break;
+    case sync_ui_util::NO_SYNC_ERROR:
+      return nil;
+    default:
+      NOTREACHED();
+  }
+  return [self buildSyncErrorViewWithContent:contentStringId
+                              buttonStringId:buttonStringId
+                                buttonAction:buttonAction];
+}
+
+- (NSView*)buildSyncErrorViewWithContent:(int)contentStringId
+                          buttonStringId:(int)buttonStringId
+                            buttonAction:(SEL)buttonAction {
+  base::scoped_nsobject<NSView> container(
+      [[NSView alloc] initWithFrame:NSMakeRect(0, 0, GetFixedMenuWidth(), 0)]);
+  CGFloat iconSize = 20.0;
+  CGFloat xOffset = kHorizontalSpacing + iconSize + 12.0;
+  CGFloat availableWidth = GetFixedMenuWidth() - xOffset - kHorizontalSpacing;
+  CGFloat yOffset = 20.0;
+
+  // Adds an action button for resolving the error at the bottom.
+  base::scoped_nsobject<NSButton> resolveErrorButton(
+      [[BlueLabelButton alloc] initWithFrame:NSZeroRect]);
+  [resolveErrorButton setTitle:l10n_util::GetNSString(buttonStringId)];
+  [resolveErrorButton setTarget:self];
+  [resolveErrorButton setAction:buttonAction];
+  [resolveErrorButton setAlignment:NSCenterTextAlignment];
+  [resolveErrorButton sizeToFit];
+  [resolveErrorButton setFrameOrigin:NSMakePoint(xOffset, yOffset)];
+  [container addSubview:resolveErrorButton];
+  yOffset = NSMaxY([resolveErrorButton frame]) + kVerticalSpacing;
+
+  // Adds the error message content.
+  NSTextField* contentLabel =
+      BuildLabel(l10n_util::GetNSString(contentStringId),
+                 NSMakePoint(xOffset, yOffset), nil);
+  [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
+  [container addSubview:contentLabel];
+  yOffset = NSMaxY([contentLabel frame]) + 4;
+
+  // Adds the title for the error card.
+  NSTextField* titleLabel =
+      BuildLabel(l10n_util::GetNSString(IDS_SYNC_ERROR_USER_MENU_TITLE),
+                 NSMakePoint(xOffset, yOffset),
+                 skia::SkColorToCalibratedNSColor(gfx::kGoogleRed700));
+  [titleLabel setFrameSize:NSMakeSize(availableWidth, 0)];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:titleLabel];
+  [container addSubview:titleLabel];
+  yOffset = NSMaxY([titleLabel frame]);
+
+  // Adds the sync problem icon.
+  base::scoped_nsobject<NSImageView> syncProblemIcon([[NSImageView alloc]
+      initWithFrame:NSMakeRect(kHorizontalSpacing, yOffset - iconSize, iconSize,
+                               iconSize)]);
+  [syncProblemIcon setImage:NSImageFromImageSkia(gfx::CreateVectorIcon(
+                                gfx::VectorIconId::SYNC_PROBLEM, iconSize,
+                                gfx::kGoogleRed700))];
+  [container addSubview:syncProblemIcon];
+
+  [container
+      setFrameSize:NSMakeSize(GetFixedMenuWidth(), yOffset + kVerticalSpacing)];
   return container.autorelease();
 }
 
