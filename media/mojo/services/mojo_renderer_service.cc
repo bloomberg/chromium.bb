@@ -166,7 +166,7 @@ void MojoRendererService::OnRendererInitializeDone(
 }
 
 void MojoRendererService::UpdateMediaTime(bool force) {
-  const uint64_t media_time = renderer_->GetMediaTime().InMicroseconds();
+  const int64_t media_time = renderer_->GetMediaTime().InMicroseconds();
   if (!force && media_time == last_media_time_usec_)
     return;
 

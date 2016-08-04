@@ -103,7 +103,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   std::unique_ptr<DemuxerStreamProviderShim> stream_provider_;
 
   base::RepeatingTimer time_update_timer_;
-  uint64_t last_media_time_usec_;
+  int64_t last_media_time_usec_;
 
   mojom::RendererClientPtr client_;
 
