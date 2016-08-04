@@ -597,10 +597,10 @@ void StatusBubbleViews::Init() {
 
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
 #if defined(OS_WIN)
-  // On Windows use the software compositor to ensure that we don't block
-  // the UI thread blocking issue during command buffer creation. We can
-  // revert this change once http://crbug.com/125248 is fixed.
-  params.force_software_compositing = true;
+    // On Windows use the software compositor to ensure that we don't block
+    // the UI thread blocking issue during command buffer creation. We can
+    // revert this change once http://crbug.com/125248 is fixed.
+    params.force_software_compositing = true;
 #endif
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.accept_events = false;
