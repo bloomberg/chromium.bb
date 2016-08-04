@@ -843,15 +843,27 @@
         "test": "capture_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "cast_alsa_cma_backend_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "cast_base_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "cast_crash_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "cast_media_unittests"
       },
       {
@@ -862,9 +874,15 @@
           "--no-sandbox",
           "--test-launcher-jobs=1"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "cast_shell_browser_test"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "cast_shell_unittests"
       },
       {
@@ -1122,6 +1140,9 @@
         "test": "crypto_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "dbus_unittests"
       },
       {
@@ -1323,6 +1344,9 @@
         "test": "mus_clipboard_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "mus_gpu_unittests"
       },
       {
@@ -1632,6 +1656,9 @@
         "test": "crypto_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "dbus_unittests"
       },
       {
@@ -1665,6 +1692,9 @@
         "test": "extensions_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "filesystem_service_unittests"
       },
       {
@@ -1777,6 +1807,9 @@
         "test": "mus_clipboard_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "mus_gpu_unittests"
       },
       {

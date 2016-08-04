@@ -342,6 +342,26 @@ test("chromevox_tests") {
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/keyboard:resources",
+  ]
+
+  data = [
+    "$root_out_dir/chrome_100_percent.pak",
+    "$root_out_dir/chrome_200_percent.pak",
+    "$root_out_dir/locales/en-US.pak",
+    "$root_out_dir/locales/fr.pak",
+    "$root_out_dir/resources.pak",
+    "$root_out_dir/resources/chromeos/chromevox/",
+    "$root_out_dir/test_data/chrome/browser/resources/chromeos/chromevox/",
+
+    # Surprisingly, the test uses data from the original location, not the
+    # copied one.
+    "//chrome/browser/resources/chromeos/chromevox/",
+    "//chrome/test/data/webui/test_api.js",
+    "//chrome/third_party/chromevox/",
+    "//chrome/third_party/mock4js/",
+    "//third_party/accessibility-audit/axs_testing.js",
+    "//third_party/chaijs/chai.js",
   ]
 }
 

@@ -173,19 +173,19 @@
   },
   "cast_alsa_cma_backend_unittests": {
     "label": "//chromecast/media/cma/backend/alsa:cast_alsa_cma_backend_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "cast_base_unittests": {
     "label": "//cast:cast_base_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "cast_crash_unittests": {
     "label": "//chromecast/crash:cast_crash_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "cast_shell_unittests": {
     "label": "//chromecast/app:cast_shell_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "cast_unittests": {
     "label": "//media/cast:cast_unittests",
@@ -218,6 +218,10 @@
   "chromeos_unittests": {
     "label": "//chromeos:chromeos_unittests",
     "type": "console_test_launcher",
+  },
+  "chromevox_tests": {
+    "label": "//chrome/browser/resources/chromeos/chromevox:chromevox_tests",
+    "type": "windowed_test_launcher",
   },
   "components_browsertests": {
     "label": "//components:components_browsertests",
@@ -260,7 +264,7 @@
   },
   "dbus_unittests": {
     "label": "//dbus:dbus_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "device_unittests": {
     "label": "//device:device_unittests",
@@ -368,7 +372,7 @@
   },
   "keyboard_unittests": {
     "label": "//ui/keyboard:keyboard_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "leveldb_service_unittests": {
     "label": "//components/leveldb:leveldb_service_unittests",
@@ -464,6 +468,11 @@
     "label": "//services/ui/ws:mus_ws_unittests",
     "type": "windowed_test_launcher",
   },
+  "nacl_helper_nonsfi_unittests": {
+    "label": "//components/nacl/loader:nacl_helper_nonsfi_unittests",
+    "type": "raw",
+    "args": [],
+  },
   "nacl_loader_unittests": {
     "label": "//components/nacl/loader:nacl_loader_unittests",
     "type": "raw",
@@ -479,7 +488,7 @@
   },
   "ozone_unittests": {
     "label": "//ui/ozone:ozone_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "ppapi_unittests": {
     "label": "//ppapi:ppapi_unittests",
@@ -599,7 +608,7 @@
   },
   "ui_chromeos_unittests": {
     "label": "//ui/chromeos:ui_chromeos_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "ui_arc_unittests": {
     "label": "//ui/arc:ui_arc_unittests",

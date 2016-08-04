@@ -94,4 +94,8 @@ test("ui_chromeos_unittests") {
     "//ui/views",
     "//ui/views:test_support",
   ]
+  data = [
+    "$root_out_dir/locales/en-US.pak",
+    "$root_out_dir/ui_test.pak",
+  ]
 }
