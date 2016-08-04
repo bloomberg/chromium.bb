@@ -1866,6 +1866,14 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
   def ParseIssueURL(parsed_url):
     if not parsed_url.scheme or not parsed_url.scheme.startswith('http'):
       return None
+    # Rietveld patch: https://domain/<number>/#ps<patchset>
+    match = re.match(r'/(\d+)/$', parsed_url.path)
+    match2 = re.match(r'ps(\d+)$', parsed_url.fragment)
+    if match and match2:
+      return _RietveldParsedIssueNumberArgument(
+          issue=int(match.group(1)),
+          patchset=int(match2.group(1)),
+          hostname=parsed_url.netloc)
     # Typical url: https://domain/<issue_number>[/[other]]
     match = re.match('/(\d+)(/.*)?$', parsed_url.path)
     if match:

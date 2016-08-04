@@ -145,6 +145,8 @@ class TestGitClBasic(unittest.TestCase):
          123, None, 'codereview.chromium.org')
     test('https://codereview.chromium.org/123/whatever',
          123, None, 'codereview.chromium.org')
+    test('https://codereview.chromium.org/123/#ps20001',
+         123, 20001, 'codereview.chromium.org')
     test('http://codereview.chromium.org/download/issue123_4.diff',
          123, 4, 'codereview.chromium.org',
          patch_url='https://codereview.chromium.org/download/issue123_4.diff')
