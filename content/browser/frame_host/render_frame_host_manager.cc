@@ -2317,6 +2317,7 @@ void RenderFrameHostManager::UpdatePendingWebUIOnCurrentFrameHost(
 }
 
 void RenderFrameHostManager::CancelPending() {
+  CHECK(pending_render_frame_host_);
   TRACE_EVENT1("navigation", "RenderFrameHostManager::CancelPending",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   render_frame_host_->ClearPendingWebUI();

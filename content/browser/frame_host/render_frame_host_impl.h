@@ -648,6 +648,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
+  void OnCancelInitialHistoryLoad();
   void OnDocumentOnLoadCompleted(
       FrameMsg_UILoadMetricsReportType::Value report_type,
       base::TimeTicks ui_timestamp);

@@ -4958,11 +4958,21 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   // FrameNavigationEntry.  If none is found, fall back to the default url.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries() &&
       info.isHistoryNavigationInNewChildFrame && is_content_initiated) {
-    OpenURL(url, IsHttpPost(info.urlRequest),
-            GetRequestBodyForWebURLRequest(info.urlRequest), referrer,
-            info.defaultPolicy, info.replacesCurrentHistoryItem, true);
-    // Suppress the load in Blink but mark the frame as loading.
-    return blink::WebNavigationPolicyHandledByClient;
+    // Don't do this if |info| also says it is a client redirect, in which case
+    // JavaScript on the page is trying to interrupt the history navigation.
+    if (!info.isClientRedirect) {
+      OpenURL(url, IsHttpPost(info.urlRequest),
+              GetRequestBodyForWebURLRequest(info.urlRequest), referrer,
+              info.defaultPolicy, info.replacesCurrentHistoryItem, true);
+      // Suppress the load in Blink but mark the frame as loading.
+      return blink::WebNavigationPolicyHandledByClient;
+    } else {
+      // Client redirects during an initial history load should attempt to
+      // cancel the history navigation.  They will create a provisional document
+      // loader, causing the history load to be ignored in NavigateInternal, and
+      // this IPC will try to cancel any cross-process history load.
+      Send(new FrameHostMsg_CancelInitialHistoryLoad(routing_id_));
+    }
   }
 
   // Use the frame's original request's URL rather than the document's URL for
@@ -5568,11 +5578,21 @@ void RenderFrameImpl::NavigateInternal(
                         : blink::WebFrameLoadType::BackForward;
         should_load_request = true;
 
+        // If this navigation is to a history item for a new child frame, we
+        // should cancel it if we were interrupted by a Javascript navigation
+        // that has already committed or has started a provisional loader.
+        if (request_params.is_history_navigation_in_new_child &&
+            (!current_history_item_.isNull() ||
+             frame_->provisionalDataSource())) {
+          should_load_request = false;
+          has_history_navigation_in_frame = false;
+        }
+
         // Generate the request for the load from the HistoryItem.
         // PlzNavigate: use the data sent by the browser for the url and the
         // HTTP state. The restoration of user state such as scroll position
         // will be done based on the history item during the load.
-        if (!browser_side_navigation) {
+        if (!browser_side_navigation && should_load_request) {
           request = frame_->requestFromHistoryItem(item_for_history_navigation,
                                                    cache_policy);
         }

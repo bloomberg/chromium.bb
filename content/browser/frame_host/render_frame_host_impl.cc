@@ -566,6 +566,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                                 OnDidCommitProvisionalLoad(msg))
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_CancelInitialHistoryLoad,
+                        OnCancelInitialHistoryLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DocumentOnLoadCompleted,
                         OnDocumentOnLoadCompleted)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
@@ -970,6 +972,16 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
   }
 
   OpenURL(params, GetSiteInstance());
+}
+
+void RenderFrameHostImpl::OnCancelInitialHistoryLoad() {
+  // A Javascript navigation interrupted the initial history load.  Check if an
+  // initial subframe cross-process navigation needs to be canceled as a result.
+  // TODO(creis, clamy): Cancel any cross-process navigation in PlzNavigate.
+  if (GetParent() && !frame_tree_node_->has_committed_real_load() &&
+      frame_tree_node_->render_manager()->pending_frame_host()) {
+    frame_tree_node_->render_manager()->CancelPending();
+  }
 }
 
 void RenderFrameHostImpl::OnDocumentOnLoadCompleted(

@@ -1087,6 +1087,11 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeLoadProgress,
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 
+// If a cross-process navigation was started for the initial history load in
+// this subframe, this tries to cancel it to allow a client redirect to happen
+// instead.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_CancelInitialHistoryLoad)
+
 // Notifies the browser that a frame finished loading.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
                     GURL /* validated_url */)

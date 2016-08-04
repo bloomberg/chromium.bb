@@ -1,4 +1,1 @@
-# These tests currently fail when they run with --isolate-sites-for-testing=*.is
-
-# https://crbug.com/585194 - back/forward lists look different with --site-per-process
-http/tests/navigation/back-to-dynamic-iframe.html [ Failure Timeout ]
+# Any tests below fail when they run with --isolate-sites-for-testing=*.is

@@ -515,6 +515,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   bool InitRenderView(RenderViewHostImpl* render_view_host,
     RenderFrameProxyHost* proxy);
 
+  // Terminates and deletes the pending RenderFrameHost.
+  void CancelPending();
+
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
@@ -709,10 +712,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // SwapOutOldFrame is used instead).
   void DiscardUnusedFrame(
       std::unique_ptr<RenderFrameHostImpl> render_frame_host);
-
-  // Helper method to terminate the pending RenderFrameHost. The frame may be
-  // deleted immediately, or it may be kept around in hopes of later reuse.
-  void CancelPending();
 
   // Clears pending_render_frame_host_, returning it to the caller for disposal.
   std::unique_ptr<RenderFrameHostImpl> UnsetPendingRenderFrameHost();
