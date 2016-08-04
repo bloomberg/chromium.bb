@@ -1803,6 +1803,8 @@
       'spdy/spdy_http_stream_unittest.cc',
       'spdy/spdy_http_utils_unittest.cc',
       'spdy/spdy_network_transaction_unittest.cc',
+      'spdy/spdy_no_op_visitor.h',
+      'spdy/spdy_no_op_visitor.cc',
       'spdy/spdy_pinnable_buffer_piece_test.cc',
       'spdy/spdy_prefixed_buffer_reader_test.cc',
       'spdy/spdy_protocol_test.cc',
