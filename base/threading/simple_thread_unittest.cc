@@ -2,15 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/atomic_sequence_num.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/gtest_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
 namespace {
+
+// Sleeps a tiny amount to augment chances of tests using it running in races
+// should there be any while the tested thread is alive.
+class SleepRunner : public DelegateSimpleThread::Delegate {
+  void Run() override {
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(20));
+  }
+};
 
 class SetIntRunner : public DelegateSimpleThread::Delegate {
  public:
@@ -131,6 +144,25 @@ TEST(SimpleThreadTest, NamedWithOptions) {
   EXPECT_EQ(thread.name_prefix(), "event_waiter");
   EXPECT_EQ(thread.name(),
             std::string("event_waiter/") + IntToString(thread.tid()));
+}
+
+TEST(SimpleThreadTest, JoinNonJoinableThreadDeath) {
+  SleepRunner runner;
+  SimpleThread::Options options;
+  options.joinable = false;
+  DelegateSimpleThread thread(&runner, "noop_runner", options);
+
+  thread.Start();
+  EXPECT_DCHECK_DEATH(thread.Join(), "");
+}
+
+TEST(SimpleThreadTest, DeleteNonJoinableWithoutJoinIsSafe) {
+  SleepRunner runner;
+  SimpleThread::Options options;
+  options.joinable = false;
+  DelegateSimpleThread thread(&runner, "noop_runner", options);
+  thread.Start();
+  // Nothing blows up when |thread| goes out of scope.
 }
 
 TEST(SimpleThreadTest, ThreadPool) {

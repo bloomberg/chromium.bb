@@ -12,39 +12,29 @@
 namespace base {
 
 SimpleThread::SimpleThread(const std::string& name_prefix)
-    : name_prefix_(name_prefix),
-      name_(name_prefix),
-      thread_(),
-      event_(WaitableEvent::ResetPolicy::MANUAL,
-             WaitableEvent::InitialState::NOT_SIGNALED),
-      tid_(0),
-      joined_(false) {}
+    : SimpleThread(name_prefix, Options()) {}
 
 SimpleThread::SimpleThread(const std::string& name_prefix,
                            const Options& options)
     : name_prefix_(name_prefix),
       name_(name_prefix),
       options_(options),
-      thread_(),
       event_(WaitableEvent::ResetPolicy::MANUAL,
-             WaitableEvent::InitialState::NOT_SIGNALED),
-      tid_(0),
-      joined_(false) {}
+             WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 SimpleThread::~SimpleThread() {
   DCHECK(HasBeenStarted()) << "SimpleThread was never started.";
-  DCHECK(HasBeenJoined()) << "SimpleThread destroyed without being Join()ed.";
+  DCHECK(thread_.is_null()) << "Joinable SimpleThread destroyed without being "
+                            << "Join()ed.";
 }
 
 void SimpleThread::Start() {
   DCHECK(!HasBeenStarted()) << "Tried to Start a thread multiple times.";
-  bool success;
-  if (options_.priority() == ThreadPriority::NORMAL) {
-    success = PlatformThread::Create(options_.stack_size(), this, &thread_);
-  } else {
-    success = PlatformThread::CreateWithPriority(options_.stack_size(), this,
-                                                 &thread_, options_.priority());
-  }
+  bool success = options_.joinable
+      ? PlatformThread::CreateWithPriority(options_.stack_size, this,
+                                           &thread_, options_.priority)
+      : PlatformThread::CreateNonJoinableWithPriority(
+            options_.stack_size, this, options_.priority);
   DCHECK(success);
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   event_.Wait();  // Wait for the thread to complete initialization.
@@ -53,7 +43,9 @@ void SimpleThread::Start() {
 void SimpleThread::Join() {
   DCHECK(HasBeenStarted()) << "Tried to Join a never-started thread.";
   DCHECK(!HasBeenJoined()) << "Tried to Join a thread multiple times.";
+  DCHECK(!thread_.is_null()) << "A non-joinable thread can't be joined.";
   PlatformThread::Join(thread_);
+  thread_ = PlatformThreadHandle();
   joined_ = true;
 }
 
