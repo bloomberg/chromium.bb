@@ -19,7 +19,6 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gfx/transform.h"
-#include "ui/gl/ca_renderer_layer_params.h"
 
 @class AVSampleBufferDisplayLayer;
 
@@ -142,8 +141,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                  unsigned background_color,
                  unsigned edge_aa_mask,
                  float opacity,
-                 unsigned filter,
-                 const CARendererLayerParams::FilterEffects& filter_effects);
+                 unsigned filter);
     ContentLayer(ContentLayer&& layer);
 
     // See the behavior of RootLayer for the effects of these functions on the
@@ -172,9 +170,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     // AVSampleBufferDisplayLayer, then |ca_layer| will point to |av_layer|.
     base::scoped_nsobject<AVSampleBufferDisplayLayer> av_layer;
     bool use_av_layer = false;
-
-    // Filter effects to apply to this layer.
-    CARendererLayerParams::FilterEffects filter_effects;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ContentLayer);

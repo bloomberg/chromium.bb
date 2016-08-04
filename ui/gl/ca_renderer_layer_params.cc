@@ -33,11 +33,4 @@ CARendererLayerParams::CARendererLayerParams(
     const CARendererLayerParams& other) = default;
 CARendererLayerParams::~CARendererLayerParams() = default;
 
-bool CARendererLayerParams::FilterEffect::operator==(
-    const FilterEffect& rhs) const {
-  return type == rhs.type && amount == rhs.amount &&
-         drop_shadow_offset == rhs.drop_shadow_offset &&
-         drop_shadow_color == rhs.drop_shadow_color;
-}
-
 }  // namespace ui

@@ -39,7 +39,6 @@ struct CALayerProperties {
   float scale_factor = 1.0f;
   unsigned filter = GL_LINEAR;
   scoped_refptr<gl::GLImageIOSurface> gl_image;
-  ui::CARendererLayerParams::FilterEffects filter_effects;
 };
 
 scoped_refptr<gl::GLImageIOSurface> CreateGLImage(const gfx::Size& size,
@@ -63,14 +62,12 @@ scoped_refptr<gl::GLImageIOSurface> CreateGLImage(const gfx::Size& size,
 
 bool ScheduleCALayer(ui::CARendererLayerTree* tree,
                      CALayerProperties* properties) {
-  ui::CARendererLayerParams params = ui::CARendererLayerParams(
+  return tree->ScheduleCALayer(ui::CARendererLayerParams(
       properties->is_clipped, properties->clip_rect,
       properties->sorting_context_id, properties->transform,
       properties->gl_image.get(), properties->contents_rect, properties->rect,
       properties->background_color, properties->edge_aa_mask,
-      properties->opacity, properties->filter);
-  params.filter_effects = properties->filter_effects;
-  return tree->ScheduleCALayer(params);
+      properties->opacity, properties->filter));
 }
 
 void UpdateCALayerTree(std::unique_ptr<ui::CARendererLayerTree>& ca_layer_tree,
@@ -363,34 +360,6 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
     // Validate the content layer.
     EXPECT_NSEQ(kCAFilterNearest, [content_layer minificationFilter]);
     EXPECT_NSEQ(kCAFilterNearest, [content_layer magnificationFilter]);
-  }
-
-  // Add every filter effect.
-  {
-    using FilterEffectType = ui::CARendererLayerParams::FilterEffectType;
-    for (int i = static_cast<int>(FilterEffectType::MIN);
-         i <= static_cast<int>(FilterEffectType::MAX); i++) {
-      ui::CARendererLayerParams::FilterEffect filter_effect;
-      filter_effect.type = static_cast<FilterEffectType>(i);
-      filter_effect.amount = i * 0.05 + 0.1;
-      properties.filter_effects.push_back(filter_effect);
-    }
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the content layer.
-    EXPECT_EQ(9u, [[content_layer filters] count]);
-    EXPECT_GT([content_layer shadowRadius], 0.0);
-    EXPECT_LT([content_layer shadowRadius], 1.0);
-  }
-
-  // Remove every filter effect.
-  {
-    properties.filter_effects.clear();
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the content layer.
-    EXPECT_EQ(0u, [[content_layer filters] count]);
-    EXPECT_EQ(0.0, [content_layer shadowRadius]);
   }
 
   // Add the clipping and IOSurface contents back.

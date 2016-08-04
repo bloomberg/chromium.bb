@@ -16,6 +16,7 @@
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_image_io_surface.h"
 
 #if !defined(MAC_OS_X_VERSION_10_8) || \
@@ -45,60 +46,9 @@ extern CFStringRef const kCMSampleAttachmentKey_DisplayImmediately;
 extern const CMTime kCMTimeInvalid;
 #endif  // MAC_OS_X_VERSION_10_8
 
-// CAFilter and CAColorMatrix are QuartzCore SPI.
-@interface CAFilter : NSObject<NSCopying, NSMutableCopying, NSCoding>
-@end
-
-@interface CAFilter (QuartzCoreSPI)
-+ (CAFilter*)filterWithType:(NSString*)type;
-@end
-
-// TODO(erikchen): Test out the named filter kCAFilterColorInvert.
-// https://crbug.com/581526.
-extern NSString* const kCAFilterColorMatrix;
-extern NSString* const kCAFilterColorMonochrome;
-extern NSString* const kCAFilterColorHueRotate;
-extern NSString* const kCAFilterColorSaturate;
-extern NSString* const kCAFilterGaussianBlur;
-
-struct CAColorMatrix {
-  float m11, m12, m13, m14, m15;
-  float m21, m22, m23, m24, m25;
-  float m31, m32, m33, m34, m35;
-  float m41, m42, m43, m44, m45;
-};
-typedef struct CAColorMatrix CAColorMatrix;
-
-@interface NSValue (QuartzCoreSPI)
-+ (NSValue*)valueWithCAColorMatrix:(CAColorMatrix)t;
-@end
-
 namespace ui {
 
 namespace {
-
-float Blend(float from, float to, float progress) {
-  return from + (to - from) * progress;
-}
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-double DegreeToRadians(double degree)  { return degree * M_PI / 180.0; }
-
-// These values were obtained from https://www.w3.org/TR/filter-effects/.
-static const double kSepiaFullConstants[3][3] = {
-  { 0.393, 0.769, 0.189 },
-  { 0.349, 0.686, 0.168 },
-  { 0.272, 0.534, 0.131 }
-};
-
-static const double kSepiaNoneConstants[3][3] = {
-  { 1, 0, 0 },
-  { 0, 1, 0 },
-  { 0, 0, 1 }
-};
 
 // This will enqueue |io_surface| to be drawn by |av_layer|. This will
 // retain |cv_pixel_buffer| until it is no longer being displayed.
@@ -175,161 +125,6 @@ bool AVSampleBufferDisplayLayerEnqueueIOSurface(
 
   return AVSampleBufferDisplayLayerEnqueueCVPixelBuffer(av_layer,
                                                         cv_pixel_buffer);
-}
-
-// If the filter effect can be represented as a named filter, return it.
-// Otherwise, return nil.
-CAFilter* NamedFilterForType(CARendererLayerParams::FilterEffectType type,
-                             float amount) {
-  CAFilter* filter = nil;
-  switch (type) {
-    case CARendererLayerParams::FilterEffectType::GRAYSCALE:
-      filter = [CAFilter filterWithType:kCAFilterColorMonochrome];
-      [filter setValue:@(amount) forKey:@"inputAmount"];
-      break;
-    case CARendererLayerParams::FilterEffectType::SATURATE:
-      filter = [CAFilter filterWithType:kCAFilterColorSaturate];
-      [filter setValue:@(amount) forKey:@"inputAmount"];
-      break;
-    case CARendererLayerParams::FilterEffectType::HUE_ROTATE:
-      filter = [CAFilter filterWithType:kCAFilterColorHueRotate];
-      [filter setValue:@(DegreeToRadians(amount)) forKey:@"inputAngle"];
-      break;
-    case CARendererLayerParams::FilterEffectType::BLUR:
-      filter = [CAFilter filterWithType:kCAFilterGaussianBlur];
-      [filter setValue:@(amount) forKey:@"inputRadius"];
-      break;
-    default:
-      break;
-  }
-  return filter;
-}
-
-// If the filter effect has a corresponding color matrix, return it. Otherwise,
-// return nil.
-NSValue* ColorMatrixForType(CARendererLayerParams::FilterEffectType type,
-                            float amount) {
-  switch (type) {
-    case CARendererLayerParams::FilterEffectType::SEPIA:
-    {
-      float t = std::min(std::max(0.0f, amount), 1.0f);
-      CAColorMatrix colorMatrix = {
-        Blend(kSepiaNoneConstants[0][0], kSepiaFullConstants[0][0], t),
-        Blend(kSepiaNoneConstants[0][1], kSepiaFullConstants[0][1], t),
-        Blend(kSepiaNoneConstants[0][2], kSepiaFullConstants[0][2], t),
-        0, 0,
-
-        Blend(kSepiaNoneConstants[1][0], kSepiaFullConstants[1][0], t),
-        Blend(kSepiaNoneConstants[1][1], kSepiaFullConstants[1][1], t),
-        Blend(kSepiaNoneConstants[1][2], kSepiaFullConstants[1][2], t),
-        0, 0,
-
-        Blend(kSepiaNoneConstants[2][0], kSepiaFullConstants[2][0], t),
-        Blend(kSepiaNoneConstants[2][1], kSepiaFullConstants[2][1], t),
-        Blend(kSepiaNoneConstants[2][2], kSepiaFullConstants[2][2], t),
-        0, 0, 0, 0, 0, 1, 0
-      };
-      return [NSValue valueWithCAColorMatrix:colorMatrix];
-    }
-    case CARendererLayerParams::FilterEffectType::INVERT:
-    {
-      float multiplier = 1 - amount * 2;
-      CAColorMatrix colorMatrix = {
-        multiplier, 0, 0, 0, amount,
-        0, multiplier, 0, 0, amount,
-        0, 0, multiplier, 0, amount,
-        0, 0, 0, 1, 0
-      };
-      return [NSValue valueWithCAColorMatrix:colorMatrix];
-    }
-    case CARendererLayerParams::FilterEffectType::BRIGHTNESS:
-    {
-      CAColorMatrix colorMatrix = {
-        amount, 0, 0, 0, 0,
-        0, amount, 0, 0, 0,
-        0, 0, amount, 0, 0,
-        0, 0, 0, 1, 0
-      };
-      return [NSValue valueWithCAColorMatrix:colorMatrix];
-    }
-    case CARendererLayerParams::FilterEffectType::CONTRAST:
-    {
-      float intercept = -0.5 * amount + 0.5;
-      CAColorMatrix colorMatrix = {
-        amount, 0, 0, 0, intercept,
-        0, amount, 0, 0, intercept,
-        0, 0, amount, 0, intercept,
-        0, 0, 0, 1, 0
-      };
-      return [NSValue valueWithCAColorMatrix:colorMatrix];
-    }
-    case CARendererLayerParams::FilterEffectType::OPACITY:
-    {
-      CAColorMatrix colorMatrix = {
-        1, 0, 0, 0, 0,
-        0, 1, 0, 0, 0,
-        0, 0, 1, 0, 0,
-        0, 0, 0, amount, 0
-      };
-      return [NSValue valueWithCAColorMatrix:colorMatrix];
-    }
-    default:
-      return nil;
-  }
-}
-
-// Updates the CALayer to accurately represent the given |filter_effects|.
-void UpdateFiltersOnCALayer(
-    const CARendererLayerParams::FilterEffects& filter_effects,
-    CALayer* layer) {
-  if (filter_effects.empty()) {
-    // It's possible that this enables shadow properties, even if there were
-    // none before. That's an implementation detail of Core Animation.
-    [layer setShadowOffset:CGSizeZero];
-    [layer setShadowColor:nil];
-    [layer setShadowRadius:0];
-    [layer setShadowOpacity:0];
-    layer.filters = @[];
-    return;
-  }
-
-  NSMutableArray* filters = [NSMutableArray array];
-  for (const CARendererLayerParams::FilterEffect& filter_effect :
-       filter_effects) {
-    CAFilter* filter =
-        NamedFilterForType(filter_effect.type, filter_effect.amount);
-    if (filter) {
-      [filters addObject:filter];
-      continue;
-    }
-
-    NSValue* color_matrix =
-        ColorMatrixForType(filter_effect.type, filter_effect.amount);
-    if (color_matrix) {
-      CAFilter* filter = [CAFilter filterWithType:kCAFilterColorMatrix];
-      [filter setValue:color_matrix forKey:@"inputColorMatrix"];
-      [filters addObject:filter];
-      continue;
-    }
-
-    DCHECK_EQ(CARendererLayerParams::FilterEffectType::DROP_SHADOW,
-              filter_effect.type);
-    [layer setShadowOffset:CGSizeMake(filter_effect.drop_shadow_offset.x(),
-                                      filter_effect.drop_shadow_offset.y())];
-
-    CGFloat rgba_color_components[4] = {
-        SkColorGetR(filter_effect.drop_shadow_color) / 255.,
-        SkColorGetG(filter_effect.drop_shadow_color) / 255.,
-        SkColorGetB(filter_effect.drop_shadow_color) / 255.,
-        SkColorGetA(filter_effect.drop_shadow_color) / 255.,
-    };
-    base::ScopedCFTypeRef<CGColorRef> srgb_color(CGColorCreate(
-        CGColorSpaceCreateWithName(kCGColorSpaceSRGB), rgba_color_components));
-    [layer setShadowColor:srgb_color.get()];
-    [layer setShadowRadius:filter_effect.amount];
-    [layer setShadowOpacity:1];
-  }
-  layer.filters = filters;
 }
 
 }  // namespace
@@ -479,8 +274,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     unsigned background_color,
     unsigned edge_aa_mask,
     float opacity,
-    unsigned filter,
-    const CARendererLayerParams::FilterEffects& filter_effects)
+    unsigned filter)
     : io_surface(io_surface),
       cv_pixel_buffer(cv_pixel_buffer),
       contents_rect(contents_rect),
@@ -488,8 +282,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
       background_color(background_color),
       ca_edge_aa_mask(0),
       opacity(opacity),
-      ca_filter(filter == GL_LINEAR ? kCAFilterLinear : kCAFilterNearest),
-      filter_effects(filter_effects) {
+      ca_filter(filter == GL_LINEAR ? kCAFilterLinear : kCAFilterNearest) {
   DCHECK(filter == GL_LINEAR || filter == GL_NEAREST);
 
   // Because the root layer has setGeometryFlipped:YES, there is some ambiguity
@@ -536,8 +329,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       ca_filter(layer.ca_filter),
       ca_layer(std::move(layer.ca_layer)),
       av_layer(std::move(layer.av_layer)),
-      use_av_layer(layer.use_av_layer),
-      filter_effects(layer.filter_effects) {
+      use_av_layer(layer.use_av_layer) {
   DCHECK(!layer.ca_layer);
   DCHECK(!layer.av_layer);
 }
@@ -615,7 +407,7 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
   content_layers.push_back(
       ContentLayer(io_surface, cv_pixel_buffer, params.contents_rect,
                    params.rect, params.background_color, params.edge_aa_mask,
-                   params.opacity, params.filter, params.filter_effects));
+                   params.opacity, params.filter));
 }
 
 void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,
@@ -743,9 +535,6 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   bool update_ca_edge_aa_mask = true;
   bool update_opacity = true;
   bool update_ca_filter = true;
-  bool update_filter_effects =
-      (old_layer && !old_layer->filter_effects.empty()) ||
-      !filter_effects.empty();
   if (old_layer && old_layer->use_av_layer == use_av_layer) {
     DCHECK(old_layer->ca_layer);
     std::swap(ca_layer, old_layer->ca_layer);
@@ -758,7 +547,6 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     update_ca_edge_aa_mask = old_layer->ca_edge_aa_mask != ca_edge_aa_mask;
     update_opacity = old_layer->opacity != opacity;
     update_ca_filter = old_layer->ca_filter != ca_filter;
-    update_filter_effects = old_layer->filter_effects != filter_effects;
   } else {
     if (use_av_layer) {
       av_layer.reset([[AVSampleBufferDisplayLayer alloc] init]);
@@ -777,7 +565,7 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   bool update_anything = update_contents || update_contents_rect ||
                          update_rect || update_background_color ||
                          update_ca_edge_aa_mask || update_opacity ||
-                         update_ca_filter || update_filter_effects;
+                         update_ca_filter;
   if (use_av_layer) {
     if (update_contents) {
       if (cv_pixel_buffer) {
@@ -820,9 +608,6 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   if (update_ca_filter) {
     [ca_layer setMagnificationFilter:ca_filter];
     [ca_layer setMinificationFilter:ca_filter];
-  }
-  if (update_filter_effects) {
-    UpdateFiltersOnCALayer(filter_effects, ca_layer.get());
   }
 
   static bool show_borders = base::CommandLine::ForCurrentProcess()->HasSwitch(
