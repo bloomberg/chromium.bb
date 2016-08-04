@@ -540,9 +540,12 @@ static void projectRectsToGraphicsLayerSpace(LocalFrame* mainFrame, const LayerH
 
             if (layer->parent()) {
                 layer = layer->parent();
-            } else if (LayoutObject* parentDocLayoutObject = layer->layoutObject()->frame()->ownerLayoutObject()) {
-                layer = parentDocLayoutObject->enclosingLayer();
-                touchHandlerInChildFrame = true;
+            } else {
+                LayoutItem parentDocLayoutItem = layer->layoutObject()->frame()->ownerLayoutItem();
+                if (!parentDocLayoutItem.isNull()) {
+                    layer = parentDocLayoutItem.enclosingLayer();
+                    touchHandlerInChildFrame = true;
+                }
             }
         } while (layer);
     }
