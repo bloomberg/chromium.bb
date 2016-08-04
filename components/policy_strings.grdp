@@ -57,7 +57,7 @@
     Validation successful
   </message>
   <message name="IDS_POLICY_VALIDATION_BAD_INITIAL_SIGNATURE" desc="Message indicating a bad signature on policy validation using the initial key.">
-    Bad intial signature
+    Bad initial signature
   </message>
   <message name="IDS_POLICY_VALIDATION_BAD_SIGNATURE" desc="Message indicating a bad signature on policy validation.">
     Bad signature
