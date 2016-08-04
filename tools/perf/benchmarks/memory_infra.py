@@ -165,6 +165,12 @@ class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
     return (not _IGNORED_STATS_RE.search(value.name) and
             'renderer_processes' in value.name)
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    # http://crbug.com/634319
+    return (possible_browser.browser_type == 'reference' and
+            possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+
 
 class _MemoryV8Benchmark(_MemoryInfra):
 
