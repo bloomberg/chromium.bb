@@ -27,14 +27,15 @@ base::subtle::AtomicWord g_Foo_clazz __attribute__((unused)) = 0;
 
 // Step 2: method stubs.
 
-static void DoSomething(JNIEnv* env, const JavaParamRef<jclass>& jcaller,
-    const JavaParamRef<jobject>& callback);
+static void DoSomething(JNIEnv* env, const base::android::JavaParamRef<jclass>&
+    jcaller,
+    const base::android::JavaParamRef<jobject>& callback);
 
 extern "C" __attribute__((visibility("default")))
 void Java_org_chromium_foo_Foo_nativeDoSomething(JNIEnv* env, jclass jcaller,
     jobject callback) {
-  return DoSomething(env, JavaParamRef<jclass>(env, jcaller),
-      JavaParamRef<jobject>(env, callback));
+  return DoSomething(env, base::android::JavaParamRef<jclass>(env, jcaller),
+      base::android::JavaParamRef<jobject>(env, callback));
 }
 
 static base::subtle::AtomicWord g_Foo_calledByNative = 0;

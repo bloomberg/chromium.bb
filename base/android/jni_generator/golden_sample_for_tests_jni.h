@@ -46,15 +46,16 @@ namespace android {
 
 // Step 2: method stubs.
 
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jstring>& param);
+static jlong Init(JNIEnv* env, const base::android::JavaParamRef<jobject>&
+    jcaller,
+    const base::android::JavaParamRef<jstring>& param);
 
 extern "C" __attribute__((visibility("default")))
 jlong Java_org_chromium_example_jni_1generator_SampleForTests_nativeInit(JNIEnv*
     env, jobject jcaller,
     jstring param) {
-  return Init(env, JavaParamRef<jobject>(env, jcaller),
-      JavaParamRef<jstring>(env, param));
+  return Init(env, base::android::JavaParamRef<jobject>(env, jcaller),
+      base::android::JavaParamRef<jstring>(env, param));
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -65,49 +66,54 @@ void
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
-  return native->Destroy(env, JavaParamRef<jobject>(env, jcaller));
+  return native->Destroy(env, base::android::JavaParamRef<jobject>(env,
+      jcaller));
 }
 
-static jdouble GetDoubleFunction(JNIEnv* env, const JavaParamRef<jobject>&
-    jcaller);
+static jdouble GetDoubleFunction(JNIEnv* env, const
+    base::android::JavaParamRef<jobject>& jcaller);
 
 extern "C" __attribute__((visibility("default")))
 jdouble
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetDoubleFunction(JNIEnv*
     env, jobject jcaller) {
-  return GetDoubleFunction(env, JavaParamRef<jobject>(env, jcaller));
+  return GetDoubleFunction(env, base::android::JavaParamRef<jobject>(env,
+      jcaller));
 }
 
-static jfloat GetFloatFunction(JNIEnv* env, const JavaParamRef<jclass>&
-    jcaller);
+static jfloat GetFloatFunction(JNIEnv* env, const
+    base::android::JavaParamRef<jclass>& jcaller);
 
 extern "C" __attribute__((visibility("default")))
 jfloat
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetFloatFunction(JNIEnv*
     env, jclass jcaller) {
-  return GetFloatFunction(env, JavaParamRef<jclass>(env, jcaller));
+  return GetFloatFunction(env, base::android::JavaParamRef<jclass>(env,
+      jcaller));
 }
 
-static void SetNonPODDatatype(JNIEnv* env, const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jobject>& rect);
+static void SetNonPODDatatype(JNIEnv* env, const
+    base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jobject>& rect);
 
 extern "C" __attribute__((visibility("default")))
 void
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeSetNonPODDatatype(JNIEnv*
     env, jobject jcaller,
     jobject rect) {
-  return SetNonPODDatatype(env, JavaParamRef<jobject>(env, jcaller),
-      JavaParamRef<jobject>(env, rect));
+  return SetNonPODDatatype(env, base::android::JavaParamRef<jobject>(env,
+      jcaller), base::android::JavaParamRef<jobject>(env, rect));
 }
 
-static ScopedJavaLocalRef<jobject> GetNonPODDatatype(JNIEnv* env, const
-    JavaParamRef<jobject>& jcaller);
+static base::android::ScopedJavaLocalRef<jobject> GetNonPODDatatype(JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller);
 
 extern "C" __attribute__((visibility("default")))
 jobject
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetNonPODDatatype(JNIEnv*
     env, jobject jcaller) {
-  return GetNonPODDatatype(env, JavaParamRef<jobject>(env, jcaller)).Release();
+  return GetNonPODDatatype(env, base::android::JavaParamRef<jobject>(env,
+      jcaller)).Release();
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -118,7 +124,8 @@ jint
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
-  return native->Method(env, JavaParamRef<jobject>(env, jcaller));
+  return native->Method(env, base::android::JavaParamRef<jobject>(env,
+      jcaller));
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -130,7 +137,8 @@ jdouble
   CPPClass::InnerClass* native =
       reinterpret_cast<CPPClass::InnerClass*>(nativePtr);
   CHECK_NATIVE_PTR(env, jcaller, native, "MethodOtherP0", 0);
-  return native->MethodOtherP0(env, JavaParamRef<jobject>(env, jcaller));
+  return native->MethodOtherP0(env, base::android::JavaParamRef<jobject>(env,
+      jcaller));
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -142,8 +150,8 @@ void
     jobject b) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddStructB");
-  return native->AddStructB(env, JavaParamRef<jobject>(env, jcaller),
-      JavaParamRef<jobject>(env, b));
+  return native->AddStructB(env, base::android::JavaParamRef<jobject>(env,
+      jcaller), base::android::JavaParamRef<jobject>(env, b));
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -155,7 +163,7 @@ void
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "IterateAndDoSomethingWithStructB");
   return native->IterateAndDoSomethingWithStructB(env,
-      JavaParamRef<jobject>(env, jcaller));
+      base::android::JavaParamRef<jobject>(env, jcaller));
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -166,18 +174,19 @@ jstring
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "ReturnAString", NULL);
-  return native->ReturnAString(env, JavaParamRef<jobject>(env,
+  return native->ReturnAString(env, base::android::JavaParamRef<jobject>(env,
       jcaller)).Release();
 }
 
-static jint GetInnerIntFunction(JNIEnv* env, const JavaParamRef<jclass>&
-    jcaller);
+static jint GetInnerIntFunction(JNIEnv* env, const
+    base::android::JavaParamRef<jclass>& jcaller);
 
 extern "C" __attribute__((visibility("default")))
 jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_nativeGetInnerIntFunction(JNIEnv*
     env, jclass jcaller) {
-  return GetInnerIntFunction(env, JavaParamRef<jclass>(env, jcaller));
+  return GetInnerIntFunction(env, base::android::JavaParamRef<jclass>(env,
+      jcaller));
 }
 
 static base::subtle::AtomicWord g_SampleForTests_javaMethod = 0;
@@ -272,8 +281,8 @@ static void Java_SampleForTests_methodThatThrowsException(JNIEnv* env, jobject
 }
 
 static base::subtle::AtomicWord g_InnerStructA_create = 0;
-static ScopedJavaLocalRef<jobject> Java_InnerStructA_create(JNIEnv* env, jlong
-    l,
+static base::android::ScopedJavaLocalRef<jobject>
+    Java_InnerStructA_create(JNIEnv* env, jlong l,
     JniIntWrapper i,
     jstring s) {
   CHECK_CLAZZ(env, InnerStructA_clazz(env),
@@ -296,7 +305,7 @@ static ScopedJavaLocalRef<jobject> Java_InnerStructA_create(JNIEnv* env, jlong
       env->CallStaticObjectMethod(InnerStructA_clazz(env),
           method_id, l, as_jint(i), s);
   jni_generator::CheckException(env);
-  return ScopedJavaLocalRef<jobject>(env, ret);
+  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_SampleForTests_addStructA = 0;
@@ -367,8 +376,8 @@ static jlong Java_InnerStructB_getKey(JNIEnv* env, jobject obj) {
 }
 
 static base::subtle::AtomicWord g_InnerStructB_getValue = 0;
-static ScopedJavaLocalRef<jstring> Java_InnerStructB_getValue(JNIEnv* env,
-    jobject obj) {
+static base::android::ScopedJavaLocalRef<jstring>
+    Java_InnerStructB_getValue(JNIEnv* env, jobject obj) {
   CHECK_CLAZZ(env, obj,
       InnerStructB_clazz(env), NULL);
   jmethodID method_id =
@@ -386,7 +395,7 @@ static ScopedJavaLocalRef<jstring> Java_InnerStructB_getValue(JNIEnv* env,
       static_cast<jstring>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return ScopedJavaLocalRef<jstring>(env, ret);
+  return base::android::ScopedJavaLocalRef<jstring>(env, ret);
 }
 
 // Step 3: RegisterNatives.

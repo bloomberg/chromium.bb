@@ -138,7 +138,7 @@ def JavaDataTypeToC(java_type):
 def WrapCTypeForDeclaration(c_type):
   """Wrap the C datatype in a JavaRef if required."""
   if re.match(RE_SCOPED_JNI_TYPES, c_type):
-    return 'const JavaParamRef<' + c_type + '>&'
+    return 'const base::android::JavaParamRef<' + c_type + '>&'
   else:
     return c_type
 
@@ -958,7 +958,8 @@ ${NATIVES}
     return template.substitute(values)
 
   def GetJavaParamRefForCall(self, c_type, name):
-    return Template('JavaParamRef<${TYPE}>(env, ${NAME})').substitute({
+    return Template(
+        'base::android::JavaParamRef<${TYPE}>(env, ${NAME})').substitute({
         'TYPE': c_type,
         'NAME': name,
     })
@@ -987,7 +988,8 @@ ${NATIVES}
     post_call = ''
     if re.match(RE_SCOPED_JNI_TYPES, return_type):
       post_call = '.Release()'
-      return_declaration = 'ScopedJavaLocalRef<' + return_type + '>'
+      return_declaration = ('base::android::ScopedJavaLocalRef<' + return_type +
+                            '>')
     values = {
         'RETURN': return_type,
         'RETURN_DECLARATION': return_declaration,
@@ -1071,7 +1073,7 @@ ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
       pre_call = ' ' + pre_call
       return_declaration = return_type + ' ret ='
       if re.match(RE_SCOPED_JNI_TYPES, return_type):
-        return_type = 'ScopedJavaLocalRef<' + return_type + '>'
+        return_type = 'base::android::ScopedJavaLocalRef<' + return_type + '>'
         return_clause = 'return ' + return_type + '(env, ret);'
       else:
         return_clause = 'return ret;'

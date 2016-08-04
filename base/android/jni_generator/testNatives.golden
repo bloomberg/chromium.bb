@@ -27,11 +27,12 @@ base::subtle::AtomicWord g_TestJni_clazz __attribute__((unused)) = 0;
 
 // Step 2: method stubs.
 
-static jint Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller);
+static jint Init(JNIEnv* env, const base::android::JavaParamRef<jobject>&
+    jcaller);
 
 extern "C" __attribute__((visibility("default")))
 jint Java_org_chromium_TestJni_nativeInit(JNIEnv* env, jobject jcaller) {
-  return Init(env, JavaParamRef<jobject>(env, jcaller));
+  return Init(env, base::android::JavaParamRef<jobject>(env, jcaller));
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -41,7 +42,8 @@ void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
-  return native->Destroy(env, JavaParamRef<jobject>(env, jcaller));
+  return native->Destroy(env, base::android::JavaParamRef<jobject>(env,
+      jcaller));
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -55,26 +57,26 @@ jlong Java_org_chromium_TestJni_nativeAddBookmark(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddBookmark", 0);
-  return native->AddBookmark(env, JavaParamRef<jobject>(env, jcaller),
-      JavaParamRef<jstring>(env, url), JavaParamRef<jstring>(env, title),
-      isFolder, parentId);
+  return native->AddBookmark(env, base::android::JavaParamRef<jobject>(env,
+      jcaller), base::android::JavaParamRef<jstring>(env, url),
+      base::android::JavaParamRef<jstring>(env, title), isFolder, parentId);
 }
 
-static ScopedJavaLocalRef<jstring> GetDomainAndRegistry(JNIEnv* env, const
-    JavaParamRef<jclass>& jcaller,
-    const JavaParamRef<jstring>& url);
+static base::android::ScopedJavaLocalRef<jstring> GetDomainAndRegistry(JNIEnv*
+    env, const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jstring>& url);
 
 extern "C" __attribute__((visibility("default")))
 jstring Java_org_chromium_TestJni_nativeGetDomainAndRegistry(JNIEnv* env, jclass
     jcaller,
     jstring url) {
-  return GetDomainAndRegistry(env, JavaParamRef<jclass>(env, jcaller),
-      JavaParamRef<jstring>(env, url)).Release();
+  return GetDomainAndRegistry(env, base::android::JavaParamRef<jclass>(env,
+      jcaller), base::android::JavaParamRef<jstring>(env, url)).Release();
 }
 
 static void CreateHistoricalTabFromState(JNIEnv* env, const
-    JavaParamRef<jclass>& jcaller,
-    const JavaParamRef<jbyteArray>& state,
+    base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jbyteArray>& state,
     jint tab_index);
 
 extern "C" __attribute__((visibility("default")))
@@ -82,44 +84,47 @@ void Java_org_chromium_TestJni_nativeCreateHistoricalTabFromState(JNIEnv* env,
     jclass jcaller,
     jbyteArray state,
     jint tab_index) {
-  return CreateHistoricalTabFromState(env, JavaParamRef<jclass>(env, jcaller),
-      JavaParamRef<jbyteArray>(env, state), tab_index);
+  return CreateHistoricalTabFromState(env,
+      base::android::JavaParamRef<jclass>(env, jcaller),
+      base::android::JavaParamRef<jbyteArray>(env, state), tab_index);
 }
 
-static ScopedJavaLocalRef<jbyteArray> GetStateAsByteArray(JNIEnv* env, const
-    JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jobject>& view);
+static base::android::ScopedJavaLocalRef<jbyteArray> GetStateAsByteArray(JNIEnv*
+    env, const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jobject>& view);
 
 extern "C" __attribute__((visibility("default")))
 jbyteArray Java_org_chromium_TestJni_nativeGetStateAsByteArray(JNIEnv* env,
     jobject jcaller,
     jobject view) {
-  return GetStateAsByteArray(env, JavaParamRef<jobject>(env, jcaller),
-      JavaParamRef<jobject>(env, view)).Release();
+  return GetStateAsByteArray(env, base::android::JavaParamRef<jobject>(env,
+      jcaller), base::android::JavaParamRef<jobject>(env, view)).Release();
 }
 
-static ScopedJavaLocalRef<jobjectArray> GetAutofillProfileGUIDs(JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller);
+static base::android::ScopedJavaLocalRef<jobjectArray>
+    GetAutofillProfileGUIDs(JNIEnv* env, const
+    base::android::JavaParamRef<jclass>& jcaller);
 
 extern "C" __attribute__((visibility("default")))
 jobjectArray Java_org_chromium_TestJni_nativeGetAutofillProfileGUIDs(JNIEnv*
     env, jclass jcaller) {
-  return GetAutofillProfileGUIDs(env, JavaParamRef<jclass>(env,
+  return GetAutofillProfileGUIDs(env, base::android::JavaParamRef<jclass>(env,
       jcaller)).Release();
 }
 
-static void SetRecognitionResults(JNIEnv* env, const JavaParamRef<jobject>&
-    jcaller,
+static void SetRecognitionResults(JNIEnv* env, const
+    base::android::JavaParamRef<jobject>& jcaller,
     jint sessionId,
-    const JavaParamRef<jobjectArray>& results);
+    const base::android::JavaParamRef<jobjectArray>& results);
 
 extern "C" __attribute__((visibility("default")))
 void Java_org_chromium_TestJni_nativeSetRecognitionResults(JNIEnv* env, jobject
     jcaller,
     jint sessionId,
     jobjectArray results) {
-  return SetRecognitionResults(env, JavaParamRef<jobject>(env, jcaller),
-      sessionId, JavaParamRef<jobjectArray>(env, results));
+  return SetRecognitionResults(env, base::android::JavaParamRef<jobject>(env,
+      jcaller), sessionId, base::android::JavaParamRef<jobjectArray>(env,
+      results));
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -136,30 +141,36 @@ jlong Java_org_chromium_TestJni_nativeAddBookmarkFromAPI(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddBookmarkFromAPI", 0);
-  return native->AddBookmarkFromAPI(env, JavaParamRef<jobject>(env, jcaller),
-      JavaParamRef<jstring>(env, url), JavaParamRef<jobject>(env, created),
-      JavaParamRef<jobject>(env, isBookmark), JavaParamRef<jobject>(env, date),
-      JavaParamRef<jbyteArray>(env, favicon), JavaParamRef<jstring>(env, title),
-      JavaParamRef<jobject>(env, visits));
+  return native->AddBookmarkFromAPI(env,
+      base::android::JavaParamRef<jobject>(env, jcaller),
+      base::android::JavaParamRef<jstring>(env, url),
+      base::android::JavaParamRef<jobject>(env, created),
+      base::android::JavaParamRef<jobject>(env, isBookmark),
+      base::android::JavaParamRef<jobject>(env, date),
+      base::android::JavaParamRef<jbyteArray>(env, favicon),
+      base::android::JavaParamRef<jstring>(env, title),
+      base::android::JavaParamRef<jobject>(env, visits));
 }
 
-static jint FindAll(JNIEnv* env, const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jstring>& find);
+static jint FindAll(JNIEnv* env, const base::android::JavaParamRef<jobject>&
+    jcaller,
+    const base::android::JavaParamRef<jstring>& find);
 
 extern "C" __attribute__((visibility("default")))
 jint Java_org_chromium_TestJni_nativeFindAll(JNIEnv* env, jobject jcaller,
     jstring find) {
-  return FindAll(env, JavaParamRef<jobject>(env, jcaller),
-      JavaParamRef<jstring>(env, find));
+  return FindAll(env, base::android::JavaParamRef<jobject>(env, jcaller),
+      base::android::JavaParamRef<jstring>(env, find));
 }
 
-static ScopedJavaLocalRef<jobject> GetInnerClass(JNIEnv* env, const
-    JavaParamRef<jclass>& jcaller);
+static base::android::ScopedJavaLocalRef<jobject> GetInnerClass(JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller);
 
 extern "C" __attribute__((visibility("default")))
 jobject Java_org_chromium_TestJni_nativeGetInnerClass(JNIEnv* env, jclass
     jcaller) {
-  return GetInnerClass(env, JavaParamRef<jclass>(env, jcaller)).Release();
+  return GetInnerClass(env, base::android::JavaParamRef<jclass>(env,
+      jcaller)).Release();
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -173,10 +184,11 @@ jobject Java_org_chromium_TestJni_nativeQueryBitmap(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "QueryBitmap", NULL);
-  return native->QueryBitmap(env, JavaParamRef<jobject>(env, jcaller),
-      JavaParamRef<jobjectArray>(env, projection), JavaParamRef<jstring>(env,
-      selection), JavaParamRef<jobjectArray>(env, selectionArgs),
-      JavaParamRef<jstring>(env, sortOrder)).Release();
+  return native->QueryBitmap(env, base::android::JavaParamRef<jobject>(env,
+      jcaller), base::android::JavaParamRef<jobjectArray>(env, projection),
+      base::android::JavaParamRef<jstring>(env, selection),
+      base::android::JavaParamRef<jobjectArray>(env, selectionArgs),
+      base::android::JavaParamRef<jstring>(env, sortOrder)).Release();
 }
 
 extern "C" __attribute__((visibility("default")))
@@ -189,20 +201,21 @@ void Java_org_chromium_TestJni_nativeGotOrientation(JNIEnv* env,
   DataFetcherImplAndroid* native =
       reinterpret_cast<DataFetcherImplAndroid*>(nativeDataFetcherImplAndroid);
   CHECK_NATIVE_PTR(env, jcaller, native, "GotOrientation");
-  return native->GotOrientation(env, JavaParamRef<jobject>(env, jcaller), alpha,
-      beta, gamma);
+  return native->GotOrientation(env, base::android::JavaParamRef<jobject>(env,
+      jcaller), alpha, beta, gamma);
 }
 
-static ScopedJavaLocalRef<jthrowable> MessWithJavaException(JNIEnv* env, const
-    JavaParamRef<jclass>& jcaller,
-    const JavaParamRef<jthrowable>& e);
+static base::android::ScopedJavaLocalRef<jthrowable>
+    MessWithJavaException(JNIEnv* env, const
+    base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jthrowable>& e);
 
 extern "C" __attribute__((visibility("default")))
 jthrowable Java_org_chromium_TestJni_nativeMessWithJavaException(JNIEnv* env,
     jclass jcaller,
     jthrowable e) {
-  return MessWithJavaException(env, JavaParamRef<jclass>(env, jcaller),
-      JavaParamRef<jthrowable>(env, e)).Release();
+  return MessWithJavaException(env, base::android::JavaParamRef<jclass>(env,
+      jcaller), base::android::JavaParamRef<jthrowable>(env, e)).Release();
 }
 
 // Step 3: RegisterNatives.
