@@ -234,9 +234,9 @@ void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, 
     client().reportException(errorMessage, location->lineNumber(), location->columnNumber(), location->url());
 }
 
-void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(ConsoleMessage* consoleMessage)
+void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, SourceLocation* location)
 {
-    client().reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location()->lineNumber(), consoleMessage->location()->url());
+    client().reportConsoleMessage(source, level, message, location->lineNumber(), location->url());
 }
 
 void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& message)

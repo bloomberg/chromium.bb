@@ -71,12 +71,12 @@ void InProcessWorkerObjectProxy::reportPendingActivity(bool hasPendingActivity)
 
 void InProcessWorkerObjectProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportException, crossThreadUnretained(m_messagingProxy), errorMessage, passed(std::move(location)), exceptionId));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportException, crossThreadUnretained(m_messagingProxy), errorMessage, passed(location->clone()), exceptionId));
 }
 
-void InProcessWorkerObjectProxy::reportConsoleMessage(ConsoleMessage* consoleMessage)
+void InProcessWorkerObjectProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, SourceLocation* location)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportConsoleMessage, crossThreadUnretained(m_messagingProxy), consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), passed(consoleMessage->location()->clone())));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportConsoleMessage, crossThreadUnretained(m_messagingProxy), source, level, message, passed(location->clone())));
 }
 
 void InProcessWorkerObjectProxy::postMessageToPageInspector(const String& message)

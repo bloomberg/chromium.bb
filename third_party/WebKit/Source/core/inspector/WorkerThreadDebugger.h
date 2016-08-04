@@ -48,7 +48,7 @@ public:
     ~WorkerThreadDebugger() override;
 
     static WorkerThreadDebugger* from(v8::Isolate*);
-    void reportConsoleMessage(ExecutionContext*, ConsoleMessage*) override;
+    void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) override;
     int contextGroupId(ExecutionContext*) override;
 
     int contextGroupId();

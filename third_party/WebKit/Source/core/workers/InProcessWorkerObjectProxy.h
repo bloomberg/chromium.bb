@@ -66,7 +66,7 @@ public:
 
     // WorkerReportingProxy overrides.
     void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId) override;
-    void reportConsoleMessage(ConsoleMessage*) override;
+    void reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*) override;
     void postMessageToPageInspector(const String&) override;
     void didEvaluateWorkerScript(bool success) override { }
     void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) override { }

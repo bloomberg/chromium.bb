@@ -224,7 +224,7 @@ void WebSharedWorkerImpl::reportException(const String& errorMessage, std::uniqu
     // Not suppported in SharedWorker.
 }
 
-void WebSharedWorkerImpl::reportConsoleMessage(ConsoleMessage*)
+void WebSharedWorkerImpl::reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*)
 {
     // Not supported in SharedWorker.
 }

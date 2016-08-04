@@ -36,7 +36,7 @@ public:
     void workerThreadCreated(Document*, WorkerThread*, const KURL&);
     void workerThreadTerminated();
     void dispatchMessageFromWorker(const String&);
-    void addConsoleMessageFromWorker(ConsoleMessage*);
+    void addConsoleMessageFromWorker(MessageLevel, const String& message, std::unique_ptr<SourceLocation>);
 
     void connectToInspector(PageInspector*);
     void disconnectFromInspector(PageInspector*);

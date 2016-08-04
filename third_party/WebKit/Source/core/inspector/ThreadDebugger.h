@@ -59,7 +59,7 @@ public:
 
     V8Inspector* v8Inspector() const { return m_v8Inspector.get(); }
     virtual bool isWorker() { return true; }
-    virtual void reportConsoleMessage(ExecutionContext*, ConsoleMessage*) = 0;
+    virtual void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) = 0;
     virtual int contextGroupId(ExecutionContext*) = 0;
 
 protected:

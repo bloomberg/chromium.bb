@@ -114,10 +114,10 @@ MainThreadDebugger::~MainThreadDebugger()
     s_instance = nullptr;
 }
 
-void MainThreadDebugger::reportConsoleMessage(ExecutionContext* context, ConsoleMessage* message)
+void MainThreadDebugger::reportConsoleMessage(ExecutionContext* context, MessageSource source, MessageLevel level, const String& message, SourceLocation* location)
 {
     if (LocalFrame* frame = toFrame(context))
-        frame->console().reportMessageToClient(message);
+        frame->console().reportMessageToClient(source, level, message, location);
 }
 
 int MainThreadDebugger::contextGroupId(ExecutionContext* context)
@@ -167,16 +167,15 @@ void MainThreadDebugger::exceptionThrown(ExecutionContext* context, ErrorEvent* 
         scriptState = toMainThreadWorkletGlobalScope(context)->scriptController()->getScriptState();
     }
 
+    frame->console().reportMessageToClient(JSMessageSource, ErrorMessageLevel, event->messageForConsole(), event->location());
+
     const String16 defaultMessage = "Uncaught";
     if (scriptState && scriptState->contextIsValid()) {
         ScriptState::Scope scope(scriptState);
         v8::Local<v8::Value> exception = V8ErrorHandler::loadExceptionFromErrorEventWrapper(scriptState, event, scriptState->context()->Global());
         SourceLocation* location = event->location();
-        v8Inspector()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+        v8Inspector()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId());
     }
-
-    // TODO(dgozman): do not wrap in ConsoleMessage.
-    frame->console().reportMessageToClient(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, event->messageForConsole(), event->location()->clone()));
 }
 
 int MainThreadDebugger::contextGroupId(LocalFrame* frame)
@@ -282,9 +281,8 @@ void MainThreadDebugger::consoleAPIMessage(int contextGroupId, V8ConsoleAPIType 
         return;
     if (type == V8ConsoleAPIType::kClear && frame->host())
         frame->host()->consoleMessageStorage().clear();
-    // TODO(dgozman): do not wrap in ConsoleMessage.
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
-    frame->console().reportMessageToClient(consoleMessage);
+    std::unique_ptr<SourceLocation> location = SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0);
+    frame->console().reportMessageToClient(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, location.get());
 }
 
 v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(v8::Isolate* isolate, v8::Local<v8::Context> context)

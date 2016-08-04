@@ -68,12 +68,12 @@ WorkerThreadDebugger::~WorkerThreadDebugger()
 {
 }
 
-void WorkerThreadDebugger::reportConsoleMessage(ExecutionContext* context, ConsoleMessage* message)
+void WorkerThreadDebugger::reportConsoleMessage(ExecutionContext* context, MessageSource source, MessageLevel level, const String& message, SourceLocation* location)
 {
     if (!context)
         return;
     DCHECK(context == m_workerThread->globalScope());
-    m_workerThread->workerReportingProxy().reportConsoleMessage(message);
+    m_workerThread->workerReportingProxy().reportConsoleMessage(source, level, message, location);
 }
 
 int WorkerThreadDebugger::contextGroupId(ExecutionContext* context)
@@ -96,17 +96,16 @@ void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context
 
 void WorkerThreadDebugger::exceptionThrown(ErrorEvent* event)
 {
+    m_workerThread->workerReportingProxy().reportConsoleMessage(JSMessageSource, ErrorMessageLevel, event->messageForConsole(), event->location());
+
     const String16 defaultMessage = "Uncaught";
     ScriptState* scriptState = m_workerThread->globalScope()->scriptController()->getScriptState();
     if (scriptState && scriptState->contextIsValid()) {
         ScriptState::Scope scope(scriptState);
         v8::Local<v8::Value> exception = V8ErrorHandler::loadExceptionFromErrorEventWrapper(scriptState, event, scriptState->context()->Global());
         SourceLocation* location = event->location();
-        v8Inspector()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+        v8Inspector()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId());
     }
-
-    // TODO(dgozman): do not wrap in ConsoleMessage.
-    m_workerThread->workerReportingProxy().reportConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, event->messageForConsole(), event->location()->clone()));
 }
 
 int WorkerThreadDebugger::contextGroupId()
@@ -169,9 +168,8 @@ void WorkerThreadDebugger::consoleAPIMessage(int contextGroupId, V8ConsoleAPITyp
     DCHECK(contextGroupId == workerContextGroupId);
     if (type == V8ConsoleAPIType::kClear)
         m_workerThread->consoleMessageStorage()->clear();
-    // TODO(dgozman): do not wrap in ConsoleMessage.
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
-    m_workerThread->workerReportingProxy().reportConsoleMessage(consoleMessage);
+    std::unique_ptr<SourceLocation> location = SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0);
+    m_workerThread->workerReportingProxy().reportConsoleMessage(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, location.get());
 }
 
 v8::MaybeLocal<v8::Value> WorkerThreadDebugger::memoryInfo(v8::Isolate*, v8::Local<v8::Context>)

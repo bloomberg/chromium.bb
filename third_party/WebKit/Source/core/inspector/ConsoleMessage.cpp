@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "wtf/CurrentTime.h"
-#include <memory>
 
 namespace blink {
 

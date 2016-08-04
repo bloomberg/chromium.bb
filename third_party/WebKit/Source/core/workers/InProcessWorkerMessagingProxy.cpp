@@ -194,7 +194,7 @@ void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, M
     if (m_askedToTerminate)
         return;
     if (m_workerInspectorProxy)
-        m_workerInspectorProxy->addConsoleMessageFromWorker(ConsoleMessage::create(source, level, message, std::move(location)));
+        m_workerInspectorProxy->addConsoleMessageFromWorker(level, message, std::move(location));
 }
 
 void InProcessWorkerMessagingProxy::workerThreadCreated()

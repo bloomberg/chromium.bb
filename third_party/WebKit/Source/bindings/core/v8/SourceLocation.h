@@ -41,10 +41,9 @@ public:
     unsigned lineNumber() const { return m_lineNumber; }
     unsigned columnNumber() const { return m_columnNumber; }
     int scriptId() const { return m_scriptId; }
+    std::unique_ptr<V8StackTrace> takeStackTrace() { return std::move(m_stackTrace); }
 
-    std::unique_ptr<V8StackTrace> cloneStackTrace() const;
-    std::unique_ptr<SourceLocation> clone() const;
-    std::unique_ptr<SourceLocation> isolatedCopy() const; // Safe to pass between threads.
+    std::unique_ptr<SourceLocation> clone() const; // Safe to pass between threads.
 
     // No-op when stack trace is unknown.
     void toTracedValue(TracedValue*, const char* name) const;
@@ -64,15 +63,6 @@ private:
     unsigned m_columnNumber;
     std::unique_ptr<V8StackTrace> m_stackTrace;
     int m_scriptId;
-};
-
-template <>
-struct CrossThreadCopier<std::unique_ptr<SourceLocation>> {
-    using Type = std::unique_ptr<SourceLocation>;
-    static Type copy(std::unique_ptr<SourceLocation> location)
-    {
-        return location ? location->isolatedCopy() : nullptr;
-    }
 };
 
 } // namespace blink

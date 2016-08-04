@@ -60,7 +60,7 @@ public:
     {
         reportExceptionMock(errorMessage, location.get(), exceptionId);
     }
-    MOCK_METHOD1(reportConsoleMessage, void(ConsoleMessage*));
+    MOCK_METHOD4(reportConsoleMessage, void(MessageSource, MessageLevel, const String& message, SourceLocation*));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
     MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
     MOCK_METHOD1(workerGlobalScopeStarted, void(WorkerOrWorkletGlobalScope*));

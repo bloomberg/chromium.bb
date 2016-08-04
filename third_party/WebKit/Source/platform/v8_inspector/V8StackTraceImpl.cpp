@@ -93,7 +93,7 @@ std::unique_ptr<protocol::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInsp
         .build();
 }
 
-V8StackTraceImpl::Frame V8StackTraceImpl::Frame::isolatedCopy() const
+V8StackTraceImpl::Frame V8StackTraceImpl::Frame::clone() const
 {
     return Frame(m_functionName.isolatedCopy(), m_scriptId.isolatedCopy(), m_scriptName.isolatedCopy(), m_lineNumber, m_columnNumber);
 }
@@ -161,28 +161,18 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::capture(V8Debugger* debugger
     return V8StackTraceImpl::create(debugger, contextGroupId, stackTrace, maxStackSize, description);
 }
 
-std::unique_ptr<V8StackTrace> V8StackTraceImpl::clone()
-{
-    return cloneImpl();
-}
-
 std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::cloneImpl()
 {
     std::vector<Frame> framesCopy(m_frames);
     return wrapUnique(new V8StackTraceImpl(m_contextGroupId, m_description, framesCopy, m_parent ? m_parent->cloneImpl() : nullptr));
 }
 
-std::unique_ptr<V8StackTrace> V8StackTraceImpl::isolatedCopy()
-{
-    return isolatedCopyImpl();
-}
-
-std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::isolatedCopyImpl()
+std::unique_ptr<V8StackTrace> V8StackTraceImpl::clone()
 {
     std::vector<Frame> frames;
     for (size_t i = 0; i < m_frames.size(); i++)
-        frames.push_back(m_frames.at(i).isolatedCopy());
-    return wrapUnique(new V8StackTraceImpl(m_contextGroupId, m_description.isolatedCopy(), frames, m_parent ? m_parent->isolatedCopyImpl() : nullptr));
+        frames.push_back(m_frames.at(i).clone());
+    return wrapUnique(new V8StackTraceImpl(m_contextGroupId, m_description.isolatedCopy(), frames, nullptr));
 }
 
 V8StackTraceImpl::V8StackTraceImpl(int contextGroupId, const String16& description, std::vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent)

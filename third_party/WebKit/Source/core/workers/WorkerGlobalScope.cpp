@@ -258,7 +258,7 @@ void WorkerGlobalScope::postTask(const WebTraceLocation& location, std::unique_p
 void WorkerGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
 {
     DCHECK(isContextThread());
-    thread()->workerReportingProxy().reportConsoleMessage(consoleMessage);
+    thread()->workerReportingProxy().reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location());
     addMessageToWorkerConsole(consoleMessage);
 }
 

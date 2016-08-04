@@ -10,7 +10,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TracedValue.h"
@@ -155,19 +154,9 @@ void SourceLocation::toTracedValue(TracedValue* value, const char* name) const
     value->endArray();
 }
 
-std::unique_ptr<V8StackTrace> SourceLocation::cloneStackTrace() const
-{
-    return m_stackTrace ? m_stackTrace->clone() : nullptr;
-}
-
 std::unique_ptr<SourceLocation> SourceLocation::clone() const
 {
-    return wrapUnique(new SourceLocation(m_url, m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->clone() : nullptr, m_scriptId));
-}
-
-std::unique_ptr<SourceLocation> SourceLocation::isolatedCopy() const
-{
-    return wrapUnique(new SourceLocation(m_url.isolatedCopy(), m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->isolatedCopy() : nullptr, m_scriptId));
+    return wrapUnique(new SourceLocation(m_url.isolatedCopy(), m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->clone() : nullptr, m_scriptId));
 }
 
 std::unique_ptr<protocol::Runtime::API::StackTrace> SourceLocation::buildInspectorObject() const

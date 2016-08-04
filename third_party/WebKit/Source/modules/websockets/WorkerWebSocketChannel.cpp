@@ -407,7 +407,7 @@ void Bridge::initialize(std::unique_ptr<SourceLocation> location)
 {
     // Wait for completion of the task on the main thread because the connection
     // must synchronously be established (see Bridge::connect).
-    if (!waitForMethodCompletion(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::createPeerOnMainThread, wrapCrossThreadPersistent(this), passed(std::move(location)), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext())))) {
+    if (!waitForMethodCompletion(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::createPeerOnMainThread, wrapCrossThreadPersistent(this), passed(location->clone()), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext())))) {
         // The worker thread has been signalled to shutdown before method completion.
         disconnect();
     }
@@ -462,7 +462,7 @@ void Bridge::close(int code, const String& reason)
 void Bridge::fail(const String& reason, MessageLevel level, std::unique_ptr<SourceLocation> location)
 {
     ASSERT(m_peer);
-    m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::fail, wrapCrossThreadPersistent(m_peer.get()), reason, level, passed(std::move(location))));
+    m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::fail, wrapCrossThreadPersistent(m_peer.get()), reason, level, passed(location->clone())));
 }
 
 void Bridge::disconnect()

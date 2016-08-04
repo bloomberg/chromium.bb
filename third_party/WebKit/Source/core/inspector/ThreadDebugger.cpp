@@ -117,10 +117,8 @@ unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const S
     else if (message.startWith("Uncaught "))
         message = message.substring(0, 8) + " (in promise)" + message.substring(8);
 
-    unsigned result = v8Inspector()->exceptionThrown(context, defaultMessage, exception, message, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
-    // TODO(dgozman): do not wrap in ConsoleMessage.
-    reportConsoleMessage(toExecutionContext(context), ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message, std::move(location)));
-    return result;
+    reportConsoleMessage(toExecutionContext(context), JSMessageSource, ErrorMessageLevel, message, location.get());
+    return v8Inspector()->exceptionThrown(context, defaultMessage, exception, message, location->url(), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId());
 }
 
 void ThreadDebugger::promiseRejectionRevoked(v8::Local<v8::Context> context, unsigned promiseRejectionId)

@@ -36,7 +36,7 @@ public:
         const String16& sourceURL() const { return m_scriptName; }
         int lineNumber() const { return m_lineNumber; }
         int columnNumber() const { return m_columnNumber; }
-        Frame isolatedCopy() const;
+        Frame clone() const;
 
     private:
         friend class V8StackTraceImpl;
@@ -54,10 +54,9 @@ public:
     static std::unique_ptr<V8StackTraceImpl> create(V8Debugger*, int contextGroupId, v8::Local<v8::StackTrace>, size_t maxStackSize, const String16& description = String16());
     static std::unique_ptr<V8StackTraceImpl> capture(V8Debugger*, int contextGroupId, size_t maxStackSize, const String16& description = String16());
 
+    // This method drops the async chain. Use cloneImpl() instead.
     std::unique_ptr<V8StackTrace> clone() override;
     std::unique_ptr<V8StackTraceImpl> cloneImpl();
-    std::unique_ptr<V8StackTrace> isolatedCopy() override;
-    std::unique_ptr<V8StackTraceImpl> isolatedCopyImpl();
     std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectForTail(V8Debugger*) const;
     std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectImpl() const;
     ~V8StackTraceImpl() override;

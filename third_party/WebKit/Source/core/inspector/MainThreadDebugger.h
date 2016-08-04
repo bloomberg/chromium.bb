@@ -69,7 +69,7 @@ public:
     bool isWorker() override { return false; }
     bool isPaused() const { return m_paused; }
     void setClientMessageLoop(std::unique_ptr<ClientMessageLoop>);
-    void reportConsoleMessage(ExecutionContext*, ConsoleMessage*) override;
+    void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) override;
     int contextGroupId(ExecutionContext*) override;
 
     // TODO(dgozman): by making this method virtual, we can move many methods to ThreadDebugger and avoid some duplication. Should be careful about performance.

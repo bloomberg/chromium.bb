@@ -94,10 +94,10 @@ void WorkerInspectorProxy::dispatchMessageFromWorker(const String& message)
         m_pageInspector->dispatchMessageFromWorker(this, message);
 }
 
-void WorkerInspectorProxy::addConsoleMessageFromWorker(ConsoleMessage* consoleMessage)
+void WorkerInspectorProxy::addConsoleMessageFromWorker(MessageLevel level, const String& message, std::unique_ptr<SourceLocation> location)
 {
     if (LocalFrame* frame = m_document->frame())
-        frame->console().addMessageFromWorker(consoleMessage, m_inspectorId);
+        frame->console().addMessageFromWorker(level, message, std::move(location), m_inspectorId);
 }
 
 static void connectToWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
