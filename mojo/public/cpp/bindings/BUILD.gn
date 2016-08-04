@@ -33,6 +33,7 @@ static_library("bindings") {
     "lib/associated_group.cc",
     "lib/associated_group_controller.cc",
     "lib/associated_interface_ptr_state.h",
+    "lib/binding_state.cc",
     "lib/binding_state.h",
     "lib/bindings_internal.h",
     "lib/buffer.h",

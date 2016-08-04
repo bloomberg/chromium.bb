@@ -45,5 +45,11 @@ MessageReceiver* FilterChain::GetHead() {
   return filters_.empty() ? sink_ : filters_.front();
 }
 
+void FilterChain::Append(MessageFilter* filter) {
+  if (!filters_.empty())
+    filters_.back()->set_sink(filter);
+  filters_.push_back(filter);
+}
+
 }  // namespace internal
 }  // namespace mojo

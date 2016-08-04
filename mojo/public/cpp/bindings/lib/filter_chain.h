@@ -28,6 +28,9 @@ class FilterChain {
   template <typename FilterType, typename... Args>
   inline void Append(Args&&... args);
 
+  // Takes ownership of |filter|.
+  void Append(MessageFilter* filter);
+
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while
   // this object is alive.
   void SetSink(MessageReceiver* sink);
@@ -50,10 +53,7 @@ class FilterChain {
 
 template <typename FilterType, typename... Args>
 inline void FilterChain::Append(Args&&... args) {
-  FilterType* filter = new FilterType(std::forward<Args>(args)..., sink_);
-  if (!filters_.empty())
-    filters_.back()->set_sink(filter);
-  filters_.push_back(filter);
+  Append(new FilterType(std::forward<Args>(args)..., sink_));
 }
 
 template <>
