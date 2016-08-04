@@ -25,6 +25,7 @@
 #define HTMLFrameSetElement_h
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLDimension.h"
 #include "core/html/HTMLElement.h"
 

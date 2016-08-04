@@ -177,6 +177,7 @@ def interface_context(interface):
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
         includes.add('bindings/core/v8/BindingSecurity.h')
+        includes.add('core/frame/LocalDOMWindow.h')
 
     # [DependentLifetime]
     is_dependent_lifetime = 'DependentLifetime' in extended_attributes
