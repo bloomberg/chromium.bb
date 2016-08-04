@@ -9,26 +9,36 @@
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-address-edit-dialog">
-  <style include="settings-shared">
-    .address-row {
-      display: flex;
-    }
-
-    .address-column {
-      -webkit-margin-end: 16px;
-      margin-bottom: 8px;
-      width: calc((var(--paper-input-max-width) - 16px) / 2);
-    }
-
-    .long {
-      width: var(--paper-input-max-width);
-    }
-
-    #saveButton {
-      -webkit-margin-start: 8px;
-    }
-  </style>
   <template>
+    <style include="settings-shared">
+      .address-row {
+        display: flex;
+      }
+
+      .address-column {
+        -webkit-margin-end: 16px;
+        margin-bottom: 8px;
+        width: calc((var(--paper-input-max-width) - 16px) / 2);
+      }
+
+      .long {
+        width: var(--paper-input-max-width);
+      }
+
+      #saveButton {
+        -webkit-margin-start: 8px;
+      }
+
+      #dialog .body {
+        max-height: 450px;
+      }
+
+      @media all and (max-height: 714px) {
+        #dialog .body {
+          max-height: 270px;
+        }
+      }
+    </style>
     <dialog is="cr-dialog" id="dialog">
       <div class="title">[[title_]]</div>
       <div class="body">
