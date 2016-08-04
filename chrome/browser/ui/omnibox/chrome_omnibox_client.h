@@ -16,10 +16,6 @@ class ChromeOmniboxEditController;
 class OmniboxEditController;
 class Profile;
 
-namespace content {
-class NavigationController;
-}
-
 class ChromeOmniboxClient : public OmniboxClient {
  public:
   ChromeOmniboxClient(OmniboxEditController* controller, Profile* profile);

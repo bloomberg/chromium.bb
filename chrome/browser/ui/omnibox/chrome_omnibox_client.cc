@@ -457,17 +457,10 @@ void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
 void ChromeOmniboxClient::SetSuggestionToPrefetch(
       const InstantSuggestion& suggestion) {
   DCHECK(search::IsInstantExtendedAPIEnabled());
-  content::WebContents* web_contents = controller_->GetWebContents();
-  // TODO(treib): This check should probably be removed - IsSearchResultsPage
-  // will always return false here, because it'll only be true for pages
-  // rendered in the Instant process. crbug.com/627747
-  if (!web_contents ||
-      !SearchTabHelper::FromWebContents(web_contents)->IsSearchResultsPage()) {
-    InstantSearchPrerenderer* prerenderer =
-        InstantSearchPrerenderer::GetForProfile(profile_);
-    if (prerenderer)
-      prerenderer->Prerender(suggestion);
-  }
+  InstantSearchPrerenderer* prerenderer =
+      InstantSearchPrerenderer::GetForProfile(profile_);
+  if (prerenderer)
+    prerenderer->Prerender(suggestion);
 }
 
 void ChromeOmniboxClient::OnBitmapFetched(const BitmapFetchedCallback& callback,
