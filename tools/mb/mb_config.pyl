@@ -1805,17 +1805,17 @@
     ('swarming_gn_asan_clang_edge_fuzzer'
          '_static_v8_heap_x86_full_symbols_release'): [
       'swarming', 'gn', 'asan', 'clang_tot', 'edge', 'fuzzer', 'static',
-      'v8_heap', 'full_symbols', 'release',
+      'v8_heap', 'full_symbols', 'release', 'x86',
     ],
 
     'swarming_gn_asan_clang_shared_v8_heap_x86_full_symbols_release': [
       'swarming', 'gn', 'asan', 'clang_tot', 'shared', 'v8_heap',
-      'full_symbols', 'release',
+      'full_symbols', 'release', 'x86',
     ],
 
     'swarming_gn_asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release': [
       'swarming', 'gn', 'asan', 'clang_tot', 'fuzzer', 'static', 'v8_heap',
-      'full_symbols', 'release',
+      'full_symbols', 'release', 'x86',
     ],
 
     'swarming_gn_asan_disable_nacl_clang_tot_full_symbols_static_release': [
