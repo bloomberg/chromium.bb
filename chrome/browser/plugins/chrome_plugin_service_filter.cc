@@ -112,7 +112,11 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
 
   // Check whether the plugin is disabled.
   ResourceContextMap::iterator prefs_it = plugin_prefs_.find(context);
-  DCHECK(prefs_it != plugin_prefs_.end());
+  // The context might not be found because RenderFrameMessageFilter might
+  // outlive the Profile (the context is unregistered during the Profile
+  // destructor).
+  if (prefs_it == plugin_prefs_.end())
+    return false;
 
   if (!prefs_it->second.get()->IsPluginEnabled(*plugin))
     return false;
