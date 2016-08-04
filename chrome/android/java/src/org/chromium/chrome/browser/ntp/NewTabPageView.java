@@ -680,12 +680,18 @@ public class NewTabPageView extends FrameLayout
         if (mDisableUrlFocusChangeAnimations) return;
 
         float percent = mSearchProviderHasLogo ? mUrlFocusChangePercent : 0;
-        // Only apply the scrolling offset when not using the cards UI, as there we will either snap
-        // to the top of the page (with scrolling offset 0), or snap to below the fold, where Most
-        // Likely items are not visible anymore, so they will stay out of sight.
-        int scrollOffset = mUseCardsUi ? 0 : mScrollView.getScrollY();
-        mNewTabPageLayout.setTranslationY(percent * (-mMostVisitedLayout.getTop() + scrollOffset
-                                                            + mNewTabPageLayout.getPaddingTop()));
+
+        int basePosition = getVerticalScroll() + mNewTabPageLayout.getPaddingTop();
+        int target;
+        if (mUseCardsUi) {
+            // Cards UI: translate so that the search box is at the top, but only upwards.
+            target = Math.max(basePosition,
+                    mSearchBoxView.getBottom() - mSearchBoxView.getPaddingBottom());
+        } else {
+            // Otherwise: translate so that Most Visited is right below the omnibox.
+            target = mMostVisitedLayout.getTop();
+        }
+        mNewTabPageLayout.setTranslationY(percent * (basePosition - target));
     }
 
     /**
