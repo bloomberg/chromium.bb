@@ -277,136 +277,118 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
 }
 
 TEST_F(CreditCardFieldTest, ParseExpField) {
-  FormFieldData field;
-  field.form_control_type = "text";
+  typedef struct {
+    const std::string label;
+    const int max_length;
+    const ServerFieldType expected_prediction;
+  } TestCase;
 
-  field.label = ASCIIToUTF16("Name on Card");
-  field.name = ASCIIToUTF16("name_on_card");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  TestCase test_cases[] = {
+    // General label, no maxlength.
+    {"Expiration Date", 0, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+    // General label, maxlength 4.
+    {"Expiration Date", 4, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
+    // General label, maxlength 5.
+    {"Expiration Date", 5, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
+    // General label, maxlength 6.
+    {"Expiration Date", 6, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+    // General label, maxlength 7.
+    {"Expiration Date", 7, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+    // General label, large maxlength.
+    {"Expiration Date", 12, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
 
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("card_number");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("number2")));
+    // Unsupported maxlength, general label.
+    {"Expiration Date", 3, UNKNOWN_TYPE},
+    // Unsupported maxlength, two digit year label.
+    {"Expiration Date (MM/YY)", 3, UNKNOWN_TYPE},
+    // Unsupported maxlength, four digit year label.
+    {"Expiration Date (MM/YYYY)", 3, UNKNOWN_TYPE},
 
-  field.label = ASCIIToUTF16("Expiration Date (MM/YYYY)");
-  field.name = ASCIIToUTF16("cc_exp");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("exp3")));
+    // Two digit year, simple label.
+    {"MM / YY", 0, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
+    // Two digit year, with slash (MM/YY).
+    {"Expiration Date (MM/YY)", 0, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
+    // Two digit year, no slash (MMYY).
+    {"Expiration Date (MMYY)", 4, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
+    // Two digit year, with slash and maxlength (MM/YY).
+    {"Expiration Date (MM/YY)", 5, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
+    // Two digit year, with slash and large maxlength (MM/YY).
+    {"Expiration Date (MM/YY)", 12, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
 
-  Parse();
-  ASSERT_NE(nullptr, field_.get());
-  AddClassifications();
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
-            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER,
-            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("exp3")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
-            field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
-}
+    // Four digit year, simple label.
+    {"MM / YYYY", 0, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+    // Four digit year, with slash (MM/YYYY).
+    {"Expiration Date (MM/YYYY)", 0, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+    // Four digit year, no slash (MMYYYY).
+    {"Expiration Date (MMYYYY)", 6, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+    // Four digit year, with slash and maxlength (MM/YYYY).
+    {"Expiration Date (MM/YYYY)", 7, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+    // Four digit year, with slash and large maxlength (MM/YYYY).
+    {"Expiration Date (MM/YYYY)", 12, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
 
-TEST_F(CreditCardFieldTest, ParseExpField2DigitYear) {
-  FormFieldData field;
-  field.form_control_type = "text";
+    // Four digit year label with restrictive maxlength (4).
+    {"Expiration Date (MM/YYYY)", 4, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
+    // Four digit year label with restrictive maxlength (5).
+    {"Expiration Date (MM/YYYY)", 5, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR},
+  };
 
-  field.label = ASCIIToUTF16("Name on Card");
-  field.name = ASCIIToUTF16("name_on_card");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  for (const TestCase &test_case : test_cases) {
+    // Clean up after previous test cases.
+    list_.clear();
+    field_.reset();
+    field_candidates_map_.clear();
 
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("card_number");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("number2")));
+    FormFieldData field;
+    field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Expiration Date (MM/YY)");
-  field.name = ASCIIToUTF16("cc_exp");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("exp3")));
+    field.label = ASCIIToUTF16("Name on Card");
+    field.name = ASCIIToUTF16("name_on_card");
+    list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
 
-  Parse();
-  ASSERT_NE(nullptr, field_.get());
-  AddClassifications();
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
-            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER,
-            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("exp3")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
-            field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
-}
+    field.label = ASCIIToUTF16("Card Number");
+    field.name = ASCIIToUTF16("card_number");
+    list_.push_back(new AutofillField(field, ASCIIToUTF16("num2")));
 
-TEST_F(CreditCardFieldTest, ParseExpField2DigitYearDueToMaxLength) {
-  FormFieldData field;
-  field.form_control_type = "text";
+    field.label = ASCIIToUTF16(test_case.label);
+    if (test_case.max_length != 0) {
+      field.max_length = test_case.max_length;
+    }
+    field.name = ASCIIToUTF16("cc_exp");
+    list_.push_back(new AutofillField(field, ASCIIToUTF16("exp3")));
 
-  field.label = ASCIIToUTF16("Name on Card");
-  field.name = ASCIIToUTF16("name_on_card");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+    Parse();
 
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("card_number");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("number2")));
+    // Assists in identifing which case has failed.
+    SCOPED_TRACE(test_case.expected_prediction);
+    SCOPED_TRACE(test_case.max_length);
+    SCOPED_TRACE(test_case.label);
 
-  field.label = ASCIIToUTF16("Expiration Date");
-  field.name = ASCIIToUTF16("cc_exp");
-  field.max_length = 6;  // Cannot fit YYYY-MM.
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("exp3")));
+    if (test_case.expected_prediction == UNKNOWN_TYPE) {
+      // Expect failure and continue to next test case.
+      // The expiry date is a required field for credit card forms, and thus the
+      // parse sets |field_| to nullptr.
+      EXPECT_EQ(nullptr, field_.get());
+      continue;
+    }
 
-  Parse();
-  ASSERT_NE(nullptr, field_.get());
-  AddClassifications();
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
-            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER,
-            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("exp3")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
-            field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
-}
+    // Ensure that the form was determined as valid.
+    ASSERT_NE(nullptr, field_.get());
+    AddClassifications();
+    ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+                field_candidates_map_.end());
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL,
+              field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
 
-TEST_F(CreditCardFieldTest, ParseExpField4DigitYear) {
-  FormFieldData field;
-  field.form_control_type = "text";
+    ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("num2")) !=
+                field_candidates_map_.end());
+    EXPECT_EQ(CREDIT_CARD_NUMBER,
+              field_candidates_map_[ASCIIToUTF16("num2")].BestHeuristicType());
 
-  field.label = ASCIIToUTF16("Name on Card");
-  field.name = ASCIIToUTF16("name_on_card");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
-
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("card_number");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("number2")));
-
-  field.label = ASCIIToUTF16("MM / YYYY");
-  field.name = ASCIIToUTF16("cc_exp");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("exp3")));
-
-  Parse();
-  ASSERT_NE(nullptr, field_.get());
-  AddClassifications();
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
-            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER,
-            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
-  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("exp3")) !=
-              field_candidates_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
-            field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
+    ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("exp3")) !=
+                field_candidates_map_.end());
+    EXPECT_EQ(test_case.expected_prediction,
+              field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
+  }
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardHolderNameWithCCFullName) {

@@ -60,11 +60,13 @@ bool FieldCanFitDataForFieldType(int max_length, ServerFieldType type) {
 
   switch (type) {
     case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR: {
-      static int kMinimum2YearCcExpLength = strlen("12/14");
+      // A date with a 2 digit year can fit in a minimum of 4 chars (MMYY)
+      static constexpr int kMinimum2YearCcExpLength = 4;
       return max_length >= kMinimum2YearCcExpLength;
     }
     case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR: {
-      static int kMinimum4YearCcExpLength = strlen("12/2014");
+      // A date with a 4 digit year can fit in a minimum of 6 chars (MMYYYY)
+      static constexpr int kMinimum4YearCcExpLength = 6;
       return max_length >= kMinimum4YearCcExpLength;
     }
     default:
@@ -434,7 +436,7 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
     return true;
   }
 
-  // If that fails, look for just MM/YY(YY).
+  // If that fails, look for just MM and/or YY(YY).
   scanner->RewindTo(month_year_saved_cursor);
   if (ParseFieldSpecifics(scanner,
                           base::ASCIIToUTF16("^mm$"),
