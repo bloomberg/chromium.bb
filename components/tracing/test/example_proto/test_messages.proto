@@ -5,8 +5,16 @@
 syntax = "proto2";
 package foo.bar;
 
+import "library.proto";
+
 // This file contains comprehensive set of supported message structures and
 // data types. Unit tests depends on the plugin-processed version of this file.
+
+// Tests importing message definition from another proto file.
+message TransgalacticParcel {
+  optional TransgalacticMessage message = 1;
+  optional string tracking_code = 2;
+}
 
 enum SmallEnum {
   TO_BE = 1;
@@ -63,4 +71,5 @@ message NestedA {
     optional NestedC value_b = 1;
   }
   repeated NestedB repeated_a = 2;
+  optional NestedB.NestedC super_nested = 3;
 }

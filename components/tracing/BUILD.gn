@@ -63,7 +63,9 @@ proto_library("proto_zero_testing_messages") {
   visibility = [ "//components/tracing/*" ]
 
   sources = [
-    "test/example_messages.proto",
+    "test/example_proto/library.proto",
+    "test/example_proto/library_internals/galaxies.proto",
+    "test/example_proto/test_messages.proto",
   ]
 
   generator_plugin_label = "tools/proto_zero_plugin:proto_zero_plugin"

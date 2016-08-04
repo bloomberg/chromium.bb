@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/test/example_messages.pbzero.h"
+#include "components/tracing/test/example_proto/test_messages.pbzero.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {
