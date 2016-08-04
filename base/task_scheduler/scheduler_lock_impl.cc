@@ -67,19 +67,30 @@ class SafeAcquisitionTracker {
     // Otherwise, make sure that the previous lock acquired is an allowed
     // predecessor.
     AutoLock auto_lock(allowed_predecessor_map_lock_);
+    // Using at() is exception-safe here as |lock| was registered already.
     const SchedulerLockImpl* allowed_predecessor =
         allowed_predecessor_map_.at(lock);
     DCHECK_EQ(acquired_locks->back(), allowed_predecessor);
   }
 
+  // Asserts that |lock|'s registered predecessor is safe. Because
+  // SchedulerLocks are registered at construction time and any predecessor
+  // specified on a SchedulerLock must already exist, the first registered
+  // SchedulerLock in a potential chain must have a null predecessor and is thus
+  // cycle-free. Any subsequent SchedulerLock with a predecessor must come from
+  // the set of registered SchedulerLocks. Since the registered SchedulerLocks
+  // only contain cycle-free SchedulerLocks, this subsequent SchedulerLock is
+  // itself cycle-free and may be safely added to the registered SchedulerLock
+  // set.
   void AssertSafePredecessor(const SchedulerLockImpl* lock) const {
     allowed_predecessor_map_lock_.AssertAcquired();
-    for (const SchedulerLockImpl* predecessor =
-             allowed_predecessor_map_.at(lock);
-         predecessor != nullptr;
-         predecessor = allowed_predecessor_map_.at(predecessor)) {
-      DCHECK_NE(predecessor, lock) <<
-          "Scheduler lock predecessor cycle detected.";
+    // Using at() is exception-safe here as |lock| was registered already.
+    const SchedulerLockImpl* predecessor = allowed_predecessor_map_.at(lock);
+    if (predecessor) {
+      DCHECK(allowed_predecessor_map_.find(predecessor) !=
+             allowed_predecessor_map_.end())
+          << "SchedulerLock was registered before its predecessor. "
+          << "Potential cycle detected";
     }
   }
 
