@@ -1336,7 +1336,7 @@
     ],
 
     'gn_asan_edge_fuzzer_v8_heap_release_bot_x86': [
-      'gn', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
+      'gn', 'clang', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
       'x86',
     ],
 
@@ -1356,12 +1356,12 @@
     ],
 
     'gn_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86': [
-      'gn', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
-      'x86',
+      'gn', 'clang', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs',
+      'release_bot', 'x86',
     ],
 
     'gn_asan_fuzzer_v8_heap_release_bot_x86': [
-      'gn', 'asan', 'fuzzer', 'v8_heap', 'release_bot', 'x86',
+      'gn', 'clang', 'asan', 'fuzzer', 'v8_heap', 'release_bot', 'x86',
     ],
 
     'gn_asan_lsan_edge_debug_bot': [
