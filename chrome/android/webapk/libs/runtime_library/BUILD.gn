@@ -21,6 +21,12 @@ android_aidl("webapk_service_aidl") {
   ]
 }
 
+# A standalone jar for the aidl's generated java files so that multiple places
+# can depend on the aidl.
+android_library("webapk_service_aidl_java") {
+  srcjar_deps = [ ":webapk_service_aidl" ]
+}
+
 # runtime_library_from_assets_java cannot be used as a dependency of another
 # library because the dx tool expects files ending in .dex.jar
 android_library("runtime_library_for_assets_java") {
@@ -29,8 +35,8 @@ android_library("runtime_library_for_assets_java") {
     "src/org/chromium/webapk/lib/runtime_library/HostBrowserLauncher.java",
     "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java",
   ]
-  srcjar_deps = [ ":webapk_service_aidl" ]
   deps = [
+    ":webapk_service_aidl_java",
     "//chrome/android/webapk/libs/common:common_java",
   ]
 }
@@ -39,7 +45,9 @@ android_library("runtime_library_for_assets_java") {
 android_library("runtime_library_for_tests_java") {
   java_files =
       [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
-  srcjar_deps = [ ":webapk_service_aidl" ]
+  deps = [
+    ":webapk_service_aidl_java",
+  ]
 }
 
 android_assets("runtime_library_assets") {
@@ -61,6 +69,7 @@ android_library("runtime_library_javatests") {
   java_files = [ "javatests/src/org/chromium/webapk/lib/runtime_library/WebApkServiceImplTest.java" ]
   deps = [
     ":runtime_library_for_tests_java",
+    ":webapk_service_aidl_java",
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_support",
     "//content/public/test/android:content_java_test_support",
