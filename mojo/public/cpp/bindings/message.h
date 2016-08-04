@@ -47,7 +47,9 @@ class Message {
   // Transfers data and handles to |destination|.
   void MoveTo(Message* destination);
 
-  uint32_t data_num_bytes() const { return buffer_->data_num_bytes(); }
+  uint32_t data_num_bytes() const {
+    return static_cast<uint32_t>(buffer_->size());
+  }
 
   // Access the raw bytes of the message.
   const uint8_t* data() const {
@@ -89,8 +91,8 @@ class Message {
   const uint8_t* payload() const { return data() + header()->num_bytes; }
   uint8_t* mutable_payload() { return const_cast<uint8_t*>(payload()); }
   uint32_t payload_num_bytes() const {
-    DCHECK(buffer_->data_num_bytes() >= header()->num_bytes);
-    size_t num_bytes = buffer_->data_num_bytes() - header()->num_bytes;
+    DCHECK(data_num_bytes() >= header()->num_bytes);
+    size_t num_bytes = data_num_bytes() - header()->num_bytes;
     DCHECK(num_bytes <= std::numeric_limits<uint32_t>::max());
     return static_cast<uint32_t>(num_bytes);
   }

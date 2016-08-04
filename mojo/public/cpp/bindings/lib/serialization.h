@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/array_traits_standard.h"
 #include "mojo/public/cpp/bindings/array_traits_stl.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
-#include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
+#include "mojo/public/cpp/bindings/lib/buffer.h"
 #include "mojo/public/cpp/bindings/lib/handle_interface_serialization.h"
 #include "mojo/public/cpp/bindings/lib/map_serialization.h"
 #include "mojo/public/cpp/bindings/lib/native_enum_serialization.h"
@@ -53,7 +53,7 @@ DataArrayType StructSerializeImpl(UserType* input) {
     DCHECK(IsAligned(result_buffer));
   }
 
-  FixedBuffer buffer;
+  Buffer buffer;
   buffer.Initialize(result_buffer, size);
   typename MojomType::Struct::Data_* data = nullptr;
   Serialize<MojomType>(*input, &buffer, &data, &context);
