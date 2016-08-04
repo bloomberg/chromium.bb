@@ -63,6 +63,10 @@ class URLRequestDelegate : public net::URLFetcherDelegate {
                                        fetcherDelegate_.get());
     fetcher_->SetRequestContext(requestContextGetter_.get());
     fetcher_->Start();
+  } else {
+    // Invalid URLs returned from delegate method are considered a permanent
+    // failure. Delegate method is called with nil to indicate failure.
+    [delegate_ processSuccessResponse:nil];
   }
 }
 

@@ -20,7 +20,8 @@ class URLRequestContextGetter;
 - (NSString*)urlToFetch;
 
 // Callback function after URL has been fetched. |response| is the content of
-// the HTTP response. |response| may be nil if the HTTP request failed.
+// the HTTP response. This method may be called with a nil |response| if the
+// HTTP request failed.
 - (void)processSuccessResponse:(NSString*)response;
 
 @end
