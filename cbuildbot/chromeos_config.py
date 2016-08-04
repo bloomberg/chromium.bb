@@ -639,7 +639,6 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
-        'elm-paladin',
         'elm-cheets-paladin',
         'gale-paladin',
         'gru-paladin',
@@ -1718,6 +1717,7 @@ def GetConfig():
       'daisy',
       'daisy_skate',
       'daisy_spring',
+      'elm',
       'nyan_freon',
       'falco',
       'glados',
