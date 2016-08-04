@@ -761,20 +761,37 @@ void HTMLMediaElement::invokeLoadAlgorithm()
     m_loadState = WaitingForSource;
     m_currentSourceNode = nullptr;
 
-    // 2 - If there are any tasks from the media element's media element event task source in
-    // one of the task queues, then remove those tasks.
+    // 2 - Let pending tasks be a list of tasks from the media element's media
+    // element task source in one of the task queues.
+    //
+    // 3 - For each task in the pending tasks that would run resolve pending
+    // play promises or project pending play prmoises algorithms, immediately
+    // resolve or reject those promises in the order the corresponding tasks
+    // were queued.
+    //
+    // TODO(mlamouri): the promises are first resolved then rejected but the
+    // order between resolved/rejected promises isn't respected. This could be
+    // improved when the same task is used for both cases.
+    if (m_playPromiseResolveTask->isPending()) {
+        m_playPromiseResolveTask->cancel();
+        resolveScheduledPlayPromises();
+    }
+    if (m_playPromiseRejectTask->isPending()) {
+        m_playPromiseRejectTask->cancel();
+        rejectScheduledPlayPromises();
+    }
+
+    // 4 - Remove each task in pending tasks from its task queue.
     cancelPendingEventsAndCallbacks();
 
-    rejectPlayPromises(AbortError, "The play() request was interrupted by a new load request.");
-
-    // 3 - If the media element's networkState is set to NETWORK_LOADING or NETWORK_IDLE, queue
+    // 5 - If the media element's networkState is set to NETWORK_LOADING or NETWORK_IDLE, queue
     // a task to fire a simple event named abort at the media element.
     if (m_networkState == kNetworkLoading || m_networkState == kNetworkIdle)
         scheduleEvent(EventTypeNames::abort);
 
     resetMediaPlayerAndMediaSource();
 
-    // 4 - If the media element's networkState is not set to NETWORK_EMPTY, then run these substeps
+    // 6 - If the media element's networkState is not set to NETWORK_EMPTY, then run these substeps
     if (m_networkState != kNetworkEmpty) {
         // 4.1 - Queue a task to fire a simple event named emptied at the media element.
         scheduleEvent(EventTypeNames::emptied);
@@ -782,30 +799,38 @@ void HTMLMediaElement::invokeLoadAlgorithm()
         // 4.2 - If a fetching process is in progress for the media element, the user agent should stop it.
         setNetworkState(kNetworkEmpty);
 
-        // 4.3 - Forget the media element's media-resource-specific tracks.
+        // 4.4 - Forget the media element's media-resource-specific tracks.
         forgetResourceSpecificTracks();
 
-        // 4.4 - If readyState is not set to HAVE_NOTHING, then set it to that state.
+        // 4.5 - If readyState is not set to kHaveNothing, then set it to that state.
         m_readyState = kHaveNothing;
         m_readyStateMaximum = kHaveNothing;
 
-        // 4.5 - If the paused attribute is false, then set it to true.
-        m_paused = true;
+        DCHECK(!m_paused || m_playPromiseResolvers.isEmpty());
 
-        // 4.6 - If seeking is true, set it to false.
+        // 4.6 - If the paused attribute is false, then run these substeps
+        if (!m_paused) {
+            // 4.6.1 - Set the paused attribute to true.
+            m_paused = true;
+
+            // 4.6.2 - Take pending play promises and reject pending play promises with the result and an "AbortError" DOMException.
+            rejectPlayPromises(AbortError, "The play() request was interrupted by a new load request.");
+        }
+
+        // 4.7 - If seeking is true, set it to false.
         m_seeking = false;
 
-        // 4.7 - Set the current playback position to 0.
+        // 4.8 - Set the current playback position to 0.
         //       Set the official playback position to 0.
         //       If this changed the official playback position, then queue a task to fire a simple event named timeupdate at the media element.
         // FIXME: Add support for firing this event.
 
-        // 4.8 - Set the initial playback position to 0.
-        // FIXME: Make this less subtle. The position only becomes 0 because the ready state is kHaveNothing.
+        // 4.9 - Set the initial playback position to 0.
+        // FIXME: Make this less subtle. The position only becomes 0 because the ready state is HAVE_NOTHING.
         invalidateCachedTime();
 
-        // 4.9 - Set the timeline offset to Not-a-Number (NaN).
-        // 4.10 - Update the duration attribute to Not-a-Number (NaN).
+        // 4.10 - Set the timeline offset to Not-a-Number (NaN).
+        // 4.11 - Update the duration attribute to Not-a-Number (NaN).
 
         cueTimeline().updateActiveCues(0);
     } else if (!m_paused) {
@@ -817,17 +842,17 @@ void HTMLMediaElement::invokeLoadAlgorithm()
         UseCounter::count(document(), UseCounter::HTMLMediaElementLoadNetworkEmptyNotPaused);
     }
 
-    // 5 - Set the playbackRate attribute to the value of the defaultPlaybackRate attribute.
+    // 7 - Set the playbackRate attribute to the value of the defaultPlaybackRate attribute.
     setPlaybackRate(defaultPlaybackRate());
 
-    // 6 - Set the error attribute to null and the autoplaying flag to true.
+    // 8 - Set the error attribute to null and the autoplaying flag to true.
     m_error = nullptr;
     m_autoplaying = true;
 
-    // 7 - Invoke the media element's resource selection algorithm.
+    // 9 - Invoke the media element's resource selection algorithm.
     invokeResourceSelectionAlgorithm();
 
-    // 8 - Note: Playback of any previously playing media resource for this element stops.
+    // 10 - Note: Playback of any previously playing media resource for this element stops.
 }
 
 void HTMLMediaElement::invokeResourceSelectionAlgorithm()
@@ -1400,11 +1425,6 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
 
     for (HTMLSourceElement* source = Traversal<HTMLSourceElement>::firstChild(*this); source; source = Traversal<HTMLSourceElement>::nextSibling(*source))
         source->cancelPendingErrorEvent();
-
-    m_playPromiseResolveTask->cancel();
-    m_playPromiseResolveList.clear();
-    m_playPromiseRejectTask->cancel();
-    m_playPromiseRejectList.clear();
 }
 
 void HTMLMediaElement::networkStateChanged()

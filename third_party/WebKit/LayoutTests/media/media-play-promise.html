@@ -220,7 +220,98 @@ var tests = [
         audio.oncanplaythrough = t.step_func(function() {
             audio.play();
         });
-    }
+    },
+
+    // Test that running the load algorithm will not drop all the promises about
+    // to be resolved.
+    function loadAlgorithmDoesNotCancelTasks(t, audio) {
+        audio.src = findMediaFile('audio', 'content/test');
+        audio.addEventListener('canplaythrough', t.step_func(function() {
+            // The play() promise will be queued to be resolved.
+            playExpectingResolvedPromise(t, audio);
+            audio.src = findMediaFile('audio', 'content/test');
+            assert_true(audio.paused);
+        }));
+    },
+
+    // Test that when the load algorithm is run, if it does not pause the
+    // playback, it will leave the promise pending, allowing it to be resolved.
+    function loadAlgorithmKeepPromisesPendingWhenNotPausing(t, audio) {
+        playExpectingResolvedPromise(t, audio);
+        setTimeout(t.step_func(function() {
+            audio.src = findMediaFile('audio', 'content/test');
+            assert_false(audio.paused);
+        }), 0);
+    },
+
+    // Test that when the load algorithm is run, if it resolves multiple
+    // promises, they are resolved in the order in which they were added.
+    function loadAlgorithmResolveOrdering(t, audio) {
+        audio.src = findMediaFile('audio', 'content/test');
+        audio.addEventListener('canplaythrough', t.step_func(function() {
+            var firstPromiseResolved = false;
+            audio.play().then(t.step_func(_ => firstPromiseResolved = true),
+                              t.unreached_func());
+
+            audio.play().then(t.step_func_done(function() {
+                assert_true(firstPromiseResolved);
+            }), t.unreached_func());
+
+            audio.src = findMediaFile('audio', 'content/test');
+        }));
+    },
+
+    // Test that when the load algorithm is run, if it does not pause the
+    // playback, it will leave the promise pending, allowing it to be resolved
+    // (version with preload='none').
+    // TODO(mlamouri): there is a bug in Blink where the media element ends up
+    // in a broken state, see https://crbug.com/633591
+    // function loadAlgorithmKeepPromisesPendingWhenNotPausingAndPreloadNone(t, audio) {
+    //     audio.preload = 'none';
+    //     playExpectingRejectedPromise(t, audio, 'AbortError');
+    //     setTimeout(_ => audio.src = findMediaFile('audio', 'content/test'), 0);
+    // },
+
+    // Test that when the load algorithm is run, if it does pause the playback,
+    // it will reject the pending promises.
+    function loadAlgorithmRejectPromisesWhenPausing(t, audio) {
+        playExpectingRejectedPromise(t, audio, 'AbortError');
+        audio.src = findMediaFile('audio', 'content/test');
+        assert_true(audio.paused);
+    },
+
+    // Test that when the load algorithm is run, if it does pause the playback,
+    // it will reject the pending promises (version with preload='none').
+    function loadAlgorithmRejectPromisesWhenPausingAndPreloadNone(t, audio) {
+        audio.preload = 'none';
+        playExpectingRejectedPromise(t, audio, 'AbortError');
+        audio.src = findMediaFile('audio', 'content/test');
+        assert_true(audio.paused);
+    },
+
+    // Test that when the load algorithm is run, if it rejects multiple
+    // promises, they are rejected in the order in which they were added.
+    function loadAlgorithmResolveOrdering(t, audio) {
+        var firstPromiseRejected = false;
+        audio.play().then(t.unreached_func(), t.step_func(function(e) {
+            assert_equals(e.name, 'AbortError');
+            assert_equals(e.message,
+                'The play() request was interrupted by a call to pause().');
+            firstPromiseRejected = true;
+        }));
+
+        audio.play().then(t.unreached_func(), t.step_func_done(function(e) {
+            assert_equals(e.name, 'AbortError');
+            assert_equals(e.message,
+                'The play() request was interrupted by a call to pause().');
+            assert_true(firstPromiseRejected);
+        }));
+
+        setTimeout(t.step_func(function() {
+            audio.pause();
+            audio.src = findMediaFile('audio', 'content/test');
+        }), 0);
+    },
 ];
 
 tests.forEach(function(test) {
