@@ -26,7 +26,7 @@ bool CreditCardScannerView::CanShow() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> java_object(
       Java_CreditCardScanner_create(
-          env, 0, base::android::GetApplicationContext(), 0));
+          env, 0, base::android::GetApplicationContext(), nullptr));
   return Java_CreditCardScanner_canScan(env, java_object.obj());
 }
 

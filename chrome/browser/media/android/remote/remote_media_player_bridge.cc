@@ -321,7 +321,8 @@ void RemoteMediaPlayerBridge::SetPosterBitmap(
   CHECK(env);
 
   if (bitmaps.empty()) {
-    Java_RemoteMediaPlayerBridge_setPosterBitmap(env, java_bridge_.obj(), NULL);
+    Java_RemoteMediaPlayerBridge_setPosterBitmap(env, java_bridge_.obj(),
+                                                 nullptr);
   } else {
     ScopedJavaLocalRef<jobject> j_poster_bitmap;
     j_poster_bitmap = gfx::ConvertToJavaBitmap(&(bitmaps[0]));

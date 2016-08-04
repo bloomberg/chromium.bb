@@ -112,7 +112,7 @@ bool RegisterTabWebContentsDelegateAndroid(JNIEnv* env) {
 
 void TabWebContentsDelegateAndroid::LoadingStateChanged(
     WebContents* source, bool to_different_document) {
-  bool has_stopped = source == NULL || !source->IsLoading();
+  bool has_stopped = source == nullptr || !source->IsLoading();
   WebContentsDelegateAndroid::LoadingStateChanged(
       source, to_different_document);
   LoadProgressChanged(source, has_stopped ? 1 : 0);
@@ -279,7 +279,7 @@ void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
-      web_contents, request, callback, NULL);
+      web_contents, request, callback, nullptr);
 }
 
 bool TabWebContentsDelegateAndroid::CheckMediaAccessPermission(
@@ -346,7 +346,7 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
           switches::kDisablePopupBlocking)) {
     if (popup_blocker_helper->MaybeBlockPopup(nav_params,
                                               blink::WebWindowFeatures())) {
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -407,7 +407,7 @@ void TabWebContentsDelegateAndroid::AddNewContents(
         jsource.obj(),
         jnew_contents.obj(),
         static_cast<jint>(disposition),
-        NULL,
+        nullptr,
         user_gesture);
   }
 

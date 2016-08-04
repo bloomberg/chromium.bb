@@ -89,7 +89,7 @@ ConnectionInfoPopupAndroid::ConnectionInfoPopupAndroid(
   // Important to use GetVisibleEntry to match what's showing in the omnibox.
   content::NavigationEntry* nav_entry =
       web_contents->GetController().GetVisibleEntry();
-  if (nav_entry == NULL)
+  if (nav_entry == nullptr)
     return;
 
   popup_jobject_.Reset(env, java_website_settings_pop);
@@ -176,7 +176,7 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
     ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
         env, identity_info.connection_status_description);
     Java_ConnectionInfoPopup_addDescriptionSection(
-        env, popup_jobject_.obj(), icon_id, NULL, description.obj());
+        env, popup_jobject_.obj(), icon_id, nullptr, description.obj());
   }
 
   Java_ConnectionInfoPopup_addMoreInfoLink(

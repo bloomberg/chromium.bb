@@ -52,7 +52,7 @@ class TestResourceManagerImpl : public ResourceManagerImpl {
     canvas.drawColor(SK_ColorWHITE);
     small_bitmap.setImmutable();
 
-    OnResourceReady(NULL, NULL, res_type, res_id,
+    OnResourceReady(nullptr, nullptr, res_type, res_id,
                     gfx::ConvertToJavaBitmap(&small_bitmap), 0, 0, 0, 0, 0, 0,
                     0, 0);
   }
@@ -103,7 +103,9 @@ class ResourceManagerTest : public testing::Test {
     resource_manager_.Init(host_.get());
   }
 
-  ~ResourceManagerTest() override { window_android_->Destroy(NULL, NULL); }
+  ~ResourceManagerTest() override {
+    window_android_->Destroy(nullptr, nullptr);
+  }
 
   void PreloadResource(ui::SystemUIResourceType type) {
     resource_manager_.PreloadResource(ui::ANDROID_RESOURCE_TYPE_SYSTEM, type);

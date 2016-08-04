@@ -203,14 +203,14 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
 void AutocompleteControllerAndroid::Stop(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj,
                                          bool clear_results) {
-  if (autocomplete_controller_ != NULL)
+  if (autocomplete_controller_ != nullptr)
     autocomplete_controller_->Stop(clear_results);
 }
 
 void AutocompleteControllerAndroid::ResetSession(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  if (autocomplete_controller_ != NULL)
+  if (autocomplete_controller_ != nullptr)
     autocomplete_controller_->ResetSession();
 }
 
@@ -566,8 +566,8 @@ AutocompleteControllerAndroid::GetTopSynchronousResult(
         obj,
         j_text,
         -1,
-        NULL,
-        NULL,
+        nullptr,
+        nullptr,
         prevent_inline_autocomplete,
         false,
         false,
@@ -608,7 +608,7 @@ static ScopedJavaLocalRef<jstring> QualifyPartialURLQuery(
       false,
       OmniboxEventProto::INVALID_SPEC,
       &match,
-      NULL);
+      nullptr);
   if (!match.destination_url.is_valid())
     return ScopedJavaLocalRef<jstring>();
 
