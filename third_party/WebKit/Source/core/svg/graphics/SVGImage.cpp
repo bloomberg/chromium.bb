@@ -304,12 +304,18 @@ PassRefPtr<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url, 
     if (!m_page)
         return nullptr;
 
-    SkPictureRecorder recorder;
-    SkCanvas* canvas = recorder.beginRecording(width(), height());
-    drawForContainer(canvas, SkPaint(), containerSize, 1, rect(), rect(), url);
+    const FloatRect containerRect(FloatPoint(), containerSize);
 
+    SkPictureRecorder recorder;
+    SkCanvas* canvas = recorder.beginRecording(containerRect);
+    drawForContainer(canvas, SkPaint(), containerSize, 1, containerRect, containerRect, url);
+
+    const IntSize imageSize = roundedIntSize(containerSize);
+    const SkMatrix residualScale = SkMatrix::MakeScale(
+        static_cast<float>(imageSize.width()) / containerSize.width(),
+        static_cast<float>(imageSize.height()) / containerSize.height());
     return fromSkSp(SkImage::MakeFromPicture(recorder.finishRecordingAsPicture(),
-        SkISize::Make(width(), height()), nullptr, nullptr));
+        SkISize::Make(imageSize.width(), imageSize.height()), &residualScale, nullptr));
 }
 
 static bool drawNeedsLayer(const SkPaint& paint)

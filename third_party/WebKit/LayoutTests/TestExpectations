@@ -195,6 +195,8 @@ crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/gesture-scroll-amount.
 crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
 crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.html [ Skip ]
 
+crbug.com/633637 fast/backgrounds/background-svg-scaling.html [ NeedsRebaseline ]
+
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
