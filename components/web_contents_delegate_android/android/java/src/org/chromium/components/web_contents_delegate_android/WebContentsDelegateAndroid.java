@@ -54,11 +54,7 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
-    public void onLoadStarted(boolean toDifferentDocument) {
-    }
-
-    @CalledByNative
-    public void onLoadStopped() {
+    public void loadingStateChanged(boolean toDifferentDocument) {
     }
 
     @CalledByNative

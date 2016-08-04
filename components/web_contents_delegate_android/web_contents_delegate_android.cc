@@ -159,18 +159,9 @@ void WebContentsDelegateAndroid::LoadingStateChanged(WebContents* source,
     bool to_different_document) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return;
-  bool has_stopped = source == NULL || !source->IsLoading();
-
-  if (has_stopped) {
-    Java_WebContentsDelegateAndroid_onLoadStopped(env, obj.obj());
-  } else {
-    Java_WebContentsDelegateAndroid_onLoadStarted(
-        env,
-        obj.obj(),
-        to_different_document);
-  }
+  Java_WebContentsDelegateAndroid_loadingStateChanged(env,
+                                                      obj.obj(),
+                                                      to_different_document);
 }
 
 void WebContentsDelegateAndroid::LoadProgressChanged(WebContents* source,

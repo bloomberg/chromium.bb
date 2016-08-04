@@ -132,20 +132,19 @@ public class OverlayPanelContent {
             private boolean mIsFullscreen;
 
             @Override
-            public void onLoadStarted(boolean toDifferentDocument) {
-                super.onLoadStarted(toDifferentDocument);
-                mProgressObserver.onProgressBarStarted();
-            }
-
-            @Override
-            public void onLoadStopped() {
-                super.onLoadStopped();
-                mProgressObserver.onProgressBarFinished();
+            public void loadingStateChanged(boolean toDifferentDocument) {
+                boolean isLoading = mContentViewCore != null
+                        && mContentViewCore.getWebContents() != null
+                        && mContentViewCore.getWebContents().isLoading();
+                if (isLoading) {
+                    mProgressObserver.onProgressBarStarted();
+                } else {
+                    mProgressObserver.onProgressBarFinished();
+                }
             }
 
             @Override
             public void onLoadProgressChanged(int progress) {
-                super.onLoadProgressChanged(progress);
                 mProgressObserver.onProgressBarUpdated(progress);
             }
 

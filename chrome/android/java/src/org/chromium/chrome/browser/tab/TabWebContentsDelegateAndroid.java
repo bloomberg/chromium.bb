@@ -186,13 +186,13 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     }
 
     @Override
-    public void onLoadStarted(boolean toDifferentDocument) {
-        mTab.onLoadStarted(toDifferentDocument);
-    }
-
-    @Override
-    public void onLoadStopped() {
-        mTab.onLoadStopped();
+    public void loadingStateChanged(boolean toDifferentDocument) {
+        boolean isLoading = mTab.getWebContents() != null && mTab.getWebContents().isLoading();
+        if (isLoading) {
+            mTab.onLoadStarted(toDifferentDocument);
+        } else {
+            mTab.onLoadStopped();
+        }
     }
 
     @Override
