@@ -285,7 +285,9 @@ SkBitmap ShortcutHelper::FinalizeLauncherIcon(const SkBitmap& bitmap,
         SkColorGetB(mean_color));
   }
 
-  return gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(result.obj()));
+  return result.obj()
+             ? gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(result.obj()))
+             : SkBitmap();
 }
 
 // static
