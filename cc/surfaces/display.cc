@@ -288,8 +288,6 @@ bool Display::DrawAndSwap() {
     should_draw = false;
   }
 
-  client_->DisplayWillDrawAndSwap(should_draw, frame_data->render_pass_list);
-
   if (should_draw) {
     gfx::Rect device_viewport_rect = external_viewport_.IsEmpty()
                                          ? gfx::Rect(current_surface_size_)
@@ -341,7 +339,6 @@ bool Display::DrawAndSwap() {
     DidSwapBuffersComplete();
   }
 
-  client_->DisplayDidDrawAndSwap();
   return true;
 }
 

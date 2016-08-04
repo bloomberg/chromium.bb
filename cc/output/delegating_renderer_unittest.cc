@@ -13,7 +13,22 @@
 
 namespace cc {
 
-class DelegatingRendererTest : public LayerTreeTest {};
+class DelegatingRendererTest : public LayerTreeTest {
+ public:
+  DelegatingRendererTest() : LayerTreeTest(), output_surface_(NULL) {}
+  ~DelegatingRendererTest() override {}
+
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
+    std::unique_ptr<FakeOutputSurface> output_surface =
+        FakeOutputSurface::CreateDelegating3d();
+    output_surface_ = output_surface.get();
+    return std::move(output_surface);
+  }
+
+ protected:
+  TestWebGraphicsContext3D* context3d_;
+  FakeOutputSurface* output_surface_;
+};
 
 class DelegatingRendererTestDraw : public DelegatingRendererTest {
  public:
@@ -24,30 +39,40 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
 
   void AfterTest() override {}
 
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(0u, output_surface_->num_sent_frames());
+
+    const CompositorFrame* last_frame = output_surface_->last_sent_frame();
+    EXPECT_EQ(nullptr, last_frame);
+    return DRAW_SUCCESS;
+  }
+
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_EQ(0, num_swaps_);
+    EXPECT_EQ(0u, output_surface_->num_sent_frames());
     drawn_viewport_ = host_impl->DeviceViewport();
   }
 
-  void DisplayReceivedCompositorFrameOnThread(
-      const CompositorFrame& frame) override {
-    EXPECT_EQ(1, ++num_swaps_);
+  void SwapBuffersCompleteOnThread() override {
+    EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
-    DelegatedFrameData* last_frame_data = frame.delegated_frame_data.get();
-    ASSERT_TRUE(frame.delegated_frame_data);
-    EXPECT_FALSE(frame.gl_frame_data);
+    const CompositorFrame* last_frame = output_surface_->last_sent_frame();
+    DelegatedFrameData* last_frame_data =
+        last_frame->delegated_frame_data.get();
+    ASSERT_TRUE(last_frame->delegated_frame_data);
+    EXPECT_FALSE(last_frame->gl_frame_data);
     EXPECT_EQ(drawn_viewport_,
               last_frame_data->render_pass_list.back()->output_rect);
-    EXPECT_EQ(0.5f, frame.metadata.min_page_scale_factor);
-    EXPECT_EQ(4.f, frame.metadata.max_page_scale_factor);
+    EXPECT_EQ(0.5f, last_frame->metadata.min_page_scale_factor);
+    EXPECT_EQ(4.f, last_frame->metadata.max_page_scale_factor);
 
-    EXPECT_EQ(0u, frame.delegated_frame_data->resource_list.size());
-    EXPECT_EQ(1u, frame.delegated_frame_data->render_pass_list.size());
+    EXPECT_EQ(0u, last_frame->delegated_frame_data->resource_list.size());
+    EXPECT_EQ(1u, last_frame->delegated_frame_data->render_pass_list.size());
 
     EndTest();
   }
 
-  int num_swaps_ = 0;
   gfx::Rect drawn_viewport_;
 };
 
@@ -78,17 +103,23 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     return draw_result;
   }
 
-  void DisplayReceivedCompositorFrameOnThread(
-      const CompositorFrame& frame) override {
-    ASSERT_TRUE(frame.delegated_frame_data);
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_EQ(0u, output_surface_->num_sent_frames());
+  }
 
-    EXPECT_EQ(2u, frame.delegated_frame_data->render_pass_list.size());
+  void SwapBuffersCompleteOnThread() override {
+    EXPECT_EQ(1u, output_surface_->num_sent_frames());
+
+    const CompositorFrame* last_frame = output_surface_->last_sent_frame();
+    ASSERT_TRUE(last_frame->delegated_frame_data);
+
+    EXPECT_EQ(2u, last_frame->delegated_frame_data->render_pass_list.size());
     // Each render pass has 10 resources in it. And the root render pass has a
     // mask resource used when drawing the child render pass, as well as its
     // replica (it's added twice). The number 10 may change if
     // AppendOneOfEveryQuadType() is updated, and the value here should be
     // updated accordingly.
-    EXPECT_EQ(22u, frame.delegated_frame_data->resource_list.size());
+    EXPECT_EQ(22u, last_frame->delegated_frame_data->resource_list.size());
 
     EndTest();
   }

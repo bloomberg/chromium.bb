@@ -60,9 +60,6 @@ class DisplayCompositor : public cc::SurfaceFactoryClient,
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
   void DisplaySetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              const cc::RenderPassList& render_passes) override;
-  void DisplayDidDrawAndSwap() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<SurfacesState> surfaces_state_;

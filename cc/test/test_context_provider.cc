@@ -23,17 +23,13 @@ namespace cc {
 
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::Create() {
-  return new TestContextProvider(base::MakeUnique<TestContextSupport>(),
-                                 base::MakeUnique<TestGLES2Interface>(),
-                                 TestWebGraphicsContext3D::Create());
+  return Create(TestWebGraphicsContext3D::Create());
 }
 
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
-  scoped_refptr<TestContextProvider> worker_context_provider(
-      new TestContextProvider(base::MakeUnique<TestContextSupport>(),
-                              base::MakeUnique<TestGLES2Interface>(),
-                              TestWebGraphicsContext3D::Create()));
+  scoped_refptr<TestContextProvider> worker_context_provider =
+      Create(TestWebGraphicsContext3D::Create());
   // Worker contexts are bound to the thread they are created on.
   if (!worker_context_provider->BindToCurrentThread())
     return nullptr;
@@ -44,8 +40,7 @@ scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
 scoped_refptr<TestContextProvider> TestContextProvider::Create(
     std::unique_ptr<TestWebGraphicsContext3D> context) {
   DCHECK(context);
-  return new TestContextProvider(base::MakeUnique<TestContextSupport>(),
-                                 base::MakeUnique<TestGLES2Interface>(),
+  return new TestContextProvider(base::MakeUnique<TestGLES2Interface>(),
                                  std::move(context));
 }
 
@@ -53,36 +48,23 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
 scoped_refptr<TestContextProvider> TestContextProvider::Create(
     std::unique_ptr<TestGLES2Interface> gl) {
   DCHECK(gl);
-  return new TestContextProvider(base::MakeUnique<TestContextSupport>(),
-                                 std::move(gl),
+  return new TestContextProvider(std::move(gl),
                                  TestWebGraphicsContext3D::Create());
 }
 
-// static
-scoped_refptr<TestContextProvider> TestContextProvider::Create(
-    std::unique_ptr<TestWebGraphicsContext3D> context,
-    std::unique_ptr<TestContextSupport> support) {
-  DCHECK(context);
-  DCHECK(support);
-  return new TestContextProvider(std::move(support),
-                                 base::MakeUnique<TestGLES2Interface>(),
-                                 std::move(context));
-}
-
 TestContextProvider::TestContextProvider(
-    std::unique_ptr<TestContextSupport> support,
     std::unique_ptr<TestGLES2Interface> gl,
     std::unique_ptr<TestWebGraphicsContext3D> context)
-    : support_(std::move(support)),
-      context3d_(std::move(context)),
+    : context3d_(std::move(context)),
       context_gl_(std::move(gl)),
+      bound_(false),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
   DCHECK(context_gl_);
   context_thread_checker_.DetachFromThread();
   context_gl_->set_test_context(context3d_.get());
-  context3d_->set_test_support(support_.get());
+  context3d_->set_test_support(&support_);
 }
 
 TestContextProvider::~TestContextProvider() {
@@ -128,7 +110,7 @@ gpu::gles2::GLES2Interface* TestContextProvider::ContextGL() {
 }
 
 gpu::ContextSupport* TestContextProvider::ContextSupport() {
-  return support();
+  return &support_;
 }
 
 class GrContext* TestContextProvider::GrContext() {

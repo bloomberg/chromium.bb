@@ -14,16 +14,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/test/failure_output_surface.h"
 #include "cc/test/fake_external_begin_frame_source.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/render_widget.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/fake_renderer_scheduler.h"
-#include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
@@ -82,20 +80,18 @@ class FakeRenderWidgetCompositorDelegate
             RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
         fallback);
     last_create_was_fallback_ = fallback;
-
     bool success = num_failures_ >= num_failures_before_success_;
-    if (!success && use_null_output_surface_)
-      return nullptr;
-
-    auto context_provider = cc::TestContextProvider::Create();
-    if (!success) {
-      context_provider->UnboundTestContext3d()->loseContextCHROMIUM(
-          GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
+    if (success) {
+      std::unique_ptr<cc::TestWebGraphicsContext3D> context =
+          cc::TestWebGraphicsContext3D::Create();
+      // Image support required for synchronous compositing.
+      context->set_support_image(true);
+      // Create delegating surface so that max_pending_frames = 1.
+      return cc::FakeOutputSurface::CreateDelegating3d(std::move(context));
     }
-
-    // Create delegating surface so that max_pending_frames = 1.
-    return cc::FakeOutputSurface::CreateDelegating3d(
-        std::move(context_provider));
+    return use_null_output_surface_
+               ? nullptr
+               : base::WrapUnique(new cc::FailureOutputSurface(true));
   }
 
   std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource()

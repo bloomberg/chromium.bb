@@ -121,16 +121,4 @@ void DisplayCompositor::DisplayOutputSurfaceLost() {
 void DisplayCompositor::DisplaySetMemoryPolicy(
     const cc::ManagedMemoryPolicy& policy) {}
 
-void DisplayCompositor::DisplayWillDrawAndSwap(
-    bool will_draw_and_swap,
-    const cc::RenderPassList& render_passes) {
-  // This notification is not relevant to our client outside of tests.
-}
-
-void DisplayCompositor::DisplayDidDrawAndSwap() {
-  // This notification is not relevant to our client outside of tests. We
-  // unblock the client from the DrawCallback when the surface is going to
-  // be drawn.
-}
-
 }  // namespace ui

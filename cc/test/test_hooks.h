@@ -22,7 +22,6 @@ class TestHooks : public AnimationDelegate {
   TestHooks();
   ~TestHooks() override;
 
-  // Compositor thread hooks.
   virtual void CreateResourceAndRasterBufferProvider(
       LayerTreeHostImpl* host_impl,
       std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
@@ -46,33 +45,22 @@ class TestHooks : public AnimationDelegate {
       LayerTreeHostImpl::FrameData* frame_data,
       DrawResult draw_result);
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) {}
+  // Note that this is called asynchronously from the LayerTreeHostImpl
+  // performing its draw, so you should record state you want to use here
+  // in DrawLayersOnThread() instead. For that reason this method does not
+  // receive a LayerTreeHostImpl pointer.
+  virtual void SwapBuffersCompleteOnThread() {}
   virtual void NotifyReadyToActivateOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyReadyToDrawOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyAllTileTasksCompleted(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
                                               const Tile* tile) {}
-  virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
-                                       bool visible) {}
   virtual void AnimateLayers(LayerTreeHostImpl* host_impl,
                              base::TimeTicks monotonic_time) {}
   virtual void UpdateAnimationState(LayerTreeHostImpl* host_impl,
                                     bool has_unfinished_animation) {}
   virtual void WillAnimateLayers(LayerTreeHostImpl* host_impl,
                                  base::TimeTicks monotonic_time) {}
-
-  // Asynchronous compositor thread hooks.
-  // These are called asynchronously from the LayerTreeHostImpl performing its
-  // draw, so you should record state you want to use here in
-  // DrawLayersOnThread() instead. For that reason these methods do not receive
-  // a LayerTreeHostImpl pointer.
-  virtual void DisplayReceivedCompositorFrameOnThread(
-      const CompositorFrame& frame) {}
-  virtual void DisplayWillDrawAndSwapOnThread(
-      bool will_draw_and_swap,
-      const RenderPassList& render_passes) {}
-  virtual void DisplayDidDrawAndSwapOnThread() {}
-
-  // Main thread hooks.
   virtual void ApplyViewportDeltas(
       const gfx::Vector2dF& inner_delta,
       const gfx::Vector2dF& outer_delta,
@@ -91,6 +79,8 @@ class TestHooks : public AnimationDelegate {
   virtual void DidCommit() {}
   virtual void DidCommitAndDrawFrame() {}
   virtual void DidCompleteSwapBuffers() {}
+  virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
+                                       bool visible) {}
   virtual void ScheduleComposite() {}
   virtual void DidActivateSyncTree() {}
 

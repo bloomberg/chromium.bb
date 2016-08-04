@@ -16,6 +16,7 @@
 #include "cc/layers/video_layer_impl.h"
 #include "cc/output/filter_operations.h"
 #include "cc/resources/single_release_callback.h"
+#include "cc/test/failure_output_surface.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -30,7 +31,6 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_delegating_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
@@ -80,35 +80,24 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     return TestWebGraphicsContext3D::Create();
   }
 
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
-      scoped_refptr<ContextProvider> compositor_context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider) override {
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
     if (times_to_fail_create_) {
       --times_to_fail_create_;
       ExpectCreateToFail();
-      auto test_compositor_context_provider = TestContextProvider::Create();
-      test_compositor_context_provider->UnboundTestContext3d()
-          ->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                                GL_INNOCENT_CONTEXT_RESET_ARB);
-      compositor_context_provider = std::move(test_compositor_context_provider);
+      return base::WrapUnique(new FailureOutputSurface(delegating_renderer()));
     }
-    return LayerTreeTest::CreateDelegatingOutputSurface(
-        std::move(compositor_context_provider),
-        std::move(worker_context_provider));
-  }
 
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
-      scoped_refptr<ContextProvider> compositor_context_provider) override {
     std::unique_ptr<TestWebGraphicsContext3D> context3d = CreateContext3d();
-    if (context_should_support_io_surface_) {
-      context3d->set_have_extension_io_surface(true);
-      context3d->set_have_extension_egl_image(true);
-    }
-
     base::AutoLock lock(context3d_lock_);
     context3d_ = context3d.get();
-    return LayerTreeTest::CreateDisplayOutputSurface(
-        TestContextProvider::Create(std::move(context3d)));
+
+    if (context_should_support_io_surface_) {
+      context3d_->set_have_extension_io_surface(true);
+      context3d_->set_have_extension_egl_image(true);
+    }
+
+    DCHECK(delegating_renderer());
+    return FakeOutputSurface::CreateDelegating3d(std::move(context3d));
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -189,15 +178,18 @@ class LayerTreeHostContextTestLostContextSucceeds
     if (async_output_surface_creation_) {
       MainThreadTaskRunner()->PostTask(
           FROM_HERE, base::Bind(&LayerTreeHostContextTestLostContextSucceeds::
-                                    AsyncRequestNewOutputSurface,
+                                    CreateAndSetOutputSurface,
                                 base::Unretained(this)));
     } else {
-      AsyncRequestNewOutputSurface();
+      CreateAndSetOutputSurface();
     }
   }
 
-  void AsyncRequestNewOutputSurface() {
-    LayerTreeHostContextTest::RequestNewOutputSurface();
+  void CreateAndSetOutputSurface() {
+    std::unique_ptr<OutputSurface> surface(
+        LayerTreeHostContextTest::CreateOutputSurface());
+    CHECK(surface);
+    layer_tree_host()->SetOutputSurface(std::move(surface));
   }
 
   void DidInitializeOutputSurface() override {
@@ -373,8 +365,9 @@ class LayerTreeHostClientNotVisibleDoesNotCreateOutputSurface
     EndTest();
   }
 
-  void RequestNewOutputSurface() override {
-    ADD_FAILURE() << "RequestNewOutputSurface() should not be called";
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
+    EXPECT_TRUE(false);
+    return nullptr;
   }
 
   void DidInitializeOutputSurface() override { EXPECT_TRUE(false); }
@@ -401,10 +394,16 @@ class LayerTreeHostClientTakeAwayOutputSurface
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void RequestNewOutputSurface() override {
-    if (layer_tree_host()->visible()) {
-      setos_counter_++;
-      LayerTreeHostContextTest::RequestNewOutputSurface();
-    }
+    if (layer_tree_host()->visible())
+      CreateAndSetOutputSurface();
+  }
+
+  void CreateAndSetOutputSurface() {
+    std::unique_ptr<OutputSurface> surface =
+        LayerTreeHostContextTest::CreateOutputSurface();
+    CHECK(surface);
+    setos_counter_++;
+    layer_tree_host()->SetOutputSurface(std::move(surface));
   }
 
   void HideAndReleaseOutputSurface() {
@@ -464,6 +463,11 @@ class MultipleCompositeDoesNotCreateOutputSurface
     layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(2));
   }
 
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
+    EXPECT_TRUE(false);
+    return nullptr;
+  }
+
   void DidInitializeOutputSurface() override { EXPECT_TRUE(false); }
 
   void AfterTest() override {}
@@ -496,20 +500,9 @@ class FailedCreateDoesNotCreateExtraOutputSurface
     EXPECT_LE(num_requests_, 2);
     if (num_requests_ > 1)
       return;
-    LayerTreeHostContextTest::RequestNewOutputSurface();
-  }
-
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
-      scoped_refptr<ContextProvider> compositor_context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider) override {
     ExpectCreateToFail();
-    auto test_compositor_context_provider = TestContextProvider::Create();
-    test_compositor_context_provider->UnboundTestContext3d()
-        ->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                              GL_INNOCENT_CONTEXT_RESET_ARB);
-    return LayerTreeTest::CreateDelegatingOutputSurface(
-        std::move(test_compositor_context_provider),
-        std::move(worker_context_provider));
+    layer_tree_host()->SetOutputSurface(
+        base::WrapUnique(new FailureOutputSurface(false)));
   }
 
   void BeginTest() override {
@@ -562,7 +555,8 @@ class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
 
   void CreateAndSetOutputSurface() {
     creating_output_ = true;
-    LayerTreeHostContextTest::RequestNewOutputSurface();
+    layer_tree_host()->SetOutputSurface(
+        LayerTreeHostContextTest::CreateOutputSurface());
   }
 
   void BeginTest() override {
@@ -594,7 +588,8 @@ class LayerTreeHostContextTestAvoidUnnecessaryComposite
   }
 
   void RequestNewOutputSurface() override {
-    LayerTreeHostContextTest::RequestNewOutputSurface();
+    layer_tree_host()->SetOutputSurface(
+        LayerTreeHostContextTest::CreateOutputSurface());
     EndTest();
   }
 
@@ -1041,14 +1036,14 @@ class LayerTreeHostContextTestDontUseLostResources
     return draw_result;
   }
 
-  void RequestNewOutputSurface() override {
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
     // This will get called twice:
     // First when we create the initial output surface...
     if (layer_tree_host()->source_frame_number() > 0) {
       // ... and then again after we forced the context to be lost.
       lost_context_ = true;
     }
-    LayerTreeHostContextTest::RequestNewOutputSurface();
+    return LayerTreeHostContextTest::CreateOutputSurface();
   }
 
   void DidCommitAndDrawFrame() override {

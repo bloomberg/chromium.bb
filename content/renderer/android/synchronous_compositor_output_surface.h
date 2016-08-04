@@ -143,10 +143,6 @@ class SynchronousCompositorOutputSurface
     void DisplayOutputSurfaceLost() override {}
     void DisplaySetMemoryPolicy(
         const cc::ManagedMemoryPolicy& policy) override {}
-    void DisplayWillDrawAndSwap(
-        bool will_draw_and_swap,
-        const cc::RenderPassList& render_passes) override {}
-    void DisplayDidDrawAndSwap() override {}
   };
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface

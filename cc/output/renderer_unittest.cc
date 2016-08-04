@@ -42,8 +42,7 @@ class MockContextProvider : public TestContextProvider {
  public:
   explicit MockContextProvider(
       std::unique_ptr<TestWebGraphicsContext3D> context)
-      : TestContextProvider(base::MakeUnique<TestContextSupport>(),
-                            base::MakeUnique<TestGLES2Interface>(),
+      : TestContextProvider(base::MakeUnique<TestGLES2Interface>(),
                             std::move(context)) {}
   MOCK_METHOD0(DeleteCachedResources, void());
 

@@ -46,8 +46,9 @@ class FakeOutputSurface : public OutputSurface {
 
   static std::unique_ptr<FakeOutputSurface> Create3d(
       std::unique_ptr<TestGLES2Interface> gl) {
-    return base::WrapUnique(new FakeOutputSurface(
-        TestContextProvider::Create(std::move(gl)), nullptr, false));
+    return base::WrapUnique(
+        new FakeOutputSurface(TestContextProvider::Create(std::move(gl)),
+                              TestContextProvider::CreateWorker(), false));
   }
 
   static std::unique_ptr<FakeOutputSurface> Create3d(

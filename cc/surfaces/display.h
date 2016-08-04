@@ -115,7 +115,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   }
 
   bool has_scheduler() const { return !!scheduler_; }
-  DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
 
  private:
   void InitializeRenderer();
@@ -125,8 +124,8 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
   const RendererSettings settings_;
 
-  DisplayClient* client_ = nullptr;
-  SurfaceManager* surface_manager_ = nullptr;
+  DisplayClient* client_;
+  SurfaceManager* surface_manager_;
   uint32_t compositor_surface_namespace_;
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;

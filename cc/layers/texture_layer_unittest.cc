@@ -34,7 +34,6 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
-#include "cc/test/test_delegating_output_surface.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
@@ -632,29 +631,12 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_SecondImplRefShortcut) {
 
 class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
  public:
-  TextureLayerImplWithMailboxThreadedCallback() = default;
-
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
-      scoped_refptr<ContextProvider> compositor_context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider) override {
-    bool synchronous_composite =
-        !HasImplThread() &&
-        !layer_tree_host()->settings().single_thread_proxy_scheduler;
-    // Allow relaim resources for this test so that mailboxes in the display
-    // will be returned inside the commit that replaces them.
-    bool force_disable_reclaim_resources = false;
-    return base::MakeUnique<TestDelegatingOutputSurface>(
-        compositor_context_provider, std::move(worker_context_provider),
-        CreateDisplayOutputSurface(compositor_context_provider),
-        shared_bitmap_manager(), gpu_memory_buffer_manager(),
-        layer_tree_host()->settings().renderer_settings, ImplThreadTaskRunner(),
-        synchronous_composite, force_disable_reclaim_resources);
-  }
+  TextureLayerImplWithMailboxThreadedCallback()
+      : callback_count_(0),
+        commit_count_(0) {}
 
   // Make sure callback is received on main and doesn't block the impl thread.
-  void ReleaseCallback(char mailbox_char,
-                       const gpu::SyncToken& sync_token,
-                       bool lost_resource) {
+  void ReleaseCallback(const gpu::SyncToken& sync_token, bool lost_resource) {
     EXPECT_EQ(true, main_thread_.CalledOnValidThread());
     EXPECT_FALSE(lost_resource);
     ++callback_count_;
@@ -665,15 +647,12 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     std::unique_ptr<SingleReleaseCallback> callback =
         SingleReleaseCallback::Create(base::Bind(
             &TextureLayerImplWithMailboxThreadedCallback::ReleaseCallback,
-            base::Unretained(this), mailbox_char));
+            base::Unretained(this)));
     layer_->SetTextureMailbox(
         TextureMailbox(MailboxFromChar(mailbox_char),
                        SyncTokenFromUInt(static_cast<uint32_t>(mailbox_char)),
                        GL_TEXTURE_2D),
         std::move(callback));
-    // Damage the layer so we send a new frame with the new mailbox to the
-    // Display compositor.
-    layer_->SetNeedsDisplay();
   }
 
   void BeginTest() override {
@@ -724,17 +703,32 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         layer_->SetTextureMailbox(TextureMailbox(), nullptr);
         break;
       case 4:
+        // With impl painting, the texture mailbox will still be on the impl
+        // thread when the commit finishes, because the layer is not drawble
+        // when it has no texture mailbox, and thus does not block the commit
+        // on activation. So, we wait for activation.
+        // TODO(danakj): fix this. crbug.com/277953
+        layer_tree_host()->SetNeedsCommit();
+        break;
+      case 5:
         EXPECT_EQ(4, callback_count_);
         // Restore a mailbox for the next step.
         SetMailbox('5');
         break;
-      case 5:
+      case 6:
         // Case #5: remove layer from tree. Callback should *not* be called, the
         // mailbox is returned to the main thread.
         EXPECT_EQ(4, callback_count_);
         layer_->RemoveFromParent();
         break;
-      case 6:
+      case 7:
+        // With impl painting, the texture mailbox will still be on the impl
+        // thread when the commit finishes, because the layer is not around to
+        // block the commit on activation anymore. So, we wait for activation.
+        // TODO(danakj): fix this. crbug.com/277953
+        layer_tree_host()->SetNeedsCommit();
+        break;
+      case 8:
         EXPECT_EQ(4, callback_count_);
         // Resetting the mailbox will call the callback now.
         layer_->SetTextureMailbox(TextureMailbox(), nullptr);
@@ -751,8 +745,8 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
 
  private:
   base::ThreadChecker main_thread_;
-  int callback_count_ = 0;
-  int commit_count_ = 0;
+  int callback_count_;
+  int commit_count_;
   scoped_refptr<Layer> root_;
   scoped_refptr<TextureLayer> layer_;
 };

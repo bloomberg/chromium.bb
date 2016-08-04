@@ -197,7 +197,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
     return draw_result;
   }
 
-  void DisplayDidDrawAndSwapOnThread() override {
+  void SwapBuffersCompleteOnThread() override {
     ++did_swap_;
     EXPECT_EQ(expect_swap_, did_swap_);
   }

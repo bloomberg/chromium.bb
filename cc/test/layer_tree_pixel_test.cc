@@ -37,49 +37,27 @@ LayerTreePixelTest::LayerTreePixelTest()
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
-std::unique_ptr<TestDelegatingOutputSurface>
-    LayerTreePixelTest::CreateDelegatingOutputSurface(
-        scoped_refptr<ContextProvider>,
-        scoped_refptr<ContextProvider>) {
+void LayerTreePixelTest::InitializeSettings(LayerTreeSettings* settings) {
+  // The PixelTestDelegatingOutputSurface will provide a BeginFrameSource.
+  settings->use_output_surface_begin_frame_source = true;
+}
+
+std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
+  // Always test Webview shenanigans.
+  gfx::Size surface_expansion_size(40, 60);
+
   scoped_refptr<TestInProcessContextProvider> compositor_context_provider;
   scoped_refptr<TestInProcessContextProvider> worker_context_provider;
+  scoped_refptr<TestInProcessContextProvider> display_context_provider;
+  std::unique_ptr<PixelTestOutputSurface> display_output_surface;
   if (test_type_ == PIXEL_TEST_GL) {
     compositor_context_provider = new TestInProcessContextProvider(nullptr);
     worker_context_provider =
         new TestInProcessContextProvider(compositor_context_provider.get());
-  }
-  bool synchronous_composite =
-      !HasImplThread() &&
-      !layer_tree_host()->settings().single_thread_proxy_scheduler;
-  // Allow resource reclaiming for partial raster tests to get back
-  // resources from the Display.
-  bool force_disable_reclaim_resources = false;
-  auto delegating_output_surface =
-      base::MakeUnique<TestDelegatingOutputSurface>(
-          compositor_context_provider, std::move(worker_context_provider),
-          CreateDisplayOutputSurface(compositor_context_provider),
-          shared_bitmap_manager(), gpu_memory_buffer_manager(),
-          RendererSettings(), ImplThreadTaskRunner(), synchronous_composite,
-          force_disable_reclaim_resources);
-  delegating_output_surface->display()->SetEnlargePassTextureAmountForTesting(
-      enlarge_texture_amount_);
-  return delegating_output_surface;
-}
-
-std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateDisplayOutputSurface(
-    scoped_refptr<ContextProvider> compositor_context_provider) {
-  // Always test Webview shenanigans.
-  gfx::Size surface_expansion_size(40, 60);
-
-  std::unique_ptr<PixelTestOutputSurface> display_output_surface;
-  if (test_type_ == PIXEL_TEST_GL) {
+    display_context_provider = new TestInProcessContextProvider(nullptr);
     bool flipped_output_surface = false;
     display_output_surface = base::MakeUnique<PixelTestOutputSurface>(
-        // Pixel tests use a separate context for the Display to more closely
-        // mimic texture transport from the renderer process to the Display
-        // compositor.
-        make_scoped_refptr(new TestInProcessContextProvider(nullptr)), nullptr,
-        flipped_output_surface);
+        std::move(display_context_provider), nullptr, flipped_output_surface);
   } else {
     std::unique_ptr<PixelTestSoftwareOutputDevice> software_output_device(
         new PixelTestSoftwareOutputDevice);
@@ -88,7 +66,20 @@ std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateDisplayOutputSurface(
         std::move(software_output_device));
   }
   display_output_surface->set_surface_expansion_size(surface_expansion_size);
-  return std::move(display_output_surface);
+
+  auto* task_runner = ImplThreadTaskRunner();
+  bool synchronous_composite =
+      !HasImplThread() &&
+      !layer_tree_host()->settings().single_thread_proxy_scheduler;
+  auto delegating_output_surface =
+      base::MakeUnique<TestDelegatingOutputSurface>(
+          std::move(compositor_context_provider),
+          std::move(worker_context_provider), std::move(display_output_surface),
+          shared_bitmap_manager(), gpu_memory_buffer_manager(),
+          RendererSettings(), task_runner, synchronous_composite);
+  delegating_output_surface->display()->SetEnlargePassTextureAmountForTesting(
+      enlarge_texture_amount_);
+  return std::move(delegating_output_surface);
 }
 
 std::unique_ptr<CopyOutputRequest>

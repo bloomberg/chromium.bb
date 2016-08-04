@@ -75,7 +75,7 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame frame) {
 
   factory_.SubmitCompositorFrame(
       delegated_surface_id_, std::move(frame),
-      base::Bind(&SurfaceDisplayOutputSurface::DidDrawCallback,
+      base::Bind(&SurfaceDisplayOutputSurface::SwapBuffersComplete,
                  base::Unretained(this)));
 }
 
@@ -153,19 +153,7 @@ void SurfaceDisplayOutputSurface::DisplaySetMemoryPolicy(
   SetMemoryPolicy(policy);
 }
 
-void SurfaceDisplayOutputSurface::DisplayWillDrawAndSwap(
-    bool will_draw_and_swap,
-    const RenderPassList& render_passes) {
-  // This notification is not relevant to our client outside of tests.
-}
-
-void SurfaceDisplayOutputSurface::DisplayDidDrawAndSwap() {
-  // This notification is not relevant to our client outside of tests. We
-  // unblock the client from DidDrawCallback() when the surface is going to
-  // be drawn.
-}
-
-void SurfaceDisplayOutputSurface::DidDrawCallback() {
+void SurfaceDisplayOutputSurface::SwapBuffersComplete() {
   // TODO(danakj): Why the lost check?
   if (!output_surface_lost_)
     client_->DidSwapBuffersComplete();
