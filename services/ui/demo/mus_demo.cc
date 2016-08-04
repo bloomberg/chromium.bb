@@ -65,7 +65,7 @@ MusDemo::~MusDemo() {
 }
 
 void MusDemo::OnStart(const shell::Identity& identity) {
-  GpuService::Initialize(connector());
+  gpu_service_ = GpuService::Initialize(connector());
   window_tree_client_ = new WindowTreeClient(this, this, nullptr);
   window_tree_client_->ConnectAsWindowManager(connector());
 }

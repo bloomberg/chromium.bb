@@ -28,6 +28,7 @@ class AuraInit;
 
 namespace ui {
 class Event;
+class GpuService;
 class WindowTreeClient;
 }
 
@@ -108,6 +109,7 @@ class WindowManagerApplication
   std::vector<mojo::InterfaceRequest<mojom::UserWindowController>>
       user_window_controller_requests_;
 
+  std::unique_ptr<ui::GpuService> gpu_service_;
   std::unique_ptr<WindowManager> window_manager_;
 
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;

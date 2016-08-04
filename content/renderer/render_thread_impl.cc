@@ -644,7 +644,8 @@ void RenderThreadImpl::Init(
 
 #if defined(USE_AURA)
   if (IsRunningInMash())
-    ui::GpuService::Initialize(GetMojoShellConnection()->GetConnector());
+    gpu_service_ =
+        ui::GpuService::Initialize(GetMojoShellConnection()->GetConnector());
 #endif
 
   InitializeWebKit(resource_task_queue);
@@ -1803,7 +1804,7 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
                                     gpu_memory_buffer_manager());
   } else {
 #if defined(USE_AURA)
-    gpu_channel_ = ui::GpuService::GetInstance()->EstablishGpuChannelSync();
+    gpu_channel_ = gpu_service_->EstablishGpuChannelSync();
 #else
     NOTREACHED();
 #endif

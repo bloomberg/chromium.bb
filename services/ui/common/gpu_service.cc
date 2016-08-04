@@ -47,21 +47,18 @@ GpuService::GpuService(shell::Connector* connector)
 
 GpuService::~GpuService() {
   DCHECK(IsMainThread());
+  DCHECK_EQ(this, g_gpu_service);
   if (gpu_channel_)
     gpu_channel_->DestroyChannel();
+  g_gpu_service = nullptr;
 }
 
 // static
-void GpuService::Initialize(shell::Connector* connector) {
+std::unique_ptr<GpuService> GpuService::Initialize(
+    shell::Connector* connector) {
   DCHECK(!g_gpu_service);
   g_gpu_service = new GpuService(connector);
-}
-
-// static
-void GpuService::Terminate() {
-  DCHECK(g_gpu_service);
-  delete g_gpu_service;
-  g_gpu_service = nullptr;
+  return base::WrapUnique(g_gpu_service);
 }
 
 // static
