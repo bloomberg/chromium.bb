@@ -621,28 +621,6 @@ TEST_F('CrSettingsLanguagesPageTest', 'LanguagesPage', function() {
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
-function CrSettingsRadioGroupTest() {}
-
-CrSettingsRadioGroupTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://md-settings/controls/settings_radio_group.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'radio_group_tests.js',
-  ]),
-};
-
-TEST_F('CrSettingsRadioGroupTest', 'All', function() {
-  mocha.run();
-});
-
-/**
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
 function CrSettingsRouteTest() {}
 
 CrSettingsRouteTest.prototype = {

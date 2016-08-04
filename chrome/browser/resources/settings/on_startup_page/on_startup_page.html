@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="/controls/controlled_radio_button.html">
 <link rel="import" href="/controls/settings_radio_group.html">
 <link rel="import" href="/on_startup_page/startup_urls_page.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -11,15 +11,18 @@
     <div class="settings-box block first">
       <settings-radio-group id="onStartupRadioGroup"
           pref="{{prefs.session.restore_on_startup}}">
-        <paper-radio-button name="[[prefValues_.OPEN_NEW_TAB]]">
+        <controlled-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"
+            pref="[[prefs.session.restore_on_startup]]">
           $i18n{onStartupOpenNewTab}
-        </paper-radio-button>
-        <paper-radio-button name="[[prefValues_.CONTINUE]]">
+        </controlled-radio-button>
+        <controlled-radio-button name="[[prefValues_.CONTINUE]]"
+            pref="[[prefs.session.restore_on_startup]]">
           $i18n{onStartupContinue}
-        </paper-radio-button>
-        <paper-radio-button name="[[prefValues_.OPEN_SPECIFIC]]">
+        </controlled-radio-button>
+        <controlled-radio-button name="[[prefValues_.OPEN_SPECIFIC]]"
+            pref="[[prefs.session.restore_on_startup]]">
           $i18n{onStartupOpenSpecific}
-        </paper-radio-button>
+        </controlled-radio-button>
       </settings-radio-group>
     </div>
     <template is="dom-if"

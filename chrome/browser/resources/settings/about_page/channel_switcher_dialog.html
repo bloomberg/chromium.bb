@@ -13,6 +13,9 @@
     <dialog is="cr-dialog" id="dialog">
       <div class="title">$i18n{aboutChangeChannel}</div>
       <div class="body">
+        <!-- TODO(dbeam): this can be policy-controlled. Show this in the UI.
+             https://www.chromium.org/administrators/policy-list-3#ChromeOsReleaseChannel
+        -->
         <paper-radio-group
             on-paper-radio-group-changed="onChannelSelectionChanged_">
           <paper-radio-button name="[[browserChannelEnum_.STABLE]]">

@@ -15,15 +15,9 @@
 Polymer({
   is: 'settings-radio-group',
 
-  behaviors: [CrPolicyPrefBehavior, PrefControlBehavior],
+  behaviors: [PrefControlBehavior],
 
   properties: {
-    disabled_: {
-      observer: 'disabledChanged_',
-      type: Boolean,
-      value: false,
-    },
-
     /**
      * IronSelectableBehavior selected attribute.
      */
@@ -41,16 +35,7 @@ Polymer({
   /** @private */
   prefChanged_: function() {
     var pref = /** @type {!chrome.settingsPrivate.PrefObject} */(this.pref);
-    this.disabled_ = this.isPrefPolicyControlled(pref);
     this.selected = Settings.PrefUtil.prefToString(pref);
-  },
-
-  /** @private */
-  disabledChanged_: function() {
-    var radioButtons = this.queryAllEffectiveChildren('paper-radio-button');
-    for (var i = 0; i < radioButtons.length; ++i) {
-      radioButtons[i].disabled = this.disabled_;
-    }
   },
 
   /** @private */

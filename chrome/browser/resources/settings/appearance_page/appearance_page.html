@@ -4,8 +4,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="/appearance_page/appearance_browser_proxy.html">
+<link rel="import" href="/controls/controlled_radio_button.html">
 <link rel="import" href="/controls/settings_dropdown_menu.html">
 <link rel="import" href="/controls/settings_input.html">
 <link rel="import" href="/controls/settings_radio_group.html">
@@ -72,16 +72,21 @@
           <div class="list-frame"
               hidden="[[!pageVisibility.homeButton]]">
             <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
-              <paper-radio-button class="list-item" name="true">
+              <controlled-radio-button class="list-item" name="true"
+                  pref="[[prefs.homepage_is_newtabpage]]">
                 $i18n{homePageNtp}
-              </paper-radio-button>
-              <paper-radio-button class="list-item" name="false">
+              </controlled-radio-button>
+              <controlled-radio-button class="list-item" name="false"
+                  pref="[[prefs.homepage_is_newtabpage]]">
                 $i18n{other}
+                <!-- TODO(dbeam): this can show double indicators when both
+                     homepage and whether to use the NTP as the homepage are
+                     managed. -->
                 <settings-input no-label-float pref="{{prefs.homepage}}"
                     label="$i18n{exampleDotCom}"
                     stop-keyboard-event-propagation>
                 </settings-input>
-              </paper-radio-button>
+              </controlled-radio-button>
             </settings-radio-group>
           </div>
         </template>
