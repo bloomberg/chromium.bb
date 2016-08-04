@@ -31,32 +31,35 @@
 #ifndef WorkerThreadableLoader_h
 #define WorkerThreadableLoader_h
 
+#include "core/dom/ExecutionContextTask.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/ThreadableLoaderClientWrapper.h"
+#include "core/workers/WorkerThread.h"
+#include "core/workers/WorkerThreadLifecycleObserver.h"
+#include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"
-#include "platform/weborigin/Referrer.h"
-#include "wtf/Functional.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
 namespace blink {
 
-class ExecutionContextTask;
 class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
-class WaitableEvent;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
 struct CrossThreadResourceRequestData;
 
+// TODO(yhirano): Draw a diagram to illustrate the class relationship.
+// TODO(yhirano): Rename inner classes so that readers can see in which thread
+// they are living easily.
 class WorkerThreadableLoader final : public ThreadableLoader {
     USING_FAST_MALLOC(WorkerThreadableLoader);
 public:
@@ -69,9 +72,7 @@ public:
     ~WorkerThreadableLoader() override;
 
     void start(const ResourceRequest&) override;
-
     void overrideTimeout(unsigned long timeout) override;
-
     void cancel() override;
 
 private:
@@ -80,132 +81,105 @@ private:
         LoadAsynchronously
     };
 
-    // Creates a loader on the main thread and bridges communication between
-    // the main thread and the worker context's thread where WorkerThreadableLoader runs.
-    //
-    // Regarding the bridge and lifetimes of items used in callbacks, there are a few cases:
-    //
-    // all cases. All tasks posted from the worker context's thread are ok because
-    //    the last task posted always is "mainThreadDestroy", so MainThreadBridge is
-    //    around for all tasks that use it on the main thread.
-    //
-    // case 1. worker.terminate is called.
-    //    In this case, no more tasks are posted from the worker object's thread to the worker
-    //    context's thread -- WorkerGlobalScopeProxy implementation enforces this.
-    //
-    // case 2. xhr gets aborted and the worker context continues running.
-    //    The ThreadableLoaderClientWrapper has the underlying client cleared, so no more calls
-    //    go through it.  All tasks posted from the worker object's thread to the worker context's
-    //    thread do "ThreadableLoaderClientWrapper::ref" (automatically inside of the cross thread copy
-    //    done in createCrossThreadTask), so the ThreadableLoaderClientWrapper instance is there until all
-    //    tasks are executed.
-    class MainThreadBridgeBase : public ThreadableLoaderClient {
+    // A TaskForwarder forwards an ExecutionContextTask to the worker thread.
+    class TaskForwarder : public GarbageCollectedFinalized<TaskForwarder> {
     public:
-        // All executed on the worker context's thread.
-        MainThreadBridgeBase(ThreadableLoaderClientWrapper*, PassRefPtr<WorkerLoaderProxy>);
-        virtual void start(const ResourceRequest&, const WorkerGlobalScope&) = 0;
+        virtual ~TaskForwarder() {}
+        virtual void forwardTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
+        virtual void forwardTaskWithDoneSignal(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
+        virtual void abort() = 0;
+
+        DEFINE_INLINE_VIRTUAL_TRACE() {}
+    };
+    class AsyncTaskForwarder;
+    struct TaskWithLocation;
+    class WaitableEventWithTasks;
+    class SyncTaskForwarder;
+
+    class Peer;
+    // A Bridge instance lives in the worker thread and requests the associated
+    // Peer (which lives in the main thread) to process loading tasks.
+    class Bridge final : public GarbageCollectedFinalized<Bridge> {
+    public:
+        Bridge(ThreadableLoaderClientWrapper*, PassRefPtr<WorkerLoaderProxy>, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, BlockingBehavior);
+        ~Bridge();
+
+        void start(const ResourceRequest&, const WorkerGlobalScope&);
         void overrideTimeout(unsigned long timeoutMilliseconds);
         void cancel();
         void destroy();
 
-        // All executed on the main thread.
-        void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) final;
-        void didReceiveResponse(unsigned long identifier, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) final;
-        void didReceiveData(const char*, unsigned dataLength) final;
-        void didDownloadData(int dataLength) final;
-        void didReceiveCachedMetadata(const char*, int dataLength) final;
-        void didFinishLoading(unsigned long identifier, double finishTime) final;
-        void didFail(const ResourceError&) final;
-        void didFailAccessControlCheck(const ResourceError&) final;
-        void didFailRedirectCheck() final;
-        void didReceiveResourceTiming(const ResourceTimingInfo&) final;
+        void didStart(Peer*);
 
-    protected:
-        ~MainThreadBridgeBase() override;
+        // This getter function is thread safe.
+        ThreadableLoaderClientWrapper* clientWrapper() { return m_clientWrapper.get(); }
 
-        // Posts a task to the main thread to run mainThreadCreateLoader().
-        void createLoaderInMainThread(const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        // Posts a task to the main thread to run mainThreadStart();
-        void startInMainThread(const ResourceRequest&, const WorkerGlobalScope&);
-
-        WorkerLoaderProxy* loaderProxy()
-        {
-            return m_loaderProxy.get();
-        }
+        DECLARE_VIRTUAL_TRACE();
 
     private:
-        // The following methods are overridden by the subclasses to implement
-        // code to forward did.* method invocations to the worker context's
-        // thread which is specialized for sync and async case respectively.
-        virtual void forwardTaskToWorker(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
-        virtual void forwardTaskToWorkerOnLoaderDone(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
+        void cancelPeer();
 
-        // All executed on the main thread.
-        void mainThreadCreateLoader(ThreadableLoaderOptions, ResourceLoaderOptions, ExecutionContext*);
-        void mainThreadStart(std::unique_ptr<CrossThreadResourceRequestData>);
-        void mainThreadDestroy(ExecutionContext*);
-        void mainThreadOverrideTimeout(unsigned long timeoutMilliseconds, ExecutionContext*);
-        void mainThreadCancel(ExecutionContext*);
+        const Member<ThreadableLoaderClientWrapper> m_clientWrapper;
+        const RefPtr<WorkerLoaderProxy> m_loaderProxy;
+        const ThreadableLoaderOptions m_threadableLoaderOptions;
+        const ResourceLoaderOptions m_resourceLoaderOptions;
+        const BlockingBehavior m_blockingBehavior;
 
-        // Only to be used on the main thread.
+        // |*m_peer| lives in the main thread.
+        CrossThreadPersistent<Peer> m_peer;
+    };
+
+    // A Peer instance lives in the main thread. It is a ThreadableLoaderClient
+    // for a DocumentThreadableLoader and forward notifications to the
+    // ThreadableLoaderClientWrapper which lives in the worker thread.
+    class Peer final : public GarbageCollectedFinalized<Peer>, public ThreadableLoaderClient, public WorkerThreadLifecycleObserver {
+        USING_GARBAGE_COLLECTED_MIXIN(Peer);
+    public:
+        static void createAndStart(
+            Bridge*,
+            PassRefPtr<WorkerLoaderProxy>,
+            WorkerThreadLifecycleContext*,
+            std::unique_ptr<CrossThreadResourceRequestData>,
+            const ThreadableLoaderOptions&,
+            const ResourceLoaderOptions&,
+            PassRefPtr<WaitableEventWithTasks>,
+            ExecutionContext*);
+        ~Peer() override;
+
+        void overrideTimeout(unsigned long timeoutMillisecond);
+        void cancel();
+
+        void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
+        void didReceiveResponse(unsigned long identifier, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
+        void didReceiveData(const char*, unsigned dataLength) override;
+        void didDownloadData(int dataLength) override;
+        void didReceiveCachedMetadata(const char*, int dataLength) override;
+        void didFinishLoading(unsigned long identifier, double finishTime) override;
+        void didFail(const ResourceError&) override;
+        void didFailAccessControlCheck(const ResourceError&) override;
+        void didFailRedirectCheck() override;
+        void didReceiveResourceTiming(const ResourceTimingInfo&) override;
+
+        void contextDestroyed() override;
+
+        DECLARE_TRACE();
+
+    private:
+        Peer(TaskForwarder*, WorkerThreadLifecycleContext*);
+        void start(Document&, std::unique_ptr<CrossThreadResourceRequestData>, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+
+        Member<TaskForwarder> m_forwarder;
         std::unique_ptr<ThreadableLoader> m_mainThreadLoader;
 
-        // |m_workerClientWrapper| holds an pointer created on the worker
-        // thread, and |this| instance is created on the main thread.
-        CrossThreadPersistent<ThreadableLoaderClientWrapper> m_workerClientWrapper;
-
-        // Used on the worker context thread.
-        RefPtr<WorkerLoaderProxy> m_loaderProxy;
-    };
-
-    class MainThreadAsyncBridge final : public MainThreadBridgeBase {
-    public:
-        MainThreadAsyncBridge(WorkerGlobalScope&, ThreadableLoaderClientWrapper*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        void start(const ResourceRequest&, const WorkerGlobalScope&) override;
-
-    private:
-        ~MainThreadAsyncBridge() override;
-
-        void forwardTaskToWorker(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
-        void forwardTaskToWorkerOnLoaderDone(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
-    };
-
-    class MainThreadSyncBridge final : public MainThreadBridgeBase {
-    public:
-        MainThreadSyncBridge(WorkerGlobalScope&, ThreadableLoaderClientWrapper*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        void start(const ResourceRequest&, const WorkerGlobalScope&) override;
-
-    private:
-        struct ClientTask {
-            WebTraceLocation m_location;
-            std::unique_ptr<ExecutionContextTask> m_task;
-
-            ClientTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
-            ~ClientTask();
-
-            ClientTask(ClientTask&&);
-        };
-
-        ~MainThreadSyncBridge() override;
-
-        void forwardTaskToWorker(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
-        void forwardTaskToWorkerOnLoaderDone(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
-
-        bool m_done;
-        std::unique_ptr<WaitableEvent> m_loaderDoneEvent;
-        // Thread-safety: |m_clientTasks| can be written (i.e. Closures are added)
-        // on the main thread only before |m_loaderDoneEvent| is signaled and can be read
-        // on the worker context thread only after |m_loaderDoneEvent| is signaled.
-        Vector<ClientTask> m_clientTasks;
-        Mutex m_lock;
+        // |*m_clientWrapper| lives in the worker thread.
+        CrossThreadWeakPersistent<ThreadableLoaderClientWrapper> m_clientWrapper;
     };
 
     WorkerThreadableLoader(WorkerGlobalScope&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, BlockingBehavior);
 
     Persistent<WorkerGlobalScope> m_workerGlobalScope;
     const Persistent<ThreadableLoaderClientWrapper> m_workerClientWrapper;
-
-    MainThreadBridgeBase* m_bridge;
+    const Persistent<Bridge> m_bridge;
 };
 
 } // namespace blink
