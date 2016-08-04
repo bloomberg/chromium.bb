@@ -161,10 +161,7 @@ Button* TouchSelectionMenuRunnerViews::Menu::CreateButton(
   LabelButton* button = new LabelButton(this, label);
   button->SetMinSize(gfx::Size(kMenuButtonMinWidth, kMenuButtonMinHeight));
   button->SetFocusForPlatform();
-  const gfx::FontList& font_list =
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::SmallFont);
-  button->SetFontList(font_list);
+  button->AdjustFontSize(ui::ResourceBundle::kSmallFontDelta);
   button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   button->set_tag(tag);
   return button;

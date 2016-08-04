@@ -140,9 +140,7 @@ void MultiprofilesIntroView::InitDialog() {
   no_show_checkbox_.reset(new views::Checkbox(
       l10n_util::GetStringUTF16(IDS_MULTIPROFILES_INTRO_NOSHOW_AGAIN)));
   no_show_checkbox_->SetChecked(true);
-  no_show_checkbox_->SetFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::MediumFont));
+  no_show_checkbox_->AdjustFontSize(ui::ResourceBundle::kMediumFontDelta);
   no_show_checkbox_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   grid_layout->StartRow(0, 0);
   grid_layout->AddView(no_show_checkbox_.get());
