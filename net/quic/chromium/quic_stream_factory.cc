@@ -76,6 +76,7 @@ enum QuicConnectionMigrationStatus {
   MIGRATION_STATUS_SUCCESS,
   MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
   MIGRATION_STATUS_DISABLED,
+  MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
   MIGRATION_STATUS_MAX
 };
 
@@ -1472,11 +1473,9 @@ void QuicStreamFactory::MaybeMigrateSingleSession(
       FindAlternateNetwork(session->GetDefaultSocket()->GetBoundNetwork());
   if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
     // No alternate network found.
-    // TODO (jri): Add histogram for this failure case.
-    scoped_event_log.net_log().AddEvent(
-        NetLog::TYPE_QUIC_CONNECTION_MIGRATION_FAILURE,
-        base::Bind(&NetLogQuicConnectionMigrationFailureCallback,
-                   session->connection_id(), "No new network"));
+    HistogramAndLogMigrationFailure(
+        scoped_event_log.net_log(), MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
+        session->connection_id(), "No alternate network found");
     return;
   }
   OnSessionGoingAway(session);

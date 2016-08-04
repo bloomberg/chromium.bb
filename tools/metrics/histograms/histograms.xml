@@ -89012,6 +89012,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="SUCCESS"/>
   <int value="5" label="NON_MIGRATABLE_STREAM"/>
   <int value="6" label="DISABLED"/>
+  <int value="7" label="MIGRATION_STATUS_NO_ALTERNATE_NETWORK"/>
 </enum>
 
 <enum name="QuicDisabledReason" type="int">
