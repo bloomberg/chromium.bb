@@ -9,6 +9,7 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test_utils.h"
@@ -206,6 +207,66 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
       web_contents, "window.domAutomationController.send(window.testStatus);",
       &result));
   EXPECT_EQ("success", result);
+}
+
+class FramesExtensionBindingsApiTest : public ExtensionBindingsApiTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionBindingsApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisablePopupBlocking);
+  }
+};
+
+// This tests that web pages with iframes or child windows pointing at
+// chrome-extenison:// urls, both web_accessible and nonexistent pages, don't
+// get improper extensions bindings injected while they briefly still point at
+// about:blank and are still scriptable by their parent.
+//
+// The general idea is to load up 2 extensions, one which listens for external
+// messages ("receiver") and one which we'll try first faking messages from in
+// the web page's iframe, as well as actually send a message from later
+// ("sender").
+IN_PROC_BROWSER_TEST_F(FramesExtensionBindingsApiTest, FramesBeforeNavigation) {
+  // Load the sender and receiver extensions, and make sure they are ready.
+  ExtensionTestMessageListener sender_ready("sender_ready", true);
+  const Extension* sender = LoadExtension(
+      test_data_dir_.AppendASCII("bindings").AppendASCII("message_sender"));
+  ASSERT_NE(nullptr, sender);
+  ASSERT_TRUE(sender_ready.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener receiver_ready("receiver_ready", false);
+  const Extension* receiver =
+      LoadExtension(test_data_dir_.AppendASCII("bindings")
+                        .AppendASCII("external_message_listener"));
+  ASSERT_NE(nullptr, receiver);
+  ASSERT_TRUE(receiver_ready.WaitUntilSatisfied());
+
+  // Load the web page which tries to impersonate the sender extension via
+  // scripting iframes/child windows before they finish navigating to pages
+  // within the sender extension.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/extensions/api_test/bindings/frames_before_navigation.html"));
+
+  bool page_success = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetWebContentsAt(0), "getResult()",
+      &page_success));
+  EXPECT_TRUE(page_success);
+
+  // Reply to |sender|, causing it to send a message over to |receiver|, and
+  // then ask |receiver| for the total message count. It should be 1 since
+  // |receiver| should not have received any impersonated messages.
+  sender_ready.Reply(receiver->id());
+  int message_count = 0;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      ProcessManager::Get(profile())
+          ->GetBackgroundHostForExtension(receiver->id())
+          ->host_contents(),
+      "getMessageCountAfterReceivingRealSenderMessage()", &message_count));
+  EXPECT_EQ(1, message_count);
 }
 
 }  // namespace

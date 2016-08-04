@@ -347,6 +347,10 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     return GetURLForPath("www.chromium.org", "/chromium.org.html");
   }
 
+  GURL popup_opener_url() {
+    return GetURLForPath("www.chromium.org", "/popup_opener.html");
+  }
+
   GURL google_com_url() {
     return GetURLForPath("www.google.com", "/google.com.html");
   }
@@ -1016,6 +1020,43 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_EQ(NAMESPACE_NOT_DEFINED,
             CanConnectAndSendMessagesToIFrame(extension.get()));
   EXPECT_FALSE(AreAnyNonWebApisDefinedForIFrame());
+}
+
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromPopup) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+
+  InitializeTestServer();
+  scoped_refptr<const Extension> extension = LoadChromiumConnectableExtension();
+
+  // This will let us wait for the chromium.org.html page to load in a popup.
+  ui_test_utils::UrlLoadObserver url_observer(
+      chromium_org_url(), content::NotificationService::AllSources());
+
+  // The page at popup_opener_url() should open chromium_org_url() as a popup.
+  ui_test_utils::NavigateToURL(browser(), popup_opener_url());
+  url_observer.Wait();
+
+  // Find the WebContents that committed the chromium_org_url().
+  // TODO(devlin) - it would be nice if UrlLoadObserver handled this for
+  // us, which it could pretty easily do.
+  content::WebContents* popup_contents = nullptr;
+  for (int i = 0; i < browser()->tab_strip_model()->count(); i++) {
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetWebContentsAt(i);
+    if (contents->GetLastCommittedURL() == chromium_org_url()) {
+      popup_contents = contents;
+      break;
+    }
+  }
+  ASSERT_NE(nullptr, popup_contents) << "Could not find WebContents for popup";
+
+  // Make sure the popup can connect and send messages to the extension.
+  content::RenderFrameHost* popup_frame = popup_contents->GetMainFrame();
+
+  EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(popup_frame, extension.get(),
+                                                 nullptr));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForFrame(popup_frame));
 }
 
 // Tests externally_connectable between a web page and an extension with a

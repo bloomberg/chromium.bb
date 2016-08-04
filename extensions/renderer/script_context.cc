@@ -4,8 +4,6 @@
 
 #include "extensions/renderer/script_context.h"
 
-#include <memory>
-
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -109,12 +107,13 @@ ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
       effective_context_type_(effective_context_type),
       safe_builtins_(this),
       isolate_(v8_context->GetIsolate()),
-      url_(web_frame_ ? GetDataSourceURLForFrame(web_frame_) : GURL()),
       runner_(new Runner(this)) {
   VLOG(1) << "Created context:\n" << GetDebugString();
   gin::PerContextData* gin_data = gin::PerContextData::From(v8_context);
   CHECK(gin_data);
   gin_data->set_runner(runner_.get());
+  if (web_frame_)
+    url_ = GetAccessCheckedFrameURL(web_frame_);
 }
 
 ScriptContext::~ScriptContext() {
@@ -279,6 +278,22 @@ GURL ScriptContext::GetDataSourceURLForFrame(const blink::WebFrame* frame) {
                                           ? frame->provisionalDataSource()
                                           : frame->dataSource();
   return data_source ? GURL(data_source->request().url()) : GURL();
+}
+
+// static
+GURL ScriptContext::GetAccessCheckedFrameURL(const blink::WebFrame* frame) {
+  const blink::WebURL& weburl = frame->document().url();
+  if (weburl.isEmpty()) {
+    blink::WebDataSource* data_source = frame->provisionalDataSource()
+                                            ? frame->provisionalDataSource()
+                                            : frame->dataSource();
+    if (data_source &&
+        frame->getSecurityOrigin().canAccess(
+            blink::WebSecurityOrigin::create(data_source->request().url()))) {
+      return GURL(data_source->request().url());
+    }
+  }
+  return GURL(weburl);
 }
 
 // static
