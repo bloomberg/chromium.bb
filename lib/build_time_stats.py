@@ -9,14 +9,13 @@ stage started relative to the start of the build.
 """
 
 from __future__ import print_function
+from sets import Set
 
 import collections
 import datetime
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
-
-
 # MUST be kept in sync with GetParser's build-type option.
 BUILD_TYPE_MAP = {
     'cq': constants.CQ_MASTER,
@@ -297,6 +296,38 @@ def CalculateStageStats(builds_timings):
   return stage_stats
 
 
+def GetNumDistinctChromeVersions(db, build_config, start_date, end_date):
+  """Get the number of distinct chrome versions.
+
+  This represents the number of successful chrome uprevs.
+
+  Args:
+    db: cidb.CIDBConnection object.
+    build_config: Name of build config of master builder.
+    start_date: datetime.datetime object for start of search range.
+    end_date: datetime.datetime object for end of search range.
+
+  Returns:
+    A list of cidb style BuildStatus dictionaries with 'stages' populated.
+  """
+  # Find masters.
+  master_statuses = db.GetBuildHistory(
+      build_config, db.NUM_RESULTS_NO_LIMIT,
+      start_date=start_date, end_date=end_date)
+
+  # Collect chrome versions from successful runs in a Set.
+  chrome_versions = Set()
+  for status in master_statuses:
+    if status['status'] == 'pass':
+      metadata = db.GetMetadata(status['id'])
+      if metadata is not None:
+        chrome_version = metadata['chrome_version']
+        if chrome_version is not None:
+          chrome_versions.add(chrome_version)
+
+  return len(chrome_versions)
+
+
 def GetBuildSuccessRates(build_statuses):
   """Get the success rate for each builder.
 
@@ -311,7 +342,7 @@ def GetBuildSuccessRates(build_statuses):
     config = build_status['build_config']
     success = build_status['status'] == 'pass'
     config_successes.setdefault(config, []).append(success)
-    config_successes.setdefault('master', []).append(success)
+    config_successes.setdefault('total', []).append(success)
 
   success_rates = {}
   for key, successes in config_successes.iteritems():
@@ -707,8 +738,8 @@ def PerBuildStageStabilityReport(output, description, per_build_stage_stats):
                                             Percent(successes, valid_stages),
                                             successes, valid_stages))
 
-def SuccessReport(
-    output, description, build_success_rates, stage_success_rates):
+def SuccessReport(output, description, build_success_rates, stage_success_rates,
+                  chrome_uprevs):
   """Generate a report describing the success rate of the builders.
 
   Report includes success rate by builder and by stage.
@@ -718,10 +749,13 @@ def SuccessReport(
     description: A user friendly string description what the report covers.
     build_success_rates: Dictionary of success rates by builder.
     stage_success_rates: Dictionary of success rates by stage.
+    chrome_uprevs: Number of chrome uprevs.
   """
   assert build_success_rates
 
   output.write('\n%s\n\n' % description)
+
+  output.write('\nChrome uprevs: %d\n' % chrome_uprevs)
 
   stage_keys = stage_success_rates.keys()
   if len(stage_keys):
@@ -738,14 +772,15 @@ def SuccessReport(
   builder_keys = build_success_rates.keys()
   builder_keys.sort()
   for key in builder_keys:
-    if key == 'master':
+    if key == 'total':
       continue
     output.write('%s Success rate: %s.\n' % (key, build_success_rates[key]))
   output.write('\nTotal success rate for %s: %s.\n' %
-               (description, build_success_rates['master']))
+               (description, build_success_rates['total']))
 
 
-def SuccessReportCsv(output, build_success_rates, stage_success_rates):
+def SuccessReportCsv(output, build_success_rates, stage_success_rates,
+                     chrome_uprevs):
   """Generate a CSV report with the success rate of the builders.
 
   Report includes success rate by builder and by stage.
@@ -754,19 +789,28 @@ def SuccessReportCsv(output, build_success_rates, stage_success_rates):
     output: A file object to write the report to.
     build_success_rates: Dictionary of success rates by builder.
     stage_success_rates: Dictionary of success rates by stage.
+    chrome_uprevs: Number of chrome uprevs.
   """
   assert build_success_rates
 
-  output.write('builder,%s,%s\n' % ('master', build_success_rates['master']))
+  # Header
+  output.write('description,success\n')
+
+  # Chrome uprevs
+  output.write('chrome_uprevs,%d\n' % chrome_uprevs)
+
+  # Builder success rates
+  output.write('builder:%s,%s\n' % ('total', build_success_rates['total']))
   builder_keys = build_success_rates.keys()
   builder_keys.sort()
   for key in builder_keys:
-    if key == 'master':
+    if key == 'total':
       continue
-    output.write('builder,%s,%s\n' % (key, build_success_rates[key]))
+    output.write('builder:%s,%s\n' % (key, build_success_rates[key]))
 
+  # Stage success rates
   stage_keys = stage_success_rates.keys()
   if len(stage_keys):
     stage_keys.sort()
     for key in stage_keys:
-      output.write('stage,%s,%s\n' % (key, stage_success_rates[key]))
+      output.write('stage:%s,%s\n' % (key, stage_success_rates[key]))

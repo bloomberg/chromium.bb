@@ -837,6 +837,22 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'build_type': d.get('build_type'),
                          'important': d.get('important')})
 
+  @minimum_schema(2)
+  def GetMetadata(self, build_id):
+    """Get the metadata for |build_id| in buildTable.
+
+    Args:
+      build_id: Id of the row to select.
+      fields: List of fields (column names) to select.
+
+    Returns:
+      The metadata object.
+    """
+    fields = ['chrome_version', 'milestone_version', 'platform_version',
+              'full_version', 'sdk_version', 'toolchain_url', 'build_type',
+              'important']
+    return self._Select('buildTable', build_id, fields)
+
   @minimum_schema(32)
   def ExtendDeadline(self, build_id, timeout_seconds):
     """Extend the deadline for this build.

@@ -44,6 +44,9 @@ class StatsCommand(command.CliCommand):
                                  ' information. Obtain your credentials'
                                  ' at go/cros-cidb-admin .')
 
+    stats_args.add_argument('--start-date', action='store', type='date',
+                            default=None,
+                            help='Limit scope to a start date in the past.')
     stats_args.add_argument('--end-date', action='store', type='date',
                             default=None,
                             help='Limit scope to an end date in the past.')
@@ -74,15 +77,12 @@ class StatsCommand(command.CliCommand):
 
     # How many builds are included, for builder/build-types.
     start_group = parser.add_mutually_exclusive_group()
-    start_group.add_argument('--start-date', action='store', type='date',
-                             default=None,
-                             help='Limit scope to a start date in the past.')
     start_group.add_argument('--month', action='store_true', default=False,
-                             help='Limit scope to the past 30 days up to now.')
+                             help='Limit scope to the past 30 days.')
     start_group.add_argument('--week', action='store_true', default=False,
-                             help='Limit scope to the past week up to now.')
+                             help='Limit scope to the past week.')
     start_group.add_argument('--day', action='store_true', default=False,
-                             help='Limit scope to the past day up to now.')
+                             help='Limit scope to the past day.')
     start_group.add_argument('--trending', action='store_true', default=False,
                              help='Show stats for all builds by month.')
 
@@ -96,19 +96,28 @@ class StatsCommand(command.CliCommand):
 
   @staticmethod
   def OptionsToStartEndDates(options):
-    end_date = options.end_date or datetime.datetime.now().date()
-
-    if options.month:
-      start_date = end_date - datetime.timedelta(days=30)
-    elif options.day:
-      start_date = end_date - datetime.timedelta(days=1)
-    elif options.start_date:
+    if options.start_date:
+      # If a start date is provided, --week, etc extend forward if provided.
       start_date = options.start_date
-    elif options.trending:
-      start_date, end_date = None, None
+      if options.end_date:
+        end_date = options.end_date
+      elif options.month:
+        end_date = start_date + datetime.timedelta(days=30)
+      elif options.day:
+        end_date = start_date + datetime.timedelta(days=1)
+      else:  # Default to week.
+        end_date = start_date + datetime.timedelta(days=7)
     else:
-      # Default of past_week.
-      start_date = end_date - datetime.timedelta(days=7)
+      # Otherwise --week, etc extend backwards from the end date or now().
+      end_date = options.end_date or datetime.datetime.now().date()
+      if options.month:
+        start_date = end_date - datetime.timedelta(days=30)
+      elif options.day:
+        start_date = end_date - datetime.timedelta(days=1)
+      elif options.trending:
+        start_date, end_date = None, None
+      else:  # Default of past_week.
+        start_date = end_date - datetime.timedelta(days=7)
 
     return start_date, end_date
 
@@ -171,12 +180,19 @@ class StatsCommand(command.CliCommand):
       stage_success_rates = (
           build_time_stats.GetStageSuccessRates(builds_statuses) if
           self.options.stages else {})
+
+      # Include the number of distinct Chrome uprevs if build_type is set.
+      chrome_uprevs = (build_time_stats.GetNumDistinctChromeVersions(
+          db, BUILD_TYPE_MAP[self.options.build_type], start_date, end_date)
+                       if self.options.build_type else None)
+
       if self.options.csv:
         build_time_stats.SuccessReportCsv(
-            sys.stdout, build_success_rates, stage_success_rates)
+            sys.stdout, build_success_rates, stage_success_rates, chrome_uprevs)
       else:
         build_time_stats.SuccessReport(
-            sys.stdout, description, build_success_rates, stage_success_rates)
+            sys.stdout, description, build_success_rates, stage_success_rates,
+            chrome_uprevs)
       return 0
 
     # Compute per-build timing.
