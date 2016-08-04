@@ -23,25 +23,25 @@ class BASE_EXPORT SchedulerWorkerPoolParams final {
 
   // Construct a scheduler worker pool parameter object that instructs a
   // scheduler worker pool to use the label |name| and create up to
-  // |max_threads| threads of priority |thread_priority|. |io_restriction|
-  // indicates whether Tasks on the scheduler worker pool are allowed to make
-  // I/O calls. |suggested_reclaim_time| sets a suggestion on when to reclaim
-  // idle threads. The worker pool is free to ignore this value for performance
-  // or correctness reasons.
-  SchedulerWorkerPoolParams(
-      const std::string& name,
-      ThreadPriority thread_priority,
-      IORestriction io_restriction,
-      int max_threads,
-      const TimeDelta& suggested_reclaim_time);
+  // |max_threads| threads. |priority_hint| is the preferred thread priority;
+  // the actual thread priority depends on shutdown state and platform
+  // capabilities. |io_restriction| indicates whether Tasks on the scheduler
+  // worker pool are allowed to make I/O calls. |suggested_reclaim_time| sets a
+  // suggestion on when to reclaim idle threads. The worker pool is free to
+  // ignore this value for performance or correctness reasons.
+  SchedulerWorkerPoolParams(const std::string& name,
+                            ThreadPriority priority_hint,
+                            IORestriction io_restriction,
+                            int max_threads,
+                            const TimeDelta& suggested_reclaim_time);
   SchedulerWorkerPoolParams(SchedulerWorkerPoolParams&& other);
   SchedulerWorkerPoolParams& operator=(SchedulerWorkerPoolParams&& other);
 
   // Name of the pool. Used to label the pool's threads.
   const std::string& name() const { return name_; }
 
-  // Priority of the pool's threads.
-  ThreadPriority thread_priority() const { return thread_priority_; }
+  // Preferred priority for the pool's threads.
+  ThreadPriority priority_hint() const { return priority_hint_; }
 
   // Whether I/O is allowed in the pool.
   IORestriction io_restriction() const { return io_restriction_; }
@@ -56,7 +56,7 @@ class BASE_EXPORT SchedulerWorkerPoolParams final {
 
  private:
   std::string name_;
-  ThreadPriority thread_priority_;
+  ThreadPriority priority_hint_;
   IORestriction io_restriction_;
   size_t max_threads_;
   TimeDelta suggested_reclaim_time_;

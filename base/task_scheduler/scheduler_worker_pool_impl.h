@@ -104,7 +104,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
                           DelayedTaskManager* delayed_task_manager);
 
   bool Initialize(
-      ThreadPriority thread_priority,
+      ThreadPriority priority_hint,
       size_t max_threads,
       const ReEnqueueSequenceCallback& re_enqueue_sequence_callback);
 

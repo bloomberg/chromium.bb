@@ -474,21 +474,23 @@ class ExpectThreadPriorityDelegate : public SchedulerWorker::Delegate {
 
 }  // namespace
 
-// Increasing the thread priority requires the CAP_SYS_NICE capability on Linux.
-#if !defined(OS_LINUX)
 TEST(TaskSchedulerWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
   TaskTracker task_tracker;
 
   std::unique_ptr<ExpectThreadPriorityDelegate> delegate(
       new ExpectThreadPriorityDelegate);
   ExpectThreadPriorityDelegate* delegate_raw = delegate.get();
-  delegate_raw->SetExpectedThreadPriority(ThreadPriority::BACKGROUND);
+  delegate_raw->SetExpectedThreadPriority(
+      PlatformThread::CanIncreaseCurrentThreadPriority()
+          ? ThreadPriority::BACKGROUND
+          : ThreadPriority::NORMAL);
 
   std::unique_ptr<SchedulerWorker> worker = SchedulerWorker::Create(
       ThreadPriority::BACKGROUND, std::move(delegate), &task_tracker,
       SchedulerWorker::InitialState::ALIVE);
 
-  // Verify that the initial thread priority is BACKGROUND.
+  // Verify that the initial thread priority is BACKGROUND (or NORMAL if thread
+  // priority can't be increased).
   worker->WakeUp();
   delegate_raw->WaitForPriorityVerifiedInGetWork();
 
@@ -500,7 +502,6 @@ TEST(TaskSchedulerWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
 
   worker->JoinForTesting();
 }
-#endif  // defined(OS_LINUX)
 
 TEST(TaskSchedulerWorkerTest, BumpPriorityOfDetachedThreadDuringShutdown) {
   TaskTracker task_tracker;

@@ -49,9 +49,7 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
       mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-#if !defined(OS_LINUX)
       UpdateThreadPriority(GetDesiredThreadPriority());
-#endif
 
       // Get the sequence containing the next task to execute.
       scoped_refptr<Sequence> sequence = outer_->delegate_->GetWork(outer_);
@@ -131,22 +129,29 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
     wake_up_event_.Reset();
   }
 
-  // Returns the desired thread priority based on the worker priority and the
-  // current shutdown state.
+  // Returns the priority for which the thread should be set based on the
+  // priority hint, current shutdown state, and platform capabilities.
   ThreadPriority GetDesiredThreadPriority() {
     DCHECK(outer_);
 
-    if (outer_->task_tracker_->HasShutdownStarted() &&
-        static_cast<int>(outer_->thread_priority_) <
-            static_cast<int>(ThreadPriority::NORMAL)) {
+    // All threads have a NORMAL priority when Lock doesn't handle multiple
+    // thread priorities.
+    if (!Lock::HandlesMultipleThreadPriorities())
+      return ThreadPriority::NORMAL;
+
+    // To avoid shutdown hangs, disallow a priority below NORMAL during
+    // shutdown. If thread priority cannot be increased, never allow a priority
+    // below NORMAL.
+    if (static_cast<int>(outer_->priority_hint_) <
+            static_cast<int>(ThreadPriority::NORMAL) &&
+        (outer_->task_tracker_->HasShutdownStarted() ||
+         !PlatformThread::CanIncreaseCurrentThreadPriority())) {
       return ThreadPriority::NORMAL;
     }
-    return outer_->thread_priority_;
+
+    return outer_->priority_hint_;
   }
 
-  // Increasing the thread priority requires the CAP_SYS_NICE capability on
-  // Linux.
-#if !defined(OS_LINUX)
   void UpdateThreadPriority(ThreadPriority desired_thread_priority) {
     if (desired_thread_priority == current_thread_priority_)
       return;
@@ -154,7 +159,6 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
     PlatformThread::SetCurrentThreadPriority(desired_thread_priority);
     current_thread_priority_ = desired_thread_priority;
   }
-#endif  // !defined(OS_LINUX)
 
   PlatformThreadHandle thread_handle_;
 
@@ -164,19 +168,19 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
   WaitableEvent wake_up_event_;
 
   // Current priority of this thread. May be different from
-  // |outer_->thread_priority_| during shutdown.
+  // |outer_->priority_hint_|.
   ThreadPriority current_thread_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
 std::unique_ptr<SchedulerWorker> SchedulerWorker::Create(
-    ThreadPriority thread_priority,
+    ThreadPriority priority_hint,
     std::unique_ptr<Delegate> delegate,
     TaskTracker* task_tracker,
     InitialState initial_state) {
   std::unique_ptr<SchedulerWorker> worker(
-      new SchedulerWorker(thread_priority, std::move(delegate), task_tracker));
+      new SchedulerWorker(priority_hint, std::move(delegate), task_tracker));
   // Creation happens before any other thread can reference this one, so no
   // synchronization is necessary.
   if (initial_state == SchedulerWorker::InitialState::ALIVE) {
@@ -228,10 +232,10 @@ bool SchedulerWorker::ThreadAliveForTesting() const {
   return !!thread_;
 }
 
-SchedulerWorker::SchedulerWorker(ThreadPriority thread_priority,
+SchedulerWorker::SchedulerWorker(ThreadPriority priority_hint,
                                  std::unique_ptr<Delegate> delegate,
                                  TaskTracker* task_tracker)
-    : thread_priority_(thread_priority),
+    : priority_hint_(priority_hint),
       delegate_(std::move(delegate)),
       task_tracker_(task_tracker) {
   DCHECK(delegate_);

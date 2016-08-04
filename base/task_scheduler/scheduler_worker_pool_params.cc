@@ -10,12 +10,12 @@ namespace base {
 
 SchedulerWorkerPoolParams::SchedulerWorkerPoolParams(
     const std::string& name,
-    ThreadPriority thread_priority,
+    ThreadPriority priority_hint,
     IORestriction io_restriction,
     int max_threads,
     const TimeDelta& suggested_reclaim_time)
     : name_(name),
-      thread_priority_(thread_priority),
+      priority_hint_(priority_hint),
       io_restriction_(io_restriction),
       max_threads_(max_threads),
       suggested_reclaim_time_(suggested_reclaim_time) {}

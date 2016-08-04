@@ -77,13 +77,15 @@ class BASE_EXPORT SchedulerWorker {
 
   enum class InitialState { ALIVE, DETACHED };
 
-  // Creates a SchedulerWorker with priority |thread_priority| that runs Tasks
-  // from Sequences returned by |delegate|. |task_tracker| is used to handle
-  // shutdown behavior of Tasks. If |worker_state| is DETACHED, the thread will
-  // be created upon a WakeUp(). Returns nullptr if creating the underlying
-  // platform thread fails during Create().
+  // Creates a SchedulerWorker that runs Tasks from Sequences returned by
+  // |delegate|. |priority_hint| is the preferred thread priority; the actual
+  // thread priority depends on shutdown state and platform capabilities.
+  // |task_tracker| is used to handle shutdown behavior of Tasks. If
+  // |worker_state| is DETACHED, the thread will be created upon a WakeUp().
+  // Returns nullptr if creating the underlying platform thread fails during
+  // Create().
   static std::unique_ptr<SchedulerWorker> Create(
-      ThreadPriority thread_priority,
+      ThreadPriority priority_hint,
       std::unique_ptr<Delegate> delegate,
       TaskTracker* task_tracker,
       InitialState initial_state);
@@ -133,7 +135,7 @@ class BASE_EXPORT SchedulerWorker {
   // The underlying thread for this SchedulerWorker.
   std::unique_ptr<Thread> thread_;
 
-  const ThreadPriority thread_priority_;
+  const ThreadPriority priority_hint_;
   const std::unique_ptr<Delegate> delegate_;
   TaskTracker* const task_tracker_;
 

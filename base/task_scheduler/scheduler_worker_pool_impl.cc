@@ -253,8 +253,7 @@ std::unique_ptr<SchedulerWorkerPoolImpl> SchedulerWorkerPoolImpl::Create(
                                   params.io_restriction(),
                                   params.suggested_reclaim_time(),
                                   task_tracker, delayed_task_manager));
-  if (worker_pool->Initialize(params.thread_priority(),
-                              params.max_threads(),
+  if (worker_pool->Initialize(params.priority_hint(), params.max_threads(),
                               re_enqueue_sequence_callback)) {
     return worker_pool;
   }
@@ -569,7 +568,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
 }
 
 bool SchedulerWorkerPoolImpl::Initialize(
-    ThreadPriority thread_priority,
+    ThreadPriority priority_hint,
     size_t max_threads,
     const ReEnqueueSequenceCallback& re_enqueue_sequence_callback) {
   AutoSchedulerLock auto_lock(idle_workers_stack_lock_);
@@ -577,15 +576,12 @@ bool SchedulerWorkerPoolImpl::Initialize(
   DCHECK(workers_.empty());
 
   for (size_t i = 0; i < max_threads; ++i) {
-    std::unique_ptr<SchedulerWorker> worker =
-        SchedulerWorker::Create(
-            thread_priority, WrapUnique(new SchedulerWorkerDelegateImpl(
-                                 this, re_enqueue_sequence_callback,
-                                 &shared_priority_queue_, static_cast<int>(i))),
-            task_tracker_,
-            i == 0
-                ? SchedulerWorker::InitialState::ALIVE
-                : SchedulerWorker::InitialState::DETACHED);
+    std::unique_ptr<SchedulerWorker> worker = SchedulerWorker::Create(
+        priority_hint, WrapUnique(new SchedulerWorkerDelegateImpl(
+                           this, re_enqueue_sequence_callback,
+                           &shared_priority_queue_, static_cast<int>(i))),
+        task_tracker_, i == 0 ? SchedulerWorker::InitialState::ALIVE
+                              : SchedulerWorker::InitialState::DETACHED);
     if (!worker)
       break;
     idle_workers_stack_.Push(worker.get());

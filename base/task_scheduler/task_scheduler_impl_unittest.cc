@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_traits.h"
@@ -53,7 +54,12 @@ bool GetIOAllowed() {
 // to run a Task with |traits|.
 // Note: ExecutionMode is verified inside TestTaskFactory.
 void VerifyTaskEnvironement(const TaskTraits& traits) {
-  EXPECT_EQ(traits.priority() == TaskPriority::BACKGROUND
+  const bool supports_background_priority =
+      Lock::HandlesMultipleThreadPriorities() &&
+      PlatformThread::CanIncreaseCurrentThreadPriority();
+
+  EXPECT_EQ(supports_background_priority &&
+                    traits.priority() == TaskPriority::BACKGROUND
                 ? ThreadPriority::BACKGROUND
                 : ThreadPriority::NORMAL,
             PlatformThread::GetCurrentThreadPriority());
