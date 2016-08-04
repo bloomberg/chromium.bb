@@ -110,12 +110,23 @@ using namespace HTMLNames;
 
 bool isBackForwardLoadType(FrameLoadType type)
 {
-    return type == FrameLoadTypeBackForward || type == FrameLoadTypeInitialHistoryLoad;
+    return type == FrameLoadTypeBackForward
+        || type == FrameLoadTypeInitialHistoryLoad;
+}
+
+bool isReloadLoadType(FrameLoadType type)
+{
+    return type == FrameLoadTypeReload
+        || type == FrameLoadTypeReloadMainResource
+        || type == FrameLoadTypeReloadBypassingCache;
 }
 
 static bool needsHistoryItemRestore(FrameLoadType type)
 {
-    return type == FrameLoadTypeBackForward || type == FrameLoadTypeReload
+    // TODO(toyoshim): Check if this should return true for
+    // FrameLoadTypeReloadMainResource.
+    return type == FrameLoadTypeBackForward
+        || type == FrameLoadTypeReload
         || type == FrameLoadTypeReloadBypassingCache;
 }
 
@@ -139,7 +150,7 @@ ResourceRequest FrameLoader::resourceRequestFromHistoryItem(HistoryItem* item, W
 ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadType,
     const KURL& overrideURL, ClientRedirectPolicy clientRedirectPolicy)
 {
-    ASSERT(frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadMainResource || frameLoadType == FrameLoadTypeReloadBypassingCache);
+    DCHECK(isReloadLoadType(frameLoadType));
     WebCachePolicy cachePolicy = frameLoadType == FrameLoadTypeReloadBypassingCache ? WebCachePolicy::BypassingCache : WebCachePolicy::ValidatingCacheData;
     if (!m_currentItem)
         return ResourceRequest();
@@ -868,7 +879,7 @@ static bool shouldOpenInNewWindow(Frame* targetFrame, const FrameLoadRequest& re
 
 static NavigationType determineNavigationType(FrameLoadType frameLoadType, bool isFormSubmission, bool haveEvent)
 {
-    bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadMainResource || frameLoadType == FrameLoadTypeReloadBypassingCache;
+    bool isReload = isReloadLoadType(frameLoadType);
     bool isBackForward = isBackForwardLoadType(frameLoadType);
     if (isFormSubmission)
         return (isReload || isBackForward) ? NavigationTypeFormResubmitted : NavigationTypeFormSubmitted;
@@ -1293,9 +1304,7 @@ bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const S
     // We don't do this if we are submitting a form with method other than "GET", explicitly reloading,
     // currently displaying a frameset, or if the URL does not have a fragment.
     return (!isFormSubmission || equalIgnoringCase(httpMethod, HTTPNames::GET))
-        && loadType != FrameLoadTypeReload
-        && loadType != FrameLoadTypeReloadBypassingCache
-        && loadType != FrameLoadTypeReloadMainResource
+        && !isReloadLoadType(loadType)
         && loadType != FrameLoadTypeBackForward
         && url.hasFragmentIdentifier()
         && equalIgnoringFragmentIdentifier(m_frame->document()->url(), url)

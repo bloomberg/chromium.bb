@@ -119,8 +119,7 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, Fetch
     // recover if blocking of a script is leading to a page break and the user
     // reloads the page.
     const FrameLoadType loadType = document.frame()->loader().loadType();
-    const bool isReload = loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadBypassingCache || loadType == FrameLoadTypeReloadMainResource;
-    if (isReload) {
+    if (isReloadLoadType(loadType)) {
         // Recording this metric since an increase in number of reloads for pages
         // where a script was blocked could be indicative of a page break.
         document.loader()->didObserveLoadingBehavior(WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlockReload);

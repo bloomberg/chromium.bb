@@ -133,7 +133,7 @@ void RemoteFrameClientImpl::navigate(const ResourceRequest& request, bool should
 
 void RemoteFrameClientImpl::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedirectPolicy)
 {
-    ASSERT(loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadBypassingCache);
+    DCHECK(isReloadLoadType(loadType));
     if (m_webFrame->client())
         m_webFrame->client()->reload(static_cast<WebFrameLoadType>(loadType), static_cast<WebClientRedirectPolicy>(clientRedirectPolicy));
 }

@@ -356,8 +356,7 @@ void LocalFrame::navigate(const FrameLoadRequest& request)
 
 void LocalFrame::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedirectPolicy)
 {
-    ASSERT(loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadBypassingCache);
-    ASSERT(clientRedirectPolicy == ClientRedirectPolicy::NotClientRedirect || loadType == FrameLoadTypeReload);
+    DCHECK(isReloadLoadType(loadType));
     if (clientRedirectPolicy == ClientRedirectPolicy::NotClientRedirect) {
         if (!m_loader.currentItem())
             return;
@@ -366,6 +365,7 @@ void LocalFrame::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedir
         request.setClientRedirect(clientRedirectPolicy);
         m_loader.load(request, loadType);
     } else {
+        DCHECK_EQ(FrameLoadTypeReload, loadType);
         m_navigationScheduler->scheduleReload();
     }
 }

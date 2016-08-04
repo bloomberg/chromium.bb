@@ -64,6 +64,7 @@ enum class WebCachePolicy;
 struct FrameLoadRequest;
 
 CORE_EXPORT bool isBackForwardLoadType(FrameLoadType);
+CORE_EXPORT bool isReloadLoadType(FrameLoadType);
 
 class CORE_EXPORT FrameLoader final {
     WTF_MAKE_NONCOPYABLE(FrameLoader);
