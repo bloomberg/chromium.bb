@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_BACKGROUND_OFFLINER_H_
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_OFFLINER_H_
 
+#include <string>
+
 #include "base/callback.h"
 
 namespace offline_pages {

@@ -6,7 +6,10 @@
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_REQUEST_COORDINATOR_EVENT_LOGGER_H_
 
 #include <stdint.h>
+#include <string>
 
+#include "components/offline_pages/background/offliner.h"
+#include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/offline_event_logger.h"
 
 namespace offline_pages {
@@ -16,8 +19,11 @@ class RequestCoordinatorEventLogger : public OfflineEventLogger {
   // Records that a background task with SavePageRequest |request_id|
   // has been updated.
   void RecordSavePageRequestUpdated(const std::string& name_space,
-                                    const std::string& new_status,
+                                    Offliner::RequestStatus new_status,
                                     int64_t request_id);
+
+  void RecordUpdateRequestFailed(const std::string& name_space,
+                                 RequestQueue::UpdateRequestResult result);
 };
 
 }  // namespace offline_pages

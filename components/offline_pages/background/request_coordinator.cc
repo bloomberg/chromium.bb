@@ -16,6 +16,7 @@
 #include "components/offline_pages/background/request_picker.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_model.h"
 
 namespace offline_pages {
 
@@ -55,6 +56,11 @@ RequestCoordinator::~RequestCoordinator() {}
 bool RequestCoordinator::SavePageLater(
     const GURL& url, const ClientId& client_id, bool was_user_requested) {
   DVLOG(2) << "URL is " << url << " " << __func__;
+
+  if (!OfflinePageModel::CanSaveURL(url)) {
+    DVLOG(1) << "Not able to save page for requested url: " << url;
+    return false;
+  }
 
   // TODO(petewil): We need a robust scheme for allocating new IDs.
   static int64_t id = 0;
@@ -99,7 +105,7 @@ void RequestCoordinator::GetQueuedRequestsCallback(
 void RequestCoordinator::RemoveRequests(
     const std::vector<ClientId>& client_ids) {
   queue_->RemoveRequestsByClientId(
-      client_ids, base::Bind(&RequestCoordinator::UpdateRequestCallback,
+      client_ids, base::Bind(&RequestCoordinator::UpdateMultipleRequestCallback,
                              weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -113,20 +119,34 @@ void RequestCoordinator::AddRequestResultCallback(
 
 // Called in response to updating a request in the request queue.
 void RequestCoordinator::UpdateRequestCallback(
+    const ClientId& client_id,
     RequestQueue::UpdateRequestResult result) {
   // If the request succeeded, nothing to do.  If it failed, we can't really do
   // much, so just log it.
   if (result != RequestQueue::UpdateRequestResult::SUCCESS) {
-    // TODO(petewil): Consider adding UMA or showing on offline-internals page.
-    DLOG(WARNING) << "Failed to update a request retry count. "
-                  << static_cast<int>(result);
+    DVLOG(1) << "Failed to update request attempt details. "
+             << static_cast<int>(result);
+    event_logger_.RecordUpdateRequestFailed(client_id.name_space, result);
+  }
+}
+
+// Called in response to updating multiple requests in the request queue.
+void RequestCoordinator::UpdateMultipleRequestCallback(
+    RequestQueue::UpdateRequestResult result) {
+  // If the request succeeded, nothing to do.  If it failed, we can't really do
+  // much, so just log it.
+  if (result != RequestQueue::UpdateRequestResult::SUCCESS) {
+    DVLOG(1) << "Failed to update request attempt details. "
+             << static_cast<int>(result);
   }
 }
 
 void RequestCoordinator::StopProcessing() {
   is_canceled_ = true;
-  if (offliner_ && is_busy_)
+  if (offliner_ && is_busy_) {
+    // TODO(dougarnett): Find current request and mark attempt aborted.
     offliner_->Cancel();
+  }
 
   // Stopping offliner means it will not call callback.
   last_offlining_status_ =
@@ -210,14 +230,28 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   DCHECK(!is_busy_);
   is_busy_ = true;
 
-  // Start the load and save process in the offliner (Async).
-  offliner_->LoadAndSave(request,
-                         base::Bind(&RequestCoordinator::OfflinerDoneCallback,
-                                    weak_ptr_factory_.GetWeakPtr()));
+  // Prepare an updated request to attempt.
+  SavePageRequest updated_request(request);
+  updated_request.MarkAttemptStarted(base::Time::Now());
 
-  // Start a watchdog timer to catch pre-renders running too long
-  watchdog_timer_.Start(FROM_HERE, offliner_timeout_, this,
-                        &RequestCoordinator::StopProcessing);
+  // Start the load and save process in the offliner (Async).
+  if (offliner_->LoadAndSave(
+          updated_request, base::Bind(&RequestCoordinator::OfflinerDoneCallback,
+                                      weak_ptr_factory_.GetWeakPtr()))) {
+    // Offliner accepted request so update it in the queue.
+    queue_->UpdateRequest(updated_request,
+                          base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     updated_request.client_id()));
+
+    // Start a watchdog timer to catch pre-renders running too long
+    watchdog_timer_.Start(FROM_HERE, offliner_timeout_, this,
+                          &RequestCoordinator::StopProcessing);
+  } else {
+    is_busy_ = false;
+    DVLOG(0) << "Unable to start LoadAndSave";
+    StopProcessing();
+  }
 }
 
 void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
@@ -227,38 +261,42 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
            << ", status: " << static_cast<int>(status) << ", " << __func__;
   DCHECK_NE(status, Offliner::RequestStatus::UNKNOWN);
   DCHECK_NE(status, Offliner::RequestStatus::LOADED);
-  event_logger_.RecordSavePageRequestUpdated(
-      request.client_id().name_space,
-      "Saved",
-      request.request_id());
+  event_logger_.RecordSavePageRequestUpdated(request.client_id().name_space,
+                                             status, request.request_id());
   last_offlining_status_ = status;
   RecordOfflinerResultUMA(last_offlining_status_);
   watchdog_timer_.Stop();
 
   is_busy_ = false;
 
-  int64_t new_attempt_count = request.attempt_count() + 1;
-
-  // Remove the request from the queue if it either succeeded or exceeded the
-  // max number of retries.
-  if (status == Offliner::RequestStatus::SAVED
-       || new_attempt_count > policy_->GetMaxTries()) {
-    queue_->RemoveRequest(request.request_id(),
+  if (status == Offliner::RequestStatus::FOREGROUND_CANCELED) {
+    // Update the request for the canceled attempt.
+    // TODO(dougarnett): See if we can conclusively identify other attempt
+    // aborted cases to treat this way (eg, for Render Process Killed).
+    SavePageRequest updated_request(request);
+    updated_request.MarkAttemptAborted();
+    queue_->UpdateRequest(updated_request,
                           base::Bind(&RequestCoordinator::UpdateRequestCallback,
-                                     weak_ptr_factory_.GetWeakPtr()));
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     updated_request.client_id()));
+
+  } else if (status == Offliner::RequestStatus::SAVED ||
+             request.attempt_count() >= policy_->GetMaxTries()) {
+    // Remove the request from the queue if it either succeeded or exceeded the
+    // max number of retries.
+    queue_->RemoveRequest(
+        request.request_id(),
+        base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                   weak_ptr_factory_.GetWeakPtr(), request.client_id()));
   } else {
     // If we failed, but are not over the limit, update the request in the
     // queue.
     SavePageRequest updated_request(request);
-    updated_request.set_attempt_count(new_attempt_count);
-    updated_request.set_last_attempt_time(base::Time::Now());
-    RequestQueue::UpdateRequestCallback update_callback =
-        base::Bind(&RequestCoordinator::UpdateRequestCallback,
-                   weak_ptr_factory_.GetWeakPtr());
-    queue_->UpdateRequest(
-        updated_request,
-        base::Bind(&RequestCoordinator::UpdateRequestCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+    updated_request.MarkAttemptCompleted();
+    queue_->UpdateRequest(updated_request,
+                          base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     updated_request.client_id()));
   }
 
   // Determine whether we might try another request in this

@@ -107,6 +107,8 @@ void PrerenderingOffliner::OnSavePageDone(
 
 bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
                                        const CompletionCallback& callback) {
+  DCHECK(!pending_request_.get());
+
   if (pending_request_) {
     DVLOG(1) << "Already have pending request";
     return false;

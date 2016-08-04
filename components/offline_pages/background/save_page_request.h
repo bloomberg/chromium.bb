@@ -50,6 +50,10 @@ class SavePageRequest {
   // Marks attempt as completed and clears |last_attempt_time_|.
   void MarkAttemptCompleted();
 
+  // Marks attempt as aborted. Specifically it clears |last_attempt_time_|
+  // and decrements |attempt_count_|.
+  void MarkAttemptAborted();
+
   int64_t request_id() const { return request_id_; }
 
   const GURL& url() const { return url_; }

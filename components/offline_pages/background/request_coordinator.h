@@ -123,7 +123,10 @@ class RequestCoordinator : public KeyedService {
                                 const SavePageRequest& request);
 
   // Receives the result of update and delete requests to the request queue.
-  void UpdateRequestCallback(RequestQueue::UpdateRequestResult result);
+  void UpdateRequestCallback(const ClientId& client_id,
+                             RequestQueue::UpdateRequestResult result);
+
+  void UpdateMultipleRequestCallback(RequestQueue::UpdateRequestResult result);
 
   // Callback from the request picker when it has chosen our next request.
   void RequestPicked(const SavePageRequest& request);

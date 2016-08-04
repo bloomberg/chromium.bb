@@ -332,6 +332,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
+  request.MarkAttemptStarted(base::Time::Now());
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -372,6 +373,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
+  request.MarkAttemptStarted(base::Time::Now());
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -416,11 +418,48 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
                  base::Unretained(this)));
   PumpLoop();
 
-  // Still two requests in the queue.
-  EXPECT_EQ(2UL, last_requests().size());
-  // Verify retry count was incremented for first request.
+  // Now just one request in the queue since failed request removed
+  // (for single attempt policy).
+  EXPECT_EQ(1UL, last_requests().size());
+}
+
+TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
+  // Add a request to the queue, wait for callbacks to finish.
+  offline_pages::SavePageRequest request(
+      kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
+  request.MarkAttemptStarted(base::Time::Now());
+  coordinator()->queue()->AddRequest(
+      request, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                          base::Unretained(this)));
+  PumpLoop();
+
+  // We need to give a callback to the request.
+  base::Callback<void(bool)> callback = base::Bind(
+      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  coordinator()->SetProcessingCallbackForTest(callback);
+
+  // Set up device conditions for the test.
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  SetDeviceConditionsForTest(device_conditions);
+
+  // Call the OfflinerDoneCallback to simulate the request failed, wait
+  // for callbacks.
+  EnableOfflinerCallback(true);
+  SendOfflinerDoneCallback(request,
+                           Offliner::RequestStatus::FOREGROUND_CANCELED);
+  PumpLoop();
+
+  // Verify the request is not removed from the queue, and wait for callbacks.
+  coordinator()->queue()->GetRequests(base::Bind(
+      &RequestCoordinatorTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+
+  // Request no longer in the queue (for single attempt policy).
+  EXPECT_EQ(1UL, last_requests().size());
+  // Verify foreground cancel not counted as an attempt after all.
   const SavePageRequest& found_request = last_requests().front();
-  EXPECT_EQ(1L, found_request.attempt_count());
+  EXPECT_EQ(0L, found_request.attempt_count());
 }
 
 // This tests a StopProcessing call before we have actually started the
@@ -498,7 +537,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
   EXPECT_TRUE(OfflinerWasCanceled());
 }
 
-TEST_F(RequestCoordinatorTest, PrerendererTimeout) {
+TEST_F(RequestCoordinatorTest, WatchdogTimeout) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);

@@ -78,4 +78,12 @@ void SavePageRequest::MarkAttemptCompleted() {
   last_attempt_time_ = base::Time();
 }
 
+void SavePageRequest::MarkAttemptAborted() {
+  DCHECK_GT(attempt_count_, 0);
+  last_attempt_time_ = base::Time();
+  // TODO(dougarnett): Would be safer if we had two persisted counters
+  // (attempts_started and attempts_completed) rather just one with decrement.
+  --attempt_count_;
+}
+
 }  // namespace offline_pages

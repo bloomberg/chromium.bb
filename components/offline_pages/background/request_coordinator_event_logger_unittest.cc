@@ -11,11 +11,17 @@ namespace offline_pages {
 namespace {
 
 const char kNamespace[] = "last_n";
-const char kStatus[] = "pending";
+const Offliner::RequestStatus kStatus = Offliner::SAVED;
 const int64_t kId = 1234;
-const char kLogString[] =
+const RequestQueue::UpdateRequestResult kUpdateResult =
+    RequestQueue::UpdateRequestResult::STORE_FAILURE;
+
+const char kStatusLogString[] =
     "Save page request for ID: 1234 and namespace: "
-    "last_n has been updated with status pending";
+    "last_n has been updated with status SAVED";
+const char kUpdateResultLogString[] =
+    "Updating queued request for namespace: last_n failed with result: "
+    "STORE_FAILURE";
 const int kTimeLength = 21;
 
 }  // namespace
@@ -26,10 +32,12 @@ TEST(RequestCoordinatorEventLoggerTest, RecordsWhenLoggingIsOn) {
 
   logger.SetIsLogging(true);
   logger.RecordSavePageRequestUpdated(kNamespace, kStatus, kId);
+  logger.RecordUpdateRequestFailed(kNamespace, kUpdateResult);
   logger.GetLogs(&log);
 
-  EXPECT_EQ(1u, log.size());
-  EXPECT_EQ(std::string(kLogString), log[0].substr(kTimeLength));
+  EXPECT_EQ(2u, log.size());
+  EXPECT_EQ(std::string(kUpdateResultLogString), log[0].substr(kTimeLength));
+  EXPECT_EQ(std::string(kStatusLogString), log[1].substr(kTimeLength));
 }
 
 TEST(RequestCoordinatorEventLoggerTest, RecordsWhenLoggingIsOff) {
