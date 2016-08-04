@@ -48,7 +48,7 @@ _EXTRA_TIMEOUT_SCALE = (
 
 _PARAMETERIZED_TEST_ANNOTATION = 'ParameterizedTest'
 _PARAMETERIZED_TEST_SET_ANNOTATION = 'ParameterizedTest$Set'
-_NATIVE_CRASH_RE = re.compile('native crash', re.IGNORECASE)
+_NATIVE_CRASH_RE = re.compile('(process|native) crash', re.IGNORECASE)
 _PICKLE_FORMAT_VERSION = 10
 
 
