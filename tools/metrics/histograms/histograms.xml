@@ -64016,6 +64016,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.WebSocket.BinaryTypeChangesAfterOpen">
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
+  <summary>
+    Count the number of changes to WebSocket.binaryType after the connection
+    opened, per connection. Assignments that match the existing binaryType are
+    not counted. This is recorded after WebSocket close, whether explicit or due
+    to error or navigation. It is not recorded if the render process is
+    destroyed before the WebSocket is closed.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.WebSocket.HandshakeResult"
     enum="WebSocketHandshakeResult">
   <owner>yhirano@chromium.org</owner>
@@ -64024,6 +64037,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Count the number of WebSocket handshake for each result. Use this histogram
     as a baseline for investigating feature usage counters.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.WebSocket.MessageSize.Receive" units="bytes">
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
+  <summary>
+    The sizes of binary WebSocket messages received, broken down by type. One
+    entry per message. Clamped to 100 MB.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.WebSocket.MessageSize.Send" units="bytes">
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
+  <summary>
+    The sizes of binary WebSocket messages sent, broken down by type. One entry
+    per message. Clamped to 100 MB.
   </summary>
 </histogram>
 
@@ -102125,6 +102158,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Data" label="Data"/>
   <affected-histogram name="WebRTC.PeerConnection.SrtpCryptoSuite"/>
   <affected-histogram name="WebRTC.PeerConnection.SslCipherSuite"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="WebSocketMessageSizeReceive" separator=".">
+  <suffix name="ArrayBuffer"/>
+  <suffix name="Blob"/>
+  <affected-histogram name="WebCore.WebSocket.MessageSize.Receive"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="WebSocketMessageSizeSend" separator=".">
+  <suffix name="ArrayBuffer"/>
+  <suffix name="ArrayBufferView"/>
+  <suffix name="Blob"/>
+  <affected-histogram name="WebCore.WebSocket.MessageSize.Send"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebStoreLinkExperiment">

@@ -49,6 +49,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
+#include <stddef.h>
 #include <stdint.h>
 
 namespace blink {
@@ -199,6 +200,11 @@ private:
         WebSocketReceiveTypeMax,
     };
 
+    enum BinaryType {
+        BinaryTypeBlob,
+        BinaryTypeArrayBuffer
+    };
+
     // This function is virtual for unittests.
     // FIXME: Move WebSocketChannel::create here.
     virtual WebSocketChannel* createChannel(ExecutionContext* context, WebSocketChannelClient* client)
@@ -221,12 +227,12 @@ private:
 
     void releaseChannel();
     void recordSendTypeHistogram(WebSocketSendType);
+    void recordSendMessageSizeHistogram(WebSocketSendType, size_t);
     void recordReceiveTypeHistogram(WebSocketReceiveType);
+    void recordReceiveMessageSizeHistogram(WebSocketReceiveType, size_t);
 
-    enum BinaryType {
-        BinaryTypeBlob,
-        BinaryTypeArrayBuffer
-    };
+    void setBinaryTypeInternal(BinaryType);
+    void logBinaryTypeChangesAfterOpen();
 
     Member<WebSocketChannel> m_channel;
 
@@ -238,6 +244,7 @@ private:
     uint64_t m_consumedBufferedAmount;
     uint64_t m_bufferedAmountAfterClose;
     BinaryType m_binaryType;
+    int m_binaryTypeChangesAfterOpen;
     // The subprotocol the server selected.
     String m_subprotocol;
     String m_extensions;
