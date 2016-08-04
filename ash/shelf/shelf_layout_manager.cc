@@ -194,8 +194,7 @@ class ShelfLayoutManager::RootWindowControllerObserverImpl
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
-    : SnapToPixelLayoutManager(shelf_widget->GetNativeView()->parent()),
-      root_window_(shelf_widget->GetNativeView()->GetRootWindow()),
+    : root_window_(shelf_widget->GetNativeView()->GetRootWindow()),
       updating_bounds_(false),
       shelf_widget_(shelf_widget),
       workspace_controller_(NULL),
@@ -500,20 +499,21 @@ void ShelfLayoutManager::SetAnimationDurationOverride(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShelfLayoutManager, aura::LayoutManager implementation:
+// ShelfLayoutManager, wm::WmSnapToPixelLayoutManager implementation:
 
 void ShelfLayoutManager::OnWindowResized() {
   LayoutShelf();
 }
 
-void ShelfLayoutManager::SetChildBounds(aura::Window* child,
+void ShelfLayoutManager::SetChildBounds(WmWindow* child,
                                         const gfx::Rect& requested_bounds) {
-  SnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
+  wm::WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
   // We may contain other widgets (such as frame maximize bubble) but they don't
   // effect the layout in anyway.
   if (!updating_bounds_ &&
-      ((shelf_widget_->GetNativeView() == child) ||
-       (shelf_widget_->status_area_widget()->GetNativeView() == child))) {
+      ((WmLookup::Get()->GetWindowForWidget(shelf_widget_) == child) ||
+       (WmLookup::Get()->GetWindowForWidget(
+            shelf_widget_->status_area_widget()) == child))) {
     LayoutShelf();
   }
 }

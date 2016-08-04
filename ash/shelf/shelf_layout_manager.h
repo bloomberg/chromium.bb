@@ -14,10 +14,10 @@
 #include "ash/common/wm/background_animator.h"
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/common/wm/lock_state_observer.h"
+#include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_types.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -52,7 +52,7 @@ class ASH_EXPORT ShelfLayoutManager
       public DockedWindowLayoutManagerObserver,
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
-      public SnapToPixelLayoutManager,
+      public wm::WmSnapToPixelLayoutManager,
       public SessionStateObserver {
  public:
   explicit ShelfLayoutManager(ShelfWidget* shelf_widget);
@@ -131,9 +131,9 @@ class ASH_EXPORT ShelfLayoutManager
   // shelf. Specifying 0 leads to use the default.
   void SetAnimationDurationOverride(int duration_override_in_ms);
 
-  // Overridden from SnapLayoutManager:
+  // Overridden from wm::WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
-  void SetChildBounds(aura::Window* child,
+  void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
   // Overridden from ShellObserver:

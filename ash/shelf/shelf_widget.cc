@@ -24,6 +24,7 @@
 #include "ash/shell.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
+#include "base/memory/ptr_util.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -364,9 +365,7 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
 
   shelf_layout_manager_ = new ShelfLayoutManager(this);
   shelf_layout_manager_->AddObserver(this);
-  aura::Window* shelf_container =
-      WmWindowAura::GetAuraWindow(wm_shelf_container);
-  shelf_container->SetLayoutManager(shelf_layout_manager_);
+  wm_shelf_container->SetLayoutManager(base::WrapUnique(shelf_layout_manager_));
   shelf_layout_manager_->set_workspace_controller(workspace_controller);
   workspace_controller->SetShelf(shelf_layout_manager_);
   background_animator_.PaintBackground(
@@ -382,12 +381,13 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
     status_area_widget_->Show();
   WmShell::Get()->focus_cycler()->AddWidget(status_area_widget_);
   background_animator_.AddObserver(status_area_widget_);
+  wm_status_container->SetLayoutManager(
+      base::MakeUnique<StatusAreaLayoutManager>(this));
 
+  aura::Window* shelf_container =
+      WmWindowAura::GetAuraWindow(wm_shelf_container);
   aura::Window* status_container =
       WmWindowAura::GetAuraWindow(wm_status_container);
-  status_container->SetLayoutManager(
-      new StatusAreaLayoutManager(status_container, this));
-
   shelf_container->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
       new ShelfWindowTargeter(shelf_container, shelf_layout_manager_)));
   status_container->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(

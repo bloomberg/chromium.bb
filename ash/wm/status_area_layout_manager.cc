@@ -5,20 +5,19 @@
 #include "ash/wm/status_area_layout_manager.h"
 
 #include "ash/common/system/status_area_widget.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_window.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "base/auto_reset.h"
-#include "ui/aura/window.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaLayoutManager, public:
 
-StatusAreaLayoutManager::StatusAreaLayoutManager(aura::Window* container,
-                                                 ShelfWidget* shelf)
-    : SnapToPixelLayoutManager(container), in_layout_(false), shelf_(shelf) {}
+StatusAreaLayoutManager::StatusAreaLayoutManager(ShelfWidget* shelf_widget)
+    : in_layout_(false), shelf_widget_(shelf_widget) {}
 
 StatusAreaLayoutManager::~StatusAreaLayoutManager() {}
 
@@ -30,12 +29,15 @@ void StatusAreaLayoutManager::OnWindowResized() {
 }
 
 void StatusAreaLayoutManager::SetChildBounds(
-    aura::Window* child,
+    WmWindow* child,
     const gfx::Rect& requested_bounds) {
   // Only need to have the shelf do a layout if the child changing is the status
   // area and the shelf isn't in the process of doing a layout.
-  if (child != shelf_->status_area_widget()->GetNativeView() || in_layout_) {
-    SnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
+  if (child !=
+          WmLookup::Get()->GetWindowForWidget(
+              shelf_widget_->status_area_widget()) ||
+      in_layout_) {
+    wm::WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
     return;
   }
 
@@ -44,7 +46,7 @@ void StatusAreaLayoutManager::SetChildBounds(
   if (requested_bounds == child->GetTargetBounds())
     return;
 
-  SnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
+  wm::WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
   LayoutStatusArea();
 }
 
@@ -53,11 +55,11 @@ void StatusAreaLayoutManager::SetChildBounds(
 
 void StatusAreaLayoutManager::LayoutStatusArea() {
   // Shelf layout manager may be already doing layout.
-  if (shelf_->shelf_layout_manager()->updating_bounds())
+  if (shelf_widget_->shelf_layout_manager()->updating_bounds())
     return;
 
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
-  shelf_->shelf_layout_manager()->LayoutShelf();
+  shelf_widget_->shelf_layout_manager()->LayoutShelf();
 }
 
 }  // namespace ash
