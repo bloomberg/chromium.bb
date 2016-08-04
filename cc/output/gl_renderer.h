@@ -270,11 +270,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void ScheduleCALayers(DrawingFrame* frame);
   void ScheduleOverlays(DrawingFrame* frame);
 
-  // Copies the contents of the render pass to an overlay resource, returned in
-  // |resource|. The resource is allocated from |overlay_resource_pool_|.
-  void CopyRenderPassToOverlayResource(const RenderPassId& render_pass_id,
-                                       Resource** resource);
-
   using OverlayResourceLock =
       std::unique_ptr<ResourceProvider::ScopedReadLockGL>;
   using OverlayResourceLockList = std::vector<OverlayResourceLock>;

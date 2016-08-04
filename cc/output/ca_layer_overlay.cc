@@ -47,59 +47,22 @@ enum CALayerResult {
   CA_LAYER_FAILED_COUNT,
 };
 
-bool ConvertAndAppendFilterOperation(
-    const FilterOperation& operation,
-    ui::CARendererLayerParams::FilterEffects* filter_effects) {
-  ui::CARendererLayerParams::FilterEffect filter_effect;
+bool FilterOperationSupported(const FilterOperation& operation) {
   switch (operation.type()) {
     case FilterOperation::GRAYSCALE:
-      filter_effect.type =
-          ui::CARendererLayerParams::FilterEffectType::GRAYSCALE;
-      break;
     case FilterOperation::SEPIA:
-      filter_effect.type = ui::CARendererLayerParams::FilterEffectType::SEPIA;
-      break;
     case FilterOperation::SATURATE:
-      filter_effect.type =
-          ui::CARendererLayerParams::FilterEffectType::SATURATE;
-      break;
     case FilterOperation::HUE_ROTATE:
-      filter_effect.type =
-          ui::CARendererLayerParams::FilterEffectType::HUE_ROTATE;
-      break;
     case FilterOperation::INVERT:
-      filter_effect.type = ui::CARendererLayerParams::FilterEffectType::INVERT;
-      break;
     case FilterOperation::BRIGHTNESS:
-      filter_effect.type =
-          ui::CARendererLayerParams::FilterEffectType::BRIGHTNESS;
-      break;
     case FilterOperation::CONTRAST:
-      filter_effect.type =
-          ui::CARendererLayerParams::FilterEffectType::CONTRAST;
-      break;
     case FilterOperation::OPACITY:
-      filter_effect.type = ui::CARendererLayerParams::FilterEffectType::OPACITY;
-      break;
     case FilterOperation::BLUR:
-      filter_effect.type = ui::CARendererLayerParams::FilterEffectType::BLUR;
-      break;
     case FilterOperation::DROP_SHADOW:
-      filter_effect.type =
-          ui::CARendererLayerParams::FilterEffectType::DROP_SHADOW;
-      break;
+      return true;
     default:
       return false;
   }
-
-  filter_effect.amount = operation.amount();
-  if (filter_effect.type ==
-      ui::CARendererLayerParams::FilterEffectType::DROP_SHADOW) {
-    filter_effect.drop_shadow_offset = operation.drop_shadow_offset();
-    filter_effect.drop_shadow_color = operation.drop_shadow_color();
-  }
-  filter_effects->push_back(filter_effect);
-  return true;
 }
 
 CALayerResult FromRenderPassQuad(ResourceProvider* resource_provider,
@@ -111,24 +74,20 @@ CALayerResult FromRenderPassQuad(ResourceProvider* resource_provider,
     return CA_LAYER_FAILED_RENDER_PASS_MASK;
 
   for (const FilterOperation& operation : quad->filters.operations()) {
-    bool success = ConvertAndAppendFilterOperation(
-        operation, &ca_layer_overlay->filter_effects);
+    bool success = FilterOperationSupported(operation);
     if (!success)
       return CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION;
   }
 
   if (quad->filters_scale != gfx::Vector2dF(1, 1)) {
-    for (const ui::CARendererLayerParams::FilterEffect& effect :
-         ca_layer_overlay->filter_effects) {
-      using FilterEffectType = ui::CARendererLayerParams::FilterEffectType;
-      if (effect.type == FilterEffectType::BLUR ||
-          effect.type == FilterEffectType::DROP_SHADOW) {
+    for (const FilterOperation& operation : quad->filters.operations()) {
+      if (operation.type() == FilterOperation::BLUR ||
+          operation.type() == FilterOperation::DROP_SHADOW) {
         return CA_LAYER_FAILED_RENDER_PASS_FILTER_SCALE;
       }
     }
   }
 
-  ca_layer_overlay->render_pass_id = quad->render_pass_id;
   ca_layer_overlay->contents_rect = gfx::RectF(0, 0, 1, 1);
 
   // TODO(erikchen): Enable this when RenderPassDrawQuad promotion to CALayer

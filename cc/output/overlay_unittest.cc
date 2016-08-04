@@ -1786,8 +1786,6 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadNoFilters) {
   ProcessForOverlays();
 
   EXPECT_EQ(1U, ca_layer_list_.size());
-  CALayerOverlay overlay = ca_layer_list_[0];
-  EXPECT_EQ(render_pass_id_, overlay.render_pass_id);
 }
 
 TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadAllValidFilters) {
@@ -1808,20 +1806,6 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadAllValidFilters) {
   ProcessForOverlays();
 
   EXPECT_EQ(1U, ca_layer_list_.size());
-
-  CALayerOverlay overlay = ca_layer_list_[0];
-  EXPECT_EQ(10u, overlay.filter_effects.size());
-  for (size_t i = 0; i < 10; ++i) {
-    ui::CARendererLayerParams::FilterEffect effect = overlay.filter_effects[i];
-    EXPECT_FLOAT_EQ((i + 1) / 10.0f, effect.amount);
-
-    if (effect.type ==
-        ui::CARendererLayerParams::FilterEffectType::DROP_SHADOW) {
-      EXPECT_EQ(10, effect.drop_shadow_offset.x());
-      EXPECT_EQ(20, effect.drop_shadow_offset.y());
-      EXPECT_EQ(SK_ColorGREEN, effect.drop_shadow_color);
-    }
-  }
 }
 
 TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadOpacityFilterScale) {

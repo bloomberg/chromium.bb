@@ -63,11 +63,6 @@ class CC_EXPORT CALayerOverlay {
   unsigned edge_aa_mask = 0;
   // The minification and magnification filters for the CALayer.
   unsigned filter;
-
-  // If valid, the renderer must copy the contents of the render pass into an
-  // overlay resource to use as the contents.
-  RenderPassId render_pass_id;
-  ui::CARendererLayerParams::FilterEffects filter_effects;
 };
 
 typedef std::vector<CALayerOverlay> CALayerOverlayList;

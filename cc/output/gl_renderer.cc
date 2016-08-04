@@ -3759,27 +3759,12 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
     }
 
     ResourceId contents_resource_id = ca_layer_overlay.contents_resource_id;
-    Resource* resource = nullptr;
-    // Some CALayers require a final round of processing.
-    if (ca_layer_overlay.render_pass_id.IsValid()) {
-      CopyRenderPassToOverlayResource(ca_layer_overlay.render_pass_id,
-                                      &resource);
-      contents_resource_id = resource->id();
-      ++copied_render_pass_count;
-    }
-
     unsigned texture_id = 0;
     if (contents_resource_id) {
       pending_overlay_resources_.push_back(
           base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
               resource_provider_, contents_resource_id)));
       texture_id = pending_overlay_resources_.back()->texture_id();
-
-      if (resource) {
-        // Once a resource is released, it is marked as "busy". It will be
-        // available for reuse after the ScopedReadLockGL is destroyed.
-        overlay_resource_pool_->ReleaseResource(resource);
-      }
     }
     GLfloat contents_rect[4] = {
         ca_layer_overlay.contents_rect.x(), ca_layer_overlay.contents_rect.y(),
@@ -3807,26 +3792,6 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
       gl_->ScheduleCALayerSharedStateCHROMIUM(
           ca_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
           sorting_context_id, transform);
-    }
-    if (!ca_layer_overlay.filter_effects.empty()) {
-      std::vector<GLCALayerFilterEffect> effects;
-      effects.resize(ca_layer_overlay.filter_effects.size());
-      for (size_t i = 0; i < ca_layer_overlay.filter_effects.size(); ++i) {
-        const ui::CARendererLayerParams::FilterEffect& filter_effect =
-            ca_layer_overlay.filter_effects[i];
-        GLCALayerFilterEffect& effect = effects[i];
-        effect.type = static_cast<GLint>(filter_effect.type);
-        effect.amount = filter_effect.amount;
-        effect.drop_shadow_offset_x = filter_effect.drop_shadow_offset.x();
-        effect.drop_shadow_offset_y = filter_effect.drop_shadow_offset.y();
-
-        static_assert(sizeof(GLuint) == sizeof(SkColor),
-                      "GLuint and SkColor must have the same size.");
-        effect.drop_shadow_color =
-            static_cast<GLuint>(filter_effect.drop_shadow_color);
-      }
-
-      gl_->ScheduleCALayerFilterEffectsCHROMIUM(effects.size(), effects.data());
     }
     gl_->ScheduleCALayerCHROMIUM(
         texture_id, contents_rect, ca_layer_overlay.background_color,
@@ -3862,34 +3827,6 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
         overlay.plane_z_order, overlay.transform, texture_id,
         ToNearestRect(overlay.display_rect), overlay.uv_rect);
   }
-}
-
-void GLRenderer::CopyRenderPassToOverlayResource(
-    const RenderPassId& render_pass_id,
-    Resource** resource) {
-  ScopedResource* contents_texture =
-      render_pass_textures_[render_pass_id].get();
-  DCHECK(contents_texture);
-  DCHECK(contents_texture->id());
-  *resource = overlay_resource_pool_->AcquireResource(
-      contents_texture->size(), ResourceFormat::RGBA_8888);
-  ResourceProvider::ScopedWriteLockGL destination(resource_provider_,
-                                                  (*resource)->id(), false);
-
-  GLuint source_texture = 0;
-  std::unique_ptr<ResourceProvider::ScopedReadLockGL> source;
-  if (current_framebuffer_lock_ &&
-      current_framebuffer_lock_->texture_id() == contents_texture->id()) {
-    source_texture = current_framebuffer_lock_->texture_id();
-  } else {
-    source.reset(new ResourceProvider::ScopedReadLockGL(
-        resource_provider_, contents_texture->id()));
-    source_texture = source->texture_id();
-  }
-  gl_->CopySubTextureCHROMIUM(source_texture, destination.texture_id(), 0, 0, 0,
-                              0, contents_texture->size().width(),
-                              contents_texture->size().height(), GL_TRUE,
-                              GL_FALSE, GL_FALSE);
 }
 
 }  // namespace cc
