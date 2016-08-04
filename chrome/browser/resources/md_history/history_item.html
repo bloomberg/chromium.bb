@@ -22,7 +22,6 @@
       :host(:not([embedded])) #main-container {
         background: #fff;
         border-color: var(--card-border-color);
-        border-radius: 2px;
         border-style: solid;
         border-width: 0 1px;
       }
@@ -36,12 +35,18 @@
       }
 
       :host([is-card-start]) #main-container {
+        border-radius: 2px 2px 0 0;
         border-top-width: 1px;
       }
 
       :host([is-card-end]) #main-container {
         border-bottom-width: 2px;
+        border-radius: 0 0 2px 2px;
         margin-bottom: var(--card-padding-between);
+      }
+
+      :host([is-card-start][is-card-end]) #main-container {
+        border-radius: 2px;
       }
 
       #date-accessed {
