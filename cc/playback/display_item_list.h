@@ -118,8 +118,6 @@ class CC_EXPORT DisplayItemList
       const DisplayItemListSettings& display_list_settings);
   ~DisplayItemList();
 
-  void ProcessAppendedItem(const DisplayItem* item);
-
   RTree rtree_;
   // For testing purposes only. Whether to keep visual rects across calls to
   // Finalize().
