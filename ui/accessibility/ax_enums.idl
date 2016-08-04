@@ -516,9 +516,16 @@
 
   // Compares two nodes in an accessibility tree in pre-order traversal.
   enum AXTreeOrder {
-    undefined,  // Not in the same tree, or other error.
-    before,     // First node is before the second one.
-    equal,      // Nodes are the same.
-    after       // First node is after the second one.
+    // Not in the same tree, or other error.
+    undefined,
+
+    // First node is before the second one.
+    before,
+
+    // Nodes are the same.
+    equal,
+
+    // First node is after the second one.
+    after
   };
 };
