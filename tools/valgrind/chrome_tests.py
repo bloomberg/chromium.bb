@@ -735,6 +735,8 @@ def _main():
                          "as well.")
   parser.add_option("--baseline", action="store_true", default=False,
                     help="generate baseline data instead of validating")
+  parser.add_option("-f", "--force", action="store_true", default=False,
+                    help="run a broken test anyway")
   parser.add_option("--gtest_filter",
                     help="additional arguments to --gtest_filter")
   parser.add_option("--gtest_repeat", help="argument for --gtest_repeat")
@@ -793,7 +795,59 @@ def _main():
   if len(options.test) != 1 and options.gtest_filter:
     parser.error("--gtest_filter and multiple tests don't make sense together")
 
+  BROKEN_TESTS = {
+    'drmemory_light': [
+      'addressinput',
+      'aura',
+      'base_unittests',
+      'cc',
+      'components', # x64 only?
+      'content',
+      'gfx',
+      'mojo_public_bindings',
+    ],
+    'drmemory_full': [
+      'addressinput',
+      'aura',
+      'base_unittests',
+      'blink_heap',
+      'blink_platform',
+      'browser_tests',
+      'cast',
+      'cc',
+      'chromedriver',
+      'compositor',
+      'content',
+      'content_browsertests',
+      'device',
+      'events',
+      'extensions',
+      'gfx',
+      'google_apis',
+      'gpu',
+      'ipc_tests',
+      'jingle',
+      'keyboard',
+      'media',
+      'midi',
+      'mojo_common',
+      'mojo_public_bindings',
+      'mojo_public_sysperf',
+      'mojo_public_system',
+      'mojo_system',
+      'net',
+      'remoting',
+      'unit',
+      'url',
+    ],
+  }
+
   for t in options.test:
+    if t in BROKEN_TESTS[options.valgrind_tool] and not options.force:
+      logging.info("Skipping broken %s test %s -- see crbug.com/633693" %
+                   (options.valgrind_tool, t))
+      return 0
+
     tests = ChromeTests(options, args, t)
     ret = tests.Run()
     if ret: return ret
