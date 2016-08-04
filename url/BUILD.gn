@@ -73,12 +73,7 @@ component("url") {
   # ICU support.
   if (use_platform_icu_alternatives) {
     if (is_android) {
-      sources += [
-        "android/url_jni_registrar.cc",
-        "android/url_jni_registrar.h",
-        "url_canon_icu_alternatives_android.cc",
-        "url_canon_icu_alternatives_android.h",
-      ]
+      sources += [ "url_canon_icu_alternatives_android.cc" ]
       deps += [
         ":url_features",
         ":url_java",

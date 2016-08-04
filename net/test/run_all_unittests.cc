@@ -17,10 +17,6 @@
 #include "base/android/jni_registrar.h"
 #include "net/android/dummy_spnego_authenticator.h"
 #include "net/android/net_jni_registrar.h"
-#if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
-#include "url/android/url_jni_registrar.h"  // nogncheck
-#endif
-
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -39,9 +35,6 @@ int main(int argc, char** argv) {
     {"DummySpnegoAuthenticator",
      net::android::DummySpnegoAuthenticator::RegisterJni},
     {"NetAndroid", net::android::RegisterJni},
-#if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
-    {"UrlAndroid", url::android::RegisterJni},
-#endif
   };
 
   // Register JNI bindings for android. Doing it early as the test suite setup

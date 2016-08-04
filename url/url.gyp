@@ -50,7 +50,6 @@
               ],
               'sources': [
                 'url_canon_icu_alternatives_android.cc',
-                'url_canon_icu_alternatives_android.h',
               ],
             }],
             ['OS == "ios"', {

@@ -34,8 +34,4 @@ bool IDNToASCII(const base::char16* src, int src_len, CanonOutputW* output) {
   return true;
 }
 
-bool RegisterIcuAlternativesJni(JNIEnv* env) {
-  return android::RegisterNativesImpl(env);
-}
-
 }  // namespace url

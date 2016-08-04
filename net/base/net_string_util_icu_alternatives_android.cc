@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_string_util_icu_alternatives_android.h"
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string16.h"
@@ -111,10 +109,6 @@ bool ConvertToUTF16WithSubstitutions(const std::string& text,
     return false;
   *output = base::android::ConvertJavaStringToUTF16(java_result);
   return true;
-}
-
-bool RegisterNetStringUtils(JNIEnv* env) {
-  return android::RegisterNativesImpl(env);
 }
 
 }  // namespace net

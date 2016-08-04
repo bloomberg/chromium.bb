@@ -117,7 +117,6 @@
             ['OS == "android"', {
               'sources': [
                 'base/net_string_util_icu_alternatives_android.cc',
-                'base/net_string_util_icu_alternatives_android.h',
               ],
             }],
             ['OS == "ios"', {
