@@ -48,7 +48,8 @@ class HeadlessBrowserContextIsolationTest
     : public HeadlessAsyncDevTooledBrowserTest {
  public:
   HeadlessBrowserContextIsolationTest()
-      : web_contents2_(nullptr),
+      : browser_context_(nullptr),
+        web_contents2_(nullptr),
         devtools_client2_(HeadlessDevToolsClient::Create()) {
     EXPECT_TRUE(embedded_test_server()->Start());
   }
@@ -142,12 +143,12 @@ class HeadlessBrowserContextIsolationTest
   void FinishTest() {
     web_contents2_->RemoveObserver(this);
     web_contents2_->Close();
-    browser_context_.reset();
+    browser_context_->Close();
     FinishAsynchronousTest();
   }
 
  private:
-  std::unique_ptr<HeadlessBrowserContext> browser_context_;
+  HeadlessBrowserContext* browser_context_;
   HeadlessWebContents* web_contents2_;
   std::unique_ptr<HeadlessDevToolsClient> devtools_client2_;
   std::unique_ptr<LoadObserver> load_observer_;
@@ -163,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
 
   // Load a page which doesn't actually exist, but which is fetched by our
   // custom protocol handler.
-  std::unique_ptr<HeadlessBrowserContext> browser_context =
+  HeadlessBrowserContext* browser_context =
       browser()
           ->CreateBrowserContextBuilder()
           .SetProtocolHandlers(std::move(protocol_handlers))
@@ -182,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
   EXPECT_EQ(kResponseBody, inner_html);
   web_contents->Close();
 
-  std::unique_ptr<HeadlessBrowserContext> another_browser_context =
+  HeadlessBrowserContext* another_browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
   // Loading the same non-existent page using a tab with a different context
@@ -214,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
   // Newly created temp directory should be empty.
   EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.path()));
 
-  std::unique_ptr<HeadlessBrowserContext> browser_context =
+  HeadlessBrowserContext* browser_context =
       browser()
           ->CreateBrowserContextBuilder()
           .SetUserDataDir(user_data_dir.path())

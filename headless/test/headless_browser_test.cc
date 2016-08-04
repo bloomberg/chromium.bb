@@ -202,7 +202,8 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   web_contents_->RemoveObserver(this);
   web_contents_->Close();
   web_contents_ = nullptr;
-  browser_context_.reset();
+  browser_context_->Close();
+  browser_context_ = nullptr;
 }
 
 }  // namespace headless

@@ -51,13 +51,14 @@ HeadlessBrowserImpl::HeadlessBrowserImpl(
     HeadlessBrowser::Options options)
     : on_start_callback_(on_start_callback),
       options_(std::move(options)),
-      browser_main_parts_(nullptr) {}
+      browser_main_parts_(nullptr),
+      weak_ptr_factory_(this) {}
 
 HeadlessBrowserImpl::~HeadlessBrowserImpl() {}
 
 HeadlessBrowserContext::Builder
 HeadlessBrowserImpl::CreateBrowserContextBuilder() {
-  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return HeadlessBrowserContext::Builder(this);
 }
 
@@ -74,37 +75,33 @@ HeadlessBrowserImpl::BrowserFileThread() const {
 }
 
 void HeadlessBrowserImpl::Shutdown() {
-  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // DevToolsManagerDelegate owns some BrowserContexts. Tell it to delete them.
-  if (devtools_manager_delegate()) {
-    devtools_manager_delegate()->Shutdown();
-  }
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
-  // We need to close all WebContents here.
-  std::vector<HeadlessWebContents*> all_web_contents = GetAllWebContents();
-  for (HeadlessWebContents* web_contents : all_web_contents) {
-    web_contents->Close();
-  }
-  DCHECK(web_contents_map_.empty());
+  // Destroy all browser contexts.
+  browser_contexts_.clear();
 
   BrowserMainThread()->PostTask(FROM_HERE,
                                 base::MessageLoop::QuitWhenIdleClosure());
 }
 
-std::vector<HeadlessWebContents*> HeadlessBrowserImpl::GetAllWebContents() {
-  std::vector<HeadlessWebContents*> result;
-  result.reserve(web_contents_map_.size());
+std::vector<HeadlessBrowserContext*>
+HeadlessBrowserImpl::GetAllBrowserContexts() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  for (const auto& web_contents_pair : web_contents_map_) {
-    result.push_back(web_contents_pair.second.get());
+  std::vector<HeadlessBrowserContext*> result;
+  result.reserve(browser_contexts_.size());
+
+  for (const auto& browser_context_pair : browser_contexts_) {
+    result.push_back(browser_context_pair.second.get());
   }
 
   return result;
 }
 
 HeadlessBrowserMainParts* HeadlessBrowserImpl::browser_main_parts() const {
-  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return browser_main_parts_;
 }
 
@@ -127,51 +124,57 @@ void HeadlessBrowserImpl::RunOnStartCallback() {
   on_start_callback_ = base::Callback<void(HeadlessBrowser*)>();
 }
 
-HeadlessWebContents* HeadlessBrowserImpl::CreateWebContents(
-    HeadlessWebContents::Builder* builder) {
-  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
-  std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
-      HeadlessWebContentsImpl::Create(builder, window_tree_host_->window());
-  if (!headless_web_contents)
+HeadlessBrowserContext* HeadlessBrowserImpl::CreateBrowserContext(
+    HeadlessBrowserContext::Builder* builder) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<HeadlessBrowserContextImpl> browser_context =
+      HeadlessBrowserContextImpl::Create(builder);
+
+  if (!browser_context) {
     return nullptr;
-  builder->browser_context_->RegisterWebContents(headless_web_contents.get());
-  return RegisterWebContents(std::move(headless_web_contents));
+  }
+
+  HeadlessBrowserContext* result = browser_context.get();
+
+  browser_contexts_[browser_context->Id()] = std::move(browser_context);
+
+  return result;
 }
 
-HeadlessWebContentsImpl* HeadlessBrowserImpl::RegisterWebContents(
-    std::unique_ptr<HeadlessWebContentsImpl> web_contents) {
-  DCHECK(web_contents);
-  HeadlessWebContentsImpl* unowned_web_contents = web_contents.get();
-  web_contents_map_[unowned_web_contents->GetDevtoolsAgentHostId()] =
-      std::move(web_contents);
-  return unowned_web_contents;
+void HeadlessBrowserImpl::DestroyBrowserContext(
+    HeadlessBrowserContextImpl* browser_context) {
+  auto it = browser_contexts_.find(browser_context->Id());
+  DCHECK(it != browser_contexts_.end());
+  browser_contexts_.erase(it);
 }
 
-void HeadlessBrowserImpl::DestroyWebContents(
-    HeadlessWebContentsImpl* web_contents) {
-  auto it = web_contents_map_.find(web_contents->GetDevtoolsAgentHostId());
-  DCHECK(it != web_contents_map_.end());
-  web_contents_map_.erase(it);
-}
-
-HeadlessDevToolsManagerDelegate*
-HeadlessBrowserImpl::devtools_manager_delegate() const {
+base::WeakPtr<HeadlessBrowserImpl> HeadlessBrowserImpl::GetWeakPtr() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return devtools_manager_delegate_.get();
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
-void HeadlessBrowserImpl::set_devtools_manager_delegate(
-    base::WeakPtr<HeadlessDevToolsManagerDelegate> devtools_manager_delegate) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  devtools_manager_delegate_ = devtools_manager_delegate;
+aura::WindowTreeHost* HeadlessBrowserImpl::window_tree_host() const {
+  return window_tree_host_.get();
 }
 
-HeadlessWebContents* HeadlessBrowserImpl::GetWebContentsForDevtoolsAgentHostId(
+HeadlessWebContents* HeadlessBrowserImpl::GetWebContentsForDevToolsAgentHostId(
     const std::string& devtools_agent_host_id) {
-  auto it = web_contents_map_.find(devtools_agent_host_id);
-  if (it == web_contents_map_.end())
+  for (HeadlessBrowserContext* context : GetAllBrowserContexts()) {
+    HeadlessWebContents* web_contents =
+        context->GetWebContentsForDevToolsAgentHostId(devtools_agent_host_id);
+    if (web_contents)
+      return web_contents;
+  }
+  return nullptr;
+}
+
+HeadlessBrowserContext* HeadlessBrowserImpl::GetBrowserContextForId(
+    const std::string& id) {
+  auto find_it = browser_contexts_.find(id);
+  if (find_it == browser_contexts_.end())
     return nullptr;
-  return it->second.get();
+  return find_it->second.get();
 }
 
 void RunChildProcessIfNeeded(int argc, const char** argv) {

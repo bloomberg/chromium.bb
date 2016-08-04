@@ -42,7 +42,8 @@ class EmbedderMojoTest : public HeadlessBrowserTest,
   EmbedderMojoTest() : EmbedderMojoTest(HttpPolicy::DEFAULT) {}
 
   explicit EmbedderMojoTest(HttpPolicy http_policy)
-      : web_contents_(nullptr),
+      : browser_context_(nullptr),
+        web_contents_(nullptr),
         devtools_client_(HeadlessDevToolsClient::Create()),
         http_policy_(http_policy) {}
 
@@ -114,7 +115,8 @@ class EmbedderMojoTest : public HeadlessBrowserTest,
     web_contents_->Close();
     web_contents_ = nullptr;
 
-    browser_context_.reset();
+    browser_context_->Close();
+    browser_context_ = nullptr;
   }
 
   void CreateTestMojoService(
@@ -122,7 +124,7 @@ class EmbedderMojoTest : public HeadlessBrowserTest,
     test_embedder_mojo_bindings_.AddBinding(this, std::move(request));
   }
 
-  std::unique_ptr<HeadlessBrowserContext> browser_context_;
+  HeadlessBrowserContext* browser_context_;
   HeadlessWebContents* web_contents_;
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 

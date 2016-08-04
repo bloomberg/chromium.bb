@@ -12,9 +12,12 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
+
+using testing::UnorderedElementsAre;
 
 namespace headless {
 
@@ -23,7 +26,7 @@ class HeadlessWebContentsTest : public HeadlessBrowserTest {};
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<HeadlessBrowserContext> browser_context =
+  HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
   HeadlessWebContents* web_contents =
@@ -32,17 +35,14 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
 
-  std::vector<HeadlessWebContents*> all_web_contents =
-      browser()->GetAllWebContents();
-
-  EXPECT_EQ(static_cast<size_t>(1), all_web_contents.size());
-  EXPECT_EQ(web_contents, all_web_contents[0]);
+  EXPECT_THAT(browser_context->GetAllWebContents(),
+              UnorderedElementsAre(web_contents));
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<HeadlessBrowserContext> browser_context =
+  HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
   HeadlessWebContents* web_contents =
@@ -51,10 +51,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
 
-  std::vector<HeadlessWebContents*> all_web_contents =
-      browser()->GetAllWebContents();
-
-  EXPECT_EQ(static_cast<size_t>(2), all_web_contents.size());
+  EXPECT_EQ(static_cast<size_t>(2),
+            browser_context->GetAllWebContents().size());
 }
 
 class HeadlessWebContentsScreenshotTest

@@ -110,7 +110,7 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
  protected:
   void RunTest();
 
-  std::unique_ptr<HeadlessBrowserContext> browser_context_;
+  HeadlessBrowserContext* browser_context_;  // Not owned.
   HeadlessWebContents* web_contents_;
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 };

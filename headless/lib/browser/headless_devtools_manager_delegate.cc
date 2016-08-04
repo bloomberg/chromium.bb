@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "base/guid.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -17,8 +17,8 @@
 namespace headless {
 
 HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
-    HeadlessBrowserImpl* browser)
-    : browser_(browser), weak_ptr_factory_(this) {
+    base::WeakPtr<HeadlessBrowserImpl> browser)
+    : browser_(std::move(browser)), default_browser_context_(nullptr) {
   command_map_["Browser.createTarget"] =
       &HeadlessDevToolsManagerDelegate::CreateTarget;
   command_map_["Browser.closeTarget"] =
@@ -34,6 +34,11 @@ HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() {}
 base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,
     base::DictionaryValue* command) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!browser_)
+    return nullptr;
+
   int id;
   std::string method;
   const base::DictionaryValue* params = nullptr;
@@ -56,16 +61,6 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
   return result.release();
 }
 
-void HeadlessDevToolsManagerDelegate::Shutdown() {
-  default_browser_context_.reset();
-  browser_context_map_.clear();
-}
-
-base::WeakPtr<HeadlessDevToolsManagerDelegate>
-HeadlessDevToolsManagerDelegate::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
 std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
     const base::DictionaryValue* params) {
   std::string url;
@@ -77,16 +72,15 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
   params->GetInteger("width", &width);
   params->GetInteger("height", &height);
 
-  HeadlessBrowserContext* context;
-  auto find_it = browser_context_map_.find(browser_context_id);
-  if (find_it != browser_context_map_.end()) {
-    context = find_it->second.get();
-  } else {
+  // TODO(alexclarke): Should we fail when user passes incorrect id?
+  HeadlessBrowserContext* context =
+      browser_->GetBrowserContextForId(browser_context_id);
+  if (!context) {
     if (!default_browser_context_) {
       default_browser_context_ =
           browser_->CreateBrowserContextBuilder().Build();
     }
-    context = default_browser_context_.get();
+    context = default_browser_context_;
   }
 
   HeadlessWebContentsImpl* web_contents_impl =
@@ -96,7 +90,7 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
                                         .Build());
 
   return browser::CreateTargetResult::Builder()
-      .SetTargetId(web_contents_impl->GetDevtoolsAgentHostId())
+      .SetTargetId(web_contents_impl->GetDevToolsAgentHostId())
       .Build()
       ->Serialize();
 }
@@ -108,7 +102,7 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CloseTarget(
     return nullptr;
   }
   HeadlessWebContents* web_contents =
-      browser_->GetWebContentsForDevtoolsAgentHostId(target_id);
+      browser_->GetWebContentsForDevToolsAgentHostId(target_id);
   bool success = false;
   if (web_contents) {
     web_contents->Close();
@@ -123,12 +117,12 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CloseTarget(
 std::unique_ptr<base::Value>
 HeadlessDevToolsManagerDelegate::CreateBrowserContext(
     const base::DictionaryValue* params) {
-  std::string browser_context_id = base::GenerateGUID();
-  browser_context_map_[browser_context_id] =
+  HeadlessBrowserContext* browser_context =
       browser_->CreateBrowserContextBuilder().Build();
+
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   return browser::CreateBrowserContextResult::Builder()
-      .SetBrowserContextId(browser_context_id)
+      .SetBrowserContextId(browser_context->Id())
       .Build()
       ->Serialize();
 }
@@ -140,25 +134,16 @@ HeadlessDevToolsManagerDelegate::DisposeBrowserContext(
   if (!params->GetString("browserContextId", &browser_context_id)) {
     return nullptr;
   }
-  auto find_it = browser_context_map_.find(browser_context_id);
+  HeadlessBrowserContext* context =
+      browser_->GetBrowserContextForId(browser_context_id);
+
   bool success = false;
-  if (find_it != browser_context_map_.end()) {
+  if (context && context != default_browser_context_ &&
+      context->GetAllWebContents().empty()) {
     success = true;
-    HeadlessBrowserContextImpl* headless_browser_context =
-        HeadlessBrowserContextImpl::From(find_it->second.get());
-    // Make sure |headless_browser_context| isn't in use!
-    for (HeadlessWebContents* headless_web_contents :
-         browser_->GetAllWebContents()) {
-      content::WebContents* web_contents =
-          HeadlessWebContentsImpl::From(headless_web_contents)->web_contents();
-      if (web_contents->GetBrowserContext() == headless_browser_context) {
-        success = false;
-        break;
-      }
-    }
-    if (success)
-      browser_context_map_.erase(find_it);
+    context->Close();
   }
+
   return browser::DisposeBrowserContextResult::Builder()
       .SetSuccess(success)
       .Build()

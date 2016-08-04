@@ -30,11 +30,7 @@ content::BrowserMainParts* HeadlessContentBrowserClient::CreateBrowserMainParts(
 
 content::DevToolsManagerDelegate*
 HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
-  std::unique_ptr<HeadlessDevToolsManagerDelegate> devtools_manager_delegate =
-      base::WrapUnique(new HeadlessDevToolsManagerDelegate(browser_));
-  browser_->set_devtools_manager_delegate(
-      devtools_manager_delegate->GetWeakPtr());
-  return devtools_manager_delegate.release();
+  return new HeadlessDevToolsManagerDelegate(browser_->GetWeakPtr());
 }
 
 }  // namespace headless

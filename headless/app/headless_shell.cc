@@ -51,7 +51,8 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
       : browser_(nullptr),
         devtools_client_(HeadlessDevToolsClient::Create()),
         web_contents_(nullptr),
-        processed_page_ready_(false) {}
+        processed_page_ready_(false),
+        browser_context_(nullptr) {}
   ~HeadlessShell() override {}
 
   void OnStart(HeadlessBrowser* browser) {
@@ -85,7 +86,7 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
     }
     web_contents_->RemoveObserver(this);
     web_contents_ = nullptr;
-    browser_context_.reset();
+    browser_context_->Close();
     browser_->Shutdown();
   }
 
@@ -285,7 +286,7 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
   HeadlessWebContents* web_contents_;
   bool processed_page_ready_;
   std::unique_ptr<net::FileStream> screenshot_file_stream_;
-  std::unique_ptr<HeadlessBrowserContext> browser_context_;
+  HeadlessBrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };

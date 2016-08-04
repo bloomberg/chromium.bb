@@ -67,7 +67,7 @@ class HeadlessWebContentsImpl : public HeadlessWebContents,
 
   void Close() override;
 
-  std::string GetDevtoolsAgentHostId();
+  std::string GetDevToolsAgentHostId();
 
   HeadlessBrowserImpl* browser() const;
   HeadlessBrowserContextImpl* browser_context() const;

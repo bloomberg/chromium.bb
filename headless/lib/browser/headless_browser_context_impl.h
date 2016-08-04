@@ -27,16 +27,21 @@ class HeadlessWebContentsImpl;
 class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
                                    public content::BrowserContext {
  public:
-  HeadlessBrowserContextImpl(HeadlessBrowserImpl* browser,
-                             HeadlessBrowserContextOptions context_options);
   ~HeadlessBrowserContextImpl() override;
 
   static HeadlessBrowserContextImpl* From(
       HeadlessBrowserContext* browser_context);
 
+  static std::unique_ptr<HeadlessBrowserContextImpl> Create(
+      HeadlessBrowserContext::Builder* builder);
+
   // HeadlessBrowserContext implementation:
   HeadlessWebContents::Builder CreateWebContentsBuilder() override;
   std::vector<HeadlessWebContents*> GetAllWebContents() override;
+  HeadlessWebContents* GetWebContentsForDevToolsAgentHostId(
+      const std::string& devtools_agent_host_id) override;
+  void Close() override;
+  const std::string& Id() const override;
 
   // BrowserContext implementation:
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
@@ -64,26 +69,34 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
       const base::FilePath& partition_path,
       bool in_memory) override;
 
-  void RegisterWebContents(HeadlessWebContentsImpl*);
-  void UnregisterWebContents(HeadlessWebContentsImpl*);
+  HeadlessWebContents* CreateWebContents(HeadlessWebContents::Builder* builder);
+  // Register web contents which were created not through Headless API
+  // (calling window.open() is a best example for this).
+  void RegisterWebContents(
+      std::unique_ptr<HeadlessWebContentsImpl> web_contents);
+  void DestroyWebContents(HeadlessWebContentsImpl* web_contents);
 
   HeadlessBrowserImpl* browser() const;
   const HeadlessBrowserContextOptions* options() const;
 
  private:
+  HeadlessBrowserContextImpl(
+      HeadlessBrowserImpl* browser,
+      std::unique_ptr<HeadlessBrowserContextOptions> context_options);
+
   // Performs initialization of the HeadlessBrowserContextImpl while IO is still
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
   HeadlessBrowserImpl* browser_;  // Not owned.
-  HeadlessBrowserContextOptions context_options_;
+  std::unique_ptr<HeadlessBrowserContextOptions> context_options_;
   std::unique_ptr<HeadlessResourceContext> resource_context_;
   base::FilePath path_;
 
-  // Web contents are owned by |HeadlessBrowser|, we keep track of
-  // contents corresponding to this context to delete them when context goes
-  // away.
-  std::unordered_map<std::string, HeadlessWebContents*> web_contents_map_;
+  std::unordered_map<std::string, std::unique_ptr<HeadlessWebContents>>
+      web_contents_map_;
+
+  std::string id_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextImpl);
 };

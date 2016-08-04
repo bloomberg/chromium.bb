@@ -18,6 +18,23 @@
 
 namespace headless {
 
+namespace {
+
+std::vector<HeadlessWebContents*> GetAllWebContents(HeadlessBrowser* browser) {
+  std::vector<HeadlessWebContents*> result;
+
+  for (HeadlessBrowserContext* browser_context :
+       browser->GetAllBrowserContexts()) {
+    std::vector<HeadlessWebContents*> web_contents =
+        browser_context->GetAllWebContents();
+    result.insert(result.end(), web_contents.begin(), web_contents.end());
+  }
+
+  return result;
+}
+
+}  // namespace
+
 class HeadlessDevToolsClientNavigationTest
     : public HeadlessAsyncDevTooledBrowserTest,
       page::ExperimentalObserver {
@@ -179,7 +196,7 @@ class BrowserDomainCreateAndDeletePageTest
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
 
-    EXPECT_EQ(1u, browser()->GetAllWebContents().size());
+    EXPECT_EQ(1u, GetAllWebContents(browser()).size());
 
     devtools_client_->GetBrowser()->GetExperimental()->CreateTarget(
         browser::CreateTargetParams::Builder()
@@ -193,7 +210,7 @@ class BrowserDomainCreateAndDeletePageTest
 
   void OnCreateTargetResult(
       std::unique_ptr<browser::CreateTargetResult> result) {
-    EXPECT_EQ(2u, browser()->GetAllWebContents().size());
+    EXPECT_EQ(2u, GetAllWebContents(browser()).size());
 
     devtools_client_->GetBrowser()->GetExperimental()->CloseTarget(
         browser::CloseTargetParams::Builder()
@@ -205,7 +222,7 @@ class BrowserDomainCreateAndDeletePageTest
 
   void OnCloseTargetResult(std::unique_ptr<browser::CloseTargetResult> result) {
     EXPECT_TRUE(result->GetSuccess());
-    EXPECT_EQ(1u, browser()->GetAllWebContents().size());
+    EXPECT_EQ(1u, GetAllWebContents(browser()).size());
     FinishAsynchronousTest();
   }
 };
@@ -217,7 +234,7 @@ class BrowserDomainCreateAndDeleteBrowserContextTest
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
 
-    EXPECT_EQ(1u, browser()->GetAllWebContents().size());
+    EXPECT_EQ(1u, GetAllWebContents(browser()).size());
 
     devtools_client_->GetBrowser()->GetExperimental()->CreateBrowserContext(
         browser::CreateBrowserContextParams::Builder().Build(),
@@ -244,7 +261,7 @@ class BrowserDomainCreateAndDeleteBrowserContextTest
 
   void OnCreateTargetResult(
       std::unique_ptr<browser::CreateTargetResult> result) {
-    EXPECT_EQ(2u, browser()->GetAllWebContents().size());
+    EXPECT_EQ(2u, GetAllWebContents(browser()).size());
 
     devtools_client_->GetBrowser()->GetExperimental()->CloseTarget(
         browser::CloseTargetParams::Builder()
@@ -256,7 +273,7 @@ class BrowserDomainCreateAndDeleteBrowserContextTest
   }
 
   void OnCloseTargetResult(std::unique_ptr<browser::CloseTargetResult> result) {
-    EXPECT_EQ(1u, browser()->GetAllWebContents().size());
+    EXPECT_EQ(1u, GetAllWebContents(browser()).size());
     EXPECT_TRUE(result->GetSuccess());
 
     devtools_client_->GetBrowser()->GetExperimental()->DisposeBrowserContext(
@@ -285,7 +302,7 @@ class BrowserDomainDisposeContextFailsIfInUse
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
 
-    EXPECT_EQ(1u, browser()->GetAllWebContents().size());
+    EXPECT_EQ(1u, GetAllWebContents(browser()).size());
     devtools_client_->GetBrowser()->GetExperimental()->CreateBrowserContext(
         browser::CreateBrowserContextParams::Builder().Build(),
         base::Bind(&BrowserDomainDisposeContextFailsIfInUse::OnContextCreated,

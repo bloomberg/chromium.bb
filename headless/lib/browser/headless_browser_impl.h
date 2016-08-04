@@ -26,7 +26,7 @@ class WindowTreeClient;
 
 namespace headless {
 
-class HeadlessBrowserContext;
+class HeadlessBrowserContextImpl;
 class HeadlessBrowserMainParts;
 
 class HeadlessBrowserImpl : public HeadlessBrowser {
@@ -45,9 +45,11 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
 
   void Shutdown() override;
 
-  std::vector<HeadlessWebContents*> GetAllWebContents() override;
-  HeadlessWebContents* GetWebContentsForDevtoolsAgentHostId(
+  std::vector<HeadlessBrowserContext*> GetAllBrowserContexts() override;
+  HeadlessWebContents* GetWebContentsForDevToolsAgentHostId(
       const std::string& devtools_agent_host_id) override;
+  HeadlessBrowserContext* GetBrowserContextForId(
+      const std::string& id) override;
 
   void set_browser_main_parts(HeadlessBrowserMainParts* browser_main_parts);
   HeadlessBrowserMainParts* browser_main_parts() const;
@@ -56,28 +58,31 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
 
   HeadlessBrowser::Options* options() { return &options_; }
 
-  HeadlessWebContents* CreateWebContents(HeadlessWebContents::Builder* builder);
-  HeadlessWebContentsImpl* RegisterWebContents(
-      std::unique_ptr<HeadlessWebContentsImpl> web_contents);
+  HeadlessBrowserContext* CreateBrowserContext(
+      HeadlessBrowserContext::Builder* builder);
+  // Close given |browser_context| and delete it
+  // (all web contents associated with it go away too).
+  void DestroyBrowserContext(HeadlessBrowserContextImpl* browser_context);
 
-  // Close given |web_contents| and delete it.
-  void DestroyWebContents(HeadlessWebContentsImpl* web_contents);
+  base::WeakPtr<HeadlessBrowserImpl> GetWeakPtr();
 
-  HeadlessDevToolsManagerDelegate* devtools_manager_delegate() const;
-  void set_devtools_manager_delegate(
-      base::WeakPtr<HeadlessDevToolsManagerDelegate>);
+  aura::WindowTreeHost* window_tree_host() const;
 
  protected:
   base::Callback<void(HeadlessBrowser*)> on_start_callback_;
   HeadlessBrowser::Options options_;
   HeadlessBrowserMainParts* browser_main_parts_;  // Not owned.
+
+  // TODO(eseckler): Currently one window and one window_tree_host
+  // is used for all web contents. We should probably use one
+  // window per web contents, but additional investigation is needed.
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
   std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
 
-  std::unordered_map<std::string, std::unique_ptr<HeadlessWebContents>>
-      web_contents_map_;
+  std::unordered_map<std::string, std::unique_ptr<HeadlessBrowserContextImpl>>
+      browser_contexts_;
 
-  base::WeakPtr<HeadlessDevToolsManagerDelegate> devtools_manager_delegate_;
+  base::WeakPtrFactory<HeadlessBrowserImpl> weak_ptr_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserImpl);

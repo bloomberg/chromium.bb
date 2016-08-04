@@ -22,7 +22,8 @@ class HeadlessWebContentsImpl;
 class HeadlessDevToolsManagerDelegate
     : public content::DevToolsManagerDelegate {
  public:
-  explicit HeadlessDevToolsManagerDelegate(HeadlessBrowserImpl* browser);
+  explicit HeadlessDevToolsManagerDelegate(
+      base::WeakPtr<HeadlessBrowserImpl> browser);
   ~HeadlessDevToolsManagerDelegate() override;
 
   // DevToolsManagerDelegate implementation:
@@ -33,11 +34,6 @@ class HeadlessDevToolsManagerDelegate
   base::DictionaryValue* HandleCommand(content::DevToolsAgentHost* agent_host,
                                        base::DictionaryValue* command) override;
 
-  // Delete owned browser contexts.
-  void Shutdown();
-
-  base::WeakPtr<HeadlessDevToolsManagerDelegate> GetWeakPtr();
-
  private:
   std::unique_ptr<base::Value> CreateTarget(
       const base::DictionaryValue* params);
@@ -47,18 +43,14 @@ class HeadlessDevToolsManagerDelegate
   std::unique_ptr<base::Value> DisposeBrowserContext(
       const base::DictionaryValue* params);
 
-  HeadlessBrowserImpl* browser_;  // Not owned.
-  std::map<std::string, std::unique_ptr<HeadlessBrowserContext>>
-      browser_context_map_;
+  base::WeakPtr<HeadlessBrowserImpl> browser_;
 
   using CommandMemberFnPtr = std::unique_ptr<base::Value> (
       HeadlessDevToolsManagerDelegate::*)(const base::DictionaryValue* params);
 
   std::map<std::string, CommandMemberFnPtr> command_map_;
 
-  std::unique_ptr<HeadlessBrowserContext> default_browser_context_;
-
-  base::WeakPtrFactory<HeadlessDevToolsManagerDelegate> weak_ptr_factory_;
+  HeadlessBrowserContext* default_browser_context_;
 };
 
 }  // namespace headless

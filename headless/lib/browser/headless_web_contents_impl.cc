@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -75,8 +76,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
 
     DCHECK(new_contents->GetBrowserContext() == browser_context_);
 
-    browser_context_->RegisterWebContents(web_contents.get());
-    browser_context_->browser()->RegisterWebContents(std::move(web_contents));
+    browser_context_->RegisterWebContents(std::move(web_contents));
   }
 
  private:
@@ -175,11 +175,11 @@ bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {
 }
 
 void HeadlessWebContentsImpl::Close() {
-  browser_context()->UnregisterWebContents(this);
-  browser()->DestroyWebContents(this);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  browser_context()->DestroyWebContents(this);
 }
 
-std::string HeadlessWebContentsImpl::GetDevtoolsAgentHostId() {
+std::string HeadlessWebContentsImpl::GetDevToolsAgentHostId() {
   return agent_host_->GetId();
 }
 
@@ -250,7 +250,7 @@ HeadlessWebContents::Builder& HeadlessWebContents::Builder::AddMojoService(
 }
 
 HeadlessWebContents* HeadlessWebContents::Builder::Build() {
-  return browser_context_->browser()->CreateWebContents(this);
+  return browser_context_->CreateWebContents(this);
 }
 
 HeadlessWebContents::Builder::MojoService::MojoService() {}

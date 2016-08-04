@@ -36,9 +36,24 @@ class HEADLESS_EXPORT HeadlessBrowserContext {
 
   // Open a new tab. Returns a builder object which can be used to set
   // properties for the new tab.
+  // Pointer to HeadlessWebContents becomes invalid after:
+  // a) Calling HeadlessWebContents::Close, or
+  // b) Calling HeadlessBrowserContext::Close on associated browser context, or
+  // c) Calling HeadlessBrowser::Shutdown.
   virtual HeadlessWebContents::Builder CreateWebContentsBuilder() = 0;
 
+  // Returns all web contents owned by this browser context.
   virtual std::vector<HeadlessWebContents*> GetAllWebContents() = 0;
+
+  // See HeadlessBrowser::GetWebContentsForDevToolsAgentHostId.
+  virtual HeadlessWebContents* GetWebContentsForDevToolsAgentHostId(
+      const std::string& devtools_agent_host_id) = 0;
+
+  // Destroy this BrowserContext and all WebContents associated with it.
+  virtual void Close() = 0;
+
+  // GUID for this browser context.
+  virtual const std::string& Id() const = 0;
 
   // TODO(skyostil): Allow saving and restoring contexts (crbug.com/617931).
 
@@ -87,10 +102,11 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);
 
-  std::unique_ptr<HeadlessBrowserContext> Build();
+  HeadlessBrowserContext* Build();
 
  private:
   friend class HeadlessBrowserImpl;
+  friend class HeadlessBrowserContextImpl;
 
   explicit Builder(HeadlessBrowserImpl* browser);
 

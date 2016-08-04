@@ -38,16 +38,22 @@ class HEADLESS_EXPORT HeadlessBrowser {
 
   // Create a new browser context which can be used to create tabs and isolate
   // them from one another.
-  // User owns newly created HeadlessBrowserContext and should delete them
-  // before calling HeadlessBrowser::Shutdown().
+  // Pointer to HeadlessBrowserContext becomes invalid after:
+  // a) Calling HeadlessBrowserContext::Close or
+  // b) Calling HeadlessBrowser::Shutdown
   virtual HeadlessBrowserContext::Builder CreateBrowserContextBuilder() = 0;
 
-  virtual std::vector<HeadlessWebContents*> GetAllWebContents() = 0;
+  virtual std::vector<HeadlessBrowserContext*> GetAllBrowserContexts() = 0;
 
   // Returns the HeadlessWebContents associated with the
   // |devtools_agent_host_id| if any.  Otherwise returns null.
-  virtual HeadlessWebContents* GetWebContentsForDevtoolsAgentHostId(
+  virtual HeadlessWebContents* GetWebContentsForDevToolsAgentHostId(
       const std::string& devtools_agent_host_id) = 0;
+
+  // Returns HeadlessBrowserContext associated with the given id if any.
+  // Otherwise returns null.
+  virtual HeadlessBrowserContext* GetBrowserContextForId(
+      const std::string& id) = 0;
 
   // Returns a task runner for submitting work to the browser main thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
@@ -59,6 +65,8 @@ class HEADLESS_EXPORT HeadlessBrowser {
 
   // Requests browser to stop as soon as possible. |Run| will return as soon as
   // browser stops.
+  // IMPORTANT: All pointers to HeadlessBrowserContexts and HeadlessWebContents
+  // become invalid after calling this function.
   virtual void Shutdown() = 0;
 
  protected:

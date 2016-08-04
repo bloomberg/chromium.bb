@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,6 +21,7 @@
 #include "headless/public/util/black_hole_protocol_handler.h"
 #include "headless/public/util/in_memory_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
+#include "ui/aura/window_tree_host.h"
 
 namespace headless {
 
@@ -78,18 +80,19 @@ net::URLRequestContext* HeadlessResourceContext::GetRequestContext() {
 
 HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
     HeadlessBrowserImpl* browser,
-    HeadlessBrowserContextOptions context_options)
+    std::unique_ptr<HeadlessBrowserContextOptions> context_options)
     : browser_(browser),
       context_options_(std::move(context_options)),
-      resource_context_(new HeadlessResourceContext) {
+      resource_context_(new HeadlessResourceContext),
+      id_(base::GenerateGUID()) {
   InitWhileIOAllowed();
 }
 
 HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
-  auto all_web_contents = GetAllWebContents();
-  for (auto* web_contents : all_web_contents) {
-    web_contents->Close();
-  }
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Destroy all web contents before shutting down storage partitions.
+  web_contents_map_.clear();
 
   ShutdownStoragePartitions();
 
@@ -105,15 +108,41 @@ HeadlessBrowserContextImpl* HeadlessBrowserContextImpl::From(
   return reinterpret_cast<HeadlessBrowserContextImpl*>(browser_context);
 }
 
+// static
+std::unique_ptr<HeadlessBrowserContextImpl> HeadlessBrowserContextImpl::Create(
+    HeadlessBrowserContext::Builder* builder) {
+  return base::WrapUnique(new HeadlessBrowserContextImpl(
+      builder->browser_, std::move(builder->options_)));
+}
+
 HeadlessWebContents::Builder
 HeadlessBrowserContextImpl::CreateWebContentsBuilder() {
   DCHECK(browser_->BrowserMainThread()->BelongsToCurrentThread());
   return HeadlessWebContents::Builder(this);
 }
 
+std::vector<HeadlessWebContents*>
+HeadlessBrowserContextImpl::GetAllWebContents() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::vector<HeadlessWebContents*> result;
+  result.reserve(web_contents_map_.size());
+
+  for (const auto& web_contents_pair : web_contents_map_) {
+    result.push_back(web_contents_pair.second.get());
+  }
+
+  return result;
+}
+
+void HeadlessBrowserContextImpl::Close() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  browser_->DestroyBrowserContext(this);
+}
+
 void HeadlessBrowserContextImpl::InitWhileIOAllowed() {
-  if (!context_options_.user_data_dir().empty()) {
-    path_ = context_options_.user_data_dir();
+  if (!context_options_->user_data_dir().empty()) {
+    path_ = context_options_->user_data_dir();
   } else {
     PathService::Get(base::DIR_EXE, &path_);
   }
@@ -182,8 +211,8 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
               content::BrowserThread::IO),
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::FILE),
-          protocol_handlers, context_options_.TakeProtocolHandlers(),
-          std::move(request_interceptors), &context_options_));
+          protocol_handlers, context_options_->TakeProtocolHandlers(),
+          std::move(request_interceptors), context_options_.get()));
   resource_context_->set_url_request_context_getter(url_request_context_getter);
   return url_request_context_getter.get();
 }
@@ -209,29 +238,46 @@ HeadlessBrowserContextImpl::CreateMediaRequestContextForStoragePartition(
   return nullptr;
 }
 
-std::vector<HeadlessWebContents*>
-HeadlessBrowserContextImpl::GetAllWebContents() {
-  std::vector<HeadlessWebContents*> result;
+HeadlessWebContents* HeadlessBrowserContextImpl::CreateWebContents(
+    HeadlessWebContents::Builder* builder) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  result.reserve(web_contents_map_.size());
+  std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
+      HeadlessWebContentsImpl::Create(builder,
+                                      browser()->window_tree_host()->window());
 
-  for (const auto& web_contents_pair : web_contents_map_) {
-    result.push_back(web_contents_pair.second);
+  if (!headless_web_contents) {
+    return nullptr;
   }
+
+  HeadlessWebContents* result = headless_web_contents.get();
+
+  RegisterWebContents(std::move(headless_web_contents));
 
   return result;
 }
 
 void HeadlessBrowserContextImpl::RegisterWebContents(
-    HeadlessWebContentsImpl* web_contents) {
-  web_contents_map_[web_contents->GetDevtoolsAgentHostId()] = web_contents;
+    std::unique_ptr<HeadlessWebContentsImpl> web_contents) {
+  DCHECK(web_contents);
+  web_contents_map_[web_contents->GetDevToolsAgentHostId()] =
+      std::move(web_contents);
 }
 
-void HeadlessBrowserContextImpl::UnregisterWebContents(
+void HeadlessBrowserContextImpl::DestroyWebContents(
     HeadlessWebContentsImpl* web_contents) {
-  auto it = web_contents_map_.find(web_contents->GetDevtoolsAgentHostId());
+  auto it = web_contents_map_.find(web_contents->GetDevToolsAgentHostId());
   DCHECK(it != web_contents_map_.end());
   web_contents_map_.erase(it);
+}
+
+HeadlessWebContents*
+HeadlessBrowserContextImpl::GetWebContentsForDevToolsAgentHostId(
+    const std::string& devtools_agent_host_id) {
+  auto find_it = web_contents_map_.find(devtools_agent_host_id);
+  if (find_it == web_contents_map_.end())
+    return nullptr;
+  return find_it->second.get();
 }
 
 HeadlessBrowserImpl* HeadlessBrowserContextImpl::browser() const {
@@ -240,7 +286,11 @@ HeadlessBrowserImpl* HeadlessBrowserContextImpl::browser() const {
 
 const HeadlessBrowserContextOptions* HeadlessBrowserContextImpl::options()
     const {
-  return &context_options_;
+  return context_options_.get();
+}
+
+const std::string& HeadlessBrowserContextImpl::Id() const {
+  return id_;
 }
 
 HeadlessBrowserContext::Builder::Builder(HeadlessBrowserImpl* browser)
@@ -307,8 +357,7 @@ HeadlessBrowserContext::Builder::EnableUnsafeNetworkAccessWithMojoBindings(
   return *this;
 }
 
-std::unique_ptr<HeadlessBrowserContext>
-HeadlessBrowserContext::Builder::Build() {
+HeadlessBrowserContext* HeadlessBrowserContext::Builder::Build() {
   if (!mojo_bindings_.empty()) {
     std::unique_ptr<InMemoryProtocolHandler> headless_mojom_protocol_handler(
         new InMemoryProtocolHandler());
@@ -333,8 +382,7 @@ HeadlessBrowserContext::Builder::Build() {
     }
   }
 
-  return base::WrapUnique(
-      new HeadlessBrowserContextImpl(browser_, std::move(*options_)));
+  return browser_->CreateBrowserContext(this);
 }
 
 HeadlessBrowserContext::Builder::MojoBindings::MojoBindings() {}
