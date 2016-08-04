@@ -9,7 +9,7 @@ var test = function()
         InspectorTest.addResult("Closeable tabs to restore: " + JSON.stringify(tabbedPaneController._closeableTabSetting.get()));
     }
 
-    var tabbedPaneController = WebInspector.inspectorView._drawerTabbedPane;
+    var tabbedPaneController = WebInspector.inspectorView._drawerTabbedLocation;
     logPersistenceSetting();
     // Show a closeable tab.
     tabbedPaneController.showView("sensors");
@@ -23,7 +23,7 @@ var test = function()
     tabbedPaneController.showView("sources.history");
     logPersistenceSetting();
     // Close closeable tab.
-    tabbedPaneController._tabbedPane.closeTab("sensors");
+    tabbedPaneController.tabbedPane().closeTab("sensors");
     logPersistenceSetting();
 
     InspectorTest.completeTest();
