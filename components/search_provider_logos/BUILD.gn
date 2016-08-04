@@ -12,6 +12,8 @@ static_library("search_provider_logos") {
     "logo_common.h",
     "logo_tracker.cc",
     "logo_tracker.h",
+    "switches.cc",
+    "switches.h",
   ]
 
   public_deps = [

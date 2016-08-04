@@ -26,6 +26,8 @@
         'search_provider_logos/logo_common.h',
         'search_provider_logos/logo_tracker.cc',
         'search_provider_logos/logo_tracker.h',
+        'search_provider_logos/switches.cc',
+        'search_provider_logos/switches.h',
       ],
     },
   ],

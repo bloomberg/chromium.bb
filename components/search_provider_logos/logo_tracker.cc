@@ -7,12 +7,15 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "components/search_provider_logos/switches.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -22,8 +25,6 @@ namespace search_provider_logos {
 namespace {
 
 const int64_t kMaxDownloadBytes = 1024 * 1024;
-
-//const int kDecodeLogoTimeoutSeconds = 30;
 
 // Returns whether the metadata for the cached logo indicates that the logo is
 // OK to show, i.e. it's not expired or it's allowed to be shown temporarily
@@ -208,14 +209,19 @@ void LogoTracker::FetchLogo() {
   DCHECK(!fetcher_);
   DCHECK(!is_idle_);
 
-  GURL url;
   std::string fingerprint;
   if (cached_logo_ && !cached_logo_->metadata.fingerprint.empty() &&
       cached_logo_->metadata.expiration_time >= clock_->Now()) {
     fingerprint = cached_logo_->metadata.fingerprint;
   }
-  url = append_queryparams_func_.Run(
-      logo_url_, fingerprint, wants_cta_, transparent_);
+  GURL url;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kGoogleDoodleUrl)) {
+    url = GURL(command_line->GetSwitchValueASCII(switches::kGoogleDoodleUrl));
+  } else {
+    url = append_queryparams_func_.Run(
+        logo_url_, fingerprint, wants_cta_, transparent_);
+  }
 
   fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(request_context_getter_.get());
@@ -295,7 +301,7 @@ void LogoTracker::OnFreshLogoAvailable(
     }
   }
 
-  DCHECK(download_outcome != kDownloadOutcomeNotTracked);
+  DCHECK_NE(kDownloadOutcomeNotTracked, download_outcome);
   ReturnToIdle(download_outcome);
 }
 
@@ -303,7 +309,16 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(!is_idle_);
   std::unique_ptr<net::URLFetcher> cleanup_fetcher(fetcher_.release());
 
-  if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200)) {
+  if (!source->GetStatus().is_success()) {
+    ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);
+    return;
+  }
+
+  int response_code = source->GetResponseCode();
+  if (response_code != net::HTTP_OK &&
+      response_code != net::URLFetcher::RESPONSE_CODE_INVALID) {
+    // RESPONSE_CODE_INVALID is returned when fetching from a file: URL
+    // (for testing). In all other cases we would have had a non-success status.
     ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);
     return;
   }

@@ -79,9 +79,17 @@ std::unique_ptr<EncodedLogo> GoogleParseLogoResponse(
 
   // Default parsing failure to be true.
   *parsing_failed = true;
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response_sp);
-  if (!value.get())
+
+  int error_code;
+  std::string error_string;
+  int error_line;
+  int error_col;
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+      response_sp, 0, &error_code, &error_string, &error_line, &error_col);
+  if (!value) {
+    LOG(WARNING) << error_string << " at " << error_line << ":" << error_col;
     return nullptr;
+  }
   // The important data lives inside several nested dictionaries:
   // {"update": {"logo": { "mime_type": ..., etc } } }
   const base::DictionaryValue* outer_dict;
