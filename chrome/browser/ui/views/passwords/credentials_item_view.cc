@@ -102,8 +102,14 @@ CredentialsItemView::CredentialsItemView(
     lower_label_ = new views::Label(
         lower_text, rb->GetFontList(ui::ResourceBundle::SmallFont));
     lower_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    lower_label_->SetMultiLine(true);
     AddChildView(lower_label_);
   }
+
+  if (!upper_text.empty() && !lower_text.empty())
+    SetAccessibleName(upper_text + base::ASCIIToUTF16("\n") + lower_text);
+  else
+    SetAccessibleName(upper_text + lower_text);
 
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }

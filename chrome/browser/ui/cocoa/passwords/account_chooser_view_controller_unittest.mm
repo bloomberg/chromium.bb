@@ -145,8 +145,10 @@ TEST_F(AccountChooserViewControllerTest, ConfiguresViews) {
 TEST_F(AccountChooserViewControllerTest, ConfiguresFederatedCredential) {
   const char federation[] = "https://google.com/idp";
   const char name[] = "Peter the Great";
+  const char username[] = "pete";
+
   PasswordDialogController::FormsVector local_forms;
-  local_forms.push_back(Credential("pizza"));
+  local_forms.push_back(Credential(username));
   local_forms.back()->federation_origin = url::Origin(GURL(federation));
   local_forms.back()->display_name = base::ASCIIToUTF16(name);
   SetUpAccountChooser(&local_forms);
@@ -158,6 +160,7 @@ TEST_F(AccountChooserViewControllerTest, ConfiguresFederatedCredential) {
       base::SysNSStringToUTF8([base::mac::ObjCCastStrict<CredentialItemButton>(
           [buttons objectAtIndex:0]) title]);
   EXPECT_THAT(title, testing::HasSubstr(name));
+  EXPECT_THAT(title, testing::HasSubstr(username));
   EXPECT_THAT(title, testing::HasSubstr(GURL(federation).host()));
 }
 

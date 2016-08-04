@@ -55,18 +55,23 @@ gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia skia_image) {
 
 std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
     const autofill::PasswordForm& form) {
-  const base::string16& upper_string =
-      form.display_name.empty() ? form.username_value : form.display_name;
-  base::string16 lower_string;
-  if (form.federation_origin.unique()) {
-    if (!form.display_name.empty())
-      lower_string = form.username_value;
-  } else {
-    lower_string = l10n_util::GetStringFUTF16(
+  base::string16 federation;
+  if (!form.federation_origin.unique()) {
+    federation = l10n_util::GetStringFUTF16(
         IDS_PASSWORDS_VIA_FEDERATION,
         base::UTF8ToUTF16(form.federation_origin.host()));
   }
-  return std::make_pair(upper_string, lower_string);
+
+  if (form.display_name.empty())
+    return std::make_pair(form.username_value, std::move(federation));
+
+  // Display name isn't empty.
+  if (federation.empty())
+    return std::make_pair(form.display_name, form.username_value);
+
+  return std::make_pair(
+      form.display_name,
+      form.username_value + base::ASCIIToUTF16("\n") + federation);
 }
 
 void GetSavePasswordDialogTitleTextAndLinkRange(

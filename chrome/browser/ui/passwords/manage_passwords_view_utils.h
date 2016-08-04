@@ -33,7 +33,7 @@ constexpr int kAvatarImageSize = 32;
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia image_skia);
 
 // Returns the upper and lower label to be displayed in the account chooser UI
-// for |form|.
+// for |form|. The lower label can be multiline.
 std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
     const autofill::PasswordForm& form);
 
