@@ -25,30 +25,23 @@ EGLImageKHR GTFCreateEGLImage(int width, int height,
   };
 
   if (format != GL_RGBA && format != GL_RGB)
-    return static_cast<EGLImageKHR>(NULL);
+    return static_cast<EGLImageKHR>(nullptr);
 
   if (type != GL_UNSIGNED_BYTE)
-    return static_cast<EGLImageKHR>(NULL);
+    return static_cast<EGLImageKHR>(nullptr);
 
   GLuint texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               format,
-               width,
-               height,
-               0,
-               format,
-               type,
-               NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, type,
+               nullptr);
 
   // Disable mip-maps because we do not require it.
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   if(glGetError() != GL_NO_ERROR)
-    return static_cast<EGLImageKHR>(NULL);
+    return static_cast<EGLImageKHR>(nullptr);
 
   EGLImageKHR egl_image =
       egl_create_image_khr_(eglGetCurrentDisplay(),
@@ -60,7 +53,7 @@ EGLImageKHR GTFCreateEGLImage(int width, int height,
   if (eglGetError() == EGL_SUCCESS)
     return egl_image;
   else
-    return static_cast<EGLImageKHR>(NULL);
+    return static_cast<EGLImageKHR>(nullptr);
 }
 
 void GTFDestroyEGLImage(EGLImageKHR image) {
