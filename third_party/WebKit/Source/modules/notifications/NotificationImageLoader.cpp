@@ -65,11 +65,7 @@ void NotificationImageLoader::stop()
     m_stopped = true;
     if (m_threadableLoader) {
         m_threadableLoader->cancel();
-        // WorkerThreadableLoader keeps a Persistent<WorkerGlobalScope> to the
-        // ExecutionContext it received in |create|. Kill it to prevent
-        // reference cycles involving a mix of GC and non-GC types that fail to
-        // clear in ThreadState::cleanup.
-        m_threadableLoader.reset();
+        m_threadableLoader = nullptr;
     }
 }
 

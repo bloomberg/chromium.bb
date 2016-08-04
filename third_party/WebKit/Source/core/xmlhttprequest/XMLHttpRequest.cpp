@@ -1024,7 +1024,7 @@ bool XMLHttpRequest::internalAbort()
     // If, window.onload contains open() and send(), m_loader will be set to
     // non 0 value. So, we cannot continue the outer open(). In such case,
     // just abort the outer open() by returning false.
-    std::unique_ptr<ThreadableLoader> loader = std::move(m_loader);
+    ThreadableLoader* loader = m_loader.release();
     loader->cancel();
 
     // If abort() called internalAbort() and a nested open() ended up
@@ -1707,6 +1707,7 @@ DEFINE_TRACE(XMLHttpRequest)
 {
     visitor->trace(m_responseBlob);
     visitor->trace(m_responseLegacyStream);
+    visitor->trace(m_loader);
     visitor->trace(m_responseDocument);
     visitor->trace(m_responseDocumentParser);
     visitor->trace(m_responseArrayBuffer);

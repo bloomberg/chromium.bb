@@ -14,7 +14,7 @@ namespace blink {
 
 class MockThreadableLoader : public ThreadableLoader {
 public:
-    static std::unique_ptr<MockThreadableLoader> create() { return wrapUnique(new testing::StrictMock<MockThreadableLoader>); }
+    static MockThreadableLoader* create() { return new testing::StrictMock<MockThreadableLoader>; }
 
     MOCK_METHOD1(start, void(const ResourceRequest&));
     MOCK_METHOD1(overrideTimeout, void(unsigned long));

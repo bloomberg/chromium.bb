@@ -34,7 +34,7 @@ using MockFetchDataLoaderClient = DataConsumerHandleTestUtil::MockFetchDataLoade
 
 class FakeLoaderFactory : public FetchBlobDataConsumerHandle::LoaderFactory {
 public:
-    std::unique_ptr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
+    ThreadableLoader* create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
     {
         ASSERT_NOT_REACHED();
         return nullptr;
