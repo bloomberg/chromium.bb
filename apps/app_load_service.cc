@@ -64,8 +64,9 @@ bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
   std::string extension_id;
-  if (!extensions::UnpackedInstaller::Create(extension_service)->
-          LoadFromCommandLine(base::FilePath(extension_path), &extension_id)) {
+  if (!extensions::UnpackedInstaller::Create(extension_service)
+           ->LoadFromCommandLine(base::FilePath(extension_path), &extension_id,
+                                 true /* only_allow_apps */)) {
     return false;
   }
 
@@ -81,8 +82,9 @@ bool AppLoadService::Load(const base::FilePath& extension_path) {
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
   std::string extension_id;
-  return extensions::UnpackedInstaller::Create(extension_service)->
-      LoadFromCommandLine(base::FilePath(extension_path), &extension_id);
+  return extensions::UnpackedInstaller::Create(extension_service)
+      ->LoadFromCommandLine(base::FilePath(extension_path), &extension_id,
+                            true /* only_allow_apps */);
 }
 
 // static

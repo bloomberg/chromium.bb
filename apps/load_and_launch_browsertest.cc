@@ -8,13 +8,17 @@
 
 #include "apps/switches.h"
 #include "base/process/launch.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/simple_message_box_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_launcher.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 using extensions::PlatformAppBrowserTest;
@@ -27,6 +31,8 @@ const char* kSwitchesToCopy[] = {
     switches::kUserDataDir,
     switches::kNoSandbox,
 };
+
+constexpr char kTestExtensionId[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 
 }  // namespace
 
@@ -112,18 +118,17 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
 namespace {
 
-// TestFixture that appends --load-and-launch-app before calling BrowserMain.
-class PlatformAppLoadAndLaunchBrowserTest : public PlatformAppBrowserTest {
+// TestFixture that appends --load-and-launch-app with an app before calling
+// BrowserMain.
+class LoadAndLaunchPlatformAppBrowserTest : public PlatformAppBrowserTest {
  protected:
-  PlatformAppLoadAndLaunchBrowserTest() {}
+  LoadAndLaunchPlatformAppBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
-    app_path_ = test_data_dir_
-        .AppendASCII("platform_apps")
-        .AppendASCII("minimal");
-    command_line->AppendSwitchNative(apps::kLoadAndLaunchApp,
-                                     app_path_.value());
+    base::FilePath app_path =
+        test_data_dir_.AppendASCII("platform_apps").AppendASCII("minimal");
+    command_line->AppendSwitchNative(apps::kLoadAndLaunchApp, app_path.value());
   }
 
   void LoadAndLaunchApp() {
@@ -136,9 +141,32 @@ class PlatformAppLoadAndLaunchBrowserTest : public PlatformAppBrowserTest {
   }
 
  private:
-  base::FilePath app_path_;
+  DISALLOW_COPY_AND_ASSIGN(LoadAndLaunchPlatformAppBrowserTest);
+};
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformAppLoadAndLaunchBrowserTest);
+// TestFixture that appends --load-and-launch-app with an extension before
+// calling BrowserMain.
+class LoadAndLaunchExtensionBrowserTest : public PlatformAppBrowserTest {
+ protected:
+  LoadAndLaunchExtensionBrowserTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    base::FilePath app_path = test_data_dir_.AppendASCII("good")
+                                  .AppendASCII("Extensions")
+                                  .AppendASCII(kTestExtensionId)
+                                  .AppendASCII("1.0.0.0");
+    command_line->AppendSwitchNative(apps::kLoadAndLaunchApp, app_path.value());
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    // Skip showing the error message box to avoid freezing the main thread.
+    chrome::internal::g_should_skip_message_box_for_test = true;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(LoadAndLaunchExtensionBrowserTest);
 };
 
 }  // namespace
@@ -155,9 +183,32 @@ class PlatformAppLoadAndLaunchBrowserTest : public PlatformAppBrowserTest {
 #endif
 
 // Case where Chrome is not running.
-IN_PROC_BROWSER_TEST_F(PlatformAppLoadAndLaunchBrowserTest,
+IN_PROC_BROWSER_TEST_F(LoadAndLaunchPlatformAppBrowserTest,
                        MAYBE_LoadAndLaunchAppChromeNotRunning) {
   LoadAndLaunchApp();
+}
+
+IN_PROC_BROWSER_TEST_F(LoadAndLaunchExtensionBrowserTest,
+                       LoadAndLaunchExtension) {
+  const std::vector<base::string16>* errors =
+      ExtensionErrorReporter::GetInstance()->GetErrors();
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // The error is skipped on official builds.
+  EXPECT_TRUE(errors->empty());
+#else
+  // Expect |extension_instead_of_app_error|.
+  EXPECT_EQ(1u, errors->size());
+  EXPECT_NE(base::string16::npos,
+            errors->at(0).find(base::ASCIIToUTF16(
+                "App loading flags cannot be used to load extensions")));
+#endif
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile());
+  EXPECT_EQ(nullptr,
+            registry->GetExtensionById(
+                kTestExtensionId, extensions::ExtensionRegistry::EVERYTHING));
 }
 
 }  // namespace apps
