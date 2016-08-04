@@ -69,6 +69,32 @@ bool RequestCoordinator::SavePageLater(
                                 weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
+void RequestCoordinator::GetQueuedRequests(
+    const std::string& client_namespace,
+    const QueuedRequestCallback& callback) {
+  // Get all matching requests from the request queue, send them to our
+  // callback.  We bind the namespace and callback to the front of the callback
+  // param set.
+  queue_->GetRequests(base::Bind(&RequestCoordinator::GetQueuedRequestsCallback,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 client_namespace, callback));
+}
+
+// For each request matching the client_namespace, return the ClientId.
+void RequestCoordinator::GetQueuedRequestsCallback(
+    const std::string& client_namespace,
+    const QueuedRequestCallback& callback,
+    RequestQueue::GetRequestsResult result,
+    const std::vector<SavePageRequest>& requests) {
+  std::vector<ClientId> client_ids;
+
+  for (const auto& request : requests) {
+    if (client_namespace == request.client_id().name_space)
+      client_ids.push_back(request.client_id());
+  }
+
+  callback.Run(client_ids);
+}
 
 void RequestCoordinator::RemoveRequests(
     const std::vector<ClientId>& client_ids) {

@@ -55,6 +55,17 @@ class RequestCoordinator : public KeyedService {
   // TODO(petewil): Add code to cancel an in-progress pre-render.
   void RemoveRequests(const std::vector<ClientId>& client_ids);
 
+  // Callback that receives the response for GetQueuedRequests.  Client must
+  // copy the result right away, it goes out of scope at the end of the
+  // callback.
+  typedef base::Callback<void(const std::vector<ClientId>&)>
+      QueuedRequestCallback;
+
+  // For a client namespace, get the ClientId of all requests for that
+  // namespace.
+  void GetQueuedRequests(const std::string& client_namespace,
+                         const QueuedRequestCallback& callback);
+
   // Starts processing of one or more queued save page later requests.
   // Returns whether processing was started and that caller should expect
   // a callback. If processing was already active, returns false.
@@ -100,9 +111,18 @@ class RequestCoordinator : public KeyedService {
   }
 
  private:
+  // Receives the results of a get from the request queue, and turns that into
+  // ClientId objects for the caller of GetQueuedRequests.
+  void GetQueuedRequestsCallback(const std::string& client_namespace,
+                                 const QueuedRequestCallback& callback,
+                                 RequestQueue::GetRequestsResult result,
+                                 const std::vector<SavePageRequest>& requests);
+
+  // Receives the result of add requests to the request queue.
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
 
+  // Receives the result of update and delete requests to the request queue.
   void UpdateRequestCallback(RequestQueue::UpdateRequestResult result);
 
   // Callback from the request picker when it has chosen our next request.

@@ -29,12 +29,15 @@ namespace offline_pages {
 
 namespace {
 // put test constants here
-const GURL kUrl("http://universe.com/everything");
-const ClientId kClientId("bookmark", "42");
-const int kRequestId2(2);
+const GURL kUrl1("http://universe.com/everything");
 const GURL kUrl2("http://universe.com/toinfinityandbeyond");
-const ClientId kClientId2("bookmark", "43");
-const int kRequestId(1);
+const std::string kClientNamespace("bookmark");
+const std::string kId1("42");
+const std::string kId2("life*universe+everything");
+const ClientId kClientId1(kClientNamespace, kId1);
+const ClientId kClientId2(kClientNamespace, kId2);
+const int kRequestId1(1);
+const int kRequestId2(2);
 const long kTestTimeoutSeconds = 1;
 const long kTestTimeBudgetSeconds = 200;
 const int kBatteryPercentageHigh = 75;
@@ -75,7 +78,7 @@ class SchedulerStub : public Scheduler {
 class OfflinerStub : public Offliner {
  public:
   OfflinerStub()
-      : request_(kRequestId, kUrl, kClientId, base::Time::Now(),
+      : request_(kRequestId1, kUrl1, kClientId1, base::Time::Now(),
                  kUserRequested),
         enable_callback_(false),
         cancel_called_(false) {}
@@ -141,7 +144,7 @@ class RequestCoordinatorTest
     return coordinator_->is_busy();
   }
 
-  // Empty callback function
+  // Empty callback function.
   void EmptyCallbackFunction(bool result) {
   }
 
@@ -150,13 +153,16 @@ class RequestCoordinatorTest
     waiter_.Signal();
   }
 
-  // Callback for Add requests
+  // Callback for Add requests.
   void AddRequestDone(RequestQueue::AddRequestResult result,
                       const SavePageRequest& request);
 
   // Callback for getting requests.
   void GetRequestsDone(RequestQueue::GetRequestsResult result,
                        const std::vector<SavePageRequest>& requests);
+
+  // Callback for getting request statuses.
+  void GetQueuedRequestsDone(const std::vector<ClientId>& client_ids);
 
   void SendOfflinerDoneCallback(const SavePageRequest& request,
                                 Offliner::RequestStatus status);
@@ -167,6 +173,10 @@ class RequestCoordinatorTest
 
   const std::vector<SavePageRequest>& last_requests() const {
     return last_requests_;
+  }
+
+  const std::vector<ClientId>& last_client_ids() const {
+    return last_client_ids_;
   }
 
   void EnableOfflinerCallback(bool enable) {
@@ -198,6 +208,7 @@ class RequestCoordinatorTest
  private:
   RequestQueue::GetRequestsResult last_get_requests_result_;
   std::vector<SavePageRequest> last_requests_;
+  std::vector<ClientId> last_client_ids_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<RequestCoordinator> coordinator_;
@@ -241,6 +252,12 @@ void RequestCoordinatorTest::GetRequestsDone(
   last_requests_ = requests;
 }
 
+void RequestCoordinatorTest::GetQueuedRequestsDone(
+    const std::vector<ClientId>& client_ids) {
+  last_client_ids_ = client_ids;
+  waiter_.Signal();
+}
+
 void RequestCoordinatorTest::AddRequestDone(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {}
@@ -263,7 +280,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
   // Put the request on the queue.
-  EXPECT_TRUE(coordinator()->SavePageLater(kUrl, kClientId, kUserRequested));
+  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
 
   // Set up for the call to StartProcessing by building arguments.
   DeviceConditions device_conditions(false, 75,
@@ -286,7 +303,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
-  EXPECT_TRUE(coordinator()->SavePageLater(kUrl, kClientId, kUserRequested));
+  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
 
   // Expect that a request got placed on the queue.
   coordinator()->queue()->GetRequests(
@@ -298,8 +315,8 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 
   // Check the request queue is as expected.
   EXPECT_EQ(1UL, last_requests().size());
-  EXPECT_EQ(kUrl, last_requests()[0].url());
-  EXPECT_EQ(kClientId, last_requests()[0].client_id());
+  EXPECT_EQ(kUrl1, last_requests()[0].url());
+  EXPECT_EQ(kClientId1, last_requests()[0].client_id());
 
   // Expect that the scheduler got notified.
   SchedulerStub* scheduler_stub = reinterpret_cast<SchedulerStub*>(
@@ -314,7 +331,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
+      kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -354,7 +371,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
+      kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -411,7 +428,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
 TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
+      kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -445,7 +462,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
 TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
+      kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -484,7 +501,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
 TEST_F(RequestCoordinatorTest, PrerendererTimeout) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
+      kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -527,18 +544,18 @@ TEST_F(RequestCoordinatorTest, PrerendererTimeout) {
 }
 
 TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
-  // Build a request to use with the pre-renderer, and put it on the queue.
+  // Build two requests to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request1(
-      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
+      kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
   offline_pages::SavePageRequest request2(
-      kRequestId + 1, kUrl, kClientId, base::Time::Now(), kUserRequested);
+      kRequestId1 + 1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
   request2.set_attempt_count(kAttemptCount);
   coordinator()->queue()->AddRequest(
       request1,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
                  base::Unretained(this)));
-    coordinator()->queue()->AddRequest(
-      request1,
+  coordinator()->queue()->AddRequest(
+      request1,  // TODO(petewil): This is a bug, should be request2.
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
                  base::Unretained(this)));
   PumpLoop();
@@ -570,6 +587,37 @@ TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
 
   // We should find one request in the queue.
   EXPECT_EQ(1UL, last_requests().size());
+}
+
+TEST_F(RequestCoordinatorTest, GetQueuedRequests) {
+  // Add two requests to the queue.
+  offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
+                                          base::Time::Now(), kUserRequested);
+  offline_pages::SavePageRequest request2(kRequestId1 + 1, kUrl2, kClientId2,
+                                          base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request1, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  coordinator()->queue()->AddRequest(
+      request2, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  PumpLoop();
+
+  // Start the async status fetching.
+  coordinator()->GetQueuedRequests(
+      kClientNamespace,
+      base::Bind(&RequestCoordinatorTest::GetQueuedRequestsDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  // Wait for async get to finish.
+  WaitForCallback();
+  PumpLoop();
+
+  // Check that the statuses found in the callback match what we expect.
+  EXPECT_EQ(2UL, last_client_ids().size());
+  EXPECT_EQ(kId1, last_client_ids().at(0).id);
+  EXPECT_EQ(kId2, last_client_ids().at(1).id);
 }
 
 }  // namespace offline_pages
