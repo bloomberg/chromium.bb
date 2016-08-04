@@ -85,11 +85,6 @@ PaymentRequestUpdateEvent::~PaymentRequestUpdateEvent()
 {
 }
 
-PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::create()
-{
-    return new PaymentRequestUpdateEvent();
-}
-
 PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::create(const AtomicString& type, const PaymentRequestUpdateEventInit& init)
 {
     return new PaymentRequestUpdateEvent(type, init);
@@ -137,12 +132,6 @@ DEFINE_TRACE(PaymentRequestUpdateEvent)
 {
     visitor->trace(m_updater);
     Event::trace(visitor);
-}
-
-PaymentRequestUpdateEvent::PaymentRequestUpdateEvent()
-    : m_waitForUpdate(false)
-    , m_abortTimer(this, &PaymentRequestUpdateEvent::onTimerFired)
-{
 }
 
 PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(const AtomicString& type, const PaymentRequestUpdateEventInit& init)

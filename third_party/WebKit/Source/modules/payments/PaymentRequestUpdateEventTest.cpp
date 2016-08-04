@@ -36,7 +36,7 @@ public:
 TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled)
 {
     V8TestingScope scope;
-    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create();
+    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
     MockPaymentUpdater* updater = new MockPaymentUpdater;
     event->setPaymentDetailsUpdater(updater);
     event->setEventPhase(Event::kCapturingPhase);
@@ -109,7 +109,7 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout)
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
     makePaymentRequestOriginSecure(scope.document());
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
-    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create();
+    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
     event->setPaymentDetailsUpdater(request);
     EXPECT_FALSE(scope.getExceptionState().hadException());
 

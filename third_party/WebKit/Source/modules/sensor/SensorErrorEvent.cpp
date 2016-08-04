@@ -13,11 +13,6 @@ SensorErrorEvent::~SensorErrorEvent()
 {
 }
 
-SensorErrorEvent::SensorErrorEvent()
-    : Event(EventTypeNames::error, false, true)
-{
-}
-
 SensorErrorEvent::SensorErrorEvent(const AtomicString& eventType)
     : Event(eventType, true, false) // let default be bubbles but is not cancelable.
 {

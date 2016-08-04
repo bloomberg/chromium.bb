@@ -16,10 +16,6 @@ class DeviceLightEvent final : public Event {
 public:
     ~DeviceLightEvent() override;
 
-    static DeviceLightEvent* create()
-    {
-        return new DeviceLightEvent;
-    }
     static DeviceLightEvent* create(const AtomicString& eventType, double value)
     {
         return new DeviceLightEvent(eventType, value);
@@ -34,7 +30,6 @@ public:
     const AtomicString& interfaceName() const override;
 
 private:
-    DeviceLightEvent();
     DeviceLightEvent(const AtomicString& eventType, double value);
     DeviceLightEvent(const AtomicString& eventType, const DeviceLightEventInit& initializer);
 

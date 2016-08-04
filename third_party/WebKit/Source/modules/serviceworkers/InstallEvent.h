@@ -18,7 +18,6 @@ class MODULES_EXPORT InstallEvent : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static InstallEvent* create();
     static InstallEvent* create(const AtomicString& type, const ExtendableEventInit&);
     static InstallEvent* create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 
@@ -29,7 +28,6 @@ public:
     const AtomicString& interfaceName() const override;
 
 protected:
-    InstallEvent();
     InstallEvent(const AtomicString& type, const ExtendableEventInit&);
     InstallEvent(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 };

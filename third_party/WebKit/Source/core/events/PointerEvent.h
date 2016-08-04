@@ -15,11 +15,6 @@ class PointerEvent final : public MouseEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static PointerEvent* create()
-    {
-        return new PointerEvent;
-    }
-
     static PointerEvent* create(const AtomicString& type, const PointerEventInit& initializer)
     {
         return new PointerEvent(type, initializer);
@@ -43,7 +38,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PointerEvent();
     PointerEvent(const AtomicString&, const PointerEventInit&);
 
     int m_pointerId;

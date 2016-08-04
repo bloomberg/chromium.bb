@@ -15,11 +15,6 @@ class InputEvent final : public UIEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static InputEvent* create()
-    {
-        return new InputEvent;
-    }
-
     static InputEvent* create(const AtomicString& type, const InputEventInit& initializer)
     {
         return new InputEvent(type, initializer);
@@ -110,7 +105,6 @@ public:
 
 private:
     friend class InputEventDispatchMediator;
-    InputEvent();
     InputEvent(const AtomicString&, const InputEventInit&);
 
     InputType m_inputType;

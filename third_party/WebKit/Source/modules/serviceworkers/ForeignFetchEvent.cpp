@@ -11,10 +11,6 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
-ForeignFetchEvent* ForeignFetchEvent::create()
-{
-    return new ForeignFetchEvent();
-}
 
 ForeignFetchEvent* ForeignFetchEvent::create(ScriptState* scriptState, const AtomicString& type, const ForeignFetchEventInit& initializer)
 {
@@ -46,10 +42,6 @@ void ForeignFetchEvent::respondWith(ScriptState* scriptState, ScriptPromise scri
 const AtomicString& ForeignFetchEvent::interfaceName() const
 {
     return EventNames::ForeignFetchEvent;
-}
-
-ForeignFetchEvent::ForeignFetchEvent()
-{
 }
 
 ForeignFetchEvent::ForeignFetchEvent(ScriptState* scriptState, const AtomicString& type, const ForeignFetchEventInit& initializer, ForeignFetchRespondWithObserver* respondWithObserver, WaitUntilObserver* waitUntilObserver)

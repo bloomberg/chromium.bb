@@ -16,11 +16,6 @@ class SensorReadingEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static SensorReadingEvent* create()
-    {
-        return new SensorReadingEvent;
-    }
-
     static SensorReadingEvent* create(const AtomicString& eventType)
     {
         return new SensorReadingEvent(eventType);
@@ -48,7 +43,6 @@ protected:
     Member<SensorReading> m_reading;
 
 private:
-    SensorReadingEvent();
     explicit SensorReadingEvent(const AtomicString& eventType);
     SensorReadingEvent(const AtomicString& eventType, SensorReading&);
     SensorReadingEvent(const AtomicString& eventType, const SensorReadingEventInit& initializer);

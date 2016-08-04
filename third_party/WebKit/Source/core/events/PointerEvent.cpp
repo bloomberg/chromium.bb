@@ -9,17 +9,6 @@
 
 namespace blink {
 
-PointerEvent::PointerEvent()
-    : m_pointerId(0)
-    , m_width(0)
-    , m_height(0)
-    , m_pressure(0)
-    , m_tiltX(0)
-    , m_tiltY(0)
-    , m_isPrimary(false)
-{
-}
-
 PointerEvent::PointerEvent(const AtomicString& type, const PointerEventInit& initializer)
     : MouseEvent(type, initializer)
     , m_pointerId(0)

@@ -10,11 +10,6 @@
 
 namespace blink {
 
-InstallEvent* InstallEvent::create()
-{
-    return new InstallEvent();
-}
-
 InstallEvent* InstallEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
 {
     return new InstallEvent(type, eventInit);
@@ -93,10 +88,6 @@ void InstallEvent::registerForeignFetch(ExecutionContext* executionContext, cons
 const AtomicString& InstallEvent::interfaceName() const
 {
     return EventNames::InstallEvent;
-}
-
-InstallEvent::InstallEvent()
-{
 }
 
 InstallEvent::InstallEvent(const AtomicString& type, const ExtendableEventInit& initializer)

@@ -3,6 +3,7 @@ Tests to confirm behavior of updating IDL attributes of RelatedEvent.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS relatedEvent.type is "foo"
 PASS relatedEvent.bubbles is false
 PASS relatedEvent.cancelable is false
 PASS relatedEvent.relatedTarget is null

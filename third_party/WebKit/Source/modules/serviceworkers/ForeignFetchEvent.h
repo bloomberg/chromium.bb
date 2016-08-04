@@ -26,7 +26,6 @@ class Request;
 class MODULES_EXPORT ForeignFetchEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ForeignFetchEvent* create();
     static ForeignFetchEvent* create(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&);
     static ForeignFetchEvent* create(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*, WaitUntilObserver*);
 
@@ -40,7 +39,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    ForeignFetchEvent();
     ForeignFetchEvent(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*, WaitUntilObserver*);
 
 private:

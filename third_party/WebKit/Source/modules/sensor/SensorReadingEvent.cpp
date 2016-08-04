@@ -10,10 +10,6 @@ SensorReadingEvent::~SensorReadingEvent()
 {
 }
 
-SensorReadingEvent::SensorReadingEvent()
-{
-}
-
 SensorReadingEvent::SensorReadingEvent(const AtomicString& eventType)
     : Event(eventType, true, false) // let default be bubbles but is not cancelable.
     , m_reading(SensorReading::create())

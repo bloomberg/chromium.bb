@@ -13,10 +13,6 @@ namespace blink {
 class AnimationPlayerEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AnimationPlayerEvent* create()
-    {
-        return new AnimationPlayerEvent;
-    }
     static AnimationPlayerEvent* create(const AtomicString& type, double currentTime, double timelineTime)
     {
         return new AnimationPlayerEvent(type, currentTime, timelineTime);
@@ -37,7 +33,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    AnimationPlayerEvent();
     AnimationPlayerEvent(const AtomicString& type, double currentTime, double timelineTime);
     AnimationPlayerEvent(const AtomicString&, const AnimationPlayerEventInit&);
 

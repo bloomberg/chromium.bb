@@ -7,13 +7,15 @@
 
 description("Tests to confirm behavior of updating IDL attributes of RelatedEvent.");
 
-var relatedEvent = document.createEvent("RelatedEvent");
+var relatedEvent = new RelatedEvent("foo");
 
-// We should not be able to update readonly attributes. 
+// We should not be able to update readonly attributes.
+relatedEvent.type = "bar";
 relatedEvent.bubbles = true;
 relatedEvent.cancelable = true;
 relatedEvent.relatedTarget = document;
 
+shouldBeEqualToString("relatedEvent.type", "foo");
 shouldBeFalse("relatedEvent.bubbles");
 shouldBeFalse("relatedEvent.cancelable");
 shouldBeNull("relatedEvent.relatedTarget");

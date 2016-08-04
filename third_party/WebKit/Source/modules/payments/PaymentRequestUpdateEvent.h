@@ -25,7 +25,6 @@ class MODULES_EXPORT PaymentRequestUpdateEvent final : public Event {
 public:
     ~PaymentRequestUpdateEvent() override;
 
-    static PaymentRequestUpdateEvent* create();
     static PaymentRequestUpdateEvent* create(const AtomicString& type, const PaymentRequestUpdateEventInit& = PaymentRequestUpdateEventInit());
 
     void setPaymentDetailsUpdater(PaymentUpdater*);
@@ -37,7 +36,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PaymentRequestUpdateEvent();
     PaymentRequestUpdateEvent(const AtomicString& type, const PaymentRequestUpdateEventInit&);
 
     Member<PaymentUpdater> m_updater;

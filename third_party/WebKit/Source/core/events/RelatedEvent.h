@@ -13,7 +13,6 @@ namespace blink {
 class RelatedEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RelatedEvent* create();
     static RelatedEvent* create(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget);
     static RelatedEvent* create(const AtomicString& eventType, const RelatedEventInit&);
 
@@ -27,7 +26,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RelatedEvent();
     RelatedEvent(const AtomicString& type, bool canBubble, bool cancelable, EventTarget*);
     RelatedEvent(const AtomicString& type, const RelatedEventInit&);
 

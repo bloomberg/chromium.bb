@@ -16,11 +16,6 @@ class SensorErrorEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static SensorErrorEvent* create()
-    {
-        return new SensorErrorEvent;
-    }
-
     static SensorErrorEvent* create(const AtomicString& eventType)
     {
         return new SensorErrorEvent(eventType);
@@ -37,7 +32,6 @@ public:
 
     const AtomicString& interfaceName() const override;
 
-    SensorErrorEvent();
     explicit SensorErrorEvent(const AtomicString& eventType);
     SensorErrorEvent(const AtomicString& eventType, const SensorErrorEventInit& initializer);
 

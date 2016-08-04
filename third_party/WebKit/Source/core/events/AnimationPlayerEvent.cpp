@@ -6,12 +6,6 @@
 
 namespace blink {
 
-AnimationPlayerEvent::AnimationPlayerEvent()
-    : m_currentTime(0.0)
-    , m_timelineTime(0.0)
-{
-}
-
 AnimationPlayerEvent::AnimationPlayerEvent(const AtomicString& type, double currentTime, double timelineTime)
     : Event(type, false, false)
     , m_currentTime(currentTime)

@@ -85,10 +85,6 @@ InputEvent::InputType convertStringToInputType(const String& stringName)
 
 } // anonymous namespace
 
-InputEvent::InputEvent()
-{
-}
-
 InputEvent::InputEvent(const AtomicString& type, const InputEventInit& initializer)
     : UIEvent(type, initializer)
 {
