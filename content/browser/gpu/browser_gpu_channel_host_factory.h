@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu_process_launch_causes.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/message_filter.h"
 
@@ -38,11 +37,9 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
   int GpuProcessHostId() { return gpu_host_id_; }
 #if !defined(OS_ANDROID)
-  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync(
-      CauseForGpuLaunch cause_for_gpu_launch);
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
 #endif
-  void EstablishGpuChannel(CauseForGpuLaunch cause_for_gpu_launch,
-                           const base::Closure& callback);
+  void EstablishGpuChannel(const base::Closure& callback);
   gpu::GpuChannelHost* GetGpuChannel();
   int GetGpuChannelId() { return gpu_client_id_; }
 

@@ -40,8 +40,7 @@ BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
 class BrowserGpuChannelHostFactory::EstablishRequest
     : public base::RefCountedThreadSafe<EstablishRequest> {
  public:
-  static scoped_refptr<EstablishRequest> Create(CauseForGpuLaunch cause,
-                                                int gpu_client_id,
+  static scoped_refptr<EstablishRequest> Create(int gpu_client_id,
                                                 uint64_t gpu_client_tracing_id,
                                                 int gpu_host_id);
   void Wait();
@@ -53,8 +52,7 @@ class BrowserGpuChannelHostFactory::EstablishRequest
 
  private:
   friend class base::RefCountedThreadSafe<EstablishRequest>;
-  explicit EstablishRequest(CauseForGpuLaunch cause,
-                            int gpu_client_id,
+  explicit EstablishRequest(int gpu_client_id,
                             uint64_t gpu_client_tracing_id,
                             int gpu_host_id);
   ~EstablishRequest() {}
@@ -65,7 +63,6 @@ class BrowserGpuChannelHostFactory::EstablishRequest
   void FinishOnMain();
 
   base::WaitableEvent event_;
-  CauseForGpuLaunch cause_for_gpu_launch_;
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
   int gpu_host_id_;
@@ -78,12 +75,11 @@ class BrowserGpuChannelHostFactory::EstablishRequest
 
 scoped_refptr<BrowserGpuChannelHostFactory::EstablishRequest>
 BrowserGpuChannelHostFactory::EstablishRequest::Create(
-    CauseForGpuLaunch cause,
     int gpu_client_id,
     uint64_t gpu_client_tracing_id,
     int gpu_host_id) {
-  scoped_refptr<EstablishRequest> establish_request = new EstablishRequest(
-      cause, gpu_client_id, gpu_client_tracing_id, gpu_host_id);
+  scoped_refptr<EstablishRequest> establish_request =
+      new EstablishRequest(gpu_client_id, gpu_client_tracing_id, gpu_host_id);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   // PostTask outside the constructor to ensure at least one reference exists.
@@ -95,13 +91,11 @@ BrowserGpuChannelHostFactory::EstablishRequest::Create(
 }
 
 BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
-    CauseForGpuLaunch cause,
     int gpu_client_id,
     uint64_t gpu_client_tracing_id,
     int gpu_host_id)
     : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
              base::WaitableEvent::InitialState::NOT_SIGNALED),
-      cause_for_gpu_launch_(cause),
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id),
       gpu_host_id_(gpu_host_id),
@@ -117,8 +111,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
           "BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO"));
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
   if (!host) {
-    host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                               cause_for_gpu_launch_);
+    host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
     if (!host) {
       LOG(ERROR) << "Failed to launch GPU process.";
       FinishOnIO();
@@ -216,8 +209,7 @@ void BrowserGpuChannelHostFactory::Initialize(bool establish_gpu_channel) {
   DCHECK(!instance_);
   instance_ = new BrowserGpuChannelHostFactory();
   if (establish_gpu_channel) {
-    instance_->EstablishGpuChannel(CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP,
-                                   base::Closure());
+    instance_->EstablishGpuChannel(base::Closure());
   }
 }
 
@@ -287,9 +279,8 @@ BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
 // task on the UI thread first, so we cannot block here.)
 #if !defined(OS_ANDROID)
 scoped_refptr<gpu::GpuChannelHost>
-BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
-    CauseForGpuLaunch cause_for_gpu_launch) {
-  EstablishGpuChannel(cause_for_gpu_launch, base::Closure());
+BrowserGpuChannelHostFactory::EstablishGpuChannelSync() {
+  EstablishGpuChannel(base::Closure());
 
   if (pending_request_.get())
     pending_request_->Wait();
@@ -299,7 +290,6 @@ BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
 #endif
 
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
-    CauseForGpuLaunch cause_for_gpu_launch,
     const base::Closure& callback) {
 #if defined(MOJO_RUNNER_CLIENT)
   DCHECK(!shell::ShellIsRemote());
@@ -314,9 +304,7 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
   if (!gpu_channel_.get() && !pending_request_.get()) {
     // We should only get here if the context was lost.
     pending_request_ = EstablishRequest::Create(
-        cause_for_gpu_launch, gpu_client_id_,
-        gpu_client_tracing_id_,
-        gpu_host_id_);
+        gpu_client_id_, gpu_client_tracing_id_, gpu_host_id_);
   }
 
   if (!callback.is_null()) {

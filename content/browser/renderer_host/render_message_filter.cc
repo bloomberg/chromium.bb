@@ -622,7 +622,6 @@ void RenderMessageFilter::GpuMemoryBufferAllocated(
 }
 
 void RenderMessageFilter::OnEstablishGpuChannel(
-    CauseForGpuLaunch cause_for_gpu_launch,
     IPC::Message* reply_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<IPC::Message> reply(reply_ptr);
@@ -639,8 +638,7 @@ void RenderMessageFilter::OnEstablishGpuChannel(
 
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
   if (!host) {
-    host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                               cause_for_gpu_launch);
+    host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
     if (!host) {
       reply->set_reply_error();
       Send(reply.release());

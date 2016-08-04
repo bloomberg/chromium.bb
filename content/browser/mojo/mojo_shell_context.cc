@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/mojo/constants.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/process_control.mojom.h"
@@ -95,8 +94,7 @@ void LaunchAppInUtilityProcess(const std::string& app_name,
 void RequestGpuProcessControl(
     mojo::InterfaceRequest<mojom::ProcessControl> request) {
   BrowserChildProcessHostDelegate* process_host =
-      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                          CAUSE_FOR_GPU_LAUNCH_MOJO_SETUP);
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
   if (!process_host) {
     DLOG(ERROR) << "GPU process host not available.";
     return;

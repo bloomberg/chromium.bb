@@ -27,7 +27,6 @@
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/render_frame_message_filter.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/renderer/render_thread.h"
@@ -232,7 +231,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
   // time this routine returns.
-  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync(CauseForGpuLaunch);
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
 
   std::unique_ptr<cc::OutputSurface> CreateCompositorOutputSurface(
       bool use_software,

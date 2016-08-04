@@ -176,11 +176,10 @@ enum GPUProcessLifetimeEvent {
 // only be accessed from the IO thread.
 GpuProcessHost* g_gpu_process_hosts[GpuProcessHost::GPU_PROCESS_KIND_COUNT];
 
-
 void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
-                           CauseForGpuLaunch cause,
+                           bool force_create,
                            IPC::Message* message) {
-  GpuProcessHost* host = GpuProcessHost::Get(kind, cause);
+  GpuProcessHost* host = GpuProcessHost::Get(kind, force_create);
   if (host) {
     host->Send(message);
   } else {
@@ -317,8 +316,7 @@ bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
 }
 
 // static
-GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind,
-                                    CauseForGpuLaunch cause) {
+GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
 #if defined(MOJO_SHELL_CLIENT)
   DCHECK(!shell::ShellIsRemote());
 #endif
@@ -333,16 +331,12 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind,
   if (g_gpu_process_hosts[kind] && ValidateHost(g_gpu_process_hosts[kind]))
     return g_gpu_process_hosts[kind];
 
-  if (cause == CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH)
-    return NULL;
+  if (!force_create)
+    return nullptr;
 
   static int last_host_id = 0;
   int host_id;
   host_id = ++last_host_id;
-
-  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLaunchCause",
-                            cause,
-                            CAUSE_FOR_GPU_LAUNCH_MAX_ENUM);
 
   GpuProcessHost* host = new GpuProcessHost(host_id, kind);
   if (host->Init())
@@ -381,12 +375,11 @@ void GpuProcessHost::GetProcessHandles(
 
 // static
 void GpuProcessHost::SendOnIO(GpuProcessKind kind,
-                              CauseForGpuLaunch cause,
+                              bool force_create,
                               IPC::Message* message) {
   if (!BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &SendGpuProcessMessage, kind, cause, message))) {
+          base::Bind(&SendGpuProcessMessage, kind, force_create, message))) {
     delete message;
   }
 }

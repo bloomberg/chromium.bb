@@ -44,7 +44,6 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -312,8 +311,7 @@ void GpuProcessTransportFactory::CreateOutputSurface(
                    callback_factory_.GetWeakPtr(), compositor,
                    create_gpu_output_surface, 0));
     if (!use_mus) {
-      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-          CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT, callback);
+      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(callback);
     } else {
 #if defined(MOJO_RUNNER_CLIENT)
       ui::GpuService::GetInstance()->EstablishGpuChannel(callback);
@@ -458,8 +456,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                      callback_factory_.GetWeakPtr(), compositor,
                      create_gpu_output_surface, num_attempts + 1));
       if (!use_mus) {
-        BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-            CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT, callback);
+        BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(callback);
       } else {
 #if defined(MOJO_RUNNER_CLIENT)
         ui::GpuService::GetInstance()->EstablishGpuChannel(callback);
@@ -801,8 +798,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host;
   if (!use_mus) {
     gpu_channel_host =
-        BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(
-            CAUSE_FOR_GPU_LAUNCH_BROWSER_SHARED_MAIN_THREAD_CONTEXT);
+        BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync();
   } else {
 #if defined(MOJO_RUNNER_CLIENT)
     gpu_channel_host = ui::GpuService::GetInstance()->EstablishGpuChannelSync();

@@ -202,7 +202,6 @@ void VideoCaptureGpuJpegDecoder::EstablishGpuChannelOnUIThread(
   DCHECK(BrowserGpuChannelHostFactory::instance());
 
   BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-      CAUSE_FOR_GPU_LAUNCH_JPEGDECODEACCELERATOR_INITIALIZE,
       base::Bind(&VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread,
                  task_runner, weak_this));
 }

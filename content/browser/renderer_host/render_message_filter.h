@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "content/common/cache_storage/cache_storage_types.h"
-#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -145,7 +144,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnGenerateRoutingID(int* route_id);
 
   // Message handlers called on the browser IO thread:
-  void OnEstablishGpuChannel(CauseForGpuLaunch, IPC::Message* reply);
+  void OnEstablishGpuChannel(IPC::Message* reply);
   void OnHasGpuProcess(IPC::Message* reply);
   // Helper callbacks for the message handlers.
   void EstablishChannelCallback(std::unique_ptr<IPC::Message> reply,

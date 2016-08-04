@@ -1352,7 +1352,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
         BrowserThread::IO, FROM_HERE,
         base::Bind(base::IgnoreResult(&GpuProcessHost::Get),
                    GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                   CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP));
+                   true /* force_create */));
   }
 
 #if defined(OS_MACOSX)

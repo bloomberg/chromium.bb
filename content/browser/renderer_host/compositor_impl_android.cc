@@ -56,7 +56,6 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
@@ -562,7 +561,6 @@ void CompositorImpl::RequestNewOutputSurface() {
       BrowserGpuChannelHostFactory::instance();
   if (!factory->GetGpuChannel()) {
     factory->EstablishGpuChannel(
-        CAUSE_FOR_GPU_LAUNCH_DISPLAY_COMPOSITOR_CONTEXT,
         base::Bind(&CompositorImpl::OnGpuChannelEstablished,
                    weak_factory_.GetWeakPtr()));
     establish_gpu_channel_timeout_.Start(

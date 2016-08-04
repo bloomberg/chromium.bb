@@ -9,7 +9,6 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu_process_launch_causes.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
@@ -20,9 +19,6 @@
 #include "ui/gl/gl_switches.h"
 
 namespace {
-
-constexpr content::CauseForGpuLaunch kInitCause =
-    content::CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP;
 
 scoped_refptr<content::ContextProviderCommandBuffer> CreateContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
@@ -59,7 +55,7 @@ class ContextTestBase : public content::ContentBrowserTest {
         content::BrowserGpuChannelHostFactory::instance();
     CHECK(factory);
     base::RunLoop run_loop;
-    factory->EstablishGpuChannel(kInitCause, run_loop.QuitClosure());
+    factory->EstablishGpuChannel(run_loop.QuitClosure());
     run_loop.Run();
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
         factory->GetGpuChannel());
@@ -134,7 +130,7 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
 
   void EstablishAndWait() {
     base::RunLoop run_loop;
-    GetFactory()->EstablishGpuChannel(kInitCause, run_loop.QuitClosure());
+    GetFactory()->EstablishGpuChannel(run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -170,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                        MAYBE_EstablishAndTerminate) {
   DCHECK(!IsChannelEstablished());
   base::RunLoop run_loop;
-  GetFactory()->EstablishGpuChannel(kInitCause, run_loop.QuitClosure());
+  GetFactory()->EstablishGpuChannel(run_loop.QuitClosure());
   GetFactory()->Terminate();
 
   // The callback should still trigger.
@@ -189,12 +185,11 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                        MAYBE_AlreadyEstablished) {
   DCHECK(!IsChannelEstablished());
   scoped_refptr<gpu::GpuChannelHost> gpu_channel =
-      GetFactory()->EstablishGpuChannelSync(kInitCause);
+      GetFactory()->EstablishGpuChannelSync();
 
   // Expect established callback immediately.
   bool event = false;
   GetFactory()->EstablishGpuChannel(
-      kInitCause,
       base::Bind(&BrowserGpuChannelHostFactoryTest::Signal, &event));
   EXPECT_TRUE(event);
   EXPECT_EQ(gpu_channel.get(), GetGpuChannel());

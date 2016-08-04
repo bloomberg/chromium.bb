@@ -241,8 +241,7 @@ bool PPB_Graphics3D_Impl::InitRaw(
     return false;
 
   scoped_refptr<gpu::GpuChannelHost> channel =
-      render_thread->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
+      render_thread->EstablishGpuChannelSync();
   if (!channel)
     return false;
 

@@ -17646,6 +17646,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="GPU.GPUProcessLaunchCause" enum="GPUProcessLaunchCauses">
+  <obsolete>
+    Deprecated 08/2016.
+  </obsolete>
   <owner>piman@chromium.org</owner>
   <summary>
     Counts enumerating the initial cause for the GPU Process to be launched.

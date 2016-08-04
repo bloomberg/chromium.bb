@@ -43,7 +43,6 @@
 #include "content/common/file_utilities_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/render_process_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
@@ -678,8 +677,7 @@ WebString RendererBlinkPlatformImpl::databaseCreateOriginIdentifier(
 
 bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
-  scoped_refptr<gpu::GpuChannelHost> host =
-      thread->EstablishGpuChannelSync(CAUSE_FOR_GPU_LAUNCH_CANVAS_2D);
+  scoped_refptr<gpu::GpuChannelHost> host = thread->EstablishGpuChannelSync();
   if (!host)
     return false;
 
@@ -1057,8 +1055,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   }
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
-      RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_WEBGL_CONTEXT));
+      RenderThreadImpl::current()->EstablishGpuChannelSync());
   if (!gpu_channel_host) {
     std::string error_message(
         "OffscreenContext Creation failed, GpuChannelHost creation failed");

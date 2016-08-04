@@ -20,9 +20,8 @@ namespace content {
 namespace {
 void SendDestroyingVideoSurfaceOnIO(int surface_id,
                                     const base::Closure& done_cb) {
-  GpuProcessHost* host =
-      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                          CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH);
+  GpuProcessHost* host = GpuProcessHost::Get(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */);
   if (host)
     host->SendDestroyingVideoSurface(surface_id, done_cb);
   else

@@ -523,8 +523,7 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
   // There is no guarantee that we have a 3D context to work with. So
   // we create a dummy command buffer to communicate with the gpu process.
   scoped_refptr<gpu::GpuChannelHost> channel =
-      RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_PEPPERVIDEOENCODERACCELERATOR_INITIALIZE);
+      RenderThreadImpl::current()->EstablishGpuChannelSync();
   if (!channel)
     return false;
 
