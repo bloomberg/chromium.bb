@@ -224,3 +224,38 @@ int drv_gem_bo_destroy(struct bo *bo)
 
 	return error;
 }
+
+uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo,
+				  size_t plane)
+{
+	void *count;
+	uintptr_t num = 0;
+
+	if (!drmHashLookup(drv->buffer_table, bo->handles[plane].u32, &count))
+		num = (uintptr_t) (count);
+
+	return num;
+}
+
+void drv_increment_reference_count(struct driver *drv, struct bo *bo,
+				   size_t plane)
+{
+	uintptr_t num = drv_get_reference_count(drv, bo, plane);
+
+	/* If a value isn't in the table, drmHashDelete is a no-op */
+	drmHashDelete(drv->buffer_table, bo->handles[plane].u32);
+	drmHashInsert(drv->buffer_table, bo->handles[plane].u32,
+		      (void *) (num + 1));
+}
+
+void drv_decrement_reference_count(struct driver *drv, struct bo *bo,
+				   size_t plane)
+{
+	uintptr_t num = drv_get_reference_count(drv, bo, plane);
+
+	drmHashDelete(drv->buffer_table, bo->handles[plane].u32);
+
+	if (num > 0)
+		drmHashInsert(drv->buffer_table, bo->handles[plane].u32,
+			      (void *) (num - 1));
+}

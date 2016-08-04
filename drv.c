@@ -5,6 +5,7 @@
  */
 #include <assert.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,6 +104,17 @@ struct driver *drv_create(int fd)
 		return NULL;
 	}
 
+	if (pthread_mutex_init(&drv->table_lock, NULL)) {
+		free(drv);
+		return NULL;
+	}
+
+	drv->buffer_table = drmHashCreate();
+	if (!drv->buffer_table) {
+		free(drv);
+		return NULL;
+	}
+
 	if (drv->backend->init) {
 		ret = drv->backend->init(drv);
 		if (ret) {
@@ -118,6 +130,9 @@ void drv_destroy(struct driver *drv)
 {
 	if (drv->backend->close)
 		drv->backend->close(drv);
+
+	pthread_mutex_destroy(&drv->table_lock);
+	drmHashDestroy(drv->buffer_table);
 
 	free(drv);
 }
@@ -182,6 +197,7 @@ struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height,
 			 drv_format_t format, uint64_t flags)
 {
 	int ret;
+	size_t plane;
 	struct bo *bo;
 
 	bo = drv_bo_new(drv, width, height, format);
@@ -196,12 +212,35 @@ struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height,
 		return NULL;
 	}
 
+	pthread_mutex_lock(&drv->table_lock);
+
+	for (plane = 0; plane < bo->num_planes; plane++)
+		drv_increment_reference_count(drv, bo, plane);
+
+	pthread_mutex_unlock(&drv->table_lock);
+
 	return bo;
 }
 
 void drv_bo_destroy(struct bo *bo)
 {
-	bo->drv->backend->bo_destroy(bo);
+	size_t plane;
+	uintptr_t total = 0;
+	struct driver *drv = bo->drv;
+
+	pthread_mutex_lock(&drv->table_lock);
+
+	for (plane = 0; plane < bo->num_planes; plane++)
+		drv_decrement_reference_count(drv, bo, plane);
+
+	for (plane = 0; plane < bo->num_planes; plane++)
+		total += drv_get_reference_count(drv, bo, plane);
+
+	pthread_mutex_unlock(&drv->table_lock);
+
+	if (total == 0)
+		bo->drv->backend->bo_destroy(bo);
+
 	free(bo);
 }
 
@@ -234,6 +273,10 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 	bo->strides[0] = data->stride;
 	bo->sizes[0] = data->height * data->stride;
 	bo->handles[0].u32 = prime_handle.handle;
+
+	pthread_mutex_lock(&drv->table_lock);
+	drv_increment_reference_count(drv, bo, 0);
+	pthread_mutex_unlock(&drv->table_lock);
 
 	return bo;
 }

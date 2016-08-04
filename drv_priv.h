@@ -33,6 +33,8 @@ struct driver {
 	int fd;
 	struct backend *backend;
 	void *priv;
+	void *buffer_table;
+	pthread_mutex_t table_lock;
 };
 
 struct backend
