@@ -972,9 +972,13 @@ void WebAXObject::showContextMenu() const
     Element* element = nullptr;
     if (node->isElementNode()) {
         element = toElement(node);
+    } else if (node->isDocumentNode()) {
+        element = node->document().documentElement();
     } else {
         node->updateDistribution();
         ContainerNode* parent = FlatTreeTraversal::parent(*node);
+        if (!parent)
+            return;
         ASSERT_WITH_SECURITY_IMPLICATION(parent->isElementNode());
         element = toElement(parent);
     }
