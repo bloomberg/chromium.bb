@@ -18,6 +18,8 @@
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 
+using ntp_tiles::NTPTilesVector;
+
 class Profile;
 
 // Provides the list of most visited sites and their thumbnails to Java.

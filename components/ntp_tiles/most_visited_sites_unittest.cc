@@ -36,13 +36,13 @@ static const size_t kNumSites = 4;
 
 }  // namespace
 
-// This a test for MostVisitedSites::MergeSuggestions(...) method, and thus has
-// the same scope as the method itself. This tests merging popular suggestions
-// with personal suggestions.
+// This a test for MostVisitedSites::MergeTiles(...) method, and thus has the
+// same scope as the method itself. This tests merging popular sites with
+// personal tiles.
 // More important things out of the scope of testing presently:
-// - Removing blacklisted suggestions.
+// - Removing blacklisted tiles.
 // - Correct host extraction from the URL.
-// - Ensuring personal suggestions are not duplicated in popular suggestions.
+// - Ensuring personal tiles are not duplicated in popular tiles.
 class MostVisitedSitesTest : public testing::Test {
  protected:
   void Check(const std::vector<TitleURL>& popular_sites,
@@ -50,42 +50,39 @@ class MostVisitedSitesTest : public testing::Test {
              const std::vector<TitleURL>& personal_sites,
              const std::vector<bool>& expected_sites_is_personal,
              const std::vector<TitleURL>& expected_sites) {
-    MostVisitedSites::SuggestionsVector personal_suggestions;
+    NTPTilesVector personal_tiles;
     for (const TitleURL& site : personal_sites)
-      personal_suggestions.push_back(MakeSuggestionFrom(site, true, false));
-    MostVisitedSites::SuggestionsVector whitelist_suggestions;
+      personal_tiles.push_back(MakeTileFrom(site, true, false));
+    NTPTilesVector whitelist_tiles;
     for (const TitleURL& site : whitelist_entry_points)
-      whitelist_suggestions.push_back(MakeSuggestionFrom(site, false, true));
-    MostVisitedSites::SuggestionsVector popular_suggestions;
+      whitelist_tiles.push_back(MakeTileFrom(site, false, true));
+    NTPTilesVector popular_tiles;
     for (const TitleURL& site : popular_sites)
-      popular_suggestions.push_back(MakeSuggestionFrom(site, false, false));
-    MostVisitedSites::SuggestionsVector result_suggestions =
-        MostVisitedSites::MergeSuggestions(std::move(personal_suggestions),
-                                           std::move(whitelist_suggestions),
-                                           std::move(popular_suggestions));
+      popular_tiles.push_back(MakeTileFrom(site, false, false));
+    NTPTilesVector result_tiles = MostVisitedSites::MergeTiles(
+        std::move(personal_tiles), std::move(whitelist_tiles),
+        std::move(popular_tiles));
     std::vector<TitleURL> result_sites;
     std::vector<bool> result_is_personal;
-    result_sites.reserve(result_suggestions.size());
-    result_is_personal.reserve(result_suggestions.size());
-    for (const auto& suggestion : result_suggestions) {
-      result_sites.push_back(TitleURL(suggestion.title, suggestion.url.spec()));
-      result_is_personal.push_back(suggestion.source !=
-                                   MostVisitedSites::POPULAR);
+    result_sites.reserve(result_tiles.size());
+    result_is_personal.reserve(result_tiles.size());
+    for (const auto& tile : result_tiles) {
+      result_sites.push_back(TitleURL(tile.title, tile.url.spec()));
+      result_is_personal.push_back(tile.source != NTPTileSource::POPULAR);
     }
     EXPECT_EQ(expected_sites_is_personal, result_is_personal);
     EXPECT_EQ(expected_sites, result_sites);
   }
-  static MostVisitedSites::Suggestion MakeSuggestionFrom(
-      const TitleURL& title_url,
-      bool is_personal,
-      bool whitelist) {
-    MostVisitedSites::Suggestion suggestion;
-    suggestion.title = title_url.title;
-    suggestion.url = GURL(title_url.url);
-    suggestion.source = whitelist ? MostVisitedSites::WHITELIST
-                                  : (is_personal ? MostVisitedSites::TOP_SITES
-                                                 : MostVisitedSites::POPULAR);
-    return suggestion;
+  static NTPTile MakeTileFrom(const TitleURL& title_url,
+                              bool is_personal,
+                              bool whitelist) {
+    NTPTile tile;
+    tile.title = title_url.title;
+    tile.url = GURL(title_url.url);
+    tile.source = whitelist ? NTPTileSource::WHITELIST
+                            : (is_personal ? NTPTileSource::TOP_SITES
+                                           : NTPTileSource::POPULAR);
+    return tile;
   }
 };
 
@@ -96,8 +93,8 @@ TEST_F(MostVisitedSitesTest, PersonalSites) {
       TitleURL("Site 3", "https://www.site3.com/"),
       TitleURL("Site 4", "https://www.site4.com/"),
   };
-  // Without any popular suggestions, the result after merge should be the
-  // personal suggestions.
+  // Without any popular tiles, the result after merge should be the personal
+  // tiles.
   std::vector<bool> expected_sites_source(kNumSites, true /*personal source*/);
   Check(std::vector<TitleURL>(), std::vector<TitleURL>(), personal_sites,
         expected_sites_source, personal_sites);
@@ -110,8 +107,8 @@ TEST_F(MostVisitedSitesTest, PopularSites) {
       TitleURL("Site 3", "https://www.site3.com/"),
       TitleURL("Site 4", "https://www.site4.com/"),
   };
-  // Without any personal suggestions, the result after merge should be the
-  // popular suggestions.
+  // Without any personal tiles, the result after merge should be the popular
+  // tiles.
   std::vector<bool> expected_sites_source(kNumSites, false /*popular source*/);
   Check(popular_sites, std::vector<TitleURL>(), std::vector<TitleURL>(),
         expected_sites_source, popular_sites);
@@ -126,7 +123,7 @@ TEST_F(MostVisitedSitesTest, PersonalPrecedePopularSites) {
       TitleURL("Site 3", "https://www.site3.com/"),
       TitleURL("Site 4", "https://www.site4.com/"),
   };
-  // Personal suggestions should precede popular suggestions.
+  // Personal tiles should precede popular tiles.
   std::vector<TitleURL> expected_sites{
       TitleURL("Site 3", "https://www.site3.com/"),
       TitleURL("Site 4", "https://www.site4.com/"),

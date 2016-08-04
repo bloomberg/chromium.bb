@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
+#include "components/ntp_tiles/ntp_tile.h"
 #include "components/ntp_tiles/popular_sites.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
@@ -59,7 +60,7 @@ class MostVisitedSitesSupervisor {
   // If true, |url| should not be shown on the NTP.
   virtual bool IsBlocked(const GURL& url) = 0;
 
-  // Explicit suggestions for sites to show on NTP.
+  // Explicitly-specified sites to show on NTP.
   virtual std::vector<Whitelist> whitelists() = 0;
 
   // If true, be conservative about suggesting sites from outside sources.
@@ -79,8 +80,6 @@ class MostVisitedSitesSupervisor {
 class MostVisitedSites : public history::TopSitesObserver,
                          public MostVisitedSitesSupervisor::Observer {
  public:
-  struct Suggestion;
-  using SuggestionsVector = std::vector<Suggestion>;
   using PopularSitesVector = std::vector<PopularSites::Site>;
 
   // The visual type of a most visited tile.
@@ -102,47 +101,14 @@ class MostVisitedSites : public history::TopSitesObserver,
     NUM_TILE_TYPES,
   };
 
-  // The source of the Most Visited sites.
-  // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp
-  enum MostVisitedSource {
-    // Item comes from the personal top sites list.
-    TOP_SITES,
-    // Item comes from the suggestions service.
-    SUGGESTIONS_SERVICE,
-    // Item is regionally popular.
-    POPULAR,
-    // Item is on an custodian-managed whitelist.
-    WHITELIST
-  };
-
   // The observer to be notified when the list of most visited sites changes.
   class Observer {
    public:
-    virtual void OnMostVisitedURLsAvailable(
-        const SuggestionsVector& suggestions) = 0;
+    virtual void OnMostVisitedURLsAvailable(const NTPTilesVector& tiles) = 0;
     virtual void OnPopularURLsAvailable(const PopularSitesVector& sites) = 0;
 
    protected:
     virtual ~Observer() {}
-  };
-
-  struct Suggestion {
-    base::string16 title;
-    GURL url;
-    MostVisitedSource source;
-
-    // Only valid for source == WHITELIST (empty otherwise).
-    base::FilePath whitelist_icon_path;
-
-    Suggestion();
-    ~Suggestion();
-
-    Suggestion(Suggestion&&);
-    Suggestion& operator=(Suggestion&&);
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Suggestion);
   };
 
   MostVisitedSites(PrefService* prefs,
@@ -170,7 +136,7 @@ class MostVisitedSites : public history::TopSitesObserver,
  private:
   friend class MostVisitedSitesTest;
 
-  void BuildCurrentSuggestions();
+  void BuildCurrentTiles();
 
   // Initialize the query to Top Sites. Called if the SuggestionsService
   // returned no data.
@@ -189,27 +155,25 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   // Takes the personal suggestions and creates whitelist entry point
   // suggestions if necessary.
-  SuggestionsVector CreateWhitelistEntryPointSuggestions(
-      const SuggestionsVector& personal_suggestions);
+  NTPTilesVector CreateWhitelistEntryPointTiles(
+      const NTPTilesVector& personal_tiles);
 
-  // Takes the personal and whitelist suggestions and creates popular
-  // suggestions if necessary.
-  SuggestionsVector CreatePopularSitesSuggestions(
-      const SuggestionsVector& personal_suggestions,
-      const SuggestionsVector& whitelist_suggestions);
+  // Takes the personal and whitelist tiles and creates popular tiles if
+  // necessary.
+  NTPTilesVector CreatePopularSitesTiles(const NTPTilesVector& personal_tiles,
+                                         const NTPTilesVector& whitelist_tiles);
 
-  // Takes the personal suggestions, creates and merges in whitelist and popular
-  // suggestions if appropriate, and saves the new suggestions.
-  void SaveNewSuggestions(SuggestionsVector personal_suggestions);
+  // Takes the personal tiles, creates and merges in whitelist and popular tiles
+  // if appropriate, and saves the new tiles.
+  void SaveNewTiles(NTPTilesVector personal_tiles);
 
-  // Workhorse for SaveNewSuggestions above. Implemented as a separate static
-  // method for ease of testing.
-  static SuggestionsVector MergeSuggestions(
-      SuggestionsVector personal_suggestions,
-      SuggestionsVector whitelist_suggestions,
-      SuggestionsVector popular_suggestions);
+  // Workhorse for SaveNewTiles above. Implemented as a separate static method
+  // for ease of testing.
+  static NTPTilesVector MergeTiles(NTPTilesVector personal_tiles,
+                                   NTPTilesVector whitelist_tiles,
+                                   NTPTilesVector popular_tiles);
 
-  // Notifies the observer about the availability of suggestions.
+  // Notifies the observer about the availability of tiles.
   // Also records impressions UMA if not done already.
   void NotifyMostVisitedURLsObserver();
 
@@ -253,11 +217,10 @@ class MostVisitedSites : public history::TopSitesObserver,
   ScopedObserver<history::TopSites, history::TopSitesObserver>
       top_sites_observer_;
 
-  // The main source of personal suggestions - either TOP_SITES or
-  // SUGGESTIONS_SEVICE.
-  MostVisitedSource mv_source_;
+  // The main source of personal tiles - either TOP_SITES or SUGGESTIONS_SEVICE.
+  NTPTileSource mv_source_;
 
-  SuggestionsVector current_suggestions_;
+  NTPTilesVector current_tiles_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<MostVisitedSites> weak_ptr_factory_;

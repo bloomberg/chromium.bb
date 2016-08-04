@@ -44,8 +44,8 @@ using ParseJSONCallback = base::Callback<void(
     const base::Callback<void(const std::string&)>& error_callback)>;
 
 // Downloads and provides a list of suggested popular sites, for display on
-// the NTP when there are not enough personalized suggestions. Caches the
-// downloaded file on disk to avoid re-downloading on every startup.
+// the NTP when there are not enough personalized tiles. Caches the downloaded
+// file on disk to avoid re-downloading on every startup.
 class PopularSites : public net::URLFetcherDelegate {
  public:
   struct Site {
@@ -79,7 +79,7 @@ class PopularSites : public net::URLFetcherDelegate {
   // invokes |callback| before returning control to the caller, even if the
   // result is immediately known.
   //
-  // Set |force_download| to enforce re-downloading the suggestions file, even
+  // Set |force_download| to enforce re-downloading the popular sites file, even
   // if it already exists on disk.
   //
   // Must be called at most once on a given PopularSites object.

@@ -97,8 +97,7 @@ class MostVisitedSitesBridge::JavaObserver : public MostVisitedSites::Observer {
  public:
   JavaObserver(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
-  void OnMostVisitedURLsAvailable(
-      const MostVisitedSites::SuggestionsVector& suggestions) override;
+  void OnMostVisitedURLsAvailable(const NTPTilesVector& tiles) override;
 
   void OnPopularURLsAvailable(
       const MostVisitedSites::PopularSitesVector& sites) override;
@@ -115,22 +114,22 @@ MostVisitedSitesBridge::JavaObserver::JavaObserver(
     : observer_(env, obj) {}
 
 void MostVisitedSitesBridge::JavaObserver::OnMostVisitedURLsAvailable(
-    const MostVisitedSites::SuggestionsVector& suggestions) {
+    const NTPTilesVector& tiles) {
   JNIEnv* env = AttachCurrentThread();
   std::vector<base::string16> titles;
   std::vector<std::string> urls;
   std::vector<std::string> whitelist_icon_paths;
   std::vector<int> sources;
 
-  titles.reserve(suggestions.size());
-  urls.reserve(suggestions.size());
-  whitelist_icon_paths.reserve(suggestions.size());
-  sources.reserve(suggestions.size());
-  for (const auto& suggestion : suggestions) {
-    titles.emplace_back(suggestion.title);
-    urls.emplace_back(suggestion.url.spec());
-    whitelist_icon_paths.emplace_back(suggestion.whitelist_icon_path.value());
-    sources.emplace_back(suggestion.source);
+  titles.reserve(tiles.size());
+  urls.reserve(tiles.size());
+  whitelist_icon_paths.reserve(tiles.size());
+  sources.reserve(tiles.size());
+  for (const auto& tile : tiles) {
+    titles.emplace_back(tile.title);
+    urls.emplace_back(tile.url.spec());
+    whitelist_icon_paths.emplace_back(tile.whitelist_icon_path.value());
+    sources.emplace_back(static_cast<int>(tile.source));
   }
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),

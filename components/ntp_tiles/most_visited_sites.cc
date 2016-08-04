@@ -93,28 +93,28 @@ bool ShouldShowPopularSites() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
-// Determine whether we need any popular suggestions to fill up a grid of
+// Determine whether we need any tiles from PopularSites to fill up a grid of
 // |num_tiles| tiles.
 bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
-  if (num_tiles <= prefs->GetInteger(prefs::kNumPersonalSuggestions))
+  if (num_tiles <= prefs->GetInteger(prefs::kNumPersonalTiles))
     return false;
 
   // TODO(treib): Remove after M55.
   const base::ListValue* source_list =
-      prefs->GetList(prefs::kDeprecatedNTPSuggestionsIsPersonal);
-  // If there aren't enough previous suggestions to fill the grid, we need
-  // popular suggestions.
+      prefs->GetList(prefs::kDeprecatedNTPTilesIsPersonal);
+  // If there aren't enough previous tiles to fill the grid, we need tiles from
+  // PopularSites.
   if (static_cast<int>(source_list->GetSize()) < num_tiles)
     return true;
-  // Otherwise, if any of the previous suggestions is not personal, then also
-  // get popular suggestions.
+  // Otherwise, if any of the previous tiles are not personal, then also
+  // get tiles from PopularSites.
   for (int i = 0; i < num_tiles; ++i) {
     bool is_personal = false;
     if (source_list->GetBoolean(i, &is_personal) && !is_personal)
       return true;
   }
-  // The whole grid is already filled with personal suggestions, no point in
-  // bothering with popular ones.
+  // The whole grid is already filled with personal tiles, no point in bothering
+  // with popular ones.
   return false;
 }
 
@@ -124,13 +124,13 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
 
 std::string GetSourceHistogramName(int source) {
   switch (source) {
-    case MostVisitedSites::TOP_SITES:
+    case static_cast<int>(NTPTileSource::TOP_SITES):
       return kHistogramClientName;
-    case MostVisitedSites::POPULAR:
+    case static_cast<int>(NTPTileSource::POPULAR):
       return kHistogramPopularName;
-    case MostVisitedSites::WHITELIST:
+    case static_cast<int>(NTPTileSource::WHITELIST):
       return kHistogramWhitelistName;
-    case MostVisitedSites::SUGGESTIONS_SERVICE:
+    case static_cast<int>(NTPTileSource::SUGGESTIONS_SERVICE):
       return kHistogramServerName;
   }
   NOTREACHED();
@@ -139,20 +139,11 @@ std::string GetSourceHistogramName(int source) {
 
 }  // namespace
 
-MostVisitedSites::Suggestion::Suggestion() : source(TOP_SITES) {}
-
-MostVisitedSites::Suggestion::~Suggestion() {}
-
-MostVisitedSites::Suggestion::Suggestion(Suggestion&&) = default;
-MostVisitedSites::Suggestion&
-MostVisitedSites::Suggestion::operator=(Suggestion&&) = default;
-
-MostVisitedSites::MostVisitedSites(
-    PrefService* prefs,
-    scoped_refptr<history::TopSites> top_sites,
-    SuggestionsService* suggestions,
-    PopularSites* popular_sites,
-    MostVisitedSitesSupervisor* supervisor)
+MostVisitedSites::MostVisitedSites(PrefService* prefs,
+                                   scoped_refptr<history::TopSites> top_sites,
+                                   SuggestionsService* suggestions,
+                                   PopularSites* popular_sites,
+                                   MostVisitedSitesSupervisor* supervisor)
     : prefs_(prefs),
       top_sites_(top_sites),
       suggestions_service_(suggestions),
@@ -164,7 +155,7 @@ MostVisitedSites::MostVisitedSites(
       waiting_for_popular_sites_(true),
       recorded_uma_(false),
       top_sites_observer_(this),
-      mv_source_(SUGGESTIONS_SERVICE),
+      mv_source_(NTPTileSource::SUGGESTIONS_SERVICE),
       weak_ptr_factory_(this) {
   DCHECK(suggestions_service_);
   supervisor_->SetObserver(this);
@@ -203,9 +194,9 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
       base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
                  base::Unretained(this)));
 
-  // Immediately build the current suggestions, getting personal suggestions
-  // from the SuggestionsService's cache or, if that is empty, from TopSites.
-  BuildCurrentSuggestions();
+  // Immediately build the current set of tiles, getting suggestions from the
+  // SuggestionsService's cache or, if that is empty, sites from TopSites.
+  BuildCurrentTiles();
   // Also start a request for fresh suggestions.
   suggestions_service_->FetchSuggestionsData();
 }
@@ -221,7 +212,7 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
   }
 
   // Only blacklist in the server-side suggestions service if it's active.
-  if (mv_source_ == SUGGESTIONS_SERVICE) {
+  if (mv_source_ == NTPTileSource::SUGGESTIONS_SERVICE) {
     if (add_url)
       suggestions_service_->BlacklistURL(url);
     else
@@ -271,19 +262,19 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(int index,
 }
 
 void MostVisitedSites::OnBlockedSitesChanged() {
-  BuildCurrentSuggestions();
+  BuildCurrentTiles();
 }
 
 // static
 void MostVisitedSites::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kNumPersonalSuggestions, 0);
+  registry->RegisterIntegerPref(prefs::kNumPersonalTiles, 0);
   // TODO(treib): Remove after M55.
-  registry->RegisterListPref(prefs::kDeprecatedNTPSuggestionsURL);
-  registry->RegisterListPref(prefs::kDeprecatedNTPSuggestionsIsPersonal);
+  registry->RegisterListPref(prefs::kDeprecatedNTPTilesURL);
+  registry->RegisterListPref(prefs::kDeprecatedNTPTilesIsPersonal);
 }
 
-void MostVisitedSites::BuildCurrentSuggestions() {
+void MostVisitedSites::BuildCurrentTiles() {
   // Get the current suggestions from cache. If the cache is empty, this will
   // fall back to TopSites.
   OnSuggestionsProfileAvailable(
@@ -309,7 +300,7 @@ base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
 
 void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
-  SuggestionsVector suggestions;
+  NTPTilesVector tiles;
   size_t num_tiles =
       std::min(visited_list.size(), static_cast<size_t>(num_sites_));
   for (size_t i = 0; i < num_tiles; ++i) {
@@ -321,18 +312,18 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
     if (supervisor_->IsBlocked(visited.url))
       continue;
 
-    Suggestion suggestion;
-    suggestion.title = visited.title;
-    suggestion.url = visited.url;
-    suggestion.source = TOP_SITES;
-    suggestion.whitelist_icon_path = GetWhitelistLargeIconPath(visited.url);
+    NTPTile tile;
+    tile.title = visited.title;
+    tile.url = visited.url;
+    tile.source = NTPTileSource::TOP_SITES;
+    tile.whitelist_icon_path = GetWhitelistLargeIconPath(visited.url);
 
-    suggestions.push_back(std::move(suggestion));
+    tiles.push_back(std::move(tile));
   }
 
   waiting_for_most_visited_sites_ = false;
-  mv_source_ = TOP_SITES;
-  SaveNewSuggestions(std::move(suggestions));
+  mv_source_ = NTPTileSource::TOP_SITES;
+  SaveNewTiles(std::move(tiles));
   NotifyMostVisitedURLsObserver();
 }
 
@@ -348,47 +339,46 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   if (num_sites_ < num_tiles)
     num_tiles = num_sites_;
 
-  SuggestionsVector suggestions;
+  NTPTilesVector tiles;
   for (int i = 0; i < num_tiles; ++i) {
     const ChromeSuggestion& suggestion_pb = suggestions_profile.suggestions(i);
     GURL url(suggestion_pb.url());
     if (supervisor_->IsBlocked(url))
       continue;
 
-    Suggestion suggestion;
-    suggestion.title = base::UTF8ToUTF16(suggestion_pb.title());
-    suggestion.url = url;
-    suggestion.source = SUGGESTIONS_SERVICE;
-    suggestion.whitelist_icon_path = GetWhitelistLargeIconPath(url);
+    NTPTile tile;
+    tile.title = base::UTF8ToUTF16(suggestion_pb.title());
+    tile.url = url;
+    tile.source = NTPTileSource::SUGGESTIONS_SERVICE;
+    tile.whitelist_icon_path = GetWhitelistLargeIconPath(url);
 
-    suggestions.push_back(std::move(suggestion));
+    tiles.push_back(std::move(tile));
   }
 
   waiting_for_most_visited_sites_ = false;
-  mv_source_ = SUGGESTIONS_SERVICE;
-  SaveNewSuggestions(std::move(suggestions));
+  mv_source_ = NTPTileSource::SUGGESTIONS_SERVICE;
+  SaveNewTiles(std::move(tiles));
   NotifyMostVisitedURLsObserver();
 }
 
-MostVisitedSites::SuggestionsVector
-MostVisitedSites::CreateWhitelistEntryPointSuggestions(
-    const SuggestionsVector& personal_suggestions) {
-  size_t num_personal_suggestions = personal_suggestions.size();
-  DCHECK_LE(num_personal_suggestions, static_cast<size_t>(num_sites_));
+NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
+    const NTPTilesVector& personal_tiles) {
+  size_t num_personal_tiles = personal_tiles.size();
+  DCHECK_LE(num_personal_tiles, static_cast<size_t>(num_sites_));
 
-  size_t num_whitelist_suggestions = num_sites_ - num_personal_suggestions;
-  SuggestionsVector whitelist_suggestions;
+  size_t num_whitelist_tiles = num_sites_ - num_personal_tiles;
+  NTPTilesVector whitelist_tiles;
 
   std::set<std::string> personal_hosts;
-  for (const auto& suggestion : personal_suggestions)
-    personal_hosts.insert(suggestion.url.host());
+  for (const auto& tile : personal_tiles)
+    personal_hosts.insert(tile.url.host());
 
   for (const auto& whitelist : supervisor_->whitelists()) {
     // Skip blacklisted sites.
     if (top_sites_ && top_sites_->IsBlacklisted(whitelist.entry_point))
       continue;
 
-    // Skip suggestions already present.
+    // Skip tiles already present.
     if (personal_hosts.find(whitelist.entry_point.host()) !=
         personal_hosts.end())
       continue;
@@ -397,107 +387,101 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
     if (supervisor_->IsBlocked(whitelist.entry_point))
       continue;
 
-    Suggestion suggestion;
-    suggestion.title = whitelist.title;
-    suggestion.url = whitelist.entry_point;
-    suggestion.source = WHITELIST;
-    suggestion.whitelist_icon_path = whitelist.large_icon_path;
+    NTPTile tile;
+    tile.title = whitelist.title;
+    tile.url = whitelist.entry_point;
+    tile.source = NTPTileSource::WHITELIST;
+    tile.whitelist_icon_path = whitelist.large_icon_path;
 
-    whitelist_suggestions.push_back(std::move(suggestion));
-    if (whitelist_suggestions.size() >= num_whitelist_suggestions)
+    whitelist_tiles.push_back(std::move(tile));
+    if (whitelist_tiles.size() >= num_whitelist_tiles)
       break;
   }
 
-  return whitelist_suggestions;
+  return whitelist_tiles;
 }
 
-MostVisitedSites::SuggestionsVector
-MostVisitedSites::CreatePopularSitesSuggestions(
-    const SuggestionsVector& personal_suggestions,
-    const SuggestionsVector& whitelist_suggestions) {
-  // For child accounts popular sites suggestions will not be added.
+NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
+    const NTPTilesVector& personal_tiles,
+    const NTPTilesVector& whitelist_tiles) {
+  // For child accounts popular sites tiles will not be added.
   if (supervisor_->IsChildProfile())
-    return SuggestionsVector();
+    return NTPTilesVector();
 
-  size_t num_suggestions =
-      personal_suggestions.size() + whitelist_suggestions.size();
-  DCHECK_LE(num_suggestions, static_cast<size_t>(num_sites_));
+  size_t num_tiles = personal_tiles.size() + whitelist_tiles.size();
+  DCHECK_LE(num_tiles, static_cast<size_t>(num_sites_));
 
   // Collect non-blacklisted popular suggestions, skipping those already present
   // in the personal suggestions.
-  size_t num_popular_sites_suggestions = num_sites_ - num_suggestions;
-  SuggestionsVector popular_sites_suggestions;
+  size_t num_popular_sites_tiles = num_sites_ - num_tiles;
+  NTPTilesVector popular_sites_tiles;
 
-  if (num_popular_sites_suggestions > 0 && popular_sites_) {
+  if (num_popular_sites_tiles > 0 && popular_sites_) {
     std::set<std::string> hosts;
-    for (const auto& suggestion : personal_suggestions)
-      hosts.insert(suggestion.url.host());
-    for (const auto& suggestion : whitelist_suggestions)
-      hosts.insert(suggestion.url.host());
+    for (const auto& tile : personal_tiles)
+      hosts.insert(tile.url.host());
+    for (const auto& tile : whitelist_tiles)
+      hosts.insert(tile.url.host());
     for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
       // Skip blacklisted sites.
       if (top_sites_ && top_sites_->IsBlacklisted(popular_site.url))
         continue;
       std::string host = popular_site.url.host();
-      // Skip suggestions already present in personal or whitelists.
+      // Skip tiles already present in personal or whitelists.
       if (hosts.find(host) != hosts.end())
         continue;
 
-      Suggestion suggestion;
-      suggestion.title = popular_site.title;
-      suggestion.url = GURL(popular_site.url);
-      suggestion.source = POPULAR;
+      NTPTile tile;
+      tile.title = popular_site.title;
+      tile.url = GURL(popular_site.url);
+      tile.source = NTPTileSource::POPULAR;
 
-      popular_sites_suggestions.push_back(std::move(suggestion));
-      if (popular_sites_suggestions.size() >= num_popular_sites_suggestions)
+      popular_sites_tiles.push_back(std::move(tile));
+      if (popular_sites_tiles.size() >= num_popular_sites_tiles)
         break;
     }
   }
-  return popular_sites_suggestions;
+  return popular_sites_tiles;
 }
 
-void MostVisitedSites::SaveNewSuggestions(
-    SuggestionsVector personal_suggestions) {
-  SuggestionsVector whitelist_suggestions =
-      CreateWhitelistEntryPointSuggestions(personal_suggestions);
-  SuggestionsVector popular_sites_suggestions =
-      CreatePopularSitesSuggestions(personal_suggestions,
-                                    whitelist_suggestions);
+void MostVisitedSites::SaveNewTiles(NTPTilesVector personal_tiles) {
+  NTPTilesVector whitelist_tiles =
+      CreateWhitelistEntryPointTiles(personal_tiles);
+  NTPTilesVector popular_sites_tiles =
+      CreatePopularSitesTiles(personal_tiles, whitelist_tiles);
 
-  size_t num_actual_tiles = personal_suggestions.size() +
-                            whitelist_suggestions.size() +
-                            popular_sites_suggestions.size();
+  size_t num_actual_tiles = personal_tiles.size() + whitelist_tiles.size() +
+                            popular_sites_tiles.size();
   DCHECK_LE(num_actual_tiles, static_cast<size_t>(num_sites_));
 
-  current_suggestions_ = MergeSuggestions(std::move(personal_suggestions),
-                                          std::move(whitelist_suggestions),
-                                          std::move(popular_sites_suggestions));
-  DCHECK_EQ(num_actual_tiles, current_suggestions_.size());
+  current_tiles_ =
+      MergeTiles(std::move(personal_tiles), std::move(whitelist_tiles),
+                 std::move(popular_sites_tiles));
+  DCHECK_EQ(num_actual_tiles, current_tiles_.size());
 
-  int num_personal_suggestions = 0;
-  for (const auto& suggestion : current_suggestions_) {
-    if (suggestion.source != POPULAR)
-      num_personal_suggestions++;
+  int num_personal_tiles = 0;
+  for (const auto& tile : current_tiles_) {
+    if (tile.source != NTPTileSource::POPULAR)
+      num_personal_tiles++;
   }
-  prefs_->SetInteger(prefs::kNumPersonalSuggestions, num_personal_suggestions);
+  prefs_->SetInteger(prefs::kNumPersonalTiles, num_personal_tiles);
   // TODO(treib): Remove after M55.
-  prefs_->ClearPref(prefs::kDeprecatedNTPSuggestionsIsPersonal);
-  prefs_->ClearPref(prefs::kDeprecatedNTPSuggestionsURL);
+  prefs_->ClearPref(prefs::kDeprecatedNTPTilesIsPersonal);
+  prefs_->ClearPref(prefs::kDeprecatedNTPTilesURL);
 }
 
 // static
-MostVisitedSites::SuggestionsVector MostVisitedSites::MergeSuggestions(
-    SuggestionsVector personal_suggestions,
-    SuggestionsVector whitelist_suggestions,
-    SuggestionsVector popular_suggestions) {
-  SuggestionsVector merged_suggestions;
-  std::move(personal_suggestions.begin(), personal_suggestions.end(),
-            std::back_inserter(merged_suggestions));
-  std::move(whitelist_suggestions.begin(), whitelist_suggestions.end(),
-            std::back_inserter(merged_suggestions));
-  std::move(popular_suggestions.begin(), popular_suggestions.end(),
-            std::back_inserter(merged_suggestions));
-  return merged_suggestions;
+NTPTilesVector MostVisitedSites::MergeTiles(NTPTilesVector personal_tiles,
+                                            NTPTilesVector whitelist_tiles,
+                                            NTPTilesVector popular_tiles) {
+  NTPTilesVector merged_tiles;
+  std::move(personal_tiles.begin(), personal_tiles.end(),
+            std::back_inserter(merged_tiles));
+  std::move(whitelist_tiles.begin(), whitelist_tiles.end(),
+            std::back_inserter(merged_tiles));
+  std::move(popular_tiles.begin(), popular_tiles.end(),
+            std::back_inserter(merged_tiles));
+  return merged_tiles;
 }
 
 void MostVisitedSites::NotifyMostVisitedURLsObserver() {
@@ -510,7 +494,7 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
   if (!observer_)
     return;
 
-  observer_->OnMostVisitedURLsAvailable(current_suggestions_);
+  observer_->OnMostVisitedURLsAvailable(current_tiles_);
 }
 
 void MostVisitedSites::OnPopularSitesAvailable(bool success) {
@@ -525,21 +509,22 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
   // missing icons, but will *not* cause it to display the popular sites.
   observer_->OnPopularURLsAvailable(popular_sites_->sites());
 
-  // Re-build the suggestions list. Once done, this will notify the observer.
-  BuildCurrentSuggestions();
+  // Re-build the tile list. Once done, this will notify the observer.
+  BuildCurrentTiles();
 }
 
 void MostVisitedSites::RecordImpressionUMAMetrics() {
   UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles",
-                              current_suggestions_.size());
+                              current_tiles_.size());
 
-  for (size_t i = 0; i < current_suggestions_.size(); i++) {
+  for (size_t i = 0; i < current_tiles_.size(); i++) {
     UMA_HISTOGRAM_ENUMERATION(
         "NewTabPage.SuggestionsImpression", static_cast<int>(i), num_sites_);
 
     std::string histogram = base::StringPrintf(
         "NewTabPage.SuggestionsImpression.%s",
-        GetSourceHistogramName(current_suggestions_[i].source).c_str());
+        GetSourceHistogramName(static_cast<int>(current_tiles_[i].source))
+            .c_str());
     LogHistogramEvent(histogram, static_cast<int>(i), num_sites_);
   }
 }
@@ -548,8 +533,8 @@ void MostVisitedSites::TopSitesLoaded(TopSites* top_sites) {}
 
 void MostVisitedSites::TopSitesChanged(TopSites* top_sites,
                                        ChangeReason change_reason) {
-  if (mv_source_ == TOP_SITES) {
-    // The displayed suggestions are invalidated.
+  if (mv_source_ == NTPTileSource::TOP_SITES) {
+    // The displayed tiles are invalidated.
     InitiateTopSitesQuery();
   }
 }
