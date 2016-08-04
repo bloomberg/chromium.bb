@@ -6,13 +6,13 @@
 
 namespace blink {
 
-NGConstraintSpace::NGConstraintSpace(LayoutUnit inlineSize,
-    LayoutUnit blockSize)
+NGConstraintSpace::NGConstraintSpace(LayoutUnit inlineContainerSize,
+    LayoutUnit blockContainerSize)
 {
-    m_inlineSize = inlineSize;
-    m_blockSize = blockSize;
-    m_inlineOverflowSize = LayoutUnit(-1);
-    m_blockOverflowSize = LayoutUnit(-1);
+    m_inlineContainerSize = inlineContainerSize;
+    m_blockContainerSize = blockContainerSize;
+    m_inlineTriggersScrollbar = 0;
+    m_blockTriggersScrollbar = 0;
     m_fixedInlineSize = 0;
     m_fixedBlockSize = 0;
     m_blockFragmentationType = FragmentNone;
@@ -24,11 +24,11 @@ void NGConstraintSpace::addExclusion(const NGExclusion exclusion,
 
 }
 
-void NGConstraintSpace::setOverflowSize(LayoutUnit inlineSize,
-    LayoutUnit blockSize)
+void NGConstraintSpace::setOverflowTriggersScrollbar(bool inlineTriggers,
+    bool blockTriggers)
 {
-    m_inlineOverflowSize = inlineSize;
-    m_blockOverflowSize = blockSize;
+    m_inlineTriggersScrollbar = inlineTriggers;
+    m_blockTriggersScrollbar = blockTriggers;
 }
 
 void NGConstraintSpace::setFixedSize(bool inlineFixed, bool blockFixed)
