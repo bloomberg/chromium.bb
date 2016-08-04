@@ -206,6 +206,7 @@ Polymer({
 
   /**
    * @param {string} query
+   * @return {!Promise} A promise indicating that searching finished.
    */
   searchContents: function(query) {
     this.ensureInDefaultSearchPage_();
@@ -214,26 +215,30 @@ Polymer({
     // Trigger rendering of the basic and advanced pages and search once ready.
     this.showPages_ = {about: false, basic: true, advanced: true};
 
-    setTimeout(function() {
-      settings.getSearchManager().search(
-          query, assert(this.$$('settings-basic-page')));
-    }.bind(this), 0);
-    setTimeout(function() {
-      settings.getSearchManager().search(
-          query, assert(this.$$('settings-advanced-page'))).then(
-          function(request) {
-            if (!request.finished) {
-              // Nothing to do here. A previous search request was canceled
-              // because a new search request was issued before the first one
-              // completed.
-              return;
-            }
+    return new Promise(function(resolve, reject) {
+      setTimeout(function() {
+        var whenSearchDone = settings.getSearchManager().search(
+            query, assert(this.$$('settings-basic-page')));
+        assert(
+            whenSearchDone ===
+                settings.getSearchManager().search(
+                    query, assert(this.$$('settings-advanced-page'))));
 
-            this.toolbarSpinnerActive = false;
-            this.showNoResultsFound_ =
-                !request.isSame('') && !request.didFindMatches();
-          }.bind(this));
-    }.bind(this), 0);
+        whenSearchDone.then(function(request) {
+          resolve();
+          if (!request.finished) {
+            // Nothing to do here. A previous search request was canceled
+            // because a new search request was issued before the first one
+            // completed.
+            return;
+          }
+
+          this.toolbarSpinnerActive = false;
+          this.showNoResultsFound_ =
+              !request.isSame('') && !request.didFindMatches();
+        }.bind(this));
+      }.bind(this), 0);
+    }.bind(this));
   },
 
   /**
