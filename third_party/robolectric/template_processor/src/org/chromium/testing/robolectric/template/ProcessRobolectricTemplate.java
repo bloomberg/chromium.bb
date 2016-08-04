@@ -51,39 +51,21 @@ public final class ProcessRobolectricTemplate {
             context.put("ptrClass", "int");
             context.put("ptrClassBoxed", "Integer");
         }
-
         try {
-            final PathMatcher templatePathMatcher =
-                    FileSystems.getDefault().getPathMatcher("glob:" + "**/*.vm");
-            Files.walkFileTree(parser.getBaseTemplateDir(), new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(
-                        Path path, BasicFileAttributes attrs) throws IOException {
-                    if (templatePathMatcher.matches(path)) {
-                        processTemplate(context, path, parser.getBaseTemplateDir(), parser.getOutputDir(), api);
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+            for(TemplateFileInfo templateFileInfo: parser.getTemplateFileInfoList()) {
+                processTemplate(context, templateFileInfo.getTemplateFile(),
+                        templateFileInfo.getOutputFile(), api);
+            }
         } catch (IOException e) {
             System.err.println("Error processing template files for Robolectric! " + e.toString());
         }
     }
 
-    private static void processTemplate(VelocityContext context, Path templateFile, Path baseTemplateDir, Path outputDir, int api_level) throws IOException {
+    private static void processTemplate(VelocityContext context, Path templateFile,
+            Path outputFile, int api_level) throws IOException {
         final StringWriter stringWriter = new StringWriter();
-        Template template = Velocity.getTemplate(baseTemplateDir.relativize(templateFile).toString(), "UTF-8");
+        Template template = Velocity.getTemplate(templateFile.toString(), "UTF-8");
         template.merge(context, stringWriter);
-
-        String templateFilename = templateFile.getFileName().toString();
-        String processedFilename = "" + api_level + File.separator + templateFilename.replace(".vm", "");
-
-        String relativeOutputFile = templateFile.toString().replace(baseTemplateDir.toString(), "").replace(templateFilename, processedFilename);
-
-        if (relativeOutputFile.startsWith("/")) {
-            relativeOutputFile = relativeOutputFile.substring(1);
-        }
-        Path outputFile = outputDir.resolve(relativeOutputFile);
         if (!Files.exists(outputFile.getParent())) {
             Files.createDirectories(outputFile.getParent());
         }

@@ -531,6 +531,7 @@ java_binary("robolectric_template_processor") {
   java_files = [
     "template_processor/src/org/chromium/testing/robolectric/template/ProcessRobolectricTemplate.java",
     "template_processor/src/org/chromium/testing/robolectric/template/ProcessTemplateArgParser.java",
+    "template_processor/src/org/chromium/testing/robolectric/template/TemplateFileInfo.java",
   ]
   main_class =
       "org.chromium.testing.robolectric.template.ProcessRobolectricTemplate"
@@ -552,24 +553,30 @@ template("shadows_core") {
   _process_templates_target_name = "${target_name}__process_templates"
 
   _processed_template_files = []
-  foreach(t, _template_files) {
-    _gen_dir = get_path_info(t, "gen_dir")
-    _name = get_path_info(t, "name")
-    _processed_template_files += [ "$_gen_dir/$api_level/$_name" ]
+  _template_file_args = []
+  foreach(template_file, _template_files) {
+    _gen_dir = get_path_info(template_file, "gen_dir")
+    _name = get_path_info(template_file, "name")
+    _output_file = "$_gen_dir/$api_level/$_name"
+    _template_file_args += [
+      "--process-file",
+      "$template_file",
+      rebase_path(_output_file, root_build_dir),
+    ]
+    _processed_template_files += [ _output_file ]
   }
 
   action(_process_templates_target_name) {
     _base_template_dir = rebase_path(".", root_build_dir)
-    _base_template_output_dir = rebase_path(target_gen_dir, root_build_dir)
     script = "$root_build_dir/bin/robolectric_template_processor"
     args = [
       "--api-level",
       "$api_level",
       "--base-template-dir",
       _base_template_dir,
-      "--output-dir",
-      _base_template_output_dir,
     ]
+    args += _template_file_args
+
     inputs = _template_files
     outputs = _processed_template_files
 

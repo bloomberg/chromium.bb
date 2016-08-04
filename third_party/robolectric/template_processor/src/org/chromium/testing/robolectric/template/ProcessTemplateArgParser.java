@@ -6,12 +6,14 @@ package org.chromium.testing.robolectric.template;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import java.util.LinkedList;
+import java.util.List;
 /**
  *  Parses command line arguments for ProcessRobolectricTemplate.
  */
 public class ProcessTemplateArgParser {
 
+    private List<TemplateFileInfo> mTemplateFileInfoList;
     private Path mBaseTemplateDir;
     private Path mOutputDir;
     private Integer mApiLevel;
@@ -29,15 +31,20 @@ public class ProcessTemplateArgParser {
                     argName = args[i].substring(1, args[i].length());
                 }
                 try {
-                    if ("output-dir".equals(argName)) {
-                        // Read the command line argument after the flag.
-                        parsed.setOutputDir(args[++i]);
-                    } else if ("base-template-dir".equals(argName)) {
-                        // Read the command line argument after the flag.
-                        parsed.setBaseTemplateDir(args[++i]);
+                    if ("process-file".equals(argName)) {
+                        // Read the two command line arguments after the flag.
+                        // Format is --process-file <template file> <output file>.
+                        // Argument can be passed multiple times.
+                        Path templatePath = Paths.get(args[++i]);
+                        Path outputPath = Paths.get(args[++i]);
+                        parsed.addTemplateFileInfo(
+                                new TemplateFileInfo(templatePath, outputPath));
                     } else if ("api-level".equals(argName)) {
                         // Read the command line argument after the flag.
                         parsed.setApiLevel(args[++i]);
+                    } else if ("base-template-dir".equals(argName)) {
+                        // Read the command line argument after the flag.
+                        parsed.setBaseTemplateDir(args[++i]);
                     } else {
                         System.out.println("Ignoring flag: \"" + argName + "\"");
                     }
@@ -48,11 +55,6 @@ public class ProcessTemplateArgParser {
             } else {
                 System.out.println("Ignoring argument: \"" + args[i] + "\"");
             }
-        }
-
-        if (parsed.getOutputDir() == null) {
-            System.err.println("--output-dir argument required.");
-            System.exit(1);
         }
 
         if (parsed.getBaseTemplateDir() == null) {
@@ -68,32 +70,33 @@ public class ProcessTemplateArgParser {
     }
 
     private ProcessTemplateArgParser() {
+        mApiLevel = null;
         mBaseTemplateDir = null;
         mOutputDir = null;
-        mApiLevel = null;
-    }
-
-    public Path getBaseTemplateDir() {
-        return mBaseTemplateDir;
-    }
-
-    public Path getOutputDir() {
-        return mOutputDir;
+        mTemplateFileInfoList = new LinkedList<TemplateFileInfo>();
     }
 
     public Integer getApiLevel() {
         return mApiLevel;
     }
 
-    private void setBaseTemplateDir(String path) {
-        mBaseTemplateDir = Paths.get(path);
+    public Path getBaseTemplateDir() {
+        return mBaseTemplateDir;
     }
 
-    private void setOutputDir(String path) {
-        mOutputDir = Paths.get(path);
+    public List<TemplateFileInfo> getTemplateFileInfoList() {
+        return mTemplateFileInfoList;
     }
 
     private void setApiLevel(String integer) {
         mApiLevel = Integer.parseInt(integer);
+    }
+
+    private void setBaseTemplateDir(String path) {
+        mBaseTemplateDir = Paths.get(path);
+    }
+
+    private void addTemplateFileInfo(TemplateFileInfo templateFileInfo) {
+        mTemplateFileInfoList.add(templateFileInfo);
     }
 }
