@@ -123,8 +123,6 @@ void SerialIoHandlerPosix::ReadImpl() {
   DCHECK(pending_read_buffer());
   DCHECK(file().IsValid());
 
-  EnsureWatchingReads();
-
   // Try to read immediately. This is needed because on some platforms
   // (e.g., OSX) there may not be a notification from the message loop
   // when the fd is ready to read immediately after it is opened. There
@@ -303,7 +301,7 @@ void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
   AttemptRead(false);
 }
 
-void SerialIoHandlerPosix::AttemptRead(bool within_read) {
+bool SerialIoHandlerPosix::AttemptRead(bool within_read) {
   if (pending_read_buffer()) {
     int bytes_read = HANDLE_EINTR(read(file().GetPlatformFile(),
                                        pending_read_buffer(),
@@ -311,7 +309,7 @@ void SerialIoHandlerPosix::AttemptRead(bool within_read) {
     if (bytes_read < 0) {
       if (errno == EAGAIN) {
         // The fd does not have data to read yet so continue waiting.
-        return;
+        EnsureWatchingReads();
       } else if (errno == ENXIO) {
         RunReadCompleted(within_read, 0, serial::ReceiveError::DEVICE_LOST);
       } else {
@@ -343,6 +341,8 @@ void SerialIoHandlerPosix::AttemptRead(bool within_read) {
     is_watching_reads_ = false;
     file_read_watcher_.StopWatchingFileDescriptor();
   }
+
+  return true;
 }
 
 void SerialIoHandlerPosix::RunReadCompleted(bool within_read,
