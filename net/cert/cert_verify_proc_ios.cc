@@ -278,7 +278,7 @@ int CertVerifyProcIOS::VerifyInternal(
       verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
       break;
     default:
-      CFArrayRef properties = SecTrustCopyProperties(trust_ref);
+      ScopedCFTypeRef<CFArrayRef> properties(SecTrustCopyProperties(trust_ref));
       verify_result->cert_status |= GetFailureFromTrustProperties(properties);
   }
 
