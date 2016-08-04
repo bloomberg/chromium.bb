@@ -209,6 +209,7 @@ public:
         unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowChildFrameContent, ExceptionState&) const;
 
     bool hasSpellingMarker(Document*, int from, int length);
+    bool hasGrammarMarker(Document*, int from, int length);
     void setContinuousSpellCheckingEnabled(bool);
 
     bool canHyphenate(const AtomicString& locale);

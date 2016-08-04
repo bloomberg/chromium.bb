@@ -175,6 +175,8 @@ static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerType
         result = DocumentMarker::AllMarkers();
     else if (equalIgnoringCase(markerType, "Spelling"))
         result =  DocumentMarker::Spelling;
+    else if (equalIgnoringCase(markerType, "Grammar"))
+        result =  DocumentMarker::Grammar;
     else if (equalIgnoringCase(markerType, "TextMatch"))
         result =  DocumentMarker::TextMatch;
     else
@@ -1608,6 +1610,15 @@ Vector<unsigned long> Internals::setMemoryCacheCapacities(unsigned long minDeadB
     result.append(memoryCache()->capacity());
     memoryCache()->setCapacities(minDeadBytes, maxDeadBytes, totalBytes);
     return result;
+}
+
+bool Internals::hasGrammarMarker(Document* document, int from, int length)
+{
+    ASSERT(document);
+    if (!document->frame())
+        return false;
+
+    return document->frame()->spellChecker().selectionStartHasMarkerFor(DocumentMarker::Grammar, from, length);
 }
 
 unsigned Internals::numberOfScrollableAreas(Document* document)
