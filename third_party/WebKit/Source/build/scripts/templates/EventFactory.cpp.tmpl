@@ -15,7 +15,7 @@ namespace blink {
 
 {{namespace}}* {{namespace}}{{suffix}}Factory::create(ExecutionContext* executionContext, const String& type)
 {
-    {% for event in events %}
+    {% for event in events if event|script_name|create_event_whitelist or event|script_name|create_event_legacy_whitelist %}
     {% if event|script_name|create_event_whitelist %}
     if (equalIgnoringCase(type, "{{event|script_name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
     {% else %}

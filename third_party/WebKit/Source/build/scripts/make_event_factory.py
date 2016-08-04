@@ -50,14 +50,9 @@ HEADER_TEMPLATE = """%(license)s
 # All events on the following whitelist are matched case-insensitively
 # in createEvent.
 #
-# All events not on the list are being measured (except for already
-# deprecated ones). The plan is to limit createEvent to just a few
-# selected events necessary for legacy content in accordance with the
-# specification:
-#
 # https://dom.spec.whatwg.org/#dom-document-createevent
 def create_event_whitelist(name):
-    return (name == ('HTMLEvents')
+    return (name == 'HTMLEvents'
             or name == 'Event'
             or name == 'Events'
             or name.startswith('UIEvent')
@@ -66,6 +61,85 @@ def create_event_whitelist(name):
             or name == 'MessageEvent'
             or name.startswith('MouseEvent')
             or name == 'TouchEvent')
+
+
+# All events on the following whitelist are matched case-sensitively
+# in createEvent and are measured using UseCounter.
+#
+# TODO(foolip): All events on this list should either be added to the spec and
+# moved to the above whitelist (causing them to be matched case-insensitively)
+# or be deprecated/removed. https://crbug.com/569690
+def create_event_legacy_whitelist(name):
+    return (name == 'AnimationEvent'
+            or name == 'AnimationPlayerEvent'
+            or name == 'ApplicationCacheErrorEvent'
+            or name == 'AudioProcessingEvent'
+            or name == 'BeforeInstallPromptEvent'
+            or name == 'BeforeUnloadEvent'
+            or name == 'BlobEvent'
+            or name == 'ClipboardEvent'
+            or name == 'CloseEvent'
+            or name == 'CompositionEvent'
+            or name == 'DeviceLightEvent'
+            or name == 'DeviceMotionEvent'
+            or name == 'DeviceOrientationEvent'
+            or name == 'DragEvent'
+            or name == 'ErrorEvent'
+            or name == 'ExtendableEvent'
+            or name == 'ExtendableMessageEvent'
+            or name == 'FetchEvent'
+            or name == 'FocusEvent'
+            or name == 'FontFaceSetLoadEvent'
+            or name == 'ForeignFetchEvent'
+            or name == 'GamepadEvent'
+            or name == 'HashChangeEvent'
+            or name == 'IDBVersionChangeEvent'
+            or name == 'InputEvent'
+            or name == 'InstallEvent'
+            or name == 'KeyboardEvents'
+            or name == 'MediaEncryptedEvent'
+            or name == 'MediaKeyMessageEvent'
+            or name == 'MediaQueryListEvent'
+            or name == 'MediaStreamEvent'
+            or name == 'MediaStreamTrackEvent'
+            or name == 'MIDIConnectionEvent'
+            or name == 'MIDIMessageEvent'
+            or name == 'MutationEvent'
+            or name == 'MutationEvents'
+            or name == 'NotificationEvent'
+            or name == 'OfflineAudioCompletionEvent'
+            or name == 'OrientationEvent'
+            or name == 'PageTransitionEvent'
+            or name == 'PaymentRequestUpdateEvent'
+            or name == 'PointerEvent'
+            or name == 'PopStateEvent'
+            or name == 'PresentationConnectionAvailableEvent'
+            or name == 'PresentationConnectionCloseEvent'
+            or name == 'ProgressEvent'
+            or name == 'PromiseRejectionEvent'
+            or name == 'PushEvent'
+            or name == 'RelatedEvent'
+            or name == 'ResourceProgressEvent'
+            or name == 'RTCDataChannelEvent'
+            or name == 'RTCDTMFToneChangeEvent'
+            or name == 'RTCIceCandidateEvent'
+            or name == 'SecurityPolicyViolationEvent'
+            or name == 'SensorErrorEvent'
+            or name == 'SensorReadingEvent'
+            or name == 'ServiceWorkerMessageEvent'
+            or name == 'SpeechRecognitionError'
+            or name == 'SpeechRecognitionEvent'
+            or name == 'SpeechSynthesisEvent'
+            or name == 'StorageEvent'
+            or name == 'SVGEvents'
+            or name == 'SyncEvent'
+            or name == 'TextEvent'
+            or name == 'TrackEvent'
+            or name == 'TransitionEvent'
+            or name == 'WebGLContextEvent'
+            or name == 'WebKitAnimationEvent'
+            or name == 'WebKitTransitionEvent'
+            or name == 'WheelEvent')
 
 
 def measure_name(name):
@@ -87,6 +161,7 @@ class EventFactoryWriter(in_generator.Writer):
         'lower_first': name_utilities.lower_first,
         'script_name': name_utilities.script_name,
         'create_event_whitelist': create_event_whitelist,
+        'create_event_legacy_whitelist': create_event_legacy_whitelist,
         'measure_name': measure_name,
     }
 
