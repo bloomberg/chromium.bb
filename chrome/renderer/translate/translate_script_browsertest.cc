@@ -38,6 +38,7 @@ const char kTranslate[] = "cr.googleTranslate.translate('auto', 'en')";
 
 // JavaScript code to mimic element.js provided by a translate server.
 const char kElementJs[] =
+    "serverParams = '';"
     "translateApiKey = '';"
     "google = {};"
     "google.translate = {};"

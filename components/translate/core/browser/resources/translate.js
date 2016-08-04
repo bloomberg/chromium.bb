@@ -258,12 +258,15 @@ cr.googleTranslate = (function() {
         lib = google.translate.TranslateService({
           // translateApiKey is predefined by translate_script.cc.
           'key': translateApiKey,
+          'serverParams': serverParams,
           'useSecureConnection': true
         });
         translateApiKey = undefined;
+        serverParams = undefined;
       } catch (err) {
         errorCode = ERROR['INITIALIZATION_ERROR'];
         translateApiKey = undefined;
+        serverParams = undefined;
         return;
       }
       // The TranslateService is not available immediately as it needs to start

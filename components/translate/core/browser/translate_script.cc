@@ -19,6 +19,7 @@
 #include "components/translate/core/browser/translate_url_util.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/translate/core/common/translate_util.h"
+#include "components/variations/variations_associated_data.h"
 #include "google_apis/google_api_keys.h"
 #include "grit/components_resources.h"
 #include "net/base/escape.h"
@@ -48,6 +49,8 @@ const char TranslateScript::kCssLoaderCallbackQueryValue[] =
 const char TranslateScript::kJavascriptLoaderCallbackQueryName[] = "jlc";
 const char TranslateScript::kJavascriptLoaderCallbackQueryValue[] =
     "cr.googleTranslate.onLoadJavascript";
+const char kTranslateServerStudy[] = "TranslateServerStudy";
+const char kServerParams[] = "server_params";
 
 TranslateScript::TranslateScript()
     : expiration_delay_(base::TimeDelta::FromDays(kExpirationDelayDays)),
@@ -131,6 +134,16 @@ void TranslateScript::OnScriptFetchComplete(
     // Insert variable definitions on API Key and security origin.
     data_ = base::StringPrintf("var translateApiKey = '%s';\n",
                                google_apis::GetAPIKey().c_str());
+
+    // Insert server params to pass experimental params to google translate
+    // server.
+    std::string server_params;
+    std::map<std::string, std::string> params;
+    if (variations::GetVariationParams(kTranslateServerStudy, &params)) {
+      server_params = params[kServerParams];
+    }
+    base::StringAppendF(&data_, "var serverParams = '%s';\n",
+                        server_params.c_str());
 
     GURL security_origin = translate::GetTranslateSecurityOrigin();
     base::StringAppendF(
