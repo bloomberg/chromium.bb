@@ -108,6 +108,7 @@
           'conditions': [
             ["use_dbus==1", {
               'dependencies': [
+                '<(DEPTH)/build/linux/system.gyp:dbus',
                 '<(DEPTH)/dbus/dbus.gyp:dbus',
               ],
               'sources!': [
