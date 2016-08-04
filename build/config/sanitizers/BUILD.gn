@@ -252,8 +252,9 @@ config("asan_flags") {
       # and dlls, see link_executable and link_shared_library below.
       # This here handles only the component build.
       if (target_cpu == "x64") {
-        # Windows 64-bit.
+        # Windows 64-bit. TODO(etienneb): Remove the assert when this is ready.
         if (is_component_build) {
+          assert(false, "win/asan does not work in 64-bit yet")
           libs = [
             "clang_rt.asan_dynamic-x86_64.lib",
             "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib",
@@ -275,7 +276,8 @@ config("asan_flags") {
 config("link_executable") {
   if (is_asan && is_win && !is_component_build) {
     if (target_cpu == "x64") {
-      # Windows 64-bit.
+      # Windows 64-bit. TODO(etienneb): Remove the assert when this is ready.
+      assert(false, "win/asan does not work in 64-bit yet")
       libs = [ "clang_rt.asan-x86_64.lib" ]
     } else {
       assert(target_cpu == "x86", "WinASan unsupported architecture")
@@ -287,7 +289,8 @@ config("link_executable") {
 config("link_shared_library") {
   if (is_asan && is_win && !is_component_build) {
     if (target_cpu == "x64") {
-      # Windows 64-bit.
+      # Windows 64-bit. TODO(etienneb): Remove the assert when this is ready.
+      assert(false, "win/asan does not work in 64-bit yet")
       libs = [ "clang_rt.asan_dll_thunk-x86_64.lib" ]
     } else {
       assert(target_cpu == "x86", "WinASan unsupported architecture")
