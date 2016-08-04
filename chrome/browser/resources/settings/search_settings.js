@@ -100,7 +100,7 @@ cr.define('settings', function() {
    * ensures that <settings-section> instances become visible if any matches
    * occurred under their subtree.
    *
-   * @param {!settings.SearchRequest} request
+   * @param {!SearchRequest} request
    * @param {!Node} root The root of the sub-tree to be searched
    * @private
    */
@@ -167,11 +167,11 @@ cr.define('settings', function() {
   /**
    * @constructor
    *
-   * @param {!settings.SearchRequest} request
+   * @param {!SearchRequest} request
    * @param {!Node} node
    */
   function Task(request, node) {
-    /** @protected {!settings.SearchRequest} */
+    /** @protected {!SearchRequest} */
     this.request = request;
 
     /** @protected {!Node} */
@@ -193,7 +193,7 @@ cr.define('settings', function() {
    * @constructor
    * @extends {Task}
    *
-   * @param {!settings.SearchRequest} request
+   * @param {!SearchRequest} request
    * @param {!Node} node
    */
   function RenderTask(request, node) {
@@ -227,7 +227,7 @@ cr.define('settings', function() {
    * @constructor
    * @extends {Task}
    *
-   * @param {!settings.SearchRequest} request
+   * @param {!SearchRequest} request
    * @param {!Node} node
    */
   function SearchAndHighlightTask(request, node) {
@@ -247,7 +247,7 @@ cr.define('settings', function() {
    * @constructor
    * @extends {Task}
    *
-   * @param {!settings.SearchRequest} request
+   * @param {!SearchRequest} request
    * @param {!Node} page
    */
   function TopLevelSearchTask(request, page) {
@@ -454,25 +454,11 @@ cr.define('settings', function() {
     },
   };
 
-  /** @interface */
-  var SearchManager = function() {};
-
-  SearchManager.prototype = {
-    /**
-     * @param {string} text The text to search for.
-     * @param {!Node} page
-     * @return {!Promise<!settings.SearchRequest>} A signal indicating that
-     *     searching finished.
-     */
-    search: function(text, page) {}
-  };
-
   /**
    * @constructor
-   * @implements {SearchManager}
    */
-  var SearchManagerImpl = function() {
-    /** @private {?settings.SearchRequest} */
+  var SearchManager = function() {
+    /** @private {?SearchRequest} */
     this.activeRequest_ = null;
 
     /** @private {!TaskQueue} */
@@ -483,15 +469,20 @@ cr.define('settings', function() {
       this.activeRequest_ = null;
     }.bind(this));
   };
-  cr.addSingletonGetter(SearchManagerImpl);
+  cr.addSingletonGetter(SearchManager);
 
-  SearchManagerImpl.prototype = {
-    /** @override */
+  SearchManager.prototype = {
+    /**
+     * @param {string} text The text to search for.
+     * @param {!Node} page
+     * @return {!Promise<!SearchRequest>} A signal indicating that searching
+     *     finished.
+     */
     search: function(text, page) {
       // Creating a new request only if the |text| changed.
       if (!this.activeRequest_ || !this.activeRequest_.isSame(text)) {
         // Resolving previous search request without marking it as
-        // 'finished', if any, and dropping all pending tasks.
+        // 'finisthed', if any, and droping all pending tasks.
         this.queue_.reset();
         if (this.activeRequest_)
           this.activeRequest_.resolver.resolve(this.activeRequest_);
@@ -508,20 +499,10 @@ cr.define('settings', function() {
 
   /** @return {!SearchManager} */
   function getSearchManager() {
-    return SearchManagerImpl.getInstance();
-  }
-
-  /**
-   * Sets the SearchManager singleton instance, useful for testing.
-   * @param {!SearchManager} searchManager
-   */
-  function setSearchManagerForTesting(searchManager) {
-    SearchManagerImpl.instance_ = searchManager;
+    return SearchManager.getInstance();
   }
 
   return {
     getSearchManager: getSearchManager,
-    setSearchManagerForTesting: setSearchManagerForTesting,
-    SearchRequest: SearchRequest,
   };
 });

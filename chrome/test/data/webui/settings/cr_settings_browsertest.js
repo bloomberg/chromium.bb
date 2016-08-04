@@ -724,27 +724,3 @@ TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
   });
   mocha.run();
 });
-
-/**
- * Test fixture for chrome/browser/resources/settings/settings_main/.
- * @constructor
- * @extends {CrSettingsBrowserTest}
-*/
-function CrSettingsMainPageTest() {}
-
-CrSettingsMainPageTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://md-settings/settings_main/settings_main.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'settings_main_test.js',
-  ]),
-};
-
-TEST_F('CrSettingsMainPageTest', 'All', function() {
-  settings_main_page.registerTests();
-  mocha.run();
-});
