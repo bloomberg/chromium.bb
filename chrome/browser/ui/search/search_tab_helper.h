@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
@@ -110,19 +111,11 @@ class SearchTabHelper : public content::WebContentsObserver,
                            OnChromeIdentityCheckMatchSlightlyDifferentGmail2);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, OnChromeIdentityCheckMismatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnChromeIdentityCheckSignedOutMatch);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnChromeIdentityCheckSignedOutMismatch);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnHistorySyncCheckSyncInactive);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnHistorySyncCheckSyncing);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnHistorySyncCheckNotSyncing);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnMostVisitedItemsChangedFromServer);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnMostVisitedItemsChangedFromClient);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
@@ -193,12 +186,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Returns the OmniboxView for |web_contents_| or NULL if not available.
   OmniboxView* GetOmniboxView() const;
 
-  typedef bool (*OmniboxHasFocusFn)(OmniboxView*);
-
-  void set_omnibox_has_focus_fn(OmniboxHasFocusFn fn) {
-    omnibox_has_focus_fn_ = fn;
-  }
-
   const bool is_search_enabled_;
 
   // Model object for UI that cares about search state.
@@ -214,10 +201,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // by us.
   // NULL on iOS and Android because they don't use the Instant framework.
   SearchTabHelperDelegate* delegate_;
-
-  // Function to check if the omnibox has focus. Tests use this to modify the
-  // default behavior.
-  OmniboxHasFocusFn omnibox_has_focus_fn_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };

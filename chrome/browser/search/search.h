@@ -119,10 +119,6 @@ std::vector<GURL> GetSearchURLs(Profile* profile);
 // trials.
 GURL GetSearchResultPrefetchBaseURL(Profile* profile);
 
-// Returns true if 'prerender_instant_url_on_omnibox_focus' flag is enabled in
-// field trials to prerender Instant search base page when the omnibox is
-// focused.
-bool ShouldPrerenderInstantUrlOnOmniboxFocus();
 
 // Transforms the input |url| into its "effective URL". |url| must be an
 // Instant URL, i.e. ShouldAssignURLToInstantRenderer must return true. The

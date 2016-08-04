@@ -10,25 +10,15 @@
 #include <string>
 #include <tuple>
 
-#include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/search/instant_unittest_base.h"
-#include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -36,7 +26,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
-#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -354,69 +343,4 @@ TEST_F(SearchTabHelperTest, TitleIsSetForNTP) {
   EXPECT_EQ(title, title_observer.title_on_start());
   EXPECT_EQ(title, title_observer.title_on_commit());
   EXPECT_EQ(title, web_contents()->GetTitle());
-}
-
-class SearchTabHelperPrerenderTest : public InstantUnitTestBase {
- public:
-  ~SearchTabHelperPrerenderTest() override {}
-
- protected:
-  void SetUp() override {
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch",
-        "Group1 espv:89 prefetch_results:1 "
-        "prerender_instant_url_on_omnibox_focus:1"));
-    InstantUnitTestBase::SetUp();
-
-    AddTab(browser(), GURL(chrome::kChromeUINewTabURL));
-    SearchTabHelper::FromWebContents(web_contents())->set_omnibox_has_focus_fn(
-        omnibox_has_focus);
-    SearchTabHelperPrerenderTest::omnibox_has_focus_ = true;
-  }
-
-  content::WebContents* web_contents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
-  }
-
-  bool IsInstantURLMarkedForPrerendering() {
-    GURL instant_url(search::GetSearchResultPrefetchBaseURL(profile()));
-    prerender::PrerenderManager* prerender_manager =
-        prerender::PrerenderManagerFactory::GetForProfile(profile());
-    return prerender_manager->HasPrerenderedUrl(instant_url, web_contents());
-  }
-
-  static bool omnibox_has_focus(OmniboxView* omnibox) {
-    return omnibox_has_focus_;
-  }
-
-  static bool omnibox_has_focus_;
-};
-
-bool SearchTabHelperPrerenderTest::omnibox_has_focus_ = true;
-
-TEST_F(SearchTabHelperPrerenderTest, OnOmniboxFocusPrerenderInstantURL) {
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(web_contents());
-  search_tab_helper->OmniboxFocusChanged(OMNIBOX_FOCUS_VISIBLE,
-                                         OMNIBOX_FOCUS_CHANGE_EXPLICIT);
-  ASSERT_TRUE(IsInstantURLMarkedForPrerendering());
-  search_tab_helper->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
-                                         OMNIBOX_FOCUS_CHANGE_EXPLICIT);
-  ASSERT_FALSE(IsInstantURLMarkedForPrerendering());
-}
-
-TEST_F(SearchTabHelperPrerenderTest, OnTabActivatedPrerenderInstantURL) {
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(web_contents());
-  search_tab_helper->OnTabActivated();
-  ASSERT_TRUE(IsInstantURLMarkedForPrerendering());
-}
-
-TEST_F(SearchTabHelperPrerenderTest,
-    OnTabActivatedNoPrerenderIfOmniboxBlurred) {
-  SearchTabHelperPrerenderTest::omnibox_has_focus_ = false;
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(web_contents());
-  search_tab_helper->OnTabActivated();
-  ASSERT_FALSE(IsInstantURLMarkedForPrerendering());
 }

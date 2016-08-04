@@ -7,10 +7,8 @@
 #include <memory>
 #include <set>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -23,7 +21,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
@@ -42,7 +39,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/navigation_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
@@ -138,10 +134,6 @@ bool IsHistorySyncEnabled(Profile* profile) {
       sync->GetPreferredDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
-bool OmniboxHasFocus(OmniboxView* omnibox) {
-  return omnibox && omnibox->model()->has_focus();
-}
-
 }  // namespace
 
 SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
@@ -153,8 +145,7 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
           this,
           base::WrapUnique(new SearchIPCRouterPolicyImpl(web_contents))),
       instant_service_(NULL),
-      delegate_(NULL),
-      omnibox_has_focus_fn_(&OmniboxHasFocus) {
+      delegate_(NULL) {
   if (!is_search_enabled_)
     return;
 
@@ -189,25 +180,8 @@ void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
   // Don't send oninputstart/oninputend updates in response to focus changes
   // if there's a navigation in progress. This prevents Chrome from sending
   // a spurious oninputend when the user accepts a match in the omnibox.
-  if (web_contents_->GetController().GetPendingEntry() == NULL) {
+  if (web_contents_->GetController().GetPendingEntry() == NULL)
     ipc_router_.SetInputInProgress(IsInputInProgress());
-
-    InstantSearchPrerenderer* prerenderer =
-        InstantSearchPrerenderer::GetForProfile(profile());
-    if (!prerenderer || !search::ShouldPrerenderInstantUrlOnOmniboxFocus())
-      return;
-
-    if (state == OMNIBOX_FOCUS_NONE) {
-      prerenderer->Cancel();
-      return;
-    }
-
-    if (!IsSearchResultsPage()) {
-      prerenderer->Init(
-          web_contents_->GetController().GetDefaultSessionStorageNamespace(),
-          web_contents_->GetContainerBounds().size());
-    }
-  }
 }
 
 void SearchTabHelper::NavigationEntryUpdated() {
@@ -240,18 +214,6 @@ void SearchTabHelper::OnTabActivated() {
     // startup or from the user opening a new tab, and if we wait until later,
     // it won't correctly detect this case.
     NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_);
-  }
-
-  OmniboxView* omnibox_view = GetOmniboxView();
-  if (search::ShouldPrerenderInstantUrlOnOmniboxFocus() &&
-      omnibox_has_focus_fn_(omnibox_view)) {
-    InstantSearchPrerenderer* prerenderer =
-        InstantSearchPrerenderer::GetForProfile(profile());
-    if (prerenderer && !IsSearchResultsPage()) {
-      prerenderer->Init(
-          web_contents_->GetController().GetDefaultSessionStorageNamespace(),
-          web_contents_->GetContainerBounds().size());
-    }
   }
 }
 

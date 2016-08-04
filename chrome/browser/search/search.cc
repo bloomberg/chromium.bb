@@ -52,9 +52,6 @@ namespace search {
 
 namespace {
 
-const char kPrerenderInstantUrlOnOmniboxFocus[] =
-    "prerender_instant_url_on_omnibox_focus";
-
 // Controls whether to use the alternate Instant search base URL. This allows
 // experimentation of Instant search.
 const char kUseAltInstantURL[] = "use_alternate_instant_url";
@@ -515,15 +512,6 @@ GURL GetNewTabPageURL(Profile* profile) {
 
 GURL GetSearchResultPrefetchBaseURL(Profile* profile) {
   return ShouldPrefetchSearchResults() ? GetInstantURL(profile, true) : GURL();
-}
-
-bool ShouldPrerenderInstantUrlOnOmniboxFocus() {
-  if (!ShouldPrefetchSearchResults())
-    return false;
-
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
-      kPrerenderInstantUrlOnOmniboxFocus, false, flags);
 }
 
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {

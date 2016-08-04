@@ -577,24 +577,6 @@ TEST_F(SearchTest, ShouldUseSearchPathForInstant_EnabledViaFieldTrial) {
   EXPECT_TRUE(ShouldUseSearchPathForInstant());
 }
 
-TEST_F(SearchTest,
-       ShouldPrerenderInstantUrlOnOmniboxFocus_DisabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 espv:89 prerender_instant_url_on_omnibox_focus:0"));
-  EXPECT_FALSE(ShouldPrerenderInstantUrlOnOmniboxFocus());
-  EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
-}
-
-TEST_F(SearchTest,
-       ShouldPrerenderInstantUrlOnOmniboxFocus_EnabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 espv:80 prerender_instant_url_on_omnibox_focus:1"));
-  EXPECT_TRUE(ShouldPrerenderInstantUrlOnOmniboxFocus());
-  EXPECT_EQ(80ul, EmbeddedSearchPageVersion());
-}
-
 
 TEST_F(SearchTest, IsNTPURL) {
   GURL invalid_url;
