@@ -35,6 +35,8 @@
 
 namespace blink {
 
+class DOMException;
+
 class ErrorCallback : public GarbageCollectedFinalized<ErrorCallback> {
 public:
     virtual ~ErrorCallback() { }
