@@ -37,4 +37,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   ASSERT_FALSE(web_contents->IsCrashed());
 }
 
+// Tests that loading a file from a theme in a tab doesn't crash anything.
+// Another part of crbug.com/528026 and related.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
+                       TestRendererInitializationWithThemesTab) {
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("theme"), kFlagAllowOldManifestVersions);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension->is_theme());
+  GURL url = extension->GetResourceURL("manifest.json");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // Wait for the web contents to stop loading.
+  content::WaitForLoadStop(web_contents);
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+  ASSERT_FALSE(web_contents->IsCrashed());
+}
+
 }  // namespace extensions

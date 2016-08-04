@@ -128,12 +128,18 @@ void RendererStartupHelper::UntrackProcess(
 }
 
 void RendererStartupHelper::ActivateExtensionInProcess(
-    const ExtensionId& id,
+    const Extension& extension,
     content::RenderProcessHost* process) {
+  // Renderers don't need to know about themes. We also don't normally
+  // "activate" themes, but this could happen if someone tries to open a tab
+  // to the e.g. theme's manifest.
+  if (extension.is_theme())
+    return;
+
   if (initialized_processes_.count(process))
-    process->Send(new ExtensionMsg_ActivateExtension(id));
+    process->Send(new ExtensionMsg_ActivateExtension(extension.id()));
   else
-    pending_active_extensions_[process].insert(id);
+    pending_active_extensions_[process].insert(extension.id());
 }
 
 void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
@@ -152,11 +158,15 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
     process->Send(new ExtensionMsg_Loaded(params));
 }
 
-void RendererStartupHelper::OnExtensionUnloaded(const ExtensionId& id) {
+void RendererStartupHelper::OnExtensionUnloaded(const Extension& extension) {
+  // Renderers don't need to know about themes.
+  if (extension.is_theme())
+    return;
+
   for (content::RenderProcessHost* process : initialized_processes_)
-    process->Send(new ExtensionMsg_Unloaded(id));
+    process->Send(new ExtensionMsg_Unloaded(extension.id()));
   for (auto& process_extensions_pair : pending_active_extensions_)
-    process_extensions_pair.second.erase(id);
+    process_extensions_pair.second.erase(extension.id());
 }
 
 //////////////////////////////////////////////////////////////////////////////

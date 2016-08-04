@@ -1106,7 +1106,7 @@ void ExtensionService::NotifyExtensionUnloaded(
       content::Source<Profile>(profile_),
       content::Details<UnloadedExtensionInfo>(&details));
 
-  renderer_helper_->OnExtensionUnloaded(extension->id());
+  renderer_helper_->OnExtensionUnloaded(*extension);
 
   system_->UnregisterExtensionWithRequestContexts(extension->id(), reason);
 

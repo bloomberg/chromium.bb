@@ -1,5 +1,6 @@
 {
    "name": "camo theme",
+   "manifest_version": 2,
    "theme": {
       "colors": {
          "frame": [ 71, 105, 91 ],

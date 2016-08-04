@@ -107,8 +107,7 @@ void ExtensionWebContentsObserver::RenderViewCreated(
   // Plus, we can delete the concept of activating an extension once site
   // isolation is turned on.
   RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
-      ->ActivateExtensionInProcess(extension->id(),
-                                   render_view_host->GetProcess());
+      ->ActivateExtensionInProcess(*extension, render_view_host->GetProcess());
 }
 
 void ExtensionWebContentsObserver::RenderFrameCreated(
