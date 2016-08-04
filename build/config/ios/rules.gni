@@ -170,18 +170,9 @@ template("ios_app_bundle") {
     _generate_entitlements_target_with_toolchain_suffix =
         "$_generate_entitlements_target$_toolchain_suffix"
 
-    # TODO: the correct way to generate _generate_entitlements_output would
-    # be the following, but get_label_info() ignores the toolchain specifier
-    # so use a workaround.
-    #
-    # _generate_entitlements_output =
-    #     get_label_info(
-    #         _generate_entitlements_target_with_toolchain_suffix,
-    #         "target_gen_dir") +
-    #     "/$_output_name.xcent"
-    _generate_entitlements_output = "$root_build_dir/gen" + get_label_info(
-                                        _generate_entitlements_target,
-                                        "dir") + "/" + "$_output_name.xcent"
+    _generate_entitlements_output =
+        get_label_info(_generate_entitlements_target_with_toolchain_suffix,
+                       "target_gen_dir") + "/$_output_name.xcent"
 
     _executable_extra_inputs += [ _generate_entitlements_output ]
     _executable_extra_deps +=
