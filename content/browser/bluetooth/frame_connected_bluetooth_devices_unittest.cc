@@ -30,11 +30,11 @@ using testing::_;
 
 namespace {
 
-constexpr char kDeviceId0[] = "0";
+const WebBluetoothDeviceId kDeviceId0("000000000000000000000A==");
 constexpr char kDeviceAddress0[] = "0";
 constexpr char kDeviceName0[] = "Device0";
 
-constexpr char kDeviceId1[] = "1";
+const WebBluetoothDeviceId kDeviceId1("111111111111111111111A==");
 constexpr char kDeviceAddress1[] = "1";
 constexpr char kDeviceName1[] = "Device1";
 
@@ -255,7 +255,7 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
 
-  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0),
+  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0).value(),
             kDeviceId0);
 
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
@@ -269,9 +269,9 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
 
-  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0),
+  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0).value(),
             kDeviceId0);
-  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0), "");
+  EXPECT_FALSE(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0));
 
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_FALSE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -285,7 +285,7 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
 
-  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0),
+  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0).value(),
             kDeviceId0);
 
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
@@ -300,9 +300,9 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
 
-  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0),
+  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0).value(),
             kDeviceId0);
-  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0), "");
+  EXPECT_FALSE(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0));
 
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_FALSE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -316,14 +316,14 @@ TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionAddress_TwoDevices) {
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId1));
 
-  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0),
+  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0).value(),
             kDeviceId0);
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_FALSE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId1));
 
-  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress1),
+  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress1).value(),
             kDeviceId1);
 
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
@@ -338,14 +338,14 @@ TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionAddress_TwoMaps) {
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
   EXPECT_TRUE(map1_->IsConnectedToDeviceWithId(kDeviceId1));
 
-  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0),
+  EXPECT_EQ(map0_->CloseConnectionToDeviceWithAddress(kDeviceAddress0).value(),
             kDeviceId0);
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_FALSE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
   EXPECT_TRUE(map1_->IsConnectedToDeviceWithId(kDeviceId1));
 
-  EXPECT_EQ(map1_->CloseConnectionToDeviceWithAddress(kDeviceAddress1),
+  EXPECT_EQ(map1_->CloseConnectionToDeviceWithAddress(kDeviceAddress1).value(),
             kDeviceId1);
 
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());

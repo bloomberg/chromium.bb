@@ -90,8 +90,12 @@ enum WebBluetoothGATTQueryQuantity {
   MULTIPLE
 };
 
+struct WebBluetoothDeviceId {
+  string device_id;
+};
+
 struct WebBluetoothDevice {
-  string id;
+  WebBluetoothDeviceId id;
   string? name;
   array<string> uuids;
 };
@@ -122,18 +126,18 @@ interface WebBluetoothService {
   // connection to the device didn't exist already. If a GATT connection existed
   // already then this function increases the ref count to keep that connection
   // alive.
-  RemoteServerConnect(string device_id) => (WebBluetoothError error);
+  RemoteServerConnect(WebBluetoothDeviceId device_id) => (WebBluetoothError error);
 
   // If a GATT connection exists for Device with |device_id| then decreases
   // the ref count for that connection.
-  RemoteServerDisconnect(string device_id);
+  RemoteServerDisconnect(WebBluetoothDeviceId device_id);
 
   // If |services_uuid| is present, returns services with |services_uuid|.
   // Otherwise returns all non-blacklisted services.
   // If |quantity| == WebBluetoothGATTQueryQuantity::SINGLE, only one
   // service will be returned.
   RemoteServerGetPrimaryServices(
-    string device_id,
+    WebBluetoothDeviceId device_id,
     WebBluetoothGATTQueryQuantity quantity,
     device.mojom.BluetoothUUID? services_uuid) => (
       WebBluetoothError error,
@@ -184,5 +188,5 @@ interface WebBluetoothService {
 interface WebBluetoothServiceClient {
   RemoteCharacteristicValueChanged(string characteristic_instance_id,
                                    array<uint8> value);
-  GattServerDisconnected(string device_id);
+  GattServerDisconnected(WebBluetoothDeviceId device_id);
 };

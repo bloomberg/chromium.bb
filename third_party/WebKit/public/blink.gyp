@@ -36,7 +36,6 @@
         'blink_mojo_sources': [
             'platform/mime_registry.mojom',
             'platform/modules/background_sync/background_sync.mojom',
-            'platform/modules/bluetooth/web_bluetooth.mojom',
             'platform/modules/broadcastchannel/broadcast_channel.mojom',
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/hyphenation/hyphenation.mojom',
@@ -123,6 +122,7 @@
                 'mojom_files': [
                     '<@(blink_mojo_sources)',
                     '<@(blink_android_mojo_sources)',
+                    'platform/modules/bluetooth/web_bluetooth.mojom',
                 ],
                 'mojom_typemaps': [
                     '../Source/platform/mojo/SecurityOrigin.typemap',
@@ -172,7 +172,6 @@
                     '<@(blink_android_mojo_sources)',
                 ],
                 'mojom_typemaps': [
-                    '../../../device/bluetooth/public/interfaces/bluetooth_uuid.typemap',
                     '<(DEPTH)/url/mojo/origin.typemap',
                     '<@(blink_typemap_sources)',
                 ],
@@ -218,8 +217,8 @@
                 'mojo_bindings_mojom',
                 'new_wrapper_types_mojo_bindings_blink_mojom',
                 'new_wrapper_types_mojo_bindings_mojom',
-                '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
                 '../../../device/bluetooth/bluetooth.gyp:bluetooth_mojom',
+                '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
                 '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces',
                 '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces_blink',
             ],
