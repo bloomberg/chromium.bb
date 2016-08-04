@@ -168,11 +168,10 @@ def _RunDx(changes, options, dex_cmd, paths):
           dex_cmd.append('--incremental')
           for path in changed_paths:
             changed_subpaths = set(changes.IterChangedSubpaths(path))
-            # Not a fundamental restriction, but it's the case right now and it
-            # simplifies the logic to assume so.
-            assert changed_subpaths, 'All inputs should be zip files.'
-            build_utils.ExtractAll(path, path=classes_temp_dir,
-                                   predicate=lambda p: p in changed_subpaths)
+            # Note: |changed_subpaths| may be empty if nothing changed.
+            if changed_subpaths:
+              build_utils.ExtractAll(path, path=classes_temp_dir,
+                                     predicate=lambda p: p in changed_subpaths)
           paths = [classes_temp_dir]
 
     dex_cmd += paths
