@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -130,9 +131,18 @@ using content::BrowserThread;
 
 namespace {
 
-// Profiles that should be deleted on shutdown.
-std::vector<base::FilePath>& ProfilesToDelete() {
-  CR_DEFINE_STATIC_LOCAL(std::vector<base::FilePath>, profiles_to_delete, ());
+// Profile deletion can pass through two stages:
+enum class ProfileDeletionStage {
+  // At SCHEDULED stage will be performed necessary activity prior to
+  // profile deletion. Such as new profile creation, if none is left, or load
+  // fallback profile for Macs, if it not loaded yet.
+  SCHEDULED,
+  // At MARKED stage profile can be safely removed from disk.
+  MARKED
+};
+using ProfileDeletionMap = std::map<base::FilePath, ProfileDeletionStage>;
+ProfileDeletionMap& ProfilesToDelete() {
+  CR_DEFINE_STATIC_LOCAL(ProfileDeletionMap, profiles_to_delete, ());
   return profiles_to_delete;
 }
 
@@ -201,14 +211,26 @@ void ProfileSizeTask(const base::FilePath& path, int enabled_app_count) {
 }
 
 #if !defined(OS_ANDROID)
-void QueueProfileDirectoryForDeletion(const base::FilePath& path) {
-  ProfilesToDelete().push_back(path);
+// Schedule a profile for deletion if it isn't already scheduled.
+// Returns whether the profile has been newly scheduled.
+bool ScheduleProfileDirectoryForDeletion(const base::FilePath& path) {
+  if (ContainsKey(ProfilesToDelete(), path))
+    return false;
+  ProfilesToDelete()[path] = ProfileDeletionStage::SCHEDULED;
+  return true;
+}
+
+void MarkProfileDirectoryForDeletion(const base::FilePath& path) {
+  DCHECK(!ContainsKey(ProfilesToDelete(), path) ||
+         ProfilesToDelete()[path] == ProfileDeletionStage::SCHEDULED);
+  ProfilesToDelete()[path] = ProfileDeletionStage::MARKED;
 }
 #endif
 
-bool IsProfileMarkedForDeletion(const base::FilePath& profile_path) {
-  return std::find(ProfilesToDelete().begin(), ProfilesToDelete().end(),
-      profile_path) != ProfilesToDelete().end();
+bool IsProfileDirectoryMarkedForDeletion(const base::FilePath& profile_path) {
+  auto it = ProfilesToDelete().find(profile_path);
+  return it != ProfilesToDelete().end() &&
+         it->second == ProfileDeletionStage::MARKED;
 }
 
 // Physically remove deleted profile directories from disk.
@@ -333,11 +355,9 @@ void ProfileManager::ShutdownSessionServices() {
 
 // static
 void ProfileManager::NukeDeletedProfilesFromDisk() {
-  for (std::vector<base::FilePath>::iterator it =
-          ProfilesToDelete().begin();
-       it != ProfilesToDelete().end();
-       ++it) {
-    NukeProfileFromDisk(*it);
+  for (const auto& item : ProfilesToDelete()) {
+    if (item.second == ProfileDeletionStage::MARKED)
+      NukeProfileFromDisk(item.first);
   }
   ProfilesToDelete().clear();
 }
@@ -467,7 +487,7 @@ void ProfileManager::CreateProfileAsync(
                profile_path.AsUTF8Unsafe());
 
   // Make sure that this profile is not pending deletion.
-  if (IsProfileMarkedForDeletion(profile_path)) {
+  if (IsProfileDirectoryMarkedForDeletion(profile_path)) {
     if (!callback.is_null())
       callback.Run(NULL, Profile::CREATE_STATUS_LOCAL_FAIL);
     return;
@@ -735,7 +755,7 @@ bool ProfileManager::MaybeScheduleProfileForDeletion(
     const base::FilePath& profile_dir,
     const CreateCallback& callback,
     ProfileMetrics::ProfileDelete deletion_source) {
-  if (IsProfileMarkedForDeletion(profile_dir))
+  if (!ScheduleProfileDirectoryForDeletion(profile_dir))
     return false;
   ScheduleProfileForDeletion(profile_dir, callback);
   ProfileMetrics::LogProfileDeleteUser(deletion_source);
@@ -746,7 +766,7 @@ void ProfileManager::ScheduleProfileForDeletion(
     const base::FilePath& profile_dir,
     const CreateCallback& callback) {
   DCHECK(profiles::IsMultipleProfilesEnabled());
-  DCHECK(!IsProfileMarkedForDeletion(profile_dir));
+  DCHECK(!IsProfileDirectoryMarkedForDeletion(profile_dir));
 
   // Cancel all in-progress downloads before deleting the profile to prevent a
   // "Do you want to exit Google Chrome and cancel the downloads?" prompt
@@ -770,7 +790,7 @@ void ProfileManager::ScheduleProfileForDeletion(
     // legacy-supervised.
     if (cur_path != profile_dir &&
         !entry->IsLegacySupervised() &&
-        !IsProfileMarkedForDeletion(cur_path)) {
+        !IsProfileDirectoryMarkedForDeletion(cur_path)) {
       last_non_supervised_profile_path = cur_path;
       break;
     }
@@ -1403,7 +1423,7 @@ void ProfileManager::FinishDeletingProfile(
 
   // Queue even a profile that was nuked so it will be MarkedForDeletion and so
   // CreateProfileAsync can't create it.
-  QueueProfileDirectoryForDeletion(profile_dir);
+  MarkProfileDirectoryForDeletion(profile_dir);
   storage.RemoveProfile(profile_dir);
   ProfileMetrics::UpdateReportedProfilesStatistics(this);
 }
@@ -1566,7 +1586,7 @@ void ProfileManager::BrowserListObserver::OnBrowserRemoved(
   }
 
   base::FilePath path = profile->GetPath();
-  if (IsProfileMarkedForDeletion(path)) {
+  if (IsProfileDirectoryMarkedForDeletion(path)) {
     // Do nothing if the profile is already being deleted.
   } else if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
     // Delete if the profile is an ephemeral profile.
@@ -1617,7 +1637,7 @@ void ProfileManager::OnNewActiveProfileLoaded(
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
 
-  if (IsProfileMarkedForDeletion(new_active_profile_path)) {
+  if (IsProfileDirectoryMarkedForDeletion(new_active_profile_path)) {
     // If the profile we tried to load as the next active profile has been
     // deleted, then retry deleting this profile to redo the logic to load
     // the next available profile.
