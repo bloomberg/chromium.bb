@@ -15,19 +15,19 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-namespace autofill {
-class PersonalDataManager;
-}
-
 namespace ios {
 class ChromeBrowserState;
 }
+
+namespace autofill {
+
+class PersonalDataManager;
 
 // Singleton that owns all PersonalDataManagers and associates them with
 // ios::ChromeBrowserState.
 class PersonalDataManagerFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static autofill::PersonalDataManager* GetForBrowserState(
+  static PersonalDataManager* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
   static PersonalDataManagerFactory* GetInstance();
 
@@ -43,5 +43,11 @@ class PersonalDataManagerFactory : public BrowserStateKeyedServiceFactory {
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerFactory);
 };
+
+}  // namespace autofill
+
+// TODO(crbug.com/513344): Remove this typedef once downstream code has
+// been fixed to use the fully namespaced name.
+using PersonalDataManagerFactory = autofill::PersonalDataManagerFactory;
 
 #endif  // IOS_CHROME_BROWSER_AUTOFILL_PERSONAL_DATA_MANAGER_FACTORY_H_

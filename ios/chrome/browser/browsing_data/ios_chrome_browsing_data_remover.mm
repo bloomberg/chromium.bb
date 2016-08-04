@@ -225,7 +225,8 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
                      base::Unretained(this)));
 
       autofill::PersonalDataManager* data_manager =
-          PersonalDataManagerFactory::GetForBrowserState(browser_state_);
+          autofill::PersonalDataManagerFactory::GetForBrowserState(
+              browser_state_);
       if (data_manager)
         data_manager->Refresh();
     }
@@ -292,7 +293,8 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
                      base::Unretained(this)));
 
       autofill::PersonalDataManager* data_manager =
-          PersonalDataManagerFactory::GetForBrowserState(browser_state_);
+          autofill::PersonalDataManagerFactory::GetForBrowserState(
+              browser_state_);
       if (data_manager)
         data_manager->Refresh();
     }

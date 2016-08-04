@@ -19,10 +19,12 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 
+namespace autofill {
+
 // static
-autofill::PersonalDataManager* PersonalDataManagerFactory::GetForBrowserState(
+PersonalDataManager* PersonalDataManagerFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<autofill::PersonalDataManager*>(
+  return static_cast<PersonalDataManager*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
@@ -47,9 +49,8 @@ PersonalDataManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  std::unique_ptr<autofill::PersonalDataManager> service(
-      new autofill::PersonalDataManager(
-          GetApplicationContext()->GetApplicationLocale()));
+  std::unique_ptr<PersonalDataManager> service(
+      new PersonalDataManager(GetApplicationContext()->GetApplicationLocale()));
   service->Init(
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS),
@@ -60,3 +61,5 @@ PersonalDataManagerFactory::BuildServiceInstanceFor(
       chrome_browser_state->IsOffTheRecord());
   return std::move(service);
 }
+
+}  // namespace autofill

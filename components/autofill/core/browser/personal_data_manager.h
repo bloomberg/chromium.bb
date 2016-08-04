@@ -31,11 +31,6 @@ class PrefService;
 class RemoveAutofillTester;
 class SigninManagerBase;
 
-#if defined(OS_IOS)
-// TODO(crbug.com/513344): Remove this once Chrome on iOS is unforked.
-class PersonalDataManagerFactory;
-#endif
-
 namespace sync_driver {
 class SyncService;
 }
@@ -293,10 +288,6 @@ class PersonalDataManager : public KeyedService,
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
-#if defined(OS_IOS)
-  // TODO(crbug.com/513344): Remove this once Chrome on iOS is unforked.
-  friend class ::PersonalDataManagerFactory;
-#endif
   friend class ProfileSyncServiceAutofillTest;
   friend class ::RemoveAutofillTester;
   friend std::default_delete<PersonalDataManager>;

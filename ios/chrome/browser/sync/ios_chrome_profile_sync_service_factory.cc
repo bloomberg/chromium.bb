@@ -93,8 +93,8 @@ IOSChromeProfileSyncServiceFactory::IOSChromeProfileSyncServiceFactory()
   // The ProfileSyncService depends on various SyncableServices being around
   // when it is shut down.  Specify those dependencies here to build the proper
   // destruction order.
+  DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(ios::AboutSigninInternalsFactory::GetInstance());
-  DependsOn(PersonalDataManagerFactory::GetInstance());
   DependsOn(ios::BookmarkModelFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());

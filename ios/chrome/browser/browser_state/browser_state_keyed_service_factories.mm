@@ -52,6 +52,7 @@
 // TODO(erg): This needs to be something else. I don't think putting every
 // FooServiceFactory here will scale or is desirable long term.
 void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
+  autofill::PersonalDataManagerFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   ios::AboutSigninInternalsFactory::GetInstance();
   ios::AccountConsistencyServiceFactory::GetInstance();
@@ -84,7 +85,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   IOSChromePasswordStoreFactory::GetInstance();
   IOSChromeProfileInvalidationProviderFactory::GetInstance();
   OAuth2TokenServiceFactory::GetInstance();
-  PersonalDataManagerFactory::GetInstance();
   SigninClientFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();

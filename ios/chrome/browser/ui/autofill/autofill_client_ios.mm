@@ -46,7 +46,7 @@ AutofillClientIOS::~AutofillClientIOS() {
 }
 
 PersonalDataManager* AutofillClientIOS::GetPersonalDataManager() {
-  return PersonalDataManagerFactory::GetForBrowserState(
+  return autofill::PersonalDataManagerFactory::GetForBrowserState(
       browser_state_->GetOriginalChromeBrowserState());
 }
 

@@ -199,7 +199,8 @@ history::HistoryService* IOSChromeSyncClient::GetHistoryService() {
 
 autofill::PersonalDataManager* IOSChromeSyncClient::GetPersonalDataManager() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return PersonalDataManagerFactory::GetForBrowserState(browser_state_);
+  return autofill::PersonalDataManagerFactory::GetForBrowserState(
+      browser_state_);
 }
 
 base::Closure IOSChromeSyncClient::GetPasswordStateChangedCallback() {
