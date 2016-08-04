@@ -88,33 +88,26 @@ Polymer({
    * @private
    */
   updateAddressWrapper_: function() {
-    var self = this;
-
     // Default to the last country used if no country code is provided.
-    var countryCode = self.countryCode_ || self.countries_[0].countryCode;
-    self.countryInfo.getAddressFormat(countryCode).then(function(format) {
-      self.addressWrapper_ = format.components.map(function(component) {
+    var countryCode = this.countryCode_ || this.countries_[0].countryCode;
+    this.countryInfo.getAddressFormat(countryCode).then(function(format) {
+      this.addressWrapper_ = format.components.map(function(component) {
         return component.row.map(function(c) {
-          return new settings.address.AddressComponentUI(self.address, c);
-        });
-      });
+          return new settings.address.AddressComponentUI(this.address, c);
+        }.bind(this));
+      }.bind(this));
 
       // Flush dom before resize and savability updates.
       Polymer.dom.flush();
 
-/**
- * TODO(hcarmona): Fix closure compiler to better understand |SettingsDialog|.
- * @suppress {missingProperties}
- */
-(function() {
-      self.updateCanSave_();
+      this.updateCanSave_();
 
-      self.fire('on-update-address-wrapper');  // For easier testing.
+      this.fire('on-update-address-wrapper');  // For easier testing.
 
-      if (!self.$.dialog.open)
-        self.$.dialog.showModal();
-})();
-    });
+      var dialog = /** @type {HTMLDialogElement} */(this.$.dialog);
+      if (!dialog.open)
+        dialog.showModal();
+    }.bind(this));
   },
 
   updateCanSave_: function() {
