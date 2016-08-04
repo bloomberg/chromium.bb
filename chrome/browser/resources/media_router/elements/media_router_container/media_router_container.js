@@ -528,6 +528,10 @@ Polymer({
     this.userHasTakenInitialAction_ = true;
   },
 
+  get header() {
+    return this.$['container-header'];
+  },
+
   /**
    * Checks that the currently selected cast mode is still in the
    * updated list of available cast modes. If not, then update the selected
@@ -2317,7 +2321,7 @@ Polymer({
   updateElementPositioning_: function() {
     // Ensures that conditionally templated elements have finished stamping.
     this.async(function() {
-      var headerHeight = this.$$('#container-header').offsetHeight;
+      var headerHeight = this.header.offsetHeight;
       var firstRunFlowHeight = this.$$('#first-run-flow') &&
           this.$$('#first-run-flow').style.display != 'none' ?
               this.$$('#first-run-flow').offsetHeight : 0;
@@ -2330,7 +2334,7 @@ Polymer({
       var searchPadding =
           hasSearch ? this.computeElementVerticalPadding_(search) : 0;
 
-      this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
+      this.header.style.marginTop = firstRunFlowHeight + 'px';
       this.$['content'].style.marginTop =
           firstRunFlowHeight + headerHeight + 'px';
 
