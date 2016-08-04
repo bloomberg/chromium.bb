@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="files_icon_button.html">
 <link rel="import" href="files_metadata_box.html">
 <link rel="import" href="files_safe_img.html">
 <link rel="import" href="files_tooltip.html">
@@ -23,9 +24,8 @@
            <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[isUnsupported_(type)]]" i18n-values="aria-label:QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" tabindex="0" has-tooltip>
              <iron-icon icon="files:open-in-new"></iron-icon>
            </paper-button>
-           <paper-button id-"metadata-button" active="{{metadataBoxActive}}" i18n-values="aria-label:QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" tabindex="0" toggles has-tooltip>
-             <iron-icon  icon="files:info-outline"></iron-icon>
-           </paper-button>
+           <files-icon-button toggles id="metadata-button" active="{{metadataBoxActive}}" i18n-values="aria-label:QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" tabindex="0" has-tooltip>
+           </files-icon-button>
         </div>
       </paper-toolbar>
       <div id="mainPanel">

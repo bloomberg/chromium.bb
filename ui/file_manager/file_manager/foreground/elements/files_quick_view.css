@@ -66,6 +66,14 @@ video::-webkit-media-controls-volume-slider {
   margin-right: 320px;
 }
 
+#metadata-button {
+  background: -webkit-image-set(
+      url(../images/files/ui/quick_view/info_outline.png) 1x,
+      url(../images/files/ui/quick_view/2x/info_outline.png) 2x)
+    center
+    no-repeat;
+}
+
 #innerContentPanel {
   background-color: transparent;
   color: white;
@@ -92,13 +100,21 @@ video::-webkit-media-controls-volume-slider {
 }
 
 #toolbar {
-  --paper-toolbar-background: rgb(60, 60, 60);
+  --paper-toolbar-background: rgb(40, 42, 45);
   --paper-toolbar-height: 48px;
   color: white;
   margin: 0;
+  opacity: 0.9;
   padding: 0;
   width: 100%;
   z-index: 1;
+}
+
+#metadata-button {
+  --files-icon-button-activated-theme: {
+    background: white;
+    opacity: 0.3;
+  };
 }
 
 #buttons {
@@ -107,7 +123,8 @@ video::-webkit-media-controls-volume-slider {
   right: 0px;
 }
 
-paper-button {
+paper-button,
+files-icon-button {
   border-radius: 2px;
   height: 32px;
   margin: 0 8px;
@@ -121,12 +138,25 @@ iron-icon {
 }
 
 #metadata-box {
-  background-color: rgba(40, 40, 44, 0.8);
+  background-color: rgba(20, 22, 24, 0.8);
   bottom: 0;
   height: 100%;
   margin: 0;
+  opacity: 0.8;
+  overflow-y: auto;
   position: absolute;
   right: 0;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-clip: content-box;
+  background-color: rgb(118, 118, 121);
+  border: 2.5px solid transparent;
+  width: 5px;
 }
 
 [hidden] {
@@ -134,6 +164,7 @@ iron-icon {
 }
 
 .no-preview {
+  font-size: 115%;
   margin-top: 16px;
 }
 

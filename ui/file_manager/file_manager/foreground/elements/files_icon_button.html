@@ -47,14 +47,14 @@
         width: 28px;
       }
 
-      files-toggle-ripple::shadow .ripple.activated {
+      files-toggle-ripple::shadow .ripple {
         opacity: 0.1;
+        @apply(--files-icon-button-activated-theme);
       }
     </style>
 
     <files-ripple hidden="[[toggles]]"></files-ripple>
     <files-toggle-ripple activated="[[active]]"></files-toggle-ripple>
-    <!-- TODO(fukino): Make it possible to insert user-defined element to show them on top of ripple effect. -->
   </template>
 
   <script src="files_icon_button.js"></script>
