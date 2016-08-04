@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/mac/scoped_cftyperef.h"
-#import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,34 +17,13 @@
 #include "ui/gfx/geometry/point.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
-namespace {
-
-NSWindow* g_test_window = nil;
-
-}  // namespace
-
-// Mac APIs for creating test events are frustrating. Quartz APIs have, e.g.,
-// CGEventCreateMouseEvent() which can't set a window or modifier flags.
-// Cocoa APIs have +[NSEvent mouseEventWithType:..] which can't set
-// buttonNumber or scroll deltas. To work around this, these tests use some
-// Objective C magic to donate member functions to NSEvent temporarily.
-@interface MiddleMouseButtonNumberDonor : NSObject
-@end
-
-@interface TestWindowDonor : NSObject
-@end
-
-@implementation MiddleMouseButtonNumberDonor
-- (NSInteger)buttonNumber { return 2; }
-@end
-
-@implementation TestWindowDonor
-- (NSWindow*)window { return g_test_window; }
-@end
-
 namespace ui {
 
 namespace {
+
+// Although CGEventFlags is just a typedef to int in 10.10 and earlier headers,
+// the 10.11 header makes this a CF_ENUM, but doesn't give an option for "none".
+const CGEventFlags kNoEventFlags = static_cast<CGEventFlags>(0);
 
 class EventsMacTest : public CocoaTest {
  public:
@@ -59,52 +37,32 @@ class EventsMacTest : public CocoaTest {
     return window_location;
   }
 
-  void SwizzleMiddleMouseButton() {
-    DCHECK(!swizzler_);
-    swizzler_.reset(new base::mac::ScopedObjCClassSwizzler(
-        [NSEvent class],
-        [MiddleMouseButtonNumberDonor class],
-        @selector(buttonNumber)));
-  }
-
-  void SwizzleTestWindow() {
-    DCHECK(!g_test_window);
-    DCHECK(!swizzler_);
-    g_test_window = test_window();
-    swizzler_.reset(new base::mac::ScopedObjCClassSwizzler(
-        [NSEvent class], [TestWindowDonor class], @selector(window)));
-  }
-
-  void ClearSwizzle() {
-    swizzler_.reset();
-    g_test_window = nil;
-  }
-
-  NSEvent* TestMouseEvent(NSEventType type,
-                          const gfx::Point &window_location,
-                          NSInteger modifier_flags) {
-    NSPoint point = NSPointFromCGPoint(Flip(window_location).ToCGPoint());
-    return [NSEvent mouseEventWithType:type
-                              location:point
-                         modifierFlags:modifier_flags
-                             timestamp:0
-                          windowNumber:[test_window() windowNumber]
-                               context:nil
-                           eventNumber:0
-                            clickCount:0
-                              pressure:1.0];
+  NSEvent* TestMouseEvent(CGEventType type,
+                          const gfx::Point& window_location,
+                          CGEventFlags event_flags) {
+    // CGEventCreateMouseEvent() ignores the CGMouseButton parameter unless
+    // |type| is one of kCGEventOtherMouse{Up,Down,Dragged}. It can be an
+    // integer up to 31. However, constants are only supplied up to 2. For now,
+    // just assume "other" means the third/center mouse button, and rely on
+    // Quartz ignoring it when the type is not "other".
+    CGMouseButton other_button = kCGMouseButtonCenter;
+    base::ScopedCFTypeRef<CGEventRef> mouse(CGEventCreateMouseEvent(
+        nullptr, type, TestWindowPointToScreen(window_location), other_button));
+    CGEventSetFlags(mouse, event_flags);
+    return EventWithTestWindow(mouse);
   }
 
   NSEvent* TestScrollEvent(const gfx::Point& window_location,
                            int32_t delta_x,
                            int32_t delta_y) {
-    SwizzleTestWindow();
-    base::ScopedCFTypeRef<CGEventRef> scroll(
-        CGEventCreateScrollWheelEvent(NULL,
-                                      kCGScrollEventUnitLine,
-                                      2,
-                                      delta_y,
-                                      delta_x));
+    base::ScopedCFTypeRef<CGEventRef> scroll(CGEventCreateScrollWheelEvent(
+        nullptr, kCGScrollEventUnitLine, 2, delta_y, delta_x));
+    CGEventSetLocation(scroll, TestWindowPointToScreen(window_location));
+    return EventWithTestWindow(scroll);
+  }
+
+ private:
+  CGPoint TestWindowPointToScreen(const gfx::Point& window_location) {
     // CGEvents are always in global display coordinates. These are like screen
     // coordinates, but flipped. But first the point needs to be converted out
     // of window coordinates (which also requires flipping).
@@ -116,12 +74,24 @@ class EventsMacTest : public CocoaTest {
     CGFloat primary_screen_height =
         NSHeight([[[NSScreen screens] firstObject] frame]);
     screen_point.y = primary_screen_height - screen_point.y;
-    CGEventSetLocation(scroll, NSPointToCGPoint(screen_point));
-    return [NSEvent eventWithCGEvent:scroll];
+    return NSPointToCGPoint(screen_point);
   }
 
- private:
-  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzler_;
+  NSEvent* EventWithTestWindow(CGEventRef event) {
+    // These CGEventFields were made public in the 10.7 SDK, but don't help to
+    // populate the -[NSEvent window] pointer when creating an event with
+    // +[NSEvent eventWithCGEvent:]. Set that separately, using reflection.
+    CGEventSetIntegerValueField(event, kCGMouseEventWindowUnderMousePointer,
+                                [test_window() windowNumber]);
+    CGEventSetIntegerValueField(
+        event, kCGMouseEventWindowUnderMousePointerThatCanHandleThisEvent,
+        [test_window() windowNumber]);
+    NSEvent* ns_event = [NSEvent eventWithCGEvent:event];
+    EXPECT_EQ(nil, [ns_event window]);  // Verify assumptions.
+    [ns_event setValue:test_window() forKey:@"_window"];
+    EXPECT_EQ(test_window(), [ns_event window]);
+    return ns_event;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(EventsMacTest);
 };
@@ -192,20 +162,20 @@ TEST_F(EventsMacTest, ButtonEvents) {
   gfx::Point location(5, 10);
   gfx::Vector2d offset;
 
-  NSEvent* event = TestMouseEvent(NSLeftMouseDown, location, 0);
+  NSEvent* event =
+      TestMouseEvent(kCGEventLeftMouseDown, location, kNoEventFlags);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
 
-  SwizzleMiddleMouseButton();
-  event = TestMouseEvent(NSOtherMouseDown, location, NSShiftKeyMask);
+  event =
+      TestMouseEvent(kCGEventOtherMouseDown, location, kCGEventFlagMaskShift);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_SHIFT_DOWN,
             ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
-  ClearSwizzle();
 
-  event = TestMouseEvent(NSRightMouseUp, location, 0);
+  event = TestMouseEvent(kCGEventRightMouseUp, location, kNoEventFlags);
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
@@ -218,7 +188,6 @@ TEST_F(EventsMacTest, ButtonEvents) {
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_GT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
-  ClearSwizzle();
 
   // Scroll down.
   event = TestScrollEvent(location, 0, -1);
@@ -228,7 +197,6 @@ TEST_F(EventsMacTest, ButtonEvents) {
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_LT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
-  ClearSwizzle();
 
   // Scroll left.
   event = TestScrollEvent(location, 1, 0);
@@ -238,7 +206,6 @@ TEST_F(EventsMacTest, ButtonEvents) {
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_EQ(0, offset.y());
   EXPECT_GT(offset.x(), 0);
-  ClearSwizzle();
 
   // Scroll right.
   event = TestScrollEvent(location, -1, 0);
@@ -248,7 +215,6 @@ TEST_F(EventsMacTest, ButtonEvents) {
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_EQ(0, offset.y());
   EXPECT_LT(offset.x(), 0);
-  ClearSwizzle();
 }
 
 // Test correct location when the window has a native titlebar.
@@ -263,7 +229,8 @@ TEST_F(EventsMacTest, NativeTitlebarEventLocation) {
   DCHECK_EQ(style_mask, [test_window() styleMask]);
 
   // EventLocationFromNative should behave the same as the ButtonEvents test.
-  NSEvent* event = TestMouseEvent(NSLeftMouseDown, location, 0);
+  NSEvent* event =
+      TestMouseEvent(kCGEventLeftMouseDown, location, kNoEventFlags);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
