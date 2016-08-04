@@ -1111,6 +1111,7 @@ internal_tests = 				\
 
 shared_tests =					\
 	config-parser.test			\
+	string.test					\
 	vertex-clip.test			\
 	zuctest
 
@@ -1208,6 +1209,12 @@ config_parser_test_LDADD =	\
 config_parser_test_CFLAGS =			\
 	$(AM_CFLAGS)				\
 	-I$(top_srcdir)/tools/zunitc/inc
+
+string_test_SOURCES = \
+	tests/string-test.c \
+	shared/string-helpers.h
+string_test_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+string_test_LDADD =	libtest-client.la
 
 vertex_clip_test_SOURCES =			\
 	tests/vertex-clip-test.c		\
