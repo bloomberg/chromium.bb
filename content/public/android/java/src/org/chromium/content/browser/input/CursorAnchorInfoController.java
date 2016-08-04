@@ -9,6 +9,7 @@ import android.graphics.Matrix;
 import android.os.Build;
 import android.view.View;
 import android.view.inputmethod.CursorAnchorInfo;
+import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -128,16 +129,14 @@ final class CursorAnchorInfoController {
     /**
      * Sets positional information of composing text as an array of character bounds.
      * @param compositionCharacterBounds Array of character bounds in local coordinates.
-     * @param view The attached view.
      */
-    public void setCompositionCharacterBounds(float[] compositionCharacterBounds, View view) {
+    public void setCompositionCharacterBounds(float[] compositionCharacterBounds) {
         if (!mIsEditable) return;
 
         if (!Arrays.equals(compositionCharacterBounds, mCompositionCharacterBounds)) {
             mLastCursorAnchorInfo = null;
             mCompositionCharacterBounds = compositionCharacterBounds;
         }
-        updateCursorAnchorInfo(view);
     }
 
     /**
@@ -199,6 +198,14 @@ final class CursorAnchorInfoController {
         }
     }
 
+    /**
+     * Resets the current state on update monitoring mode to the default (= do nothing.)
+     */
+    public void resetMonitoringState() {
+        mMonitorModeEnabled = false;
+        mHasPendingImmediateRequest = false;
+    }
+
     public void focusedNodeChanged(boolean isEditable) {
         mIsEditable = isEditable;
         mCompositionCharacterBounds = null;
@@ -206,18 +213,11 @@ final class CursorAnchorInfoController {
         mLastCursorAnchorInfo = null;
     }
 
-    public boolean onRequestCursorUpdates(boolean immediateRequest, boolean monitorRequest,
-            View view) {
+    public boolean onRequestCursorUpdates(int cursorUpdateMode, View view) {
         if (!mIsEditable) return false;
 
-        if (mMonitorModeEnabled && !monitorRequest) {
-            // Invalidate saved cursor anchor info if monitor request is cancelled since no longer
-            // new values will be arrived from renderer and immediate request may return too old
-            // position.
-            invalidateLastCursorAnchorInfo();
-        }
-        mMonitorModeEnabled = monitorRequest;
-        if (immediateRequest) {
+        mMonitorModeEnabled = (cursorUpdateMode & InputConnection.CURSOR_UPDATE_MONITOR) != 0;
+        if ((cursorUpdateMode & InputConnection.CURSOR_UPDATE_IMMEDIATE) != 0) {
             mHasPendingImmediateRequest = true;
             updateCursorAnchorInfo(view);
         }

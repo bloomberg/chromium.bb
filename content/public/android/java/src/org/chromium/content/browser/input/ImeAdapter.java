@@ -18,7 +18,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -193,15 +192,8 @@ public class ImeAdapter {
                 mViewEmbedder.getAttachedView(), this, mTextInputType, mTextInputFlags,
                 mLastSelectionStart, mLastSelectionEnd, outAttrs));
         if (DEBUG_LOGS) Log.w(TAG, "onCreateInputConnection: " + mInputConnection);
-
         if (mCursorAnchorInfoController != null) {
-            mCursorAnchorInfoController.onRequestCursorUpdates(
-                    false /* not an immediate request */, false /* disable monitoring */,
-                    mViewEmbedder.getAttachedView());
-        }
-        if (mNativeImeAdapterAndroid != 0) {
-            nativeRequestCursorUpdate(mNativeImeAdapterAndroid,
-                    false /* not an immediate request */, false /* disable monitoring */);
+            mCursorAnchorInfoController.resetMonitoringState();
         }
         return mInputConnection;
     }
@@ -682,16 +674,8 @@ public class ImeAdapter {
      * Notified when IME requested Chrome to change the cursor update mode.
      */
     public boolean onRequestCursorUpdates(int cursorUpdateMode) {
-        final boolean immediateRequest =
-                (cursorUpdateMode & InputConnection.CURSOR_UPDATE_IMMEDIATE) != 0;
-        final boolean monitorRequest =
-                (cursorUpdateMode & InputConnection.CURSOR_UPDATE_MONITOR) != 0;
-
-        if (mNativeImeAdapterAndroid != 0) {
-            nativeRequestCursorUpdate(mNativeImeAdapterAndroid, immediateRequest, monitorRequest);
-        }
         if (mCursorAnchorInfoController == null) return false;
-        return mCursorAnchorInfoController.onRequestCursorUpdates(immediateRequest, monitorRequest,
+        return mCursorAnchorInfoController.onRequestCursorUpdates(cursorUpdateMode,
                 mViewEmbedder.getAttachedView());
     }
 
@@ -747,8 +731,7 @@ public class ImeAdapter {
     @CalledByNative
     private void setCharacterBounds(float[] characterBounds) {
         if (mCursorAnchorInfoController == null) return;
-        mCursorAnchorInfoController.setCompositionCharacterBounds(characterBounds,
-                mViewEmbedder.getAttachedView());
+        mCursorAnchorInfoController.setCompositionCharacterBounds(characterBounds);
     }
 
     @CalledByNative
@@ -780,7 +763,5 @@ public class ImeAdapter {
             int before, int after);
     private native void nativeResetImeAdapter(long nativeImeAdapterAndroid);
     private native boolean nativeRequestTextInputStateUpdate(long nativeImeAdapterAndroid);
-    private native void nativeRequestCursorUpdate(long nativeImeAdapterAndroid,
-            boolean immediateRequest, boolean monitorRequest);
     private native boolean nativeIsImeThreadEnabled(long nativeImeAdapterAndroid);
 }

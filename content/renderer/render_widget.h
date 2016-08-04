@@ -352,9 +352,7 @@ class CONTENT_EXPORT RenderWidget
   // changed. If they are changed, the new value will be sent to the browser
   // process. This method does nothing when the browser process is not able to
   // handle composition range and composition character bounds.
-  // If immediate_request is true, render sends the latest composition info to
-  // the browser even if the composition info is not changed.
-  void UpdateCompositionInfo(bool immediate_request);
+  void UpdateCompositionInfo(bool should_update_range);
 
   // Change the device ICC color profile while running a layout test.
   void SetDeviceColorProfileForTesting(const std::vector<char>& color_profile);
@@ -495,10 +493,6 @@ class CONTENT_EXPORT RenderWidget
   // Called by the browser process to update text input state.
   void OnRequestTextInputStateUpdate();
 #endif
-
-  // Called by the browser process to update the cursor and composition
-  // information.
-  void OnRequestCompositionUpdate(bool immediate_request, bool monitor_request);
 
   // Notify the compositor about a change in viewport size. This should be
   // used only with auto resize mode WebWidgets, as normal WebWidgets should
@@ -743,9 +737,6 @@ class CONTENT_EXPORT RenderWidget
   // currently aware of.
   std::deque<blink::WebTextInputInfo> text_input_info_history_;
 #endif
-
-  // True if the IME requests updated composition info.
-  bool monitor_composition_info_;
 
   std::unique_ptr<RenderWidgetScreenMetricsEmulator> screen_metrics_emulator_;
 
