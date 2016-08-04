@@ -6380,39 +6380,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   EXPECT_FALSE(mixed_child->has_committed_real_load());
 }
 
-// Test that subresources with certificate errors that are redundant
-// with the main page do not get reported to the browser. That is, if
-// https://redundant.test frames https://a.com which frames
-// https://redundant.test which loads an image with certificate errors,
-// the browser doesn't care and doesn't need to know about the image's
-// certificate errors because they are redundant with the main page
-// load.
-IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
-                       SubresourceWithRedundantCertificateErrors) {
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("content/test/data");
-  ASSERT_TRUE(https_server.Start());
-  SetupCrossSiteRedirector(&https_server);
-
-  GURL url(https_server.GetURL(
-      "redundant.test", "/mixed-content/redundant-cert-error-in-iframe.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  NavigationEntry* entry =
-      shell()->web_contents()->GetController().GetLastCommittedEntry();
-  ASSERT_TRUE(entry);
-
-  // The main page was loaded with certificate errors.
-  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
-            entry->GetSSL().security_style);
-
-  // The image that the iframe loaded had certificate errors also, but
-  // they were redundant with the main resource, so the page should not
-  // be marked as displaying insecure content.
-  EXPECT_FALSE(entry->GetSSL().content_status &
-               SSLStatus::DISPLAYED_INSECURE_CONTENT);
-}
-
 // Test that subresources with certificate errors that are NOT redundant
 // with the main page DO get reported to the browser. That is, if
 // https://nonredundant.test frames https://a.com which loads an image
