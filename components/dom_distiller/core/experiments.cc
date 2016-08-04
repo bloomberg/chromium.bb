@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 
 namespace dom_distiller {
@@ -31,10 +32,12 @@ DistillerHeuristicsType GetDistillerHeuristicsType() {
     }
     NOTREACHED() << "Invalid value for " << switches::kReaderModeHeuristics;
   } else {
-    if (group_name == "AdaBoost") {
+    if (base::StartsWith(group_name, "AdaBoost",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       return DistillerHeuristicsType::ADABOOST_MODEL;
     }
-    if (group_name == "OGArticle") {
+    if (base::StartsWith(group_name, "OGArticle",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       return DistillerHeuristicsType::OG_ARTICLE;
     }
   }
