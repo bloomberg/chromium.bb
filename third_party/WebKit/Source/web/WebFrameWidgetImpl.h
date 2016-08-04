@@ -120,7 +120,6 @@ public:
     void applyReplacementRange(int start, int length) override;
 
     // WebFrameWidget implementation.
-    WebLocalFrameImpl* localRoot() override { return m_localRoot; }
     void setVisibilityState(WebPageVisibilityState) override;
     bool isTransparent() const override;
     void setIsTransparent(bool) override;

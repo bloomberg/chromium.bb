@@ -128,8 +128,6 @@
         'web_view_test_proxy.h',
         'web_widget_test_client.cc',
         'web_widget_test_client.h',
-        'web_widget_test_proxy.cc',
-        'web_widget_test_proxy.h',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

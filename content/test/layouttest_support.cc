@@ -19,7 +19,6 @@
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_view_test_proxy.h"
-#include "components/test_runner/web_widget_test_proxy.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -35,7 +34,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/shell/common/shell_switches.h"
 #include "gpu/ipc/service/image_transport_surface.h"
@@ -70,9 +68,6 @@ namespace {
 base::LazyInstance<ViewProxyCreationCallback>::Leaky
     g_view_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<WidgetProxyCreationCallback>::Leaky
-    g_widget_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
-
 base::LazyInstance<FrameProxyCreationCallback>::Leaky
     g_frame_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
 
@@ -80,14 +75,6 @@ using WebViewTestProxyType =
     test_runner::WebViewTestProxy<RenderViewImpl,
                                   CompositorDependencies*,
                                   const ViewMsg_New_Params&>;
-using WebWidgetTestProxyType =
-    test_runner::WebWidgetTestProxy<RenderWidget,
-                                    CompositorDependencies*,
-                                    blink::WebPopupType,
-                                    const blink::WebScreenInfo&,
-                                    bool,
-                                    bool,
-                                    bool>;
 using WebFrameTestProxyType =
     test_runner::WebFrameTestProxy<RenderFrameImpl,
                                    const RenderFrameImpl::CreateParams&>;
@@ -100,22 +87,6 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
     return render_view_proxy;
   g_view_test_proxy_callback.Get().Run(render_view_proxy, render_view_proxy);
   return render_view_proxy;
-}
-
-RenderWidget* CreateWebWidgetTestProxy(CompositorDependencies* compositor_deps,
-                                       blink::WebPopupType popup_type,
-                                       const blink::WebScreenInfo& screen_info,
-                                       bool swapped_out,
-                                       bool hidden,
-                                       bool never_visible) {
-  WebWidgetTestProxyType* render_widget_proxy =
-      new WebWidgetTestProxyType(compositor_deps, popup_type, screen_info,
-                                 swapped_out, hidden, never_visible);
-  if (g_widget_test_proxy_callback == 0)
-    return render_widget_proxy;
-  g_widget_test_proxy_callback.Get().Run(render_widget_proxy->web_widget(),
-                                         render_widget_proxy);
-  return render_widget_proxy;
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(
@@ -159,13 +130,10 @@ test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
 
 void EnableWebTestProxyCreation(
     const ViewProxyCreationCallback& view_proxy_creation_callback,
-    const WidgetProxyCreationCallback& widget_proxy_creation_callback,
     const FrameProxyCreationCallback& frame_proxy_creation_callback) {
   g_view_test_proxy_callback.Get() = view_proxy_creation_callback;
-  g_widget_test_proxy_callback.Get() = widget_proxy_creation_callback;
   g_frame_test_proxy_callback.Get() = frame_proxy_creation_callback;
   RenderViewImpl::InstallCreateHook(CreateWebViewTestProxy);
-  RenderWidget::InstallCreateHook(CreateWebWidgetTestProxy);
   RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
 }
 

@@ -15,7 +15,6 @@
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
-#include "components/test_runner/web_widget_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
@@ -24,14 +23,13 @@ namespace test_runner {
 
 WebWidgetTestClient::WebWidgetTestClient(
     TestRunner* test_runner,
-    WebWidgetTestProxyBase* web_widget_test_proxy_base)
+    WebViewTestProxyBase* web_view_test_proxy_base)
     : test_runner_(test_runner),
-      web_view_test_proxy_base_(nullptr),
-      web_widget_test_proxy_base_(web_widget_test_proxy_base),
+      web_view_test_proxy_base_(web_view_test_proxy_base),
       animation_scheduled_(false),
       weak_factory_(this) {
   DCHECK(test_runner);
-  DCHECK(web_widget_test_proxy_base_);
+  DCHECK(web_view_test_proxy_base);
 }
 
 WebWidgetTestClient::~WebWidgetTestClient() {}
@@ -42,8 +40,7 @@ void WebWidgetTestClient::scheduleAnimation() {
 
   if (!animation_scheduled_) {
     animation_scheduled_ = true;
-    test_runner_->OnAnimationScheduled(
-        web_widget_test_proxy_base_->web_widget());
+    test_runner_->OnAnimationScheduled(web_view_test_proxy_base_->web_widget());
 
     web_view_test_proxy_base_->delegate()->PostDelayedTask(
         new WebCallbackTask(base::Bind(&WebWidgetTestClient::AnimateNow,
@@ -54,7 +51,7 @@ void WebWidgetTestClient::scheduleAnimation() {
 
 void WebWidgetTestClient::AnimateNow() {
   if (animation_scheduled_) {
-    blink::WebWidget* web_widget = web_widget_test_proxy_base_->web_widget();
+    blink::WebWidget* web_widget = web_view_test_proxy_base_->web_widget();
     animation_scheduled_ = false;
     test_runner_->OnAnimationBegun(web_widget);
 
@@ -71,7 +68,9 @@ void WebWidgetTestClient::AnimateNow() {
 blink::WebScreenInfo WebWidgetTestClient::screenInfo() {
   blink::WebScreenInfo screen_info;
   MockScreenOrientationClient* mock_client =
-      test_runner_->getMockScreenOrientationClient();
+      web_view_test_proxy_base_->test_interfaces()
+          ->GetTestRunner()
+          ->getMockScreenOrientationClient();
   if (mock_client->IsDisabled()) {
     // Indicate to WebViewTestProxy that there is no test/mock info.
     screen_info.orientationType = blink::WebScreenOrientationUndefined;
@@ -103,8 +102,8 @@ void WebWidgetTestClient::setToolTipText(const blink::WebString& text,
 void WebWidgetTestClient::resetInputMethod() {
   // If a composition text exists, then we need to let the browser process
   // to cancel the input method's ongoing composition session.
-  if (web_widget_test_proxy_base_)
-    web_widget_test_proxy_base_->web_widget()->confirmComposition();
+  if (web_view_test_proxy_base_)
+    web_view_test_proxy_base_->web_widget()->confirmComposition();
 }
 
 }  // namespace test_runner

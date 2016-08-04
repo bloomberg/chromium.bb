@@ -29,7 +29,6 @@
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
-#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -73,31 +72,10 @@ void WebViewTestProxyCreated(RenderView* render_view,
   proxy->set_view_test_client(LayoutTestRenderThreadObserver::GetInstance()
                                   ->test_interfaces()
                                   ->CreateWebViewTestClient(proxy));
-  std::unique_ptr<test_runner::WebWidgetTestClient> widget_test_client =
-      LayoutTestRenderThreadObserver::GetInstance()
-          ->test_interfaces()
-          ->CreateWebWidgetTestClient(proxy);
-  widget_test_client->set_web_view_test_proxy_base(proxy);
-  proxy->set_widget_test_client(std::move(widget_test_client));
+  proxy->set_widget_test_client(LayoutTestRenderThreadObserver::GetInstance()
+                                    ->test_interfaces()
+                                    ->CreateWebWidgetTestClient(proxy));
   proxy->SetInterfaces(interfaces);
-}
-
-void WebWidgetTestProxyCreated(blink::WebWidget* web_widget,
-                               test_runner::WebWidgetTestProxyBase* proxy) {
-  CHECK(web_widget->isWebFrameWidget());
-  proxy->set_web_widget(web_widget);
-  blink::WebFrameWidget* web_frame_widget =
-      static_cast<blink::WebFrameWidget*>(web_widget);
-  blink::WebView* web_view = web_frame_widget->localRoot()->view();
-  RenderView* render_view = RenderView::FromWebView(web_view);
-  test_runner::WebViewTestProxyBase* view_proxy =
-      GetWebViewTestProxyBase(render_view);
-  std::unique_ptr<test_runner::WebWidgetTestClient> widget_test_client =
-      LayoutTestRenderThreadObserver::GetInstance()
-          ->test_interfaces()
-          ->CreateWebWidgetTestClient(proxy);
-  widget_test_client->set_web_view_test_proxy_base(view_proxy);
-  proxy->set_widget_test_client(std::move(widget_test_client));
 }
 
 void WebFrameTestProxyCreated(RenderFrame* render_frame,
@@ -114,7 +92,6 @@ void WebFrameTestProxyCreated(RenderFrame* render_frame,
 
 LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
   EnableWebTestProxyCreation(base::Bind(&WebViewTestProxyCreated),
-                             base::Bind(&WebWidgetTestProxyCreated),
                              base::Bind(&WebFrameTestProxyCreated));
 }
 

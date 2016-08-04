@@ -257,11 +257,6 @@ void WebViewFrameWidget::setBaseBackgroundColor(WebColor color)
     m_webView->setBaseBackgroundColor(color);
 }
 
-WebLocalFrameImpl* WebViewFrameWidget::localRoot()
-{
-    return m_webView->mainFrameImpl();
-}
-
 void WebViewFrameWidget::scheduleAnimation()
 {
     m_webView->scheduleAnimationForWidget();

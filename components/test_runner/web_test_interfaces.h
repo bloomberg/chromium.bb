@@ -35,7 +35,6 @@ class WebFrameTestClient;
 class WebFrameTestProxyBase;
 class WebTestDelegate;
 class WebViewTestProxyBase;
-class WebWidgetTestProxyBase;
 class WebTestRunner;
 class WebViewTestClient;
 class WebWidgetTestClient;
@@ -87,9 +86,9 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   // Creates a WebWidgetClient implementation providing test behavior (i.e.
   // providing a mocked screen orientation).  The caller should guarantee that
   // the returned pointer won't be used beyond the lifetime of WebTestInterfaces
-  // and/or the lifetime of |web_widget_test_proxy_base|.
+  // and/or the lifetime of |web_view_test_proxy_base|.
   std::unique_ptr<WebWidgetTestClient> CreateWebWidgetTestClient(
-      WebWidgetTestProxyBase* web_widget_test_proxy_base);
+      WebViewTestProxyBase* web_view_test_proxy_base);
 
   // Gets a list of currently opened windows created by the current test.
   std::vector<blink::WebView*> GetWindowList();

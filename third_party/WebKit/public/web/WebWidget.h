@@ -208,10 +208,6 @@ public:
 
     // Returns true if the WebWidget created is of type WebView.
     virtual bool isWebView() const { return false; }
-
-    // Returns true if the WebWidget created is of type WebFrameWidget.
-    virtual bool isWebFrameWidget() const { return false; }
-
     // Returns true if the WebWidget created is of type WebPagePopup.
     virtual bool isPagePopup() const { return false; }
 

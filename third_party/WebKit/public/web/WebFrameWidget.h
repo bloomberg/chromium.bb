@@ -69,12 +69,6 @@ public:
     // persists across subsequent navigations. Defaults to white prior to the
     // first call to this method.
     virtual void setBaseBackgroundColor(WebColor) = 0;
-
-    // Returns the local root of this WebFrameWidget.
-    virtual WebLocalFrame* localRoot() = 0;
-
-    // WebWidget implementation.
-    bool isWebFrameWidget() const final { return true; }
 };
 
 } // namespace blink
