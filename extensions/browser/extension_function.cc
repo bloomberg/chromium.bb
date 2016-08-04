@@ -641,20 +641,3 @@ ExtensionFunction::ResponseAction SyncExtensionFunction::Run() {
 bool SyncExtensionFunction::ValidationFailure(SyncExtensionFunction* function) {
   return false;
 }
-
-SyncIOThreadExtensionFunction::SyncIOThreadExtensionFunction() {
-}
-
-SyncIOThreadExtensionFunction::~SyncIOThreadExtensionFunction() {
-}
-
-ExtensionFunction::ResponseAction SyncIOThreadExtensionFunction::Run() {
-  return RespondNow(RunSync() ? ArgumentList(std::move(results_))
-                              : Error(error_));
-}
-
-// static
-bool SyncIOThreadExtensionFunction::ValidationFailure(
-    SyncIOThreadExtensionFunction* function) {
-  return false;
-}

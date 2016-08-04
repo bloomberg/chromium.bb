@@ -1987,7 +1987,8 @@ void ClearCacheQuotaHeuristic::OnPageLoad(Bucket* bucket) {
   bucket->DeductToken();
 }
 
-bool WebRequestInternalAddEventListenerFunction::RunSync() {
+ExtensionFunction::ResponseAction
+WebRequestInternalAddEventListenerFunction::Run() {
   // Argument 0 is the callback, which we don't use here.
   ExtensionWebRequestEventRouter::RequestFilter filter;
   base::DictionaryValue* value = NULL;
@@ -1997,7 +1998,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value, &error_) ||
                               !error_.empty());
   if (!error_.empty())
-    return false;
+    return RespondNow(Error(error_));
 
   int extra_info_spec = 0;
   if (HasOptionalArgument(2)) {
@@ -2032,8 +2033,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
          (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) &&
         !extension->permissions_data()->HasAPIPermission(
             APIPermission::kWebRequestBlocking)) {
-      error_ = keys::kBlockingPermissionRequired;
-      return false;
+      return RespondNow(Error(keys::kBlockingPermissionRequired));
     }
 
     // We allow to subscribe to patterns that are broader than the host
@@ -2049,8 +2049,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
             ->withheld_permissions()
             .explicit_hosts()
             .is_empty()) {
-      error_ = keys::kHostPermissionsRequired;
-      return false;
+      return RespondNow(Error(keys::kHostPermissionsRequired));
     }
   }
 
@@ -2070,16 +2069,14 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
                                        profile_id(), extension_id_safe()));
   }
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
-void WebRequestInternalEventHandledFunction::RespondWithError(
+void WebRequestInternalEventHandledFunction::OnError(
     const std::string& event_name,
     const std::string& sub_event_name,
     uint64_t request_id,
-    std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response,
-    const std::string& error) {
-  error_ = error;
+    std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response) {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile_id(),
       extension_id_safe(),
@@ -2089,7 +2086,8 @@ void WebRequestInternalEventHandledFunction::RespondWithError(
       response.release());
 }
 
-bool WebRequestInternalEventHandledFunction::RunSync() {
+ExtensionFunction::ResponseAction
+WebRequestInternalEventHandledFunction::Run() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
 
@@ -2117,9 +2115,8 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
     if (value->HasKey("cancel")) {
       // Don't allow cancel mixed with other keys.
       if (value->size() != 1) {
-        RespondWithError(event_name, sub_event_name, request_id,
-                         std::move(response), keys::kInvalidBlockingResponse);
-        return false;
+        OnError(event_name, sub_event_name, request_id, std::move(response));
+        return RespondNow(Error(keys::kInvalidBlockingResponse));
       }
 
       bool cancel = false;
@@ -2133,11 +2130,8 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
                                                    &new_url_str));
       response->new_url = GURL(new_url_str);
       if (!response->new_url.is_valid()) {
-        RespondWithError(event_name, sub_event_name, request_id,
-                         std::move(response),
-                         ErrorUtils::FormatErrorMessage(
-                             keys::kInvalidRedirectUrl, new_url_str));
-        return false;
+        OnError(event_name, sub_event_name, request_id, std::move(response));
+        return RespondNow(Error(keys::kInvalidRedirectUrl, new_url_str));
       }
     }
 
@@ -2146,10 +2140,8 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
     if (has_request_headers || has_response_headers) {
       if (has_request_headers && has_response_headers) {
         // Allow only one of the keys, not both.
-        RespondWithError(event_name, sub_event_name, request_id,
-                         std::move(response),
-                         keys::kInvalidHeaderKeyCombination);
-        return false;
+        OnError(event_name, sub_event_name, request_id, std::move(response));
+        return RespondNow(Error(keys::kInvalidHeaderKeyCombination));
       }
 
       base::ListValue* headers_value = NULL;
@@ -2174,22 +2166,16 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
         if (!FromHeaderDictionary(header_value, &name, &value)) {
           std::string serialized_header;
           base::JSONWriter::Write(*header_value, &serialized_header);
-          RespondWithError(event_name, sub_event_name, request_id,
-                           std::move(response),
-                           ErrorUtils::FormatErrorMessage(keys::kInvalidHeader,
-                                                          serialized_header));
-          return false;
+          OnError(event_name, sub_event_name, request_id, std::move(response));
+          return RespondNow(Error(keys::kInvalidHeader, serialized_header));
         }
         if (!net::HttpUtil::IsValidHeaderName(name)) {
-          RespondWithError(event_name, sub_event_name, request_id,
-                           std::move(response), keys::kInvalidHeaderName);
-          return false;
+          OnError(event_name, sub_event_name, request_id, std::move(response));
+          return RespondNow(Error(keys::kInvalidHeaderName));
         }
         if (!net::HttpUtil::IsValidHeaderValue(value)) {
-          RespondWithError(
-              event_name, sub_event_name, request_id, std::move(response),
-              ErrorUtils::FormatErrorMessage(keys::kInvalidHeaderValue, name));
-          return false;
+          OnError(event_name, sub_event_name, request_id, std::move(response));
+          return RespondNow(Error(keys::kInvalidHeaderValue, name));
         }
         if (has_request_headers)
           request_headers->SetHeader(name, value);
@@ -2222,7 +2208,7 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
       profile_id(), extension_id_safe(), event_name, sub_event_name, request_id,
       response.release());
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
 void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
@@ -2250,12 +2236,13 @@ void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
       base::Bind(&WarningService::NotifyWarningsOnUI, profile_id(), warnings));
 
   // Continue gracefully.
-  RunSync();
+  RunWithValidation()->Execute();
 }
 
-bool WebRequestHandlerBehaviorChangedFunction::RunSync() {
+ExtensionFunction::ResponseAction
+WebRequestHandlerBehaviorChangedFunction::Run() {
   helpers::ClearCacheOnNavigation();
-  return true;
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

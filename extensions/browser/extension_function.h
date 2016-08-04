@@ -700,30 +700,4 @@ class SyncExtensionFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(SyncExtensionFunction);
 };
 
-class SyncIOThreadExtensionFunction : public IOThreadExtensionFunction {
- public:
-  SyncIOThreadExtensionFunction();
-
- protected:
-  ~SyncIOThreadExtensionFunction() override;
-
-  // Deprecated: Override IOThreadExtensionFunction and implement Run() instead.
-  //
-  // SyncIOThreadExtensionFunctions implement this method. Return true to
-  // respond immediately with success, false to respond immediately with an
-  // error.
-  virtual bool RunSync() = 0;
-
-  // ValidationFailure override to match RunSync().
-  static bool ValidationFailure(SyncIOThreadExtensionFunction* function);
-
- private:
-  // If you're hitting a compile error here due to "final" - great! You're
-  // doing the right thing, you just need to extend IOThreadExtensionFunction
-  // instead of SyncIOExtensionFunction.
-  ResponseAction Run() final;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncIOThreadExtensionFunction);
-};
-
 #endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_H_

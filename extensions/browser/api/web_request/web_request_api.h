@@ -476,7 +476,7 @@ class ExtensionWebRequestEventRouter
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
 
-class WebRequestInternalFunction : public SyncIOThreadExtensionFunction {
+class WebRequestInternalFunction : public IOThreadExtensionFunction {
  public:
   WebRequestInternalFunction() {}
 
@@ -498,7 +498,7 @@ class WebRequestInternalAddEventListenerFunction
   ~WebRequestInternalAddEventListenerFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class WebRequestInternalEventHandledFunction
@@ -510,19 +510,18 @@ class WebRequestInternalEventHandledFunction
  protected:
   ~WebRequestInternalEventHandledFunction() override {}
 
-  // Unblocks the network request and sets |error_| such that the developer
-  // console will show the respective error message. Use this function to handle
-  // incorrect requests from the extension that cannot be detected by the schema
+ private:
+  // Unblocks the network request. Use this function when handling incorrect
+  // requests from the extension that cannot be detected by the schema
   // validator.
-  void RespondWithError(
+  void OnError(
       const std::string& event_name,
       const std::string& sub_event_name,
       uint64_t request_id,
-      std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response,
-      const std::string& error);
+      std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response);
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class WebRequestHandlerBehaviorChangedFunction
@@ -540,7 +539,7 @@ class WebRequestHandlerBehaviorChangedFunction
   // Handle quota exceeded gracefully: Only warn the user but still execute the
   // function.
   void OnQuotaExceeded(const std::string& error) override;
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions
