@@ -102,8 +102,13 @@ class ServiceManager : public Service {
   // If |service| is not null, there must not be an instance of the target
   // application already running. The Service Manager will create a new instance
   // and use |service| to control it.
+  //
+  // If |instance| is not null, the lifetime of the connection request is
+  // bounded by that of |instance|. The connection will be cancelled dropped if
+  // |instance| is destroyed.
   void Connect(std::unique_ptr<ConnectParams> params,
-               mojom::ServicePtr service);
+               mojom::ServicePtr service,
+               base::WeakPtr<Instance> source_instance);
 
   // Returns a running instance matching |identity|. This might be an instance
   // running as a different user if one is available that services all users.
@@ -139,6 +144,8 @@ class ServiceManager : public Service {
   // |result| contains the result of the resolve operation.
   void OnGotResolvedName(std::unique_ptr<ConnectParams> params,
                          mojom::ServicePtr service,
+                         bool has_source_instance,
+                         base::WeakPtr<Instance> source_instance,
                          mojom::ResolveResultPtr result);
 
   base::WeakPtr<ServiceManager> GetWeakPtr();

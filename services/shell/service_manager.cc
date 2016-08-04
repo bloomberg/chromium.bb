@@ -281,7 +281,8 @@ class ServiceManager::Instance
     params->set_local_interfaces(std::move(local_interfaces));
     params->set_client_process_connection(std::move(client_process_connection));
     params->set_connect_callback(callback);
-    service_manager_->Connect(std::move(params));
+    service_manager_->Connect(
+        std::move(params), nullptr, weak_factory_.GetWeakPtr());
   }
 
   void Clone(mojom::ConnectorRequest request) override {
@@ -517,7 +518,7 @@ void ServiceManager::SetInstanceQuitCallback(
 }
 
 void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
-  Connect(std::move(params), nullptr);
+  Connect(std::move(params), nullptr, nullptr);
 }
 
 mojom::ServiceRequest ServiceManager::StartEmbedderService(
@@ -530,7 +531,7 @@ mojom::ServiceRequest ServiceManager::StartEmbedderService(
 
   mojom::ServicePtr service;
   mojom::ServiceRequest request = mojo::GetProxy(&service);
-  Connect(std::move(params), std::move(service));
+  Connect(std::move(params), std::move(service), nullptr);
 
   return request;
 }
@@ -605,7 +606,8 @@ void ServiceManager::OnInstanceError(Instance* instance) {
 }
 
 void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
-                             mojom::ServicePtr service) {
+                             mojom::ServicePtr service,
+                             base::WeakPtr<Instance> source_instance) {
   TRACE_EVENT_INSTANT1("mojo_shell", "ServiceManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
                        params->target().name());
@@ -629,7 +631,8 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
   resolver->ResolveMojoName(
       name, base::Bind(&shell::ServiceManager::OnGotResolvedName,
                        weak_ptr_factory_.GetWeakPtr(), base::Passed(&params),
-                       base::Passed(&service)));
+                       base::Passed(&service), !!source_instance,
+                       source_instance));
 }
 
 ServiceManager::Instance* ServiceManager::GetExistingInstance(
@@ -727,7 +730,14 @@ void ServiceManager::OnServiceFactoryLost(const Identity& which) {
 
 void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
                                        mojom::ServicePtr service,
+                                       bool has_source_instance,
+                                       base::WeakPtr<Instance> source_instance,
                                        mojom::ResolveResultPtr result) {
+  // If this request was originated by a specific Instance and that Instance is
+  // no longer around, we ignore this response.
+  if (has_source_instance && !source_instance)
+    return;
+
   std::string instance_name = params->target().instance();
   if (instance_name == GetNamePath(params->target().name()) &&
       result->qualifier != GetNamePath(result->resolved_name)) {
@@ -790,8 +800,7 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
       instance->StartWithService(std::move(service));
       Identity factory(result->resolved_name, target.user_id(),
                        instance_name);
-      CreateServiceWithFactory(factory, target.name(),
-                                   std::move(request));
+      CreateServiceWithFactory(factory, target.name(), std::move(request));
     } else {
       instance->StartWithFilePath(result->package_path);
     }
