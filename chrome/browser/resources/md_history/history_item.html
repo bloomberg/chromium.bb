@@ -102,24 +102,15 @@
 
       #menu-button {
         -webkit-margin-end: 12px;
-        -webkit-margin-start: 2px;
-        color: var(--secondary-text-color);
-        height: 36px;
-        width: 36px;
-      }
-
-      #menu-button iron-icon {
-        height: 20px;
-        width: 20px;
       }
 
       #bookmark-star {
-        -webkit-margin-end: 10px;
-        -webkit-margin-start: 20px;
+        -webkit-margin-end: 4px;
+        -webkit-margin-start: 12px;
         color: rgb(68, 136, 255);
-        height: 20px;
+        height: 32px;
         visibility: hidden;
-        width: 20px;
+        width: 32px;
       }
 
       #bookmark-star iron-icon {
@@ -161,7 +152,8 @@
             <iron-icon icon="cr:star"></iron-icon>
           </button>
           <button is="paper-icon-button-light" id="menu-button"
-              on-tap="onMenuButtonTap_" title="$i18n{moreActionsButton}">
+              class="icon-button" title="$i18n{moreActionsButton}"
+              on-tap="onMenuButtonTap_">
             <iron-icon icon="cr:more-vert"></iron-icon>
           </button>
         </div>

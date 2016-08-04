@@ -87,5 +87,14 @@ Polymer({
   /** @private */
   isWindowSeparatorIndex_: function(index, separatorIndexes) {
     return this.separatorIndexes.indexOf(index) != -1;
-  }
+  },
+
+  /**
+   * @param {boolean} cardOpen
+   * @return {string}
+   */
+  getCollapseTitle_: function(cardOpen) {
+    return cardOpen ? loadTimeData.getString('collapseSessionButton') :
+                      loadTimeData.getString('expandSessionButton');
+  },
 });
