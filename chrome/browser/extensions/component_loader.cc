@@ -56,7 +56,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -377,30 +376,8 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
 }
 
 #if defined(OS_CHROMEOS)
-void ComponentLoader::AddChromeVoxExtension(
-    const base::Closure& done_cb) {
-  base::FilePath resources_path;
-  CHECK(PathService::Get(chrome::DIR_RESOURCES, &resources_path));
-
-  base::FilePath chromevox_path =
-      resources_path.Append(extension_misc::kChromeVoxExtensionPath);
-
-  const base::FilePath::CharType* manifest_filename =
-      IsNormalSession() ? extensions::kManifestFilename
-                        : extension_misc::kGuestManifestFilename;
-  AddWithManifestFile(
-      manifest_filename,
-      chromevox_path,
-      extension_misc::kChromeVoxExtensionId,
-      done_cb);
-}
-
 void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
-  const base::FilePath::CharType* manifest_filename =
-      IsNormalSession() ? extensions::kManifestFilename
-                        : extension_misc::kGuestManifestFilename;
-  AddWithManifestFile(
-      manifest_filename,
+  AddComponentFromDir(
       base::FilePath(extension_misc::kSpeechSynthesisExtensionPath),
       extension_misc::kSpeechSynthesisExtensionId,
       base::Bind(&ComponentLoader::EnableFileSystemInGuestMode,
@@ -625,12 +602,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     Add(IDR_ARC_SUPPORT_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/arc_support")));
   }
-
-  // Load ChromeVox extension now if spoken feedback is enabled.
-  if (chromeos::AccessibilityManager::Get() &&
-      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
-    AddChromeVoxExtension(base::Closure());
-  }
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -689,24 +660,26 @@ void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
 }
 
 #if defined(OS_CHROMEOS)
-void ComponentLoader::AddWithManifestFile(
-    const base::FilePath::CharType* manifest_filename,
+void ComponentLoader::AddComponentFromDir(
     const base::FilePath& root_directory,
     const char* extension_id,
     const base::Closure& done_cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const base::FilePath::CharType* manifest_filename =
+      IsNormalSession() ? extensions::kManifestFilename
+                        : extension_misc::kGuestManifestFilename;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&LoadManifestOnFileThread, root_directory, manifest_filename),
-      base::Bind(&ComponentLoader::FinishAddWithManifestFile,
+      base::Bind(&ComponentLoader::FinishAddComponentFromDir,
                  weak_factory_.GetWeakPtr(),
                  root_directory,
                  extension_id,
                  done_cb));
 }
 
-void ComponentLoader::FinishAddWithManifestFile(
+void ComponentLoader::FinishAddComponentFromDir(
     const base::FilePath& root_directory,
     const char* extension_id,
     const base::Closure& done_cb,

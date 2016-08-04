@@ -227,7 +227,9 @@ void LoadChromeVoxExtension(
         render_view_host->GetRoutingID(),
         done_cb);
   }
-  extension_service->component_loader()->AddChromeVoxExtension(done_cb);
+
+  extension_service->component_loader()->AddComponentFromDir(
+      GetChromeVoxPath(), extension_misc::kChromeVoxExtensionId, done_cb);
 }
 
 void InjectChromeVoxContentScript(
