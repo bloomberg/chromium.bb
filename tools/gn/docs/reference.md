@@ -2022,6 +2022,7 @@
       The output file directory corresponding to the path of the
       given file, not including a trailing slash.
         "//foo/bar/baz.txt" => "//out/Default/obj/foo/bar"
+
   "gen_dir"
       The generated file directory corresponding to the path of the
       given file, not including a trailing slash.
@@ -3437,20 +3438,6 @@
     requires a lot of duplicate of rules) so should only be used when
     absolutely necessary.
 
-  concurrent_links
-    In integer expressing the number of links that Ninja will perform in
-    parallel. GN will create a pool for shared library and executable
-    link steps with this many processes. Since linking is memory- and
-    I/O-intensive, projects with many large targets may want to limit
-    the number of parallel steps to avoid overloading the computer.
-    Since creating static libraries is generally not as intensive
-    there is no limit to "alink" steps.
-
-    Defaults to 0 which Ninja interprets as "no limit".
-
-    The value used will be the one from the default toolchain of the
-    current build.
-
 ```
 
 ### **Invoking targets in toolchains**:
@@ -3481,8 +3468,6 @@
 ### **Example**:
 ```
   toolchain("plugin_toolchain") {
-    concurrent_links = 8
-
     tool("cc") {
       command = "gcc {{source}}"
       ...

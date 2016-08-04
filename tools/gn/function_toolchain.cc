@@ -332,20 +332,6 @@ const char kToolchain_Help[] =
     "    requires a lot of duplicate of rules) so should only be used when\n"
     "    absolutely necessary.\n"
     "\n"
-    "  concurrent_links\n"
-    "    In integer expressing the number of links that Ninja will perform in\n"
-    "    parallel. GN will create a pool for shared library and executable\n"
-    "    link steps with this many processes. Since linking is memory- and\n"
-    "    I/O-intensive, projects with many large targets may want to limit\n"
-    "    the number of parallel steps to avoid overloading the computer.\n"
-    "    Since creating static libraries is generally not as intensive\n"
-    "    there is no limit to \"alink\" steps.\n"
-    "\n"
-    "    Defaults to 0 which Ninja interprets as \"no limit\".\n"
-    "\n"
-    "    The value used will be the one from the default toolchain of the\n"
-    "    current build.\n"
-    "\n"
     "Invoking targets in toolchains:\n"
     "\n"
     "  By default, when a target depends on another, there is an implicit\n"
@@ -370,8 +356,6 @@ const char kToolchain_Help[] =
     "\n"
     "Example:\n"
     "  toolchain(\"plugin_toolchain\") {\n"
-    "    concurrent_links = 8\n"
-    "\n"
     "    tool(\"cc\") {\n"
     "      command = \"gcc {{source}}\"\n"
     "      ...\n"
@@ -426,21 +410,6 @@ Value RunToolchain(Scope* scope,
         ToolchainLabelForScope(&block_scope), &toolchain->deps(), err);
     if (err->has_error())
       return Value();
-  }
-
-  // Read concurrent_links (if any).
-  const Value* concurrent_links_value =
-      block_scope.GetValue("concurrent_links", true);
-  if (concurrent_links_value) {
-    if (!concurrent_links_value->VerifyTypeIs(Value::INTEGER, err))
-      return Value();
-    if (concurrent_links_value->int_value() < 0 ||
-        concurrent_links_value->int_value() > std::numeric_limits<int>::max()) {
-      *err = Err(*concurrent_links_value, "Value out of range.");
-      return Value();
-    }
-    toolchain->set_concurrent_links(
-        static_cast<int>(concurrent_links_value->int_value()));
   }
 
   if (!block_scope.CheckForUnusedVars(err))

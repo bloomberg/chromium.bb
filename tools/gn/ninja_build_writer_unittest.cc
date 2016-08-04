@@ -66,9 +66,6 @@ TEST(NinjaBuildWriter, TwoTargets) {
       "build build.ninja: gn\n"
       "  generator = 1\n"
       "  depfile = build.ninja.d\n";
-  const char expected_link_pool[] =
-      "pool link_pool\n"
-      "  depth = 0\n";
   const char expected_other_pool[] =
       "pool other_toolchain_other_pool\n"
       "  depth = 42\n";
@@ -91,7 +88,6 @@ TEST(NinjaBuildWriter, TwoTargets) {
         "Within: " << out_str
   EXPECT_SNIPPET(expected_rule_gn);
   EXPECT_SNIPPET(expected_build_ninja);
-  EXPECT_SNIPPET(expected_link_pool);
   EXPECT_SNIPPET(expected_other_pool);
   EXPECT_SNIPPET(expected_toolchain);
   EXPECT_SNIPPET(expected_targets);

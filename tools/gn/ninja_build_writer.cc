@@ -254,10 +254,6 @@ void NinjaBuildWriter::WriteNinjaRules() {
 }
 
 void NinjaBuildWriter::WriteAllPools() {
-  out_ << "pool link_pool\n"
-       << "  depth = " << default_toolchain_->concurrent_links() << std::endl
-       << std::endl;
-
   // Compute the pools referenced by all tools of all used toolchains.
   std::set<const Pool*> used_pools;
   for (const auto& pair : used_toolchains_) {
