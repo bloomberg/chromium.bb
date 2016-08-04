@@ -5,9 +5,29 @@
 #include "platform/network/NetworkUtils.h"
 
 #include "net/base/ip_address.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
+
+namespace {
+
+net::registry_controlled_domains::PrivateRegistryFilter getNetPrivateRegistryFilter(blink::NetworkUtils::PrivateRegistryFilter filter)
+{
+    switch (filter) {
+    case blink::NetworkUtils::IncludePrivateRegistries:
+        return net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
+    case blink::NetworkUtils::ExcludePrivateRegistries:
+        return net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
+    }
+    // There are only two NetworkUtils::PrivateRegistryFilter enum entries, so
+    // we should never reach this point. However, we must have a default return
+    // value to avoid a compiler error.
+    NOTREACHED();
+    return net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
+}
+
+} // namespace
 
 namespace blink {
 
@@ -26,6 +46,13 @@ bool isLocalHostname(const String& host, bool* isLocal6)
 {
     StringUTF8Adaptor utf8(host);
     return net::IsLocalHostname(utf8.asStringPiece(), isLocal6);
+}
+
+String getDomainAndRegistry(const String& host, PrivateRegistryFilter filter)
+{
+    StringUTF8Adaptor hostUtf8(host);
+    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(hostUtf8.asStringPiece(), getNetPrivateRegistryFilter(filter));
+    return String(domain.data(), domain.length());
 }
 
 } // NetworkUtils

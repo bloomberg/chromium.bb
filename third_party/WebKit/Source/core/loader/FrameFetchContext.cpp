@@ -64,6 +64,7 @@
 #include "platform/Logging.h"
 #include "platform/TracedValue.h"
 #include "platform/mhtml/MHTMLArchive.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -110,7 +111,20 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, Fetch
     // Avoid blocking same origin scripts, as they may be used to render main
     // page content, whereas cross-origin scripts inserted via document.write
     // are likely to be third party content.
-    if (request.url().host() == document.getSecurityOrigin()->domain())
+    String requestHost = request.url().host();
+    String documentHost = document.getSecurityOrigin()->domain();
+    if (requestHost == documentHost)
+        return false;
+
+    // If the hosts didn't match, then see if the domains match. For example, if
+    // a script is served from static.example.com for a document served from
+    // www.example.com, we consider that a first party script and allow it.
+    String requestDomain = NetworkUtils::getDomainAndRegistry(requestHost, NetworkUtils::IncludePrivateRegistries);
+    String documentDomain = NetworkUtils::getDomainAndRegistry(documentHost, NetworkUtils::IncludePrivateRegistries);
+    // getDomainAndRegistry will return the empty string for domains that are
+    // already top-level, such as localhost. Thus we only compare domains if we
+    // get non-empty results back from getDomainAndRegistry.
+    if (!requestDomain.isEmpty() && !documentDomain.isEmpty() && requestDomain == documentDomain)
         return false;
 
     emitWarningForDocWriteScripts(request.url().getString(), document);

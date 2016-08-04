@@ -61,4 +61,30 @@ TEST(NetworkUtilsTest, IsReservedIPAddress)
     }
 }
 
+TEST(NetworkUtilsTest, GetDomainAndRegistry)
+{
+    EXPECT_EQ("", NetworkUtils::getDomainAndRegistry("", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("", NetworkUtils::getDomainAndRegistry(".", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("", NetworkUtils::getDomainAndRegistry("..", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("", NetworkUtils::getDomainAndRegistry("com", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("", NetworkUtils::getDomainAndRegistry(".com", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("", NetworkUtils::getDomainAndRegistry("www.example.com:8000", NetworkUtils::IncludePrivateRegistries));
+
+    EXPECT_EQ("", NetworkUtils::getDomainAndRegistry("localhost", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("", NetworkUtils::getDomainAndRegistry("127.0.0.1", NetworkUtils::IncludePrivateRegistries));
+
+    EXPECT_EQ("example.com", NetworkUtils::getDomainAndRegistry("example.com", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("example.com", NetworkUtils::getDomainAndRegistry("www.example.com", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("example.com", NetworkUtils::getDomainAndRegistry("static.example.com", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("example.com", NetworkUtils::getDomainAndRegistry("multilevel.www.example.com", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("example.co.uk", NetworkUtils::getDomainAndRegistry("www.example.co.uk", NetworkUtils::IncludePrivateRegistries));
+
+    // Verify proper handling of 'private registries'.
+    EXPECT_EQ("foo.appspot.com", NetworkUtils::getDomainAndRegistry("www.foo.appspot.com", NetworkUtils::IncludePrivateRegistries));
+    EXPECT_EQ("appspot.com", NetworkUtils::getDomainAndRegistry("www.foo.appspot.com", NetworkUtils::ExcludePrivateRegistries));
+
+    // Verify that unknown registries are included.
+    EXPECT_EQ("example.notarealregistry", NetworkUtils::getDomainAndRegistry("www.example.notarealregistry", NetworkUtils::IncludePrivateRegistries));
+}
+
 } // namespace blink
