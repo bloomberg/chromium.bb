@@ -38,6 +38,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
@@ -83,6 +84,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   AddSettingsPageUIHandler(new StartupPagesHandler(web_ui));
 
 #if defined(OS_CHROMEOS)
+  AddSettingsPageUIHandler(new chromeos::settings::AccessibilityHandler(
+      web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::ChangePictureHandler());
   AddSettingsPageUIHandler(new chromeos::settings::KeyboardHandler(web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::PointerHandler());

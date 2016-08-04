@@ -2497,14 +2497,65 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the focused object to make it easier to see.">
     Highlight the object with keyboard focus when it changes
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to enable an option to hold a key and click to speak any on-screen text out loud.">
-    Select-to-speak: Hold down Search and click or drag to speak anything
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_TITLE" desc="In the settings tab, the text next to the checkbox to enable an option to hold a key and click to speak any on-screen text out loud.">
+    Select-to-speak
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION" desc="In the settings tab, the description of an option to hold a key and click to speak any on-screen text out loud.">
+    Hold down Search and click or drag to speak anything
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to enable switch access (for users with limited motor control).">
     Switch access (control the computer with just one or two switches)
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES" desc="In the settings tab, the title of a link that opens a screen allowing the user to change accessibility features.">
+    Manage accessibility features
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_TEXT_TO_SPEECH_HEADING" desc="In the settings tab, the heading for accessibility features that enable the computer to speak text from the computer screen.">
+    Text-to-Speech
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DISPLAY_HEADING" desc="In the settings tab, the heading for accessibility features related to the computer's display.">
+    Display
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DISPLAY_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open display settings.">
+    Open display device settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DISPLAY_SETTINGS_DESCRIPTION" desc="In the settings tab, an explanation that the display settings have options to adjust the screen resolution.">
+    Allows you to adjust your screen resolution
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_APPEARANCE_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open appearance settings.">
+    Open appearance settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_APPEARANCE_SETTINGS_DESCRIPTION" desc="In the settings tab, an explanation that the appearance settings allows you to change the size of text on the screen.">
+    Customize your text size
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_KEYBOARD_HEADING" desc="In the settings tab, the heading above settings related to the keyboard.">
+    Keyboard
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_KEYBOARD_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open keyboard settings.">
+    Open keyboard device settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_KEYBOARD_SETTINGS_DESCRIPTION" desc="In the settings tab, an explanation that the keyboard settings let you adjust the rate at which keys automatically repeat when held down, automatic prediction of words, and more.">
+    Allows you to adjust your keyboard repeat rate, word prediction, and more
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_MOUSE_AND_TOUCHPAD_HEADING" desc="In the settings tab, the heading for the section on mouse and touchpad settings.">
+    Mouse and touchpad
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_MOUSE_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open mouse and touchpad settings.">
+    Open mouse and touchpad device settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_MOUSE_SETTINGS_DESCRIPTION" desc="In the settings tab, an explanation that the mouse and touchpad settings allows you to turn the tap-to-click feature on and off.">
+    Allows you to enable/disable tap-to-click
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUDIO_HEADING" desc="In the settings tab, the heading for the section on audio / sound settings.">
+    Audio
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_ADDITIONAL_FEATURES_TITLE" desc="In the settings tab, the title of a link that adds additional accessibility features not found in the built-in settings.">
+    Add additional features
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_ADDITIONAL_FEATURES_DESCRIPTION" desc="In the settings tab, an explanation that additional accessibility features are found on the Chrome Web Store.">
+    Choose from the Chrome Web Store
+  </message>
   <message name="IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_NAME" desc="Name of the about:flag option for experimental accessibility features.">
-    Experimental acecssibility features
+    Experimental accessibility features
   </message>
   <message name="IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_DESCRIPTION" desc="Description of the about:flag option for experimental accessibility features.">
     Enable additional accessibility features in the Settings page.

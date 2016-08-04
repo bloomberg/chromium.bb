@@ -93,7 +93,9 @@
       <template is="dom-if" if="[[showPage(pageVisibility.a11y)]]" restamp>
         <settings-section page-title="$i18n{a11yPageTitle}"
             current-route="[[currentRoute]]" section="a11y">
-          <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
+          <settings-a11y-page prefs="{{prefs}}"
+              current-route="{{currentRoute}}">
+          </settings-a11y-page>
         </settings-section>
       </template>
 <if expr="not chromeos">

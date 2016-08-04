@@ -2045,6 +2045,8 @@
       'browser/ui/webui/settings/appearance_handler.h',
       'browser/ui/webui/settings/browser_lifetime_handler.cc',
       'browser/ui/webui/settings/browser_lifetime_handler.h',
+      'browser/ui/webui/settings/chromeos/accessibility_handler.cc',
+      'browser/ui/webui/settings/chromeos/accessibility_handler.h',
       'browser/ui/webui/settings/chromeos/change_picture_handler.cc',
       'browser/ui/webui/settings/chromeos/change_picture_handler.h',
       'browser/ui/webui/settings/chromeos/device_keyboard_handler.cc',

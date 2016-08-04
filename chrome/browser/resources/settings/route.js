@@ -246,6 +246,9 @@ cr.define('settings', function() {
 </if>
 
   r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
+  r.MANAGE_ACCESSIBILITY = r.ACCESSIBILITY.createChild(
+      '/manageAccessibility', 'manage-a11y');
+
   r.SYSTEM = r.ADVANCED.createSection('/system', 'system');
   r.RESET = r.ADVANCED.createSection('/reset', 'reset');
 
