@@ -586,11 +586,12 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
 
   // If there are no Autofill suggestions, consider showing Autocomplete
   // suggestions. We will not show Autocomplete suggestions for a field that
-  // specifies autocomplete=off or a field that we think is a credit card
-  // expiration, cvc or number.
+  // specifies autocomplete=off (or an unrecognized type) or a field that we
+  // think is a credit card expiration, cvc or number.
   if (suggestions.empty() && field.should_autocomplete &&
       !(autofill_field &&
         (IsCreditCardExpirationType(autofill_field->Type().GetStorableType()) ||
+         autofill_field->Type().html_type() == HTML_TYPE_UNRECOGNIZED ||
          autofill_field->Type().GetStorableType() == CREDIT_CARD_NUMBER ||
          autofill_field->Type().GetStorableType() ==
              CREDIT_CARD_VERIFICATION_CODE))) {

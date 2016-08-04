@@ -581,33 +581,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                            UserHappinessFormLoadAndSubmission);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, UserHappinessFormInteraction);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           FormSubmittedAutocompleteEnabled);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            OnLoadedServerPredictions);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            OnLoadedServerPredictions_ResetManager);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           AutocompleteSuggestions_SomeWhenAutofillDisabled);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           AutocompleteSuggestions_SomeWhenAutofillEmpty);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           AutocompleteSuggestions_NoneWhenAutofillPresent);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillManagerTest,
-      AutocompleteSuggestions_CreditCardNameFieldShouldAutocomplete);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillManagerTest,
-      AutocompleteSuggestions_CreditCardNumberShouldNotAutocomplete);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillManagerTest,
-      AutocompleteSuggestions_AutofillDisabledAndFieldShouldNotAutocomplete);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillManagerTest,
-      AutocompleteSuggestions_NoneWhenAutofillEmptyFieldShouldNotAutocomplete);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           AutocompleteOffRespectedForAutocomplete);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           DontSaveCvcInAutocompleteHistory);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DontOfferToSavePaymentsCard);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillInUpdatedExpirationDate);
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
