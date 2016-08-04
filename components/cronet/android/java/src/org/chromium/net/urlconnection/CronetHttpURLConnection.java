@@ -402,7 +402,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         // Sockets are assigned to requests according to request priorities
         // when sockets are connected. This requires requests with the same host,
         // domain and port to have same timeout.
-        Log.e(TAG, "setConnectTimeout is not supported by CronetHttpURLConnection");
+        Log.d(TAG, "setConnectTimeout is not supported by CronetHttpURLConnection");
     }
 
     /**
