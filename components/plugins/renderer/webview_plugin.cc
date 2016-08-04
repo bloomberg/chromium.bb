@@ -209,6 +209,13 @@ void WebViewPlugin::updateGeometry(const WebRect& window_rect,
                                    bool is_visible) {
   DCHECK(container_);
 
+  base::AutoReset<bool> is_resizing(&is_resizing_, true);
+
+  if (static_cast<gfx::Rect>(window_rect) != rect_) {
+    rect_ = window_rect;
+    web_view_->resize(rect_.size());
+  }
+
   // Plugin updates are forbidden during Blink layout. Therefore,
   // UpdatePluginForNewGeometry must be posted to a task to run asynchronously.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -348,19 +355,13 @@ void WebViewPlugin::UpdatePluginForNewGeometry(
     const blink::WebRect& window_rect,
     const blink::WebRect& unobscured_rect) {
   DCHECK(container_);
+  if (!delegate_)
+    return;
 
-  base::AutoReset<bool> is_resizing(&is_resizing_, true);
-
-  if (static_cast<gfx::Rect>(window_rect) != rect_) {
-    rect_ = window_rect;
-    web_view_->resize(rect_.size());
-  }
-
-  if (delegate_) {
-    delegate_->OnUnobscuredRectUpdate(gfx::Rect(unobscured_rect));
-    // The delegate may have dirtied style and layout of the WebView.
-    // See for example the resizePoster function in plugin_poster.html.
-    // Run the lifecycle now so that it is clean.
-    web_view_->updateAllLifecyclePhases();
-  }
+  // The delegate may instantiate a new plugin.
+  delegate_->OnUnobscuredRectUpdate(gfx::Rect(unobscured_rect));
+  // The delegate may have dirtied style and layout of the WebView.
+  // See for example the resizePoster function in plugin_poster.html.
+  // Run the lifecycle now so that it is clean.
+  web_view_->updateAllLifecyclePhases();
 }
