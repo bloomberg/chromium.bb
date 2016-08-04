@@ -31,7 +31,7 @@ from pylib import constants
 sys.path.append(os.path.join(sys.path[0], '..', '..', 'tools', 'perf'))
 from chrome_telemetry_build import chromium_config
 sys.path.append(chromium_config.GetTelemetryDir())
-from telemetry.internal.util import webpagereplay
+from telemetry.internal.util import wpr_server
 
 sys.path.append(os.path.join(sys.path[0], '..', '..',
     'third_party', 'webpagereplay'))
@@ -143,10 +143,9 @@ class WprManager(object):
     if self._is_test_ca_installed:
       args.extend(['--should_generate_certs',
                    '--https_root_ca_cert_path=' + self._wpr_ca_cert_path])
-    wpr_server = webpagereplay.ReplayServer(self._wpr_archive,
+    self._wpr_server = wpr_server.ReplayServer(self._wpr_archive,
         '127.0.0.1', 0, 0, None, args)
-    ports = wpr_server.StartServer()[:-1]
-    self._wpr_server = wpr_server
+    ports = self._wpr_server.StartServer()[:-1]
     self._host_http_port = ports[0]
     self._host_https_port = ports[1]
 
