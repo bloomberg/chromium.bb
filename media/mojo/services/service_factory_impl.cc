@@ -32,13 +32,13 @@ namespace media {
 
 ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::InterfaceRequest<mojom::ServiceFactory> request,
-    shell::mojom::InterfaceProvider* interfaces,
+    shell::mojom::InterfaceProviderPtr interfaces,
     scoped_refptr<MediaLog> media_log,
     std::unique_ptr<shell::ServiceContextRef> connection_ref,
     MojoMediaClient* mojo_media_client)
     : binding_(this, std::move(request)),
 #if defined(ENABLE_MOJO_CDM)
-      interfaces_(interfaces),
+      interfaces_(std::move(interfaces)),
 #endif
       media_log_(media_log),
       connection_ref_(std::move(connection_ref)),
@@ -115,7 +115,7 @@ void ServiceFactoryImpl::CreateCdm(
 #if defined(ENABLE_MOJO_CDM)
 CdmFactory* ServiceFactoryImpl::GetCdmFactory() {
   if (!cdm_factory_) {
-    cdm_factory_ = mojo_media_client_->CreateCdmFactory(interfaces_);
+    cdm_factory_ = mojo_media_client_->CreateCdmFactory(interfaces_.get());
     LOG_IF(ERROR, !cdm_factory_) << "CdmFactory not available.";
   }
   return cdm_factory_.get();

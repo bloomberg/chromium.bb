@@ -36,7 +36,9 @@
 #include "content/common/navigation_params.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
+#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "net/http/http_response_headers.h"
+#include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
@@ -103,7 +105,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       NON_EXPORTED_BASE(public mojom::FrameHost),
       public BrowserAccessibilityDelegate,
-      public SiteInstanceImpl::Observer {
+      public SiteInstanceImpl::Observer,
+      public NON_EXPORTED_BASE(
+          shell::InterfaceFactory<media::mojom::ServiceFactory>) {
  public:
   using AXTreeSnapshotCallback =
       base::Callback<void(
@@ -205,6 +209,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // SiteInstanceImpl::Observer
   void RenderProcessGone(SiteInstanceImpl* site_instance) override;
+
+  // shell::InterfaceFactory<media::mojom::ServiceFactory>
+  void Create(const shell::Identity& remote_identity,
+              media::mojom::ServiceFactoryRequest request) override;
 
   // Creates a RenderFrame in the renderer process.
   bool CreateRenderFrame(int proxy_routing_id,
@@ -1044,6 +1052,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Callback for responding when
   // |FrameHostMsg_TextSurroundingSelectionResponse| message comes.
   TextSurroundingSelectionCallback text_surrounding_selection_callback_;
+
+  std::vector<std::unique_ptr<shell::InterfaceRegistry>> media_registries_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

@@ -12,6 +12,7 @@ mojom("interfaces") {
     "content_decryption_module.mojom",
     "decryptor.mojom",
     "demuxer_stream.mojom",
+    "media_service.mojom",
     "media_types.mojom",
     "output_protection.mojom",
     "renderer.mojom",
@@ -28,6 +29,7 @@ mojom("interfaces") {
   }
 
   public_deps = [
+    "//services/shell/public/interfaces",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]

@@ -30,7 +30,7 @@ class RendererFactory;
 class ServiceFactoryImpl : public mojom::ServiceFactory {
  public:
   ServiceFactoryImpl(mojo::InterfaceRequest<mojom::ServiceFactory> request,
-                     shell::mojom::InterfaceProvider* interfaces,
+                     shell::mojom::InterfaceProviderPtr interfaces,
                      scoped_refptr<MediaLog> media_log,
                      std::unique_ptr<shell::ServiceContextRef> connection_ref,
                      MojoMediaClient* mojo_media_client);
@@ -53,7 +53,7 @@ class ServiceFactoryImpl : public mojom::ServiceFactory {
   MojoCdmServiceContext cdm_service_context_;
   mojo::StrongBinding<mojom::ServiceFactory> binding_;
 #if defined(ENABLE_MOJO_CDM)
-  shell::mojom::InterfaceProvider* interfaces_;
+  shell::mojom::InterfaceProviderPtr interfaces_;
 #endif
 
   scoped_refptr<MediaLog> media_log_;
