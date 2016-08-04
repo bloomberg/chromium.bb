@@ -96,16 +96,7 @@ class PwsClientImpl implements PwsClient {
         // Loop through the metadata for each url.
         for (int i = 0; i < metadata.length(); i++) {
             try {
-                JSONObject obj = metadata.getJSONObject(i);
-                JSONObject pageInfo = obj.getJSONObject("pageInfo");
-                String scannedUrl = obj.getString("scannedUrl");
-                String resolvedUrl = obj.getString("resolvedUrl");
-                String iconUrl = pageInfo.optString("icon", null);
-                String title = pageInfo.optString("title", "");
-                String description = pageInfo.optString("description", null);
-                String groupId = pageInfo.optString("groupId", null);
-                pwsResults.add(new PwsResult(
-                        scannedUrl, resolvedUrl, iconUrl, title, description, groupId));
+                pwsResults.add(PwsResult.jsonDeserialize(metadata.getJSONObject(i)));
             } catch (JSONException e) {
                 Log.e(TAG, "PWS returned invalid data", e);
                 continue;
