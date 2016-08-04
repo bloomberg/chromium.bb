@@ -53,7 +53,6 @@ public:
     explicit LayoutGrid(Element*);
     ~LayoutGrid() override;
 
-    static LayoutGrid* createAnonymous(Document*);
     const char* name() const override { return "LayoutGrid"; }
 
     void layoutBlock(bool relayoutChildren) override;

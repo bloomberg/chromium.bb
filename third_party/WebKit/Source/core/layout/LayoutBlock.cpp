@@ -1736,9 +1736,6 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(const LayoutObject
     if (display == FLEX || display == INLINE_FLEX) {
         newBox = LayoutFlexibleBox::createAnonymous(&parent->document());
         newDisplay = FLEX;
-    } else if (display == GRID || display == INLINE_GRID) {
-        newBox = LayoutGrid::createAnonymous(&parent->document());
-        newDisplay = GRID;
     } else {
         newBox = LayoutBlockFlow::createAnonymous(&parent->document());
         newDisplay = BLOCK;

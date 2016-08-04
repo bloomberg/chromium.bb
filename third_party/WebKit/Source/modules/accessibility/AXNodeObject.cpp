@@ -522,10 +522,6 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const
     if (isHTMLHRElement(*getNode()))
         return SplitterRole;
 
-    if (isFieldset()) {
-        return GroupRole;
-    }
-
     return UnknownRole;
 }
 

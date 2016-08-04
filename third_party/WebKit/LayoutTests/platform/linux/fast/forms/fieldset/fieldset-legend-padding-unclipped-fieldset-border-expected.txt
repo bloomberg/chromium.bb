@@ -17,4 +17,3 @@ layer at (0,0) size 800x150
       LayoutBlockFlow {FORM} at (0,72) size 784x53.59
         LayoutFieldset {FIELDSET} at (2,0) size 780x53.59 [border: (2px groove #C0C0C0)]
           LayoutBlockFlow {LEGEND} at (14,0) size 36x36 [border: (1px solid #0000FF)]
-          LayoutBlockFlow (anonymous) at (14,7.59) size 752x34

@@ -59,7 +59,6 @@ public:
     void paintChildren(const PaintInfo&, const LayoutPoint&) const final;
 
     bool isHorizontalFlow() const;
-    virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) {return nullptr;};
 
     const OrderIterator& orderIterator() const { return m_orderIterator; }
 
@@ -176,7 +175,7 @@ private:
     LayoutUnit adjustChildSizeForAspectRatioCrossAxisMinAndMax(const LayoutBox& child, LayoutUnit childSize);
     FlexItem constructFlexItem(LayoutBox& child, ChildLayoutType);
     // The hypothetical main size of an item is the flex base size clamped according to its min and max main size properties
-    bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren, LayoutObject* childToExclude);
+    bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren);
 
     void freezeInflexibleItems(FlexSign, OrderedFlexItemList& children, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink);
     bool resolveFlexibleLengths(FlexSign, OrderedFlexItemList&, LayoutUnit initialFreeSpace, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink);
