@@ -373,12 +373,6 @@ bool FrameView::didFirstLayout() const
 
 void FrameView::invalidateRect(const IntRect& rect)
 {
-    if (!parent()) {
-        if (HostWindow* window = getHostWindow())
-            window->invalidateRect(rect);
-        return;
-    }
-
     LayoutPartItem layoutItem = m_frame->ownerLayoutItem();
     if (layoutItem.isNull())
         return;
