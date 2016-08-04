@@ -13,6 +13,8 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/GeneratedPasswordSavedInfoBarDelegate_jni.h"
 
+using base::android::JavaParamRef;
+
 // static
 void GeneratedPasswordSavedInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents) {

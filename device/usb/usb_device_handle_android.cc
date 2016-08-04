@@ -9,6 +9,8 @@
 #include "device/usb/usb_device.h"
 #include "jni/ChromeUsbConnection_jni.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace device {
 
 // static

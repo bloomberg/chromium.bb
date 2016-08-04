@@ -10,6 +10,9 @@
 #include "jni/NetworkChangeNotifier_jni.h"
 #include "net/android/network_change_notifier_android.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace net {
 
 namespace {

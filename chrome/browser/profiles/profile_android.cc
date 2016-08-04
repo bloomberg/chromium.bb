@@ -11,6 +11,8 @@
 #include "jni/Profile_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace {
 const char kProfileAndroidKey[] = "profile_android";

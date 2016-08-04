@@ -17,6 +17,8 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 
+using base::android::JavaParamRef;
+
 namespace autofill {
 
 // static

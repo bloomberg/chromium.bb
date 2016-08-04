@@ -7,6 +7,8 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/PopupTouchHandleDrawable_jni.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace content {
 
 // static

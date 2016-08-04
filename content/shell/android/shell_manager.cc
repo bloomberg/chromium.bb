@@ -16,6 +16,7 @@
 #include "jni/ShellManager_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace {

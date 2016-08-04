@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "jni/AccountManagementScreenHelper_jni.h"
 
+using base::android::JavaParamRef;
+
 // static
 void AccountManagementScreenHelper::OpenAccountManagementScreen(
     Profile* profile,

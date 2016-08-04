@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 
 using base::android::ConvertJavaStringToUTF16;
+using base::android::JavaParamRef;
 using content::BrowserThread;
 
 namespace android_webview {

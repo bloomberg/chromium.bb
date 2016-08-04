@@ -18,6 +18,8 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
+using base::android::JavaParamRef;
+
 namespace chrome {
 namespace android {
 

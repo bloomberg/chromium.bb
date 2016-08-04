@@ -7,6 +7,8 @@
 #include "base/android/jni_array.h"
 #include "jni/MidiOutputPortAndroid_jni.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace media {
 namespace midi {
 

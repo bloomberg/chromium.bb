@@ -50,6 +50,7 @@
 #endif
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using content::BluetoothChooser;
 using content::FileChooserParams;

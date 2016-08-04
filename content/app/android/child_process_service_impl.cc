@@ -25,6 +25,7 @@
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::JavaIntArrayToIntVector;
+using base::android::JavaParamRef;
 
 namespace content {
 

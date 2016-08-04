@@ -10,6 +10,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 using content::ContentViewCore;
 
 namespace external_video_surface {

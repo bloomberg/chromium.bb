@@ -22,6 +22,7 @@ using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ClearException;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using blink::WebGamepad;
 using blink::WebGamepads;

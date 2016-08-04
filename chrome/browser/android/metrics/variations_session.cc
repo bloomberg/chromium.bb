@@ -9,6 +9,8 @@
 #include "components/variations/service/variations_service.h"
 #include "jni/VariationsSession_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace {
 
 // Tracks whether VariationsService::OnAppEnterForeground() has been called

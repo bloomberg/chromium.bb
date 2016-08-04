@@ -8,6 +8,8 @@
 #include "net/test/jni/DummySpnegoAuthenticator_jni.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::android::JavaParamRef;
+
 namespace net {
 
 // iso.org.dod.internet.security.mechanism.snego (1.3.6.1.5.5.2)

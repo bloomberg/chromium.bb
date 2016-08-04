@@ -8,6 +8,9 @@
 #include "content/public/browser/android/compositor.h"
 #include "jni/SceneLayer_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace chrome {
 namespace android {
 

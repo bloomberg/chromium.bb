@@ -19,6 +19,8 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace autofill {
 
 std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(

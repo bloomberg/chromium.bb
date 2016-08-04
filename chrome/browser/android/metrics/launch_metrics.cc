@@ -19,6 +19,8 @@
 #include "jni/LaunchMetrics_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 namespace metrics {
 
 enum HomeScreenLaunch {

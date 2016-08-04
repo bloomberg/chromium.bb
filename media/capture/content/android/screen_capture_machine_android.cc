@@ -12,6 +12,7 @@
 #include "third_party/libyuv/include/libyuv.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ScopedJavaLocalRef;
 
 namespace media {
 

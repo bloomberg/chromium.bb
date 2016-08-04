@@ -14,6 +14,9 @@
 #include "jni/ManifestUpgradeDetector_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace {
 
 // Returns whether the given |url| is within the scope of the |scope| url.

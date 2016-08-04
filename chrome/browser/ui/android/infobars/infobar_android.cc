@@ -15,6 +15,7 @@
 #include "components/infobars/core/infobar_delegate.h"
 #include "jni/InfoBar_jni.h"
 
+using base::android::JavaParamRef;
 
 // InfoBarAndroid -------------------------------------------------------------
 

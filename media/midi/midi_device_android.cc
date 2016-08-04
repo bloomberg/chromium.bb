@@ -9,6 +9,8 @@
 #include "jni/MidiDeviceAndroid_jni.h"
 #include "media/midi/midi_output_port_android.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace media {
 namespace midi {
 

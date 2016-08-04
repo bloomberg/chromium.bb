@@ -15,6 +15,7 @@
 #include "chrome/browser/android/download/download_overwrite_infobar_delegate.h"
 #include "jni/DownloadOverwriteInfoBar_jni.h"
 
+using base::android::ScopedJavaLocalRef;
 using chrome::android::DownloadOverwriteInfoBarDelegate;
 
 // static

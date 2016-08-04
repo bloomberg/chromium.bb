@@ -12,6 +12,9 @@
 #include "content/public/browser/tracing_controller.h"
 #include "jni/TracingControllerAndroid_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace content {
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

@@ -11,6 +11,9 @@
 #include "printing/print_settings.h"
 #include "printing/units.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace android_webview {
 
 AwPdfExporter::AwPdfExporter(JNIEnv* env,

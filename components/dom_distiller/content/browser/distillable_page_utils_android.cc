@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/DistillablePageUtils_jni.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 
 namespace dom_distiller {

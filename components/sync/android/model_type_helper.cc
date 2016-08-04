@@ -11,6 +11,9 @@
 #include "components/sync/base/model_type.h"
 #include "jni/ModelTypeHelper_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace syncer {
 
 static ScopedJavaLocalRef<jstring> ModelTypeToNotificationType(

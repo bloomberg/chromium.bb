@@ -8,6 +8,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "jni/AnimationFrameTimeHistogram_jni.h"
 
+using base::android::JavaParamRef;
+
 // static
 void SaveHistogram(JNIEnv* env,
                    const JavaParamRef<jobject>& jcaller,

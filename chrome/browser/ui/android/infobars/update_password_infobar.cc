@@ -13,6 +13,8 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "jni/UpdatePasswordInfoBar_jni.h"
 
+using base::android::JavaParamRef;
+
 UpdatePasswordInfoBar::UpdatePasswordInfoBar(
     std::unique_ptr<UpdatePasswordInfoBarDelegate> delegate)
     : ConfirmInfoBar(std::move(delegate)) {}

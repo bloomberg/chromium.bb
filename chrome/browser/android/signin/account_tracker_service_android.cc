@@ -12,6 +12,8 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "jni/AccountTrackerService_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace signin {
 namespace android {
 

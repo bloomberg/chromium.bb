@@ -21,6 +21,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
 
 namespace {
 // The poll interval in ms when there is no active discovery. This

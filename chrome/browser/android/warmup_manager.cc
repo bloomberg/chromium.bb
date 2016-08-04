@@ -12,6 +12,8 @@
 #include "jni/WarmupManager_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 static void PreconnectUrlAndSubresources(JNIEnv* env,
                                          const JavaParamRef<jclass>& clazz,
                                          const JavaParamRef<jobject>& jprofile,

@@ -10,6 +10,8 @@
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "jni/UmaUtils_jni.h"
 
+using base::android::JavaParamRef;
+
 class PrefService;
 
 namespace chrome {

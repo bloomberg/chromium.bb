@@ -16,6 +16,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::AppendJavaStringArrayToStringVector;
+using base::android::JavaParamRef;
 
 namespace device {
 namespace {

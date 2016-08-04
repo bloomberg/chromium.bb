@@ -8,6 +8,9 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "jni/OmniboxViewUtil_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 // static
 ScopedJavaLocalRef<jstring> SanitizeTextForPaste(
     JNIEnv* env,

@@ -9,6 +9,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "jni/SurfaceTextureListener_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace gl {
 
 SurfaceTextureListener::SurfaceTextureListener(const base::Closure& callback,

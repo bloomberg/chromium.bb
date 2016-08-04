@@ -23,6 +23,8 @@
 #include "jni/LinkerTests_jni.h"
 #include "third_party/re2/src/re2/re2.h"
 
+using base::android::JavaParamRef;
+
 namespace content {
 
 namespace {

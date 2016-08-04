@@ -14,6 +14,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "jni/WebappRegistry_jni.h"
 
+using base::android::JavaParamRef;
+
 void WebappRegistry::UnregisterWebappsForUrls(
     const base::Callback<bool(const GURL&)>& url_filter,
     const base::Closure& callback) {

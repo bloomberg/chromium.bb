@@ -26,6 +26,9 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 // InfoBarService -------------------------------------------------------------
 
 std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(

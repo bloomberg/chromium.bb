@@ -12,6 +12,8 @@
 #include "content/public/common/media_metadata.h"
 #include "jni/MediaMetadata_jni.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace content {
 
 namespace {

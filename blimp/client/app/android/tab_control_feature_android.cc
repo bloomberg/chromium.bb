@@ -9,6 +9,8 @@
 #include "jni/TabControlFeature_jni.h"
 #include "ui/gfx/geometry/size.h"
 
+using base::android::JavaParamRef;
+
 namespace blimp {
 namespace client {
 

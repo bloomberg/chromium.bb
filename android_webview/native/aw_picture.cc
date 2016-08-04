@@ -9,6 +9,8 @@
 #include "jni/AwPicture_jni.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
+using base::android::JavaParamRef;
+
 namespace android_webview {
 
 AwPicture::AwPicture(sk_sp<SkPicture> picture)

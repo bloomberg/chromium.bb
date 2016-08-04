@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "jni/SystemMessageHandler_jni.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 // ----------------------------------------------------------------------------

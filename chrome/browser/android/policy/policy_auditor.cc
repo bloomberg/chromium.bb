@@ -11,6 +11,8 @@
 #include "jni/PolicyAuditor_jni.h"
 #include "net/cert/cert_status_flags.h"
 
+using base::android::JavaParamRef;
+
 int GetCertificateFailure(JNIEnv* env,
                           const JavaParamRef<jclass>& obj,
                           const JavaParamRef<jobject>& java_web_contents) {

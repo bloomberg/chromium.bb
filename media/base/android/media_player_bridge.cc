@@ -20,6 +20,7 @@
 #include "media/base/timestamp_constants.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {

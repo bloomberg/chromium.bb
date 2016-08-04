@@ -24,6 +24,7 @@
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::JavaParamRef;
 using bookmarks::BookmarkNode;
 using bookmarks::BookmarkPermanentNode;
 using content::BrowserThread;

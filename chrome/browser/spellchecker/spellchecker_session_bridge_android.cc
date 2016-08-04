@@ -14,6 +14,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "jni/SpellCheckerSessionBridge_jni.h"
 
+using base::android::JavaParamRef;
+
 SpellCheckerSessionBridge::SpellCheckerSessionBridge(int render_process_id)
     : render_process_id_(render_process_id) {}
 

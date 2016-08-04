@@ -18,6 +18,8 @@
 #include "jni/MojoTestCase_jni.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 
+using base::android::JavaParamRef;
+
 namespace {
 
 struct TestEnvironment {

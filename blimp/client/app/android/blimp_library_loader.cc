@@ -19,6 +19,8 @@
 #include "net/android/net_jni_registrar.h"
 #include "ui/gl/gl_surface.h"
 
+using base::android::JavaParamRef;
+
 namespace {
 
 bool OnLibrariesLoaded(JNIEnv* env, jclass clazz) {

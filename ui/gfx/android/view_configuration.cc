@@ -13,6 +13,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::GetApplicationContext;
+using base::android::JavaParamRef;
 
 namespace gfx {
 

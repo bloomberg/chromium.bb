@@ -12,6 +12,9 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/WebContentsFactory_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 static ScopedJavaLocalRef<jobject> CreateWebContents(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,

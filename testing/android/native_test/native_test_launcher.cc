@@ -29,6 +29,8 @@
 #include "jni/NativeTest_jni.h"
 #include "testing/android/native_test/native_test_util.h"
 
+using base::android::JavaParamRef;
+
 // The main function of the program to be wrapped as a test apk.
 extern int main(int argc, char** argv);
 

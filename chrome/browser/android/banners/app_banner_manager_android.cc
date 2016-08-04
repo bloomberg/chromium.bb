@@ -18,6 +18,8 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerAndroid);
 

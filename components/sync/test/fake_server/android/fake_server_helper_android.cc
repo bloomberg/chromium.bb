@@ -28,6 +28,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 FakeServerHelperAndroid::FakeServerHelperAndroid(JNIEnv* env, jobject obj) {}
 
 FakeServerHelperAndroid::~FakeServerHelperAndroid() {}

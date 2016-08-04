@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/InfoBarContainer_jni.h"
 
+using base::android::JavaParamRef;
 
 // InfoBarContainerAndroid ----------------------------------------------------
 

@@ -17,6 +17,9 @@
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "jni/TranslateInfoBar_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 // ChromeTranslateClient
 // ----------------------------------------------------------
 

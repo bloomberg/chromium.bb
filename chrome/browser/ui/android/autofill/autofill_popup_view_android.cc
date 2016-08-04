@@ -23,6 +23,9 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace autofill {
 
 AutofillPopupViewAndroid::AutofillPopupViewAndroid(

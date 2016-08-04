@@ -37,6 +37,8 @@
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 
+using base::android::JavaParamRef;
+
 namespace chrome {
 namespace android {
 

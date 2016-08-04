@@ -25,6 +25,7 @@
 #include "jni/OverlayPanelContent_jni.h"
 #include "net/url_request/url_fetcher_impl.h"
 
+using base::android::JavaParamRef;
 using content::ContentViewCore;
 
 namespace {

@@ -10,6 +10,8 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/SingleTabModel_jni.h"
 
+using base::android::JavaParamRef;
+
 static void PermanentlyBlockAllNewWindows(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,

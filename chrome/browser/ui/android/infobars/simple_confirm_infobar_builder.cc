@@ -20,6 +20,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/vector_icons_public.h"
 
+using base::android::JavaParamRef;
+
 namespace {
 
 // Delegate for a simple ConfirmInfoBar triggered via JNI.

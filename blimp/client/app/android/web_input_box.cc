@@ -9,6 +9,8 @@
 #include "jni/WebInputBox_jni.h"
 #include "ui/base/ime/text_input_type.h"
 
+using base::android::JavaParamRef;
+
 namespace blimp {
 namespace client {
 

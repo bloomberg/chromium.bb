@@ -30,6 +30,7 @@
 #include "ui/gl/android/surface_texture.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;

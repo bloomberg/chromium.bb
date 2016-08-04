@@ -13,6 +13,8 @@
 #include "jni/TabListSceneLayer_jni.h"
 #include "ui/android/resources/resource_manager_impl.h"
 
+using base::android::JavaParamRef;
+
 namespace chrome {
 namespace android {
 

@@ -45,7 +45,9 @@ using base::FilePath;
 using base::WaitableEvent;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 using net::CookieList;
 

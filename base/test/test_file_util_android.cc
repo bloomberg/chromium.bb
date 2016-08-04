@@ -10,6 +10,8 @@
 #include "base/files/file_path.h"
 #include "jni/ContentUriTestUtils_jni.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace base {
 
 FilePath InsertImageIntoMediaStore(const FilePath& path) {

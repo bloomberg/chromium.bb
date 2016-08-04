@@ -12,6 +12,8 @@
 #include "ui/android/window_android.h"
 #include "url/gurl.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace dom_distiller {
 
 namespace android {

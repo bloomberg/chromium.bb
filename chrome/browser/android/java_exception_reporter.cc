@@ -10,6 +10,8 @@
 #include "base/debug/dump_without_crashing.h"
 #include "jni/JavaExceptionReporter_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace chrome {
 namespace android {
 

@@ -12,6 +12,8 @@
 #include "ui/android/view_android.h"
 #include "url/gurl.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace platform_util {
 
 // TODO: crbug/115682 to track implementation of the following methods.

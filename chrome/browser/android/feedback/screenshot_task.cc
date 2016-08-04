@@ -17,6 +17,7 @@
 #include "ui/snapshot/snapshot.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using ui::WindowAndroid;
 

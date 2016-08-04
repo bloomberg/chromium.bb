@@ -12,6 +12,7 @@
 #include "components/prefs/pref_service.h"
 #include "jni/FontSizePrefs_jni.h"
 
+using base::android::JavaParamRef;
 using base::android::JavaRef;
 
 FontSizePrefsAndroid::FontSizePrefsAndroid(JNIEnv* env, jobject obj)

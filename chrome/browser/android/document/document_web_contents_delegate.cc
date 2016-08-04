@@ -8,6 +8,8 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/DocumentWebContentsDelegate_jni.h"
 
+using base::android::JavaParamRef;
+
 DocumentWebContentsDelegate::DocumentWebContentsDelegate(JNIEnv* env,
                                                          jobject obj)
     : WebContentsDelegateAndroid(env, obj) {

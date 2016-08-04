@@ -27,6 +27,7 @@
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
 
+using base::android::JavaParamRef;
 using content::WebContents;
 
 // This class manages the native behavior of the Contextual Search feature.

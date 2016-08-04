@@ -8,6 +8,9 @@
 #include "jni/GURLUtils_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace net {
 
 ScopedJavaLocalRef<jstring> GetOrigin(JNIEnv* env,

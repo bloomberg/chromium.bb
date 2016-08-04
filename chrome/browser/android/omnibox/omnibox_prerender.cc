@@ -18,6 +18,7 @@
 #include "jni/OmniboxPrerender_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
 using predictors::AutocompleteActionPredictor;
 using predictors::AutocompleteActionPredictorFactory;
 

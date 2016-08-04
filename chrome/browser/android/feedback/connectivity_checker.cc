@@ -23,6 +23,8 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 namespace chrome {
 namespace android {
 

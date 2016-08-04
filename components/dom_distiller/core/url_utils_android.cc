@@ -13,6 +13,9 @@
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace dom_distiller {
 
 namespace url_utils {

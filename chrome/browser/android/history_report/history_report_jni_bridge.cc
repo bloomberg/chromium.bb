@@ -28,6 +28,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "jni/HistoryReportJniBridge_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace history_report {
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

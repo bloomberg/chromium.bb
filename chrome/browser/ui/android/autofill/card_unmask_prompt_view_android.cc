@@ -12,6 +12,9 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace autofill {
 
 CardUnmaskPromptView* CreateCardUnmaskPromptView(

@@ -15,6 +15,9 @@
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 CookiesFetcher::CookiesFetcher(JNIEnv* env, jobject obj, Profile* profile) {
 }
 

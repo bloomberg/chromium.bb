@@ -27,6 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/ForeignSessionHelper_jni.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::AttachCurrentThread;

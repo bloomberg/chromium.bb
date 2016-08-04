@@ -7,6 +7,8 @@
 #include "base/android/context_utils.h"
 #include "jni/BackgroundSyncNetworkObserver_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace content {
 
 // static

@@ -9,6 +9,8 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/SecurityStateModel_jni.h"
 
+using base::android::JavaParamRef;
+
 // static
 bool RegisterSecurityStateModelAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);

@@ -17,6 +17,8 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace ui {
 

@@ -11,6 +11,9 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "jni/OmniboxUrlEmphasizer_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 // static
 ScopedJavaLocalRef<jintArray> ParseForEmphasizeComponents(
     JNIEnv* env,

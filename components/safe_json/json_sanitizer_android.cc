@@ -14,6 +14,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "jni/JsonSanitizer_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace safe_json {
 
 namespace {

@@ -15,6 +15,8 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetApplicationContext;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 // Called by Java when the WebContents instance for a request Id is available.
 void OnWebContentsForRequestAvailable(

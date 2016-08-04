@@ -20,6 +20,7 @@
 #include "ui/gfx/transform_util.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ScopedJavaLocalRef;
 
 namespace device {
 

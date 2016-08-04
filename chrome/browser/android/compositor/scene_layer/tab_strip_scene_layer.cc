@@ -13,6 +13,8 @@
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/gfx/transform.h"
 
+using base::android::JavaParamRef;
+
 namespace chrome {
 namespace android {
 

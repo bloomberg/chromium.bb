@@ -12,6 +12,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "jni/ContextualSearchTabHelper_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 ContextualSearchTabHelper::ContextualSearchTabHelper(JNIEnv* env,
                                                      jobject obj,

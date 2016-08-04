@@ -21,6 +21,9 @@
 #include "printing/units.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace {
 
 // 1 inch in mils.

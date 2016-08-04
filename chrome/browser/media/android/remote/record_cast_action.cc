@@ -12,6 +12,7 @@
 #include "media/base/container_names.h"
 
 using base::UserMetricsAction;
+using base::android::JavaParamRef;
 using content::RecordAction;
 
 namespace {

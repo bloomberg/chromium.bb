@@ -22,6 +22,9 @@
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/c/system/core.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace {
 
 using MojoAsyncWaitID = uintptr_t;

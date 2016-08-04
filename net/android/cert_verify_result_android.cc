@@ -10,6 +10,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::JavaArrayOfByteArrayToStringVector;
+using base::android::ScopedJavaLocalRef;
 
 namespace net {
 namespace android {

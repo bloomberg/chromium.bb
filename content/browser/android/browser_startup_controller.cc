@@ -10,6 +10,8 @@
 
 #include "jni/BrowserStartupController_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace content {
 
 bool BrowserMayStartAsynchronously() {

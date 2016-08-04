@@ -10,6 +10,7 @@
 #include "jni/CombinedPolicyProvider_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 
 namespace {
 

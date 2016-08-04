@@ -24,6 +24,7 @@
 #include "net/base/net_errors.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 
+using base::android::JavaParamRef;
 using content::DevToolsAgentHost;
 using content::RenderViewHost;
 using content::WebContents;

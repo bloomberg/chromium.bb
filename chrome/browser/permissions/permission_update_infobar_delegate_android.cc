@@ -20,6 +20,8 @@
 #include "ui/android/window_android.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::android::JavaParamRef;
+
 // static
 infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
     content::WebContents* web_contents,

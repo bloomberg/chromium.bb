@@ -19,6 +19,7 @@
 #include "jni/PrecacheLauncher_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 using precache::PrecacheManager;
 
 namespace {

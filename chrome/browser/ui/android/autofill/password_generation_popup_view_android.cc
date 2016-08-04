@@ -19,6 +19,9 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/range/range.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace autofill {
 
 PasswordGenerationPopupViewAndroid::PasswordGenerationPopupViewAndroid(

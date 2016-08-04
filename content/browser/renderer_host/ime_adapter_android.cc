@@ -35,6 +35,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::JavaParamRef;
 
 namespace content {
 namespace {

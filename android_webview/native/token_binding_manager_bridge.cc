@@ -15,7 +15,9 @@
 #include "net/base/net_errors.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
 namespace android_webview {

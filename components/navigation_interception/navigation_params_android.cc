@@ -8,6 +8,7 @@
 #include "jni/NavigationParams_jni.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::ScopedJavaLocalRef;
 
 namespace navigation_interception {
 

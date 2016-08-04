@@ -8,6 +8,8 @@
 #include "base/android/jni_android.h"
 #include "jni/TimeZoneMonitor_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace content {
 
 TimeZoneMonitorAndroid::TimeZoneMonitorAndroid() : TimeZoneMonitor() {

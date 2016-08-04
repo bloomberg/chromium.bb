@@ -17,6 +17,9 @@
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/l10n/time_format.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace l10n_util {
 
 jint GetFirstStrongCharacterDirection(JNIEnv* env,

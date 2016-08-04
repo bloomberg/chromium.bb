@@ -6,6 +6,8 @@
 
 #include "jni/AutofillLogger_jni.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace autofill {
 
 void AutofillLoggerAndroid::DidFillOrPreviewField(

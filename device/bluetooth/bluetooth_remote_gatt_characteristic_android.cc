@@ -21,6 +21,7 @@
 #include "jni/ChromeBluetoothRemoteGattCharacteristic_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 
 namespace device {
 

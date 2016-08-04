@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "jni/BlimpClientContextFactory_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace content {
 class BrowserContext;
 }

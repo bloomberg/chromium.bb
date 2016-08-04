@@ -49,6 +49,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using base::android::JavaParamRef;
 using content::DevToolsAgentHost;
 using content::RenderViewHost;
 using content::WebContents;

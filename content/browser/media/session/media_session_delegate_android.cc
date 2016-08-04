@@ -8,6 +8,8 @@
 #include "base/android/jni_android.h"
 #include "jni/MediaSessionDelegate_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace content {
 
 // static

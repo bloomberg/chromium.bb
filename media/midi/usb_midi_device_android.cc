@@ -13,6 +13,9 @@
 #include "jni/UsbMidiDeviceAndroid_jni.h"
 #include "media/midi/usb_midi_descriptor_parser.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace media {
 namespace midi {
 

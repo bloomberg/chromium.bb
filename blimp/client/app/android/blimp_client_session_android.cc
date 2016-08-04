@@ -17,6 +17,8 @@
 #include "jni/BlimpClientSession_jni.h"
 #include "net/base/net_errors.h"
 
+using base::android::JavaParamRef;
+
 namespace blimp {
 namespace client {
 namespace {

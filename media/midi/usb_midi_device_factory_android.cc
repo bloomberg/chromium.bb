@@ -16,6 +16,8 @@
 #include "jni/UsbMidiDeviceFactoryAndroid_jni.h"
 #include "media/midi/usb_midi_device_android.h"
 
+using base::android::JavaParamRef;
+
 namespace media {
 namespace midi {
 

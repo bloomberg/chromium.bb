@@ -12,6 +12,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "jni/ExternalEstimateProviderAndroid_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace chrome {
 namespace android {
 

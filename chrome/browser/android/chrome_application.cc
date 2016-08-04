@@ -25,6 +25,8 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace {
 

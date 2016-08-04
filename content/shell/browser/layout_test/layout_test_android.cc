@@ -18,6 +18,8 @@
 #include "jni/ShellLayoutTestUtils_jni.h"
 #include "url/gurl.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace {
 
 base::FilePath GetTestFilesDirectory(JNIEnv* env) {

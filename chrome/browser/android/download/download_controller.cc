@@ -32,6 +32,7 @@
 #include "ui/base/page_transition_types.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserContext;
 using content::BrowserThread;

@@ -14,6 +14,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {

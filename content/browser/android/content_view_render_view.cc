@@ -24,6 +24,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/size.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace content {

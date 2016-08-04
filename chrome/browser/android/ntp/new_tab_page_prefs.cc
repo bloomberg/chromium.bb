@@ -15,6 +15,7 @@
 #include "jni/NewTabPagePrefs_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jclass>& clazz,

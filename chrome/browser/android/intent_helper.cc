@@ -14,6 +14,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ScopedJavaLocalRef;
 
 namespace chrome {
 namespace android {

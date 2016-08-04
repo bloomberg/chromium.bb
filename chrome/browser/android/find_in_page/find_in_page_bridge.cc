@@ -10,6 +10,8 @@
 #include "jni/FindInPageBridge_jni.h"
 
 using base::android::ConvertUTF16ToJavaString;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 FindInPageBridge::FindInPageBridge(JNIEnv* env,
                                    jobject obj,

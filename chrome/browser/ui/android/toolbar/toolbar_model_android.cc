@@ -18,6 +18,7 @@
 #include "jni/ToolbarModel_jni.h"
 #include "net/cert/x509_certificate.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 ToolbarModelAndroid::ToolbarModelAndroid(JNIEnv* env, jobject jdelegate)

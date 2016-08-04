@@ -26,6 +26,7 @@
 #include "jni/UmaSessionStats_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
 using base::UserMetricsAction;
 
 namespace {

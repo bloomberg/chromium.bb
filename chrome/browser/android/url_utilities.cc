@@ -14,6 +14,8 @@
 #include "url/gurl.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace {
 

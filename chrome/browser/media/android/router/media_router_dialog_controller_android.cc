@@ -22,6 +22,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::MediaRouterDialogControllerAndroid);
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 using content::WebContents;
 
 namespace media_router {

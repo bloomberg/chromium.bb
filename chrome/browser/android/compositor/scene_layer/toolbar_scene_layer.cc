@@ -14,6 +14,8 @@
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/gfx/android/java_bitmap.h"
 
+using base::android::JavaParamRef;
+
 namespace chrome {
 namespace android {
 

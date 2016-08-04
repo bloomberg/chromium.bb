@@ -10,6 +10,8 @@
 #include "jni/X509Util_jni.h"
 #include "net/cert/cert_database.h"
 
+using base::android::JavaParamRef;
+
 namespace net {
 
 void NotifyKeyChainChanged(JNIEnv* env, const JavaParamRef<jclass>& clazz) {

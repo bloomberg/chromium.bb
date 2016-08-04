@@ -21,6 +21,7 @@
 #include "ui/accessibility/ax_text_utils.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace content {

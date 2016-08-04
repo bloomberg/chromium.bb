@@ -14,6 +14,8 @@
 #include "jni/AutoSigninSnackbarController_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::android::ScopedJavaLocalRef;
+
 void ShowAutoSigninPrompt(content::WebContents* web_contents,
                           const base::string16& username) {
   base::string16 message = l10n_util::GetStringFUTF16(

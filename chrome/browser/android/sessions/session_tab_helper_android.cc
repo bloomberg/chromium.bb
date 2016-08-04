@@ -9,6 +9,8 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/SessionTabHelper_jni.h"
 
+using base::android::JavaParamRef;
+
 // static
 jint IdForTab(JNIEnv* env,
               const JavaParamRef<jclass>& clazz,

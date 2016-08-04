@@ -22,6 +22,8 @@
 #include "ui/gfx/color_analysis.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 using content::Manifest;
 
 jlong Initialize(JNIEnv* env,

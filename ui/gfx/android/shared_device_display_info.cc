@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "jni/DeviceDisplayInfo_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace gfx {
 
 // static JNI call

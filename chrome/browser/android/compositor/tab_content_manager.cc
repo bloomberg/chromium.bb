@@ -32,6 +32,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 namespace {
 
 const size_t kMaxReadbacks = 1;

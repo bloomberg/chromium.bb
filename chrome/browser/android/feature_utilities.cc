@@ -6,6 +6,8 @@
 
 #include "jni/FeatureUtilities_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace {
 bool document_mode_enabled = false;
 bool custom_tab_visible = false;

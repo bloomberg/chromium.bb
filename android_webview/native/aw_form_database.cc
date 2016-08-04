@@ -12,6 +12,8 @@
 #include "base/time/time.h"
 #include "jni/AwFormDatabase_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace android_webview {
 
 namespace {

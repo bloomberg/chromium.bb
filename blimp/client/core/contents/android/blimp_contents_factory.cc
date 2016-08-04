@@ -10,6 +10,8 @@
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "jni/BlimpContentsFactory_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace blimp {
 namespace client {
 

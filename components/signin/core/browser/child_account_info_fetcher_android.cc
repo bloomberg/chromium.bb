@@ -10,6 +10,8 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "jni/ChildAccountInfoFetcher_jni.h"
 
+using base::android::JavaParamRef;
+
 // static
 void ChildAccountInfoFetcherAndroid::StartFetchingChildAccountInfo(
     AccountFetcherService* service,

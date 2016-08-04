@@ -11,6 +11,8 @@
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/geometry/size.h"
 
+using base::android::JavaParamRef;
+
 namespace blimp {
 namespace client {
 

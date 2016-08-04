@@ -9,6 +9,8 @@
 #include "media/audio/android/audio_manager_android.h"
 #include "media/base/audio_bus.h"
 
+using base::android::JavaParamRef;
+
 namespace media {
 
 AudioRecordInputStream::AudioRecordInputStream(

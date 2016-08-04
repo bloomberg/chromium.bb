@@ -13,6 +13,9 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "jni/BrowsingDataCounterBridge_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 BrowsingDataCounterBridge::BrowsingDataCounterBridge(
     JNIEnv* env, const JavaParamRef<jobject>& obj, jint data_type)
     : jobject_(obj) {

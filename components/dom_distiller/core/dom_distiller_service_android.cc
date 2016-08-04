@@ -13,6 +13,7 @@
 #include "jni/DomDistillerService_jni.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace dom_distiller {

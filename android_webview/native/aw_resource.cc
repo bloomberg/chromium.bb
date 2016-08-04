@@ -9,6 +9,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "jni/AwResource_jni.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace android_webview {
 namespace AwResource {
 

@@ -8,6 +8,8 @@
 #include "jni/Surface_jni.h"
 #include "ui/gl/android/surface_texture.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace gl {
 
 ScopedJavaSurface::ScopedJavaSurface() {

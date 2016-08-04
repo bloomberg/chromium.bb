@@ -25,6 +25,7 @@
 
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using data_reduction_proxy::DataReductionProxySettings;
 

@@ -10,6 +10,8 @@
 #include "jni/RapporServiceBridge_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 namespace rappor {
 
 void SampleDomainAndRegistryFromURL(JNIEnv* env,

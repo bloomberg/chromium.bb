@@ -19,6 +19,7 @@
 #include "jni/ChromeFeatureList_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
 
 namespace chrome {
 namespace android {

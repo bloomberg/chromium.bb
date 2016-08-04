@@ -16,6 +16,7 @@
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ClearException;
+using base::android::JavaParamRef;
 using device::AndroidLocationApiAdapter;
 
 static void NewLocationAvailable(JNIEnv* env,

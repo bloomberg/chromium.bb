@@ -15,7 +15,9 @@
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 using base::UserMetricsAction;
 using content::RecordAction;
 

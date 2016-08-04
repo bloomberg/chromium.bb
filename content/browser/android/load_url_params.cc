@@ -12,6 +12,8 @@
 #include "jni/LoadUrlParams_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 namespace content {
 
 bool RegisterLoadUrlParams(JNIEnv* env) {

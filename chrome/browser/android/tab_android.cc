@@ -91,6 +91,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
 using content::BrowserThread;
 using content::GlobalRequestID;
 using content::NavigationController;

@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "jni/SavePasswordInfoBar_jni.h"
 
+using base::android::JavaParamRef;
+
 SavePasswordInfoBar::SavePasswordInfoBar(
     std::unique_ptr<SavePasswordInfoBarDelegate> delegate)
     : ConfirmInfoBar(std::move(delegate)) {}

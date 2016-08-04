@@ -9,6 +9,8 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "jni/ChildAccountService_jni.h"
 
+using base::android::JavaParamRef;
+
 jboolean IsChildAccountDetectionEnabled(JNIEnv* env,
                                         const JavaParamRef<jclass>& jcaller) {
   return ChildAccountService::IsChildAccountDetectionEnabled();

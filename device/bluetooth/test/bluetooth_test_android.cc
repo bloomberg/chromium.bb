@@ -21,6 +21,7 @@
 #include "jni/Fakes_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace device {

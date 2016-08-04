@@ -8,6 +8,9 @@
 #include "base/android/jni_string.h"
 #include "jni/PlatformImeControllerAndroid_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace ui {
 
 // static

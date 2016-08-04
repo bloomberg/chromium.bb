@@ -17,6 +17,9 @@
 #include "jni/DomDistillerTabUtils_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace android {
 
 void DistillCurrentPageAndView(JNIEnv* env,

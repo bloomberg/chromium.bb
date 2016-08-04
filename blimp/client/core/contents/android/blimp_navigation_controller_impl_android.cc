@@ -12,6 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "jni/BlimpNavigationControllerImpl_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace blimp {
 namespace client {
 

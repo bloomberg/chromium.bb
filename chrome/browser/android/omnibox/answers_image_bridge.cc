@@ -19,6 +19,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ConvertUTF8ToJavaString;
 

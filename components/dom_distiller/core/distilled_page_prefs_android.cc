@@ -8,6 +8,8 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "jni/DistilledPagePrefs_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace dom_distiller {
 
 namespace android {

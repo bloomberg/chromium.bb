@@ -19,6 +19,7 @@
 #include "net/base/network_change_notifier.h"
 
 using base::android::ConvertJavaStringToUTF16;
+using base::android::JavaParamRef;
 
 namespace prerender {
 

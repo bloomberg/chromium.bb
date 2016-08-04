@@ -11,6 +11,8 @@
 #include "jni/DataReductionPromoInfoBarDelegate_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::android::JavaParamRef;
+
 // static
 void DataReductionPromoInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents) {

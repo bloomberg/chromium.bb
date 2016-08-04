@@ -15,6 +15,8 @@
 #include "content/public/common/resource_request_body.h"
 #include "jni/ResourceRequestBody_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace content {
 
 namespace {

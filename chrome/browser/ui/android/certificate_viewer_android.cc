@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 void ShowCertificateViewer(content::WebContents* web_contents,

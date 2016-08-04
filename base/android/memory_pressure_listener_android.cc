@@ -8,6 +8,8 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "jni/MemoryPressureListener_jni.h"
 
+using base::android::JavaParamRef;
+
 // Defined and called by JNI.
 static void OnMemoryPressure(JNIEnv* env,
                              const JavaParamRef<jclass>& clazz,

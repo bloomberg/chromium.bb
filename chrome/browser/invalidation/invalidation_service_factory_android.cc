@@ -12,6 +12,7 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "jni/InvalidationServiceFactory_jni.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace invalidation {

@@ -6,6 +6,8 @@
 #include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
 #include "jni/AppMenuDragHelper_jni.h"
 
+using base::android::JavaParamRef;
+
 bool RegisterAppMenuDragHelper(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

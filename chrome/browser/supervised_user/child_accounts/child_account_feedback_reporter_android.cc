@@ -12,6 +12,8 @@
 #include "ui/android/window_android.h"
 #include "url/gurl.h"
 
+using base::android::ScopedJavaLocalRef;
+
 void ReportChildAccountFeedback(content::WebContents* web_contents,
                                 const std::string& description,
                                 const GURL& url) {

@@ -11,6 +11,7 @@
 #include "components/dom_distiller/core/dom_distiller_service_android.h"
 #include "jni/DomDistillerServiceFactory_jni.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace dom_distiller {

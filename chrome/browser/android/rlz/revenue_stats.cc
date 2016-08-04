@@ -10,6 +10,8 @@
 #include "jni/RevenueStats_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 namespace chrome {
 namespace android {
 

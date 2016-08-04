@@ -18,6 +18,7 @@
 #include "jni/ContentMain_jni.h"
 
 using base::LazyInstance;
+using base::android::JavaParamRef;
 
 namespace content {
 

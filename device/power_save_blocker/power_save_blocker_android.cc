@@ -15,6 +15,7 @@
 namespace device {
 
 using base::android::AttachCurrentThread;
+using base::android::ScopedJavaLocalRef;
 
 class PowerSaveBlocker::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {

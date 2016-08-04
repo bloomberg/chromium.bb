@@ -18,6 +18,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 
 namespace content {

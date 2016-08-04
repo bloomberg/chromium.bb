@@ -20,6 +20,7 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 
 namespace {

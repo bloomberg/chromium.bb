@@ -9,6 +9,8 @@
 #include "jni/AwGLFunctor_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
 extern "C" {

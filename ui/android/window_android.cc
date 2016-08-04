@@ -17,6 +17,7 @@
 namespace ui {
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 

@@ -46,6 +46,7 @@
 #include "jni/SigninManager_jni.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using base::android::JavaParamRef;
 using bookmarks::BookmarkModel;
 
 namespace {

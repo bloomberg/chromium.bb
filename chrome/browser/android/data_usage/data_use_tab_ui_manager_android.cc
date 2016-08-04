@@ -22,6 +22,9 @@
 #include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace {
 
 // Represents the IDs for string messages used by data use snackbar and

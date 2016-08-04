@@ -15,6 +15,9 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace ui {
 
 namespace {

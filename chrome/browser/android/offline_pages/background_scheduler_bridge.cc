@@ -13,7 +13,9 @@
 #include "components/offline_pages/background/request_coordinator.h"
 #include "jni/BackgroundSchedulerBridge_jni.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace offline_pages {
 namespace android {

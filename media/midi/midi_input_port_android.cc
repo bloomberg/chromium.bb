@@ -8,6 +8,8 @@
 #include "base/time/time.h"
 #include "jni/MidiInputPortAndroid_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace media {
 namespace midi {
 

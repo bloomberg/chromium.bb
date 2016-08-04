@@ -20,6 +20,8 @@
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 using content::StoragePartition;
 using storage::QuotaClient;

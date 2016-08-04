@@ -26,6 +26,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetApplicationContext;
 using base::android::JavaFloatArrayToFloatVector;
+using base::android::JavaParamRef;
 
 namespace content {
 
