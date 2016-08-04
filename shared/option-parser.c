@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "config-parser.h"
 
@@ -40,11 +41,17 @@ handle_option(const struct weston_option *option, char *value)
 
 	switch (option->type) {
 	case WESTON_OPTION_INTEGER:
+		errno = 0;
 		* (int32_t *) option->data = strtol(value, &p, 10);
-		return *value && !*p;
+		if (errno != 0 || p == value || *p != '\0')
+			return 0;
+		return 1;
 	case WESTON_OPTION_UNSIGNED_INTEGER:
+		errno = 0;
 		* (uint32_t *) option->data = strtoul(value, &p, 10);
-		return *value && !*p;
+		if (errno != 0 || p == value || *p != '\0')
+			return 0;
+		return 1;
 	case WESTON_OPTION_STRING:
 		* (char **) option->data = strdup(value);
 		return 1;
