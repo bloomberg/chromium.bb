@@ -84,6 +84,7 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glColorMaskProc>(GetGLProcAddress("glColorMask"));
   fn.glCompileShaderFn = reinterpret_cast<glCompileShaderProc>(
       GetGLProcAddress("glCompileShader"));
+  fn.glCompressedCopyTextureCHROMIUMFn = 0;
   fn.glCompressedTexImage2DFn = reinterpret_cast<glCompressedTexImage2DProc>(
       GetGLProcAddress("glCompressedTexImage2D"));
   fn.glCompressedTexImage3DFn = 0;
@@ -92,11 +93,13 @@ void DriverGL::InitializeStaticBindings() {
           GetGLProcAddress("glCompressedTexSubImage2D"));
   fn.glCompressedTexSubImage3DFn = 0;
   fn.glCopyBufferSubDataFn = 0;
+  fn.glCopySubTextureCHROMIUMFn = 0;
   fn.glCopyTexImage2DFn = reinterpret_cast<glCopyTexImage2DProc>(
       GetGLProcAddress("glCopyTexImage2D"));
   fn.glCopyTexSubImage2DFn = reinterpret_cast<glCopyTexSubImage2DProc>(
       GetGLProcAddress("glCopyTexSubImage2D"));
   fn.glCopyTexSubImage3DFn = 0;
+  fn.glCopyTextureCHROMIUMFn = 0;
   fn.glCoverageModulationNVFn = 0;
   fn.glCoverFillPathInstancedNVFn = 0;
   fn.glCoverFillPathNVFn = 0;
@@ -521,6 +524,14 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   ext.b_GL_CHROMIUM_bind_uniform_location =
       extensions.find("GL_CHROMIUM_bind_uniform_location ") !=
       std::string::npos;
+  ext.b_GL_CHROMIUM_compressed_copy_texture =
+      extensions.find("GL_CHROMIUM_compressed_copy_texture ") !=
+      std::string::npos;
+  ext.b_GL_CHROMIUM_copy_compressed_texture =
+      extensions.find("GL_CHROMIUM_copy_compressed_texture ") !=
+      std::string::npos;
+  ext.b_GL_CHROMIUM_copy_texture =
+      extensions.find("GL_CHROMIUM_copy_texture ") != std::string::npos;
   ext.b_GL_CHROMIUM_gles_depth_binding_hack =
       extensions.find("GL_CHROMIUM_gles_depth_binding_hack ") !=
       std::string::npos;
@@ -803,6 +814,14 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         GetGLProcAddress("glClientWaitSync"));
   }
 
+  debug_fn.glCompressedCopyTextureCHROMIUMFn = 0;
+  if (ext.b_GL_CHROMIUM_copy_compressed_texture ||
+      ext.b_GL_CHROMIUM_compressed_copy_texture) {
+    fn.glCompressedCopyTextureCHROMIUMFn =
+        reinterpret_cast<glCompressedCopyTextureCHROMIUMProc>(
+            GetGLProcAddress("glCompressedCopyTextureCHROMIUM"));
+  }
+
   debug_fn.glCompressedTexImage3DFn = 0;
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
     fn.glCompressedTexImage3DFn = reinterpret_cast<glCompressedTexImage3DProc>(
@@ -822,10 +841,23 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         GetGLProcAddress("glCopyBufferSubData"));
   }
 
+  debug_fn.glCopySubTextureCHROMIUMFn = 0;
+  if (ext.b_GL_CHROMIUM_copy_texture) {
+    fn.glCopySubTextureCHROMIUMFn =
+        reinterpret_cast<glCopySubTextureCHROMIUMProc>(
+            GetGLProcAddress("glCopySubTextureCHROMIUM"));
+  }
+
   debug_fn.glCopyTexSubImage3DFn = 0;
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
     fn.glCopyTexSubImage3DFn = reinterpret_cast<glCopyTexSubImage3DProc>(
         GetGLProcAddress("glCopyTexSubImage3D"));
+  }
+
+  debug_fn.glCopyTextureCHROMIUMFn = 0;
+  if (ext.b_GL_CHROMIUM_copy_texture) {
+    fn.glCopyTextureCHROMIUMFn = reinterpret_cast<glCopyTextureCHROMIUMProc>(
+        GetGLProcAddress("glCopyTextureCHROMIUM"));
   }
 
   debug_fn.glCoverageModulationNVFn = 0;
@@ -2534,6 +2566,14 @@ static void GL_BINDING_CALL Debug_glCompileShader(GLuint shader) {
   g_driver_gl.debug_fn.glCompileShaderFn(shader);
 }
 
+static void GL_BINDING_CALL
+Debug_glCompressedCopyTextureCHROMIUM(GLuint sourceId, GLuint destId) {
+  GL_SERVICE_LOG("glCompressedCopyTextureCHROMIUM"
+                 << "(" << sourceId << ", " << destId << ")");
+  DCHECK(g_driver_gl.debug_fn.glCompressedCopyTextureCHROMIUMFn != nullptr);
+  g_driver_gl.debug_fn.glCompressedCopyTextureCHROMIUMFn(sourceId, destId);
+}
+
 static void GL_BINDING_CALL Debug_glCompressedTexImage2D(GLenum target,
                                                          GLint level,
                                                          GLenum internalformat,
@@ -2629,6 +2669,31 @@ static void GL_BINDING_CALL Debug_glCopyBufferSubData(GLenum readTarget,
                                              readOffset, writeOffset, size);
 }
 
+static void GL_BINDING_CALL
+Debug_glCopySubTextureCHROMIUM(GLuint sourceId,
+                               GLuint destId,
+                               GLint xoffset,
+                               GLint yoffset,
+                               GLint x,
+                               GLint y,
+                               GLsizei width,
+                               GLsizei height,
+                               GLboolean unpackFlipY,
+                               GLboolean unpackPremultiplyAlpha,
+                               GLboolean unpackUnmultiplyAlpha) {
+  GL_SERVICE_LOG("glCopySubTextureCHROMIUM"
+                 << "(" << sourceId << ", " << destId << ", " << xoffset << ", "
+                 << yoffset << ", " << x << ", " << y << ", " << width << ", "
+                 << height << ", " << GLEnums::GetStringBool(unpackFlipY)
+                 << ", " << GLEnums::GetStringBool(unpackPremultiplyAlpha)
+                 << ", " << GLEnums::GetStringBool(unpackUnmultiplyAlpha)
+                 << ")");
+  DCHECK(g_driver_gl.debug_fn.glCopySubTextureCHROMIUMFn != nullptr);
+  g_driver_gl.debug_fn.glCopySubTextureCHROMIUMFn(
+      sourceId, destId, xoffset, yoffset, x, y, width, height, unpackFlipY,
+      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+}
+
 static void GL_BINDING_CALL Debug_glCopyTexImage2D(GLenum target,
                                                    GLint level,
                                                    GLenum internalformat,
@@ -2681,6 +2746,26 @@ static void GL_BINDING_CALL Debug_glCopyTexSubImage3D(GLenum target,
   DCHECK(g_driver_gl.debug_fn.glCopyTexSubImage3DFn != nullptr);
   g_driver_gl.debug_fn.glCopyTexSubImage3DFn(target, level, xoffset, yoffset,
                                              zoffset, x, y, width, height);
+}
+
+static void GL_BINDING_CALL
+Debug_glCopyTextureCHROMIUM(GLuint sourceId,
+                            GLuint destId,
+                            GLint internalFormat,
+                            GLenum destType,
+                            GLboolean unpackFlipY,
+                            GLboolean unpackPremultiplyAlpha,
+                            GLboolean unpackUnmultiplyAlpha) {
+  GL_SERVICE_LOG("glCopyTextureCHROMIUM"
+                 << "(" << sourceId << ", " << destId << ", " << internalFormat
+                 << ", " << GLEnums::GetStringEnum(destType) << ", "
+                 << GLEnums::GetStringBool(unpackFlipY) << ", "
+                 << GLEnums::GetStringBool(unpackPremultiplyAlpha) << ", "
+                 << GLEnums::GetStringBool(unpackUnmultiplyAlpha) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCopyTextureCHROMIUMFn != nullptr);
+  g_driver_gl.debug_fn.glCopyTextureCHROMIUMFn(
+      sourceId, destId, internalFormat, destType, unpackFlipY,
+      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
 static void GL_BINDING_CALL Debug_glCoverageModulationNV(GLenum components) {
@@ -5749,6 +5834,12 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glCompileShaderFn = fn.glCompileShaderFn;
     fn.glCompileShaderFn = Debug_glCompileShader;
   }
+  if (!debug_fn.glCompressedCopyTextureCHROMIUMFn) {
+    debug_fn.glCompressedCopyTextureCHROMIUMFn =
+        fn.glCompressedCopyTextureCHROMIUMFn;
+    fn.glCompressedCopyTextureCHROMIUMFn =
+        Debug_glCompressedCopyTextureCHROMIUM;
+  }
   if (!debug_fn.glCompressedTexImage2DFn) {
     debug_fn.glCompressedTexImage2DFn = fn.glCompressedTexImage2DFn;
     fn.glCompressedTexImage2DFn = Debug_glCompressedTexImage2D;
@@ -5769,6 +5860,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glCopyBufferSubDataFn = fn.glCopyBufferSubDataFn;
     fn.glCopyBufferSubDataFn = Debug_glCopyBufferSubData;
   }
+  if (!debug_fn.glCopySubTextureCHROMIUMFn) {
+    debug_fn.glCopySubTextureCHROMIUMFn = fn.glCopySubTextureCHROMIUMFn;
+    fn.glCopySubTextureCHROMIUMFn = Debug_glCopySubTextureCHROMIUM;
+  }
   if (!debug_fn.glCopyTexImage2DFn) {
     debug_fn.glCopyTexImage2DFn = fn.glCopyTexImage2DFn;
     fn.glCopyTexImage2DFn = Debug_glCopyTexImage2D;
@@ -5780,6 +5875,10 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glCopyTexSubImage3DFn) {
     debug_fn.glCopyTexSubImage3DFn = fn.glCopyTexSubImage3DFn;
     fn.glCopyTexSubImage3DFn = Debug_glCopyTexSubImage3D;
+  }
+  if (!debug_fn.glCopyTextureCHROMIUMFn) {
+    debug_fn.glCopyTextureCHROMIUMFn = fn.glCopyTextureCHROMIUMFn;
+    fn.glCopyTextureCHROMIUMFn = Debug_glCopyTextureCHROMIUM;
   }
   if (!debug_fn.glCoverageModulationNVFn) {
     debug_fn.glCoverageModulationNVFn = fn.glCoverageModulationNVFn;
@@ -7133,6 +7232,11 @@ void GLApiBase::glCompileShaderFn(GLuint shader) {
   driver_->fn.glCompileShaderFn(shader);
 }
 
+void GLApiBase::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
+                                                  GLuint destId) {
+  driver_->fn.glCompressedCopyTextureCHROMIUMFn(sourceId, destId);
+}
+
 void GLApiBase::glCompressedTexImage2DFn(GLenum target,
                                          GLint level,
                                          GLenum internalformat,
@@ -7196,6 +7300,22 @@ void GLApiBase::glCopyBufferSubDataFn(GLenum readTarget,
                                     writeOffset, size);
 }
 
+void GLApiBase::glCopySubTextureCHROMIUMFn(GLuint sourceId,
+                                           GLuint destId,
+                                           GLint xoffset,
+                                           GLint yoffset,
+                                           GLint x,
+                                           GLint y,
+                                           GLsizei width,
+                                           GLsizei height,
+                                           GLboolean unpackFlipY,
+                                           GLboolean unpackPremultiplyAlpha,
+                                           GLboolean unpackUnmultiplyAlpha) {
+  driver_->fn.glCopySubTextureCHROMIUMFn(
+      sourceId, destId, xoffset, yoffset, x, y, width, height, unpackFlipY,
+      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+}
+
 void GLApiBase::glCopyTexImage2DFn(GLenum target,
                                    GLint level,
                                    GLenum internalformat,
@@ -7231,6 +7351,18 @@ void GLApiBase::glCopyTexSubImage3DFn(GLenum target,
                                       GLsizei height) {
   driver_->fn.glCopyTexSubImage3DFn(target, level, xoffset, yoffset, zoffset, x,
                                     y, width, height);
+}
+
+void GLApiBase::glCopyTextureCHROMIUMFn(GLuint sourceId,
+                                        GLuint destId,
+                                        GLint internalFormat,
+                                        GLenum destType,
+                                        GLboolean unpackFlipY,
+                                        GLboolean unpackPremultiplyAlpha,
+                                        GLboolean unpackUnmultiplyAlpha) {
+  driver_->fn.glCopyTextureCHROMIUMFn(
+      sourceId, destId, internalFormat, destType, unpackFlipY,
+      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
 void GLApiBase::glCoverageModulationNVFn(GLenum components) {
@@ -9075,6 +9207,13 @@ void TraceGLApi::glCompileShaderFn(GLuint shader) {
   gl_api_->glCompileShaderFn(shader);
 }
 
+void TraceGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
+                                                   GLuint destId) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glCompressedCopyTextureCHROMIUM")
+  gl_api_->glCompressedCopyTextureCHROMIUMFn(sourceId, destId);
+}
+
 void TraceGLApi::glCompressedTexImage2DFn(GLenum target,
                                           GLint level,
                                           GLenum internalformat,
@@ -9143,6 +9282,23 @@ void TraceGLApi::glCopyBufferSubDataFn(GLenum readTarget,
                                  writeOffset, size);
 }
 
+void TraceGLApi::glCopySubTextureCHROMIUMFn(GLuint sourceId,
+                                            GLuint destId,
+                                            GLint xoffset,
+                                            GLint yoffset,
+                                            GLint x,
+                                            GLint y,
+                                            GLsizei width,
+                                            GLsizei height,
+                                            GLboolean unpackFlipY,
+                                            GLboolean unpackPremultiplyAlpha,
+                                            GLboolean unpackUnmultiplyAlpha) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCopySubTextureCHROMIUM")
+  gl_api_->glCopySubTextureCHROMIUMFn(
+      sourceId, destId, xoffset, yoffset, x, y, width, height, unpackFlipY,
+      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+}
+
 void TraceGLApi::glCopyTexImage2DFn(GLenum target,
                                     GLint level,
                                     GLenum internalformat,
@@ -9181,6 +9337,19 @@ void TraceGLApi::glCopyTexSubImage3DFn(GLenum target,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCopyTexSubImage3D")
   gl_api_->glCopyTexSubImage3DFn(target, level, xoffset, yoffset, zoffset, x, y,
                                  width, height);
+}
+
+void TraceGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
+                                         GLuint destId,
+                                         GLint internalFormat,
+                                         GLenum destType,
+                                         GLboolean unpackFlipY,
+                                         GLboolean unpackPremultiplyAlpha,
+                                         GLboolean unpackUnmultiplyAlpha) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCopyTextureCHROMIUM")
+  gl_api_->glCopyTextureCHROMIUMFn(sourceId, destId, internalFormat, destType,
+                                   unpackFlipY, unpackPremultiplyAlpha,
+                                   unpackUnmultiplyAlpha);
 }
 
 void TraceGLApi::glCoverageModulationNVFn(GLenum components) {
@@ -11352,6 +11521,14 @@ void NoContextGLApi::glCompileShaderFn(GLuint shader) {
   LOG(ERROR) << "Trying to call glCompileShader() without current GL context";
 }
 
+void NoContextGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
+                                                       GLuint destId) {
+  NOTREACHED() << "Trying to call glCompressedCopyTextureCHROMIUM() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glCompressedCopyTextureCHROMIUM() without "
+                "current GL context";
+}
+
 void NoContextGLApi::glCompressedTexImage2DFn(GLenum target,
                                               GLint level,
                                               GLenum internalformat,
@@ -11424,6 +11601,24 @@ void NoContextGLApi::glCopyBufferSubDataFn(GLenum readTarget,
       << "Trying to call glCopyBufferSubData() without current GL context";
 }
 
+void NoContextGLApi::glCopySubTextureCHROMIUMFn(
+    GLuint sourceId,
+    GLuint destId,
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean unpackFlipY,
+    GLboolean unpackPremultiplyAlpha,
+    GLboolean unpackUnmultiplyAlpha) {
+  NOTREACHED()
+      << "Trying to call glCopySubTextureCHROMIUM() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glCopySubTextureCHROMIUM() without current GL context";
+}
+
 void NoContextGLApi::glCopyTexImage2DFn(GLenum target,
                                         GLint level,
                                         GLenum internalformat,
@@ -11464,6 +11659,19 @@ void NoContextGLApi::glCopyTexSubImage3DFn(GLenum target,
       << "Trying to call glCopyTexSubImage3D() without current GL context";
   LOG(ERROR)
       << "Trying to call glCopyTexSubImage3D() without current GL context";
+}
+
+void NoContextGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
+                                             GLuint destId,
+                                             GLint internalFormat,
+                                             GLenum destType,
+                                             GLboolean unpackFlipY,
+                                             GLboolean unpackPremultiplyAlpha,
+                                             GLboolean unpackUnmultiplyAlpha) {
+  NOTREACHED()
+      << "Trying to call glCopyTextureCHROMIUM() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glCopyTextureCHROMIUM() without current GL context";
 }
 
 void NoContextGLApi::glCoverageModulationNVFn(GLenum components) {

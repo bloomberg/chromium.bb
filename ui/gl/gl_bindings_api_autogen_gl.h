@@ -126,6 +126,7 @@ void glColorMaskFn(GLboolean red,
                    GLboolean blue,
                    GLboolean alpha) override;
 void glCompileShaderFn(GLuint shader) override;
+void glCompressedCopyTextureCHROMIUMFn(GLuint sourceId, GLuint destId) override;
 void glCompressedTexImage2DFn(GLenum target,
                               GLint level,
                               GLenum internalformat,
@@ -168,6 +169,17 @@ void glCopyBufferSubDataFn(GLenum readTarget,
                            GLintptr readOffset,
                            GLintptr writeOffset,
                            GLsizeiptr size) override;
+void glCopySubTextureCHROMIUMFn(GLuint sourceId,
+                                GLuint destId,
+                                GLint xoffset,
+                                GLint yoffset,
+                                GLint x,
+                                GLint y,
+                                GLsizei width,
+                                GLsizei height,
+                                GLboolean unpackFlipY,
+                                GLboolean unpackPremultiplyAlpha,
+                                GLboolean unpackUnmultiplyAlpha) override;
 void glCopyTexImage2DFn(GLenum target,
                         GLint level,
                         GLenum internalformat,
@@ -193,6 +205,13 @@ void glCopyTexSubImage3DFn(GLenum target,
                            GLint y,
                            GLsizei width,
                            GLsizei height) override;
+void glCopyTextureCHROMIUMFn(GLuint sourceId,
+                             GLuint destId,
+                             GLint internalFormat,
+                             GLenum destType,
+                             GLboolean unpackFlipY,
+                             GLboolean unpackPremultiplyAlpha,
+                             GLboolean unpackUnmultiplyAlpha) override;
 void glCoverageModulationNVFn(GLenum components) override;
 void glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                   GLenum pathNameType,

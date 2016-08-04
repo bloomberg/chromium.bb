@@ -114,6 +114,8 @@ MOCK_METHOD4(
     ColorMask,
     void(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha));
 MOCK_METHOD1(CompileShader, void(GLuint shader));
+MOCK_METHOD2(CompressedCopyTextureCHROMIUM,
+             void(GLuint sourceId, GLuint destId));
 MOCK_METHOD8(CompressedTexImage2D,
              void(GLenum target,
                   GLint level,
@@ -151,6 +153,8 @@ MOCK_METHOD5(CopyBufferSubData,
                   GLintptr readOffset,
                   GLintptr writeOffset,
                   GLsizeiptr size));
+// TODO(zmo): crbug.com/456340
+// glCopySubTextureCHROMIUM cannot be mocked because it has 11 args.
 MOCK_METHOD8(CopyTexImage2D,
              void(GLenum target,
                   GLint level,
@@ -179,6 +183,14 @@ MOCK_METHOD9(CopyTexSubImage3D,
                   GLint y,
                   GLsizei width,
                   GLsizei height));
+MOCK_METHOD7(CopyTextureCHROMIUM,
+             void(GLuint sourceId,
+                  GLuint destId,
+                  GLint internalFormat,
+                  GLenum destType,
+                  GLboolean unpackFlipY,
+                  GLboolean unpackPremultiplyAlpha,
+                  GLboolean unpackUnmultiplyAlpha));
 MOCK_METHOD1(CoverageModulationNV, void(GLenum components));
 MOCK_METHOD7(CoverFillPathInstancedNV,
              void(GLsizei numPaths,

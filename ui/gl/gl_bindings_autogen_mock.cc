@@ -441,6 +441,13 @@ void GL_BINDING_CALL MockGLInterface::Mock_glCompileShader(GLuint shader) {
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glCompressedCopyTextureCHROMIUM(GLuint sourceId,
+                                                      GLuint destId) {
+  MakeFunctionUnique("glCompressedCopyTextureCHROMIUM");
+  interface_->CompressedCopyTextureCHROMIUM(sourceId, destId);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glCompressedTexImage2D(GLenum target,
                                              GLint level,
                                              GLenum internalformat,
@@ -513,6 +520,24 @@ MockGLInterface::Mock_glCopyBufferSubData(GLenum readTarget,
                                 writeOffset, size);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glCopySubTextureCHROMIUM(
+    GLuint sourceId,
+    GLuint destId,
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean unpackFlipY,
+    GLboolean unpackPremultiplyAlpha,
+    GLboolean unpackUnmultiplyAlpha) {
+  MakeFunctionUnique("glCopySubTextureCHROMIUM");
+  interface_->CopySubTextureCHROMIUM(
+      sourceId, destId, xoffset, yoffset, x, y, width, height, unpackFlipY,
+      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+}
+
 void GL_BINDING_CALL
 MockGLInterface::Mock_glCopyTexImage2D(GLenum target,
                                        GLint level,
@@ -552,6 +577,20 @@ void GL_BINDING_CALL MockGLInterface::Mock_glCopyTexSubImage3D(GLenum target,
   MakeFunctionUnique("glCopyTexSubImage3D");
   interface_->CopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y,
                                 width, height);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glCopyTextureCHROMIUM(GLuint sourceId,
+                                            GLuint destId,
+                                            GLint internalFormat,
+                                            GLenum destType,
+                                            GLboolean unpackFlipY,
+                                            GLboolean unpackPremultiplyAlpha,
+                                            GLboolean unpackUnmultiplyAlpha) {
+  MakeFunctionUnique("glCopyTextureCHROMIUM");
+  interface_->CopyTextureCHROMIUM(sourceId, destId, internalFormat, destType,
+                                  unpackFlipY, unpackPremultiplyAlpha,
+                                  unpackUnmultiplyAlpha);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glCoverFillPathInstancedNV(
@@ -3083,6 +3122,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glColorMask);
   if (strcmp(name, "glCompileShader") == 0)
     return reinterpret_cast<void*>(Mock_glCompileShader);
+  if (strcmp(name, "glCompressedCopyTextureCHROMIUM") == 0)
+    return reinterpret_cast<void*>(Mock_glCompressedCopyTextureCHROMIUM);
   if (strcmp(name, "glCompressedTexImage2D") == 0)
     return reinterpret_cast<void*>(Mock_glCompressedTexImage2D);
   if (strcmp(name, "glCompressedTexImage3D") == 0)
@@ -3093,12 +3134,16 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glCompressedTexSubImage3D);
   if (strcmp(name, "glCopyBufferSubData") == 0)
     return reinterpret_cast<void*>(Mock_glCopyBufferSubData);
+  if (strcmp(name, "glCopySubTextureCHROMIUM") == 0)
+    return reinterpret_cast<void*>(Mock_glCopySubTextureCHROMIUM);
   if (strcmp(name, "glCopyTexImage2D") == 0)
     return reinterpret_cast<void*>(Mock_glCopyTexImage2D);
   if (strcmp(name, "glCopyTexSubImage2D") == 0)
     return reinterpret_cast<void*>(Mock_glCopyTexSubImage2D);
   if (strcmp(name, "glCopyTexSubImage3D") == 0)
     return reinterpret_cast<void*>(Mock_glCopyTexSubImage3D);
+  if (strcmp(name, "glCopyTextureCHROMIUM") == 0)
+    return reinterpret_cast<void*>(Mock_glCopyTextureCHROMIUM);
   if (strcmp(name, "glCoverFillPathInstancedNV") == 0)
     return reinterpret_cast<void*>(Mock_glCoverFillPathInstancedNV);
   if (strcmp(name, "glCoverFillPathNV") == 0)

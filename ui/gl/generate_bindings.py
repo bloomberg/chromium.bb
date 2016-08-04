@@ -229,6 +229,10 @@ GL_FUNCTIONS = [
   'names': ['glCompileShader'],
   'arguments': 'GLuint shader', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glCompressedCopyTextureCHROMIUM',
+                 'extensions': ['GL_CHROMIUM_copy_compressed_texture'], }],
+  'arguments': 'GLuint sourceId, GLuint destId', },
+{ 'return_type': 'void',
   'names': ['glCompressedTexImage2D'],
   'arguments':
       'GLenum target, GLint level, GLenum internalformat, GLsizei width, '
@@ -257,6 +261,14 @@ GL_FUNCTIONS = [
       'GLenum readTarget, GLenum writeTarget, GLintptr readOffset, '
       'GLintptr writeOffset, GLsizeiptr size', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glCopySubTextureCHROMIUM',
+                 'extensions': ['GL_CHROMIUM_copy_texture'], }],
+  'arguments':
+      'GLuint sourceId, GLuint destId, GLint xoffset, GLint yoffset, '
+      'GLint x, GLint y, GLsizei width, GLsizei height, '
+      'GLboolean unpackFlipY, GLboolean unpackPremultiplyAlpha, '
+      'GLboolean unpackUnmultiplyAlpha', },
+{ 'return_type': 'void',
   'names': ['glCopyTexImage2D'],
   'arguments':
       'GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, '
@@ -271,6 +283,13 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
       'GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glCopyTextureCHROMIUM',
+                 'extensions': ['GL_CHROMIUM_copy_texture'], }],
+  'arguments':
+      'GLuint sourceId, GLuint destId, GLint internalFormat, '
+      'GLenum destType, GLboolean unpackFlipY, '
+      'GLboolean unpackPremultiplyAlpha, GLboolean unpackUnmultiplyAlpha', },
 { 'return_type': 'void',
   'names': ['glCoverageModulationNV'],
   'arguments': 'GLenum components'},

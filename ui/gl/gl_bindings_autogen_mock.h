@@ -169,6 +169,8 @@ static void GL_BINDING_CALL Mock_glColorMask(GLboolean red,
                                              GLboolean blue,
                                              GLboolean alpha);
 static void GL_BINDING_CALL Mock_glCompileShader(GLuint shader);
+static void GL_BINDING_CALL
+Mock_glCompressedCopyTextureCHROMIUM(GLuint sourceId, GLuint destId);
 static void GL_BINDING_CALL Mock_glCompressedTexImage2D(GLenum target,
                                                         GLint level,
                                                         GLenum internalformat,
@@ -211,6 +213,18 @@ static void GL_BINDING_CALL Mock_glCopyBufferSubData(GLenum readTarget,
                                                      GLintptr readOffset,
                                                      GLintptr writeOffset,
                                                      GLsizeiptr size);
+static void GL_BINDING_CALL
+Mock_glCopySubTextureCHROMIUM(GLuint sourceId,
+                              GLuint destId,
+                              GLint xoffset,
+                              GLint yoffset,
+                              GLint x,
+                              GLint y,
+                              GLsizei width,
+                              GLsizei height,
+                              GLboolean unpackFlipY,
+                              GLboolean unpackPremultiplyAlpha,
+                              GLboolean unpackUnmultiplyAlpha);
 static void GL_BINDING_CALL Mock_glCopyTexImage2D(GLenum target,
                                                   GLint level,
                                                   GLenum internalformat,
@@ -236,6 +250,14 @@ static void GL_BINDING_CALL Mock_glCopyTexSubImage3D(GLenum target,
                                                      GLint y,
                                                      GLsizei width,
                                                      GLsizei height);
+static void GL_BINDING_CALL
+Mock_glCopyTextureCHROMIUM(GLuint sourceId,
+                           GLuint destId,
+                           GLint internalFormat,
+                           GLenum destType,
+                           GLboolean unpackFlipY,
+                           GLboolean unpackPremultiplyAlpha,
+                           GLboolean unpackUnmultiplyAlpha);
 static void GL_BINDING_CALL
 Mock_glCoverFillPathInstancedNV(GLsizei numPaths,
                                 GLenum pathNameType,

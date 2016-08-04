@@ -43,6 +43,20 @@ class MockGLInterface {
     NOTREACHED();
   }
 
+  void CopySubTextureCHROMIUM(GLuint /*sourceId*/,
+                              GLuint /*destId*/,
+                              GLint /*xoffset*/,
+                              GLint /*yoffset*/,
+                              GLint /*x*/,
+                              GLint /*y*/,
+                              GLsizei /*width*/,
+                              GLsizei /*height*/,
+                              GLboolean /*unpackFlipY*/,
+                              GLboolean /*unpackPremultiplyAlpha*/,
+                              GLboolean /*unpackUnmultiplyAlpha*/) {
+    NOTREACHED();
+  }
+
   void TexSubImage3D(
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
       GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,

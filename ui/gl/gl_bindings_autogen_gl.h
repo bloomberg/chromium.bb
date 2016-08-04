@@ -143,6 +143,9 @@ typedef void(GL_BINDING_CALL* glColorMaskProc)(GLboolean red,
                                                GLboolean blue,
                                                GLboolean alpha);
 typedef void(GL_BINDING_CALL* glCompileShaderProc)(GLuint shader);
+typedef void(GL_BINDING_CALL* glCompressedCopyTextureCHROMIUMProc)(
+    GLuint sourceId,
+    GLuint destId);
 typedef void(GL_BINDING_CALL* glCompressedTexImage2DProc)(GLenum target,
                                                           GLint level,
                                                           GLenum internalformat,
@@ -185,6 +188,18 @@ typedef void(GL_BINDING_CALL* glCopyBufferSubDataProc)(GLenum readTarget,
                                                        GLintptr readOffset,
                                                        GLintptr writeOffset,
                                                        GLsizeiptr size);
+typedef void(GL_BINDING_CALL* glCopySubTextureCHROMIUMProc)(
+    GLuint sourceId,
+    GLuint destId,
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean unpackFlipY,
+    GLboolean unpackPremultiplyAlpha,
+    GLboolean unpackUnmultiplyAlpha);
 typedef void(GL_BINDING_CALL* glCopyTexImage2DProc)(GLenum target,
                                                     GLint level,
                                                     GLenum internalformat,
@@ -210,6 +225,14 @@ typedef void(GL_BINDING_CALL* glCopyTexSubImage3DProc)(GLenum target,
                                                        GLint y,
                                                        GLsizei width,
                                                        GLsizei height);
+typedef void(GL_BINDING_CALL* glCopyTextureCHROMIUMProc)(
+    GLuint sourceId,
+    GLuint destId,
+    GLint internalFormat,
+    GLenum destType,
+    GLboolean unpackFlipY,
+    GLboolean unpackPremultiplyAlpha,
+    GLboolean unpackUnmultiplyAlpha);
 typedef void(GL_BINDING_CALL* glCoverageModulationNVProc)(GLenum components);
 typedef void(GL_BINDING_CALL* glCoverFillPathInstancedNVProc)(
     GLsizei numPaths,
@@ -1064,6 +1087,9 @@ struct ExtensionsGL {
   bool b_GL_ARB_transform_feedback2;
   bool b_GL_ARB_vertex_array_object;
   bool b_GL_CHROMIUM_bind_uniform_location;
+  bool b_GL_CHROMIUM_compressed_copy_texture;
+  bool b_GL_CHROMIUM_copy_compressed_texture;
+  bool b_GL_CHROMIUM_copy_texture;
   bool b_GL_CHROMIUM_gles_depth_binding_hack;
   bool b_GL_CHROMIUM_glgetstringi_hack;
   bool b_GL_EXT_blend_func_extended;
@@ -1144,14 +1170,17 @@ struct ProcsGL {
   glClientWaitSyncProc glClientWaitSyncFn;
   glColorMaskProc glColorMaskFn;
   glCompileShaderProc glCompileShaderFn;
+  glCompressedCopyTextureCHROMIUMProc glCompressedCopyTextureCHROMIUMFn;
   glCompressedTexImage2DProc glCompressedTexImage2DFn;
   glCompressedTexImage3DProc glCompressedTexImage3DFn;
   glCompressedTexSubImage2DProc glCompressedTexSubImage2DFn;
   glCompressedTexSubImage3DProc glCompressedTexSubImage3DFn;
   glCopyBufferSubDataProc glCopyBufferSubDataFn;
+  glCopySubTextureCHROMIUMProc glCopySubTextureCHROMIUMFn;
   glCopyTexImage2DProc glCopyTexImage2DFn;
   glCopyTexSubImage2DProc glCopyTexSubImage2DFn;
   glCopyTexSubImage3DProc glCopyTexSubImage3DFn;
+  glCopyTextureCHROMIUMProc glCopyTextureCHROMIUMFn;
   glCoverageModulationNVProc glCoverageModulationNVFn;
   glCoverFillPathInstancedNVProc glCoverFillPathInstancedNVFn;
   glCoverFillPathNVProc glCoverFillPathNVFn;
@@ -1552,6 +1581,8 @@ class GL_EXPORT GLApi {
                              GLboolean blue,
                              GLboolean alpha) = 0;
   virtual void glCompileShaderFn(GLuint shader) = 0;
+  virtual void glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
+                                                 GLuint destId) = 0;
   virtual void glCompressedTexImage2DFn(GLenum target,
                                         GLint level,
                                         GLenum internalformat,
@@ -1594,6 +1625,17 @@ class GL_EXPORT GLApi {
                                      GLintptr readOffset,
                                      GLintptr writeOffset,
                                      GLsizeiptr size) = 0;
+  virtual void glCopySubTextureCHROMIUMFn(GLuint sourceId,
+                                          GLuint destId,
+                                          GLint xoffset,
+                                          GLint yoffset,
+                                          GLint x,
+                                          GLint y,
+                                          GLsizei width,
+                                          GLsizei height,
+                                          GLboolean unpackFlipY,
+                                          GLboolean unpackPremultiplyAlpha,
+                                          GLboolean unpackUnmultiplyAlpha) = 0;
   virtual void glCopyTexImage2DFn(GLenum target,
                                   GLint level,
                                   GLenum internalformat,
@@ -1619,6 +1661,13 @@ class GL_EXPORT GLApi {
                                      GLint y,
                                      GLsizei width,
                                      GLsizei height) = 0;
+  virtual void glCopyTextureCHROMIUMFn(GLuint sourceId,
+                                       GLuint destId,
+                                       GLint internalFormat,
+                                       GLenum destType,
+                                       GLboolean unpackFlipY,
+                                       GLboolean unpackPremultiplyAlpha,
+                                       GLboolean unpackUnmultiplyAlpha) = 0;
   virtual void glCoverageModulationNVFn(GLenum components) = 0;
   virtual void glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                             GLenum pathNameType,
@@ -2394,6 +2443,8 @@ class GL_EXPORT GLApi {
 #define glClientWaitSync ::gl::g_current_gl_context->glClientWaitSyncFn
 #define glColorMask ::gl::g_current_gl_context->glColorMaskFn
 #define glCompileShader ::gl::g_current_gl_context->glCompileShaderFn
+#define glCompressedCopyTextureCHROMIUM \
+  ::gl::g_current_gl_context->glCompressedCopyTextureCHROMIUMFn
 #define glCompressedTexImage2D \
   ::gl::g_current_gl_context->glCompressedTexImage2DFn
 #define glCompressedTexImage3D \
@@ -2403,9 +2454,13 @@ class GL_EXPORT GLApi {
 #define glCompressedTexSubImage3D \
   ::gl::g_current_gl_context->glCompressedTexSubImage3DFn
 #define glCopyBufferSubData ::gl::g_current_gl_context->glCopyBufferSubDataFn
+#define glCopySubTextureCHROMIUM \
+  ::gl::g_current_gl_context->glCopySubTextureCHROMIUMFn
 #define glCopyTexImage2D ::gl::g_current_gl_context->glCopyTexImage2DFn
 #define glCopyTexSubImage2D ::gl::g_current_gl_context->glCopyTexSubImage2DFn
 #define glCopyTexSubImage3D ::gl::g_current_gl_context->glCopyTexSubImage3DFn
+#define glCopyTextureCHROMIUM \
+  ::gl::g_current_gl_context->glCopyTextureCHROMIUMFn
 #define glCoverageModulationNV \
   ::gl::g_current_gl_context->glCoverageModulationNVFn
 #define glCoverFillPathInstancedNV \
