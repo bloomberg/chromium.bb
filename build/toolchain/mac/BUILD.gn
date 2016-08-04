@@ -70,8 +70,6 @@ template("mac_toolchain") {
     assert(defined(invoker.toolchain_os),
            "mac_toolchain() must specify a \"toolchain_os\"")
 
-    # concurrent_links is picked up from the declare_arg().
-
     if (use_goma) {
       assert(cc_wrapper == "", "Goma and cc_wrapper can't be used together.")
       _compiler_prefix = "$goma_dir/gomacc "
@@ -197,6 +195,7 @@ template("mac_toolchain") {
     tool("solink") {
       dylib = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.dylib"
       rspfile = dylib + ".rsp"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       # These variables are not built into GN but are helpers that implement
       # (1) linking to produce a .dylib, (2) extracting the symbols from that
@@ -260,6 +259,7 @@ template("mac_toolchain") {
     tool("solink_module") {
       sofile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.so"
       rspfile = sofile + ".rsp"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       link_command = "$linker_driver $ld -bundle {{ldflags}} -o \"$sofile\" -Wl,-filelist,\"$rspfile\""
       if (is_component_build) {
@@ -294,6 +294,7 @@ template("mac_toolchain") {
     tool("link") {
       outfile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       # Note about --filelist: Apple's linker reads the file list file and
       # interprets each newline-separated chunk of text as a file name. It

@@ -9,7 +9,6 @@ import("//build/config/v8_target_cpu.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
-import("//build/toolchain/concurrent_links.gni")
 
 # This template defines a toolchain for something that works like gcc
 # (including clang).
@@ -113,8 +112,6 @@ template("gcc_toolchain") {
            "gcc_toolchain() must specify a \"toolchain_cpu\"")
     assert(defined(invoker.toolchain_os),
            "gcc_toolchain() must specify a \"toolchain_os\"")
-
-    # concurrent_links is picked up from the declare_arg().
 
     if (defined(invoker.cc_wrapper)) {
       cc_wrapper = invoker.cc_wrapper
@@ -279,6 +276,7 @@ template("gcc_toolchain") {
       soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
       sofile = "{{output_dir}}/$soname"  # Possibly including toolchain dir.
       rspfile = sofile + ".rsp"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       if (defined(invoker.strip)) {
         unstripped_sofile = "{{root_out_dir}}/lib.unstripped/$soname"
@@ -345,6 +343,7 @@ template("gcc_toolchain") {
       soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
       sofile = "{{output_dir}}/$soname"
       rspfile = sofile + ".rsp"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       if (defined(invoker.strip)) {
         unstripped_sofile = "{{root_out_dir}}/lib.unstripped/$soname"
@@ -391,6 +390,7 @@ template("gcc_toolchain") {
       outfile = "{{output_dir}}/$exename"
       rspfile = "$outfile.rsp"
       unstripped_outfile = outfile
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       # Use this for {{output_extension}} expansions unless a target manually
       # overrides it (in which case {{output_extension}} will be what the target

@@ -8,7 +8,6 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/win/visual_studio_version.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
-import("//build/toolchain/concurrent_links.gni")
 
 # Should only be running on Windows.
 assert(is_win)
@@ -49,11 +48,6 @@ if (current_toolchain == default_toolchain) {
 #  toolchain_os: current_os to pass as a build arg
 #  environment: File name of environment file.
 template("msvc_toolchain") {
-  if (defined(invoker.concurrent_links)) {
-    # concurrent_links is picked up from the declare_arg() otherwise.
-    concurrent_links = invoker.concurrent_links
-  }
-
   env = invoker.environment
 
   if (invoker.is_clang && host_os != "win") {
@@ -182,6 +176,7 @@ template("msvc_toolchain") {
       libname = "${dllname}.lib"  # e.g. foo.dll.lib
       pdbname = "${dllname}.pdb"
       rspfile = "${dllname}.rsp"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
 
@@ -214,6 +209,7 @@ template("msvc_toolchain") {
       dllname = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
       pdbname = "${dllname}.pdb"
       rspfile = "${dllname}.rsp"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
 
@@ -237,6 +233,7 @@ template("msvc_toolchain") {
       exename = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       pdbname = "$exename.pdb"
       rspfile = "$exename.rsp"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
 
@@ -353,7 +350,6 @@ x64_toolchain_data = exec_script("setup_toolchain.py",
 template("win_x64_toolchains") {
   # TODO(mcgrathr): These assignments are only required because of
   # crbug.com/395883.  Drop them if that ever gets fixed in GN.
-  concurrent_links = invoker.concurrent_links
   goma_prefix = invoker.goma_prefix
   x64_toolchain_data = invoker.x64_toolchain_data
   clang_cl = invoker.clang_cl
@@ -391,7 +387,6 @@ template("win_x64_toolchains") {
 win_x64_toolchains("x64") {
   # TODO(mcgrathr): These assignments are only required because of
   # crbug.com/395883.  Drop them if that ever gets fixed in GN.
-  concurrent_links = concurrent_links
   goma_prefix = goma_prefix
   x64_toolchain_data = x64_toolchain_data
 }
@@ -406,7 +401,6 @@ win_x64_toolchains("nacl_win64") {
 
   # TODO(mcgrathr): These assignments are only required because of
   # crbug.com/395883.  Drop them if that ever gets fixed in GN.
-  concurrent_links = concurrent_links
   goma_prefix = goma_prefix
   x64_toolchain_data = x64_toolchain_data
   clang_cl = clang_cl
