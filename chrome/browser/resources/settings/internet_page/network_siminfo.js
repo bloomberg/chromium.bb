@@ -137,7 +137,7 @@ Polymer({
     this.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
-        this.$.enterPin.$.input.select();
+        this.$.enterPin.inputElement.select();
       } else {
         this.error = ErrorType.NONE;
         this.$.enterPinDialog.close();
@@ -182,7 +182,7 @@ Polymer({
     this.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
-        this.$.changePinOld.$.input.select();
+        this.$.changePinOld.inputElement.select();
       } else {
         this.error = ErrorType.NONE;
         this.$.changePinDialog.close();
@@ -217,7 +217,7 @@ Polymer({
     this.networkingPrivate.unlockCellularSim(guid, pin, '', function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
-        this.$.unlockPin.$.input.select();
+        this.$.unlockPin.inputElement.select();
       } else {
         this.error = ErrorType.NONE;
         this.$.unlockPinDialog.close();
@@ -258,7 +258,7 @@ Polymer({
     this.networkingPrivate.unlockCellularSim(guid, pin, puk, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PUK;
-        this.$.unlockPuk.$.input.select();
+        this.$.unlockPuk.inputElement.select();
       } else {
         this.error = ErrorType.NONE;
         this.$.unlockPukDialog.close();
