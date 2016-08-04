@@ -60,6 +60,14 @@ def StartVirtualX(slave_build_name, build_dir, with_wm=True, server_dir=None):
       print 'xdisplaycheck says there is a display still running, exiting...'
       raise Exception('Display already present.')
 
+  xvfb_lock_filename = '/tmp/.X%s-lock' % _XvfbDisplayIndex(slave_build_name)
+  if os.path.exists(xvfb_lock_filename):
+    print 'Removing stale xvfb lock file %r' % xvfb_lock_filename
+    try:
+      os.unlink(xvfb_lock_filename)
+    except OSError as e:
+      print 'Removing xvfb lock file failed: %s' % e
+
   # Figure out which X server to try.
   cmd = 'Xvfb'
   if server_dir and os.path.exists(server_dir):
