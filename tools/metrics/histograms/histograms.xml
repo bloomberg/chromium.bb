@@ -30451,6 +30451,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.RejectHasProof" enum="Boolean">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    True if the QUIC REJ message received from the server contains a proof.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.RejectLength">
   <owner>rch@chromium.org</owner>
   <summary>
