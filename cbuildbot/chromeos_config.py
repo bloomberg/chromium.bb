@@ -1254,7 +1254,7 @@ def GetConfig():
       'arm-generic_freon',
       'arm-generic',
       'daisy',
-      'veyron_minnie',
+      'veyron_jerry',
       'x86-generic',
       'amd64-generic',
   ])

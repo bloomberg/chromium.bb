@@ -23580,12 +23580,12 @@
     },
     "veyron_jerry-chromium-pfq": {
         "_template": "chromium-pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_jerry"
         ],
         "description": "Preflight Chromium Uprev & Build (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "important": false,
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
@@ -24393,12 +24393,12 @@
     },
     "veyron_minnie-chromium-pfq": {
         "_template": "chromium-pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_minnie"
         ],
         "description": "Preflight Chromium Uprev & Build (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
