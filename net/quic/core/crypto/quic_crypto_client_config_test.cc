@@ -217,22 +217,6 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
   EXPECT_EQ("12345678", scid);
 }
 
-TEST(QuicCryptoClientConfigTest, InchoateChloSecureNoEcdsa) {
-  QuicCryptoClientConfig::CachedState state;
-  QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());
-  config.DisableEcdsa();
-  QuicCryptoNegotiatedParameters params;
-  CryptoHandshakeMessage msg;
-  QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  MockRandom rand;
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
-                                 /* demand_x509_proof= */ true, &params, &msg);
-
-  QuicTag pdmd;
-  EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kPDMD, &pdmd));
-  EXPECT_EQ(kX59R, pdmd);
-}
-
 TEST(QuicCryptoClientConfigTest, FillClientHello) {
   QuicCryptoClientConfig::CachedState state;
   QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());

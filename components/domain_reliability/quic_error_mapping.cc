@@ -236,6 +236,10 @@ const struct QuicErrorMapping {
   // Stream frame overlaps with buffered data.
   { net::QUIC_OVERLAPPING_STREAM_DATA,
     "quic.overlapping_stream_data" },
+  // Stream frames arrived too discontiguously so that stream sequencer buffer
+  // has too many gaps.
+  { net::QUIC_TOO_MANY_FRAME_GAPS,
+    "quic.too_many_frame_gaps" },
 
   // No error. Used as bound while iterating.
   { net::QUIC_LAST_ERROR, "quic.last_error"}
