@@ -27,7 +27,7 @@ body { overflow:hidden; }
 <body>
 
 <script>
-description("This tests the correct placement of inline spelling "
+description("This tests the correct placement of inline spelling and grammar "
     + "markers in text. Spelling markers should line up exactly under misspelled "
     + "words in all cases.");
 
@@ -68,15 +68,22 @@ function verifyMarkers()
     if (!window.internals)
         return done();
 
+    // Take care of spelling markers first.
     shouldBecomeEqual('internals.hasSpellingMarker(document, 8, 4)', 'true', function() { // Verifies 'adlj'.
         shouldBecomeEqual('internals.hasSpellingMarker(document, 13, 6)', 'true', function() { // Verifies 'adaasj'.
-            shouldBecomeEqual('internals.hasSpellingMarker(document, 20, 5)', 'true', function() { // Verifies 'sdklj'.
+            shouldBecomeEqual('internals.hasSpellingMarker(document, 20, 5)', 'true', verifyGrammarMarkers) // Verifies 'sdklj'.
+        })
+    });
+
+    function verifyGrammarMarkers() {
+        shouldBecomeEqual('internals.hasGrammarMarker(document, 4, 3)', 'true', function() { // Verifies second 'the'.
+            shouldBecomeEqual('internals.hasGrammarMarker(document, 33, 5)', 'true', function() { // Verifies second 'there'.
                 // Markers of next element can not be found after modification selection without blur event.
                 div.blur();
                 done();
             })
-        })
-    });
+        });
+    }
 }
 
 var tests = [ function() { moveCursorOverAllWords('testLTR'); },

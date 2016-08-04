@@ -147,6 +147,41 @@ void SpellCheckerClientImpl::requestCheckingOfString(TextCheckingRequest* reques
     m_webView->spellCheckClient()->requestCheckingOfText(text, markers, markerOffsets, new WebTextCheckingCompletionImpl(request));
 }
 
+void SpellCheckerClientImpl::checkGrammarOfString(const String& text, WTF::Vector<GrammarDetail>& details, int* badGrammarLocation, int* badGrammarLength)
+{
+    if (badGrammarLocation)
+        *badGrammarLocation = -1;
+    if (badGrammarLength)
+        *badGrammarLength = 0;
+
+    if (!m_webView->spellCheckClient())
+        return;
+    WebVector<WebTextCheckingResult> webResults;
+    m_webView->spellCheckClient()->checkTextOfParagraph(text, WebTextCheckingTypeGrammar, &webResults);
+    if (!webResults.size())
+        return;
+
+    // Convert a list of WebTextCheckingResults to a list of GrammarDetails. If
+    // the converted vector of GrammarDetails has grammar errors, we set
+    // badGrammarLocation and badGrammarLength to tell WebKit that the input
+    // text has grammar errors.
+    for (size_t i = 0; i < webResults.size(); ++i) {
+        if (webResults[i].decoration == WebTextDecorationTypeGrammar) {
+            GrammarDetail detail;
+            detail.location = webResults[i].location;
+            detail.length = webResults[i].length;
+            detail.userDescription = webResults[i].replacement;
+            details.append(detail);
+        }
+    }
+    if (!details.size())
+        return;
+    if (badGrammarLocation)
+        *badGrammarLocation = 0;
+    if (badGrammarLength)
+        *badGrammarLength = text.length();
+}
+
 void SpellCheckerClientImpl::updateSpellingUIWithMisspelledWord(const String& misspelledWord)
 {
     if (m_webView->spellCheckClient())

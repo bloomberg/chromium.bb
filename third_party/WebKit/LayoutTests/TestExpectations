@@ -1370,7 +1370,7 @@ crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/data-s
 
 crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
 
-# crbug.com/627798 editing/spelling/inline-spelling-markers-hidpi-composited.html [ Pass Failure ]
+crbug.com/627798 editing/spelling/inline-spelling-markers-hidpi-composited.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/line-flow-with-floats-9.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/nested-fixed-iframe-scrolled.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/repaint-during-scroll-with-zoom.html [ Pass Failure ]
@@ -1400,8 +1400,6 @@ crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-eleme
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-element-scrollTo.html [ Pass Failure ]
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-scroll.html [ Pass Failure ]
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/overflow-scroll-scroll.html [ Pass Failure ]
-
-crbug.com/619452 editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
 
 crbug.com/630870 svg/animations/use-animate-width-and-height.html [ Skip ]
 # Flaky on Win7 dbg and Mac10.11 (retina)

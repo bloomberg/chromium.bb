@@ -14,7 +14,7 @@
 <body>
 <div id="container"></div>
 <script>
-description("Tests spelling markers for misspellings.");
+description("Tests spelling and grammar markers for misspellings.");
 
 jsTestIsAsync = true;
 
@@ -38,11 +38,14 @@ function typeText(elem, text) {
 
 var container = document.getElementById('container');
 
+var elementWithGrammarIssue = createEditableElement(container);
+typeText(elementWithGrammarIssue, 'I have a issue.');
+
 var elementWithSpellingIssue  = createEditableElement(container);
 typeText(elementWithSpellingIssue, 'zz.');
 
-var elementAlsoWithSpellingIssue = createEditableElement(container);
-typeText(elementAlsoWithSpellingIssue, 'orange,zz,apple.');
+var elementWithGrammarAndSpellingIssue = createEditableElement(container);
+typeText(elementWithGrammarAndSpellingIssue, 'orange,zz,apple.');
 
 var element;
 var next;
@@ -65,12 +68,15 @@ function verifyMarkers(e, misspellings) {
 }
 
 var misspellings = [
+    { marker:'grammar', issue:'a' },
     { marker:'spelling', issue:'zz' },
+    { marker:'grammar', issue:'orange,zz,apple.' }
 ];
 
 var tests = [
-    function() { verifyMarkers(elementWithSpellingIssue, misspellings.slice(0, 1)) },
-    function() { verifyMarkers(elementAlsoWithSpellingIssue, misspellings.slice(0, 1)) },
+    function() { verifyMarkers(elementWithGrammarIssue, misspellings.slice(0, 1)) },
+    function() { verifyMarkers(elementWithSpellingIssue, misspellings.slice(1, 2)) },
+    function() { verifyMarkers(elementWithGrammarAndSpellingIssue, misspellings.slice(1, 3)) },
 ];
 
 function done()

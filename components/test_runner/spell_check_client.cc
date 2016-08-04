@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "components/test_runner/mock_grammar_check.h"
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
@@ -65,6 +66,8 @@ void SpellCheckClient::checkTextOfParagraph(
       offset += misspelled_position + misspelled_length;
     }
   }
+  if (mask & blink::WebTextCheckingTypeGrammar)
+    MockGrammarCheck::CheckGrammarOfString(text, &results);
   web_results->assign(results);
 }
 
@@ -119,6 +122,8 @@ void SpellCheckClient::FinishLastTextCheck() {
       text = text.substr(misspelled_position + misspelled_length);
       offset += misspelled_position + misspelled_length;
     }
+    MockGrammarCheck::CheckGrammarOfString(last_requested_text_check_string_,
+                                           &results);
   }
   last_requested_text_checking_completion_->didFinishCheckingText(results);
   last_requested_text_checking_completion_ = 0;

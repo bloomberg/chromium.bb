@@ -283,6 +283,7 @@ public:
     ~EmptyTextCheckerClient() { }
 
     void checkSpellingOfString(const String&, int*, int*) override {}
+    void checkGrammarOfString(const String&, Vector<GrammarDetail>&, int*, int*) override {}
     void requestCheckingOfString(TextCheckingRequest*) override;
 };
 
