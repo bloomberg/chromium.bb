@@ -138,13 +138,14 @@ class PageCyclerTypical25(_PageCycler):
   options = {'pageset_repeat': 3}
 
   @classmethod
-  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
-    if (possible_browser.browser_type == 'reference' and
-        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'):
-      return True
-    # http://crbug.com/616781
+  def ShouldDisable(cls, possible_browser):
+    if possible_browser.browser_type == 'reference':
+      if possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X':
+        return True  # http://crbug.com/597656
+      if possible_browser.platform.GetOSVersionName() == 'yosemite':
+        return True  # http://crbug.com/634337
     if possible_browser.platform.GetDeviceTypeName() == 'AOSP on BullHead':
-      return True
+      return True  # http://crbug.com/616781
     return False
 
   @classmethod
