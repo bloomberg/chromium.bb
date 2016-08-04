@@ -292,8 +292,11 @@ class GitWrapper(SCMWrapper):
     """
 
   def diff(self, options, _args, _file_list):
-    merge_base = self._Capture(['merge-base', 'HEAD', self.remote])
-    self._Run(['diff', merge_base], options)
+    try:
+      merge_base = [self._Capture(['merge-base', 'HEAD', self.remote])]
+    except subprocess2.CalledProcessError:
+      merge_base = []
+    self._Run(['diff'] + merge_base, options)
 
   def pack(self, _options, _args, _file_list):
     """Generates a patch file which can be applied to the root of the
@@ -302,9 +305,12 @@ class GitWrapper(SCMWrapper):
     The patch file is generated from a diff of the merge base of HEAD and
     its upstream branch.
     """
-    merge_base = self._Capture(['merge-base', 'HEAD', self.remote])
+    try:
+      merge_base = [self._Capture(['merge-base', 'HEAD', self.remote])]
+    except subprocess2.CalledProcessError:
+      merge_base = []
     gclient_utils.CheckCallAndFilter(
-        ['git', 'diff', merge_base],
+        ['git', 'diff'] + merge_base,
         cwd=self.checkout_path,
         filter_fn=GitDiffFilterer(self.relpath, print_func=self.Print).Filter)
 
@@ -785,11 +791,14 @@ class GitWrapper(SCMWrapper):
       self.Print('________ couldn\'t run status in %s:\n'
                  'The directory does not exist.' % self.checkout_path)
     else:
-      merge_base = self._Capture(['merge-base', 'HEAD', self.remote])
-      self._Run(['diff', '--name-status', merge_base], options,
+      try:
+        merge_base = [self._Capture(['merge-base', 'HEAD', self.remote])]
+      except subprocess2.CalledProcessError:
+        merge_base = []
+      self._Run(['diff', '--name-status'] + merge_base, options,
                 stdout=self.out_fh)
       if file_list is not None:
-        files = self._Capture(['diff', '--name-only', merge_base]).split()
+        files = self._Capture(['diff', '--name-only'] + merge_base).split()
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def GetUsableRev(self, rev, options):
