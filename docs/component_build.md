@@ -5,16 +5,20 @@
 Release builds are “static” builds which compile to one executable and
 zero-to-two shared libraries (depending on the platform). This is efficient at
 runtime, but can take a long time to link because so much code goes into a
-single binary. When you set the GN build variable
+single binary.
+
+In a component build, many smaller shared libraries will be generated. This
+speeds up link times, and means that many changes only require that the local
+shared library be linked rather than the full executable, but at the expense of
+program load-time performance.
+
+The component build is currently the default for debug non-iOS builds (it
+doesn’t work for iOS). You can force it on for release builds using the
+[GN build arg](https://www.chromium.org/developers/gn-build-configuration):
 
 ```python
 is_component_build = true
 ```
-
-the build will generate many smaller shared libraries. This speeds up link
-times, and means that many changes only require that the local shared library
-be linked rather than the full executable, but at the expense of program
-load-time performance.
 
 ### How to make a component
 
