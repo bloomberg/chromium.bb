@@ -169,6 +169,9 @@ views::Link* ChooserContentView::CreateExtraView() {
   discovery_state_ = new views::Link(chooser_controller_->GetStatus());
   discovery_state_->SetHandlesTooltips(false);
   discovery_state_->SetUnderline(false);
+  discovery_state_->SetMultiLine(true);
+  discovery_state_->SizeToFit(kChooserWidth / 2);
+  discovery_state_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   discovery_state_->set_listener(this);
   return discovery_state_;
 }

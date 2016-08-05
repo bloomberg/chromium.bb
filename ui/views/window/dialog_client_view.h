@@ -87,6 +87,12 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Update |button|'s text and enabled state according to the delegate's state.
   void UpdateButton(LabelButton* button, ui::DialogButton type);
 
+  // Returns the height of the buttons.
+  int GetButtonHeight() const;
+
+  // Returns the height of the extra view.
+  int GetExtraViewHeight() const;
+
   // Returns the height of the row containing the buttons and the extra view.
   int GetButtonsAndExtraViewRowHeight() const;
 

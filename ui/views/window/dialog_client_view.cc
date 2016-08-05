@@ -11,6 +11,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/blue_button.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/layout_constants.h"
@@ -38,14 +39,19 @@ bool ShouldShow(View* view) {
 }
 
 // Do the layout for a button.
-void LayoutButton(LabelButton* button, gfx::Rect* row_bounds) {
+void LayoutButton(LabelButton* button,
+                  gfx::Rect* row_bounds,
+                  int button_height) {
   if (!button)
     return;
 
   const gfx::Size size = button->GetPreferredSize();
   row_bounds->set_width(row_bounds->width() - size.width());
-  button->SetBounds(row_bounds->right(), row_bounds->y(),
-                    size.width(), row_bounds->height());
+  DCHECK_LE(button_height, row_bounds->height());
+  button->SetBounds(
+      row_bounds->right(),
+      row_bounds->y() + (row_bounds->height() - button_height) / 2,
+      size.width(), button_height);
   row_bounds->set_width(row_bounds->width() - kRelatedButtonHSpacing);
 }
 
@@ -180,12 +186,17 @@ void DialogClientView::Layout() {
     const int height = GetButtonsAndExtraViewRowHeight();
     gfx::Rect row_bounds(bounds.x(), bounds.bottom() - height,
                          bounds.width(), height);
+    // If the |extra_view_| is a also button, then the |button_height| is the
+    // maximum height of the three buttons, otherwise it is the maximum height
+    // of the ok and cancel buttons.
+    const int button_height =
+        CustomButton::AsCustomButton(extra_view_) ? height : GetButtonHeight();
     if (kIsOkButtonOnLeftSide) {
-      LayoutButton(cancel_button_, &row_bounds);
-      LayoutButton(ok_button_, &row_bounds);
+      LayoutButton(cancel_button_, &row_bounds, button_height);
+      LayoutButton(ok_button_, &row_bounds, button_height);
     } else {
-      LayoutButton(ok_button_, &row_bounds);
-      LayoutButton(cancel_button_, &row_bounds);
+      LayoutButton(ok_button_, &row_bounds, button_height);
+      LayoutButton(cancel_button_, &row_bounds, button_height);
     }
     if (extra_view_) {
       int custom_padding = 0;
@@ -316,13 +327,18 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   return button;
 }
 
-int DialogClientView::GetButtonsAndExtraViewRowHeight() const {
-  int extra_view_height = ShouldShow(extra_view_) ?
-      extra_view_->GetPreferredSize().height() : 0;
-  int buttons_height = std::max(
+int DialogClientView::GetButtonHeight() const {
+  return std::max(
       ok_button_ ? ok_button_->GetPreferredSize().height() : 0,
       cancel_button_ ? cancel_button_->GetPreferredSize().height() : 0);
-  return std::max(extra_view_height, buttons_height);
+}
+
+int DialogClientView::GetExtraViewHeight() const {
+  return ShouldShow(extra_view_) ? extra_view_->GetPreferredSize().height() : 0;
+}
+
+int DialogClientView::GetButtonsAndExtraViewRowHeight() const {
+  return std::max(GetExtraViewHeight(), GetButtonHeight());
 }
 
 gfx::Insets DialogClientView::GetButtonRowInsets() const {
