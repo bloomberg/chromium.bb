@@ -437,7 +437,8 @@ def UpdateClang(args):
 
   Checkout('LLVM', LLVM_REPO_URL + '/llvm/trunk', LLVM_DIR)
   Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
-  Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
+  if sys.platform == 'win32' or use_head_revision:
+    Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
   Checkout('compiler-rt', LLVM_REPO_URL + '/compiler-rt/trunk', COMPILER_RT_DIR)
   if sys.platform == 'darwin':
     # clang needs a libc++ checkout, else -stdlib=libc++ won't find includes
@@ -528,34 +529,40 @@ def UpdateClang(args):
 
   # Build LLVM gold plugin with LTO. That speeds up the linker by ~10%.
   # We only use LTO for Linux now.
-  if args.bootstrap and args.lto:
+  if args.bootstrap and args.lto_gold_plugin:
     print 'Building LTO LLVM Gold plugin'
     if os.path.exists(LLVM_LTO_GOLD_PLUGIN_DIR):
       RmTree(LLVM_LTO_GOLD_PLUGIN_DIR)
     EnsureDirExists(LLVM_LTO_GOLD_PLUGIN_DIR)
     os.chdir(LLVM_LTO_GOLD_PLUGIN_DIR)
 
+    # Create a symlink to LLVMgold.so build in the previous step so that ar
+    # and ranlib could find it while linking LLVMgold.so with LTO.
+    EnsureDirExists(BFD_PLUGINS_DIR)
+    RunCommand(['ln', '-sf',
+                os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'lib', 'LLVMgold.so'),
+                os.path.join(BFD_PLUGINS_DIR, 'LLVMgold.so')])
+
     lto_cflags = ['-flto']
-    lto_cxxflags = ['-flto']
-    lto_ldflags = ['-fuse-ld=lld']
+    lto_ldflags = ['-fuse-ld=gold']
     if args.gcc_toolchain:
       # Tell the bootstrap compiler to use a specific gcc prefix to search
       # for standard library headers and shared object files.
       lto_cflags += ['--gcc-toolchain=' + args.gcc_toolchain]
-      lto_cxxflags += ['--gcc-toolchain=' + args.gcc_toolchain]
     lto_cmake_args = base_cmake_args + [
         '-DLLVM_BINUTILS_INCDIR=' + binutils_incdir,
         '-DCMAKE_C_COMPILER=' + cc,
         '-DCMAKE_CXX_COMPILER=' + cxx,
         '-DCMAKE_C_FLAGS=' + ' '.join(lto_cflags),
-        '-DCMAKE_CXX_FLAGS=' + ' '.join(lto_cxxflags),
+        '-DCMAKE_CXX_FLAGS=' + ' '.join(lto_cflags),
         '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(lto_ldflags),
         '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(lto_ldflags),
         '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(lto_ldflags)]
 
-    # We need to use the proper binutils which support LTO.
+    # We need to use the proper binutils which support LLVM Gold plugin.
     lto_env = os.environ.copy()
     lto_env['PATH'] = BINUTILS_BIN_DIR + os.pathsep + lto_env.get('PATH', '')
+
     RmCmakeCache('.')
     RunCommand(['cmake'] + lto_cmake_args + [LLVM_DIR], env=lto_env)
     RunCommand(['ninja', 'LLVMgold'], env=lto_env)
@@ -590,27 +597,10 @@ def UpdateClang(args):
 
   CreateChromeToolsShim()
 
-  llvm_build_cflags = cflags
-  llvm_build_cxxflags = cxxflags
-  llvm_build_ldflags = ldflags
-  llvm_build_env = None
-  if sys.platform != 'win32':
-    # On Windows, the line below might add some Unicode entries
-    # and that will fail if passed into popen. See
-    # http://stackoverflow.com/questions/12253014/why-does-popen-fail-on-windows-if-the-env-parameter-contains-a-unicode-object
-    # Since we don't need to add anything into environment on Windows,
-    # just workaround this, until we moved into Python 3, where it's
-    # supposedly fixed.
-    llvm_build_env = os.environ.copy()
+  deployment_env = None
   if deployment_target:
-    llvm_build_env['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
-  if args.lto:
-    # Put proper binutils for building with LTO
-    llvm_build_env['PATH'] = (BINUTILS_BIN_DIR + os.pathsep +
-                              llvm_build_env.get('PATH', ''))
-    llvm_build_cflags += ['-flto']
-    llvm_build_cxxflags += ['-flto']
-    llvm_build_ldflags += ['-fuse-ld=lld']
+    deployment_env = os.environ.copy()
+    deployment_env['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
 
   cmake_args = []
   # TODO(thakis): Unconditionally append this to base_cmake_args instead once
@@ -620,11 +610,11 @@ def UpdateClang(args):
   if cxx is not None: cc_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
   cmake_args += base_cmake_args + [
       '-DLLVM_BINUTILS_INCDIR=' + binutils_incdir,
-      '-DCMAKE_C_FLAGS=' + ' '.join(llvm_build_cflags),
-      '-DCMAKE_CXX_FLAGS=' + ' '.join(llvm_build_cxxflags),
-      '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(llvm_build_ldflags),
-      '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(llvm_build_ldflags),
-      '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(llvm_build_ldflags),
+      '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
+      '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+      '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
+      '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(ldflags),
+      '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(ldflags),
       '-DCMAKE_INSTALL_PREFIX=' + LLVM_BUILD_DIR,
       # TODO(thakis): Remove this once official builds pass -Wl,--build-id
       # explicitly, https://crbug.com/622775
@@ -636,7 +626,7 @@ def UpdateClang(args):
   os.chdir(LLVM_BUILD_DIR)
   RmCmakeCache('.')
   RunCommand(['cmake'] + cmake_args + [LLVM_DIR],
-             msvc_arch='x64', env=llvm_build_env)
+             msvc_arch='x64', env=deployment_env)
 
   if args.gcc_toolchain:
     # Copy in the right stdlibc++.so.6 so clang can start.
@@ -676,8 +666,8 @@ def UpdateClang(args):
     #cflags += ['-m32']
     #cxxflags += ['-m32']
   compiler_rt_args = base_cmake_args + [
-      '-DCMAKE_C_FLAGS=' + ' '.join(llvm_build_cflags),
-      '-DCMAKE_CXX_FLAGS=' + ' '.join(llvm_build_cxxflags)]
+      '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
+      '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags)]
   if sys.platform != 'win32':
     compiler_rt_args += ['-DLLVM_CONFIG_PATH=' +
                          os.path.join(LLVM_BUILD_DIR, 'bin', 'llvm-config'),
@@ -687,7 +677,7 @@ def UpdateClang(args):
   RmCmakeCache('.')
   RunCommand(['cmake'] + compiler_rt_args +
              [LLVM_DIR if sys.platform == 'win32' else COMPILER_RT_DIR],
-             msvc_arch='x86', env=llvm_build_env)
+             msvc_arch='x86', env=deployment_env)
   RunCommand(['ninja', 'compiler-rt'], msvc_arch='x86')
 
   # Copy select output to the main tree.
@@ -818,8 +808,8 @@ def main():
   parser.add_argument('--gcc-toolchain', help='set the version for which gcc '
                       'version be used for building; --gcc-toolchain=/opt/foo '
                       'picks /opt/foo/bin/gcc')
-  parser.add_argument('--lto', action='store_true',
-                      help='build Clang toolchain with LTO')
+  parser.add_argument('--lto-gold-plugin', action='store_true',
+                      help='build LLVM Gold plugin with LTO')
   parser.add_argument('--llvm-force-head-revision', action='store_true',
                       help=('use the revision in the repo when printing '
                             'the revision'))
@@ -838,12 +828,12 @@ def main():
                       default=sys.platform.startswith('linux'))
   args = parser.parse_args()
 
-  if args.lto and not args.bootstrap:
-    print '--lto requires --bootstrap'
+  if args.lto_gold_plugin and not args.bootstrap:
+    print '--lto-gold-plugin requires --bootstrap'
     return 1
-  if args.lto and not sys.platform.startswith('linux'):
-    print '--lto is only effective on Linux. Ignoring the option.'
-    args.lto = False
+  if args.lto_gold_plugin and not sys.platform.startswith('linux'):
+    print '--lto-gold-plugin is only effective on Linux. Ignoring the option.'
+    args.lto_gold_plugin = False
 
   if args.if_needed:
     is_clang_required = False

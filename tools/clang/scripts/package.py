@@ -178,7 +178,7 @@ def main():
 
     opt_flags = []
     if sys.platform.startswith('linux'):
-      opt_flags += ['--lto']
+      opt_flags += ['--lto-gold-plugin']
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'update.py'),
                  '--bootstrap', '--force-local-build',
                  '--run-tests'] + opt_flags
@@ -217,7 +217,6 @@ def main():
                  'lib/clang/*/lib/darwin/*profile_osx*',
                  ])
   elif sys.platform.startswith('linux'):
-    want.append('bin/lld')
     # Copy the libstdc++.so.6 we linked Clang against so it can run.
     want.append('lib/libstdc++.so.6')
     # Copy only
