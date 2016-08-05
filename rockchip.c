@@ -34,6 +34,7 @@ static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 			bo->offsets[1] = height * bo->strides[0];
 			break;
 		case DRV_FORMAT_XRGB8888:
+		case DRV_FORMAT_XBGR8888:
 		case DRV_FORMAT_ARGB8888:
 		case DRV_FORMAT_ABGR8888:
 			bo->strides[0] = drv_stride_from_format(format, width, 0);
@@ -119,6 +120,12 @@ const struct backend backend_rockchip =
 				      DRV_BO_USE_HW_RENDER | DRV_BO_USE_HW_2D |
 				      DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR |
+				      DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
+		{DRV_FORMAT_XBGR8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR |
+				      DRV_BO_USE_RENDERING | DRV_BO_USE_HW_TEXTURE |
+				      DRV_BO_USE_HW_RENDER | DRV_BO_USE_HW_2D |
+				      DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
+		{DRV_FORMAT_XBGR8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR |
 				      DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
 		{DRV_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR |
 				      DRV_BO_USE_RENDERING | DRV_BO_USE_HW_TEXTURE |
