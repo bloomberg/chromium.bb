@@ -963,7 +963,6 @@ crbug.com/336604 imported/csswg-test/css-flexbox-1/flexbox_visibility-collapse-l
 crbug.com/336604 imported/csswg-test/css-flexbox-1/flexbox_visibility-collapse.html [ Failure ]
 crbug.com/249112 imported/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-006.xht [ Failure ]
 
-crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-grow-006.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-aspect-ratio-img-column-003.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-aspect-ratio-img-row-002.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-aspect-ratio-img-row-003.html [ Failure ]
@@ -986,7 +985,6 @@ crbug.com/599828 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-canvas-vert-001.xhtml [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-iframe-vert-001.xhtml [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-img-vert-001.xhtml [ Failure ]
-crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-textarea-horiz-001.xhtml [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-textarea-vert-001.xhtml [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-video-vert-001.xhtml [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-horiz-001a.html [ Failure ]
@@ -1008,8 +1006,6 @@ crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002a.html [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002c.html [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-paint-ordering-002.xhtml [ Failure ]
-crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-whitespace-handling-001a.xhtml [ Failure ]
-crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-whitespace-handling-001b.xhtml [ Failure ]
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 
