@@ -18,31 +18,26 @@ static const char kImageCaptureHtmlFile[] = "/media/image_capture_test.html";
 
 // TODO(mcasas): enable real-camera tests by disabling the Fake Device for
 // platforms where the ImageCaptureCode is landed, https://crbug.com/518807.
+// TODO(mcasas): enable in Android when takePhoto() can be specified a (small)
+// capture resolution preventing the test from timeout https://crbug.com/634811.
 static struct TargetCamera {
   bool use_fake;
-} const kTestParameters[] = {{true}};
+}
+const kTestParameters[] = {{true}};
 
 }  // namespace
 
 namespace content {
 
-#if defined(OS_WIN)
-// This test is flaky on WebRTC Windows bots: https://crbug.com/633242.
-#define MAYBE_WebRtcImageCaptureBrowserTest \
-  DISABLED_WebRtcImageCaptureBrowserTest
-#else
-#define MAYBE_WebRtcImageCaptureBrowserTest WebRtcImageCaptureBrowserTest
-#endif
-
 // This class is the content_browsertests for Image Capture API, which allows
 // for capturing still images out of a MediaStreamTrack. Is a
 // WebRtcWebcamBrowserTest to be able to use a physical camera.
-class MAYBE_WebRtcImageCaptureBrowserTest
+class WebRtcImageCaptureBrowserTest
     : public WebRtcWebcamBrowserTest,
       public testing::WithParamInterface<struct TargetCamera> {
  public:
-  MAYBE_WebRtcImageCaptureBrowserTest() = default;
-  ~MAYBE_WebRtcImageCaptureBrowserTest() override = default;
+  WebRtcImageCaptureBrowserTest() = default;
+  ~WebRtcImageCaptureBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcWebcamBrowserTest::SetUpCommandLine(command_line);
@@ -68,11 +63,17 @@ class MAYBE_WebRtcImageCaptureBrowserTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_WebRtcImageCaptureBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(WebRtcImageCaptureBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcImageCaptureBrowserTest,
-                       CreateAndGetCapabilities) {
+#if defined(OS_WIN)
+// This test is flaky on WebRTC Windows bots: https://crbug.com/633242.
+#define MAYBE_CreateAndGetCapabilities DISABLED_CreateAndGetCapabilities
+#else
+#define MAYBE_CreateAndGetCapabilities CreateAndGetCapabilities
+#endif
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
+                       MAYBE_CreateAndGetCapabilities) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kImageCaptureHtmlFile));
   NavigateToURL(shell(), url);
@@ -85,8 +86,28 @@ IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcImageCaptureBrowserTest,
   FAIL();
 }
 
+#if defined(OS_WIN)
+// This test is flaky on WebRTC Windows bots: https://crbug.com/633242.
+#define MAYBE_CreateAndTakePhoto DISABLED_CreateAndTakePhoto
+#else
+#define MAYBE_CreateAndTakePhoto CreateAndTakePhoto
+#endif
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
+                       MAYBE_CreateAndTakePhoto) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kImageCaptureHtmlFile));
+  NavigateToURL(shell(), url);
+
+  std::string result;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(shell(), "testCreateAndTakePhoto()",
+                                            &result));
+  if (result == "OK")
+    return;
+  FAIL();
+}
+
 INSTANTIATE_TEST_CASE_P(,
-                        MAYBE_WebRtcImageCaptureBrowserTest,
+                        WebRtcImageCaptureBrowserTest,
                         testing::ValuesIn(kTestParameters));
 
 }  // namespace content
