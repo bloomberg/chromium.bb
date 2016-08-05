@@ -154,6 +154,9 @@ TEST_F(ThreadTest, StartWithOptions_StackSize) {
   event.Wait();
 }
 
+// Intentional test-only race for otherwise untestable code, won't fix.
+// https://crbug.com/634383
+#if !defined(THREAD_SANITIZER)
 TEST_F(ThreadTest, StartWithOptions_NonJoinable) {
   Thread* a = new Thread("StartNonJoinable");
   // Non-joinable threads have to be leaked for now (see
@@ -193,6 +196,7 @@ TEST_F(ThreadTest, StartWithOptions_NonJoinable) {
   // The thread should now have stopped on its own.
   EXPECT_FALSE(a->IsRunning());
 }
+#endif
 
 TEST_F(ThreadTest, TwoTasksOnJoinableThread) {
   bool was_invoked = false;
@@ -288,7 +292,11 @@ TEST_F(ThreadTest, StartTwice) {
   EXPECT_FALSE(a.IsRunning());
 }
 
+// Intentional test-only race for otherwise untestable code, won't fix.
+// https://crbug.com/634383
+#if !defined(THREAD_SANITIZER)
 TEST_F(ThreadTest, StartTwiceNonJoinableNotAllowed) {
+  LOG(ERROR) << __FUNCTION__;
   Thread* a = new Thread("StartTwiceNonJoinable");
   // Non-joinable threads have to be leaked for now (see
   // Thread::Options::joinable for details).
@@ -323,6 +331,7 @@ TEST_F(ThreadTest, StartTwiceNonJoinableNotAllowed) {
   // Restarting it should not be allowed.
   EXPECT_DCHECK_DEATH(a->Start());
 }
+#endif
 
 TEST_F(ThreadTest, ThreadName) {
   Thread a("ThreadName");
