@@ -127,6 +127,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       const base::string16& error_description,
       bool was_ignored_by_handler) override;
   void WebContentsDestroyed() override;
+  void WasShown() override;
+  void WasHidden() override;
 
   void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
                                   RenderFrameHost* new_host);
@@ -151,6 +153,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       const DevToolsMessageChunk& message);
   void OnRequestNewWindow(RenderFrameHost* sender, int new_routing_id);
   void DestroyOnRenderFrameGone();
+
+  void CreatePowerSaveBlocker();
 
   class FrameHostHolder;
 
