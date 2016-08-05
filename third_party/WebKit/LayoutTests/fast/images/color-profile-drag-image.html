@@ -21,8 +21,6 @@ if (window.testRunner) {
 }
 
 window.onload = function() {
-  if (window.internals)
-    internals.settings.setImageColorProfilesEnabled(true);
   if (window.testRunner)
     testRunner.waitUntilDone();
 
@@ -35,7 +33,7 @@ window.onload = function() {
 };
 
 function changeColorProfile() {
-  window.testRunner.setColorProfile('whacked', profileChanged);
+  window.testRunner.setColorProfile('colorSpin', profileChanged);
 }
 
 function profileChanged() {

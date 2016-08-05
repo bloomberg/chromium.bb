@@ -356,7 +356,7 @@ int main(int argc, char* argv[])
     public:
         void screenColorProfile(WebVector<char>* profile) override
         {
-            getScreenColorProfile(profile); // Returns a whacked color profile.
+            getScreenColorProfile(profile); // Returns a color spin color profile.
         }
     };
 

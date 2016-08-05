@@ -34,7 +34,7 @@ window.onload = function() {
   video.addEventListener('seeked', function() {
     video.classList.add('filter');
     if (window.testRunner)
-      setTimeout(function() { testRunner.setColorProfile('whacked', done) }, 100);
+      setTimeout(function() { testRunner.setColorProfile('colorSpin', done) }, 100);
     video.pause();
   }, false);
 
@@ -49,9 +49,6 @@ function seek(video, time) {
 function done() {
   setTimeout(function() { testRunner.notifyDone() }, 0);
 }
-
-if (window.internals)
-  internals.settings.setImageColorProfilesEnabled(true);
 
 if (window.testRunner) {
   testRunner.dumpAsTextWithPixelResults();

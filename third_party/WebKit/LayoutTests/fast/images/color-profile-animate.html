@@ -22,15 +22,12 @@ function fade(element) {
 
 function end(event) {
   if (window.testRunner)
-    testRunner.setColorProfile('whacked', done);
+    testRunner.setColorProfile('colorSpin', done);
 }
 
 function done() {
   setTimeout(function() { testRunner.notifyDone() }, 0);
 }
-
-if (window.internals)
-  internals.settings.setImageColorProfilesEnabled(true);
 
 if (window.testRunner) {
   testRunner.dumpAsTextWithPixelResults();

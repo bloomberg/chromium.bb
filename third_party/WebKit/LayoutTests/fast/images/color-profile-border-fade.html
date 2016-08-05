@@ -33,11 +33,8 @@ function start(event) {
     setTimeout(function() { testRunner.notifyDone() }, 0);
 }
 
-if (window.internals)
-  internals.settings.setImageColorProfilesEnabled(true);
-
 if (window.testRunner) {
-  testRunner.setColorProfile('whacked', new Function());
+  testRunner.setColorProfile('colorSpin', new Function());
   testRunner.dumpAsTextWithPixelResults();
   testRunner.waitUntilDone();
 }

@@ -26,15 +26,12 @@ function load(element) {
 
 function next() {
   if (++images == 3 && window.testRunner)
-    setTimeout(function() { testRunner.setColorProfile('whacked', profileChanged) }, 100);
+    setTimeout(function() { testRunner.setColorProfile('colorSpin', profileChanged) }, 100);
 }
 
 function profileChanged() {
   setTimeout(function() { testRunner.notifyDone() }, 0);
 }
-
-if (window.internals)
-  internals.settings.setImageColorProfilesEnabled(true);
 
 if (window.testRunner) {
   window.testRunner.dumpAsTextWithPixelResults();

@@ -23,9 +23,6 @@ if (window.testRunner) {
 }
 
 window.onload = function() {
-  if (window.internals)
-    internals.settings.setImageColorProfilesEnabled(true);
-
   var cyanInTargetGamut = true; // BT.709 and sRGB have the same gamut.
 
   testImageColors('resources/munsell-bt709-hdtv-itu.png', cyanInTargetGamut);

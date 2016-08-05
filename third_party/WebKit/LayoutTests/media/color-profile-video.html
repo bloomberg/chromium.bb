@@ -29,12 +29,9 @@ if (window.testRunner) {
 }
 
 window.onload = function() {
-  if (window.internals)
-    internals.settings.setImageColorProfilesEnabled(true);
-
   if (window.testRunner) {
     document.querySelector('video').oncanplaythrough = function() {
-      testRunner.setColorProfile('whacked', done);
+      testRunner.setColorProfile('colorSpin', done);
     };
   }
 

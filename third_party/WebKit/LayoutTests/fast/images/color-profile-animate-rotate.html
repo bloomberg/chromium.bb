@@ -29,16 +29,13 @@ function rotate(element) {
 
 function start(event) {
   if (window.testRunner)
-    setTimeout(function() { testRunner.setColorProfile('whacked', new Function()) }, 100);
+    setTimeout(function() { testRunner.setColorProfile('colorSpin', new Function()) }, 100);
 }
 
 function end(event) {
   if (window.testRunner)
     setTimeout(function() { testRunner.notifyDone() }, 0);
 }
-
-if (window.internals)
-  internals.settings.setImageColorProfilesEnabled(true);
 
 if (window.testRunner) {
   testRunner.dumpAsTextWithPixelResults();

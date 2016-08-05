@@ -26,7 +26,7 @@ window.onload = function() {
 };
 
 function changeColorProfile() {
-  window.testRunner.setColorProfile('whacked', profileChanged);
+  window.testRunner.setColorProfile('colorSpin', profileChanged);
 }
 
 function profileChanged() {
@@ -49,9 +49,6 @@ function drawImagePatternToCanvas() {
   if (window.testRunner)
     window.testRunner.notifyDone();
 }
-
-if (window.internals)
-  internals.settings.setImageColorProfilesEnabled(true);
 
 if (window.testRunner) {
   testRunner.dumpAsTextWithPixelResults();

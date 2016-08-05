@@ -23,9 +23,6 @@ if (window.testRunner) {
 }
 
 window.onload = function() {
-  if (window.internals)
-    internals.settings.setImageColorProfilesEnabled(true);
-
   var cyanInTargetGamut = false; // BT.601 Cyan is outside the sRGB gamut.
 
   testImageColors('resources/munsell-bt601-smpte-c.png', cyanInTargetGamut);
