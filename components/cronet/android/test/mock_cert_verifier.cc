@@ -21,6 +21,8 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 
+using base::android::JavaParamRef;
+
 namespace cronet {
 
 namespace {

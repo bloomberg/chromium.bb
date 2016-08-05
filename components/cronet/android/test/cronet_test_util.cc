@@ -15,6 +15,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/url_request/url_request.h"
 
+using base::android::JavaParamRef;
+
 namespace cronet {
 
 const char kFakeSdchDomain[] = "fake.sdch.domain";

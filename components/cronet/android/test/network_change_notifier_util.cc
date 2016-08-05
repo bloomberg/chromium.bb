@@ -11,6 +11,8 @@
 #include "jni/NetworkChangeNotifierUtil_jni.h"
 #include "net/base/network_change_notifier.h"
 
+using base::android::JavaParamRef;
+
 namespace cronet {
 
 namespace {

@@ -64,6 +64,9 @@
 #include "components/cronet/android/cronet_data_reduction_proxy.h"
 #endif
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace {
 
 // This class wraps a NetLog that also contains network change events.

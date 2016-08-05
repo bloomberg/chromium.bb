@@ -14,6 +14,8 @@
 #include "jni/TestUploadDataStreamHandler_jni.h"
 #include "net/base/net_errors.h"
 
+using base::android::JavaParamRef;
+
 namespace cronet {
 
 static const size_t kReadBufferSize = 32768;

@@ -29,6 +29,7 @@
 #include "net/url_request/url_request_context.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
 
 namespace cronet {
 

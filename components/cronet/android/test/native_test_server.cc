@@ -32,6 +32,9 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace cronet {
 
 namespace {

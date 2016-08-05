@@ -16,6 +16,8 @@
 #include "components/cronet/android/cronet_url_request_adapter.h"
 #include "jni/CronetUploadDataStream_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace cronet {
 
 CronetUploadDataStreamAdapter::CronetUploadDataStreamAdapter(

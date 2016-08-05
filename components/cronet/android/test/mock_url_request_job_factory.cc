@@ -13,6 +13,9 @@
 #include "net/test/url_request/url_request_mock_data_job.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace cronet {
 
 void AddUrlInterceptors(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {

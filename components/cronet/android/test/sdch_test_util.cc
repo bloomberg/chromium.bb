@@ -19,6 +19,8 @@
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 namespace cronet {
 
 namespace {

@@ -36,6 +36,9 @@
 #include "base/i18n/icu_util.h"  // nogncheck
 #endif
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace cronet {
 namespace {
 

@@ -21,6 +21,9 @@
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace cronet {
 
 namespace {

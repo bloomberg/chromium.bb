@@ -14,6 +14,8 @@
 #include "components/cronet/version.h"
 #include "jni/CronetUrlRequestContextTest_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace cronet {
 
 // Verifies that all the configuration options set by

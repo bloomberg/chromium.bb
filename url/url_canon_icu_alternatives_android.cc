@@ -11,6 +11,8 @@
 #include "jni/IDNStringUtil_jni.h"
 #include "url/url_canon_internal.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace url {
 
 // This uses the JDK's conversion function, which uses IDNA 2003, unlike the

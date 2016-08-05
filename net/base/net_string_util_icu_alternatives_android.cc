@@ -9,6 +9,8 @@
 #include "jni/NetStringUtil_jni.h"
 #include "net/base/net_string_util.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace net {
 
 namespace {
