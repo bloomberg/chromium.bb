@@ -451,17 +451,17 @@ public:
 
             m_decoder->setOrientation(readImageOrientation(info()));
 
-#if USE(QCMSLIB)
             // Allow color management of the decoded RGBA pixels if possible.
             if (!m_decoder->ignoresGammaAndColorProfile()) {
 #if USE(ICCJPEG)
                 JOCTET* profile = nullptr;
                 unsigned profileLength = 0;
                 if (read_icc_profile(info(), &profile, &profileLength)) {
-                    decoder()->setColorProfileAndTransform(reinterpret_cast<char*>(profile), profileLength, colorSpaceHasAlpha(info()->out_color_space), false /* useSRGB */);
+                    decoder()->setColorProfileAndComputeTransform(reinterpret_cast<char*>(profile), profileLength, colorSpaceHasAlpha(info()->out_color_space), false /* useSRGB */);
                     free(profile);
                 }
 #endif // USE(ICCJPEG)
+#if USE(QCMSLIB)
                 if (decoder()->colorTransform()) {
                     overrideColorSpace = JCS_UNKNOWN;
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
@@ -470,8 +470,8 @@ public:
                         m_info.out_color_space = JCS_EXT_RGBA;
 #endif // defined(TURBO_JPEG_RGB_SWIZZLE)
                 }
-            }
 #endif // USE(QCMSLIB)
+            }
             if (overrideColorSpace == JCS_YCbCr) {
                 m_info.out_color_space = JCS_YCbCr;
                 m_info.raw_data_out = TRUE;
@@ -927,7 +927,7 @@ bool JPEGImageDecoder::outputScanlines()
         ASSERT(info->output_width == static_cast<JDIMENSION>(m_decodedSize.width()));
         ASSERT(info->output_height == static_cast<JDIMENSION>(m_decodedSize.height()));
 
-        if (!buffer.setSize(info->output_width, info->output_height))
+        if (!buffer.setSizeAndColorProfile(info->output_width, info->output_height, colorProfile()))
             return setFailed();
 
         // The buffer is transparent outside the decoded area while the image is

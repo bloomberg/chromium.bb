@@ -112,10 +112,7 @@ public:
     ImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
         : m_premultiplyAlpha(alphaOption == AlphaPremultiplied)
         , m_ignoreGammaAndColorProfile(colorOptions == GammaAndColorProfileIgnored)
-        , m_maxDecodedBytes(maxDecodedBytes)
-        , m_sizeAvailable(false)
-        , m_isAllDataReceived(false)
-        , m_failed(false) { }
+        , m_maxDecodedBytes(maxDecodedBytes) { }
 
     virtual ~ImageDecoder() { }
 
@@ -231,14 +228,19 @@ public:
 
     ImageOrientation orientation() const { return m_orientation; }
 
-    void setIgnoreGammaAndColorProfile(bool flag) { m_ignoreGammaAndColorProfile = flag; }
     bool ignoresGammaAndColorProfile() const { return m_ignoreGammaAndColorProfile; }
-
     static void setTargetColorProfile(const WebVector<char>&);
-    bool hasColorProfile() const;
+
+
+    // Note that hasColorProfile refers to the existence of a not-ignored
+    // embedded color profile, and is independent of whether or not that
+    // profile's transform has been baked into the pixel values.
+    bool hasColorProfile() const { return m_hasColorProfile; }
+    void setColorProfileAndComputeTransform(const char* iccData, unsigned iccLength, bool hasAlpha, bool useSRGB);
 
 #if USE(QCMSLIB)
-    void setColorProfileAndTransform(const char* iccData, unsigned iccLength, bool hasAlpha, bool useSRGB);
+    // In contrast with hasColorProfile, this refers to the transform that has
+    // been baked into the pixels.
     qcms_transform* colorTransform() { return m_sourceToOutputDeviceColorTransform.get(); }
 #endif
 
@@ -315,10 +317,13 @@ protected:
     // Decodes the requested frame.
     virtual void decode(size_t) = 0;
 
+    // Returns the embedded image color profile.
+    const ImageFrame::ICCProfile& colorProfile() const { return m_colorProfile; }
+
     RefPtr<SegmentReader> m_data; // The encoded data.
     Vector<ImageFrame, 1> m_frameBufferCache;
-    bool m_premultiplyAlpha;
-    bool m_ignoreGammaAndColorProfile;
+    const bool m_premultiplyAlpha;
+    const bool m_ignoreGammaAndColorProfile;
     ImageOrientation m_orientation;
 
     // The maximum amount of memory a decoded image should require. Ideally,
@@ -326,7 +331,7 @@ protected:
     // (and then return the downsampled size from decodedSize()). Ignoring
     // this limit can cause excessive memory use or even crashes on low-
     // memory devices.
-    size_t m_maxDecodedBytes;
+    const size_t m_maxDecodedBytes;
 
 private:
     // Some code paths compute the size of the image as "width * height * 4"
@@ -339,9 +344,12 @@ private:
     }
 
     IntSize m_size;
-    bool m_sizeAvailable;
-    bool m_isAllDataReceived;
-    bool m_failed;
+    bool m_sizeAvailable = false;
+    bool m_isAllDataReceived = false;
+    bool m_failed = false;
+
+    bool m_hasColorProfile = false;
+    ImageFrame::ICCProfile m_colorProfile;
 
 #if USE(QCMSLIB)
     QCMSTransformUniquePtr m_sourceToOutputDeviceColorTransform;

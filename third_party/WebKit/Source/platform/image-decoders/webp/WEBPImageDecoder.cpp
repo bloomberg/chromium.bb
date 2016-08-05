@@ -231,10 +231,8 @@ bool WEBPImageDecoder::updateDemuxer()
             m_formatFlags &= ~ICCP_FLAG;
         }
 
-#if USE(QCMSLIB)
         if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
             readColorProfile();
-#endif
     }
 
     ASSERT(isDecodedSizeAvailable());
@@ -250,7 +248,7 @@ bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex)
     const size_t requiredPreviousFrameIndex = buffer.requiredPreviousFrameIndex();
     if (requiredPreviousFrameIndex == kNotFound) {
         // This frame doesn't rely on any previous data.
-        if (!buffer.setSize(size().width(), size().height()))
+        if (!buffer.setSizeAndColorProfile(size().width(), size().height(), colorProfile()))
             return setFailed();
         m_frameBackgroundHasAlpha = !buffer.originalFrameRect().contains(IntRect(IntPoint(), size()));
     } else {
@@ -300,8 +298,6 @@ void WEBPImageDecoder::clearFrameBuffer(size_t frameIndex)
     ImageDecoder::clearFrameBuffer(frameIndex);
 }
 
-#if USE(QCMSLIB)
-
 void WEBPImageDecoder::readColorProfile()
 {
     WebPChunkIterator chunkIterator;
@@ -313,12 +309,10 @@ void WEBPImageDecoder::readColorProfile()
     const char* profileData = reinterpret_cast<const char*>(chunkIterator.chunk.bytes);
     size_t profileSize = chunkIterator.chunk.size;
 
-    setColorProfileAndTransform(profileData, profileSize, true /* hasAlpha */, false /* useSRGB */);
+    setColorProfileAndComputeTransform(profileData, profileSize, true /* hasAlpha */, false /* useSRGB */);
 
     WebPDemuxReleaseChunkIterator(&chunkIterator);
 }
-
-#endif // USE(QCMSLIB)
 
 void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
 {
@@ -462,7 +456,7 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes, size_t dataSi
     ASSERT(buffer.getStatus() != ImageFrame::FrameComplete);
 
     if (buffer.getStatus() == ImageFrame::FrameEmpty) {
-        if (!buffer.setSize(size().width(), size().height()))
+        if (!buffer.setSizeAndColorProfile(size().width(), size().height(), colorProfile()))
             return setFailed();
         buffer.setStatus(ImageFrame::FramePartial);
         // The buffer is transparent outside the decoded area while the image is loading.

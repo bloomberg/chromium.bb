@@ -49,6 +49,7 @@ ICOImageDecoder::ICOImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOp
     , m_fastReader(nullptr)
     , m_decodedOffset(0)
     , m_dirEntriesCount(0)
+    , m_gammaAndColorProfileOption(colorOptions)
 {
 }
 
@@ -210,8 +211,7 @@ bool ICOImageDecoder::decodeAtIndex(size_t index)
 
     if (!m_pngDecoders[index]) {
         AlphaOption alphaOption = m_premultiplyAlpha ? AlphaPremultiplied : AlphaNotPremultiplied;
-        GammaAndColorProfileOption colorOptions = m_ignoreGammaAndColorProfile ? GammaAndColorProfileIgnored : GammaAndColorProfileApplied;
-        m_pngDecoders[index] = wrapUnique(new PNGImageDecoder(alphaOption, colorOptions, m_maxDecodedBytes, dirEntry.m_imageOffset));
+        m_pngDecoders[index] = wrapUnique(new PNGImageDecoder(alphaOption, m_gammaAndColorProfileOption, m_maxDecodedBytes, dirEntry.m_imageOffset));
         setDataForPNGDecoderAtIndex(index);
     }
     // Fail if the size the PNGImageDecoder calculated does not match the size

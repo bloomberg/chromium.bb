@@ -65,10 +65,7 @@ private:
     int m_formatFlags;
     bool m_frameBackgroundHasAlpha;
 
-#if USE(QCMSLIB)
     void readColorProfile();
-#endif
-
     bool updateDemuxer();
     bool initFrameBuffer(size_t frameIndex);
     void applyPostProcessing(size_t frameIndex);

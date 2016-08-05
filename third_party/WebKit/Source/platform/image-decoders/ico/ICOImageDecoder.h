@@ -174,6 +174,9 @@ private:
     // Valid only while a BMPImageReader is decoding, this holds the size
     // for the particular entry being decoded.
     IntSize m_frameSize;
+
+    // Used to pass on to an internally created PNG decoder.
+    const GammaAndColorProfileOption m_gammaAndColorProfileOption;
 };
 
 } // namespace blink

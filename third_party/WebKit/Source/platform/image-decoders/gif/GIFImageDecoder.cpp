@@ -353,7 +353,7 @@ bool GIFImageDecoder::initFrameBuffer(size_t frameIndex)
     size_t requiredPreviousFrameIndex = buffer->requiredPreviousFrameIndex();
     if (requiredPreviousFrameIndex == kNotFound) {
         // This frame doesn't rely on any previous data.
-        if (!buffer->setSize(size().width(), size().height()))
+        if (!buffer->setSizeAndColorProfile(size().width(), size().height(), ImageFrame::ICCProfile()))
             return setFailed();
     } else {
         const ImageFrame* prevBuffer = &m_frameBufferCache[requiredPreviousFrameIndex];

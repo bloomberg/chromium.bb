@@ -129,7 +129,7 @@ private:
 
     void initializeNewFrame(size_t index) override
     {
-        m_frameBufferCache[index].setSize(size().width(), size().height());
+        m_frameBufferCache[index].setSizeAndColorProfile(size().width(), size().height(), colorProfile());
         m_frameBufferCache[index].setHasAlpha(false);
     }
 

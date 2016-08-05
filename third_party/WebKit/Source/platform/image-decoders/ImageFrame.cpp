@@ -93,10 +93,13 @@ bool ImageFrame::copyBitmapData(const ImageFrame& other)
     return other.m_bitmap.copyTo(&m_bitmap, other.m_bitmap.colorType());
 }
 
-bool ImageFrame::setSize(int newWidth, int newHeight)
+bool ImageFrame::setSizeAndColorProfile(int newWidth, int newHeight, const ICCProfile& newIccProfile)
 {
-    // setSize() should only be called once, it leaks memory otherwise.
+    // setSizeAndColorProfile() should only be called once, it leaks memory otherwise.
     ASSERT(!width() && !height());
+
+    // TODO(ccameron): Populate the color space parameter of the SkImageInfo
+    // with newIccProfile, under a runtime flag.
 
     m_bitmap.setInfo(SkImageInfo::MakeN32(newWidth, newHeight,
         m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType));

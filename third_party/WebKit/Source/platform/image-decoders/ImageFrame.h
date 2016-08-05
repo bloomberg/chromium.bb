@@ -29,6 +29,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
+#include "public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
@@ -69,6 +70,8 @@ public:
         BlendAtopBgcolor,
     };
     typedef uint32_t PixelData;
+
+    typedef WebVector<char> ICCProfile;
 
     ImageFrame();
 
@@ -111,7 +114,7 @@ public:
     // Allocates space for the pixel data.  Must be called before any pixels
     // are written.  Must only be called once.  Returns whether allocation
     // succeeded.
-    bool setSize(int newWidth, int newHeight);
+    bool setSizeAndColorProfile(int newWidth, int newHeight, const ICCProfile& newIccProfile);
 
     bool hasAlpha() const;
     const IntRect& originalFrameRect() const { return m_originalFrameRect; }

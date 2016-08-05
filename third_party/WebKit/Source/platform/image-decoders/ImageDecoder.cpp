@@ -294,8 +294,9 @@ size_t ImagePlanes::rowBytes(int i) const
     return m_rowBytes[i];
 }
 
-#if USE(QCMSLIB)
 namespace {
+
+#if USE(QCMSLIB)
 
 const unsigned kIccColorProfileHeaderLength = 128;
 
@@ -317,11 +318,14 @@ bool inputDeviceColorProfile(const char* profileData, unsigned profileLength)
 SpinLock gTargetColorProfileLock;
 qcms_profile* gTargetColorProfile = nullptr;
 
+#endif // USE(QCMSLIB)
+
 } // namespace
 
 // static
 void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile)
 {
+#if USE(QCMSLIB)
     if (profile.isEmpty())
         return;
 
@@ -349,15 +353,18 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile)
     }
 
     qcms_profile_precache_output_transform(gTargetColorProfile);
+#endif // USE(QCMSLIB)
 }
 
-bool ImageDecoder::hasColorProfile() const
+void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData, unsigned iccLength, bool hasAlpha, bool useSRGB)
 {
-    return m_sourceToOutputDeviceColorTransform.get();
-}
+    // Sub-classes should not call this if they were instructed to ignore embedded color profiles.
+    DCHECK(!m_ignoreGammaAndColorProfile);
 
-void ImageDecoder::setColorProfileAndTransform(const char* iccData, unsigned iccLength, bool hasAlpha, bool useSRGB)
-{
+    m_colorProfile.assign(iccData, iccLength);
+    m_hasColorProfile = true;
+
+#if USE(QCMSLIB)
     m_sourceToOutputDeviceColorTransform.reset();
 
     // Create the input profile
@@ -396,19 +403,7 @@ void ImageDecoder::setColorProfileAndTransform(const char* iccData, unsigned icc
 
     // FIXME: Don't force perceptual intent if the image profile contains an intent.
     m_sourceToOutputDeviceColorTransform.reset(qcms_transform_create(inputProfile.get(), dataFormat, gTargetColorProfile, QCMS_DATA_RGBA_8, QCMS_INTENT_PERCEPTUAL));
-}
-
-#else // USE(QCMSLIB)
-
-void ImageDecoder::setTargetColorProfile(const WebVector<char>&)
-{
-}
-
-bool ImageDecoder::hasColorProfile() const
-{
-    return false;
-}
-
 #endif // USE(QCMSLIB)
+}
 
 } // namespace blink

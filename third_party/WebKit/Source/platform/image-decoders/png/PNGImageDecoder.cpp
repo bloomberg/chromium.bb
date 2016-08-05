@@ -216,7 +216,6 @@ void PNGImageDecoder::headerAvailable()
     if (colorType == PNG_COLOR_TYPE_GRAY || colorType == PNG_COLOR_TYPE_GRAY_ALPHA)
         png_set_gray_to_rgb(png);
 
-#if USE(QCMSLIB)
     if ((colorType & PNG_COLOR_MASK_COLOR) && !m_ignoreGammaAndColorProfile) {
         // We only support color profiles for color PALETTE and RGB[A] PNG. Supporting
         // color profiles for gray-scale images is slightly tricky, at least using the
@@ -227,7 +226,7 @@ void PNGImageDecoder::headerAvailable()
         bool imageHasAlpha = (colorType & PNG_COLOR_MASK_ALPHA) || trnsCount;
 #ifdef PNG_iCCP_SUPPORTED
         if (png_get_valid(png, info, PNG_INFO_sRGB)) {
-            setColorProfileAndTransform(nullptr, 0, imageHasAlpha, true /* useSRGB */);
+            setColorProfileAndComputeTransform(nullptr, 0, imageHasAlpha, true /* useSRGB */);
         } else {
             char* profileName = nullptr;
             int compressionType = 0;
@@ -238,12 +237,11 @@ void PNGImageDecoder::headerAvailable()
 #endif
             png_uint_32 profileLength = 0;
             if (png_get_iCCP(png, info, &profileName, &compressionType, &profile, &profileLength)) {
-                setColorProfileAndTransform(reinterpret_cast<char*>(profile), profileLength, imageHasAlpha, false /* useSRGB */);
+                setColorProfileAndComputeTransform(reinterpret_cast<char*>(profile), profileLength, imageHasAlpha, false /* useSRGB */);
             }
         }
 #endif // PNG_iCCP_SUPPORTED
     }
-#endif // USE(QCMSLIB)
 
     if (!hasColorProfile()) {
         // Deal with gamma and keep it under our control.
@@ -294,7 +292,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
     ImageFrame& buffer = m_frameBufferCache[0];
     if (buffer.getStatus() == ImageFrame::FrameEmpty) {
         png_structp png = m_reader->pngPtr();
-        if (!buffer.setSize(size().width(), size().height())) {
+        if (!buffer.setSizeAndColorProfile(size().width(), size().height(), colorProfile())) {
             longjmp(JMPBUF(png), 1);
             return;
         }
