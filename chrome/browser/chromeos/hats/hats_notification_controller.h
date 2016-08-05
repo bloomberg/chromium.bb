@@ -31,12 +31,6 @@ namespace chromeos {
 class HatsNotificationController : public NotificationDelegate,
                                    public NetworkPortalDetector::Observer {
  public:
-  // Minimum amount of time before the notification is displayed again after a
-  // user has interacted with it.
-  static const int kHatsThresholdDays;
-  // Minimum amount of time after initial login or oobe after which we can show
-  // the HaTS notification.
-  static const int kHatsNewDeviceThresholdDays;
   static const char kDelegateId[];
   static const char kNotificationId[];
   static const char kImageFetcher1xId[];

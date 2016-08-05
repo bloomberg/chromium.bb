@@ -35,6 +35,17 @@ const char kNotificationOriginUrl[] = "chrome://hats";
 const float kScale_1x = 1.0f;
 const float kScale_2x = 2.0f;
 
+// Minimum amount of time before the notification is displayed again after a
+// user has interacted with it.
+const int kHatsThresholdDays = 90;
+
+// The threshold for a googler is less.
+const int kHatsGooglerThresholdDays = 30;
+
+// Minimum amount of time after initial login or oobe after which we can show
+// the HaTS notification.
+const int kHatsNewDeviceThresholdDays = 7;
+
 // Returns true if the given |profile| interacted with HaTS by either
 // dismissing the notification or taking the survey within a given threshold
 // days |threshold_days|.
@@ -85,12 +96,6 @@ const char HatsNotificationController::kGoogleIcon1xUrl[] =
 // static
 const char HatsNotificationController::kGoogleIcon2xUrl[] =
     "https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png";
-
-// static
-const int HatsNotificationController::kHatsThresholdDays = 90;
-
-// static
-const int HatsNotificationController::kHatsNewDeviceThresholdDays = 7;
 
 HatsNotificationController::HatsNotificationController(
     Profile* profile,
@@ -146,9 +151,12 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
     return false;
   }
 
+  int threshold_days = IsGoogleUser(profile->GetProfileUserName())
+                           ? kHatsGooglerThresholdDays
+                           : kHatsThresholdDays;
   // Do not show survey to user if user has interacted with HaTS within the past
   // |kHatsThresholdTime| time delta.
-  if (DidShowSurveyToProfileRecently(profile, kHatsThresholdDays))
+  if (DidShowSurveyToProfileRecently(profile, threshold_days))
     return false;
 
   return true;
