@@ -8,6 +8,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
@@ -40,18 +42,60 @@ namespace chromeos {
 
 namespace {
 
+// Timeout for RunLoop::Run() in this test.
+const int kTimeoutSeconds = 2;
+
 // OOBE constants.
 const char kLocaleSelect[] = "language-select";
 const char kKeyboardSelect[] = "keyboard-select";
 
 const char kUSLayout[] = "xkb:us::eng";
+class TimedRunLoop {
+ public:
+  TimedRunLoop(const base::TimeDelta& timeout,
+               const std::string& failure_message)
+      : timeout_(timeout), message_(failure_message) {}
+
+  // Returns true if Run() successfully finished,
+  // Returns false on timeout.
+  bool Run() {
+    base::OneShotTimer timer;
+    timer.Start(FROM_HERE, timeout_,
+                base::Bind(&TimedRunLoop::OnTimeout, base::Unretained(this)));
+    loop_.Run();
+    return result_;
+  }
+
+  void Quit() {
+    result_ = true;
+    loop_.Quit();
+  }
+
+  base::Closure QuitClosure() {
+    return base::Bind(&TimedRunLoop::Quit, base::Unretained(this));
+  }
+
+ private:
+  void OnTimeout() {
+    LOG(ERROR) << "Timeout waiting for: " << message_;
+    result_ = false;
+    loop_.Quit();
+  }
+
+  bool result_ = false;
+  const base::TimeDelta timeout_;
+  const std::string message_;
+  base::RunLoop loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(TimedRunLoop);
+};
 
 class LanguageListWaiter : public NetworkScreen::Observer {
  public:
-  explicit LanguageListWaiter(base::RunLoop& loop)
+  LanguageListWaiter()
       : network_screen_(
             NetworkScreen::Get(WizardController::default_controller())),
-        loop_(loop) {
+        loop_(base::TimeDelta::FromSeconds(kTimeoutSeconds), "LanguageList") {
     network_screen_->AddObserver(this);
     CheckLanguageList();
   }
@@ -61,14 +105,26 @@ class LanguageListWaiter : public NetworkScreen::Observer {
   // NetworkScreen::Observer implementation:
   void OnLanguageListReloaded() override { CheckLanguageList(); }
 
+  // Returns true on success, false on timeout.
+  bool Wait() {
+    if (LanguageListReady())
+      return true;
+
+    return loop_.Run();
+  }
+
  private:
+  bool LanguageListReady() const {
+    return network_screen_->GetLanguageList();
+  }
+
   void CheckLanguageList() {
-    if (network_screen_->GetLanguageList())
+    if (LanguageListReady())
       loop_.Quit();
   }
 
   NetworkScreen* network_screen_;
-  base::RunLoop& loop_;
+  TimedRunLoop loop_;
 };
 
 }  // namespace
@@ -154,17 +210,23 @@ class OobeLocalizationTest
   // Runs the test for the given locale and keyboard layout.
   void RunLocalizationTest();
 
-  void WaitUntilJSIsReady() {
+  // Returns true on success, false on error.
+  bool WaitUntilJSIsReady() {
     LoginDisplayHost* host = LoginDisplayHost::default_host();
     if (!host)
-      return;
+      return false;
+
     OobeUI* oobe_ui = host->GetOobeUI();
     if (!oobe_ui)
-      return;
-    base::RunLoop run_loop;
+      return false;
+
+    TimedRunLoop run_loop(base::TimeDelta::FromSeconds(kTimeoutSeconds),
+                          "WaitUntilJSIsReady()");
     const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
-    if (!oobe_ui_ready)
-      run_loop.Run();
+    if (oobe_ui_ready)
+      return true;
+
+    return run_loop.Run();
   }
 
  private:
@@ -297,13 +359,9 @@ void OobeLocalizationTest::RunLocalizationTest() {
   const std::string expected_keyboard_select =
       TranslateXKB2Extension(expected_keyboard_select_control);
 
-  {
-    base::RunLoop loop;
-    LanguageListWaiter waiter(loop);
-    loop.Run();
-  }
+  ASSERT_TRUE(LanguageListWaiter().Wait());
 
-  WaitUntilJSIsReady();
+  ASSERT_TRUE(WaitUntilJSIsReady());
 
   const std::string first_language =
       expected_locale.substr(0, expected_locale.find(','));
