@@ -895,7 +895,7 @@ void StreamMixerAlsa::UpdateRenderingDelay(int newly_pushed_frames) {
     return;
   }
 
-  snd_htimestamp_t status_timestamp;
+  snd_htimestamp_t status_timestamp = {};
   alsa_->PcmStatusGetHtstamp(pcm_status_, &status_timestamp);
   rendering_delay_.timestamp_microseconds =
       TimespecToMicroseconds(status_timestamp);
