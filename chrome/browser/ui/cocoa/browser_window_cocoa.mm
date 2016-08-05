@@ -48,7 +48,6 @@
 #import "chrome/browser/ui/cocoa/website_settings/website_settings_bubble_controller.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -141,12 +140,9 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
   chrome::GetSavedWindowBoundsAndShowState(browser_,
                                            &bounds,
                                            &initial_show_state_);
-
-  browser_->search_model()->AddObserver(this);
 }
 
 BrowserWindowCocoa::~BrowserWindowCocoa() {
-  browser_->search_model()->RemoveObserver(this);
 }
 
 void BrowserWindowCocoa::Show() {
@@ -789,10 +785,6 @@ extensions::ActiveTabPermissionGranter*
   extensions::TabHelper* tab_helper =
       extensions::TabHelper::FromWebContents(web_contents);
   return tab_helper ? tab_helper->active_tab_permission_granter() : NULL;
-}
-
-void BrowserWindowCocoa::ModelChanged(const SearchModel::State& old_state,
-                                      const SearchModel::State& new_state) {
 }
 
 void BrowserWindowCocoa::DestroyBrowser() {

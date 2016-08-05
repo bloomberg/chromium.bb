@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -36,8 +35,7 @@ class Extension;
 
 class BrowserWindowCocoa
     : public BrowserWindow,
-      public extensions::ExtensionKeybindingRegistry::Delegate,
-      public SearchModelObserver {
+      public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   BrowserWindowCocoa(Browser* browser,
                      BrowserWindowController* controller);
@@ -161,10 +159,6 @@ class BrowserWindowCocoa
   // Overridden from ExtensionKeybindingRegistry::Delegate:
   extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()
       override;
-
-  // Overridden from SearchModelObserver:
-  void ModelChanged(const SearchModel::State& old_state,
-                    const SearchModel::State& new_state) override;
 
   // Adds the given FindBar cocoa controller to this browser window.
   void AddFindBar(FindBarCocoaController* find_bar_cocoa_controller);
