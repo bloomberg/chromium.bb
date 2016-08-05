@@ -224,6 +224,18 @@ static struct gl_renderer_interface *gl_renderer;
 
 static const char default_seat[] = "seat0";
 
+static inline struct drm_output *
+to_drm_output(struct weston_output *base)
+{
+	return container_of(base, struct drm_output, base);
+}
+
+static inline struct drm_backend *
+to_drm_backend(struct weston_compositor *base)
+{
+	return container_of(base->backend, struct drm_backend, base);
+}
+
 static void
 drm_output_set_cursor(struct drm_output *output);
 
@@ -234,7 +246,7 @@ static int
 drm_sprite_crtc_supported(struct drm_output *output, uint32_t supported)
 {
 	struct weston_compositor *ec = output->base.compositor;
-	struct drm_backend *b =(struct drm_backend *)ec->backend;
+	struct drm_backend *b = to_drm_backend(ec);
 	int crtc;
 
 	for (crtc = 0; crtc < b->num_crtcs; crtc++) {
@@ -505,8 +517,7 @@ static struct weston_plane *
 drm_output_prepare_scanout_view(struct drm_output *output,
 				struct weston_view *ev)
 {
-	struct drm_backend *b =
-		(struct drm_backend *)output->base.compositor->backend;
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct gbm_bo *bo;
@@ -551,8 +562,7 @@ drm_output_prepare_scanout_view(struct drm_output *output,
 static void
 drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 {
-	struct drm_backend *b =
-		(struct drm_backend *)output->base.compositor->backend;
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct gbm_bo *bo;
 
 	output->base.compositor->renderer->repaint_output(&output->base,
@@ -602,7 +612,7 @@ static void
 drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 {
 	struct weston_compositor *c = output->base.compositor;
-	struct drm_backend *b = (struct drm_backend *)c->backend;
+	struct drm_backend *b = to_drm_backend(c);
 
 	if (b->use_pixman)
 		drm_output_render_pixman(output, damage);
@@ -618,9 +628,9 @@ drm_output_set_gamma(struct weston_output *output_base,
 		     uint16_t size, uint16_t *r, uint16_t *g, uint16_t *b)
 {
 	int rc;
-	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_output *output = to_drm_output(output_base);
 	struct drm_backend *backend =
-		(struct drm_backend *) output->base.compositor->backend;
+		to_drm_backend(output->base.compositor);
 
 	/* check */
 	if (output_base->gamma_size != size)
@@ -664,9 +674,9 @@ static int
 drm_output_repaint(struct weston_output *output_base,
 		   pixman_region32_t *damage)
 {
-	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_output *output = to_drm_output(output_base);
 	struct drm_backend *backend =
-		(struct drm_backend *)output->base.compositor->backend;
+		to_drm_backend(output->base.compositor);
 	struct drm_sprite *s;
 	struct drm_mode *mode;
 	int ret = 0;
@@ -763,9 +773,9 @@ err_pageflip:
 static void
 drm_output_start_repaint_loop(struct weston_output *output_base)
 {
-	struct drm_output *output = (struct drm_output *) output_base;
-	struct drm_backend *backend = (struct drm_backend *)
-		output_base->compositor->backend;
+	struct drm_output *output = to_drm_output(output_base);
+	struct drm_backend *backend =
+		to_drm_backend(output_base->compositor);
 	uint32_t fb_id;
 	struct timespec ts, tnow;
 	struct timespec vbl2now;
@@ -873,7 +883,7 @@ static void
 page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
-	struct drm_output *output = (struct drm_output *) data;
+	struct drm_output *output = data;
 	struct timespec ts;
 	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_VSYNC |
 			 WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
@@ -947,7 +957,7 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 				struct weston_view *ev)
 {
 	struct weston_compositor *ec = output->base.compositor;
-	struct drm_backend *b = (struct drm_backend *)ec->backend;
+	struct drm_backend *b = to_drm_backend(ec);
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct wl_resource *buffer_resource;
 	struct drm_sprite *s;
@@ -1119,8 +1129,7 @@ static struct weston_plane *
 drm_output_prepare_cursor_view(struct drm_output *output,
 			       struct weston_view *ev)
 {
-	struct drm_backend *b =
-		(struct drm_backend *)output->base.compositor->backend;
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct wl_shm_buffer *shmbuf;
 
@@ -1199,8 +1208,7 @@ drm_output_set_cursor(struct drm_output *output)
 {
 	struct weston_view *ev = output->cursor_view;
 	struct weston_buffer *buffer;
-	struct drm_backend *b =
-		(struct drm_backend *) output->base.compositor->backend;
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	EGLint handle;
 	struct gbm_bo *bo;
 	float x, y;
@@ -1253,9 +1261,8 @@ drm_output_set_cursor(struct drm_output *output)
 static void
 drm_assign_planes(struct weston_output *output_base)
 {
-	struct drm_backend *b =
-		(struct drm_backend *)output_base->compositor->backend;
-	struct drm_output *output = (struct drm_output *)output_base;
+	struct drm_backend *b = to_drm_backend(output_base->compositor);
+	struct drm_output *output = to_drm_output(output_base);
 	struct weston_view *ev, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_plane *primary, *next_plane;
@@ -1340,9 +1347,8 @@ drm_output_fini_pixman(struct drm_output *output);
 static void
 drm_output_destroy(struct weston_output *output_base)
 {
-	struct drm_output *output = (struct drm_output *) output_base;
-	struct drm_backend *b =
-		(struct drm_backend *)output->base.compositor->backend;
+	struct drm_output *output = to_drm_output(output_base);
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	drmModeCrtcPtr origcrtc = output->original_crtc;
 
 	if (output->page_flip_pending) {
@@ -1441,8 +1447,8 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		return -1;
 	}
 
-	b = (struct drm_backend *)output_base->compositor->backend;
-	output = (struct drm_output *)output_base;
+	b = to_drm_backend(output_base->compositor);
+	output = to_drm_output(output_base);
 	drm_mode  = choose_mode (output, mode);
 
 	if (!drm_mode) {
@@ -1732,7 +1738,7 @@ drm_get_backlight(struct drm_output *output)
 static void
 drm_set_backlight(struct weston_output *output_base, uint32_t value)
 {
-	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_output *output = to_drm_output(output_base);
 	long max_brightness, new_brightness;
 
 	if (!output->backlight)
@@ -1772,9 +1778,9 @@ drm_get_prop(int fd, drmModeConnectorPtr connector, const char *name)
 static void
 drm_set_dpms(struct weston_output *output_base, enum dpms_enum level)
 {
-	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_output *output = to_drm_output(output_base);
 	struct weston_compositor *ec = output_base->compositor;
-	struct drm_backend *b = (struct drm_backend *)ec->backend;
+	struct drm_backend *b = to_drm_backend(ec);
 	int ret;
 
 	if (!output->dpms_prop)
@@ -2734,7 +2740,7 @@ drm_restore(struct weston_compositor *ec)
 static void
 drm_destroy(struct weston_compositor *ec)
 {
-	struct drm_backend *b = (struct drm_backend *) ec->backend;
+	struct drm_backend *b = to_drm_backend(ec);
 
 	udev_input_destroy(&b->input);
 
@@ -2790,7 +2796,7 @@ static void
 session_notify(struct wl_listener *listener, void *data)
 {
 	struct weston_compositor *compositor = data;
-	struct drm_backend *b = (struct drm_backend *)compositor->backend;
+	struct drm_backend *b = to_drm_backend(compositor);
 	struct drm_sprite *sprite;
 	struct drm_output *output;
 
@@ -2930,7 +2936,7 @@ recorder_frame_notify(struct wl_listener *listener, void *data)
 
 	output = container_of(listener, struct drm_output,
 			      recorder_frame_listener);
-	b = (struct drm_backend *)output->base.compositor->backend;
+	b = to_drm_backend(output->base.compositor);
 
 	if (!output->recorder)
 		return;
@@ -3067,7 +3073,7 @@ renderer_switch_binding(struct weston_keyboard *keyboard, uint32_t time,
 			uint32_t key, void *data)
 {
 	struct drm_backend *b =
-		(struct drm_backend *) keyboard->seat->compositor;
+		to_drm_backend(keyboard->seat->compositor);
 
 	switch_to_gl_renderer(b);
 }
