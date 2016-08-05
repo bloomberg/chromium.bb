@@ -463,7 +463,31 @@ class GeneratorJob {
       }
     }
 
-    // Fields descriptors.
+    // Field numbers.
+    if (message->field_count() > 0) {
+      stub_h_->Print("enum : int32_t {\n");
+      stub_h_->Indent();
+
+      for (int i = 0; i < message->field_count(); ++i) {
+        const FieldDescriptor* field = message->field(i);
+        std::string name = field->camelcase_name();
+        if (!name.empty()) {
+          name.at(0) = toupper(name.at(0));
+        } else {
+          // Protoc allows fields like 'bool _ = 1'.
+          Abort("Empty field name in camel case notation.");
+        }
+
+        stub_h_->Print(
+            "k$name$FieldNumber = $id$,\n",
+            "name", name,
+            "id", std::to_string(field->number()));
+      }
+      stub_h_->Outdent();
+      stub_h_->Print("};\n");
+    }
+
+    // Field descriptors.
     for (int i = 0; i < message->field_count(); ++i) {
       const FieldDescriptor* field = message->field(i);
       if (field->is_packed()) {

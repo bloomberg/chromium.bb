@@ -73,3 +73,16 @@ message NestedA {
   repeated NestedB repeated_a = 2;
   optional NestedB.NestedC super_nested = 3;
 }
+
+message CamelCaseFields {
+  // To check that any reasonable name converts to camel case correctly.
+  optional bool foo_bar_baz = 1;
+  optional bool barBaz = 2;
+  optional bool MooMoo = 3;
+  optional bool URLEncoder = 4;
+  optional bool XMap = 5;
+  optional bool UrLE_nco__der = 6;
+  optional bool __bigBang = 7;
+  optional bool U2 = 8;
+  optional bool bangBig__ = 9;
+}
