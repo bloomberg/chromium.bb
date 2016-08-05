@@ -154,24 +154,6 @@ def _PrintTrybotsStatus(tryjob_results):
   for status,name_list in status_to_name.iteritems():
     print '%s: %s' % (status, ','.join(sorted(name_list)))
 
-
-def _GenerateCLDescriptionCommand(webrtc_current, webrtc_new):
-  def GetChangeLogURL(git_repo_url, current_hash, new_hash):
-    return '%s/+log/%s..%s' % (git_repo_url, current_hash[0:7], new_hash[0:7])
-
-  webrtc_str = 'WebRTC %s:%s' % (webrtc_current.commit_position,
-                                 webrtc_new.commit_position)
-  webrtc_changelog_url = GetChangeLogURL(webrtc_current.git_repo_url,
-                                         webrtc_current.git_commit,
-                                         webrtc_new.git_commit)
-
-  description = [ '-m', 'Roll ' + webrtc_str ]
-  description.extend(['-m', 'Changes: %s' % webrtc_changelog_url])
-  description.extend(['-m', 'TBR='])
-  description.extend(['-m', 'CQ_INCLUDE_TRYBOTS=%s' % EXTRA_TRYBOTS])
-  return description
-
-
 class AutoRoller(object):
   def __init__(self, chromium_src):
     self._chromium_src = chromium_src
@@ -200,6 +182,38 @@ class AutoRoller(object):
       logging.error('Command failed: %s\n%s', str(command), output)
       sys.exit(p.returncode)
     return output
+
+  def _GenerateCLDescriptionCommand(self, webrtc_current, webrtc_new):
+    commit_range = '%s..%s' % (webrtc_current.git_commit[:7],
+                               webrtc_new.git_commit[:7])
+
+    webrtc_changelog_url = '%s/+log/%s' % (webrtc_current.git_repo_url,
+                                           commit_range)
+
+    git_log_cmd = ['git', 'log', commit_range, '--date=short', '--no-merges',
+                   '--format=%ad %ae %s']
+
+    working_dir = os.path.join(self._chromium_src, WEBRTC_PATH)
+    git_log = self._RunCommand(git_log_cmd, working_dir=working_dir)
+
+    nb_commits = git_log.count('\n')
+    webrtc_header = 'Roll WebRTC %s:%s (%d commit%s)' % (
+        webrtc_current.commit_position, webrtc_new.commit_position,
+        nb_commits, 's' if nb_commits > 1 else '')
+
+    description = ('%s\n\n'
+                   'Changes: %s\n\n'
+                   '$ %s\n'
+                   '%s\n'
+                   'TBR=\n'
+                   'CQ_INCLUDE_TRYBOTS=%s\n') % (
+                       webrtc_header,
+                       webrtc_changelog_url,
+                       ' '.join(git_log_cmd),
+                       git_log,
+                       EXTRA_TRYBOTS)
+
+    return description
 
   def _GetCommitInfo(self, path_below_src, git_hash=None, git_repo_url=None):
     working_dir = os.path.join(self._chromium_src, path_below_src)
@@ -298,11 +312,11 @@ class AutoRoller(object):
       print 'The latest revision is already rolled for WebRTC.'
       self._DeleteRollBranch()
     else:
-      description = _GenerateCLDescriptionCommand(
+      description = self._GenerateCLDescriptionCommand(
         webrtc_current, webrtc_latest)
       logging.debug('Committing changes locally.')
       self._RunCommand(['git', 'add', '--update', '.'])
-      self._RunCommand(['git', 'commit'] + description)
+      self._RunCommand(['git', 'commit', '-m', description])
       logging.debug('Uploading changes...')
       self._RunCommand(['git', 'cl', 'upload'],
                        extra_env={'EDITOR': 'true'})
