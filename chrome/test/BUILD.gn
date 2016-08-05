@@ -2150,8 +2150,8 @@ test("unit_tests") {
     sources +=
         [ "../browser/password_manager/native_backend_gnome_x_unittest.cc" ]
     configs += [
-      "//chrome/browser:gnome_keyring",
-      "//chrome/browser:gnome_keyring_direct",
+      "//components/os_crypt:gnome_keyring",
+      "//components/os_crypt:gnome_keyring_direct",
     ]
   }
   if (is_linux && !is_chromeos) {
