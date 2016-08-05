@@ -165,6 +165,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                        VideoCaptureDevice::SetPhotoOptionsCallback callback);
   void TakePhoto(int session_id,
                  VideoCaptureDevice::TakePhotoCallback callback);
+
 #if defined(OS_ANDROID)
   // Some devices had troubles when stopped and restarted quickly, so the device
   // is only stopped when Chrome is sent to background and not when, e.g., a tab
@@ -211,13 +212,10 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // may be freed by this function.
   void DestroyDeviceEntryIfNoClients(DeviceEntry* entry);
 
-  // Retrieve the VideoCaptureDevice associated to |session_id|, or nullptr
-  // if not found.
-  VideoCaptureDevice* GetVideoCaptureDeviceBySessionId(int session_id);
-
-  // Finds a DeviceEntry in different ways: by its |device_id| and |type| (if it
-  // is already opened), by its |controller| or by its |serial_id|. In all
-  // cases, if not found, nullptr is returned.
+  // Finds a DeviceEntry in different ways: by |session_id|, by its |device_id|
+  // and |type| (if it is already opened), by its |controller| or by its
+  // |serial_id|. In all cases, if not found, nullptr is returned.
+  DeviceEntry* GetDeviceEntryBySessionId(int session_id);
   DeviceEntry* GetDeviceEntryByTypeAndId(MediaStreamType type,
                                          const std::string& device_id) const;
   DeviceEntry* GetDeviceEntryByController(
@@ -275,6 +273,17 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       media::VideoCaptureDevice* device,
       gfx::NativeViewId window_id);
 
+  // Internal versions of the Image Capture public ones, for delayed execution.
+  void DoGetPhotoCapabilities(
+      VideoCaptureDevice::GetPhotoCapabilitiesCallback callback,
+      VideoCaptureDevice* device);
+  void DoSetPhotoOptions(
+      VideoCaptureDevice::SetPhotoOptionsCallback callback,
+      media::mojom::PhotoSettingsPtr settings,
+      VideoCaptureDevice* device);
+  void DoTakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
+                   VideoCaptureDevice* device);
+
 #if defined(OS_MACOSX)
   // Called on the IO thread after the device layer has been initialized on Mac.
   // Sets |capture_device_api_initialized_| to true and then executes and_then.
@@ -323,6 +332,11 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   DeviceEntries devices_;
 
   DeviceStartQueue device_start_queue_;
+
+  // Queue to keep photo-associated requests waiting for a device to initialize,
+  // bundles a session id integer and an associated photo-related request.
+  std::list<std::pair<int, base::Callback<void(media::VideoCaptureDevice*)>>>
+      photo_request_queue_;
 
   // Device creation factory injected on construction from MediaStreamManager or
   // from the test harness.
