@@ -1158,7 +1158,7 @@ void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect)
         return;
     ASSERT(m_canvas);
 
-    SkAutoDataUnref url(SkData::NewWithCString(link.getString().utf8().data()));
+    sk_sp<SkData> url(SkData::MakeWithCString(link.getString().utf8().data()));
     SkAnnotateRectWithURL(m_canvas, destRect, url.get());
 }
 
@@ -1168,7 +1168,7 @@ void GraphicsContext::setURLFragmentForRect(const String& destName, const IntRec
         return;
     ASSERT(m_canvas);
 
-    SkAutoDataUnref skDestName(SkData::NewWithCString(destName.utf8().data()));
+    sk_sp<SkData> skDestName(SkData::MakeWithCString(destName.utf8().data()));
     SkAnnotateLinkToDestination(m_canvas, rect, skDestName.get());
 }
 
@@ -1178,8 +1178,8 @@ void GraphicsContext::setURLDestinationLocation(const String& name, const IntPoi
         return;
     ASSERT(m_canvas);
 
-    SkAutoDataUnref skName(SkData::NewWithCString(name.utf8().data()));
-    SkAnnotateNamedDestination(m_canvas, SkPoint::Make(location.x(), location.y()), skName);
+    sk_sp<SkData> skName(SkData::MakeWithCString(name.utf8().data()));
+    SkAnnotateNamedDestination(m_canvas, SkPoint::Make(location.x(), location.y()), skName.get());
 }
 
 void GraphicsContext::concatCTM(const AffineTransform& affine)

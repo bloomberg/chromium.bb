@@ -569,7 +569,7 @@ void ThumbnailCache::CompressionTask(
                                          encoded_size.height(),
                                          kUnknown_SkColorType,
                                          kUnpremul_SkAlphaType);
-    sk_sp<SkData> etc1_pixel_data(SkData::NewUninitialized(encoded_bytes));
+    sk_sp<SkData> etc1_pixel_data(SkData::MakeUninitialized(encoded_bytes));
     sk_sp<SkMallocPixelRef> etc1_pixel_ref(
         SkMallocPixelRef::NewWithData(info, 0, NULL, etc1_pixel_data.get()));
 
@@ -685,7 +685,7 @@ bool ReadFromFile(base::File& file,
   }
 
   int data_size = etc1_get_encoded_data_size(raw_width, raw_height);
-  sk_sp<SkData> etc1_pixel_data(SkData::NewUninitialized(data_size));
+  sk_sp<SkData> etc1_pixel_data(SkData::MakeUninitialized(data_size));
 
   int pixel_bytes_read = file.ReadAtCurrentPos(
       reinterpret_cast<char*>(etc1_pixel_data->writable_data()),

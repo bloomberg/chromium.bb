@@ -348,7 +348,7 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
         memcpy(&mailboxInfo.m_mailbox.name[0], mailboxInfo.m_image->getTexture()->getCustomData()->data(), sizeof(mailboxInfo.m_mailbox.name));
     } else {
         gl->GenMailboxCHROMIUM(mailboxInfo.m_mailbox.name);
-        RefPtr<SkData> mailboxNameData = adoptRef(SkData::NewWithCopy(&mailboxInfo.m_mailbox.name[0], sizeof(mailboxInfo.m_mailbox.name)));
+        sk_sp<SkData> mailboxNameData = SkData::MakeWithCopy(&mailboxInfo.m_mailbox.name[0], sizeof(mailboxInfo.m_mailbox.name));
         mailboxInfo.m_image->getTexture()->setCustomData(mailboxNameData.get());
         gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo.m_mailbox.name);
     }

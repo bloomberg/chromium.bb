@@ -96,7 +96,7 @@ class EncodingSerializer : public SkPixelSerializer {
         // interesting.
         vector.push_back(pixmap.colorType());
         vector.push_back(pixmap.alphaType());
-        return SkData::NewWithCopy(&vector.front(), vector.size());
+        return SkData::MakeWithCopy(&vector.front(), vector.size()).release();
     } else {
       SkBitmap bm;
       // The const_cast is fine, since we only read from the bitmap.
@@ -104,7 +104,7 @@ class EncodingSerializer : public SkPixelSerializer {
                            const_cast<void*>(pixmap.addr()),
                            pixmap.rowBytes())) {
         if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, false, &vector)) {
-          return SkData::NewWithCopy(&vector.front(), vector.size());
+          return SkData::MakeWithCopy(&vector.front(), vector.size()).release();
         }
       }
     }

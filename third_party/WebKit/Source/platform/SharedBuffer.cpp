@@ -261,10 +261,10 @@ bool SharedBuffer::getAsBytesInternal(void* dest, size_t byteLength) const
     return true;
 }
 
-PassRefPtr<SkData> SharedBuffer::getAsSkData() const
+sk_sp<SkData> SharedBuffer::getAsSkData() const
 {
     size_t bufferLength = size();
-    SkData* data = SkData::NewUninitialized(bufferLength);
+    sk_sp<SkData> data = SkData::MakeUninitialized(bufferLength);
     char* buffer = static_cast<char*>(data->writable_data());
     const char* segment = 0;
     size_t position = 0;
@@ -278,7 +278,7 @@ PassRefPtr<SkData> SharedBuffer::getAsSkData() const
         // Don't return the incomplete SkData.
         return nullptr;
     }
-    return adoptRef(data);
+    return data;
 }
 
 bool SharedBuffer::lock()

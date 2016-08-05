@@ -20,7 +20,6 @@
     # defines in SkUserConfig.h which are normally more permanent.
     'chromium_skia_defines': [
       'SK_IGNORE_DW_GRAY_FIX',
-      'SK_SUPPORT_LEGACY_DATA_FACTORIES',
     ],
   },
 }

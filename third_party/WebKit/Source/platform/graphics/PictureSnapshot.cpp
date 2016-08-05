@@ -66,7 +66,7 @@ static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
         return false;
 
     // No need to copy the data; this decodes immediately.
-    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkData(adoptRef(SkData::NewWithoutCopy(data, length)));
+    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkData(SkData::MakeWithoutCopy(data, length));
     imageDecoder->setData(segmentReader.release(), true);
     ImageFrame* frame = imageDecoder->frameBufferAtIndex(0);
     if (!frame)

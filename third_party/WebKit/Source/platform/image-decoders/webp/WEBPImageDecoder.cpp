@@ -144,7 +144,7 @@ void WEBPImageDecoder::clear()
 {
     WebPDemuxDelete(m_demux);
     m_demux = 0;
-    m_consolidatedData.clear();
+    m_consolidatedData.reset();
     clearDecoder();
 }
 
@@ -201,7 +201,7 @@ bool WEBPImageDecoder::updateDemuxer()
     m_demux = WebPDemuxPartial(&inputData, &m_demuxState);
     if (!m_demux || (isAllDataReceived() && m_demuxState != WEBP_DEMUX_DONE)) {
         if (!m_demux)
-            m_consolidatedData.clear();
+            m_consolidatedData.reset();
         return setFailed();
     }
 

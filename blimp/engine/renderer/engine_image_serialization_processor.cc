@@ -29,13 +29,13 @@ namespace blimp {
 namespace engine {
 namespace {
 
-SkData* BlobCacheImageMetadataProtoAsSkData(
+sk_sp<SkData> BlobCacheImageMetadataProtoAsSkData(
     const BlobCacheImageMetadata& proto) {
   int signed_size = proto.ByteSize();
   size_t unsigned_size = base::checked_cast<size_t>(signed_size);
   std::vector<uint8_t> serialized(unsigned_size);
   proto.SerializeWithCachedSizesToArray(serialized.data());
-  return SkData::NewWithCopy(serialized.data(), serialized.size());
+  return SkData::MakeWithCopy(serialized.data(), serialized.size());
 }
 
 // For each pixel, un-premultiplies the alpha-channel for each of the RGB
@@ -145,9 +145,9 @@ SkData* EngineImageSerializationProcessor::onEncode(const SkPixmap& pixmap) {
   proto.set_width(pixmap.width());
   proto.set_height(pixmap.height());
 
-  SkData* sk_data = BlobCacheImageMetadataProtoAsSkData(proto);
+  sk_sp<SkData> sk_data = BlobCacheImageMetadataProtoAsSkData(proto);
   DVLOG(3) << "Returning image ID " << BlobIdToString(blob_id);
-  return sk_data;
+  return sk_data.release();
 }
 
 scoped_refptr<BlobData> EngineImageSerializationProcessor::EncodeImageAsBlob(

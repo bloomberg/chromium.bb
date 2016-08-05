@@ -54,7 +54,7 @@ class BitmapSerializer : public SkPixelSerializer {
     }
 
     if (encoding_succeeded) {
-      return SkData::NewWithCopy(&data.front(), data.size());
+      return SkData::MakeWithCopy(&data.front(), data.size()).release();
     }
     return nullptr;
   }

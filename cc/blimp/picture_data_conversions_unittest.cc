@@ -43,7 +43,7 @@ bool SamePicture(sk_sp<const SkPicture> picture,
     return false;
 
   sk_sp<const SkData> serialized_picture = SerializePicture(picture);
-  return picture_data.data->equals(serialized_picture);
+  return picture_data.data->equals(serialized_picture.get());
 }
 
 PictureData CreatePictureData(sk_sp<const SkPicture> picture) {

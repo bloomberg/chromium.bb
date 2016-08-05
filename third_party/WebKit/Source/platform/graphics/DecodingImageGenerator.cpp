@@ -66,7 +66,7 @@ SkData* DecodingImageGenerator::onRefEncodedData(GrContext* ctx)
     // Other clients are serializers, which want the data even if it requires
     // copying, and even if the data is incomplete. (Otherwise they would
     // potentially need to decode the partial image in order to re-encode it.)
-    return m_data->getAsSkData().leakRef();
+    return m_data->getAsSkData().release();
 }
 
 bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, size_t rowBytes, SkPMColor table[], int* tableCount)
@@ -127,9 +127,7 @@ SkImageGenerator* DecodingImageGenerator::create(SkData* data)
     if (!decoder)
         return 0;
 
-    // Blink does not know Skia has already adopted |data|.
-    WTF::adopted(data);
-    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkData(data);
+    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkData(sk_ref_sp(data));
     decoder->setData(segmentReader.get(), true);
     if (!decoder->isSizeAvailable())
         return 0;

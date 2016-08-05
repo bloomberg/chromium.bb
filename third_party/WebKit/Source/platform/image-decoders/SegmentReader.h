@@ -34,14 +34,14 @@ public:
     static PassRefPtr<SegmentReader> createFromSharedBuffer(PassRefPtr<SharedBuffer>);
 
     // These versions use thread-safe input, so they are always thread-safe.
-    static PassRefPtr<SegmentReader> createFromSkData(PassRefPtr<SkData>);
+    static PassRefPtr<SegmentReader> createFromSkData(sk_sp<SkData>);
     static PassRefPtr<SegmentReader> createFromSkROBuffer(PassRefPtr<SkROBuffer>);
 
     SegmentReader() {}
     virtual ~SegmentReader() {}
     virtual size_t size() const = 0;
     virtual size_t getSomeData(const char*& data, size_t position) const = 0;
-    virtual PassRefPtr<SkData> getAsSkData() const = 0;
+    virtual sk_sp<SkData> getAsSkData() const = 0;
 };
 
 } // namespace blink

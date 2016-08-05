@@ -182,7 +182,7 @@ TEST(SegmentReaderTest, getAsSkData)
 
     SegmentReaders readerStruct(data);
     for (auto segmentReader : readerStruct.segmentReaders) {
-        RefPtr<SkData> skdata = segmentReader->getAsSkData();
+        sk_sp<SkData> skdata = segmentReader->getAsSkData();
         EXPECT_EQ(data->size(), skdata->size());
 
         const char* segment;
