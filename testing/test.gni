@@ -249,18 +249,10 @@ template("test") {
         info_plist = "//testing/gtest_ios/unittest-Info.plist"
       }
 
-      # TODO(crbug.com/603102): remove this once gyp support is dropped and all
-      # application uses the target name as value for BUNDLE_ID_TEST_NAME.
-      if (defined(invoker.app_name)) {
-        app_name = invoker.app_name
-      } else {
-        app_name = target_name
-      }
-
       if (!defined(extra_substitutions)) {
         extra_substitutions = []
       }
-      extra_substitutions += [ "BUNDLE_ID_TEST_NAME=$app_name" ]
+      extra_substitutions += [ "BUNDLE_ID_TEST_NAME=$target_name" ]
 
       if (!defined(deps)) {
         deps = []
