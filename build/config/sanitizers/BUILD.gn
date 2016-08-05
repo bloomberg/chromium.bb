@@ -176,6 +176,10 @@ config("default_sanitizer_ldflags") {
       ldflags += [ "-fsanitize=vptr" ]
     }
 
+    if (use_sanitizer_coverage) {
+      ldflags += [ "-fsanitize-coverage=$sanitizer_coverage_flags" ]
+    }
+
     if (is_cfi && !is_nacl) {
       ldflags += [ "-fsanitize=cfi-vcall" ]
       if (use_cfi_cast) {

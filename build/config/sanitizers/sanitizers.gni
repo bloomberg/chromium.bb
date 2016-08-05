@@ -146,8 +146,9 @@ if (use_afl && sanitizer_coverage_flags == "") {
   sanitizer_coverage_flags = "edge,indirect-calls,8bit-counters"
 }
 
-using_sanitizer = is_asan || is_lsan || is_tsan || is_msan || is_ubsan ||
-                  is_ubsan_null || is_ubsan_vptr || is_ubsan_security
+using_sanitizer =
+    is_asan || is_lsan || is_tsan || is_msan || is_ubsan || is_ubsan_null ||
+    is_ubsan_vptr || is_ubsan_security || use_sanitizer_coverage
 
 assert(!using_sanitizer || is_clang,
        "Sanitizers (is_*san) require setting is_clang = true in 'gn args'")
