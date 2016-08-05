@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "ui/gfx/color_space.h"
 
 #if defined(OS_MACOSX)
@@ -57,7 +58,7 @@ class GFX_EXPORT ICCProfile {
 #endif
 
  private:
-  static ICCProfile FromData(const std::vector<char>& icc_profile);
+  static ICCProfile FromData(const char* icc_profile, size_t size);
   static bool IsValidProfileLength(size_t length);
 
   bool valid_ = false;
@@ -67,6 +68,7 @@ class GFX_EXPORT ICCProfile {
   // profile from a ColorSpace object created from it.
   uint64_t id_ = 0;
 
+  FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, BT709toSRGBICC);
   friend class ColorSpace;
   friend struct IPC::ParamTraits<gfx::ICCProfile>;
 };

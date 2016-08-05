@@ -4,14 +4,7 @@
 
 {
   'variables': {
-    'conditions': [
-      # Do not build QCMS on Android or iOS. (See http://crbug.com/577155)
-      ['OS == "android" or OS == "ios"', {
-        'disable_qcms%': 1,
-      }, {
-        'disable_qcms%': 0,
-      }],
-    ],
+   'disable_qcms%': 0,
   },
   'targets': [
     {

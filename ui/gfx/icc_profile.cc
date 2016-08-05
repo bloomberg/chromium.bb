@@ -46,11 +46,11 @@ bool ICCProfile::operator==(const ICCProfile& other) const {
 }
 
 // static
-ICCProfile ICCProfile::FromData(const std::vector<char>& icc_profile_data) {
+ICCProfile ICCProfile::FromData(const char* data, size_t size) {
   ICCProfile icc_profile;
-  if (IsValidProfileLength(icc_profile_data.size())) {
+  if (IsValidProfileLength(size)) {
     icc_profile.valid_ = true;
-    icc_profile.data_ = icc_profile_data;
+    icc_profile.data_.insert(icc_profile.data_.begin(), data, data + size);
   }
   if (!icc_profile.valid_)
     return icc_profile;

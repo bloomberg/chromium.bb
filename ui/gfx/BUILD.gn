@@ -265,6 +265,7 @@ component("gfx") {
     "//skia",
     "//third_party/harfbuzz-ng",
     "//third_party/libpng",
+    "//third_party/qcms",
     "//third_party/zlib",
   ]
 

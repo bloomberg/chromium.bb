@@ -24,7 +24,7 @@ ICCProfile ICCProfile::FromCGColorSpace(CGColorSpaceRef cg_color_space) {
   const unsigned char* data = CFDataGetBytePtr(cf_icc_profile);
   std::vector<char> vector_icc_profile;
   vector_icc_profile.assign(data, data + length);
-  return FromData(vector_icc_profile);
+  return FromData(vector_icc_profile.data(), vector_icc_profile.size());
 }
 
 }  // namespace gfx

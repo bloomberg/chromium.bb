@@ -8,7 +8,15 @@
 
 #include "base/logging.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/icc_profile.h"
 #include "ui/gfx/transform.h"
+#include "third_party/qcms/src/qcms.h"
+
+#ifndef THIS_MUST_BE_INCLUDED_AFTER_QCMS_H
+extern "C" {
+#include "third_party/qcms/src/chain.h"
+};
+#endif
 
 namespace gfx {
 
@@ -178,7 +186,7 @@ GFX_EXPORT Transform GetPrimaryMatrix(ColorSpace::PrimaryID id) {
                   dest_response.y() / source_response.y(),
                   dest_response.z() / source_response.z());
 
-  return bradford * adapter * Invert(bradford) * ret;
+  return Invert(bradford) * adapter * bradford * ret;
 }
 
 GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
@@ -547,14 +555,104 @@ class ColorSpaceToColorSpaceTransform : public ColorTransform {
   Transform c_;
 };
 
+class QCMSColorTransform : public ColorTransform {
+ public:
+  // Takes ownership of the profiles
+  QCMSColorTransform(qcms_profile* from, qcms_profile* to)
+      : from_(from), to_(to) {}
+  ~QCMSColorTransform() {
+    qcms_profile_release(from_);
+    qcms_profile_release(to_);
+  }
+  void transform(TriStim* colors, size_t num) override {
+    CHECK(sizeof(TriStim) == sizeof(float[3]));
+    // QCMS doesn't like numbers outside 0..1
+    for (size_t i = 0; i < num; i++) {
+      colors[i].set_x(fmin(1.0f, fmax(0.0f, colors[i].x())));
+      colors[i].set_y(fmin(1.0f, fmax(0.0f, colors[i].y())));
+      colors[i].set_z(fmin(1.0f, fmax(0.0f, colors[i].z())));
+    }
+    qcms_chain_transform(from_, to_, reinterpret_cast<float*>(colors),
+                         reinterpret_cast<float*>(colors), num * 3);
+  }
+
+ private:
+  qcms_profile *from_, *to_;
+};
+
+class ChainColorTransform : public ColorTransform {
+ public:
+  ChainColorTransform(std::unique_ptr<ColorTransform> a,
+                      std::unique_ptr<ColorTransform> b)
+      : a_(std::move(a)), b_(std::move(b)) {}
+
+ private:
+  void transform(TriStim* colors, size_t num) override {
+    a_->transform(colors, num);
+    b_->transform(colors, num);
+  }
+  std::unique_ptr<ColorTransform> a_;
+  std::unique_ptr<ColorTransform> b_;
+};
+
+qcms_profile* GetQCMSProfileIfAvailable(const ColorSpace& color_space) {
+  ICCProfile icc_profile = ICCProfile::FromColorSpace(color_space);
+  if (icc_profile.GetData().empty())
+    return nullptr;
+  return qcms_profile_from_memory(icc_profile.GetData().data(),
+                                  icc_profile.GetData().size());
+}
+
+qcms_profile* GetXYZD50Profile() {
+  // QCMS is trixy, it has a datatype called qcms_CIE_xyY, but what it expects
+  // is in fact not xyY color coordinates, it just wants the x/y values of the
+  // primaries with Y equal to 1.0.
+  qcms_CIE_xyYTRIPLE xyz;
+  qcms_CIE_xyY w;
+  xyz.red.x = 1.0f;
+  xyz.red.y = 0.0f;
+  xyz.red.Y = 1.0f;
+  xyz.green.x = 0.0f;
+  xyz.green.y = 1.0f;
+  xyz.green.Y = 1.0f;
+  xyz.blue.x = 0.0f;
+  xyz.blue.y = 0.0f;
+  xyz.blue.Y = 1.0f;
+  w.x = 0.34567f;
+  w.y = 0.35850f;
+  w.Y = 1.0f;
+  return qcms_profile_create_rgb_with_gamma(w, xyz, 1.0f);
+}
+
 std::unique_ptr<ColorTransform> ColorTransform::NewColorTransform(
     const ColorSpace& from,
     const ColorSpace& to,
     Intent intent) {
-  // TODO(Hubbe): Check if from and/or to can be mapped to ICC profiles and
-  // provide better transforms in those cases.
-  return std::unique_ptr<ColorTransform>(
-      new ColorSpaceToColorSpaceTransform(from, to, intent));
+  qcms_profile* from_profile = GetQCMSProfileIfAvailable(from);
+  qcms_profile* to_profile = GetQCMSProfileIfAvailable(to);
+  if (from_profile) {
+    if (to_profile) {
+      return std::unique_ptr<ColorTransform>(
+          new QCMSColorTransform(from_profile, to_profile));
+    } else {
+      return std::unique_ptr<ColorTransform>(new ChainColorTransform(
+          std::unique_ptr<ColorTransform>(
+              new QCMSColorTransform(from_profile, GetXYZD50Profile())),
+          std::unique_ptr<ColorTransform>(new ColorSpaceToColorSpaceTransform(
+              ColorSpace::CreateXYZD50(), to, intent))));
+    }
+  } else {
+    if (to_profile) {
+      return std::unique_ptr<ColorTransform>(new ChainColorTransform(
+          std::unique_ptr<ColorTransform>(new ColorSpaceToColorSpaceTransform(
+              from, ColorSpace::CreateXYZD50(), intent)),
+          std::unique_ptr<ColorTransform>(
+              new QCMSColorTransform(GetXYZD50Profile(), to_profile))));
+    } else {
+      return std::unique_ptr<ColorTransform>(
+          new ColorSpaceToColorSpaceTransform(from, to, intent));
+    }
+  }
 }
 
 }  // namespace gfx
