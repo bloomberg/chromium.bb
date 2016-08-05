@@ -148,7 +148,7 @@ public:
 
     bool scrollingLayerDidChange(PaintLayer*);
 
-    PassRefPtr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
+    std::unique_ptr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
 
     GraphicsLayer* layerForHorizontalScrollbar() const { return m_layerForHorizontalScrollbar.get(); }
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }

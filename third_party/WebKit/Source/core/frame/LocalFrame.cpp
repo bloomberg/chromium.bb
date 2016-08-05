@@ -783,14 +783,14 @@ String LocalFrame::layerTreeAsText(unsigned flags) const
     if (contentLayoutItem().isNull())
         return String();
 
-    RefPtr<JSONObject> layerTree = contentLayoutItem().compositor()->layerTreeAsJSON(static_cast<LayerTreeFlags>(flags));
+    std::unique_ptr<JSONObject> layerTree = contentLayoutItem().compositor()->layerTreeAsJSON(static_cast<LayerTreeFlags>(flags));
 
     if (flags & LayerTreeIncludesPaintInvalidations) {
-        RefPtr<JSONArray> objectPaintInvalidations = m_view->trackedObjectPaintInvalidationsAsJSON();
-        if (objectPaintInvalidations && objectPaintInvalidations->length()) {
+        std::unique_ptr<JSONArray> objectPaintInvalidations = m_view->trackedObjectPaintInvalidationsAsJSON();
+        if (objectPaintInvalidations && objectPaintInvalidations->size()) {
             if (!layerTree)
                 layerTree = JSONObject::create();
-            layerTree->setArray("objectPaintInvalidations", objectPaintInvalidations);
+            layerTree->setArray("objectPaintInvalidations", std::move(objectPaintInvalidations));
         }
     }
 

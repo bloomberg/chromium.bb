@@ -328,7 +328,7 @@ void validateAndConvertPaymentMethodData(const HeapVector<PaymentMethodData>& pa
 
         String stringifiedData = "";
         if (pmd.hasData() && !pmd.data().isEmpty()) {
-            RefPtr<JSONValue> value = toJSONValue(pmd.data().context(), pmd.data().v8Value());
+            std::unique_ptr<JSONValue> value = toJSONValue(pmd.data().context(), pmd.data().v8Value());
             if (!value) {
                 exceptionState.throwTypeError("Unable to parse payment method specific data");
                 return;
@@ -338,7 +338,7 @@ void validateAndConvertPaymentMethodData(const HeapVector<PaymentMethodData>& pa
                     exceptionState.throwTypeError("Data should be a JSON-serializable object");
                     return;
                 }
-                stringifiedData = JSONObject::cast(value)->toJSONString();
+                stringifiedData = JSONObject::cast(value.get())->toJSONString();
             }
         }
         methodData->append(PaymentRequest::MethodData(pmd.supportedMethods(), stringifiedData));

@@ -90,12 +90,12 @@ PassRefPtr<EncodedFormData> XSSAuditorDelegate::generateViolationReport(const XS
             httpBody = formData->flattenToString();
     }
 
-    RefPtr<JSONObject> reportDetails = JSONObject::create();
+    std::unique_ptr<JSONObject> reportDetails = JSONObject::create();
     reportDetails->setString("request-url", xssInfo.m_originalURL);
     reportDetails->setString("request-body", httpBody);
 
-    RefPtr<JSONObject> reportObject = JSONObject::create();
-    reportObject->setObject("xss-report", reportDetails.release());
+    std::unique_ptr<JSONObject> reportObject = JSONObject::create();
+    reportObject->setObject("xss-report", std::move(reportDetails));
 
     return EncodedFormData::create(reportObject->toJSONString().utf8().data());
 }

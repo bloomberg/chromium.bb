@@ -878,7 +878,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     // sent explicitly. As for which directive was violated, that's pretty
     // harmless information.
 
-    RefPtr<JSONObject> cspReport = JSONObject::create();
+    std::unique_ptr<JSONObject> cspReport = JSONObject::create();
     cspReport->setString("document-uri", violationData.documentURI());
     cspReport->setString("referrer", violationData.referrer());
     cspReport->setString("violated-directive", violationData.violatedDirective());
@@ -886,15 +886,15 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     cspReport->setString("original-policy", violationData.originalPolicy());
     cspReport->setString("blocked-uri", violationData.blockedURI());
     if (violationData.lineNumber())
-        cspReport->setNumber("line-number", violationData.lineNumber());
+        cspReport->setInteger("line-number", violationData.lineNumber());
     if (violationData.columnNumber())
-        cspReport->setNumber("column-number", violationData.columnNumber());
+        cspReport->setInteger("column-number", violationData.columnNumber());
     if (!violationData.sourceFile().isEmpty())
         cspReport->setString("source-file", violationData.sourceFile());
-    cspReport->setNumber("status-code", violationData.statusCode());
+    cspReport->setInteger("status-code", violationData.statusCode());
 
-    RefPtr<JSONObject> reportObject = JSONObject::create();
-    reportObject->setObject("csp-report", cspReport.release());
+    std::unique_ptr<JSONObject> reportObject = JSONObject::create();
+    reportObject->setObject("csp-report", std::move(cspReport));
     String stringifiedReport = reportObject->toJSONString();
 
     if (!shouldSendViolationReport(stringifiedReport))

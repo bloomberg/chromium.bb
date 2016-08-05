@@ -327,7 +327,7 @@ public:
     void setTracksPaintInvalidations(bool);
     bool isTrackingPaintInvalidations() const { return m_trackedObjectPaintInvalidations.get(); }
     void trackObjectPaintInvalidation(const DisplayItemClient&, PaintInvalidationReason);
-    PassRefPtr<JSONArray> trackedObjectPaintInvalidationsAsJSON() const;
+    std::unique_ptr<JSONArray> trackedObjectPaintInvalidationsAsJSON() const;
 
     using ScrollableAreaSet = HeapHashSet<Member<ScrollableArea>>;
     void addScrollableArea(ScrollableArea*);

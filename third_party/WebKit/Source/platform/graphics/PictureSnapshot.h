@@ -59,7 +59,7 @@ public:
 
     std::unique_ptr<Vector<char>> replay(unsigned fromStep = 0, unsigned toStep = 0, double scale = 1.0) const;
     std::unique_ptr<Timings> profile(unsigned minIterations, double minDuration, const FloatRect* clipRect) const;
-    PassRefPtr<JSONArray> snapshotCommandLog() const;
+    std::unique_ptr<JSONArray> snapshotCommandLog() const;
     bool isEmpty() const;
 
 private:

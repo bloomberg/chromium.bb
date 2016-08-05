@@ -80,10 +80,10 @@ static bool copySequenceOfStringProperty(const char* property, const Dictionary&
     Vector<String> value;
     if (!DictionaryHelper::get(source, property, value))
         return false;
-    RefPtr<JSONArray> jsonArray = JSONArray::create();
+    std::unique_ptr<JSONArray> jsonArray = JSONArray::create();
     for (unsigned i = 0; i < value.size(); ++i)
         jsonArray->pushString(value[i]);
-    destination->setArray(property, jsonArray.release());
+    destination->setArray(property, std::move(jsonArray));
     return true;
 }
 
@@ -133,7 +133,7 @@ static bool parseJsonWebKey(const Dictionary& dict, WebVector<uint8_t>& jsonUtf8
     //  * Parse "oth" (crbug.com/441396)
     //  * Fail with TypeError (not DataError) if the input does not conform
     //    to a JsonWebKey
-    RefPtr<JSONObject> jsonObject = JSONObject::create();
+    std::unique_ptr<JSONObject> jsonObject = JSONObject::create();
 
     if (!copyStringProperty("kty", dict, jsonObject.get())) {
         result->completeWithError(WebCryptoErrorTypeData, "The required JWK member \"kty\" was missing");

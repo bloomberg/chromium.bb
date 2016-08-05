@@ -645,7 +645,7 @@ bool PaintLayerCompositor::scrollingLayerDidChange(PaintLayer* layer)
     return false;
 }
 
-PassRefPtr<JSONObject> PaintLayerCompositor::layerTreeAsJSON(LayerTreeFlags flags) const
+std::unique_ptr<JSONObject> PaintLayerCompositor::layerTreeAsJSON(LayerTreeFlags flags) const
 {
     ASSERT(lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean || m_layoutView.frameView()->shouldThrottleRendering());
 

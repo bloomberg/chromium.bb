@@ -33,13 +33,16 @@
 
 #include "platform/JSONValues.h"
 #include "platform/graphics/InterceptingCanvas.h"
+#include <memory>
 
 namespace blink {
 
 class LoggingCanvas : public InterceptingCanvasBase {
 public:
     LoggingCanvas(int width, int height);
-    PassRefPtr<JSONArray> log();
+
+    // Returns a snapshot of the current log data.
+    std::unique_ptr<JSONArray> log();
 
     void onDrawPaint(const SkPaint&) override;
     void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override;
@@ -75,7 +78,7 @@ public:
 private:
     friend class AutoLogger;
 
-    RefPtr<JSONArray> m_log;
+    std::unique_ptr<JSONArray> m_log;
 };
 
 #ifndef NDEBUG

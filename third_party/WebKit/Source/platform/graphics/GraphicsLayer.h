@@ -202,7 +202,7 @@ public:
     // pointers for the layers and timing data will be included in the returned string.
     String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
 
-    PassRefPtr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
+    std::unique_ptr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
 
     void setTracksPaintInvalidations(bool);
     bool isTrackingOrCheckingPaintInvalidations() const
@@ -296,7 +296,7 @@ private:
     WebLayer* contentsLayerIfRegistered();
 
     typedef HashMap<int, int> RenderingContextMap;
-    PassRefPtr<JSONObject> layerTreeAsJSONInternal(LayerTreeFlags, RenderingContextMap&) const;
+    std::unique_ptr<JSONObject> layerTreeAsJSONInternal(LayerTreeFlags, RenderingContextMap&) const;
 
 #if DCHECK_IS_ON()
     PassRefPtr<SkPicture> capturePicture();

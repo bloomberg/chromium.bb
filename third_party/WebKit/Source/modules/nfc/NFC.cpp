@@ -178,7 +178,7 @@ struct TypeConverter<mojo::WTFArray<uint8_t>, blink::ScriptValue> {
         }
 
         if (value->IsObject() && !value->IsArrayBuffer()) {
-            RefPtr<blink::JSONValue> jsonResult = blink::toJSONValue(scriptValue.context(), value);
+            std::unique_ptr<blink::JSONValue> jsonResult = blink::toJSONValue(scriptValue.context(), value);
             if (jsonResult && (jsonResult->getType() == blink::JSONValue::TypeObject))
                 return mojo::WTFArray<uint8_t>::From(jsonResult->toJSONString());
         }

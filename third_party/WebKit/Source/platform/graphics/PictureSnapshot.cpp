@@ -174,7 +174,7 @@ std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::profile(unsigned minR
     return timings;
 }
 
-PassRefPtr<JSONArray> PictureSnapshot::snapshotCommandLog() const
+std::unique_ptr<JSONArray> PictureSnapshot::snapshotCommandLog() const
 {
     const SkIRect bounds = m_picture->cullRect().roundOut();
     LoggingCanvas canvas(bounds.width(), bounds.height());
