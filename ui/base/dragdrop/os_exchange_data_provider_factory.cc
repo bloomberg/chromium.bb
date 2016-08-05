@@ -22,6 +22,7 @@ OSExchangeDataProviderFactory::Factory* factory_ = nullptr;
 
 // static
 void OSExchangeDataProviderFactory::SetFactory(Factory* factory) {
+  DCHECK(!factory_ || !factory);
   factory_ = factory;
 }
 

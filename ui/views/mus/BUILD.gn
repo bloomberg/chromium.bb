@@ -28,6 +28,8 @@ component("mus") {
     "mus_export.h",
     "native_widget_mus.cc",
     "native_widget_mus.h",
+    "os_exchange_data_provider_mus.cc",
+    "os_exchange_data_provider_mus.h",
     "screen_mus.cc",
     "screen_mus.h",
     "screen_mus_delegate.h",

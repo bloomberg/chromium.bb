@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
@@ -19,6 +20,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/native_widget_mus.h"
+#include "ui/views/mus/os_exchange_data_provider_mus.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/touch_event_watcher.h"
@@ -40,6 +42,7 @@ WindowManagerConnection::~WindowManagerConnection() {
   // ~WindowTreeClient calls back to us (we're its delegate), destroy it while
   // we are still valid.
   client_.reset();
+  ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
   ui::Clipboard::DestroyClipboardForCurrentThread();
   gpu_service_.reset();
   lazy_tls_ptr.Pointer()->Set(nullptr);
@@ -161,6 +164,8 @@ WindowManagerConnection::WindowManagerConnection(
   clipboard->Init(connector);
   ui::Clipboard::SetClipboardForCurrentThread(std::move(clipboard));
 
+  ui::OSExchangeDataProviderFactory::SetFactory(this);
+
   ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
       &WindowManagerConnection::CreateNativeWidgetMus,
       base::Unretained(this),
@@ -234,6 +239,11 @@ void WindowManagerConnection::OnWindowManagerFrameValuesChanged() {
 
 gfx::Point WindowManagerConnection::GetCursorScreenPoint() {
   return client_->GetCursorScreenPoint();
+}
+
+std::unique_ptr<OSExchangeData::Provider>
+WindowManagerConnection::BuildProvider() {
+  return base::MakeUnique<OSExchangeDataProviderMus>();
 }
 
 }  // namespace views

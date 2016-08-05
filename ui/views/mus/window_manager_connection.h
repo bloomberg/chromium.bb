@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -49,7 +50,8 @@ class NativeWidgetDelegate;
 // TODO(sky): this name is now totally confusing. Come up with a better one.
 class VIEWS_MUS_EXPORT WindowManagerConnection
     : public NON_EXPORTED_BASE(ui::WindowTreeClientDelegate),
-      public ScreenMusDelegate {
+      public ScreenMusDelegate,
+      public ui::OSExchangeDataProviderFactory::Factory {
  public:
   ~WindowManagerConnection() override;
 
@@ -95,6 +97,9 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
   gfx::Point GetCursorScreenPoint() override;
+
+  // ui:OSExchangeDataProviderFactory::Factory:
+  std::unique_ptr<OSExchangeData::Provider> BuildProvider() override;
 
   shell::Connector* connector_;
   shell::Identity identity_;
