@@ -204,13 +204,29 @@ Status WaitForDevToolsAndCheckVersion(
   if (status.IsError())
     return status;
 
+  const BrowserInfo* browser_info = client->browser_info();
+  if (browser_info->is_android &&
+      browser_info->android_package != capabilities->android_package) {
+    // DevTools from Chrome 30 and earlier did not provide an Android-Package
+    // key, so skip the package check for WebView on KitKat and older.
+    // TODO(samuong): Make this unconditional once we stop supporting Android
+    // KitKat WebView apps.
+    if (!(browser_info->browser_name == "webview" &&
+          browser_info->major_version <= 30 &&
+          browser_info->android_package.empty())) {
+      return Status(
+          kSessionNotCreatedException,
+          base::StringPrintf("please close '%s' and try again",
+                             browser_info->android_package.c_str()));
+    }
+  }
+
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch("disable-build-check")) {
     LOG(WARNING) << "You are using an unsupported command-line switch: "
                     "--disable-build-check. Please don't report bugs that "
                     "cannot be reproduced with this switch removed.";
-  } else if (client->browser_info()->build_no <
-             kMinimumSupportedChromeBuildNo) {
+  } else if (browser_info->build_no < kMinimumSupportedChromeBuildNo) {
     return Status(kUnknownError, "Chrome version must be >= " +
         GetMinimumSupportedChromeVersion());
   }
@@ -493,23 +509,6 @@ Status LaunchAndroidChrome(
   if (status.IsError()) {
     device->TearDown();
     return status;
-  }
-
-  const BrowserInfo* browser_info = devtools_http_client->browser_info();
-  if (browser_info->android_package != capabilities.android_package) {
-    // DevTools from Chrome 30 and earlier did not provide an Android-Package
-    // key, so skip the package check for WebView on KitKat and older.
-    // TODO(samuong): Make this unconditional once we stop supporting Android
-    // KitKat WebView apps.
-    if (!(browser_info->browser_name == "webview" &&
-          browser_info->major_version <= 30 &&
-          browser_info->android_package.empty())) {
-      device->TearDown();
-      return Status(
-          kSessionNotCreatedException,
-          base::StringPrintf("please close '%s' and try again",
-                             browser_info->android_package.c_str()));
-    }
   }
 
   std::unique_ptr<DevToolsClient> devtools_websocket_client;
