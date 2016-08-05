@@ -2062,6 +2062,15 @@ void LayoutBlockFlow::setShouldDoFullPaintInvalidationForFirstLine()
         firstRootBox->setShouldDoFullPaintInvalidationRecursively();
 }
 
+bool LayoutBlockFlow::paintedOutputOfObjectHasNoEffect() const
+{
+    // LayoutBlockFlow is in charge of paint invalidation of the first line.
+    if (firstLineBox())
+        return false;
+
+    return LayoutBlock::paintedOutputOfObjectHasNoEffect();
+}
+
 PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     if (containsFloats())

@@ -571,13 +571,6 @@ void LayoutView::invalidatePaintForSelection()
             continue;
 
         o->setShouldInvalidateSelection();
-
-        // Blocks are responsible for painting line gaps and margin gaps. They must be examined as well.
-        for (LayoutBlock* block = o->containingBlock(); block && !block->isLayoutView(); block = block->containingBlock()) {
-            if (!processedBlocks.add(block).isNewEntry)
-                break;
-            block->setShouldInvalidateSelection();
-        }
     }
 }
 

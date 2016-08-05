@@ -354,12 +354,6 @@ public:
 
 #endif
 
-    // Correct version of !layoutObjectHasNoBoxEffectObsolete().
-    bool hasBoxEffect() const
-    {
-        return hasBoxDecorationBackground() || style()->hasVisualOverflowingEffect();
-    }
-
     // LayoutObject tree manipulation
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
@@ -443,8 +437,6 @@ private:
     // Gets pseudoStyle from Shadow host(in case of input elements)
     // or from Parent element.
     PassRefPtr<ComputedStyle> getUncachedPseudoStyleFromParentOrShadowHost() const;
-
-    bool skipInvalidationWhenLaidOutChildren() const;
 
 public:
 #ifndef NDEBUG
@@ -693,8 +685,6 @@ public:
     bool hasBoxDecorationBackground() const { return m_bitfields.getBoxDecorationBackgroundState() != NoBoxDecorationBackground; }
     bool boxDecorationBackgroundIsKnownToBeObscured() const;
     bool hasBackground() const { return style()->hasBackground(); }
-
-    bool needsLayoutBecauseOfChildren() const { return needsLayout() && !selfNeedsLayout() && !needsPositionedMovementLayout() && !needsSimplifiedNormalFlowLayout(); }
 
     bool needsLayout() const
     {
@@ -1131,6 +1121,12 @@ public:
     void invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer);
     void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
 
+    // Returns true if the object will not generate any effective painted output.
+    // It's used to skip unforced paint invalidation (which is when shouldDoFullPaintInvalidation
+    // is false, but mayNeedPaintInvalidation or childShouldCheckForPaintInvalidation is true) to
+    // avoid unnecessary paint invalidations of empty areas covered by such objects.
+    virtual bool paintedOutputOfObjectHasNoEffect() const { return false; }
+
     // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the view's
     // coordinate space. This method deals with outlines and overflow.
     virtual LayoutRect absoluteClippedOverflowRect() const;
@@ -1555,7 +1551,7 @@ protected:
 #if ENABLE(ASSERT)
     virtual bool paintInvalidationStateIsDirty() const
     {
-        return m_bitfields.neededLayoutBecauseOfChildren() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+        return shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
     }
 #endif
 
@@ -1748,7 +1744,6 @@ private:
             , m_mayNeedPaintInvalidation(false)
             , m_mayNeedPaintInvalidationSubtree(false)
             , m_shouldInvalidateSelection(false)
-            , m_neededLayoutBecauseOfChildren(false)
             , m_floating(false)
             , m_isAnonymous(!node)
             , m_isText(false)
@@ -1782,7 +1777,7 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 17 in the second.
+        // 32 bits have been used in the first word, and 16 in the second.
 
         // Self needs layout means that this layout object is marked for a full layout.
         // This is the default layout but it is expensive as it recomputes everything.
@@ -1833,8 +1828,7 @@ private:
         ADD_BOOLEAN_BITFIELD(childShouldCheckForPaintInvalidation, ChildShouldCheckForPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidationSubtree, MayNeedPaintInvalidationSubtree);
-        ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection); // TODO(wangxianzhu): Remove for slimming paint v2.
-        ADD_BOOLEAN_BITFIELD(neededLayoutBecauseOfChildren, NeededLayoutBecauseOfChildren); // TODO(wangxianzhu): Remove for slimming paint v2.
+        ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection);
 
         // This boolean is the cached value of 'float'
         // (see ComputedStyle::isFloating).
@@ -2051,7 +2045,6 @@ inline void LayoutObject::clearNeedsLayout()
     // Set flags for later stages/cycles.
     setEverHadLayout();
     setMayNeedPaintInvalidation();
-    m_bitfields.setNeededLayoutBecauseOfChildren(needsLayoutBecauseOfChildren());
 
     // Clear needsLayout flags.
     setSelfNeedsLayout(false);

@@ -2034,6 +2034,28 @@ bool LayoutBox::needsForcedBreakBefore(EBreak previousBreakAfterValue) const
     return isForcedFragmentainerBreakValue(classABreakPointValue(previousBreakAfterValue));
 }
 
+bool LayoutBox::paintedOutputOfObjectHasNoEffect() const
+{
+    // In case scrollbars got repositioned (which will typically happen if the box got
+    // resized), we cannot skip invalidation.
+    if (hasNonCompositedScrollbars())
+        return false;
+
+    // Cannot skip paint invalidation if the box has real things to paint.
+    if (getSelectionState() != SelectionNone || hasBoxDecorationBackground() || styleRef().hasVisualOverflowingEffect())
+        return false;
+
+    // If the box has clip, we need issue a paint invalidation to cover the changed part of
+    // children because of change of clip when the box got resized. In theory the children
+    // should invalidate themselves when ancestor clip changes, but for now this is missing
+    // and ensuring it may hurt performance.
+    // TODO(wangxianzhu): Paint invalidation for clip change will be different in spv2.
+    if (hasClipRelatedProperty() || hasControlClip())
+        return false;
+
+    return true;
+}
+
 LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const
 {
     if (style()->visibility() != VISIBLE)

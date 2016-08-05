@@ -40,10 +40,12 @@ protected:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGHiddenContainer || LayoutSVGContainer::isOfType(type); }
 
 private:
-    void paint(const PaintInfo&, const LayoutPoint&) const final;
+    // LayoutSVGHiddenContainer paints nothing.
+    void paint(const PaintInfo&, const LayoutPoint&) const final { }
+    bool paintedOutputOfObjectHasNoEffect() const final { return true; }
     LayoutRect absoluteClippedOverflowRect() const final { return LayoutRect(); }
     FloatRect paintInvalidationRectInLocalSVGCoordinates() const final { return FloatRect(); }
-    void absoluteQuads(Vector<FloatQuad>&) const final;
+    void absoluteQuads(Vector<FloatQuad>&) const final { }
 
     bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) final;
 };

@@ -341,6 +341,7 @@ protected:
 
     void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const override;
 
+    bool paintedOutputOfObjectHasNoEffect() const override;
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
 
     Node* nodeForHitTest() const final;

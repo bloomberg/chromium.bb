@@ -684,28 +684,6 @@ LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
     return LayoutFlowThread::locateFlowThreadContainingBlockOf(*this);
 }
 
-bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
-{
-    if (!m_bitfields.neededLayoutBecauseOfChildren())
-        return false;
-
-    // SVG layoutObjects need to be invalidated when their children are laid out.
-    // LayoutBlocks with line boxes are responsible to invalidate them so we can't ignore them.
-    if (isSVG() || (isLayoutBlockFlow() && toLayoutBlockFlow(this)->firstLineBox()))
-        return false;
-
-    // In case scrollbars got repositioned (which will typically happen if the layout object got
-    // resized), we cannot skip invalidation.
-    if (hasNonCompositedScrollbars())
-        return false;
-
-    // We can't detect whether a plugin has box effects, so disable this optimization for that case.
-    if (isEmbeddedObject())
-        return false;
-
-    return !hasBoxEffect();
-}
-
 static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
 {
     // FIXME: In future it may be possible to broaden these conditions in order to improve performance.
@@ -1330,7 +1308,6 @@ void LayoutObject::setPreviousSelectionRectForPaintInvalidation(const LayoutRect
         selectionPaintInvalidationMap->set(this, selectionRect);
 }
 
-// TODO(wangxianzhu): Remove this for slimming paint v2 because we won't care about paint invalidation rects.
 inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState& paintInvalidationState, PaintInvalidationReason invalidationReason)
 {
     // Update selection rect when we are doing full invalidation (in case that the object is moved, composite status changed, etc.)
@@ -1354,11 +1331,10 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
 
     setPreviousSelectionRectForPaintInvalidation(newSelectionRect);
 
-    // TODO(wangxianzhu): Combine the following two conditions when removing LayoutView::doingFullPaintInvalidation().
-    if (!fullInvalidation)
+    if (!fullInvalidation) {
         fullyInvalidatePaint(paintInvalidationContainer, PaintInvalidationSelection, oldSelectionRect, newSelectionRect);
-    if (shouldInvalidateSelection())
         invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationState, PaintInvalidationSelection);
+    }
 }
 
 PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
@@ -1423,7 +1399,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
         // invalidation is issued. See crbug.com/508383 and crbug.com/515977.
         // This is a workaround to force display items to update paint offset.
         if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && paintInvalidationState.forcedSubtreeInvalidationCheckingWithinContainer())
-            invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationState, invalidationReason);
+            invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationState, PaintInvalidationLocationChange);
 
         return invalidationReason;
     }
@@ -1447,6 +1423,9 @@ PaintInvalidationReason LayoutObject::getPaintInvalidationReason(const PaintInva
     if (shouldDoFullPaintInvalidation())
         return m_bitfields.fullPaintInvalidationReason();
 
+    if (paintedOutputOfObjectHasNoEffect())
+        return PaintInvalidationNone;
+
     // The outline may change shape because of position change of descendants. For simplicity,
     // just force full paint invalidation if this object is marked for checking paint invalidation
     // for any reason.
@@ -1464,13 +1443,6 @@ PaintInvalidationReason LayoutObject::getPaintInvalidationReason(const PaintInva
     // be caused by some layout property (left / top) or some in-flow layoutObject inserted / removed before us in the tree.
     if (newBounds.location() != oldBounds.location())
         return PaintInvalidationBoundsChange;
-
-    // This covers the case where we mark containing blocks for layout
-    // and they change size but don't have anything to paint. This is
-    // a pretty common case for <body> as we add / remove children
-    // (and the default background is done by FrameView).
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && skipInvalidationWhenLaidOutChildren())
-        return PaintInvalidationNone;
 
     // If the size is zero on one of our bounds then we know we're going to have
     // to do a full invalidation of either old bounds or new bounds. If we fall
@@ -3458,7 +3430,6 @@ void LayoutObject::clearPaintInvalidationFlags(const PaintInvalidationState& pai
     ASSERT(!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() || paintInvalidationStateIsDirty());
     clearShouldDoFullPaintInvalidation();
     m_bitfields.setChildShouldCheckForPaintInvalidation(false);
-    m_bitfields.setNeededLayoutBecauseOfChildren(false);
     m_bitfields.setMayNeedPaintInvalidation(false);
     m_bitfields.setMayNeedPaintInvalidationSubtree(false);
     m_bitfields.setShouldInvalidateSelection(false);
