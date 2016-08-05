@@ -27,19 +27,13 @@ var makeAsyncTest = function(value, expected) {
 
     async_test(function(test) {
         const recorderOnDataAvailable = this.step_func(function(event) {
-            if (event) {
-                assert_greater_than(event.data.size, 0,
-                                    'Recorded data size should be > 0');
-                assert_equals(recorder.state, "recording");
-            } else {
-                assert_equals(recorder.state, "inactive");
-            }
-
             // TODO(mcasas): Let the test record for a while.
             // TODO(mcasas): Consider storing recorded data and playing it back.
 
-            recorder.onstop = recorderOnStopExpected;
-            recorder.stop();
+            if (recorder.state == "recording") {
+                recorder.onstop = recorderOnStopExpected;
+                recorder.stop();
+            }
         });
 
         const recorderOnStopExpected = this.step_func_done();
@@ -47,7 +41,7 @@ var makeAsyncTest = function(value, expected) {
         const recorderOnStopUnexpected = test.unreached_func('Recording stopped.');
         const recorderOnError = test.unreached_func('Recording error.');
 
-        const gotStream = this.step_func_done(function(stream) {
+        const gotStream = this.step_func(function(stream) {
             checkStreamTracks(stream, value['video'], value['audio']);
 
             recorder = new MediaRecorder(stream);
@@ -59,6 +53,7 @@ var makeAsyncTest = function(value, expected) {
             recorder.start();
 
             assert_equals(recorder.state, "recording");
+            recorder.requestData();
         });
 
         const onError = test.unreached_func('Error creating MediaStream.');
