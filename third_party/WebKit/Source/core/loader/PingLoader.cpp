@@ -51,6 +51,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
@@ -140,6 +141,9 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
     frame->loader().client()->didDispatchPingLoader(request.url());
     frame->document()->fetcher()->context().willStartLoadingResource(m_identifier, request, Resource::Image);
     frame->document()->fetcher()->context().dispatchWillSendRequest(m_identifier, request, ResourceResponse(), initiatorInfo);
+    // Make sure the scheduler doesn't wait for the ping.
+    if (frame->frameScheduler())
+        frame->frameScheduler()->didStopLoading(m_identifier);
 
     m_loader = wrapUnique(Platform::current()->createURLLoader());
     ASSERT(m_loader);
