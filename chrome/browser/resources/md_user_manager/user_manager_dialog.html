@@ -10,16 +10,11 @@
   <template>
     <style include="shared-styles paper-dialog-shared-styles iron-flex iron-flex-alignment iron-positioning">
       :host {
-        --paper-dialog: {
-          border-radius: 2px;
-          color: var(--primary-text-color);
-          font-size: inherit;
-          line-height: initial;
-          width: 512px;
-        };
+        border-radius: 2px;
+        width: 512px;
       }
 
-      :host ::content > *,
+      :host > ::content > *,
       :host > ::content > *:first-child,
       :host > ::content > *:last-child {
         /* Overrides paper-dialog-shared-styles. */

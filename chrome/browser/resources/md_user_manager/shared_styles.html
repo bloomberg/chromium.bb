@@ -69,6 +69,15 @@
         --iron-overlay-backdrop-opacity: .8;
       }
 
+      /* TODO(mahmadi): Move this back to user_manager_dialog.html when it does
+       * not break the dialog */
+      user-manager-dialog {
+        --paper-dialog: {
+          font-size: inherit;
+          line-height: initial;
+        };
+      }
+
       .product-logo {
         content: -webkit-image-set(
             url(../../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo_name_22.png) 1x,
