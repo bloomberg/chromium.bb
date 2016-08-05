@@ -57,6 +57,7 @@ def _ReadMappingDict(mapping_file):
   mapping = {}
   renamed_class_name = ''
   original_class_name = ''
+  current_entry = []
   for line in mapping_file:
     line = line.strip()
     if _IsNewClass(line):
@@ -70,7 +71,8 @@ def _ReadMappingDict(mapping_file):
       original_member_name, renamed_member_name = _ParseMappingLine(line)
       member_mappings[renamed_member_name] = original_member_name
 
-  mapping[renamed_class_name] = current_entry
+  if current_entry and renamed_class_name:
+    mapping[renamed_class_name] = current_entry
   return mapping
 
 
@@ -127,8 +129,9 @@ def _TypeLookup(renamed_type, mapping_dict):
 def _GetMemberIdentifier(line_tokens, mapping_dict, renamed_class_name,
                          is_function):
   assert len(line_tokens) > 1
-  assert renamed_class_name in mapping_dict
-  mapping_entry = mapping_dict[renamed_class_name][1]
+  if mapping_dict:
+    assert renamed_class_name in mapping_dict
+    mapping_entry = mapping_dict[renamed_class_name][1]
 
   renamed_type = line_tokens[0]
   real_type = _TypeLookup(renamed_type, mapping_dict)
@@ -147,6 +150,10 @@ def _GetMemberIdentifier(line_tokens, mapping_dict, renamed_class_name,
 
   renamed_member_identifier = (real_type + ' ' + renamed_name_token
                                + function_args)
+
+  if not mapping_dict:
+    return renamed_member_identifier
+
   if renamed_member_identifier not in mapping_entry:
     print 'Proguarded class which caused the issue:', renamed_class_name
     print 'Key supposed to be in this dict:',  mapping_entry
@@ -159,6 +166,8 @@ def _GetMemberIdentifier(line_tokens, mapping_dict, renamed_class_name,
 
 def _GetClassNames(line_tokens, mapping_dict):
   assert len(line_tokens) > 1
+  if not mapping_dict:
+    return line_tokens[1], line_tokens[1]
   assert line_tokens[1] in mapping_dict
   return line_tokens[1], mapping_dict[line_tokens[1]][0]
 
@@ -174,7 +183,8 @@ def _IsLineFunctionDefinition(line):
 def _BuildMappedDexDict(dextra_file, mapping_dict):
   # Have to add 'bool' -> 'boolean' mapping in dictionary, since for some reason
   # dextra shortens boolean to bool.
-  mapping_dict['bool'] = ['boolean', {}]
+  if mapping_dict:
+    mapping_dict['bool'] = ['boolean', {}]
   dex_dict = {}
   current_entry = []
   reading_class_header = True
