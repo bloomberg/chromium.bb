@@ -9,7 +9,6 @@ header("Link: <   //wut.com.test/>; rel=preconnect");
     }
     if (window.internals) {
         internals.settings.setLogDnsPrefetchAndPreconnect(true);
-        internals.settings.setLinkHeaderEnabled(true);
     }
     if (!localStorage.getItem("reloaded")) {
         localStorage.setItem("reloaded",  true);

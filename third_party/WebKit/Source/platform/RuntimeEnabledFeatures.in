@@ -110,7 +110,6 @@ IntersectionObserver status=stable
 LangAttributeAwareFormControlUI
 LayoutNG
 LinkPreload status=stable
-LinkHeader status=stable
 LinkServiceWorker status=experimental
 FractionalScrollOffsets
 MediaCapture

@@ -64,5 +64,4 @@
     void setExperimentalContentSecurityPolicyFeaturesEnabled(boolean enabled);
     void setImageColorProfilesEnabled(boolean enabled);
     void setScrollTopLeftInteropEnabled(boolean enabled);
-    void setLinkHeaderEnabled(boolean enabled);
 };

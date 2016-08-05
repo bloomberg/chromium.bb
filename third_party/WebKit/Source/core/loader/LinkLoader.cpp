@@ -321,8 +321,7 @@ void LinkLoader::loadLinksFromHeader(const String& headerValue, const KURL& base
         if (url == baseURL)
             continue;
         if (canLoadResources != OnlyLoadResources) {
-            if (RuntimeEnabledFeatures::linkHeaderEnabled())
-                dnsPrefetchIfNeeded(relAttribute, url, *document, networkHintsInterface, LinkCalledFromHeader);
+            dnsPrefetchIfNeeded(relAttribute, url, *document, networkHintsInterface, LinkCalledFromHeader);
 
             preconnectIfNeeded(relAttribute, url, *document, crossOriginAttributeValue(header.crossOrigin()), networkHintsInterface, LinkCalledFromHeader);
         }
