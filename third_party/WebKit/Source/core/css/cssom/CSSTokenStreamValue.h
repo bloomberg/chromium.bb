@@ -16,7 +16,7 @@ class CORE_EXPORT CSSTokenStreamValue final : public CSSStyleValue, public Value
     WTF_MAKE_NONCOPYABLE(CSSTokenStreamValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static CSSTokenStreamValue* create(const Vector<String>& fragments)
+    static CSSTokenStreamValue* create(const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
     {
         return new CSSTokenStreamValue(fragments);
     }
@@ -25,12 +25,18 @@ public:
 
     StyleValueType type() const override { return TokenStreamType; }
 
-    String fragmentAtIndex(int index) const { return m_fragments.at(index); }
+    StringOrCSSVariableReferenceValue fragmentAtIndex(int index) const { return m_fragments.at(index); }
 
     size_t size() const { return m_fragments.size(); }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_fragments);
+        CSSStyleValue::trace(visitor);
+    }
+
 protected:
-    CSSTokenStreamValue(const Vector<String>& fragments)
+    CSSTokenStreamValue(const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
         : CSSStyleValue()
         , m_fragments(fragments)
     {
@@ -39,7 +45,7 @@ protected:
 private:
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 
-    Vector<String> m_fragments;
+    HeapVector<StringOrCSSVariableReferenceValue> m_fragments;
 };
 
 } // namespace blink

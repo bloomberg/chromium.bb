@@ -5,6 +5,7 @@
 #include "core/css/cssom/CSSTokenStreamValue.h"
 
 #include "core/css/CSSVariableReferenceValue.h"
+#include "core/css/cssom/CSSStyleVariableReferenceValue.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -23,7 +24,7 @@ public:
     {
         if (m_index >= m_tokenStreamValue->size())
             return false;
-        value.setString(m_tokenStreamValue->fragmentAtIndex(m_index));
+        value = m_tokenStreamValue->fragmentAtIndex(m_index);
         return true;
     }
 
@@ -51,7 +52,12 @@ CSSValue* CSSTokenStreamValue::toCSSValue() const
     for (unsigned i = 0; i < m_fragments.size(); i++) {
         if (i)
             tokens.append("/**/");
-        tokens.append(m_fragments[i]);
+        if (m_fragments[i].isString())
+            tokens.append(m_fragments[i].getAsString());
+        else if (m_fragments[i].isCSSVariableReferenceValue())
+            tokens.append(m_fragments[i].getAsCSSVariableReferenceValue()->variable());
+        else
+            NOTREACHED();
     }
 
     CSSTokenizer::Scope scope(tokens.toString());
