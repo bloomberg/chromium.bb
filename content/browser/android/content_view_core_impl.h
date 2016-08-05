@@ -61,8 +61,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   WebContents* GetWebContents() const override;
   ui::WindowAndroid* GetWindowAndroid() const override;
-  const base::android::JavaRef<jobject>& GetViewAndroidDelegate()
-      const override;
   bool ShowPastePopup(int x, int y) override;
   void PauseOrResumeGeolocation(bool should_pause) override;
 
@@ -447,6 +445,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;
+
+  // Select popup view
+  ui::ViewAndroid::ScopedAnchorView select_popup_;
 
   ui::ViewAndroid view_;
 

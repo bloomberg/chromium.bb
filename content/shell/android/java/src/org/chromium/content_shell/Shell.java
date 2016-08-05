@@ -29,6 +29,7 @@ import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -288,7 +289,8 @@ public class Shell extends LinearLayout {
         Context context = getContext();
         mContentViewCore = new ContentViewCore(context);
         ContentView cv = ContentView.createContentView(context, mContentViewCore);
-        mContentViewCore.initialize(cv, cv, webContents, mWindow);
+        mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv,
+                webContents, mWindow);
         mContentViewCore.setContentViewClient(mContentViewClient);
         mWebContents = mContentViewCore.getWebContents();
         mNavigationController = mWebContents.getNavigationController();

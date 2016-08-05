@@ -20,10 +20,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwAutofillClient_jni.h"
+#include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 using base::android::AttachCurrentThread;
@@ -135,13 +137,22 @@ void AwAutofillClient::ShowAutofillPopupImpl(
         env, data_array.obj(), i, name.obj(), label.obj(),
         suggestions[i].frontend_id);
   }
+  ui::ViewAndroid* view_android = web_contents_->GetNativeView();
+  if (!view_android)
+    return;
 
+  const ScopedJavaLocalRef<jobject> current_view = anchor_view_.view();
+  if (current_view.is_null())
+    anchor_view_ = view_android->AcquireAnchorView();
+
+  const ScopedJavaLocalRef<jobject> view = anchor_view_.view();
+  if (view.is_null())
+    return;
+
+  view_android->SetAnchorRect(view, element_bounds);
   Java_AwAutofillClient_showAutofillPopup(env,
                                           obj.obj(),
-                                          element_bounds.x(),
-                                          element_bounds.y(),
-                                          element_bounds.width(),
-                                          element_bounds.height(),
+                                          view.obj(),
                                           is_rtl,
                                           data_array.obj());
 }
@@ -203,6 +214,11 @@ bool AwAutofillClient::ShouldShowSigninPromo() {
 }
 
 void AwAutofillClient::StartSigninFlow() {}
+
+void AwAutofillClient::Dismissed(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj) {
+  anchor_view_.Reset();
+}
 
 void AwAutofillClient::SuggestionSelected(JNIEnv* env,
                                           const JavaParamRef<jobject>& object,

@@ -15,6 +15,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service_factory.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/android/view_android.h"
 
 namespace autofill {
 class AutofillMetrics;
@@ -104,6 +105,8 @@ class AwAutofillClient : public autofill::AutofillClient,
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
 
+  void Dismissed(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj);
   void SuggestionSelected(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jint position);
@@ -121,6 +124,8 @@ class AwAutofillClient : public autofill::AutofillClient,
   content::WebContents* web_contents_;
   bool save_form_data_;
   JavaObjectWeakGlobalRef java_ref_;
+
+  ui::ViewAndroid::ScopedAnchorView anchor_view_;
 
   // The current Autofill query values.
   std::vector<autofill::Suggestion> suggestions_;

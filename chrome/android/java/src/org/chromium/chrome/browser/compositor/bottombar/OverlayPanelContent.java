@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.text.TextUtils;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -22,6 +24,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.base.ViewAndroidDelegate;
 
 /**
  * Content container for an OverlayPanel. This class is responsible for the management of the
@@ -228,7 +231,37 @@ public class OverlayPanelContent {
 
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
         WebContents panelWebContents = WebContentsFactory.createWebContents(false, true);
-        mContentViewCore.initialize(cv, cv, panelWebContents, mActivity.getWindowAndroid());
+
+        // Dummny ViewAndroidDelegate since the container view for overlay panel is
+        // never added to the view hierarchy.
+        ViewAndroidDelegate delegate =
+                new ViewAndroidDelegate() {
+                    private ViewGroup mContainerView;
+
+                    private ViewAndroidDelegate init(ViewGroup containerView) {
+                        mContainerView = containerView;
+                        return this;
+                    }
+
+                    @Override
+                    public View acquireView() {
+                        assert false : "Shold not reach here";
+                        return null;
+                    }
+
+                    @Override
+                    public void setViewPosition(View anchorView, float x, float y, float width,
+                            float height, float scale, int leftMargin, int topMargin) { }
+
+                    @Override
+                    public void removeView(View anchorView) { }
+
+                    @Override
+                    public ViewGroup getContainerView() {
+                        return mContainerView;
+                    }
+                }.init(cv);
+        mContentViewCore.initialize(delegate, cv, panelWebContents, mActivity.getWindowAndroid());
 
         // Transfers the ownership of the WebContents to the native OverlayPanelContent.
         nativeSetWebContents(mNativeOverlayPanelContentPtr, panelWebContents, mWebContentsDelegate);

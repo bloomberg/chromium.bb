@@ -46,10 +46,7 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -89,7 +86,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.ime.TextInputType;
-import org.chromium.ui.gfx.DeviceDisplayInfo;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.lang.annotation.Annotation;
@@ -97,10 +93,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Provides a Java-side 'wrapper' around a WebContent (native) instance.
@@ -148,176 +142,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     // on the interface object. Note we use HashSet rather than Set as the native side
     // expects HashSet (no bindings for interfaces).
     private final HashSet<Object> mRetainedJavaScriptObjects = new HashSet<Object>();
-
-    /**
-     * A {@link ViewAndroidDelegate} that delegates to the current container view.
-     *
-     * <p>This delegate handles the replacement of container views transparently so
-     * that clients can safely hold to instances of this class.
-     */
-    private static class ContentViewAndroidDelegate implements ViewAndroidDelegate {
-        // TODO(hush): use View#DRAG_FLAG_GLOBAL when Chromium starts to build with API 24.
-        private static final int DRAG_FLAG_GLOBAL = 1 << 8;
-        /**
-         * Represents the position of an anchor view.
-         */
-        @VisibleForTesting
-        private static class Position {
-            private final float mX;
-            private final float mY;
-            private final float mWidth;
-            private final float mHeight;
-
-            public Position(float x, float y, float width, float height) {
-                mX = x;
-                mY = y;
-                mWidth = width;
-                mHeight = height;
-            }
-        }
-
-        private final RenderCoordinates mRenderCoordinates;
-
-        /**
-         * The current container view. This view can be updated with
-         * {@link #updateCurrentContainerView()}. This needs to be a WeakReference
-         * because ViewAndroidDelegate is held strongly native side, which otherwise
-         * indefinitely prevents Android WebView from being garbage collected.
-         */
-        private WeakReference<ViewGroup> mCurrentContainerView;
-
-        /**
-         * List of anchor views stored in the order in which they were acquired mapped
-         * to their position.
-         */
-        private final Map<View, Position> mAnchorViews = new LinkedHashMap<View, Position>();
-
-        ContentViewAndroidDelegate(ViewGroup containerView, RenderCoordinates renderCoordinates) {
-            mRenderCoordinates = renderCoordinates;
-            mCurrentContainerView = new WeakReference<>(containerView);
-        }
-
-        @Override
-        public View acquireAnchorView() {
-            ViewGroup containerView = mCurrentContainerView.get();
-            if (containerView == null) return null;
-            View anchorView = new View(containerView.getContext());
-            mAnchorViews.put(anchorView, null);
-            containerView.addView(anchorView);
-            return anchorView;
-        }
-
-        @Override
-        public void setAnchorViewPosition(
-                View view, float x, float y, float width, float height) {
-            mAnchorViews.put(view, new Position(x, y, width, height));
-            doSetAnchorViewPosition(view, x, y, width, height);
-        }
-
-        @SuppressWarnings("deprecation")  // AbsoluteLayout
-        private void doSetAnchorViewPosition(
-                View view, float x, float y, float width, float height) {
-            if (view.getParent() == null) {
-                // Ignore. setAnchorViewPosition has been called after the anchor view has
-                // already been released.
-                return;
-            }
-            ViewGroup containerView = mCurrentContainerView.get();
-            if (containerView == null) {
-                return;
-            }
-            assert view.getParent() == containerView;
-
-            float scale =
-                    (float) DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
-
-            // The anchor view should not go outside the bounds of the ContainerView.
-            int leftMargin = Math.round(x * scale);
-            int topMargin = Math.round(mRenderCoordinates.getContentOffsetYPix() + y * scale);
-            int scaledWidth = Math.round(width * scale);
-            // ContentViewCore currently only supports these two container view types.
-            if (containerView instanceof FrameLayout) {
-                int startMargin;
-                if (ApiCompatibilityUtils.isLayoutRtl(containerView)) {
-                    startMargin =
-                            containerView.getMeasuredWidth() - Math.round((width + x) * scale);
-                } else {
-                    startMargin = leftMargin;
-                }
-                if (scaledWidth + startMargin > containerView.getWidth()) {
-                    scaledWidth = containerView.getWidth() - startMargin;
-                }
-                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                        scaledWidth, Math.round(height * scale));
-                ApiCompatibilityUtils.setMarginStart(lp, startMargin);
-                lp.topMargin = topMargin;
-                view.setLayoutParams(lp);
-            } else if (containerView instanceof android.widget.AbsoluteLayout) {
-                // This fixes the offset due to a difference in
-                // scrolling model of WebView vs. Chrome.
-                // TODO(sgurun) fix this to use mContainerViewAtCreation.getScroll[X/Y]()
-                // as it naturally accounts for scroll differences between
-                // these models.
-                leftMargin += mRenderCoordinates.getScrollXPixInt();
-                topMargin += mRenderCoordinates.getScrollYPixInt();
-
-                android.widget.AbsoluteLayout.LayoutParams lp =
-                        new android.widget.AbsoluteLayout.LayoutParams(
-                            scaledWidth, (int) (height * scale), leftMargin, topMargin);
-                view.setLayoutParams(lp);
-            } else {
-                Log.e(TAG, "Unknown layout %s", containerView.getClass().getName());
-            }
-        }
-
-        @Override
-        public void releaseAnchorView(View anchorView) {
-            mAnchorViews.remove(anchorView);
-            ViewGroup containerView = mCurrentContainerView.get();
-            if (containerView != null) {
-                containerView.removeView(anchorView);
-            }
-        }
-
-        /**
-         * Updates (or sets for the first time) the current container view to which
-         * this class delegates. Existing anchor views are transferred from the old to
-         * the new container view.
-         */
-        void updateCurrentContainerView(ViewGroup containerView) {
-            ViewGroup oldContainerView = mCurrentContainerView.get();
-            mCurrentContainerView = new WeakReference<>(containerView);
-            for (Entry<View, Position> entry : mAnchorViews.entrySet()) {
-                View anchorView = entry.getKey();
-                Position position = entry.getValue();
-                if (oldContainerView != null) {
-                    oldContainerView.removeView(anchorView);
-                }
-                containerView.addView(anchorView);
-                if (position != null) {
-                    doSetAnchorViewPosition(anchorView,
-                            position.mX, position.mY, position.mWidth, position.mHeight);
-                }
-            }
-        }
-
-        @SuppressWarnings("deprecation")
-        @Override
-        public void startDragAndDrop(String text, Bitmap shadowImage) {
-            ClipData data = ClipData.newPlainText(null, text);
-
-            ViewGroup containerView = mCurrentContainerView.get();
-            if (containerView == null) return;
-
-            ImageView imageView = new ImageView(containerView.getContext());
-            imageView.setImageBitmap(shadowImage);
-            imageView.layout(0, 0, shadowImage.getWidth(), shadowImage.getHeight());
-
-            // TODO(hush): use View#startDragAndDrop when Chromium starts to build with API 24.
-            containerView.startDrag(
-                    data, new View.DragShadowBuilder(imageView), null, DRAG_FLAG_GLOBAL);
-        }
-    }
 
     /**
      * A {@link WebContentsObserver} that listens to frame navigation events.
@@ -625,7 +449,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private boolean mFullscreenRequiredForOrientationLock = true;
 
     // A ViewAndroidDelegate that delegates to the current container view.
-    private ContentViewAndroidDelegate mViewAndroidDelegate;
+    private ViewAndroidDelegate mViewAndroidDelegate;
 
     // A flag to determine if we enable hover feature or not.
     private Boolean mEnableTouchHover;
@@ -733,7 +557,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      *
      * @return A ViewAndroidDelegate that can be used to add and remove views.
      */
+    @VisibleForTesting
     public ViewAndroidDelegate getViewAndroidDelegate() {
+        // TODO(jinsukkim): Remove this method since it is only used by tests that don't
+        //     necessarily require the delegate.
         return mViewAndroidDelegate;
     }
 
@@ -798,7 +625,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
     /**
      *
-     * @param containerView The view that will act as a container for all views created by this.
+     * @param viewDelegate Delegate to add/remove anchor views.
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
      *                           containerView.
      * @param webContents A WebContents instance to connect to.
@@ -813,17 +640,17 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     // to set the private browsing mode at a later point for the WebView implementation.
     // Note that the caller remains the owner of the nativeWebContents and is responsible for
     // deleting it after destroying the ContentViewCore.
-    public void initialize(ViewGroup containerView, InternalAccessDelegate internalDispatcher,
-            WebContents webContents, WindowAndroid windowAndroid) {
-        createContentViewAndroidDelegate();
-        setContainerView(containerView);
+    public void initialize(ViewAndroidDelegate viewDelegate,
+            InternalAccessDelegate internalDispatcher, WebContents webContents,
+            WindowAndroid windowAndroid) {
+        mViewAndroidDelegate = viewDelegate;
+        setContainerView(viewDelegate.getContainerView());
         long windowNativePointer = windowAndroid.getNativePointer();
         assert windowNativePointer != 0;
 
         mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
-
-        mNativeContentViewCore = nativeInit(
-                webContents, mViewAndroidDelegate, windowNativePointer, mRetainedJavaScriptObjects);
+        mNativeContentViewCore = nativeInit(webContents, mViewAndroidDelegate, windowNativePointer,
+                mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
 
         setContainerViewInternals(internalDispatcher);
@@ -848,11 +675,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         // Clean up cached popups that may have been created with an old activity.
         mSelectPopup = null;
         mPastePopupMenu = null;
-    }
-
-    @VisibleForTesting
-    public void createContentViewAndroidDelegate() {
-        mViewAndroidDelegate = new ContentViewAndroidDelegate(mContainerView, mRenderCoordinates);
     }
 
     /**
@@ -884,7 +706,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
             mContainerView = containerView;
             mContainerView.setClickable(true);
-            mViewAndroidDelegate.updateCurrentContainerView(mContainerView);
             for (ContainerViewObserver observer : mContainerViewObservers) {
                 observer.onContainerViewChanged(mContainerView);
             }
@@ -2518,6 +2339,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
     /**
      * Called (from native) when the <select> popup needs to be shown.
+     * @param anchorView View anchored for popup.
      * @param nativeSelectPopupSourceFrame The native RenderFrameHost that owns the popup.
      * @param items           Items to show.
      * @param enabled         POPUP_ITEM_TYPEs for items.
@@ -2526,7 +2348,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void showSelectPopup(long nativeSelectPopupSourceFrame, Rect bounds, String[] items,
+    private void showSelectPopup(View anchorView, long nativeSelectPopupSourceFrame, String[] items,
             int[] enabled, boolean multiple, int[] selectedIndices, boolean rightAligned) {
         if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
             mNativeSelectPopupSourceFrame = nativeSelectPopupSourceFrame;
@@ -2544,7 +2366,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         }
         if (DeviceFormFactor.isTablet(mContext) && !multiple && !isTouchExplorationEnabled()) {
             mSelectPopup = new SelectPopupDropdown(
-                    this, popupItems, bounds, selectedIndices, rightAligned);
+                    this, anchorView, popupItems, selectedIndices, rightAligned);
         } else {
             if (getWindowAndroid() == null) return;
             Context windowContext = getWindowAndroid().getContext().get();

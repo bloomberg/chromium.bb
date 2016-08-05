@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
+#include "ui/android/view_android.h"
 
 namespace gfx {
 class Rect;
@@ -63,6 +64,9 @@ class AutofillPopupViewAndroid : public AutofillPopupView {
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+
+  // Popup view
+  ui::ViewAndroid::ScopedAnchorView popup_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewAndroid);
 };

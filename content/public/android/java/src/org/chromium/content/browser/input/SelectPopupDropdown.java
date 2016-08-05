@@ -5,13 +5,11 @@
 package org.chromium.content.browser.input;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.PopupWindow;
 
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.ui.DropdownAdapter;
 import org.chromium.ui.DropdownPopupWindow;
 
@@ -28,12 +26,11 @@ public class SelectPopupDropdown implements SelectPopup {
 
     private boolean mSelectionNotified;
 
-    public SelectPopupDropdown(ContentViewCore contentViewCore, List<SelectPopupItem> items,
-            Rect bounds, int[] selected, boolean rightAligned) {
+    public SelectPopupDropdown(ContentViewCore contentViewCore, View anchorView,
+            List<SelectPopupItem> items, int[] selected, boolean rightAligned) {
         mContentViewCore = contentViewCore;
         mContext = mContentViewCore.getContext();
-        mDropdownPopupWindow = new DropdownPopupWindow(mContext,
-                mContentViewCore.getViewAndroidDelegate());
+        mDropdownPopupWindow = new DropdownPopupWindow(mContext, anchorView);
         mDropdownPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -49,16 +46,6 @@ public class SelectPopupDropdown implements SelectPopup {
         mDropdownPopupWindow.setInitialSelection(initialSelection);
         mDropdownPopupWindow.setAdapter(new DropdownAdapter(mContext, items, null));
         mDropdownPopupWindow.setRtl(rightAligned);
-        RenderCoordinates renderCoordinates = mContentViewCore.getRenderCoordinates();
-        float anchorX = renderCoordinates.fromPixToDip(
-                renderCoordinates.fromLocalCssToPix(bounds.left));
-        float anchorY = renderCoordinates.fromPixToDip(
-                renderCoordinates.fromLocalCssToPix(bounds.top));
-        float anchorWidth = renderCoordinates.fromPixToDip(
-                renderCoordinates.fromLocalCssToPix(bounds.right)) - anchorX;
-        float anchorHeight = renderCoordinates.fromPixToDip(
-                renderCoordinates.fromLocalCssToPix(bounds.bottom)) - anchorY;
-        mDropdownPopupWindow.setAnchorRect(anchorX, anchorY, anchorWidth, anchorHeight);
         mDropdownPopupWindow.setOnDismissListener(
                 new PopupWindow.OnDismissListener() {
                     @Override

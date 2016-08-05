@@ -499,8 +499,6 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   if (j_obj.is_null())
     return;
 
-  ScopedJavaLocalRef<jobject> bounds_rect(CreateJavaRect(env, bounds));
-
   // For multi-select list popups we find the list of previous selections by
   // iterating through the items. But for single selection popups we take the
   // given |selected_item| as is.
@@ -537,8 +535,14 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   }
   ScopedJavaLocalRef<jobjectArray> items_array(
       base::android::ToJavaArrayOfStrings(env, labels));
+  select_popup_ = view_.AcquireAnchorView();
+  const ScopedJavaLocalRef<jobject> popup_view = select_popup_.view();
+  if (popup_view.is_null())
+    return;
+  view_.SetAnchorRect(popup_view,
+                      gfx::ScaleRect(gfx::RectF(bounds), page_scale_));
   Java_ContentViewCore_showSelectPopup(
-      env, j_obj.obj(), reinterpret_cast<intptr_t>(frame), bounds_rect.obj(),
+      env, j_obj.obj(), popup_view.obj(), reinterpret_cast<intptr_t>(frame),
       items_array.obj(), enabled_array.obj(), multiple, selected_array.obj(),
       right_aligned);
 }
@@ -548,6 +552,7 @@ void ContentViewCoreImpl::HideSelectPopupMenu() {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (!j_obj.is_null())
     Java_ContentViewCore_hideSelectPopup(env, j_obj.obj());
+  select_popup_.Reset();
 }
 
 void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
@@ -857,11 +862,6 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(const gfx::PointF& base,
     return;
 
   web_contents_->SelectRange(base_point, extent_point);
-}
-
-const base::android::JavaRef<jobject>&
-ContentViewCoreImpl::GetViewAndroidDelegate() const {
-  return view_.GetViewAndroidDelegate();
 }
 
 ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {

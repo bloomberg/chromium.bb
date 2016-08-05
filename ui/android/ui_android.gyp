@@ -55,6 +55,7 @@
       'target_name': 'ui_android_jni_headers',
       'type': 'none',
       'sources': [
+        'java/src/org/chromium/ui/base/ViewAndroidDelegate.java',
         'java/src/org/chromium/ui/base/WindowAndroid.java',
         'java/src/org/chromium/ui/resources/ResourceManager.java',
       ],

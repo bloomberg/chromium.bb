@@ -650,6 +650,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwSwitches.java",
     "java/src/org/chromium/android_webview/AwTokenBindingManager.java",
     "java/src/org/chromium/android_webview/AwViewMethods.java",
+    "java/src/org/chromium/android_webview/AwViewAndroidDelegate.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegateAdapter.java",
     "java/src/org/chromium/android_webview/AwWebContentsObserver.java",

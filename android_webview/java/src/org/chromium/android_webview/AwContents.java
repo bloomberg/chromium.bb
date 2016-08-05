@@ -73,6 +73,7 @@ import org.chromium.net.NetError;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
@@ -83,6 +84,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 
@@ -92,7 +94,7 @@ import java.util.concurrent.Callable;
  * primary entry point for the WebViewProvider implementation; it holds a 1:1 object
  * relationship with application WebView instances.
  * (We define this class independent of the hidden WebViewProvider interfaces, to allow
- * continuous build & test in the open source SDK-based tree).
+ * continuous build &amp; test in the open source SDK-based tree).
  */
 @JNINamespace("android_webview")
 public class AwContents implements SmartClipProvider,
@@ -264,6 +266,7 @@ public class AwContents implements SmartClipProvider,
     private final Context mContext;
     private final int mAppTargetSdkVersion;
     private ContentViewCore mContentViewCore;
+    private AwViewAndroidDelegate mViewAndroidDelegate;
     private WindowAndroidWrapper mWindowAndroid;
     private WebContents mWebContents;
     private NavigationController mNavigationController;
@@ -805,19 +808,16 @@ public class AwContents implements SmartClipProvider,
         onContainerViewChanged();
     }
 
-    private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
-            Context context, InternalAccessDelegate internalDispatcher, WebContents webContents,
-            GestureStateListener gestureStateListener,
-            ContentViewClient contentViewClient,
+    private static void initializeContentViewCore(ContentViewCore contentViewCore,
+            Context context, ViewAndroidDelegate viewDelegate,
+            InternalAccessDelegate internalDispatcher, WebContents webContents,
+            GestureStateListener gestureStateListener, ContentViewClient contentViewClient,
             ContentViewCore.ZoomControlsDelegate zoomControlsDelegate,
             WindowAndroid windowAndroid) {
-        ContentViewCore contentViewCore = new ContentViewCore(context);
-        contentViewCore.initialize(containerView, internalDispatcher, webContents,
-                windowAndroid);
+        contentViewCore.initialize(viewDelegate, internalDispatcher, webContents, windowAndroid);
         contentViewCore.addGestureStateListener(gestureStateListener);
         contentViewCore.setContentViewClient(contentViewClient);
         contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);
-        return contentViewCore;
     }
 
     boolean isFullScreen() {
@@ -919,6 +919,7 @@ public class AwContents implements SmartClipProvider,
         updateNativeAwGLFunctor();
         mContainerView.setWillNotDraw(false);
 
+        mViewAndroidDelegate.updateCurrentContainerView(mContainerView);
         mContentViewCore.setContainerView(mContainerView);
         if (mAwPdfExporter != null) {
             mAwPdfExporter.setContainerView(mContainerView);
@@ -1039,7 +1040,10 @@ public class AwContents implements SmartClipProvider,
         WebContents webContents = nativeGetWebContents(mNativeAwContents);
 
         mWindowAndroid = getWindowAndroid(mContext);
-        mContentViewCore = createAndInitializeContentViewCore(mContainerView, mContext,
+        mContentViewCore = new ContentViewCore(mContext);
+        mViewAndroidDelegate = new AwViewAndroidDelegate(mContainerView,
+                mContentViewCore.getRenderCoordinates());
+        initializeContentViewCore(mContentViewCore, mContext, mViewAndroidDelegate,
                 mInternalAccessAdapter, webContents, new AwGestureStateListener(),
                 mContentViewClient, mZoomControls, mWindowAndroid.getWindowAndroid());
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,

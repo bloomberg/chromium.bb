@@ -114,6 +114,7 @@ import org.chromium.ui.WindowOpenDisposition;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.ref.WeakReference;
@@ -1799,7 +1800,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
         cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
-        cvc.initialize(cv, cv, webContents, getWindowAndroid());
+        cvc.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv, webContents,
+                getWindowAndroid());
         setContentViewCore(cvc);
         if (getTabModelSelector() instanceof SingleTabModelSelector) {
             getContentViewCore().setFullscreenRequiredForOrientationLock(false);
@@ -2481,7 +2483,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
         cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
-        cvc.initialize(cv, cv, webContents, getWindowAndroid());
+        cvc.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv, webContents,
+                getWindowAndroid());
         swapContentViewCore(cvc, false, didStartLoad, didFinishLoad);
     }
 

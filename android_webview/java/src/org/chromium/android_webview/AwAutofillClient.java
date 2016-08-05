@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -41,18 +42,20 @@ public class AwAutofillClient {
     }
 
     @CalledByNative
-    private void showAutofillPopup(float x, float y, float width, float height,
-            boolean isRtl, AutofillSuggestion[] suggestions) {
+    private void showAutofillPopup(View anchorView, boolean isRtl,
+            AutofillSuggestion[] suggestions) {
 
         if (mContentViewCore == null) return;
 
         if (mAutofillPopup == null) {
             mAutofillPopup = new AutofillPopup(
                 mContentViewCore.getContext(),
-                mContentViewCore.getViewAndroidDelegate(),
+                anchorView,
                 new AutofillDelegate() {
                     @Override
-                    public void dismissed() { }
+                    public void dismissed() {
+                        nativeDismissed(mNativeAwAutofillClient);
+                    }
                     @Override
                     public void suggestionSelected(int listIndex) {
                         nativeSuggestionSelected(mNativeAwAutofillClient, listIndex);
@@ -61,7 +64,6 @@ public class AwAutofillClient {
                     public void deleteSuggestion(int listIndex) { }
                 });
         }
-        mAutofillPopup.setAnchorRect(x, y, width, height);
         mAutofillPopup.filterAndShow(suggestions, isRtl);
     }
 
@@ -91,6 +93,7 @@ public class AwAutofillClient {
                 new AutofillSuggestion(name, label, DropdownItem.NO_ICON, uniqueId, false, false);
     }
 
+    private native void nativeDismissed(long nativeAwAutofillClient);
     private native void nativeSuggestionSelected(long nativeAwAutofillClient,
             int position);
 }

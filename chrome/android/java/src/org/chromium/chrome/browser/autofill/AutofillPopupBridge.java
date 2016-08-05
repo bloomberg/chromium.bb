@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
+import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -18,7 +19,6 @@ import org.chromium.ui.DropdownItem;
 import org.chromium.ui.autofill.AutofillDelegate;
 import org.chromium.ui.autofill.AutofillPopup;
 import org.chromium.ui.autofill.AutofillSuggestion;
-import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -31,8 +31,8 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
     private AlertDialog mDeletionDialog;
     private final Context mContext;
 
-    public AutofillPopupBridge(long nativeAutofillPopupViewAndroid, WindowAndroid windowAndroid,
-            ViewAndroidDelegate containerViewDelegate) {
+    public AutofillPopupBridge(View anchorView, long nativeAutofillPopupViewAndroid,
+            WindowAndroid windowAndroid) {
         mNativeAutofillPopup = nativeAutofillPopupViewAndroid;
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) {
@@ -47,16 +47,16 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
                 }
             });
         } else {
-            mAutofillPopup = new AutofillPopup(activity, containerViewDelegate, this);
+            mAutofillPopup = new AutofillPopup(activity, anchorView, this);
             mContext = activity;
         }
     }
 
     @CalledByNative
-    private static AutofillPopupBridge create(long nativeAutofillPopupViewAndroid,
-            WindowAndroid windowAndroid, ViewAndroidDelegate viewAndroidDelegate) {
-        return new AutofillPopupBridge(
-                nativeAutofillPopupViewAndroid, windowAndroid, viewAndroidDelegate);
+    private static AutofillPopupBridge create(View anchorView, long nativeAutofillPopupViewAndroid,
+            WindowAndroid windowAndroid) {
+        return new AutofillPopupBridge(anchorView, nativeAutofillPopupViewAndroid,
+                windowAndroid);
     }
 
     @Override
@@ -96,18 +96,6 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
     @CalledByNative
     private void show(AutofillSuggestion[] suggestions, boolean isRtl) {
         if (mAutofillPopup != null) mAutofillPopup.filterAndShow(suggestions, isRtl);
-    }
-
-    /**
-     * Sets the location and size of the Autofill popup anchor (input field).
-     * @param x X coordinate.
-     * @param y Y coordinate.
-     * @param width The width of the anchor.
-     * @param height The height of the anchor.
-     */
-    @CalledByNative
-    private void setAnchorRect(float x, float y, float width, float height) {
-        if (mAutofillPopup != null) mAutofillPopup.setAnchorRect(x, y, width, height);
     }
 
     @CalledByNative

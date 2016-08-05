@@ -47,8 +47,6 @@ class CONTENT_EXPORT ContentViewCore {
   virtual void PauseOrResumeGeolocation(bool should_pause) = 0;
 
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
-  virtual const base::android::JavaRef<jobject>& GetViewAndroidDelegate()
-      const = 0;
 
  protected:
  ~ContentViewCore() {}

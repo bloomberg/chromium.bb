@@ -7,9 +7,10 @@
 
 #include <list>
 
-#include "base/android/scoped_java_ref.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/memory/ref_counted.h"
 #include "ui/android/ui_android_export.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace cc {
 class Layer;
@@ -23,9 +24,40 @@ class WindowAndroid;
 // At the root of the hierarchy is a WindowAndroid, when attached.
 class UI_ANDROID_EXPORT ViewAndroid {
  public:
+  // Stores an anchored view to delete itself at the end of its lifetime
+  // automatically. This helps manage the lifecyle without the dependency
+  // on |ViewAndroid|.
+  class ScopedAnchorView {
+   public:
+    ScopedAnchorView(JNIEnv* env,
+                     const base::android::JavaRef<jobject>& jview,
+                     const base::android::JavaRef<jobject>& jdelegate);
+
+    ScopedAnchorView();
+    ScopedAnchorView(ScopedAnchorView&& other);
+    ScopedAnchorView& operator=(ScopedAnchorView&& other);
+
+    // Calls JNI removeView() on the delegate for cleanup.
+    ~ScopedAnchorView();
+
+    void Reset();
+
+    const base::android::ScopedJavaLocalRef<jobject> view() const;
+
+   private:
+    // TODO(jinsukkim): Following weak refs can be cast to strong refs which
+    //     cannot be garbage-collected and leak memory. Rewrite not to use them.
+    //     see comments in crrev.com/2103243002.
+    JavaObjectWeakGlobalRef view_;
+    JavaObjectWeakGlobalRef delegate_;
+
+    // Default copy/assign disabled by move constructor.
+  };
+
   // A ViewAndroid may have its own delegate or otherwise will
   // use the next available parent's delegate.
   ViewAndroid(const base::android::JavaRef<jobject>& delegate);
+
   ViewAndroid();
   virtual ~ViewAndroid();
 
@@ -33,10 +65,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // if disconnected.
   virtual WindowAndroid* GetWindowAndroid() const;
 
-  // Returns the Java delegate for this view. This is used to delegate work
-  // up to the embedding view (or the embedder that can deal with the
-  // implementation details).
-  const base::android::JavaRef<jobject>& GetViewAndroidDelegate() const;
+  // Set the root |WindowAndroid|. This is only valid for root
+  // nodes and must not be called for children.
+  void SetWindowAndroid(WindowAndroid* root_window);
 
   // Used to return and set the layer for this view. May be |null|.
   cc::Layer* GetLayer() const;
@@ -51,15 +82,25 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void StartDragAndDrop(const base::android::JavaRef<jstring>& jtext,
                         const base::android::JavaRef<jobject>& jimage);
 
+  ScopedAnchorView AcquireAnchorView();
+  void SetAnchorRect(const base::android::JavaRef<jobject>& anchor,
+                     const gfx::RectF& bounds);
+
  protected:
   ViewAndroid* parent_;
 
  private:
   void RemoveChild(ViewAndroid* child);
 
+  // Returns the Java delegate for this view. This is used to delegate work
+  // up to the embedding view (or the embedder that can deal with the
+  // implementation details).
+  const base::android::ScopedJavaLocalRef<jobject>
+      GetViewAndroidDelegate() const;
+
   std::list<ViewAndroid*> children_;
   scoped_refptr<cc::Layer> layer_;
-  base::android::ScopedJavaGlobalRef<jobject> delegate_;
+  JavaObjectWeakGlobalRef delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAndroid);
 };

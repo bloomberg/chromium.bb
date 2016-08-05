@@ -32,12 +32,11 @@ public class ContentViewCoreViewAndroidDelegateTest extends ContentShellTestBase
         mContentViewCore = new ContentViewCore(getActivity());
         mContainerView = new FrameLayout(getActivity());
 
-        mContentViewCore.createContentViewAndroidDelegate();
         mContentViewCore.initPopupZoomer(getActivity());
         // This reference never changes during the duration of the tests,
         // but can still be used to add/remove anchor views from the
         // updated container view.
-        mViewAndroidDelegate = mContentViewCore.getViewAndroidDelegate();
+        mViewAndroidDelegate = ViewAndroidDelegate.createBasicDelegate(mContainerView);
         mContentViewCore.setContainerView(mContainerView);
     }
 
@@ -78,99 +77,8 @@ public class ContentViewCoreViewAndroidDelegateTest extends ContentShellTestBase
         assertTrue(areEqual(originalLayoutParams, updatedLayoutParams));
     }
 
-    @SmallTest
-    public void testMovedAndRemovedAnchorViewIsNotTransferred() {
-        // Add, move and remove anchorView
-        View anchorView = addAnchorViewTest(mContainerView, 1);
-        setLayoutParams(anchorView, 1, 2);
-        removeAnchorViewTest(mContainerView, anchorView, 0);
-
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
-
-        // Verify that no anchor view is transferred between containerViews
-        assertEquals(0, mContainerView.getChildCount());
-        assertEquals(0, updatedContainerView.getChildCount());
-    }
-
-    @SmallTest
-    public void testTransferAnchorView() {
-        // Add anchor view
-        View anchorView = addAnchorViewTest(mContainerView, 1);
-        LayoutParams layoutParams = anchorView.getLayoutParams();
-
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
-
-        verifyAnchorViewCorrectlyTransferred(anchorView, updatedContainerView, layoutParams);
-    }
-
-    @SmallTest
-    public void testTransferMovedAnchorView() {
-        // Add anchor view and move it
-        View anchorView = addAnchorViewTest(mContainerView, 1);
-        LayoutParams layoutParams = setLayoutParams(anchorView, 1, 2);
-
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
-
-        verifyAnchorViewCorrectlyTransferred(anchorView, updatedContainerView, layoutParams);
-    }
-
-    @SmallTest
-    public void testRemoveTransferedAnchorView() {
-        // Add anchor view
-        View anchorView = addAnchorViewTest(mContainerView, 1);
-
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
-
-        verifyAnchorViewCorrectlyTransferred(anchorView, updatedContainerView);
-
-        // Remove transferred anchor view
-        removeAnchorViewTest(updatedContainerView, anchorView, 0);
-    }
-
-    @SmallTest
-    public void testMoveTransferedAnchorView() {
-        // Add anchor view
-        View anchorView = addAnchorViewTest(mContainerView, 1);
-        LayoutParams layoutParams = anchorView.getLayoutParams();
-
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
-
-        verifyAnchorViewCorrectlyTransferred(anchorView, updatedContainerView, layoutParams);
-
-        // Move transferred anchor view
-        assertFalse(areEqual(layoutParams, setLayoutParams(anchorView, 1, 2)));
-    }
-
-    @SmallTest
-    public void testTransferMultipleMovedAnchorViews() {
-        // Add and move anchorView1
-        View anchorView1 = addAnchorViewTest(mContainerView, 1);
-        LayoutParams layoutParams1 = setLayoutParams(anchorView1, 1, 2);
-
-        // Add and move anchorView2
-        View anchorView2 = addAnchorViewTest(mContainerView, 2);
-        LayoutParams layoutParams2 = setLayoutParams(anchorView2, 2, 4);
-
-        // Replace containerView
-        FrameLayout updatedContainerView = updateContainerView();
-
-        // Verify that anchor views are transfered in the same order
-        // and with the same layout params.
-        assertEquals(0, mContainerView.getChildCount());
-        assertEquals(2, updatedContainerView.getChildCount());
-        assertSame(anchorView1, updatedContainerView.getChildAt(0));
-        assertTrue(areEqual(layoutParams1, anchorView1.getLayoutParams()));
-        assertSame(anchorView2, updatedContainerView.getChildAt(1));
-        assertTrue(areEqual(layoutParams2, anchorView2.getLayoutParams()));
-    }
-
     private View addAnchorViewTest(ViewGroup containerView, int expectedCount) {
-        View anchorView = mViewAndroidDelegate.acquireAnchorView();
+        View anchorView = mViewAndroidDelegate.acquireView();
         assertEquals(expectedCount, containerView.getChildCount());
         assertSame(anchorView, containerView.getChildAt(expectedCount - 1));
         return anchorView;
@@ -178,34 +86,15 @@ public class ContentViewCoreViewAndroidDelegateTest extends ContentShellTestBase
 
     private void removeAnchorViewTest(
             ViewGroup containerView, View anchorView1, int expectedCount) {
-        mViewAndroidDelegate.releaseAnchorView(anchorView1);
+        mViewAndroidDelegate.removeView(anchorView1);
         assertEquals(expectedCount, containerView.getChildCount());
     }
 
     private LayoutParams setLayoutParams(View anchorView,
             int coordinatesValue, int dimensionsValue) {
-        mViewAndroidDelegate.setAnchorViewPosition(anchorView, coordinatesValue, coordinatesValue,
-                dimensionsValue, dimensionsValue);
+        mViewAndroidDelegate.setViewPosition(anchorView, coordinatesValue, coordinatesValue,
+                dimensionsValue, dimensionsValue, 1f, 10, 10);
         return anchorView.getLayoutParams();
-    }
-
-    private FrameLayout updateContainerView() {
-        FrameLayout updatedContainerView = new FrameLayout(getActivity());
-        mContentViewCore.setContainerView(updatedContainerView);
-        return updatedContainerView;
-    }
-
-    private void verifyAnchorViewCorrectlyTransferred(View anchorView,
-            FrameLayout updatedContainerView, LayoutParams expectedParams) {
-        assertTrue(areEqual(expectedParams, anchorView.getLayoutParams()));
-        verifyAnchorViewCorrectlyTransferred(anchorView, updatedContainerView);
-    }
-
-    private void verifyAnchorViewCorrectlyTransferred(View anchorView,
-            FrameLayout updatedContainerView) {
-        assertEquals(0, mContainerView.getChildCount());
-        assertEquals(1, updatedContainerView.getChildCount());
-        assertSame(anchorView, updatedContainerView.getChildAt(0));
     }
 
     private boolean areEqual(LayoutParams params1, LayoutParams params2) {

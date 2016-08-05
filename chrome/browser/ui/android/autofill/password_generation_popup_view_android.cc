@@ -59,15 +59,18 @@ bool PasswordGenerationPopupViewAndroid::Register(JNIEnv* env) {
 PasswordGenerationPopupViewAndroid::~PasswordGenerationPopupViewAndroid() {}
 
 void PasswordGenerationPopupViewAndroid::Show() {
-  JNIEnv* env = base::android::AttachCurrentThread();
   ui::ViewAndroid* view_android = controller_->container_view();
 
   DCHECK(view_android);
 
+  popup_ = view_android->AcquireAnchorView();
+  const ScopedJavaLocalRef<jobject> view = popup_.view();
+  if (view.is_null())
+    return;
+  JNIEnv* env = base::android::AttachCurrentThread();
   java_object_.Reset(Java_PasswordGenerationPopupBridge_create(
-      env, reinterpret_cast<intptr_t>(this),
-      view_android->GetWindowAndroid()->GetJavaObject().obj(),
-      view_android->GetViewAndroidDelegate().obj()));
+      env, view.obj(), reinterpret_cast<intptr_t>(this),
+      view_android->GetWindowAndroid()->GetJavaObject().obj()));
 
   UpdateBoundsAndRedrawPopup();
 }
@@ -75,7 +78,12 @@ void PasswordGenerationPopupViewAndroid::Show() {
 void PasswordGenerationPopupViewAndroid::Hide() {
   controller_ = NULL;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PasswordGenerationPopupBridge_hide(env, java_object_.obj());
+  if (!java_object_.is_null()) {
+    Java_PasswordGenerationPopupBridge_hide(env, java_object_.obj());
+  } else {
+    // Hide() should delete |this| either via Java dismiss or directly.
+    delete this;
+  }
 }
 
 gfx::Size PasswordGenerationPopupViewAndroid::GetPreferredSizeOfPasswordView() {
@@ -84,15 +92,18 @@ gfx::Size PasswordGenerationPopupViewAndroid::GetPreferredSizeOfPasswordView() {
 }
 
 void PasswordGenerationPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PasswordGenerationPopupBridge_setAnchorRect(
-      env,
-      java_object_.obj(),
-      controller_->element_bounds().x(),
-      controller_->element_bounds().y(),
-      controller_->element_bounds().width(),
-      controller_->element_bounds().height());
+  if (java_object_.is_null())
+    return;
 
+  const ScopedJavaLocalRef<jobject> view = popup_.view();
+  if (view.is_null())
+    return;
+
+  ui::ViewAndroid* view_android = controller_->container_view();
+
+  DCHECK(view_android);
+  view_android->SetAnchorRect(view, controller_->element_bounds());
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> password =
       base::android::ConvertUTF16ToJavaString(env, controller_->password());
   ScopedJavaLocalRef<jstring> suggestion =

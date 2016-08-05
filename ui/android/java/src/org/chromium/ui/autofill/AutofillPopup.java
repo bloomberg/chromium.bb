@@ -14,7 +14,6 @@ import org.chromium.ui.DropdownAdapter;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.R;
-import org.chromium.ui.base.ViewAndroidDelegate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,12 +39,11 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
     /**
      * Creates an AutofillWindow with specified parameters.
      * @param context Application context.
-     * @param viewAndroidDelegate View delegate used to add and remove views.
+     * @param anchorView View anchored for popup.
      * @param autofillDelegate An object that handles the calls to the native AutofillPopupView.
      */
-    public AutofillPopup(Context context, ViewAndroidDelegate viewAndroidDelegate,
-            AutofillDelegate autofillDelegate) {
-        super(context, viewAndroidDelegate);
+    public AutofillPopup(Context context, View anchorView, AutofillDelegate autofillDelegate) {
+        super(context, anchorView);
         mContext = context;
         mAutofillDelegate = autofillDelegate;
 

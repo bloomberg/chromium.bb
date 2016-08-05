@@ -24,6 +24,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -128,7 +129,8 @@ public class CastWindowAndroid extends LinearLayout {
         Context context = getContext();
         mContentViewCore = new ContentViewCore(context);
         ContentView view = ContentView.createContentView(context, mContentViewCore);
-        mContentViewCore.initialize(view, view, webContents, mWindow);
+        mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(view), view,
+                webContents, mWindow);
         mWebContents = mContentViewCore.getWebContents();
         mNavigationController = mWebContents.getNavigationController();
         mRenderProcessId = renderProcessId;
