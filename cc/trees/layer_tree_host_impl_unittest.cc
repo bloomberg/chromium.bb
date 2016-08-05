@@ -2770,16 +2770,26 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     settings.scrollbar_fade_delay_ms = 20;
     settings.scrollbar_fade_duration_ms = 20;
 
+    // If no animator is set, scrollbar won't show and no animation is expected.
+    bool expecting_animations = animator != LayerTreeSettings::NO_ANIMATOR;
+
     SetupLayers(settings);
 
     base::TimeTicks fake_now = base::TimeTicks::Now();
 
-    // A task will be posted to fade the initial scrollbar.
-    EXPECT_FALSE(did_request_next_frame_);
-    EXPECT_FALSE(did_request_redraw_);
-    EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-    requested_animation_delay_ = base::TimeDelta();
-    animation_task_ = base::Closure();
+    if (expecting_animations) {
+      // A task will be posted to fade the initial scrollbar.
+      EXPECT_FALSE(did_request_next_frame_);
+      EXPECT_FALSE(did_request_redraw_);
+      EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+      requested_animation_delay_ = base::TimeDelta();
+      animation_task_ = base::Closure();
+    } else {
+      EXPECT_FALSE(did_request_next_frame_);
+      EXPECT_FALSE(did_request_redraw_);
+      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
+    }
 
     // If no scroll happened during a scroll gesture, it should have no effect.
     host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
@@ -2817,42 +2827,49 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_->ScrollEnd(EndState().get());
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
-    EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
-              requested_animation_delay_);
-    EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+    if (expecting_animations) {
+      EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
+                requested_animation_delay_);
+      EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+    } else {
+      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
+      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+    }
 
-    // Before the scrollbar animation begins, we should not get redraws.
-    begin_frame_args =
-        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
-    host_impl_->WillBeginImplFrame(begin_frame_args);
-    host_impl_->Animate();
-    EXPECT_FALSE(did_request_next_frame_);
-    did_request_next_frame_ = false;
-    EXPECT_FALSE(did_request_redraw_);
-    did_request_redraw_ = false;
-    host_impl_->DidFinishImplFrame();
+    if (expecting_animations) {
+      // Before the scrollbar animation begins, we should not get redraws.
+      begin_frame_args =
+          CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
+      host_impl_->WillBeginImplFrame(begin_frame_args);
+      host_impl_->Animate();
+      EXPECT_FALSE(did_request_next_frame_);
+      did_request_next_frame_ = false;
+      EXPECT_FALSE(did_request_redraw_);
+      did_request_redraw_ = false;
+      host_impl_->DidFinishImplFrame();
 
-    // Start the scrollbar animation.
-    fake_now += requested_animation_delay_;
-    requested_animation_delay_ = base::TimeDelta();
-    animation_task_.Run();
-    animation_task_ = base::Closure();
-    EXPECT_TRUE(did_request_next_frame_);
-    did_request_next_frame_ = false;
-    EXPECT_FALSE(did_request_redraw_);
+      // Start the scrollbar animation.
+      fake_now += requested_animation_delay_;
+      requested_animation_delay_ = base::TimeDelta();
+      animation_task_.Run();
+      animation_task_ = base::Closure();
+      EXPECT_TRUE(did_request_next_frame_);
+      did_request_next_frame_ = false;
+      EXPECT_FALSE(did_request_redraw_);
 
-    // After the scrollbar animation begins, we should start getting redraws.
-    begin_frame_args =
-        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
-    host_impl_->WillBeginImplFrame(begin_frame_args);
-    host_impl_->Animate();
-    EXPECT_TRUE(did_request_next_frame_);
-    did_request_next_frame_ = false;
-    EXPECT_TRUE(did_request_redraw_);
-    did_request_redraw_ = false;
-    EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
-    EXPECT_TRUE(animation_task_.Equals(base::Closure()));
-    host_impl_->DidFinishImplFrame();
+      // After the scrollbar animation begins, we should start getting redraws.
+      begin_frame_args =
+          CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
+      host_impl_->WillBeginImplFrame(begin_frame_args);
+      host_impl_->Animate();
+      EXPECT_TRUE(did_request_next_frame_);
+      did_request_next_frame_ = false;
+      EXPECT_TRUE(did_request_redraw_);
+      did_request_redraw_ = false;
+      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
+      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+      host_impl_->DidFinishImplFrame();
+    }
 
     // Setting the scroll offset outside a scroll should also cause the
     // scrollbar to appear and to schedule a scrollbar animation.
@@ -2866,23 +2883,30 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
           host_impl_->InnerViewportScrollLayer()->transform_tree_index());
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
-    EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
-              requested_animation_delay_);
-    EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-    requested_animation_delay_ = base::TimeDelta();
-    animation_task_ = base::Closure();
+    if (expecting_animations) {
+      EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
+                requested_animation_delay_);
+      EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+      requested_animation_delay_ = base::TimeDelta();
+      animation_task_ = base::Closure();
+    } else {
+      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
+      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+    }
 
-    // Scrolling should have stopped the animation, so we should not be getting
-    // redraws.
-    begin_frame_args =
-        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
-    host_impl_->WillBeginImplFrame(begin_frame_args);
-    host_impl_->Animate();
-    EXPECT_FALSE(did_request_next_frame_);
-    did_request_next_frame_ = false;
-    EXPECT_FALSE(did_request_redraw_);
-    did_request_redraw_ = false;
-    host_impl_->DidFinishImplFrame();
+    if (expecting_animations) {
+      // Scrolling should have stopped the animation, so we should not be
+      // getting redraws.
+      begin_frame_args =
+          CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
+      host_impl_->WillBeginImplFrame(begin_frame_args);
+      host_impl_->Animate();
+      EXPECT_FALSE(did_request_next_frame_);
+      did_request_next_frame_ = false;
+      EXPECT_FALSE(did_request_redraw_);
+      did_request_redraw_ = false;
+      host_impl_->DidFinishImplFrame();
+    }
 
     // Scrollbar animation is not triggered unnecessarily.
     host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
@@ -2905,11 +2929,16 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_->active_tree()->SetPageScaleOnActiveTree(1.1f);
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
-    EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
-              requested_animation_delay_);
-    EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-    requested_animation_delay_ = base::TimeDelta();
-    animation_task_ = base::Closure();
+    if (expecting_animations) {
+      EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
+                requested_animation_delay_);
+      EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+      requested_animation_delay_ = base::TimeDelta();
+      animation_task_ = base::Closure();
+    } else {
+      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
+      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+    }
   }
 };
 
@@ -2921,6 +2950,10 @@ TEST_F(LayerTreeHostImplTestScrollbarAnimation, Thinning) {
   RunTest(LayerTreeSettings::THINNING);
 }
 
+TEST_F(LayerTreeHostImplTestScrollbarAnimation, NoAnimator) {
+  RunTest(LayerTreeSettings::NO_ANIMATOR);
+}
+
 class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
  protected:
   void RunTest(LayerTreeSettings::ScrollbarAnimator animator) {
@@ -2929,6 +2962,9 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     settings.scrollbar_fade_delay_ms = 20;
     settings.scrollbar_fade_duration_ms = 20;
     gfx::Size content_size(100, 100);
+
+    // If no animator is set, scrollbar won't show and no animation is expected.
+    bool expecting_animations = animator != LayerTreeSettings::NO_ANIMATOR;
 
     CreateHostImpl(settings, CreateOutputSurface());
     host_impl_->CreatePendingTree();
@@ -2955,8 +2991,13 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     EXPECT_FLOAT_EQ(active_scrollbar_layer->Opacity(),
                     active_tree_node->opacity);
 
-    host_impl_->ScrollbarAnimationControllerForId(scroll->id())
-        ->DidMouseMoveNear(0);
+    if (expecting_animations) {
+      host_impl_->ScrollbarAnimationControllerForId(scroll->id())
+          ->DidMouseMoveNear(0);
+    } else {
+      EXPECT_EQ(nullptr,
+                host_impl_->ScrollbarAnimationControllerForId(scroll->id()));
+    }
     host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                             InputHandler::WHEEL);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2dF(0, 5)).get());
@@ -2971,21 +3012,32 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
 
     LayerImpl* pending_scrollbar_layer =
         host_impl_->pending_tree()->LayerById(400);
+    pending_scrollbar_layer->SetNeedsPushProperties();
     EffectNode* pending_tree_node =
         host_impl_->pending_tree()->property_trees()->effect_tree.Node(
             pending_scrollbar_layer->effect_tree_index());
     host_impl_->pending_tree()
         ->property_trees()
         ->always_use_active_tree_opacity_effect_ids.push_back(400);
-    EXPECT_FLOAT_EQ(1.f, active_tree_node->opacity);
-    EXPECT_FLOAT_EQ(1.f, active_scrollbar_layer->Opacity());
+    if (expecting_animations) {
+      EXPECT_FLOAT_EQ(1.f, active_tree_node->opacity);
+      EXPECT_FLOAT_EQ(1.f, active_scrollbar_layer->Opacity());
+    } else {
+      EXPECT_FLOAT_EQ(0.f, active_tree_node->opacity);
+      EXPECT_FLOAT_EQ(0.f, active_scrollbar_layer->Opacity());
+    }
     EXPECT_FLOAT_EQ(0.f, pending_tree_node->opacity);
     host_impl_->ActivateSyncTree();
     active_tree_node =
         host_impl_->active_tree()->property_trees()->effect_tree.Node(
             active_scrollbar_layer->effect_tree_index());
-    EXPECT_FLOAT_EQ(1.f, active_tree_node->opacity);
-    EXPECT_FLOAT_EQ(1.f, active_scrollbar_layer->Opacity());
+    if (expecting_animations) {
+      EXPECT_FLOAT_EQ(1.f, active_tree_node->opacity);
+      EXPECT_FLOAT_EQ(1.f, active_scrollbar_layer->Opacity());
+    } else {
+      EXPECT_FLOAT_EQ(0.f, active_tree_node->opacity);
+      EXPECT_FLOAT_EQ(0.f, active_scrollbar_layer->Opacity());
+    }
   }
 };
 
@@ -2995,6 +3047,10 @@ TEST_F(LayerTreeHostImplTestScrollbarOpacity, LinearFade) {
 
 TEST_F(LayerTreeHostImplTestScrollbarOpacity, Thinning) {
   RunTest(LayerTreeSettings::THINNING);
+}
+
+TEST_F(LayerTreeHostImplTestScrollbarOpacity, NoAnimator) {
+  RunTest(LayerTreeSettings::NO_ANIMATOR);
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {

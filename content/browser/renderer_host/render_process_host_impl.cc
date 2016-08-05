@@ -1536,6 +1536,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableCanvas2dDynamicRenderingModeSwitching,
     switches::kForceOverlayFullscreenVideo,
     switches::kFullMemoryCrashReport,
+    switches::kHideScrollbars,
     switches::kInertVisualViewport,
     switches::kIPCConnectionTimeout,
     switches::kIsRunningInMash,
