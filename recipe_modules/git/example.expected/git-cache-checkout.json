@@ -16,15 +16,47 @@
       "git",
       "retry",
       "cache",
-      "fetch",
+      "populate",
       "-c",
-      "[GIT_CACHE]"
+      "[GIT_CACHE]",
+      "https://chromium.googlesource.com/chromium/src.git"
     ],
     "cwd": "[SLAVE_BUILD]/src",
     "env": {
       "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
     },
-    "name": "fetch cache"
+    "name": "populate cache"
+  },
+  {
+    "cmd": [
+      "git",
+      "cache",
+      "exists",
+      "--quiet",
+      "--cache-dir",
+      "[GIT_CACHE]",
+      "https://chromium.googlesource.com/chromium/src.git"
+    ],
+    "cwd": "[SLAVE_BUILD]/src",
+    "env": {
+      "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
+    },
+    "name": "git cache",
+    "stdout": "/path/to/tmp/"
+  },
+  {
+    "cmd": [
+      "git",
+      "remote",
+      "set-url",
+      "origin",
+      "mirror_dir"
+    ],
+    "cwd": "[SLAVE_BUILD]/src",
+    "env": {
+      "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
+    },
+    "name": "git remote"
   },
   {
     "cmd": [

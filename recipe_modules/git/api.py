@@ -213,11 +213,23 @@ class GitApi(recipe_api.RecipeApi):
         str(self.package_repo_resource()), '%(PATH)s'])
 
     if use_git_cache:
-      self('retry', 'cache', 'fetch', '-c', self.m.path['git_cache'],
-           cwd=dir_path,
-           name='fetch cache',
-           can_fail_build=can_fail_build,
-           env={'PATH': path})
+      with self.m.step.context({'env': {'PATH': path}}):
+        self('retry', 'cache', 'populate', '-c', self.m.path['git_cache'], url,
+             name='populate cache',
+             can_fail_build=can_fail_build,
+             cwd=dir_path)
+        dir_cmd = self(
+            'cache', 'exists', '--quiet',
+            '--cache-dir', self.m.path['git_cache'], url,
+            can_fail_build=can_fail_build,
+            stdout=self.m.raw_io.output(),
+            step_test_data=lambda:
+                self.m.raw_io.test_api.stream_output('mirror_dir'),
+            cwd=dir_path)
+        mirror_dir = dir_cmd.stdout.strip()
+        self('remote', 'set-url', 'origin', mirror_dir,
+             can_fail_build=can_fail_build,
+             cwd=dir_path)
 
     # There are five kinds of refs we can be handed:
     # 0) None. In this case, we default to properties['branch'].
