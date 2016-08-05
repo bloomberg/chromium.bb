@@ -41,6 +41,7 @@ public class QuicTest extends CronetTestBase {
         mBuilder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
 
+        // TODO(mgersh): Enable connection migration once it works, see http://crbug.com/634910
         JSONObject quicParams = new JSONObject()
                                         .put("connection_options", "PACE,IW10,FOO,DEADBEEF")
                                         .put("host_whitelist", "test.example.com")
@@ -50,8 +51,8 @@ public class QuicTest extends CronetTestBase {
                                         .put("packet_loss_threshold", 0.5)
                                         .put("idle_connection_timeout_seconds", 300)
                                         .put("close_sessions_on_ip_change", false)
-                                        .put("migrate_sessions_on_network_change", true)
-                                        .put("migrate_sessions_early", true)
+                                        .put("migrate_sessions_on_network_change", false)
+                                        .put("migrate_sessions_early", false)
                                         .put("race_cert_verification", true);
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         mBuilder.setExperimentalOptions(experimentalOptions.toString());
