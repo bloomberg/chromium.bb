@@ -4,11 +4,9 @@
 
 #include "core/layout/LayoutObject.h"
 
-#include "core/frame/FrameView.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
-#include "platform/JSONValues.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -124,45 +122,6 @@ TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll)
     LayoutObject* overflowClipObject = getLayoutObjectByElementId("overflow-clip-layer");
     LayoutBlock* columns = toLayoutBlock(getLayoutObjectByElementId("columns"));
     EXPECT_EQ(columns->layer(), overflowClipObject->paintingLayer());
-}
-
-TEST_F(LayoutObjectTest, TraverseNonCompositingDescendantsInPaintOrder)
-{
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        return;
-
-    enableCompositing();
-    setBodyInnerHTML(
-        "<style>div { width: 10px; height: 10px; background-color: green; }</style>"
-        "<div id='container' style='position: fixed'>"
-        "  <div id='normal-child'></div>"
-        "  <div id='stacked-child' style='position: relative'></div>"
-        "  <div id='composited-stacking-context' style='will-change: transform'>"
-        "    <div id='normal-child-of-composited-stacking-context'></div>"
-        "    <div id='stacked-child-of-composited-stacking-context' style='position: relative'></div>"
-        "  </div>"
-        "  <div id='composited-non-stacking-context' style='backface-visibility: hidden'>"
-        "    <div id='normal-child-of-composited-non-stacking-context'></div>"
-        "    <div id='stacked-child-of-composited-non-stacking-context' style='position: relative'></div>"
-        "    <div id='non-stacked-layered-child-of-composited-non-stacking-context' style='overflow: scroll'></div>"
-        "  </div>"
-        "</div>");
-
-    document().view()->setTracksPaintInvalidations(true);
-    getLayoutObjectByElementId("container")->invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationSubtree);
-    RefPtr<JSONArray> invalidations = document().view()->trackedObjectPaintInvalidationsAsJSON();
-    document().view()->setTracksPaintInvalidations(false);
-
-    ASSERT_EQ(4u, invalidations->length());
-    String s;
-    static_cast<JSONObject*>(invalidations->get(0).get())->get("object")->asString(&s);
-    EXPECT_EQ(getLayoutObjectByElementId("container")->debugName(), s);
-    static_cast<JSONObject*>(invalidations->get(1).get())->get("object")->asString(&s);
-    EXPECT_EQ(getLayoutObjectByElementId("normal-child")->debugName(), s);
-    static_cast<JSONObject*>(invalidations->get(2).get())->get("object")->asString(&s);
-    EXPECT_EQ(getLayoutObjectByElementId("stacked-child")->debugName(), s);
-    static_cast<JSONObject*>(invalidations->get(3).get())->get("object")->asString(&s);
-    EXPECT_EQ(getLayoutObjectByElementId("stacked-child-of-composited-non-stacking-context")->debugName(), s);
 }
 
 } // namespace blink
