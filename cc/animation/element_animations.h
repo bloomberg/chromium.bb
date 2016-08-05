@@ -9,9 +9,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/linked_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
@@ -62,9 +62,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void RemovePlayer(AnimationPlayer* player);
   bool IsEmpty() const;
 
-  typedef base::LinkedList<AnimationPlayer> PlayersList;
-  typedef base::LinkNode<AnimationPlayer> PlayersListNode;
-  const PlayersList& players_list() const { return *players_list_.get(); }
+  typedef base::ObserverList<AnimationPlayer> PlayersList;
+  PlayersList& players_list() const { return *players_list_.get(); }
 
   // Ensures that the list of active animations on the main thread and the impl
   // thread are kept in sync. This function does not take ownership of the impl

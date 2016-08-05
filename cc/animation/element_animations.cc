@@ -111,21 +111,15 @@ void ElementAnimations::ElementUnregistered(ElementId element_id,
 }
 
 void ElementAnimations::AddPlayer(AnimationPlayer* player) {
-  players_list_->Append(player);
+  players_list_->AddObserver(player);
 }
 
 void ElementAnimations::RemovePlayer(AnimationPlayer* player) {
-  for (PlayersListNode* node = players_list_->head();
-       node != players_list_->end(); node = node->next()) {
-    if (node->value() == player) {
-      node->RemoveFromList();
-      return;
-    }
-  }
+  players_list_->RemoveObserver(player);
 }
 
 bool ElementAnimations::IsEmpty() const {
-  return players_list_->empty();
+  return !players_list_->might_have_observers();
 }
 
 void ElementAnimations::PushPropertiesTo(
@@ -281,7 +275,7 @@ void ElementAnimations::NotifyAnimationFinished(const AnimationEvent& event) {
 
 void ElementAnimations::NotifyAnimationTakeover(const AnimationEvent& event) {
   DCHECK(event.target_property == TargetProperty::SCROLL_OFFSET);
-  if (!players_list_->empty()) {
+  if (!IsEmpty()) {
     std::unique_ptr<AnimationCurve> animation_curve = event.curve->Clone();
     NotifyPlayersAnimationTakeover(event.monotonic_time, event.target_property,
                                    event.animation_start_time,
@@ -1435,33 +1429,32 @@ void ElementAnimations::NotifyPlayersAnimationStarted(
     base::TimeTicks monotonic_time,
     TargetProperty::Type target_property,
     int group) {
-  for (PlayersListNode* node = players_list_->head();
-       node != players_list_->end(); node = node->next()) {
-    AnimationPlayer* player = node->value();
+  ElementAnimations::PlayersList::Iterator it(players_list_.get());
+  AnimationPlayer* player;
+  // TODO(crbug.com/634916): Shouldn't manually iterate through the list if
+  // base::ObserverList has a callback mechanism.
+  while ((player = it.GetNext()) != nullptr)
     player->NotifyAnimationStarted(monotonic_time, target_property, group);
-  }
 }
 
 void ElementAnimations::NotifyPlayersAnimationFinished(
     base::TimeTicks monotonic_time,
     TargetProperty::Type target_property,
     int group) {
-  for (PlayersListNode* node = players_list_->head();
-       node != players_list_->end(); node = node->next()) {
-    AnimationPlayer* player = node->value();
+  ElementAnimations::PlayersList::Iterator it(players_list_.get());
+  AnimationPlayer* player;
+  while ((player = it.GetNext()) != nullptr)
     player->NotifyAnimationFinished(monotonic_time, target_property, group);
-  }
 }
 
 void ElementAnimations::NotifyPlayersAnimationAborted(
     base::TimeTicks monotonic_time,
     TargetProperty::Type target_property,
     int group) {
-  for (PlayersListNode* node = players_list_->head();
-       node != players_list_->end(); node = node->next()) {
-    AnimationPlayer* player = node->value();
+  ElementAnimations::PlayersList::Iterator it(players_list_.get());
+  AnimationPlayer* player;
+  while ((player = it.GetNext()) != nullptr)
     player->NotifyAnimationAborted(monotonic_time, target_property, group);
-  }
 }
 
 void ElementAnimations::NotifyPlayersAnimationTakeover(
@@ -1470,10 +1463,10 @@ void ElementAnimations::NotifyPlayersAnimationTakeover(
     double animation_start_time,
     std::unique_ptr<AnimationCurve> curve) {
   DCHECK(curve);
-  for (PlayersListNode* node = players_list_->head();
-       node != players_list_->end(); node = node->next()) {
+  ElementAnimations::PlayersList::Iterator it(players_list_.get());
+  AnimationPlayer* player;
+  while ((player = it.GetNext()) != nullptr) {
     std::unique_ptr<AnimationCurve> animation_curve = curve->Clone();
-    AnimationPlayer* player = node->value();
     player->NotifyAnimationTakeover(monotonic_time, target_property,
                                     animation_start_time,
                                     std::move(animation_curve));

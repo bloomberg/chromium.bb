@@ -191,12 +191,11 @@ TEST_F(ElementAnimationsTest, AddRemovePlayers) {
   EXPECT_TRUE(element_animations_impl);
 
   int list_size_before = 0;
-  for (const ElementAnimations::PlayersListNode* node =
-           element_animations_impl->players_list().head();
-       node != element_animations_impl->players_list().end();
-       node = node->next()) {
-    const AnimationPlayer* player_impl = node->value();
-    EXPECT_TRUE(timeline_->GetPlayerById(player_impl->id()));
+  ElementAnimations::PlayersList::Iterator it(
+      &element_animations_impl->players_list());
+  AnimationPlayer* player;
+  while ((player = it.GetNext()) != nullptr) {
+    EXPECT_TRUE(timeline_->GetPlayerById(player->id()));
     ++list_size_before;
   }
   EXPECT_EQ(3, list_size_before);
@@ -210,12 +209,10 @@ TEST_F(ElementAnimationsTest, AddRemovePlayers) {
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
 
   int list_size_after = 0;
-  for (const ElementAnimations::PlayersListNode* node =
-           element_animations_impl->players_list().head();
-       node != element_animations_impl->players_list().end();
-       node = node->next()) {
-    const AnimationPlayer* player_impl = node->value();
-    EXPECT_TRUE(timeline_->GetPlayerById(player_impl->id()));
+  it = ElementAnimations::PlayersList::Iterator(
+      &element_animations_impl->players_list());
+  while ((player = it.GetNext()) != nullptr) {
+    EXPECT_TRUE(timeline_->GetPlayerById(player->id()));
     ++list_size_after;
   }
   EXPECT_EQ(2, list_size_after);
@@ -298,6 +295,72 @@ TEST_F(ElementAnimationsTest,
                           ->curve()
                           ->ToScrollOffsetAnimationCurve()
                           ->GetValue(base::TimeDelta()));
+}
+
+class TestAnimationDelegateThatDestroysPlayer : public TestAnimationDelegate {
+ public:
+  TestAnimationDelegateThatDestroysPlayer() {}
+
+  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                              TargetProperty::Type target_property,
+                              int group) override {
+    TestAnimationDelegate::NotifyAnimationStarted(monotonic_time,
+                                                  target_property, group);
+    // Detaching player from the timeline ensures that the timeline doesn't hold
+    // a reference to the player and the player is destroyed.
+    timeline_->DetachPlayer(player_);
+  };
+
+  void setTimelineAndPlayer(scoped_refptr<AnimationTimeline> timeline,
+                            scoped_refptr<AnimationPlayer> player) {
+    timeline_ = timeline;
+    player_ = player;
+  }
+
+ private:
+  scoped_refptr<AnimationTimeline> timeline_;
+  scoped_refptr<AnimationPlayer> player_;
+};
+
+// Test that we don't crash if a player is deleted while ElementAnimations is
+// iterating through the list of players (see crbug.com/631052). This test
+// passes if it doesn't crash.
+TEST_F(ElementAnimationsTest, AddedPlayerIsDestroyed) {
+  CreateTestLayer(true, false);
+  AttachTimelinePlayerLayer();
+  CreateImplTimelineAndPlayer();
+
+  scoped_refptr<ElementAnimations> animations = element_animations();
+  scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
+
+  TestAnimationDelegateThatDestroysPlayer delegate;
+  {
+    scoped_refptr<AnimationPlayer> player =
+        AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+    delegate.setTimelineAndPlayer(timeline_, player);
+
+    timeline_->AttachPlayer(player);
+    player->AttachElement(element_id_);
+    player->set_animation_delegate(&delegate);
+  }
+
+  int animation_id = AddOpacityTransitionToElementAnimations(
+      animations.get(), 1.0, 0.f, 1.f, false);
+
+  animations->PushPropertiesTo(animations_impl.get());
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
+
+  animations_impl->Animate(kInitialTickTime);
+
+  auto events = host_impl_->CreateEvents();
+  animations_impl->UpdateState(true, events.get());
+  EXPECT_EQ(1u, events->events_.size());
+  EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
+
+  // The actual detachment happens here, inside the callback
+  animations->NotifyAnimationStarted(events->events_[0]);
+  EXPECT_TRUE(delegate.started());
 }
 
 // If an animation is started on the impl thread before it is ticked on the main

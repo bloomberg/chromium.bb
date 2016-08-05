@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/containers/linked_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -31,8 +30,7 @@ class ElementAnimations;
 // same-property animations.
 // Each AnimationPlayer has its copy on the impl thread.
 // This is a CC counterpart for blink::AnimationPlayer (in 1:1 relationship).
-class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
-                                  public base::LinkNode<AnimationPlayer> {
+class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
  public:
   static scoped_refptr<AnimationPlayer> Create(int id);
   scoped_refptr<AnimationPlayer> CreateImplInstance() const;
