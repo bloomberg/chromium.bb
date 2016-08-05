@@ -176,6 +176,8 @@ static_library("arc_test_support") {
     "test/fake_arc_bridge_instance.h",
     "test/fake_arc_bridge_service.cc",
     "test/fake_arc_bridge_service.h",
+    "test/fake_bluetooth_instance.cc",
+    "test/fake_bluetooth_instance.h",
     "test/fake_notifications_instance.cc",
     "test/fake_notifications_instance.h",
     "test/fake_policy_instance.cc",
@@ -195,6 +197,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "arc_bridge_service_unittest.cc",
+    "bluetooth/arc_bluetooth_bridge_unittest.cc",
+    "bluetooth/bluetooth_type_converters_unittest.cc",
     "ime/arc_ime_service_unittest.cc",
     "intent_helper/activity_icon_loader_unittest.cc",
     "intent_helper/arc_intent_helper_bridge_unittest.cc",
@@ -209,6 +213,7 @@ source_set("unit_tests") {
     ":arc_test_support",
     "//base",
     "//chromeos",
+    "//device/bluetooth",
     "//mojo/public/cpp/system:system",
     "//testing/gtest",
     "//ui/aura",

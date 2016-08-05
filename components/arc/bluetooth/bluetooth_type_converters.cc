@@ -19,6 +19,10 @@
 
 namespace {
 
+constexpr size_t kAddressSize = 6;
+constexpr size_t kUUIDSize = 16;
+constexpr char kInvalidAddress[] = "00:00:00:00:00:00";
+
 bool IsNonHex(char c) {
   return !isxdigit(c);
 }
@@ -34,8 +38,6 @@ std::string StripNonHex(const std::string& str) {
 }  // namespace
 
 namespace mojo {
-
-// TODO(smbarber): Add unit tests for Bluetooth type converters.
 
 // static
 arc::mojom::BluetoothAddressPtr
@@ -60,6 +62,9 @@ std::string TypeConverter<std::string, arc::mojom::BluetoothAddress>::Convert(
   addr_stream << std::setfill('0') << std::hex << std::uppercase;
 
   const mojo::Array<uint8_t>& bytes = address.address;
+
+  if (address.address.size() != kAddressSize)
+    return std::string(kInvalidAddress);
 
   for (size_t k = 0; k < bytes.size(); k++) {
     addr_stream << std::setw(2) << (unsigned int)bytes[k];
@@ -89,6 +94,9 @@ device::BluetoothUUID
 TypeConverter<device::BluetoothUUID, arc::mojom::BluetoothUUIDPtr>::Convert(
     const arc::mojom::BluetoothUUIDPtr& uuid) {
   std::vector<uint8_t> address_bytes = uuid->uuid.To<std::vector<uint8_t>>();
+
+  if (address_bytes.size() != kUUIDSize)
+    return device::BluetoothUUID();
 
   // BluetoothUUID expects the format below with the dashes inserted.
   // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
