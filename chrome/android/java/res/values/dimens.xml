@@ -277,7 +277,6 @@
     <dimen name="ntp_search_box_material_padding_right">2dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
-    <dimen name="ntp_list_item_padding">16dp</dimen>
     <dimen name="ntp_list_item_min_height">48dp</dimen>
     <dimen name="ntp_list_item_text_size">16sp</dimen>
     <dimen name="ntp_shadow_height">9dp</dimen>
@@ -287,12 +286,6 @@
     <dimen name="snippets_padding_and_peeking_card_height">16dp</dimen>
     <dimen name="snippets_card_9_patch_adjustment">2dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
-
-    <!-- Interests page -->
-    <dimen name="ntp_interest_item_text_size">20sp</dimen>
-    <dimen name="ntp_interest_item_min_height">180dp</dimen>
-    <dimen name="ntp_interest_item_image_size">120dp</dimen>
-    <dimen name="ntp_interest_item_image_text_size">20sp</dimen>
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>

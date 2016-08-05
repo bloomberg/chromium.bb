@@ -108,8 +108,13 @@ Still reading?
   <issue id="UnusedResources">
     <!-- Used by Android's policies system -->
     <ignore regexp="restriction_values.xml" />
-
     <ignore path="android_webview/tools/automated_ui_tests/java/res/" />
+    <!--
+        This file isn't used if the target SDK version is less than 24.
+        TODO(estevenson) remove this and the conditional inclusion in
+        AndroidManifest.xml after rolling to SDK 24.
+    -->
+    <ignore path="chrome/android/java/res/xml/network_security_config.xml" />
   </issue>
   <issue id="SignatureOrSystemPermissions" severity="ignore"/>
   <issue id="UnusedAttribute" severity="ignore"/>
