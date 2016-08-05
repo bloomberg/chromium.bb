@@ -200,7 +200,7 @@ class Command;
   // The Extension Command Registry used to determine which keyboard events to
   // handle.
   std::unique_ptr<ExtensionKeybindingRegistryCocoa>
-      extension_keybinding_registry_;
+      extensionKeybindingRegistry_;
 }
 
 // A convenience class method which gets the |BrowserWindowController| for a

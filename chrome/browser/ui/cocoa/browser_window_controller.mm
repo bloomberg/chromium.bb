@@ -395,7 +395,7 @@ bool IsTabDetachingInFullscreenEnabled() {
     if ([self hasToolbar])  // Do not create the buttons in popups.
       [toolbarController_ createBrowserActionButtons];
 
-    extension_keybinding_registry_.reset(
+    extensionKeybindingRegistry_.reset(
         new ExtensionKeybindingRegistryCocoa(browser_->profile(),
             [self window],
             extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
@@ -612,7 +612,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   }];
 
   extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile())
-      ->set_registry_for_active_window(extension_keybinding_registry_.get());
+      ->set_registry_for_active_window(extensionKeybindingRegistry_.get());
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
@@ -988,7 +988,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (BOOL)handledByExtensionCommand:(NSEvent*)event
     priority:(ui::AcceleratorManager::HandlerPriority)priority {
-  return extension_keybinding_registry_->ProcessKeyEvent(
+  return extensionKeybindingRegistry_->ProcessKeyEvent(
       content::NativeWebKeyboardEvent(event), priority);
 }
 
@@ -1850,8 +1850,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // Global commands are handled by the ExtensionCommandsGlobalRegistry
   // instance.
   DCHECK(!command.global());
-  extension_keybinding_registry_->ExecuteCommand(extension_id,
-                                                 command.accelerator());
+  extensionKeybindingRegistry_->ExecuteCommand(extension_id,
+                                               command.accelerator());
 }
 
 - (void)setAlertState:(TabAlertState)alertState {
