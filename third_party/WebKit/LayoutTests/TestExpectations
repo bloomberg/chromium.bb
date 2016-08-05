@@ -1418,3 +1418,5 @@ crbug.com/490015 http/tests/navigation/beacon-cross-origin-redirect-blob.html [ 
 crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simple-type.html [ Skip ]
 # This test fails with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
+
+crbug.com/634685 compositing/overflow/scroll-ancestor-update.html [ Pass Failure ]
