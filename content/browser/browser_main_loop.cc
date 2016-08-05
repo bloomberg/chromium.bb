@@ -1292,6 +1292,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     TRACE_EVENT0("startup",
       "BrowserMainLoop::BrowserThreadsStarted:InitResourceDispatcherHost");
     resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
+    GetContentClient()->browser()->ResourceDispatcherHostCreated();
 
     loader_delegate_.reset(new LoaderDelegateImpl());
     resource_dispatcher_host_->SetLoaderDelegate(loader_delegate_.get());

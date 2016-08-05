@@ -517,8 +517,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
 
-  GetContentClient()->browser()->ResourceDispatcherHostCreated();
-
   ANNOTATE_BENIGN_RACE(
       &last_user_gesture_time_,
       "We don't care about the precise value, see http://crbug.com/92889");
