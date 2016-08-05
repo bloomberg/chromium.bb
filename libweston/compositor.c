@@ -4326,8 +4326,13 @@ WL_EXPORT void
 weston_compositor_add_output(struct weston_compositor *compositor,
                              struct weston_output *output)
 {
+	struct weston_view *view, *next;
+
 	wl_list_insert(compositor->output_list.prev, &output->link);
 	wl_signal_emit(&compositor->output_created_signal, output);
+
+	wl_list_for_each_safe(view, next, &compositor->view_list, link)
+		weston_view_geometry_dirty(view);
 }
 
 WL_EXPORT void
