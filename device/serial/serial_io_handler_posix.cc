@@ -348,10 +348,16 @@ bool SerialIoHandlerPosix::AttemptRead(bool within_read) {
 void SerialIoHandlerPosix::RunReadCompleted(bool within_read,
                                             int bytes_read,
                                             serial::ReceiveError error) {
-  if (within_read)
+  if (within_read) {
+    // Stop watching the fd to avoid more reads until the queued ReadCompleted()
+    // completes and releases the pending_read_buffer.
+    is_watching_reads_ = false;
+    file_read_watcher_.StopWatchingFileDescriptor();
+
     QueueReadCompleted(bytes_read, error);
-  else
+  } else {
     ReadCompleted(bytes_read, error);
+  }
 }
 
 void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking(int fd) {
