@@ -157,12 +157,16 @@ MostVisitedSites::MostVisitedSites(PrefService* prefs,
       top_sites_observer_(this),
       mv_source_(NTPTileSource::SUGGESTIONS_SERVICE),
       weak_ptr_factory_(this) {
+  DCHECK(prefs_);
+  DCHECK(top_sites_);
   DCHECK(suggestions_service_);
-  supervisor_->SetObserver(this);
+  if (supervisor_)
+    supervisor_->SetObserver(this);
 }
 
 MostVisitedSites::~MostVisitedSites() {
-  supervisor_->SetObserver(nullptr);
+  if (supervisor_)
+    supervisor_->SetObserver(nullptr);
 }
 
 void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
@@ -291,9 +295,11 @@ void MostVisitedSites::InitiateTopSitesQuery() {
 }
 
 base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
-  for (const auto& whitelist : supervisor_->whitelists()) {
-    if (AreURLsEquivalent(whitelist.entry_point, url))
-      return whitelist.large_icon_path;
+  if (supervisor_) {
+    for (const auto& whitelist : supervisor_->whitelists()) {
+      if (AreURLsEquivalent(whitelist.entry_point, url))
+        return whitelist.large_icon_path;
+    }
   }
   return base::FilePath();
 }
@@ -309,7 +315,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
       num_tiles = i;
       break;  // This is the signal that there are no more real visited sites.
     }
-    if (supervisor_->IsBlocked(visited.url))
+    if (supervisor_ && supervisor_->IsBlocked(visited.url))
       continue;
 
     NTPTile tile;
@@ -343,7 +349,7 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   for (int i = 0; i < num_tiles; ++i) {
     const ChromeSuggestion& suggestion_pb = suggestions_profile.suggestions(i);
     GURL url(suggestion_pb.url());
-    if (supervisor_->IsBlocked(url))
+    if (supervisor_ && supervisor_->IsBlocked(url))
       continue;
 
     NTPTile tile;
@@ -363,6 +369,10 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
 
 NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
     const NTPTilesVector& personal_tiles) {
+  if (!supervisor_) {
+    return NTPTilesVector();
+  }
+
   size_t num_personal_tiles = personal_tiles.size();
   DCHECK_LE(num_personal_tiles, static_cast<size_t>(num_sites_));
 
@@ -405,7 +415,7 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
     const NTPTilesVector& personal_tiles,
     const NTPTilesVector& whitelist_tiles) {
   // For child accounts popular sites tiles will not be added.
-  if (supervisor_->IsChildProfile())
+  if (supervisor_ && supervisor_->IsChildProfile())
     return NTPTilesVector();
 
   size_t num_tiles = personal_tiles.size() + whitelist_tiles.size();

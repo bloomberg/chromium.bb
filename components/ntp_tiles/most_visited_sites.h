@@ -111,6 +111,11 @@ class MostVisitedSites : public history::TopSitesObserver,
     virtual ~Observer() {}
   };
 
+  // Construct a MostVisitedSites instance.
+  //
+  // |prefs|, |top_sites|, and |suggestions| are required and may not be null.
+  // |popular_sites| and |supervisor| are optional and if null the associated
+  // features will be disabled.
   MostVisitedSites(PrefService* prefs,
                    scoped_refptr<history::TopSites> top_sites,
                    suggestions::SuggestionsService* suggestions,
