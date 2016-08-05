@@ -77,10 +77,15 @@ bool SyntheticPointerAction::UserInputCheck(
     return false;
   }
 
-  if ((params.pointer_action_type() ==
-           SyntheticPointerActionParams::PointerActionType::MOVE ||
-       params.pointer_action_type() ==
-           SyntheticPointerActionParams::PointerActionType::RELEASE) &&
+  if (synthetic_pointer_->SourceType() == SyntheticGestureParams::TOUCH_INPUT &&
+      params.pointer_action_type() ==
+          SyntheticPointerActionParams::PointerActionType::MOVE &&
+      GetPointIndex(params.index()) < 0) {
+    return false;
+  }
+
+  if (params.pointer_action_type() ==
+          SyntheticPointerActionParams::PointerActionType::RELEASE &&
       GetPointIndex(params.index()) < 0) {
     return false;
   }

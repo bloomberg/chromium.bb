@@ -51,6 +51,8 @@ struct CONTENT_EXPORT SyntheticPointerActionParams
   void set_index(int index) {
     DCHECK(pointer_action_type_ != PointerActionType::PROCESS &&
            pointer_action_type_ != PointerActionType::FINISH);
+    // For all mouse pointer actions, the index should always be 0.
+    DCHECK(gesture_source_type != MOUSE_INPUT || index == 0);
     index_ = index;
   }
 
@@ -65,6 +67,7 @@ struct CONTENT_EXPORT SyntheticPointerActionParams
   int index() const {
     DCHECK(pointer_action_type_ != PointerActionType::PROCESS &&
            pointer_action_type_ != PointerActionType::FINISH);
+    DCHECK(gesture_source_type != MOUSE_INPUT || index_ == 0);
     return index_;
   }
 
