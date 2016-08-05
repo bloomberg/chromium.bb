@@ -1,5 +1,5 @@
 {
-  "android.webkit.cts.WebViewTest":[
+  "android.webkit.cts.WebViewTest": [
     {
       "name": "testPageScroll",
       "_bug_id": "crbug.com/534643"
