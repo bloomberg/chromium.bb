@@ -14852,6 +14852,15 @@ should be able to be added at any place in this file.
   <obsolete>Removed from codebase; see GoogleUpdate.UpgradeResult.</obsolete>
 </action>
 
+<action name="UserManager_Cleared_Legacy_User_Prefs">
+  <owner>mahmadi@chromium.org</owner>
+  <description>
+    Recorded when prefs::kBrowserGuestModeEnabled and
+    prefs::kBrowserAddPersonEnabled are cleared because they no longer exist in
+    the Material Design settings page.
+  </description>
+</action>
+
 <action name="VideoPlayer.CastVideoError">
   <owner>yoshiki@chromium.org</owner>
   <description>
