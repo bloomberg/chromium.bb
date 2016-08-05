@@ -4983,15 +4983,24 @@ def CMDformat(parser, args):
 
   # Format GN build files. Always run on full build files for canonical form.
   if gn_diff_files:
-    cmd = ['gn', 'format']
-    if not opts.dry_run and not opts.diff:
-      cmd.append('--in-place')
+    cmd = ['gn', 'format' ]
+    if opts.dry_run or opts.diff:
+      cmd.append('--dry-run')
     for gn_diff_file in gn_diff_files:
-      stdout = RunCommand(cmd + [gn_diff_file],
-                          shell=sys.platform == 'win32',
-                          cwd=top_dir)
-      if opts.diff:
-        sys.stdout.write(stdout)
+      gn_ret = subprocess2.call(cmd + [gn_diff_file],
+                                shell=sys.platform == 'win32',
+                                cwd=top_dir)
+      if opts.dry_run and gn_ret == 2:
+        return_value = 2  # Not formatted.
+      elif opts.diff and gn_ret == 2:
+        # TODO this should compute and print the actual diff.
+        print("This change has GN build file diff for " + gn_diff_file)
+      elif gn_ret != 0:
+        # For non-dry run cases (and non-2 return values for dry-run), a
+        # nonzero error code indicates a failure, probably because the file
+        # doesn't parse.
+        DieWithError("gn format failed on " + gn_diff_file +
+                     "\nTry running 'gn format' on this file manually.")
 
   return return_value
 

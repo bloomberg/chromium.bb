@@ -1178,7 +1178,7 @@ def CheckGNFormatted(input_api, output_api):
     rc = gn.main(cmd)
     if rc == 2:
       warnings.append(output_api.PresubmitPromptWarning(
-          '%s requires formatting. Please run `gn format --in-place %s`.' % (
+          '%s requires formatting. Please run:\n  gn format %s' % (
               f.AbsoluteLocalPath(), f.LocalPath())))
   # It's just a warning, so ignore other types of failures assuming they'll be
   # caught elsewhere.
