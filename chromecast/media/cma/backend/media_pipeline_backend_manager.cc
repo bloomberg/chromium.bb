@@ -5,13 +5,22 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/memory/ptr_util.h"
+#include "chromecast/chromecast_features.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 #include "chromecast/public/cast_media_shlib.h"
 
 namespace chromecast {
 namespace media {
+namespace {
+#if BUILDFLAG(DISABLE_DISPLAY)
+constexpr int kAudioDecoderLimit = std::numeric_limits<int>::max();
+#else
+constexpr int kAudioDecoderLimit = 2;
+#endif
+}  // namespace
 
 MediaPipelineBackendManager::MediaPipelineBackendManager(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
@@ -48,7 +57,7 @@ MediaPipelineBackendManager::CreateMediaPipelineBackend(
 bool MediaPipelineBackendManager::IncrementDecoderCount(DecoderType type) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(type < NUM_DECODER_TYPES);
-  const int limit = (type == AUDIO_DECODER) ? 2 : 1;
+  const int limit = (type == AUDIO_DECODER) ? kAudioDecoderLimit : 1;
   if (decoder_count_[type] >= limit) {
     LOG(WARNING) << "Decoder limit reached for type " << type;
     return false;
