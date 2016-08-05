@@ -811,13 +811,15 @@ void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value
     const UChar* begin = position;
     skipWhile<UChar, isNotASCIISpace>(position, end);
 
+    StringView token(begin, position - begin);
+
     // value1
     //       ^
-    if (equalIgnoringCase("allow", begin, position - begin)) {
+    if (equalIgnoringCase("allow", token)) {
         m_reflectedXSSDisposition = AllowReflectedXSS;
-    } else if (equalIgnoringCase("filter", begin, position - begin)) {
+    } else if (equalIgnoringCase("filter", token)) {
         m_reflectedXSSDisposition = FilterReflectedXSS;
-    } else if (equalIgnoringCase("block", begin, position - begin)) {
+    } else if (equalIgnoringCase("block", token)) {
         m_reflectedXSSDisposition = BlockReflectedXSS;
     } else {
         m_reflectedXSSDisposition = ReflectedXSSInvalid;
@@ -857,17 +859,19 @@ void CSPDirectiveList::parseReferrer(const String& name, const String& value)
     const UChar* begin = position;
     skipWhile<UChar, isNotASCIISpace>(position, end);
 
+    StringView token(begin, position - begin);
+
     // value1
     //       ^
-    if (equalIgnoringCase("unsafe-url", begin, position - begin)) {
+    if (equalIgnoringCase("unsafe-url", token)) {
         m_referrerPolicy = ReferrerPolicyAlways;
-    } else if (equalIgnoringCase("no-referrer", begin, position - begin)) {
+    } else if (equalIgnoringCase("no-referrer", token)) {
         m_referrerPolicy = ReferrerPolicyNever;
-    } else if (equalIgnoringCase("no-referrer-when-downgrade", begin, position - begin)) {
+    } else if (equalIgnoringCase("no-referrer-when-downgrade", token)) {
         m_referrerPolicy = ReferrerPolicyDefault;
-    } else if (equalIgnoringCase("origin", begin, position - begin)) {
+    } else if (equalIgnoringCase("origin", token)) {
         m_referrerPolicy = ReferrerPolicyOrigin;
-    } else if (equalIgnoringCase("origin-when-cross-origin", begin, position - begin) || equalIgnoringCase("origin-when-crossorigin", begin, position - begin)) {
+    } else if (equalIgnoringCase("origin-when-cross-origin", token) || equalIgnoringCase("origin-when-crossorigin", token)) {
         m_referrerPolicy = ReferrerPolicyOriginWhenCrossOrigin;
     } else {
         m_policy->reportInvalidReferrer(value);

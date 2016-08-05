@@ -90,7 +90,7 @@ static bool tokenExitsForeignContent(const CompactHTMLToken& token)
 static bool tokenExitsSVG(const CompactHTMLToken& token)
 {
     // FIXME: It's very fragile that we special case foreignObject here to be case-insensitive.
-    return equalIgnoringCaseNonNull(token.data().impl(), SVGNames::foreignObjectTag.localName().impl());
+    return equalIgnoringCase(token.data(), SVGNames::foreignObjectTag.localName());
 }
 
 static bool tokenExitsMath(const CompactHTMLToken& token)

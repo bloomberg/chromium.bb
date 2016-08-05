@@ -98,7 +98,12 @@ public:
 
     static inline bool equal(const StringImpl* a, const StringImpl* b)
     {
-        return equalIgnoringCaseNonNull(a, b);
+        DCHECK(a);
+        DCHECK(b);
+        // Save one branch inside each StringView by derefing the StringImpl,
+        // and another branch inside the compare function by skipping the null
+        // checks.
+        return equalIgnoringCaseAndNullity(*a, *b);
     }
 
     static unsigned hash(const RefPtr<StringImpl>& key)

@@ -170,14 +170,6 @@ inline bool operator!=(const char* a, const AtomicString& b) { return !(b == a);
 inline bool operator!=(const String& a, const AtomicString& b) { return !equal(a.impl(), b.impl()); }
 inline bool operator!=(const Vector<UChar>& a, const AtomicString& b) { return !(a == b); }
 
-inline bool equalIgnoringCase(const AtomicString& a, const AtomicString& b) { return equalIgnoringCase(a.impl(), b.impl()); }
-inline bool equalIgnoringCase(const AtomicString& a, const LChar* b) { return equalIgnoringCase(a.impl(), b); }
-inline bool equalIgnoringCase(const AtomicString& a, const char* b) { return equalIgnoringCase(a.impl(), reinterpret_cast<const LChar*>(b)); }
-inline bool equalIgnoringCase(const AtomicString& a, const String& b) { return equalIgnoringCase(a.impl(), b.impl()); }
-inline bool equalIgnoringCase(const LChar* a, const AtomicString& b) { return equalIgnoringCase(a, b.impl()); }
-inline bool equalIgnoringCase(const char* a, const AtomicString& b) { return equalIgnoringCase(reinterpret_cast<const LChar*>(a), b.impl()); }
-inline bool equalIgnoringCase(const String& a, const AtomicString& b) { return equalIgnoringCase(a.impl(), b.impl()); }
-
 // Define external global variables for the commonly used atomic strings.
 // These are only usable from the main thread.
 WTF_EXPORT extern const AtomicString& nullAtom;

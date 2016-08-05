@@ -439,12 +439,6 @@ inline bool operator!=(const Vector<char, inlineCapacity>& a, const String& b) {
 template<size_t inlineCapacity>
 inline bool operator!=(const String& a, const Vector<char, inlineCapacity>& b) { return b != a; }
 
-inline bool equalIgnoringCase(const String& a, const String& b) { return equalIgnoringCase(a.impl(), b.impl()); }
-inline bool equalIgnoringCase(const String& a, const LChar* b) { return equalIgnoringCase(a.impl(), b); }
-inline bool equalIgnoringCase(const String& a, const char* b) { return equalIgnoringCase(a.impl(), reinterpret_cast<const LChar*>(b)); }
-inline bool equalIgnoringCase(const LChar* a, const String& b) { return equalIgnoringCase(a, b.impl()); }
-inline bool equalIgnoringCase(const char* a, const String& b) { return equalIgnoringCase(reinterpret_cast<const LChar*>(a), b.impl()); }
-
 inline bool equalPossiblyIgnoringCase(const String& a, const String& b, bool ignoreCase)
 {
     return ignoreCase ? equalIgnoringCase(a, b) : (a == b);
@@ -623,7 +617,6 @@ using WTF::emptyString16Bit;
 using WTF::append;
 using WTF::charactersAreAllASCII;
 using WTF::equal;
-using WTF::equalIgnoringCase;
 using WTF::find;
 using WTF::isAllSpecialCharacters;
 using WTF::isSpaceOrNewline;

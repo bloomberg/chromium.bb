@@ -1128,11 +1128,22 @@ const UChar StringImpl::latin1CaseFoldTable[256] = {
 
 bool equalIgnoringCase(const LChar* a, const LChar* b, unsigned length)
 {
+    DCHECK_GE(length, 0u);
+    if (a == b)
+        return true;
     while (length--) {
         if (StringImpl::latin1CaseFoldTable[*a++] != StringImpl::latin1CaseFoldTable[*b++])
             return false;
     }
     return true;
+}
+
+bool equalIgnoringCase(const UChar* a, const UChar* b, unsigned length)
+{
+    DCHECK_GE(length, 0u);
+    if (a == b)
+        return true;
+    return !Unicode::umemcasecmp(a, b, length);
 }
 
 bool equalIgnoringCase(const UChar* a, const LChar* b, unsigned length)
@@ -2068,93 +2079,6 @@ bool equalNonNull(const StringImpl* a, const StringImpl* b)
         return true;
 
     return stringImplContentEqual(a, b);
-}
-
-bool equalIgnoringCase(const StringImpl* a, const StringImpl* b)
-{
-    if (a == b)
-        return true;
-    if (!a || !b)
-        return false;
-
-    return CaseFoldingHash::equal(a, b);
-}
-
-bool equalIgnoringCase(const StringImpl* a, const LChar* b)
-{
-    if (!a)
-        return !b;
-    if (!b)
-        return !a;
-
-    unsigned length = a->length();
-
-    // Do a faster loop for the case where all the characters are ASCII.
-    UChar ored = 0;
-    bool equal = true;
-    if (a->is8Bit()) {
-        const LChar* as = a->characters8();
-        for (unsigned i = 0; i != length; ++i) {
-            LChar bc = b[i];
-            if (!bc)
-                return false;
-            UChar ac = as[i];
-            ored |= ac;
-            equal = equal && (toASCIILower(ac) == toASCIILower(bc));
-        }
-
-        // Do a slower implementation for cases that include non-ASCII characters.
-        if (ored & ~0x7F) {
-            equal = true;
-            for (unsigned i = 0; i != length; ++i)
-                equal = equal && (foldCase(as[i]) == foldCase(b[i]));
-        }
-
-        return equal && !b[length];
-    }
-
-    const UChar* as = a->characters16();
-    for (unsigned i = 0; i != length; ++i) {
-        LChar bc = b[i];
-        if (!bc)
-            return false;
-        UChar ac = as[i];
-        ored |= ac;
-        equal = equal && (toASCIILower(ac) == toASCIILower(bc));
-    }
-
-    // Do a slower implementation for cases that include non-ASCII characters.
-    if (ored & ~0x7F) {
-        equal = true;
-        for (unsigned i = 0; i != length; ++i) {
-            equal = equal && (foldCase(as[i]) == foldCase(b[i]));
-        }
-    }
-
-    return equal && !b[length];
-}
-
-bool equalIgnoringCaseNonNull(const StringImpl* a, const StringImpl* b)
-{
-    ASSERT(a && b);
-    if (a == b)
-        return true;
-
-    unsigned length = a->length();
-    if (length != b->length())
-        return false;
-
-    if (a->is8Bit()) {
-        if (b->is8Bit())
-            return equalIgnoringCase(a->characters8(), b->characters8(), length);
-
-        return equalIgnoringCase(b->characters16(), a->characters8(), length);
-    }
-
-    if (b->is8Bit())
-        return equalIgnoringCase(a->characters16(), b->characters8(), length);
-
-    return equalIgnoringCase(a->characters16(), b->characters16(), length);
 }
 
 bool equalIgnoringNullity(StringImpl* a, StringImpl* b)

@@ -177,6 +177,7 @@ public:
     unsigned pathAfterLastSlash() const;
 
     operator const String&() const { return getString(); }
+    operator StringView() const { return StringView(getString()); }
 
     const url::Parsed& parsed() const { return m_parsed; }
 

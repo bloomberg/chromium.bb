@@ -477,21 +477,14 @@ ALWAYS_INLINE bool equal(const LChar* a, const UChar* b, unsigned length)
 
 ALWAYS_INLINE bool equal(const UChar* a, const LChar* b, unsigned length) { return equal(b, a, length); }
 
-WTF_EXPORT bool equalIgnoringCase(const StringImpl*, const StringImpl*);
-WTF_EXPORT bool equalIgnoringCase(const StringImpl*, const LChar*);
-inline bool equalIgnoringCase(const LChar* a, const StringImpl* b) { return equalIgnoringCase(b, a); }
 WTF_EXPORT bool equalIgnoringCase(const LChar*, const LChar*, unsigned length);
 WTF_EXPORT bool equalIgnoringCase(const UChar*, const LChar*, unsigned length);
-inline bool equalIgnoringCase(const UChar* a, const char* b, unsigned length) { return equalIgnoringCase(a, reinterpret_cast<const LChar*>(b), length); }
-inline bool equalIgnoringCase(const LChar* a, const UChar* b, unsigned length) { return equalIgnoringCase(b, a, length); }
-inline bool equalIgnoringCase(const char* a, const UChar* b, unsigned length) { return equalIgnoringCase(b, reinterpret_cast<const LChar*>(a), length); }
-inline bool equalIgnoringCase(const char* a, const LChar* b, unsigned length) { return equalIgnoringCase(b, reinterpret_cast<const LChar*>(a), length); }
-inline bool equalIgnoringCase(const UChar* a, const UChar* b, int length)
+inline bool equalIgnoringCase(const LChar* a, const UChar* b, unsigned length)
 {
-    ASSERT(length >= 0);
-    return !Unicode::umemcasecmp(a, b, length);
+    return equalIgnoringCase(b, a, length);
 }
-WTF_EXPORT bool equalIgnoringCaseNonNull(const StringImpl*, const StringImpl*);
+
+WTF_EXPORT bool equalIgnoringCase(const UChar*, const UChar*, unsigned length);
 
 WTF_EXPORT bool equalIgnoringNullity(StringImpl*, StringImpl*);
 

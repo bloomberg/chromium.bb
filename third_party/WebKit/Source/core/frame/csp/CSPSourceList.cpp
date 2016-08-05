@@ -22,7 +22,7 @@ static bool isSourceListNone(const UChar* begin, const UChar* end)
 
     const UChar* position = begin;
     skipWhile<UChar, isSourceCharacter>(position, end);
-    if (!equalIgnoringCase("'none'", begin, position - begin))
+    if (!equalIgnoringCase("'none'", StringView(begin, position - begin)))
         return false;
 
     skipWhile<UChar, isASCIISpace>(position, end);
@@ -154,7 +154,9 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
     if (begin == end)
         return false;
 
-    if (equalIgnoringCase("'none'", begin, end - begin))
+    StringView token(begin, end - begin);
+
+    if (equalIgnoringCase("'none'", token))
         return false;
 
     if (end - begin == 1 && *begin == '*') {
@@ -162,27 +164,27 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
         return true;
     }
 
-    if (equalIgnoringCase("'self'", begin, end - begin)) {
+    if (equalIgnoringCase("'self'", token)) {
         addSourceSelf();
         return true;
     }
 
-    if (equalIgnoringCase("'unsafe-inline'", begin, end - begin)) {
+    if (equalIgnoringCase("'unsafe-inline'", token)) {
         addSourceUnsafeInline();
         return true;
     }
 
-    if (equalIgnoringCase("'unsafe-eval'", begin, end - begin)) {
+    if (equalIgnoringCase("'unsafe-eval'", token)) {
         addSourceUnsafeEval();
         return true;
     }
 
-    if (equalIgnoringCase("'strict-dynamic'", begin, end - begin)) {
+    if (equalIgnoringCase("'strict-dynamic'", token)) {
         addSourceStrictDynamic();
         return true;
     }
 
-    if (equalIgnoringCase("'unsafe-hashed-attributes'", begin, end - begin)) {
+    if (equalIgnoringCase("'unsafe-hashed-attributes'", token)) {
         addSourceUnsafeHashedAttributes();
         return true;
     }
@@ -286,12 +288,13 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
 bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& nonce)
 {
     size_t nonceLength = end - begin;
-    const char* prefix = "'nonce-";
+    StringView prefix("'nonce-");
 
-    if (nonceLength <= strlen(prefix) || !equalIgnoringCase(prefix, begin, strlen(prefix)))
+    // TODO(esprehn): Should be StringView(begin, nonceLength).startsWith(prefix).
+    if (nonceLength <= prefix.length() || !equalIgnoringCase(prefix, StringView(begin, prefix.length())))
         return true;
 
-    const UChar* position = begin + strlen(prefix);
+    const UChar* position = begin + prefix.length();
     const UChar* nonceBegin = position;
 
     ASSERT(position < end);
@@ -327,13 +330,14 @@ bool CSPSourceList::parseHash(const UChar* begin, const UChar* end, DigestValue&
         { "'sha-512-", ContentSecurityPolicyHashAlgorithmSha512 }
     };
 
-    String prefix;
+    StringView prefix;
     hashAlgorithm = ContentSecurityPolicyHashAlgorithmNone;
     size_t hashLength = end - begin;
 
     for (const auto& algorithm : kSupportedPrefixes) {
-        if (hashLength > strlen(algorithm.prefix) && equalIgnoringCase(algorithm.prefix, begin, strlen(algorithm.prefix))) {
-            prefix = algorithm.prefix;
+        prefix = algorithm.prefix;
+        // TODO(esprehn): Should be StringView(begin, end - begin).startsWith(prefix).
+        if (hashLength > prefix.length() && equalIgnoringCase(prefix, StringView(begin, prefix.length()))) {
             hashAlgorithm = algorithm.type;
             break;
         }

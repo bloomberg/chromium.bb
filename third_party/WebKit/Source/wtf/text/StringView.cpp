@@ -5,6 +5,7 @@
 #include "wtf/text/StringView.h"
 
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/StringImpl.h"
 #include "wtf/text/WTFString.h"
 
 namespace WTF {
@@ -61,6 +62,28 @@ bool equalStringView(const StringView& a, const StringView& b)
     if (b.is8Bit())
         return equal(a.characters16(), b.characters8(), a.length());
     return equal(a.characters16(), b.characters16(), a.length());
+}
+
+
+bool equalIgnoringCaseAndNullity(const StringView& a, const StringView& b)
+{
+    if (a.length() != b.length())
+        return false;
+    if (a.is8Bit()) {
+        if (b.is8Bit())
+            return equalIgnoringCase(a.characters8(), b.characters8(), a.length());
+        return equalIgnoringCase(a.characters8(), b.characters16(), a.length());
+    }
+    if (b.is8Bit())
+        return equalIgnoringCase(a.characters16(), b.characters8(), a.length());
+    return equalIgnoringCase(a.characters16(), b.characters16(), a.length());
+}
+
+bool equalIgnoringCase(const StringView& a, const StringView& b)
+{
+    if (a.isNull() || b.isNull())
+        return a.isNull() == b.isNull();
+    return equalIgnoringCaseAndNullity(a, b);
 }
 
 bool equalIgnoringASCIICase(const StringView& a, const StringView& b)
