@@ -181,7 +181,6 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 ChromeSyncClient::ChromeSyncClient(Profile* profile)
     : profile_(profile),
       sync_sessions_client_(new SyncSessionsClientImpl(profile)),
-      browsing_data_remover_observer_(NULL),
       weak_ptr_factory_(this) {}
 
 ChromeSyncClient::~ChromeSyncClient() {
