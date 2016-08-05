@@ -285,6 +285,9 @@ class ASH_EXPORT WmShell {
 
   void SetShelfDelegateForTesting(std::unique_ptr<ShelfDelegate> test_delegate);
 
+  // True if any touch points are down.
+  virtual bool IsTouchDown() = 0;
+
 #if defined(OS_CHROMEOS)
   LogoutConfirmationController* logout_confirmation_controller() {
     return logout_confirmation_controller_.get();

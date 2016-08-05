@@ -336,6 +336,12 @@ void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
   NOTIMPLEMENTED();
 }
 
+bool WmShellMus::IsTouchDown() {
+  // TODO: implement me, http://crbug.com/634967.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 #if defined(OS_CHROMEOS)
 void WmShellMus::ToggleIgnoreExternalKeyboard() {
   NOTIMPLEMENTED();

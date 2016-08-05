@@ -26,6 +26,7 @@
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/env.h"
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_CHROMEOS)
@@ -212,6 +213,10 @@ void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher) {
 
 void WmShellAura::RemovePointerWatcher(views::PointerWatcher* watcher) {
   Shell::GetInstance()->RemovePointerWatcher(watcher);
+}
+
+bool WmShellAura::IsTouchDown() {
+  return aura::Env::GetInstance()->is_touch_down();
 }
 
 #if defined(OS_CHROMEOS)

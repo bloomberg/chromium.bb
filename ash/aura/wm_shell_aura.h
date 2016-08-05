@@ -64,6 +64,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddPointerWatcher(views::PointerWatcher* watcher) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
+  bool IsTouchDown() override;
 #if defined(OS_CHROMEOS)
   void ToggleIgnoreExternalKeyboard() override;
 #endif
