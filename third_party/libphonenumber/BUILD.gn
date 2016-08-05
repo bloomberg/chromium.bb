@@ -18,7 +18,10 @@ config("libphonenumber_config") {
     "dist/cpp/src",
     "$root_gen_dir/third_party/libphonenumber",
   ]
-  defines = [ "I18N_PHONENUMBERS_USE_ICU_REGEXP=1" ]
+  defines = [ 
+    "I18N_PHONENUMBERS_USE_ICU_REGEXP=1",
+    "I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS=1"
+  ]
   if (!is_android) {
     defines += [ "I18N_PHONENUMBERS_NO_THREAD_SAFETY=1" ]
   }
@@ -36,6 +39,7 @@ config("libphonenumber_config_internal") {
 # GYP version: third_party/libphonenumber/libphonenumber.gyp:libphonenumber_without_metadata
 static_library("libphonenumber_without_metadata") {
   sources = [
+    "dist/cpp/src/phonenumbers/alternate_format.cc",
     "dist/cpp/src/phonenumbers/asyoutypeformatter.cc",
     "dist/cpp/src/phonenumbers/base/strings/string_piece.cc",
     "dist/cpp/src/phonenumbers/default_logger.cc",
