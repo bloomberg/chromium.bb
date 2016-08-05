@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -4704,6 +4705,43 @@ TEST_F(ChunkDemuxerTest,
   CheckExpectedRanges("{ [30,90) }");
   CheckExpectedBuffers(audio_stream, "30K 40K 50K 60K 70K 80K");
   CheckExpectedBuffers(video_stream, "71K 81");
+}
+
+void OnStreamStatusChanged(base::WaitableEvent* event,
+                           DemuxerStream* stream,
+                           bool enabled,
+                           base::TimeDelta) {
+  EXPECT_EQ(enabled, stream->enabled());
+  event->Signal();
+}
+
+void CheckStreamStatusNotifications(DemuxerStream* stream) {
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  ASSERT_TRUE(stream->enabled());
+  stream->SetStreamStatusChangeCB(base::Bind(&OnStreamStatusChanged,
+                                             base::Unretained(&event),
+                                             base::Unretained(stream)));
+
+  stream->set_enabled(false, base::TimeDelta());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(event.IsSignaled());
+
+  event.Reset();
+  stream->set_enabled(true, base::TimeDelta());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(event.IsSignaled());
+}
+
+TEST_F(ChunkDemuxerTest, StreamStatusNotifications) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+  EXPECT_NE(nullptr, audio_stream);
+  CheckStreamStatusNotifications(audio_stream);
+  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  EXPECT_NE(nullptr, video_stream);
+  CheckStreamStatusNotifications(video_stream);
 }
 
 }  // namespace media

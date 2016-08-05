@@ -79,8 +79,8 @@ void MojoDemuxerStreamAdapter::set_enabled(bool enabled,
   NOTIMPLEMENTED();
 }
 
-void MojoDemuxerStreamAdapter::SetStreamRestartedCB(
-    const StreamRestartedCB& cb) {
+void MojoDemuxerStreamAdapter::SetStreamStatusChangeCB(
+    const StreamStatusChangeCB& cb) {
   NOTIMPLEMENTED();
 }
 

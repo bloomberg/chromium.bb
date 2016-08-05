@@ -49,7 +49,7 @@ class DemuxerStreamForTest : public ::media::DemuxerStream {
   ::media::VideoRotation video_rotation() override;
   bool enabled() const override;
   void set_enabled(bool enabled, base::TimeDelta time) override;
-  void SetStreamRestartedCB(const StreamRestartedCB& cb) override;
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
   bool has_pending_read() const { return has_pending_read_; }
 

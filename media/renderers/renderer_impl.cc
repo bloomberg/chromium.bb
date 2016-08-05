@@ -134,13 +134,13 @@ void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
   DemuxerStream* audio_stream =
       demuxer_stream_provider->GetStream(DemuxerStream::AUDIO);
   if (audio_stream)
-    audio_stream->SetStreamRestartedCB(
-        base::Bind(&RendererImpl::RestartStreamPlayback, weak_this_));
+    audio_stream->SetStreamStatusChangeCB(base::Bind(
+        &RendererImpl::RestartStreamPlayback, weak_this_, audio_stream));
   DemuxerStream* video_stream =
       demuxer_stream_provider->GetStream(DemuxerStream::VIDEO);
   if (video_stream)
-    video_stream->SetStreamRestartedCB(
-        base::Bind(&RendererImpl::RestartStreamPlayback, weak_this_));
+    video_stream->SetStreamStatusChangeCB(base::Bind(
+        &RendererImpl::RestartStreamPlayback, weak_this_, video_stream));
 
   if (HasEncryptedStream() && !cdm_context_) {
     state_ = STATE_INIT_PENDING_CDM;
@@ -215,9 +215,13 @@ void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
 }
 
 void RendererImpl::RestartStreamPlayback(DemuxerStream* stream,
+                                         bool enabled,
                                          base::TimeDelta time) {
-  DVLOG(1) << __func__ << " stream=" << stream << " time=" << time.InSecondsF();
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(stream);
+  bool video = (stream->type() == DemuxerStream::VIDEO);
+  DVLOG(1) << __func__ << (video ? " video" : " audio") << " stream=" << stream
+           << " enabled=" << stream->enabled() << " time=" << time.InSecondsF();
   if (state_ != STATE_PLAYING)
     return;
   if (stream->type() == DemuxerStream::VIDEO) {
@@ -246,24 +250,22 @@ void RendererImpl::RestartStreamPlayback(DemuxerStream* stream,
 }
 
 void RendererImpl::RestartVideoRenderer(base::TimeDelta time) {
+  DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __func__;
+  DCHECK(video_renderer_);
+  DCHECK_EQ(state_, STATE_PLAYING);
   video_ended_ = false;
-  if (state_ == STATE_PLAYING) {
-    DCHECK(video_renderer_);
-    video_renderer_->StartPlayingFrom(time);
-  }
+  video_renderer_->StartPlayingFrom(time);
 }
 
 void RendererImpl::RestartAudioRenderer(base::TimeDelta time) {
+  DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __func__;
+  DCHECK_EQ(state_, STATE_PLAYING);
+  DCHECK(time_source_);
+  DCHECK(audio_renderer_);
   audio_ended_ = false;
-  if (state_ == STATE_PLAYING) {
-    DCHECK(time_source_);
-    DCHECK(audio_renderer_);
-    audio_renderer_->StartPlaying();
-  }
+  audio_renderer_->StartPlaying();
 }
 
 void RendererImpl::SetPlaybackRate(double playback_rate) {

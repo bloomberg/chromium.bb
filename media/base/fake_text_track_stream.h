@@ -31,7 +31,7 @@ class FakeTextTrackStream : public DemuxerStream {
   VideoRotation video_rotation() override;
   bool enabled() const override;
   void set_enabled(bool enabled, base::TimeDelta timestamp) override;
-  void SetStreamRestartedCB(const StreamRestartedCB& cb) override;
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
   void SatisfyPendingRead(const base::TimeDelta& start,
                           const base::TimeDelta& duration,

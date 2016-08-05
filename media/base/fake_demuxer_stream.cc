@@ -112,7 +112,8 @@ void FakeDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
   NOTIMPLEMENTED();
 }
 
-void FakeDemuxerStream::SetStreamRestartedCB(const StreamRestartedCB& cb) {
+void FakeDemuxerStream::SetStreamStatusChangeCB(
+    const StreamStatusChangeCB& cb) {
   NOTIMPLEMENTED();
 }
 

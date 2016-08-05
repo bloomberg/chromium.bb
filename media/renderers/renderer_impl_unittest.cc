@@ -87,7 +87,8 @@ class RendererImplTest : public ::testing::Test {
       DemuxerStream::Type type) {
     std::unique_ptr<StrictMock<MockDemuxerStream>> stream(
         new StrictMock<MockDemuxerStream>(type));
-    EXPECT_CALL(*stream, SetStreamRestartedCB(_)).Times(testing::AnyNumber());
+    EXPECT_CALL(*stream, SetStreamStatusChangeCB(_))
+        .Times(testing::AnyNumber());
     return stream;
   }
 
@@ -711,6 +712,33 @@ TEST_F(RendererImplTest, VideoUnderflowWithAudioFlush) {
 
   // Nothing else should primed on the message loop.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(RendererImplTest, StreamStatusNotificationHandling) {
+  CreateAudioAndVideoStream();
+
+  DemuxerStream::StreamStatusChangeCB audio_stream_status_change_cb;
+  DemuxerStream::StreamStatusChangeCB video_stream_status_change_cb;
+  EXPECT_CALL(*audio_stream_, SetStreamStatusChangeCB(_))
+      .WillOnce(SaveArg<0>(&audio_stream_status_change_cb));
+  EXPECT_CALL(*video_stream_, SetStreamStatusChangeCB(_))
+      .WillOnce(SaveArg<0>(&video_stream_status_change_cb));
+  SetAudioRendererInitializeExpectations(PIPELINE_OK);
+  SetVideoRendererInitializeExpectations(PIPELINE_OK);
+  InitializeAndExpect(PIPELINE_OK);
+  Play();
+
+  // Verify that DemuxerStream status changes cause the corresponding
+  // audio/video renderer to be flushed and restarted.
+  base::TimeDelta time0;
+  EXPECT_CALL(time_source_, StopTicking());
+  EXPECT_CALL(*audio_renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(*audio_renderer_, StartPlaying()).Times(1);
+  audio_stream_status_change_cb.Run(false, time0);
+
+  EXPECT_CALL(*video_renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(*video_renderer_, StartPlayingFrom(_)).Times(1);
+  video_stream_status_change_cb.Run(false, time0);
 }
 
 }  // namespace media

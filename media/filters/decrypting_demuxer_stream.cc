@@ -161,9 +161,9 @@ void DecryptingDemuxerStream::set_enabled(bool enabled,
   demuxer_stream_->set_enabled(enabled, timestamp);
 }
 
-void DecryptingDemuxerStream::SetStreamRestartedCB(
-    const StreamRestartedCB& cb) {
-  demuxer_stream_->SetStreamRestartedCB(cb);
+void DecryptingDemuxerStream::SetStreamStatusChangeCB(
+    const StreamStatusChangeCB& cb) {
+  demuxer_stream_->SetStreamStatusChangeCB(cb);
 }
 
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {

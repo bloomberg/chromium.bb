@@ -86,7 +86,8 @@ void DemuxerStreamForTest::set_enabled(bool enabled, base::TimeDelta time) {
   NOTIMPLEMENTED();
 }
 
-void DemuxerStreamForTest::SetStreamRestartedCB(const StreamRestartedCB& cb) {
+void DemuxerStreamForTest::SetStreamStatusChangeCB(
+    const StreamStatusChangeCB& cb) {
   NOTIMPLEMENTED();
 }
 

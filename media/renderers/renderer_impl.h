@@ -62,7 +62,9 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool HasAudio() final;
   bool HasVideo() final;
 
-  void RestartStreamPlayback(DemuxerStream* stream, base::TimeDelta time);
+  void RestartStreamPlayback(DemuxerStream* stream,
+                             bool enabled,
+                             base::TimeDelta time);
 
   // Helper functions for testing purposes. Must be called before Initialize().
   void DisableUnderflowForTesting();

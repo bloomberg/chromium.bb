@@ -113,7 +113,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   VideoRotation video_rotation() override;
   bool enabled() const override;
   void set_enabled(bool enabled, base::TimeDelta timestamp) override;
-  void SetStreamRestartedCB(const StreamRestartedCB& cb) override;
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
   // Returns the text track configuration.  It is an error to call this method
   // if type() != TEXT.
@@ -158,7 +158,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   bool splice_frames_enabled_;
   bool partial_append_window_trimming_enabled_;
   bool is_enabled_;
-  StreamRestartedCB stream_restarted_cb_;
+  StreamStatusChangeCB stream_status_change_cb_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChunkDemuxerStream);
 };

@@ -112,7 +112,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   VideoRotation video_rotation() override;
   bool enabled() const override;
   void set_enabled(bool enabled, base::TimeDelta timestamp) override;
-  void SetStreamRestartedCB(const StreamRestartedCB& cb) override;
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
   void SetLiveness(Liveness liveness);
 
@@ -179,7 +179,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
 
   DecoderBufferQueue buffer_queue_;
   ReadCB read_cb_;
-  StreamRestartedCB stream_restarted_cb_;
+  StreamStatusChangeCB stream_status_change_cb_;
 
 #if defined(USE_PROPRIETARY_CODECS)
   std::unique_ptr<FFmpegBitstreamConverter> bitstream_converter_;

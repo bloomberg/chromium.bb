@@ -158,7 +158,7 @@ class MockDemuxerStream : public DemuxerStream {
   VideoRotation video_rotation() override;
   MOCK_CONST_METHOD0(enabled, bool());
   MOCK_METHOD2(set_enabled, void(bool, base::TimeDelta));
-  MOCK_METHOD1(SetStreamRestartedCB, void(const StreamRestartedCB&));
+  MOCK_METHOD1(SetStreamStatusChangeCB, void(const StreamStatusChangeCB&));
 
  private:
   Type type_;

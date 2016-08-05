@@ -711,19 +711,20 @@ void FFmpegDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
   is_enabled_ = enabled;
   if (is_enabled_) {
     waiting_for_keyframe_ = true;
-    if (!stream_restarted_cb_.is_null())
-      stream_restarted_cb_.Run(this, timestamp);
   }
   if (!is_enabled_ && !read_cb_.is_null()) {
     DVLOG(1) << "Read from disabled stream, returning EOS";
     base::ResetAndReturn(&read_cb_).Run(kOk, DecoderBuffer::CreateEOSBuffer());
     return;
   }
+  if (!stream_status_change_cb_.is_null())
+    stream_status_change_cb_.Run(is_enabled_, timestamp);
 }
 
-void FFmpegDemuxerStream::SetStreamRestartedCB(const StreamRestartedCB& cb) {
+void FFmpegDemuxerStream::SetStreamStatusChangeCB(
+    const StreamStatusChangeCB& cb) {
   DCHECK(!cb.is_null());
-  stream_restarted_cb_ = cb;
+  stream_status_change_cb_ = cb;
 }
 
 void FFmpegDemuxerStream::SetLiveness(Liveness liveness) {

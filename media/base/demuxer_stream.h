@@ -102,9 +102,12 @@ class MEDIA_EXPORT DemuxerStream {
   // reading data from a key frame preceeding the |timestamp|.
   virtual void set_enabled(bool enabled, base::TimeDelta timestamp) = 0;
 
-  using StreamRestartedCB =
-      base::Callback<void(DemuxerStream*, base::TimeDelta)>;
-  virtual void SetStreamRestartedCB(const StreamRestartedCB& cb) = 0;
+  // The StreamStatusChangeCB allows DemuxerStream clients to receive
+  // notifications about the stream being disabled or enabled.
+  // The first parameter indicates whether the stream is enabled or disabled.
+  // The second parameter is the playback position when the change occured.
+  using StreamStatusChangeCB = base::Callback<void(bool, base::TimeDelta)>;
+  virtual void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) = 0;
 
  protected:
   // Only allow concrete implementations to get deleted.

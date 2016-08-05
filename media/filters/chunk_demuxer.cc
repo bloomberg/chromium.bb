@@ -300,18 +300,19 @@ void ChunkDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
   if (enabled) {
     DCHECK(stream_);
     stream_->Seek(timestamp);
-    if (!stream_restarted_cb_.is_null())
-      stream_restarted_cb_.Run(this, timestamp);
   } else if (!read_cb_.is_null()) {
     DVLOG(1) << "Read from disabled stream, returning EOS";
     base::ResetAndReturn(&read_cb_).Run(kOk,
                                         StreamParserBuffer::CreateEOSBuffer());
   }
+  if (!stream_status_change_cb_.is_null())
+    stream_status_change_cb_.Run(is_enabled_, timestamp);
 }
 
-void ChunkDemuxerStream::SetStreamRestartedCB(const StreamRestartedCB& cb) {
+void ChunkDemuxerStream::SetStreamStatusChangeCB(
+    const StreamStatusChangeCB& cb) {
   DCHECK(!cb.is_null());
-  stream_restarted_cb_ = BindToCurrentLoop(cb);
+  stream_status_change_cb_ = BindToCurrentLoop(cb);
 }
 
 TextTrackConfig ChunkDemuxerStream::text_track_config() {

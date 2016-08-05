@@ -46,7 +46,7 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
   VideoRotation video_rotation() override;
   bool enabled() const override;
   void set_enabled(bool enabled, base::TimeDelta timestamp) override;
-  void SetStreamRestartedCB(const StreamRestartedCB& cb) override;
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
  private:
   void OnStreamReady(mojom::DemuxerStream::Type type,
