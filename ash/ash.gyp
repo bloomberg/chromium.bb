@@ -489,6 +489,7 @@
       'common/wm_root_window_controller_observer.h',
       'common/wm_shell.cc',
       'common/wm_shell.h',
+      'common/wm_transient_window_observer.h',
       'common/wm_window.h',
       'common/wm_window_observer.h',
       'common/wm_window_property.h',

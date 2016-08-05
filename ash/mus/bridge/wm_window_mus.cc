@@ -7,6 +7,7 @@
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_layout_manager.h"
+#include "ash/common/wm_transient_window_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/mus/bridge/mus_layout_manager_adapter.h"
@@ -203,6 +204,10 @@ int WmWindowMus::GetShellWindowId() const {
 
 ui::wm::WindowType WmWindowMus::GetType() const {
   return GetWmWindowType(window_);
+}
+
+bool WmWindowMus::IsBubble() {
+  return GetWindowType(window_) == ui::mojom::WindowType::BUBBLE;
 }
 
 ui::Layer* WmWindowMus::GetLayer() {
@@ -766,6 +771,16 @@ bool WmWindowMus::HasObserver(const WmWindowObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
+void WmWindowMus::AddTransientWindowObserver(
+    WmTransientWindowObserver* observer) {
+  transient_observers_.AddObserver(observer);
+}
+
+void WmWindowMus::RemoveTransientWindowObserver(
+    WmTransientWindowObserver* observer) {
+  transient_observers_.RemoveObserver(observer);
+}
+
 void WmWindowMus::AddLimitedPreTargetHandler(ui::EventHandler* handler) {
   DCHECK(GetInternalWidget());
   widget_->GetNativeWindow()->AddPreTargetHandler(handler);
@@ -833,6 +848,18 @@ void WmWindowMus::OnWindowDestroying(ui::Window* window) {
 
 void WmWindowMus::OnWindowDestroyed(ui::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowDestroyed(this));
+}
+
+void WmWindowMus::OnTransientChildAdded(ui::Window* window,
+                                        ui::Window* transient) {
+  FOR_EACH_OBSERVER(WmTransientWindowObserver, transient_observers_,
+                    OnTransientChildAdded(this, Get(transient)));
+}
+
+void WmWindowMus::OnTransientChildRemoved(ui::Window* window,
+                                          ui::Window* transient) {
+  FOR_EACH_OBSERVER(WmTransientWindowObserver, transient_observers_,
+                    OnTransientChildRemoved(this, Get(transient)));
 }
 
 }  // namespace mus

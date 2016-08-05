@@ -97,6 +97,11 @@ class WindowObserver {
   virtual void OnWindowDrawnChanging(Window* window) {}
   virtual void OnWindowDrawnChanged(Window* window) {}
 
+  virtual void OnTransientChildAdded(ui::Window* window,
+                                     ui::Window* transient) {}
+  virtual void OnTransientChildRemoved(ui::Window* window,
+                                       ui::Window* transient) {}
+
   // The WindowManager has requested the window to close. If the observer
   // allows the close it should destroy the window as appropriate.
   virtual void OnRequestClose(Window* window) {}

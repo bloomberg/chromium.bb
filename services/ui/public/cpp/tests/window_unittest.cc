@@ -1198,4 +1198,62 @@ TEST_F(WindowTest, StackUponCreation) {
   EXPECT_EQ("1 3 2", ChildWindowIDsAsString(parent.get()));
 }
 
+namespace {
+
+class TransientWindowObserver : public WindowObserver {
+ public:
+  TransientWindowObserver() {}
+  ~TransientWindowObserver() override {}
+
+  void ResetCounts() { added_count_ = removed_count_ = 0; }
+
+  int added_count() const { return added_count_; }
+  int removed_count() const { return removed_count_; }
+
+  // WindowObserver:
+  void OnTransientChildAdded(ui::Window* window,
+                             ui::Window* transient) override {
+    added_count_++;
+  }
+  void OnTransientChildRemoved(ui::Window* window,
+                               ui::Window* transient) override {
+    removed_count_++;
+  }
+
+ private:
+  int added_count_ = 0;
+  int removed_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TransientWindowObserver);
+};
+
+}  // namespace
+
+// Verifies WindowObserver is notified of transient windows added/removed.
+TEST_F(WindowTest, TransientNotifiesObserver) {
+  std::unique_ptr<TestWindow> parent(CreateTestWindow(0, nullptr));
+  TransientWindowObserver observer;
+  parent->AddObserver(&observer);
+  std::unique_ptr<TestWindow> child(CreateTestWindow(0, nullptr));
+  parent->AddTransientWindow(child.get());
+  EXPECT_EQ(1, observer.added_count());
+  EXPECT_EQ(0, observer.removed_count());
+  observer.ResetCounts();
+
+  parent->RemoveTransientWindow(child.get());
+  EXPECT_EQ(0, observer.added_count());
+  EXPECT_EQ(1, observer.removed_count());
+  observer.ResetCounts();
+
+  parent->AddTransientWindow(child.get());
+  EXPECT_EQ(1, observer.added_count());
+  EXPECT_EQ(0, observer.removed_count());
+  observer.ResetCounts();
+
+  child.reset();
+  EXPECT_EQ(0, observer.added_count());
+  EXPECT_EQ(1, observer.removed_count());
+  observer.ResetCounts();
+}
+
 }  // namespace ui

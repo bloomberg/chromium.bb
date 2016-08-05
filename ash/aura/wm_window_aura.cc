@@ -11,6 +11,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_layout_manager.h"
+#include "ash/common/wm_transient_window_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/screen_util.h"
@@ -35,8 +36,10 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
 
@@ -88,6 +91,9 @@ WmWindowAura::WmWindowAura(aura::Window* window)
 }
 
 WmWindowAura::~WmWindowAura() {
+  if (added_transient_observer_)
+    ::wm::TransientWindowManager::Get(window_)->RemoveObserver(this);
+
   window_->RemoveObserver(this);
 }
 
@@ -163,6 +169,11 @@ int WmWindowAura::GetShellWindowId() const {
 
 ui::wm::WindowType WmWindowAura::GetType() const {
   return window_->type();
+}
+
+bool WmWindowAura::IsBubble() {
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window_);
+  return widget->widget_delegate()->AsBubbleDialogDelegate() != nullptr;
 }
 
 ui::Layer* WmWindowAura::GetLayer() {
@@ -685,6 +696,25 @@ bool WmWindowAura::HasObserver(const WmWindowObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
+void WmWindowAura::AddTransientWindowObserver(
+    WmTransientWindowObserver* observer) {
+  if (!added_transient_observer_) {
+    added_transient_observer_ = true;
+    ::wm::TransientWindowManager::Get(window_)->AddObserver(this);
+  }
+  transient_observers_.AddObserver(observer);
+}
+
+void WmWindowAura::RemoveTransientWindowObserver(
+    WmTransientWindowObserver* observer) {
+  transient_observers_.RemoveObserver(observer);
+  if (added_transient_observer_ &&
+      !transient_observers_.might_have_observers()) {
+    added_transient_observer_ = false;
+    ::wm::TransientWindowManager::Get(window_)->RemoveObserver(this);
+  }
+}
+
 void WmWindowAura::AddLimitedPreTargetHandler(ui::EventHandler* handler) {
   // This behaves differently from WmWindowMus for child and embedded windows.
   window_->AddPreTargetHandler(handler);
@@ -775,6 +805,18 @@ void WmWindowAura::OnWindowVisibilityChanged(aura::Window* window,
 
 void WmWindowAura::OnWindowTitleChanged(aura::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowTitleChanged(this));
+}
+
+void WmWindowAura::OnTransientChildAdded(aura::Window* window,
+                                         aura::Window* transient) {
+  FOR_EACH_OBSERVER(WmTransientWindowObserver, transient_observers_,
+                    OnTransientChildAdded(this, Get(transient)));
+}
+
+void WmWindowAura::OnTransientChildRemoved(aura::Window* window,
+                                           aura::Window* transient) {
+  FOR_EACH_OBSERVER(WmTransientWindowObserver, transient_observers_,
+                    OnTransientChildRemoved(this, Get(transient)));
 }
 
 }  // namespace ash

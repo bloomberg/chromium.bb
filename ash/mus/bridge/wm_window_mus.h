@@ -111,6 +111,7 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   int GetShellWindowId() const override;
   WmWindow* GetChildByShellWindowId(int id) override;
   ui::wm::WindowType GetType() const override;
+  bool IsBubble() override;
   ui::Layer* GetLayer() override;
   display::Display GetDisplayNearestWindow() override;
   bool HasNonClientArea() override;
@@ -218,6 +219,9 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;
   bool HasObserver(const WmWindowObserver* observer) const override;
+  void AddTransientWindowObserver(WmTransientWindowObserver* observer) override;
+  void RemoveTransientWindowObserver(
+      WmTransientWindowObserver* observer) override;
   void AddLimitedPreTargetHandler(ui::EventHandler* handler) override;
   void RemoveLimitedPreTargetHandler(ui::EventHandler* handler) override;
 
@@ -238,6 +242,10 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroying(ui::Window* window) override;
   void OnWindowDestroyed(ui::Window* window) override;
+  void OnTransientChildAdded(ui::Window* window,
+                             ui::Window* transient) override;
+  void OnTransientChildRemoved(ui::Window* window,
+                               ui::Window* transient) override;
 
   ui::Window* window_;
 
@@ -264,6 +272,8 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   // If true child windows should get a slightly larger hit region to make
   // resizing easier.
   bool children_use_extended_hit_region_ = false;
+
+  base::ObserverList<WmTransientWindowObserver, true> transient_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmWindowMus);
 };

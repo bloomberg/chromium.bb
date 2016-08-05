@@ -643,13 +643,15 @@ void Window::LocalAddTransientWindow(Window* transient_window) {
     RestackTransientDescendants(this, &GetStackingTarget,
                                 &ReorderWithoutNotification);
 
-  // TODO(fsamuel): We might want a notification here.
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnTransientChildAdded(this, transient_window));
 }
 
 void Window::LocalRemoveTransientWindow(Window* transient_window) {
   DCHECK_EQ(this, transient_window->transient_parent());
   RemoveTransientWindowImpl(transient_window);
-  // TODO(fsamuel): We might want a notification here.
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnTransientChildRemoved(this, transient_window));
 }
 
 void Window::LocalSetModal() {

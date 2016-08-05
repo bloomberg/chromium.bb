@@ -43,6 +43,7 @@ struct ShelfItemDetails;
 class WmLayoutManager;
 class WmRootWindowController;
 class WmShell;
+class WmTransientWindowObserver;
 class WmWindowObserver;
 enum class WmWindowProperty;
 
@@ -84,6 +85,8 @@ class ASH_EXPORT WmWindow {
   virtual WmWindow* GetChildByShellWindowId(int id) = 0;
 
   virtual ui::wm::WindowType GetType() const = 0;
+
+  virtual bool IsBubble() = 0;
 
   // TODO(sky): seems like this shouldn't be exposed.
   virtual ui::Layer* GetLayer() = 0;
@@ -290,6 +293,11 @@ class ASH_EXPORT WmWindow {
   virtual void AddObserver(WmWindowObserver* observer) = 0;
   virtual void RemoveObserver(WmWindowObserver* observer) = 0;
   virtual bool HasObserver(const WmWindowObserver* observer) const = 0;
+
+  virtual void AddTransientWindowObserver(
+      WmTransientWindowObserver* observer) = 0;
+  virtual void RemoveTransientWindowObserver(
+      WmTransientWindowObserver* observer) = 0;
 
   // Adds or removes a handler to receive events targeted at this window, before
   // this window handles the events itself; the handler does not recieve events
