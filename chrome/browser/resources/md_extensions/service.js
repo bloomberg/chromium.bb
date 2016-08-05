@@ -23,8 +23,8 @@ cr.define('extensions', function() {
       this.manager_ = manager;
       this.manager_.sidebar.setDelegate(this);
       this.manager_.set('itemDelegate', this);
-      this.manager_.$['pack-dialog'].set('delegate', this);
-      var keyboardShortcuts = this.manager_.$['keyboard-shortcuts'];
+      this.manager_.packDialog.set('delegate', this);
+      var keyboardShortcuts = this.manager_.keyboardShortcuts;
       keyboardShortcuts.addEventListener(
           'shortcut-updated',
           this.onExtensionCommandUpdated_.bind(this));

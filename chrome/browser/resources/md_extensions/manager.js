@@ -92,6 +92,14 @@ cr.define('extensions', function() {
       this.readyPromiseResolver.resolve();
     },
 
+    get keyboardShortcuts() {
+      return this.$['keyboard-shortcuts'];
+    },
+
+    get packDialog() {
+      return this.$['pack-dialog'];
+    },
+
     /**
      * @param {!CustomEvent} event
      * @private
@@ -273,7 +281,7 @@ cr.define('extensions', function() {
           break;
       }
 
-      this.manager_.$['items-list'].set('items', assert(items));
+      this.manager_.$/* hack */ ['items-list'].set('items', assert(items));
       this.manager_.changePage(Page.ITEM_LIST);
     },
 
@@ -284,7 +292,7 @@ cr.define('extensions', function() {
 
     /** @override */
     showPackDialog: function() {
-      this.manager_.$['pack-dialog'].show();
+      this.manager_.packDialog.show();
     }
   };
 
