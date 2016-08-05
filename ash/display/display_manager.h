@@ -17,6 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
@@ -164,7 +165,8 @@ class ASH_EXPORT DisplayManager
   // ui-scale change, and device scale factor change. Returns true if it changes
   // the display resolution so that the caller needs to show a notification in
   // case the new resolution actually doesn't work.
-  bool SetDisplayMode(int64_t display_id, const DisplayMode& display_mode);
+  bool SetDisplayMode(int64_t display_id,
+                      const scoped_refptr<DisplayMode>& display_mode);
 
   // Register per display properties. |overscan_insets| is NULL if
   // the display has no custom overscan insets.
@@ -193,12 +195,13 @@ class ASH_EXPORT DisplayManager
   }
 
   // Returns the display mode of |display_id| which is currently used.
-  DisplayMode GetActiveModeForDisplayId(int64_t display_id) const;
+  scoped_refptr<DisplayMode> GetActiveModeForDisplayId(
+      int64_t display_id) const;
 
   // Returns the display's selected mode. This returns false and doesn't
   // set |mode_out| if the display mode is in default.
-  bool GetSelectedModeForDisplayId(int64_t display_id,
-                                   DisplayMode* mode_out) const;
+  scoped_refptr<DisplayMode> GetSelectedModeForDisplayId(
+      int64_t display_id) const;
 
   // Tells if the virtual resolution feature is enabled.
   bool IsDisplayUIScalingEnabled() const;
@@ -418,7 +421,7 @@ class ASH_EXPORT DisplayManager
   std::map<int64_t, DisplayInfo> display_info_;
 
   // Selected display modes for displays. Key is the displays' ID.
-  std::map<int64_t, DisplayMode> display_modes_;
+  std::map<int64_t, scoped_refptr<DisplayMode>> display_modes_;
 
   // When set to true, the host window's resize event updates
   // the display's size. This is set to true when running on

@@ -21,8 +21,8 @@ DisplayInfo CreateDisplayInfo(int64_t id,
   info.AddInputDevice(touch_device_id);
 
   // Create a default mode.
-  std::vector<DisplayMode> default_modes(
-      1, DisplayMode(bounds.size(), 60, false, true));
+  DisplayInfo::DisplayModeList default_modes(
+      1, make_scoped_refptr(new DisplayMode(bounds.size(), 60, false, true)));
   info.SetDisplayModes(default_modes);
 
   return info;
@@ -45,10 +45,13 @@ TEST_F(TouchTransformerControllerTest, MirrorModeLetterboxing) {
   DisplayInfo internal_display_info =
       CreateDisplayInfo(1, 10u, gfx::Rect(0, 0, 1920, 1200));
   internal_display_info.set_is_aspect_preserving_scaling(true);
-  std::vector<DisplayMode> internal_modes;
-  internal_modes.push_back(DisplayMode(gfx::Size(2560, 1700), 60, false, true));
-  internal_modes.push_back(
-      DisplayMode(gfx::Size(1920, 1200), 60, false, false));
+
+  DisplayInfo::DisplayModeList internal_modes;
+
+  internal_modes.push_back(make_scoped_refptr(
+      new DisplayMode(gfx::Size(2560, 1700), 60, false, true)));
+  internal_modes.push_back(make_scoped_refptr(
+      new DisplayMode(gfx::Size(1920, 1200), 60, false, false)));
   internal_display_info.SetDisplayModes(internal_modes);
 
   DisplayInfo external_display_info =
@@ -115,9 +118,11 @@ TEST_F(TouchTransformerControllerTest, MirrorModePillarboxing) {
   DisplayInfo internal_display_info =
       CreateDisplayInfo(1, 10, gfx::Rect(0, 0, 1024, 768));
   internal_display_info.set_is_aspect_preserving_scaling(true);
-  std::vector<DisplayMode> internal_modes;
-  internal_modes.push_back(DisplayMode(gfx::Size(1366, 768), 60, false, true));
-  internal_modes.push_back(DisplayMode(gfx::Size(1024, 768), 60, false, false));
+  DisplayInfo::DisplayModeList internal_modes;
+  internal_modes.push_back(make_scoped_refptr(
+      new DisplayMode(gfx::Size(1366, 768), 60, false, true)));
+  internal_modes.push_back(make_scoped_refptr(
+      new DisplayMode(gfx::Size(1024, 768), 60, false, false)));
   internal_display_info.SetDisplayModes(internal_modes);
 
   DisplayInfo external_display_info =
@@ -187,14 +192,16 @@ TEST_F(TouchTransformerControllerTest, SoftwareMirrorMode) {
   // translated to point (0, 950) in the framebuffer.
   DisplayInfo display1_info =
       CreateDisplayInfo(1, 10u, gfx::Rect(0, 0, 1280, 850));
-  std::vector<DisplayMode> display1_modes;
-  display1_modes.push_back(DisplayMode(gfx::Size(1280, 850), 60, false, true));
+  DisplayInfo::DisplayModeList display1_modes;
+  display1_modes.push_back(make_scoped_refptr(
+      new DisplayMode(gfx::Size(1280, 850), 60, false, true)));
   display1_info.SetDisplayModes(display1_modes);
 
   DisplayInfo display2_info =
       CreateDisplayInfo(2, 11u, gfx::Rect(0, 950, 1920, 1080));
-  std::vector<DisplayMode> display2_modes;
-  display2_modes.push_back(DisplayMode(gfx::Size(1920, 1080), 60, false, true));
+  DisplayInfo::DisplayModeList display2_modes;
+  display2_modes.push_back(make_scoped_refptr(
+      new DisplayMode(gfx::Size(1920, 1080), 60, false, true)));
   display2_info.SetDisplayModes(display2_modes);
 
   gfx::Size fb_size(1920, 1990);

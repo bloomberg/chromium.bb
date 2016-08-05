@@ -13,6 +13,7 @@
 
 #include "ash/ash_export.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/insets.h"
@@ -20,26 +21,52 @@
 
 namespace ash {
 
-// A struct that represents the display's mode info.
-struct ASH_EXPORT DisplayMode {
+// A class that represents the display's mode info.
+class ASH_EXPORT DisplayMode : public base::RefCounted<DisplayMode> {
+ public:
   DisplayMode();
+
+  DisplayMode(const gfx::Size& size);
+
   DisplayMode(const gfx::Size& size,
               float refresh_rate,
-              bool interlaced,
+              bool is_interlaced,
               bool native);
 
+  DisplayMode(const gfx::Size& size,
+              float refresh_rate,
+              bool is_interlaced,
+              bool native,
+              float ui_scale,
+              float device_scale_factor);
   // Returns the size in DIP which is visible to the user.
   gfx::Size GetSizeInDIP(bool is_internal) const;
 
   // Returns true if |other| has same size and scale factors.
-  bool IsEquivalent(const DisplayMode& other) const;
+  bool IsEquivalent(const scoped_refptr<DisplayMode>& other) const;
 
-  gfx::Size size;             // Physical pixel size of the display.
-  float refresh_rate;         // Refresh rate of the display, in Hz.
-  bool interlaced;            // True if mode is interlaced.
-  bool native;                // True if mode is native mode of the display.
-  float ui_scale;             // The UI scale factor of the mode.
-  float device_scale_factor;  // The device scale factor of the mode.
+  const gfx::Size& size() const { return size_; }
+  bool is_interlaced() const { return is_interlaced_; }
+  float refresh_rate() const { return refresh_rate_; }
+
+  bool native() const { return native_; }
+
+  // Missing from ui::DisplayMode
+  float ui_scale() const { return ui_scale_; }
+  float device_scale_factor() const { return device_scale_factor_; }
+
+ private:
+  ~DisplayMode();
+  friend class base::RefCounted<DisplayMode>;
+
+  gfx::Size size_;             // Physical pixel size of the display.
+  float refresh_rate_;         // Refresh rate of the display, in Hz.
+  bool is_interlaced_;         // True if mode is interlaced.
+  bool native_;                // True if mode is native mode of the display.
+  float ui_scale_;             // The UI scale factor of the mode.
+  float device_scale_factor_;  // The device scale factor of the mode.
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayMode);
 };
 
 // DisplayInfo contains metadata for each display. This is used to
@@ -48,6 +75,8 @@ struct ASH_EXPORT DisplayMode {
 // This class is intentionally made copiable.
 class ASH_EXPORT DisplayInfo {
  public:
+  using DisplayModeList = std::vector<scoped_refptr<DisplayMode>>;
+
   // Creates a DisplayInfo from string spec. 100+200-1440x800 creates display
   // whose size is 1440x800 at the location (100, 200) in host coordinates.
   // The format is
@@ -207,12 +236,10 @@ class ASH_EXPORT DisplayInfo {
   void set_native(bool native) { native_ = native; }
   bool native() const { return native_; }
 
-  const std::vector<DisplayMode>& display_modes() const {
-    return display_modes_;
-  }
+  const DisplayModeList& display_modes() const { return display_modes_; }
   // Sets the display mode list. The mode list will be sorted for the
   // display.
-  void SetDisplayModes(const std::vector<DisplayMode>& display_modes);
+  void SetDisplayModes(const DisplayModeList& display_modes);
 
   // Returns the native mode size. If a native mode is not present, return an
   // empty size.
@@ -313,7 +340,7 @@ class ASH_EXPORT DisplayInfo {
   bool clear_overscan_insets_;
 
   // The list of modes supported by this display.
-  std::vector<DisplayMode> display_modes_;
+  DisplayModeList display_modes_;
 
   // The current profile of the color calibration.
   ui::ColorCalibrationProfile color_profile_;

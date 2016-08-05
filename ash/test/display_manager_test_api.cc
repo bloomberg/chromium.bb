@@ -155,8 +155,9 @@ ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
 bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   const DisplayInfo& info = display_manager->GetDisplayInfo(display_id);
-  DisplayMode mode;
-  if (!GetDisplayModeForResolution(info, resolution, &mode))
+  scoped_refptr<DisplayMode> mode =
+      GetDisplayModeForResolution(info, resolution);
+  if (!mode)
     return false;
   return display_manager->SetDisplayMode(display_id, mode);
 }

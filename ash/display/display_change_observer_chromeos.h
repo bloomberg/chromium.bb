@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/display/display_info.h"
 #include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "ui/display/chromeos/display_configurator.h"
@@ -17,8 +18,7 @@
 
 namespace ash {
 
-class DisplayInfo;
-struct DisplayMode;
+class DisplayMode;
 class DisplaySnapshot;
 
 // An object that observes changes in display configuration and
@@ -29,12 +29,12 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
                               public ShellObserver {
  public:
   // Returns the mode list for internal display.
-  ASH_EXPORT static std::vector<DisplayMode> GetInternalDisplayModeList(
+  ASH_EXPORT static DisplayInfo::DisplayModeList GetInternalDisplayModeList(
       const DisplayInfo& display_info,
       const ui::DisplaySnapshot& output);
 
   // Returns the resolution list.
-  ASH_EXPORT static std::vector<DisplayMode> GetExternalDisplayModeList(
+  ASH_EXPORT static DisplayInfo::DisplayModeList GetExternalDisplayModeList(
       const ui::DisplaySnapshot& output);
 
   DisplayChangeObserver();

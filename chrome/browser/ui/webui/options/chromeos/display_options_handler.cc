@@ -121,47 +121,60 @@ bool GetFloat(const base::DictionaryValue* dict,
   return false;
 }
 
-bool ConvertValueToDisplayMode(const base::DictionaryValue* dict,
-                               ash::DisplayMode* mode) {
-  mode->size.set_width(GetIntOrDouble(dict, "originalWidth"));
-  mode->size.set_height(GetIntOrDouble(dict, "originalHeight"));
-  if (mode->size.IsEmpty()) {
+scoped_refptr<ash::DisplayMode> ConvertValueToDisplayMode(
+    const base::DictionaryValue* dict) {
+  scoped_refptr<ash::DisplayMode> mode;
+
+  gfx::Size size;
+  size.set_width(GetIntOrDouble(dict, "originalWidth"));
+  size.set_height(GetIntOrDouble(dict, "originalHeight"));
+
+  if (size.IsEmpty()) {
     LOG(ERROR) << "missing width or height.";
-    return false;
+    return mode;
   }
-  if (!GetFloat(dict, "refreshRate", &mode->refresh_rate)) {
+
+  float refresh_rate, ui_scale, device_scale_factor;
+  if (!GetFloat(dict, "refreshRate", &refresh_rate)) {
     LOG(ERROR) << "missing refreshRate.";
-    return false;
+    return mode;
   }
-  if (!GetFloat(dict, "scale", &mode->ui_scale)) {
+  if (!GetFloat(dict, "scale", &ui_scale)) {
     LOG(ERROR) << "missing ui-scale.";
-    return false;
+    return mode;
   }
-  if (!GetFloat(dict, "deviceScaleFactor", &mode->device_scale_factor)) {
+  if (!GetFloat(dict, "deviceScaleFactor", &device_scale_factor)) {
     LOG(ERROR) << "missing deviceScaleFactor.";
-    return false;
+    return mode;
   }
-  return true;
+
+  // Used to select the actual mode.
+  mode =
+      new ash::DisplayMode(size, refresh_rate, false /* interlaced */,
+                           false /* native */, ui_scale, device_scale_factor);
+  return mode;
 }
 
-base::DictionaryValue* ConvertDisplayModeToValue(int64_t display_id,
-                                                 const ash::DisplayMode& mode) {
+base::DictionaryValue* ConvertDisplayModeToValue(
+    int64_t display_id,
+    const scoped_refptr<ash::DisplayMode>& mode) {
   bool is_internal = display::Display::HasInternalDisplay() &&
                      display::Display::InternalDisplayId() == display_id;
   base::DictionaryValue* result = new base::DictionaryValue();
-  gfx::Size size_dip = mode.GetSizeInDIP(is_internal);
+  gfx::Size size_dip = mode->GetSizeInDIP(is_internal);
   result->SetInteger("width", size_dip.width());
   result->SetInteger("height", size_dip.height());
-  result->SetInteger("originalWidth", mode.size.width());
-  result->SetInteger("originalHeight", mode.size.height());
-  result->SetDouble("deviceScaleFactor", mode.device_scale_factor);
-  result->SetDouble("scale", mode.ui_scale);
-  result->SetDouble("refreshRate", mode.refresh_rate);
+  result->SetInteger("originalWidth", mode->size().width());
+  result->SetInteger("originalHeight", mode->size().height());
+  result->SetDouble("deviceScaleFactor", mode->device_scale_factor());
+  result->SetDouble("scale", mode->ui_scale());
+  result->SetDouble("refreshRate", mode->refresh_rate());
+  result->SetBoolean("isBest",
+                     is_internal ? (mode->ui_scale() == 1.0f) : mode->native());
+  result->SetBoolean("isNative", mode->native());
   result->SetBoolean(
-      "isBest", is_internal ? (mode.ui_scale == 1.0f) : mode.native);
-  result->SetBoolean("isNative", mode.native);
-  result->SetBoolean(
-      "selected", mode.IsEquivalent(
+      "selected",
+      mode->IsEquivalent(
           GetDisplayManager()->GetActiveModeForDisplayId(display_id)));
   return result;
 }
@@ -320,7 +333,8 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
     js_display->SetInteger("rotation", display.RotationAsDegree());
 
     base::ListValue* js_resolutions = new base::ListValue();
-    for (const ash::DisplayMode& display_mode : display_info.display_modes()) {
+    for (const scoped_refptr<ash::DisplayMode>& display_mode :
+         display_info.display_modes()) {
       js_resolutions->Append(
           ConvertDisplayModeToValue(display.id(), display_mode));
     }
@@ -464,14 +478,14 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
     return;
   }
 
-  ash::DisplayMode mode;
-  if (!ConvertValueToDisplayMode(mode_data, &mode))
+  scoped_refptr<ash::DisplayMode> mode = ConvertValueToDisplayMode(mode_data);
+  if (!mode)
     return;
 
   content::RecordAction(
       base::UserMetricsAction("Options_DisplaySetResolution"));
   ash::DisplayManager* display_manager = GetDisplayManager();
-  ash::DisplayMode current_mode =
+  scoped_refptr<ash::DisplayMode> current_mode =
       display_manager->GetActiveModeForDisplayId(display_id);
   if (!display_manager->SetDisplayMode(display_id, mode)) {
     LOG(ERROR) << "Unable to set display mode for: " << display_id

@@ -60,11 +60,12 @@ bool GetDisplayBounds(const std::string& spec,
 struct DisplayModeSorter {
   explicit DisplayModeSorter(bool is_internal) : is_internal(is_internal) {}
 
-  bool operator()(const DisplayMode& a, const DisplayMode& b) {
-    gfx::Size size_a_dip = a.GetSizeInDIP(is_internal);
-    gfx::Size size_b_dip = b.GetSizeInDIP(is_internal);
+  bool operator()(const scoped_refptr<DisplayMode>& a,
+                  const scoped_refptr<DisplayMode>& b) {
+    gfx::Size size_a_dip = a->GetSizeInDIP(is_internal);
+    gfx::Size size_b_dip = b->GetSizeInDIP(is_internal);
     if (size_a_dip.GetArea() == size_b_dip.GetArea())
-      return (a.refresh_rate > b.refresh_rate);
+      return (a->refresh_rate() > b->refresh_rate());
     return (size_a_dip.GetArea() < size_b_dip.GetArea());
   }
 
@@ -74,41 +75,67 @@ struct DisplayModeSorter {
 }  // namespace
 
 DisplayMode::DisplayMode()
-    : refresh_rate(0.0f),
-      interlaced(false),
-      native(false),
-      ui_scale(1.0f),
-      device_scale_factor(1.0f) {}
+    : refresh_rate_(0.0f),
+      is_interlaced_(false),
+      native_(false),
+      ui_scale_(1.0f),
+      device_scale_factor_(1.0f) {}
+
+DisplayMode::DisplayMode(const gfx::Size& size)
+    : size_(size),
+      refresh_rate_(0.0f),
+      is_interlaced_(false),
+      native_(false),
+      ui_scale_(1.0f),
+      device_scale_factor_(1.0f) {}
 
 DisplayMode::DisplayMode(const gfx::Size& size,
                          float refresh_rate,
-                         bool interlaced,
+                         bool is_interlaced,
                          bool native)
-    : size(size),
-      refresh_rate(refresh_rate),
-      interlaced(interlaced),
-      native(native),
-      ui_scale(1.0f),
-      device_scale_factor(1.0f) {}
+    : size_(size),
+      refresh_rate_(refresh_rate),
+      is_interlaced_(is_interlaced),
+      native_(native),
+      ui_scale_(1.0f),
+      device_scale_factor_(1.0f) {}
+
+DisplayMode::~DisplayMode(){};
+
+DisplayMode::DisplayMode(const gfx::Size& size,
+                         float refresh_rate,
+                         bool is_interlaced,
+                         bool native,
+                         float ui_scale,
+                         float device_scale_factor)
+    : size_(size),
+      refresh_rate_(refresh_rate),
+      is_interlaced_(is_interlaced),
+      native_(native),
+      ui_scale_(ui_scale),
+      device_scale_factor_(device_scale_factor) {}
 
 gfx::Size DisplayMode::GetSizeInDIP(bool is_internal) const {
-  gfx::SizeF size_dip(size);
-  size_dip.Scale(ui_scale);
+  gfx::SizeF size_dip(size_);
+  size_dip.Scale(ui_scale_);
   // DSF=1.25 is special on internal display. The screen is drawn with DSF=1.25
   // but it doesn't affect the screen size computation.
-  if (use_125_dsf_for_ui_scaling && is_internal && device_scale_factor == 1.25f)
+  if (use_125_dsf_for_ui_scaling && is_internal &&
+      device_scale_factor_ == 1.25f)
     return gfx::ToFlooredSize(size_dip);
-  size_dip.Scale(1.0f / device_scale_factor);
+  size_dip.Scale(1.0f / device_scale_factor_);
   return gfx::ToFlooredSize(size_dip);
 }
 
-bool DisplayMode::IsEquivalent(const DisplayMode& other) const {
+bool DisplayMode::IsEquivalent(const scoped_refptr<DisplayMode>& other) const {
   const float kEpsilon = 0.0001f;
-  return size == other.size && std::abs(ui_scale - other.ui_scale) < kEpsilon &&
-         std::abs(device_scale_factor - other.device_scale_factor) < kEpsilon;
+  return size_ == other->size_ &&
+         std::abs(ui_scale_ - other->ui_scale_) < kEpsilon &&
+         std::abs(device_scale_factor_ - other->device_scale_factor_) <
+             kEpsilon;
 }
 
-// satic
+// static
 DisplayInfo DisplayInfo::CreateFromSpec(const std::string& spec) {
   return CreateFromSpecWithID(spec, display::Display::kInvalidDisplayID);
 }
@@ -175,7 +202,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
 #endif
   }
 
-  std::vector<DisplayMode> display_modes;
+  DisplayModeList display_modes;
   parts = base::SplitString(main_spec, "#", base::KEEP_WHITESPACE,
                             base::SPLIT_WANT_NONEMPTY);
   if (parts.size() == 2) {
@@ -187,26 +214,33 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
     parts = base::SplitString(resolution_list, "|", base::KEEP_WHITESPACE,
                               base::SPLIT_WANT_NONEMPTY);
     for (size_t i = 0; i < parts.size(); ++i) {
-      DisplayMode mode;
+      gfx::Size size;
+      float refresh_rate = 0.0f;
+      bool is_interlaced = false;
+
       gfx::Rect mode_bounds;
       std::vector<std::string> resolution = base::SplitString(
           parts[i], "%", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-      if (GetDisplayBounds(resolution[0], &mode_bounds,
-                           &mode.device_scale_factor)) {
-        mode.size = mode_bounds.size();
+      if (GetDisplayBounds(resolution[0], &mode_bounds, &device_scale_factor)) {
+        size = mode_bounds.size();
         if (resolution.size() > 1)
-          sscanf(resolution[1].c_str(), "%f", &mode.refresh_rate);
-        if (mode.size.GetArea() >= largest_area &&
-            mode.refresh_rate > highest_refresh_rate) {
+          sscanf(resolution[1].c_str(), "%f", &refresh_rate);
+        if (size.GetArea() >= largest_area &&
+            refresh_rate > highest_refresh_rate) {
           // Use mode with largest area and highest refresh rate as native.
-          largest_area = mode.size.GetArea();
-          highest_refresh_rate = mode.refresh_rate;
+          largest_area = size.GetArea();
+          highest_refresh_rate = refresh_rate;
           native_mode = i;
         }
-        display_modes.push_back(mode);
+        display_modes.push_back(make_scoped_refptr(
+            new DisplayMode(size, refresh_rate, is_interlaced, false, 1.0,
+                            device_scale_factor)));
       }
     }
-    display_modes[native_mode].native = true;
+    scoped_refptr<DisplayMode> dm = display_modes[native_mode];
+    display_modes[native_mode] =
+        new DisplayMode(dm->size(), dm->refresh_rate(), dm->is_interlaced(),
+                        true, dm->ui_scale(), dm->device_scale_factor());
   }
 
   if (id == display::Display::kInvalidDisplayID)
@@ -372,8 +406,7 @@ gfx::Insets DisplayInfo::GetOverscanInsetsInPixel() const {
   return overscan_insets_in_dip_.Scale(device_scale_factor_);
 }
 
-void DisplayInfo::SetDisplayModes(
-    const std::vector<DisplayMode>& display_modes) {
+void DisplayInfo::SetDisplayModes(const DisplayModeList& display_modes) {
   display_modes_ = display_modes;
   std::sort(display_modes_.begin(), display_modes_.end(),
             DisplayModeSorter(display::Display::IsInternalDisplayId(id_)));
@@ -381,10 +414,9 @@ void DisplayInfo::SetDisplayModes(
 
 gfx::Size DisplayInfo::GetNativeModeSize() const {
   for (size_t i = 0; i < display_modes_.size(); ++i) {
-    if (display_modes_[i].native)
-      return display_modes_[i].size;
+    if (display_modes_[i]->native())
+      return display_modes_[i]->size();
   }
-
   return gfx::Size();
 }
 
@@ -418,14 +450,15 @@ std::string DisplayInfo::ToString() const {
 
 std::string DisplayInfo::ToFullString() const {
   std::string display_modes_str;
-  std::vector<DisplayMode>::const_iterator iter = display_modes_.begin();
+  DisplayModeList::const_iterator iter = display_modes_.begin();
   for (; iter != display_modes_.end(); ++iter) {
+    scoped_refptr<DisplayMode> m(*iter);
     if (!display_modes_str.empty())
       display_modes_str += ",";
-    base::StringAppendF(&display_modes_str, "(%dx%d@%f%c%s)",
-                        iter->size.width(), iter->size.height(),
-                        iter->refresh_rate, iter->interlaced ? 'I' : 'P',
-                        iter->native ? "(N)" : "");
+    base::StringAppendF(&display_modes_str, "(%dx%d@%f%c%s)", m->size().width(),
+                        m->size().height(), m->refresh_rate(),
+                        m->is_interlaced() ? 'I' : 'P',
+                        m->native() ? "(N)" : "");
   }
   return ToString() + ", display_modes==" + display_modes_str;
 }

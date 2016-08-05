@@ -12,6 +12,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/display/display_info.h"
+#include "base/memory/ref_counted.h"
 #include "ui/display/manager/display_layout.h"
 
 namespace gfx {
@@ -22,37 +24,37 @@ class Size;
 
 namespace ash {
 class AshWindowTreeHost;
-struct DisplayMode;
+class DisplayMode;
 class DisplayInfo;
 
 // Creates the display mode list for internal display
 // based on |native_mode|.
-ASH_EXPORT std::vector<DisplayMode> CreateInternalDisplayModeList(
-    const DisplayMode& native_mode);
+ASH_EXPORT DisplayInfo::DisplayModeList CreateInternalDisplayModeList(
+    const scoped_refptr<DisplayMode>& native_mode);
 
 // Creates the display mode list for unified display
 // based on |native_mode| and |scales|.
-ASH_EXPORT std::vector<DisplayMode> CreateUnifiedDisplayModeList(
-    const DisplayMode& native_mode,
+ASH_EXPORT DisplayInfo::DisplayModeList CreateUnifiedDisplayModeList(
+    const scoped_refptr<DisplayMode>& native_mode,
     const std::set<std::pair<float, float>>& dsf_scale_list);
 
 // Gets the display mode for |resolution|. Returns false if no display
 // mode matches the resolution, or the display is an internal display.
-ASH_EXPORT bool GetDisplayModeForResolution(const DisplayInfo& info,
-                                            const gfx::Size& resolution,
-                                            DisplayMode* out);
+ASH_EXPORT scoped_refptr<DisplayMode> GetDisplayModeForResolution(
+    const DisplayInfo& info,
+    const gfx::Size& resolution);
 
 // Gets the display mode for the next valid UI scale. Returns false
 // if the display is not an internal display.
-ASH_EXPORT bool GetDisplayModeForNextUIScale(const DisplayInfo& info,
-                                             bool up,
-                                             DisplayMode* out);
+ASH_EXPORT scoped_refptr<DisplayMode> GetDisplayModeForNextUIScale(
+    const DisplayInfo& info,
+    bool up);
 
 // Gets the display mode for the next valid resolution. Returns false
 // if the display is an internal display.
-ASH_EXPORT bool GetDisplayModeForNextResolution(const DisplayInfo& info,
-                                                bool up,
-                                                DisplayMode* out);
+ASH_EXPORT scoped_refptr<DisplayMode> GetDisplayModeForNextResolution(
+    const DisplayInfo& info,
+    bool up);
 
 // Sets the UI scale for the |display_id|. Returns false if the
 // display_id is not an internal display.

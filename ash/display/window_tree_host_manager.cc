@@ -136,12 +136,12 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
       CreateRootWindowTransformerForDisplay(host->window(), display));
   ash_host->SetRootWindowTransformer(std::move(transformer));
 
-  DisplayMode mode =
+  scoped_refptr<DisplayMode> mode =
       GetDisplayManager()->GetActiveModeForDisplayId(display.id());
-  if (mode.refresh_rate > 0.0f) {
+  if (mode && mode->refresh_rate() > 0.0f) {
     host->compositor()->SetAuthoritativeVSyncInterval(
         base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
-                                          mode.refresh_rate));
+                                          mode->refresh_rate()));
   }
 
   // Just movnig the display requires the full redraw.

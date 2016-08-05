@@ -27,7 +27,7 @@ class Widget;
 
 namespace ash {
 
-struct DisplayMode;
+class DisplayMode;
 
 // A class which manages the notification of display resolution change and
 // also manages the timeout in case the new resolution is unusable.
@@ -51,8 +51,8 @@ class ASH_EXPORT ResolutionNotificationController
   // method will be combined with resolution change methods like
   // DisplayManager::SetDisplayMode().
   void PrepareNotification(int64_t display_id,
-                           const DisplayMode& old_resolution,
-                           const DisplayMode& new_resolution,
+                           const scoped_refptr<DisplayMode>& old_resolution,
+                           const scoped_refptr<DisplayMode>& new_resolution,
                            const base::Closure& accept_callback);
 
   // Returns true if the notification is visible or scheduled to be visible and

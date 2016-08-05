@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_commands_aura.h"
 
+#include "ash/common/display/display_info.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
@@ -39,15 +40,15 @@ bool ZoomInternalDisplay(bool up) {
                            ? DisplayManager::kUnifiedDisplayId
                            : display_manager->GetDisplayIdForUIScaling();
   const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
-  DisplayMode mode;
 
-  if (display_manager->IsInUnifiedMode()) {
-    if (!GetDisplayModeForNextResolution(display_info, up, &mode))
-      return false;
-  } else {
-    if (!GetDisplayModeForNextUIScale(display_info, up, &mode))
-      return false;
-  }
+  scoped_refptr<DisplayMode> mode;
+  if (display_manager->IsInUnifiedMode())
+    mode = GetDisplayModeForNextResolution(display_info, up);
+  else
+    mode = GetDisplayModeForNextUIScale(display_info, up);
+
+  if (!mode)
+    return false;
   return display_manager->SetDisplayMode(display_id, mode);
 }
 
@@ -58,10 +59,10 @@ void ResetInternalDisplayZoom() {
   if (display_manager->IsInUnifiedMode()) {
     const DisplayInfo& display_info =
         display_manager->GetDisplayInfo(DisplayManager::kUnifiedDisplayId);
-    const std::vector<DisplayMode>& modes = display_info.display_modes();
-    auto iter =
-        std::find_if(modes.begin(), modes.end(),
-                     [](const DisplayMode& mode) { return mode.native; });
+    const DisplayInfo::DisplayModeList& modes = display_info.display_modes();
+    auto iter = std::find_if(
+        modes.begin(), modes.end(),
+        [](const scoped_refptr<DisplayMode>& mode) { return mode->native(); });
     display_manager->SetDisplayMode(DisplayManager::kUnifiedDisplayId, *iter);
   } else {
     SetDisplayUIScale(display_manager->GetDisplayIdForUIScaling(), 1.0f);
