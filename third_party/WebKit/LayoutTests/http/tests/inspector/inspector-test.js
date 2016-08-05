@@ -56,6 +56,42 @@ InspectorTest.evaluateInPagePromise = function(code)
     return new Promise(succ => InspectorTest.evaluateInPage(code, succ));
 }
 
+InspectorTest.evaluateInPageAsync = function(code)
+{
+    var callback;
+    var promise = new Promise((fulfill) => { callback = fulfill });
+    InspectorTest.RuntimeAgent.evaluate(code,
+        "console",
+        /* includeCommandLineAPI */ false,
+        /* doNotPauseOnExceptionsAndMuteConsole */ undefined,
+        /* contextId */ undefined,
+        /* returnByValue */ undefined,
+        /* generatePreview */ undefined,
+        /* userGesture */ undefined,
+        /* awaitPromise */ true,
+        mycallback);
+
+    function mycallback(error, result, wasThrown, exceptionDetails)
+    {
+        if (!error && !wasThrown) {
+            callback(InspectorTest.runtimeModel.createRemoteObject(result));
+        } else {
+            if (error)
+                InspectorTest.addResult("Error: " + error);
+            else
+                InspectorTest.addResult("Error: " + (exceptionDetails ? exceptionDetails.text : " exception while evaluation in page."));
+            InspectorTest.completeTest();
+        }
+    }
+    return promise;
+}
+
+InspectorTest.callFunctionInPageAsync = function(name, args)
+{
+    args = args || [];
+    return InspectorTest.evaluateInPageAsync(name + "(" + args.map(JSON.stringify).join(",") + ")");
+}
+
 InspectorTest.evaluateInPageWithTimeout = function(code)
 {
     // FIXME: we need a better way of waiting for chromium events to happen
@@ -81,62 +117,6 @@ InspectorTest.waitForOverlayRepaint = function(callback)
 
 var lastEvalId = 0;
 var pendingEvalRequests = {};
-
-var lastPromiseEvalId = 0;
-var pendingPromiseEvalRequests = {};
-
-/**
- * The given function should take two callback paraters before the arguments:
- *  * resolve - called when successful (with optional result)
- *  * reject  - called when there was a failure (with optional error)
- */
-InspectorTest.invokePageFunctionPromise = function(functionName, parameters)
-{
-    return new Promise(function(resolve, reject) {
-        var id = ++lastPromiseEvalId;
-        pendingPromiseEvalRequests[id] = { resolve: InspectorTest.safeWrap(resolve), reject: InspectorTest.safeWrap(reject) };
-
-        var jsonParameters = [];
-        for (var i = 0; i < parameters.length; ++i)
-            jsonParameters.push(JSON.stringify(parameters[i]));
-        var asyncEvalWrapper = function(callId, functionName, argumentsArray)
-        {
-            function evalCallbackResolve(result)
-            {
-                testRunner.evaluateInWebInspector(evalCallbackCallId, "InspectorTest.didInvokePageFunctionPromise(" + callId + ", " + JSON.stringify(result) + ", true);");
-            }
-
-            function evalCallbackReject(result)
-            {
-                testRunner.evaluateInWebInspector(evalCallbackCallId, "InspectorTest.didInvokePageFunctionPromise(" + callId + ", " + JSON.stringify(result) + ", false);");
-            }
-
-            var args = [evalCallbackResolve, evalCallbackReject].concat(argumentsArray.map(JSON.stringify));
-            var functionCall = functionName + ".call(null, " + args.join(", ") + ")";
-            try {
-                eval(functionCall);
-            } catch(e) {
-                InspectorTest.addResult("Error: " + e);
-                evalCallbackReject(e);
-            }
-        }
-        var pageRequest = "(" + asyncEvalWrapper.toString() + ")(" + id + ", unescape('" + escape(functionName) + "'), [" + jsonParameters.join(", ") + "])";
-        InspectorTest.evaluateInPage(pageRequest);
-    });
-}
-
-
-InspectorTest.didInvokePageFunctionPromise = function(callId, value, didResolve)
-{
-    var callbacks = pendingPromiseEvalRequests[callId];
-    if (!callbacks) {
-        InspectorTest.addResult("Missing callback for async eval " + callId + ", perhaps callback invoked twice?");
-        return;
-    }
-    var callback = didResolve ? callbacks.resolve : callbacks.reject;
-    delete pendingPromiseEvalRequests[callId];
-    callback(value);
-}
 
 /**
  * @param {string} functionName

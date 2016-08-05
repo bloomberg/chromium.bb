@@ -4,16 +4,16 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function pseudoVisibility(resolve, reject, pseudo)
+function pseudoVisibility(pseudo)
 {
     var parentNode = document.getElementById("parent-node");
-    resolve(getComputedStyle(parentNode, ":" + pseudo).visibility);
+    return getComputedStyle(parentNode, ":" + pseudo).visibility;
 }
 
-function pseudoIframeVisibility(resolve, reject)
+function pseudoIframeVisibility()
 {
     var parentNode = frames[0].document.getElementById("frame-node");
-    resolve(getComputedStyle(parentNode).visibility);
+    return getComputedStyle(parentNode).visibility;
 }
 
 function test()
@@ -125,10 +125,10 @@ function test()
 
             function callback()
             {
-                InspectorTest.invokePageFunctionPromise("pseudoIframeVisibility", []).then(function(result) {
+                InspectorTest.evaluateInPagePromise("pseudoIframeVisibility()").then(function(result) {
                     InspectorTest.addResult("=== Added hide shortcut in frame ===");
                     InspectorTest.addResult("=== Frame node is hidden ===");
-                    InspectorTest.addResult("visibility: " + result + ";");
+                    InspectorTest.addResult("visibility: " + result.value + ";");
                     next();
                 });
             }
@@ -145,8 +145,9 @@ function test()
         treeOutline.toggleHideElement(pseudoNode, callback);
         function callback()
         {
-            InspectorTest.invokePageFunctionPromise("pseudoVisibility", [pseudoNode.pseudoType()]).then(function(result) {
-                InspectorTest.addResult("::" + pseudoNode.pseudoType() + " node visibility: '" + result + "'");
+            var pseudoNodeTypeArg = pseudoNode.pseudoType() ? ("\"" + pseudoNode.pseudoType() + "\"") : "undefined";
+            InspectorTest.evaluateInPagePromise("pseudoVisibility(" + pseudoNodeTypeArg + ")").then(function(result) {
+                InspectorTest.addResult("::" + pseudoNode.pseudoType() + " node visibility: '" + result.value + "'");
                 next();
             });
         }
