@@ -78,6 +78,7 @@ const char kBannerParamsDirectKey[] = "direct";
 const char kBannerParamsIndirectKey[] = "indirect";
 const char kBannerParamsTotalKey[] = "total";
 const char kBannerParamsMinutesKey[] = "minutes";
+const char kBannerParamsEngagementTotalKey[] = "site_engagement_total";
 const char kBannerSiteEngagementParamsKey[] = "use_site_engagement";
 
 // Engagement weight assigned to direct and indirect navigations.
@@ -139,7 +140,7 @@ double GetEventEngagement(ui::PageTransition transition_type) {
 // the banner showing.
 void UpdateSiteEngagementToTrigger() {
   std::string total_param = variations::GetVariationParamValue(
-      kBannerParamsKey, kBannerParamsTotalKey);
+      kBannerParamsKey, kBannerParamsEngagementTotalKey);
 
   if (!total_param.empty()) {
     double total_engagement = -1;
