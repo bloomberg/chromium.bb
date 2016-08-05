@@ -1068,6 +1068,15 @@ TEST_F(OfflinePageModelImplTest, CustomTabsNamespace) {
                                   static_cast<int>(SavePageResult::SUCCESS), 1);
 }
 
+TEST_F(OfflinePageModelImplTest, DownloadNamespace) {
+  SavePage(kTestUrl, ClientId(kDownloadNamespace, "123"));
+  std::string histogram_name = "OfflinePages.SavePageResult.";
+  histogram_name += kDownloadNamespace;
+
+  histograms().ExpectUniqueSample(histogram_name,
+                                  static_cast<int>(SavePageResult::SUCCESS), 1);
+}
+
 TEST(CommandLineFlagsTest, OfflineBookmarks) {
   // Disabled by default.
   EXPECT_FALSE(offline_pages::IsOfflineBookmarksEnabled());

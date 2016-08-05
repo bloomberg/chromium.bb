@@ -71,4 +71,10 @@ TEST_F(ClientPolicyControllerTest, CheckCCTDefined) {
   EXPECT_TRUE(isTemporary(policy));
 }
 
+TEST_F(ClientPolicyControllerTest, CheckDownloadDefined) {
+  OfflinePageClientPolicy policy = controller()->GetPolicy(kDownloadNamespace);
+  EXPECT_EQ(policy.name_space, kDownloadNamespace);
+  EXPECT_FALSE(isTemporary(policy));
+}
+
 }  // namespace offline_pages

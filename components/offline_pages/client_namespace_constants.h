@@ -15,6 +15,7 @@ extern const char kBookmarkNamespace[];
 extern const char kLastNNamespace[];
 extern const char kAsyncNamespace[];
 extern const char kCCTNamespace[];
+extern const char kDownloadNamespace[];
 
 // Currently used for fallbacks like tests.
 extern const char kDefaultNamespace[];
