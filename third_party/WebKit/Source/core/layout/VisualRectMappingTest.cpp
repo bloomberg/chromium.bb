@@ -160,6 +160,39 @@ TEST_F(VisualRectMappingTest, LayoutViewSubpixelRounding)
     EXPECT_EQ(LayoutRect(LayoutPoint(DoublePoint(0.5, 0)), LayoutSize(101, 100)), rect);
 }
 
+TEST_F(VisualRectMappingTest, LayoutViewDisplayNone)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id=frameContainer>"
+        "  <iframe id=frame src='http://test.com' width='50' height='50' frameBorder='0'></iframe>"
+        "</div>");
+
+    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 0; }</style><div style='width:100px;height:100px;'></div>");
+    document().view()->updateAllLifecyclePhases();
+
+    LayoutBlock* frameContainer = toLayoutBlock(getLayoutObjectByElementId("frameContainer"));
+    LayoutBlock* frameBody = toLayoutBlock(frameDocument.body()->layoutObject());
+    LayoutBlock* frameDiv = toLayoutBlock(frameBody->lastChild());
+
+    // This part is copied from the LayoutView test, just to ensure that the mapped
+    // rect is valid before display:none is set on the iframe.
+    frameDocument.view()->setScrollPosition(DoublePoint(0, 47), ProgrammaticScroll);
+    LayoutRect originalRect(4, 60, 20, 80);
+    LayoutRect rect = originalRect;
+    EXPECT_TRUE(frameDiv->mapToVisualRectInAncestorSpace(frameContainer, rect));
+    EXPECT_EQ(rect, LayoutRect(4, 13, 20, 37));
+
+    Element* frameElement = document().getElementById("frame");
+    frameElement->setInlineStyleProperty(CSSPropertyDisplay, "none");
+    document().view()->updateAllLifecyclePhases();
+
+    rect = originalRect;
+    EXPECT_FALSE(frameDiv->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+    EXPECT_EQ(rect, LayoutRect());
+}
+
 TEST_F(VisualRectMappingTest, SelfFlippedWritingMode)
 {
     setBodyInnerHTML(

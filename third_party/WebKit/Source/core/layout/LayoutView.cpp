@@ -479,7 +479,9 @@ bool LayoutView::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ance
         return obj->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
     }
 
-    return true;
+    // This can happen, e.g., if the iframe element has display:none.
+    rect = LayoutRect();
+    return false;
 }
 
 void LayoutView::adjustOffsetForFixedPosition(LayoutRect& rect) const
