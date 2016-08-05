@@ -1,8 +1,9 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="/settings_page/main_page_behavior.html">
 
 <dom-module id="settings-page-styles">
   <template>
-    <style include="main-page-styles">
+    <style>
       :host {
         box-sizing: border-box;
         display: block;
@@ -18,12 +19,23 @@
         height: inherit;
       }
 
-      :host > div > * {
+      :host > div > :not(.expanded) {
         /* The margin and padding here are doing two things: make the total
          * separation 24px; and make scrollIntoView align the section header
          * with the top item in the side nav menu. Both things are desired
          * by Alan (bettes@). */
         margin-bottom: 3px;
+      }
+
+      .expanded {
+        min-height: 100%;
+      }
+
+      .expanding,
+      .collapsing {
+        /* Must be lower than the paper-header-panel's z-index.
+         * See settings_ui.html. */
+        z-index: 1;
       }
     </style>
   </template>
