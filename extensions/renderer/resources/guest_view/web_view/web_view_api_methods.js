@@ -37,6 +37,9 @@ var WEB_VIEW_API_METHODS = [
   // Returns whether there is a subsequent history entry to navigate to.
   'canGoForward',
 
+  // Captures the visible region of the WebView contents into a bitmap.
+  'captureVisibleRegion',
+
   // Clears browsing data for the WebView partition.
   'clearData',
 

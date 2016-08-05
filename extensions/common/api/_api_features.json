@@ -499,12 +499,6 @@
       "chrome://oobe/*"
     ]
   }],
-  "webViewExperimentalInternal": [{
-    "internal": true,
-    "channel": "dev",
-    "dependencies": ["permission:webview"],
-    "contexts": ["blessed_extension"]
-  }],
   "webViewRequest": [{
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]
