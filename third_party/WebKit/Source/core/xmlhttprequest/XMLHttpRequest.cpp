@@ -632,11 +632,7 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
     }
 
     if (!m_async && exceptionState.isolate() && v8::MicrotasksScope::IsRunningMicrotasks(exceptionState.isolate())) {
-        Deprecation::countDeprecation(getExecutionContext(), UseCounter::During_Microtask_SyncXHR);
-        if (RuntimeEnabledFeatures::disableBlockingMethodsDuringMicrotasksEnabled()) {
-            exceptionState.throwDOMException(InvalidAccessError, "Cannot send() synchronous requests during microtask execution.");
-            return false;
-        }
+        UseCounter::count(getExecutionContext(), UseCounter::During_Microtask_SyncXHR);
     }
 
 

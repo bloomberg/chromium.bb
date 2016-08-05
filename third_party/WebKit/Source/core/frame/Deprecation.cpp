@@ -367,9 +367,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
         return String::format("EME requires that contentType strings accepted by requestMediaKeySystemAccess() include codecs. Non-standard support for contentType strings without codecs will be removed in %s. Please specify the desired codec(s) as part of the contentType.", milestoneString(54));
 
-    case UseCounter::During_Microtask_SyncXHR:
-        return willBeRemoved("Invoking 'send()' on a sync XHR during microtask execution", 54, "5647113010544640");
-
     case UseCounter::UntrustedEventDefaultHandled:
         return String::format("A DOM event generated from JavaScript has triggered a default action inside the browser. This behavior is non-standard and will be removed in %s. See https://www.chromestatus.com/features/5718803933560832 for more details.", milestoneString(53));
 
