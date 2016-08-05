@@ -37,7 +37,7 @@ NonBlockingDataTypeController::NonBlockingDataTypeController(
 NonBlockingDataTypeController::~NonBlockingDataTypeController() {}
 
 bool NonBlockingDataTypeController::ShouldLoadModelBeforeConfigure() const {
-  // USS datatypes require loading models because model contols storage where
+  // USS datatypes require loading models because model controls storage where
   // data type context and progress marker are persisted.
   return true;
 }

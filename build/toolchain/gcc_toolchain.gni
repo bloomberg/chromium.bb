@@ -73,7 +73,7 @@ import("//build/toolchain/toolchain.gni")
 #      all shared libraries and executables as they are built. The pre-stripped
 #      artifacts will be put in lib.unstripped/ and exe.unstripped/.
 #
-# Optional build argument contols.
+# Optional build argument controls.
 #
 #  - clear_sanitizers
 #      When set to true, is_asan, is_msan, etc.will all be set to false. Often
