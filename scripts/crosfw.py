@@ -268,7 +268,7 @@ def ParseCmdline(argv):
                       help='Write to SD card instead of USB/em100')
   parser.add_argument('-z', '--size', action='store_true', default=False,
                       help='Display U-Boot image size')
-  parser.add_argument('target', nargs='?',
+  parser.add_argument('target', nargs='?', default='all',
                       help='The target to work on')
   return parser.parse_args(argv)
 
