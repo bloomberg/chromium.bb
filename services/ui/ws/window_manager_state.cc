@@ -350,7 +350,7 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   event_dispatch_phase_ = EventDispatchPhase::TARGET;
 
   WindowTree* tree = window_server()->GetTreeWithId(client_id);
-
+  DCHECK(tree);
   ScheduleInputEventTimeout(tree);
 
   if (accelerator) {

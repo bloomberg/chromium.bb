@@ -83,6 +83,12 @@ WindowTree::WindowTree(WindowServer* window_server,
 
 WindowTree::~WindowTree() {
   DestroyWindows();
+
+  // We alert the WindowManagerState that we're destroying this state here
+  // because WindowManagerState would attempt to use things that wouldn't have
+  // been cleaned up by OnWindowDestroyingTreeImpl().
+  if (window_manager_state_)
+    window_manager_state_->OnWillDestroyTree(this);
 }
 
 void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
@@ -193,9 +199,6 @@ void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
 }
 
 void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
-  if (window_manager_state_)
-    window_manager_state_->OnWillDestroyTree(tree);
-
   if (event_source_wms_ && event_source_wms_->window_tree() == tree)
     event_source_wms_ = nullptr;
 

@@ -92,6 +92,11 @@ class WindowManagerStateTest : public testing::Test {
     *embed_tree = window_event_targeting_helper_.last_binding()->tree();
   }
 
+  void DestroyWindowTree() {
+    window_event_targeting_helper_.window_server()->DestroyTree(window_tree_);
+    window_tree_ = nullptr;
+  }
+
   // testing::Test:
   void SetUp() override;
 
@@ -371,6 +376,34 @@ TEST_F(WindowManagerStateTest, DeleteNonRootTree) {
   window_manager_state()->OnWillDestroyTree(target_tree);
   EXPECT_FALSE(target_window_manager.on_accelerator_called());
   EXPECT_TRUE(window_manager()->on_accelerator_called());
+}
+
+// Tests that if a tree is destroyed before acking an event, that mus won't
+// then try to send any queued events.
+TEST_F(WindowManagerStateTest, DontSendQueuedEventsToADeadTree) {
+  ServerWindow* target = window();
+  TestChangeTracker* tracker = window_tree_client()->tracker();
+
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
+                       base::TimeTicks(), EF_LEFT_MOUSE_BUTTON,
+                       EF_LEFT_MOUSE_BUTTON);
+  DispatchInputEventToWindow(target, press, nullptr);
+  ASSERT_EQ(1u, tracker->changes()->size());
+  EXPECT_EQ("InputEvent window=1,1 event_action=1",
+            ChangesToDescription1(*tracker->changes())[0]);
+  tracker->changes()->clear();
+  // The above is not setting TreeAwaitingInputAck.
+
+  // Queue the key release event; it should not be immediately dispatched
+  // because there's no ACK for the last one.
+  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(5, 5),
+                         gfx::Point(5, 5), base::TimeTicks(),
+                         EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON);
+  DispatchInputEventToWindow(target, release, nullptr);
+  EXPECT_EQ(0u, tracker->changes()->size());
+
+  // Destroying a window tree with an event in queue shouldn't crash.
+  DestroyWindowTree();
 }
 
 // Tests that when an ack times out that the accelerator is notified.
