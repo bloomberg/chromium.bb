@@ -507,17 +507,28 @@ int Printer::Expr(const ParseNode* root,
     bool is_assignment = binop->op().value() == "=" ||
                          binop->op().value() == "+=" ||
                          binop->op().value() == "-=";
-    // A sort of funny special case for the long lists that are common in .gn
-    // files, don't indent them + 4, even though they're just continuations when
-    // they're simple lists like "x = [ a, b, c, ... ]"
-    const ListNode* right_as_list = binop->right()->AsList();
-    int indent_column =
-        (is_assignment &&
-         (!right_as_list || (!right_as_list->prefer_multiline() &&
-                             !ListWillBeMultiline(right_as_list->contents(),
-                                                  right_as_list->End()))))
-            ? margin() + kIndentSize * 2
-            : start_column;
+
+    int indent_column = start_column;
+    if (is_assignment) {
+      // Default to a double-indent for wrapped assignments.
+      indent_column = margin() + kIndentSize * 2;
+
+      // A special case for the long lists and scope assignments that are
+      // common in .gn files, don't indent them + 4, even though they're just
+      // continuations when they're simple lists like "x = [ a, b, c, ... ]" or
+      // scopes like "x = { a = 1 b = 2 }". Put back to "normal" indenting.
+      const ListNode* right_as_list = binop->right()->AsList();
+      if (right_as_list) {
+        if (right_as_list->prefer_multiline() ||
+            ListWillBeMultiline(right_as_list->contents(),
+                                right_as_list->End()))
+          indent_column = start_column;
+      } else {
+        const BlockNode* right_as_block = binop->right()->AsBlock();
+        if (right_as_block)
+          indent_column = start_column;
+      }
+    }
     if (stack_.back().continuation_requires_indent)
       indent_column += kIndentSize * 2;
 

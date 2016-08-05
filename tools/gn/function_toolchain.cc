@@ -314,10 +314,26 @@ const char kToolchain_Help[] =
     "    The tool() function call specifies the commands commands to run for\n"
     "    a given step. See \"gn help tool\".\n"
     "\n"
-    "  toolchain_args()\n"
-    "    List of arguments to pass to the toolchain when invoking this\n"
-    "    toolchain. This applies only to non-default toolchains. See\n"
-    "    \"gn help toolchain_args\" for more.\n"
+    "  toolchain_args\n"
+    "    Overrides for build arguments to pass to the toolchain when invoking\n"
+    "    it. This is a variable of type \"scope\" where the variable names\n"
+    "    correspond to varibles in declare_args() blocks.\n"
+    "\n"
+    "    When you specify a target using an alternate toolchain, the master\n"
+    "    build configuration file is re-interpreted in the context of that\n"
+    "    toolchain (see \"gn help toolchain\"). The toolchain_args allows you\n"
+    "    to control the arguments passed into this alternate invocation of\n"
+    "    the build.\n"
+    "\n"
+    "    Any default system arguments or arguments passed in via \"gn args\"\n"
+    "    will also be passed to the alternate invocation unless explicitly\n"
+    "    overridden by toolchain_args.\n"
+    "\n"
+    "    The toolchain_args will be ignored when the toolchain being defined\n"
+    "    is the default. In this case, it's expected you want the default\n"
+    "    argument values.\n"
+    "\n"
+    "    See also \"gn help buildargs\" for an overview of these arguments.\n"
     "\n"
     "  deps\n"
     "    Dependencies of this toolchain. These dependencies will be resolved\n"
@@ -350,18 +366,19 @@ const char kToolchain_Help[] =
     "      by the toolchain label).\n"
     "   2. Re-runs the master build configuration file, applying the\n"
     "      arguments specified by the toolchain_args section of the toolchain\n"
-    "      definition (see \"gn help toolchain_args\").\n"
+    "      definition.\n"
     "   3. Loads the destination build file in the context of the\n"
     "      configuration file in the previous step.\n"
     "\n"
-    "Example:\n"
+    "Example\n"
+    "\n"
     "  toolchain(\"plugin_toolchain\") {\n"
     "    tool(\"cc\") {\n"
     "      command = \"gcc {{source}}\"\n"
     "      ...\n"
     "    }\n"
     "\n"
-    "    toolchain_args() {\n"
+    "    toolchain_args = {\n"
     "      is_plugin = true\n"
     "      is_32bit = true\n"
     "      is_64bit = false\n"
@@ -410,6 +427,17 @@ Value RunToolchain(Scope* scope,
         ToolchainLabelForScope(&block_scope), &toolchain->deps(), err);
     if (err->has_error())
       return Value();
+  }
+
+  // Read toolchain args (if any).
+  const Value* toolchain_args = block_scope.GetValue("toolchain_args", true);
+  if (toolchain_args) {
+    if (!toolchain_args->VerifyTypeIs(Value::SCOPE, err))
+      return Value();
+
+    Scope::KeyValueMap values;
+    toolchain_args->scope_value()->GetCurrentScopeValues(&values);
+    toolchain->args() = values;
   }
 
   if (!block_scope.CheckForUnusedVars(err))
@@ -1015,79 +1043,45 @@ Value RunTool(Scope* scope,
   return Value();
 }
 
-// toolchain_args --------------------------------------------------------------
-
 extern const char kToolchainArgs[] = "toolchain_args";
 extern const char kToolchainArgs_HelpShort[] =
     "toolchain_args: Set build arguments for toolchain build setup.";
 extern const char kToolchainArgs_Help[] =
     "toolchain_args: Set build arguments for toolchain build setup.\n"
     "\n"
-    "  Used inside a toolchain definition to pass arguments to an alternate\n"
-    "  toolchain's invocation of the build.\n"
+    "  DEPRECATED. Instead use:\n"
+    "    toolchain_args = { ... }\n"
     "\n"
-    "  When you specify a target using an alternate toolchain, the master\n"
-    "  build configuration file is re-interpreted in the context of that\n"
-    "  toolchain (see \"gn help toolchain\"). The toolchain_args function\n"
-    "  allows you to control the arguments passed into this alternate\n"
-    "  invocation of the build.\n"
-    "\n"
-    "  Any default system arguments or arguments passed in on the command-\n"
-    "  line will also be passed to the alternate invocation unless explicitly\n"
-    "  overridden by toolchain_args.\n"
-    "\n"
-    "  The toolchain_args will be ignored when the toolchain being defined\n"
-    "  is the default. In this case, it's expected you want the default\n"
-    "  argument values.\n"
-    "\n"
-    "  See also \"gn help buildargs\" for an overview of these arguments.\n"
-    "\n"
-    "Example:\n"
-    "  toolchain(\"my_weird_toolchain\") {\n"
-    "    ...\n"
-    "    toolchain_args() {\n"
-    "      # Override the system values for a generic Posix system.\n"
-    "      is_win = false\n"
-    "      is_posix = true\n"
-    "\n"
-    "      # Pass this new value for specific setup for my toolchain.\n"
-    "      is_my_weird_system = true\n"
-    "    }\n"
-    "  }\n";
+    "  See \"gn help toolchain\" for documentation.\n";
 
 Value RunToolchainArgs(Scope* scope,
                        const FunctionCallNode* function,
                        const std::vector<Value>& args,
                        BlockNode* block,
                        Err* err) {
-  // Find the toolchain definition we're executing inside of. The toolchain
-  // function will set a property pointing to it that we'll pick up.
-  Toolchain* toolchain = reinterpret_cast<Toolchain*>(
-      scope->GetProperty(&kToolchainPropertyKey, nullptr));
-  if (!toolchain) {
-    *err = Err(function->function(),
-               "toolchain_args() called outside of toolchain().",
-               "The toolchain_args() function can only be used inside a "
-               "toolchain() definition.");
-    return Value();
-  }
-
+  // This is a backwards-compatible shim that converts the old form of:
+  //   toolchain_args() {
+  //     foo = bar
+  //   }
+  // to the new form:
+  //   toolchain_args = {
+  //     foo = bar
+  //   }
+  // It will be deleted when all users of toolchain_args as a function are
+  // deleted.
   if (!args.empty()) {
     *err = Err(function->function(), "This function takes no arguments.");
     return Value();
   }
 
-  // This function makes a new scope with various variable sets on it, which
-  // we then save on the toolchain to use when re-invoking the build.
-  Scope block_scope(scope);
-  block->Execute(&block_scope, err);
+  std::unique_ptr<Scope> block_scope(new Scope(scope));
+  block->Execute(block_scope.get(), err);
   if (err->has_error())
     return Value();
 
-  Scope::KeyValueMap values;
-  block_scope.GetCurrentScopeValues(&values);
-  toolchain->args() = values;
-
+  block_scope->DetachFromContaining();
+  scope->SetValue("toolchain_args", Value(function, std::move(block_scope)),
+                  function);
   return Value();
 }
 

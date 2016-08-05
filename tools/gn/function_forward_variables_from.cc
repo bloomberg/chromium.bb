@@ -172,23 +172,27 @@ Value RunForwardVariablesFrom(Scope* scope,
     return Value();
   }
 
-  // Extract the scope identifier. This assumes the first parameter is an
-  // identifier. It is difficult to write code where this is not the case, and
-  // this saves an expensive scope copy. If necessary, this could be expanded
-  // to execute the ParseNode and get the value out if it's not an identifer.
+  Value* value = nullptr;  // Value to use, may point to result_value.
+  Value result_value;  // Storage for the "evaluate" case.
   const IdentifierNode* identifier = args_vector[0]->AsIdentifier();
-  if (!identifier) {
-    *err = Err(args_vector[0].get(), "Expected an identifier for the scope.");
-    return Value();
+  if (identifier) {
+    // Optimize the common case where the input scope is an identifier. This
+    // prevents a copy of a potentially large Scope object.
+    value = scope->GetMutableValue(identifier->value().value(),
+                                   Scope::SEARCH_NESTED, true);
+    if (!value) {
+      *err = Err(identifier, "Undefined identifier.");
+      return Value();
+    }
+  } else {
+    // Non-optimized case, just evaluate the argument.
+    result_value = args_vector[0]->Execute(scope, err);
+    if (err->has_error())
+      return Value();
+    value = &result_value;
   }
 
   // Extract the source scope.
-  Value* value = scope->GetMutableValue(
-      identifier->value().value(), Scope::SEARCH_NESTED, true);
-  if (!value) {
-    *err = Err(identifier, "Undefined identifier.");
-    return Value();
-  }
   if (!value->VerifyTypeIs(Value::SCOPE, err))
     return Value();
   Scope* source = value->scope_value();

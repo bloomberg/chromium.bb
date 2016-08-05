@@ -35,7 +35,7 @@ const char kBuildArgs_Help[] =
     "  toolchain_args section of a toolchain definition. The use-case for\n"
     "  this is that a toolchain may be building code for a different\n"
     "  platform, and that it may want to always specify Posix, for example.\n"
-    "  See \"gn help toolchain_args\" for more.\n"
+    "  See \"gn help toolchain\" for more.\n"
     "\n"
     "  If you specify an override for a build argument that never appears in\n"
     "  a \"declare_args\" call, a nonfatal error will be displayed.\n"

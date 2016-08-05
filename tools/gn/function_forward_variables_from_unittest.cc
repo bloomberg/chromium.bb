@@ -50,6 +50,28 @@ TEST(FunctionForwardVariablesFrom, List) {
   }
 }
 
+TEST(FunctionForwardVariablesFrom, LiteralList) {
+  Scheduler scheduler;
+  TestWithScope setup;
+
+  // Forwards all variables from a literal scope into another scope definition.
+  TestParseInput input(
+    "a = {\n"
+    "  forward_variables_from({x = 1 y = 2}, \"*\")\n"
+    "  z = 3\n"
+    "}\n"
+    "print(\"${a.x} ${a.y} ${a.z}\")\n");
+
+  ASSERT_FALSE(input.has_error());
+
+  Err err;
+  input.parsed()->Execute(setup.scope(), &err);
+  ASSERT_FALSE(err.has_error()) << err.message();
+
+  EXPECT_EQ("1 2 3\n", setup.print_output());
+  setup.print_output().clear();
+}
+
 TEST(FunctionForwardVariablesFrom, ListWithExclusion) {
   Scheduler scheduler;
   TestWithScope setup;
@@ -94,7 +116,7 @@ TEST(FunctionForwardVariablesFrom, ErrorCases) {
   Err err;
   invalid_source.parsed()->Execute(setup.scope(), &err);
   EXPECT_TRUE(err.has_error());
-  EXPECT_EQ("Expected an identifier for the scope.", err.message());
+  EXPECT_EQ("This is not a scope.", err.message());
 
   // Type check the list. We need to use a new template name each time since
   // all of these invocations are executing in sequence in the same scope.
