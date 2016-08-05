@@ -11,26 +11,26 @@ Polymer({
   is: 'settings-internet-page',
 
   properties: {
-    /**
-     * The current active route.
-     */
+    /** The current active route. */
     currentRoute: {
       type: Object,
       notify: true,
     },
 
-    /**
-     * The network GUID for the detail subpage.
-     */
+    /** The network GUID for the detail subpage. */
     detailGuid: {
       type: String,
     },
 
-    /**
-     * The network type for the known networks subpage.
-     */
+    /** The network type for the known networks subpage. */
     knownNetworksType: {
       type: String,
+    },
+
+    /** Whether the 'Add connection' section is expanded. */
+    addConnectionExpanded: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -61,4 +61,24 @@ Polymer({
     settings.navigateTo(settings.Route.KNOWN_NETWORKS);
   },
 
+  /**
+   * Event triggered when the 'Add connections' div is tapped.
+   * @param {Event} event
+   * @private
+   */
+  onExpandAddConnectionsTap_: function(event) {
+    if (event.target.id == 'expandAddConnections')
+      return;
+    this.addConnectionExpanded = !this.addConnectionExpanded;
+  },
+
+  /*** @private */
+  onAddWiFiTap_: function() {
+    chrome.send('addNetwork', [CrOnc.Type.WI_FI]);
+  },
+
+  /*** @private */
+  onAddVPNTap_: function() {
+    chrome.send('addNetwork', [CrOnc.Type.VPN]);
+  },
 });

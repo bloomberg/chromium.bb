@@ -336,6 +336,22 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  showConfigure_: function() {
+    var type = this.networkProperties.Type;
+    if (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.WI_MAX)
+      return false;
+    if (type == CrOnc.Type.WI_FI &&
+        this.networkProperties.ConnectionState !=
+            CrOnc.ConnectionState.NOT_CONNECTED) {
+      return false;
+    }
+    return this.isRemembered_();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
   showViewAccount_: function() {
     // Show either the 'Activate' or the 'View Account' button.
     if (this.showActivate_())
@@ -402,6 +418,11 @@ Polymer({
   /** @private */
   onActivateTap_: function() {
     this.networkingPrivate.startActivate(this.guid);
+  },
+
+  /** @private */
+  onConfigureTap_: function() {
+    chrome.send('configureNetwork', [this.guid]);
   },
 
   /** @private */

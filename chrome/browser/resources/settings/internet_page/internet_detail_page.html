@@ -90,6 +90,10 @@
               hidden$="[[!showActivate_(networkProperties)]]">
             Activate
           </paper-button>
+          <paper-button class="secondary-button" on-tap="onConfigureTap_"
+              hidden$="[[!showConfigure_(networkProperties)]]">
+            Configure
+          </paper-button>
           <paper-button class="primary-button" on-tap="onConnectTap_"
               hidden$="[[!showConnect_(networkProperties)]]"
               disabled="[[!enableConnect_(networkProperties, defaultNetwork)]]">
