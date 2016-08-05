@@ -834,7 +834,7 @@ inline void Node::lazyReattachIfAttached()
 
 inline bool Node::shouldCallRecalcStyle(StyleRecalcChange change)
 {
-    return change >= IndependentInherit || needsStyleRecalc() || childNeedsStyleRecalc();
+    return change >= Inherit || needsStyleRecalc() || childNeedsStyleRecalc();
 }
 
 inline bool isTreeScopeRoot(const Node* node)

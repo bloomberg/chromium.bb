@@ -43,9 +43,6 @@ state.style()->{{property.setter}}
 {{set_value(property)}}(toCSSPrimitiveValue(value).convertTo<{{property.type_name}}>());
 {%- endif %}
 {% endmacro %}
-{% macro set_is_inherited(property) %}
-state.style()->{{property.is_inherited_setter}}
-{% endmacro %}
 
 namespace blink {
 
@@ -61,9 +58,6 @@ namespace blink {
     {% else %}
     {{set_value(property)}}(ComputedStyle::{{property.initial}}());
     {% endif %}
-    {% if property.independent %}
-    {{set_is_inherited(property)}}(true);
-    {% endif %}
 }
 
 {% endif %}
@@ -77,9 +71,6 @@ namespace blink {
     {% else %}
     {{set_value(property)}}(state.parentStyle()->{{property.getter}}());
     {% endif %}
-    {% if property.independent %}
-    {{set_is_inherited(property)}}(false);
-    {% endif %}
 }
 
 {% endif %}
@@ -87,9 +78,6 @@ namespace blink {
 {{declare_value_function(property_id)}}
 {
     {{convert_and_set_value(property)}}
-    {% if property.independent %}
-    {{set_is_inherited(property)}}(false);
-    {% endif %}
 }
 
 {% endif %}

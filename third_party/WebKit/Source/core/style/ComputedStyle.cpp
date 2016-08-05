@@ -64,8 +64,6 @@ struct SameSizeAsBorderValue {
 
 static_assert(sizeof(BorderValue) == sizeof(SameSizeAsBorderValue), "BorderValue should stay small");
 
-// Since different compilers/architectures pack ComputedStyle differently,
-// re-create the same structure for an accurate size comparison.
 struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
     void* dataRefs[7];
     void* ownPtrs[1];
@@ -199,15 +197,8 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
         || oldStyle->justifyItems() != newStyle->justifyItems()) // TODO (lajava): We must avoid this Reattach.
         return Reattach;
 
-    bool independentEqual = oldStyle->independentInheritedEqual(*newStyle);
-    bool nonIndependentEqual = oldStyle->nonIndependentInheritedEqual(*newStyle);
-    if (!independentEqual || !nonIndependentEqual) {
-        if (nonIndependentEqual && !oldStyle->hasExplicitlyInheritedProperties())
-            return IndependentInherit;
-        return Inherit;
-    }
-
-    if (!oldStyle->loadingCustomFontsEqual(*newStyle))
+    if (!oldStyle->inheritedEqual(*newStyle)
+        || !oldStyle->loadingCustomFontsEqual(*newStyle))
         return Inherit;
 
     if (*oldStyle == *newStyle)
@@ -217,15 +208,6 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
         return Inherit;
 
     return NoInherit;
-}
-
-// TODO(sashab): Generate this function.
-void ComputedStyle::propagateIndependentInheritedProperties(const ComputedStyle& parentStyle)
-{
-    if (m_nonInheritedData.m_isPointerEventsInherited)
-        setPointerEvents(parentStyle.pointerEvents());
-    if (m_nonInheritedData.m_isVisibilityInherited)
-        setVisibility(parentStyle.visibility());
 }
 
 ItemPosition ComputedStyle::resolveAlignment(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
@@ -360,11 +342,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
     // m_nonInheritedData.m_affectedByDrag
     // m_nonInheritedData.m_isLink
 
-    // Any properties that are inherited on a style are also inherited on elements
-    // that share this style.
-    m_nonInheritedData.m_isPointerEventsInherited = other.m_nonInheritedData.m_isPointerEventsInherited;
-    m_nonInheritedData.m_isVisibilityInherited = other.m_nonInheritedData.m_isVisibilityInherited;
-
     if (m_svgStyle != other.m_svgStyle)
         m_svgStyle.access()->copyNonInheritedFromCached(other.m_svgStyle.get());
     DCHECK_EQ(zoom(), initialZoom());
@@ -444,18 +421,7 @@ void ComputedStyle::removeCachedPseudoStyle(PseudoId pid)
 
 bool ComputedStyle::inheritedEqual(const ComputedStyle& other) const
 {
-    return independentInheritedEqual(other)
-        && nonIndependentInheritedEqual(other);
-}
-
-bool ComputedStyle::independentInheritedEqual(const ComputedStyle& other) const
-{
-    return m_inheritedData.compareEqualIndependent(other.m_inheritedData);
-}
-
-bool ComputedStyle::nonIndependentInheritedEqual(const ComputedStyle& other) const
-{
-    return m_inheritedData.compareEqualNonIndependent(other.m_inheritedData)
+    return m_inheritedData == other.m_inheritedData
         && m_styleInheritedData == other.m_styleInheritedData
         && m_svgStyle->inheritedEqual(*other.m_svgStyle)
         && m_rareInheritedData == other.m_rareInheritedData;

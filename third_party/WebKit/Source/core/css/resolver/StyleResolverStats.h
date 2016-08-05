@@ -70,7 +70,6 @@ public:
     unsigned elementsStyled;
     unsigned pseudoElementsStyled;
     unsigned baseStylesUsed;
-    unsigned independentInheritedStylesPropagated;
 
 private:
     StyleResolverStats()
