@@ -15,13 +15,13 @@ namespace {
 TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
   const std::string kJsonStr =
       "{"
-      "  \"id\" : [\"http://localhost/foobar\"],"
+      "  \"ids\" : [\"http://localhost/foobar\"],"
       "  \"title\" : \"Foo Barred from Baz\","
-      "  \"summaryText\" : \"...\","
+      "  \"snippet\" : \"...\","
       "  \"fullPageUrl\" : \"http://localhost/foobar\","
-      "  \"publishTime\" : \"2016-06-30T11:01:37.000Z\","
+      "  \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
       "  \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
-      "  \"publisherName\" : \"Foo News\","
+      "  \"attribution\" : \"Foo News\","
       "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
       "  \"ampUrl\" : \"http://localhost/amp\","
       "  \"faviconUrl\" : \"http://localhost/favicon.ico\" "

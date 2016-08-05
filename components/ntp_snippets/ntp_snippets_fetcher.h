@@ -174,6 +174,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  bool JsonToSnippets(const base::Value& parsed,
+                      NTPSnippet::PtrVector* snippets);
   void OnJsonParsed(std::unique_ptr<base::Value> parsed);
   void OnJsonError(const std::string& error);
   void FetchFinished(OptionalSnippets snippets,

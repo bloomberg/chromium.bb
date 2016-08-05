@@ -560,14 +560,12 @@ const FeatureEntry::FeatureParam
 
 const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationServer[] = {
     {"content_suggestions_backend",
-     "https://dev-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
-     "snippets/list"}};
+     ntp_snippets::kContentSuggestionsSandboxServer}};
 
 const FeatureEntry::FeatureParam
     kNTPSnippetsFeatureVariationServerNonPersonalized[] = {
         {"content_suggestions_backend",
-         "https://dev-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
-         "snippets/list"},
+         ntp_snippets::kContentSuggestionsSandboxServer},
         {"fetching_personalization", "non_personal"}};
 
 const FeatureEntry::FeatureVariation kNTPSnippetsFeatureVariations[] = {

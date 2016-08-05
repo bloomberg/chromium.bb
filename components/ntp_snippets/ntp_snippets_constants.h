@@ -17,6 +17,11 @@ extern const char kStudyName[];
 // profile path.
 extern const base::FilePath::CharType kDatabaseFolder[];
 
+// Server endpoints for fetching snippets.
+extern const char kChromeReaderServer[];               // old endpoint
+extern const char kContentSuggestionsServer[];         // new, production
+extern const char kContentSuggestionsSandboxServer[];  // new, for testing
+
 }  // namespace ntp_snippets
 
 #endif

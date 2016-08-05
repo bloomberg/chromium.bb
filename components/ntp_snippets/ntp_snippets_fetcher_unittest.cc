@@ -47,10 +47,8 @@ using testing::StartsWith;
 const char kTestChromeReaderUrlFormat[] =
     "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
 const char kTestChromeContentSuggestionsUrlFormat[] =
-    "https://chromecontentsuggestions-pa.googleapis.com/v1/snippets/"
-    "list?key=%s";
-const char kContentSuggestionsBackend[] =
-    "https://chromecontentsuggestions-pa.googleapis.com/v1/snippets/list";
+    "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+    "fetch?key=%s";
 
 // Artificial time delay for JSON parsing.
 const int64_t kTestJsonParsingLatencyMs = 20;
@@ -228,7 +226,7 @@ class NTPSnippetsContentSuggestionsFetcherTest : public NTPSnippetsFetcherTest {
   NTPSnippetsContentSuggestionsFetcherTest()
       : NTPSnippetsFetcherTest(
             GetFetcherUrl(kTestChromeContentSuggestionsUrlFormat),
-            {{"content_suggestions_backend", kContentSuggestionsBackend}}) {}
+            {{"content_suggestions_backend", kContentSuggestionsServer}}) {}
 };
 
 class NTPSnippetsFetcherHostRestrictedTest : public NTPSnippetsFetcherTest {
@@ -290,7 +288,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
   EXPECT_THAT(params.BuildRequest(),
               EqualsJSON("{"
                          "  \"uiLanguage\": \"en\","
-                         "  \"regularlyVisitedHostName\": ["
+                         "  \"regularlyVisitedHostNames\": ["
                          "    \"chromium.org\""
                          "  ]"
                          "}"));
@@ -337,7 +335,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
   params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
   EXPECT_THAT(params.BuildRequest(),
               EqualsJSON("{"
-                         "  \"regularlyVisitedHostName\": []"
+                         "  \"regularlyVisitedHostNames\": []"
                          "}"));
 }
 
@@ -383,17 +381,21 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
 
 TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ShouldFetchSuccessfully) {
   const std::string kJsonStr =
-      "{\"snippet\" : [{"
-      "  \"id\" : [\"http://localhost/foobar\"],"
-      "  \"title\" : \"Foo Barred from Baz\","
-      "  \"summaryText\" : \"...\","
-      "  \"fullPageUrl\" : \"http://localhost/foobar\","
-      "  \"publishTime\" : \"2016-06-30T11:01:37.000Z\","
-      "  \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
-      "  \"publisherName\" : \"Foo News\","
-      "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
-      "  \"ampUrl\" : \"http://localhost/amp\","
-      "  \"faviconUrl\" : \"http://localhost/favicon.ico\" "
+      "{\"categories\" : [{"
+      "  \"id\": 1,"
+      "  \"localizedTitle\": \"Articles for You\","
+      "  \"suggestions\" : [{"
+      "    \"ids\" : [\"http://localhost/foobar\"],"
+      "    \"title\" : \"Foo Barred from Baz\","
+      "    \"snippet\" : \"...\","
+      "    \"fullPageUrl\" : \"http://localhost/foobar\","
+      "    \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
+      "    \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
+      "    \"attribution\" : \"Foo News\","
+      "    \"imageUrl\" : \"http://localhost/foobar.jpg\","
+      "    \"ampUrl\" : \"http://localhost/amp\","
+      "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
+      "  }]"
       "}]}";
   SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);

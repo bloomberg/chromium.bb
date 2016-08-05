@@ -49,13 +49,6 @@ const char kChromeReaderApiScope[] =
     "https://www.googleapis.com/auth/webhistory";
 const char kContentSuggestionsApiScope[] =
     "https://www.googleapis.com/auth/chrome-content-suggestions";
-const char kChromeReaderServer[] =
-    "https://chromereader-pa.googleapis.com/v1/fetch";
-const char kContentSuggestionsServer[] =
-    "https://chromecontentsuggestions-pa.googleapis.com/v1/snippets/list";
-const char kContentSuggestionsSandboxServer[] =
-    "https://chromecontentsuggestions-pa.sandbox.googleapis.com/v1/snippets/"
-    "list";
 const char kSnippetsServerNonAuthorizedFormat[] = "%s?key=%s";
 const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
@@ -318,7 +311,7 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
     for (const auto& host : host_restricts) {
       regular_hosts->AppendString(host);
     }
-    request->Set("regularlyVisitedHostName", std::move(regular_hosts));
+    request->Set("regularlyVisitedHostNames", std::move(regular_hosts));
 
     // TODO(sfiera): support authentication and personalization
     // TODO(sfiera): support count_to_fetch
@@ -494,22 +487,49 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
   }
 }
 
-void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
+bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
+                                        NTPSnippet::PtrVector* snippets) {
   const base::DictionaryValue* top_dict = nullptr;
-  const base::ListValue* list = nullptr;
+  if (!parsed.GetAsDictionary(&top_dict)) {
+    return false;
+  }
+
+  if (fetch_api_ == CHROME_READER_API) {
+    const base::ListValue* recos = nullptr;
+    return top_dict->GetList("recos", &recos) &&
+           AddSnippetsFromListValue(/* content_suggestions_api = */ false,
+                                    *recos, snippets);
+  } else {
+    const base::ListValue* categories = nullptr;
+    if (!top_dict->GetList("categories", &categories)) {
+      return false;
+    }
+
+    // Merge all categories together, for now.
+    // TODO(sfiera): preserve categories from server.
+    for (const auto& v : *categories) {
+      const base::DictionaryValue* category = nullptr;
+      const base::ListValue* suggestions = nullptr;
+      if (!(v->GetAsDictionary(&category) &&
+            category->GetList("suggestions", &suggestions) &&
+            AddSnippetsFromListValue(/* content_suggestions_api = */ true,
+                                     *suggestions, snippets))) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
+void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
   NTPSnippet::PtrVector snippets;
-  const std::string list_key =
-      fetch_api_ == CHROME_CONTENT_SUGGESTIONS_API ? "snippet" : "recos";
-  if (!parsed->GetAsDictionary(&top_dict) ||
-      !top_dict->GetList(list_key, &list) ||
-      !AddSnippetsFromListValue(fetch_api_ == CHROME_CONTENT_SUGGESTIONS_API,
-                                *list, &snippets)) {
+  if (JsonToSnippets(*parsed, &snippets)) {
+    FetchFinished(OptionalSnippets(std::move(snippets)), FetchResult::SUCCESS,
+                  /*extra_message=*/std::string());
+  } else {
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;
     FetchFinished(OptionalSnippets(),
                   FetchResult::INVALID_SNIPPET_CONTENT_ERROR,
-                  /*extra_message=*/std::string());
-  } else {
-    FetchFinished(OptionalSnippets(std::move(snippets)), FetchResult::SUCCESS,
                   /*extra_message=*/std::string());
   }
 }

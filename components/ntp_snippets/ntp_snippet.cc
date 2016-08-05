@@ -139,10 +139,10 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
 // static
 std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
     const base::DictionaryValue& dict) {
-  const base::ListValue* id_list;
+  const base::ListValue* ids;
   std::string id;
-  if (!(dict.GetList("id", &id_list) &&
-        id_list->GetString(0, &id))) {  // TODO(sfiera): multiple IDs
+  if (!(dict.GetList("ids", &ids) &&
+        ids->GetString(0, &id))) {  // TODO(sfiera): multiple IDs
     return nullptr;
   }
 
@@ -152,11 +152,11 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
   snippet->best_source_index_ = 0;
 
   if (!(dict.GetString("title", &snippet->title_) &&
-        dict.GetString("summaryText", &snippet->snippet_) &&
-        GetTimeValue(dict, "publishTime", &snippet->publish_date_) &&
+        dict.GetString("snippet", &snippet->snippet_) &&
+        GetTimeValue(dict, "creationTime", &snippet->publish_date_) &&
         GetTimeValue(dict, "expirationTime", &snippet->expiry_date_) &&
         GetURLValue(dict, "imageUrl", &snippet->salient_image_url_) &&
-        dict.GetString("publisherName", &source->publisher_name) &&
+        dict.GetString("attribution", &source->publisher_name) &&
         GetURLValue(dict, "fullPageUrl", &source->url))) {
     return nullptr;
   }
