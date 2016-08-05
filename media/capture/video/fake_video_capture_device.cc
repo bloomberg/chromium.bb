@@ -194,6 +194,7 @@ void FakeVideoCaptureDevice::GetPhotoCapabilities(
   photo_capabilities->width->current = capture_format_.frame_size.width();
   photo_capabilities->width->max = 1920;
   photo_capabilities->width->min = 320;
+  photo_capabilities->focus_mode = mojom::FocusMode::UNAVAILABLE;
   photo_capabilities->zoom = mojom::Range::New();
   photo_capabilities->zoom->current = current_zoom_;
   photo_capabilities->zoom->max = kMaxZoom;

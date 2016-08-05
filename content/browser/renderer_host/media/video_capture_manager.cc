@@ -518,8 +518,8 @@ void VideoCaptureManager::OnDeviceStarted(
     int serial_id,
     std::unique_ptr<VideoCaptureDevice> device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(serial_id, device_start_queue_.begin()->serial_id());
-  DVLOG(3) << __func__;
+  DCHECK(serial_id == device_start_queue_.begin()->serial_id());
+  DVLOG(3) << "OnDeviceStarted";
   if (device_start_queue_.front().abort_start()) {
     // |device| can be null if creation failed in
     // DoStartDeviceCaptureOnDeviceThread.
@@ -544,15 +544,6 @@ void VideoCaptureManager::OnDeviceStarted(
           device_start_queue_.front().session_id();
       DCHECK(session_id != kFakeSessionId);
       MaybePostDesktopCaptureWindowId(session_id);
-    }
-
-    auto request = photo_request_queue_.begin();
-    while(request != photo_request_queue_.end()) {
-      if (GetDeviceEntryBySessionId(request->first)->video_capture_device()) {
-        request->second.Run(entry->video_capture_device());
-        photo_request_queue_.erase(request);
-      }
-      ++request;
     }
   }
 
@@ -872,19 +863,15 @@ void VideoCaptureManager::GetPhotoCapabilities(
     int session_id,
     VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  const DeviceEntry* entry = GetDeviceEntryBySessionId(session_id);
-  if (!entry)
+  VideoCaptureDevice* device = GetVideoCaptureDeviceBySessionId(session_id);
+  if (!device)
     return;
-  VideoCaptureDevice* device = entry->video_capture_device();
-  if (device) {
-    VideoCaptureManager::DoGetPhotoCapabilities(std::move(callback), device);
-    return;
-  }
-  // |entry| is known but |device| is nullptr, queue up a request for later.
-  photo_request_queue_.emplace_back(
-      session_id, base::Bind(&VideoCaptureManager::DoGetPhotoCapabilities, this,
-                             base::Passed(&callback)));
+  // Unretained(device) is safe to use here because |device| would be null if it
+  // was scheduled for shutdown and destruction, and because this task is
+  // guaranteed to run before the task that destroys the |device|.
+  device_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureDevice::GetPhotoCapabilities,
+                            base::Unretained(device), base::Passed(&callback)));
 }
 
 void VideoCaptureManager::SetPhotoOptions(
@@ -892,39 +879,28 @@ void VideoCaptureManager::SetPhotoOptions(
     media::mojom::PhotoSettingsPtr settings,
     VideoCaptureDevice::SetPhotoOptionsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  const DeviceEntry* entry = GetDeviceEntryBySessionId(session_id);
-  if (!entry)
+  VideoCaptureDevice* device = GetVideoCaptureDeviceBySessionId(session_id);
+  if (!device)
     return;
-  VideoCaptureDevice* device = entry->video_capture_device();
-  if (device) {
-    VideoCaptureManager::DoSetPhotoOptions(std::move(callback),
-                                           std::move(settings), device);
-    return;
-  }
-  // |entry| is known but |device| is nullptr, queue up a request for later.
-  photo_request_queue_.emplace_back(
-      session_id, base::Bind(&VideoCaptureManager::DoSetPhotoOptions, this,
-                             base::Passed(&callback), base::Passed(&settings)));
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoCaptureDevice::SetPhotoOptions, base::Unretained(device),
+                 base::Passed(&settings), base::Passed(&callback)));
 }
 
 void VideoCaptureManager::TakePhoto(
     int session_id,
     VideoCaptureDevice::TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  const DeviceEntry* entry = GetDeviceEntryBySessionId(session_id);
-  if (!entry)
+  VideoCaptureDevice* device = GetVideoCaptureDeviceBySessionId(session_id);
+  if (!device)
     return;
-  VideoCaptureDevice* device = entry->video_capture_device();
-  if (device) {
-    VideoCaptureManager::DoTakePhoto(std::move(callback), device);
-    return;
-  }
-  // |entry| is known but |device| is nullptr, queue up a request for later.
-  photo_request_queue_.emplace_back(
-      session_id, base::Bind(&VideoCaptureManager::DoTakePhoto, this,
-                             base::Passed(&callback)));
+  // Unretained(device) is safe to use here because |device| would be null if it
+  // was scheduled for shutdown and destruction, and because this task is
+  // guaranteed to run before the task that destroys the |device|.
+  device_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureDevice::TakePhoto,
+                            base::Unretained(device), base::Passed(&callback)));
 }
 
 void VideoCaptureManager::DoStopDeviceOnDeviceThread(
@@ -1049,15 +1025,16 @@ void VideoCaptureManager::DestroyDeviceEntryIfNoClients(DeviceEntry* entry) {
   }
 }
 
-VideoCaptureManager::DeviceEntry*
-VideoCaptureManager::GetDeviceEntryBySessionId(int session_id) {
+media::VideoCaptureDevice*
+VideoCaptureManager::GetVideoCaptureDeviceBySessionId(int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SessionMap::const_iterator session_it = sessions_.find(session_id);
   if (session_it == sessions_.end())
     return nullptr;
 
-  return GetDeviceEntryByTypeAndId(session_it->second.type,
-                                   session_it->second.id);
+  DeviceEntry* const device_info =
+      GetDeviceEntryByTypeAndId(session_it->second.type, session_it->second.id);
+  return device_info ? device_info->video_capture_device() : nullptr;
 }
 
 VideoCaptureManager::DeviceEntry*
@@ -1146,41 +1123,6 @@ void VideoCaptureManager::SetDesktopCaptureWindowIdOnDeviceThread(
   desktop_device->SetNotificationWindowId(window_id);
   VLOG(2) << "Screen capture notification window passed on device thread.";
 #endif
-}
-
-void VideoCaptureManager::DoGetPhotoCapabilities(
-    VideoCaptureDevice::GetPhotoCapabilitiesCallback callback,
-    VideoCaptureDevice* device) {
-  // Unretained() is safe to use here because |device| would be null if it
-  // was scheduled for shutdown and destruction, and because this task is
-  // guaranteed to run before the task that destroys the |device|.
-  device_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureDevice::GetPhotoCapabilities,
-                            base::Unretained(device), base::Passed(&callback)));
-}
-
-void VideoCaptureManager::DoSetPhotoOptions(
-    VideoCaptureDevice::SetPhotoOptionsCallback callback,
-    media::mojom::PhotoSettingsPtr settings,
-    VideoCaptureDevice* device) {
-  // Unretained() is safe to use here because |device| would be null if it
-  // was scheduled for shutdown and destruction, and because this task is
-  // guaranteed to run before the task that destroys the |device|.
-  device_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureDevice::SetPhotoOptions, base::Unretained(device),
-                 base::Passed(&settings), base::Passed(&callback)));
-}
-
-void VideoCaptureManager::DoTakePhoto(
-    VideoCaptureDevice::TakePhotoCallback callback,
-    VideoCaptureDevice* device) {
-  // Unretained() is safe to use here because |device| would be null if it
-  // was scheduled for shutdown and destruction, and because this task is
-  // guaranteed to run before the task that destroys the |device|.
-  device_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureDevice::TakePhoto,
-                            base::Unretained(device), base::Passed(&callback)));
 }
 
 #if defined(OS_MACOSX)

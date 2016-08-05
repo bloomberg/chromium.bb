@@ -12,7 +12,6 @@
 #include "base/android/jni_string.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "jni/VideoCapture_jni.h"
 #include "media/capture/video/android/photo_capabilities.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
@@ -35,14 +34,12 @@ bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
 
 VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(
     const VideoCaptureDeviceDescriptor& device_descriptor)
-    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      state_(kIdle),
+    : state_(kIdle),
       got_first_frame_(false),
-      device_descriptor_(device_descriptor),
-      weak_ptr_factory_(this) {}
+      device_descriptor_(device_descriptor) {}
 
 VideoCaptureDeviceAndroid::~VideoCaptureDeviceAndroid() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   StopAndDeAllocate();
 }
 
@@ -59,7 +56,7 @@ bool VideoCaptureDeviceAndroid::Init() {
 void VideoCaptureDeviceAndroid::AllocateAndStart(
     const VideoCaptureParams& params,
     std::unique_ptr<Client> client) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(lock_);
     if (state_ != kIdle)
@@ -108,15 +105,15 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
 
   {
     base::AutoLock lock(lock_);
-    state_ = kConfigured;
+    state_ = kCapturing;
   }
 }
 
 void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(lock_);
-    if (state_ != kConfigured && state_ != kError)
+    if (state_ != kCapturing && state_ != kError)
       return;
   }
 
@@ -138,55 +135,84 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
 }
 
 void VideoCaptureDeviceAndroid::TakePhoto(TakePhotoCallback callback) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(lock_);
-    if (state_ != kConfigured)
+    if (state_ != kCapturing)
       return;
-    if (!got_first_frame_) {  // We have to wait until we get the first frame.
-      photo_requests_queue_.push_back(
-          base::Bind(&VideoCaptureDeviceAndroid::DoTakePhoto,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
-      return;
-    }
   }
-  DoTakePhoto(std::move(callback));
+
+  JNIEnv* env = AttachCurrentThread();
+
+  // Make copy on the heap so we can pass the pointer through JNI.
+  std::unique_ptr<TakePhotoCallback> heap_callback(
+      new TakePhotoCallback(std::move(callback)));
+  const intptr_t callback_id = reinterpret_cast<intptr_t>(heap_callback.get());
+  if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id,
+                                   next_photo_resolution_.width(),
+                                   next_photo_resolution_.height()))
+    return;
+
+  {
+    base::AutoLock lock(photo_callbacks_lock_);
+    photo_callbacks_.push_back(std::move(heap_callback));
+  }
 }
 
 void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
     GetPhotoCapabilitiesCallback callback) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  {
-    base::AutoLock lock(lock_);
-    if (state_ != kConfigured)
-      return;
-    if (!got_first_frame_) {  // We have to wait until we get the first frame.
-      photo_requests_queue_.push_back(
-          base::Bind(&VideoCaptureDeviceAndroid::DoGetPhotoCapabilities,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
-      return;
-    }
-  }
-  DoGetPhotoCapabilities(std::move(callback));
+  DCHECK(thread_checker_.CalledOnValidThread());
+  JNIEnv* env = AttachCurrentThread();
+
+  PhotoCapabilities caps(
+      Java_VideoCapture_getPhotoCapabilities(env, j_capture_.obj()));
+
+  // TODO(mcasas): Manual member copying sucks, consider adding typemapping from
+  // PhotoCapabilities to mojom::PhotoCapabilitiesPtr, https://crbug.com/622002.
+  mojom::PhotoCapabilitiesPtr photo_capabilities =
+      mojom::PhotoCapabilities::New();
+  photo_capabilities->iso = mojom::Range::New();
+  photo_capabilities->iso->current = caps.getCurrentIso();
+  photo_capabilities->iso->max = caps.getMaxIso();
+  photo_capabilities->iso->min = caps.getMinIso();
+  photo_capabilities->height = mojom::Range::New();
+  photo_capabilities->height->current = caps.getCurrentHeight();
+  photo_capabilities->height->max = caps.getMaxHeight();
+  photo_capabilities->height->min = caps.getMinHeight();
+  photo_capabilities->width = mojom::Range::New();
+  photo_capabilities->width->current = caps.getCurrentWidth();
+  photo_capabilities->width->max = caps.getMaxWidth();
+  photo_capabilities->width->min = caps.getMinWidth();
+  photo_capabilities->zoom = mojom::Range::New();
+  photo_capabilities->zoom->current = caps.getCurrentZoom();
+  photo_capabilities->zoom->max = caps.getMaxZoom();
+  photo_capabilities->zoom->min = caps.getMinZoom();
+  photo_capabilities->focus_mode = caps.getAutoFocusInUse()
+                                       ? mojom::FocusMode::AUTO
+                                       : mojom::FocusMode::MANUAL;
+  callback.Run(std::move(photo_capabilities));
 }
 
 void VideoCaptureDeviceAndroid::SetPhotoOptions(
     mojom::PhotoSettingsPtr settings,
     SetPhotoOptionsCallback callback) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  {
-    base::AutoLock lock(lock_);
-    if (state_ != kConfigured)
-      return;
-    if (!got_first_frame_) {  // We have to wait until we get the first frame.
-      photo_requests_queue_.push_back(
-          base::Bind(&VideoCaptureDeviceAndroid::DoSetPhotoOptions,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&settings),
-                     base::Passed(&callback)));
-      return;
-    }
+  DCHECK(thread_checker_.CalledOnValidThread());
+  JNIEnv* env = AttachCurrentThread();
+  // |width| and/or |height| are kept for the next TakePhoto()s.
+  if (settings->has_width || settings->has_height)
+    next_photo_resolution_.SetSize(0, 0);
+  if (settings->has_width) {
+    next_photo_resolution_.set_width(
+        base::saturated_cast<int>(settings->width));
   }
-  DoSetPhotoOptions(std::move(settings), std::move(callback));
+  if (settings->has_height) {
+    next_photo_resolution_.set_height(
+        base::saturated_cast<int>(settings->height));
+  }
+
+  if (settings->has_zoom)
+    Java_VideoCapture_setZoom(env, j_capture_.obj(), settings->zoom);
+  callback.Run(true);
 }
 
 void VideoCaptureDeviceAndroid::OnFrameAvailable(
@@ -197,7 +223,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
     jint rotation) {
   {
     base::AutoLock lock(lock_);
-    if (state_ != kConfigured || !client_)
+    if (state_ != kCapturing || !client_)
       return;
   }
 
@@ -209,18 +235,11 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
   }
 
   const base::TimeTicks current_time = base::TimeTicks::Now();
-  {
-    base::AutoLock lock(lock_);
-    if (!got_first_frame_) {
-      // Set aside one frame allowance for fluctuation.
-      expected_next_frame_time_ = current_time - frame_interval_;
-      first_ref_time_ = current_time;
-      got_first_frame_ = true;
-
-      for (const auto& request : photo_requests_queue_)
-        main_task_runner_->PostTask(FROM_HERE, request);
-      photo_requests_queue_.clear();
-    }
+  if (!got_first_frame_) {
+    // Set aside one frame allowance for fluctuation.
+    expected_next_frame_time_ = current_time - frame_interval_;
+    first_ref_time_ = current_time;
+    got_first_frame_ = true;
   }
 
   // Deliver the frame when it doesn't arrive too early.
@@ -253,23 +272,16 @@ void VideoCaptureDeviceAndroid::OnI420FrameAvailable(JNIEnv* env,
                                                      jint rotation) {
   {
     base::AutoLock lock(lock_);
-    if (state_ != kConfigured || !client_)
+    if (state_ != kCapturing || !client_)
       return;
   }
 
   const base::TimeTicks current_time = base::TimeTicks::Now();
-  {
-    base::AutoLock lock(lock_);
-    if (!got_first_frame_) {
-      // Set aside one frame allowance for fluctuation.
-      expected_next_frame_time_ = current_time - frame_interval_;
-      first_ref_time_ = current_time;
-      got_first_frame_ = true;
-
-      for (const auto& request : photo_requests_queue_)
-        main_task_runner_->PostTask(FROM_HERE, request);
-      photo_requests_queue_.clear();
-    }
+  if (!got_first_frame_) {
+    // Set aside one frame allowance for fluctuation.
+    expected_next_frame_time_ = current_time - frame_interval_;
+    first_ref_time_ = current_time;
+    got_first_frame_ = true;
   }
 
   uint8_t* const y_src =
@@ -372,104 +384,6 @@ void VideoCaptureDeviceAndroid::SetErrorState(
       return;
     client_->OnError(from_here, reason);
   }
-}
-
-void VideoCaptureDeviceAndroid::DoTakePhoto(TakePhotoCallback callback) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-#if DCHECK_IS_ON()
-  {
-    base::AutoLock lock(lock_);
-    DCHECK_EQ(kConfigured, state_);
-    DCHECK(got_first_frame_);
-  }
-#endif
-  JNIEnv* env = AttachCurrentThread();
-
-  // Make copy on the heap so we can pass the pointer through JNI.
-  std::unique_ptr<TakePhotoCallback> heap_callback(
-      new TakePhotoCallback(std::move(callback)));
-  const intptr_t callback_id = reinterpret_cast<intptr_t>(heap_callback.get());
-  if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id,
-                                   next_photo_resolution_.width(),
-                                   next_photo_resolution_.height()))
-    return;
-
-  {
-    base::AutoLock lock(photo_callbacks_lock_);
-    photo_callbacks_.push_back(std::move(heap_callback));
-  }
-}
-
-void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
-    GetPhotoCapabilitiesCallback callback) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-#if DCHECK_IS_ON()
-  {
-    base::AutoLock lock(lock_);
-    DCHECK_EQ(kConfigured, state_);
-    DCHECK(got_first_frame_);
-  }
-#endif
-  JNIEnv* env = AttachCurrentThread();
-
-  PhotoCapabilities caps(
-      Java_VideoCapture_getPhotoCapabilities(env, j_capture_.obj()));
-
-  // TODO(mcasas): Manual member copying sucks, consider adding typemapping from
-  // PhotoCapabilities to mojom::PhotoCapabilitiesPtr, https://crbug.com/622002.
-  mojom::PhotoCapabilitiesPtr photo_capabilities =
-      mojom::PhotoCapabilities::New();
-  photo_capabilities->iso = mojom::Range::New();
-  photo_capabilities->iso->current = caps.getCurrentIso();
-  photo_capabilities->iso->max = caps.getMaxIso();
-  photo_capabilities->iso->min = caps.getMinIso();
-  photo_capabilities->height = mojom::Range::New();
-  photo_capabilities->height->current = caps.getCurrentHeight();
-  photo_capabilities->height->max = caps.getMaxHeight();
-  photo_capabilities->height->min = caps.getMinHeight();
-  photo_capabilities->width = mojom::Range::New();
-  photo_capabilities->width->current = caps.getCurrentWidth();
-  photo_capabilities->width->max = caps.getMaxWidth();
-  photo_capabilities->width->min = caps.getMinWidth();
-  photo_capabilities->zoom = mojom::Range::New();
-  photo_capabilities->zoom->current = caps.getCurrentZoom();
-  photo_capabilities->zoom->max = caps.getMaxZoom();
-  photo_capabilities->zoom->min = caps.getMinZoom();
-  photo_capabilities->focus_mode = caps.getAutoFocusInUse()
-                                       ? mojom::FocusMode::AUTO
-                                       : mojom::FocusMode::MANUAL;
-  callback.Run(std::move(photo_capabilities));
-}
-
-void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
-    mojom::PhotoSettingsPtr settings,
-    SetPhotoOptionsCallback callback) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-#if DCHECK_IS_ON()
-  {
-    base::AutoLock lock(lock_);
-    DCHECK_EQ(kConfigured, state_);
-    DCHECK(got_first_frame_);
-  }
-#endif
-  JNIEnv* env = AttachCurrentThread();
-
-  // |width| and/or |height| are kept for the next TakePhoto()s.
-  if (settings->has_width || settings->has_height)
-    next_photo_resolution_.SetSize(0, 0);
-  if (settings->has_width) {
-    next_photo_resolution_.set_width(
-        base::saturated_cast<int>(settings->width));
-  }
-  if (settings->has_height) {
-    next_photo_resolution_.set_height(
-        base::saturated_cast<int>(settings->height));
-  }
-
-  if (settings->has_zoom)
-    Java_VideoCapture_setZoom(env, j_capture_.obj(), settings->zoom);
-
-  callback.Run(true);
 }
 
 }  // namespace media
