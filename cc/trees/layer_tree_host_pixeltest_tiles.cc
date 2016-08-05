@@ -113,7 +113,7 @@ class BlueYellowClient : public ContentLayerClient {
     DisplayItemListSettings settings;
     settings.use_cached_picture = false;
     scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(settings);
+        DisplayItemList::Create(PaintableRegion(), settings);
 
     SkPictureRecorder recorder;
     sk_sp<SkCanvas> canvas =

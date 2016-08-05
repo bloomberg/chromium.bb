@@ -270,7 +270,7 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
   void SetInitialDeviceScaleFactor(float device_scale_factor) {
     // Device scale factor is a per-tree property. However, tests can't directly
     // set the pending tree's device scale factor before the pending tree is
-    // created, and setting it after SetupPendingTree is too late, since
+    // created, and setting it after SetupPendingTreeis too late, since
     // draw properties will already have been updated on the tree. To handle
     // this, we initially set only the active tree's device scale factor, and we
     // copy this over to the pending tree inside SetupPendingTree.

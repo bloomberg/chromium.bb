@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/playback/recording_source.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace base {
 class DictionaryValue;
@@ -25,7 +26,6 @@ namespace cc {
 
 class LayerTreeHost;
 class Layer;
-
 class RasterizeAndRecordBenchmark : public MicroBenchmark {
  public:
   explicit RasterizeAndRecordBenchmark(

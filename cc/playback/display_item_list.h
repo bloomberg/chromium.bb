@@ -16,13 +16,11 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/contiguous_container.h"
-#include "cc/base/rtree.h"
 #include "cc/playback/discardable_image_map.h"
 #include "cc/playback/display_item.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_conversions.h"
 
 class SkCanvas;
 class SkPictureRecorder;
@@ -39,8 +37,13 @@ class DisplayItemList;
 class CC_EXPORT DisplayItemList
     : public base::RefCountedThreadSafe<DisplayItemList> {
  public:
-  // Creates a display item list.
+  // Creates a display item list. If picture caching is used, then layer_rect
+  // specifies the cull rect of the display item list (the picture will not
+  // exceed this rect). If picture caching is not used, then the given rect can
+  // be empty.
+  // TODO(vmpstr): Maybe this cull rect can be part of the settings instead.
   static scoped_refptr<DisplayItemList> Create(
+      const gfx::Rect& layer_rect,
       const DisplayItemListSettings& settings);
 
   // Creates a DisplayItemList from a Protobuf.
@@ -62,6 +65,11 @@ class CC_EXPORT DisplayItemList
 
   void Raster(SkCanvas* canvas, SkPicture::AbortCallback* callback) const;
 
+  // This is a fast path for use only if canvas_ is set and
+  // retain_individual_display_items_ is false. This method also updates
+  // approximate_op_count_.
+  void RasterIntoCanvas(const DisplayItem& display_item);
+
   // Because processing happens in this function, all the set up for
   // this item should be done via the args, which is why the return
   // type needs to be const, to prevent set-after-processing mistakes.
@@ -72,6 +80,7 @@ class CC_EXPORT DisplayItemList
     auto* item = &inputs_.items.AllocateAndConstruct<DisplayItemType>(
         std::forward<Args>(args)...);
     approximate_op_count_ += item->ApproximateOpCount();
+    ProcessAppendedItem(item);
     return *item;
   }
 
@@ -80,12 +89,14 @@ class CC_EXPORT DisplayItemList
   void Finalize();
 
   void SetIsSuitableForGpuRasterization(bool is_suitable) {
-    inputs_.all_items_are_suitable_for_gpu_rasterization = is_suitable;
+    inputs_.is_suitable_for_gpu_rasterization = is_suitable;
   }
   bool IsSuitableForGpuRasterization() const;
   int ApproximateOpCount() const;
   size_t ApproximateMemoryUsage() const;
   bool ShouldBeAnalyzedForSolidColor() const;
+
+  bool RetainsIndividualDisplayItems() const;
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue(
       bool include_items) const;
@@ -96,10 +107,6 @@ class CC_EXPORT DisplayItemList
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   float raster_scale,
                                   std::vector<DrawImage>* images);
-
-  void SetRetainVisualRectsForTesting(bool retain) {
-    retain_visual_rects_ = retain;
-  }
 
   gfx::Rect VisualRectForTesting(int index) {
     return inputs_.visual_rects[index];
@@ -114,21 +121,27 @@ class CC_EXPORT DisplayItemList
   }
 
  private:
-  explicit DisplayItemList(
-      const DisplayItemListSettings& display_list_settings);
+  DisplayItemList(gfx::Rect layer_rect,
+                  const DisplayItemListSettings& display_list_settings,
+                  bool retain_individual_display_items);
   ~DisplayItemList();
 
-  RTree rtree_;
-  // For testing purposes only. Whether to keep visual rects across calls to
-  // Finalize().
-  bool retain_visual_rects_ = false;
+  void ProcessAppendedItem(const DisplayItem* item);
 
-  int approximate_op_count_ = 0;
+  sk_sp<SkPicture> picture_;
+
+  std::unique_ptr<SkPictureRecorder> recorder_;
+
+  bool retain_individual_display_items_;
+  int approximate_op_count_;
+
+  // Memory usage due to the cached SkPicture.
+  size_t picture_memory_usage_;
 
   DiscardableImageMap image_map_;
 
   struct Inputs {
-    explicit Inputs(const DisplayItemListSettings& settings);
+    Inputs(gfx::Rect layer_rect, const DisplayItemListSettings& settings);
     ~Inputs();
 
     ContiguousContainer<DisplayItem> items;
@@ -140,7 +153,8 @@ class CC_EXPORT DisplayItemList
     std::vector<gfx::Rect> visual_rects;
 
     const DisplayItemListSettings settings;
-    bool all_items_are_suitable_for_gpu_rasterization = true;
+    gfx::Rect layer_rect;
+    bool is_suitable_for_gpu_rasterization;
   };
 
   Inputs inputs_;

@@ -775,7 +775,7 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
   cc::DisplayItemListSettings settings;
   settings.use_cached_picture = false;
   scoped_refptr<cc::DisplayItemList> display_list =
-      cc::DisplayItemList::Create(settings);
+      cc::DisplayItemList::Create(PaintableRegion(), settings);
   if (delegate_) {
     delegate_->OnPaintLayer(
         PaintContext(display_list.get(), device_scale_factor_, invalidation));
