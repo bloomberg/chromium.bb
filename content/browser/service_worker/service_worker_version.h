@@ -35,6 +35,7 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
@@ -460,9 +461,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   class MojoServiceWrapper : public BaseMojoServiceWrapper {
    public:
     MojoServiceWrapper(ServiceWorkerVersion* worker,
-                       mojo::InterfacePtr<Interface> interface)
+                       mojo::InterfacePtr<Interface> interface_ptr)
         : BaseMojoServiceWrapper(worker, Interface::Name_),
-          interface_(std::move(interface)),
+          interface_(std::move(interface_ptr)),
           weak_ptr_factory_(interface_.get()) {}
 
     base::WeakPtr<Interface> GetWeakPtr() {
@@ -754,12 +755,12 @@ base::WeakPtr<Interface> ServiceWorkerVersion::GetMojoServiceForRequest(
       static_cast<MojoServiceWrapper<Interface>*>(
           mojo_services_.get(Interface::Name_));
   if (!service) {
-    mojo::InterfacePtr<Interface> interface;
-    embedded_worker_->GetRemoteInterfaces()->GetInterface(&interface);
-    interface.set_connection_error_handler(
+    mojo::InterfacePtr<Interface> interface_ptr;
+    embedded_worker_->GetRemoteInterfaces()->GetInterface(&interface_ptr);
+    interface_ptr.set_connection_error_handler(
         base::Bind(&ServiceWorkerVersion::OnMojoConnectionError,
                    weak_factory_.GetWeakPtr(), Interface::Name_));
-    service = new MojoServiceWrapper<Interface>(this, std::move(interface));
+    service = new MojoServiceWrapper<Interface>(this, std::move(interface_ptr));
     mojo_services_.add(Interface::Name_, base::WrapUnique(service));
   }
   request->mojo_service = Interface::Name_;
