@@ -47,6 +47,7 @@ from utilities import idl_filename_to_component, is_valid_component_dependency, 
 DEPENDENCY_EXTENDED_ATTRIBUTES = frozenset([
     'OriginTrialEnabled',
     'RuntimeEnabled',
+    'SecureContext',
 ])
 
 
@@ -263,11 +264,10 @@ def transfer_extended_attributes(dependency_interface, dependency_interface_base
     """
     merged_extended_attributes = {}
     for key in DEPENDENCY_EXTENDED_ATTRIBUTES:
-        value = dependency_interface.extended_attributes.get(key)
-        if not value:
+        if key not in dependency_interface.extended_attributes:
             continue
 
-        merged_extended_attributes[key] = value
+        merged_extended_attributes[key] = dependency_interface.extended_attributes[key]
         # Remove the merged attributes from the original dependency interface.
         # This ensures that if other dependency interfaces are merged onto this
         # one, its extended_attributes do not leak through

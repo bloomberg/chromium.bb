@@ -26,6 +26,7 @@
 #include "bindings/tests/idls/core/TestImplements3Implementation.h"
 #include "bindings/tests/idls/core/TestInterfacePartial.h"
 #include "bindings/tests/idls/core/TestInterfacePartial2Implementation.h"
+#include "bindings/tests/idls/core/TestInterfacePartialSecureContext.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -1226,6 +1227,230 @@ static void partial2StaticLongAttributeAttributeSetterCallback(const v8::Functio
     TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetter(v8Value, info);
 }
 
+static void partial2SecureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    v8SetReturnValueFast(info, TestInterfacePartial2Implementation::partial2SecureContextAttribute(*impl), impl);
+}
+
+static void partial2SecureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partial2SecureContextAttributeAttributeGetter(info);
+}
+
+static void partial2SecureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partial2SecureContextAttribute", "TestInterface", holder, info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterfacePartial2Implementation::setPartial2SecureContextAttribute(*impl, cppValue);
+}
+
+static void partial2SecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TestInterfaceImplementationV8Internal::partial2SecureContextAttributeAttributeSetter(v8Value, info);
+}
+
+static void partialSecureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextAttribute(*impl), impl);
+}
+
+static void partialSecureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextAttributeAttributeGetter(info);
+}
+
+static void partialSecureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextAttribute", "TestInterface", holder, info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterfacePartialSecureContext::setPartialSecureContextAttribute(*impl, cppValue);
+}
+
+static void partialSecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TestInterfaceImplementationV8Internal::partialSecureContextAttributeAttributeSetter(v8Value, info);
+}
+
+static void partialSecureContextRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextRuntimeEnabledAttribute(*impl), impl);
+}
+
+static void partialSecureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+static void partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextRuntimeEnabledAttribute", "TestInterface", holder, info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterfacePartialSecureContext::setPartialSecureContextRuntimeEnabledAttribute(*impl, cppValue);
+}
+
+static void partialSecureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
+}
+
+static void partialSecureContextWindowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWindowExposedAttribute(*impl), impl);
+}
+
+static void partialSecureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedAttributeAttributeGetter(info);
+}
+
+static void partialSecureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextWindowExposedAttribute", "TestInterface", holder, info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterfacePartialSecureContext::setPartialSecureContextWindowExposedAttribute(*impl, cppValue);
+}
+
+static void partialSecureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedAttributeAttributeSetter(v8Value, info);
+}
+
+static void partialSecureContextWorkerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWorkerExposedAttribute(*impl), impl);
+}
+
+static void partialSecureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedAttributeAttributeGetter(info);
+}
+
+static void partialSecureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextWorkerExposedAttribute", "TestInterface", holder, info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterfacePartialSecureContext::setPartialSecureContextWorkerExposedAttribute(*impl, cppValue);
+}
+
+static void partialSecureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
+}
+
+static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWindowExposedRuntimeEnabledAttribute(*impl), impl);
+}
+
+static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextWindowExposedRuntimeEnabledAttribute", "TestInterface", holder, info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterfacePartialSecureContext::setPartialSecureContextWindowExposedRuntimeEnabledAttribute(*impl, cppValue);
+}
+
+static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
+}
+
+static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWorkerExposedRuntimeEnabledAttribute(*impl), impl);
+}
+
+static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextWorkerExposedRuntimeEnabledAttribute", "TestInterface", holder, info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'bool'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterfacePartialSecureContext::setPartialSecureContextWorkerExposedRuntimeEnabledAttribute(*impl, cppValue);
+}
+
+static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
+}
+
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -1896,6 +2121,83 @@ static void partial2StaticVoidMethod1Method(const v8::FunctionCallbackInfo<v8::V
     TestInterfacePartial2Implementation::partial2StaticVoidMethod();
 }
 
+static void partial2SecureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    TestInterfacePartial2Implementation::partial2SecureContextMethod(*impl);
+}
+
+static void partial2SecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partial2SecureContextMethodMethod(info);
+}
+
+static void partialSecureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    TestInterfacePartialSecureContext::partialSecureContextMethod(*impl);
+}
+
+static void partialSecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextMethodMethod(info);
+}
+
+static void partialSecureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    TestInterfacePartialSecureContext::partialSecureContextRuntimeEnabledMethod(*impl);
+}
+
+static void partialSecureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledMethodMethod(info);
+}
+
+static void partialSecureContextWindowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    TestInterfacePartialSecureContext::partialSecureContextWindowExposedMethod(*impl);
+}
+
+static void partialSecureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedMethodMethod(info);
+}
+
+static void partialSecureContextWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    TestInterfacePartialSecureContext::partialSecureContextWorkerExposedMethod(*impl);
+}
+
+static void partialSecureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedMethodMethod(info);
+}
+
+static void partialSecureContextWindowExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    TestInterfacePartialSecureContext::partialSecureContextWindowExposedRuntimeEnabledMethod(*impl);
+}
+
+static void partialSecureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledMethodMethod(info);
+}
+
+static void partialSecureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    TestInterfacePartialSecureContext::partialSecureContextWorkerExposedRuntimeEnabledMethod(*impl);
+}
+
+static void partialSecureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledMethodMethod(info);
+}
+
 static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
@@ -2500,6 +2802,48 @@ void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> 
             }
         }
     }
+    if (executionContext && (executionContext->isSecureContext())) {
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"partial2SecureContextAttribute", TestInterfaceImplementationV8Internal::partial2SecureContextAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2SecureContextAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+        V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+    }
+    if (executionContext && (executionContext->isSecureContext())) {
+        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"partialSecureContextAttribute", TestInterfaceImplementationV8Internal::partialSecureContextAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialSecureContextAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+        V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+    }
+    if (executionContext && (executionContext->isSecureContext())) {
+        if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+            const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"partialSecureContextRuntimeEnabledAttribute", TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+            V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+        }
+    }
+    if (executionContext && (executionContext->isDocument())) {
+        if (executionContext && (executionContext->isSecureContext())) {
+            const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"partialSecureContextWindowExposedAttribute", TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+            V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+        }
+    }
+    if (executionContext && (executionContext->isWorkerGlobalScope())) {
+        if (executionContext && (executionContext->isSecureContext())) {
+            const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"partialSecureContextWorkerExposedAttribute", TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+            V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+        }
+    }
+    if (executionContext && (executionContext->isDocument())) {
+        if (executionContext && (executionContext->isSecureContext())) {
+            if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+                const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"partialSecureContextWindowExposedRuntimeEnabledAttribute", TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+                V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+            }
+        }
+    }
+    if (executionContext && (executionContext->isWorkerGlobalScope())) {
+        if (executionContext && (executionContext->isSecureContext())) {
+            if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+                const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"partialSecureContextWorkerExposedRuntimeEnabledAttribute", TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+                V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+            }
+        }
+    }
     v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
     ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
     ASSERT(executionContext);
@@ -2572,6 +2916,48 @@ void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> 
             if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
                 const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration = {"secureContextWorkerExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
                 V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration);
+            }
+        }
+    }
+    if (executionContext && (executionContext->isSecureContext())) {
+        const V8DOMConfiguration::MethodConfiguration partial2SecureContextMethodMethodConfiguration = {"partial2SecureContextMethod", TestInterfaceImplementationV8Internal::partial2SecureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+        V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partial2SecureContextMethodMethodConfiguration);
+    }
+    if (executionContext && (executionContext->isSecureContext())) {
+        const V8DOMConfiguration::MethodConfiguration partialSecureContextMethodMethodConfiguration = {"partialSecureContextMethod", TestInterfaceImplementationV8Internal::partialSecureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+        V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextMethodMethodConfiguration);
+    }
+    if (executionContext && (executionContext->isSecureContext())) {
+        if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+            const V8DOMConfiguration::MethodConfiguration partialSecureContextRuntimeEnabledMethodMethodConfiguration = {"partialSecureContextRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+            V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextRuntimeEnabledMethodMethodConfiguration);
+        }
+    }
+    if (executionContext && (executionContext->isSecureContext())) {
+        if (executionContext && (executionContext->isDocument())) {
+            const V8DOMConfiguration::MethodConfiguration partialSecureContextWindowExposedMethodMethodConfiguration = {"partialSecureContextWindowExposedMethod", TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+            V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextWindowExposedMethodMethodConfiguration);
+        }
+    }
+    if (executionContext && (executionContext->isSecureContext())) {
+        if (executionContext && (executionContext->isWorkerGlobalScope())) {
+            const V8DOMConfiguration::MethodConfiguration partialSecureContextWorkerExposedMethodMethodConfiguration = {"partialSecureContextWorkerExposedMethod", TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+            V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextWorkerExposedMethodMethodConfiguration);
+        }
+    }
+    if (executionContext && (executionContext->isSecureContext())) {
+        if (executionContext && (executionContext->isDocument())) {
+            if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+                const V8DOMConfiguration::MethodConfiguration partialSecureContextWindowExposedRuntimeEnabledMethodMethodConfiguration = {"partialSecureContextWindowExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+                V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextWindowExposedRuntimeEnabledMethodMethodConfiguration);
+            }
+        }
+    }
+    if (executionContext && (executionContext->isSecureContext())) {
+        if (executionContext && (executionContext->isWorkerGlobalScope())) {
+            if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+                const V8DOMConfiguration::MethodConfiguration partialSecureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration = {"partialSecureContextWorkerExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+                V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration);
             }
         }
     }

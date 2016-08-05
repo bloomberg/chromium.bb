@@ -38,4 +38,7 @@
 
     void partial2VoidMethod();
     static void partial2StaticVoidMethod();
+
+    [SecureContext] void partial2SecureContextMethod();
+    [SecureContext] attribute bool partial2SecureContextAttribute;
 };
