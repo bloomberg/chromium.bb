@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <limits>
 #include <string>
 #include <vector>
@@ -105,6 +106,38 @@ TEST_F(Webm2PesTests, CanParseFirstPacket) {
 
   // Parse the next packet to confirm correct parse and consumption of payload.
   EXPECT_TRUE(parser()->ParseNextPacket(&header, &frame));
+}
+
+TEST_F(Webm2PesTests, CanMuxLargeBuffers) {
+  const std::size_t kBufferSize = 100 * 1024;
+  const std::int64_t kFakeTimestamp = libwebm::kNanosecondsPerSecond;
+  libwebm::VideoFrame fake_frame(kFakeTimestamp, libwebm::VideoFrame::kVP9);
+  ASSERT_TRUE(fake_frame.Init(kBufferSize));
+  std::memset(fake_frame.buffer().data.get(), 0x80, kBufferSize);
+  ASSERT_TRUE(fake_frame.SetBufferLength(kBufferSize));
+  libwebm::PacketDataBuffer pes_packet_buffer;
+  ASSERT_TRUE(
+      libwebm::Webm2Pes::WritePesPacket(fake_frame, &pes_packet_buffer));
+
+  // TODO(tomfinegan): Change VpxPesParser so it can read from a buffer, and get
+  // rid of this extra step.
+  libwebm::FilePtr pes_file(std::fopen(pes_file_name().c_str(), "wb"),
+                            libwebm::FILEDeleter());
+  ASSERT_EQ(pes_packet_buffer.size(),
+            fwrite(&pes_packet_buffer[0], 1, pes_packet_buffer.size(),
+                   pes_file.get()));
+  fclose(pes_file.get());
+  pes_file.release();
+
+  libwebm::VpxPesParser parser;
+  ASSERT_TRUE(parser.Open(pes_file_name()));
+  libwebm::VpxPesParser::PesHeader header;
+  libwebm::VideoFrame parsed_frame;
+  ASSERT_TRUE(parser.ParseNextPacket(&header, &parsed_frame));
+  EXPECT_EQ(fake_frame.nanosecond_pts(), parsed_frame.nanosecond_pts());
+  EXPECT_EQ(fake_frame.buffer().length, parsed_frame.buffer().length);
+  EXPECT_EQ(0, std::memcmp(fake_frame.buffer().data.get(),
+                           parsed_frame.buffer().data.get(), kBufferSize));
 }
 
 }  // namespace
