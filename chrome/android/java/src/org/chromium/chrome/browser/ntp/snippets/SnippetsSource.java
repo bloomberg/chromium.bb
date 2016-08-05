@@ -7,22 +7,25 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories.KnownCategoriesEnum;
 
 import java.util.List;
 
-
 /**
- * An interface for classes that provide Snippets.
+ * An interface for classes that provide snippets.
  */
 public interface SnippetsSource {
     /**
      * An observer for events in the snippets service.
      */
     public interface SnippetsObserver {
-        void onSnippetsReceived(List<SnippetArticleListItem> snippets);
+        void onSuggestionsReceived(@KnownCategoriesEnum int category,
+                List<SnippetArticleListItem> snippets);
 
-        /** Called when the ARTICLES category changed its status. */
-        void onCategoryStatusChanged(int newStatus);
+        /** Called when a category changed its status. */
+        void onCategoryStatusChanged(@KnownCategoriesEnum int category,
+                @CategoryStatusEnum int newStatus);
     }
 
     /**
@@ -48,5 +51,5 @@ public interface SnippetsSource {
     /**
      * Gives the reason snippets are disabled.
      */
-    public int getCategoryStatus();
+    public int getCategoryStatus(@KnownCategoriesEnum int category);
 }

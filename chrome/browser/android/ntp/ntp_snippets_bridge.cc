@@ -25,10 +25,9 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
+using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
-using base::android::ToJavaArrayOfStrings;
-using base::android::ToJavaLongArray;
-using base::android::ToJavaFloatArray;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using ntp_snippets::Category;
@@ -129,7 +128,8 @@ void NTPSnippetsBridge::SnippetVisited(JNIEnv* env,
 }
 
 int NTPSnippetsBridge::GetCategoryStatus(JNIEnv* env,
-                                         const JavaParamRef<jobject>& obj) {
+                                         const JavaParamRef<jobject>& obj,
+                                         jint category) {
   return static_cast<int>(content_suggestions_service_->GetCategoryStatus(
       content_suggestions_service_->category_factory()->FromKnownCategory(
           KnownCategories::ARTICLES)));
@@ -141,62 +141,51 @@ void NTPSnippetsBridge::OnNewSuggestions() {
   if (observer_.is_null())
     return;
 
-  std::vector<std::string> ids;
-  std::vector<base::string16> titles;
-  // URL for the article. This will also be used to find the favicon for the
-  // article.
-  std::vector<std::string> urls;
-  // URL for the AMP version of the article if it exists. This will be used as
-  // the URL to direct the user to on tap.
-  std::vector<std::string> amp_urls;
-  std::vector<base::string16> snippet_texts;
-  std::vector<int64_t> timestamps;
-  std::vector<base::string16> publisher_names;
-  std::vector<float> scores;
-
   // Show all suggestions from all categories, even though we currently display
   // them in a single section on the UI.
   // TODO(pke): This is only for debugging new sections and will be replaced
   // with proper multi-section UI support.
-  for (Category category : content_suggestions_service_->GetCategories()) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> suggestions =
+      Java_SnippetsBridge_createSuggestionList(env);
+  for (Category category :
+       content_suggestions_service_->GetCategories()) {
     if (content_suggestions_service_->GetCategoryStatus(category) !=
         CategoryStatus::AVAILABLE) {
       continue;
     }
     for (const ntp_snippets::ContentSuggestion& suggestion :
          content_suggestions_service_->GetSuggestionsForCategory(category)) {
-      ids.push_back(suggestion.id());
-      titles.push_back(suggestion.title());
-      // The url from source_info is a url for a site that is one of the
-      // HOST_RESTRICT parameters, so this is preferred.
-      urls.push_back(suggestion.url().spec());
-      amp_urls.push_back(suggestion.amp_url().spec());
-      snippet_texts.push_back(suggestion.snippet_text());
-      timestamps.push_back(suggestion.publish_date().ToJavaTime());
-      publisher_names.push_back(suggestion.publisher_name());
-      scores.push_back(suggestion.score());
+      Java_SnippetsBridge_addSuggestion(
+          env, suggestions.obj(),
+          ConvertUTF8ToJavaString(env, suggestion.id()).obj(),
+          ConvertUTF16ToJavaString(env, suggestion.title()).obj(),
+          ConvertUTF16ToJavaString(env, suggestion.publisher_name()).obj(),
+          ConvertUTF16ToJavaString(env, suggestion.snippet_text()).obj(),
+          ConvertUTF8ToJavaString(env, suggestion.url().spec()).obj(),
+          ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()).obj(),
+          suggestion.publish_date().ToJavaTime(), suggestion.score());
     }
   }
 
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SnippetsBridge_onSnippetsAvailable(
-      env, observer_.obj(), ToJavaArrayOfStrings(env, ids).obj(),
-      ToJavaArrayOfStrings(env, titles).obj(),
-      ToJavaArrayOfStrings(env, urls).obj(),
-      ToJavaArrayOfStrings(env, amp_urls).obj(),
-      ToJavaArrayOfStrings(env, snippet_texts).obj(),
-      ToJavaLongArray(env, timestamps).obj(),
-      ToJavaArrayOfStrings(env, publisher_names).obj(),
-      ToJavaFloatArray(env, scores).obj());
+  // TODO(mvanouwerkerk): Do not hard code ARTICLES.
+  Java_SnippetsBridge_onSuggestionsAvailable(
+      env, observer_.obj(),
+      static_cast<int>(
+          content_suggestions_service_->category_factory()->FromKnownCategory(
+              KnownCategories::ARTICLES).id()),
+      suggestions.obj());
 }
 
 void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
                                                 CategoryStatus new_status) {
+  // TODO(mvanouwerkerk): Do not hard code ARTICLES.
   if (!category.IsKnownCategory(KnownCategories::ARTICLES))
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SnippetsBridge_onCategoryStatusChanged(env, observer_.obj(),
+                                              static_cast<int>(category.id()),
                                               static_cast<int>(new_status));
 }
 

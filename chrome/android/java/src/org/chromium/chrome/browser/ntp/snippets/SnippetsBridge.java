@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories.KnownCategoriesEnum;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
@@ -22,17 +24,17 @@ public class SnippetsBridge implements SnippetsSource {
     private long mNativeSnippetsBridge;
     private SnippetsObserver mObserver;
 
-    public static boolean isCategoryStatusAvailable(int status) {
+    public static boolean isCategoryStatusAvailable(@CategoryStatusEnum int status) {
         // Note: This code is duplicated in content_suggestions_category_status.cc.
         return status == CategoryStatus.AVAILABLE_LOADING || status == CategoryStatus.AVAILABLE;
     }
 
-    public static boolean isCategoryStatusInitOrAvailable(int status) {
+    public static boolean isCategoryStatusInitOrAvailable(@CategoryStatusEnum int status) {
         // Note: This code is duplicated in content_suggestions_category_status.cc.
         return status == CategoryStatus.INITIALIZING || isCategoryStatusAvailable(status);
     }
 
-    public static boolean isCategoryLoading(int status) {
+    public static boolean isCategoryLoading(@CategoryStatusEnum int status) {
         return status == CategoryStatus.AVAILABLE_LOADING || status == CategoryStatus.INITIALIZING;
     }
 
@@ -118,29 +120,39 @@ public class SnippetsBridge implements SnippetsSource {
     }
 
     @Override
-    public int getCategoryStatus() {
+    @CategoryStatusEnum
+    public int getCategoryStatus(@KnownCategoriesEnum int category) {
         assert mNativeSnippetsBridge != 0;
-        return nativeGetCategoryStatus(mNativeSnippetsBridge);
+        return nativeGetCategoryStatus(mNativeSnippetsBridge, category);
     }
 
     @CalledByNative
-    private void onSnippetsAvailable(String[] ids, String[] titles, String[] urls, String[] ampUrls,
-            String[] previewText, long[] timestamps, String[] publishers, float[] scores) {
+    private static List<SnippetArticleListItem> createSuggestionList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
+    private static void addSuggestion(List<SnippetArticleListItem> suggestions, String id,
+            String title, String publisher, String previewText, String url, String ampUrl,
+            long timestamp, float score) {
+        int position = suggestions.size();
+        suggestions.add(new SnippetArticleListItem(id, title, publisher, previewText, url, ampUrl,
+                timestamp, score, position));
+    }
+
+    @CalledByNative
+    private void onSuggestionsAvailable(/* @KnownCategoriesEnum */ int category,
+            List<SnippetArticleListItem> suggestions) {
         assert mNativeSnippetsBridge != 0;
         assert mObserver != null;
 
-        List<SnippetArticleListItem> newSnippets = new ArrayList<>(ids.length);
-        for (int i = 0; i < ids.length; i++) {
-            newSnippets.add(new SnippetArticleListItem(ids[i], titles[i], publishers[i],
-                    previewText[i], urls[i], ampUrls[i], timestamps[i], scores[i], i));
-        }
-
-        mObserver.onSnippetsReceived(newSnippets);
+        mObserver.onSuggestionsReceived(category, suggestions);
     }
 
     @CalledByNative
-    private void onCategoryStatusChanged(int newStatus) {
-        if (mObserver != null) mObserver.onCategoryStatusChanged(newStatus);
+    private void onCategoryStatusChanged(/* @KnownCategoriesEnum */ int category,
+            /* @CategoryStatusEnum */ int newStatus) {
+        if (mObserver != null) mObserver.onCategoryStatusChanged(category, newStatus);
     }
 
     private native long nativeInit(Profile profile);
@@ -153,5 +165,5 @@ public class SnippetsBridge implements SnippetsSource {
             Callback<Boolean> callback, String url);
     private native void nativeFetchImage(
             long nativeNTPSnippetsBridge, String snippetId, Callback<Bitmap> callback);
-    private native int nativeGetCategoryStatus(long nativeNTPSnippetsBridge);
+    private native int nativeGetCategoryStatus(long nativeNTPSnippetsBridge, int category);
 }

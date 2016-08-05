@@ -49,10 +49,11 @@ class NTPSnippetsBridge
                       const base::android::JavaParamRef<jobject>& callback,
                       const base::android::JavaParamRef<jstring>& jurl);
 
-  // Returns the status of the ARTICLES category.
+  // Returns the status of |category|.
   // See CategoryStatus for more info.
   int GetCategoryStatus(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj);
+                        const base::android::JavaParamRef<jobject>& obj,
+                        jint category);
 
   static bool Register(JNIEnv* env);
 

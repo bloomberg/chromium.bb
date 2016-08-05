@@ -83,6 +83,7 @@ static_library("ntp_snippets") {
 if (is_android) {
   java_cpp_enum("ntp_snippets_java_enums_srcjar") {
     sources = [
+      "category.h",
       "category_status.h",
     ]
   }

@@ -13,7 +13,7 @@ package org.chromium.chrome.browser.ntp.cards;
  * Other elements coming after it and initially off-screen are just added to the RecyclerView after
  * that.
  */
-class AboveTheFoldListItem implements NewTabPageListItem {
+class AboveTheFoldListItem extends SingleItemGroup {
     @Override
     public int getType() {
         return NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD;

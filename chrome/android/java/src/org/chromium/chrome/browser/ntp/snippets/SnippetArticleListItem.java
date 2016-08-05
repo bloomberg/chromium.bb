@@ -13,14 +13,31 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
  * Represents the data for an article card on the NTP.
  */
 public class SnippetArticleListItem implements NewTabPageListItem {
+    /** The unique identifier for this article. */
     public final String mId;
+
+    /** The title of this article. */
     public final String mTitle;
+
+    /** The canonical publisher name (e.g., New York Times). */
     public final String mPublisher;
+
+    /** The snippet preview text. */
     public final String mPreviewText;
+
+    /** The URL of this article. */
     public final String mUrl;
+
+    /** the AMP url for this article (possible for this to be empty). */
     public final String mAmpUrl;
+
+    /** The time when this article was published. */
     public final long mPublishTimestampMilliseconds;
+
+    /** The score expressing relative quality of the article for the user. */
     public final float mScore;
+
+    /** The position of this article in the whole list of snippets. */
     public final int mPosition;
 
     /** Bitmap of the thumbnail, fetched lazily, when the RecyclerView wants to show the snippet. */
@@ -34,14 +51,6 @@ public class SnippetArticleListItem implements NewTabPageListItem {
 
     /**
      * Creates a SnippetArticleListItem object that will hold the data.
-     * @param title the title of the article
-     * @param publisher the canonical publisher name (e.g., New York Times)
-     * @param previewText the snippet preview text
-     * @param url the URL of the article
-     * @param ampUrl the AMP url for the article (possible for this to be empty)
-     * @param timestamp the time in ms when this article was published
-     * @param score the score expressing relative quality of the article for the user
-     * @param position the position of this article in the list of snippets
      */
     public SnippetArticleListItem(String id, String title, String publisher, String previewText,
             String url, String ampUrl, long timestamp, float score, int position) {

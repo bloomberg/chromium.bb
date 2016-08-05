@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 
@@ -135,7 +136,8 @@ public abstract class StatusListItem implements NewTabPageListItem {
     private final int mDescriptionStringId;
     private final int mActionStringId;
 
-    public static StatusListItem create(int categoryStatus, NewTabPageAdapter adapter) {
+    public static StatusListItem create(@CategoryStatusEnum int categoryStatus,
+            NewTabPageAdapter adapter) {
         switch (categoryStatus) {
             // TODO(dgn): AVAILABLE_LOADING and INITIALIZING should show a progress indicator.
             case CategoryStatus.AVAILABLE:

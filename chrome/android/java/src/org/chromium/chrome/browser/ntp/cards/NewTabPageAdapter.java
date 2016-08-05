@@ -18,6 +18,9 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories.KnownCategoriesEnum;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
@@ -27,7 +30,10 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsSource;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsSource.SnippetsObserver;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A class that handles merging above the fold elements and below the fold cards into an adapter
@@ -40,18 +46,21 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     private final NewTabPageManager mNewTabPageManager;
     private final NewTabPageLayout mNewTabPageLayout;
-    private final AboveTheFoldListItem mAboveTheFold;
-    private final SnippetHeaderListItem mHeader;
-    private final UiConfig mUiConfig;
-    private final ProgressListItem mProgressIndicator;
-    private StatusListItem mStatusCard;
-    private final SpacingListItem mBottomSpacer;
-    private final List<NewTabPageListItem> mItems;
-    private final ItemTouchCallbacks mItemTouchCallbacks;
-    private NewTabPageRecyclerView mRecyclerView;
-    private int mProviderStatus;
-
     private SnippetsSource mSnippetsSource;
+    private final UiConfig mUiConfig;
+    private final ItemTouchCallbacks mItemTouchCallbacks = new ItemTouchCallbacks();
+    private NewTabPageRecyclerView mRecyclerView;
+
+    /**
+     * List of all item groups (which can themselves contain multiple items. When flattened, this
+     * will be a list of all items the adapter exposes.
+     */
+    private final List<ItemGroup> mGroups = new ArrayList<>();
+    private final AboveTheFoldListItem mAboveTheFold = new AboveTheFoldListItem();
+    private final SpacingListItem mBottomSpacer = new SpacingListItem();
+
+    /** Maps suggestion categories to sections, with stable iteration ordering. */
+    private final Map<Integer, SuggestionsSection> mSections = new TreeMap<>();
 
     private class ItemTouchCallbacks extends ItemTouchHelper.Callback {
         @Override
@@ -114,17 +123,14 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             SnippetsSource snippetsSource, UiConfig uiConfig) {
         mNewTabPageManager = manager;
         mNewTabPageLayout = newTabPageLayout;
-        mAboveTheFold = new AboveTheFoldListItem();
-        mHeader = new SnippetHeaderListItem();
-        mProgressIndicator = new ProgressListItem();
-        mBottomSpacer = new SpacingListItem();
-        mItemTouchCallbacks = new ItemTouchCallbacks();
-        mItems = new ArrayList<>();
-        mProviderStatus = snippetsSource.getCategoryStatus();
         mSnippetsSource = snippetsSource;
         mUiConfig = uiConfig;
-        mStatusCard = StatusListItem.create(mProviderStatus, this);
-        loadSnippets(new ArrayList<SnippetArticleListItem>());
+
+        // TODO(mvanouwerkerk): Do not hard code ARTICLES. Maybe do not initialize an empty
+        // section in the constructor.
+        setSuggestions(KnownCategories.ARTICLES,
+                Collections.<SnippetArticleListItem>emptyList(),
+                snippetsSource.getCategoryStatus(KnownCategories.ARTICLES));
         snippetsSource.setObserver(this);
     }
 
@@ -134,54 +140,50 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @Override
-    public void onSnippetsReceived(List<SnippetArticleListItem> snippets) {
+    public void onSuggestionsReceived(
+            @KnownCategoriesEnum int category, List<SnippetArticleListItem> suggestions) {
         // We never want to refresh the suggestions if we already have some content.
-        if (hasSuggestions()) return;
+        if (mSections.containsKey(category) && mSections.get(category).hasSuggestions()) return;
 
-        if (!SnippetsBridge.isCategoryStatusInitOrAvailable(mProviderStatus)) {
+        // The status may have changed while the suggestions were loading, perhaps they should not
+        // be displayed any more.
+        if (!SnippetsBridge.isCategoryStatusInitOrAvailable(
+                    mSnippetsSource.getCategoryStatus(category))) {
             return;
         }
 
-        Log.d(TAG, "Received %d new snippets.", snippets.size());
+        Log.d(TAG, "Received %d new suggestions for category %d.", suggestions.size(), category);
 
-        // At first, there might be no snippets available, we wait until they have been fetched.
-        if (snippets.isEmpty()) return;
+        // At first, there might be no suggestions available, we wait until they have been fetched.
+        if (suggestions.isEmpty()) return;
 
-        loadSnippets(snippets);
+        setSuggestions(category, suggestions, mSnippetsSource.getCategoryStatus(category));
 
         NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
     }
 
     @Override
-    public void onCategoryStatusChanged(int categoryStatus) {
-        // Observers should not be registered for that state
-        assert categoryStatus != CategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
+    public void onCategoryStatusChanged(
+            @KnownCategoriesEnum int category, @CategoryStatusEnum int status) {
+        // Observers should not be registered for this state.
+        assert status != CategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
 
-        mProviderStatus = categoryStatus;
-        mStatusCard = StatusListItem.create(mProviderStatus, this);
-        mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(mProviderStatus));
+        // If there is no section for this category there is nothing to do.
+        if (!mSections.containsKey(category)) return;
 
-        // We had suggestions but we just got notified about the provider being enabled. Nothing to
-        // do then.
-        if (SnippetsBridge.isCategoryStatusAvailable(mProviderStatus) && hasSuggestions()) return;
+        SuggestionsSection section = mSections.get(category);
 
-        if (hasSuggestions()) {
-            // We have suggestions, this implies that the service was previously enabled and just
-            // transitioned to a disabled state. Clear them.
-            loadSnippets(new ArrayList<SnippetArticleListItem>());
-        } else {
-            // If there are no suggestions there is an old status card that must be replaced.
-            int firstCardPosition = getFirstCardPosition();
-            mItems.set(firstCardPosition, mStatusCard);
-            // Update both the status card, the progress indicator and the spacer after it.
-            notifyItemRangeChanged(firstCardPosition, 3);
-        }
+        // The section already has suggestions but we just got notified about the provider being
+        // enabled. Nothing to do.
+        if (SnippetsBridge.isCategoryStatusAvailable(status) && section.hasSuggestions()) return;
+
+        setSuggestions(category, Collections.<SnippetArticleListItem>emptyList(), status);
     }
 
     @Override
     @NewTabPageListItem.ViewType
     public int getItemViewType(int position) {
-        return mItems.get(position).getType();
+        return getItems().get(position).getType();
     }
 
     @Override
@@ -218,32 +220,36 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, final int position) {
-        holder.onBindViewHolder(mItems.get(position));
+        holder.onBindViewHolder(getItems().get(position));
     }
 
     @Override
     public int getItemCount() {
-        return mItems.size();
+        return getItems().size();
     }
 
     public int getAboveTheFoldPosition() {
-        return mItems.indexOf(mAboveTheFold);
+        return getGroupPositionOffset(mAboveTheFold);
     }
 
-    public int getHeaderPosition() {
-        return mItems.indexOf(mHeader);
+    public int getFirstHeaderPosition() {
+        List<NewTabPageListItem> items = getItems();
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i) instanceof SnippetHeaderListItem) return i;
+        }
+        return RecyclerView.NO_POSITION;
     }
 
     public int getFirstCardPosition() {
-        return getHeaderPosition() + 1;
+        return getFirstHeaderPosition() + 1;
     }
 
-    public int getLastCardPosition() {
+    public int getLastContentItemPosition() {
         return getBottomSpacerPosition() - 1;
     }
 
     public int getBottomSpacerPosition() {
-        return mItems.indexOf(mBottomSpacer);
+        return getGroupPositionOffset(mBottomSpacer);
     }
 
     /** Start a request for new snippets. */
@@ -251,34 +257,23 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         SnippetsBridge.fetchSnippets(/*forceRequest=*/true);
     }
 
-    private void loadSnippets(List<SnippetArticleListItem> snippets) {
-        // Copy thumbnails over
-        for (SnippetArticleListItem snippet : snippets) {
-            int existingSnippetIdx = mItems.indexOf(snippet);
-            if (existingSnippetIdx == -1) continue;
+    private void setSuggestions(@KnownCategoriesEnum int category,
+            List<SnippetArticleListItem> suggestions, @CategoryStatusEnum int status) {
+        mGroups.clear();
+        mGroups.add(mAboveTheFold);
 
-            snippet.setThumbnailBitmap(
-                    ((SnippetArticleListItem) mItems.get(existingSnippetIdx)).getThumbnailBitmap());
-        }
-
-        boolean hasContentToShow = !snippets.isEmpty();
-
-        // TODO(mvanouwerkerk): Make it so that the header does not need to be manipulated
-        // separately from the cards to which it belongs - crbug.com/616090.
-        mHeader.setVisible(hasContentToShow);
-
-        mItems.clear();
-        mItems.add(mAboveTheFold);
-        mItems.add(mHeader);
-        if (hasContentToShow) {
-            mItems.addAll(snippets);
+        if (!mSections.containsKey(category)) {
+            mSections.put(category,
+                    new SuggestionsSection(suggestions, status, this));
         } else {
-            mItems.add(mStatusCard);
-            mItems.add(mProgressIndicator);
+            mSections.get(category).setSuggestions(suggestions, status, this);
         }
 
-        mItems.add(mBottomSpacer);
+        mGroups.addAll(mSections.values());
 
+        mGroups.add(mBottomSpacer);
+
+        // TODO(bauerb): Notify about a smaller range.
         notifyDataSetChanged();
     }
 
@@ -300,9 +295,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         assert itemViewHolder.getItemViewType() == NewTabPageListItem.VIEW_TYPE_SNIPPET;
 
         int position = itemViewHolder.getAdapterPosition();
-        SnippetArticleListItem dismissedSnippet = (SnippetArticleListItem) mItems.get(position);
+        SnippetArticleListItem suggestion = (SnippetArticleListItem) getItems().get(position);
 
-        mSnippetsSource.getSnippedVisited(dismissedSnippet, new Callback<Boolean>() {
+        mSnippetsSource.getSnippedVisited(suggestion, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
                 NewTabPageUma.recordSnippetAction(result
@@ -311,33 +306,48 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             }
         });
 
-        mSnippetsSource.discardSnippet(dismissedSnippet);
-        mItems.remove(position);
-        notifyItemRemoved(position);
+        mSnippetsSource.discardSnippet(suggestion);
+        SuggestionsSection section = (SuggestionsSection) getGroup(position);
+        section.dismissSuggestion(suggestion);
 
-        addStatusCardIfNecessary();
-    }
-
-    private void addStatusCardIfNecessary() {
-        if (!hasSuggestions() && !mItems.contains(mStatusCard)) {
-            mItems.add(getFirstCardPosition(), mStatusCard);
-            mItems.add(getFirstCardPosition() + 1, mProgressIndicator);
-
-            // We also want to refresh the header and the bottom padding.
-            mHeader.setVisible(false);
+        if (section.hasSuggestions()) {
+            // If one of many suggestions was dismissed, it's a simple item removal, which can be
+            // animated smoothly by the RecyclerView.
+            notifyItemRemoved(position);
+        } else {
+            // If the last suggestion was dismissed, multiple items will have changed, so mark
+            // everything as changed.
             notifyDataSetChanged();
         }
     }
 
-    /** Returns whether we have some suggested content to display. */
-    private boolean hasSuggestions() {
-        for (NewTabPageListItem item : mItems) {
-            if (item instanceof SnippetArticleListItem) return true;
+    /**
+     * Returns an unmodifiable list containing all items in the adapter.
+     */
+    List<NewTabPageListItem> getItems() {
+        List<NewTabPageListItem> items = new ArrayList<>();
+        for (ItemGroup group : mGroups) {
+            items.addAll(group.getItems());
         }
-        return false;
+        return Collections.unmodifiableList(items);
     }
 
-    List<NewTabPageListItem> getItemsForTesting() {
-        return mItems;
+    private ItemGroup getGroup(int itemPosition) {
+        int itemsSkipped = 0;
+        for (ItemGroup group : mGroups) {
+            List<NewTabPageListItem> items = group.getItems();
+            itemsSkipped += items.size();
+            if (itemPosition < itemsSkipped) return group;
+        }
+        return null;
+    }
+
+    private int getGroupPositionOffset(ItemGroup group) {
+        int positionOffset = 0;
+        for (ItemGroup candidateGroup : mGroups) {
+            if (candidateGroup == group) return positionOffset;
+            positionOffset += candidateGroup.getItems().size();
+        }
+        return RecyclerView.NO_POSITION;
     }
 }

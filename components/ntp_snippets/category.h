@@ -16,13 +16,22 @@ class CategoryFactory;
 // locally on the device. Categories provided by the server (IDs strictly larger
 // than REMOTE_CATEGORIES_OFFSET) only need to be hard-coded here if they need
 // to be recognized by the client implementation.
+// On Android builds, a Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
 enum class KnownCategories {
+  // Pages downloaded for offline consumption.
   OFFLINE_PAGES,
+
+  // Recently used bookmarks.
   BOOKMARKS,
+
+  // Follows the last local category.
   LOCAL_CATEGORIES_COUNT,
 
   REMOTE_CATEGORIES_OFFSET = 10000,
-  ARTICLES = REMOTE_CATEGORIES_OFFSET + 1,
+
+  // Articles for you.
+  ARTICLES,
 };
 
 // A category groups ContentSuggestions which belong together. Use the

@@ -13,7 +13,7 @@ import android.view.ViewGroup;
  * contain enough of them. It is displayed as a dummy item with variable height that just occupies
  * the remaining space between the last item in the RecyclerView and the bottom of the screen.
  */
-public class SpacingListItem implements NewTabPageListItem {
+public class SpacingListItem extends SingleItemGroup {
     private static class SpacingListItemView extends View {
         public SpacingListItemView(Context context) {
             super(context);
