@@ -707,6 +707,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"composited-layer-borders", IDS_FLAGS_COMPOSITED_LAYER_BORDERS,
      IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(cc::switches::kShowCompositedLayerBorders)},
+    {"gl-composited-texture-quad-borders",
+     IDS_FLAGS_GL_COMPOSITED_TEXTURE_QUAD_BORDERS,
+     IDS_FLAGS_GL_COMPOSITED_TEXTURE_QUAD_BORDERS_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(cc::switches::kGlCompositedTextureQuadBorder)},
 #if defined(ENABLE_WEBRTC)
     {"disable-webrtc-hw-decoding", IDS_FLAGS_WEBRTC_HW_DECODING_NAME,
      IDS_FLAGS_WEBRTC_HW_DECODING_DESCRIPTION, kOsAndroid | kOsCrOS,

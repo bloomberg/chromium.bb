@@ -5373,6 +5373,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION" desc="Description of the 'Composited layer borders' lab.">
         Renders a border around composited Render Layers to help debug and study layer compositing.
       </message>
+      <message name="IDS_FLAGS_GL_COMPOSITED_TEXTURE_QUAD_BORDERS" desc="Name of the 'Composited layer borders' lab.">
+        GL composited texture quad borders
+      </message>
+      <message name="IDS_FLAGS_GL_COMPOSITED_TEXTURE_QUAD_BORDERS_DESCRIPTION" desc="Description of the 'Composited layer borders' lab.">
+        Renders a border around GL composited texture quads to help debug and study overlay support.
+      </message>
       <message name="IDS_FLAGS_DEBUG_SHORTCUTS_NAME" desc="Name of the 'Debugging keyboard shortcuts' lab.">
         Debugging keyboard shortcuts
       </message>

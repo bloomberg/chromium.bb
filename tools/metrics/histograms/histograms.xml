@@ -82555,6 +82555,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1941852572" label="floating-virtual-keyboard"/>
   <int value="-1940806558" label="enable-syncfs-directory-operation"/>
   <int value="-1938263248" label="enable-extension-info-dialog"/>
+  <int value="-1934673791" label="gl-composited-texture-quad-border"/>
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1925117279" label="disable-quic-https"/>
