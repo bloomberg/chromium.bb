@@ -349,7 +349,6 @@ public class ChromeBrowserInitializer {
             BrowserStartupController.StartupCallback callback) throws ProcessInitException {
         try {
             TraceEvent.begin("ChromeBrowserInitializer.startChromeBrowserProcessesAsync");
-            mApplication.registerPolicyProviders(CombinedPolicyProvider.get());
             BrowserStartupController.get(mApplication, LibraryProcessType.PROCESS_BROWSER)
                     .startBrowserProcessesAsync(startGpuProcess, callback);
         } finally {
@@ -367,9 +366,6 @@ public class ChromeBrowserInitializer {
             libraryLoader.ensureInitialized(mApplication);
             StrictMode.setThreadPolicy(oldPolicy);
             libraryLoader.asyncPrefetchLibrariesToMemory();
-            // The policies are used by browser startup, so we need to register the policy providers
-            // before starting the browser process.
-            mApplication.registerPolicyProviders(CombinedPolicyProvider.get());
             BrowserStartupController.get(mApplication, LibraryProcessType.PROCESS_BROWSER)
                     .startBrowserProcessesSync(false);
             GoogleServicesManager.get(mApplication);
@@ -390,6 +386,10 @@ public class ChromeBrowserInitializer {
     private void onStartNativeInitialization() {
         ThreadUtils.assertOnUiThread();
         if (mNativeInitializationComplete) return;
+        // The policies are used by browser startup, so we need to register the policy providers
+        // before starting the browser process.
+        mApplication.registerPolicyProviders(CombinedPolicyProvider.get());
+
         SpeechRecognition.initialize(mApplication);
     }
 
