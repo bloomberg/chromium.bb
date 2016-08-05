@@ -56,7 +56,8 @@ public:
     LayoutUnit computeReplacedLogicalHeight(LayoutUnit estimatedUsedWidth = LayoutUnit()) const override;
 
     bool hasReplacedLogicalHeight() const;
-    LayoutRect replacedContentRect(const LayoutSize* overriddenIntrinsicSize = nullptr) const;
+    // This function returns the local rect of the replaced content.
+    virtual LayoutRect replacedContentRect() const;
 
     bool needsPreferredWidthsRecalculation() const override;
 
@@ -99,6 +100,10 @@ protected:
     void computePositionedLogicalHeight(LogicalExtentComputedValues&) const override;
 
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const final;
+
+    // This function calculates the placement of the replaced contents. It takes intrinsic size of
+    // the replaced contents, stretch to fit CSS content box according to object-fit.
+    LayoutRect computeObjectFit(const LayoutSize* overriddenIntrinsicSize = nullptr) const;
 
     virtual LayoutUnit intrinsicContentLogicalHeight() const { return intrinsicLogicalHeight(); }
 

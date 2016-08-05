@@ -37,9 +37,9 @@ public:
     LayoutVideo(HTMLVideoElement*);
     ~LayoutVideo() override;
 
-    IntRect videoBox() const;
-
     static LayoutSize defaultSize();
+
+    LayoutRect replacedContentRect() const final;
 
     bool supportsAcceleratedRendering() const;
 

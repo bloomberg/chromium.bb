@@ -59,18 +59,20 @@ bool LayoutTextTrackContainer::updateSizes(const LayoutVideo& videoLayoutObject)
     // for lack of per-spec vh/vw support) but the whole media element is used
     // for cue rendering. This is inconsistent. See also the somewhat related
     // spec bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=28105
-    IntSize videoSize = videoLayoutObject.videoBox().size();
-    if (m_videoSize == videoSize)
-        return false;
-    m_videoSize = videoSize;
+    LayoutSize videoSize = videoLayoutObject.replacedContentRect().size();
 
-    float smallestDimension = std::min(m_videoSize.height(), m_videoSize.width());
+    float smallestDimension = std::min(videoSize.height().toFloat(), videoSize.width().toFloat());
 
     float fontSize = smallestDimension * 0.05f;
-    if (m_fontSize == fontSize)
-        return false;
+
+    // Avoid excessive FP precision issue.
+    // C11 5.2.4.2.2:9 requires assignment and cast to remove extra precision, but the behavior
+    // is currently not portable. fontSize may have precision higher than m_fontSize thus
+    // straight comparison can fail despite they cast to the same float value.
+    volatile float& m_fontSize = this->m_fontSize;
+    float oldFontSize = m_fontSize;
     m_fontSize = fontSize;
-    return true;
+    return m_fontSize != oldFontSize;
 }
 
 } // namespace blink

@@ -46,6 +46,8 @@ public:
 
     Widget* widget() const;
 
+    LayoutRect replacedContentRect() const final;
+
     void updateOnWidgetChange();
     void updateWidgetGeometry();
 
@@ -71,8 +73,6 @@ private:
 
     void willBeDestroyed() final;
     void destroy() final;
-
-    void setWidgetGeometry(const LayoutRect&);
 
     bool nodeAtPointOverWidget(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 

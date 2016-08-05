@@ -262,6 +262,17 @@ CursorDirective LayoutPart::getCursor(const LayoutPoint& point, Cursor& cursor) 
     return LayoutReplaced::getCursor(point, cursor);
 }
 
+LayoutRect LayoutPart::replacedContentRect() const
+{
+    // We don't propagate sub-pixel into sub-frame layout, in other words, the rect is snapped
+    // at the document boundary, and sub-pixel movement could cause the sub-frame to layout
+    // due to the 1px snap difference. In order to avoid that, the size of sub-frame is rounded
+    // in advance.
+    LayoutRect sizeRoundedRect = contentBoxRect();
+    sizeRoundedRect.setSize(LayoutSize(roundedIntSize(sizeRoundedRect.size())));
+    return sizeRoundedRect;
+}
+
 void LayoutPart::updateOnWidgetChange()
 {
     Widget* widget = this->widget();
@@ -281,14 +292,6 @@ void LayoutPart::updateOnWidgetChange()
         // FIXME: Why do we issue a full paint invalidation in this case, but not the other?
         setShouldDoFullPaintInvalidation();
     }
-}
-
-// Widgets are always placed on integer boundaries, so rounding the size is actually
-// the desired behavior. This function is here because it's otherwise seldom what we
-// want to do with a LayoutRect.
-static inline IntRect roundedIntRect(const LayoutRect& rect)
-{
-    return IntRect(roundedIntPoint(rect.location()), roundedIntSize(rect.size()));
 }
 
 void LayoutPart::updateWidgetGeometry()
@@ -314,31 +317,27 @@ void LayoutPart::updateWidgetGeometryInternal()
     Widget* widget = this->widget();
     ASSERT(widget);
 
-    LayoutRect contentBox = contentBoxRect();
-    LayoutRect absoluteContentBox(localToAbsoluteQuad(FloatQuad(FloatRect(contentBox))).boundingBox());
-    if (widget->isFrameView()) {
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-            contentBox.setLocation(absoluteContentBox.location());
-        setWidgetGeometry(contentBox);
-    } else {
-        // TODO(chrishtr): why are these widgets using an absolute rect for their frameRect?
-        setWidgetGeometry(absoluteContentBox);
-    }
-}
+    // Ignore transform here, as we only care about the sub-pixel accumulation.
+    // TODO(trchen): What about multicol? Need a LayoutBox function to query sub-pixel accumulation.
+    LayoutPoint absoluteLocation(localToAbsolute(FloatPoint()));
+    LayoutRect absoluteReplacedRect = replacedContentRect();
+    absoluteReplacedRect.moveBy(absoluteLocation);
 
-void LayoutPart::setWidgetGeometry(const LayoutRect& frame)
-{
-    Widget* widget = this->widget();
-    ASSERT(widget);
-    ASSERT(node());
+    IntRect frameRect(IntPoint(), pixelSnappedIntRect(absoluteReplacedRect).size());
+    // Normally the location of the frame rect is ignored by the painter, but currently it is
+    // still used by a family of coordinate conversion function in Widget/FrameView. This is
+    // incorrect because coordinate conversion needs to take transform and into account.
+    // A few callers still use the family of conversion function, including but not exhaustive:
+    // FrameView::updateViewportIntersectionIfNeeded()
+    // RemoteFrameView::frameRectsChanged().
+    // WebPluginContainerImpl::reportGeometry()
+    // TODO(trchen): Remove this hack once we fixed all callers.
+    FloatRect absoluteBoundingBox = localToAbsoluteQuad(FloatRect(replacedContentRect())).boundingBox();
+    frameRect.setLocation(roundedIntPoint(absoluteBoundingBox.location()));
 
-    IntRect newFrame = roundedIntRect(frame);
-
-    if (widget->frameRect() == newFrame)
-        return;
-
+    // Why is the protector needed?
     RefPtr<LayoutPart> protector(this);
-    widget->setFrameRect(newFrame);
+    widget->setFrameRect(frameRect);
 }
 
 void LayoutPart::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& paintInvalidationState)

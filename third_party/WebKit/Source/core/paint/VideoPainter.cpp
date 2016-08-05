@@ -23,10 +23,12 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!displayingPoster && !mediaPlayer)
         return;
 
-    LayoutRect rect(m_layoutVideo.videoBox());
-    if (rect.isEmpty())
+    LayoutRect replacedRect(m_layoutVideo.replacedContentRect());
+    replacedRect.moveBy(paintOffset);
+    IntRect snappedReplacedRect = pixelSnappedIntRect(replacedRect);
+
+    if (snappedReplacedRect.isEmpty())
         return;
-    rect.moveBy(paintOffset);
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutVideo, paintInfo.phase))
         return;
@@ -51,15 +53,17 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         }
     }
 
+    // TODO(trchen): Video rect could overflow the content rect due to object-fit.
+    // Should apply a clip here like EmbeddedObjectPainter does.
     LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutVideo, paintInfo.phase, contentRect);
 
     if (displayingPoster || !forceSoftwareVideoPaint) {
         // This will display the poster image, if one is present, and otherwise paint nothing.
-        ImagePainter(m_layoutVideo).paintIntoRect(context, rect, contentRect);
+        ImagePainter(m_layoutVideo).paintIntoRect(context, replacedRect, contentRect);
     } else {
         SkPaint videoPaint = context.fillPaint();
         videoPaint.setColor(SK_ColorBLACK);
-        m_layoutVideo.videoElement()->paintCurrentFrame(context.canvas(), pixelSnappedIntRect(rect), &videoPaint);
+        m_layoutVideo.videoElement()->paintCurrentFrame(context.canvas(), snappedReplacedRect, &videoPaint);
     }
 }
 

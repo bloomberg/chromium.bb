@@ -124,15 +124,6 @@ void LayoutVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     updateIntrinsicSize();
 }
 
-IntRect LayoutVideo::videoBox() const
-{
-    const LayoutSize* overriddenIntrinsicSize = nullptr;
-    if (videoElement()->shouldDisplayPosterImage())
-        overriddenIntrinsicSize = &m_cachedImageSize;
-
-    return pixelSnappedIntRect(replacedContentRect(overriddenIntrinsicSize));
-}
-
 bool LayoutVideo::shouldDisplayVideo() const
 {
     return !videoElement()->shouldDisplayPosterImage();
@@ -190,6 +181,20 @@ LayoutUnit LayoutVideo::computeReplacedLogicalHeight(LayoutUnit estimatedUsedWid
 LayoutUnit LayoutVideo::minimumReplacedHeight() const
 {
     return LayoutReplaced::minimumReplacedHeight();
+}
+
+LayoutRect LayoutVideo::replacedContentRect() const
+{
+    if (shouldDisplayVideo()) {
+        // Video codecs may need to restart from an I-frame when the output is resized.
+        // Round size in advance to avoid 1px snap difference.
+        // TODO(trchen): The way of rounding is different from LayoutPart just to match
+        // existing behavior. This is probably a bug and We should unify it with LayoutPart.
+        return LayoutRect(pixelSnappedIntRect(computeObjectFit()));
+    }
+    // If we are displaying the poster image no pre-rounding is needed, but the size of
+    // the image should be used for fitting instead.
+    return computeObjectFit(&m_cachedImageSize);
 }
 
 bool LayoutVideo::supportsAcceleratedRendering() const

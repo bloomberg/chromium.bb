@@ -45,7 +45,6 @@ private:
 
     bool updateSizes(const LayoutVideo&);
 
-    IntSize m_videoSize;
     float m_fontSize;
 };
 

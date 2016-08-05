@@ -65,9 +65,13 @@ void PrePaintTreeWalk::walk(const LayoutObject& object, const PrePaintTreeWalkCo
         walk(*toLayoutMultiColumnSpannerPlaceholder(object).layoutObjectInFlowThread(), localContext);
 
     if (object.isLayoutPart()) {
-        Widget* widget = toLayoutPart(object).widget();
-        if (widget && widget->isFrameView())
+        const LayoutPart& layoutPart = toLayoutPart(object);
+        Widget* widget = layoutPart.widget();
+        if (widget && widget->isFrameView()) {
+            localContext.treeBuilderContext.current.paintOffset += layoutPart.replacedContentRect().location() - widget->frameRect().location();
+            localContext.treeBuilderContext.current.paintOffset = roundedIntPoint(localContext.treeBuilderContext.current.paintOffset);
             walk(*toFrameView(widget), localContext);
+        }
         // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
     }
 }

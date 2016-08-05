@@ -86,7 +86,7 @@ static IntRect contentsRect(const LayoutObject* layoutObject)
     if (layoutObject->isCanvas())
         return pixelSnappedIntRect(toLayoutHTMLCanvas(layoutObject)->replacedContentRect());
     if (layoutObject->isVideo())
-        return toLayoutVideo(layoutObject)->videoBox();
+        return pixelSnappedIntRect(toLayoutVideo(layoutObject)->replacedContentRect());
 
     return pixelSnappedIntRect(toLayoutBox(layoutObject)->contentBoxRect());
 }
