@@ -39323,6 +39323,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PaymentRequest.CheckoutFunnel.Aborted"
+    enum="PaymentRequestAbortReason">
+  <owner>sebsg@chromium.org</owner>
+  <summary>The reason that lead to an abort of the Payment Request.</summary>
+</histogram>
+
 <histogram name="PaymentRequest.CheckoutFunnel.Completed" enum="BooleanHit">
   <owner>sebsg@chromium.org</owner>
   <summary>When the merchant has processed the user's Payment Request.</summary>
@@ -87354,6 +87360,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Read failed"/>
   <int value="2" label="Duplcate tags"/>
   <int value="3" label="Server failed"/>
+</enum>
+
+<enum name="PaymentRequestAbortReason" type="int">
+  <int value="0" label="DismissedByUser"/>
+  <int value="1" label="AbortedByMerchant"/>
+  <int value="2" label="InvalidDataFromRenderer"/>
+  <int value="3" label="MojoConnectionError"/>
+  <int value="4" label="MojoRendererClosing"/>
+  <int value="5" label="InstrumentDetailsError"/>
+  <int value="6" label="NoMatchingPaymentMethod"/>
+  <int value="7" label="NoSupportedPaymentMethod"/>
+  <int value="8" label="Other"/>
 </enum>
 
 <enum name="PaymentRequestRequestedInformation" type="int">

@@ -24,6 +24,28 @@ public final class PaymentRequestMetrics {
     @VisibleForTesting
     public static final int REQUESTED_INFORMATION_MAX = 8;
 
+    // PaymentRequestAbortReason defined in tools/metrics/histograms/histograms.xml.
+    @VisibleForTesting
+    public static final int ABORT_REASON_ABORTED_BY_USER = 0;
+    @VisibleForTesting
+    public static final int ABORT_REASON_ABORTED_BY_MERCHANT = 1;
+    @VisibleForTesting
+    public static final int ABORT_REASON_INVALID_DATA_FROM_RENDERER = 2;
+    @VisibleForTesting
+    public static final int ABORT_REASON_MOJO_CONNECTION_ERROR = 3;
+    @VisibleForTesting
+    public static final int ABORT_REASON_MOJO_RENDERER_CLOSING = 4;
+    @VisibleForTesting
+    public static final int ABORT_REASON_INSTRUMENT_DETAILS_ERROR = 5;
+    @VisibleForTesting
+    public static final int ABORT_REASON_NO_MATCHING_PAYMENT_METHOD = 6;
+    @VisibleForTesting
+    public static final int ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD = 7;
+    @VisibleForTesting
+    public static final int ABORT_REASON_OTHER = 8;
+    @VisibleForTesting
+    public static final int ABORT_REASON_MAX = 9;
+
     // There should be no instance of PaymentRequestMetrics created.
     private PaymentRequestMetrics() {}
 

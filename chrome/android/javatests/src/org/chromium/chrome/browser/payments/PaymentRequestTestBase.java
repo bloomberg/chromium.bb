@@ -14,7 +14,7 @@ import android.widget.Spinner;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * A base integration test for payments.
  */
-abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeActivity>
+abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeTabbedActivity>
         implements PaymentRequestObserverForTest, PaymentRequestServiceObserverForTest,
         CardUnmaskObserverForTest {
     /** Flag for installing a payment app without instruments. */
@@ -82,7 +82,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     private CardUnmaskPrompt mCardUnmaskPrompt;
 
     protected PaymentRequestTestBase(String testFileName) {
-        super(ChromeActivity.class);
+        super(ChromeTabbedActivity.class);
         mReadyForInput = new PaymentsCallbackHelper<>();
         mReadyToPay = new PaymentsCallbackHelper<>();
         mSelectionChecked = new PaymentsCallbackHelper<>();
@@ -110,11 +110,16 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
 
     protected void triggerUIAndWait(PaymentsCallbackHelper<PaymentRequestUI> helper)
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait((CallbackHelper) helper);
+        triggerUIAndWait("buy", (CallbackHelper) helper);
         mUI = helper.getTarget();
     }
 
     protected void triggerUIAndWait(CallbackHelper helper)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait("buy", helper);
+    }
+
+    protected void triggerUIAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, ExecutionException, TimeoutException {
         startMainActivityWithURL(mTestFilePath);
         onMainActivityStarted();
@@ -129,7 +134,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
             }
         });
         assertWaitForPageScaleFactorMatch(1);
-        clickNodeAndWait("buy", helper);
+        clickNodeAndWait(nodeId, helper);
     }
 
     /** Clicks on an HTML node. */
