@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DRAG_DROP_DRAG_IMAGE_VIEW_H_
-#define ASH_DRAG_DROP_DRAG_IMAGE_VIEW_H_
+#ifndef ASH_COMMON_DRAG_DROP_DRAG_IMAGE_VIEW_H_
+#define ASH_COMMON_DRAG_DROP_DRAG_IMAGE_VIEW_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/image_view.h"
 
 namespace gfx {
@@ -21,18 +23,19 @@ class Widget;
 
 namespace ash {
 
+class WmWindow;
+
 // This class allows to show a (native) view always on top of everything. It
 // does this by creating a widget and setting the content as the given view. The
 // caller can then use this object to freely move / drag it around on the
 // desktop in screen coordinates.
 class DragImageView : public views::ImageView {
  public:
-  // |context is the native view context used to create the widget holding the
-  // drag image.
+  // |root_window| is the root window on which to create the drag image widget.
   // |source| is the event source that started this drag drop operation (touch
   // or mouse). It is used to determine attributes of the drag image such as
   // whether to show drag operation hint on top of the image.
-  DragImageView(gfx::NativeView context,
+  DragImageView(WmWindow* root_window,
                 ui::DragDropTypes::DragEventSource source);
   ~DragImageView() override;
 
@@ -77,6 +80,8 @@ class DragImageView : public views::ImageView {
   gfx::Size widget_size_;
 
   ui::DragDropTypes::DragEventSource drag_event_source_;
+
+  // Bitmask of ui::DragDropTypes::DragOperation values.
   int touch_drag_operation_;
   gfx::Point touch_drag_operation_indicator_position_;
 
@@ -85,4 +90,4 @@ class DragImageView : public views::ImageView {
 
 }  // namespace ash
 
-#endif  // ASH_DRAG_DROP_DRAG_IMAGE_VIEW_H_
+#endif  // ASH_COMMON_DRAG_DROP_DRAG_IMAGE_VIEW_H_

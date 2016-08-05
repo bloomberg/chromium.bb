@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/drag_drop/drag_image_view.h"
 #include "ash/common/scoped_root_window_for_new_windows.h"
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/overflow_bubble.h"
@@ -25,7 +25,7 @@
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
-#include "ash/drag_drop/drag_image_view.h"
+#include "ash/common/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_widget.h"
@@ -575,9 +575,12 @@ void ShelfView::CreateDragIconProxy(
     const gfx::Vector2d& cursor_offset_from_center,
     float scale_factor) {
   drag_replaced_view_ = replaced_view;
+  WmWindow* root_window =
+      WmLookup::Get()
+          ->GetWindowForWidget(drag_replaced_view_->GetWidget())
+          ->GetRootWindow();
   drag_image_.reset(new DragImageView(
-      drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow(),
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE));
+      root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE));
   drag_image_->SetImage(icon);
   gfx::Size size = drag_image_->GetPreferredSize();
   size.set_width(size.width() * scale_factor);
@@ -647,11 +650,9 @@ bool ShelfView::StartDrag(const std::string& app_id,
   // First we have to center the mouse cursor over the item.
   gfx::Point pt = drag_and_drop_view->GetBoundsInScreen().CenterPoint();
   views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
-  gfx::Point point_in_root = location_in_screen_coordinates;
-  ::wm::ConvertPointFromScreen(
-      WmWindowAura::GetAuraWindow(
-          ash::wm::GetRootWindowAt(location_in_screen_coordinates)),
-      &point_in_root);
+  gfx::Point point_in_root =
+      wm::GetRootWindowAt(location_in_screen_coordinates)
+          ->ConvertPointFromScreen(location_in_screen_coordinates);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerPressedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);
@@ -670,11 +671,9 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
   views::View* drag_and_drop_view =
       view_model_->view_at(model_->ItemIndexByID(drag_and_drop_shelf_id_));
   ConvertPointFromScreen(drag_and_drop_view, &pt);
-  gfx::Point point_in_root = location_in_screen_coordinates;
-  ::wm::ConvertPointFromScreen(
-      WmWindowAura::GetAuraWindow(
-          ash::wm::GetRootWindowAt(location_in_screen_coordinates)),
-      &point_in_root);
+  gfx::Point point_in_root =
+      wm::GetRootWindowAt(location_in_screen_coordinates)
+          ->ConvertPointFromScreen(location_in_screen_coordinates);
   ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerDraggedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);

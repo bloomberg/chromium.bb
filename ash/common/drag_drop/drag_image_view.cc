@@ -2,46 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/drag_drop/drag_image_view.h"
+#include "ash/common/drag_drop/drag_image_view.h"
 
+#include <memory>
+
+#include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "skia/ext/image_operations.h"
-#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/dip_util.h"
+#include "ui/display/display.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/shadow_types.h"
 
 namespace ash {
 namespace {
 using views::Widget;
 
-Widget* CreateDragWidget(gfx::NativeView context) {
-  Widget* drag_widget = new Widget;
+std::unique_ptr<Widget> CreateDragWidget(WmWindow* root_window) {
+  std::unique_ptr<Widget> drag_widget(new Widget);
   Widget::InitParams params;
   params.type = Widget::InitParams::TYPE_TOOLTIP;
+  params.name = "DragWidget";
   params.keep_on_top = true;
-  params.context = context;
   params.accept_events = false;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
+      drag_widget.get(), kShellWindowId_DragImageAndTooltipContainer, &params);
   drag_widget->Init(params);
   drag_widget->SetOpacity(1.f);
-  drag_widget->GetNativeWindow()->set_owned_by_parent(false);
-  drag_widget->GetNativeWindow()->SetName("DragWidget");
-  SetShadowType(drag_widget->GetNativeView(), wm::SHADOW_TYPE_NONE);
   return drag_widget;
 }
-}
 
-DragImageView::DragImageView(gfx::NativeView context,
+}  // namespace
+
+DragImageView::DragImageView(WmWindow* root_window,
                              ui::DragDropTypes::DragEventSource event_source)
-    : views::ImageView(),
-      drag_event_source_(event_source),
+    : drag_event_source_(event_source),
       touch_drag_operation_(ui::DragDropTypes::DRAG_NONE) {
-  widget_.reset(CreateDragWidget(context));
+  DCHECK(root_window);
+  widget_ = CreateDragWidget(root_window);
   widget_->SetContentsView(this);
   widget_->SetAlwaysOnTop(true);
 
@@ -110,11 +114,9 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
   if (GetImage().size() == widget_size_) {
     canvas->DrawImageInt(GetImage(), 0, 0);
   } else {
-    float device_scale = 1;
-    if (widget_->GetNativeView() && widget_->GetNativeView()->layer()) {
-      device_scale =
-          ui::GetDeviceScaleFactor(widget_->GetNativeView()->layer());
-    }
+    WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget_.get());
+    const float device_scale =
+        window->GetDisplayNearestWindow().device_scale_factor();
     // The drag image already has device scale factor applied. But
     // |widget_size_| is in DIP units.
     gfx::Size scaled_widget_size =

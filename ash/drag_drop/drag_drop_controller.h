@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/wm_display_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -35,7 +36,8 @@ class DragDropControllerTest;
 class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
                                       public ui::EventHandler,
                                       public gfx::AnimationDelegate,
-                                      public aura::WindowObserver {
+                                      public aura::WindowObserver,
+                                      public WmDisplayObserver {
  public:
   DragDropController();
   ~DragDropController() override;
@@ -84,6 +86,9 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
+
+  // WmDisplayObserver:
+  void OnDisplayConfigurationChanging() override;
 
   // Helper method to start drag widget flying back animation.
   void StartCanceledAnimation(int animation_duration_ms);

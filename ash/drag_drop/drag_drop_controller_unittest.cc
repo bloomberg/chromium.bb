@@ -4,8 +4,8 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 
+#include "ash/common/drag_drop/drag_image_view.h"
 #include "ash/drag_drop/drag_drop_tracker.h"
-#include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -1052,6 +1052,47 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
        iter != root_windows.end(); ++iter) {
     aura::client::SetDragDropClient(*iter, NULL);
   }
+}
+
+// Verifies that a drag is aborted if a display is disconnected during the drag.
+TEST_F(DragDropControllerTest, DragCancelOnDisplayDisconnect) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  for (aura::Window* root : Shell::GetInstance()->GetAllRootWindows()) {
+    aura::client::SetDragDropClient(root, drag_drop_controller_.get());
+  }
+
+  ui::OSExchangeData data;
+  data.SetString(base::UTF8ToUTF16("I am being dragged"));
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
+  aura::Window* window = widget->GetNativeWindow();
+  drag_drop_controller_->StartDragAndDrop(
+      data, window->GetRootWindow(), window, gfx::Point(5, 5),
+      ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+
+  // Start dragging.
+  ui::MouseEvent e1(ui::ET_MOUSE_DRAGGED, gfx::Point(200, 0),
+                    gfx::Point(200, 0), ui::EventTimeForNow(), ui::EF_NONE,
+                    ui::EF_NONE);
+  drag_drop_controller_->DragUpdate(window, e1);
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_TRUE(drag_drop_controller_->IsDragDropInProgress());
+
+  // Drag onto the secondary display.
+  ui::MouseEvent e2(ui::ET_MOUSE_DRAGGED, gfx::Point(600, 0),
+                    gfx::Point(600, 0), ui::EventTimeForNow(), ui::EF_NONE,
+                    ui::EF_NONE);
+  drag_drop_controller_->DragUpdate(window, e2);
+  EXPECT_TRUE(drag_drop_controller_->IsDragDropInProgress());
+
+  // Disconnect the secondary display.
+  UpdateDisplay("800x600");
+
+  // The drag is canceled.
+  EXPECT_TRUE(drag_drop_controller_->drag_canceled_);
+  EXPECT_FALSE(drag_drop_controller_->IsDragDropInProgress());
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {

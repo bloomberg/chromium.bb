@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "ash/aura/wm_window_aura.h"
+#include "ash/common/drag_drop/drag_image_view.h"
+#include "ash/common/wm_shell.h"
 #include "ash/drag_drop/drag_drop_tracker.h"
-#include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -134,9 +136,11 @@ DragDropController::DragDropController()
       current_drag_event_source_(ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE),
       weak_factory_(this) {
   Shell::GetInstance()->PrependPreTargetHandler(this);
+  WmShell::Get()->AddDisplayObserver(this);
 }
 
 DragDropController::~DragDropController() {
+  WmShell::Get()->RemoveDisplayObserver(this);
   Shell::GetInstance()->RemovePreTargetHandler(this);
   Cleanup();
   if (cancel_animation_)
@@ -199,7 +203,8 @@ int DragDropController::StartDragAndDrop(
   drag_image_final_bounds_for_cancel_animation_ =
       gfx::Rect(start_location - provider->GetDragImageOffset(),
                 provider->GetDragImage().size());
-  drag_image_.reset(new DragImageView(source_window->GetRootWindow(), source));
+  drag_image_.reset(new DragImageView(
+      WmWindowAura::Get(source_window->GetRootWindow()), source));
   drag_image_->SetImage(provider->GetDragImage());
   drag_image_offset_ = provider->GetDragImageOffset();
   gfx::Rect drag_image_bounds(start_location, drag_image_->GetPreferredSize());
@@ -535,6 +540,13 @@ void DragDropController::AnimationProgressed(const gfx::Animation* animation) {
 
 void DragDropController::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
+}
+
+void DragDropController::OnDisplayConfigurationChanging() {
+  // Abort in-progress drags if a monitor is added or removed because the drag
+  // image widget's container may be destroyed.
+  if (IsDragDropInProgress())
+    DragCancel();
 }
 
 void DragDropController::StartCanceledAnimation(int animation_duration_ms) {
