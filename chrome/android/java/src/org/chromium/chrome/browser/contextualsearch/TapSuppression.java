@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import org.chromium.base.metrics.RecordUserAction;
+
 /**
  * Heuristic for general Tap suppression that factors in a variety of signals.
  */
@@ -44,6 +46,9 @@ class TapSuppression extends ContextualSearchHeuristic {
                 doSuppressTap = !shouldHandle;
             } else {
                 doSuppressTap = !shouldHandleFirstTap();
+                if (doSuppressTap) {
+                    RecordUserAction.record("ContextualSearch.TapSuppressed.TapThresholdExceeded");
+                }
             }
         }
         mIsConditionSatisfied = doSuppressTap;

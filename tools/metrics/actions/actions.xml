@@ -2896,6 +2896,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContextualSearch.TapSuppressed.TapThresholdExceeded">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    A tap that typically would have triggered Contextual Search was suppressed
+    because the number of taps since last opening has exceeded the suppression
+    threshold.
+  </description>
+</action>
+
 <action name="ContextualSearch.UncommonClose">
   <owner>donnd@chromium.org</owner>
   <description>
