@@ -31,7 +31,6 @@
 #include "third_party/zlib/zlib.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -292,24 +291,12 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
 
 void ResourceBundle::AddDataPackFromPath(const base::FilePath& path,
                                          ScaleFactor scale_factor) {
-  AddDataPackFromPathInternal(path, scale_factor, false, false);
+  AddDataPackFromPathInternal(path, scale_factor, false);
 }
 
 void ResourceBundle::AddOptionalDataPackFromPath(const base::FilePath& path,
-                                         ScaleFactor scale_factor) {
-  AddDataPackFromPathInternal(path, scale_factor, true, false);
-}
-
-void ResourceBundle::AddMaterialDesignDataPackFromPath(
-    const base::FilePath& path,
-    ScaleFactor scale_factor) {
-  AddDataPackFromPathInternal(path, scale_factor, false, true);
-}
-
-void ResourceBundle::AddOptionalMaterialDesignDataPackFromPath(
-    const base::FilePath& path,
-    ScaleFactor scale_factor) {
-  AddDataPackFromPathInternal(path, scale_factor, true, true);
+                                                 ScaleFactor scale_factor) {
+  AddDataPackFromPathInternal(path, scale_factor, true);
 }
 
 void ResourceBundle::AddDataPackFromFile(base::File file,
@@ -750,28 +737,6 @@ void ResourceBundle::FreeImages() {
 }
 
 void ResourceBundle::LoadChromeResources() {
-// TODO(estade): remove material design specific resources.
-// See crbug.com/613593
-#if defined(OS_MACOSX)
-  // The material design data packs contain some of the same asset IDs as in
-  // the non-material design data packs. Add these to the ResourceBundle
-  // first so that they are searched first when a request for an asset is
-  // made.
-  if (MaterialDesignController::IsModeMaterial()) {
-    if (IsScaleFactorSupported(SCALE_FACTOR_100P)) {
-      AddMaterialDesignDataPackFromPath(
-          GetResourcesPakFilePath("chrome_material_100_percent.pak"),
-          SCALE_FACTOR_100P);
-    }
-
-    if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
-      AddOptionalMaterialDesignDataPackFromPath(
-          GetResourcesPakFilePath("chrome_material_200_percent.pak"),
-          SCALE_FACTOR_200P);
-    }
-  }
-#endif
-
   // Always load the 1x data pack first as the 2x data pack contains both 1x and
   // 2x images. The 1x data pack only has 1x images, thus passes in an accurate
   // scale factor to gfx::ImageSkia::AddRepresentation.
@@ -789,8 +754,7 @@ void ResourceBundle::LoadChromeResources() {
 void ResourceBundle::AddDataPackFromPathInternal(
     const base::FilePath& path,
     ScaleFactor scale_factor,
-    bool optional,
-    bool has_only_material_assets) {
+    bool optional) {
   // Do not pass an empty |path| value to this method. If the absolute path is
   // unknown pass just the pack file name.
   DCHECK(!path.empty());
@@ -804,7 +768,6 @@ void ResourceBundle::AddDataPackFromPathInternal(
     return;
 
   std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
-  data_pack->set_has_only_material_design_assets(has_only_material_assets);
   if (data_pack->LoadFromPath(pack_path)) {
     AddDataPack(data_pack.release());
   } else if (!optional) {

@@ -48,10 +48,6 @@ class UI_DATA_PACK_EXPORT ResourceHandle {
   // The scale of images in this resource pack relative to images in the 1x
   // resource pak.
   virtual ScaleFactor GetScaleFactor() const = 0;
-
-  // Returns true if the only resources contained within this DataPack are
-  // material design image assets.
-  virtual bool HasOnlyMaterialDesignAssets() const = 0;
 };
 
 }  // namespace ui

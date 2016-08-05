@@ -45,7 +45,6 @@
         'models/tree_node_iterator_unittest.cc',
         'resource/data_pack_literal.cc',
         'resource/data_pack_unittest.cc',
-        'resource/resource_bundle_mac_unittest.mm',
         'resource/resource_bundle_unittest.cc',
         'resource/scale_factor_unittest.cc',
         'template_expressions_unittest.cc',

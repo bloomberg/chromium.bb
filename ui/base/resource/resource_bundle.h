@@ -179,15 +179,6 @@ class UI_BASE_EXPORT ResourceBundle {
   void AddOptionalDataPackFromPath(const base::FilePath& path,
                                    ScaleFactor scale_factor);
 
-  // The same as AddDataPackFromPath() and AddOptionalDataPackFromPath(),
-  // except the data pack is flagged as containing only material design assets.
-  // TODO(tdanderson): These methods are temporary and should be removed after
-  //                   the transition to material design in the browser UI.
-  void AddMaterialDesignDataPackFromPath(const base::FilePath& path,
-                                         ScaleFactor scale_factor);
-  void AddOptionalMaterialDesignDataPackFromPath(const base::FilePath& path,
-                                                 ScaleFactor scale_factor);
-
   // Changes the locale for an already-initialized ResourceBundle, returning the
   // name of the newly-loaded locale.  Future calls to get strings will return
   // the strings for this new locale.  This has no effect on existing or future
@@ -289,12 +280,6 @@ class UI_BASE_EXPORT ResourceBundle {
   // Returns SCALE_FACTOR_100P if no resource is loaded.
   ScaleFactor GetMaxScaleFactor() const;
 
-#if defined(OS_MACOSX)
-  // Loads Material Design data packs and makes them the first items in
-  // |data_packs_|.
-  void LoadMaterialDesignResources();
-#endif
-
   // Returns true if |scale_factor| is supported by this platform.
   static bool IsScaleFactorSupported(ScaleFactor scale_factor);
 
@@ -302,12 +287,6 @@ class UI_BASE_EXPORT ResourceBundle {
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetPathForLocalePack);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetImageNamed);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetNativeImageNamed);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundleImageTest,
-                           CountMaterialDesignDataPacksInResourceBundle);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundleMacImageTest,
-                           CheckImageFromMaterialDesign);
-  FRIEND_TEST_ALL_PREFIXES(ChromeBrowserMainMacBrowserTest,
-                           MDResourceAccess);
 
   friend class ResourceBundleMacImageTest;
   friend class ResourceBundleImageTest;
@@ -334,19 +313,14 @@ class UI_BASE_EXPORT ResourceBundle {
   // Load the main resources.
   void LoadCommonResources();
 
-  // Loads the resource paks chrome_{100,200}_percent.pak. Also loads the
-  // resource paks chrome_material_{100,200}_percent.pak contaning top
-  // chrome material design assets if the runtime flag is enabled.
+  // Loads the resource paks chrome_{100,200}_percent.pak.
   void LoadChromeResources();
 
   // Implementation for the public methods which add a DataPack from a path. If
-  // |optional| is false, an error is logged on failure to load. Sets the
-  // member |has_only_material_design_assets_| on the created DataPack to the
-  // value of |has_only_material_assets|.
+  // |optional| is false, an error is logged on failure to load.
   void AddDataPackFromPathInternal(const base::FilePath& path,
                                    ScaleFactor scale_factor,
-                                   bool optional,
-                                   bool has_only_material_assets);
+                                   bool optional);
 
   // Inserts |data_pack| to |data_pack_| and updates |max_scale_factor_|
   // accordingly.

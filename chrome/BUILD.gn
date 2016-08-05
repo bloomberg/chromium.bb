@@ -768,16 +768,6 @@ if (is_win) {
       sources += [ "$root_out_dir/chrome_200_percent.pak" ]
     }
 
-    # TODO(estade): remove material design specific resources.
-    # See crbug.com/613593
-    if (is_mac) {
-      sources += [ "$root_out_dir/chrome_material_100_percent.pak" ]
-
-      if (enable_hidpi) {
-        sources += [ "$root_out_dir/chrome_material_200_percent.pak" ]
-      }
-    }
-
     if (enable_mac_keystone) {
       sources += [
         "browser/mac/keystone_promote_postflight.sh",
@@ -1388,14 +1378,6 @@ group("packed_resources") {
   if (enable_hidpi) {
     public_deps += [ ":repack_chrome_200_percent" ]
   }
-
-  if (is_mac) {
-    public_deps += [ ":repack_chrome_material_100_percent" ]
-
-    if (enable_hidpi) {
-      public_deps += [ ":repack_chrome_material_200_percent" ]
-    }
-  }
 }
 
 repack("packed_extra_resources") {
@@ -1619,60 +1601,6 @@ chrome_repack_percent("repack_chrome_100_percent") {
 if (enable_hidpi) {
   chrome_repack_percent("repack_chrome_200_percent") {
     percent = "200"
-  }
-}
-
-# Generates a rule to repack a set of material design resources for the browser
-# top chrome, substituting a given string in for the percentage (e.g. "100",
-# "200").
-template("chrome_repack_material_percent") {
-  percent = invoker.percent
-
-  repack_name = "${target_name}_repack"
-  repack_output_file =
-      "$root_gen_dir/repack/chrome_material_${percent}_percent.pak"
-
-  copy_name = target_name
-
-  repack(repack_name) {
-    visibility = [ ":$copy_name" ]
-
-    # All sources should also have deps for completeness.
-    sources = [
-      "$root_gen_dir/chrome/theme_resources_material_${percent}_percent.pak",
-    ]
-
-    deps = [
-      "//chrome/app/theme:theme_resources",
-      "//components/resources",
-    ]
-
-    output = repack_output_file
-  }
-
-  copy(copy_name) {
-    visibility = [ ":*" ]
-    deps = [
-      ":$repack_name",
-    ]
-    sources = [
-      repack_output_file,
-    ]
-    outputs = [
-      "$root_build_dir/chrome_material_${percent}_percent.pak",
-    ]
-  }
-}
-
-if (is_mac) {
-  chrome_repack_material_percent("repack_chrome_material_100_percent") {
-    percent = "100"
-  }
-
-  if (enable_hidpi) {
-    chrome_repack_material_percent("repack_chrome_material_200_percent") {
-      percent = "200"
-    }
   }
 }
 

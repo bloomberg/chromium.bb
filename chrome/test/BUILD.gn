@@ -929,12 +929,6 @@ test("browser_tests") {
   if (is_win) {
     data += [ "$root_out_dir/chrome_200_percent.pak" ]
   }
-  if (is_mac) {
-    data += [
-      "$root_out_dir/chrome_material_100_percent.pak",
-      "$root_out_dir/chrome_material_200_percent.pak",
-    ]
-  }
   if (is_chromeos) {
     data += [
       # TODO(GYP): figure out which of these things are

@@ -27,7 +27,6 @@ class ResourceDataDLL : public ResourceHandle {
       uint16_t resource_id) const override;
   TextEncodingType GetTextEncodingType() const override;
   ScaleFactor GetScaleFactor() const override;
-  bool HasOnlyMaterialDesignAssets() const override;
 
  private:
   const HINSTANCE module_;

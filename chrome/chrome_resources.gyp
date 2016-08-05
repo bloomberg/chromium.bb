@@ -567,16 +567,6 @@
              '<(DEPTH)/ui/app_list/resources/app_list_resources.gyp:app_list_resources',
           ],
         }],
-        ['OS == "mac"', {
-          'actions': [
-            {
-              'includes': ['chrome_repack_chrome_material_100_percent.gypi']
-            },
-            {
-              'includes': ['chrome_repack_chrome_material_200_percent.gypi']
-            },
-          ],
-        }],
         ['OS != "mac" and OS != "ios"', {
           # Copy pak files to the product directory. These files will be picked
           # up by the following installer scripts:

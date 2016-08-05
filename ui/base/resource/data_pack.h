@@ -36,10 +36,6 @@ class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
   explicit DataPack(ui::ScaleFactor scale_factor);
   ~DataPack() override;
 
-  void set_has_only_material_design_assets(bool has_only_material_assets) {
-    has_only_material_design_assets_ = has_only_material_assets;
-  }
-
   // Load a pack file from |path|, returning false on error.
   bool LoadFromPath(const base::FilePath& path);
 
@@ -66,7 +62,6 @@ class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
       uint16_t resource_id) const override;
   TextEncodingType GetTextEncodingType() const override;
   ui::ScaleFactor GetScaleFactor() const override;
-  bool HasOnlyMaterialDesignAssets() const override;
 
 #if DCHECK_IS_ON()
   // Checks to see if any resource in this DataPack already exists in the list
@@ -90,10 +85,6 @@ class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
   // The scale of the image in this resource pack relative to images in the 1x
   // resource pak.
   ui::ScaleFactor scale_factor_;
-
-  // Set to true if the only resources contained within this DataPack are
-  // material design image assets.
-  bool has_only_material_design_assets_;
 
   DISALLOW_COPY_AND_ASSIGN(DataPack);
 };
