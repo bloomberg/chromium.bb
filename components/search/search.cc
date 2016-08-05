@@ -59,8 +59,6 @@ const char kDisablingSuffix[] = "DISABLED";
 const char kEnableQueryExtractionFlagName[] = "query_extraction";
 #endif
 
-const char kAllowPrefetchNonDefaultMatch[] = "allow_prefetch_non_default_match";
-
 #if defined(OS_ANDROID)
 const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 
@@ -226,16 +224,6 @@ bool ShouldReuseInstantSearchBasePage() {
 #else
   return true;
 #endif
-}
-
-bool ShouldAllowPrefetchNonDefaultMatch() {
-  if (!ShouldPrefetchSearchResults())
-    return false;
-
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) &&
-         GetBoolValueForFlagWithDefault(kAllowPrefetchNonDefaultMatch, false,
-                                        flags);
 }
 
 // |url| should either have a secure scheme or have a non-HTTPS base URL that

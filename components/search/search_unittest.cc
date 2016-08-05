@@ -151,20 +151,6 @@ TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_Default) {
   EXPECT_TRUE(ShouldReuseInstantSearchBasePage());
 }
 
-TEST_F(SearchTest, ShouldAllowPrefetchNonDefaultMatch_DisabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:89 allow_prefetch_non_default_match:0"));
-  EXPECT_FALSE(ShouldAllowPrefetchNonDefaultMatch());
-  EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
-}
-
-TEST_F(SearchTest, ShouldAllowPrefetchNonDefaultMatch_EnabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:80 allow_prefetch_non_default_match:1"));
-  EXPECT_TRUE(ShouldAllowPrefetchNonDefaultMatch());
-  EXPECT_EQ(80ul, EmbeddedSearchPageVersion());
-}
-
 TEST_F(SearchTest, ForceInstantResultsParam) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group1 espv:2"));

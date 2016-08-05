@@ -88,11 +88,6 @@ bool ShouldPrefetchSearchResults();
 // trials to reuse the prerendered page to commit any search query.
 bool ShouldReuseInstantSearchBasePage();
 
-// Returns true if 'allow_prefetch_non_default_match' flag is enabled in field
-// trials to allow prefetching the suggestion marked to be prefetched by the
-// suggest server even if it is not the default match.
-bool ShouldAllowPrefetchNonDefaultMatch();
-
 // |url| should either have a secure scheme or have a non-HTTPS base URL that
 // the user specified using --google-base-url. (This allows testers to use
 // --google-base-url to point at non-HTTPS servers, which eases testing.)
