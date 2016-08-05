@@ -63,7 +63,7 @@ TEST(CSSTokenStreamValueTest, ListOfString)
 
 TEST(CSSTokenStreamValueTest, ListOfCSSVariableReferenceValue)
 {
-    CSSStyleVariableReferenceValue* ref = CSSStyleVariableReferenceValue::create("Ref");
+    CSSStyleVariableReferenceValue* ref = CSSStyleVariableReferenceValue::create("Ref", tokenStreamValueFromString("Str"));
 
     CSSTokenStreamValue* tokenStreamValue = tokenStreamValueFromCSSVariableReferenceValue(ref);
 
@@ -82,7 +82,7 @@ TEST(CSSTokenStreamValueTest, MixedContents)
 
     StringOrCSSVariableReferenceValue x = getStringOrCSSVariableReferenceValue("Str");
 
-    CSSStyleVariableReferenceValue* ref = CSSStyleVariableReferenceValue::create("Ref");
+    CSSStyleVariableReferenceValue* ref = CSSStyleVariableReferenceValue::create("Ref", tokenStreamValueFromString("Str"));
     StringOrCSSVariableReferenceValue y = getStringOrCSSVariableReferenceValue(ref);
 
     StringOrCSSVariableReferenceValue z;

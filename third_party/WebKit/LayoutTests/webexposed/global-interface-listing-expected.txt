@@ -652,6 +652,7 @@ interface CSSTranslation : CSSTransformComponent
     method constructor
 interface CSSVariableReferenceValue
     attribute @@toStringTag
+    getter fallback
     getter variable
     method constructor
 interface CSSViewportRule : CSSRule

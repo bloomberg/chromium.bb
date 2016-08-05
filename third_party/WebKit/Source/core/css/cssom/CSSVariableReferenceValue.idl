@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 [
-    // TODO(anthonyhkf): add fallback: Constructor(DOMString variable, CSSTokenStreamValue fallback)
-    Constructor(DOMString variable),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
     // TODO(anthonyhkf): rename CSSStyleVariableReferenceValue
     ImplementedAs=CSSStyleVariableReferenceValue
 ] interface CSSVariableReferenceValue {
     readonly attribute DOMString variable;
-    // TODO(anthonyhkf): add fallback: readonly attribute CSSTokenStreamValue fallback;
+    readonly attribute CSSTokenStreamValue fallback;
 };

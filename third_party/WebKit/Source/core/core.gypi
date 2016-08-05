@@ -4028,6 +4028,7 @@
             'css/RuleSetTest.cpp',
             'css/StyleSheetContentsTest.cpp',
             'css/cssom/CSSTokenStreamValueTest.cpp',
+            'css/cssom/CSSVariableReferenceValueTest.cpp',
             'css/cssom/FilteredComputedStylePropertyMapTest.cpp',
             'css/invalidation/InvalidationSetTest.cpp',
             'css/parser/CSSParserFastPathsTest.cpp',

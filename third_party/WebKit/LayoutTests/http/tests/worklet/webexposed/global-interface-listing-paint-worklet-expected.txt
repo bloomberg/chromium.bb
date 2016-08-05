@@ -116,6 +116,7 @@ CONSOLE MESSAGE: line 137:     getter y
 CONSOLE MESSAGE: line 137:     getter z
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CSSVariableReferenceValue
+CONSOLE MESSAGE: line 137:     getter fallback
 CONSOLE MESSAGE: line 137:     getter variable
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CountQueuingStrategy
