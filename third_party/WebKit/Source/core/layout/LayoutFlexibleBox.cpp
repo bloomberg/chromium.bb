@@ -1248,7 +1248,7 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
         // run layout on it now to make sure its logical height and scroll bars are up to date.
         if (childHasIntrinsicMainAxisSize(*child) && child->needsLayout()) {
             child->clearOverrideSize();
-            child->layoutIfNeeded();
+            child->forceChildLayout();
             cacheChildMainSize(*child);
             layoutType = LayoutIfNeeded;
         }
