@@ -35,9 +35,11 @@ class ClientApiGeneratorTest(unittest.TestCase):
     self.assertEqual(client_api_generator.CamelCaseToHackerStyle('LoLoLoL'),
                      'lo_lo_lol')
 
-  def test_MangleEnum(self):
-    self.assertEqual(client_api_generator.MangleEnum('FOO'), 'FOO')
-    self.assertEqual(client_api_generator.MangleEnum('NULL'), 'NONE')
+  def test_SanitizeLiteralEnum(self):
+    self.assertEqual(client_api_generator.SanitizeLiteral('foo'), 'foo')
+    self.assertEqual(client_api_generator.SanitizeLiteral('null'), 'none')
+    self.assertEqual(client_api_generator.SanitizeLiteral('Infinity'),
+                                                          'InfinityValue')
 
   def test_PatchFullQualifiedRefs(self):
     json_api = {

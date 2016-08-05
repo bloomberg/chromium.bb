@@ -39,7 +39,7 @@ namespace {{domain.domain | camelcase_to_hacker_style}} {
     {% if "enum" in type %}
 enum class {{type.id}} {
       {% for literal in type.enum %}
-  {{ literal | dash_to_camelcase | camelcase_to_hacker_style | upper | mangle_enum}}{{',' if not loop.last}}
+  {{ literal | sanitize_literal | dash_to_camelcase | camelcase_to_hacker_style | upper }}{{',' if not loop.last}}
       {% endfor %}
 };
 

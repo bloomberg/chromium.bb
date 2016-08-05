@@ -59,9 +59,17 @@ def CamelCaseToHackerStyle(name):
   return name.lower()
 
 
-def MangleEnum(value):
-  # Rename NULL enumeration values to avoid a clash with the actual NULL.
-  return 'NONE' if value == 'NULL' else value
+def SanitizeLiteral(literal):
+  return {
+    # Rename null enumeration values to avoid a clash with the NULL macro.
+    'null': 'none',
+    # Rename mathematical constants to avoid colliding with C macros.
+    'Infinity': 'InfinityValue',
+    '-Infinity': 'NegativeInfinityValue',
+    'NaN': 'NaNValue',
+    # Turn negative zero into a safe identifier.
+    '-0': 'NegativeZeroValue',
+  }.get(literal, literal)
 
 
 def InitializeJinjaEnv(cache_dir):
@@ -77,7 +85,7 @@ def InitializeJinjaEnv(cache_dir):
     'to_title_case': ToTitleCase,
     'dash_to_camelcase': DashToCamelCase,
     'camelcase_to_hacker_style': CamelCaseToHackerStyle,
-    'mangle_enum': MangleEnum,
+    'sanitize_literal': SanitizeLiteral,
   })
   jinja_env.add_extension('jinja2.ext.loopcontrols')
   return jinja_env
