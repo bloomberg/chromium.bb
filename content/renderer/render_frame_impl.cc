@@ -5581,10 +5581,12 @@ void RenderFrameImpl::NavigateInternal(
 
         // If this navigation is to a history item for a new child frame, we
         // should cancel it if we were interrupted by a Javascript navigation
-        // that has already committed or has started a provisional loader.
+        // that has already committed, has started a provisional loader, or has
+        // scheduled a navigation.
         if (request_params.is_history_navigation_in_new_child &&
             (!current_history_item_.isNull() ||
-             frame_->provisionalDataSource())) {
+             frame_->provisionalDataSource() ||
+             frame_->isNavigationScheduledWithin(0))) {
           should_load_request = false;
           has_history_navigation_in_frame = false;
         }
