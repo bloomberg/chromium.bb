@@ -9,6 +9,8 @@ static_library("common") {
     "activation_state.cc",
     "activation_state.h",
     "closed_hash_map.h",
+    "copying_file_stream.cc",
+    "copying_file_stream.h",
     "fuzzy_pattern_matching.cc",
     "fuzzy_pattern_matching.h",
     "indexed_ruleset.cc",
@@ -19,6 +21,8 @@ static_library("common") {
     "ngram_extractor.h",
     "string_splitter.h",
     "uint64_hasher.h",
+    "unindexed_ruleset.cc",
+    "unindexed_ruleset.h",
     "url_pattern.cc",
     "url_pattern.h",
     "url_pattern_matching.h",
@@ -33,6 +37,7 @@ static_library("common") {
     "//base",
     "//net",
     "//third_party/flatbuffers:flatbuffers",
+    "//third_party/protobuf:protobuf_lite",
     "//url",
   ]
 }
@@ -47,6 +52,7 @@ static_library("test_support") {
     ":common",
     "//base",
     "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
   ]
 }
 
@@ -59,12 +65,14 @@ source_set("unit_tests") {
     "knuth_morris_pratt_unittest.cc",
     "ngram_extractor_unittest.cc",
     "string_splitter_unittest.cc",
+    "unindexed_ruleset_unittest.cc",
     "url_pattern_matching_unittest.cc",
   ]
   deps = [
     ":common",
     "//base",
     "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
     "//url",
   ]
 }

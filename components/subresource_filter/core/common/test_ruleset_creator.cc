@@ -9,7 +9,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
+#include "components/subresource_filter/core/common/unindexed_ruleset.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace subresource_filter {
 
@@ -32,12 +34,14 @@ proto::UrlRule CreateSuffixRule(base::StringPiece suffix) {
 
 std::vector<uint8_t> SerializeUnindexedRulesetWithSingleRule(
     const proto::UrlRule& rule) {
-  std::vector<uint8_t> ruleset_contents;
-  std::string serialized_rule;
-  rule.SerializeToString(&serialized_rule);
-  const uint8_t* data =
-      reinterpret_cast<const uint8_t*>(serialized_rule.data());
-  return std::vector<uint8_t>(data, data + serialized_rule.size());
+  std::string ruleset_contents;
+  google::protobuf::io::StringOutputStream output(&ruleset_contents);
+  UnindexedRulesetWriter ruleset_writer(&output);
+  ruleset_writer.AddUrlRule(rule);
+  ruleset_writer.Finish();
+
+  auto data = reinterpret_cast<const uint8_t*>(ruleset_contents.data());
+  return std::vector<uint8_t>(data, data + ruleset_contents.size());
 }
 
 std::vector<uint8_t> SerializeIndexedRulesetWithSingleRule(

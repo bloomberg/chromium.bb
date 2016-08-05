@@ -7,4 +7,5 @@ include_rules = [
   "-components/subresource_filter/content",
   "+net/base",
   "+third_party/flatbuffers",
+  "+third_party/protobuf",
 ]

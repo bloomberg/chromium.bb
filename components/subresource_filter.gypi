@@ -12,6 +12,7 @@
         '../base/base.gyp:base',
         '../components/components.gyp:variations',
         '../components/prefs/prefs.gyp:prefs',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'subresource_filter_core_common',
       ],
       'include_dirs': [
@@ -55,6 +56,7 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../third_party/flatbuffers/flatbuffers.gyp:flatbuffers',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
         'subresource_filter_core_common_ruleset_flatbuffer',
         'subresource_filter_core_common_ruleset_proto',
@@ -69,6 +71,8 @@
         'subresource_filter/core/common/activation_state.cc',
         'subresource_filter/core/common/activation_state.h',
         'subresource_filter/core/common/closed_hash_map.h',
+        'subresource_filter/core/common/copying_file_stream.cc',
+        'subresource_filter/core/common/copying_file_stream.h',
         'subresource_filter/core/common/fuzzy_pattern_matching.cc',
         'subresource_filter/core/common/fuzzy_pattern_matching.h',
         'subresource_filter/core/common/indexed_ruleset.cc',
@@ -79,6 +83,8 @@
         'subresource_filter/core/common/ngram_extractor.h',
         'subresource_filter/core/common/string_splitter.h',
         'subresource_filter/core/common/uint64_hasher.h',
+        'subresource_filter/core/common/unindexed_ruleset.cc',
+        'subresource_filter/core/common/unindexed_ruleset.h',
         'subresource_filter/core/common/url_pattern.cc',
         'subresource_filter/core/common/url_pattern.h',
         'subresource_filter/core/common/url_pattern_matching.h',
@@ -125,6 +131,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'subresource_filter_core_common',
       ],
       'include_dirs': [

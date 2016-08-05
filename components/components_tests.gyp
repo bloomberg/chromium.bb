@@ -822,6 +822,7 @@
       'subresource_filter/core/common/knuth_morris_pratt_unittest.cc',
       'subresource_filter/core/common/ngram_extractor_unittest.cc',
       'subresource_filter/core/common/string_splitter_unittest.cc',
+      'subresource_filter/core/common/unindexed_ruleset_unittest.cc',
       'subresource_filter/core/common/url_pattern_matching_unittest.cc',
     ],
     'suggestions_unittest_sources': [

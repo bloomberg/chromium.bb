@@ -24,8 +24,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/core/browser/ruleset_distributor.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
+#include "components/subresource_filter/core/common/copying_file_stream.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
+#include "components/subresource_filter/core/common/unindexed_ruleset.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace subresource_filter {
 
@@ -158,19 +161,24 @@ IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
     const base::FilePath& indexed_ruleset_base_dir,
     const UnindexedRulesetInfo& unindexed_ruleset_info) {
   base::ThreadRestrictions::AssertIOAllowed();
-  std::string unindexed_ruleset_data;
-  if (!base::ReadFileToString(unindexed_ruleset_info.ruleset_path,
-                              &unindexed_ruleset_data)) {
-    return IndexedRulesetVersion();
-  }
 
-  // TODO(pkalinnikov): Implement streaming wire format here.
-  proto::UrlRule rule;
-  if (!rule.ParseFromString(unindexed_ruleset_data))
+  base::File unindexed_ruleset_file(
+      unindexed_ruleset_info.ruleset_path,
+      base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!unindexed_ruleset_file.IsValid())
     return IndexedRulesetVersion();
+
+  CopyingFileInputStream copying_stream(std::move(unindexed_ruleset_file));
+  google::protobuf::io::CopyingInputStreamAdaptor zero_copy_stream_adaptor(
+      &copying_stream, 4096 /* buffer_size */);
+  UnindexedRulesetReader reader(&zero_copy_stream_adaptor);
 
   RulesetIndexer indexer;
-  indexer.AddUrlRule(rule);
+  proto::FilteringRules ruleset_chunk;
+  while (reader.ReadNextChunk(&ruleset_chunk)) {
+    for (const proto::UrlRule& rule : ruleset_chunk.url_rules())
+      indexer.AddUrlRule(rule);
+  }
   indexer.Finish();
 
   IndexedRulesetVersion indexed_version(
