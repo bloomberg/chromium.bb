@@ -55,11 +55,13 @@ ProfileErrorType ProfileErrorFromWebDataServiceWrapperError(
 
 // Callback to show error dialog on profile load error.
 void ProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
-                          sql::InitStatus status) {
-  ShowProfileErrorDialog(
-      ProfileErrorFromWebDataServiceWrapperError(error_type),
-      (status == sql::INIT_FAILURE) ?
-          IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
+                          sql::InitStatus status,
+                          const std::string& diagnostics) {
+  ShowProfileErrorDialog(ProfileErrorFromWebDataServiceWrapperError(error_type),
+                         (status == sql::INIT_FAILURE)
+                             ? IDS_COULDNT_OPEN_PROFILE_ERROR
+                             : IDS_PROFILE_TOO_NEW_ERROR,
+                         diagnostics);
 }
 
 }  // namespace

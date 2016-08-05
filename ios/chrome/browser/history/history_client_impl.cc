@@ -60,8 +60,8 @@ bool HistoryClientImpl::CanAddURL(const GURL& url) {
   return ios::CanAddURLToHistory(url);
 }
 
-void HistoryClientImpl::NotifyProfileError(sql::InitStatus init_status) {
-}
+void HistoryClientImpl::NotifyProfileError(sql::InitStatus init_status,
+                                           const std::string& diagnostics) {}
 
 std::unique_ptr<history::HistoryBackendClient>
 HistoryClientImpl::CreateBackendClient() {

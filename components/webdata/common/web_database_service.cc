@@ -27,12 +27,11 @@ class WebDatabaseService::BackendDelegate
       : web_database_service_(web_database_service),
         callback_thread_(base::ThreadTaskRunnerHandle::Get()) {}
 
-  void DBLoaded(sql::InitStatus status) override {
+  void DBLoaded(sql::InitStatus status,
+                const std::string& diagnostics) override {
     callback_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&WebDatabaseService::OnDatabaseLoadDone,
-                   web_database_service_,
-                   status));
+        FROM_HERE, base::Bind(&WebDatabaseService::OnDatabaseLoadDone,
+                              web_database_service_, status, diagnostics));
   }
  private:
   const base::WeakPtr<WebDatabaseService> web_database_service_;
@@ -133,21 +132,22 @@ void WebDatabaseService::RegisterDBErrorCallback(
   error_callbacks_.push_back(callback);
 }
 
-void WebDatabaseService::OnDatabaseLoadDone(sql::InitStatus status) {
+void WebDatabaseService::OnDatabaseLoadDone(sql::InitStatus status,
+                                            const std::string& diagnostics) {
   if (status == sql::INIT_OK) {
     db_loaded_ = true;
 
-    for (size_t i = 0; i < loaded_callbacks_.size(); i++) {
-      if (!loaded_callbacks_[i].is_null())
-        loaded_callbacks_[i].Run();
+    for (const auto& loaded_callback : loaded_callbacks_) {
+      if (!loaded_callback.is_null())
+        loaded_callback.Run();
     }
 
     loaded_callbacks_.clear();
   } else {
     // Notify that the database load failed.
-    for (size_t i = 0; i < error_callbacks_.size(); i++) {
-      if (!error_callbacks_[i].is_null())
-        error_callbacks_[i].Run(status);
+    for (const auto& error_callback : error_callbacks_) {
+      if (!error_callback.is_null())
+        error_callback.Run(status, diagnostics);
     }
 
     error_callbacks_.clear();

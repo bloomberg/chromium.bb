@@ -50,12 +50,13 @@ class WebDataServiceConsumer;
 class WEBDATA_EXPORT WebDatabaseService
     : public base::RefCountedDeleteOnMessageLoop<WebDatabaseService> {
  public:
-  typedef base::Callback<std::unique_ptr<WDTypedResult>(WebDatabase*)> ReadTask;
-  typedef base::Callback<WebDatabase::State(WebDatabase*)> WriteTask;
+  using ReadTask = base::Callback<std::unique_ptr<WDTypedResult>(WebDatabase*)>;
+  using WriteTask = base::Callback<WebDatabase::State(WebDatabase*)>;
 
   // Types for managing DB loading callbacks.
-  typedef base::Closure DBLoadedCallback;
-  typedef base::Callback<void(sql::InitStatus)> DBLoadErrorCallback;
+  using DBLoadedCallback = base::Closure;
+  using DBLoadErrorCallback =
+      base::Callback<void(sql::InitStatus, const std::string&)>;
 
   // Takes the path to the WebDatabase file.
   // WebDatabaseService lives on |ui_thread| and posts tasks to |db_thread|.
@@ -124,7 +125,8 @@ class WEBDATA_EXPORT WebDatabaseService
 
   virtual ~WebDatabaseService();
 
-  void OnDatabaseLoadDone(sql::InitStatus status);
+  void OnDatabaseLoadDone(sql::InitStatus status,
+                          const std::string& diagnostics);
 
   base::FilePath path_;
 

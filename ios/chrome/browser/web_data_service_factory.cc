@@ -25,8 +25,8 @@ namespace ios {
 namespace {
 
 void DoNothingOnErrorCallback(WebDataServiceWrapper::ErrorType error_type,
-                              sql::InitStatus status) {
-}
+                              sql::InitStatus status,
+                              const std::string& diagnostics) {}
 
 }  // namespace
 

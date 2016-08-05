@@ -448,7 +448,10 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
                                   PROFILE_ERROR_CREATE_FAILURE_SPECIFIED :
                                   PROFILE_ERROR_CREATE_FAILURE_ALL;
 
-    ShowProfileErrorDialog(error_type, IDS_COULDNT_STARTUP_PROFILE_ERROR);
+    // TODO(lwchkg): What diagnostics do you want to include in the feedback
+    // report when an error occurs?
+    ShowProfileErrorDialog(error_type, IDS_COULDNT_STARTUP_PROFILE_ERROR,
+                           "Error creating primary profile.");
     return nullptr;
   }
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)

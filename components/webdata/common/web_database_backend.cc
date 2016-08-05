@@ -4,6 +4,7 @@
 
 #include "components/webdata/common/web_database_backend.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -11,6 +12,7 @@
 #include "components/webdata/common/web_data_request_manager.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/common/web_database_table.h"
+#include "sql/error_delegate_util.h"
 
 using base::Bind;
 using base::FilePath;
@@ -24,8 +26,8 @@ WebDatabaseBackend::WebDatabaseBackend(
       request_manager_(new WebDataRequestManager()),
       init_status_(sql::INIT_FAILURE),
       init_complete_(false),
-      delegate_(delegate) {
-}
+      catastrophic_error_occurred_(false),
+      delegate_(delegate) {}
 
 void WebDatabaseBackend::AddTable(std::unique_ptr<WebDatabaseTable> table) {
   DCHECK(!db_.get());
@@ -35,7 +37,7 @@ void WebDatabaseBackend::AddTable(std::unique_ptr<WebDatabaseTable> table) {
 void WebDatabaseBackend::InitDatabase() {
   LoadDatabaseIfNecessary();
   if (delegate_) {
-    delegate_->DBLoaded(init_status_);
+    delegate_->DBLoaded(init_status_, diagnostics_);
   }
 }
 
@@ -46,15 +48,18 @@ sql::InitStatus WebDatabaseBackend::LoadDatabaseIfNecessary() {
   init_complete_ = true;
   db_.reset(new WebDatabase());
 
-  for (ScopedVector<WebDatabaseTable>::iterator it = tables_.begin();
-       it != tables_.end(); ++it) {
-    db_->AddTable(*it);
-  }
+  for (const auto& table : tables_)
+    db_->AddTable(table);
 
+  // Unretained to avoid a ref loop since we own |db_|.
+  db_->set_error_callback(base::Bind(&WebDatabaseBackend::DatabaseErrorCallback,
+                                     base::Unretained(this)));
+  diagnostics_.clear();
   init_status_ = db_->Init(db_path_);
   if (init_status_ != sql::INIT_OK) {
     LOG(ERROR) << "Cannot initialize the web database: " << init_status_;
-    db_.reset(NULL);
+    diagnostics_ += sql::GetCorruptFileDiagnosticsInfo(db_path_);
+    db_.reset();
     return init_status_;
   }
 
@@ -111,6 +116,15 @@ std::unique_ptr<WDTypedResult> WebDatabaseBackend::ExecuteReadTask(
 
 WebDatabaseBackend::~WebDatabaseBackend() {
   ShutdownDatabase();
+}
+
+void WebDatabaseBackend::DatabaseErrorCallback(int error,
+                                               sql::Statement* statement) {
+  // We ignore any further error callbacks after the first catastrophic error.
+  if (!catastrophic_error_occurred_ && sql::IsErrorCatastrophic(error)) {
+    catastrophic_error_occurred_ = true;
+    diagnostics_ = db_->GetDiagnosticInfo(error, statement);
+  }
 }
 
 void WebDatabaseBackend::Commit() {

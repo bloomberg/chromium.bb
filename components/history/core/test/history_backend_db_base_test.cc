@@ -30,7 +30,8 @@ class BackendDelegate : public HistoryBackend::Delegate {
       : history_test_(history_test) {}
 
   // HistoryBackend::Delegate implementation.
-  void NotifyProfileError(sql::InitStatus init_status) override {
+  void NotifyProfileError(sql::InitStatus init_status,
+                          const std::string& diagnostics) override {
     history_test_->last_profile_error_ = init_status;
   }
   void SetInMemoryBackend(

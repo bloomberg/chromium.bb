@@ -229,7 +229,8 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
 }
 
 void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
-                              sql::InitStatus status) {
+                              sql::InitStatus status,
+                              const std::string& diagnostics) {
   NOTREACHED();
 }
 

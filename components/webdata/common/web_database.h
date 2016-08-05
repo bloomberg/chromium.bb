@@ -41,6 +41,13 @@ class WEBDATA_EXPORT WebDatabase {
   // Retrieves a table based on its |key|.
   WebDatabaseTable* GetTable(WebDatabaseTable::TypeKey key);
 
+  // Call before Init() to set the error callback to be used for the
+  // underlying database connection.
+  void set_error_callback(
+      const sql::Connection::ErrorCallback& error_callback) {
+    db_.set_error_callback(error_callback);
+  }
+
   // Initialize the database given a name. The name defines where the SQLite
   // file is. If this returns an error code, no other method should be called.
   //
@@ -52,6 +59,8 @@ class WEBDATA_EXPORT WebDatabase {
   // Transactions management
   void BeginTransaction();
   void CommitTransaction();
+
+  std::string GetDiagnosticInfo(int extended_error, sql::Statement* statement);
 
   // Exposed for testing only.
   sql::Connection* GetSQLConnection();

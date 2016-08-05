@@ -71,8 +71,9 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
   return std::move(bookmark_model);
 }
 
-void NotReachedErrorCallback(WebDataServiceWrapper::ErrorType error_type,
-                             sql::InitStatus status) {
+void NotReachedErrorCallback(WebDataServiceWrapper::ErrorType,
+                             sql::InitStatus,
+                             const std::string&) {
   NOTREACHED();
 }
 

@@ -243,23 +243,7 @@ bool Connection::IsExpectedSqliteError(int error) {
 void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
   AssertIOAllowed();
 
-  // Trim extended error codes.
-  const int error = (extended_error & 0xFF);
-  std::string debug_info;
-  if (error == SQLITE_CORRUPT) {
-    // CollectCorruptionInfo() is implemented in terms of sql::Connection,
-    // prevent reentrant calls to the error callback.
-    // TODO(shess): Rewrite IntegrityCheckHelper() in terms of raw SQLite.
-    ErrorCallback original_callback = std::move(error_callback_);
-    reset_error_callback();
-
-    debug_info = CollectCorruptionInfo();
-
-    error_callback_ = std::move(original_callback);
-  } else {
-    debug_info = CollectErrorInfo(extended_error, stmt);
-  }
-
+  std::string debug_info = GetDiagnosticInfo(extended_error, stmt);
   if (!debug_info.empty() && RegisterIntentToUpload()) {
     char debug_buf[2000];
     base::strlcpy(debug_buf, debug_info.c_str(), arraysize(debug_buf));
@@ -1920,6 +1904,40 @@ bool Connection::QuickIntegrityCheck() {
   if (!IntegrityCheckHelper("PRAGMA quick_check", &messages))
     return false;
   return messages.size() == 1 && messages[0] == "ok";
+}
+
+std::string Connection::GetDiagnosticInfo(int extended_error,
+                                          Statement* statement) {
+  // Prevent reentrant calls to the error callback.
+  ErrorCallback original_callback = std::move(error_callback_);
+  reset_error_callback();
+
+  // Trim extended error codes.
+  const int error = (extended_error & 0xFF);
+  // CollectCorruptionInfo() is implemented in terms of sql::Connection,
+  // TODO(shess): Rewrite IntegrityCheckHelper() in terms of raw SQLite.
+  std::string result = (error == SQLITE_CORRUPT)
+                           ? CollectCorruptionInfo()
+                           : CollectErrorInfo(extended_error, statement);
+
+  // The following queries must be executed after CollectErrorInfo() above, so
+  // if they result in their own errors, they don't interfere with
+  // CollectErrorInfo().
+  const bool has_valid_header =
+      (ExecuteAndReturnErrorCode("PRAGMA auto_vacuum") == SQLITE_OK);
+  const bool select_sqlite_master_result =
+      (ExecuteAndReturnErrorCode("SELECT COUNT(*) FROM sqlite_master") ==
+       SQLITE_OK);
+
+  // Restore the original error callback.
+  error_callback_ = std::move(original_callback);
+
+  base::StringAppendF(&result, "Has valid header: %s\n",
+                      (has_valid_header ? "Yes" : "No"));
+  base::StringAppendF(&result, "Has valid schema: %s\n",
+                      (select_sqlite_master_result ? "Yes" : "No"));
+
+  return result;
 }
 
 // TODO(shess): Allow specifying maximum results (default 100 lines).

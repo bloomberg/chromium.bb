@@ -68,12 +68,14 @@ using base::TimeTicks;
 namespace history {
 
 namespace {
+
 void RunUnlessCanceled(
     const base::Closure& closure,
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled) {
   if (!is_canceled.Run())
     closure.Run();
 }
+
 }  // namespace
 
 // How long we'll wait to do a commit, so that things are batched together.
@@ -652,14 +654,11 @@ void HistoryBackend::InitImpl(
   db_->set_error_callback(base::Bind(&HistoryBackend::DatabaseErrorCallback,
                                      base::Unretained(this)));
 
+  db_diagnostics_.clear();
   sql::InitStatus status = db_->Init(history_name);
   switch (status) {
     case sql::INIT_OK:
       break;
-    case sql::INIT_TOO_NEW:
-      delegate_->NotifyProfileError(status);
-      db_.reset();
-      return;
     case sql::INIT_FAILURE: {
       // A null db_ will cause all calls on this object to notice this error
       // and to not continue. If the error callback scheduled killing the
@@ -669,7 +668,10 @@ void HistoryBackend::InitImpl(
       if (kill_db)
         KillHistoryDatabase();
       UMA_HISTOGRAM_BOOLEAN("History.AttemptedToFixProfileError", kill_db);
-      delegate_->NotifyProfileError(status);
+    }  // Falls through.
+    case sql::INIT_TOO_NEW: {
+      db_diagnostics_ += sql::GetCorruptFileDiagnosticsInfo(history_name);
+      delegate_->NotifyProfileError(status, db_diagnostics_);
       db_.reset();
       return;
     }
@@ -2411,6 +2413,9 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
 void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
   if (!scheduled_kill_db_ && sql::IsErrorCatastrophic(error)) {
     scheduled_kill_db_ = true;
+
+    db_diagnostics_ = db_->GetDiagnosticInfo(error, stmt);
+
     // Don't just do the close/delete here, as we are being called by |db| and
     // that seems dangerous.
     // TODO(shess): Consider changing KillHistoryDatabase() to use

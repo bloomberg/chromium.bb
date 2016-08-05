@@ -11408,15 +11408,22 @@ The following application will be launched if you accept this request:
       </if>
 
       <!-- General app failure messages -->
+      <message name="IDS_PROFILE_ERROR_DIALOG_TITLE" desc="The title of the dialog shown when there's an error page">
+        Profile error occurred
+      </message>
       <message name="IDS_COULDNT_OPEN_PROFILE_ERROR" desc="Error displayed on startup when the profile cannot be opened correctly due to problems reading or writing files in it.">
-Your profile could not be opened correctly.
+        Something went wrong when opening your profile. Some features may be unavailable.
+      </message>
+      <message name="IDS_PROFILE_ERROR_DIALOG_CHECKBOX" desc="The label of the checkbox on the profile error dialog asking the user whether to send a feedback report or not">
+        Send feedback to help us fix this issue.
+      </message>
+      <message name="IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION" desc="The prepopulated text filled in the feedback report reporting a profile error">
+Tell us what happened exactly before you got the profile error message:
 
-Some features may be unavailable.  Please check that the profile exists and you have permission to read and write its contents.
+****DO NOT CHANGE BELOW THIS LINE****
       </message>
       <message name="IDS_COULDNT_STARTUP_PROFILE_ERROR" desc="Error displayed when Chrome cannot start because profiles were not opened correctly.">
-Cannot start Chrome because your profile could not be opened correctly.
-
-Please check that the profile exists and you have permission to read and write its contents.
+        Cannot start Chrome because something went wrong when opening your profile. Try to restart Chrome.
       </message>
       <message name="IDS_REFUSE_TO_RUN_AS_ROOT" desc="Short error message displayed in an error dialog on startup if the user tries to run Chrome as root.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can not be run as root.

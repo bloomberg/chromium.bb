@@ -9,25 +9,47 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-void ShowProfileErrorDialog(ProfileErrorType type, int message_id) {
+namespace {
+
+#if !defined(OS_ANDROID)
+constexpr char kProfileErrorFeedbackCategory[] = "FEEDBACK_PROFILE_ERROR";
+#endif  // !defined(OS_ANDROID)
+
+}  // namespace
+
+void ShowProfileErrorDialog(ProfileErrorType type,
+                            int message_id,
+                            const std::string& diagnostics) {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
   UMA_HISTOGRAM_ENUMERATION("Profile.ProfileError", type, PROFILE_ERROR_END);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNoErrorDialogs))
+          switches::kNoErrorDialogs)) {
     return;
+  }
 
   static bool is_showing_profile_error_dialog = false;
-  if (!is_showing_profile_error_dialog) {
-    base::AutoReset<bool> resetter(&is_showing_profile_error_dialog, true);
-    chrome::ShowWarningMessageBox(NULL,
-                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                                  l10n_util::GetStringUTF16(message_id));
+  if (is_showing_profile_error_dialog)
+    return;
+
+  base::AutoReset<bool> resetter(&is_showing_profile_error_dialog, true);
+  if (chrome::ShowWarningMessageBoxWithCheckbox(
+          nullptr, l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_TITLE),
+          l10n_util::GetStringUTF16(message_id),
+          l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_CHECKBOX))) {
+    std::string feedback_description =
+        l10n_util::GetStringUTF8(IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION);
+    feedback_description += "\n" + diagnostics;
+
+    chrome::ShowFeedbackPage(nullptr, feedback_description,
+                             kProfileErrorFeedbackCategory);
   }
 #endif
 }

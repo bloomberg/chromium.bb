@@ -239,6 +239,10 @@ class SQL_EXPORT Connection {
   // without error and results in a single "ok" value.
   bool QuickIntegrityCheck() WARN_UNUSED_RESULT;
 
+  // Meant to be called from a client error callback so that it's able to
+  // get diagnostic information about the database.
+  std::string GetDiagnosticInfo(int extended_error, Statement* statement);
+
   // Initialization ------------------------------------------------------------
 
   // Initializes the SQL connection for the given file, returning true if the

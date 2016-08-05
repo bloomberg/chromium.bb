@@ -777,7 +777,8 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   void SetInMemoryBackend(std::unique_ptr<InMemoryHistoryBackend> mem_backend);
 
   // Called by our BackendDelegate when there is a problem reading the database.
-  void NotifyProfileError(sql::InitStatus init_status);
+  void NotifyProfileError(sql::InitStatus init_status,
+                          const std::string& diagnostics);
 
   // Call to schedule a given task for running on the history thread with the
   // specified priority. The task will have ownership taken.

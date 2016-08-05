@@ -36,7 +36,8 @@ class WEBDATA_EXPORT WebDataServiceBase
   // takes a single parameter, the sql::InitStatus value from trying
   // to open the database.
   // TODO(joi): Should we combine this with WebDatabaseService::InitCallback?
-  typedef base::Callback<void(sql::InitStatus)> ProfileErrorCallback;
+  typedef base::Callback<void(sql::InitStatus, const std::string&)>
+      ProfileErrorCallback;
 
   typedef base::Closure DBLoadedCallback;
 

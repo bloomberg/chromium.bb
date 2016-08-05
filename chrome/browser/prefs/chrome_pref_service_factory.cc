@@ -57,6 +57,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
+#include "sql/error_delegate_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -353,7 +354,8 @@ GetTrackingConfiguration() {
 }
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
-void HandleReadError(PersistentPrefStore::PrefReadError error) {
+void HandleReadError(const base::FilePath& pref_filename,
+                     PersistentPrefStore::PrefReadError error) {
   // Sample the histogram also for the successful case in order to get a
   // baseline on the success rate in addition to the error distribution.
   UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error,
@@ -372,10 +374,11 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
     }
 
     if (message_id) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(&ShowProfileErrorDialog,
-                                         PROFILE_ERROR_PREFERENCES,
-                                         message_id));
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&ShowProfileErrorDialog, PROFILE_ERROR_PREFERENCES,
+                     message_id,
+                     sql::GetCorruptFileDiagnosticsInfo(pref_filename)));
     }
 #else
     // On ChromeOS error screen with message about broken local state
@@ -413,13 +416,13 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
       seed, device_id, g_browser_process->local_state()));
 }
 
-void PrepareFactory(
-    syncable_prefs::PrefServiceSyncableFactory* factory,
-    policy::PolicyService* policy_service,
-    SupervisedUserSettingsService* supervised_user_settings,
-    scoped_refptr<PersistentPrefStore> user_pref_store,
-    const scoped_refptr<PrefStore>& extension_prefs,
-    bool async) {
+void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,
+                    const base::FilePath& pref_filename,
+                    policy::PolicyService* policy_service,
+                    SupervisedUserSettingsService* supervised_user_settings,
+                    scoped_refptr<PersistentPrefStore> user_pref_store,
+                    const scoped_refptr<PrefStore>& extension_prefs,
+                    bool async) {
   policy::BrowserPolicyConnector* policy_connector =
       g_browser_process->browser_policy_connector();
   factory->SetManagedPolicies(policy_service, policy_connector);
@@ -438,7 +441,7 @@ void PrepareFactory(
   factory->set_extension_prefs(extension_prefs);
   factory->set_command_line_prefs(make_scoped_refptr(
       new CommandLinePrefStore(base::CommandLine::ForCurrentProcess())));
-  factory->set_read_error_callback(base::Bind(&HandleReadError));
+  factory->set_read_error_callback(base::Bind(&HandleReadError, pref_filename));
   factory->set_user_prefs(user_pref_store);
   factory->SetPrefModelAssociatorClient(
       ChromePrefModelAssociatorClient::GetInstance());
@@ -469,7 +472,7 @@ std::unique_ptr<PrefService> CreateLocalState(
     const scoped_refptr<PrefRegistry>& pref_registry,
     bool async) {
   syncable_prefs::PrefServiceSyncableFactory factory;
-  PrepareFactory(&factory, policy_service,
+  PrepareFactory(&factory, pref_filename, policy_service,
                  NULL,  // supervised_user_settings
                  new JsonPrefStore(pref_filename, pref_io_task_runner,
                                    std::unique_ptr<PrefFilter>()),
@@ -506,11 +509,8 @@ std::unique_ptr<syncable_prefs::PrefServiceSyncable> CreateProfilePrefs(
           ->CreateProfilePrefStore(pref_io_task_runner,
                                    start_sync_flare_for_prefs,
                                    validation_delegate));
-  PrepareFactory(&factory,
-                 policy_service,
-                 supervised_user_settings,
-                 user_pref_store,
-                 extension_prefs,
+  PrepareFactory(&factory, profile_path, policy_service,
+                 supervised_user_settings, user_pref_store, extension_prefs,
                  async);
   std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());

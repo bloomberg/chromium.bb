@@ -34,7 +34,8 @@ class ChromeHistoryClient : public history::HistoryClient,
       history::HistoryService* history_service) override;
   void Shutdown() override;
   bool CanAddURL(const GURL& url) override;
-  void NotifyProfileError(sql::InitStatus init_status) override;
+  void NotifyProfileError(sql::InitStatus init_status,
+                          const std::string& diagnostics) override;
   std::unique_ptr<history::HistoryBackendClient> CreateBackendClient() override;
 
  private:

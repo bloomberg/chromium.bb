@@ -63,11 +63,13 @@ bool ChromeHistoryClient::CanAddURL(const GURL& url) {
   return CanAddURLToHistory(url);
 }
 
-void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status) {
-  ShowProfileErrorDialog(
-      PROFILE_ERROR_HISTORY,
-      (init_status == sql::INIT_FAILURE) ?
-      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
+void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status,
+                                             const std::string& diagnostics) {
+  ShowProfileErrorDialog(PROFILE_ERROR_HISTORY,
+                         (init_status == sql::INIT_FAILURE)
+                             ? IDS_COULDNT_OPEN_PROFILE_ERROR
+                             : IDS_PROFILE_TOO_NEW_ERROR,
+                         diagnostics);
 }
 
 std::unique_ptr<history::HistoryBackendClient>

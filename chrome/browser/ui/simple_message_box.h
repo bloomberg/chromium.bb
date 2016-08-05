@@ -11,8 +11,12 @@
 namespace chrome {
 
 enum MessageBoxResult {
-  MESSAGE_BOX_RESULT_NO = 0,  // User chose NO or CANCEL.
-  MESSAGE_BOX_RESULT_YES = 1, // User chose YES or OK.
+  // User chose NO or CANCEL. If there's a checkbox, then the checkbox was
+  // unchecked.
+  MESSAGE_BOX_RESULT_NO = 0,
+
+  // User chose YES or OK. If there's a checkbox, then the checkbox was checked.
+  MESSAGE_BOX_RESULT_YES = 1,
 };
 
 enum MessageBoxType {
@@ -30,6 +34,13 @@ enum MessageBoxType {
 void ShowWarningMessageBox(gfx::NativeWindow parent,
                            const base::string16& title,
                            const base::string16& message);
+
+// As above, but with a checkbox. Returns true if the checkbox was checked when
+// the dialog was dismissed, false otherwise.
+bool ShowWarningMessageBoxWithCheckbox(gfx::NativeWindow parent,
+                                       const base::string16& title,
+                                       const base::string16& message,
+                                       const base::string16& checkbox_text);
 
 // As above, but two buttons are displayed and the return value indicates which
 // is chosen.

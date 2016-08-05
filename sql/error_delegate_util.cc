@@ -77,4 +77,13 @@ bool IsErrorCatastrophic(int error) {
   return false;
 }
 
+std::string GetCorruptFileDiagnosticsInfo(
+    const base::FilePath& corrupted_file_path) {
+  std::string corrupted_file_info("Corrupted file: ");
+  corrupted_file_info +=
+      corrupted_file_path.DirName().BaseName().AsUTF8Unsafe() + "/" +
+      corrupted_file_path.BaseName().AsUTF8Unsafe() + "\n";
+  return corrupted_file_info;
+}
+
 }  // namespace sql

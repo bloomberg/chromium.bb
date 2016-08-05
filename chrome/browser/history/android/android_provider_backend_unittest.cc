@@ -74,7 +74,8 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
  public:
   AndroidProviderBackendDelegate() {}
 
-  void NotifyProfileError(sql::InitStatus init_status) override {}
+  void NotifyProfileError(sql::InitStatus init_status,
+                          const std::string& diagnostics) override {}
   void SetInMemoryBackend(
       std::unique_ptr<InMemoryHistoryBackend> backend) override {}
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,

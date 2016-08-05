@@ -21,4 +21,12 @@ MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
   return MESSAGE_BOX_RESULT_NO;
 }
 
+bool ShowWarningMessageBoxWithCheckbox(gfx::NativeWindow parent,
+                                       const base::string16& title,
+                                       const base::string16& message,
+                                       const base::string16& checkbox_text) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace chrome

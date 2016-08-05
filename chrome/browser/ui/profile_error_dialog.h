@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_PROFILE_ERROR_DIALOG_H_
 #define CHROME_BROWSER_UI_PROFILE_ERROR_DIALOG_H_
 
+#include <string>
+
 // Be very careful while modifying this enum. Do NOT remove any elements from
 // this enum. If you need to add one, add them to the end, right before
 // PROFILE_ERROR_END. PROFILE_ERROR_END should ALWAYS be the last element in
@@ -24,11 +26,16 @@ enum ProfileErrorType {
 };
 
 // Shows an error dialog corresponding to the inability to open some portion of
-// the profile. |message_id| is a string id corresponding to the message to
-// show. The ProfileErrorType needs to correspond to one of the profile error
+// the profile.
+// The ProfileErrorType |type| needs to correspond to one of the profile error
 // types in the enum above. If your use case doesn't fit any of the ones listed
-// above, please add your type to the enum and modify the enum
-// definition in tools/metrics/histograms/histograms.xml accordingly.
-void ShowProfileErrorDialog(ProfileErrorType type, int message_id);
+// above, please add your type to the enum and modify the enum definition in
+// tools/metrics/histograms/histograms.xml accordingly.
+// |message_id| is a string id corresponding to the message to show.
+// |diagnostics| contains diagnostic information about the database file that
+// might have caused a profile error.
+void ShowProfileErrorDialog(ProfileErrorType type,
+                            int message_id,
+                            const std::string& diagnostics);
 
 #endif  // CHROME_BROWSER_UI_PROFILE_ERROR_DIALOG_H_

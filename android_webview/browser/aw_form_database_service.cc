@@ -18,7 +18,8 @@ namespace {
 
 // Callback to handle database error. It seems chrome uses this to
 // display an error dialog box only.
-void DatabaseErrorCallback(sql::InitStatus status) {
+void DatabaseErrorCallback(sql::InitStatus init_status,
+                           const std::string& diagnostics) {
   LOG(WARNING) << "initializing autocomplete database failed";
 }
 

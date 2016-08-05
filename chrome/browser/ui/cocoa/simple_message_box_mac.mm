@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/simple_message_box_internal.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,6 +21,7 @@ namespace {
 MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const base::string16& title,
                                 const base::string16& message,
+                                const base::string16& checkbox_text,
                                 MessageBoxType type) {
   startup_metric_utils::SetNonBrowserUIDisplayed();
   if (internal::g_should_skip_message_box_for_test)
@@ -37,9 +39,24 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   } else {
     [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
   }
+
+  base::scoped_nsobject<NSButton> checkbox;
+  if (!checkbox_text.empty()) {
+    checkbox.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
+    [checkbox setButtonType:NSSwitchButton];
+    [checkbox setTitle:base::SysUTF16ToNSString(checkbox_text)];
+    [checkbox sizeToFit];
+    [alert setAccessoryView:checkbox];
+  }
+
   NSInteger result = [alert runModal];
-  return (result == NSAlertSecondButtonReturn) ?
-      MESSAGE_BOX_RESULT_NO : MESSAGE_BOX_RESULT_YES;
+  if (result == NSAlertSecondButtonReturn)
+    return MESSAGE_BOX_RESULT_NO;
+
+  if (!checkbox || ([checkbox state] == NSOnState))
+    return MESSAGE_BOX_RESULT_YES;
+
+  return MESSAGE_BOX_RESULT_NO;
 }
 
 }  // namespace
@@ -47,13 +64,24 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
 void ShowWarningMessageBox(gfx::NativeWindow parent,
                            const base::string16& title,
                            const base::string16& message) {
-  ShowMessageBox(parent, title, message, MESSAGE_BOX_TYPE_WARNING);
+  ShowMessageBox(parent, title, message, base::string16(),
+                 MESSAGE_BOX_TYPE_WARNING);
+}
+
+bool ShowWarningMessageBoxWithCheckbox(gfx::NativeWindow parent,
+                                       const base::string16& title,
+                                       const base::string16& message,
+                                       const base::string16& checkbox_text) {
+  ShowMessageBox(parent, title, message, checkbox_text,
+                 MESSAGE_BOX_TYPE_WARNING);
+  return false;
 }
 
 MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
                                         const base::string16& title,
                                         const base::string16& message) {
-  return ShowMessageBox(parent, title, message, MESSAGE_BOX_TYPE_QUESTION);
+  return ShowMessageBox(parent, title, message, base::string16(),
+                        MESSAGE_BOX_TYPE_QUESTION);
 }
 
 }  // namespace chrome

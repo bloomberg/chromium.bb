@@ -107,11 +107,12 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
       : history_service_(history_service),
         service_task_runner_(service_task_runner) {}
 
-  void NotifyProfileError(sql::InitStatus init_status) override {
+  void NotifyProfileError(sql::InitStatus init_status,
+                          const std::string& diagnostics) override {
     // Send to the history service on the main thread.
     service_task_runner_->PostTask(
         FROM_HERE, base::Bind(&HistoryService::NotifyProfileError,
-                              history_service_, init_status));
+                              history_service_, init_status, diagnostics));
   }
 
   void SetInMemoryBackend(
@@ -966,10 +967,11 @@ void HistoryService::SetInMemoryBackend(
   in_memory_backend_->AttachToHistoryService(this);
 }
 
-void HistoryService::NotifyProfileError(sql::InitStatus init_status) {
+void HistoryService::NotifyProfileError(sql::InitStatus init_status,
+                                        const std::string& diagnostics) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (history_client_)
-    history_client_->NotifyProfileError(init_status);
+    history_client_->NotifyProfileError(init_status, diagnostics);
 }
 
 void HistoryService::DeleteURL(const GURL& url) {

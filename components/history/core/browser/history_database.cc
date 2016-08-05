@@ -56,9 +56,6 @@ HistoryDatabase::~HistoryDatabase() {
 sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   db_.set_histogram_tag("History");
 
-  // Set the exceptional sqlite error handler.
-  db_.set_error_callback(error_callback_);
-
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).
   // This only has an effect before any tables have been created, otherwise
@@ -259,7 +256,13 @@ void HistoryDatabase::CommitTransaction() {
 }
 
 void HistoryDatabase::RollbackTransaction() {
-  db_.RollbackTransaction();
+  // If Init() returns with a failure status, the Transaction created there will
+  // be destructed and rolled back. HistoryBackend might try to kill the
+  // database after that, at which point it will try to roll back a non-existing
+  // transaction. This will crash on a DCHECK. So transaction_nesting() is
+  // checked first.
+  if (db_.transaction_nesting())
+    db_.RollbackTransaction();
 }
 
 bool HistoryDatabase::RecreateAllTablesButURL() {
@@ -294,6 +297,11 @@ void HistoryDatabase::TrimMemory(bool aggressively) {
 
 bool HistoryDatabase::Raze() {
   return db_.Raze();
+}
+
+std::string HistoryDatabase::GetDiagnosticInfo(int extended_error,
+                                               sql::Statement* statement) {
+  return db_.GetDiagnosticInfo(extended_error, statement);
 }
 
 bool HistoryDatabase::SetSegmentID(VisitID visit_id, SegmentID segment_id) {

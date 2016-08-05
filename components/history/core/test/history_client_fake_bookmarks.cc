@@ -179,8 +179,8 @@ bool HistoryClientFakeBookmarks::CanAddURL(const GURL& url) {
 }
 
 void HistoryClientFakeBookmarks::NotifyProfileError(
-    sql::InitStatus init_status) {
-}
+    sql::InitStatus init_status,
+    const std::string& diagnostics) {}
 
 std::unique_ptr<HistoryBackendClient>
 HistoryClientFakeBookmarks::CreateBackendClient() {

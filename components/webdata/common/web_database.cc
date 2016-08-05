@@ -65,6 +65,11 @@ void WebDatabase::CommitTransaction() {
   db_.CommitTransaction();
 }
 
+std::string WebDatabase::GetDiagnosticInfo(int extended_error,
+                                           sql::Statement* statement) {
+  return db_.GetDiagnosticInfo(extended_error, statement);
+}
+
 sql::Connection* WebDatabase::GetSQLConnection() {
   return &db_;
 }

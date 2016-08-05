@@ -18,6 +18,7 @@
 #endif
 
 class Browser;
+class Profile;
 
 namespace content {
 class WebContents;
