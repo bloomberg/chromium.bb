@@ -3460,41 +3460,45 @@ namespace {
 
 // TODO(trchen): Use std::function<void, LayoutObject&> when available.
 template <typename LayoutObjectTraversalFunctor>
-void traverseNonCompositingDescendants(LayoutObject&, const LayoutObjectTraversalFunctor&);
+void traverseNonCompositingDescendantsInPaintOrder(LayoutObject&, const LayoutObjectTraversalFunctor&);
 
 template <typename LayoutObjectTraversalFunctor>
-void findNonCompositedDescendantLayerToTraverse(LayoutObject& object, const LayoutObjectTraversalFunctor& functor)
+void traverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(LayoutObject& object, const LayoutObjectTraversalFunctor& functor)
 {
+    // |object| is a paint invalidation container but is not a stacking context, so the paint
+    // invalidation container of stacked descendants don't belong to |object| but belong to
+    // an ancestor. This function traverses all such descendants.
+    DCHECK(object.isPaintInvalidationContainer() && !object.styleRef().isStackingContext());
+
     LayoutObject* descendant = object.nextInPreOrder(&object);
     while (descendant) {
-        // Case 1: If the descendant has no layer, keep searching until we find a layer.
-        if (!descendant->hasLayer()) {
+        if (!descendant->hasLayer() || !descendant->styleRef().isStacked()) {
+            // Case 1: The descendant is not stacked (or is stacked but has not been
+            // allocated a layer yet during style change), so either it's a paint invalidation
+            // container in the same situation as |object|, or its paint invalidation
+            // container is in such situation. Keep searching until a stacked layer is found.
             descendant = descendant->nextInPreOrder(&object);
-            continue;
-        }
-        // Case 2: The descendant has a layer and is not composited.
-        // The invalidation container of its subtree is our parent,
-        // thus recur into the subtree.
-        if (!descendant->isPaintInvalidationContainer()) {
-            traverseNonCompositingDescendants(*descendant, functor);
+        } else if (!descendant->isPaintInvalidationContainer()) {
+            // Case 2: The descendant is stacked and is not composited.
+            // The invalidation container of its subtree is our ancestor,
+            // thus recur into the subtree.
+            traverseNonCompositingDescendantsInPaintOrder(*descendant, functor);
             descendant = descendant->nextInPreOrderAfterChildren(&object);
-            continue;
-        }
-        // Case 3: The descendant is an invalidation container and is a stacking context.
-        // No objects in the subtree can have invalidation container outside of it,
-        // thus skip the whole subtree.
-        if (descendant->styleRef().isStackingContext()) {
+        } else if (descendant->styleRef().isStackingContext()) {
+            // Case 3: The descendant is an invalidation container and is a stacking context.
+            // No objects in the subtree can have invalidation container outside of it,
+            // thus skip the whole subtree.
             descendant = descendant->nextInPreOrderAfterChildren(&object);
-            continue;
+        } else {
+            // Case 4: The descendant is an invalidation container but not a stacking context.
+            // This is the same situation as |object|, thus keep searching.
+            descendant = descendant->nextInPreOrder(&object);
         }
-        // Case 4: The descendant is an invalidation container but not a stacking context.
-        // This is the same situation as the root, thus keep searching.
-        descendant = descendant->nextInPreOrder(&object);
     }
 }
 
 template <typename LayoutObjectTraversalFunctor>
-void traverseNonCompositingDescendants(LayoutObject& object, const LayoutObjectTraversalFunctor& functor)
+void traverseNonCompositingDescendantsInPaintOrder(LayoutObject& object, const LayoutObjectTraversalFunctor& functor)
 {
     functor(object);
     LayoutObject* descendant = object.nextInPreOrder(&object);
@@ -3502,17 +3506,17 @@ void traverseNonCompositingDescendants(LayoutObject& object, const LayoutObjectT
         if (!descendant->isPaintInvalidationContainer()) {
             functor(*descendant);
             descendant = descendant->nextInPreOrder(&object);
-            continue;
-        }
-        if (descendant->styleRef().isStackingContext()) {
+        } else if (descendant->styleRef().isStackingContext()) {
+            // The descendant is an invalidation container and is a stacking context.
+            // No objects in the subtree can have invalidation container outside of it,
+            // thus skip the whole subtree.
             descendant = descendant->nextInPreOrderAfterChildren(&object);
-            continue;
+        } else {
+            // If a paint invalidation container is not a stacking context,
+            // some of its descendants may belong to the parent container.
+            traverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(*descendant, functor);
+            descendant = descendant->nextInPreOrderAfterChildren(&object);
         }
-
-        // If a paint invalidation container is not a stacking context,
-        // some of its descendants may belong to the parent container.
-        findNonCompositedDescendantLayerToTraverse(*descendant, functor);
-        descendant = descendant->nextInPreOrderAfterChildren(&object);
     }
 }
 
@@ -3524,7 +3528,7 @@ void LayoutObject::invalidateDisplayItemClientsIncludingNonCompositingDescendant
     DisableCompositingQueryAsserts disabler;
 
     slowSetPaintingLayerNeedsRepaint();
-    traverseNonCompositingDescendants(const_cast<LayoutObject&>(*this), [reason](LayoutObject& object) {
+    traverseNonCompositingDescendantsInPaintOrder(const_cast<LayoutObject&>(*this), [reason](LayoutObject& object) {
         if (object.hasLayer() && toLayoutBoxModelObject(object).hasSelfPaintingLayer())
             toLayoutBoxModelObject(object).layer()->setNeedsRepaint();
         object.invalidateDisplayItemClients(reason);
@@ -3557,7 +3561,7 @@ void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()
 {
     // Since we're only painting non-composited layers, we know that they all share the same paintInvalidationContainer.
     const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidation();
-    traverseNonCompositingDescendants(*this, [&paintInvalidationContainer](LayoutObject& object) {
+    traverseNonCompositingDescendantsInPaintOrder(*this, [&paintInvalidationContainer](LayoutObject& object) {
         if (object.hasLayer())
             toLayoutBoxModelObject(object).layer()->setNeedsRepaint();
         object.invalidatePaintOfPreviousPaintInvalidationRect(paintInvalidationContainer, PaintInvalidationSubtree);
