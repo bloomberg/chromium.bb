@@ -176,7 +176,6 @@ EngineNetworkComponents::~EngineNetworkComponents() {
 void EngineNetworkComponents::Initialize(const std::string& client_token) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!connection_manager_);
-
   // Plumb authenticated connections from the authentication handler
   // to |this| (which will then pass it to |connection_handler_|.
   authentication_handler_ =
@@ -194,6 +193,7 @@ void EngineNetworkComponents::Initialize(const std::string& client_token) {
 
   transport->GetLocalAddress(&address);
   port_ = address.port();
+  DVLOG(1) << "Engine port #: " << port_;
 }
 
 void EngineNetworkComponents::HandleConnection(

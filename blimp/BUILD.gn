@@ -28,6 +28,7 @@ group("blimp") {
 
   if (is_linux) {
     deps += [
+      ":client_engine_integration",
       "//blimp/engine",
       "//blimp/engine:blimp_engine_bundle",
     ]
@@ -176,7 +177,34 @@ if (is_linux) {
       "--output",
       rebase_path(_bundle),
       "--tar-contents-rooted-in",
-      rebase_path("//")
+      rebase_path("//"),
+    ]
+  }
+
+  # Wraps and Builds the Blimp client and engine integration script and
+  # ends up in root_out_dir/bin.
+  action("client_engine_integration") {
+    _wrapped_script = "//blimp/tools/client_engine_integration.py"
+
+    _script_basename = get_path_info(_wrapped_script, "name")
+    _output_path = "${root_out_dir}/bin/${_script_basename}"
+
+    script = "//build/android/gyp/create_tool_wrapper.py"
+    inputs = [
+      _wrapped_script,
+    ]
+    outputs = [
+      _output_path,
+    ]
+
+    args = [
+      "--output",
+      rebase_path(_output_path, root_build_dir),
+      "--target",
+      rebase_path(_wrapped_script, root_build_dir),
+      "--output-directory",
+      rebase_path(root_out_dir, root_build_dir),
+      "--flag-name=--output-linux-directory",
     ]
   }
 }

@@ -11,8 +11,23 @@ def CommonChecks(input_api, output_api):
   This is currently limited to pylint.
   """
   checks = []
+
+  blimp_tools_dir = input_api.PresubmitLocalPath()
+
+  def J(*dirs):
+    """Returns a path relative to presubmit directory."""
+    return input_api.os_path.join(blimp_tools_dir, *dirs)
+
   checks.extend(input_api.canned_checks.GetPylint(
-      input_api, output_api, pylintrc='pylintrc'))
+      input_api,
+      output_api,
+      pylintrc='pylintrc',
+      extra_paths_list=[
+          J(),
+          J('..', '..', 'build', 'android'),
+          J('..', '..', 'third_party', 'catapult', 'devil')
+      ]))
+
   return input_api.RunTests(checks, False)
 
 
