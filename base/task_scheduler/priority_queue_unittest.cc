@@ -138,8 +138,7 @@ TEST(TaskSchedulerPriorityQueueTest, IllegalTwoTransactionsSameThread) {
             pq_a.BeginTransaction();
         std::unique_ptr<PriorityQueue::Transaction> transaction_b =
             pq_b.BeginTransaction();
-      },
-      "");
+      });
 }
 
 // Check that there is no crash when Transactions are created on the same thread

@@ -321,7 +321,7 @@ TEST_F(ThreadTest, StartTwiceNonJoinableNotAllowed) {
   ASSERT_FALSE(a->IsRunning());
 
   // Restarting it should not be allowed.
-  EXPECT_DCHECK_DEATH(a->Start(), "");
+  EXPECT_DCHECK_DEATH(a->Start());
 }
 
 TEST_F(ThreadTest, ThreadName) {

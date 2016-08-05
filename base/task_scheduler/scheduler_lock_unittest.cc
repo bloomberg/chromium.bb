@@ -131,7 +131,7 @@ TEST(TaskSchedulerLock, AcquirePredecessorWrongOrder) {
   EXPECT_DCHECK_DEATH({
     lock.Acquire();
     predecessor.Acquire();
-  }, "");
+  });
 }
 
 TEST(TaskSchedulerLock, AcquireNonPredecessor) {
@@ -140,7 +140,7 @@ TEST(TaskSchedulerLock, AcquireNonPredecessor) {
   EXPECT_DCHECK_DEATH({
     lock1.Acquire();
     lock2.Acquire();
-  }, "");
+  });
 }
 
 TEST(TaskSchedulerLock, AcquireMultipleLocksInOrder) {
@@ -172,7 +172,7 @@ TEST(TaskSchedulerLock, AcquireMultipleLocksNoTransitivity) {
   EXPECT_DCHECK_DEATH({
     lock1.Acquire();
     lock3.Acquire();
-  }, "");
+  });
 }
 
 TEST(TaskSchedulerLock, AcquireLocksDifferentThreadsSafely) {
@@ -258,7 +258,7 @@ TEST(TaskSchedulerLock, SelfReferentialLock) {
     SchedulerLock lock;
   };
 
-  EXPECT_DCHECK_DEATH({ SelfReferentialLock lock; }, "");
+  EXPECT_DCHECK_DEATH({ SelfReferentialLock lock; });
 }
 
 TEST(TaskSchedulerLock, PredecessorCycle) {
@@ -269,7 +269,7 @@ TEST(TaskSchedulerLock, PredecessorCycle) {
     SchedulerLock lock2;
   };
 
-  EXPECT_DCHECK_DEATH({ LockCycle cycle; }, "");
+  EXPECT_DCHECK_DEATH({ LockCycle cycle; });
 }
 
 TEST(TaskSchedulerLock, PredecessorLongerCycle) {
@@ -288,7 +288,7 @@ TEST(TaskSchedulerLock, PredecessorLongerCycle) {
     SchedulerLock lock5;
   };
 
-  EXPECT_DCHECK_DEATH({ LockCycle cycle; }, "");
+  EXPECT_DCHECK_DEATH({ LockCycle cycle; });
 }
 
 }  // namespace

@@ -248,7 +248,7 @@ TEST_F(TaskSchedulerWorkerStackTest, PushAfterRemove) {
 TEST_F(TaskSchedulerWorkerStackTest, PushTwice) {
   SchedulerWorkerStack stack;
   stack.Push(worker_a_.get());
-  EXPECT_DCHECK_DEATH({ stack.Push(worker_a_.get()); }, "");
+  EXPECT_DCHECK_DEATH({ stack.Push(worker_a_.get()); });
 }
 
 }  // namespace internal

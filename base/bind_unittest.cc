@@ -1100,7 +1100,7 @@ TEST_F(BindTest, WindowsCallingConventions) {
 TEST(BindDeathTest, NullCallback) {
   base::Callback<void(int)> null_cb;
   ASSERT_TRUE(null_cb.is_null());
-  EXPECT_DCHECK_DEATH(base::Bind(null_cb, 42), "");
+  EXPECT_DCHECK_DEATH(base::Bind(null_cb, 42));
 }
 
 }  // namespace

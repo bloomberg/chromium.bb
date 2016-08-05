@@ -82,9 +82,7 @@ TEST_F(MessagePumpIOSForIOTest, TestWatchingFromBadThread) {
   ASSERT_DCHECK_DEATH(
       io_loop()->WatchFileDescriptor(STDOUT_FILENO, false,
                                      MessageLoopForIO::WATCH_READ, &watcher,
-                                     &delegate),
-      "Check failed: "
-      "watch_file_descriptor_caller_checker_.CalledOnValidThread\\(\\)");
+                                     &delegate));
 }
 
 class BaseWatcher : public MessagePumpIOSForIO::Watcher {

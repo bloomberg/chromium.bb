@@ -352,7 +352,7 @@ void ExpectIORestriction(IORestriction io_restriction, WaitableEvent* event) {
   if (io_restriction == IORestriction::ALLOWED) {
     ThreadRestrictions::AssertIOAllowed();
   } else {
-    EXPECT_DCHECK_DEATH({ ThreadRestrictions::AssertIOAllowed(); }, "");
+    EXPECT_DCHECK_DEATH({ ThreadRestrictions::AssertIOAllowed(); });
   }
 
   event->Signal();

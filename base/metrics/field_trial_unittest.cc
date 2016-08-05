@@ -1128,8 +1128,7 @@ TEST(FieldTrialDeathTest, OneTimeRandomizedTrialWithoutFieldTrialList) {
       FieldTrialList::FactoryGetFieldTrial(
           "OneTimeRandomizedTrialWithoutFieldTrialList", 100, kDefaultGroupName,
           base::FieldTrialList::kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
-      "");
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
 }
 
 }  // namespace base

@@ -737,16 +737,14 @@ TEST(HistogramDeathTest, BadRangesTest) {
   custom_ranges.push_back(HistogramBase::kSampleType_MAX);
   EXPECT_DCHECK_DEATH(
       CustomHistogram::FactoryGet("BadRangesCustom2", custom_ranges,
-                                  HistogramBase::kNoFlags),
-      "");
+                                  HistogramBase::kNoFlags));
 
   // CustomHistogram needs at least 1 valid range.
   custom_ranges.clear();
   custom_ranges.push_back(0);
   EXPECT_DCHECK_DEATH(
       CustomHistogram::FactoryGet("BadRangesCustom3", custom_ranges,
-                                  HistogramBase::kNoFlags),
-      "");
+                                  HistogramBase::kNoFlags));
 }
 
 }  // namespace base

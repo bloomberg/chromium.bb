@@ -20,7 +20,7 @@ namespace {
 
 void ExpectSetFlagDeath(AtomicFlag* flag) {
   ASSERT_TRUE(flag);
-  EXPECT_DCHECK_DEATH(flag->Set(), "");
+  EXPECT_DCHECK_DEATH(flag->Set());
 }
 
 // Busy waits (to explicitly avoid using synchronization constructs that would

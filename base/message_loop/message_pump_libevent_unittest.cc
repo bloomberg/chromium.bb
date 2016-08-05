@@ -93,16 +93,12 @@ TEST_F(MessagePumpLibeventTest, MAYBE_TestWatchingFromBadThread) {
   ASSERT_DCHECK_DEATH(
       io_loop()->WatchFileDescriptor(STDOUT_FILENO, false,
                                      MessageLoopForIO::WATCH_READ, &watcher,
-                                     &delegate),
-      "Check failed: "
-      "watch_file_descriptor_caller_checker_.CalledOnValidThread\\(\\)");
+                                     &delegate));
 }
 
 TEST_F(MessagePumpLibeventTest, QuitOutsideOfRun) {
   std::unique_ptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
-  ASSERT_DCHECK_DEATH(pump->Quit(),
-                      "Check failed: in_run_. "
-                      "Quit was called outside of Run!");
+  ASSERT_DCHECK_DEATH(pump->Quit());
 }
 
 class BaseWatcher : public MessagePumpLibevent::Watcher {

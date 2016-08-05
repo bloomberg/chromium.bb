@@ -153,7 +153,7 @@ TEST(SimpleThreadTest, JoinNonJoinableThreadDeath) {
   DelegateSimpleThread thread(&runner, "noop_runner", options);
 
   thread.Start();
-  EXPECT_DCHECK_DEATH(thread.Join(), "");
+  EXPECT_DCHECK_DEATH(thread.Join());
 }
 
 TEST(SimpleThreadTest, DeleteNonJoinableWithoutJoinIsSafe) {

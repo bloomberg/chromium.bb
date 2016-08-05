@@ -354,7 +354,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAfterShutdown) {
 
   // |task_tracker_| shouldn't allow a task to be posted after shutdown.
   if (GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN) {
-    EXPECT_DCHECK_DEATH({ tracker_.WillPostTask(task.get()); }, "");
+    EXPECT_DCHECK_DEATH({ tracker_.WillPostTask(task.get()); });
   } else {
     EXPECT_FALSE(tracker_.WillPostTask(task.get()));
   }
@@ -382,12 +382,13 @@ TEST_P(TaskSchedulerTaskTrackerTest, SingletonAllowed) {
     tracker.RunNextTaskInSequence(
         CreateSequenceWithTask(std::move(task)).get());
   } else {
+#if !defined(OS_LINUX)  // http://crbug.com/634552
     EXPECT_DCHECK_DEATH(
         {
           tracker.RunNextTaskInSequence(
               CreateSequenceWithTask(std::move(task)).get());
-        },
-        "");
+        });
+#endif  // !defined(OS_LINUX)
   }
 }
 

@@ -155,9 +155,9 @@ TEST(SampleMapIteratorDeathTest, IterateDoneTest) {
   HistogramBase::Sample min;
   HistogramBase::Sample max;
   HistogramBase::Count count;
-  EXPECT_DCHECK_DEATH(it->Get(&min, &max, &count), "");
+  EXPECT_DCHECK_DEATH(it->Get(&min, &max, &count));
 
-  EXPECT_DCHECK_DEATH(it->Next(), "");
+  EXPECT_DCHECK_DEATH(it->Next());
 
   samples.Accumulate(1, 100);
   it = samples.Iterator();
