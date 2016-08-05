@@ -18,6 +18,7 @@
 #include "modules/canvas2d/CanvasPattern.h"
 #include "modules/canvas2d/HitRegionOptions.h"
 #include "modules/webgl/WebGLRenderingContext.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -134,6 +135,8 @@ void CanvasRenderingContextUsageTrackingTest::SetUp()
     m_fullImageData = ImageData::create(IntSize(10, 10));
 
     m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
+
+    RuntimeEnabledFeatures::setEnableCanvas2dDynamicRenderingModeSwitchingEnabled(true);
 }
 
 TEST_F(CanvasRenderingContextUsageTrackingTest, FillTracking)
@@ -190,14 +193,15 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, FillTracking)
     gradient = context2d()->createLinearGradient(0, 0, 100, 100);
     context2d()->setFillStyle(StringOrCanvasGradientOrCanvasPattern::fromCanvasGradient(gradient));
     context2d()->fillRect(10, 10, 100, 20);
-    EXPECT_EQ(1, context2d()->getUsage().numGradients);
+    EXPECT_EQ(1, context2d()->getUsage().numLinearGradients);
     EXPECT_NEAR(100 * 20, context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::LinearGradientFillType], 1.0);
 
     NonThrowableExceptionState exceptionState;
     gradient = context2d()->createRadialGradient(0, 0, 100, 100, 200, 200, exceptionState);
     context2d()->setFillStyle(StringOrCanvasGradientOrCanvasPattern::fromCanvasGradient(gradient));
     context2d()->fillRect(10, 10, 100, 20);
-    EXPECT_EQ(2, context2d()->getUsage().numGradients);
+    EXPECT_EQ(1, context2d()->getUsage().numLinearGradients);
+    EXPECT_EQ(1, context2d()->getUsage().numRadialGradients);
     EXPECT_NEAR(100 * 20, context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::RadialGradientFillType], 1.0);
 
     // create pattern
@@ -217,7 +221,8 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, FillTracking)
     EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::StrokePath]);
     EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::StrokeText]);
     EXPECT_EQ(0, context2d()->getUsage().numPutImageDataCalls);
-    EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::DrawImage]);
+    EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::DrawVectorImage]);
+    EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::DrawBitmapImage]);
     EXPECT_EQ(0, context2d()->getUsage().numGetImageDataCalls);
 }
 
@@ -257,7 +262,7 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, StrokeTracking)
     gradient = context2d()->createLinearGradient(0, 0, 100, 100);
     context2d()->setStrokeStyle(StringOrCanvasGradientOrCanvasPattern::fromCanvasGradient(gradient));
     context2d()->strokeRect(10, 10, 100, 100);
-    EXPECT_EQ(1, context2d()->getUsage().numGradients);
+    EXPECT_EQ(1, context2d()->getUsage().numLinearGradients);
     EXPECT_NEAR(100 * 100, context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::LinearGradientFillType], 1.0);
 
     // create pattern
@@ -277,7 +282,8 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, StrokeTracking)
     EXPECT_EQ(0, context2d()->getUsage().numNonConvexFillPathCalls);
     EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::FillText]);
     EXPECT_EQ(0, context2d()->getUsage().numPutImageDataCalls);
-    EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::DrawImage]);
+    EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::DrawVectorImage]);
+    EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::DrawBitmapImage]);
     EXPECT_EQ(0, context2d()->getUsage().numGetImageDataCalls);
 }
 
@@ -296,8 +302,11 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, ImageTracking)
         context2d()->getImageData(0, 0, 10, 100, exceptionState);
     }
 
-    EXPECT_NEAR(numReps * imgWidth * imgHeight, context2d()->getUsage().boundingBoxAreaDrawCalls[BaseRenderingContext2D::DrawImage], 0.1);
-    EXPECT_NEAR(numReps * (2*imgWidth + 2*imgHeight), context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::DrawImage], 0.1);
+    EXPECT_NEAR(numReps * imgWidth * imgHeight, context2d()->getUsage().boundingBoxAreaDrawCalls[BaseRenderingContext2D::DrawBitmapImage], 0.1);
+    EXPECT_NEAR(numReps * (2*imgWidth + 2*imgHeight), context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::DrawBitmapImage], 0.1);
+
+    EXPECT_NEAR(0.0, context2d()->getUsage().boundingBoxAreaDrawCalls[BaseRenderingContext2D::DrawVectorImage], 0.1);
+    EXPECT_NEAR(0.0, context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::DrawVectorImage], 0.1);
 
     context2d()->setFilter("blur(5px)");
     context2d()->drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, 10, 10, exceptionState);
@@ -306,7 +315,7 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, ImageTracking)
     EXPECT_NE(0, context2d()->getUsage().areaPutImageDataCalls);
     EXPECT_NEAR(numReps * m_fullImageData.get()->width() * m_fullImageData.get()->height(), context2d()->getUsage().areaPutImageDataCalls, 0.1);
 
-    EXPECT_EQ(numReps + 1, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::DrawImage]);
+    EXPECT_EQ(numReps + 1, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::DrawBitmapImage]);
     EXPECT_EQ(numReps, context2d()->getUsage().numGetImageDataCalls);
 
     EXPECT_EQ(1, context2d()->getUsage().numFilters);

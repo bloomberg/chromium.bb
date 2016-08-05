@@ -814,14 +814,21 @@ TEST_F(CanvasRenderingContext2DTest, IsAccelerationOptimalForCanvasContentHeuris
     EXPECT_TRUE(context->isAccelerationOptimalForCanvasContent());
 
     context->fillRect(10, 10, 100, 100);
-    EXPECT_FALSE(context->isAccelerationOptimalForCanvasContent());
-
-    context->drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, 10, 10, exceptionState);
     EXPECT_TRUE(context->isAccelerationOptimalForCanvasContent());
 
     int numReps = 100;
     for (int i = 0; i < numReps; i++) {
-        context->fillRect(10, 10, 100, 100);
+        context->fillText("Text", 10, 10, 1); // faster with no acceleration
+    }
+    EXPECT_FALSE(context->isAccelerationOptimalForCanvasContent());
+
+    for (int i = 0; i < numReps; i++) {
+        context->fillRect(10, 10, 200, 200); // faster with acceleration
+    }
+    EXPECT_TRUE(context->isAccelerationOptimalForCanvasContent());
+
+    for (int i = 0; i < numReps * 100; i++) {
+        context->strokeText("Text", 10, 10, 1); // faster with no acceleration
     }
     EXPECT_FALSE(context->isAccelerationOptimalForCanvasContent());
 }

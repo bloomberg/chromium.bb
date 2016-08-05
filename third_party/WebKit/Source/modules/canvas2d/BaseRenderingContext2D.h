@@ -13,6 +13,7 @@
 #include "modules/canvas2d/CanvasPathMethods.h"
 #include "modules/canvas2d/CanvasRenderingContext2DState.h"
 #include "modules/canvas2d/CanvasStyle.h"
+#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace blink {
@@ -165,7 +166,8 @@ public:
     enum DrawCallType {
         StrokePath = 0,
         FillPath,
-        DrawImage,
+        DrawVectorImage,
+        DrawBitmapImage,
         FillText,
         StrokeText,
         FillRect,
@@ -183,21 +185,23 @@ public:
 
     struct UsageCounters {
         int numDrawCalls[DrawCallTypeCount]; // use DrawCallType enum as index
-        double boundingBoxPerimeterDrawCalls[DrawCallTypeCount];
-        double boundingBoxAreaDrawCalls[DrawCallTypeCount];
-        double boundingBoxAreaFillType[PathFillTypeCount];
+        float boundingBoxPerimeterDrawCalls[DrawCallTypeCount];
+        float boundingBoxAreaDrawCalls[DrawCallTypeCount];
+        float boundingBoxAreaFillType[PathFillTypeCount];
         int numNonConvexFillPathCalls;
-        int numGradients;
+        float nonConvexFillPathArea;
+        int numRadialGradients;
+        int numLinearGradients;
         int numPatterns;
         int numDrawWithComplexClips;
         int numBlurredShadows;
-        double boundingBoxAreaTimesShadowBlurSquared;
-        double boundingBoxPerimeterTimesShadowBlurSquared;
+        float boundingBoxAreaTimesShadowBlurSquared;
+        float boundingBoxPerimeterTimesShadowBlurSquared;
         int numFilters;
         int numGetImageDataCalls;
-        double areaGetImageDataCalls;
+        float areaGetImageDataCalls;
         int numPutImageDataCalls;
-        double areaPutImageDataCalls;
+        float areaPutImageDataCalls;
         int numClearRectCalls;
         int numDrawFocusCalls;
         int numFramesSinceReset;
@@ -235,6 +239,8 @@ protected:
 
     mutable UsageCounters m_usageCounters;
 
+
+    float estimateRenderingCost(ExpensiveCanvasHeuristicParameters::RenderingModeCostIndex) const;
 private:
     void realizeSaves();
 

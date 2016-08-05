@@ -75,34 +75,65 @@ enum {
 
 // Approximate relative costs of different types of operations for the
 // accelerated rendering pipeline and the recording rendering pipeline.
-// These costs were estimated experimentally based on the performance
-// of each pipeline in the animometer benchmark. Multiple factors influence
-// the true cost of each type of operation, including:
-// - The hardware configuration
-// - Version of the project
-// - Additional details about the operation:
-//   - Subtype of operation (png vs svg image, arc vs line...)
-//   - Scale
-//   - Associated effects (patterns, gradients...)
-// The coefficients are equal to 1/n, where n is equal to the number of calls
-// of a type that can be performed in each frame while maintaining
-// 50 frames per second. They were estimated using the animometer benchmark.
+// These costs were estimated experimentally using the tools located in the
+// third_party/WebKit/Source/modules/canvas2d/performance_analysis directory.
 
-const double AcceleratedDrawPathApproximateCost     = 0.004;
-const double AcceleratedGetImageDataApproximateCost = 0.1;
-const double AcceleratedDrawImageApproximateCost    = 0.002;
+// The RenderingModeCostIndex enum is used to access the heuristic coefficients that correspond
+// to a given rendering mode. For exmaple, FillRectFixedCost[RecordingModeIndex] is the estimated
+// fixed cost for FillRect in recording mode.
+enum RenderingModeCostIndex {
+    RecordingModeIndex = 0,
+    AcceleratedModeIndex = 1,
+    NumRederingModesCostIdexes = 2
+};
 
-const double RecordingDrawPathApproximateCost           = 0.0014;
-const double UnacceleratedGetImageDataApproximateCost   = 0.001; // This cost is for non-display-list mode after fallback.
-const double RecordingDrawImageApproximateCost          = 0.004;
+const float FillRectFixedCost[NumRederingModesCostIdexes] = {6.190e-03f, 7.715e-03f};
+const float FillConvexPathFixedCost[NumRederingModesCostIdexes] = {1.251e-02f, 1.231e-02f};
+const float FillNonConvexPathFixedCost[NumRederingModesCostIdexes] = {1.714e-02f, 4.497e-02f};
+const float FillTextFixedCost[NumRederingModesCostIdexes] = {1.119e-02f, 2.203e-02f};
 
-// Coefficient used in the isAccelerationOptimalForCanvasContent
-// heuristic to create a bias in the output.
-// If set to a value greater than 1, it creates a bias towards suggesting acceleration.
-// If set to a value smaller than 1, it creates a bias towards not suggesting acceleration
-// For example, if its value is 1.5, then disabling gpu acceleration will only be suggested if
-// recordingCost * 1.5 < acceleratedCost.
-const double AcceleratedHeuristicBias = 1.5;
+const float StrokeRectFixedCost[NumRederingModesCostIdexes] = {1.485e-02f, 7.287e-03f};
+const float StrokePathFixedCost[NumRederingModesCostIdexes] = {2.390e-02f, 5.125e-02f};
+const float StrokeTextFixedCost[NumRederingModesCostIdexes] = {1.149e-02f, 1.742e-02f};
+
+const float FillRectVariableCostPerArea[NumRederingModesCostIdexes] = {2.933e-07f, 2.188e-09f};
+const float FillConvexPathVariableCostPerArea[NumRederingModesCostIdexes] = {7.871e-07f, 1.608e-07f};
+const float FillNonConvexPathVariableCostPerArea[NumRederingModesCostIdexes] = {8.336e-07f, 1.384e-06f};
+const float FillTextVariableCostPerArea[NumRederingModesCostIdexes] = {1.411e-06f, 0.0f};
+
+const float StrokeRectVariableCostPerArea[NumRederingModesCostIdexes] = {9.882e-07f, 0.0f};
+const float StrokePathVariableCostPerArea[NumRederingModesCostIdexes] = {1.583e-06f, 2.401e-06f};
+const float StrokeTextVariableCostPerArea[NumRederingModesCostIdexes] = {1.530e-06f, 6.699e-07f};
+
+const float PatternFillTypeFixedCost[NumRederingModesCostIdexes] = {1.377e-02f, 1.035e-02f};
+const float LinearGradientFillTypeFixedCost[NumRederingModesCostIdexes] = {7.694e-03f, 6.900e-03f};
+const float RadialGradientFillTypeFixedCost[NumRederingModesCostIdexes] = {2.260e-02f, 7.193e-03f};
+
+const float PatternFillTypeVariableCostPerArea[NumRederingModesCostIdexes] = {6.080e-07f, 0.0f};
+const float LinearGradientFillVariableCostPerArea[NumRederingModesCostIdexes] = {9.635e-07f, 0.0f};
+const float RadialGradientFillVariableCostPerArea[NumRederingModesCostIdexes] = {6.662e-06f, 0.0f};
+
+const float ShadowFixedCost[NumRederingModesCostIdexes] = {2.502e-02f, 2.274e-02f};
+const float ShadowVariableCostPerAreaTimesShadowBlurSquared[NumRederingModesCostIdexes] = {6.856e-09f, 0.0f};
+
+const float PutImageDataFixedCost[NumRederingModesCostIdexes] = {1.209e-03f, 1.885e-02f};
+const float PutImageDataVariableCostPerArea[NumRederingModesCostIdexes] = {6.231e-06f, 4.116e-06f};
+
+const float DrawSVGImageFixedCost[NumRederingModesCostIdexes] = {1.431e-01f, 2.958e-01f};
+const float DrawPNGImageFixedCost[NumRederingModesCostIdexes] = {1.278e-02f, 1.306e-02f};
+
+const float DrawSVGImageVariableCostPerArea[NumRederingModesCostIdexes] = {1.030e-05f, 4.463e-06f};
+const float DrawPNGImageVariableCostPerArea[NumRederingModesCostIdexes] = {1.727e-06f, 0.0f};
+
+// Two conditions must be met before the isAccelerationOptimalForCanvasContent heuristics recommends
+// switching out of the accelerated mode.
+//   1. The difference in estimated cost per frame is larger than MinCostPerFrameImprovementToSuggestDisableAcceleration.
+//      This ensures that the overhead involved in a switch of rendering mode and the risk of making a wrong decision
+//      are justified by a large expected increased performance.
+//   2. The percent reduction in rendering cost is larger than MinPercentageImprovementToSuggestDisableAcceleration.
+//      This ensures that there is a high level of confidence that the performance would be improved in recording mode.
+const float MinCostPerFrameImprovementToSuggestDisableAcceleration = 15.0f;
+const float MinPercentageImprovementToSuggestDisableAcceleration = 30.0f;
 
 // Minimum number of frames that need to be rendered
 // before the rendering pipeline may be switched. Having this set

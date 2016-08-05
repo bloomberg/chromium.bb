@@ -1070,28 +1070,20 @@ unsigned CanvasRenderingContext2D::hitRegionsCount() const
 
 bool CanvasRenderingContext2D::isAccelerationOptimalForCanvasContent() const
 {
-    // Simple heuristic to determine if the GPU accelerated pipeline should be
-    // used to maximize performance of 2D canvas based on past usage.
+    // Heuristic to determine if the GPU accelerated rendering pipeline is optimal
+    // for performance based on past usage. It has a bias towards suggesting that the
+    // accelerated pipeline is optimal.
 
-    int numDrawPathCalls =
-        m_usageCounters.numDrawCalls[StrokePath] +
-        m_usageCounters.numDrawCalls[FillPath] +
-        m_usageCounters.numDrawCalls[FillText] +
-        m_usageCounters.numDrawCalls[StrokeText] +
-        m_usageCounters.numDrawCalls[FillRect] +
-        m_usageCounters.numDrawCalls[StrokeRect];
+    float acceleratedCost = estimateRenderingCost(ExpensiveCanvasHeuristicParameters::AcceleratedModeIndex);
 
-    double acceleratedCost =
-        numDrawPathCalls * ExpensiveCanvasHeuristicParameters::AcceleratedDrawPathApproximateCost +
-        m_usageCounters.numGetImageDataCalls * ExpensiveCanvasHeuristicParameters::AcceleratedGetImageDataApproximateCost+
-        m_usageCounters.numDrawCalls[DrawImage] * ExpensiveCanvasHeuristicParameters::AcceleratedDrawImageApproximateCost;
+    float recordingCost = estimateRenderingCost(ExpensiveCanvasHeuristicParameters::RecordingModeIndex);
 
-    double recordingCost =
-        numDrawPathCalls * ExpensiveCanvasHeuristicParameters::RecordingDrawPathApproximateCost +
-        m_usageCounters.numGetImageDataCalls * ExpensiveCanvasHeuristicParameters::UnacceleratedGetImageDataApproximateCost +
-        m_usageCounters.numDrawCalls[DrawImage] * ExpensiveCanvasHeuristicParameters::RecordingDrawImageApproximateCost;
+    float costDifference = acceleratedCost - recordingCost;
+    float percentCostReduction = costDifference / acceleratedCost * 100.0;
+    float costDifferencePerFrame = costDifference / m_usageCounters.numFramesSinceReset;
 
-    if (recordingCost * ExpensiveCanvasHeuristicParameters::AcceleratedHeuristicBias < acceleratedCost) {
+    if (percentCostReduction >= ExpensiveCanvasHeuristicParameters::MinPercentageImprovementToSuggestDisableAcceleration
+        && costDifferencePerFrame >= ExpensiveCanvasHeuristicParameters::MinCostPerFrameImprovementToSuggestDisableAcceleration) {
         return false;
     }
     return true;
