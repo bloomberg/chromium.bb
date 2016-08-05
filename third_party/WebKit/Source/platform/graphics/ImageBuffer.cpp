@@ -254,6 +254,9 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint t
     GLbyte syncToken[24];
     gl->GenSyncTokenCHROMIUM(contextFenceSync, syncToken);
     sharedGL->WaitSyncTokenCHROMIUM(syncToken);
+    // This disassociates the texture from the mailbox to avoid leaking the
+    // mapping between the two.
+    sharedGL->ProduceTextureDirectCHROMIUM(0, textureInfo->fTarget, mailbox->name);
 
     // Undo grContext texture binding changes introduced in this function
     provider->grContext()->resetContext(kTextureBinding_GrGLBackendState);

@@ -44,7 +44,8 @@ void MailboxManagerImpl::ProduceTexture(const Mailbox& mailbox,
     mailbox_to_textures_.erase(it);
     textures_to_mailboxes_.erase(texture_it);
   }
-  InsertTexture(mailbox, texture);
+  if (texture)
+    InsertTexture(mailbox, texture);
 }
 
 void MailboxManagerImpl::InsertTexture(const Mailbox& mailbox,

@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modifed Date: June 2, 2014
+    Last Modifed Date: August 3, 2016
 
 Dependencies
 
@@ -69,7 +69,9 @@ New Procedures and Functions
     Associates the specified texture object with the mailbox name. Performs
     identically to glProduceTextureCHROMIUM except that the texture specified by
     <texture> is used instead of the currently bound texture. This operation
-    does not change the texture bindings or alter the bound texture in any way.
+    does not change the texture bindings or alter the bound texture in any
+    way. If <texture> is 0 then any previous association of the mailbox with a
+    texture object is broken and no new association is created.
 
     <texture> Specifies the name of a texture.
 
@@ -141,3 +143,4 @@ Revision History
                  sharing.
     6/02/2014    Added glProduceTextureDirectCHROMIUM and
                  glCreateAndConsumeTextureCHROMIUM definitions.
+    8/03/2016    Allow unbinding mailbox using glProduceTextureDirectCHROMIUM.

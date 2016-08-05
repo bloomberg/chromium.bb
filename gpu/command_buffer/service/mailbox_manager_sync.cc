@@ -239,6 +239,9 @@ void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
     group_for_mailbox->RemoveName(mailbox);
   }
 
+  if (!texture)
+    return;
+
   if (group_for_texture) {
     group_for_texture->AddName(mailbox);
   } else {
