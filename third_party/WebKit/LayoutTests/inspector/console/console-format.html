@@ -114,6 +114,8 @@ function test()
 
         function onRemoteObjectsLoaded()
         {
+            InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
+            InspectorTest.addResult("Expanded all messages");
             InspectorTest.expandConsoleMessages(InspectorTest.expandConsoleMessagesErrorParameters.bind(this, finish), undefined, function(section) { return section.element.firstChild.textContent !== "#text"; });
         }
 

@@ -45,7 +45,6 @@ function test()
             var next = current + 1;
             if (next === total) {
                 InspectorTest.evaluateInPage("tearDown()");
-                InspectorTest.expandConsoleMessages();
                 InspectorTest.deprecatedRunAfterPendingDispatches(finish);
             } else {
                 loopOverGlobals(next, total);

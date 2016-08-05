@@ -47,13 +47,15 @@ function test()
         {
             var next = current + 1;
             if (next == total.description)
-                InspectorTest.expandConsoleMessages(finish);
+                finish();
             else
                 loopOverGlobals(next, total);
         }
 
         function finish()
         {
+            InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+            InspectorTest.addResult("Expanded all messages");
             InspectorTest.expandConsoleMessages(dumpConsoleMessages);
         }
 

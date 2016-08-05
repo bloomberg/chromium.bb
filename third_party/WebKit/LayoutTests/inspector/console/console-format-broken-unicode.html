@@ -29,16 +29,27 @@ function test()
 
     function step3()
     {
-        InspectorTest.evaluateInPage("obj.foo", step4);
+        InspectorTest.expandConsoleMessages(step4, expandFirstArrayIndexFilter);
     }
 
-    function step4(result)
+    function step4()
+    {
+        InspectorTest.evaluateInPage("obj.foo", step5);
+    }
+
+    function step5(result)
     {
         var text = result.description;
         InspectorTest.assertEquals(15, text.length, "text length");
-        InspectorTest.assertEquals(7, countTextNodes(text), "nodes count");
+        InspectorTest.assertEquals(6, countTextNodes(text), "nodes count");
         InspectorTest.addResult("PASS: Found all nodes with the broken text");
         InspectorTest.completeTest();
+    }
+
+    function expandFirstArrayIndexFilter(treeElement)
+    {
+        var propertyName = treeElement.nameElement && treeElement.nameElement.textContent;
+        return propertyName === "0";
     }
 
     function countTextNodes(textContent)

@@ -97,6 +97,188 @@ CONSOLE MESSAGE: line 13: [object Uint8Array]
 Tests that console logging dumps proper messages.
 
  console-format.html:21 Array[10]
+console-format.html:22 Array[10]
+console-format.html:23 Array[10]
+console-format.html:24 Test for zero "0" in formatter
+console-format.html:25 % self-escape1 dummy
+console-format.html:26 %s self-escape2 dummy
+console-format.html:27 %ss self-escape3 dummy
+console-format.html:28 %sdummy%s self-escape4
+console-format.html:29 %%% self-escape5 dummy
+console-format.html:30 %dummy self-escape6
+console-format.html:7 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
+console-format.html:8 [/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]
+globals[0]
+/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
+console-format.html:7 /foo\\bar\sbaz/i
+console-format.html:8 [/foo\\bar\sbaz/i]
+globals[1]
+/foo\\bar\sbaz/i
+console-format.html:7 test
+console-format.html:8 ["test"]
+globals[2]
+"test"
+console-format.html:7 test named "test"
+console-format.html:8 ["test named "test""]
+globals[3]
+"test named "test""
+console-format.html:7 Error(…)
+console-format.html:8 [Error
+]
+globals[4]
+Error(…)
+console-format.html:7 Error: my error message(…)
+console-format.html:8 [Error: my error message
+]
+globals[5]
+Error: my error message(…)
+console-format.html:7 Error: my multiline(…)
+console-format.html:8 [Error: my multiline
+error message
+]
+globals[6]
+Error: my multiline(…)
+console-format.html:7 
+    <p id="p">Tests that console logging dumps proper messages.</p>
+console-format.html:8 [p#p]
+globals[7]
+    <p id="p">Tests that console logging dumps proper messages.</p>
+console-format.html:7 () { return 1; }
+console-format.html:8 [function]
+globals[8]
+() { return 1; }
+console-format.html:7 () {
+        return 2;
+    }
+console-format.html:8 [function]
+globals[9]
+() {
+        return 2;
+    }
+console-format.html:7 0.12
+console-format.html:8 [0.12]
+globals[10]
+0.12
+console-format.html:7 http://webkit.org/
+console-format.html:8 ["http://webkit.org/"]
+globals[11]
+"http://webkit.org/"
+console-format.html:7 null
+console-format.html:8 [null]
+globals[12]
+null
+console-format.html:7 undefined
+console-format.html:8 [undefined]
+globals[13]
+undefined
+console-format.html:7 
+    attr=""
+console-format.html:8 [attr]
+globals[14]
+    attr=""
+console-format.html:7 
+    attr="value"
+console-format.html:8 [attr]
+globals[15]
+    attr="value"
+console-format.html:7 
+    id="x"
+console-format.html:8 [id]
+globals[16]
+    id="x"
+console-format.html:7 Object {}
+console-format.html:8 [Object]
+globals[17]
+Object {}
+console-format.html:7 NaN
+console-format.html:8 [NaN]
+globals[18]
+NaN
+console-format.html:7 Infinity
+console-format.html:8 [Infinity]
+globals[19]
+Infinity
+console-format.html:7 -Infinity
+console-format.html:8 [-Infinity]
+globals[20]
+-Infinity
+console-format.html:7 ["test", "test2", 4: "test4", foo: Object]
+console-format.html:8 [Array[10]]
+globals[21]
+["test", "test2", undefined × 2, "test4", undefined × 5]
+console-format.html:7 Object {}
+console-format.html:8 [Object]
+globals[22]
+Object {}
+console-format.html:7 [function]
+console-format.html:8 [Array[1]]
+globals[23]
+[function]
+console-format.html:7 Object {bar: "bar"}
+console-format.html:8 [Object]
+globals[24]
+Object {bar: "bar"}
+console-format.html:7 
+    <svg id="svg-node"></svg>
+console-format.html:8 [svg#svg-node]
+globals[25]
+    <svg id="svg-node"></svg>
+console-format.html:7 Object {}
+console-format.html:8 [Object]
+globals[26]
+Object {}
+console-format.html:7 -0
+console-format.html:8 [-0]
+globals[27]
+-0
+console-format.html:7 Object {}
+console-format.html:8 [Object]
+globals[28]
+Object {}
+console-format.html:7 Object() { [native code] }
+console-format.html:8 [function]
+globals[29]
+Object() { [native code] }
+console-format.html:7 Object {}
+console-format.html:8 [Object]
+globals[30]
+Object {}
+console-format.html:7 ( /**/ foo/**/, /*/**/bar,
+    /**/baz) {}
+console-format.html:8 [function]
+globals[31]
+( /**/ foo/**/, /*/**/bar,
+    /**/baz) {}
+console-format.html:7 Number {[[PrimitiveValue]]: 42}
+console-format.html:8 [Number]
+globals[32]
+Number {[[PrimitiveValue]]: 42}
+console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+console-format.html:8 [String]
+globals[33]
+String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+console-format.html:7 [1, 2, 3]
+console-format.html:8 [Uint16Array[3]]
+globals[34]
+[1, 2, 3]
+console-format.html:7 #text
+console-format.html:8 [text]
+globals[35]
+#text
+console-format.html:7 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+console-format.html:8 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
+globals[36]
+DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+console-format.html:7 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…]
+console-format.html:8 [Uint8Array[400]]
+globals[37]
+Uint8Array[400]
+console-format.html:7 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…]
+console-format.html:8 [Uint8Array[400000000]]
+globals[38]
+Uint8Array[400000000]
+Expanded all messages
+console-format.html:21 Array[10]
     0: "test"
     1: "test2"
     4: "test4"
@@ -125,44 +307,42 @@ console-format.html:28 %sdummy%s self-escape4
 console-format.html:29 %%% self-escape5 dummy
 console-format.html:30 %dummy self-escape6
 console-format.html:7 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
-console-format.html:8 [/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]
+console-format.html:8 Array[1]
     0: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
     length: 1
     __proto__: Array[0]
 globals[0]
 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
 console-format.html:7 /foo\\bar\sbaz/i
-console-format.html:8 [/foo\\bar\sbaz/i]
+console-format.html:8 Array[1]
     0: /foo\\bar\sbaz/i
     length: 1
     __proto__: Array[0]
 globals[1]
 /foo\\bar\sbaz/i
 console-format.html:7 test
-console-format.html:8 ["test"]
+console-format.html:8 Array[1]
     0: "test"
     length: 1
     __proto__: Array[0]
 globals[2]
 "test"
 console-format.html:7 test named "test"
-console-format.html:8 ["test named "test""]
+console-format.html:8 Array[1]
     0: "test named "test""
     length: 1
     __proto__: Array[0]
 globals[3]
 "test named "test""
 console-format.html:7 Error
-console-format.html:8 [Error
-]
+console-format.html:8 Array[1]
     0: Error
     length: 1
     __proto__: Array[0]
 globals[4]
 Error
 console-format.html:7 Error: my error message
-console-format.html:8 [Error: my error message
-]
+console-format.html:8 Array[1]
     0: Error: my error message
     length: 1
     __proto__: Array[0]
@@ -170,9 +350,7 @@ globals[5]
 Error: my error message
 console-format.html:7 Error: my multiline
 error message
-console-format.html:8 [Error: my multiline
-error message
-]
+console-format.html:8 Array[1]
     0: Error: my multiline
 error message
     length: 1
@@ -182,14 +360,14 @@ Error: my multiline
 error message
 console-format.html:7 
     <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:8 [p#p]
+console-format.html:8 Array[1]
     0: p#p
     length: 1
     __proto__: Array[0]
 globals[7]
     <p id="p">Tests that console logging dumps proper messages.</p>
 console-format.html:7 () { return 1; }
-console-format.html:8 [function]
+console-format.html:8 Array[1]
     0: ()
     length: 1
     __proto__: Array[0]
@@ -198,7 +376,7 @@ globals[8]
 console-format.html:7 () {
         return 2;
     }
-console-format.html:8 [function]
+console-format.html:8 Array[1]
     0: ()
     length: 1
     __proto__: Array[0]
@@ -207,28 +385,28 @@ globals[9]
         return 2;
     }
 console-format.html:7 0.12
-console-format.html:8 [0.12]
+console-format.html:8 Array[1]
     0: 0.12
     length: 1
     __proto__: Array[0]
 globals[10]
 0.12
 console-format.html:7 http://webkit.org/
-console-format.html:8 ["http://webkit.org/"]
+console-format.html:8 Array[1]
     0: "http://webkit.org/"
     length: 1
     __proto__: Array[0]
 globals[11]
 "http://webkit.org/"
 console-format.html:7 null
-console-format.html:8 [null]
+console-format.html:8 Array[1]
     0: null
     length: 1
     __proto__: Array[0]
 globals[12]
 null
 console-format.html:7 undefined
-console-format.html:8 [undefined]
+console-format.html:8 Array[1]
     0: undefined
     length: 1
     __proto__: Array[0]
@@ -236,7 +414,7 @@ globals[13]
 undefined
 console-format.html:7 
     attr=""
-console-format.html:8 [attr]
+console-format.html:8 Array[1]
     0: attr
     length: 1
     __proto__: Array[0]
@@ -244,7 +422,7 @@ globals[14]
     attr=""
 console-format.html:7 
     attr="value"
-console-format.html:8 [attr]
+console-format.html:8 Array[1]
     0: attr
     length: 1
     __proto__: Array[0]
@@ -252,147 +430,147 @@ globals[15]
     attr="value"
 console-format.html:7 
     id="x"
-console-format.html:8 [id]
+console-format.html:8 Array[1]
     0: id
     length: 1
     __proto__: Array[0]
 globals[16]
     id="x"
-console-format.html:7 Object {}
+console-format.html:7 Object
     length: (...)
     get length: length()
     __proto__: Object
-console-format.html:8 [Object]
+console-format.html:8 Array[1]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[17]
-Object {}
+Object
     length: (...)
     get length: length()
     __proto__: Object
 console-format.html:7 NaN
-console-format.html:8 [NaN]
+console-format.html:8 Array[1]
     0: NaN
     length: 1
     __proto__: Array[0]
 globals[18]
 NaN
 console-format.html:7 Infinity
-console-format.html:8 [Infinity]
+console-format.html:8 Array[1]
     0: Infinity
     length: 1
     __proto__: Array[0]
 globals[19]
 Infinity
 console-format.html:7 -Infinity
-console-format.html:8 [-Infinity]
+console-format.html:8 Array[1]
     0: -Infinity
     length: 1
     __proto__: Array[0]
 globals[20]
 -Infinity
-console-format.html:7 ["test", "test2", 4: "test4", foo: Object]
+console-format.html:7 Array[10]
     0: "test"
     1: "test2"
     4: "test4"
     foo: Object
     length: 10
     __proto__: Array[0]
-console-format.html:8 [Array[10]]
+console-format.html:8 Array[1]
     0: Array[10]
     length: 1
     __proto__: Array[0]
 globals[21]
-["test", "test2", undefined × 2, "test4", undefined × 5]
+Array[10]
     0: "test"
     1: "test2"
     4: "test4"
     foo: Object
     length: 10
     __proto__: Array[0]
-console-format.html:7 Object {}
+console-format.html:7 Object
     __proto__: Object
-console-format.html:8 [Object]
+console-format.html:8 Array[1]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[22]
-Object {}
+Object
     __proto__: Object
-console-format.html:7 [function]
+console-format.html:7 Array[1]
     0: ()
     length: 1
     __proto__: Array[0]
-console-format.html:8 [Array[1]]
+console-format.html:8 Array[1]
     0: Array[1]
     length: 1
     __proto__: Array[0]
 globals[23]
-[function]
+Array[1]
     0: ()
     length: 1
     __proto__: Array[0]
-console-format.html:7 Object {bar: "bar"}
+console-format.html:7 Object
     bar: "bar"
     __proto__: Object
-console-format.html:8 [Object]
+console-format.html:8 Array[1]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[24]
-Object {bar: "bar"}
+Object
     bar: "bar"
     __proto__: Object
 console-format.html:7 
     <svg id="svg-node"></svg>
-console-format.html:8 [svg#svg-node]
+console-format.html:8 Array[1]
     0: svg#svg-node
     length: 1
     __proto__: Array[0]
 globals[25]
     <svg id="svg-node"></svg>
-console-format.html:7 Object {}
+console-format.html:7 Object
     bar: (...)
     get bar: ()
     set bar: (x)
     getFoo: ()
     __proto__: Object
-console-format.html:8 [Object]
+console-format.html:8 Array[1]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[26]
-Object {}
+Object
     bar: (...)
     get bar: ()
     set bar: (x)
     getFoo: ()
     __proto__: Object
 console-format.html:7 -0
-console-format.html:8 [-0]
+console-format.html:8 Array[1]
     0: -0
     length: 1
     __proto__: Array[0]
 globals[27]
 -0
-console-format.html:7 Object {}
+console-format.html:7 Object
     No Properties
-console-format.html:8 [Object]
+console-format.html:8 Array[1]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[28]
-Object {}
+Object
     No Properties
 console-format.html:7 Object() { [native code] }
-console-format.html:8 [function]
+console-format.html:8 Array[1]
     0: Object()
     length: 1
     __proto__: Array[0]
 globals[29]
 Object() { [native code] }
-console-format.html:7 Object {}
+console-format.html:7 Object
     __defineGetter__: __defineGetter__()
     __defineSetter__: __defineSetter__()
     __lookupGetter__: __lookupGetter__()
@@ -406,12 +584,12 @@ console-format.html:7 Object {}
     valueOf: valueOf()
     get __proto__: __proto__()
     set __proto__: __proto__()
-console-format.html:8 [Object]
+console-format.html:8 Array[1]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[30]
-Object {}
+Object
     __defineGetter__: __defineGetter__()
     __defineSetter__: __defineSetter__()
     __lookupGetter__: __lookupGetter__()
@@ -427,44 +605,44 @@ Object {}
     set __proto__: __proto__()
 console-format.html:7 ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
-console-format.html:8 [function]
+console-format.html:8 Array[1]
     0: ( /**/ foo/**/, /*/**/bar,     /**/baz)
     length: 1
     __proto__: Array[0]
 globals[31]
 ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
-console-format.html:7 Number {[[PrimitiveValue]]: 42}
+console-format.html:7 Number
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format.html:8 [Number]
+console-format.html:8 Array[1]
     0: Number
     length: 1
     __proto__: Array[0]
 globals[32]
-Number {[[PrimitiveValue]]: 42}
+Number
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+console-format.html:7 String
     0: "a"
     1: "b"
     2: "c"
     length: 3
     __proto__: String
     [[PrimitiveValue]]: "abc"
-console-format.html:8 [String]
+console-format.html:8 Array[1]
     0: String
     length: 1
     __proto__: Array[0]
 globals[33]
-String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+String
     0: "a"
     1: "b"
     2: "c"
     length: 3
     __proto__: String
     [[PrimitiveValue]]: "abc"
-console-format.html:7 [1, 2, 3]
+console-format.html:7 Uint16Array[3]
     0: 1
     1: 2
     2: 3
@@ -474,12 +652,12 @@ console-format.html:7 [1, 2, 3]
     length: (...)
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
-console-format.html:8 [Uint16Array[3]]
+console-format.html:8 Array[1]
     0: Uint16Array[3]
     length: 1
     __proto__: Array[0]
 globals[34]
-[1, 2, 3]
+Uint16Array[3]
     0: 1
     1: 2
     2: 3
@@ -490,27 +668,27 @@ globals[34]
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
 console-format.html:7 #text
-console-format.html:8 [text]
+console-format.html:8 Array[1]
     0: text
     length: 1
     __proto__: Array[0]
 globals[35]
 #text
 console-format.html:7 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format.html:8 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
+console-format.html:8 Array[1]
     0: DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
     length: 1
     __proto__: Array[0]
 globals[36]
 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format.html:7 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…]
+console-format.html:7 Uint8Array[400]
     [0 … 99]
     [100 … 199]
     [200 … 299]
     [300 … 399]
     foo: "bar"
     __proto__: TypedArray
-console-format.html:8 [Uint8Array[400]]
+console-format.html:8 Array[1]
     0: Uint8Array[400]
     length: 1
     __proto__: Array[0]
@@ -522,13 +700,13 @@ Uint8Array[400]
     [300 … 399]
     foo: "bar"
     __proto__: TypedArray
-console-format.html:7 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…]
+console-format.html:7 Uint8Array[400000000]
     [0 … 99999999]
     [100000000 … 199999999]
     [200000000 … 299999999]
     [300000000 … 399999999]
     __proto__: TypedArray
-console-format.html:8 [Uint8Array[400000000]]
+console-format.html:8 Array[1]
     0: Uint8Array[400000000]
     length: 1
     __proto__: Array[0]

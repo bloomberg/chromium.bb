@@ -33,7 +33,6 @@ function test()
         var consoleView = WebInspector.ConsoleView.instance();
         consoleView._viewport.invalidate()
         var element = consoleView._visibleViewMessages[0].contentElement();
-        dumpNoteVisible(element, "info-note");
 
         InspectorTest.dumpConsoleMessages(false, true);
         InspectorTest.evaluateInPage("window.accessedGet", dumpAccessedGetAndExpand);
