@@ -14,10 +14,15 @@
 #include "gpu/config/gpu_switches.h"
 
 // static
-void GLStringManager::RegisterPrefs(PrefRegistrySimple* registry) {
+void GpuProfileCache::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kGLVendorString, std::string());
   registry->RegisterStringPref(prefs::kGLRendererString, std::string());
   registry->RegisterStringPref(prefs::kGLVersionString, std::string());
+}
+
+// static
+GpuProfileCache* GpuProfileCache::Create() {
+  return new GLStringManager();
 }
 
 GLStringManager::GLStringManager() {

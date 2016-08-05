@@ -60,7 +60,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
-#include "chrome/browser/gpu/gl_string_manager.h"
+#include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "chrome/browser/gpu/three_d_api_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/memory/tab_manager.h"
@@ -951,16 +951,15 @@ int ChromeBrowserMainParts::PreCreateThreads() {
       chrome_extra_parts_[i]->PreCreateThreads();
   }
 
-  // It is important to call gl_string_manager()->Initialize() before starting
-  // the gpu process. Internally it properly setup the black listed features.
-  // Which it is used to decide whether to start or not the gpu process from
-  // BrowserMainLoop::BrowserThreadsStarted.
+  // It is important to call gpu_profile_cache()->Initialize() before
+  // starting the gpu process. Internally it properly setup the black listed
+  // features. Which it is used to decide whether to start or not the gpu
+  // process from BrowserMainLoop::BrowserThreadsStarted.
 
   // Retrieve cached GL strings from local state and use them for GPU
   // blacklist decisions.
-
-  if (g_browser_process->gl_string_manager())
-    g_browser_process->gl_string_manager()->Initialize();
+  if (g_browser_process->gpu_profile_cache())
+    g_browser_process->gpu_profile_cache()->Initialize();
 
   // Create an instance of GpuModeManager to watch gpu mode pref change.
   g_browser_process->gpu_mode_manager();

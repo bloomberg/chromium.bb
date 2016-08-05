@@ -107,8 +107,8 @@ class BrowserProcessImpl : public BrowserProcess,
   policy::BrowserPolicyConnector* browser_policy_connector() override;
   policy::PolicyService* policy_service() override;
   IconManager* icon_manager() override;
-  GLStringManager* gl_string_manager() override;
   GpuModeManager* gpu_mode_manager() override;
+  GpuProfileCache* gpu_profile_cache() override;
   void CreateDevToolsHttpProtocolHandler(const std::string& ip,
                                          uint16_t port) override;
   void CreateDevToolsAutoOpener() override;
@@ -211,7 +211,7 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_icon_manager_;
   std::unique_ptr<IconManager> icon_manager_;
 
-  std::unique_ptr<GLStringManager> gl_string_manager_;
+  std::unique_ptr<GpuProfileCache> gpu_profile_cache_;
 
   std::unique_ptr<GpuModeManager> gpu_mode_manager_;
 

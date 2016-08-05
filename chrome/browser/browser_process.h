@@ -24,8 +24,8 @@ class BackgroundModeManager;
 class CRLSetFetcher;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
-class GLStringManager;
 class GpuModeManager;
+class GpuProfileCache;
 class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
@@ -180,9 +180,9 @@ class BrowserProcess {
 
   virtual IconManager* icon_manager() = 0;
 
-  virtual GLStringManager* gl_string_manager() = 0;
-
   virtual GpuModeManager* gpu_mode_manager() = 0;
+
+  virtual GpuProfileCache* gpu_profile_cache() = 0;
 
   // Create and bind remote debugging server to a given |ip| and |port|.
   // Passing empty |ip| results in binding to localhost:

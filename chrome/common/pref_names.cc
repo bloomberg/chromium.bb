@@ -1215,6 +1215,15 @@ const char kLocalDiscoveryNotificationsEnabled[] =
 #if defined(OS_ANDROID)
 // Enable vibration for web notifications.
 const char kNotificationsVibrateEnabled[] = "notifications.vibrate_enabled";
+
+// Cached information about GPU driver.
+const char kGLExtensionsString[] = "gl_extensions_string";
+const char kGpuDriverInfoMaxSamples[] = "gpu_driver_info_max_samples";
+const char kGpuDriverInfoResetNotificationStrategy[] =
+    "gpu_driver_info_reset_notification_strategy";
+const char kGpuDriverInfoShaderVersion[] = "gpu_driver_info_shader_version";
+const char kGpuDriverInfoBuildFingerPrint[] =
+    "gpu_driver_info_build_finder_print";
 #endif
 
 // Maps from app ids to origin + Service Worker registration ID.

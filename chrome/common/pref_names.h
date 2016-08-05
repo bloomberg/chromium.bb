@@ -439,6 +439,14 @@ extern const char kGLVendorString[];
 extern const char kGLRendererString[];
 extern const char kGLVersionString[];
 
+#if defined(OS_ANDROID)
+extern const char kGLExtensionsString[];
+extern const char kGpuDriverInfoMaxSamples[];
+extern const char kGpuDriverInfoResetNotificationStrategy[];
+extern const char kGpuDriverInfoShaderVersion[];
+extern const char kGpuDriverInfoBuildFingerPrint[];
+#endif
+
 // Android has it's own metric / crash reporting implemented in Android
 // Java code so kMetricsReportingEnabled doesn't make sense. We use this
 // to inform crashes_ui that we have enabled crash reporting.

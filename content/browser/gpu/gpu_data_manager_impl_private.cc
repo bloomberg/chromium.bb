@@ -536,9 +536,14 @@ void GpuDataManagerImplPrivate::Initialize() {
     // So mark it as collected.
     gpu_info.basic_info_state = gpu::kCollectInfoSuccess;
   } else {
-    TRACE_EVENT0("startup",
-      "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
-    gpu::CollectBasicGraphicsInfo(&gpu_info);
+    // Skip collecting the basic driver info if SetGpuInfo() is already called.
+    if (IsCompleteGpuInfoAvailable()) {
+      gpu_info = gpu_info_;
+    } else {
+      TRACE_EVENT0("startup",
+                   "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
+      gpu::CollectBasicGraphicsInfo(&gpu_info);
+    }
 
     if (command_line->HasSwitch(switches::kGpuTestingVendorId) &&
         command_line->HasSwitch(switches::kGpuTestingDeviceId)) {
@@ -854,6 +859,12 @@ void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
 
   EnableSwiftShaderIfNecessary();
   NotifyGpuInfoUpdate();
+}
+
+void GpuDataManagerImplPrivate::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
+  DCHECK(!is_initialized_);
+  gpu_info_ = gpu_info;
+  DCHECK(IsCompleteGpuInfoAvailable());
 }
 
 std::string GpuDataManagerImplPrivate::GetBlacklistVersion() const {

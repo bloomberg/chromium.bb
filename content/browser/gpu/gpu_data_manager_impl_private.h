@@ -65,6 +65,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
                     std::string* gl_renderer,
                     std::string* gl_version);
   void DisableHardwareAcceleration();
+  void SetGpuInfo(const gpu::GPUInfo& gpu_info);
 
   void Initialize();
 

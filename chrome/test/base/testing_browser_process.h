@@ -73,7 +73,7 @@ class TestingBrowserProcess : public BrowserProcess {
   policy::BrowserPolicyConnector* browser_policy_connector() override;
   policy::PolicyService* policy_service() override;
   IconManager* icon_manager() override;
-  GLStringManager* gl_string_manager() override;
+  GpuProfileCache* gpu_profile_cache() override;
   GpuModeManager* gpu_mode_manager() override;
   BackgroundModeManager* background_mode_manager() override;
   void set_background_mode_manager_for_test(

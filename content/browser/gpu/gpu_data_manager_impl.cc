@@ -134,6 +134,11 @@ void GpuDataManagerImpl::GetDisabledExtensions(
   private_->GetDisabledExtensions(disabled_extensions);
 }
 
+void GpuDataManagerImpl::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
+  base::AutoLock auto_lock(lock_);
+  private_->SetGpuInfo(gpu_info);
+}
+
 void GpuDataManagerImpl::Initialize() {
   base::AutoLock auto_lock(lock_);
   private_->Initialize();

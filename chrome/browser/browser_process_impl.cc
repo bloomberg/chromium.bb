@@ -45,8 +45,8 @@
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_status_updater.h"
-#include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
+#include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
@@ -621,11 +621,11 @@ IconManager* BrowserProcessImpl::icon_manager() {
   return icon_manager_.get();
 }
 
-GLStringManager* BrowserProcessImpl::gl_string_manager() {
+GpuProfileCache* BrowserProcessImpl::gpu_profile_cache() {
   DCHECK(CalledOnValidThread());
-  if (!gl_string_manager_.get())
-    gl_string_manager_.reset(new GLStringManager());
-  return gl_string_manager_.get();
+  if (!gpu_profile_cache_.get())
+    gpu_profile_cache_.reset(GpuProfileCache::Create());
+  return gpu_profile_cache_.get();
 }
 
 GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {

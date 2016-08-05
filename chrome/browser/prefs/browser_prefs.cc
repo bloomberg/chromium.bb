@@ -24,8 +24,8 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
-#include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
+#include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -334,8 +334,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ExternalProtocolHandler::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   geolocation::RegisterPrefs(registry);
-  GLStringManager::RegisterPrefs(registry);
   GpuModeManager::RegisterPrefs(registry);
+  GpuProfileCache::RegisterPrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
   IOThread::RegisterPrefs(registry);
   network_time::NetworkTimeTracker::RegisterPrefs(registry);

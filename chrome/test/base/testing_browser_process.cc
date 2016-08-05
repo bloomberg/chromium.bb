@@ -168,7 +168,7 @@ IconManager* TestingBrowserProcess::icon_manager() {
   return nullptr;
 }
 
-GLStringManager* TestingBrowserProcess::gl_string_manager() {
+GpuProfileCache* TestingBrowserProcess::gpu_profile_cache() {
   return nullptr;
 }
 
