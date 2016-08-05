@@ -9,6 +9,9 @@ cr.define('settings', function() {
   /** @const {string} */
   var HIT_CSS_CLASS = 'search-highlight-hit';
 
+  /** @const {string} */
+  var SEARCH_BUBBLE_CSS_CLASS = 'search-bubble';
+
   /**
    * List of elements types that should not be searched at all.
    * The only DOM-MODULE node is in <body> which is not searched, therefore
@@ -36,7 +39,8 @@ cr.define('settings', function() {
 
   /**
    * Finds all previous highlighted nodes under |node| (both within self and
-   * children's Shadow DOM) and removes the highlight (yellow rectangle).
+   * children's Shadow DOM) and removes the highlights (yellow rectangle and
+   * search bubbles).
    * TODO(dpapad): Consider making this a private method of TopLevelSearchTask.
    * @param {!Node} node
    * @private
@@ -61,6 +65,11 @@ cr.define('settings', function() {
 
       wrapper.parentElement.replaceChild(wrapper.firstChild, wrapper);
     }
+
+    var searchBubbles = node.querySelectorAll(
+        '* /deep/ .' + SEARCH_BUBBLE_CSS_CLASS);
+    for (var searchBubble of searchBubbles)
+      searchBubble.remove();
   }
 
   /**
@@ -87,7 +96,6 @@ cr.define('settings', function() {
       } else {
         var span = document.createElement('span');
         span.classList.add(HIT_CSS_CLASS);
-        span.style.backgroundColor = 'yellow';
         span.textContent = tokens[i];
         wrapper.appendChild(span);
       }
@@ -124,7 +132,7 @@ cr.define('settings', function() {
 
         if (request.regExp.test(textContent)) {
           foundMatches = true;
-          revealParentSection_(node);
+          revealParentSection_(node, request.rawQuery_);
           highlight_(node, textContent.split(request.regExp));
         }
         // Returning early since TEXT_NODE nodes never have children.
@@ -150,18 +158,62 @@ cr.define('settings', function() {
   }
 
   /**
+   * Highlights the HTML control that triggers a subpage, by displaying a search
+   * bubble.
+   * @param {!HTMLElement} element The element to be highlighted.
+   * @param {string} rawQuery The search query.
+   * @private
+   */
+  function highlightAssociatedControl_(element, rawQuery) {
+    var searchBubble = element.querySelector('.' + SEARCH_BUBBLE_CSS_CLASS);
+    // If the associated control has already been highlighted due to another
+    // match on the same subpage, there is no need to do anything.
+    if (searchBubble)
+      return;
+
+    searchBubble = document.createElement('div');
+    searchBubble.classList.add(SEARCH_BUBBLE_CSS_CLASS);
+    var innards = document.createElement('div');
+    innards.classList.add('search-bubble-innards');
+    innards.textContent = rawQuery;
+    searchBubble.appendChild(innards);
+    element.appendChild(searchBubble);
+
+    // Dynamically position the bubble at the edge the associated controle
+    // elemnt.
+    searchBubble.style.left = '-' + searchBubble.offsetWidth + 'px';
+  }
+
+  /**
    * Finds and makes visible the <settings-section> parent of |node|.
    * @param {!Node} node
+   * @param {string} rawQuery
+   * @private
    */
-  function revealParentSection_(node) {
+  function revealParentSection_(node, rawQuery) {
+    var associatedControl = null;
     // Find corresponding SETTINGS-SECTION parent and make it visible.
     var parent = node;
     while (parent && parent.nodeName !== 'SETTINGS-SECTION') {
       parent = parent.nodeType == Node.DOCUMENT_FRAGMENT_NODE ?
           parent.host : parent.parentNode;
+      if (parent.nodeName == 'SETTINGS-SUBPAGE') {
+        // TODO(dpapad): Cast to SettingsSubpageElement here.
+        if (!parent.noAssociatedControl) {
+          associatedControl = assert(
+              parent.associatedControl,
+              'An associated control was expected for SETTINGS-SUBPAGE ' +
+                  parent.pageTitle + ', but was not found.');
+        }
+      }
     }
     if (parent)
       parent.hidden = false;
+
+    // Need to add the search bubble after the parent SETTINGS-SECTION has
+    // become visible, otherwise |offsetWidth| returns zero.
+    if (associatedControl)
+      highlightAssociatedControl_(associatedControl, rawQuery);
   }
 
   /**

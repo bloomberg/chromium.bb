@@ -343,6 +343,36 @@
         height: 16px;
         width: 16px;
       }
+
+      .search-bubble {
+        pointer-events: none;
+        position: absolute;
+      }
+
+      .search-bubble-innards {
+        align-items: center;
+        background-color: var(--paper-yellow-500);
+        border-radius: 2px;
+        display: flex;
+        height: 28px;
+        padding: 0 16px;
+      }
+
+      /* Provides the arrow which points at the anchor element. */
+      .search-bubble-innards::after {
+        -webkit-transform: rotate(-45deg);
+        background-color: var(--paper-yellow-500);
+        content: '';
+        height: 10px;
+        position: absolute;
+        right: -5px;
+        top: 10px;
+        width: 10px;
+      }
+
+      .search-highlight-hit {
+        background-color: var(--paper-yellow-500);
+      }
     </style>
   </template>
 </dom-module>
