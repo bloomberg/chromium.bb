@@ -876,6 +876,21 @@
     <message name="IDS_SETTINGS_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
       <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
     </message>
+    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_BUTTON" desc="Text for button that opens the known networks subpage.">
+      Known networks
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_PREFFERED" desc="Title for list of preferred networks.">
+      Preferred networks
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_NO_PREFERRED" desc="Entry when there are no preferred networks in the known networks page.">
+      None
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE" desc="Message describing the behavior of the known networks page.">
+      Preferred networks will be preferred over other known networks if more than one is available.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL" desc="Title for list of all other (non preferred) networks.">
+      All networks
+    </message>
   </if>
 
   <!-- On Startup Page -->

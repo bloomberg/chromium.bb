@@ -671,6 +671,13 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"internetPageTitle", IDS_SETTINGS_INTERNET},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},
       {"internetKnownNetworksPageTitle", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS},
+      {"knownNetworksButton", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_BUTTON},
+      {"knownNetworksMessage", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE},
+      {"knownNetworksPreferred",
+       IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_PREFFERED},
+      {"knownNetworksNoPreferred",
+       IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_NO_PREFERRED},
+      {"knownNetworksAll", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

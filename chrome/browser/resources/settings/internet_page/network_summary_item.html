@@ -86,10 +86,8 @@
         </cr-network-list>
         <template is="dom-if"
             if="[[knownNetworksIsVisible_(activeNetworkState)]]">
-          <div class="button-row">
-            <paper-button on-tap="onKnownNetworksTap_">
-              Known networks
-            </paper-button>
+          <div class="button-row" actionable on-tap="onKnownNetworksTap_">
+            <a is="action-link">$i18n{knownNetworksButton}</a>
           </div>
         </template>
       </div>
