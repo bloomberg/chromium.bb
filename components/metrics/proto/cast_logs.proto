@@ -50,7 +50,7 @@ message CastLogsProto {
 
     // This message describes a detail sender device and sdk. Those are
     // parsed from the user agent string sent from sender sdk during connection.
-    // Next tag: 9
+    // Next tag: 10
     message SenderInfo {
       // The identifier for the sender device, that is not tied any kind of
       // device id outside of UMA, and this id is reset when user resets sender
@@ -107,6 +107,11 @@ message CastLogsProto {
 
       // Sender device model.
       optional string model = 8;
+
+      // Last 2 bytes of the sender’s local IP addresses (both IP4/IP6) when
+      // the sender connected. This field stores ip fragment to last 2 bytes and
+      // first 2 bytes won't be used.
+      optional int32 sender_local_ip_fragment = 9;
     }
     optional SenderInfo sender_info = 3;
   }
