@@ -11,167 +11,162 @@
 #include <string.h>
 #include <xf86drm.h>
 
-#include "gbm_priv.h"
+#include "drv_priv.h"
 #include "helpers.h"
 #include "util.h"
 
-size_t gbm_num_planes_from_format(uint32_t format)
+size_t drv_num_planes_from_format(uint32_t format)
 {
 	switch(format)
 	{
-		case GBM_FORMAT_C8:
-		case GBM_FORMAT_R8:
-		case GBM_FORMAT_RG88:
-		case GBM_FORMAT_GR88:
-		case GBM_FORMAT_RGB332:
-		case GBM_FORMAT_BGR233:
-		case GBM_FORMAT_XRGB4444:
-		case GBM_FORMAT_XBGR4444:
-		case GBM_FORMAT_RGBX4444:
-		case GBM_FORMAT_BGRX4444:
-		case GBM_FORMAT_ARGB4444:
-		case GBM_FORMAT_ABGR4444:
-		case GBM_FORMAT_RGBA4444:
-		case GBM_FORMAT_BGRA4444:
-		case GBM_FORMAT_XRGB1555:
-		case GBM_FORMAT_XBGR1555:
-		case GBM_FORMAT_RGBX5551:
-		case GBM_FORMAT_BGRX5551:
-		case GBM_FORMAT_ARGB1555:
-		case GBM_FORMAT_ABGR1555:
-		case GBM_FORMAT_RGBA5551:
-		case GBM_FORMAT_BGRA5551:
-		case GBM_FORMAT_RGB565:
-		case GBM_FORMAT_BGR565:
-		case GBM_FORMAT_YUYV:
-		case GBM_FORMAT_YVYU:
-		case GBM_FORMAT_UYVY:
-		case GBM_FORMAT_VYUY:
-		case GBM_FORMAT_RGB888:
-		case GBM_FORMAT_BGR888:
-		case GBM_FORMAT_XRGB8888:
-		case GBM_FORMAT_XBGR8888:
-		case GBM_FORMAT_RGBX8888:
-		case GBM_FORMAT_BGRX8888:
-		case GBM_FORMAT_ARGB8888:
-		case GBM_FORMAT_ABGR8888:
-		case GBM_FORMAT_RGBA8888:
-		case GBM_FORMAT_BGRA8888:
-		case GBM_FORMAT_XRGB2101010:
-		case GBM_FORMAT_XBGR2101010:
-		case GBM_FORMAT_RGBX1010102:
-		case GBM_FORMAT_BGRX1010102:
-		case GBM_FORMAT_ARGB2101010:
-		case GBM_FORMAT_ABGR2101010:
-		case GBM_FORMAT_RGBA1010102:
-		case GBM_FORMAT_BGRA1010102:
-		case GBM_FORMAT_AYUV:
+		case DRV_FORMAT_C8:
+		case DRV_FORMAT_R8:
+		case DRV_FORMAT_RG88:
+		case DRV_FORMAT_GR88:
+		case DRV_FORMAT_RGB332:
+		case DRV_FORMAT_BGR233:
+		case DRV_FORMAT_XRGB4444:
+		case DRV_FORMAT_XBGR4444:
+		case DRV_FORMAT_RGBX4444:
+		case DRV_FORMAT_BGRX4444:
+		case DRV_FORMAT_ARGB4444:
+		case DRV_FORMAT_ABGR4444:
+		case DRV_FORMAT_RGBA4444:
+		case DRV_FORMAT_BGRA4444:
+		case DRV_FORMAT_XRGB1555:
+		case DRV_FORMAT_XBGR1555:
+		case DRV_FORMAT_RGBX5551:
+		case DRV_FORMAT_BGRX5551:
+		case DRV_FORMAT_ARGB1555:
+		case DRV_FORMAT_ABGR1555:
+		case DRV_FORMAT_RGBA5551:
+		case DRV_FORMAT_BGRA5551:
+		case DRV_FORMAT_RGB565:
+		case DRV_FORMAT_BGR565:
+		case DRV_FORMAT_YUYV:
+		case DRV_FORMAT_YVYU:
+		case DRV_FORMAT_UYVY:
+		case DRV_FORMAT_VYUY:
+		case DRV_FORMAT_RGB888:
+		case DRV_FORMAT_BGR888:
+		case DRV_FORMAT_XRGB8888:
+		case DRV_FORMAT_XBGR8888:
+		case DRV_FORMAT_RGBX8888:
+		case DRV_FORMAT_BGRX8888:
+		case DRV_FORMAT_ARGB8888:
+		case DRV_FORMAT_ABGR8888:
+		case DRV_FORMAT_RGBA8888:
+		case DRV_FORMAT_BGRA8888:
+		case DRV_FORMAT_XRGB2101010:
+		case DRV_FORMAT_XBGR2101010:
+		case DRV_FORMAT_RGBX1010102:
+		case DRV_FORMAT_BGRX1010102:
+		case DRV_FORMAT_ARGB2101010:
+		case DRV_FORMAT_ABGR2101010:
+		case DRV_FORMAT_RGBA1010102:
+		case DRV_FORMAT_BGRA1010102:
+		case DRV_FORMAT_AYUV:
 			return 1;
-		case GBM_FORMAT_NV12:
+		case DRV_FORMAT_NV12:
 			return 2;
 	}
 
-	fprintf(stderr, "minigbm: UNKNOWN FORMAT %d\n", format);
+	fprintf(stderr, "drv: UNKNOWN FORMAT %d\n", format);
 	return 0;
 }
 
-int gbm_bpp_from_format(uint32_t format)
+int drv_bpp_from_format(uint32_t format)
 {
 	switch(format)
 	{
-		case GBM_FORMAT_C8:
-		case GBM_FORMAT_R8:
-		case GBM_FORMAT_RGB332:
-		case GBM_FORMAT_BGR233:
+		case DRV_FORMAT_C8:
+		case DRV_FORMAT_R8:
+		case DRV_FORMAT_RGB332:
+		case DRV_FORMAT_BGR233:
 			return 8;
 
-		case GBM_FORMAT_NV12:
+		case DRV_FORMAT_NV12:
 			return 12;
 
-		case GBM_FORMAT_RG88:
-		case GBM_FORMAT_GR88:
-		case GBM_FORMAT_XRGB4444:
-		case GBM_FORMAT_XBGR4444:
-		case GBM_FORMAT_RGBX4444:
-		case GBM_FORMAT_BGRX4444:
-		case GBM_FORMAT_ARGB4444:
-		case GBM_FORMAT_ABGR4444:
-		case GBM_FORMAT_RGBA4444:
-		case GBM_FORMAT_BGRA4444:
-		case GBM_FORMAT_XRGB1555:
-		case GBM_FORMAT_XBGR1555:
-		case GBM_FORMAT_RGBX5551:
-		case GBM_FORMAT_BGRX5551:
-		case GBM_FORMAT_ARGB1555:
-		case GBM_FORMAT_ABGR1555:
-		case GBM_FORMAT_RGBA5551:
-		case GBM_FORMAT_BGRA5551:
-		case GBM_FORMAT_RGB565:
-		case GBM_FORMAT_BGR565:
-		case GBM_FORMAT_YUYV:
-		case GBM_FORMAT_YVYU:
-		case GBM_FORMAT_UYVY:
-		case GBM_FORMAT_VYUY:
+		case DRV_FORMAT_RG88:
+		case DRV_FORMAT_GR88:
+		case DRV_FORMAT_XRGB4444:
+		case DRV_FORMAT_XBGR4444:
+		case DRV_FORMAT_RGBX4444:
+		case DRV_FORMAT_BGRX4444:
+		case DRV_FORMAT_ARGB4444:
+		case DRV_FORMAT_ABGR4444:
+		case DRV_FORMAT_RGBA4444:
+		case DRV_FORMAT_BGRA4444:
+		case DRV_FORMAT_XRGB1555:
+		case DRV_FORMAT_XBGR1555:
+		case DRV_FORMAT_RGBX5551:
+		case DRV_FORMAT_BGRX5551:
+		case DRV_FORMAT_ARGB1555:
+		case DRV_FORMAT_ABGR1555:
+		case DRV_FORMAT_RGBA5551:
+		case DRV_FORMAT_BGRA5551:
+		case DRV_FORMAT_RGB565:
+		case DRV_FORMAT_BGR565:
+		case DRV_FORMAT_YUYV:
+		case DRV_FORMAT_YVYU:
+		case DRV_FORMAT_UYVY:
+		case DRV_FORMAT_VYUY:
 			return 16;
 
-		case GBM_FORMAT_RGB888:
-		case GBM_FORMAT_BGR888:
+		case DRV_FORMAT_RGB888:
+		case DRV_FORMAT_BGR888:
 			return 24;
 
-		case GBM_FORMAT_XRGB8888:
-		case GBM_FORMAT_XBGR8888:
-		case GBM_FORMAT_RGBX8888:
-		case GBM_FORMAT_BGRX8888:
-		case GBM_FORMAT_ARGB8888:
-		case GBM_FORMAT_ABGR8888:
-		case GBM_FORMAT_RGBA8888:
-		case GBM_FORMAT_BGRA8888:
-		case GBM_FORMAT_XRGB2101010:
-		case GBM_FORMAT_XBGR2101010:
-		case GBM_FORMAT_RGBX1010102:
-		case GBM_FORMAT_BGRX1010102:
-		case GBM_FORMAT_ARGB2101010:
-		case GBM_FORMAT_ABGR2101010:
-		case GBM_FORMAT_RGBA1010102:
-		case GBM_FORMAT_BGRA1010102:
-		case GBM_FORMAT_AYUV:
+		case DRV_FORMAT_XRGB8888:
+		case DRV_FORMAT_XBGR8888:
+		case DRV_FORMAT_RGBX8888:
+		case DRV_FORMAT_BGRX8888:
+		case DRV_FORMAT_ARGB8888:
+		case DRV_FORMAT_ABGR8888:
+		case DRV_FORMAT_RGBA8888:
+		case DRV_FORMAT_BGRA8888:
+		case DRV_FORMAT_XRGB2101010:
+		case DRV_FORMAT_XBGR2101010:
+		case DRV_FORMAT_RGBX1010102:
+		case DRV_FORMAT_BGRX1010102:
+		case DRV_FORMAT_ARGB2101010:
+		case DRV_FORMAT_ABGR2101010:
+		case DRV_FORMAT_RGBA1010102:
+		case DRV_FORMAT_BGRA1010102:
+		case DRV_FORMAT_AYUV:
 			return 32;
 	}
 
-	fprintf(stderr, "minigbm: UNKNOWN FORMAT %d\n", format);
+	fprintf(stderr, "drv: UNKNOWN FORMAT %d\n", format);
 	return 0;
 }
 
-int gbm_stride_from_format(uint32_t format, uint32_t width)
+int drv_stride_from_format(uint32_t format, uint32_t width)
 {
 	/* Only single-plane formats are supported */
-	assert(gbm_num_planes_from_format(format) == 1);
-	return DIV_ROUND_UP(width * gbm_bpp_from_format(format), 8);
+	assert(drv_num_planes_from_format(format) == 1);
+	return DIV_ROUND_UP(width * drv_bpp_from_format(format), 8);
 }
 
-int gbm_is_format_supported(struct gbm_bo *bo)
-{
-	return 1;
-}
-
-int gbm_dumb_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
+int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		       uint32_t format, uint32_t flags)
 {
 	struct drm_mode_create_dumb create_dumb;
 	int ret;
 
 	/* Only single-plane formats are supported */
-	assert(gbm_num_planes_from_format(format) == 1);
+	assert(drv_num_planes_from_format(format) == 1);
 
 	memset(&create_dumb, 0, sizeof(create_dumb));
 	create_dumb.height = height;
 	create_dumb.width = width;
-	create_dumb.bpp = gbm_bpp_from_format(format);
+	create_dumb.bpp = drv_bpp_from_format(format);
 	create_dumb.flags = 0;
 
-	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_dumb);
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_dumb);
 	if (ret) {
-		fprintf(stderr, "minigbm: DRM_IOCTL_MODE_CREATE_DUMB failed\n");
+		fprintf(stderr, "drv: DRM_IOCTL_MODE_CREATE_DUMB failed\n");
 		return ret;
 	}
 
@@ -183,7 +178,7 @@ int gbm_dumb_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
 	return 0;
 }
 
-int gbm_dumb_bo_destroy(struct gbm_bo *bo)
+int drv_dumb_bo_destroy(struct bo *bo)
 {
 	struct drm_mode_destroy_dumb destroy_dumb;
 	int ret;
@@ -191,9 +186,9 @@ int gbm_dumb_bo_destroy(struct gbm_bo *bo)
 	memset(&destroy_dumb, 0, sizeof(destroy_dumb));
 	destroy_dumb.handle = bo->handles[0].u32;
 
-	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_dumb);
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_dumb);
 	if (ret) {
-		fprintf(stderr, "minigbm: DRM_IOCTL_MODE_DESTROY_DUMB failed "
+		fprintf(stderr, "drv: DRM_IOCTL_MODE_DESTROY_DUMB failed "
 				"(handle=%x)\n", bo->handles[0].u32);
 		return ret;
 	}
@@ -201,7 +196,7 @@ int gbm_dumb_bo_destroy(struct gbm_bo *bo)
 	return 0;
 }
 
-int gbm_gem_bo_destroy(struct gbm_bo *bo)
+int drv_gem_bo_destroy(struct bo *bo)
 {
 	struct drm_gem_close gem_close;
 	int ret, error = 0;
@@ -218,9 +213,9 @@ int gbm_gem_bo_destroy(struct gbm_bo *bo)
 		memset(&gem_close, 0, sizeof(gem_close));
 		gem_close.handle = bo->handles[plane].u32;
 
-		ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
+		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
 		if (ret) {
-			fprintf(stderr, "minigbm: DRM_IOCTL_GEM_CLOSE failed "
+			fprintf(stderr, "drv: DRM_IOCTL_GEM_CLOSE failed "
 					"(handle=%x) error %d\n",
 					bo->handles[plane].u32, ret);
 			error = ret;

@@ -4,19 +4,19 @@
  * found in the LICENSE file.
  */
 
-#include "gbm_priv.h"
+#include "drv_priv.h"
 #include "helpers.h"
 
-const struct gbm_driver gbm_driver_evdi =
+const struct backend backend_evdi =
 {
 	.name = "evdi",
-	.bo_create = gbm_dumb_bo_create,
-	.bo_destroy = gbm_dumb_bo_destroy,
+	.bo_create = drv_dumb_bo_create,
+	.bo_destroy = drv_dumb_bo_destroy,
 	.format_list = {
-		{GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_RENDERING},
-		{GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_LINEAR},
-		{GBM_FORMAT_ARGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_RENDERING},
-		{GBM_FORMAT_ARGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_LINEAR},
+		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
+		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
+		{DRV_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
+		{DRV_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
 	}
 };
 

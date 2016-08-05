@@ -4,14 +4,14 @@
  * found in the LICENSE file.
  */
 
-#ifdef GBM_TEGRA
+#ifdef DRV_TEGRA
 
 #include <stdio.h>
 #include <string.h>
 #include <xf86drm.h>
 #include <tegra_drm.h>
 
-#include "gbm_priv.h"
+#include "drv_priv.h"
 #include "helpers.h"
 #include "util.h"
 
@@ -55,7 +55,7 @@ static void compute_layout_blocklinear(int width, int height, int format,
 				       uint32_t *block_height_log2,
 				       uint32_t *stride, uint32_t *size)
 {
-	int pitch = gbm_stride_from_format(format, width);
+	int pitch = drv_stride_from_format(format, width);
 
 	/* Align to blocklinear blocks. */
 	pitch = ALIGN(pitch, NV_BLOCKLINEAR_GOB_WIDTH);
@@ -82,11 +82,11 @@ static void compute_layout_blocklinear(int width, int height, int format,
 static void compute_layout_linear(int width, int height, int format,
 				  uint32_t *stride, uint32_t *size)
 {
-	*stride = gbm_stride_from_format(format, width);
+	*stride = drv_stride_from_format(format, width);
 	*size = *stride * height;
 }
 
-static int gbm_tegra_bo_create(struct gbm_bo *bo, uint32_t width,
+static int drv_tegra_bo_create(struct bo *bo, uint32_t width,
 			       uint32_t height, uint32_t format, uint32_t flags)
 {
 	uint32_t size, stride, block_height_log2 = 0;
@@ -94,7 +94,7 @@ static int gbm_tegra_bo_create(struct gbm_bo *bo, uint32_t width,
 	struct drm_tegra_gem_create gem_create;
 	int ret;
 
-	if (flags & GBM_BO_USE_RENDERING)
+	if (flags & DRV_BO_USE_RENDERING)
 		compute_layout_blocklinear(width, height, format, &kind,
 					   &block_height_log2, &stride, &size);
 	else
@@ -104,9 +104,9 @@ static int gbm_tegra_bo_create(struct gbm_bo *bo, uint32_t width,
 	gem_create.size = size;
 	gem_create.flags = 0;
 
-	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_TEGRA_GEM_CREATE, &gem_create);
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_TEGRA_GEM_CREATE, &gem_create);
 	if (ret) {
-		fprintf(stderr, "minigbm: DRM_IOCTL_TEGRA_GEM_CREATE failed "
+		fprintf(stderr, "drv: DRM_IOCTL_TEGRA_GEM_CREATE failed "
 				"(size=%zu)\n", size);
 		return ret;
 	}
@@ -124,34 +124,34 @@ static int gbm_tegra_bo_create(struct gbm_bo *bo, uint32_t width,
 		gem_tile.mode = DRM_TEGRA_GEM_TILING_MODE_BLOCK;
 		gem_tile.value = block_height_log2;
 
-		ret = drmCommandWriteRead(bo->gbm->fd, DRM_TEGRA_GEM_SET_TILING,
+		ret = drmCommandWriteRead(bo->drv->fd, DRM_TEGRA_GEM_SET_TILING,
 					  &gem_tile, sizeof(gem_tile));
 		if (ret < 0) {
-			gbm_gem_bo_destroy(bo);
+			drv_gem_bo_destroy(bo);
 			return ret;
 		}
 
 		/* Encode blocklinear parameters for EGLImage creation. */
 		bo->tiling = (kind & 0xff) |
 			     ((block_height_log2 & 0xf) << 8);
-		bo->format_modifiers[0] = gbm_fourcc_mod_code(NV, bo->tiling);
+		bo->format_modifiers[0] = drv_fourcc_mod_code(NV, bo->tiling);
 	}
 
 	return 0;
 }
 
-const struct gbm_driver gbm_driver_tegra =
+const struct backend backend_tegra =
 {
 	.name = "tegra",
-	.bo_create = gbm_tegra_bo_create,
-	.bo_destroy = gbm_gem_bo_destroy,
+	.bo_create = drv_tegra_bo_create,
+	.bo_destroy = drv_gem_bo_destroy,
 	.format_list = {
 		/* Linear support */
-		{GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_LINEAR},
-		{GBM_FORMAT_ARGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_LINEAR},
+		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
+		{DRV_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
 		/* Blocklinear support */
-		{GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING},
-		{GBM_FORMAT_ARGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING},
+		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING},
+		{DRV_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING},
 	}
 };
 

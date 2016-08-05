@@ -4,17 +4,17 @@
  * found in the LICENSE file.
  */
 
-#ifdef GBM_MEDIATEK
+#ifdef DRV_MEDIATEK
 
 #include <stdio.h>
 #include <string.h>
 #include <xf86drm.h>
 #include <mediatek_drm.h>
 #include <stdio.h>
-#include "gbm_priv.h"
+#include "drv_priv.h"
 #include "helpers.h"
 
-static int gbm_mediatek_bo_create(struct gbm_bo *bo,
+static int drv_mediatek_bo_create(struct bo *bo,
 				  uint32_t width, uint32_t height,
 				  uint32_t format, uint32_t flags)
 {
@@ -22,15 +22,15 @@ static int gbm_mediatek_bo_create(struct gbm_bo *bo,
 	struct drm_mtk_gem_create gem_create;
 	int ret;
 
-	bo->strides[0] = gbm_stride_from_format(format, width);
+	bo->strides[0] = drv_stride_from_format(format, width);
 	size = height * bo->strides[0];
 
 	memset(&gem_create, 0, sizeof(gem_create));
 	gem_create.size = size;
 
-	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_MTK_GEM_CREATE, &gem_create);
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MTK_GEM_CREATE, &gem_create);
 	if (ret) {
-		fprintf(stderr, "minigbm: DRM_IOCTL_MTK_GEM_CREATE failed "
+		fprintf(stderr, "drv: DRM_IOCTL_MTK_GEM_CREATE failed "
 				"(size=%zu)\n", size);
 		return ret;
 	}
@@ -42,16 +42,16 @@ static int gbm_mediatek_bo_create(struct gbm_bo *bo,
 	return 0;
 }
 
-const struct gbm_driver gbm_driver_mediatek =
+const struct backend backend_mediatek =
 {
 	.name = "mediatek",
-	.bo_create = gbm_mediatek_bo_create,
-	.bo_destroy = gbm_gem_bo_destroy,
+	.bo_create = drv_mediatek_bo_create,
+	.bo_destroy = drv_gem_bo_destroy,
 	.format_list = {
-		{GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_RENDERING},
-		{GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_LINEAR},
-		{GBM_FORMAT_ARGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_RENDERING},
-		{GBM_FORMAT_ARGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_LINEAR},
+		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
+		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
+		{DRV_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
+		{DRV_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
 	}
 };
 
