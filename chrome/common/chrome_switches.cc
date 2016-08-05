@@ -396,9 +396,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // crbug.com/142458 .
 const char kEnableFastUnload[] = "enable-fast-unload";
 
-// Enables the Material Design version of chrome://extensions.
-const char kEnableMaterialDesignExtensions[] = "enable-md-extensions";
-
 // Enables the Material Design feedback form.
 const char kEnableMaterialDesignFeedback[] = "enable-md-feedback";
 
@@ -1299,11 +1296,6 @@ bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              ::switches::kDisableAboutInSettings);
-}
-
-bool MdExtensionsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableMaterialDesignExtensions);
 }
 
 bool MdFeedbackEnabled() {

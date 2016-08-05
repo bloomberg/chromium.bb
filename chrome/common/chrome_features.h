@@ -45,9 +45,13 @@ extern const base::Feature kHappininessTrackingSystem;
 extern const base::Feature kLinuxObsoleteSystemIsEndOfTheLine;
 #endif
 
-extern const base::Feature kMaterialDesignHistoryFeature;
+#if defined(ENABLE_EXTENSIONS)
+extern const base::Feature kMaterialDesignExtensions;
+#endif
 
-extern const base::Feature kMaterialDesignSettingsFeature;
+extern const base::Feature kMaterialDesignHistory;
+
+extern const base::Feature kMaterialDesignSettings;
 
 extern const base::Feature kPreferHtmlOverPlugins;
 

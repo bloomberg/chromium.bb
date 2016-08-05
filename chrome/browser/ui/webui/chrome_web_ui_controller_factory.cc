@@ -419,7 +419,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // If the material design extensions page is enabled, it gets its own host.
   // Otherwise, it's handled by the uber settings page.
   if (url.host() == chrome::kChromeUIExtensionsHost &&
-      ::switches::MdExtensionsEnabled()) {
+      base::FeatureList::IsEnabled(features::kMaterialDesignExtensions)) {
     return &NewWebUI<extensions::ExtensionsUI>;
   }
   // Material Design history is on its own host, rather than on an Uber page.
@@ -428,7 +428,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<MdHistoryUI>;
   }
   // Material Design Settings gets its own host, if enabled.
-  if (base::FeatureList::IsEnabled(features::kMaterialDesignSettingsFeature) &&
+  if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings) &&
       url.host() == chrome::kChromeUISettingsHost) {
     return &NewWebUI<settings::MdSettingsUI>;
   }

@@ -187,8 +187,7 @@ MdHistoryUI::~MdHistoryUI() {}
 
 // static
 bool MdHistoryUI::IsEnabled(Profile* profile) {
-  return base::FeatureList::IsEnabled(
-             features::kMaterialDesignHistoryFeature) &&
+  return base::FeatureList::IsEnabled(features::kMaterialDesignHistory) &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kHistoryEnableGroupByDomain) &&
          !profile->IsSupervised();
@@ -198,7 +197,7 @@ bool MdHistoryUI::IsEnabled(Profile* profile) {
 void MdHistoryUI::DisableForTesting() {
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
-      std::string(), features::kMaterialDesignHistoryFeature.name);
+      std::string(), features::kMaterialDesignHistory.name);
   base::FeatureList::ClearInstanceForTesting();
   base::FeatureList::SetInstance(std::move(feature_list));
 }

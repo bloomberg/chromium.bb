@@ -61,10 +61,11 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUISyncHost) {
     host = chrome::kChromeUISyncInternalsHost;
   // Redirect chrome://extensions.
+#if defined(ENABLE_EXTENSIONS)
   } else if (host == chrome::kChromeUIExtensionsHost) {
     // If the material design extensions page is enabled, it gets its own host.
     // Otherwise, it's handled by the uber settings page.
-    if (::switches::MdExtensionsEnabled()) {
+    if (base::FeatureList::IsEnabled(features::kMaterialDesignExtensions)) {
       host = chrome::kChromeUIExtensionsHost;
       path = url->path();
     } else {
@@ -76,6 +77,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
       url->path() == std::string("/") + chrome::kExtensionsSubPage) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIExtensionsHost;
+#endif  // defined(ENABLE_EXTENSIONS)
   // Redirect chrome://history.
   } else if (host == chrome::kChromeUIHistoryHost) {
 #if defined(OS_ANDROID)
@@ -95,8 +97,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
 #endif
   // Redirect chrome://settings, unless MD settings is enabled.
   } else if (host == chrome::kChromeUISettingsHost) {
-    if (base::FeatureList::IsEnabled(
-            features::kMaterialDesignSettingsFeature)) {
+    if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
       return true;  // Prevent further rewriting - this is a valid URL.
     } else if (::switches::AboutInSettingsEnabled()) {
       host = chrome::kChromeUISettingsFrameHost;
@@ -106,8 +107,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
     }
   // Redirect chrome://help, unless MD settings is enabled.
   } else if (host == chrome::kChromeUIHelpHost) {
-    if (base::FeatureList::IsEnabled(
-            features::kMaterialDesignSettingsFeature)) {
+    if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
       host = chrome::kChromeUISettingsHost;
       path = chrome::kChromeUIHelpHost;
     } else if (::switches::AboutInSettingsEnabled()) {

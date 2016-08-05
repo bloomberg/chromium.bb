@@ -96,11 +96,11 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
   source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
 #endif  // defined(OS_CHROMEOS)
 
-  source->AddBoolean("hideExtensions", ::switches::MdExtensionsEnabled());
+  source->AddBoolean("hideExtensions",
+      base::FeatureList::IsEnabled(features::kMaterialDesignExtensions));
   source->AddBoolean("hideSettingsAndHelp",
-                     ::switches::SettingsWindowEnabled() ||
-                         base::FeatureList::IsEnabled(
-                             features::kMaterialDesignSettingsFeature));
+      ::switches::SettingsWindowEnabled() ||
+      base::FeatureList::IsEnabled(features::kMaterialDesignSettings));
   source->AddString("extensionsHost", chrome::kChromeUIExtensionsHost);
   source->AddLocalizedString("extensionsDisplayName",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);

@@ -30,7 +30,8 @@ CrExtensionsBrowserTest.prototype = {
 
   /** @override */
   commandLineSwitches: [{
-    switchName: 'enable-md-extensions',
+    switchName: 'enable-features',
+    switchValue: 'MaterialDesignExtensions',
   }],
 
   /** @override */

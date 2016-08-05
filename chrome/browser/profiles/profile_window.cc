@@ -139,7 +139,7 @@ void OnUserManagerSystemProfileCreated(
   // Force Material Design user manager on when Material Design settings are on.
   bool use_material_design_user_manager =
       switches::IsMaterialDesignUserManager() ||
-      base::FeatureList::IsEnabled(features::kMaterialDesignSettingsFeature);
+      base::FeatureList::IsEnabled(features::kMaterialDesignSettings);
 
   // Tell the webui which user should be focused.
   std::string page = use_material_design_user_manager

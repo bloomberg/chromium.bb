@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/extensions/install_extension_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -211,7 +211,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = nullptr;
 
-  if (::switches::MdExtensionsEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kMaterialDesignExtensions)) {
     source = CreateMdExtensionsSource();
     InstallExtensionHandler* install_extension_handler =
         new InstallExtensionHandler();

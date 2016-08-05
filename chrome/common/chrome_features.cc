@@ -67,14 +67,19 @@ const base::Feature kLinuxObsoleteSystemIsEndOfTheLine{
     "LinuxObsoleteSystemIsEndOfTheLine", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
+// Enabled or disabled the Material Design version of chrome://extensions.
+const base::Feature kMaterialDesignExtensions{
+    "MaterialDesignExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables or disables the Material Design version of chrome://history.
-const base::Feature kMaterialDesignHistoryFeature {
-  "MaterialDesignHistory", base::FEATURE_ENABLED_BY_DEFAULT
-};
+const base::Feature kMaterialDesignHistory{
+    "MaterialDesignHistory", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the Material Design version of chrome://settings.
 // Also affects chrome://help.
-const base::Feature kMaterialDesignSettingsFeature{
+const base::Feature kMaterialDesignSettings{
     "MaterialDesignSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Prefer HTML content by hiding Flash from the list of plugins.

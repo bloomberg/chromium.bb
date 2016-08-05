@@ -115,7 +115,7 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForOptions) {
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForMDSettings) {
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
-      features::kMaterialDesignSettingsFeature.name, "");
+      features::kMaterialDesignSettings.name, "");
   base::FeatureList::ClearInstanceForTesting();
   base::FeatureList::SetInstance(std::move(feature_list));
 
