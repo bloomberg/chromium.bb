@@ -358,7 +358,7 @@ bool CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType rule
 StyleRuleBase* CSSParserImpl::consumeAtRule(CSSParserTokenRange& range, AllowedRulesType allowedRules)
 {
     ASSERT(range.peek().type() == AtKeywordToken);
-    const StringView name = range.consume().value();
+    const StringView name = range.consumeIncludingWhitespace().value();
     const CSSParserToken* preludeStart = &range.peek();
     while (!range.atEnd() && range.peek().type() != LeftBraceToken && range.peek().type() != SemicolonToken)
         range.consumeComponentValue();
@@ -453,7 +453,6 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
 
 StyleRuleCharset* CSSParserImpl::consumeCharsetRule(CSSParserTokenRange prelude)
 {
-    prelude.consumeWhitespace();
     const CSSParserToken& string = prelude.consumeIncludingWhitespace();
     if (string.type() != StringToken || !prelude.atEnd())
         return nullptr; // Parse error, expected a single string
@@ -462,7 +461,6 @@ StyleRuleCharset* CSSParserImpl::consumeCharsetRule(CSSParserTokenRange prelude)
 
 StyleRuleImport* CSSParserImpl::consumeImportRule(CSSParserTokenRange prelude)
 {
-    prelude.consumeWhitespace();
     AtomicString uri(consumeStringOrURI(prelude));
     if (uri.isNull())
         return nullptr; // Parse error, expected string or URI
@@ -480,13 +478,11 @@ StyleRuleImport* CSSParserImpl::consumeImportRule(CSSParserTokenRange prelude)
 
 StyleRuleNamespace* CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prelude)
 {
-    prelude.consumeWhitespace();
     AtomicString namespacePrefix;
     if (prelude.peek().type() == IdentToken)
         namespacePrefix = prelude.consumeIncludingWhitespace().value().toAtomicString();
 
     AtomicString uri(consumeStringOrURI(prelude));
-    prelude.consumeWhitespace();
     if (uri.isNull() || !prelude.atEnd())
         return nullptr; // Parse error, expected string or URI
 
@@ -498,10 +494,8 @@ StyleRuleMedia* CSSParserImpl::consumeMediaRule(CSSParserTokenRange prelude, CSS
     HeapVector<Member<StyleRuleBase>> rules;
 
     if (m_observerWrapper) {
-        CSSParserTokenRange preludeWithoutWhitespace = prelude;
-        preludeWithoutWhitespace.consumeWhitespace();
-        m_observerWrapper->observer().startRuleHeader(StyleRule::Media, m_observerWrapper->startOffset(preludeWithoutWhitespace));
-        m_observerWrapper->observer().endRuleHeader(m_observerWrapper->endOffset(preludeWithoutWhitespace));
+        m_observerWrapper->observer().startRuleHeader(StyleRule::Media, m_observerWrapper->startOffset(prelude));
+        m_observerWrapper->observer().endRuleHeader(m_observerWrapper->endOffset(prelude));
         m_observerWrapper->observer().startRuleBody(m_observerWrapper->previousTokenStartOffset(block));
     }
 
@@ -547,7 +541,6 @@ StyleRuleViewport* CSSParserImpl::consumeViewportRule(CSSParserTokenRange prelud
     if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode()))
         return nullptr;
 
-    prelude.consumeWhitespace();
     if (!prelude.atEnd())
         return nullptr; // Parser error; @viewport prelude should be empty
 
@@ -565,7 +558,6 @@ StyleRuleViewport* CSSParserImpl::consumeViewportRule(CSSParserTokenRange prelud
 
 StyleRuleFontFace* CSSParserImpl::consumeFontFaceRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
-    prelude.consumeWhitespace();
     if (!prelude.atEnd())
         return nullptr; // Parse error; @font-face prelude should be empty
 
@@ -586,7 +578,6 @@ StyleRuleFontFace* CSSParserImpl::consumeFontFaceRule(CSSParserTokenRange prelud
 
 StyleRuleKeyframes* CSSParserImpl::consumeKeyframesRule(bool webkitPrefixed, CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
-    prelude.consumeWhitespace();
     CSSParserTokenRange rangeCopy = prelude; // For inspector callbacks
     const CSSParserToken& nameToken = prelude.consumeIncludingWhitespace();
     if (!prelude.atEnd())
@@ -640,7 +631,6 @@ void CSSParserImpl::consumeApplyRule(CSSParserTokenRange prelude)
 {
     ASSERT(RuntimeEnabledFeatures::cssApplyAtRulesEnabled());
 
-    prelude.consumeWhitespace();
     const CSSParserToken& ident = prelude.consumeIncludingWhitespace();
     if (!prelude.atEnd() || !CSSVariableParser::isValidVariableName(ident))
         return; // Parse error, expected a single custom property name
