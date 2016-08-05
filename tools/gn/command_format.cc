@@ -24,14 +24,13 @@ namespace commands {
 
 const char kSwitchDryRun[] = "dry-run";
 const char kSwitchDumpTree[] = "dump-tree";
-const char kSwitchInPlace[] = "in-place";
 const char kSwitchStdin[] = "stdin";
 
 const char kFormat[] = "format";
 const char kFormat_HelpShort[] =
     "format: Format .gn file.";
 const char kFormat_Help[] =
-    "gn format [--dump-tree] [--in-place] [--stdin] BUILD.gn\n"
+    "gn format [--dump-tree] (--stdin | <build_file>)\n"
     "\n"
     "  Formats .gn file to a standard format.\n"
     "\n"
@@ -46,6 +45,7 @@ const char kFormat_Help[] =
     "  ]\n"
     "\n"
     "Arguments\n"
+    "\n"
     "  --dry-run\n"
     "      Does not change or output anything, but sets the process exit code\n"
     "      based on whether output would be different than what's on disk.\n"
@@ -55,16 +55,12 @@ const char kFormat_Help[] =
     "      - Exit code 2: successful format, but differs from on disk.\n"
     "\n"
     "  --dump-tree\n"
-    "      For debugging only, dumps the parse tree.\n"
-    "\n"
-    "  --in-place\n"
-    "      Instead of writing the formatted file to stdout, replace the input\n"
-    "      file with the formatted output. If no reformatting is required,\n"
-    "      the input file will not be touched, and nothing printed.\n"
+    "      For debugging, dumps the parse tree to stdout and does not update\n"
+    "      the file or print formatted output.\n"
     "\n"
     "  --stdin\n"
-    "      Read input from stdin (and write to stdout). Not compatible with\n"
-    "      --in-place of course.\n"
+    "      Read input from stdin and write to stdout rather than update\n"
+    "      a file in-place.\n"
     "\n"
     "Examples\n"
     "  gn format //some/BUILD.gn\n"
@@ -935,11 +931,7 @@ void DoFormat(const ParseNode* root, bool dump_tree, std::string* output) {
   if (dump_tree) {
     std::ostringstream os;
     root->Print(os, 0);
-    printf("----------------------\n");
-    printf("-- PARSE TREE --------\n");
-    printf("----------------------\n");
     printf("%s", os.str().c_str());
-    printf("----------------------\n");
   }
   Printer pr;
   pr.Block(root);
@@ -1013,13 +1005,10 @@ int RunFormat(const std::vector<std::string>& args) {
       base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchDumpTree);
   bool from_stdin =
       base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchStdin);
-  bool in_place =
-    base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchInPlace);
 
   if (dry_run) {
     // --dry-run only works with an actual file to compare to.
     from_stdin = false;
-    in_place = true;
   }
 
   if (from_stdin) {
@@ -1032,7 +1021,8 @@ int RunFormat(const std::vector<std::string>& args) {
     std::string output;
     if (!FormatStringToString(input, dump_tree, &output))
       return 1;
-    printf("%s", output.c_str());
+    if (!dump_tree)
+      printf("%s", output.c_str());
     return 0;
   }
 
@@ -1058,7 +1048,8 @@ int RunFormat(const std::vector<std::string>& args) {
 
   std::string output_string;
   if (FormatFileToString(&setup, file, dump_tree, &output_string)) {
-    if (in_place) {
+    if (!dump_tree) {
+      // Update the file in-place.
       base::FilePath to_write = setup.build_settings().GetFullPath(file);
       std::string original_contents;
       if (!base::ReadFileToString(to_write, &original_contents)) {
@@ -1080,8 +1071,6 @@ int RunFormat(const std::vector<std::string>& args) {
         }
         printf("Wrote formatted to '%s'.\n", to_write.AsUTF8Unsafe().c_str());
       }
-    } else {
-      printf("%s", output_string.c_str());
     }
   }
 
