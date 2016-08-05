@@ -87,6 +87,12 @@ class ASH_EXPORT PowerButtonController
   // True when the volume down button is being held down.
   bool volume_down_pressed_;
 
+#if defined(OS_CHROMEOS)
+  // Volume to be restored after a screenshot is taken by pressing the power
+  // button while holding VKEY_VOLUME_DOWN.
+  int volume_percent_before_screenshot_;
+#endif
+
   // Has the screen brightness been reduced to 0%?
   bool brightness_is_zero_;
 

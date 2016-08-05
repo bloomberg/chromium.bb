@@ -8,6 +8,8 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/audio/tray_audio.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
@@ -20,6 +22,7 @@
 #include "ui/wm/core/compound_event_filter.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
@@ -29,6 +32,9 @@ PowerButtonController::PowerButtonController(LockStateController* controller)
     : power_button_down_(false),
       lock_button_down_(false),
       volume_down_pressed_(false),
+#if defined(OS_CHROMEOS)
+      volume_percent_before_screenshot_(0),
+#endif
       brightness_is_zero_(false),
       internal_display_off_and_external_display_on_(false),
       has_legacy_power_button_(
@@ -80,8 +86,21 @@ void PowerButtonController::OnPowerButtonEvent(
       WmShell::Get()
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {
+    SystemTray* system_tray = Shell::GetInstance()->GetPrimarySystemTray();
+    if (system_tray && system_tray->GetTrayAudio())
+      system_tray->GetTrayAudio()->HideDetailedView(false);
+
     WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
         TAKE_SCREENSHOT);
+
+#if defined(OS_CHROMEOS)
+    // Restore volume.
+    chromeos::CrasAudioHandler* audio_handler =
+        chromeos::CrasAudioHandler::Get();
+    audio_handler->SetOutputVolumePercentWithoutNotifyingObservers(
+        volume_percent_before_screenshot_,
+        chromeos::CrasAudioHandler::VOLUME_CHANGE_MAXIMIZE_MODE_SCREENSHOT);
+#endif
     return;
   }
 
@@ -151,8 +170,17 @@ void PowerButtonController::OnLockButtonEvent(
 }
 
 void PowerButtonController::OnKeyEvent(ui::KeyEvent* event) {
-  if (event->key_code() == ui::VKEY_VOLUME_DOWN)
+  if (event->key_code() == ui::VKEY_VOLUME_DOWN) {
     volume_down_pressed_ = event->type() == ui::ET_KEY_PRESSED;
+#if defined(OS_CHROMEOS)
+    if (!event->is_repeat()) {
+      chromeos::CrasAudioHandler* audio_handler =
+          chromeos::CrasAudioHandler::Get();
+      volume_percent_before_screenshot_ =
+          audio_handler->GetOutputVolumePercent();
+    }
+#endif
+  }
 }
 
 #if defined(OS_CHROMEOS)

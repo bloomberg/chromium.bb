@@ -42,6 +42,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/audio/tray_audio_chromeos.h"
@@ -129,6 +130,7 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
       hide_notifications_(false),
       full_system_tray_menu_(false),
       tray_accessibility_(nullptr),
+      tray_audio_(nullptr),
       tray_cast_(nullptr),
       tray_date_(nullptr),
       tray_update_(nullptr),
@@ -206,7 +208,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   screen_share_tray_item_ = new ScreenShareTrayItem(this);
   AddTrayItem(screen_share_tray_item_);
   AddTrayItem(new MultiProfileMediaTrayItem(this));
-  AddTrayItem(new TrayAudioChromeOs(this));
+  tray_audio_ = new TrayAudioChromeOs(this);
+  AddTrayItem(tray_audio_);
   AddTrayItem(new TrayBrightness(this));
   AddTrayItem(new TrayCapsLock(this));
   // TODO(jamescook): Remove this when mus has support for display management
@@ -277,9 +280,21 @@ void SystemTray::SetDetailedViewCloseDelay(int close_delay) {
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
 
-void SystemTray::HideDetailedView(SystemTrayItem* item) {
+void SystemTray::HideDetailedView(SystemTrayItem* item, bool animate) {
   if (item != detailed_item_)
     return;
+
+  if (!animate) {
+    // In unittest, GetSystemBubble might return nullptr.
+    if (GetSystemBubble()) {
+      GetSystemBubble()
+          ->bubble_view()
+          ->GetWidget()
+          ->SetVisibilityAnimationTransition(
+              views::Widget::VisibilityTransition::ANIMATE_NONE);
+    }
+  }
+
   DestroySystemBubble();
   UpdateNotificationBubble();
 }
@@ -370,6 +385,10 @@ bool SystemTray::CloseSystemBubble() const {
 
 views::View* SystemTray::GetHelpButtonView() const {
   return tray_date_->GetHelpButtonView();
+}
+
+TrayAudio* SystemTray::GetTrayAudio() const {
+  return tray_audio_;
 }
 
 bool SystemTray::CloseNotificationBubbleForTest() const {

@@ -411,7 +411,7 @@ void TraySms::Update(bool notify) {
     if (default_)
       default_->SetVisible(false);
     if (detailed_)
-      HideDetailedView();
+      HideDetailedView(true /* animate */);
     HideNotificationView();
   } else {
     if (default_) {

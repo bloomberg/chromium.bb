@@ -25,6 +25,7 @@ class SystemBubbleWrapper;
 class SystemTrayDelegate;
 class SystemTrayItem;
 class TrayAccessibility;
+class TrayAudio;
 class TrayCast;
 class TrayDate;
 class TrayUpdate;
@@ -74,8 +75,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // seconds.
   void SetDetailedViewCloseDelay(int close_delay);
 
-  // Hides the detailed view for |item|.
-  void HideDetailedView(SystemTrayItem* item);
+  // Hides the detailed view for |item|. If |animate| is false, disable
+  // the hiding animation for hiding |item|.
+  void HideDetailedView(SystemTrayItem* item, bool animate);
 
   // Shows the notification view for |item|.
   void ShowNotificationView(SystemTrayItem* item);
@@ -120,6 +122,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Returns view for help button if default view is shown. Returns NULL
   // otherwise.
   views::View* GetHelpButtonView() const;
+
+  // Returns TrayAudio object if present or null otherwise.
+  TrayAudio* GetTrayAudio() const;
 
   // Accessors for testing.
 
@@ -247,7 +252,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Note that the value is only valid when |system_bubble_| is true.
   bool full_system_tray_menu_;
 
-  TrayAccessibility* tray_accessibility_;  // not owned
+  // These objects are not owned by this class.
+  TrayAccessibility* tray_accessibility_;
+  TrayAudio* tray_audio_;  // May be null.
   TrayCast* tray_cast_;
   TrayDate* tray_date_;
   TrayUpdate* tray_update_;
