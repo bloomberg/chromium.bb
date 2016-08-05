@@ -1111,8 +1111,6 @@ cr.define('login', function() {
       // Set the focus to the input element after showing/hiding pin keyboard.
       if (this.pinKeyboard && visible)
         this.pinKeyboard.focus();
-      else
-        this.mainInput.focus();
     },
 
     isPinShown: function() {
