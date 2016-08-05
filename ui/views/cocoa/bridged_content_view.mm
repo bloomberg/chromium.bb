@@ -661,6 +661,14 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
       ui::CanvasPainter(&canvas, 1.f).context());
 }
 
+- (BOOL)isOpaque {
+  if (!hostedView_)
+    return NO;
+
+  ui::Layer* layer = hostedView_->GetWidget()->GetLayer();
+  return layer && layer->fills_bounds_opaquely();
+}
+
 // To maximize consistency with the Cocoa browser (mac_views_browser=0), accept
 // mouse clicks immediately so that clicking on Chrome from an inactive window
 // will allow the event to be processed, rather than merely activate the window.

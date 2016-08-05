@@ -1379,6 +1379,31 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   widget->CloseNow();
 }
 
+// Test that the contentView opacity corresponds to the window type.
+TEST_F(NativeWidgetMacTest, ContentOpacity) {
+  NativeWidgetMacTestWindow* window;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+
+  EXPECT_EQ(init_params.opacity, Widget::InitParams::INFER_OPACITY);
+  Widget* widget = CreateWidgetWithTestWindow(init_params, &window);
+
+  // Infer should default to opaque on Mac.
+  EXPECT_TRUE([[window contentView] isOpaque]);
+  widget->CloseNow();
+
+  init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  widget = CreateWidgetWithTestWindow(init_params, &window);
+  EXPECT_FALSE([[window contentView] isOpaque]);
+  widget->CloseNow();
+
+  // Test opaque explicitly.
+  init_params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  widget = CreateWidgetWithTestWindow(init_params, &window);
+  EXPECT_TRUE([[window contentView] isOpaque]);
+  widget->CloseNow();
+}
+
 // Test the expected result of GetWorkAreaBoundsInScreen().
 TEST_F(NativeWidgetMacTest, GetWorkAreaBoundsInScreen) {
   Widget widget;
