@@ -8,7 +8,9 @@
 #include <iterator>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
@@ -61,14 +63,16 @@ void ContentSuggestionsService::FetchSuggestionImage(
     const ImageFetchedCallback& callback) {
   if (!id_category_map_.count(suggestion_id)) {
     LOG(WARNING) << "Requested image for unknown suggestion " << suggestion_id;
-    callback.Run(suggestion_id, gfx::Image());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
     return;
   }
   Category category = id_category_map_.at(suggestion_id);
   if (!providers_by_category_.count(category)) {
     LOG(WARNING) << "Requested image for suggestion " << suggestion_id
                  << " for unavailable category " << category;
-    callback.Run(suggestion_id, gfx::Image());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
     return;
   }
   providers_by_category_[category]->FetchSuggestionImage(suggestion_id,

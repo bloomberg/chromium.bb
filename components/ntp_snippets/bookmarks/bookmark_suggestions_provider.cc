@@ -7,11 +7,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/content_suggestion.h"
+#include "ui/gfx/image/image.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -69,7 +73,8 @@ void BookmarkSuggestionsProvider::DismissSuggestion(
 void BookmarkSuggestionsProvider::FetchSuggestionImage(
     const std::string& suggestion_id,
     const ImageFetchedCallback& callback) {
-  callback.Run(suggestion_id, gfx::Image());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
 }
 
 void BookmarkSuggestionsProvider::ClearCachedSuggestionsForDebugging() {

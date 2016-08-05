@@ -5,8 +5,11 @@
 #include "components/ntp_snippets/offline_pages/offline_page_suggestions_provider.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "ui/gfx/image/image.h"
 
 using offline_pages::MultipleOfflinePageItemResult;
 using offline_pages::OfflinePageModel;
@@ -58,7 +61,10 @@ void OfflinePageSuggestionsProvider::DismissSuggestion(
 void OfflinePageSuggestionsProvider::FetchSuggestionImage(
     const std::string& suggestion_id,
     const ImageFetchedCallback& callback) {
-  // TODO(pke): Implement.
+  // TODO(pke): Fetch proper thumbnail from OfflinePageModel once it's available
+  // there.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
 }
 
 void OfflinePageSuggestionsProvider::ClearCachedSuggestionsForDebugging() {

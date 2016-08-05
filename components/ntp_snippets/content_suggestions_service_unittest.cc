@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
@@ -18,15 +20,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 
-using testing::Eq;
-using testing::IsNull;
-using testing::NotNull;
-using testing::IsEmpty;
-using testing::ElementsAre;
-using testing::Property;
-using testing::Const;
-using testing::Mock;
 using testing::ByRef;
+using testing::Const;
+using testing::ElementsAre;
+using testing::Eq;
+using testing::InvokeWithoutArgs;
+using testing::IsEmpty;
+using testing::IsNull;
+using testing::Mock;
+using testing::NotNull;
+using testing::Property;
 using testing::_;
 
 namespace ntp_snippets {
@@ -260,12 +263,18 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectFetchSuggestionImage) {
 
 TEST_F(ContentSuggestionsServiceTest,
        ShouldCallbackEmptyImageForUnavailableProvider) {
+  // Setup the current thread's MessageLoop.
+  base::MessageLoop message_loop;
+
+  base::RunLoop run_loop;
   std::string suggestion_id = "TestID";
   EXPECT_CALL(*this, OnImageFetched(suggestion_id,
-                                    Property(&gfx::Image::IsEmpty, Eq(true))));
+                                    Property(&gfx::Image::IsEmpty, Eq(true))))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   service()->FetchSuggestionImage(
       suggestion_id, base::Bind(&ContentSuggestionsServiceTest::OnImageFetched,
                                 base::Unretained(this)));
+  run_loop.Run();
 }
 
 TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDismissSuggestion) {
