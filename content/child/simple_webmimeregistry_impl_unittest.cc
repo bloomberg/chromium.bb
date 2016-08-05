@@ -19,3 +19,14 @@ TEST(SimpleWebMimeRegistryImpl, mimeTypeTest)
   EXPECT_TRUE(registry.supportsImageMIMEType("image/gif"));
 }
 
+TEST(SimpleWebMimeRegistryImpl, PluginMimeTypes) {
+  content::SimpleWebMimeRegistryImpl registry;
+
+  // Since we've removed MIME type guessing based on plugin-declared file
+  // extensions, ensure that the SimpleWebMimeRegistry already contains
+  // the extensions used by common PPAPI plugins.
+  EXPECT_EQ("application/pdf",
+            registry.wellKnownMimeTypeForExtension("pdf").utf8());
+  EXPECT_EQ("application/x-shockwave-flash",
+            registry.wellKnownMimeTypeForExtension("swf").utf8());
+}

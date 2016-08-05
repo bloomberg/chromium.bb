@@ -844,11 +844,6 @@ ObjectContentType FrameLoaderClientImpl::getObjectContentType(
         if (extensionPos >= 0) {
             String extension = filename.substring(extensionPos + 1);
             mimeType = MIMETypeRegistry::getWellKnownMIMETypeForExtension(extension);
-            if (mimeType.isEmpty()) {
-                // If there's no mimetype registered for the extension, check to see
-                // if a plugin can handle the extension.
-                mimeType = getPluginMimeTypeFromExtension(extension);
-            }
         }
 
         if (mimeType.isEmpty())

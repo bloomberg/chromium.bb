@@ -1,9 +1,0 @@
-CONSOLE MESSAGE: Blink Test Plugin: initializing
-CONSOLE MESSAGE: Blink Test Plugin: plugin args:
-CONSOLE MESSAGE: Blink Test Plugin:   name = id, value = plugin
-CONSOLE MESSAGE: Blink Test Plugin:   name = name, value = plugin
-CONSOLE MESSAGE: Blink Test Plugin:   name = src, value = resources/test.blinktestplugin
-CONSOLE MESSAGE: Blink Test Plugin:   name = logargs, value = 1
-This test checks that bug 50568 is fixed. logargs is used to log initialization of the plugin. If the bug is present, the logargs attribute that triggers the log will be lost and nothing will be displayed on screen. Upon success, this test should log a message at initialization.
-
-

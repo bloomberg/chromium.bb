@@ -1,7 +1,7 @@
 <html>
 <head>
 <script>
-function print(message, color) 
+function print(message, color)
 {
     var paragraph = document.createElement("div");
     paragraph.appendChild(document.createTextNode(message));
@@ -27,11 +27,11 @@ function shouldBe(a, b)
 
 var embed;
 
-function test() 
+function test()
 {
     if (window.testRunner)
         testRunner.dumpAsText();
-        
+
     embed = document.getElementById('embed');
     print("[Embed is element specified in markup]");
 
@@ -51,22 +51,12 @@ function test()
     shouldBe("typeof embed.postMessage", "function");
 
     print("----------");
-    
+
     embed = document.createElement('embed');
     print("[Embed is dynamically created element with only type specified]");
 
     embed.style.visibility = "hidden";
     embed.type = "application/x-blink-test-plugin";
-    document.body.appendChild(embed);
-    shouldBe("typeof embed.postMessage", "function");
-    
-    print("----------");
-    
-    embed = document.createElement('embed');
-    print("[Embed is dynamically created element with only src specified]");
-
-    embed.style.visibility = "hidden";
-    embed.src = "resources/test.blinktestplugin";
     document.body.appendChild(embed);
     shouldBe("typeof embed.postMessage", "function");
 }

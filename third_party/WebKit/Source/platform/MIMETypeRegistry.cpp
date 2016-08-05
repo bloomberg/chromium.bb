@@ -55,14 +55,7 @@ String MIMETypeRegistry::getMIMETypeForPath(const String& path)
         return "application/octet-stream";
     String extension = path.substring(pos + 1);
     String mimeType = getMIMETypeForExtension(extension);
-    if (mimeType.isEmpty()) {
-        // If there's no mimetype registered for the extension, check to see
-        // if a plugin can handle the extension.
-        mimeType = getPluginMimeTypeFromExtension(extension);
-    }
-    if (mimeType.isEmpty())
-        return "application/octet-stream";
-    return mimeType;
+    return mimeType.isEmpty() ? "application/octet-stream" : mimeType;
 }
 
 bool MIMETypeRegistry::isSupportedImageMIMEType(const String& mimeType)
