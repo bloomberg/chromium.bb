@@ -696,6 +696,11 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (request.downloadToFile() || request.useStreamOnResponse())
         return Reload;
 
+    // Never reuse opaque responses from a service worker for requests that
+    // are not no-cors. https://crbug.com/625575
+    if (existingResource->response().wasFetchedViaServiceWorker() && existingResource->response().serviceWorkerResponseType() == WebServiceWorkerResponseTypeOpaque && request.fetchRequestMode() != WebURLRequest::FetchRequestModeNoCORS)
+        return Reload;
+
     // If resource was populated from a SubstituteData load or data: url, use it.
     if (isStaticData)
         return Use;
