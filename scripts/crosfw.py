@@ -273,6 +273,27 @@ def ParseCmdline(argv):
   return parser.parse_args(argv)
 
 
+def FindCompiler(gcc, cros_prefix):
+  """Look up the compiler for an architecture.
+
+  Args:
+    gcc: GCC architecture, either 'arm' or 'aarch64'
+    cros_prefix: Full Chromium OS toolchain prefix
+  """
+  if in_chroot:
+    # Use the Chromium OS toolchain.
+    prefix = cros_prefix
+  else:
+    prefix = glob.glob('/opt/linaro/gcc-linaro-%s-linux-*/bin/*gcc' % gcc)
+    if not prefix:
+      cros_build_lib.Die("""Please install an ARM toolchain for your machine.
+Install a Linaro toolchain from:
+https://launchpad.net/linaro-toolchain-binaries
+or see cros/commands/cros_chrome_sdk.py.""")
+    prefix = re.sub('gcc$', '', prefix[0])
+  return prefix
+
+
 def SetupBuild(options):
   """Set up parameters needed for the build.
 
@@ -355,18 +376,11 @@ def SetupBuild(options):
     else:
       compiler = '/opt/i686/bin/i686-unknown-elf-'
   elif arch == 'arm':
-    if in_chroot:
-      # Use the Chrome OS toolchain
-      compiler = 'armv7a-cros-linux-gnueabi-'
-    else:
-      compiler = glob.glob('/opt/linaro/gcc-linaro-arm-linux-*/bin/*gcc')
-      if not compiler:
-        cros_build_lib.Die("""Please install an ARM toolchain for your machine.
-'Install a Linaro toolchain from:'
-'https://launchpad.net/linaro-toolchain-binaries'
-'or see cros/commands/cros_chrome_sdk.py.""")
-      compiler = compiler[0]
-    compiler = re.sub('gcc$', '', compiler)
+    compiler = FindCompiler(arch, 'armv7a-cros-linux-gnueabi-')
+  elif arch == 'aarch64':
+    compiler = FindCompiler(arch, 'aarch64-cros-linux-gnu-')
+    # U-Boot builds both arm and aarch64 with the 'arm' architecture.
+    arch = 'arm'
   elif arch == 'sandbox':
     compiler = ''
   else:
