@@ -16,9 +16,42 @@ class LocalFrame;
 class ScriptState;
 class WebTaskRunner;
 
+enum class TaskType {
+    // Speced tasks and related internal tasks should be posted to one of
+    // the following task runners. These task runners may be throttled.
+    DOMManipulation,
+    UserInteraction,
+    Networking,
+    HistoryTraversal,
+    Embed,
+    MediaElementEvent,
+    CanvasBlobSerialization,
+    Microtask,
+    Timer,
+    RemoteEvent,
+    WebSocket,
+    PostedMessage,
+    UnshippedPortMessage,
+
+    // Other internal tasks that cannot fit any of the above task runners
+    // can be posted here, but the usage is not encouraged. The task runner
+    // may be throttled.
+    Internal,
+
+    // Tasks that must not be throttled should be posted here, but the usage
+    // should be very limited.
+    Unthrottled,
+};
+
 class CORE_EXPORT TaskRunnerHelper final {
     STATIC_ONLY(TaskRunnerHelper);
 public:
+    static WebTaskRunner* get(TaskType, LocalFrame*);
+    static WebTaskRunner* get(TaskType, Document*);
+    static WebTaskRunner* get(TaskType, ExecutionContext*);
+    static WebTaskRunner* get(TaskType, ScriptState*);
+
+    // TODO(haraken): Remove the following APIs.
     static WebTaskRunner* getUnthrottledTaskRunner(LocalFrame*);
     static WebTaskRunner* getTimerTaskRunner(LocalFrame*);
     static WebTaskRunner* getLoadingTaskRunner(LocalFrame*);
