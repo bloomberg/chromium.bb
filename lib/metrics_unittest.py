@@ -6,10 +6,8 @@
 
 from __future__ import print_function
 
-import pickle
-import Queue
-
 from chromite.lib import metrics
+from chromite.lib import parallel
 from chromite.lib import cros_test_lib
 
 
@@ -18,15 +16,18 @@ class TestIndirectMetrics(cros_test_lib.MockTestCase):
 
   def testEnqueue(self):
     """Test that _Indirect enqueues messages correctly."""
-    metric = metrics.Boolean('foo')
-    # The metric should be pickleable
-    pickle.dumps(metric)
+    metric = metrics.Boolean
 
-    q = Queue.Queue()
-    self.PatchObject(metrics, 'MESSAGE_QUEUE', q)
+    with parallel.Manager() as manager:
+      q = manager.Queue()
+      self.PatchObject(metrics, 'MESSAGE_QUEUE', q)
 
-    proxy_metric = metrics.Boolean('foo')
-    proxy_metric.example_method('arg1', 'arg2')
+      proxy_metric = metric('foo')
+      proxy_metric.example('arg1', 'arg2')
 
-    entry = q.get_nowait()
-    self.assertEqual(entry, (metric, 'example_method', ('arg1', 'arg2'), {}))
+      message = q.get(timeout=10)
+
+    self.assertEqual(
+        message,
+        metrics.MetricCall(metric.__name__, ('foo',),
+                           {}, 'example', ('arg1', 'arg2'), {}))

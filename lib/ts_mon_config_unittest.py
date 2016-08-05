@@ -7,12 +7,12 @@
 from __future__ import print_function
 
 import itertools
-import mock
 import multiprocessing
 import Queue
 
-from chromite.lib import ts_mon_config
 from chromite.lib import cros_test_lib
+from chromite.lib import metrics
+from chromite.lib import ts_mon_config
 
 
 # pylint: disable=protected-access
@@ -27,8 +27,9 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     # things like Process.join(10) won't sleep.
     time_mock = self.PatchObject(ts_mon_config, 'time')
     time_mock.time.side_effect = itertools.count(0)
-    self.PatchObject(ts_mon_config.metrics, 'flush')
+    self.flush_mock = self.PatchObject(ts_mon_config.metrics, 'flush')
     self.PatchObject(ts_mon_config, 'SetupTsMonGlobalState')
+    self.mock_metric = self.PatchObject(metrics, 'Boolean')
 
 
   def testNoneEndsProcess(self):
@@ -46,8 +47,8 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
   def testConsumeOneMetric(self):
     """Tests that sending one metric calls flush once."""
     q = Queue.Queue()
-    mock_metric = mock.Mock()
-    q.put((mock_metric, 'mock_name', ['arg1'], {'kwarg1': 'value'}))
+    q.put(metrics.MetricCall('Boolean', [], {},
+                             'mock_name', ['arg1'], {'kwarg1': 'value'}))
     q.put(None)
 
     ts_mon_config._ConsumeMessages(q, [''], {})
@@ -56,14 +57,16 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     ts_mon_config.time.sleep.assert_called_once_with(
         ts_mon_config.FLUSH_INTERVAL - 1)
     ts_mon_config.metrics.flush.assert_called_once_with()
-    mock_metric.mock_name.assert_called_once_with('arg1', kwarg1='value')
+    self.mock_metric.return_value.mock_name.assert_called_once_with(
+        'arg1', kwarg1='value')
 
   def testConsumeTwoMetrics(self):
     """Tests that sending two metrics only calls flush once."""
     q = Queue.Queue()
-    mock_metric = mock.Mock()
-    q.put((mock_metric, 'mock_name1', ['arg1'], {'kwarg1': 'value'}))
-    q.put((mock_metric, 'mock_name2', ['arg2'], {'kwarg2': 'value'}))
+    q.put(metrics.MetricCall('Boolean', [], {},
+                             'mock_name1', ['arg1'], {'kwarg1': 'value'}))
+    q.put(metrics.MetricCall('Boolean', [], {},
+                             'mock_name2', ['arg2'], {'kwarg2': 'value'}))
     q.put(None)
 
     ts_mon_config._ConsumeMessages(q, [''], {})
@@ -72,8 +75,10 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     ts_mon_config.time.sleep.assert_called_once_with(
         ts_mon_config.FLUSH_INTERVAL - 2)
     ts_mon_config.metrics.flush.assert_called_once_with()
-    mock_metric.mock_name1.assert_called_once_with('arg1', kwarg1='value')
-    mock_metric.mock_name2.assert_called_once_with('arg2', kwarg2='value')
+    self.mock_metric.return_value.mock_name1.assert_called_once_with(
+        'arg1', kwarg1='value')
+    self.mock_metric.return_value.mock_name2.assert_called_once_with(
+        'arg2', kwarg2='value')
 
   def testFlushingProcessExits(self):
     """Tests that _CreateTsMonFlushingProcess cleans up the process."""
@@ -87,8 +92,8 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.PatchObject(multiprocessing, 'Process', SaveProcess)
 
     with ts_mon_config._CreateTsMonFlushingProcess([], {}) as q:
-      # We can't pickle a Mock() object, so just create any placeholder object.
-      q.put((object(), '__class__', [], {}))
+      q.put(metrics.MetricCall('Boolean', [], {},
+                               '__class__', [], {}))
 
     # wait a bit for the process to close, since multiprocessing.Queue and
     # Process.join() is not synchronous.
@@ -99,12 +104,15 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
   def testCatchesException(self):
     """Tests that the _ConsumeMessages loop catches exceptions."""
     q = Queue.Queue()
+
     class RaisesException(object):
       """Class to raise an exception"""
-      @staticmethod
-      def raiseException(*_args, **_kwargs):
+      def raiseException(self, *_args, **_kwargs):
         raise Exception()
-    q.put((RaisesException, 'raiseException', ['arg1'], {'kwarg1': 'value1'}))
+
+    metrics.RaisesException = RaisesException
+    q.put(metrics.MetricCall('RaisesException', [], {},
+                             'raiseException', ['arg1'], {'kwarg1': 'value1'}))
     q.put(None)
 
     mock_logging = self.PatchObject(ts_mon_config.logging, 'exception')

@@ -135,6 +135,10 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
     try:
       yield message_q
     finally:
+      # Now that there is no longer a process to listen to the Queue, re-set it
+      # to None so that any future metrics are created within this process.
+      metrics.MESSAGE_QUEUE = None
+      # Send the sentinal value for "flush one more time and exit".
       message_q.put(None)
       logging.info("Waiting for ts_mon flushing process to finish...")
       p.join(timeout=FLUSH_INTERVAL*2)
@@ -200,9 +204,6 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
     setup_args: Arguments to pass to SetupTsMonGlobalState.
     setup_kwargs: Keyword arguments to pass to SetupTsMonGlobalState.
   """
-  # Configure ts-mon, but don't start up a sending thread.
-  setup_kwargs['auto_flush'] = False
-  SetupTsMonGlobalState(*setup_args, **setup_kwargs)
 
   last_flush = 0
   pending = False
@@ -211,14 +212,24 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
   parallel.ExitWithParent(signal.SIGHUP)
   signal.signal(signal.SIGHUP, lambda _sig, _stack: _WaitToFlush(last_flush))
 
+  # Configure ts-mon, but don't start up a sending thread.
+  setup_kwargs['auto_flush'] = False
+  SetupTsMonGlobalState(*setup_args, **setup_kwargs)
+
   message = message_q.get()
   while message:
-    metric, func, f_args, f_kwargs = message
     try:
-      getattr(metric, func)(*f_args, **f_kwargs)
+      cls = getattr(metrics, message.metric_name)
+      metric = cls(*message.metric_args, **message.metric_kwargs)
+      getattr(metric, message.method)(
+          *message.method_args,
+          **message.method_kwargs)
     except Exception:
       logging.exception('Caught an exception while running %s',
-                        _MethodCallRepr(metric, func, f_args, f_kwargs))
+                        _MethodCallRepr(message.metric_name,
+                                        message.method,
+                                        message.method_args,
+                                        message.method_kwargs))
 
     pending, last_flush, time_delta = _FlushIfReady(True, last_flush)
 

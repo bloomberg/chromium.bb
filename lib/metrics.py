@@ -12,6 +12,7 @@ deployed with your code.
 from __future__ import print_function
 
 from functools import wraps
+from collections import namedtuple
 
 try:
   from infra_libs import ts_mon
@@ -28,15 +29,23 @@ _SECONDS_BUCKET_FACTOR = 1.16
 # this Queue to a dedicated flushing processes.
 MESSAGE_QUEUE = None
 
+MetricCall = namedtuple(
+    'MetricCall',
+    'metric_name metric_args metric_kwargs method method_args method_kwargs')
+
 
 class ProxyMetric(object):
   """Redirects any method calls to the message queue."""
-  def __init__(self, metric):
+  def __init__(self, metric, metric_args, metric_kwargs):
     self.metric = metric
+    self.metric_args = metric_args
+    self.metric_kwargs = metric_kwargs
 
-  def __getattr__(self, name):
+  def __getattr__(self, method_name):
     def enqueue(*args, **kwargs):
-      MESSAGE_QUEUE.put((self.metric, name, args, kwargs))
+      MESSAGE_QUEUE.put(MetricCall(
+          self.metric, self.metric_args, self.metric_kwargs,
+          method_name, args, kwargs))
     return enqueue
 
 
@@ -48,11 +57,10 @@ def _Indirect(fn):
   """
   @wraps(fn)
   def AddToQueueIfPresent(*args, **kwargs):
-    metric = fn(*args, **kwargs)
     if MESSAGE_QUEUE:
-      return ProxyMetric(metric)
+      return ProxyMetric(fn.__name__, args, kwargs)
     else:
-      return metric
+      return fn(*args, **kwargs)
   return AddToQueueIfPresent
 
 
