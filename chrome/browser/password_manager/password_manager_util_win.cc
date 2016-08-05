@@ -128,7 +128,7 @@ bool CheckBlankPasswordWithPrefs(const WCHAR* username,
     DWORD logon_result = LogonUser(username,
                                    L".",
                                    L"",
-                                   LOGON32_LOGON_NETWORK,
+                                   LOGON32_LOGON_INTERACTIVE,
                                    LOGON32_PROVIDER_DEFAULT,
                                    &handle);
 
@@ -304,7 +304,7 @@ bool AuthenticateUser(gfx::NativeWindow window) {
       logon_result = LogonUser(username,
                                use_principalname ? NULL : L".",
                                password,
-                               LOGON32_LOGON_NETWORK,
+                               LOGON32_LOGON_INTERACTIVE,
                                LOGON32_PROVIDER_DEFAULT,
                                &handle);
       if (logon_result) {
