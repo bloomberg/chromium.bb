@@ -1237,6 +1237,16 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   ui::CompositionText composition;
   composition.text = base::SysNSStringToUTF16(text);
   composition.selection = gfx::Range(selectedRange);
+
+  // Add a black underline with a transparent background to the composition
+  // text. TODO(karandeepb): On Cocoa textfields, the target clause of the
+  // composition has a thick underlines. The composition text also has
+  // discontinous underlines for different clauses. This is also supported in
+  // the Chrome renderer. Add code to extract underlines from |text| once our
+  // render text implementation supports thick underlines and discontinous
+  // underlines for consecutive characters. See http://crbug.com/612675.
+  composition.underlines.push_back(ui::CompositionUnderline(
+      0, [text length], SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   textInputClient_->SetCompositionText(composition);
 }
 
