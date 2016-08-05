@@ -270,6 +270,10 @@
     "label": "//device:device_unittests",
     "type": "console_test_launcher",
   },
+  "disable_outdated_build_detector_unittests": {
+    "label": "//chrome/tools/disable_outdated_build_detector:disable_outdated_build_detector_unittests",
+    "type": "console_test_launcher",
+  },
   "display_unittests": {
     "label": "//ui/display:display_unittests",
     "type": "console_test_launcher",

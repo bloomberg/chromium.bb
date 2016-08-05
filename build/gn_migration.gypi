@@ -495,6 +495,8 @@
             '../chrome/chrome.gyp:setup',
             '../chrome/chrome.gyp:setup_unittests',
             '../chrome/installer/mini_installer.gyp:mini_installer',
+            '../chrome/tools/disable_outdated_build_detector/disable_outdated_build_detector.gyp:disable_outdated_build_detector',
+            '../chrome/tools/disable_outdated_build_detector/disable_outdated_build_detector.gyp:disable_outdated_build_detector_unittests',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
             '../chrome_elf/chrome_elf.gyp:dll_hash_main',
             '../components/components.gyp:wifi_test',

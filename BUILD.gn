@@ -357,6 +357,7 @@ group("both_gn_and_gyp") {
     deps += [
       "//chrome/installer/gcapi",
       "//chrome/tools/build/win/syzygy:chrome_dll_syzygy",
+      "//chrome/tools/disable_outdated_build_detector",
     ]
   }
 

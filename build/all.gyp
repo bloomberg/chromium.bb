@@ -226,6 +226,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            '../chrome/tools/disable_outdated_build_detector/disable_outdated_build_detector.gyp:*',
             '../chrome_elf/chrome_elf.gyp:*',
             '../courgette/courgette.gyp:*',
             '../rlz/rlz.gyp:*',
