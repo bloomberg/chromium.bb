@@ -13,6 +13,7 @@ namespace ntp_snippets {
 CategoryFactory::CategoryFactory() {
   // Add all local categories in a fixed order.
   AddKnownCategory(KnownCategories::OFFLINE_PAGES);
+  AddKnownCategory(KnownCategories::BOOKMARKS);
 }
 
 CategoryFactory::~CategoryFactory() {}

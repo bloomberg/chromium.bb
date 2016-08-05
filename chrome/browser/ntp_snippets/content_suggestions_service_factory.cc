@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
@@ -15,11 +16,12 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/pref_names.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -50,8 +52,10 @@ using offline_pages::OfflinePageModel;
 using offline_pages::OfflinePageModelFactory;
 #endif  // OS_ANDROID
 
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using image_fetcher::ImageFetcherImpl;
+using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::NTPSnippetsDatabase;
 using ntp_snippets::NTPSnippetsFetcher;
@@ -80,6 +84,7 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "ContentSuggestionsService",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(BookmarkModelFactory::GetInstance());
 #if defined(OS_ANDROID)
   DependsOn(OfflinePageModelFactory::GetInstance());
 #endif  // OS_ANDROID
@@ -104,8 +109,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   if (state == State::DISABLED)
     return service;
 
-// Create the OfflinePageSuggestionsProvider.
 #if defined(OS_ANDROID)
+  // Create the OfflinePageSuggestionsProvider.
   if (base::FeatureList::IsEnabled(
           chrome::android::kNTPOfflinePageSuggestionsFeature)) {
     OfflinePageModel* offline_page_model =
@@ -118,6 +123,18 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     service->RegisterProvider(std::move(offline_page_suggestions_provider));
   }
 #endif  // OS_ANDROID
+
+  // Create the BookmarkSuggestionsProvider.
+  if (base::FeatureList::IsEnabled(
+          ntp_snippets::kBookmarkSuggestionsFeature)) {
+    // TODO(pke): GetForBrowserContext
+    BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForProfile(profile);
+    std::unique_ptr<BookmarkSuggestionsProvider> bookmark_suggestions_provider =
+        base::MakeUnique<BookmarkSuggestionsProvider>(
+            service, service->category_factory(), bookmark_model);
+    service->RegisterProvider(std::move(bookmark_suggestions_provider));
+  }
 
   // Create the NTPSnippetsService (articles provider).
   SigninManagerBase* signin_manager =

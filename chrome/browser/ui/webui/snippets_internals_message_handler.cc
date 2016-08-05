@@ -83,6 +83,9 @@ std::string GetCategoryTitle(Category category) {
   if (category.IsKnownCategory(KnownCategories::OFFLINE_PAGES)) {
     return "Offline pages (continue browsing)";
   }
+  if (category.IsKnownCategory(KnownCategories::BOOKMARKS)) {
+    return "Recently visited bookmarks";
+  }
   return std::string();
 }
 

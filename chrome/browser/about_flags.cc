@@ -1908,6 +1908,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPOfflinePageSuggestionsFeature)},
+    {"enable-ntp-bookmark-suggestions",
+     IDS_FLAGS_ENABLE_NTP_BOOKMARK_SUGGESTIONS_NAME,
+     IDS_FLAGS_ENABLE_NTP_BOOKMARK_SUGGESTIONS_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(ntp_snippets::kBookmarkSuggestionsFeature)},
 #endif  // defined(OS_ANDROID)
 #if defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
     {"enable-webrtc-h264-with-openh264-ffmpeg",

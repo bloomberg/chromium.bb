@@ -18,6 +18,7 @@ class CategoryFactory;
 // to be recognized by the client implementation.
 enum class KnownCategories {
   OFFLINE_PAGES,
+  BOOKMARKS,
   LOCAL_CATEGORIES_COUNT,
 
   REMOTE_CATEGORIES_OFFSET = 10000,

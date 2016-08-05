@@ -9,6 +9,7 @@
 
 namespace ntp_snippets {
 
+extern const base::Feature kBookmarkSuggestionsFeature;
 extern const base::Feature kContentSuggestionsFeature;
 
 }  // namespace ntp_snippets

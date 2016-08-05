@@ -33,6 +33,8 @@
       'sources': [
         'ntp_snippets/bookmarks/bookmark_last_visit_utils.cc',
         'ntp_snippets/bookmarks/bookmark_last_visit_utils.h',
+        'ntp_snippets/bookmarks/bookmark_suggestions_provider.cc',
+        'ntp_snippets/bookmarks/bookmark_suggestions_provider.h',
         'ntp_snippets/category_factory.cc',
         'ntp_snippets/category_factory.h',
         'ntp_snippets/category_status.cc',

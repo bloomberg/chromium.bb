@@ -14,6 +14,8 @@ static_library("ntp_snippets") {
   sources = [
     "bookmarks/bookmark_last_visit_utils.cc",
     "bookmarks/bookmark_last_visit_utils.h",
+    "bookmarks/bookmark_suggestions_provider.cc",
+    "bookmarks/bookmark_suggestions_provider.h",
     "category.cc",
     "category.h",
     "category_factory.cc",
