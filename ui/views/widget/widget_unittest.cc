@@ -3636,6 +3636,8 @@ TEST_F(WidgetTest, WidgetRemovalsObserverCalledWhenMovingBetweenWidgets) {
 
 #if defined(OS_WIN)
 
+namespace {
+
 // Provides functionality to create a window modal dialog.
 class ModalDialogDelegate : public DialogDelegateView {
 public:
@@ -3650,6 +3652,8 @@ private:
 
   DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
 };
+
+}  // namespace
 
 // Tests the case where an intervening owner popup window is destroyed out from
 // under the currently active modal top-level window. In this instance, the

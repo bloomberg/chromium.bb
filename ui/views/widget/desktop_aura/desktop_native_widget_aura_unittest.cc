@@ -509,6 +509,8 @@ TEST_F(DesktopAuraWidgetTest, CloseWidgetDuringMouseReleased) {
   RunCloseWidgetDuringDispatchTest(this, ui::ET_MOUSE_RELEASED);
 }
 
+namespace {
+
 // Provides functionality to create a window modal dialog.
 class ModalDialogDelegate : public DialogDelegateView {
  public:
@@ -521,6 +523,8 @@ class ModalDialogDelegate : public DialogDelegateView {
  private:
   DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
 };
+
+}  // namespace
 
 // This test verifies that whether mouse events when a modal dialog is
 // displayed are eaten or recieved by the dialog.
