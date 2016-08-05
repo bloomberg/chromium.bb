@@ -315,6 +315,7 @@ void BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported(
 void BrowsingDataRemoverFunction::StartRemoving() {
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  // TODO(msramek): This restriction is no longer needed. Remove it.
   if (remover->is_removing()) {
     error_ = extension_browsing_data_api_constants::kOneAtATimeError;
     SendResponse(false);
@@ -329,9 +330,9 @@ void BrowsingDataRemoverFunction::StartRemoving() {
   // we've generated above. We can use a raw pointer here, as the browsing data
   // remover is responsible for deleting itself once data removal is complete.
   observer_.Add(remover);
-  remover->Remove(
+  remover->RemoveAndReply(
       BrowsingDataRemover::TimeRange(remove_since_, base::Time::Max()),
-      removal_mask_, origin_type_mask_);
+      removal_mask_, origin_type_mask_, this);
 }
 
 int BrowsingDataRemoverFunction::ParseOriginTypeMask(

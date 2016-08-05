@@ -299,12 +299,20 @@ BrowsingDataRemover::BrowsingDataRemover(
 }
 
 BrowsingDataRemover::~BrowsingDataRemover() {
-  // If we are still removing data, notify observers so they can remove
-  // themselves from the observer list.
+  if (!task_queue_.empty()) {
+    VLOG(1) << "BrowsingDataRemover shuts down with " << task_queue_.size()
+            << " pending tasks";
+  }
+
+  // If we are still removing data, notify observers that their task has been
+  // (albeit unsucessfuly) processed, so they can unregister themselves.
   // TODO(bauerb): If it becomes a problem that browsing data might not actually
   // be fully cleared when an observer is notified, add a success flag.
-  if (is_removing_)
-    Notify();
+  while (!task_queue_.empty()) {
+    if (observer_list_.HasObserver(task_queue_.front().observer))
+      task_queue_.front().observer->OnBrowsingDataRemoverDone();
+    task_queue_.pop();
+  }
 }
 
 void BrowsingDataRemover::Shutdown() {
@@ -322,20 +330,84 @@ void BrowsingDataRemover::SetRemoving(bool is_removing) {
 void BrowsingDataRemover::Remove(const TimeRange& time_range,
                                  int remove_mask,
                                  int origin_type_mask) {
-  // Any instance of BrowsingDataFilterBuilder that |IsEmptyBlacklist()|
-  // is OK to pass here.
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::BLACKLIST);
-  DCHECK(builder.IsEmptyBlacklist());
-  RemoveImpl(time_range, remove_mask, builder, origin_type_mask);
+  RemoveInternal(time_range, remove_mask, origin_type_mask,
+                 std::unique_ptr<RegistrableDomainFilterBuilder>(), nullptr);
+}
+
+void BrowsingDataRemover::RemoveAndReply(
+    const TimeRange& time_range,
+    int remove_mask,
+    int origin_type_mask,
+    Observer* observer) {
+  DCHECK(observer);
+  RemoveInternal(time_range, remove_mask, origin_type_mask,
+                 std::unique_ptr<RegistrableDomainFilterBuilder>(), observer);
 }
 
 void BrowsingDataRemover::RemoveWithFilter(
     const TimeRange& time_range,
     int remove_mask,
     int origin_type_mask,
-    const BrowsingDataFilterBuilder& filter_builder) {
-  RemoveImpl(time_range, remove_mask, filter_builder, origin_type_mask);
+    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
+  DCHECK(filter_builder);
+  RemoveInternal(time_range, remove_mask, origin_type_mask,
+                 std::move(filter_builder), nullptr);
+}
+
+void BrowsingDataRemover::RemoveWithFilterAndReply(
+    const TimeRange& time_range,
+    int remove_mask,
+    int origin_type_mask,
+    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+    Observer* observer) {
+  DCHECK(filter_builder);
+  DCHECK(observer);
+  RemoveInternal(time_range, remove_mask, origin_type_mask,
+                 std::move(filter_builder), observer);
+}
+
+void BrowsingDataRemover::RemoveInternal(
+    const TimeRange& time_range,
+    int remove_mask,
+    int origin_type_mask,
+    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+    Observer* observer) {
+  DCHECK(!observer || observer_list_.HasObserver(observer))
+      << "Every observer must register itself (by calling AddObserver()) "
+      << "before observing a removal task.";
+
+  // Remove() and RemoveAndReply() pass a null pointer to indicate no filter.
+  // No filter is equivalent to one that |IsEmptyBlacklist()|.
+  if (!filter_builder) {
+    filter_builder = base::WrapUnique(new RegistrableDomainFilterBuilder(
+        RegistrableDomainFilterBuilder::BLACKLIST));
+    DCHECK(filter_builder->IsEmptyBlacklist());
+  }
+
+  task_queue_.emplace(
+      time_range,
+      remove_mask,
+      origin_type_mask,
+      std::move(filter_builder),
+      observer);
+
+  // If this is the only scheduled task, execute it immediately. Otherwise,
+  // it will be automatically executed when all tasks scheduled before it
+  // finish.
+  if (task_queue_.size() == 1) {
+    SetRemoving(true);
+    RunNextTask();
+  }
+}
+
+void BrowsingDataRemover::RunNextTask() {
+  DCHECK(!task_queue_.empty());
+  const RemovalTask& removal_task = task_queue_.front();
+
+  RemoveImpl(removal_task.time_range,
+             removal_task.remove_mask,
+             *removal_task.filter_builder,
+             removal_task.origin_type_mask);
 }
 
 void BrowsingDataRemover::RemoveImpl(
@@ -350,7 +422,6 @@ void BrowsingDataRemover::RemoveImpl(
   // delete_end, even though they should've used base::Time::Max().
   DCHECK_NE(base::Time(), time_range.end);
 
-  SetRemoving(true);
   delete_begin_ = time_range.begin;
   delete_end_ = time_range.end;
   remove_mask_ = remove_mask;
@@ -1050,6 +1121,19 @@ int BrowsingDataRemover::GetLastUsedOriginTypeMask() {
   return origin_type_mask_;
 }
 
+BrowsingDataRemover::RemovalTask::RemovalTask(
+    const TimeRange& time_range,
+    int remove_mask,
+    int origin_type_mask,
+    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+    Observer* observer)
+    : time_range(time_range),
+      remove_mask(remove_mask),
+      origin_type_mask(origin_type_mask),
+      filter_builder(std::move(filter_builder)),
+      observer(observer) {}
+
+BrowsingDataRemover::RemovalTask::~RemovalTask() {}
 
 void BrowsingDataRemover::ClearSettingsForOneTypeWithPredicate(
     HostContentSettingsMap* content_settings_map,
@@ -1109,8 +1193,40 @@ void BrowsingDataRemover::OnKeywordsLoaded() {
 }
 
 void BrowsingDataRemover::Notify() {
-  SetRemoving(false);
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnBrowsingDataRemoverDone());
+  // Some tests call |RemoveImpl| directly, without using the task scheduler.
+  // TODO(msramek): Improve those tests so we don't have to do this. Tests
+  // relying on |RemoveImpl| do so because they need to pass in
+  // BrowsingDataFilterBuilder while still keeping ownership of it. Making
+  // BrowsingDataFilterBuilder copyable would solve this.
+  if (!is_removing_) {
+    DCHECK(task_queue_.empty());
+    return;
+  }
+
+  // Inform the observer of the current task unless it has unregistered
+  // itself in the meantime.
+  DCHECK(!task_queue_.empty());
+
+  if (task_queue_.front().observer != nullptr &&
+      observer_list_.HasObserver(task_queue_.front().observer)) {
+    task_queue_.front().observer->OnBrowsingDataRemoverDone();
+  }
+
+  task_queue_.pop();
+
+  if (task_queue_.empty()) {
+    // All removal tasks have finished. Inform the observers that we're idle.
+    SetRemoving(false);
+    return;
+  }
+
+  // Yield to the UI thread before executing the next removal task.
+  // TODO(msramek): Consider also adding a backoff if too many tasks
+  // are scheduled.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowsingDataRemover::RunNextTask,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BrowsingDataRemover::NotifyIfDone() {

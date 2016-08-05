@@ -115,20 +115,22 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->Remove(BrowsingDataRemover::Period(browsing_data::LAST_HOUR),
-                    remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
+    remover->RemoveAndReply(
+        BrowsingDataRemover::Period(browsing_data::LAST_HOUR), remove_mask,
+        BrowsingDataHelper::UNPROTECTED_WEB, &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 
   void RemoveWithFilterAndWait(
       int remove_mask,
-      const BrowsingDataFilterBuilder& filter_builder) {
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->RemoveWithFilter(
+    remover->RemoveWithFilterAndReply(
         BrowsingDataRemover::Period(browsing_data::LAST_HOUR), remove_mask,
-        BrowsingDataHelper::UNPROTECTED_WEB, filter_builder);
+        BrowsingDataHelper::UNPROTECTED_WEB, std::move(filter_builder),
+        &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 
@@ -246,16 +248,21 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
 
   // Partially delete cache data. Delete data for localhost, which is the origin
   // of |url1|, but not for |kExampleHost|, which is the origin of |url2|.
-  OriginFilterBuilder filter_builder(OriginFilterBuilder::WHITELIST);
-  filter_builder.AddOrigin(url::Origin(url1));
-  RemoveWithFilterAndWait(BrowsingDataRemover::REMOVE_CACHE, filter_builder);
+  std::unique_ptr<OriginFilterBuilder> filter_builder(
+      new OriginFilterBuilder(OriginFilterBuilder::WHITELIST));
+  filter_builder->AddOrigin(url::Origin(url1));
+  RemoveWithFilterAndWait(BrowsingDataRemover::REMOVE_CACHE,
+                          std::move(filter_builder));
 
   // After the partial deletion, the cache should be smaller but still nonempty.
   browsing_data::BrowsingDataCounter::ResultInt new_size = GetCacheSize();
   EXPECT_LT(new_size, original_size);
 
   // Another partial deletion with the same filter should have no effect.
-  RemoveWithFilterAndWait(BrowsingDataRemover::REMOVE_CACHE, filter_builder);
+  filter_builder.reset(new OriginFilterBuilder(OriginFilterBuilder::WHITELIST));
+  filter_builder->AddOrigin(url::Origin(url1));
+  RemoveWithFilterAndWait(BrowsingDataRemover::REMOVE_CACHE,
+                          std::move(filter_builder));
   EXPECT_EQ(new_size, GetCacheSize());
 
   // Delete the remaining data.

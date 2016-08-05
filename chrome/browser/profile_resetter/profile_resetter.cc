@@ -257,8 +257,9 @@ void ProfileResetter::ResetCookiesAndSiteData() {
   // Don't try to clear LSO data if it's not supported.
   if (!prefs->GetBoolean(prefs::kClearPluginLSODataEnabled))
     remove_mask &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
-  cookies_remover_->Remove(BrowsingDataRemover::Unbounded(), remove_mask,
-                           BrowsingDataHelper::UNPROTECTED_WEB);
+  cookies_remover_->RemoveAndReply(BrowsingDataRemover::Unbounded(),
+                                   remove_mask,
+                                   BrowsingDataHelper::UNPROTECTED_WEB, this);
 }
 
 void ProfileResetter::ResetExtensions() {

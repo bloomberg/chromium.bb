@@ -318,9 +318,10 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
   remover_->AddObserver(this);
   int period_selected =
       prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
-  remover_->Remove(BrowsingDataRemover::Period(
-                       static_cast<browsing_data::TimePeriod>(period_selected)),
-                   remove_mask, origin_mask);
+  remover_->RemoveAndReply(
+      BrowsingDataRemover::Period(
+          static_cast<browsing_data::TimePeriod>(period_selected)),
+      remove_mask, origin_mask, this);
 
   // Store the clear browsing data time. Next time the clear browsing data
   // dialog is open, this time is used to decide whether to display an info

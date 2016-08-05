@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <list>
 #include <memory>
 #include <set>
 #include <string>
@@ -1068,8 +1069,8 @@ class BrowsingDataRemoverTest : public testing::Test {
       origin_type_mask |= BrowsingDataHelper::PROTECTED_WEB;
 
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->Remove(BrowsingDataRemover::Period(period), remove_mask,
-                    origin_type_mask);
+    remover->RemoveAndReply(BrowsingDataRemover::Period(period), remove_mask,
+                            origin_type_mask, &completion_observer);
     completion_observer.BlockUntilCompletion();
 
     // Save so we can verify later.
@@ -1086,10 +1087,11 @@ class BrowsingDataRemoverTest : public testing::Test {
     TestStoragePartition storage_partition;
     remover->OverrideStoragePartitionForTesting(&storage_partition);
 
-    BrowsingDataRemoverCompletionObserver completion_observer(remover);
+    BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
     remover->RemoveImpl(BrowsingDataRemover::Period(period), remove_mask,
                         filter_builder, BrowsingDataHelper::UNPROTECTED_WEB);
-    completion_observer.BlockUntilCompletion();
+    completion_inhibitor.BlockUntilNearCompletion();
+    completion_inhibitor.ContinueToCompletion();
 
     // Save so we can verify later.
     storage_partition_removal_data_ =
@@ -2181,9 +2183,10 @@ TEST_F(BrowsingDataRemoverTest, CompletionInhibition) {
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
   InspectableCompletionObserver completion_observer(remover);
-  remover->Remove(BrowsingDataRemover::Unbounded(),
-                  BrowsingDataRemover::REMOVE_HISTORY,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+  remover->RemoveAndReply(BrowsingDataRemover::Unbounded(),
+                          BrowsingDataRemover::REMOVE_HISTORY,
+                          BrowsingDataHelper::UNPROTECTED_WEB,
+                          &completion_observer);
 
   // Process messages until the inhibitor is notified, and then some, to make
   // sure we do not complete asynchronously before ContinueToCompletion() is
@@ -2210,9 +2213,10 @@ TEST_F(BrowsingDataRemoverTest, EarlyShutdown) {
       BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
   InspectableCompletionObserver completion_observer(remover);
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
-  remover->Remove(BrowsingDataRemover::Unbounded(),
-                  BrowsingDataRemover::REMOVE_HISTORY,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+  remover->RemoveAndReply(BrowsingDataRemover::Unbounded(),
+                          BrowsingDataRemover::REMOVE_HISTORY,
+                          BrowsingDataHelper::UNPROTECTED_WEB,
+                          &completion_observer);
 
   completion_inhibitor.BlockUntilNearCompletion();
 
@@ -2593,4 +2597,200 @@ TEST_F(BrowsingDataRemoverTest, ClearWithPredicate) {
   EXPECT_EQ(1u, host_settings.size());
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(url1),
             host_settings[0].primary_pattern);
+}
+
+class MultipleTasksObserver {
+ public:
+  // A simple implementation of BrowsingDataRemover::Observer.
+  // MultipleTasksObserver will use several instances of Target to test
+  // that completion callbacks are returned to the correct one.
+  class Target : public BrowsingDataRemover::Observer {
+   public:
+    Target(MultipleTasksObserver* parent, BrowsingDataRemover* remover)
+        : parent_(parent),
+          observer_(this) {
+      observer_.Add(remover);
+    }
+    ~Target() override {}
+
+    void OnBrowsingDataRemoverDone() override {
+      parent_->SetLastCalledTarget(this);
+    }
+
+   private:
+    MultipleTasksObserver* parent_;
+    ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer>
+        observer_;
+  };
+
+  explicit MultipleTasksObserver(BrowsingDataRemover* remover)
+      : target_a_(this, remover),
+        target_b_(this, remover),
+        last_called_target_(nullptr) {}
+  ~MultipleTasksObserver() {}
+
+  void ClearLastCalledTarget() {
+    last_called_target_ = nullptr;
+  }
+
+  Target* GetLastCalledTarget() {
+    return last_called_target_;
+  }
+
+  Target* target_a() { return &target_a_; }
+  Target* target_b() { return &target_b_; }
+
+ private:
+  void SetLastCalledTarget(Target* target) {
+    DCHECK(!last_called_target_)
+        << "Call ClearLastCalledTarget() before every removal task.";
+    last_called_target_ = target;
+  }
+
+  Target target_a_;
+  Target target_b_;
+  Target* last_called_target_;
+};
+
+TEST_F(BrowsingDataRemoverTest, MultipleTasks) {
+  BrowsingDataRemover* remover =
+      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  EXPECT_FALSE(remover->is_removing());
+
+  std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder_1(
+      new RegistrableDomainFilterBuilder(
+          RegistrableDomainFilterBuilder::WHITELIST));
+  std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder_2(
+      new RegistrableDomainFilterBuilder(
+          RegistrableDomainFilterBuilder::BLACKLIST));
+  filter_builder_2->AddRegisterableDomain("example.com");
+
+  MultipleTasksObserver observer(remover);
+  BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
+
+  // Test several tasks with various configuration of masks, filters, and target
+  // observers.
+  std::list<BrowsingDataRemover::RemovalTask> tasks;
+  tasks.emplace_back(
+      BrowsingDataRemover::Unbounded(),
+      BrowsingDataRemover::REMOVE_HISTORY,
+      BrowsingDataHelper::UNPROTECTED_WEB,
+      base::WrapUnique(new RegistrableDomainFilterBuilder(
+          RegistrableDomainFilterBuilder::BLACKLIST)),
+      observer.target_a());
+  tasks.emplace_back(
+      BrowsingDataRemover::Unbounded(),
+      BrowsingDataRemover::REMOVE_COOKIES,
+      BrowsingDataHelper::PROTECTED_WEB,
+      base::WrapUnique(new RegistrableDomainFilterBuilder(
+          RegistrableDomainFilterBuilder::BLACKLIST)),
+      nullptr);
+  tasks.emplace_back(
+      BrowsingDataRemover::TimeRange(base::Time::Now(), base::Time::Max()),
+      BrowsingDataRemover::REMOVE_PASSWORDS,
+      BrowsingDataHelper::ALL,
+      base::WrapUnique(new RegistrableDomainFilterBuilder(
+          RegistrableDomainFilterBuilder::BLACKLIST)),
+      observer.target_b());
+  tasks.emplace_back(
+      BrowsingDataRemover::TimeRange(base::Time(), base::Time::UnixEpoch()),
+      BrowsingDataRemover::REMOVE_PASSWORDS,
+      BrowsingDataHelper::UNPROTECTED_WEB,
+      std::move(filter_builder_1),
+      observer.target_b());
+  tasks.emplace_back(
+      BrowsingDataRemover::TimeRange(
+          base::Time::UnixEpoch(), base::Time::Now()),
+      BrowsingDataRemover::REMOVE_CHANNEL_IDS,
+      BrowsingDataHelper::ALL,
+      std::move(filter_builder_2),
+      nullptr);
+
+  for (BrowsingDataRemover::RemovalTask& task : tasks) {
+    // All tasks can be directly translated to a RemoveInternal() call. Since
+    // that is a private method, we must call the four public versions of
+    // Remove.* instead. This also serves as a test that those methods are all
+    // correctly reduced to RemoveInternal().
+    if (!task.observer && task.filter_builder->IsEmptyBlacklist()) {
+      remover->Remove(task.time_range, task.remove_mask, task.origin_type_mask);
+    } else if (task.filter_builder->IsEmptyBlacklist()) {
+      remover->RemoveAndReply(task.time_range, task.remove_mask,
+                              task.origin_type_mask, task.observer);
+    } else if (!task.observer) {
+      remover->RemoveWithFilter(task.time_range, task.remove_mask,
+                                task.origin_type_mask,
+                                std::move(task.filter_builder));
+    } else {
+      remover->RemoveWithFilterAndReply(task.time_range, task.remove_mask,
+                                        task.origin_type_mask,
+                                        std::move(task.filter_builder),
+                                        task.observer);
+    }
+  }
+
+  // Use the inhibitor to stop after every task and check the results.
+  for (BrowsingDataRemover::RemovalTask& task : tasks) {
+    EXPECT_TRUE(remover->is_removing());
+    observer.ClearLastCalledTarget();
+
+    // Finish the task execution synchronously.
+    completion_inhibitor.BlockUntilNearCompletion();
+    completion_inhibitor.ContinueToCompletion();
+
+    // Observers, if any, should have been called by now (since we call
+    // observers on the same thread).
+    EXPECT_EQ(task.observer, observer.GetLastCalledTarget());
+
+    // TODO(msramek): If BrowsingDataRemover took ownership of the last used
+    // filter builder and exposed it, we could also test it here. Make it so.
+    EXPECT_EQ(task.remove_mask, GetRemovalMask());
+    EXPECT_EQ(task.origin_type_mask, GetOriginTypeMask());
+    EXPECT_EQ(task.time_range.begin, GetBeginTime());
+  }
+
+  EXPECT_FALSE(remover->is_removing());
+}
+
+// The previous test, BrowsingDataRemoverTest.MultipleTasks, tests that the
+// tasks are not mixed up and they are executed in a correct order. However,
+// the completion inhibitor kept synchronizing the execution in order to verify
+// the parameters. This test demonstrates that even running the tasks without
+// inhibition is executed correctly and doesn't crash.
+TEST_F(BrowsingDataRemoverTest, MultipleTasksInQuickSuccession) {
+  BrowsingDataRemover* remover =
+      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  EXPECT_FALSE(remover->is_removing());
+
+  int test_removal_masks[] = {
+      BrowsingDataRemover::REMOVE_COOKIES,
+      BrowsingDataRemover::REMOVE_PASSWORDS,
+      BrowsingDataRemover::REMOVE_COOKIES,
+      BrowsingDataRemover::REMOVE_COOKIES,
+      BrowsingDataRemover::REMOVE_COOKIES,
+      BrowsingDataRemover::REMOVE_HISTORY,
+      BrowsingDataRemover::REMOVE_HISTORY,
+      BrowsingDataRemover::REMOVE_HISTORY,
+      BrowsingDataRemover::REMOVE_COOKIES | BrowsingDataRemover::REMOVE_HISTORY,
+      BrowsingDataRemover::REMOVE_COOKIES | BrowsingDataRemover::REMOVE_HISTORY,
+      BrowsingDataRemover::REMOVE_COOKIES |
+          BrowsingDataRemover::REMOVE_HISTORY |
+          BrowsingDataRemover::REMOVE_PASSWORDS,
+      BrowsingDataRemover::REMOVE_PASSWORDS,
+      BrowsingDataRemover::REMOVE_PASSWORDS,
+  };
+
+  for (int removal_mask : test_removal_masks) {
+    remover->Remove(BrowsingDataRemover::Unbounded(), removal_mask,
+                    BrowsingDataHelper::UNPROTECTED_WEB);
+  }
+
+  EXPECT_TRUE(remover->is_removing());
+
+  // Add one more deletion and wait for it.
+  BlockUntilBrowsingDataRemoved(
+      browsing_data::ALL_TIME,
+      BrowsingDataRemover::REMOVE_COOKIES,
+      BrowsingDataHelper::UNPROTECTED_WEB);
+
+  EXPECT_FALSE(remover->is_removing());
 }

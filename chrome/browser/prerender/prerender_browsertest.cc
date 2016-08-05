@@ -231,8 +231,8 @@ void ClearBrowsingData(Browser* browser, int remove_mask) {
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(browser->profile());
   BrowsingDataRemoverCompletionObserver observer(remover);
-  remover->Remove(BrowsingDataRemover::Unbounded(), remove_mask,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+  remover->RemoveAndReply(BrowsingDataRemover::Unbounded(), remove_mask,
+                          BrowsingDataHelper::UNPROTECTED_WEB, &observer);
   observer.BlockUntilCompletion();
   // BrowsingDataRemover deletes itself.
 }

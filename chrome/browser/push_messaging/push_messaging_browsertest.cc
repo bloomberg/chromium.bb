@@ -1417,9 +1417,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowser()->profile());
   BrowsingDataRemoverCompletionObserver observer(remover);
-  remover->Remove(BrowsingDataRemover::Unbounded(),
-                  BrowsingDataRemover::REMOVE_SITE_DATA,
-                  BrowsingDataHelper::UNPROTECTED_WEB);
+  remover->RemoveAndReply(BrowsingDataRemover::Unbounded(),
+                          BrowsingDataRemover::REMOVE_SITE_DATA,
+                          BrowsingDataHelper::UNPROTECTED_WEB, &observer);
   observer.BlockUntilCompletion();
 
   base::RunLoop run_loop;

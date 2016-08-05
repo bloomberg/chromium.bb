@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <queue>
 #include <set>
 
 #include "base/callback_forward.h"
@@ -63,8 +64,53 @@ class URLRequestContextGetter;
 class WebappRegistry;
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
 // BrowsingDataRemover is responsible for removing data related to browsing:
 // visits in url database, downloads, cookies ...
+//
+//  USAGE:
+//
+//  0. Instantiation.
+//
+//       BrowsingDataRemover remover =
+//           BrowsingDataRemoverFactory::GetForBrowserContext(profile);
+//
+//  1. No observer.
+//
+//       remover->Remove(Unbounded(), REMOVE_COOKIES, ALL);
+//
+//  2. Using an observer to report when one's own removal task is finished.
+//
+//       class CookiesDeleter : public BrowsingDataRemover::Observer {
+//         CookiesDeleter() { remover->AddObserver(this); }
+//         ~CookiesDeleter() { remover->RemoveObserver(this); }
+//
+//         void DeleteCookies() {
+//           remover->RemoveAndReply(Unbounded(), REMOVE_COOKIES, ALL, this);
+//         }
+//
+//         void OnBrowsingDataRemoverDone() {
+//           LOG(INFO) << "Cookies were deleted.";
+//         }
+//       }
+//
+//  3. Using an observer to report when any removal task started or all removal
+//     tasks finished (i.e. when BrowsingDataRemover changes state from idle
+//     to busy and vice versa).
+//
+//       class BrowsingDataRemoverStatusObsever {
+//         BrowsingDataRemoverStatusObserver() { remover->AddObserver(this); }
+//         ~BrowsingDataRemoverStatusObserver() {
+//           remover->RemoveObserver(this);
+//         }
+//
+//         void OnBrowsingDataRemoving(bool removing) {
+//           LOG(INFO) << "Remover is now " << (removing ? "busy" : "idle");
+//         }
+//       }
+//
+////////////////////////////////////////////////////////////////////////////////
+
 class BrowsingDataRemover : public KeyedService
 #if defined(ENABLE_PLUGINS)
                             , public PepperFlashSettingsManager::Client
@@ -153,6 +199,10 @@ class BrowsingDataRemover : public KeyedService
   };
 
   // Observer is notified when the removal is active and when it's done.
+  // TODO(msramek): The semantics of the two methods are slightly different;
+  // one is called for every observer at the same time, while the other only
+  // for one observer at a time. Split the interface or deprecate
+  // OnBrowsingDataRemoving().
   class Observer {
    public:
     // NOTE: DEPRECATED; talk to dbeam/msramek before using this.
@@ -162,8 +212,8 @@ class BrowsingDataRemover : public KeyedService
     // from the done message.
     virtual void OnBrowsingDataRemoving(bool is_removing) {}
 
-    // Done means keywords have been deleted, cache cleared and all other
-    // removal tasks are scheduled.
+    // Called when a removal task is finished. Note that every removal task can
+    // only have one observer attached to it, and only that one is called.
     virtual void OnBrowsingDataRemoverDone() {}
 
    protected:
@@ -202,22 +252,38 @@ class BrowsingDataRemover : public KeyedService
     completion_inhibitor_ = inhibitor;
   }
 
-  // Removes the specified items related to browsing for all origins that match
-  // the provided |origin_type_mask| (see BrowsingDataHelper::OriginTypeMask).
+  // Removes browsing data within the given |time_range|, with datatypes being
+  // specified by |remove_mask| and origin types by |origin_type_mask|.
   void Remove(const TimeRange& time_range,
               int remove_mask,
               int origin_type_mask);
 
-  // Removes the specified items related to browsing for all origins that match
-  // the provided |origin_type_mask| (see BrowsingDataHelper::OriginTypeMask).
-  // The |origin_filter| is used as a final filter for clearing operations.
+  // A version of the above that in addition informs the |observer| when the
+  // removal task is finished.
+  void RemoveAndReply(const TimeRange& time_range,
+                      int remove_mask,
+                      int origin_type_mask,
+                      Observer* observer);
+
+  // Like Remove(), but in case of URL-keyed only removes data whose URL match
+  // |filter_builder| (e.g. are on certain origin or domain).
   // TODO(dmurph): Support all backends with filter (crbug.com/113621).
   // DO NOT USE THIS METHOD UNLESS CALLER KNOWS WHAT THEY'RE DOING. NOT ALL
   // BACKENDS ARE SUPPORTED YET, AND MORE DATA THAN EXPECTED COULD BE DELETED.
-  virtual void RemoveWithFilter(const TimeRange& time_range,
-                                int remove_mask,
-                                int origin_type_mask,
-                                const BrowsingDataFilterBuilder& origin_filter);
+  void RemoveWithFilter(
+      const TimeRange& time_range,
+      int remove_mask,
+      int origin_type_mask,
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder);
+
+  // A version of the above that in addition informs the |observer| when the
+  // removal task is finished.
+  void RemoveWithFilterAndReply(
+      const TimeRange& time_range,
+      int remove_mask,
+      int origin_type_mask,
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+      Observer* observer);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -246,12 +312,22 @@ class BrowsingDataRemover : public KeyedService
   BrowsingDataRemover(content::BrowserContext* browser_context);
   ~BrowsingDataRemover() override;
 
+  // A common reduction of all public Remove[WithFilter][AndReply] methods.
+  virtual void RemoveInternal(
+      const TimeRange& time_range,
+      int remove_mask,
+      int origin_type_mask,
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+      Observer* observer);
+
  private:
   // The clear API needs to be able to toggle removing_ in order to test that
   // only one BrowsingDataRemover instance can be called at a time.
   FRIEND_TEST_ALL_PREFIXES(ExtensionBrowsingDataTest, OneAtATime);
   // Testing our static method, ClearSettingsForOneTypeWithPredicate.
   FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverTest, ClearWithPredicate);
+  // Testing the private RemovalTask.
+  FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverTest, MultipleTasks);
 
   // The BrowsingDataRemover tests need to be able to access the implementation
   // of Remove(), as it exposes details that aren't yet available in the public
@@ -262,6 +338,23 @@ class BrowsingDataRemover : public KeyedService
   friend class BrowsingDataRemoverTest;
 
   friend class BrowsingDataRemoverFactory;
+
+  // Represents a single removal task. Contains all parameters needed to execute
+  // it and a pointer to the observer that added it.
+  struct RemovalTask {
+    RemovalTask(const TimeRange& time_range,
+                int remove_mask,
+                int origin_type_mask,
+                std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+                Observer* observer);
+    ~RemovalTask();
+
+    TimeRange time_range;
+    int remove_mask;
+    int origin_type_mask;
+    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder;
+    Observer* observer;
+  };
 
   // Clears all host-specific settings for one content type that satisfy the
   // given predicate.
@@ -298,6 +391,10 @@ class BrowsingDataRemover : public KeyedService
                            bool result);
 #endif
 
+  // Executes the next removal task. Called after the previous task was finished
+  // or directly from Remove() if the task queue was empty.
+  void RunNextTask();
+
   // Removes the specified items related to browsing for a specific host. If the
   // provided |remove_url| is empty, data is removed for all origins; otherwise,
   // it is restricted by the origin filter origin (where implemented yet). The
@@ -308,7 +405,7 @@ class BrowsingDataRemover : public KeyedService
   // TODO(crbug.com/589586): Support all backends w/ origin filter.
   void RemoveImpl(const TimeRange& time_range,
                   int remove_mask,
-                  const BrowsingDataFilterBuilder& origin_filter,
+                  const BrowsingDataFilterBuilder& filter_builder,
                   int origin_type_mask);
 
   // Notifies observers and transitions to the idle state.
@@ -411,6 +508,9 @@ class BrowsingDataRemover : public KeyedService
   // True if Remove has been invoked.
   bool is_removing_;
 
+  // Removal tasks to be processed.
+  std::queue<RemovalTask> task_queue_;
+
   // If non-NULL, the |completion_inhibitor_| is notified each time an instance
   // is about to complete a browsing data removal process, and has the ability
   // to artificially delay completion. Used for testing.
@@ -466,6 +566,7 @@ class BrowsingDataRemover : public KeyedService
   // From which types of origins should we remove data?
   int origin_type_mask_ = 0;
 
+  // Observers of the global state and individual tasks.
   base::ObserverList<Observer, true> observer_list_;
 
   // Used if we need to clear history.

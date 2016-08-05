@@ -605,9 +605,6 @@ static void ClearBrowsingData(
     const JavaParamRef<jobjectArray>& jexcluding_domains) {
   BrowsingDataRemover* browsing_data_remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetOriginalProfile());
-  // ClearBrowsingDataObserver deletes itself when |browsing_data_remover| is
-  // done.
-  new ClearBrowsingDataObserver(env, obj, browsing_data_remover);
 
   std::vector<int> data_types_vector;
   base::android::JavaIntArrayToIntVector(env, data_types, &data_types_vector);
@@ -642,10 +639,10 @@ static void ClearBrowsingData(
   std::vector<std::string> excluding_domains;
   base::android::AppendJavaStringArrayToStringVector(
       env, jexcluding_domains.obj(), &excluding_domains);
-  RegistrableDomainFilterBuilder filter_builder(
-      BrowsingDataFilterBuilder::BLACKLIST);
+  std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder(
+      new RegistrableDomainFilterBuilder(BrowsingDataFilterBuilder::BLACKLIST));
   for (const std::string& domain : excluding_domains) {
-    filter_builder.AddRegisterableDomain(domain);
+    filter_builder->AddRegisterableDomain(domain);
   }
 
   if (!excluding_domains.empty()) {
@@ -653,10 +650,16 @@ static void ClearBrowsingData(
                                                          excluding_domains);
   }
 
-  browsing_data_remover->RemoveWithFilter(
+  // ClearBrowsingDataObserver deletes itself when |browsing_data_remover| is
+  // done.
+  ClearBrowsingDataObserver* observer =
+      new ClearBrowsingDataObserver(env, obj, browsing_data_remover);
+
+  browsing_data_remover->RemoveWithFilterAndReply(
       BrowsingDataRemover::Period(
           static_cast<browsing_data::TimePeriod>(time_period)),
-      remove_mask, BrowsingDataHelper::UNPROTECTED_WEB, filter_builder);
+      remove_mask, BrowsingDataHelper::UNPROTECTED_WEB,
+      std::move(filter_builder), observer);
 }
 
 static jboolean CanDeleteBrowsingHistory(JNIEnv* env,
