@@ -11,6 +11,7 @@ from telemetry import benchmark
 
 @benchmark.Enabled('has tabs')
 @benchmark.Disabled('android')  # http://crbug.com/460084
+@benchmark.Disabled('mac-reference')  # http://crbug.com/634378
 class TabSwitchingTop10(perf_benchmark.PerfBenchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
 
