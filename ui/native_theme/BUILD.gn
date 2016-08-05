@@ -81,6 +81,7 @@ test("native_theme_unittests") {
     "//base/test:test_support",
     "//skia:skia",
     "//testing/gtest",
+    "//ui/base",
     "//ui/gfx/geometry:geometry",
   ]
 }

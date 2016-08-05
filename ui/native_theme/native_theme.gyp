@@ -58,6 +58,7 @@
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../base/ui_base.gyp:ui_base',
         '../gfx/gfx.gyp:gfx_geometry',
         'native_theme',
       ],
