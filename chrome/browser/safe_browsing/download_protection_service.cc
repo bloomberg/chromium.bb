@@ -805,13 +805,12 @@ class DownloadProtectionService::CheckClientDownloadRequest
       }
     }
 
-    bool should_sample_for_certificate = ShouldSampleWhitelistedDownload();
-    if (signature_info_.trusted()) {
+    if (!skipped_url_whitelist_ && signature_info_.trusted()) {
       for (int i = 0; i < signature_info_.certificate_chain_size(); ++i) {
         if (CertificateChainIsWhitelisted(
                 signature_info_.certificate_chain(i))) {
           RecordCountOfWhitelistedDownload(SIGNATURE_WHITELIST);
-          if (should_sample_for_certificate) {
+          if (ShouldSampleWhitelistedDownload()) {
             skipped_certificate_whitelist_ = true;
             break;
           } else {
