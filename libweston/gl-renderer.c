@@ -217,6 +217,8 @@ struct gl_renderer {
 	struct gl_shader *current_shader;
 
 	struct wl_signal destroy_signal;
+
+	struct wl_listener output_destroy_listener;
 };
 
 static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
@@ -2643,6 +2645,8 @@ gl_renderer_destroy(struct weston_compositor *ec)
 	eglTerminate(gr->egl_display);
 	eglReleaseThread();
 
+	wl_list_remove(&gr->output_destroy_listener.link);
+
 	wl_array_release(&gr->vertices);
 	wl_array_release(&gr->vtxcnt);
 
@@ -2826,6 +2830,20 @@ platform_to_extension(EGLenum platform)
 	default:
 		assert(0 && "bad EGL platform enum");
 	}
+}
+
+static void
+output_handle_destroy(struct wl_listener *listener, void *data)
+{
+	struct gl_renderer *gr;
+	struct weston_output *output = data;
+
+	gr = container_of(listener, struct gl_renderer,
+			  output_destroy_listener);
+
+	if (wl_list_empty(&output->compositor->output_list))
+		eglMakeCurrent(gr->egl_display, gr->dummy_surface,
+			       gr->dummy_surface, gr->egl_context);
 }
 
 static int
@@ -3136,6 +3154,10 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		weston_compositor_add_debug_binding(ec, KEY_F,
 						    fan_debug_repaint_binding,
 						    ec);
+
+	gr->output_destroy_listener.notify = output_handle_destroy;
+	wl_signal_add(&ec->output_destroyed_signal,
+		      &gr->output_destroy_listener);
 
 	weston_log("GL ES 2 renderer features:\n");
 	weston_log_continue(STAMP_SPACE "read-back format: %s\n",
