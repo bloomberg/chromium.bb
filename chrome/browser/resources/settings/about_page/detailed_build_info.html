@@ -14,6 +14,13 @@
       .secondary {
         -webkit-user-select: text;
       }
+
+      /* The command line string can contain very long substrings that
+       * don't have any spaces, need to force a line break in such cases. */
+      #command-line {
+        overflow-wrap: break-word;
+        width: 100%;
+      }
     </style>
     <div class="settings-box two-line single-column">
       <div>$i18n{aboutPlatformLabel}</div>
@@ -59,7 +66,7 @@
     </div>
     <div class="settings-box two-line single-column">
       <div>$i18n{aboutCommandLineLabel}</div>
-      <div class="secondary">$i18n{aboutCommandLine}</div>
+      <div id="command-line" class="secondary">$i18n{aboutCommandLine}</div>
     </div>
     <div class="settings-box two-line single-column">
       <div>$i18n{aboutBuildDateLabel}</div>
