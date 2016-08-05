@@ -13,6 +13,16 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'controlled_radio_button',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_pref_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '../prefs/compiled_resources2.gyp:pref_util',
+        'pref_control_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'pref_control_behavior',
       'dependencies': [
         '../prefs/compiled_resources2.gyp:prefs_types',
