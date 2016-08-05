@@ -260,6 +260,8 @@ void TransformTree::CombineTransformsBetween(int source_id,
 
   gfx::Transform combined_transform;
   if (current->id > dest_id) {
+    // TODO(sunxd): Instead of using target space transform, only use to_parent
+    // here when we fully implement computing draw transforms on demand.
     combined_transform = ToTarget(current->id, kInvalidNodeId);
     // The stored target space transform has surface contents scale baked in,
     // but we need the unscaled transform.
@@ -1799,8 +1801,8 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
     // Computing maximum animated scale in the presence of non-scale/translation
     // transforms isn't supported.
     bool failed_for_non_scale_or_translation =
-        !transform_tree.ToTarget(transform_node_id, effect_tree.kInvalidNodeId)
-             .IsScaleOrTranslation();
+        !transform_tree.Node(transform_node_id)
+             ->to_parent.IsScaleOrTranslation();
 
     // We don't attempt to accumulate animation scale from multiple nodes with
     // scale animations, because of the risk of significant overestimation. For
@@ -1867,10 +1869,9 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
       } else {
         gfx::Vector2dF ancestor_scales =
             parent_node ? MathUtil::ComputeTransform2dScaleComponents(
-                              transform_tree.ToTarget(
-                                  parent_node->id, effect_tree.kInvalidNodeId),
-                              0.f)
+                              transform_tree.ToScreen(parent_node->id), 0.f)
                         : gfx::Vector2dF(1.f, 1.f);
+
         float max_ancestor_scale =
             std::max(ancestor_scales.x(), ancestor_scales.y());
         cached_data_.animation_scales[transform_node_id]

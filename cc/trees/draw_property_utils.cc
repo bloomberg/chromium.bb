@@ -81,9 +81,8 @@ static const EffectNode* ContentsTargetEffectNode(
     const int effect_tree_index,
     const EffectTree& effect_tree) {
   const EffectNode* effect_node = effect_tree.Node(effect_tree_index);
-  return effect_node->has_render_surface
-             ? effect_node
-             : effect_tree.Node(effect_node->target_id);
+  return effect_node->render_surface ? effect_node
+                                     : effect_tree.Node(effect_node->target_id);
 }
 
 template <typename LayerType>
@@ -531,7 +530,7 @@ void CalculateVisibleRects(
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
         continue;
       }
-      if (target_effect_node->id != EffectTree::kContentsRootNodeId) {
+      if (target_effect_node->id > EffectTree::kContentsRootNodeId) {
         ConcatInverseSurfaceContentsScale(target_effect_node, &target_to_layer);
 #if DCHECK_IS_ON()
         VerifySurfaceContentsScalesMatch(target_effect_node->id, target_node_id,
@@ -1207,12 +1206,15 @@ gfx::Transform DrawTransform(const LayerImpl* layer,
                              const EffectTree& effect_tree) {
   gfx::Transform xform;
   const bool owns_non_root_surface =
-      !IsRootLayer(layer) && layer->has_render_surface();
+      !IsRootLayer(layer) && layer->render_surface();
   if (!owns_non_root_surface) {
     // If you're not the root, or you don't own a surface, you need to apply
     // your local offset.
-    xform = transform_tree.ToTarget(layer->transform_tree_index(),
-                                    layer->render_target_effect_tree_index());
+    xform =
+        transform_tree.property_trees()->non_root_surfaces_enabled
+            ? transform_tree.ToTarget(layer->transform_tree_index(),
+                                      layer->render_target_effect_tree_index())
+            : transform_tree.ToScreen(layer->transform_tree_index());
     if (layer->should_flatten_transform_from_property_tree())
       xform.FlattenTo2d();
     xform.Translate(layer->offset_to_transform_parent().x(),
@@ -1442,13 +1444,8 @@ void ComputeLayerDrawProperties(LayerImpl* layer,
 
   layer->draw_properties().screen_space_transform =
       ScreenSpaceTransformInternal(layer, property_trees->transform_tree);
-  if (property_trees->non_root_surfaces_enabled) {
-    layer->draw_properties().target_space_transform = DrawTransform(
-        layer, property_trees->transform_tree, property_trees->effect_tree);
-  } else {
-    layer->draw_properties().target_space_transform =
-        layer->draw_properties().screen_space_transform;
-  }
+  layer->draw_properties().target_space_transform = DrawTransform(
+      layer, property_trees->transform_tree, property_trees->effect_tree);
   layer->draw_properties().screen_space_transform_is_animating =
       transform_node->to_screen_is_potentially_animated;
 
