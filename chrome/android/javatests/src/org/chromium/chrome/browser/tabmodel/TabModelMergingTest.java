@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -19,15 +21,18 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStoreTest.MockTabPersistentStoreObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
+import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -45,17 +50,15 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
     private static final String TEST_URL_2 = UrlUtils.encodeHtmlDataUri("<html>test_url_2.</html>");
     private static final String TEST_URL_3 = UrlUtils.encodeHtmlDataUri("<html>test_url_3.</html>");
     private static final String TEST_URL_4 = UrlUtils.encodeHtmlDataUri("<html>test_url_4.</html>");
+    private static final String TEST_URL_5 = UrlUtils.encodeHtmlDataUri("<html>test_url_5.</html>");
+    private static final String TEST_URL_6 = UrlUtils.encodeHtmlDataUri("<html>test_url_6.</html>");
 
     private ChromeTabbedActivity mActivity1;
     private ChromeTabbedActivity mActivity2;
     private int mActivity1State;
     private int mActivity2State;
-    private String[] mMergeIntoActivity1ExpectedTabs = {
-            "about:blank", TEST_URL_0, TEST_URL_1, TEST_URL_2, "about:blank", TEST_URL_3,
-            TEST_URL_4};
-    private String[] mMergeIntoActivity2ExpectedTabs = {
-            "about:blank", TEST_URL_3, TEST_URL_4, "about:blank", TEST_URL_0, TEST_URL_1,
-            TEST_URL_2};
+    private String[] mMergeIntoActivity1ExpectedTabs;
+    private String[] mMergeIntoActivity2ExpectedTabs;
 
     @Override
     public void startMainActivity() throws InterruptedException {
@@ -123,9 +126,6 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
                         TabLaunchType.FROM_CHROME_UI, null);
                 mActivity2.getTabCreator(false).createNewTab(new LoadUrlParams(TEST_URL_4),
                         TabLaunchType.FROM_CHROME_UI, null);
-
-                // TODO(twellington): Add tests for incognito tabs. Merging incognito tabs works
-                // but the tests currently crash; need to debug.
             }
         });
 
@@ -138,17 +138,40 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         // just created.
         assertEquals("Wrong number of tabs in ChromeTabbedActivity2", 3,
                 mActivity2.getTabModelSelector().getModel(false).getCount());
+
+        // Construct expected tabs.
+        mMergeIntoActivity1ExpectedTabs = new String[7];
+        mMergeIntoActivity2ExpectedTabs = new String[7];
+        for (int i = 0; i < 4; i++) {
+            mMergeIntoActivity1ExpectedTabs[i] =
+                    mActivity1.getTabModelSelector().getModel(false).getTabAt(i).getUrl();
+            mMergeIntoActivity2ExpectedTabs[i + 3] =
+                    mActivity1.getTabModelSelector().getModel(false).getTabAt(i).getUrl();
+        }
+        for (int i = 0; i < 3; i++) {
+            mMergeIntoActivity2ExpectedTabs[i] =
+                    mActivity2.getTabModelSelector().getModel(false).getTabAt(i).getUrl();
+            mMergeIntoActivity1ExpectedTabs[i + 4] =
+                    mActivity2.getTabModelSelector().getModel(false).getTabAt(i).getUrl();
+        }
+    }
+
+    private void mergeTabsAndAssert(final ChromeTabbedActivity activity,
+            final String[] expectedTabUrls) throws InterruptedException {
+        String selectedTabUrl = activity.getTabModelSelector().getCurrentTab().getUrl();
+        mergeTabsAndAssert(activity, expectedTabUrls, expectedTabUrls.length, selectedTabUrl);
     }
 
     /**
      * Merges tabs into the provided activity and asserts that the tab model looks as expected.
      * @param activity The activity to merge into.
-     * @param expectedTabUrls The expected ordering of tab URLs after the merge.
+     * @param expectedTabUrls The expected ordering of normal tab URLs after the merge.
+     * @param expectedNumberOfTabs The expected number of tabs after the merge.
+     * @param expectedSelectedTabUrl The expected URL of the selected tab after the merge.
      */
     private void mergeTabsAndAssert(final ChromeTabbedActivity activity,
-            final String[] expectedTabUrls) throws InterruptedException {
-        Tab expectedSelectedTab = activity.getTabModelSelector().getCurrentTab();
-
+            final String[] expectedTabUrls, final int expectedNumberOfTabs,
+            String expectedSelectedTabUrl) throws InterruptedException {
         // Merge tabs into the activity.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -161,11 +184,11 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return activity.getTabModelSelector().getTotalTabCount() == expectedTabUrls.length;
+                return activity.getTabModelSelector().getTotalTabCount() == expectedNumberOfTabs;
             }
         });
 
-        assertTabModelMatchesExpectations(activity, expectedSelectedTab.getUrl(), expectedTabUrls);
+        assertTabModelMatchesExpectations(activity, expectedSelectedTabUrl, expectedTabUrls);
     }
 
     /**
@@ -208,8 +231,8 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
     private void assertTabModelMatchesExpectations(final ChromeTabbedActivity activity,
             String expectedSelectedTabUrl, final String[] expectedTabUrls) {
         // Assert there are the correct number of tabs.
-        assertEquals("Wrong number of tabs", expectedTabUrls.length,
-                activity.getTabModelSelector().getTotalTabCount());
+        assertEquals("Wrong number of normal tabs", expectedTabUrls.length,
+                activity.getTabModelSelector().getModel(false).getCount());
 
         // Assert that the correct tab is selected.
         assertEquals("Wrong tab selected", expectedSelectedTabUrl,
@@ -308,5 +331,69 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
 
         // Clean up.
         newActivity.finishAndRemoveTask();
+    }
+
+    @LargeTest
+    @Feature({"TabPersistentStore", "MultiWindow"})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    public void testMergeWhileInTabSwitcher() throws Exception {
+        OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
+                mActivity1.getLayoutManager(), true, false);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mActivity1.getLayoutManager().showOverview(false);
+            }
+        });
+        overviewModeWatcher.waitForBehavior();
+
+        mergeTabsAndAssert(mActivity1, mMergeIntoActivity1ExpectedTabs);
+        assertTrue("Overview mode should still be showing", mActivity1.isInOverviewMode());
+        mActivity1.finishAndRemoveTask();
+    }
+
+    @LargeTest
+    @Feature({"TabPersistentStore", "MultiWindow"})
+    public void testMergeWithNoTabs() throws Exception {
+        // Close all tabs and wait for the callback.
+        ChromeTabUtils.closeAllTabs(getInstrumentation(), mActivity1);
+
+        String[] expectedTabUrls = new String[3];
+        for (int i = 0; i < 3; i++) {
+            expectedTabUrls[i] = mMergeIntoActivity2ExpectedTabs[i];
+        }
+
+        // The first tab should be selected after the merge.
+        mergeTabsAndAssert(mActivity1, expectedTabUrls, 3, expectedTabUrls[0]);
+        mActivity1.finishAndRemoveTask();
+    }
+
+    @LargeTest
+    @Feature({"TabPersistentStore", "MultiWindow"})
+    public void testMergingIncognitoTabs() throws InterruptedException {
+        // Incognito tabs must be fully loaded so that their tab states are written out.
+        ChromeTabUtils.fullyLoadUrlInNewTab(getInstrumentation(), mActivity1, TEST_URL_5, true);
+        ChromeTabUtils.fullyLoadUrlInNewTab(getInstrumentation(), mActivity2, TEST_URL_6, true);
+
+        // Save state.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mActivity1.saveState();
+                mActivity2.saveState();
+            }
+        });
+
+        assertEquals("Wrong number of incognito tabs in ChromeTabbedActivity",
+                1, mActivity1.getTabModelSelector().getModel(true).getCount());
+        assertEquals("Wrong number of tabs in ChromeTabbedActivity",
+                5, mActivity1.getTabModelSelector().getTotalTabCount());
+        assertEquals("Wrong number of incognito tabs in ChromeTabbedActivity2",
+                1, mActivity2.getTabModelSelector().getModel(true).getCount());
+        assertEquals("Wrong number of tabs in ChromeTabbedActivity2",
+                4, mActivity2.getTabModelSelector().getTotalTabCount());
+
+        String selectedUrl = mActivity1.getTabModelSelector().getCurrentTab().getUrl();
+        mergeTabsAndAssert(mActivity1, mMergeIntoActivity1ExpectedTabs, 9, selectedUrl);
     }
 }
