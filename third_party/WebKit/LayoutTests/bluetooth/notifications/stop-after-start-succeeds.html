@@ -14,11 +14,16 @@ promise_test(() => {
     .then(characteristic => {
       return characteristic.startNotifications()
         .then(start_characteristic => {
-          assert_equals(start_characteristic, characteristic,
-	                'Start characteristic should be the same as characteristic.');
-        });
-    });
-  // TODO(ortuno): Assert that notifications are active.
+            assert_equals(start_characteristic, characteristic,
+                'Start characteristic should the same as characteristic.');
+            return characteristic.stopNotifications()
+              .then(stop_characteristic => {
+                assert_equals(stop_characteristic, start_characteristic,
+                    'Stop characteristic should the same as start characteristic.');
+              });
+         });
+     });
+  // TODO(ortuno): Assert that notifications are not active.
   // http://crbug.com/600762
-}, 'Single start notifications succeeds.');
+}, 'Single stop after start notifications succeeds.');
 </script>

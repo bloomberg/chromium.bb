@@ -1348,6 +1348,7 @@ crbug.com/624019 [ Mac ] bluetooth/notifications/parallel-start-stop.html [ Skip
 crbug.com/624019 [ Mac ] bluetooth/notifications/start-before-stop-resolves.html [ Skip ]
 crbug.com/624019 [ Mac ] bluetooth/notifications/start-stop-start-stop.html [ Skip ]
 crbug.com/624019 [ Mac ] bluetooth/notifications/start-succeeds.html [ Skip ]
+crbug.com/624019 [ Mac ] bluetooth/notifications/stop-after-start-succeeds.html [ Skip ]
 crbug.com/624019 [ Mac ] bluetooth/notifications/stop-twice.html [ Skip ]
 crbug.com/624019 [ Mac ] bluetooth/notifications/stop-without-starting.html [ Skip ]
 

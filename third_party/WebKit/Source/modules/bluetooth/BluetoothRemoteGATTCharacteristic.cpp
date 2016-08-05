@@ -195,12 +195,36 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(ScriptState* scriptS
     return promise;
 }
 
+class NotificationsCallback : public WebBluetoothNotificationsCallbacks {
+public:
+    NotificationsCallback(BluetoothRemoteGATTCharacteristic* characteristic, ScriptPromiseResolver* resolver) : m_webCharacteristic(characteristic), m_resolver(resolver) {}
+
+    void onSuccess() override
+    {
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+            return;
+
+        m_resolver->resolve(m_webCharacteristic);
+    }
+
+    void onError(int32_t error /* Corresponds to WebBluetoothError in web_bluetooth.mojom */) override
+    {
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->reject(BluetoothError::take(m_resolver, error));
+    }
+
+private:
+    Persistent<BluetoothRemoteGATTCharacteristic> m_webCharacteristic;
+    Persistent<ScriptPromiseResolver> m_resolver;
+};
+
 ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(ScriptState* scriptState)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->startNotifications(m_webCharacteristic->characteristicInstanceID, new CallbackPromiseAdapter<void, BluetoothError>(resolver));
+    webbluetooth->startNotifications(m_webCharacteristic->characteristicInstanceID, new NotificationsCallback(this, resolver));
     return promise;
 }
 
@@ -217,7 +241,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(ScriptState* 
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->stopNotifications(m_webCharacteristic->characteristicInstanceID, new CallbackPromiseAdapter<void, BluetoothError>(resolver));
+    webbluetooth->stopNotifications(m_webCharacteristic->characteristicInstanceID, new NotificationsCallback(this, resolver));
     return promise;
 }
 

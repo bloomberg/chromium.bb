@@ -16,10 +16,10 @@
     readonly attribute DataView?                         value;
     // Promise<BluetoothRemoteGATTDescriptor>           getDescriptor(BluetoothDescriptorUUID descriptor);
     // Promise<sequence<BluetoothRemoteGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
-    [CallWith=ScriptState] Promise<DataView>    readValue();
-    [CallWith=ScriptState] Promise<void>        writeValue(BufferSource value);
-    [CallWith=ScriptState] Promise<void>        startNotifications();
-    [CallWith=ScriptState] Promise<void>        stopNotifications();
+    [CallWith=ScriptState] Promise<DataView>                          readValue();
+    [CallWith=ScriptState] Promise<void>                              writeValue(BufferSource value);
+    [CallWith=ScriptState] Promise<BluetoothRemoteGATTCharacteristic> startNotifications();
+    [CallWith=ScriptState] Promise<BluetoothRemoteGATTCharacteristic> stopNotifications();
 
     // TODO(ortuno): Move this to CharacteristicEventHandlers.
     // http://crbug.com/537459
