@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "components/tracing/tracing_export.h"
 
@@ -51,6 +52,16 @@ class TRACING_EXPORT ScatteredStreamWriter {
   // Reserves a fixed amount of bytes to be backfilled later. The reserved range
   // is guaranteed to be contiguous and not span across chunks.
   ContiguousMemoryRange ReserveBytes(size_t size);
+
+  // Fast (but unsafe) version of the above. The caller must have previously
+  // checked that there are at least |size| contiguos bytes available.
+  // Returns only the start pointer of the reservation.
+  uint8_t* ReserveBytesUnsafe(size_t size) {
+    uint8_t* begin = write_ptr_;
+    write_ptr_ += size;
+    DCHECK_LE(write_ptr_, cur_range_.end);
+    return begin;
+  }
 
   // Resets the buffer boundaries and the write pointer to the given |range|.
   // Subsequent WriteByte(s) will write into |range|.

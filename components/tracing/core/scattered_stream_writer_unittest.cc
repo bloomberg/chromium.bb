@@ -68,8 +68,13 @@ TEST(ScatteredStreamWriterTest, ScatteredWrites) {
   for (uint8_t i = 0; i < 5; ++i)
     ssw.WriteByte(0xFF);
   memcpy(ssw.ReserveBytes(4).begin, kFourByteBuf, sizeof(kFourByteBuf));
-  EXPECT_EQ(7u, delegate.chunks().size());
-  EXPECT_EQ(4u, ssw.bytes_available());
+  memcpy(ssw.ReserveBytesUnsafe(3), kThreeByteBuf, sizeof(kThreeByteBuf));
+  memcpy(ssw.ReserveBytes(3).begin, kThreeByteBuf, sizeof(kThreeByteBuf));
+  memcpy(ssw.ReserveBytesUnsafe(1), kOneByteBuf, sizeof(kOneByteBuf));
+  memcpy(ssw.ReserveBytes(1).begin, kOneByteBuf, sizeof(kOneByteBuf));
+
+  EXPECT_EQ(8u, delegate.chunks().size());
+  EXPECT_EQ(3u, ssw.bytes_available());
 
   EXPECT_EQ("0001020304050607", delegate.GetChunkAsString(0));
   EXPECT_EQ("4060616263FF5051", delegate.GetChunkAsString(1));
@@ -77,7 +82,8 @@ TEST(ScatteredStreamWriterTest, ScatteredWrites) {
   EXPECT_EQ("A3A4A5A6A7A8A9AA", delegate.GetChunkAsString(3));
   EXPECT_EQ("ABACADAEAFB0B1B2", delegate.GetChunkAsString(4));
   EXPECT_EQ("B3FFFFFFFFFF0000", delegate.GetChunkAsString(5));
-  EXPECT_EQ("6061626300000000", delegate.GetChunkAsString(6));
+  EXPECT_EQ("6061626350515200", delegate.GetChunkAsString(6));
+  EXPECT_EQ("5051524040000000", delegate.GetChunkAsString(7));
 
   // Finally reset the writer to a new buffer.
   uint8_t other_buffer[8] = {0};

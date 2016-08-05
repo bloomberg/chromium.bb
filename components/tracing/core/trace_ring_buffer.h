@@ -5,14 +5,17 @@
 #ifndef COMPONENTS_TRACING_CORE_TRACE_RING_BUFFER_H_
 #define COMPONENTS_TRACING_CORE_TRACE_RING_BUFFER_H_
 
+#include <memory>
+
 #include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread.h"
 #include "components/tracing/tracing_export.h"
 
 namespace tracing {
 namespace v2 {
+
+static const uint32_t kNoChunkOwner = 0;
 
 class TRACING_EXPORT TraceRingBuffer {
  public:
@@ -39,14 +42,26 @@ class TRACING_EXPORT TraceRingBuffer {
       return base::subtle::NoBarrier_Load(header());
     }
 
+    void set_next_in_owner_list(Chunk* next) { next_in_owner_list_ = next; }
+    Chunk* next_in_owner_list() const { return next_in_owner_list_; }
+
+    // Owner is a flag matching the id of the TraceBufferWriter, 0 if not owned.
     // Accesses to |owner_| must happen under the buffer |lock_|.
-    bool is_owned() const { return owner_ != base::kInvalidThreadId; }
-    void clear_owner() { owner_ = base::kInvalidThreadId; }
-    void set_owner(base::PlatformThreadId tid) { owner_ = tid; }
+    bool is_owned() const { return owner_ != kNoChunkOwner; }
+    uint32_t owner() const { return owner_; }
+    void clear_owner() { owner_ = kNoChunkOwner; }
+    void set_owner(uint32_t owner) {
+      DCHECK_NE(kNoChunkOwner, owner);
+      owner_ = owner;
+    }
 
    private:
     uint8_t* begin_;
-    base::PlatformThreadId owner_;  // kInvalidThreadId -> Chunk is not owned.
+    uint32_t owner_;
+
+    // When a chunk is owned, this is the next pointer to keep track of all
+    // owned chunks in a singly linked list.
+    Chunk* next_in_owner_list_;
 
     DISALLOW_COPY_AND_ASSIGN(Chunk);
   };
@@ -54,13 +69,23 @@ class TRACING_EXPORT TraceRingBuffer {
   TraceRingBuffer(uint8_t* begin, size_t size);
   ~TraceRingBuffer();
 
-  Chunk* TakeChunk();
-  void ReturnChunk(Chunk* chunk, uint32_t used_size);
+  Chunk* TakeChunk(uint32_t writer_id);
+  void ReturnChunk(Chunk* chunk);
+
+  size_t num_chunks() const { return num_chunks_; }
+
+  // Returns the number of chunks taken and not returned, without counting any
+  // bankrupcy chunk obtained when the ring buffer was full.
+  size_t GetNumChunksTaken() const;
+
+  const Chunk* chunks_for_testing() const { return chunks_.get(); }
+  bool IsBankrupcyChunkForTesting(const Chunk*) const;
 
  private:
-  base::Lock lock_;
+  mutable base::Lock lock_;
   std::unique_ptr<Chunk[]> chunks_;
   const size_t num_chunks_;
+  size_t num_chunks_taken_;
   size_t current_chunk_idx_;
 
   // An emergency chunk used in the rare case in which all chunks are in flight.
