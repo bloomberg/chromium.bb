@@ -850,6 +850,12 @@ void ResourceFetcher::reloadImagesIfNotDeferred()
     }
 }
 
+void ResourceFetcher::clearContext()
+{
+    clearPreloads(ResourceFetcher::ClearAllPreloads);
+    m_context.clear();
+}
+
 int ResourceFetcher::requestCount() const
 {
     return m_loaders.size();
@@ -887,11 +893,15 @@ void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy)
     logPreloadStats();
 
     for (auto resource : *m_preloads) {
-        resource->decreasePreloadCount();
-        if (resource->getPreloadResult() == Resource::PreloadNotReferenced && (policy == ClearAllPreloads || !resource->isLinkPreload()))
-            memoryCache()->remove(resource.get());
+        if (policy == ClearAllPreloads || !resource->isLinkPreload()) {
+            resource->decreasePreloadCount();
+            if (resource->getPreloadResult() == Resource::PreloadNotReferenced)
+                memoryCache()->remove(resource.get());
+            m_preloads->remove(resource);
+        }
     }
-    m_preloads.clear();
+    if (!m_preloads->size())
+        m_preloads.clear();
 }
 
 ArchiveResource* ResourceFetcher::createArchive(Resource* resource)

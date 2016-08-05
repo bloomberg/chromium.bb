@@ -88,7 +88,7 @@ public:
     void setImagesEnabled(bool);
 
     FetchContext& context() const { return m_context ? *m_context.get() : FetchContext::nullInstance(); }
-    void clearContext() { m_context.clear(); }
+    void clearContext();
 
     int requestCount() const;
 
