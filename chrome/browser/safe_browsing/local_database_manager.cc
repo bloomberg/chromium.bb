@@ -34,6 +34,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -136,7 +137,7 @@ ListType GetUrlSeverestThreatListType(
     return INVALID;
 
   std::vector<std::string> patterns;
-  GeneratePatternsToCheck(url, &patterns);
+  V4ProtocolManagerUtil::GeneratePatternsToCheck(url, &patterns);
 
   ListType pending_threat = INVALID;
   int pending_threat_severity = GetThreatSeverity(INVALID);

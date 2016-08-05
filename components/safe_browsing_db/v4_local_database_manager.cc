@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -18,29 +17,12 @@ using content::BrowserThread;
 namespace safe_browsing {
 
 namespace {
-#if defined(OS_WIN)
-#define PLATFORM_TYPE WINDOWS_PLATFORM
-#elif defined(OS_LINUX)
-#define PLATFORM_TYPE LINUX_PLATFORM
-#elif defined(OS_MACOSX)
-#define PLATFORM_TYPE OSX_PLATFORM
-#else
-// This should ideally never compile but it is getting compiled on Android.
-// See: https://bugs.chromium.org/p/chromium/issues/detail?id=621647
-// TODO(vakh): Once that bug is fixed, this should be removed. If we leave
-// the platform_type empty, the server won't recognize the request and
-// return an error response which will pollute our UMA metrics.
-#define PLATFORM_TYPE LINUX_PLATFORM
-#endif
 
 // TODO(vakh): Implement this to populate the map appopriately.
 // Filed as http://crbug.com/608075
 StoreFileNameMap GetStoreFileNameMap() {
   return StoreFileNameMap(
-      {{UpdateListIdentifier(PLATFORM_TYPE, URL, MALWARE_THREAT),
-        "UrlMalware.store"},
-       {UpdateListIdentifier(PLATFORM_TYPE, URL, SOCIAL_ENGINEERING_PUBLIC),
-        "UrlSoceng.store"}});
+      {{kUrlMalwareId, "UrlMalware.store"}, {kUrlSocengId, "UrlSoceng.store"}});
 }
 
 }  // namespace
@@ -154,7 +136,7 @@ bool V4LocalDatabaseManager::IsCsdWhitelistKillSwitchOn() {
 bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
   // TODO(vakh): Implement this skeleton.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!enabled_) {
+  if (!enabled_ || !CanCheckUrl(url)) {
     return true;
   }
 

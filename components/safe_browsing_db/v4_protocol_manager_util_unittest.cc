@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/escape.h"
 #include "net/http/http_request_headers.h"
@@ -21,11 +22,16 @@ const char kClient[] = "unittest";
 const char kAppVer[] = "1.0";
 const char kKeyParam[] = "test_key_param";
 
+bool VectorContains(const std::vector<std::string>& data,
+                    const std::string& str) {
+  return std::find(data.begin(), data.end(), str) != data.end();
+}
+
 }  // namespace
 
 namespace safe_browsing {
 
-class SafeBrowsingV4ProtocolManagerUtilTest : public testing::Test {
+class V4ProtocolManagerUtilTest : public testing::Test {
  protected:
   void PopulateV4ProtocolConfig(V4ProtocolConfig* config) {
     config->client_name = kClient;
@@ -34,7 +40,7 @@ class SafeBrowsingV4ProtocolManagerUtilTest : public testing::Test {
   }
 };
 
-TEST_F(SafeBrowsingV4ProtocolManagerUtilTest, TestBackOffLogic) {
+TEST_F(V4ProtocolManagerUtilTest, TestBackOffLogic) {
   size_t error_count = 0, back_off_multiplier = 1;
 
   // 1 error.
@@ -108,8 +114,7 @@ TEST_F(SafeBrowsingV4ProtocolManagerUtilTest, TestBackOffLogic) {
   EXPECT_EQ(TimeDelta::FromHours(24), next);
 }
 
-TEST_F(SafeBrowsingV4ProtocolManagerUtilTest,
-       TestGetRequestUrlAndUpdateHeaders) {
+TEST_F(V4ProtocolManagerUtilTest, TestGetRequestUrlAndUpdateHeaders) {
   V4ProtocolConfig config;
   PopulateV4ProtocolConfig(&config);
 
@@ -124,6 +129,124 @@ TEST_F(SafeBrowsingV4ProtocolManagerUtilTest,
   std::string header_value;
   EXPECT_TRUE(headers.GetHeader("X-HTTP-Method-Override", &header_value));
   EXPECT_EQ("POST", header_value);
+}
+
+// Tests that we generate the required host/path combinations for testing
+// according to the Safe Browsing spec.
+// See: https://developers.google.com/safe-browsing/v4/urls-hashing
+TEST_F(V4ProtocolManagerUtilTest, UrlParsing) {
+  std::vector<std::string> hosts, paths;
+
+  GURL url("http://a.b.c/1/2.html?param=1");
+  V4ProtocolManagerUtil::GenerateHostsToCheck(url, &hosts);
+  V4ProtocolManagerUtil::GeneratePathsToCheck(url, &paths);
+  EXPECT_EQ(hosts.size(), static_cast<size_t>(2));
+  EXPECT_EQ(paths.size(), static_cast<size_t>(4));
+  EXPECT_EQ(hosts[0], "b.c");
+  EXPECT_EQ(hosts[1], "a.b.c");
+
+  EXPECT_TRUE(VectorContains(paths, "/1/2.html?param=1"));
+  EXPECT_TRUE(VectorContains(paths, "/1/2.html"));
+  EXPECT_TRUE(VectorContains(paths, "/1/"));
+  EXPECT_TRUE(VectorContains(paths, "/"));
+
+  url = GURL("http://a.b.c.d.e.f.g/1.html");
+  V4ProtocolManagerUtil::GenerateHostsToCheck(url, &hosts);
+  V4ProtocolManagerUtil::GeneratePathsToCheck(url, &paths);
+  EXPECT_EQ(hosts.size(), static_cast<size_t>(5));
+  EXPECT_EQ(paths.size(), static_cast<size_t>(2));
+  EXPECT_EQ(hosts[0], "f.g");
+  EXPECT_EQ(hosts[1], "e.f.g");
+  EXPECT_EQ(hosts[2], "d.e.f.g");
+  EXPECT_EQ(hosts[3], "c.d.e.f.g");
+  EXPECT_EQ(hosts[4], "a.b.c.d.e.f.g");
+  EXPECT_TRUE(VectorContains(paths, "/1.html"));
+  EXPECT_TRUE(VectorContains(paths, "/"));
+
+  url = GURL("http://a.b/saw-cgi/eBayISAPI.dll/");
+  V4ProtocolManagerUtil::GeneratePathsToCheck(url, &paths);
+  EXPECT_EQ(paths.size(), static_cast<size_t>(3));
+  EXPECT_TRUE(VectorContains(paths, "/saw-cgi/eBayISAPI.dll/"));
+  EXPECT_TRUE(VectorContains(paths, "/saw-cgi/"));
+  EXPECT_TRUE(VectorContains(paths, "/"));
+}
+
+// Tests the url canonicalization according to the Safe Browsing spec.
+// See: https://developers.google.com/safe-browsing/v4/urls-hashing
+TEST_F(V4ProtocolManagerUtilTest, CanonicalizeUrl) {
+  struct {
+    const char* input_url;
+    const char* expected_canonicalized_hostname;
+    const char* expected_canonicalized_path;
+    const char* expected_canonicalized_query;
+  } tests[] = {
+      {"http://host/%25%32%35", "host", "/%25", ""},
+      {"http://host/%25%32%35%25%32%35", "host", "/%25%25", ""},
+      {"http://host/%2525252525252525", "host", "/%25", ""},
+      {"http://host/asdf%25%32%35asd", "host", "/asdf%25asd", ""},
+      {"http://host/%%%25%32%35asd%%", "host", "/%25%25%25asd%25%25", ""},
+      {"http://host/%%%25%32%35asd%%", "host", "/%25%25%25asd%25%25", ""},
+      {"http://www.google.com/", "www.google.com", "/", ""},
+      {"http://%31%36%38%2e%31%38%38%2e%39%39%2e%32%36/%2E%73%65%63%75%72%65/"
+       "%77"
+       "%77%77%2E%65%62%61%79%2E%63%6F%6D/",
+       "168.188.99.26", "/.secure/www.ebay.com/", ""},
+      {"http://195.127.0.11/uploads/%20%20%20%20/.verify/"
+       ".eBaysecure=updateuserd"
+       "ataxplimnbqmn-xplmvalidateinfoswqpcmlx=hgplmcx/",
+       "195.127.0.11",
+       "/uploads/%20%20%20%20/.verify/"
+       ".eBaysecure=updateuserdataxplimnbqmn-xplmv"
+       "alidateinfoswqpcmlx=hgplmcx/",
+       ""},
+      {"http://host.com/%257Ea%2521b%2540c%2523d%2524e%25f%255E00%252611%252A"
+       "22%252833%252944_55%252B",
+       "host.com", "/~a!b@c%23d$e%25f^00&11*22(33)44_55+", ""},
+      {"http://3279880203/blah", "195.127.0.11", "/blah", ""},
+      {"http://www.google.com/blah/..", "www.google.com", "/", ""},
+      {"http://www.google.com/blah#fraq", "www.google.com", "/blah", ""},
+      {"http://www.GOOgle.com/", "www.google.com", "/", ""},
+      {"http://www.google.com.../", "www.google.com", "/", ""},
+      {"http://www.google.com/q?", "www.google.com", "/q", ""},
+      {"http://www.google.com/q?r?", "www.google.com", "/q", "r?"},
+      {"http://www.google.com/q?r?s", "www.google.com", "/q", "r?s"},
+      {"http://evil.com/foo#bar#baz", "evil.com", "/foo", ""},
+      {"http://evil.com/foo;", "evil.com", "/foo;", ""},
+      {"http://evil.com/foo?bar;", "evil.com", "/foo", "bar;"},
+      {"http://notrailingslash.com", "notrailingslash.com", "/", ""},
+      {"http://www.gotaport.com:1234/", "www.gotaport.com", "/", ""},
+      {"  http://www.google.com/  ", "www.google.com", "/", ""},
+      {"http:// leadingspace.com/", "%20leadingspace.com", "/", ""},
+      {"http://%20leadingspace.com/", "%20leadingspace.com", "/", ""},
+      {"https://www.securesite.com/", "www.securesite.com", "/", ""},
+      {"http://host.com/ab%23cd", "host.com", "/ab%23cd", ""},
+      {"http://host%3e.com//twoslashes?more//slashes", "host>.com",
+       "/twoslashes", "more//slashes"},
+      {"http://host.com/abc?val=xyz#anything", "host.com", "/abc", "val=xyz"},
+      {"http://abc:def@host.com/xyz", "host.com", "/xyz", ""},
+      {"http://host%3e.com/abc/%2e%2e%2fdef", "host>.com", "/def", ""},
+      {"http://.......host...com.....//abc/////def%2F%2F%2Fxyz", "host.com",
+       "/abc/def/xyz", ""},
+      {"ftp://host.com/foo?bar", "host.com", "/foo", "bar"},
+      {"data:text/html;charset=utf-8,%0D%0A", "", "", ""},
+      {"javascript:alert()", "", "", ""},
+      {"mailto:abc@example.com", "", "", ""},
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Test: %s", tests[i].input_url));
+    GURL url(tests[i].input_url);
+
+    std::string canonicalized_hostname;
+    std::string canonicalized_path;
+    std::string canonicalized_query;
+    V4ProtocolManagerUtil::CanonicalizeUrl(url, &canonicalized_hostname,
+                                           &canonicalized_path,
+                                           &canonicalized_query);
+
+    EXPECT_EQ(tests[i].expected_canonicalized_hostname, canonicalized_hostname);
+    EXPECT_EQ(tests[i].expected_canonicalized_path, canonicalized_path);
+    EXPECT_EQ(tests[i].expected_canonicalized_query, canonicalized_query);
+  }
 }
 
 }  // namespace safe_browsing

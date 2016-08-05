@@ -191,14 +191,6 @@ ListType GetListId(const base::StringPiece& name);
 // Maps a ListId to list name. Return false if fails.
 bool GetListName(ListType list_id, std::string* list);
 
-// Canonicalizes url as per Google Safe Browsing Specification.
-// See section 6.1 in
-// http://code.google.com/p/google-safe-browsing/wiki/Protocolv2Spec.
-void CanonicalizeUrl(const GURL& url, std::string* canonicalized_hostname,
-                     std::string* canonicalized_path,
-                     std::string* canonicalized_query);
-
-
 // Generate the set of full hashes to check for |url|.  If
 // |include_whitelist_hashes| is true we will generate additional path-prefixes
 // to match against the csd whitelist.  E.g., if the path-prefix /foo is on the
@@ -206,17 +198,6 @@ void CanonicalizeUrl(const GURL& url, std::string* canonicalized_hostname,
 // other lists.  We'll also always add a pattern for the empty path.
 void UrlToFullHashes(const GURL& url, bool include_whitelist_hashes,
                      std::vector<SBFullHash>* full_hashes);
-
-// Given a URL, returns all the hosts we need to check.  They are returned
-// in order of size (i.e. b.c is first, then a.b.c).
-void GenerateHostsToCheck(const GURL& url, std::vector<std::string>* hosts);
-
-// Given a URL, returns all the paths we need to check.
-void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths);
-
-// Given a URL, returns all the patterns we need to check.
-void GeneratePatternsToCheck(const GURL& url, std::vector<std::string>* urls);
-
 }  // namespace safe_browsing
 
 #endif  // COMPONENTS_SAFE_BROWSING_DB_UTIL_H_
