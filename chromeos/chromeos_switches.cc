@@ -9,11 +9,33 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 
-// TODO(rsorokin): alphabetize all of these switches so they
-// match the order from the .h file
-
 namespace chromeos {
 namespace switches {
+
+namespace {
+
+// The memory pressure thresholds selection which is used to decide whether and
+// when a memory pressure event needs to get fired.
+const char kMemoryPressureExperimentName[] = "ChromeOSMemoryPressureHandling";
+const char kMemoryPressureHandlingOff[] = "memory-pressure-off";
+
+// Controls CrOS GaiaId migration for tests ("" is default).
+const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
+
+// Value for kTestCrosGaiaIdMigration indicating that migration is started (i.e.
+// all stored user keys will be converted to GaiaId)
+const char kTestCrosGaiaIdMigrationStarted[] = "started";
+
+}  // namespace
+
+// Please keep the order of these switches synchronized with the header file
+// (i.e. in alphabetical order).
+
+const char kAggressiveCacheDiscardThreshold[] = "aggressive-cache-discard";
+
+const char kAggressiveTabDiscardThreshold[] = "aggressive-tab-discard";
+
+const char kAggressiveThreshold[] = "aggressive";
 
 // If this flag is set, enable data roaming in the cellular network by default
 // upon system start if it's an unmanaged device. This flag is used by Rialto
@@ -36,18 +58,41 @@ const char kAllowRAInDevMode[] = "allow-ra-in-dev-mode";
 // Path for app's OEM manifest file.
 const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 
+// Screenshot testing: specifies the directoru where artifacts will be stored.
+const char kArtifactsDir[] = "artifacts-dir";
+
 // When wallpaper boot animation is not disabled this switch
 // is used to override OOBE/sign in WebUI init type.
 // Possible values: parallel|postpone. Default: parallel.
 const char kAshWebUIInit[] = "ash-webui-init";
 
-// Default wallpaper to use for kids accounts
-// (as paths to trusted, non-user-writable JPEG files).
+// Default large wallpaper to use for kids accounts (as path to trusted,
+// non-user-writable JPEG file).
 const char kChildWallpaperLarge[] = "child-wallpaper-large";
+
+// Default small wallpaper to use for kids accounts (as path to trusted,
+// non-user-writable JPEG file).
 const char kChildWallpaperSmall[] = "child-wallpaper-small";
+
+const char kConservativeThreshold[] = "conservative";
 
 // Specifies the URL of the consumer device management backend.
 const char kConsumerDeviceManagementUrl[] = "consumer-device-management-url";
+
+// Forces CrOS region value.
+const char kCrosRegion[] = "cros-region";
+
+// Control regions data load ("" is default).
+const char kCrosRegionsMode[] = "cros-regions-mode";
+
+// "Override" value for kCrosRegionsMode (region's data is read first).
+const char kCrosRegionsModeOverride[] = "override";
+
+// "Hide" value for kCrosRegionsMode (VPD values are hidden).
+const char kCrosRegionsModeHide[] = "hide";
+
+// Optional value for Data Saver prompt on cellular networks.
+const char kDataSaverPromptDemoMode[] = "demo";
 
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
@@ -61,8 +106,12 @@ const char kDbusUnstubClients[] = "dbus-unstub-clients";
 // downloadable from Google).
 const char kDefaultWallpaperIsOem[] = "default-wallpaper-is-oem";
 
-// Default wallpaper to use (as paths to trusted, non-user-writable JPEG files).
+// Default large wallpaper to use (as path to trusted, non-user-writable JPEG
+// file).
 const char kDefaultWallpaperLarge[] = "default-wallpaper-large";
+
+// Default small wallpaper to use (as path to trusted, non-user-writable JPEG
+// file).
 const char kDefaultWallpaperSmall[] = "default-wallpaper-small";
 
 // Time in seconds before a machine at OOBE is considered derelict.
@@ -80,35 +129,69 @@ const char kDisableArcOptInVerification[] = "disable-arc-opt-in-verification";
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[] = "disable-boot-animation";
 
+// Disables bypass proxy for captive portal authorization.
+const char kDisableCaptivePortalBypassProxy[] =
+    "disable-captive-portal-bypass-proxy";
+
 // Disables cloud backup feature.
 const char kDisableCloudImport[] = "disable-cloud-import";
 
-// Disables the ChromeOS demo.
+// Disables Data Saver prompt on cellular networks.
+const char kDisableDataSaverPrompt[] = "disable-datasaver-prompt";
+
+// Disables the Chrome OS demo.
 const char kDisableDemoMode[] = "disable-demo-mode";
+
+// If this switch is set, the device cannot be remotely disabled by its owner.
+const char kDisableDeviceDisabling[] = "disable-device-disabling";
+
+// Disables notification when device is in end of life status.
+const char kDisableEolNotification[] = "disable-eol-notification";
 
 // Disables quick view in Files app.
 const char kDisableFilesQuickView[] = "disable-files-quick-view";
 
-// Disable HID-detection OOBE screen.
+// Disables GAIA services such as enrollment and OAuth session restore. Used by
+// 'fake' telemetry login.
+const char kDisableGaiaServices[] = "disable-gaia-services";
+
+// Disables HID-detection OOBE screen.
 const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[] = "disable-login-animations";
 
-// Disable new channel switcher UI.
+// Disables mtp write support.
+const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
+
+// Disables the multiple display layout UI.
+const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
+
+// Disables notifications about captive portals in session.
+const char kDisableNetworkPortalNotification[] =
+    "disable-network-portal-notification";
+
+// Disables new channel switcher UI.
 const char kDisableNewChannelSwitcherUI[] = "disable-new-channel-switcher-ui";
 
 // Disables new Kiosk UI when kiosk apps are represented as user pods.
 const char kDisableNewKioskUI[] = "disable-new-kiosk-ui";
 
+// Disables the new Korean IME in chrome://settings/languages.
+const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
+
 // Disables the new File System Provider API based ZIP unpacker.
 const char kDisableNewZIPUnpacker[] = "disable-new-zip-unpacker";
 
-// Disable Office Editing for Docs, Sheets & Slides component app so handlers
+// Disables Office Editing for Docs, Sheets & Slides component app so handlers
 // won't be registered, making it possible to install another version for
 // testing.
 const char kDisableOfficeEditingComponentApp[] =
     "disable-office-editing-component-extension";
+
+// Disables suggestions while typing on a physical keyboard.
+const char kDisablePhysicalKeyboardAutocorrect[] =
+    "disable-physical-keyboard-autocorrect";
 
 // Disables rollback option on reset screen.
 const char kDisableRollbackOption[] = "disable-rollback-option";
@@ -116,19 +199,25 @@ const char kDisableRollbackOption[] = "disable-rollback-option";
 // Disables experimental storage manager to manage local storage.
 const char kDisableStorageManager[] = "disable-storage-manager";
 
+// Disables SystemTimezoneAutomaticDetection policy.
+const char kDisableSystemTimezoneAutomaticDetectionPolicy[] =
+    "disable-system-timezone-automatic-detection";
+
+// Disables automatic timezone update.
+const char kDisableTimeZoneTrackingOption[] =
+    "disable-timezone-tracking-option";
+
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 
 // Disables wake on wifi features.
 const char kDisableWakeOnWifi[] = "disable-wake-on-wifi";
 
-// Disables notifications about captive portals in session.
-const char kDisableNetworkPortalNotification[] =
-    "disable-network-portal-notification";
-
-// EAFE url and path to use for Easy bootstrapping.
-const char kEafeUrl[] = "eafe-url";
+// EAFE path to use for Easy bootstrapping.
 const char kEafePath[] = "eafe-path";
+
+// EAFE URL to use for Easy bootstrapping.
+const char kEafeUrl[] = "eafe-url";
 
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
@@ -137,53 +226,43 @@ const char kEnableArc[] = "enable-arc";
 // locate the device.
 const char kEnableConsumerManagement[] = "enable-consumer-management";
 
-// Enables details panel in Files app.
-const char kEnableFilesDetailsPanel[] = "enable-files-details-panel";
-
-// Enables quick view in Files app.
-const char kEnableFilesQuickView[] = "enable-files-quick-view";
-
-// Disables notification when device is in end of life status.
-const char kDisableEolNotification[] = "disable-eol-notification";
-
-// If this switch is set, the device cannot be remotely disabled by its owner.
-const char kDisableDeviceDisabling[] = "disable-device-disabling";
-
-// If this switch is set, the new Korean IME will not be available in
-// chrome://settings/languages.
-const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
-
-// Disables mtp write support.
-const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
-
-// Enable the multiple display layout UI.
-const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
-
-// If this switch is set, the options for suggestions as typing on physical
-// keyboard will be enabled.
-const char kEnablePhysicalKeyboardAutocorrect[] =
-    "enable-physical-keyboard-autocorrect";
-
-// If this switch is set, the options for suggestions as typing on physical
-// keyboard will be disabled.
-const char kDisablePhysicalKeyboardAutocorrect[] =
-    "disable-physical-keyboard-autocorrect";
+// Enables Data Saver prompt on cellular networks.
+const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 
 // Shows additional checkboxes in Settings to enable Chrome OS accessibility
 // features that haven't launched yet.
 const char kEnableExperimentalAccessibilityFeatures[] =
     "enable-experimental-accessibility-features";
 
-// Enabled sharing assets for installed default apps.
-const char kEnableExtensionAssetsSharing[]  = "enable-extension-assets-sharing";
+// Enables sharing assets for installed default apps.
+const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
+
+// Enables details panel in Files app.
+const char kEnableFilesDetailsPanel[] = "enable-files-details-panel";
+
+// Enables quick view in Files app.
+const char kEnableFilesQuickView[] = "enable-files-quick-view";
+
+// Enables animated transitions during first-run tutorial.
+const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
+
+// Enables Kiosk mode for Chrome OS. Note this switch refers to retail mode
+// rather than the kiosk app mode.
+const char kEnableKioskMode[] = "enable-kiosk-mode";
+
+// Enables material design OOBE UI.
+const char kEnableMdOobe[] = "enable-md-oobe";
 
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
 
-// Enables touchpad three-finger-click as middle button.
-const char kEnableTouchpadThreeFingerClick[]
-    = "enable-touchpad-three-finger-click";
+// Enables suggestions while typing on a physical keyboard.
+const char kEnablePhysicalKeyboardAutocorrect[] =
+    "enable-physical-keyboard-autocorrect";
+
+// Enables request of tablet site (via user agent override).
+const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
 
 // Enables using screenshots in tests and seets mode.
 const char kEnableScreenshotTestingWithMode[] =
@@ -192,12 +271,13 @@ const char kEnableScreenshotTestingWithMode[] =
 // Enables experimental storage manager to manage local storage.
 const char kEnableStorageManager[] = "enable-storage-manager";
 
-// Enable Kiosk mode for ChromeOS. Note this switch refers to retail mode rather
-// than the kiosk app mode.
-const char kEnableKioskMode[] = "enable-kiosk-mode";
+// Enables touchpad three-finger-click as middle button.
+const char kEnableTouchpadThreeFingerClick[] =
+    "enable-touchpad-three-finger-click";
 
-// Enables request of tablet site (via user agent override).
-const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
+// Enables the chromecast support for video player app.
+const char kEnableVideoPlayerChromecastSupport[] =
+    "enable-video-player-chromecast-support";
 
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
@@ -205,6 +285,10 @@ const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
 // Whether to enable forced enterprise re-enrollment.
 const char kEnterpriseEnableForcedReEnrollment[] =
     "enterprise-enable-forced-re-enrollment";
+
+// Enables the zero-touch enterprise enrollment flow.
+const char kEnterpriseEnableZeroTouchEnrollment[] =
+    "enterprise-enable-zero-touch-enrollment";
 
 // Power of the power-of-2 initial modulus that will be used by the
 // auto-enrollment client. E.g. "4" means the modulus will be 2^4 = 16.
@@ -216,36 +300,38 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
-// Enables the zero-touch enterprise enrollment flow.
-const char kEnterpriseEnableZeroTouchEnrollment[] =
-    "enterprise-enable-zero-touch-enrollment";
-
-// Enables the chromecast support for video player app.
-const char kEnableVideoPlayerChromecastSupport[] =
-    "enable-video-player-chromecast-support";
-
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[] = "first-exec-after-boot";
+
+// Forces first-run UI to be shown for every login.
+const char kForceFirstRunUI[] = "force-first-run-ui";
 
 // Usually in browser tests the usual login manager bringup is skipped so that
 // tests can change how it's brought up. This flag disables that.
 const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 
+// Screenshot testing: specifies the directory where the golden screenshots are
+// stored.
+const char kGoldenScreenshotsDir[] = "golden-screenshots-dir";
+
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[] = "bwsi";
 
-// Wallpaper to use in guest mode (as paths to trusted, non-user-writable JPEG
-// files).
+// Large wallpaper to use in guest mode (as path to trusted, non-user-writable
+// JPEG file).
 const char kGuestWallpaperLarge[] = "guest-wallpaper-large";
+
+// Small wallpaper to use in guest mode (as path to trusted, non-user-writable
+// JPEG file).
 const char kGuestWallpaperSmall[] = "guest-wallpaper-small";
 
 // If true, the Chromebook has a keyboard with a diamond key.
 const char kHasChromeOSDiamondKey[] = "has-chromeos-diamond-key";
 
 // Defines user homedir. This defaults to primary user homedir.
-const char kHomedir[]           = "homedir";
+const char kHomedir[] = "homedir";
 
 // With this switch, start remora OOBE with the pairing screen.
 const char kHostPairingOobe[] = "host-pairing-oobe";
@@ -270,34 +356,24 @@ const char kLoginProfile[] = "login-profile";
 // Specifies the user which is already logged in.
 const char kLoginUser[] = "login-user";
 
-// The memory pressure thresholds selection which is used to decide whether and
+// The memory pressure threshold selection which is used to decide whether and
 // when a memory pressure event needs to get fired.
-const char kMemoryPressureExperimentName[] = "ChromeOSMemoryPressureHandling";
-const char kMemoryPressureHandlingOff[] = "memory-pressure-off";
 const char kMemoryPressureThresholds[] = "memory-pressure-thresholds";
-const char kConservativeThreshold[] = "conservative";
-const char kAggressiveCacheDiscardThreshold[] = "aggressive-cache-discard";
-const char kAggressiveTabDiscardThreshold[] = "aggressive-tab-discard";
-const char kAggressiveThreshold[] = "aggressive";
 
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 
-// Skips all other OOBE pages after user login.
-const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
-
-// Disable GAIA services such as enrollment and OAuth session restore. Used by
-// 'fake' telemetry login.
-const char kDisableGaiaServices[] = "disable-gaia-services";
-
-// Interval at which we check for total time on OOBE.
-const char kOobeTimerInterval[] = "oobe-timer-interval";
+// Indicates that if we should start bootstrapping Master OOBE.
+const char kOobeBootstrappingMaster[] = "oobe-bootstrapping-master";
 
 // Indicates that a guest session has been started before OOBE completion.
 const char kOobeGuestSession[] = "oobe-guest-session";
 
-// Indicates that if we should start bootstrapping Master OOBE.
-const char kOobeBootstrappingMaster[] = "oobe-bootstrapping-master";
+// Skips all other OOBE pages after user login.
+const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
+
+// Interval at which we check for total time on OOBE.
+const char kOobeTimerInterval[] = "oobe-timer-interval";
 
 // Specifies power stub behavior:
 //  'cycle=2' - Cycles power states every 2 seconds.
@@ -335,63 +411,12 @@ const char kStubCrosSettings[] = "stub-cros-settings";
 // done by session manager.
 const char kSystemDevMode[] = "system-developer-mode";
 
-// Enables animated transitions during first-run tutorial.
-const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
-
-// Forces first-run UI to be shown for every login.
-const char kForceFirstRunUI[] = "force-first-run-ui";
-
 // Enables testing for auto update UI.
 const char kTestAutoUpdateUI[] = "test-auto-update-ui";
 
 // Enables wake on wifi packet feature, which wakes the device on the receipt
 // of network packets from whitelisted sources.
 const char kWakeOnWifiPacket[] = "wake-on-wifi-packet";
-
-// Screenshot testing: specifies the directory where the golden screenshots are
-// stored.
-const char kGoldenScreenshotsDir[] = "golden-screenshots-dir";
-
-// Screenshot testing: specifies the directoru where artifacts will be stored.
-const char kArtifactsDir[] = "artifacts-dir";
-
-// Disable bypass proxy for captive portal authorization.
-const char kDisableCaptivePortalBypassProxy[] =
-    "disable-captive-portal-bypass-proxy";
-
-// Disable automatic timezone update.
-const char kDisableTimeZoneTrackingOption[] =
-    "disable-timezone-tracking-option";
-
-// Switches and optional value for Data Saver prompt on cellular networks.
-const char kDisableDataSaverPrompt[] = "disable-datasaver-prompt";
-const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
-const char kDataSaverPromptDemoMode[] = "demo";
-
-// Control regions data load:
-// ""         - default
-// "override" - regions data is read first
-// "hide"     - VPD values are hidden
-const char kCrosRegionsMode[] = "cros-regions-mode";
-const char kCrosRegionsModeOverride[] = "override";
-const char kCrosRegionsModeHide[] = "hide";
-
-// Forces CrOS region value.
-const char kCrosRegion[] = "cros-region";
-
-// Controls CrOS GaiaId migration for tests:
-// ""        - default,
-// "started" - migration started (i.e. all stored user keys will be converted
-//             to GaiaId).
-const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
-const char kTestCrosGaiaIdMigrationStarted[] = "started";
-
-// This flag disables SystemTimezoneAutomaticDetection policy.
-const char kDisableSystemTimezoneAutomaticDetectionPolicy[] =
-    "disable-system-timezone-automatic-detection";
-
-// This flag enables material design OOBE UI.
-const char kEnableMdOobe[] = "enable-md-oobe";
 
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
