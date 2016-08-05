@@ -52,3 +52,4 @@ Local Modifications:
 - patches/extension_number_update.patch: Update TLS extension numbers.
 - patches/save_randoms.patch: Save client and server randoms when resuming
   sessions.
+- patches/alpn.path: Implement Application-Layer Protocol Negotiation Extension.

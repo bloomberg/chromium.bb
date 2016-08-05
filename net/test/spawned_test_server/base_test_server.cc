@@ -639,6 +639,13 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->Set("ocsp-server-unavailable",
                      base::Value::CreateNullValue());
     }
+    if (!ssl_options_.alpn_protocols.empty()) {
+      std::unique_ptr<base::ListValue> alpn_protocols(new base::ListValue());
+      for (const std::string& proto : ssl_options_.alpn_protocols) {
+        alpn_protocols->AppendString(proto);
+      }
+      arguments->Set("alpn-protocols", std::move(alpn_protocols));
+    }
     if (!ssl_options_.npn_protocols.empty()) {
       std::unique_ptr<base::ListValue> npn_protocols(new base::ListValue());
       for (const std::string& proto : ssl_options_.npn_protocols) {

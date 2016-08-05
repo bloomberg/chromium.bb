@@ -128,6 +128,12 @@ class HandshakeSettings(object):
     
     Note that TACK support is not standardized by IETF and uses a temporary
     TLS Extension number, so should NOT be used in production software.
+
+    @type alpnProtos: list of strings.
+    @param alpnProtos: A list of supported upper layer protocols to use in the
+    Application-Layer Protocol Negotiation Extension (RFC 7301).  For the
+    client, the order does not matter.  For the server, the list is in
+    decreasing order of preference.
     """
     def __init__(self):
         self.minKeySize = 1023
@@ -146,6 +152,7 @@ class HandshakeSettings(object):
         self.enableChannelID = True
         self.enableExtendedMasterSecret = True
         self.supportedTokenBindingParams = []
+        self.alpnProtos = None
 
     # Validates the min/max fields, and certificateTypes
     # Filters out unsupported cipherNames and cipherImplementations
@@ -166,6 +173,7 @@ class HandshakeSettings(object):
         other.enableChannelID = self.enableChannelID
         other.enableExtendedMasterSecret = self.enableExtendedMasterSecret
         other.supportedTokenBindingParams = self.supportedTokenBindingParams
+        other.alpnProtos = self.alpnProtos;
 
         if not cipherfactory.tripleDESPresent:
             other.cipherNames = [e for e in self.cipherNames if e != "3des"]

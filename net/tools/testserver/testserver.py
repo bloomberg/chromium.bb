@@ -161,8 +161,8 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
 
   def __init__(self, server_address, request_hander_class, pem_cert_and_key,
                ssl_client_auth, ssl_client_cas, ssl_client_cert_types,
-               ssl_bulk_ciphers, ssl_key_exchanges, npn_protocols,
-               record_resume_info, tls_intolerant,
+               ssl_bulk_ciphers, ssl_key_exchanges, alpn_protocols,
+               npn_protocols, record_resume_info, tls_intolerant,
                tls_intolerance_type, signed_cert_timestamps,
                fallback_scsv_enabled, ocsp_response,
                alert_after_handshake, disable_channel_id, disable_ems,
@@ -215,6 +215,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
       self.ssl_handshake_settings.enableExtendedMasterSecret = False
     self.ssl_handshake_settings.supportedTokenBindingParams = \
         token_binding_params
+    self.ssl_handshake_settings.alpnProtos=alpn_protocols;
 
     if record_resume_info:
       # If record_resume_info is true then we'll replace the session cache with
@@ -1992,6 +1993,7 @@ class ServerRunner(testserver_base.TestServerRunner):
                              self.options.ssl_client_cert_type,
                              self.options.ssl_bulk_cipher,
                              self.options.ssl_key_exchange,
+                             self.options.alpn_protocols,
                              self.options.npn_protocols,
                              self.options.record_resume,
                              self.options.tls_intolerant,
@@ -2226,9 +2228,13 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   'will be used. This option may appear '
                                   'multiple times, indicating multiple '
                                   'algorithms should be enabled.');
-    # TODO(davidben): Add ALPN support to tlslite.
+    self.option_parser.add_option('--alpn-protocols', action='append',
+                                  help='Specify the list of ALPN protocols.  '
+                                  'The server will not send an ALPN response '
+                                  'if this list does not overlap with the '
+                                  'list of protocols the client advertises.')
     self.option_parser.add_option('--npn-protocols', action='append',
-                                  help='Specify the list of protocols sent in'
+                                  help='Specify the list of protocols sent in '
                                   'an NPN response.  The server will not'
                                   'support NPN if the list is empty.')
     self.option_parser.add_option('--file-root-url', default='/files/',

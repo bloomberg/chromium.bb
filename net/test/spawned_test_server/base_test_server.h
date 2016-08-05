@@ -277,6 +277,9 @@ class BaseTestServer {
     // test server will continue to speak HTTP/1.1.
     std::vector<std::string> npn_protocols;
 
+    // List of supported ALPN protocols.
+    std::vector<std::string> alpn_protocols;
+
     // Whether to send a fatal alert immediately after completing the handshake.
     bool alert_after_handshake;
 

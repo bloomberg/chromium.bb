@@ -2567,6 +2567,36 @@ TEST_F(SSLClientSocketTest, SessionResumption) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
 }
 
+// Tests that ALPN works with session resumption.
+TEST_F(SSLClientSocketTest, SessionResumptionAlpn) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.alpn_protocols.push_back("h2");
+  ssl_options.alpn_protocols.push_back("http/1.1");
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  // First, perform a full handshake.
+  SSLConfig ssl_config;
+  // Disable TLS False Start to ensure the handshake has completed.
+  ssl_config.false_start_enabled = false;
+  ssl_config.alpn_protos.push_back(kProtoHTTP2);
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+  EXPECT_EQ(kProtoHTTP2, sock_->GetNegotiatedProtocol());
+
+  // The next connection should resume; ALPN should be renegotiated.
+  ssl_config.alpn_protos.clear();
+  ssl_config.alpn_protos.push_back(kProtoHTTP11);
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  EXPECT_EQ(kProtoHTTP11, sock_->GetNegotiatedProtocol());
+}
+
 // Tests that connections with certificate errors do not add entries to the
 // session cache.
 TEST_F(SSLClientSocketTest, CertificateErrorNoResume) {
@@ -2786,26 +2816,35 @@ TEST_F(SSLClientSocketTest, TokenBindingEnabledWithoutServerSupport) {
   EXPECT_FALSE(info.token_binding_negotiated);
 }
 
-// In tests requiring NPN, client_config.alpn_protos and
-// client_config.npn_protos both need to be set when using NSS, otherwise NPN is
-// disabled due to quirks of the implementation.
-
-TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
-  // False Start requires NPN/ALPN, ECDHE, and an AEAD.
+TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabledWithNPN) {
+  // False Start requires ALPN or NPN, and ECDHE, and an AEAD.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  server_options.npn_protocols.push_back("http/1.1");
   SSLConfig client_config;
   client_config.npn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, true));
 }
 
-// Test that False Start is disabled without NPN.
-TEST_F(SSLClientSocketFalseStartTest, NoNPN) {
+TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabledWithALPN) {
+  // False Start requires ALPN or NPN, and ECDHE, and an AEAD.
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.key_exchanges =
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
+  server_options.alpn_protocols.push_back("http/1.1");
+  SSLConfig client_config;
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, true));
+}
+
+// Test that False Start is disabled without either ALPN or NPN.
+TEST_F(SSLClientSocketFalseStartTest, NoAlpnAndNoNpn) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
@@ -2825,9 +2864,9 @@ TEST_F(SSLClientSocketFalseStartTest, RSA) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  server_options.alpn_protocols.push_back("http/1.1");
   SSLConfig client_config;
-  client_config.npn_protos.push_back(kProtoHTTP11);
+  client_config.alpn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, false));
 }
@@ -2839,9 +2878,9 @@ TEST_F(SSLClientSocketFalseStartTest, DHE_RSA) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  server_options.alpn_protocols.push_back("http/1.1");
   SSLConfig client_config;
-  client_config.npn_protos.push_back(kProtoHTTP11);
+  client_config.alpn_protos.push_back(kProtoHTTP11);
   // DHE is only advertised when deprecated ciphers are enabled.
   client_config.deprecated_cipher_suites_enabled = true;
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
@@ -2854,9 +2893,9 @@ TEST_F(SSLClientSocketFalseStartTest, NoAEAD) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
-  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  server_options.alpn_protocols.push_back("http/1.1");
   SSLConfig client_config;
-  client_config.npn_protos.push_back(kProtoHTTP11);
+  client_config.alpn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
 }
 
@@ -2868,9 +2907,9 @@ TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  server_options.alpn_protocols.push_back("http/1.1");
   SSLConfig client_config;
-  client_config.npn_protos.push_back(kProtoHTTP11);
+  client_config.alpn_protos.push_back(kProtoHTTP11);
 
   // Let a full handshake complete with False Start.
   ASSERT_NO_FATAL_FAILURE(
@@ -2896,11 +2935,11 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinished) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  server_options.alpn_protocols.push_back("http/1.1");
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.npn_protos.push_back(kProtoHTTP11);
+  client_config.alpn_protos.push_back(kProtoHTTP11);
 
   // Start a handshake up to the server Finished message.
   TestCompletionCallback callback;
@@ -2950,11 +2989,11 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBadFinished) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  server_options.alpn_protocols.push_back("http/1.1");
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.npn_protos.push_back(kProtoHTTP11);
+  client_config.alpn_protos.push_back(kProtoHTTP11);
 
   // Start a handshake up to the server Finished message.
   TestCompletionCallback callback;
@@ -3095,8 +3134,8 @@ TEST_F(SSLClientSocketChannelIDTest, ChannelIDShardSessionCache) {
 
 TEST_F(SSLClientSocketTest, NPN) {
   SpawnedTestServer::SSLOptions server_options;
-  server_options.npn_protocols.push_back(std::string("spdy/3.1"));
-  server_options.npn_protocols.push_back(std::string("h2"));
+  server_options.npn_protocols.push_back("spdy/3.1");
+  server_options.npn_protocols.push_back("h2");
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
@@ -3112,16 +3151,31 @@ TEST_F(SSLClientSocketTest, NPN) {
   EXPECT_EQ("h2", proto);
 }
 
-// If npn_protos.empty(), then NPN should be disabled, even if
-// !alpn_protos.empty().  Tlslite does not support ALPN, therefore if NPN is
-// disabled in the client, no protocol should be negotiated.
-TEST_F(SSLClientSocketTest, NPNClientDisabled) {
+// Server preference should win in ALPN.
+TEST_F(SSLClientSocketTest, Alpn) {
   SpawnedTestServer::SSLOptions server_options;
-  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  server_options.alpn_protocols.push_back("h2");
+  server_options.alpn_protocols.push_back("http/1.1");
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
   client_config.alpn_protos.push_back(kProtoHTTP11);
+  client_config.alpn_protos.push_back(kProtoHTTP2);
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsOk());
+
+  EXPECT_EQ(kProtoHTTP2, sock_->GetNegotiatedProtocol());
+}
+
+// If the server supports ALPN but the client does not, then ALPN is not used.
+TEST_F(SSLClientSocketTest, AlpnClientDisabled) {
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.alpn_protocols.push_back("foo");
+  ASSERT_TRUE(StartTestServer(server_options));
+
+  SSLConfig client_config;
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
