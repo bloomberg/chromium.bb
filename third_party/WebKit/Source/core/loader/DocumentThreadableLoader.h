@@ -54,7 +54,8 @@ class ResourceRequest;
 class SecurityOrigin;
 class ThreadableLoaderClient;
 
-class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, private RawResourceClient {
+class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, private ResourceOwner<RawResource> {
+    USING_GARBAGE_COLLECTED_MIXIN(DocumentThreadableLoader);
     public:
         static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         static DocumentThreadableLoader* create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
@@ -149,29 +150,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // if m_forceDoNotAllowStoredCredentials is set. Otherwise, just
         // returns allowCredentials value of m_resourceLoaderOptions.
         StoredCredentials effectiveAllowCredentials() const;
-
-        // TODO(oilpan): DocumentThreadableLoader used to be a ResourceOwner,
-        // but ResourceOwner was moved onto the oilpan heap before
-        // DocumentThreadableLoader was ready. When DocumentThreadableLoader
-        // moves onto the oilpan heap, make it a ResourceOwner again and remove
-        // this re-implementation of ResourceOwner.
-        RawResource* resource() const { return m_resource.get(); }
-        void clearResource() { setResource(nullptr); }
-        void setResource(RawResource* newResource)
-        {
-            if (newResource == m_resource)
-                return;
-
-            if (RawResource* oldResource = m_resource.release())
-                oldResource->removeClient(this);
-
-            if (newResource) {
-                m_resource = newResource;
-                m_resource->addClient(this);
-            }
-        }
-        Member<RawResource> m_resource;
-        // End of ResourceOwner re-implementation, see above.
 
         SecurityOrigin* getSecurityOrigin() const;
         Document& document() const;
