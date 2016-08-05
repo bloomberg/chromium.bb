@@ -75,7 +75,6 @@ class MessageFilter;
 }
 
 namespace media {
-class AudioHardwareConfig;
 class GpuVideoAcceleratorFactories;
 }
 
@@ -375,11 +374,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // instances shared based on configured audio parameters.  Lazily created on
   // first call.
   AudioRendererMixerManager* GetAudioRendererMixerManager();
-
-  // AudioHardwareConfig contains audio hardware configuration for
-  // renderer side clients.  Creation requires a synchronous IPC call so it is
-  // lazily created on the first call.
-  media::AudioHardwareConfig* GetAudioHardwareConfig();
 
 #if defined(OS_WIN)
   void PreCacheFontCharacters(const LOGFONT& log_font,
