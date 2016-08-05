@@ -24,6 +24,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
+  void EchoDxDiagNode(const DxDiagNode& d,
+                      const EchoDxDiagNodeCallback& callback) override {
+    callback.Run(d);
+  }
+
   void EchoGpuDevice(const GPUInfo::GPUDevice& g,
                      const EchoGpuDeviceCallback& callback) override {
     callback.Run(g);
@@ -44,6 +49,26 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(s);
   }
 
+  void EchoVideoDecodeAcceleratorSupportedProfile(
+      const VideoDecodeAcceleratorSupportedProfile& v,
+      const EchoVideoDecodeAcceleratorSupportedProfileCallback& callback)
+      override {
+    callback.Run(v);
+  }
+
+  void EchoVideoDecodeAcceleratorCapabilities(
+      const VideoDecodeAcceleratorCapabilities& v,
+      const EchoVideoDecodeAcceleratorCapabilitiesCallback& callback) override {
+    callback.Run(v);
+  }
+
+  void EchoVideoEncodeAcceleratorSupportedProfile(
+      const VideoEncodeAcceleratorSupportedProfile& v,
+      const EchoVideoEncodeAcceleratorSupportedProfileCallback& callback)
+      override {
+    callback.Run(v);
+  }
+
   base::MessageLoop loop_;
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
 
@@ -51,6 +76,18 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 };
 
 }  // namespace
+
+TEST_F(StructTraitsTest, DxDiagNode) {
+  gpu::DxDiagNode input;
+  input.values["abc"] = "123";
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gpu::DxDiagNode output;
+  proxy->EchoDxDiagNode(input, &output);
+
+  gpu::DxDiagNode test_dx_diag_node;
+  test_dx_diag_node.values["abc"] = "123";
+  EXPECT_EQ(test_dx_diag_node.values, output.values);
+}
 
 TEST_F(StructTraitsTest, GPUDevice) {
   gpu::GPUInfo::GPUDevice input;
@@ -136,6 +173,65 @@ TEST_F(StructTraitsTest, SyncToken) {
   EXPECT_EQ(command_buffer_id, output.command_buffer_id());
   EXPECT_EQ(release_count, output.release_count());
   EXPECT_EQ(verified_flush, output.verified_flush());
+}
+
+TEST_F(StructTraitsTest, VideoDecodeAcceleratorSupportedProfile) {
+  const gpu::VideoCodecProfile profile =
+      gpu::VideoCodecProfile::H264PROFILE_MAIN;
+  const int32_t max_width = 1920;
+  const int32_t max_height = 1080;
+  const int32_t min_width = 640;
+  const int32_t min_height = 480;
+  const gfx::Size max_resolution(max_width, max_height);
+  const gfx::Size min_resolution(min_width, min_height);
+
+  gpu::VideoDecodeAcceleratorSupportedProfile input;
+  input.profile = profile;
+  input.max_resolution = max_resolution;
+  input.min_resolution = min_resolution;
+  input.encrypted_only = false;
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gpu::VideoDecodeAcceleratorSupportedProfile output;
+  proxy->EchoVideoDecodeAcceleratorSupportedProfile(input, &output);
+  EXPECT_EQ(profile, output.profile);
+  EXPECT_EQ(max_resolution, output.max_resolution);
+  EXPECT_EQ(min_resolution, output.min_resolution);
+  EXPECT_FALSE(output.encrypted_only);
+}
+
+TEST_F(StructTraitsTest, VideoDecodeAcceleratorCapabilities) {
+  const uint32_t flags = 1234;
+
+  gpu::VideoDecodeAcceleratorCapabilities input;
+  input.flags = flags;
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gpu::VideoDecodeAcceleratorCapabilities output;
+  proxy->EchoVideoDecodeAcceleratorCapabilities(input, &output);
+  EXPECT_EQ(flags, output.flags);
+}
+
+TEST_F(StructTraitsTest, VideoEncodeAcceleratorSupportedProfile) {
+  const gpu::VideoCodecProfile profile =
+      gpu::VideoCodecProfile::H264PROFILE_MAIN;
+  const gfx::Size max_resolution(1920, 1080);
+  const uint32_t max_framerate_numerator = 144;
+  const uint32_t max_framerate_denominator = 12;
+
+  gpu::VideoEncodeAcceleratorSupportedProfile input;
+  input.profile = profile;
+  input.max_resolution = max_resolution;
+  input.max_framerate_numerator = max_framerate_numerator;
+  input.max_framerate_denominator = max_framerate_denominator;
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gpu::VideoEncodeAcceleratorSupportedProfile output;
+  proxy->EchoVideoEncodeAcceleratorSupportedProfile(input, &output);
+  EXPECT_EQ(profile, output.profile);
+  EXPECT_EQ(max_resolution, output.max_resolution);
+  EXPECT_EQ(max_framerate_numerator, output.max_framerate_numerator);
+  EXPECT_EQ(max_framerate_denominator, output.max_framerate_denominator);
 }
 
 }  // namespace gpu

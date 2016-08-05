@@ -1,8 +1,11 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// gpu/config/gpu_info.h
 module gpu.mojom;
+
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // gpu::GPUInfo::GPUDevice
 struct GpuDevice {
@@ -13,9 +16,55 @@ struct GpuDevice {
   string device_string;
 };
 
+// gpu::CollectInfoResult
 enum CollectInfoResult {
   kCollectInfoNone = 0,
   kCollectInfoSuccess = 1,
   kCollectInfoNonFatalFailure = 2,
   kCollectInfoFatalFailure = 3
+};
+
+// gpu::VideoCodecProfile
+enum VideoCodecProfile {
+  VIDEO_CODEC_PROFILE_UNKNOWN = -1,
+  H264PROFILE_BASELINE = 0,
+  H264PROFILE_MAIN,
+  H264PROFILE_EXTENDED,
+  H264PROFILE_HIGH,
+  H264PROFILE_HIGH10PROFILE,
+  H264PROFILE_HIGH422PROFILE,
+  H264PROFILE_HIGH444PREDICTIVEPROFILE,
+  H264PROFILE_SCALABLEBASELINE,
+  H264PROFILE_SCALABLEHIGH,
+  H264PROFILE_STEREOHIGH,
+  H264PROFILE_MULTIVIEWHIGH,
+  VP8PROFILE_ANY,
+  VP9PROFILE_PROFILE0,
+  VP9PROFILE_PROFILE1,
+  VP9PROFILE_PROFILE2,
+  VP9PROFILE_PROFILE3,
+  HEVCPROFILE_MAIN,
+  HEVCPROFILE_MAIN10,
+  HEVCPROFILE_MAIN_STILL_PICTURE,
+};
+
+// gpu::VideoDecodeAcceleratorSupportedProfile
+struct VideoDecodeAcceleratorSupportedProfile {
+  VideoCodecProfile profile;
+  gfx.mojom.Size max_resolution;
+  gfx.mojom.Size min_resolution;
+  bool encrypted_only;
+};
+
+// gpu::VideoDecodeAcceleratorCapabilities
+struct VideoDecodeAcceleratorCapabilities {
+  uint32 flags;
+};
+
+// gpu::VideoEncodeAcceleratorSupportedProfile
+struct VideoEncodeAcceleratorSupportedProfile {
+  VideoCodecProfile profile;
+  gfx.mojom.Size max_resolution;
+  uint32 max_framerate_numerator;
+  uint32 max_framerate_denominator;
 };

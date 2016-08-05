@@ -10,8 +10,13 @@ sources = [
 ]
 deps = [
   "//gpu/config",
+  "//ui/gfx/geometry/mojo",
 ]
 type_mappings = [
-  "gpu.mojom.GpuDevice=::gpu::GPUInfo::GPUDevice",
-  "gpu.mojom.CollectInfoResult=::gpu::CollectInfoResult",
+  "gpu.mojom.GpuDevice=gpu::GPUInfo::GPUDevice",
+  "gpu.mojom.CollectInfoResult=gpu::CollectInfoResult",
+  "gpu.mojom.VideoCodecProfile=gpu::VideoCodecProfile",
+  "gpu.mojom.VideoDecodeAcceleratorSupportedProfile=gpu::VideoDecodeAcceleratorSupportedProfile",
+  "gpu.mojom.VideoDecodeAcceleratorCapabilities=gpu::VideoDecodeAcceleratorCapabilities",
+  "gpu.mojom.VideoEncodeAcceleratorSupportedProfile=gpu::VideoEncodeAcceleratorSupportedProfile",
 ]

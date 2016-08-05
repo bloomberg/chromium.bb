@@ -24,3 +24,8 @@ struct TimeTicks;
 
 [Native]
 struct String16;
+
+// Corresponds to |base::Version| in base/version.h
+struct Version {
+  array<uint32> components;
+};

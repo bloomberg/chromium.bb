@@ -122,10 +122,15 @@ mojom("interfaces") {
   sources = [
     "capabilities.mojom",
     "command_buffer.mojom",
+    "dx_diag_node.mojom",
     "gpu_info.mojom",
     "mailbox.mojom",
     "mailbox_holder.mojom",
     "sync_token.mojom",
+  ]
+
+  public_deps = [
+    "//ui/gfx/geometry/mojo",
   ]
 }
 

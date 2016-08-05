@@ -4,6 +4,7 @@
 
 module gpu.mojom;
 
+import "gpu/ipc/common/dx_diag_node.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/mailbox.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
@@ -12,6 +13,9 @@ import "gpu/ipc/common/sync_token.mojom";
 // All functions on this interface echo their arguments to test StructTraits
 // serialization and deserialization.
 interface TraitsTestService {
+
+  [Sync]
+  EchoDxDiagNode(DxDiagNode d) => (DxDiagNode pass);
 
   [Sync]
   EchoGpuDevice(GpuDevice g) => (GpuDevice pass);
@@ -24,4 +28,19 @@ interface TraitsTestService {
 
   [Sync]
   EchoSyncToken(SyncToken s) => (SyncToken pass);
+
+  [Sync]
+  EchoVideoDecodeAcceleratorSupportedProfile(
+    VideoDecodeAcceleratorSupportedProfile v) =>
+      (VideoDecodeAcceleratorSupportedProfile pass);
+
+  [Sync]
+  EchoVideoDecodeAcceleratorCapabilities(
+    VideoDecodeAcceleratorCapabilities v) =>
+      (VideoDecodeAcceleratorCapabilities pass);
+
+  [Sync]
+  EchoVideoEncodeAcceleratorSupportedProfile(
+    VideoEncodeAcceleratorSupportedProfile v) =>
+      (VideoEncodeAcceleratorSupportedProfile pass);
 };
