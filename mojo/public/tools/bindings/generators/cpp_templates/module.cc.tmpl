@@ -129,7 +129,6 @@ const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{cons
 {%- for struct in structs %}
 {%-   if not struct|is_native_only_kind %}
 {%-     include "wrapper_class_definition.tmpl" %}
-{%-     include "struct_data_view_definition.tmpl" %}
 {%-   endif %}
 {%- endfor %}
 

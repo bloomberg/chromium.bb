@@ -3,7 +3,7 @@
 {%-   set name = pf.field.name %}
 
 {%-   if kind|is_union_kind %}
-void {{struct.name}}DataView::Get{{name|under_to_camel}}DataView(
+inline void {{struct.name}}DataView::Get{{name|under_to_camel}}DataView(
     {{kind|cpp_data_view_type}}* output) {
 {%-     if pf.min_version != 0 %}
   auto pointer = data_->header_.version >= {{pf.min_version}}
@@ -15,7 +15,7 @@ void {{struct.name}}DataView::Get{{name|under_to_camel}}DataView(
 }
 
 {%-   elif kind|is_object_kind %}
-void {{struct.name}}DataView::Get{{name|under_to_camel}}DataView(
+inline void {{struct.name}}DataView::Get{{name|under_to_camel}}DataView(
     {{kind|cpp_data_view_type}}* output) {
 {%-     if pf.min_version != 0 %}
   auto pointer = data_->header_.version >= {{pf.min_version}}
