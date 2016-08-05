@@ -289,10 +289,10 @@ v8::MaybeLocal<v8::Value> InjectedScript::resolveCallArgument(ErrorString* error
             return v8::MaybeLocal<v8::Value>();
         return object;
     }
-    if (callArgument->hasValue()) {
-        String16 value = callArgument->getValue(nullptr)->toJSONString();
-        if (callArgument->getType(String16()) == "number")
-            value = "Number(" + value + ")";
+    if (callArgument->hasValue() || callArgument->hasUnserializableValue()) {
+        String16 value = callArgument->hasValue() ?
+            callArgument->getValue(nullptr)->toJSONString() :
+            "Number(\"" + callArgument->getUnserializableValue("") + "\")";
         v8::Local<v8::Value> object;
         if (!m_context->inspector()->compileAndRunInternalScript(m_context->context(), toV8String(m_context->isolate(), value)).ToLocal(&object)) {
             *errorString = "Couldn't parse value object in call argument";

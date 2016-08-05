@@ -132,7 +132,11 @@ def to_title_case(name):
 
 
 def dash_to_camelcase(word):
-    return "".join(to_title_case(x) or "-" for x in word.split("-"))
+    prefix = ""
+    if word[0] == "-":
+        prefix = "Negative"
+        word = word[1:]
+    return prefix + "".join(to_title_case(x) or "-" for x in word.split("-"))
 
 
 def initialize_jinja_env(cache_dir):

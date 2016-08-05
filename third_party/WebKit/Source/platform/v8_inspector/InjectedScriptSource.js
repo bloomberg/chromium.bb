@@ -716,13 +716,13 @@ InjectedScript.RemoteObject = function(object, objectGroupName, doNotBind, force
         // Provide user-friendly number values.
         if (this.type === "number") {
             this.description = toStringDescription(object);
-            // Override "value" property for values that can not be JSON-stringified.
             switch (this.description) {
             case "NaN":
             case "Infinity":
             case "-Infinity":
             case "-0":
-                this.value = this.description;
+                delete this.value;
+                this.unserializableValue = this.description;
                 break;
             }
         }

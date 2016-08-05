@@ -113,12 +113,19 @@ function test()
 
         function addArgument(result)
         {
-            if (result.objectId)
-                callArguments.push({ objectId: result.objectId, type: result.type });
-            else if (result.value)
-                callArguments.push({ value: result.value, type: result.type })
-            else
-                callArguments.push({ type: result.type });
+            if (result.objectId) {
+                callArguments.push({ objectId: result.objectId });
+            } else if (result.value) {
+                callArguments.push({ value: result.value })
+            } else if (result.unserializableValue) {
+                callArguments.push({ unserializableValue: result.unserializableValue });
+            } else if (result.type === "undefined") {
+                callArguments.push({});
+            } else {
+                InspectorTest.log("Unexpected argument object:");
+                InspectorTest.logObject(result);
+                InspectorTest.completeTest();
+            }
         }
     }
 
