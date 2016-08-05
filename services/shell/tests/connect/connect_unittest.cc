@@ -90,7 +90,6 @@ class ConnectTest : public test::ServiceTest,
       const std::string& connection_remote_userid,
       const std::string& initialize_local_name,
       const std::string& initialize_userid) {
-    EXPECT_EQ(connection_local_name, connection_state_->connection_local_name);
     EXPECT_EQ(connection_remote_name,
               connection_state_->connection_remote_name);
     EXPECT_EQ(connection_remote_userid,
@@ -167,7 +166,6 @@ TEST_F(ConnectTest, Connect) {
   run_loop.Run();
   EXPECT_EQ("APP", title);
   EXPECT_FALSE(connection->IsPending());
-  EXPECT_NE(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
   EXPECT_EQ(connection->GetRemoteIdentity().name(), kTestAppName);
 }
 
@@ -259,7 +257,6 @@ TEST_F(ConnectTest, PackagedApp) {
   run_loop.Run();
   EXPECT_EQ("A", a_name);
   EXPECT_FALSE(connection->IsPending());
-  EXPECT_NE(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
   EXPECT_EQ(connection->GetRemoteIdentity().name(), kTestAppAName);
 }
 
@@ -302,7 +299,6 @@ TEST_F(ConnectTest, BlockedPackagedApplication) {
   run_loop.Run();
   EXPECT_FALSE(connection->IsPending());
   EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, connection->GetResult());
-  EXPECT_EQ(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
 }
 
 TEST_F(ConnectTest, CapabilityClasses) {

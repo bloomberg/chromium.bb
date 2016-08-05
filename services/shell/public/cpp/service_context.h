@@ -66,13 +66,10 @@ class ServiceContext : public mojom::Service {
  private:
   // mojom::Service:
   void OnStart(mojom::IdentityPtr identity,
-               uint32_t id,
                const OnStartCallback& callback) override;
   void OnConnect(mojom::IdentityPtr source,
-                 uint32_t source_id,
                  mojom::InterfaceProviderRequest interfaces,
-                 mojom::CapabilityRequestPtr allowed_capabilities,
-                 const mojo::String& name) override;
+                 mojom::CapabilityRequestPtr allowed_capabilities) override;
 
   void OnConnectionError();
 

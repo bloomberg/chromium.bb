@@ -55,9 +55,8 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   mojom::InterfaceProviderPtr remote_interfaces;
   mojom::InterfaceProviderRequest remote_request = GetProxy(&remote_interfaces);
   std::unique_ptr<internal::ConnectionImpl> connection(
-      new internal::ConnectionImpl(
-          params->target().name(), params->target(), mojom::kInvalidInstanceID,
-          request, Connection::State::PENDING));
+      new internal::ConnectionImpl(params->target(), request,
+                                   Connection::State::PENDING));
   if (params->remote_interfaces()) {
     params->remote_interfaces()->Bind(std::move(remote_interfaces));
     connection->set_remote_interfaces(params->remote_interfaces());

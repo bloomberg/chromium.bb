@@ -100,13 +100,6 @@ class Connection {
   // false for outbound connections.
   virtual bool HasCapabilityClass(const std::string& class_name) const = 0;
 
-  // Returns the name that was used by the source application to establish a
-  // connection to the destination application.
-  //
-  // When Connection is representing and outgoing connection, this will be the
-  // same as the value returned by GetRemoveApplicationName().
-  virtual const std::string& GetConnectionName() = 0;
-
   // Returns the remote identity. While the connection is in the pending state,
   // the user_id() field will be the value passed via Connect(). After the
   // connection is completed, it will change to the value assigned by the shell.
@@ -126,13 +119,6 @@ class Connection {
 
   // Returns true if the connection has not yet been processed by the shell.
   virtual bool IsPending() const = 0;
-
-  // Returns the instance id of the remote application if it is known at the
-  // time this function is called. When IsPending() returns true, this function
-  // will return mojom::kInvalidInstanceID. Use
-  // AddConnectionCompletedClosure() to schedule a closure to be run when the
-  // connection is processed by the shell and remote id is available.
-  virtual uint32_t GetRemoteInstanceID() const = 0;
 
   // Register a closure to be run when the connection has been completed by the
   // shell and remote metadata is available. Useful only for connections created

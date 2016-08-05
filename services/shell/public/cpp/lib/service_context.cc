@@ -48,7 +48,6 @@ void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
 // ServiceContext, mojom::Service implementation:
 
 void ServiceContext::OnStart(mojom::IdentityPtr identity,
-                             uint32_t id,
                              const OnStartCallback& callback) {
   identity_ = identity.To<Identity>();
   if (!initialize_handler_.is_null())
@@ -65,12 +64,10 @@ void ServiceContext::OnStart(mojom::IdentityPtr identity,
 
 void ServiceContext::OnConnect(
     mojom::IdentityPtr source,
-    uint32_t source_id,
     mojom::InterfaceProviderRequest interfaces,
-    mojom::CapabilityRequestPtr allowed_capabilities,
-    const mojo::String& name) {
+    mojom::CapabilityRequestPtr allowed_capabilities) {
   std::unique_ptr<internal::ConnectionImpl> connection(
-      new internal::ConnectionImpl(name, source.To<Identity>(), source_id,
+      new internal::ConnectionImpl(source.To<Identity>(),
                                    allowed_capabilities.To<CapabilityRequest>(),
                                    Connection::State::CONNECTED));
 

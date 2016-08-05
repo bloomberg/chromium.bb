@@ -82,10 +82,9 @@ void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
                                 interface_name,
                                 std::move(handle));
   } else if (connection_ && !connection_->AllowsInterface(interface_name)) {
-    LOG(ERROR) << "Connection CapabilityFilter prevented binding to "
-               << "interface: " << interface_name << " connection_name:"
-               << connection_->GetConnectionName() << " remote_name:"
-               << connection_->GetRemoteIdentity().name();
+    LOG(ERROR) << "Capability spec prevented service: "
+               << connection_->GetRemoteIdentity().name()
+               << " from binding interface: " << interface_name;
   } else if (!default_binder_.is_null()) {
     default_binder_.Run(interface_name, std::move(handle));
   } else {

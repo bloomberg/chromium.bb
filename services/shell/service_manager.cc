@@ -175,16 +175,14 @@ class ServiceManager::Instance
     std::unique_ptr<ConnectParams> params(std::move(*connect_params));
     if (!params->connect_callback().is_null()) {
         params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
-                                       identity_.user_id(), id_);
+                                       identity_.user_id());
     }
-    uint32_t source_id = mojom::kInvalidInstanceID;
     CapabilityRequest request;
     request.interfaces.insert("*");
     Instance* source = service_manager_->GetExistingInstance(params->source());
     if (source) {
       request = GenerateCapabilityRequestForConnection(
           source->capability_spec_, identity_, capability_spec_);
-      source_id = source->id();
     }
 
     // The target has specified that sources must request one of its provided
@@ -194,11 +192,9 @@ class ServiceManager::Instance
       request.interfaces.erase("*");
     }
 
-    service_->OnConnect(
-        mojom::Identity::From(params->source()), source_id,
-        params->TakeRemoteInterfaces(), mojom::CapabilityRequest::From(request),
-        params->target().name());
-
+    service_->OnConnect(mojom::Identity::From(params->source()),
+                        params->TakeRemoteInterfaces(),
+                        mojom::CapabilityRequest::From(request));
     return true;
   }
 
@@ -208,7 +204,7 @@ class ServiceManager::Instance
     service_.set_connection_error_handler(
         base::Bind(&Instance::OnServiceLost, base::Unretained(this),
                    service_manager_->GetWeakPtr()));
-    service_->OnStart(mojom::Identity::From(identity_), id_,
+    service_->OnStart(mojom::Identity::From(identity_),
                       base::Bind(&Instance::OnInitializeResponse,
                                  base::Unretained(this)));
   }
@@ -310,13 +306,13 @@ class ServiceManager::Instance
     if (!IsValidName(identity.name())) {
       LOG(ERROR) << "Error: invalid Name: " << identity.name();
       callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
-                   mojom::kInheritUserID, mojom::kInvalidInstanceID);
+                   mojom::kInheritUserID);
       return false;
     }
     if (!base::IsValidGUID(identity.user_id())) {
       LOG(ERROR) << "Error: invalid user_id: " << identity.user_id();
       callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
-                   mojom::kInheritUserID, mojom::kInvalidInstanceID);
+                   mojom::kInheritUserID);
       return false;
     }
     return true;
@@ -333,7 +329,7 @@ class ServiceManager::Instance
                    << "target: " << target.name() << " without the "
                    << "mojo:shell{client_process} capability class.";
         callback.Run(mojom::ConnectResult::ACCESS_DENIED,
-                     mojom::kInheritUserID, mojom::kInvalidInstanceID);
+                     mojom::kInheritUserID);
         return false;
       }
 
@@ -343,7 +339,7 @@ class ServiceManager::Instance
                    << "pid_receiver_request when sending "
                    << "client_process_connection.";
         callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
-                     mojom::kInheritUserID, mojom::kInvalidInstanceID);
+                     mojom::kInheritUserID);
         return false;
       }
       if (service_manager_->GetExistingInstance(target)) {
@@ -351,7 +347,7 @@ class ServiceManager::Instance
                    << "Name: " << target.name() << " User: "
                    << target.user_id() << " Instance: " << target.instance();
         callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
-                     mojom::kInheritUserID, mojom::kInvalidInstanceID);
+                     mojom::kInheritUserID);
         return false;
       }
     }
@@ -371,7 +367,7 @@ class ServiceManager::Instance
                   << target.name() << " as: " << target.user_id() << " without "
                   << " the mojo:shell{user_id} capability class.";
       callback.Run(mojom::ConnectResult::ACCESS_DENIED,
-                   mojom::kInheritUserID, mojom::kInvalidInstanceID);
+                   mojom::kInheritUserID);
       return false;
     }
     if (!target.instance().empty() &&
@@ -381,8 +377,7 @@ class ServiceManager::Instance
                   << "connect to " << target.name() << " using Instance name: "
                   << target.instance() << " without the "
                   << "mojo:shell{instance_name} capability class.";
-      callback.Run(mojom::ConnectResult::ACCESS_DENIED,
-                   mojom::kInheritUserID, mojom::kInvalidInstanceID);
+      callback.Run(mojom::ConnectResult::ACCESS_DENIED, mojom::kInheritUserID);
       return false;
 
     }
@@ -394,8 +389,7 @@ class ServiceManager::Instance
     }
     LOG(ERROR) << "Capabilities prevented connection from: " <<
                   identity_.name() << " to: " << target.name();
-    callback.Run(mojom::ConnectResult::ACCESS_DENIED,
-                 mojom::kInheritUserID, mojom::kInvalidInstanceID);
+    callback.Run(mojom::ConnectResult::ACCESS_DENIED, mojom::kInheritUserID);
     return false;
   }
 
@@ -544,7 +538,7 @@ bool ServiceManager::OnConnect(Connection* connection) {
   // caller's instance to continue.
   Instance* instance = nullptr;
   for (const auto& entry : identity_to_instance_) {
-    if (entry.second->id() == connection->GetRemoteInstanceID()) {
+    if (entry.first == connection->GetRemoteIdentity()) {
       instance = entry.second;
       break;
     }

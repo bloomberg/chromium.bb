@@ -30,9 +30,7 @@ class ConnectionImpl : public Connection {
   // |allowed_interfaces| are the set of interfaces that the shell has allowed
   // an application to expose to another application. If this set contains only
   // the string value "*" all interfaces may be exposed.
-  ConnectionImpl(const std::string& connection_name,
-                 const Identity& remote,
-                 uint32_t remote_id,
+  ConnectionImpl(const Identity& remote,
                  const CapabilityRequest& capability_request,
                  State initial_state);
   ~ConnectionImpl() override;
@@ -57,12 +55,10 @@ class ConnectionImpl : public Connection {
  private:
   // Connection:
   bool HasCapabilityClass(const std::string& class_name) const override;
-  const std::string& GetConnectionName() override;
   const Identity& GetRemoteIdentity() const override;
   void SetConnectionLostClosure(const base::Closure& handler) override;
   shell::mojom::ConnectResult GetResult() const override;
   bool IsPending() const override;
-  uint32_t GetRemoteInstanceID() const override;
   void AddConnectionCompletedClosure(const base::Closure& callback) override;
   bool AllowsInterface(const std::string& interface_name) const override;
   InterfaceRegistry* GetInterfaceRegistry() override;
@@ -70,12 +66,9 @@ class ConnectionImpl : public Connection {
   base::WeakPtr<Connection> GetWeakPtr() override;
 
   void OnConnectionCompleted(shell::mojom::ConnectResult result,
-                             mojo::String target_user_id,
-                             uint32_t target_application_id);
+                             mojo::String target_user_id);
 
-  const std::string connection_name_;
   Identity remote_;
-  uint32_t remote_id_ = shell::mojom::kInvalidInstanceID;
 
   State state_;
   shell::mojom::ConnectResult result_ = shell::mojom::ConnectResult::SUCCEEDED;

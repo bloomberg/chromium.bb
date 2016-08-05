@@ -25,17 +25,13 @@ interface Service {
   //      be kInheritUserID.
   //    * The instance group this instance belongs to.
   //
-  //  id
-  //    A unique identifier used by the shell to identify this instance.
-  //
-  //
   // Response parameters:
   //
   //  connector_request
   //    An optional Connector request for the shell to bind, allowing the
   //    initialized client to connect to others.
   //
-  OnStart(Identity identity, uint32 id) => (Connector&? connector_request);
+  OnStart(Identity identity) => (Connector&? connector_request);
 
   // Called when another application attempts to open a connection to this
   // application. An application implements this method to complete the exchange
@@ -49,9 +45,6 @@ interface Service {
   //  source
   //    The identity of the instance originating the connection.
   //
-  //  source_id
-  //    A unique identifier used by the shell to identify the source instance.
-  //
   //  interfaces
   //    A request for an InterfaceProvider by which the source application may
   //    seek to bind interface implementations exported by the target.
@@ -62,12 +55,7 @@ interface Service {
   //    by the source and target's manifests. Attempts to bind interfaces not in
   //    this whitelist must not be fulfilled.
   //
-  //  resolved_name
-  //    The resolved name used to complete this connection.
-  //
   OnConnect(Identity source,
-            uint32 source_id,
             InterfaceProvider&? interfaces,
-            CapabilityRequest allowed_capabilities,
-            string resolved_name);
+            CapabilityRequest allowed_capabilities);
 };

@@ -124,13 +124,10 @@ interface Connector {
   //    passes kInheritUserID as the user id to Connect() which is resolved by
   //    the shell into a valid user id returned through this callback.
   //
-  //  application_id
-  //    A unique identifier for the instance that was connected to.
-  //
   Connect(Identity target,
           InterfaceProvider&? remote_interfaces,
           ClientProcessConnection? client_process_connection) =>
-      (ConnectResult result, string user_id, uint32 application_id);
+      (ConnectResult result, string user_id);
 
   // Clones this Connector so it can be passed to another thread.
   Clone(Connector& request);

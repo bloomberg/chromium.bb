@@ -50,13 +50,10 @@ interface ClientProcessTest {
 };
 
 struct ConnectionState {
-  string connection_local_name;
   string connection_remote_name;
   string connection_remote_userid;
-  uint32 connection_remote_id;
   string initialize_local_name;
   string initialize_userid;
-  uint32 initialize_id;
 };
 
 interface ExposedInterface {

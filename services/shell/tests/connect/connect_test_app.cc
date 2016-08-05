@@ -67,12 +67,9 @@ class ConnectTestApp : public Service,
     connection->AddInterface<test::mojom::BlockedInterface>(this);
     connection->AddInterface<test::mojom::UserIdTest>(this);
 
-    uint32_t remote_id = connection->GetRemoteInstanceID();
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
-    state->connection_local_name = connection->GetConnectionName();
     state->connection_remote_name = connection->GetRemoteIdentity().name();
     state->connection_remote_userid = connection->GetRemoteIdentity().user_id();
-    state->connection_remote_id = remote_id;
     state->initialize_local_name = identity_.name();
     state->initialize_userid = identity_.user_id();
 
