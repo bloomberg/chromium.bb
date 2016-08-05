@@ -164,6 +164,7 @@ class PermissionsBubbleDialogDelegateView
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
+  int GetDefaultDialogButton() const override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
@@ -302,6 +303,13 @@ void PermissionsBubbleDialogDelegateView::GetAccessibleState(
     ui::AXViewState* state) {
   views::BubbleDialogDelegateView::GetAccessibleState(state);
   state->role = ui::AX_ROLE_ALERT_DIALOG;
+}
+
+int PermissionsBubbleDialogDelegateView::GetDefaultDialogButton() const {
+  // To prevent permissions being accepted accidentally, and as a security
+  // measure against crbug.com/619429, permission prompts should not be accepted
+  // as the default action.
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 int PermissionsBubbleDialogDelegateView::GetDialogButtons() const {
