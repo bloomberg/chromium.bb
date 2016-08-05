@@ -439,6 +439,9 @@ def UpdateClang(args):
   Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
   if sys.platform == 'win32' or use_head_revision:
     Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
+  else:
+    # Remove potential stale lld checkouts on the slaves.
+    RmTree(LLD_DIR)
   Checkout('compiler-rt', LLVM_REPO_URL + '/compiler-rt/trunk', COMPILER_RT_DIR)
   if sys.platform == 'darwin':
     # clang needs a libc++ checkout, else -stdlib=libc++ won't find includes
