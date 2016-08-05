@@ -22,12 +22,14 @@ const char kTestExperimentGroupName[] = "GroupNameShouldNotMatter";
 
 ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
     base::FeatureList::OverrideState feature_state,
-    const std::string& maximum_activation_state) {
+    const std::string& maximum_activation_state,
+    const std::string& activation_scope) {
   base::FeatureList::ClearInstanceForTesting();
   variations::testing::ClearAllVariationParams();
 
   std::map<std::string, std::string> variation_params;
   variation_params[kActivationStateParameterName] = maximum_activation_state;
+  variation_params[kActivationScopeParameterName] = activation_scope;
   EXPECT_TRUE(variations::AssociateVariationParams(
       kTestFieldTrialName, kTestExperimentGroupName, variation_params));
 

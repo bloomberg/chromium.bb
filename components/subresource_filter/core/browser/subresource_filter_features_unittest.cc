@@ -40,8 +40,93 @@ TEST(SubresourceFilterFeaturesTest, ActivationState) {
     testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        test_case.activation_state_param);
+        test_case.activation_state_param, kActivationScopeNoSites);
 
+    EXPECT_EQ(test_case.expected_activation_state, GetMaximumActivationState());
+    EXPECT_EQ(ActivationScope::NO_SITES, GetCurrentActivationScope());
+  }
+}
+
+TEST(SubresourceFilterFeaturesTest, ActivationScope) {
+  const struct {
+    bool feature_enabled;
+    const char* activation_scope_param;
+    ActivationScope expected_activation_scope;
+  } kTestCases[] = {
+      {false, "", ActivationScope::NO_SITES},
+      {false, "no_sites", ActivationScope::NO_SITES},
+      {false, "allsites", ActivationScope::NO_SITES},
+      {false, "enabled", ActivationScope::NO_SITES},
+      {false, "%$ garbage !%", ActivationScope::NO_SITES},
+      {true, "", ActivationScope::NO_SITES},
+      {true, "nosites", ActivationScope::NO_SITES},
+      {true, "No_sites", ActivationScope::NO_SITES},
+      {true, "no_sites", ActivationScope::NO_SITES},
+      {true, "%$ garbage !%", ActivationScope::NO_SITES},
+      {true, kActivationScopeAllSites, ActivationScope::ALL_SITES},
+      {true, kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
+    SCOPED_TRACE(::testing::Message("ActivationScopeParam = \"")
+                 << test_case.activation_scope_param << "\"");
+
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+        test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                                  : base::FeatureList::OVERRIDE_USE_DEFAULT,
+        kActivationStateDisabled, test_case.activation_scope_param);
+
+    EXPECT_EQ(ActivationState::DISABLED, GetMaximumActivationState());
+    EXPECT_EQ(test_case.expected_activation_scope, GetCurrentActivationScope());
+  }
+}
+
+TEST(SubresourceFilterFeaturesTest, ActivationStateAndScope) {
+  const struct {
+    bool feature_enabled;
+    const char* activation_state_param;
+    ActivationState expected_activation_state;
+    const char* activation_scope_param;
+    ActivationScope expected_activation_scope;
+  } kTestCases[] = {
+      {false, kActivationStateDisabled, ActivationState::DISABLED,
+       kActivationScopeNoSites, ActivationScope::NO_SITES},
+      {true, kActivationStateDisabled, ActivationState::DISABLED,
+       kActivationScopeNoSites, ActivationScope::NO_SITES},
+      {true, kActivationStateDisabled, ActivationState::DISABLED,
+       kActivationScopeAllSites, ActivationScope::ALL_SITES},
+      {true, kActivationStateDisabled, ActivationState::DISABLED,
+       kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST},
+      {true, kActivationStateDisabled, ActivationState::DISABLED,
+       kActivationScopeAllSites, ActivationScope::ALL_SITES},
+      {true, kActivationStateDryRun, ActivationState::DRYRUN,
+       kActivationScopeNoSites, ActivationScope::NO_SITES},
+      {true, kActivationStateDryRun, ActivationState::DRYRUN,
+       kActivationScopeAllSites, ActivationScope::ALL_SITES},
+      {true, kActivationStateDryRun, ActivationState::DRYRUN,
+       kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST},
+      {true, kActivationStateDryRun, ActivationState::DRYRUN,
+       kActivationScopeAllSites, ActivationScope::ALL_SITES},
+      {true, kActivationStateEnabled, ActivationState::ENABLED,
+       kActivationScopeNoSites, ActivationScope::NO_SITES},
+      {true, kActivationStateEnabled, ActivationState::ENABLED,
+       kActivationScopeAllSites, ActivationScope::ALL_SITES},
+      {true, kActivationStateEnabled, ActivationState::ENABLED,
+       kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST},
+      {true, kActivationStateEnabled, ActivationState::ENABLED,
+       kActivationScopeAllSites, ActivationScope::ALL_SITES},
+      {false, kActivationStateEnabled, ActivationState::DISABLED,
+       kActivationScopeAllSites, ActivationScope::NO_SITES}};
+
+  for (const auto& test_case : kTestCases) {
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+        test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                                  : base::FeatureList::OVERRIDE_USE_DEFAULT,
+        test_case.activation_state_param, test_case.activation_scope_param);
+
+    EXPECT_EQ(test_case.expected_activation_scope, GetCurrentActivationScope());
     EXPECT_EQ(test_case.expected_activation_state, GetMaximumActivationState());
   }
 }

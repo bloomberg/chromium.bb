@@ -64,6 +64,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'subresource_filter/core/common/activation_scope.cc',
+        'subresource_filter/core/common/activation_scope.h',
         'subresource_filter/core/common/activation_state.cc',
         'subresource_filter/core/common/activation_state.h',
         'subresource_filter/core/common/closed_hash_map.h',

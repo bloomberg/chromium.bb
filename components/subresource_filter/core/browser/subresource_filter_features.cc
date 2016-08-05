@@ -19,6 +19,11 @@ const char kActivationStateDryRun[] = "dryrun";
 const char kActivationStateEnabled[] = "enabled";
 const char kActivationStateDisabled[] = "disabled";
 
+const char kActivationScopeParameterName[] = "activation_scope";
+const char kActivationScopeAllSites[] = "all_sites";
+const char kActivationScopeActivationList[] = "activation_list";
+const char kActivationScopeNoSites[] = "no_sites";
+
 ActivationState GetMaximumActivationState() {
   std::string activation_state = variations::GetVariationParamValueByFeature(
       kSafeBrowsingSubresourceFilter, kActivationStateParameterName);
@@ -27,6 +32,17 @@ ActivationState GetMaximumActivationState() {
   else if (base::LowerCaseEqualsASCII(activation_state, kActivationStateDryRun))
     return ActivationState::DRYRUN;
   return ActivationState::DISABLED;
+}
+
+ActivationScope GetCurrentActivationScope() {
+  std::string activation_scope = variations::GetVariationParamValueByFeature(
+      kSafeBrowsingSubresourceFilter, kActivationScopeParameterName);
+  if (base::LowerCaseEqualsASCII(activation_scope, kActivationScopeAllSites))
+    return ActivationScope::ALL_SITES;
+  else if (base::LowerCaseEqualsASCII(activation_scope,
+                                      kActivationScopeActivationList))
+    return ActivationScope::ACTIVATION_LIST;
+  return ActivationScope::NO_SITES;
 }
 
 }  // namespace subresource_filter

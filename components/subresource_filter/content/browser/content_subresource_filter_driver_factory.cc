@@ -82,7 +82,8 @@ void ContentSubresourceFilterDriverFactory::AddOriginOfURLToActivationSet(
 void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
     content::RenderFrameHost* render_frame_host,
     const GURL& url) {
-  if (!ShouldActivateForURL(url))
+  if (GetCurrentActivationScope() != ActivationScope::ACTIVATION_LIST ||
+      !ShouldActivateForURL(url))
     return;
   ContentSubresourceFilterDriver* driver =
       DriverFromFrameHost(render_frame_host);
@@ -121,9 +122,10 @@ void ContentSubresourceFilterDriverFactory::DidStartProvisionalLoadForFrame(
     const GURL& validated_url,
     bool is_error_page,
     bool is_iframe_srcdoc) {
-  // TODO(melandory): Replace placeholder with actual activation logic.
-  DriverFromFrameHost(render_frame_host)
-      ->ActivateForProvisionalLoad(GetMaximumActivationState());
+  if (GetCurrentActivationScope() == ActivationScope::ALL_SITES) {
+    DriverFromFrameHost(render_frame_host)
+        ->ActivateForProvisionalLoad(GetMaximumActivationState());
+  }
 }
 
 }  // namespace subresource_filter

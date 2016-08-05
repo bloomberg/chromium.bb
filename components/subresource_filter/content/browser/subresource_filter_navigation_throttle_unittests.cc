@@ -113,7 +113,8 @@ class SubresourceFilterNavigationThrottleTest
 TEST_F(SubresourceFilterNavigationThrottleTest, RequestWithoutRedirects) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled);
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
 
   const GURL url(kExampleURL);
   SetUpNavigationHandleForURL(url);
@@ -134,7 +135,8 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
        RequestWithoutRedirectsNoActivation) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled);
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
 
   const GURL url_with_activation(kExampleURL);
   const GURL url_without_activation(kTestURL);
@@ -159,7 +161,8 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
        RequestToNonWebURLNoActivation) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled);
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
 
   const GURL non_web_url(kNonWebURL);
 
@@ -185,7 +188,8 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   // Test checks that both |url| and |redirect| are in the activation set.
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled);
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
 
   const GURL url(kExampleURL);
   const GURL redirect(kRedirectURLFirst);
@@ -215,7 +219,8 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   // are in the activation set.
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled);
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
 
   const GURL url(kExampleURL);
   const GURL redirect_after_sb_classification(kTestURL);
@@ -251,7 +256,8 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
        RequestRedirectWithMatchRedirectTest) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled);
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
 
   const GURL init_url(kExampleURL);
   const GURL redirect_with_match(kRedirectURLFirst);

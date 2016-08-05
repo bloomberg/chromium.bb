@@ -4,9 +4,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -105,17 +108,44 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitWithRedirects) {
   }
 }
 
-TEST_F(ContentSubresourceFilterDriverFactoryTest, ActivateForFrameHostNeeded) {
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       ActivateForFrameHostNotNeeded) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeNoSites);
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
+  factory()->ActivateForFrameHostIfNeeded(main_rfh(), GURL("https://test.com"));
+  ::testing::Mock::VerifyAndClearExpectations(driver());
+
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
       GURL("https://example.com/soceng?q=engsoc"), std::vector<GURL>(),
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
-  factory()->ActivateForFrameHostIfNeeded(main_rfh(), GURL("https://test.com"));
 
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
+  factory()->ActivateForFrameHostIfNeeded(main_rfh(),
+                                          GURL("https://example.com"));
   ::testing::Mock::VerifyAndClearExpectations(driver());
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest, ActivateForFrameHostNeeded) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
+
+  factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
+      GURL("https://example.com/soceng?q=engsoc"), std::vector<GURL>(),
+      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
+
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
+  factory()->ActivateForFrameHostIfNeeded(main_rfh(), GURL("https://test.com"));
+  ::testing::Mock::VerifyAndClearExpectations(driver());
+
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(1);
   factory()->ActivateForFrameHostIfNeeded(main_rfh(),
                                           GURL("https://example.com"));
+  ::testing::Mock::VerifyAndClearExpectations(driver());
 }
 
 TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest, NonSocEngHit) {
@@ -146,7 +176,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest, NonSocEngHit) {
 INSTANTIATE_TEST_CASE_P(
     NoSonEngHit,
     ContentSubresourceFilterDriverFactoryThreatTypeTest,
-    testing::Values(
+    ::testing::Values(
         safe_browsing::ThreatPatternType::NONE,
         safe_browsing::ThreatPatternType::MALWARE_LANDING,
         safe_browsing::ThreatPatternType::MALWARE_DISTRIBUTION,

@@ -63,7 +63,8 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
  protected:
   void SetUpOnMainThread() override {
     scoped_feature_toggle_.reset(new ScopedSubresourceFilterFeatureToggle(
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled));
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+        kActivationScopeAllSites));
   }
 
   content::WebContents* web_contents() {

@@ -163,7 +163,8 @@ TEST_F(SubresourceFilterComponentInstallerTest,
   base::FieldTrialList field_trial_list(nullptr);
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
       scoped_feature_toggle(base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-                            subresource_filter::kActivationStateEnabled);
+                            subresource_filter::kActivationStateEnabled,
+                            subresource_filter::kActivationScopeNoSites);
   std::unique_ptr<SubresourceFilterMockComponentUpdateService>
       component_updater(new SubresourceFilterMockComponentUpdateService());
   EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(0);
@@ -176,7 +177,8 @@ TEST_F(SubresourceFilterComponentInstallerTest,
   base::FieldTrialList field_trial_list(nullptr);
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
       scoped_feature_toggle(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                            subresource_filter::kActivationStateDisabled);
+                            subresource_filter::kActivationStateDisabled,
+                            subresource_filter::kActivationScopeNoSites);
   std::unique_ptr<SubresourceFilterMockComponentUpdateService>
       component_updater(new SubresourceFilterMockComponentUpdateService());
   EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(1);

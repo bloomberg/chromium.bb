@@ -20,7 +20,8 @@ class ScopedSubresourceFilterFeatureToggle {
  public:
   ScopedSubresourceFilterFeatureToggle(
       base::FeatureList::OverrideState feature_state,
-      const std::string& maximum_activation_state);
+      const std::string& maximum_activation_state,
+      const std::string& activation_scope);
   ~ScopedSubresourceFilterFeatureToggle();
 
  private:
