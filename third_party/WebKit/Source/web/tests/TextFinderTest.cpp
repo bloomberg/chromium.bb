@@ -77,9 +77,8 @@ TEST_F(TextFinderTest, FindTextSimple)
     WebString searchText(String("FindMe"));
     WebFindOptions findOptions; // Default.
     bool wrapWithinFrame = true;
-    WebRect* selectionRect = nullptr;
 
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     Range* activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textNode, activeMatch->startContainer());
@@ -88,7 +87,7 @@ TEST_F(TextFinderTest, FindTextSimple)
     EXPECT_EQ(10, activeMatch->endOffset());
 
     findOptions.findNext = true;
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textNode, activeMatch->startContainer());
@@ -97,7 +96,7 @@ TEST_F(TextFinderTest, FindTextSimple)
     EXPECT_EQ(20, activeMatch->endOffset());
 
     // Should wrap to the first match.
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textNode, activeMatch->startContainer());
@@ -110,7 +109,7 @@ TEST_F(TextFinderTest, FindTextSimple)
     findOptions = WebFindOptions();
     findOptions.forward = false;
 
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textNode, activeMatch->startContainer());
@@ -119,7 +118,7 @@ TEST_F(TextFinderTest, FindTextSimple)
     EXPECT_EQ(20, activeMatch->endOffset());
 
     findOptions.findNext = true;
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textNode, activeMatch->startContainer());
@@ -128,7 +127,7 @@ TEST_F(TextFinderTest, FindTextSimple)
     EXPECT_EQ(10, activeMatch->endOffset());
 
     // Wrap to the first match (last occurence in the document).
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textNode, activeMatch->startContainer());
@@ -146,7 +145,6 @@ TEST_F(TextFinderTest, FindTextAutosizing)
     WebString searchText(String("FindMe"));
     WebFindOptions findOptions; // Default.
     bool wrapWithinFrame = true;
-    WebRect* selectionRect = nullptr;
 
     // Set viewport scale to 20 in order to simulate zoom-in
     VisualViewport& visualViewport = document().page()->frameHost().visualViewport();
@@ -159,7 +157,7 @@ TEST_F(TextFinderTest, FindTextAutosizing)
     document().updateStyleAndLayout();
 
     // In case of autosizing, scale _should_ change
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     ASSERT_TRUE(textFinder().activeMatch());
     ASSERT_EQ(1, visualViewport.scale()); // in this case to 1
 
@@ -169,7 +167,7 @@ TEST_F(TextFinderTest, FindTextAutosizing)
     document().textAutosizer()->updatePageInfo();
     document().updateStyleAndLayout();
 
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     ASSERT_TRUE(textFinder().activeMatch());
     ASSERT_EQ(20, visualViewport.scale());
 }
@@ -183,9 +181,8 @@ TEST_F(TextFinderTest, FindTextNotFound)
     WebString searchText(String("Boo"));
     WebFindOptions findOptions; // Default.
     bool wrapWithinFrame = true;
-    WebRect* selectionRect = nullptr;
 
-    EXPECT_FALSE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    EXPECT_FALSE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     EXPECT_FALSE(textFinder().activeMatch());
 }
 
@@ -203,12 +200,11 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     WebString searchText(String("foo"));
     WebFindOptions findOptions; // Default.
     bool wrapWithinFrame = true;
-    WebRect* selectionRect = nullptr;
 
     // TextIterator currently returns the matches in the flat treeorder, so
     // in this case the matches will be returned in the order of
     // <i> -> <u> -> <b>.
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     Range* activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInIElement, activeMatch->startContainer());
@@ -217,7 +213,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     EXPECT_EQ(3, activeMatch->endOffset());
 
     findOptions.findNext = true;
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInUElement, activeMatch->startContainer());
@@ -225,7 +221,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     EXPECT_EQ(textInUElement, activeMatch->endContainer());
     EXPECT_EQ(3, activeMatch->endOffset());
 
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInBElement, activeMatch->startContainer());
@@ -234,7 +230,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     EXPECT_EQ(3, activeMatch->endOffset());
 
     // Should wrap to the first match.
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInIElement, activeMatch->startContainer());
@@ -247,7 +243,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     findOptions = WebFindOptions();
     findOptions.forward = false;
 
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInBElement, activeMatch->startContainer());
@@ -256,7 +252,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     EXPECT_EQ(3, activeMatch->endOffset());
 
     findOptions.findNext = true;
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInUElement, activeMatch->startContainer());
@@ -264,7 +260,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     EXPECT_EQ(textInUElement, activeMatch->endContainer());
     EXPECT_EQ(3, activeMatch->endOffset());
 
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInIElement, activeMatch->startContainer());
@@ -273,7 +269,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     EXPECT_EQ(3, activeMatch->endOffset());
 
     // And wrap.
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInBElement, activeMatch->startContainer());
@@ -419,7 +415,6 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM)
     WebString searchText(String("FindMe"));
     WebFindOptions findOptions; // Default.
     bool wrapWithinFrame = true;
-    WebRect* selectionRect = nullptr;
     bool activeNow;
 
     textFinder().resetMatchCount();
@@ -428,9 +423,9 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM)
         runPendingTasks();
 
     findOptions.findNext = true;
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect, &activeNow));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, &activeNow));
     EXPECT_TRUE(activeNow);
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect, &activeNow));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, &activeNow));
     EXPECT_TRUE(activeNow);
 
     // Add new text to DOM and try FindNext.
@@ -439,7 +434,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM)
     iElement->setInnerHTML("ZZFindMe", ASSERT_NO_EXCEPTION);
     document().updateStyleAndLayout();
 
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect, &activeNow));
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, &activeNow));
     Range* activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_FALSE(activeNow);

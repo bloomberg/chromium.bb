@@ -5216,7 +5216,6 @@ void RenderFrameImpl::OnFind(int request_id,
     return;
   }
 
-  WebRect selection_rect;
   bool active_now = false;
 
   // If something is selected when we start searching it means we cannot just
@@ -5224,8 +5223,7 @@ void RenderFrameImpl::OnFind(int request_id,
   WebRange current_selection = frame_->selectionRange();
 
   bool result = frame_->find(request_id, search_text, options,
-                             false /* wrapWithinFrame */, &selection_rect,
-                             &active_now);
+                             false /* wrapWithinFrame */, &active_now);
   if (result && !options.findNext) {
     // Indicate that at least one match has been found. 1 here means possibly
     // more matches could be coming. -1 here means that the exact active match

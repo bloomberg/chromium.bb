@@ -333,7 +333,6 @@ public:
         const WebString& searchText,
         const WebFindOptions&,
         bool wrapWithinFrame,
-        WebRect* selectionRect,
         bool* activeNow = nullptr) = 0;
 
     // Notifies the frame that we are no longer interested in searching.

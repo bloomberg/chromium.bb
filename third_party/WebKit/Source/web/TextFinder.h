@@ -58,7 +58,7 @@ public:
 
     bool find(
         int identifier, const WebString& searchText, const WebFindOptions&,
-        bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow = nullptr);
+        bool wrapWithinFrame, bool* activeNow = nullptr);
     void clearActiveFindMatch();
     void stopFindingAndClearSelection();
     void scopeStringMatches(

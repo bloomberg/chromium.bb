@@ -3550,7 +3550,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
     WebFindOptions options;
 
     // Find in a <div> element.
-    EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar1"), options, false, 0));
+    EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar1"), options, false));
     frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     WebRange range = frame->selectionRange();
     EXPECT_EQ(5, range.startOffset());
@@ -3558,7 +3558,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
     EXPECT_TRUE(frame->document().focusedElement().isNull());
 
     // Find in an <input> value.
-    EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar2"), options, false, 0));
+    EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar2"), options, false));
     // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the selection on the found text.
     frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     range = frame->selectionRange();
@@ -3568,7 +3568,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
     EXPECT_TRUE(frame->document().focusedElement().hasHTMLTagName("input"));
 
     // Find in a <textarea> content.
-    EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar3"), options, false, 0));
+    EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar3"), options, false));
     // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the selection on the found text.
     frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     range = frame->selectionRange();
@@ -3578,7 +3578,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
     EXPECT_TRUE(frame->document().focusedElement().hasHTMLTagName("textarea"));
 
     // Find in a contentEditable element.
-    EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar4"), options, false, 0));
+    EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar4"), options, false));
     // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the selection on the found text.
     frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     range = frame->selectionRange();
@@ -3589,7 +3589,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
     EXPECT_TRUE(frame->document().focusedElement().hasHTMLTagName("div"));
 
     // Find in <select> content.
-    EXPECT_FALSE(frame->find(findIdentifier, WebString::fromUTF8("bar5"), options, false, 0));
+    EXPECT_FALSE(frame->find(findIdentifier, WebString::fromUTF8("bar5"), options, false));
     // If there are any matches, stopFinding will set the selection on the found text.
     // However, we do not expect any matches, so check that the selection is null.
     frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
@@ -3746,7 +3746,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
-    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
 
     mainFrame->resetMatchCount();
 
@@ -3806,14 +3806,14 @@ TEST_F(WebFrameTest, FindInPageActiveIndex)
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
-    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
     mainFrame->resetMatchCount();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
-    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
     mainFrame->stopFinding(WebLocalFrame::StopFindActionClearSelection);
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
@@ -3826,7 +3826,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex)
     const char* kFindStringNew = "e";
     WebString searchTextNew = WebString::fromUTF8(kFindStringNew);
 
-    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchTextNew, options, false, 0));
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchTextNew, options, false));
     mainFrame->resetMatchCount();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
@@ -3860,8 +3860,8 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
     // Detach the frame before finding.
     removeElementById(mainFrame, "frame");
 
-    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
-    EXPECT_FALSE(secondFrame->find(kFindIdentifier, searchText, options, false, 0));
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
+    EXPECT_FALSE(secondFrame->find(kFindIdentifier, searchText, options, false));
 
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
@@ -3896,7 +3896,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false)) {
         webViewHelper.webView()->setFocusedFrame(frame);
-        EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
+        EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false));
     }
 
     runPendingTasks();
@@ -3935,7 +3935,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false)) {
         webViewHelper.webView()->setFocusedFrame(frame);
-        EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
+        EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false));
     }
 
     runPendingTasks();
@@ -3975,7 +3975,7 @@ TEST_P(ParameterizedWebFrameTest, ResetMatchCount)
     EXPECT_TRUE(!!mainFrame->traverseNext(false));
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        EXPECT_FALSE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
+        EXPECT_FALSE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false));
 
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
@@ -4000,7 +4000,7 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks)
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
-    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
 
     mainFrame->resetMatchCount();
     mainFrame->scopeStringMatches(kFindIdentifier, searchText, options, true);
@@ -4062,7 +4062,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOM)
 
     // Find in a <div> element.
     options.findNext = true;
-    EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, 0, &activeNow));
+    EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, &activeNow));
     EXPECT_TRUE(activeNow);
 
     // Insert new text, which contains occurence of |searchText|.
@@ -4072,11 +4072,11 @@ TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOM)
         "document.body.insertBefore(newTextNode, textArea);"));
 
     // Find in a <input> element.
-    EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, 0, &activeNow));
+    EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, &activeNow));
     EXPECT_TRUE(activeNow);
 
     // Find in the inserted text node.
-    EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, 0, &activeNow));
+    EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, &activeNow));
     frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     WebRange range = frame->selectionRange();
     EXPECT_EQ(5, range.startOffset());

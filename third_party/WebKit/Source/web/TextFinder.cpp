@@ -112,7 +112,7 @@ private:
     const bool m_reset;
 };
 
-bool TextFinder::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow)
+bool TextFinder::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, bool* activeNow)
 {
     if (!options.findNext)
         unmarkAllTextMatches();
@@ -196,10 +196,8 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
             else if (m_activeMatchIndex < 0)
                 m_activeMatchIndex = m_lastMatchCount - 1;
         }
-        if (selectionRect) {
-            *selectionRect = ownerFrame().frameView()->contentsToRootFrame(m_activeMatch->boundingBox());
-            reportFindInPageSelection(*selectionRect, m_activeMatchIndex + 1, identifier);
-        }
+        WebRect selectionRect = ownerFrame().frameView()->contentsToRootFrame(m_activeMatch->boundingBox());
+        reportFindInPageSelection(selectionRect, m_activeMatchIndex + 1, identifier);
     }
 
     return true;

@@ -1955,7 +1955,7 @@ void WebLocalFrameImpl::didCallIsSearchProviderInstalled()
     UseCounter::count(frame(), UseCounter::ExternalIsSearchProviderInstalled);
 }
 
-bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow)
+bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, bool* activeNow)
 {
     if (!frame())
         return false;
@@ -1972,7 +1972,7 @@ bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const 
     // on TextIterator to look over the text.
     frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect, activeNow);
+    return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, activeNow);
 }
 
 void WebLocalFrameImpl::stopFinding(StopFindAction action)
