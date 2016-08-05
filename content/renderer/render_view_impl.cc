@@ -149,6 +149,7 @@
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
 #include "third_party/WebKit/public/web/WebRange.h"
+#include "third_party/WebKit/public/web/WebRenderTheme.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
@@ -157,7 +158,6 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
-#include "third_party/WebKit/public/web/default/WebRenderTheme.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -2452,11 +2452,11 @@ void RenderViewImpl::OnSetRendererPrefs(
   renderer_preferences_ = renderer_prefs;
 
   UpdateFontRenderingFromRendererPrefs();
+  blink::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
 
 #if defined(USE_DEFAULT_RENDER_THEME)
   if (renderer_prefs.use_custom_colors) {
     blink::setFocusRingColor(renderer_prefs.focus_ring_color);
-    blink::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
 
     if (webview()) {
       webview()->setSelectionColors(

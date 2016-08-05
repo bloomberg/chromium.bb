@@ -201,11 +201,6 @@ void LayoutThemeDefault::adjustSliderThumbSize(ComputedStyle& style) const
     }
 }
 
-void LayoutThemeDefault::setCaretBlinkInterval(double interval)
-{
-    m_caretBlinkInterval = interval;
-}
-
 void LayoutThemeDefault::setSelectionColors(
     unsigned activeBackgroundColor,
     unsigned activeForegroundColor,
@@ -286,7 +281,7 @@ double LayoutThemeDefault::caretBlinkInterval() const
     if (LayoutTestSupport::isRunningLayoutTest())
         return 0;
 
-    return m_caretBlinkInterval;
+    return LayoutTheme::caretBlinkInterval();
 }
 
 void LayoutThemeDefault::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily) const

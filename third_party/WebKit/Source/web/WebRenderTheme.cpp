@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/default/WebRenderTheme.h"
+#include "public/web/WebRenderTheme.h"
 
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutThemeDefault.h"
@@ -37,11 +37,9 @@
 
 namespace blink {
 
-// TODO(esprehn): Make sense of LayoutThemeDefault and LayoutTheme::theme().
-
 void setCaretBlinkInterval(double interval)
 {
-    LayoutThemeDefault::setCaretBlinkInterval(interval);
+    LayoutTheme::theme().setCaretBlinkInterval(interval);
 }
 
 void setFocusRingColor(WebColor color)

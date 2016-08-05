@@ -148,11 +148,6 @@
                         ['exclude', 'mac/WebScrollbarTheme.cpp$'],
                     ],
                 }],
-                ['use_default_render_theme==0', {
-                    'sources/': [
-                        ['exclude', 'default/WebRenderTheme.cpp'],
-                    ],
-                }],
             ],
             'direct_dependent_settings': {
                 'include_dirs': [

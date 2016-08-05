@@ -649,6 +649,16 @@ void LayoutTheme::platformColorsDidChange()
     Page::platformColorsChanged();
 }
 
+void LayoutTheme::setCaretBlinkInterval(double interval)
+{
+    m_caretBlinkInterval = interval;
+}
+
+double LayoutTheme::caretBlinkInterval() const
+{
+    return m_caretBlinkInterval;
+}
+
 static FontDescription& getCachedFontDescription(CSSValueID systemFontID)
 {
     DEFINE_STATIC_LOCAL(FontDescription, caption, ());

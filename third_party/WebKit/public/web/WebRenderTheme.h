@@ -31,8 +31,8 @@
 #ifndef WebRenderTheme_h
 #define WebRenderTheme_h
 
-#include "../../platform/WebColor.h"
-#include "../../platform/WebCommon.h"
+#include "../platform/WebColor.h"
+#include "../platform/WebCommon.h"
 
 namespace blink {
 

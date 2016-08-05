@@ -130,7 +130,8 @@ public:
     virtual Color platformDefaultCompositionBackgroundColor() const { return defaultCompositionBackgroundColor; }
     virtual void platformColorsDidChange();
 
-    virtual double caretBlinkInterval() const { return 0.5; }
+    void setCaretBlinkInterval(double);
+    virtual double caretBlinkInterval() const;
 
     // System fonts and colors for CSS.
     virtual void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const = 0;
@@ -242,6 +243,7 @@ private:
 
     Color m_customFocusRingColor;
     bool m_hasCustomFocusRingColor;
+    double m_caretBlinkInterval = 0.5;
 
     // This color is expected to be drawn on a semi-transparent overlay,
     // making it more transparent than its alpha value indicates.

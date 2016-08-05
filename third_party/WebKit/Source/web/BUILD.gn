@@ -42,10 +42,6 @@ component("web") {
 
   sources = web_gypi.web_files
 
-  if (!use_default_render_theme) {
-    sources -= [ "default/WebRenderTheme.cpp" ]
-  }
-
   if (is_android) {
     set_sources_assignment_filter([])
     sources += [ "linux/WebFontRendering.cpp" ]

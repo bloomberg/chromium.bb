@@ -61,8 +61,6 @@ public:
     int sliderTickOffsetFromTrackCenter() const override;
     void adjustSliderThumbSize(ComputedStyle&) const override;
 
-    static void setCaretBlinkInterval(double);
-
     void setCheckboxSize(ComputedStyle&) const override;
     void setRadioSize(ComputedStyle&) const override;
     void adjustInnerSpinButtonStyle(ComputedStyle&) const override;
