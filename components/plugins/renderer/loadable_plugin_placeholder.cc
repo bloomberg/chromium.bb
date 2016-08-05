@@ -263,7 +263,8 @@ void LoadablePluginPlaceholder::OnLoadBlockedPlugins(
     return;
 
   RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_UI"));
-  MarkPluginEssential(PluginInstanceThrottler::UNTHROTTLE_METHOD_DO_NOT_RECORD);
+  MarkPluginEssential(
+      PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_OMNIBOX_ICON);
   LoadPlugin();
 }
 
