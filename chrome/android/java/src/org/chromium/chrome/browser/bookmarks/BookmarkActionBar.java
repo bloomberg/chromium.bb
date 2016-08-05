@@ -123,9 +123,13 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
         } else if (menuItem.getItemId() == R.id.selection_open_in_new_tab_id) {
             openBookmarksInNewTabs(mDelegate.getSelectedBookmarks(), new TabDelegate(false),
                     mDelegate.getModel());
+            mDelegate.clearSelection();
+            return true;
         } else if (menuItem.getItemId() == R.id.selection_open_in_incognito_tab_id) {
             openBookmarksInNewTabs(mDelegate.getSelectedBookmarks(), new TabDelegate(true),
                     mDelegate.getModel());
+            mDelegate.clearSelection();
+            return true;
         }
 
         assert false : "Unhandled menu click.";
