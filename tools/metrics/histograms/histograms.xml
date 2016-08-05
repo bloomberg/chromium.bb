@@ -17637,6 +17637,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.DestroyProgramManagerPrograms.Elapsed" units="ms">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The amount of time spent destroying programs during ProgramManager::Destroy.
+  </summary>
+</histogram>
+
+<histogram name="GPU.DestroyProgramManagerPrograms.Programs" units="programs">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The number of progams destroyed during ProgramManager::Destroy.
+  </summary>
+</histogram>
+
+<histogram name="GPU.DestroyProgramManagerPrograms.ProgramsPerMs"
+    units="programs per ms">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The number of programs destroyed per millisecond during
+    ProgramManager::Destroy. Only logged if both the number of programs and the
+    elapsed time are greater than zero.
+  </summary>
+</histogram>
+
 <histogram name="GPU.DoLinkProgramTime" units="ms">
   <owner>jmadill@chromium.org</owner>
   <summary>
