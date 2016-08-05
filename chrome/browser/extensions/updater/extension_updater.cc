@@ -50,9 +50,9 @@ typedef extensions::ExtensionDownloaderDelegate::PingResult PingResult;
 
 namespace {
 
-// Wait at least 5 minutes after browser startup before we do any checks. If you
-// change this value, make sure to update comments where it is used.
-const int kStartupWaitSeconds = 60 * 5;
+// Wait at least 60 seconds after browser startup before we do any checks. If
+// you change this value, make sure to update comments where it is used.
+const int kStartupWaitSeconds = 60;
 
 // For sanity checking on update frequency - enforced in release mode only.
 #if defined(NDEBUG)
@@ -172,42 +172,28 @@ TimeDelta ExtensionUpdater::DetermineFirstCheckDelay() {
   if (frequency_seconds_ < kStartupWaitSeconds)
     return TimeDelta::FromSeconds(frequency_seconds_);
 
-  // If we've never scheduled a check before, start at frequency_seconds_.
+  // If we've never scheduled a check before, start at a random time up to
+  // frequency_seconds_ away.
   if (!prefs_->HasPrefPath(pref_names::kNextUpdateCheck))
-    return TimeDelta::FromSeconds(frequency_seconds_);
+    return TimeDelta::FromSeconds(
+        RandInt(kStartupWaitSeconds, frequency_seconds_));
 
-  // If it's been a long time since our last actual check, we want to do one
-  // relatively soon.
-  Time now = Time::Now();
-  Time last = Time::FromInternalValue(prefs_->GetInt64(
-      pref_names::kLastUpdateCheck));
-  int days = (now - last).InDays();
-  if (days >= 30) {
-    // Wait 5-10 minutes.
-    return TimeDelta::FromSeconds(RandInt(kStartupWaitSeconds,
-                                          kStartupWaitSeconds * 2));
-  } else if (days >= 14) {
-    // Wait 10-20 minutes.
-    return TimeDelta::FromSeconds(RandInt(kStartupWaitSeconds * 2,
-                                          kStartupWaitSeconds * 4));
-  } else if (days >= 3) {
-    // Wait 20-40 minutes.
-    return TimeDelta::FromSeconds(RandInt(kStartupWaitSeconds * 4,
-                                          kStartupWaitSeconds * 8));
-  }
-
-  // Read the persisted next check time, and use that if it isn't too soon
-  // or too late. Otherwise pick something random.
   Time saved_next = Time::FromInternalValue(prefs_->GetInt64(
       pref_names::kNextUpdateCheck));
-  Time earliest = now + TimeDelta::FromSeconds(kStartupWaitSeconds);
-  Time latest = now + TimeDelta::FromSeconds(frequency_seconds_);
-  if (saved_next >= earliest && saved_next <= latest) {
+
+  Time now = Time::Now();
+
+  // Read the persisted next check time, and use that if it isn't in the past
+  // or too far in the future (this can happen with system clock changes).
+  if (saved_next > now &&
+      saved_next < now + TimeDelta::FromSeconds(frequency_seconds_)) {
     return saved_next - now;
-  } else {
-    return TimeDelta::FromSeconds(RandInt(kStartupWaitSeconds,
-                                          frequency_seconds_));
   }
+
+  // In most cases we'll get here because the persisted next check time passed
+  // while we weren't running, so pick something soon.
+  return TimeDelta::FromSeconds(
+      RandInt(kStartupWaitSeconds, kStartupWaitSeconds * 5));
 }
 
 void ExtensionUpdater::Start() {
