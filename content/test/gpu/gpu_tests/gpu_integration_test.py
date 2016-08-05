@@ -82,6 +82,11 @@ class GpuIntegrationTest(
       elif expectation == 'fail':
         msg = 'Expected exception while running %s' % test_name
         exception_formatter.PrintFormattedException(msg=msg)
+        # Even though this is a known failure, the browser might still
+        # be in a bad state; for example, certain kinds of timeouts
+        # will affect the next test. Restart the browser to prevent
+        # these kinds of failures propagating to the next test.
+        self._RestartBrowser('expected test failure')
         return
       if expectation != 'flaky':
         logging.warning(
