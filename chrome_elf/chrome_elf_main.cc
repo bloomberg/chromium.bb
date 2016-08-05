@@ -50,6 +50,7 @@ void InitializeCrashReportingForProcess() {
   ChromeCrashReporterClient::InitializeCrashReportingForProcess();
 }
 
+#if !defined(ADDRESS_SANITIZER)
 // chrome_elf loads early in the process and initializes Crashpad. That in turn
 // uses the SetUnhandledExceptionFilter API to set a top level exception
 // handler for the process. When the process eventually initializes, CRT sets
@@ -80,6 +81,7 @@ void DisableSetUnhandledExceptionFilter() {
       SetUnhandledExceptionFilterPatch);
   CHECK(patched == 0);
 }
+#endif // !defined(ADDRESS_SANITIZER)
 
 }  // namespace
 
@@ -112,8 +114,11 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
     InitializeCrashReportingForProcess();
     // CRT on initialization installs an exception filter which calls
     // TerminateProcess. We need to hook CRT's attempt to set an exception
-    // handler and ignore it.
+    // handler and ignore it. Don't do this when ASan is present, or ASan will
+    // fail to install its own unhandled exception filter.
+#if !defined(ADDRESS_SANITIZER)
     DisableSetUnhandledExceptionFilter();
+#endif
 
     install_static::InitializeProcessType();
     if (install_static::g_process_type ==
