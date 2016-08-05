@@ -27,11 +27,12 @@ ENUM_FIXED_TYPE_WHITELIST = ['char', 'unsigned char',
 
 class EnumDefinition(object):
   def __init__(self, original_enum_name=None, class_name_override=None,
-               enum_package=None, entries=None, fixed_type=None):
+               enum_package=None, entries=None, comments=None, fixed_type=None):
     self.original_enum_name = original_enum_name
     self.class_name_override = class_name_override
     self.enum_package = enum_package
     self.entries = collections.OrderedDict(entries or [])
+    self.comments = collections.OrderedDict(comments or [])
     self.prefix_to_strip = None
     self.fixed_type = fixed_type
 
@@ -39,6 +40,11 @@ class EnumDefinition(object):
     if key in self.entries:
       raise Exception('Multiple definitions of key %s found.' % key)
     self.entries[key] = value
+
+  def AppendEntryComment(self, key, value):
+    if key in self.comments:
+      raise Exception('Multiple definitions of key %s found.' % key)
+    self.comments[key] = value
 
   @property
   def class_name(self):
@@ -124,7 +130,7 @@ class DirectiveSet(object):
 
 
 class HeaderParser(object):
-  single_line_comment_re = re.compile(r'\s*//')
+  single_line_comment_re = re.compile(r'\s*//\s*([^\n]+)')
   multi_line_comment_start_re = re.compile(r'\s*/\*')
   enum_line_re = re.compile(r'^\s*(\w+)(\s*\=\s*([^,\n]+))?,?')
   enum_end_re = re.compile(r'^\s*}\s*;\.*$')
@@ -150,6 +156,7 @@ class HeaderParser(object):
     self._enum_definitions = []
     self._in_enum = False
     self._current_definition = None
+    self._current_comments = []
     self._generator_directives = DirectiveSet()
     self._multi_line_generator_directive = None
 
@@ -171,7 +178,9 @@ class HeaderParser(object):
       self._ParseEnumLine(line)
 
   def _ParseEnumLine(self, line):
-    if HeaderParser.single_line_comment_re.match(line):
+    enum_comment = HeaderParser.single_line_comment_re.match(line)
+    if enum_comment:
+      self._current_comments.append(enum_comment.groups()[0])
       return
     if HeaderParser.multi_line_comment_start_re.match(line):
       raise Exception('Multi-line comments in enums are not supported in ' +
@@ -187,6 +196,10 @@ class HeaderParser(object):
       enum_key = enum_entry.groups()[0]
       enum_value = enum_entry.groups()[2]
       self._current_definition.AppendEntry(enum_key, enum_value)
+      if self._current_comments:
+         self._current_definition.AppendEntryComment(
+                 enum_key, ' '.join(self._current_comments))
+         self._current_comments = []
 
   def _ParseMultiLineDirectiveLine(self, line):
     multi_line_directive_continuation = (
@@ -289,6 +302,17 @@ ${ENUM_ENTRIES}
         'NAME': enum_name,
         'VALUE': enum_value,
     }
+    enum_comments = enum_definition.comments.get(enum_name)
+    if enum_comments:
+        enum_comments_indent = '   * '
+        comments_line_wrapper = textwrap.TextWrapper(
+                initial_indent=enum_comments_indent,
+                subsequent_indent=enum_comments_indent,
+                width=100)
+        enum_entries_string.append('  /**')
+        enum_entries_string.append(
+                '\n'.join(comments_line_wrapper.wrap(enum_comments)))
+        enum_entries_string.append('   */')
     enum_entries_string.append(enum_template.substitute(values))
     enum_names.append(enum_name)
   enum_entries_string = '\n'.join(enum_entries_string)
