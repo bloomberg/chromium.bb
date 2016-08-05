@@ -40,11 +40,11 @@ void DrawingDisplayItem::analyzeForGpuRasterization(SkPictureGpuAnalyzer& analyz
 }
 
 #ifndef NDEBUG
-void DrawingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
+void DrawingDisplayItem::dumpPropertiesAsDebugString(StringBuilder& stringBuilder) const
 {
     DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
     if (m_picture) {
-        stringBuilder.append(WTF::String::format(", rect: [%f,%f %fx%f]",
+        stringBuilder.append(String::format(", rect: [%f,%f %fx%f]",
             m_picture->cullRect().x(), m_picture->cullRect().y(),
             m_picture->cullRect().width(), m_picture->cullRect().height()));
     }
