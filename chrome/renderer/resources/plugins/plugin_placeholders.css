@@ -13,16 +13,10 @@ html, body {
 }
 
 h1 {
+  display: none;
   font-size: 10pt;
   font-weight: normal;
   padding: 0pt 10pt;
-<if expr="not is_android and not chromeos">
-  visibility: hidden;
-</if>
-}
-
-#outer:hover h1, #outer:hover #close {
-  visibility: visible;
 }
 
 p {
@@ -30,46 +24,50 @@ p {
   padding: 0pt 14pt;
 }
 
+#t {
+  background-color: #f7f7f7;
+  color: #646464;
+}
+
 #outer {
   align-items: center;
-  border: 1px black solid;
   box-sizing: border-box;
   display: flex;
   height: 100%;
   justify-content: center;
   position: absolute;
   width: 100%;
+  flex-direction: column;
 }
 
-#close {
-  background-image: -webkit-image-set(
-      url(../../../../ui/resources/default_100_percent/close_2.png) 1x,
-      url(../../../../ui/resources/default_200_percent/close_2.png) 2x);
-  background-position: right top;
-  background-repeat: no-repeat;
-  cursor: pointer;
-  height: 14px;
-  position: absolute;
-  right: 3px;
-  top: 3px;
-<if expr="not is_android">
-  visibility: hidden;
-</if>
-  width: 14px;
+.icon {
+  max-height: 100%;
+  max-width: 100%;
+  opacity: .3;
 }
 
-#close[data-plugin-type='document'] {
-  display: none;
+@media (orientation: landscape) and (min-height: 2em) and (min-width: 14em) {
+  #outer {
+    flex-direction: row;
+  }
+  .icon {
+    max-height: 100%;
+    max-width: 50%;
+  }
+  h1 {
+    display: block;
+  }
 }
 
-#close:hover {
-  background-image: -webkit-image-set(
-      url(../../../../ui/resources/default_100_percent/close_2_hover.png) 1x,
-      url(../../../../ui/resources/default_200_percent/close_2_hover.png) 2x);
-}
-
-#close:active {
-  background-image: -webkit-image-set(
-      url(../../../../ui/resources/default_100_percent/close_2_pressed.png) 1x,
-      url(../../../../ui/resources/default_200_percent/close_2_pressed.png) 2x);
+@media (min-height: 7em) and (min-width: 6em) {
+  #outer {
+    flex-direction: column;
+  }
+  .icon {
+    max-height: 50%;
+    max-width: 100%;
+  }
+  h1 {
+    display: block;
+  }
 }

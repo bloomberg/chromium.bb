@@ -7085,7 +7085,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Install
       </message>
       <message name="IDS_PLUGIN_DISABLED" desc="The placeholder text for a disabled plugin.">
-        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> has been disabled. To re-enable it, please go to <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph>.
+        Visit <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph> to re-enable <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
       </message>
 
       <!-- Session Crashed Info Bar/Bubble-->
