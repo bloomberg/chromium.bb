@@ -171,24 +171,20 @@ class TaskSchedulerImplTest
     std::vector<SchedulerWorkerPoolParams> params_vector;
 
     ASSERT_EQ(BACKGROUND_WORKER_POOL, params_vector.size());
-    params_vector.emplace_back("TaskSchedulerBackground",
-                               ThreadPriority::BACKGROUND,
+    params_vector.emplace_back("Background", ThreadPriority::BACKGROUND,
                                IORestriction::DISALLOWED, 1U, TimeDelta::Max());
 
     ASSERT_EQ(BACKGROUND_FILE_IO_WORKER_POOL, params_vector.size());
-    params_vector.emplace_back("TaskSchedulerBackgroundFileIO",
-                               ThreadPriority::BACKGROUND,
+    params_vector.emplace_back("BackgroundFileIO", ThreadPriority::BACKGROUND,
                                IORestriction::ALLOWED, 3U, TimeDelta::Max());
 
     ASSERT_EQ(FOREGROUND_WORKER_POOL, params_vector.size());
-    params_vector.emplace_back("TaskSchedulerForeground",
-                               ThreadPriority::NORMAL,
+    params_vector.emplace_back("Foreground", ThreadPriority::NORMAL,
                                IORestriction::DISALLOWED, 4U, TimeDelta::Max());
 
     ASSERT_EQ(FOREGROUND_FILE_IO_WORKER_POOL, params_vector.size());
-    params_vector.emplace_back("TaskSchedulerForegroundFileIO",
-                               ThreadPriority::NORMAL, IORestriction::ALLOWED,
-                               12U, TimeDelta::Max());
+    params_vector.emplace_back("ForegroundFileIO", ThreadPriority::NORMAL,
+                               IORestriction::ALLOWED, 12U, TimeDelta::Max());
 
     scheduler_ = TaskSchedulerImpl::Create(params_vector,
                                            Bind(&GetThreadPoolIndexForTraits));

@@ -433,7 +433,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
 #endif
 
   PlatformThread::SetName(
-      StringPrintf("%sWorker%d", outer_->name_.c_str(), index_));
+      StringPrintf("TaskScheduler%sWorker%d", outer_->name_.c_str(), index_));
 
   DCHECK(!tls_current_worker.Get().Get());
   DCHECK(!tls_current_worker_pool.Get().Get());
