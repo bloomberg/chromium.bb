@@ -39,7 +39,7 @@ Worklet* WindowAnimationWorklet::animationWorklet(DOMWindow& window)
 
 AnimationWorklet* WindowAnimationWorklet::animationWorklet()
 {
-    if (!m_animationWorklet)
+    if (!m_animationWorklet && frame())
         m_animationWorklet = AnimationWorklet::create(frame());
     return m_animationWorklet.get();
 }
