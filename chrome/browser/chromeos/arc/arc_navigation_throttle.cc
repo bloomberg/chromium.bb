@@ -13,6 +13,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/intent_helper/local_activity_resolver.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -54,9 +55,10 @@ mojom::IntentHelperInstance* GetIntentHelper() {
 
 ArcNavigationThrottle::ArcNavigationThrottle(
     content::NavigationHandle* navigation_handle,
-    const ShowDisambigDialogCallback& show_disambig_dialog_cb)
+    const ShowIntentPickerCallback& show_intent_picker_cb)
     : content::NavigationThrottle(navigation_handle),
-      show_disambig_dialog_callback_(show_disambig_dialog_cb),
+      show_intent_picker_callback_(show_intent_picker_cb),
+      previous_user_action_(CloseReason::INVALID),
       weak_ptr_factory_(this) {}
 
 ArcNavigationThrottle::~ArcNavigationThrottle() = default;
@@ -64,27 +66,71 @@ ArcNavigationThrottle::~ArcNavigationThrottle() = default;
 content::NavigationThrottle::ThrottleCheckResult
 ArcNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return HandleRequest();
+}
 
+content::NavigationThrottle::ThrottleCheckResult
+ArcNavigationThrottle::WillRedirectRequest() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  switch (previous_user_action_) {
+    case CloseReason::ERROR:
+    case CloseReason::DIALOG_DEACTIVATED:
+      // User dismissed the dialog, or some error occurred before.  Don't
+      // repeatedly pop up the dialog.
+      return content::NavigationThrottle::PROCEED;
+
+    case CloseReason::ALWAYS_PRESSED:
+    case CloseReason::JUST_ONCE_PRESSED:
+    case CloseReason::PREFERRED_ACTIVITY_FOUND:
+      // Should never get here - if the user selected one of these previously,
+      // Chrome should not see a redirect.
+      NOTREACHED();
+
+    case CloseReason::INVALID:
+      // No picker has previously been popped up for this - continue.
+      break;
+  }
+  return HandleRequest();
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+ArcNavigationThrottle::HandleRequest() {
+  const GURL& url = navigation_handle()->GetURL();
+
+  // Mask out any redirect qualifiers - this method handles navigation from
+  // redirect and non-redirect navigations equivalently.
   const ui::PageTransition transition =
-      navigation_handle()->GetPageTransition();
+      ui::PageTransitionFromInt(navigation_handle()->GetPageTransition() &
+                                ~ui::PAGE_TRANSITION_IS_REDIRECT_MASK);
 
   if (!ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK)) {
-    // If this navigation event wasn't spawned by the user clicking on a link.
+    // Allow navigation to proceed if this event wasn't spawned by the user
+    // clicking on a link.
     return content::NavigationThrottle::PROCEED;
   }
 
   if (ui::PageTransitionGetQualifier(transition) != 0) {
     // Qualifiers indicate that this navigation was the result of a click on a
-    // forward/back button, or a redirect, or typing in the URL bar, etc.  Don't
-    // pass any of those types of navigations to the intent helper (see
-    // crbug.com/630072).
+    // forward/back button, or typing in the URL bar, etc.  Don't pass any of
+    // those types of navigations to the intent helper (see crbug.com/630072).
+    // Note that redirects, which we do pass on, are masked out above.
     return content::NavigationThrottle::PROCEED;
   }
 
   if (!ShouldOverrideUrlLoading(navigation_handle()))
     return content::NavigationThrottle::PROCEED;
 
-  const GURL& url = navigation_handle()->GetURL();
+  arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
+  DCHECK(arc_service_manager);
+  scoped_refptr<arc::LocalActivityResolver> local_resolver =
+      arc_service_manager->activity_resolver();
+  if (local_resolver->ShouldChromeHandleUrl(url)) {
+    // Allow navigation to proceed if there isn't an android app that handles
+    // the given URL.
+    return content::NavigationThrottle::PROCEED;
+  }
+
   mojom::IntentHelperInstance* bridge_instance = GetIntentHelper();
   if (!bridge_instance)
     return content::NavigationThrottle::PROCEED;
@@ -92,12 +138,6 @@ ArcNavigationThrottle::WillStartRequest() {
       url.spec(), base::Bind(&ArcNavigationThrottle::OnAppCandidatesReceived,
                              weak_ptr_factory_.GetWeakPtr()));
   return content::NavigationThrottle::DEFER;
-}
-
-content::NavigationThrottle::ThrottleCheckResult
-ArcNavigationThrottle::WillRedirectRequest() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return content::NavigationThrottle::PROCEED;
 }
 
 // We received the array of app candidates to handle this URL (even the Chrome
@@ -129,8 +169,8 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
           << "Chrome browser is selected as the preferred app for this URL: "
           << navigation_handle()->GetURL().spec();
     }
-    OnDisambigDialogClosed(std::move(handlers), i,
-                           CloseReason::PREFERRED_ACTIVITY_FOUND);
+    OnIntentPickerClosed(std::move(handlers), i,
+                         CloseReason::PREFERRED_ACTIVITY_FOUND);
     return;
   }
 
@@ -180,19 +220,21 @@ void ArcNavigationThrottle::OnAppIconsReceived(
         handler->name, it != icons->end() ? it->second.icon20 : gfx::Image());
   }
 
-  show_disambig_dialog_callback_.Run(
+  show_intent_picker_callback_.Run(
       navigation_handle(), app_info,
-      base::Bind(&ArcNavigationThrottle::OnDisambigDialogClosed,
+      base::Bind(&ArcNavigationThrottle::OnIntentPickerClosed,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&handlers)));
 }
 
-void ArcNavigationThrottle::OnDisambigDialogClosed(
+void ArcNavigationThrottle::OnIntentPickerClosed(
     mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
     size_t selected_app_index,
     CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const GURL& url = navigation_handle()->GetURL();
   content::NavigationHandle* handle = navigation_handle();
+
+  previous_user_action_ = close_reason;
 
   mojom::IntentHelperInstance* bridge = GetIntentHelper();
   if (!bridge || selected_app_index >= handlers.size()) {
@@ -226,7 +268,7 @@ void ArcNavigationThrottle::OnDisambigDialogClosed(
       }
       break;
     }
-    case CloseReason::SIZE: {
+    case CloseReason::INVALID: {
       NOTREACHED();
       return;
     }

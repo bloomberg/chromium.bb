@@ -205,8 +205,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/intent_helper/local_activity_resolver.h"
 #include "components/user_manager/user_manager.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
@@ -2948,22 +2946,14 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     // warning that the selected app is not in incognito mode.
     if (IsIntentPickerEnabled() &&
         !handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()) {
-      arc::ArcServiceManager* arc_service_manager =
-          arc::ArcServiceManager::Get();
-      DCHECK(arc_service_manager);
-      scoped_refptr<arc::LocalActivityResolver> local_resolver =
-          arc_service_manager->activity_resolver();
-      if (!local_resolver->ShouldChromeHandleUrl(handle->GetURL())) {
-        prerender::PrerenderContents* prerender_contents =
-            prerender::PrerenderContents::FromWebContents(
-                handle->GetWebContents());
-        if (!prerender_contents) {
-          auto intent_picker_cb = base::Bind(ShowIntentPickerBubble());
-          auto url_to_arc_throttle =
-              base::MakeUnique<arc::ArcNavigationThrottle>(handle,
-                                                           intent_picker_cb);
-          throttles.push_back(std::move(url_to_arc_throttle));
-        }
+      prerender::PrerenderContents* prerender_contents =
+          prerender::PrerenderContents::FromWebContents(
+              handle->GetWebContents());
+      if (!prerender_contents) {
+        auto intent_picker_cb = base::Bind(ShowIntentPickerBubble());
+        auto url_to_arc_throttle = base::MakeUnique<arc::ArcNavigationThrottle>(
+            handle, intent_picker_cb);
+        throttles.push_back(std::move(url_to_arc_throttle));
       }
     }
   }
