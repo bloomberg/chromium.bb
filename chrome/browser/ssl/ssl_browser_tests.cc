@@ -154,11 +154,7 @@ enum AuthStateFlags {
   DISPLAYED_INSECURE_CONTENT = 1 << 0,
   RAN_INSECURE_CONTENT = 1 << 1,
   SHOWING_INTERSTITIAL = 1 << 2,
-  SHOWING_ERROR = 1 << 3,
-  // Useful when a favicon load may or may not have finished loading, to avoid
-  // checking if a page displayed insecure content.
-  // TODO(estark): remove this once http://crbug.com/634171 is fixed.
-  DONT_CHECK_DISPLAYED_INSECURE_CONTENT = 1 << 4,
+  SHOWING_ERROR = 1 << 3
 };
 
 void Check(const NavigationEntry& entry, int expected_authentication_state) {
@@ -172,16 +168,11 @@ void Check(const NavigationEntry& entry, int expected_authentication_state) {
         entry.GetPageType());
   }
 
-  if (!(expected_authentication_state &
-        AuthState::DONT_CHECK_DISPLAYED_INSECURE_CONTENT)) {
-    bool displayed_insecure_content =
-         !!(entry.GetSSL().content_status &
-            SSLStatus::DISPLAYED_INSECURE_CONTENT);
-    EXPECT_EQ(
-        !!(expected_authentication_state &
-           AuthState::DISPLAYED_INSECURE_CONTENT),
-        displayed_insecure_content);
-  }
+  bool displayed_insecure_content =
+      !!(entry.GetSSL().content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT);
+  EXPECT_EQ(
+      !!(expected_authentication_state & AuthState::DISPLAYED_INSECURE_CONTENT),
+      displayed_insecure_content);
 
   bool ran_insecure_content =
       !!(entry.GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT);
@@ -1837,6 +1828,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCNInvalidStickiness) {
       tab, net::CERT_STATUS_COMMON_NAME_INVALID, AuthState::NONE);
 }
 
+#if defined(OS_CHROMEOS)
+// This test seems to be flaky and hang on chromiumos.
+// http://crbug.com/84419
+#define MAYBE_TestRefNavigation DISABLED_TestRefNavigation
+#else
+#define MAYBE_TestRefNavigation TestRefNavigation
+#endif
+
 // Test that navigating to a #ref does not change a bad security state.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
   ASSERT_TRUE(https_server_expired_.Start());
@@ -1858,8 +1857,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
       browser(), https_server_expired_.GetURL("/ssl/page_with_refs.html#jp"));
 
   CheckAuthenticationBrokenState(
-      tab, net::CERT_STATUS_DATE_INVALID,
-      AuthState::DONT_CHECK_DISPLAYED_INSECURE_CONTENT);
+      tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
 }
 
 // Tests that closing a page that opened a pop-up with an interstitial does not
@@ -2177,8 +2175,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
 
   // We should still be authentication broken.
   CheckAuthenticationBrokenState(
-      tab, net::CERT_STATUS_DATE_INVALID,
-      AuthState::DONT_CHECK_DISPLAYED_INSECURE_CONTENT);
+      tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
 }
 
 // From an HTTP top frame, navigate to good and bad HTTPS (security state should
@@ -2293,10 +2290,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   ui_test_utils::NavigateToURL(
       browser(), https_server_.GetURL(page_with_unsafe_worker_path));
   CheckWorkerLoadResult(tab, true);  // Worker loads insecure content
-  CheckAuthenticationBrokenState(
-      tab, CertError::NONE,
-      AuthState::RAN_INSECURE_CONTENT |
-          AuthState::DONT_CHECK_DISPLAYED_INSECURE_CONTENT);
+  CheckAuthenticationBrokenState(tab, CertError::NONE,
+                                 AuthState::RAN_INSECURE_CONTENT);
 }
 
 // Visits a page with unsafe content and makes sure that if a user exception to
@@ -2335,9 +2330,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       tab, "window.domAutomationController.send(IsFooSet());", &js_result));
   EXPECT_TRUE(js_result);
-  CheckAuthenticationBrokenState(
-      tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-      AuthState::DONT_CHECK_DISPLAYED_INSECURE_CONTENT);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                 AuthState::NONE);
 }
 
 // Like the test above, but only displaying inactive content (an image).
