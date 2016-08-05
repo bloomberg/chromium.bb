@@ -12,3 +12,8 @@ per-file renderer_font_platform_win.*=cpu@chromium.org
 # Web Notifications.
 per-file notification_permission_dispatcher.*=mvanouwerkerk@chromium.org
 per-file notification_permission_dispatcher.*=peter@chromium.org
+
+# WebSocket
+per-file *websocket*=ricea@chromium.org
+per-file *websocket*=tyoshino@chromium.org
+per-file *websocket*=yhirano@chromium.org

@@ -491,6 +491,8 @@
       'renderer/webscrollbarbehavior_impl_mac.mm',
       'renderer/websharedworker_proxy.cc',
       'renderer/websharedworker_proxy.h',
+      'renderer/websockethandle_impl.cc',
+      'renderer/websockethandle_impl.h',
     ],
     # Put WebRTC-related sources in the plugin+WebRTC section below.
     'private_renderer_plugin_sources': [

@@ -597,9 +597,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void requestStorageQuota(blink::WebStorageQuotaType type,
                            unsigned long long requested_size,
                            blink::WebStorageQuotaCallbacks callbacks) override;
-  void willOpenWebSocket(blink::WebSocketHandle* handle) override;
   blink::WebPushClient* pushClient() override;
   blink::WebPresentationClient* presentationClient() override;
+  void willOpenWebSocket(blink::WebSocketHandle* handle) override;
   void willStartUsingPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandler* handler) override;
   blink::WebUserMediaClient* userMediaClient() override;
