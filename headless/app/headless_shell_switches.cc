@@ -34,5 +34,8 @@ const char kUseGL[] = "use-gl";
 // Directory where the browser stores the user profile.
 const char kUserDataDir[] = "user-data-dir";
 
+// Sets the initial window size. Provided as string in the format "800x600".
+const char kWindowSize[] = "window-size";
+
 }  // namespace switches
 }  // namespace headless

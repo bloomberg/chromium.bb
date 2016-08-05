@@ -42,7 +42,18 @@ namespace {
 const char kDevToolsHttpServerAddress[] = "127.0.0.1";
 // Default file name for screenshot. Can be overriden by "--screenshot" switch.
 const char kDefaultScreenshotFileName[] = "screenshot.png";
+
+bool ParseWindowSize(std::string window_size, gfx::Size* parsed_window_size) {
+  int width, height = 0;
+  if (sscanf(window_size.c_str(), "%dx%d", &width, &height) >= 2 &&
+      width >= 0 && height >= 0) {
+    parsed_window_size->set_width(width);
+    parsed_window_size->set_height(height);
+    return true;
+  }
+  return false;
 }
+}  // namespace
 
 // A sample application which demonstrates the use of the headless API.
 class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
@@ -350,6 +361,17 @@ int main(int argc, const char** argv) {
     builder.SetUserDataDir(
         command_line.GetSwitchValuePath(headless::switches::kUserDataDir));
     builder.SetIncognitoMode(false);
+  }
+
+  if (command_line.HasSwitch(headless::switches::kWindowSize)) {
+    std::string window_size =
+        command_line.GetSwitchValueASCII(headless::switches::kWindowSize);
+    gfx::Size parsed_window_size;
+    if (!ParseWindowSize(window_size, &parsed_window_size)) {
+      LOG(ERROR) << "Malformed window size";
+      return EXIT_FAILURE;
+    }
+    builder.SetWindowSize(parsed_window_size);
   }
 
   return HeadlessBrowserMain(
