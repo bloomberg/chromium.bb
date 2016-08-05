@@ -407,11 +407,17 @@ void PaintLayerCompositor::updateIfNeeded()
 
     if (updateType != CompositingUpdateNone) {
         if (RuntimeEnabledFeatures::compositorWorkerEnabled() && m_scrollLayer) {
-            if (Element* scrollingElement = m_layoutView.document().scrollingElement()) {
-                uint32_t mutableProperties = CompositorMutableProperty::kNone;
-                if (scrollingElement->hasCompositorProxy())
-                    mutableProperties = (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop) & scrollingElement->compositorMutableProperties();
-                m_scrollLayer->setCompositorMutableProperties(mutableProperties);
+            LocalFrame* frame = m_layoutView.document().frame();
+            Settings* settings = frame ? frame->settings() : nullptr;
+            // If rootLayerScrolls is enabled, these properties are applied in
+            // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties.
+            if (!settings || !settings->rootLayerScrolls()) {
+                if (Element* scrollingElement = m_layoutView.document().scrollingElement()) {
+                    uint32_t mutableProperties = CompositorMutableProperty::kNone;
+                    if (scrollingElement->hasCompositorProxy())
+                        mutableProperties = (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop) & scrollingElement->compositorMutableProperties();
+                    m_scrollLayer->setCompositorMutableProperties(mutableProperties);
+                }
             }
         }
 

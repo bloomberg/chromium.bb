@@ -1540,18 +1540,32 @@ void CompositedLayerMapping::updateElementIdAndCompositorMutableProperties()
     uint32_t scrollMutableProperties = CompositorMutableProperty::kNone;
 
     Node* owningNode = m_owningLayer.layoutObject()->node();
-    Element* owningElement = nullptr;
-    if (owningNode && owningNode->isElementNode())
-        owningElement = toElement(owningNode);
+    Element* animatingElement = nullptr;
+    const ComputedStyle* animatingStyle = nullptr;
+    if (owningNode) {
+        Document& document = owningNode->document();
+        Element* scrollingElement = document.scrollingElement();
+        LocalFrame* frame = document.frame();
+        Settings* settings = frame ? frame->settings() : nullptr;
+        bool rootLayerScrolls = settings && settings->rootLayerScrolls();
+        if (owningNode->isElementNode() && (!rootLayerScrolls || owningNode != scrollingElement)) {
+            animatingElement = toElement(owningNode);
+            animatingStyle = m_owningLayer.layoutObject()->style();
+        } else if (owningNode->isDocumentNode() && rootLayerScrolls) {
+            owningNode = animatingElement = scrollingElement;
+            if (scrollingElement)
+                animatingStyle = scrollingElement->layoutObject()->style();
+        }
+    }
 
-    if (RuntimeEnabledFeatures::compositorWorkerEnabled() && owningElement && m_owningLayer.layoutObject()->style()->hasCompositorProxy()) {
-        uint32_t compositorMutableProperties = owningElement->compositorMutableProperties();
+    if (RuntimeEnabledFeatures::compositorWorkerEnabled() && animatingElement && animatingStyle->hasCompositorProxy()) {
+        uint32_t compositorMutableProperties = animatingElement->compositorMutableProperties();
         elementId = DOMNodeIds::idForNode(owningNode);
         primaryMutableProperties = (CompositorMutableProperty::kOpacity | CompositorMutableProperty::kTransform) & compositorMutableProperties;
         scrollMutableProperties = (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop) & compositorMutableProperties;
     }
 
-    if (m_owningLayer.layoutObject()->style()->shouldCompositeForCurrentAnimations() && owningNode)
+    if (animatingStyle && animatingStyle->shouldCompositeForCurrentAnimations())
         elementId = DOMNodeIds::idForNode(owningNode);
 
     CompositorElementId compositorElementId;
@@ -1653,10 +1667,8 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
             // Inner layer which renders the content that scrolls.
             m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContents);
 
-            if (Node* owningNode = m_owningLayer.layoutObject()->node()) {
+            if (Node* owningNode = m_owningLayer.layoutObject()->node())
                 m_scrollingContentsLayer->setElementId(createCompositorElementId(DOMNodeIds::idForNode(owningNode), CompositorSubElementId::Scroll));
-                m_scrollingContentsLayer->setCompositorMutableProperties(CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop);
-            }
 
             m_scrollingLayer->addChild(m_scrollingContentsLayer.get());
 

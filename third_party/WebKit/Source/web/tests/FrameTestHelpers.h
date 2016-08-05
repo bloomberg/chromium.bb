@@ -40,6 +40,7 @@
 #include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebHistoryItem.h"
 #include "public/web/WebRemoteFrameClient.h"
+#include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 #include <gmock/gmock.h>

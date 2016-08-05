@@ -27,10 +27,19 @@
 
 namespace blink {
 
-class CompositorWorkerTest : public testing::Test {
+class CompositorWorkerTest
+    : public testing::Test
+    , public testing::WithParamInterface<FrameTestHelpers::SettingOverrideFunction>
+    , public FrameTestHelpers::SettingOverrider {
+
 public:
     CompositorWorkerTest()
         : m_baseURL("http://www.test.com/")
+        , m_helper(this)
+    {
+    }
+
+    void SetUp() override
     {
         RuntimeEnabledFeatures::setCompositorWorkerEnabled(true);
         m_helper.initialize(true, nullptr, &m_mockWebViewClient, nullptr, &configureSettings);
@@ -41,6 +50,11 @@ public:
     {
         Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
         WebCache::clear();
+    }
+
+    void overrideSettings(WebSettings *settings) override
+    {
+        GetParam()(settings);
     }
 
     void navigateTo(const String& url)
@@ -60,6 +74,15 @@ public:
 
     WebLayer* getRootScrollLayer()
     {
+        Settings* settings = frame()->settings();
+        bool rootLayerScrolls = settings && settings->rootLayerScrolls();
+        if (rootLayerScrolls) {
+            DCHECK(frame());
+            DCHECK(frame()->view());
+            DCHECK(frame()->view()->layoutViewportScrollableArea());
+            DCHECK(frame()->view()->layoutViewportScrollableArea()->layerForScrolling());
+            return frame()->view()->layoutViewportScrollableArea()->layerForScrolling()->platformLayer();
+        }
         PaintLayerCompositor* compositor = frame()->contentLayoutItem().compositor();
         DCHECK(compositor);
         DCHECK(compositor->scrollLayer());
@@ -125,7 +148,11 @@ static WebLayer* webLayerFromElement(Element* element)
     return webLayerFromGraphicsLayer(compositedLayerMapping->mainGraphicsLayer());
 }
 
-TEST_F(CompositorWorkerTest, plumbingElementIdAndMutableProperties)
+INSTANTIATE_TEST_CASE_P(All, CompositorWorkerTest, ::testing::Values(
+    FrameTestHelpers::DefaultSettingOverride,
+    FrameTestHelpers::RootLayerScrollsSettingOverride));
+
+TEST_P(CompositorWorkerTest, plumbingElementIdAndMutableProperties)
 {
     registerMockedHttpURLLoad("compositor-proxy-basic.html");
     navigateTo(m_baseURL + "compositor-proxy-basic.html");
@@ -157,7 +184,7 @@ TEST_F(CompositorWorkerTest, plumbingElementIdAndMutableProperties)
     EXPECT_TRUE(rootScrollLayer->elementId());
 }
 
-TEST_F(CompositorWorkerTest, noProxies)
+TEST_P(CompositorWorkerTest, noProxies)
 {
     // This case is identical to compositor-proxy-basic, but no proxies have
     // actually been created.
@@ -188,7 +215,7 @@ TEST_F(CompositorWorkerTest, noProxies)
     EXPECT_FALSE(!!rootScrollLayer->compositorMutableProperties());
 }
 
-TEST_F(CompositorWorkerTest, disconnectedProxies)
+TEST_P(CompositorWorkerTest, disconnectedProxies)
 {
     // This case is identical to compositor-proxy-basic, but the proxies are
     // disconnected (the result should be the same as compositor-proxy-plumbing-no-proxies).
@@ -215,7 +242,7 @@ TEST_F(CompositorWorkerTest, disconnectedProxies)
     EXPECT_FALSE(!!rootScrollLayer->compositorMutableProperties());
 }
 
-TEST_F(CompositorWorkerTest, applyingMutationsMultipleElements)
+TEST_P(CompositorWorkerTest, applyingMutationsMultipleElements)
 {
     registerMockedHttpURLLoad("compositor-proxy-basic.html");
     navigateTo(m_baseURL + "compositor-proxy-basic.html");
@@ -259,7 +286,7 @@ TEST_F(CompositorWorkerTest, applyingMutationsMultipleElements)
     }
 }
 
-TEST_F(CompositorWorkerTest, applyingMutationsMultipleProperties)
+TEST_P(CompositorWorkerTest, applyingMutationsMultipleProperties)
 {
     registerMockedHttpURLLoad("compositor-proxy-basic.html");
     navigateTo(m_baseURL + "compositor-proxy-basic.html");
