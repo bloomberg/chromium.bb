@@ -233,6 +233,7 @@ template("generate_mini_installer") {
     configs += [
       ":mini_installer_compiler_flags",
       "//build/config/compiler:optimize_no_wpo",
+      "//build/config/sanitizers:link_executable",
       "//build/config/win:sdk_link",
       "//build/config/win:windowed",
     ]

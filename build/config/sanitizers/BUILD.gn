@@ -191,6 +191,30 @@ config("default_sanitizer_ldflags") {
         ]
       }
     }
+  } else if (is_win && is_asan) {
+    # Windows directly calls link.exe instead of the compiler driver when
+    # linking.  Hence, pass the runtime libraries instead of -fsanitize=address.
+    # In the static-library build, libraries are different for executables
+    # and dlls, see link_executable and link_shared_library below.
+    # This here handles only the component build.
+    if (target_cpu == "x64") {
+      # Windows 64-bit. TODO(etienneb): Remove the assert when this is ready.
+      if (is_component_build) {
+        assert(false, "win/asan does not work in 64-bit yet")
+        libs = [
+          "clang_rt.asan_dynamic-x86_64.lib",
+          "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib",
+        ]
+      }
+    } else {
+      assert(target_cpu == "x86", "WinASan unsupported architecture")
+      if (is_component_build) {
+        libs = [
+          "clang_rt.asan_dynamic-i386.lib",
+          "clang_rt.asan_dynamic_runtime_thunk-i386.lib",
+        ]
+      }
+    }
   }
 }
 
@@ -245,30 +269,6 @@ config("asan_flags") {
       cflags +=
           [ "-fsanitize-blacklist=" +
             rebase_path("//tools/memory/asan/blacklist.txt", root_build_dir) ]
-    }
-
-    if (is_win) {
-      # In the static-library build, libraries are different for executables
-      # and dlls, see link_executable and link_shared_library below.
-      # This here handles only the component build.
-      if (target_cpu == "x64") {
-        # Windows 64-bit. TODO(etienneb): Remove the assert when this is ready.
-        if (is_component_build) {
-          assert(false, "win/asan does not work in 64-bit yet")
-          libs = [
-            "clang_rt.asan_dynamic-x86_64.lib",
-            "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib",
-          ]
-        }
-      } else {
-        assert(target_cpu == "x86", "WinASan unsupported architecture")
-        if (is_component_build) {
-          libs = [
-            "clang_rt.asan_dynamic-i386.lib",
-            "clang_rt.asan_dynamic_runtime_thunk-i386.lib",
-          ]
-        }
-      }
     }
   }
 }
