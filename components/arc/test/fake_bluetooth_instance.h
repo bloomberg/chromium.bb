@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_TEST_FAKE_BLUETOOTH_INSTANCE_H_
 #define COMPONENTS_ARC_TEST_FAKE_BLUETOOTH_INSTANCE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -122,18 +123,19 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
     return device_found_data_;
   }
 
-  const std::vector<LEDeviceFoundData*>& le_device_found_data() const {
+  const std::vector<std::unique_ptr<LEDeviceFoundData>>& le_device_found_data()
+      const {
     return le_device_found_data_;
   }
 
-  const std::vector<GattDBResult*>& gatt_db_result() const {
+  const std::vector<std::unique_ptr<GattDBResult>>& gatt_db_result() const {
     return gatt_db_result_;
   }
 
  private:
   std::vector<mojo::Array<mojom::BluetoothPropertyPtr>> device_found_data_;
-  std::vector<LEDeviceFoundData*> le_device_found_data_;
-  std::vector<GattDBResult*> gatt_db_result_;
+  std::vector<std::unique_ptr<LEDeviceFoundData>> le_device_found_data_;
+  std::vector<std::unique_ptr<GattDBResult>> gatt_db_result_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothInstance);
 };

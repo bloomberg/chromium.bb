@@ -59,8 +59,8 @@ void FakeBluetoothInstance::OnLEDeviceFound(
     mojom::BluetoothAddressPtr addr,
     int32_t rssi,
     mojo::Array<mojom::BluetoothAdvertisingDataPtr> adv_data) {
-  le_device_found_data_.push_back(
-      new LEDeviceFoundData(std::move(addr), rssi, std::move(adv_data)));
+  le_device_found_data_.push_back(base::MakeUnique<LEDeviceFoundData>(
+      std::move(addr), rssi, std::move(adv_data)));
 }
 
 void FakeBluetoothInstance::OnLEConnectionStateChange(
@@ -75,7 +75,7 @@ void FakeBluetoothInstance::OnGetGattDB(
     mojom::BluetoothAddressPtr remote_addr,
     mojo::Array<mojom::BluetoothGattDBElementPtr> db) {
   gatt_db_result_.push_back(
-      new GattDBResult(std::move(remote_addr), std::move(db)));
+      base::MakeUnique<GattDBResult>(std::move(remote_addr), std::move(db)));
 }
 
 void FakeBluetoothInstance::OnServicesRemoved(
