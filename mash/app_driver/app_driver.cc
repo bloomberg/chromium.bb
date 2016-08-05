@@ -97,7 +97,8 @@ bool AppDriver::OnConnect(shell::Connection* connection) {
 
 bool AppDriver::OnStop() {
   // Prevent the code in AddAccelerators() from keeping this app alive.
-  binding_.set_connection_error_handler(base::Bind(&DoNothing));
+  if (binding_.is_bound())
+    binding_.set_connection_error_handler(base::Bind(&DoNothing));
   return true;
 }
 

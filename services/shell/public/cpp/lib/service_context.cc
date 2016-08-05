@@ -66,30 +66,25 @@ void ServiceContext::OnStart(mojom::IdentityPtr identity,
 void ServiceContext::OnConnect(
     mojom::IdentityPtr source,
     uint32_t source_id,
-    mojom::InterfaceProviderRequest local_interfaces,
-    mojom::InterfaceProviderPtr remote_interfaces,
+    mojom::InterfaceProviderRequest interfaces,
     mojom::CapabilityRequestPtr allowed_capabilities,
     const mojo::String& name) {
-  std::unique_ptr<internal::ConnectionImpl> registry(
+  std::unique_ptr<internal::ConnectionImpl> connection(
       new internal::ConnectionImpl(name, source.To<Identity>(), source_id,
                                    allowed_capabilities.To<CapabilityRequest>(),
                                    Connection::State::CONNECTED));
 
   std::unique_ptr<InterfaceRegistry> exposed_interfaces(
-      new InterfaceRegistry(registry.get()));
-  exposed_interfaces->Bind(std::move(local_interfaces));
-  registry->SetExposedInterfaces(std::move(exposed_interfaces));
+      new InterfaceRegistry(connection.get()));
+  exposed_interfaces->Bind(std::move(interfaces));
+  connection->SetExposedInterfaces(std::move(exposed_interfaces));
 
-  std::unique_ptr<InterfaceProvider> interfaces(new InterfaceProvider);
-  interfaces->Bind(std::move(remote_interfaces));
-  registry->SetRemoteInterfaces(std::move(interfaces));
-
-  if (!service_->OnConnect(registry.get()))
+  if (!service_->OnConnect(connection.get()))
     return;
 
   // TODO(beng): it appears we never prune this list. We should, when the
   //             connection's remote service provider pipe breaks.
-  incoming_connections_.push_back(std::move(registry));
+  incoming_connections_.push_back(std::move(connection));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

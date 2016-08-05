@@ -116,7 +116,7 @@ bool WindowManagerApplication::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::UserWindowController>(this);
   connection->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
   if (connection->GetRemoteIdentity().name() == "mojo:mash_session") {
-    connection->GetInterface(&session_);
+    connector()->ConnectToInterface(connection->GetRemoteIdentity(), &session_);
     session_->AddScreenlockStateListener(
         screenlock_state_listener_binding_.CreateInterfacePtrAndBind());
   }

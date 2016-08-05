@@ -144,9 +144,6 @@ class Connection {
   // remote application.
   virtual bool AllowsInterface(const std::string& interface_name) const = 0;
 
-  // Returns a raw pointer to the InterfaceProvider at the remote end.
-  virtual mojom::InterfaceProvider* GetRemoteInterfaceProvider() = 0;
-
   // Returns the InterfaceRegistry that implements the mojom::InterfaceProvider
   // exposed to the remote application.
   virtual InterfaceRegistry* GetInterfaceRegistry() = 0;

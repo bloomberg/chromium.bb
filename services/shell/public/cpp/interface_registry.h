@@ -127,6 +127,9 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   // Populates a set with the interface names this registry can bind.
   void GetInterfaceNames(std::set<std::string>* interface_names);
 
+  // Sets a closure to be run when the InterfaceProvider pipe is closed.
+  void SetConnectionLostClosure(const base::Closure& connection_lost_closure);
+
  private:
   using NameToInterfaceBinderMap =
       std::map<std::string, std::unique_ptr<InterfaceBinder>>;

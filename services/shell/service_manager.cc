@@ -196,8 +196,8 @@ class ServiceManager::Instance
 
     service_->OnConnect(
         mojom::Identity::From(params->source()), source_id,
-        params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
-        mojom::CapabilityRequest::From(request), params->target().name());
+        params->TakeRemoteInterfaces(), mojom::CapabilityRequest::From(request),
+        params->target().name());
 
     return true;
   }
@@ -258,7 +258,6 @@ class ServiceManager::Instance
   // mojom::Connector implementation:
   void Connect(mojom::IdentityPtr target_ptr,
                mojom::InterfaceProviderRequest remote_interfaces,
-               mojom::InterfaceProviderPtr local_interfaces,
                mojom::ClientProcessConnectionPtr client_process_connection,
                const ConnectCallback& callback) override {
     Identity target = target_ptr.To<Identity>();
@@ -278,7 +277,6 @@ class ServiceManager::Instance
     params->set_source(identity_);
     params->set_target(target);
     params->set_remote_interfaces(std::move(remote_interfaces));
-    params->set_local_interfaces(std::move(local_interfaces));
     params->set_client_process_connection(std::move(client_process_connection));
     params->set_connect_callback(callback);
     service_manager_->Connect(

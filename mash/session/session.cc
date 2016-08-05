@@ -137,7 +137,6 @@ void Session::StartRestartableService(
   if (connection) {
     connection->SetConnectionLostClosure(
         base::Bind(&LogAndCallServiceRestartCallback, url, restart_callback));
-    connection->AddInterface<mojom::Session>(this);
     connections_[url] = std::move(connection);
   }
 }

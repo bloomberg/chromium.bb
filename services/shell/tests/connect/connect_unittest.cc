@@ -84,10 +84,6 @@ class ConnectTest : public test::ServiceTest,
     return connection;
   }
 
-  void set_ping_callback(const base::Closure& callback) {
-    ping_callback_ = callback;
-  }
-
   void CompareConnectionState(
       const std::string& connection_local_name,
       const std::string& connection_remote_name,
@@ -104,6 +100,24 @@ class ConnectTest : public test::ServiceTest,
   }
 
  private:
+  class TestService : public test::ServiceTestClient {
+   public:
+    explicit TestService(ConnectTest* connect_test)
+        : test::ServiceTestClient(connect_test),
+          connect_test_(connect_test) {}
+    ~TestService() override {}
+
+   private:
+    bool OnConnect(Connection* connection) override {
+      connection->AddInterface<test::mojom::ExposedInterface>(connect_test_);
+      return true;
+    }
+
+    ConnectTest* connect_test_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestService);
+  };
+
   // test::ServiceTest:
   void SetUp() override {
     test::ServiceTest::SetUp();
@@ -120,6 +134,9 @@ class ConnectTest : public test::ServiceTest,
         base::Bind(&ReceiveOneString, &root_name, &run_loop));
     run_loop.Run();
   }
+  std::unique_ptr<Service> CreateService() override {
+    return base::WrapUnique(new TestService(this));
+  }
 
   // InterfaceFactory<test::mojom::ExposedInterface>:
   void Create(const Identity& remote_identity,
@@ -129,10 +146,8 @@ class ConnectTest : public test::ServiceTest,
 
   void ConnectionAccepted(test::mojom::ConnectionStatePtr state) override {
     connection_state_ = std::move(state);
-    ping_callback_.Run();
   }
 
-  base::Closure ping_callback_;
   test::mojom::ConnectionStatePtr connection_state_;
 
   mojo::BindingSet<test::mojom::ExposedInterface> bindings_;
@@ -397,65 +412,6 @@ TEST_F(ConnectTest, AllUsersSingleton) {
     loop.Run();
     EXPECT_EQ(inherit_connection->GetRemoteIdentity().user_id(),
               connection->GetRemoteIdentity().user_id());
-  }
-}
-
-// Tests that we can expose an interface to targets on outbound connections.
-TEST_F(ConnectTest, LocalInterface) {
-  // Connect to a standalone application.
-  {
-    test::mojom::ConnectTestServicePtr service;
-    std::unique_ptr<Connection> connection = connector()->Connect(kTestAppName);
-    connection->GetInterface(&service);
-    connection->AddInterface<test::mojom::ExposedInterface>(this);
-
-    {
-      base::RunLoop run_loop;
-      EXPECT_TRUE(connection->IsPending());
-      EXPECT_EQ(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
-      connection->AddConnectionCompletedClosure(
-          base::Bind(&QuitLoop, &run_loop));
-      run_loop.Run();
-      EXPECT_FALSE(connection->IsPending());
-    }
-
-    {
-      base::RunLoop run_loop;
-      set_ping_callback(base::Bind(&QuitLoop, &run_loop));
-      run_loop.Run();
-      CompareConnectionState(
-          kTestAppName, test_name(), test_userid(), kTestAppName,
-          connection->GetRemoteIdentity().user_id());
-    }
-  }
-
-  // Connect to an application provided by a package.
-  {
-    test::mojom::ConnectTestServicePtr service_a;
-    std::unique_ptr<Connection> connection =
-        connector()->Connect(kTestAppAName);
-    connection->GetInterface(&service_a);
-    connection->AddInterface<test::mojom::ExposedInterface>(this);
-
-    {
-      base::RunLoop run_loop;
-      EXPECT_TRUE(connection->IsPending());
-      EXPECT_EQ(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
-      connection->AddConnectionCompletedClosure(
-          base::Bind(&QuitLoop, &run_loop));
-      run_loop.Run();
-      EXPECT_FALSE(connection->IsPending());
-    }
-
-    {
-      base::RunLoop run_loop;
-      set_ping_callback(base::Bind(&QuitLoop, &run_loop));
-      run_loop.Run();
-      CompareConnectionState(
-          kTestAppAName, test_name(), test_userid(), kTestAppAName,
-          connection->GetRemoteIdentity().user_id());
-    }
-
   }
 }
 

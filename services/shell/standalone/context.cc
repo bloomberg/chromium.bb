@@ -180,7 +180,6 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
   params->set_source(CreateServiceManagerIdentity());
   params->set_target(Identity("mojo:tracing", mojom::kRootUserID));
   params->set_remote_interfaces(mojo::GetProxy(&tracing_remote_interfaces));
-  params->set_local_interfaces(std::move(tracing_local_interfaces));
   service_manager_->Connect(std::move(params));
 
   if (command_line.HasSwitch(tracing::kTraceStartup)) {
@@ -259,7 +258,6 @@ void Context::Run(const std::string& name) {
   params->set_source(CreateServiceManagerIdentity());
   params->set_target(Identity(name, mojom::kRootUserID));
   params->set_remote_interfaces(mojo::GetProxy(&remote_interfaces));
-  params->set_local_interfaces(std::move(local_interfaces));
   service_manager_->Connect(std::move(params));
 }
 

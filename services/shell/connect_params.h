@@ -35,13 +35,6 @@ class ConnectParams {
     return std::move(remote_interfaces_);
   }
 
-  void set_local_interfaces(mojom::InterfaceProviderPtr value) {
-    local_interfaces_ = std::move(value);
-  }
-  mojom::InterfaceProviderPtr TakeLocalInterfaces() {
-    return std::move(local_interfaces_);
-  }
-
   void set_client_process_connection(
       mojom::ClientProcessConnectionPtr client_process_connection) {
     client_process_connection_ = std::move(client_process_connection);
@@ -65,7 +58,6 @@ class ConnectParams {
   Identity target_;
 
   mojom::InterfaceProviderRequest remote_interfaces_;
-  mojom::InterfaceProviderPtr local_interfaces_;
   mojom::ClientProcessConnectionPtr client_process_connection_;
   mojom::Connector::ConnectCallback connect_callback_;
 

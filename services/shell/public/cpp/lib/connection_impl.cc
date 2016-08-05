@@ -74,7 +74,10 @@ const Identity& ConnectionImpl::GetRemoteIdentity() const {
 }
 
 void ConnectionImpl::SetConnectionLostClosure(const base::Closure& handler) {
-  remote_interfaces_->SetConnectionLostClosure(handler);
+  if (remote_interfaces_)
+    remote_interfaces_->SetConnectionLostClosure(handler);
+  else
+    exposed_interfaces_->SetConnectionLostClosure(handler);
 }
 
 shell::mojom::ConnectResult ConnectionImpl::GetResult() const {
@@ -100,10 +103,6 @@ void ConnectionImpl::AddConnectionCompletedClosure(
 bool ConnectionImpl::AllowsInterface(const std::string& interface_name) const {
   return allow_all_interfaces_ ||
          capability_request_.interfaces.count(interface_name);
-}
-
-mojom::InterfaceProvider* ConnectionImpl::GetRemoteInterfaceProvider() {
-  return remote_interfaces_->get();
 }
 
 InterfaceRegistry* ConnectionImpl::GetInterfaceRegistry() {

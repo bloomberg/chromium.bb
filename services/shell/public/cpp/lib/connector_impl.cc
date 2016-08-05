@@ -52,31 +52,20 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   // a position to know who we're talking to.
   CapabilityRequest request;
   request.interfaces.insert("*");
-  mojom::InterfaceProviderPtr local_interfaces;
-  mojom::InterfaceProviderRequest local_request = GetProxy(&local_interfaces);
   mojom::InterfaceProviderPtr remote_interfaces;
   mojom::InterfaceProviderRequest remote_request = GetProxy(&remote_interfaces);
-  std::unique_ptr<internal::ConnectionImpl> registry(
+  std::unique_ptr<internal::ConnectionImpl> connection(
       new internal::ConnectionImpl(
           params->target().name(), params->target(), mojom::kInvalidInstanceID,
           request, Connection::State::PENDING));
-  if (params->exposed_interfaces()) {
-    params->exposed_interfaces()->Bind(std::move(local_request));
-    registry->set_exposed_interfaces(params->exposed_interfaces());
-  } else {
-    std::unique_ptr<InterfaceRegistry> exposed_interfaces(
-        new InterfaceRegistry(registry.get()));
-    exposed_interfaces->Bind(std::move(local_request));
-    registry->SetExposedInterfaces(std::move(exposed_interfaces));
-  }
   if (params->remote_interfaces()) {
     params->remote_interfaces()->Bind(std::move(remote_interfaces));
-    registry->set_remote_interfaces(params->remote_interfaces());
+    connection->set_remote_interfaces(params->remote_interfaces());
   } else {
     std::unique_ptr<InterfaceProvider> remote_interface_provider(
         new InterfaceProvider);
     remote_interface_provider->Bind(std::move(remote_interfaces));
-    registry->SetRemoteInterfaces(std::move(remote_interface_provider));
+    connection->SetRemoteInterfaces(std::move(remote_interface_provider));
   }
 
   mojom::ServicePtr service;
@@ -92,13 +81,13 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   } else if (service.is_bound() || pid_receiver_request.is_pending()) {
     NOTREACHED() << "If one of service or pid_receiver_request is valid, "
                  << "both must be valid.";
-    return std::move(registry);
+    return std::move(connection);
   }
   connector_->Connect(mojom::Identity::From(params->target()),
-                      std::move(remote_request), std::move(local_interfaces),
+                      std::move(remote_request),
                       std::move(client_process_connection),
-                      registry->GetConnectCallback());
-  return std::move(registry);
+                      connection->GetConnectCallback());
+  return std::move(connection);
 }
 
 std::unique_ptr<Connector> ConnectorImpl::Clone() {

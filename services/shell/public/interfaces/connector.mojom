@@ -108,12 +108,6 @@ interface Connector {
   //    InterfaceParameter are filtered by the security policy described by the
   //    source and target application manifests.
   //
-  //  local_interfaces
-  //    Allows the remote application access to interface implementations
-  //    exposed by the source application. The interfaces accessible via this
-  //    InterfaceProvider are filtered by the security policy described by the
-  //    source and target application manifests.
-  //
   //  client_process_connection
   //    When non-null, supplies control pipes the shell can use to bind a
   //    process created by the client, instead of creating one itself.
@@ -135,7 +129,6 @@ interface Connector {
   //
   Connect(Identity target,
           InterfaceProvider&? remote_interfaces,
-          InterfaceProvider? local_interfaces,
           ClientProcessConnection? client_process_connection) =>
       (ConnectResult result, string user_id, uint32 application_id);
 

@@ -65,7 +65,6 @@ class ConnectionImpl : public Connection {
   uint32_t GetRemoteInstanceID() const override;
   void AddConnectionCompletedClosure(const base::Closure& callback) override;
   bool AllowsInterface(const std::string& interface_name) const override;
-  mojom::InterfaceProvider* GetRemoteInterfaceProvider() override;
   InterfaceRegistry* GetInterfaceRegistry() override;
   InterfaceProvider* GetRemoteInterfaces() override;
   base::WeakPtr<Connection> GetWeakPtr() override;

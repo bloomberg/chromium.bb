@@ -63,7 +63,6 @@ void Init::StartTracing() {
 
 void Init::StartLogin() {
   login_connection_ = connector()->Connect("mojo:login");
-  login_connection_->AddInterface<mojom::Init>(this);
   mash::login::mojom::LoginPtr login;
   login_connection_->GetInterface(&login);
   login->ShowLoginUI();

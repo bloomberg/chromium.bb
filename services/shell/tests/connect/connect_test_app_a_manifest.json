@@ -4,7 +4,10 @@
   "display_name": "Connect Test A",
   "capabilities": {
     "required": {
-      "mojo:connect_test_class_app": { "classes":  [ "class" ] }
+      "mojo:connect_unittests": {
+        "interfaces":  [ "shell::test::mojom::ExposedInterface" ]
+      },
+      "mojo:connect_test_class_app": { "classes": [ "class" ] }
     }
   }
 }

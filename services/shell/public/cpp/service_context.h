@@ -70,8 +70,7 @@ class ServiceContext : public mojom::Service {
                const OnStartCallback& callback) override;
   void OnConnect(mojom::IdentityPtr source,
                  uint32_t source_id,
-                 mojom::InterfaceProviderRequest remote_interfaces,
-                 mojom::InterfaceProviderPtr local_interfaces,
+                 mojom::InterfaceProviderRequest interfaces,
                  mojom::CapabilityRequestPtr allowed_capabilities,
                  const mojo::String& name) override;
 

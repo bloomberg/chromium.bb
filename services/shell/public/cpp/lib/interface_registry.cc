@@ -61,6 +61,11 @@ void InterfaceRegistry::GetInterfaceNames(
     interface_names->insert(entry.first);
 }
 
+void InterfaceRegistry::SetConnectionLostClosure(
+    const base::Closure& connection_lost_closure) {
+  binding_.set_connection_error_handler(connection_lost_closure);
+}
+
 // mojom::InterfaceProvider:
 void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
                                      mojo::ScopedMessagePipeHandle handle) {

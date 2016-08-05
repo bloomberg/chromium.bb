@@ -75,7 +75,8 @@ class ConnectTestApp : public Service,
     state->connection_remote_id = remote_id;
     state->initialize_local_name = identity_.name();
     state->initialize_userid = identity_.user_id();
-    connection->GetInterface(&caller_);
+
+    connector()->ConnectToInterface(connection->GetRemoteIdentity(), &caller_);
     caller_->ConnectionAccepted(std::move(state));
 
     return true;
