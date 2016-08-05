@@ -21,6 +21,7 @@
 #include "ash/shelf/dimmer_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_window_targeter.h"
 #include "ash/shell.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
@@ -38,7 +39,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/easy_resize_window_targeter.h"
 
 namespace ash {
 
@@ -46,64 +46,6 @@ namespace {
 
 // Size of black border at bottom (or side) of shelf.
 const int kNumBlackPixels = 3;
-
-// ShelfWindowTargeter makes it easier to resize windows with the mouse when the
-// window-edge slightly overlaps with the shelf edge. The targeter also makes it
-// easier to drag the shelf out with touch while it is hidden.
-class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
-                            public ShelfLayoutManagerObserver {
- public:
-  ShelfWindowTargeter(aura::Window* container, ShelfLayoutManager* shelf)
-      : ::wm::EasyResizeWindowTargeter(container, gfx::Insets(), gfx::Insets()),
-        shelf_(shelf) {
-    WillChangeVisibilityState(shelf_->visibility_state());
-    shelf_->AddObserver(this);
-  }
-
-  ~ShelfWindowTargeter() override {
-    // |shelf_| may have been destroyed by this time.
-    if (shelf_)
-      shelf_->RemoveObserver(this);
-  }
-
- private:
-  gfx::Insets GetInsetsForAlignment(int distance, ShelfAlignment alignment) {
-    if (alignment == SHELF_ALIGNMENT_LEFT)
-      return gfx::Insets(0, 0, 0, distance);
-    if (alignment == SHELF_ALIGNMENT_RIGHT)
-      return gfx::Insets(0, distance, 0, 0);
-    return gfx::Insets(distance, 0, 0, 0);
-  }
-
-  // ShelfLayoutManagerObserver:
-  void WillDeleteShelfLayoutManager() override {
-    shelf_->RemoveObserver(this);
-    shelf_ = nullptr;
-  }
-
-  void WillChangeVisibilityState(ShelfVisibilityState new_state) override {
-    gfx::Insets mouse_insets;
-    gfx::Insets touch_insets;
-    if (new_state == SHELF_VISIBLE) {
-      // Let clicks at the very top of the shelf through so windows can be
-      // resized with the bottom-right corner and bottom edge.
-      mouse_insets = GetInsetsForAlignment(kWorkspaceAreaVisibleInset,
-                                           shelf_->GetAlignment());
-    } else if (new_state == SHELF_AUTO_HIDE) {
-      // Extend the touch hit target out a bit to allow users to drag shelf out
-      // while hidden.
-      touch_insets = GetInsetsForAlignment(-kWorkspaceAreaAutoHideInset,
-                                           shelf_->GetAlignment());
-    }
-
-    set_mouse_extend(mouse_insets);
-    set_touch_extend(touch_insets);
-  }
-
-  ShelfLayoutManager* shelf_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfWindowTargeter);
-};
 
 }  // namespace
 
@@ -337,8 +279,8 @@ void ShelfWidget::DelegateView::UpdateShelfAssetBackground(int alpha) {
   SchedulePaint();
 }
 
-ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
-                         WmWindow* wm_status_container,
+ShelfWidget::ShelfWidget(WmWindow* shelf_container,
+                         WmWindow* status_container,
                          WmShelfAura* wm_shelf_aura,
                          WorkspaceController* workspace_controller)
     : wm_shelf_aura_(wm_shelf_aura),
@@ -353,9 +295,9 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = delegate_view_;
-  wm_shelf_container->GetRootWindowController()
+  shelf_container->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
-          this, wm_shelf_container->GetShellWindowId(), &params);
+          this, shelf_container->GetShellWindowId(), &params);
   Init(params);
 
   // The shelf should not take focus when initially shown.
@@ -365,7 +307,7 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
 
   shelf_layout_manager_ = new ShelfLayoutManager(this);
   shelf_layout_manager_->AddObserver(this);
-  wm_shelf_container->SetLayoutManager(base::WrapUnique(shelf_layout_manager_));
+  shelf_container->SetLayoutManager(base::WrapUnique(shelf_layout_manager_));
   shelf_layout_manager_->set_workspace_controller(workspace_controller);
   workspace_controller->SetShelf(shelf_layout_manager_);
   background_animator_.PaintBackground(
@@ -374,24 +316,19 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
   wm_shelf_aura_->SetShelfLayoutManager(shelf_layout_manager_);
 
   // TODO(jamescook): Move ownership to RootWindowController.
-  status_area_widget_ =
-      new StatusAreaWidget(wm_status_container, wm_shelf_aura_);
+  status_area_widget_ = new StatusAreaWidget(status_container, wm_shelf_aura_);
   status_area_widget_->CreateTrayViews();
   if (WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted())
     status_area_widget_->Show();
   WmShell::Get()->focus_cycler()->AddWidget(status_area_widget_);
   background_animator_.AddObserver(status_area_widget_);
-  wm_status_container->SetLayoutManager(
+  status_container->SetLayoutManager(
       base::MakeUnique<StatusAreaLayoutManager>(this));
 
-  aura::Window* shelf_container =
-      WmWindowAura::GetAuraWindow(wm_shelf_container);
-  aura::Window* status_container =
-      WmWindowAura::GetAuraWindow(wm_status_container);
-  shelf_container->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
-      new ShelfWindowTargeter(shelf_container, shelf_layout_manager_)));
-  status_container->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
-      new ShelfWindowTargeter(status_container, shelf_layout_manager_)));
+  WmWindowAura::GetAuraWindow(shelf_container)->SetEventTargeter(
+      base::MakeUnique<ShelfWindowTargeter>(shelf_container, wm_shelf_aura_));
+  WmWindowAura::GetAuraWindow(status_container)->SetEventTargeter(
+      base::MakeUnique<ShelfWindowTargeter>(status_container, wm_shelf_aura_));
 
   views::Widget::AddObserver(this);
 }

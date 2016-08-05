@@ -30,8 +30,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                                public ShelfBackgroundAnimatorObserver,
                                public ShelfLayoutManagerObserver {
  public:
-  ShelfWidget(WmWindow* wm_shelf_container,
-              WmWindow* wm_status_container,
+  ShelfWidget(WmWindow* shelf_container,
+              WmWindow* status_container,
               WmShelfAura* wm_shelf_aura,
               WorkspaceController* workspace_controller);
   ~ShelfWidget() override;

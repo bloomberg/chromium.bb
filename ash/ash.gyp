@@ -651,6 +651,8 @@
       'shelf/shelf_view.h',
       'shelf/shelf_widget.cc',
       'shelf/shelf_widget.h',
+      'shelf/shelf_window_targeter.cc',
+      'shelf/shelf_window_targeter.h',
       'shell.cc',
       'shell.h',
       'shell_init_params.cc',
