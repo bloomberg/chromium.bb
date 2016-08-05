@@ -32,7 +32,6 @@
 #include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/CrossOriginAttributeValue.h"
-#include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
@@ -58,7 +57,7 @@ public:
         }
     };
 
-    explicit FetchRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);
+    FetchRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String());
     FetchRequest(const ResourceRequest&, const AtomicString& initiator, const ResourceLoaderOptions&);
     FetchRequest(const ResourceRequest&, const FetchInitiatorInfo&);
     ~FetchRequest();
@@ -71,10 +70,6 @@ public:
     void setCharset(const String& charset) { m_charset = charset; }
 
     const ResourceLoaderOptions& options() const { return m_options; }
-    void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
-
-    ResourceLoadPriority priority() const { return m_priority; }
-    void setPriority(ResourceLoadPriority priority) { m_priority = priority; }
 
     DeferOption defer() const { return m_defer; }
     void setDefer(DeferOption defer) { m_defer = defer; }
@@ -102,11 +97,12 @@ public:
     String contentSecurityPolicyNonce() const { return m_options.contentSecurityPolicyNonce; }
     void setContentSecurityPolicyNonce(const String& nonce) { m_options.contentSecurityPolicyNonce = nonce; }
 
+    void makeSynchronous();
+
 private:
     ResourceRequest m_resourceRequest;
     String m_charset;
     ResourceLoaderOptions m_options;
-    ResourceLoadPriority m_priority;
     bool m_forPreload;
     bool m_linkPreload;
     double m_preloadDiscoveryTime;

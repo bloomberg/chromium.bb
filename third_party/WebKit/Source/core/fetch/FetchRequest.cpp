@@ -30,11 +30,10 @@
 
 namespace blink {
 
-FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const String& charset, ResourceLoadPriority priority)
+FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const String& charset)
     : m_resourceRequest(resourceRequest)
     , m_charset(charset)
     , m_options(ResourceFetcher::defaultResourceOptions())
-    , m_priority(priority)
     , m_forPreload(false)
     , m_linkPreload(false)
     , m_preloadDiscoveryTime(0.0)
@@ -47,7 +46,6 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicS
 FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const ResourceLoaderOptions& options)
     : m_resourceRequest(resourceRequest)
     , m_options(options)
-    , m_priority(ResourceLoadPriorityUnresolved)
     , m_forPreload(false)
     , m_linkPreload(false)
     , m_preloadDiscoveryTime(0.0)
@@ -60,7 +58,6 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicS
 FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const FetchInitiatorInfo& initiator)
     : m_resourceRequest(resourceRequest)
     , m_options(ResourceFetcher::defaultResourceOptions())
-    , m_priority(ResourceLoadPriorityUnresolved)
     , m_forPreload(false)
     , m_linkPreload(false)
     , m_preloadDiscoveryTime(0.0)
@@ -105,6 +102,14 @@ void FetchRequest::setForPreload(bool forPreload, double discoveryTime)
 {
     m_forPreload = forPreload;
     m_preloadDiscoveryTime = discoveryTime;
+}
+
+void FetchRequest::makeSynchronous()
+{
+    // Synchronous requests should always be max priority, lest they hang the renderer.
+    m_resourceRequest.setPriority(ResourceLoadPriorityHighest);
+    m_resourceRequest.setTimeoutInterval(10);
+    m_options.synchronousPolicy = RequestSynchronously;
 }
 
 } // namespace blink

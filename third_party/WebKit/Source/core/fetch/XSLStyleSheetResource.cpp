@@ -50,10 +50,7 @@ static void applyXSLRequestProperties(ResourceRequest& request)
 XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(FetchRequest& request, ResourceFetcher* fetcher)
 {
     applyXSLRequestProperties(request.mutableResourceRequest());
-    request.mutableResourceRequest().setTimeoutInterval(10);
-    ResourceLoaderOptions options(request.options());
-    options.synchronousPolicy = RequestSynchronously;
-    request.setOptions(options);
+    request.makeSynchronous();
     XSLStyleSheetResource* resource = toXSLStyleSheetResource(fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
     if (resource && resource->data())
         resource->m_sheet = resource->decodedText();

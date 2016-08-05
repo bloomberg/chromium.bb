@@ -37,10 +37,7 @@ namespace blink {
 
 Resource* RawResource::fetchSynchronously(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    request.mutableResourceRequest().setTimeoutInterval(10);
-    ResourceLoaderOptions options(request.options());
-    options.synchronousPolicy = RequestSynchronously;
-    request.setOptions(options);
+    request.makeSynchronous();
     return fetcher->requestResource(request, RawResourceFactory(Resource::Raw));
 }
 

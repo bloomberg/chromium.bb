@@ -134,16 +134,8 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
     return ResourceLoadPriorityUnresolved;
 }
 
-ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const FetchRequest& request, ResourcePriority::VisibilityStatus visibility)
+ResourceLoadPriority ResourceFetcher::computeLoadPriority(Resource::Type type, const FetchRequest& request, ResourcePriority::VisibilityStatus visibility)
 {
-    // TODO(yoav): Change it here so that priority can be changed even after it was resolved.
-    if (request.priority() != ResourceLoadPriorityUnresolved)
-        return request.priority();
-
-    // Synchronous requests should always be max priority, lest they hang the renderer.
-    if (request.options().synchronousPolicy == RequestSynchronously)
-        return ResourceLoadPriorityHighest;
-
     ResourceLoadPriority priority = typeToPriority(type);
 
     // Visible resources (images in practice) get a boost to High priority.
@@ -166,9 +158,16 @@ ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const Fe
             priority = ResourceLoadPriorityLow;
         else if (request.forPreload() && m_imageFetched)
             priority = ResourceLoadPriorityMedium;
+    } else if (FetchRequest::LazyLoad == request.defer()) {
+        // A deferred load of type Raw is a link rel=preload, which should be Low instead of VeryLow.
+        priority = type == Resource::Raw ? ResourceLoadPriorityLow : ResourceLoadPriorityVeryLow;
     }
 
-    return context().modifyPriorityForExperiments(priority);
+    // A manually set priority acts as a floor. This is used to ensure that synchronous requests
+    // are always given the highest possible priority, as well as to ensure that there isn't priority
+    // churn if images move in and out of the viewport, or is displayed more than once, both in and out
+    // of the viewport.
+    return std::max(context().modifyPriorityForExperiments(priority), request.resourceRequest().priority());
 }
 
 static void populateResourceTiming(ResourceTimingInfo* info, Resource* resource)
@@ -428,8 +427,7 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
         return nullptr;
 
     unsigned long identifier = createUniqueIdentifier();
-    request.setPriority(loadPriority(factory.type(), request, ResourcePriority::NotVisible));
-    request.mutableResourceRequest().setPriority(request.priority());
+    request.mutableResourceRequest().setPriority(computeLoadPriority(factory.type(), request, ResourcePriority::NotVisible));
     initializeResourceRequest(request.mutableResourceRequest(), factory.type(), request.defer());
     context().willStartLoadingResource(identifier, request.mutableResourceRequest(), factory.type());
     if (!request.url().isValid())
@@ -505,8 +503,8 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
         // isn't at the same priority as the in-flight request, only allow promotions.
         // This can happen when a visible image's priority is increased and then another
         // reference to the image is parsed (which would be at a lower priority).
-        if (request.priority() > resource->resourceRequest().priority())
-            resource->didChangePriority(request.priority(), 0);
+        if (request.resourceRequest().priority() > resource->resourceRequest().priority())
+            resource->didChangePriority(request.resourceRequest().priority(), 0);
     }
 
     // If only the fragment identifiers differ, it is the same resource.
@@ -1132,7 +1130,7 @@ void ResourceFetcher::updateAllImageResourcePriorities()
             continue;
 
         ResourcePriority resourcePriority = resource->priorityFromObservers();
-        ResourceLoadPriority resourceLoadPriority = loadPriority(Resource::Image, FetchRequest(resource->resourceRequest(), FetchInitiatorInfo()), resourcePriority.visibility);
+        ResourceLoadPriority resourceLoadPriority = computeLoadPriority(Resource::Image, FetchRequest(resource->resourceRequest(), FetchInitiatorInfo()), resourcePriority.visibility);
         if (resourceLoadPriority == resource->resourceRequest().priority())
             continue;
 

@@ -77,8 +77,9 @@ LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
 
 FetchRequest LinkRequestBuilder::build(bool lowPriority) const
 {
-    ResourceLoadPriority priority = lowPriority ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityUnresolved;
-    FetchRequest request(ResourceRequest(m_owner->document().completeURL(m_url)), m_owner->localName(), m_charset, priority);
+    FetchRequest request(ResourceRequest(m_owner->document().completeURL(m_url)), m_owner->localName(), m_charset);
+    if (lowPriority)
+        request.setDefer(FetchRequest::LazyLoad);
     request.setContentSecurityPolicyNonce(m_owner->fastGetAttribute(HTMLNames::nonceAttr));
     return request;
 }

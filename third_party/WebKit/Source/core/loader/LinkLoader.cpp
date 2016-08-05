@@ -296,7 +296,8 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
         document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
     linkRequest.setForPreload(true, monotonicallyIncreasingTime());
     linkRequest.setLinkPreload(true);
-    linkRequest.setPriority(document.fetcher()->loadPriority(resourceType, linkRequest));
+    if (resourceType == Resource::LinkPreload)
+        linkRequest.setDefer(FetchRequest::LazyLoad);
     return document.loader()->startPreload(resourceType, linkRequest);
 }
 

@@ -122,8 +122,6 @@ public:
 
     void acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
-    ResourceLoadPriority loadPriority(Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus = ResourcePriority::NotVisible);
-
     enum ResourceLoadStartType {
         ResourceLoadingFromNetwork,
         ResourceLoadingFromCache
@@ -151,6 +149,7 @@ private:
     void initializeRevalidation(ResourceRequest&, Resource*);
     Resource* createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
     void storeResourceTimingInitiatorInformation(Resource*);
+    ResourceLoadPriority computeLoadPriority(Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus);
 
     Resource* resourceForStaticData(const FetchRequest&, const ResourceFactory&, const SubstituteData&);
 
