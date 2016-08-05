@@ -1586,9 +1586,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_PRINT:
-      return prefs->GetBoolean(prefs::kPrintingEnabled) &&
-             (params_.media_type == WebContextMenuData::MediaTypeNone ||
-              params_.media_flags & WebContextMenuData::MediaCanPrint);
+      return IsPrintPreviewEnabled();
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
@@ -2085,6 +2083,17 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::Clipboard::GetPlainTextFormatType(),
       ui::CLIPBOARD_TYPE_COPY_PASTE);
+}
+
+bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
+  if (params_.media_type != WebContextMenuData::MediaTypeNone &&
+      !(params_.media_flags & WebContextMenuData::MediaCanPrint)) {
+    return false;
+  }
+
+  // |browser| is a nullptr if a modal dialog is open.
+  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  return browser && chrome::CanPrint(browser);
 }
 
 bool RenderViewContextMenu::IsRouteMediaEnabled() const {

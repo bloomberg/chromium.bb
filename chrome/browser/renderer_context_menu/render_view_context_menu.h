@@ -164,6 +164,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   bool IsSavePageEnabled() const;
   bool IsPasteEnabled() const;
   bool IsPasteAndMatchStyleEnabled() const;
+  bool IsPrintPreviewEnabled() const;
   bool IsRouteMediaEnabled() const;
 
   // Command execution functions.
