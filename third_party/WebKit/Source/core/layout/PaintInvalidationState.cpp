@@ -200,6 +200,11 @@ void PaintInvalidationState::updateForCurrentObject(const PaintInvalidationState
         }
         // Use slow path to get the offset of the fixed-position, and enable fast path for descendants.
         FloatPoint fixedOffset = m_currentObject.localToAncestorPoint(FloatPoint(), m_paintInvalidationContainer, TraverseDocumentBoundaries);
+        if (m_paintInvalidationContainer->isBox()) {
+            const LayoutBox* box = toLayoutBox(m_paintInvalidationContainer);
+            if (box->hasOverflowClip())
+                fixedOffset.move(box->scrolledContentOffset());
+        }
         m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y());
         // In the above way to get paint offset, we can't get accurate clip rect, so just assume no clip.
         // Clip on fixed-position is rare, in case that paintInvalidationContainer crosses frame boundary
@@ -307,14 +312,14 @@ void PaintInvalidationState::updateForNormalChildren()
 
     const LayoutBox& box = toLayoutBox(m_currentObject);
 
-    // Do not clip scroll layer contents because the compositor expects the whole layer
-    // to be always invalidated in-time.
-    if (box == m_paintInvalidationContainer && box.scrollsOverflow())
+    // Do not clip or scroll for the paint invalidation container, if it scrolls overflow, because it will always use composited
+    // scrolling in this case.
+    if (box == m_paintInvalidationContainer && box.scrollsOverflow()) {
         ASSERT(!m_clipped); // The box establishes paint invalidation container, so no m_clipped inherited.
-    else
+    } else {
         addClipRectRelativeToPaintOffset(box.overflowClipRect(LayoutPoint()));
-
-    m_paintOffset -= box.scrolledContentOffset();
+        m_paintOffset -= box.scrolledContentOffset();
+    }
 
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
@@ -323,7 +328,14 @@ static FloatPoint slowLocalToAncestorPoint(const LayoutObject& object, const Lay
 {
     if (object.isLayoutView())
         return toLayoutView(object).localToAncestorPoint(point, &ancestor, TraverseDocumentBoundaries | InputIsInFrameCoordinates);
-    return object.localToAncestorPoint(point, &ancestor, TraverseDocumentBoundaries);
+    FloatPoint result = object.localToAncestorPoint(point, &ancestor, TraverseDocumentBoundaries);
+    // Paint invalidation does not include scroll of the ancestor.
+    if (ancestor.isBox()) {
+        const LayoutBox* box = toLayoutBox(&ancestor);
+        if (box->hasOverflowClip())
+            result.move(box->scrolledContentOffset());
+    }
+    return result;
 }
 
 LayoutPoint PaintInvalidationState::computePositionFromPaintInvalidationBacking() const

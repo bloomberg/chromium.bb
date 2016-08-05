@@ -60,6 +60,7 @@ TEST_F(VisualRectMappingTest, LayoutText)
     LayoutRect originalRect(0, 60, 20, 80);
     LayoutRect rect = originalRect;
     EXPECT_TRUE(text->mapToVisualRectInAncestorSpace(container, rect));
+    rect.move(-container->scrolledContentOffset());
     EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
 
     rect = originalRect;
@@ -69,6 +70,7 @@ TEST_F(VisualRectMappingTest, LayoutText)
 
     rect = LayoutRect(0, 60, 80, 0);
     EXPECT_TRUE(text->mapToVisualRectInAncestorSpace(container, rect, EdgeInclusive));
+    rect.move(-container->scrolledContentOffset());
     EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
 }
 
@@ -88,6 +90,7 @@ TEST_F(VisualRectMappingTest, LayoutInline)
     LayoutRect originalRect(0, 60, 20, 80);
     LayoutRect rect = originalRect;
     EXPECT_TRUE(leaf->mapToVisualRectInAncestorSpace(container, rect));
+    rect.move(-container->scrolledContentOffset());
     EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
 
     rect = originalRect;
@@ -97,6 +100,7 @@ TEST_F(VisualRectMappingTest, LayoutInline)
 
     rect = LayoutRect(0, 60, 80, 0);
     EXPECT_TRUE(leaf->mapToVisualRectInAncestorSpace(container, rect, EdgeInclusive));
+    rect.move(-container->scrolledContentOffset());
     EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
 }
 
@@ -260,6 +264,7 @@ TEST_F(VisualRectMappingTest, ContainerOverflowScroll)
 
     rect = targetOverflowRect;
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
+    rect.move(-container->scrolledContentOffset());
     // 2 = target_x(0) + container_border_left(10) - scroll_left(8)
     // 3 = target_y(0) + container_border_top(10) - scroll_top(7)
     // Rect is not clipped by container's overflow clip because of overflow:scroll.
@@ -323,6 +328,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll)
     rect = targetOverflowRect;
     target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
+    rect.move(-container->scrolledContentOffset());
     // -2 = target_physical_x(100) + container_border_left(40) - scroll_left(142)
     // 3 = target_y(0) + container_border_top(10) - scroll_top(7)
     // Rect is clipped by container's overflow clip because of overflow:scroll.
@@ -460,6 +466,7 @@ TEST_F(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode)
 
     rect = targetOverflowRect;
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
+    rect.move(-container->scrolledContentOffset());
     // -2 = target_physical_x(100) + container_border_left(40) - scroll_left(142)
     // 3 = target_y(0) + container_border_top(10) - scroll_top(7)
     // Rect is not clipped by container's overflow clip.
@@ -491,7 +498,7 @@ TEST_F(VisualRectMappingTest, DifferentPaintInvalidaitionContainerForAbsolutePos
     EXPECT_EQ(LayoutRect(0, 0, 2000, 2000), normalFlowOverflowRect);
     LayoutRect rect = normalFlowOverflowRect;
     EXPECT_TRUE(normalFlow->mapToVisualRectInAncestorSpace(scroller, rect));
-    EXPECT_EQ(LayoutRect(-88, -77, 2000, 2000), rect);
+    EXPECT_EQ(LayoutRect(0, 0, 2000, 2000), rect);
     checkPaintInvalidationStateRectMapping(rect, normalFlowOverflowRect, *normalFlow, layoutView(), *scroller);
 
     LayoutBlock* stackingContext = toLayoutBlock(getLayoutObjectByElementId("stacking-context"));

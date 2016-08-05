@@ -1210,6 +1210,18 @@ bool LayoutObject::compositedScrollsWithRespectTo(const LayoutBoxModelObject& pa
     return paintInvalidationContainer.usesCompositedScrolling() && this != &paintInvalidationContainer;
 }
 
+IntSize LayoutObject::scrollAdjustmentForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer) const
+{
+    // Non-composited scrolling should be included in the bounds of scrolled items. Since mapToVisualRectInAncestorSpace does not include
+    // scrolling of the ancestor, we need to add it back in after.
+    if (paintInvalidationContainer.isBox() && !paintInvalidationContainer.usesCompositedScrolling() && this != &paintInvalidationContainer) {
+        const LayoutBox* box = toLayoutBox(&paintInvalidationContainer);
+        if (box->hasOverflowClip())
+            return -box->scrolledContentOffset();
+    }
+    return IntSize();
+}
+
 void LayoutObject::invalidatePaintRectangle(const LayoutRect& dirtyRect) const
 {
     RELEASE_ASSERT(isRooted());
@@ -1223,12 +1235,7 @@ void LayoutObject::invalidatePaintRectangle(const LayoutRect& dirtyRect) const
     const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidation();
     LayoutRect dirtyRectOnBacking = dirtyRect;
     PaintLayer::mapRectToPaintInvalidationBacking(*this, paintInvalidationContainer, dirtyRectOnBacking);
-
-    // Composited scrolling should not be included in the bounds of composited-scrolled items.
-    if (compositedScrollsWithRespectTo(paintInvalidationContainer)) {
-        LayoutSize inverseOffset(toLayoutBox(&paintInvalidationContainer)->scrolledContentOffset());
-        dirtyRectOnBacking.move(inverseOffset);
-    }
+    dirtyRectOnBacking.move(scrollAdjustmentForPaintInvalidation(paintInvalidationContainer));
 
     invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRectOnBacking, PaintInvalidationRectangle);
 
@@ -1318,16 +1325,10 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
 
     LayoutRect oldSelectionRect = previousSelectionRectForPaintInvalidation();
     LayoutRect newSelectionRect = localSelectionRect();
-    if (!newSelectionRect.isEmpty()) {
+    if (!newSelectionRect.isEmpty())
         paintInvalidationState.mapLocalRectToPaintInvalidationBacking(newSelectionRect);
 
-        // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
-        // does not move on scroll.
-        if (compositedScrollsWithRespectTo(paintInvalidationContainer)) {
-            LayoutSize inverseOffset(toLayoutBox(&paintInvalidationContainer)->scrolledContentOffset());
-            newSelectionRect.move(inverseOffset);
-        }
-    }
+    newSelectionRect.move(scrollAdjustmentForPaintInvalidation(paintInvalidationContainer));
 
     setPreviousSelectionRectForPaintInvalidation(newSelectionRect);
 
@@ -1359,14 +1360,9 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     LayoutRect newBounds = paintInvalidationState.computePaintInvalidationRectInBacking();
     LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : paintInvalidationState.computePositionFromPaintInvalidationBacking();
 
-    // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
-    // does not move on scroll.
-    // TODO(chrishtr): can we just avoid adding in the scroll in the first place in LayoutBox::mapScrollingContentsRectToBoxSpace?
-    if (compositedScrollsWithRespectTo(paintInvalidationContainer)) {
-        LayoutSize inverseOffset(toLayoutBox(&paintInvalidationContainer)->scrolledContentOffset());
-        newLocation.move(inverseOffset);
-        newBounds.move(inverseOffset);
-    }
+    IntSize adjustment = scrollAdjustmentForPaintInvalidation(paintInvalidationContainer);
+    newLocation.move(adjustment);
+    newBounds.move(adjustment);
 
     setPreviousPaintInvalidationRect(newBounds);
     if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())

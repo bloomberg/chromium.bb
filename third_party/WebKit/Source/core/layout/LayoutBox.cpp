@@ -1013,11 +1013,12 @@ bool LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect, ApplyOverfl
     if (!hasOverflowClip())
         return true;
 
+    if (applyOverflowClip == ApplyNonScrollOverflowClip && scrollsOverflow()) {
+        return true;
+    }
+
     LayoutSize offset = LayoutSize(-scrolledContentOffset());
     rect.move(offset);
-
-    if (applyOverflowClip == ApplyNonScrollOverflowClip && scrollsOverflow())
-        return true;
 
     LayoutRect clipRect = overflowClipRect(LayoutPoint());
 

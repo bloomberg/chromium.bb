@@ -1138,9 +1138,9 @@ public:
 
     // Given a rect in the object's coordinate space, mutates the rect into one representing the size of its visual painted
     // output as if |ancestor| was the root of the page: the rect is modified by any intervening clips, transforms
-    // and scrolls between |this| and |ancestor|, but not any above |ancestor|.
+    // and scrolls between |this| and |ancestor| (not inclusive of |ancestor|), but not any above |ancestor|.
     // The output is in the physical, painted coordinate pixel space of |ancestor|.
-    // Overflow clipping is *not* applied for |ancestor| itself if |ancestor| scrolls overflow.
+    // Overflow clipping and scrolling is *not* applied for |ancestor| itself if |ancestor| scrolls overflow.
     // The output rect is suitable for purposes such as paint invalidation.
     //
     // If visualRectFlags has the EdgeInclusive bit set, clipping operations will use
@@ -1408,6 +1408,7 @@ public:
     void clearChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(false); }
 
     bool compositedScrollsWithRespectTo(const LayoutBoxModelObject& paintInvalidationContainer) const;
+    IntSize scrollAdjustmentForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 protected:
     enum LayoutObjectType {

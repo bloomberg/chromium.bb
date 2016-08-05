@@ -61,14 +61,17 @@ void IntersectionObservation::clipToRoot(IntersectionGeometry& geometry) const
     // Map and clip rect into root element coordinates.
     // TODO(szager): the writing mode flipping needs a test.
     DCHECK(m_target);
-    LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
+    LayoutBox* rootLayoutObject = toLayoutBox(m_observer->rootLayoutObject());
     LayoutObject* targetLayoutObject = target()->layoutObject();
 
-    geometry.doesIntersect = targetLayoutObject->mapToVisualRectInAncestorSpace(toLayoutBoxModelObject(rootLayoutObject), geometry.intersectionRect, EdgeInclusive);
+    geometry.doesIntersect = targetLayoutObject->mapToVisualRectInAncestorSpace(rootLayoutObject, geometry.intersectionRect, EdgeInclusive);
+    if (rootLayoutObject->hasOverflowClip())
+        geometry.intersectionRect.move(-rootLayoutObject->scrolledContentOffset());
+
     if (!geometry.doesIntersect)
         return;
     LayoutRect rootClipRect(geometry.rootRect);
-    toLayoutBox(rootLayoutObject)->flipForWritingMode(rootClipRect);
+    rootLayoutObject->flipForWritingMode(rootClipRect);
     geometry.doesIntersect &= geometry.intersectionRect.inclusiveIntersect(rootClipRect);
 }
 

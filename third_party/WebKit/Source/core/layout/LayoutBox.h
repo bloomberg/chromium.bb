@@ -50,6 +50,7 @@ enum ShouldComputePreferred { ComputeActual, ComputePreferred };
 
 enum ApplyOverflowClipFlag {
     ApplyOverflowClip,
+    // Don't apply overflow clipping or scrolling.
     ApplyNonScrollOverflowClip
 };
 
