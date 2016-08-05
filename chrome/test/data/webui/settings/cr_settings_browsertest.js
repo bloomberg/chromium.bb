@@ -747,3 +747,24 @@ CrControlledButtonTest.prototype = {
 TEST_F('CrControlledButtonTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrControlledRadioButtonTest() {}
+
+CrControlledRadioButtonTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/controls/controlled_radio_button.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'controlled_radio_button_tests.js',
+  ]),
+};
+
+TEST_F('CrControlledRadioButtonTest', 'All', function() {
+  mocha.run();
+});

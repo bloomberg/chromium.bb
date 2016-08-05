@@ -16,19 +16,17 @@ Polymer({
     /** @private */
     controlled_: {
       type: Boolean,
-      computed: 'computeControlled_(pref)',
+      computed: 'computeControlled_(pref.*)',
       reflectToAttribute: true,
     },
   },
 
   /**
-   * @param {chrome.settingsPrivate.PrefObject} pref
    * @return {boolean} Whether the button is disabled.
    * @private
    */
-  computeControlled_: function(pref) {
-    var pref = /** @type {!chrome.settingsPrivate.PrefObject} */(this.pref);
-    return this.isPrefPolicyControlled(pref);
+  computeControlled_: function() {
+    return this.isPrefPolicyControlled(assert(this.pref));
   },
 
   /**

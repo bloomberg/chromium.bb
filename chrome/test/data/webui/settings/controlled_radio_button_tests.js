@@ -1,0 +1,40 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+suite('controlled radio button', function() {
+  /** @type {ControlledRadioButtonElement} */
+  var radioButton;
+
+  /** @type {!chrome.settingsPrivate.PrefObject} */
+  var pref = {
+    key: 'test',
+    type: chrome.settingsPrivate.PrefType.BOOLEAN,
+    value: true
+  };
+
+  setup(function() {
+    PolymerTest.clearBody();
+    radioButton = document.createElement('controlled-radio-button');
+    radioButton.set('pref', pref);
+    document.body.appendChild(radioButton);
+  });
+
+  test('disables when pref is managed', function() {
+    radioButton.set('pref.policyEnforcement',
+                    chrome.settingsPrivate.PolicyEnforcement.ENFORCED);
+    Polymer.dom.flush();
+    assertTrue(radioButton.$$('paper-radio-button').disabled);
+    assertFalse(!!radioButton.$$('cr-policy-pref-indicator'));
+
+    radioButton.set('name', 'true');
+    Polymer.dom.flush();
+    assertTrue(!!radioButton.$$('cr-policy-pref-indicator'));
+
+    radioButton.set('pref.policyEnforcement', undefined);
+    Polymer.dom.flush();
+    assertFalse(radioButton.$$('paper-radio-button').disabled);
+    assertEquals('none',
+                 radioButton.$$('cr-policy-pref-indicator').style.display);
+  });
+});
