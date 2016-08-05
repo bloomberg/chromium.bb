@@ -1,3 +1,51 @@
+/* global self */
+
+// testharness.js has the higher priority.
+var TESTHARNESS = true;
+var JSTEST = false;
+
+(function () {
+    // Selected properies from testharness.js
+    var testharnessProperties = [
+        'test', 'async_test', 'promise_test', 'promise_rejects',
+        'generate_tests', 'setup', 'done', 'assert_true', 'assert_false'
+    ];
+
+    // Selected properties from js-test.js
+    var jsTestProperties = [
+        'isJsTest', 'testPassed', 'testFailed', 'gc', 'finishJSTest'
+    ];
+
+    // Check if testharness.js is properly loaded and set up a flag for it.
+    for (var name in testharnessProperties) {
+        if (!self.hasOwnProperty(testharnessProperties[name])) {
+            TESTHARNESS = false;
+            break;
+        }
+    }
+
+    // Immediately return here because testharness.js is ready.
+    if (TESTHARNESS)
+        return;
+
+    // Because testharness.js is not loaded, let us assume that js-test.js might
+    // be in use. Check if js-test.js is properly loaded and set up a flag for
+    // it.
+    JSTEST = true;
+    for (var name in jsTestProperties) {
+        if (!self.hasOwnProperty(jsTestProperties[name])) {
+            JSTEST = false;
+            break;
+        }
+    }
+
+    // If both are not loaded at all, throw here.
+    if (!JSTEST)
+        throw new Error('Cannot proceed. No test infrastructure is loaded.');
+})();
+
+
+
 function writeString(s, a, offset) {
     for (var i = 0; i < s.length; ++i) {
         a[offset + i] = s.charCodeAt(i);
@@ -301,6 +349,24 @@ function isValidNumber(x) {
         this.currentTask = 0;
     }
 
+    // This is to prime the task runner for the testharness.js async operation.
+    Tasks.prototype._initialize = function () {
+        if (TESTHARNESS) {
+            setup(new Function(), {
+                explicit_done: true
+            });
+        }
+    };
+
+    // Finalize the task runner by notifying testharness and testRunner that
+    // all the task is completed.
+    Tasks.prototype._finalize = function () {
+        if (TESTHARNESS) {
+            // From testharness.js
+            done();
+        }
+    };
+
     Tasks.prototype.defineTask = function (taskName, taskFunc) {
         // Check if there is a task defined with the same name.  If found, do
         // not add the task to the roster.
@@ -319,6 +385,8 @@ function isValidNumber(x) {
     // undefined or duplicate task in the requested task arguments.  If there
     // is no argument, run all the defined tasks.
     Tasks.prototype.runTasks = function () {
+
+        this._initialize();
 
         if (arguments.length > 0) {
 
@@ -341,21 +409,23 @@ function isValidNumber(x) {
             return;
         }
 
-        // done() callback from each task.  Increase the task index and call the
-        // next task.  Note that explicit signaling by done() in each task
-        // is needed because some of tests run asynchronously.
-        var done = function () {
+        // taskDone() callback from each task.  Increase the task index and call
+        // the next task.  Note that explicit signaling by taskDone() in each
+        // task is needed because some of tests run asynchronously.
+        var taskDone = function () {
             if (this.currentTask !== this.queue.length - 1) {
                 ++this.currentTask;
                 // debug('>> Audit.runTasks: ' + this.queue[this.currentTask]);
-                this.tasks[this.queue[this.currentTask]](done);
+                this.tasks[this.queue[this.currentTask]](taskDone);
+            } else {
+                this._finalize();
             }
             return;
         }.bind(this);
 
         // Start the first task.
         // debug('>> Audit.runTasks: ' + this.queue[this.currentTask]);
-        this.tasks[this.queue[this.currentTask]](done);
+        this.tasks[this.queue[this.currentTask]](taskDone);
     };
 
     return {
@@ -399,12 +469,6 @@ var Should = (function () {
 
         // Check if the target contains any NaN value.
         this._checkNaN(this.target, 'ACTUAL');
-        // if (resultNaNCheck.length > 0) {
-        //     var failureMessage = 'NaN found while testing the target (' + label + ')';
-        //     testFailed(failureMessage + ': "' + this.desc + '" \n' +
-        //         resultNaNCheck);
-        //     throw failureMessage;
-        // }
 
         // |_testPassed| and |_testFailed| set this appropriately.
         this._success = false;
@@ -428,13 +492,28 @@ var Should = (function () {
 
     // Internal methods starting with a underscore.
     ShouldModel.prototype._testPassed = function (msg) {
-        testPassed(this.desc + ' ' + msg + '.');
         this._success = true;
+        if (TESTHARNESS) {
+            // Using testharness.js
+            test(function () {
+                assert_true(true);
+                }, this.desc + ' ' + msg + '.');
+        } else {
+            // Using js-test.js
+            testPassed(this.desc + ' ' + msg + '.');
+        }
     };
 
     ShouldModel.prototype._testFailed = function (msg) {
-        testFailed(this.desc + ' ' + msg + '.');
         this._success = false;
+        var that = this;
+        if (TESTHARNESS) {
+            test(function () {
+                assert_true(false, that.desc + ' ' + msg + '.');
+                }, this.desc);
+        } else {
+            testFailed(this.desc + ' ' + msg + '.');
+        }
     };
 
     ShouldModel.prototype._isArray = function (arg) {
@@ -451,7 +530,15 @@ var Should = (function () {
         var failureMessage = 'Assertion failed: ' + reason + ' ' + this.desc +'.';
         if (arguments.length >= 3)
             failureMessage += ": " + value;
-        testFailed(failureMessage);
+
+        if (TESTHARNESS) {
+            test(function () {
+                assert_true(false, reason + ' (' + value + ')');
+            }, this.desc)
+        } else {
+            testFailed(failureMessage);
+        }
+
         throw failureMessage;
     };
 
@@ -464,7 +551,14 @@ var Should = (function () {
 
         // Checking a single variable first.
         if (Number.isNaN(value)) {
-            testFailed(failureMessage);
+            if (TESTHARNESS) {
+                test(function () {
+                    assert_true(false, failureMessage);
+                }, this.desc)
+            } else {
+                testFailed(failureMessage);
+            }
+
             throw failureMessage;
         }
 
@@ -492,7 +586,14 @@ var Should = (function () {
             }
         }
 
-        testFailed(failureMessage + failureDetail);
+        if (TESTHARNESS) {
+            test(function () {
+                assert_true(false, failureMessage + failureDetail);
+            }, this.desc)
+        } else {
+            testFailed(failureMessage + failureDetail);
+        }
+
         throw failureMessage;
     };
 
