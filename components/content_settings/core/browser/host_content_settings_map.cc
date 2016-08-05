@@ -524,7 +524,6 @@ void HostContentSettingsMap::MigrateDomainScopedSettings(bool after_sync) {
   DCHECK(status != NOT_MIGRATED || !after_sync);
 
   const ContentSettingsType kDomainScopedTypes[] = {
-      CONTENT_SETTINGS_TYPE_COOKIES,
       CONTENT_SETTINGS_TYPE_IMAGES,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
