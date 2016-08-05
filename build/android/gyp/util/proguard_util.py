@@ -105,18 +105,6 @@ class ProguardCmdBuilder(object):
     if self._tested_apk_info_path:
       tested_apk_info = build_utils.ReadJson(self._tested_apk_info_path)
       self._configs += tested_apk_info['configs']
-      self._injars = [
-          p for p in self._injars if not p in tested_apk_info['inputs']]
-      if not self._libraries:
-        self._libraries = []
-      self._libraries += tested_apk_info['inputs']
-      self._mapping = tested_apk_info['mapping']
-      cmd += [
-        '-dontobfuscate',
-        '-dontoptimize',
-        '-dontshrink',
-        '-dontskipnonpubliclibraryclassmembers',
-      ]
 
     if self._mapping:
       cmd += [

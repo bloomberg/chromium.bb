@@ -2,104 +2,27 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file is for proguard flags which will be applied to apks that are being
-# built to be instrumentation tested. The flags in this file should only affect
-# how the instrumentation tests interact with the .apk. Do not put any flags in
-# this file which might affect the correctness of the .apk.
+# This file is for proguard flags which are applied to the combined test and
+# tested code. Do not put any flags in this file which might affect the
+# correctness of the .apk we are testing, since it will apply to that .apk as
+# well.
 
-# This line prevents optmization from being applied to either packages. We rely
-# on optimizations being off to prevent inlining functions our instrumentation
-# tests use.
-# TODO(smaier): when buildbot scripts have been updated to not include this
-# config as part of its release build, switch these lines to:
-# -dontoptimize
--keepnames,allowobfuscation class com.google.android.apps.chrome.**,org.chromium.** {
-  *;
-}
-
-# Keeping @VisibleForTesting and its annotated classes + methods
--keep @interface org.chromium.base.VisibleForTesting
--keep @org.chromium.base.VisibleForTesting class **
--keepclasseswithmembers class * {
-  @org.chromium.base.VisibleForTesting <methods>;
-}
-
-# TODO(aurimas): figure out why we need to keep these classes.
--keep class org.chromium.base.test.** {
-  *;
-}
-
-# Everything below this is kept because they are referenced by the test APK.
--keep class android.support.v7.mediarouter.R* {
-  *;
-}
-
--keep class android.support.v7.media.MediaRouteProvider** {
-  *;
-}
-
--keep class android.support.v4.app.FragmentManager** {
-  *;
-}
-
--keep class android.support.v4.app.DialogFragment** {
-  *;
-}
-
--keep class android.support.v7.app.NotificationCompat** {
-  *;
-}
-
--keep class android.support.v7.app.AlertDialog** {
-  *;
-}
-
--keep class com.google.android.gms.cast.CastMediaControlIntent* {
-  *;
-}
-
--keepnames class com.google.android.gms.gcm.** {
-  *;
-}
-
--keepclassmembers class com.google.android.gms.gcm.TaskParams {
-  public <init>(java.lang.String);
-}
-
--keepnames class jp.tomorrowkey.android.gifplayer.** {
-  public *;
-}
-
-# Used in tests.
--keep class android.support.v4.view.ViewCompat {
-  public static int getLayoutDirection(android.view.View);
-}
-
-# flingViewport is used by Android WebView and a Chrome test.
--keepclassmembers class org.chromium.content.browser.ContentViewCore {
-  public void flingViewport(long, int, int);
-}
-
-# Needed to compile ChromeTest.apk
--keep class android.support.customtabs.** {
+# We want all tests to stick around.
+-keep class * extends junit.framework.TestCase {
   *;
 }
 
 # TODO(yfriedman): Remove when crbug.com/488192 is fixed.
 -dontwarn org.apache.http.conn.scheme.LayeredSocketFactory
 
-# Needed to run ChromeTest.apk
--keepnames class com.google.android.gms.common.GoogleApiAvailability {
+# We have some "library class WebView depends on program class SslCertificate"
+# warnings, and they don't affect us.
+-dontwarn android.webkit.WebView*
+
+# We don't want BasicHttpParams or AbstractHttpParams to get renamed since that
+# then makes our calls to them use the implementation that we find in our .dex
+# file, which is broken. We need to rely on these calls resolving to the
+# system's implementation. See crbug.com/488192#c36.
+-keep class org.apache.** {
   *;
-}
-
-# Needed for chrome_sync_shell_test_apk. Note - these do no affect chrome_apk's
-# size.
--keep class org.chromium.components.sync.protocol.* { *; }
-
-# These resources are referenced in tests, but not in the real application.
--keepclassmembers class org.chromium.chrome.R$id {
-  int webapp_splash_space;
-  int mr_chooser_list;
-  int find_toolbar;
 }

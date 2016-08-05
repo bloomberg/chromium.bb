@@ -521,14 +521,33 @@ def main(argv):
     javac_classpath = [c['jar_path'] for c in direct_library_deps]
     java_full_classpath = [c['jar_path'] for c in all_library_deps]
 
-  # An instrumentation test apk should exclude the dex files that are in the apk
-  # under test.
+  # The java code for an instrumentation test apk is assembled differently for
+  # ProGuard vs. non-ProGuard.
+  #
+  # Without ProGuard: Each library's jar is dexed separately and then combined
+  # into a single classes.dex. A test apk will include all dex files not already
+  # present in the apk-under-test. At runtime all test code lives in the test
+  # apk, and the program code lives in the apk-under-test.
+  #
+  # With ProGuard: Each library's .jar file is fed into ProGuard, which outputs
+  # a single .jar, which is then dexed into a classes.dex. A test apk includes
+  # all jar files from the program and the tests because having them separate
+  # doesn't work with ProGuard's whole-program optimizations. Although the
+  # apk-under-test still has all of its code in its classes.dex, none of it is
+  # used at runtime because the copy of it within the test apk takes precidence.
   if options.type == 'android_apk' and options.tested_apk_config:
     tested_apk_config = GetDepConfig(options.tested_apk_config)
 
     expected_tested_package = tested_apk_config['package_name']
     AndroidManifest(options.android_manifest).CheckInstrumentation(
         expected_tested_package)
+    if options.proguard_enabled:
+      # Add all tested classes to the test's classpath to ensure that the test's
+      # java code is a superset of the tested apk's java code
+      java_full_classpath += [
+          jar for jar in tested_apk_config['java']['full_classpath']
+          if jar not in java_full_classpath]
+
     if tested_apk_config['proguard_enabled']:
       assert options.proguard_enabled, ('proguard must be enabled for '
           'instrumentation apks if it\'s enabled for the tested apk.')
@@ -564,7 +583,7 @@ def main(argv):
     config['javac']['classpath'] = javac_classpath
     config['javac']['interface_classpath'] = [
         _AsInterfaceJar(p) for p in javac_classpath]
-    config['java'] = {
+    deps_info['java'] = {
       'full_classpath': java_full_classpath
     }
 

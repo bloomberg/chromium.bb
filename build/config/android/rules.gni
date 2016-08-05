@@ -2290,6 +2290,15 @@ if (enable_java_templates) {
         data_deps += invoker.additional_apks
       }
 
+      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
+        # When ProGuard is on, we use ProGuard to combine the under test java
+        # code and the test java code. This is to allow us to apply all ProGuard
+        # optimizations that we ship with, but not have them break tests. The
+        # apk under test will still have the same resources, assets, and
+        # manifest, all of which are the ones used in the tests.
+        proguard_configs = [ "//testing/android/proguard_for_test.flags" ]
+      }
+
       create_dist_ijar = true
       if (defined(invoker.run_findbugs_override)) {
         # Only allow findbugs when there are java files.

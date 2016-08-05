@@ -12,8 +12,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.test.webapk.TestWebApkServiceImplWrapper;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
@@ -62,11 +62,8 @@ public class WebApkServiceImplTest extends InstrumentationTestCase {
 
     /**
      * Test that an application which is not allowed to use the WebAPK service actually cannot.
-     *
-     * @SmallTest
-     * crbug.com/634390
      */
-    @DisabledTest
+    @SmallTest
     public void testApiFailsIfNoPermission() throws Exception {
         IWebApkApi api = bindService(mContext, mTargetUid + 1, SMALL_ICON_ID);
         try {
@@ -79,11 +76,8 @@ public class WebApkServiceImplTest extends InstrumentationTestCase {
 
     /**
      * Test that an application which is allowed to use the WebAPK service actually can.
-     *
-     * @SmallTest
-     * crbug.com/634390
      */
-    @DisabledTest
+    @SmallTest
     public void testApiWorksIfHasPermission() throws Exception {
         IWebApkApi api = bindService(mContext, mTargetUid, SMALL_ICON_ID);
         try {

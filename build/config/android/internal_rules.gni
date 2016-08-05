@@ -867,7 +867,7 @@ if (enable_java_templates) {
         rebase_path(depfile, root_build_dir),
         "--output",
         rebase_path(java_script, root_build_dir),
-        "--classpath=@FileArg($_rebased_build_config:java:full_classpath)",
+        "--classpath=@FileArg($_rebased_build_config:deps_info:java:full_classpath)",
         "--jar-path",
         rebase_path(_jar_path, root_build_dir),
         "--main-class",

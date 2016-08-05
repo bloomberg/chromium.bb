@@ -1,8 +1,9 @@
 # Keep line number information, useful for stack traces.
 -keepattributes SourceFile,LineNumberTable
 
-# Keep all runtime visible annotations
--keepattributes RuntimeVisibleAnnotations
+# Keep all annotation related attributes that can affect runtime
+-keepattributes RuntimeVisible*Annotations
+-keepattributes AnnotationDefault
 
 # Keep the annotations, because if we don't, the ProGuard rules that use them
 # will not be respected. These classes then show up in our final dex, which we
