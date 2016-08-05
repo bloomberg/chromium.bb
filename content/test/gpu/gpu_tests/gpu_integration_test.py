@@ -5,6 +5,7 @@
 import logging
 
 from telemetry.testing import serially_executed_browser_test_case
+from telemetry.util import screenshot
 
 from gpu_tests import exception_formatter
 from gpu_tests import gpu_test_expectations
@@ -29,21 +30,33 @@ class GpuIntegrationTest(
     for test_name, url, args in cls.GenerateGpuTests(options):
       yield test_name, (url, test_name, args)
 
-  def _RestartBrowser(self, reason):
+  @classmethod
+  def StartBrowser(cls):
     for x in range(0, 3):
       try:
-        restart_attempt = ('Restarting browser %d time due to '
-          % (x + 1))
-        logging.warning(restart_attempt + reason)
-        self.StopBrowser()
-        self.SetBrowserOptions(self._finder_options)
-        self.StartBrowser()
-        self.tab = self.browser.tabs[0]
+        restart = 'Starting browser, attempt %d of 3' % (x + 1)
+        logging.warning(restart)
+        super(GpuIntegrationTest, cls).StartBrowser()
         return
       except Exception:
-        # If we are on the last try and there is an exception raise it
+        # If we are on the last try and there is an exception take a screenshot
+        # to try and capture more about the browser failure and raise
         if x == 2:
+          url = screenshot.TryCaptureScreenShotAndUploadToCloudStorage(
+            cls.platform)
+          if url is not None:
+            logging.info("GpuIntegrationTest screenshot of browser failure " +
+              "located at " + url)
+          else:
+            logging.warning("GpuIntegrationTest unable to take screenshot")
           raise
+
+  def _RestartBrowser(self, reason):
+    logging.warning('Restarting browser due to '+ reason)
+    self.StopBrowser()
+    self.SetBrowserOptions(self._finder_options)
+    self.StartBrowser()
+    self.tab = self.browser.tabs[0]
 
   def _RunGpuTest(self, url, test_name, args):
     temp_page = _EmulatedPage(url, test_name)
