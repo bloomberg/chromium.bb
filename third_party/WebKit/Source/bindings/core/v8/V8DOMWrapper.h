@@ -70,8 +70,9 @@ inline void V8DOMWrapper::setNativeInfo(v8::Isolate* isolate, v8::Local<v8::Obje
     ASSERT(wrapper->InternalFieldCount() >= 2);
     ASSERT(scriptWrappable);
     ASSERT(wrapperTypeInfo);
-    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, scriptWrappable);
-    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
+    int indices[] = { v8DOMWrapperObjectIndex, v8DOMWrapperTypeIndex };
+    void* values[] = { scriptWrappable, const_cast<WrapperTypeInfo*>(wrapperTypeInfo) };
+    wrapper->SetAlignedPointerInInternalFields(WTF_ARRAY_LENGTH(indices), indices, values);
     if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
         auto perIsolateData = V8PerIsolateData::from(isolate);
         // We notify ScriptWrappableVisitor about the new wrapper association,
