@@ -268,7 +268,7 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
     if (GetScreenCover(window) != NO_USER_COVERS_SCREEN &&
         (!chrome_launcher_controller ||
          !chrome_launcher_controller->ShelfBoundsChangesProbablyWithUser(
-             shelf, new_account_id_.GetUserEmail()))) {
+             shelf, new_account_id_))) {
       shelf->shelf_widget()->HideShelfBehindBlackBar(true, duration_override);
     } else {
       // This shelf change is only part of the animation and will be updated by

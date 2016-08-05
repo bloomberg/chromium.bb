@@ -824,10 +824,9 @@ LauncherItemController* ChromeLauncherControllerImpl::GetLauncherItemController(
 
 bool ChromeLauncherControllerImpl::ShelfBoundsChangesProbablyWithUser(
     ash::Shelf* shelf,
-    const std::string& user_id) const {
-  Profile* other_profile = multi_user_util::GetProfileFromAccountId(
-      AccountId::FromUserEmail(user_id));
-  if (other_profile == profile_)
+    const AccountId& account_id) const {
+  Profile* other_profile = multi_user_util::GetProfileFromAccountId(account_id);
+  if (!other_profile || other_profile == profile_)
     return false;
 
   // Note: The Auto hide state from preferences is not the same as the actual

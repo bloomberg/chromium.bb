@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "extensions/common/constants.h"
 
+class AccountId;
 class ArcAppDeferredLauncherController;
 class Browser;
 class BrowserShortcutLauncherItemController;
@@ -234,7 +235,7 @@ class ChromeLauncherController {
   // animation predictions.
   virtual bool ShelfBoundsChangesProbablyWithUser(
       ash::Shelf* shelf,
-      const std::string& user_id) const = 0;
+      const AccountId& account_id) const = 0;
 
   // Called when the user profile is fully loaded and ready to switch to.
   virtual void OnUserProfileReadyToSwitch(Profile* profile) = 0;
