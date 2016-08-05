@@ -316,9 +316,6 @@ base::TimeTicks StartupTimeToTimeTicks(const base::Time& time) {
   // bumping the priority reduces the likelihood of a context switch interfering
   // with this computation.
 
-// Enabling this logic on OS X causes a significant performance regression.
-// https://crbug.com/601270
-#if !defined(OS_MACOSX)
   static bool statics_initialized = false;
 
   base::ThreadPriority previous_priority = base::ThreadPriority::NORMAL;
@@ -327,17 +324,14 @@ base::TimeTicks StartupTimeToTimeTicks(const base::Time& time) {
     base::PlatformThread::SetCurrentThreadPriority(
         base::ThreadPriority::DISPLAY);
   }
-#endif
 
   static const base::Time time_base = base::Time::Now();
   static const base::TimeTicks trace_ticks_base = base::TimeTicks::Now();
 
-#if !defined(OS_MACOSX)
   if (!statics_initialized) {
     base::PlatformThread::SetCurrentThreadPriority(previous_priority);
   }
   statics_initialized = true;
-#endif
 
   // Then use the TimeDelta common ground between the two units to make the
   // conversion.
