@@ -56,7 +56,7 @@ DEFINE_TRACE(DocumentResource)
 
 void DocumentResource::checkNotify()
 {
-    if (m_data && mimeTypeAllowed()) {
+    if (data() && mimeTypeAllowed()) {
         // We don't need to create a new frame because the new document belongs to the parent UseElement.
         m_document = createDocument(response().url());
         m_document->setContent(decodedText());

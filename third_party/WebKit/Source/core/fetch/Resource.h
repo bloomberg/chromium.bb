@@ -294,7 +294,8 @@ protected:
     void setCachePolicyBypassingCache();
     void setLoFiStateOff();
 
-    RefPtr<SharedBuffer> m_data;
+    SharedBuffer* data() const { return m_data.get(); }
+    void clearData() { m_data.clear(); }
 
 private:
     class ResourceCallback;
@@ -360,6 +361,8 @@ private:
     ResourceRequest m_resourceRequest;
     Member<ResourceLoader> m_loader;
     ResourceResponse m_response;
+
+    RefPtr<SharedBuffer> m_data;
 };
 
 class ResourceFactory {

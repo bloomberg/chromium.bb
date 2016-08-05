@@ -89,7 +89,7 @@ const String CSSStyleSheetResource::sheetText(MIMETypeCheck mimeTypeCheck) const
 {
     ASSERT(!isPurgeable());
 
-    if (!m_data || m_data->isEmpty() || !canUseSheet(mimeTypeCheck))
+    if (!data() || data()->isEmpty() || !canUseSheet(mimeTypeCheck))
         return String();
 
     if (!m_decodedSheetText.isNull())
@@ -102,7 +102,7 @@ const String CSSStyleSheetResource::sheetText(MIMETypeCheck mimeTypeCheck) const
 void CSSStyleSheetResource::checkNotify()
 {
     // Decode the data to find out the encoding and keep the sheet text around during checkNotify()
-    if (m_data)
+    if (data())
         m_decodedSheetText = decodedText();
 
     ResourceClientWalker<StyleSheetResourceClient> w(clients());
@@ -114,7 +114,7 @@ void CSSStyleSheetResource::checkNotify()
 
 bool CSSStyleSheetResource::isSafeToUnlock() const
 {
-    return m_data->hasOneRef();
+    return data()->hasOneRef();
 }
 
 void CSSStyleSheetResource::destroyDecodedDataIfPossible()

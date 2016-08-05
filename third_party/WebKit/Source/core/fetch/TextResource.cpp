@@ -32,13 +32,13 @@ String TextResource::encoding() const
 
 String TextResource::decodedText() const
 {
-    ASSERT(m_data);
+    DCHECK(data());
 
     StringBuilder builder;
-    const char* data;
+    const char* segment;
     size_t position = 0;
-    while (size_t length = m_data->getSomeData(data, position)) {
-        builder.append(m_decoder->decode(data, length));
+    while (size_t length = data()->getSomeData(segment, position)) {
+        builder.append(m_decoder->decode(segment, length));
         position += length;
     }
     builder.append(m_decoder->flush());

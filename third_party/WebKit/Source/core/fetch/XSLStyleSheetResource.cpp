@@ -55,7 +55,7 @@ XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(FetchRequest& r
     options.synchronousPolicy = RequestSynchronously;
     request.setOptions(options);
     XSLStyleSheetResource* resource = toXSLStyleSheetResource(fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
-    if (resource && resource->m_data)
+    if (resource && resource->data())
         resource->m_sheet = resource->decodedText();
     return resource;
 }
@@ -82,7 +82,7 @@ void XSLStyleSheetResource::didAddClient(ResourceClient* c)
 
 void XSLStyleSheetResource::checkNotify()
 {
-    if (m_data.get())
+    if (data())
         m_sheet = decodedText();
 
     ResourceClientWalker<StyleSheetResourceClient> w(clients());

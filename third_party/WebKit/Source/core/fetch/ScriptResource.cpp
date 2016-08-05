@@ -85,9 +85,9 @@ const CompressibleString& ScriptResource::script()
     ASSERT(!isPurgeable());
     ASSERT(isLoaded());
 
-    if (m_script.isNull() && m_data) {
+    if (m_script.isNull() && data()) {
         String script = decodedText();
-        m_data.clear();
+        clearData();
         // We lie a it here and claim that script counts as encoded data (even though it's really decoded data).
         // That's because the MemoryCache thinks that it can clear out decoded data by calling destroyDecodedData(),
         // but we can't destroy script in destroyDecodedData because that's our only copy of the data!

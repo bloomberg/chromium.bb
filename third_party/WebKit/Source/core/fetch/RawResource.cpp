@@ -119,8 +119,8 @@ void RawResource::didAddClient(ResourceClient* c)
         client->responseReceived(this, response(), nullptr);
     if (!clientWeak || !hasClient(c))
         return;
-    if (m_data)
-        client->dataReceived(this, m_data->data(), m_data->size());
+    if (data())
+        client->dataReceived(this, data()->data(), data()->size());
     if (!clientWeak || !hasClient(c))
         return;
     Resource::didAddClient(client);
@@ -160,10 +160,10 @@ void RawResource::responseReceived(const ResourceResponse& response, std::unique
     // Forward the data to clients now instead.
     // Note: |m_data| can be null when no data is appended to the original
     // resource.
-    if (isSuccessfulRevalidation && m_data) {
+    if (isSuccessfulRevalidation && data()) {
         ResourceClientWalker<RawResourceClient> w(clients());
         while (RawResourceClient* c = w.next())
-            c->dataReceived(this, m_data->data(), m_data->size());
+            c->dataReceived(this, data()->data(), data()->size());
     }
 }
 

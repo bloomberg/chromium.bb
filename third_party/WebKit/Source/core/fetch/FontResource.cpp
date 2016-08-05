@@ -121,11 +121,11 @@ void FontResource::startLoadLimitTimersIfNeeded()
 bool FontResource::ensureCustomFontData()
 {
     if (!m_fontData && !errorOccurred() && !isLoading()) {
-        if (m_data)
-            m_fontData = FontCustomPlatformData::create(m_data.get(), m_otsParsingMessage);
+        if (data())
+            m_fontData = FontCustomPlatformData::create(data(), m_otsParsingMessage);
 
         if (m_fontData) {
-            recordPackageFormatHistogram(packageFormatOf(m_data.get()));
+            recordPackageFormatHistogram(packageFormatOf(data()));
         } else {
             setStatus(DecodeError);
             recordPackageFormatHistogram(PackageFormatUnknown);
@@ -142,7 +142,7 @@ FontPlatformData FontResource::platformDataFromCustomData(float size, bool bold,
 
 bool FontResource::isSafeToUnlock() const
 {
-    return m_data->hasOneRef();
+    return data()->hasOneRef();
 }
 
 void FontResource::fontLoadShortLimitCallback(TimerBase*)

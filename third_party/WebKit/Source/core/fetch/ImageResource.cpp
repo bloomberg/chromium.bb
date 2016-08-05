@@ -117,7 +117,7 @@ void ImageResource::markClientsAndObserversFinished()
 
 void ImageResource::didAddClient(ResourceClient* client)
 {
-    DCHECK((m_multipartParser && isLoading()) || !m_data || m_image);
+    DCHECK((m_multipartParser && isLoading()) || !data() || m_image);
     Resource::didAddClient(client);
 }
 
@@ -130,15 +130,15 @@ void ImageResource::addObserver(ImageResourceObserver* observer)
     if (isCacheValidator())
         return;
 
-    // When the response is not multipart, if |m_data| exists, |m_image| must
-    // be created. This is assured that |updateImage()| is called when
+    // When the response is not multipart, if |data()| exists, |m_image| must be
+    // created. This is assured that |updateImage()| is called when
     // |appendData()| is called.
     //
     // On the other hand, when the response is multipart, |updateImage()| is
     // not called in |appendData()|, which means |m_image| might not be created
-    // even when |m_data| exists. This is intentional since creating a |m_image|
+    // even when |data()| exists. This is intentional since creating a |m_image|
     // on receiving data might destroy an existing image in a previous part.
-    DCHECK((m_multipartParser && isLoading()) || !m_data || m_image);
+    DCHECK((m_multipartParser && isLoading()) || !data() || m_image);
 
     if (m_image && !m_image->isNull()) {
         observer->imageChanged(this);
@@ -195,8 +195,8 @@ ResourcePriority ImageResource::priorityFromObservers()
 
 bool ImageResource::isSafeToUnlock() const
 {
-    // Note that |m_image| holds a reference to |m_data| in addition to the one held by the Resource parent class.
-    return !m_image || (m_image->hasOneRef() && m_data->refCount() == 2);
+    // Note that |m_image| holds a reference to |data()| in addition to the one held by the Resource parent class.
+    return !m_image || (m_image->hasOneRef() && data()->refCount() == 2);
 }
 
 void ImageResource::destroyDecodedDataForFailedRevalidation()
@@ -238,8 +238,8 @@ void ImageResource::allClientsAndObserversRemoved()
 
 PassRefPtr<SharedBuffer> ImageResource::resourceBuffer() const
 {
-    if (m_data)
-        return m_data.get();
+    if (data())
+        return data();
     if (m_image)
         return m_image->data();
     return nullptr;
@@ -348,7 +348,7 @@ void ImageResource::notifyObservers(const IntRect* changeRect)
 void ImageResource::clear()
 {
     clearImage();
-    m_data.clear();
+    clearData();
     setEncodedSize(0);
 }
 
@@ -380,7 +380,7 @@ void ImageResource::updateImage(bool allDataReceived)
 {
     TRACE_EVENT0("blink", "ImageResource::updateImage");
 
-    if (m_data)
+    if (data())
         createImage();
 
     Image::SizeAvailability sizeAvailable = Image::SizeUnavailable;
@@ -388,9 +388,9 @@ void ImageResource::updateImage(bool allDataReceived)
     // Have the image update its data from its internal buffer.
     // It will not do anything now, but will delay decoding until
     // queried for info (like size or specific image frames).
-    if (m_data) {
+    if (data()) {
         DCHECK(m_image);
-        sizeAvailable = m_image->setData(m_data, allDataReceived);
+        sizeAvailable = m_image->setData(data(), allDataReceived);
     }
 
     // Go ahead and tell our observers to try to draw if we have either
@@ -417,14 +417,14 @@ void ImageResource::updateImageAndClearBuffer()
 {
     clearImage();
     updateImage(true);
-    m_data.clear();
+    clearData();
 }
 
 void ImageResource::finish(double loadFinishTime)
 {
     if (m_multipartParser) {
         m_multipartParser->finish();
-        if (m_data)
+        if (data())
             updateImageAndClearBuffer();
     } else {
         updateImage(true);
@@ -433,7 +433,7 @@ void ImageResource::finish(double loadFinishTime)
         // clear this. As for the lifetimes of m_image and m_data, see this
         // document:
         // https://docs.google.com/document/d/1v0yTAZ6wkqX2U_M6BNIGUJpM1s0TIw1VsqpxoL7aciY/edit?usp=sharing
-        m_data.clear();
+        clearData();
     }
     Resource::finish(loadFinishTime);
 }
