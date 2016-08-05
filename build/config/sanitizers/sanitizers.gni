@@ -90,6 +90,30 @@ declare_args() {
   sanitizer_coverage_flags = ""
 }
 
+# Disable sanitizers for non-default toolchains.
+if (current_toolchain != default_toolchain) {
+  is_asan = false
+  is_cfi = false
+  is_lsan = false
+  is_msan = false
+  is_syzyasan = false
+  is_tsan = false
+  is_ubsan = false
+  is_ubsan_null = false
+  is_ubsan_no_recover = false
+  is_ubsan_security = false
+  is_ubsan_vptr = false
+  msan_track_origins = 0
+  sanitizer_coverage_flags = ""
+  use_cfi_diag = false
+  use_custom_libcxx = false
+  use_drfuzz = false
+  use_libfuzzer = false
+  use_prebuilt_instrumented_libraries = false
+  use_locally_built_instrumented_libraries = false
+  use_sanitizer_coverage = false
+}
+
 # Args that are in turn dependent on other args must be in a separate
 # declare_args block. User overrides are only applied at the end of a
 # declare_args block.
