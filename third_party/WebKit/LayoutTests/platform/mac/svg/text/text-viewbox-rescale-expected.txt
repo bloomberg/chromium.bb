@@ -184,7 +184,7 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "none"
+      "reason": "location change"
     }
   ]
 }
