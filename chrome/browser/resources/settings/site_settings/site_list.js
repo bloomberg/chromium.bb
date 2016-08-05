@@ -169,6 +169,24 @@ Polymer({
   },
 
   /**
+   * @param {string} source Where the setting came from.
+   * @return {boolean}
+   * @private
+   */
+  isPolicyControlled_: function(source) {
+    return source == 'policy';
+  },
+
+  /**
+   * @param {string} source Where the setting came from.
+   * @return {boolean}
+   * @private
+   */
+  shouldShowMenu_: function(source) {
+    return !(this.isPolicyControlled_(source) || this.allSites);
+  },
+
+  /**
    * Makes sure the visibility is correct for this widget.
    * @private
    */
@@ -299,7 +317,7 @@ Polymer({
   /**
    * Converts an unordered site list to an ordered array, sorted by site name
    * then protocol and de-duped (by origin).
-   * @param {!Array<SiteException>} sites A list of sites to sort and de-dup.
+   * @param {!Array<SiteException>} sites A list of sites to sort and de-dupe.
    * @return {!Array<SiteException>} Sorted and de-duped list.
    * @private
    */
@@ -354,6 +372,7 @@ Polymer({
          originForDisplay: originForDisplay,
          embeddingOrigin: embeddingOrigin,
          embeddingOriginForDisplay: embeddingOriginForDisplay,
+         source: sites[i].source,
       });
 
       lastOrigin = originForDisplay;
@@ -382,6 +401,9 @@ Polymer({
    */
   onOriginTap_: function(event) {
     this.selectedSite = event.model.item;
+    if (this.isPolicyControlled_(this.selectedSite.source))
+      return;
+
     if (this.allSites)
       settings.navigateTo(settings.Route.SITE_SETTINGS_ALL_DETAILS);
     else

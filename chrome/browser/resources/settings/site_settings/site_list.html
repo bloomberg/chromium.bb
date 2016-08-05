@@ -33,6 +33,10 @@
       .no-upper {
         text-transform: none;
       }
+
+      .selectable {
+        -webkit-user-select: text;
+      }
     </style>
     <paper-submenu id="category" hidden
         on-paper-submenu-open="onToggle_" on-paper-submenu-close="onToggle_">
@@ -46,41 +50,52 @@
       <div class="list-frame menu-content vertical-list" id="listContainer">
         <template is="dom-repeat" items="[[sites]]">
           <div class="list-item">
-            <div class="favicon-image"
-                style$="[[computeSiteIcon(item.originForDisplay)]]"
-                on-tap="onOriginTap_" actionable></div>
-            <div class="middle" on-tap="onOriginTap_" actionable>
-              <div>[[item.originForDisplay]]</div>
-              <div class="secondary">[[item.embeddingOriginForDisplay]]</div>
+            <div class="start layout horizontal center" on-tap="onOriginTap_"
+                actionable$="[[!isPolicyControlled_(item.source)]]">
+              <div class="favicon-image"
+                  style$="[[computeSiteIcon(item.originForDisplay)]]">
+              </div>
+              <div class="middle">
+                <div class="selectable">[[item.originForDisplay]]</div>
+                <div class="selectable secondary">
+                  [[item.embeddingOriginForDisplay]]
+                </div>
+              </div>
             </div>
-            <paper-menu-button hidden$="[[allSites]]">
-              <paper-icon-button icon="cr:more-vert"
-                  class="dropdown-trigger">
-              </paper-icon-button>
-              <paper-menu id="actionMenu" class="dropdown-content"
-                  on-iron-activate="onActionMenuIronActivate_"
-                  attr-for-selected="menu-value">
-                <paper-item
-                    hidden="[[!showAllowAction_]]"
-                    menu-value$="[[PermissionValues.ALLOW]]">
-                  $i18n{siteSettingsActionAllow}
-                </paper-item>
-                <paper-item
-                    hidden="[[!showBlockAction_]]"
-                    menu-value$="[[PermissionValues.BLOCK]]">
-                  $i18n{siteSettingsActionBlock}
-                </paper-item>
-                <paper-item
-                    hidden="[[!showSessionOnlyAction_]]"
-                    menu-value$="[[PermissionValues.SESSION_ONLY]]">
-                  $i18n{siteSettingsActionSessionOnly}
-                </paper-item>
-                <paper-item
-                    menu-value$="[[PermissionValues.DEFAULT]]">
-                  $i18n{siteSettingsActionReset}
-                </paper-item>
-              </paper-menu>
-            </paper-menu-button>
+
+            <template is="dom-if" if="[[isPolicyControlled_(item.source)]]">
+              <iron-icon icon="cr:domain"></iron-icon>
+            </template>
+            <template is="dom-if" if="[[shouldShowMenu_(item.source)]]">
+              <paper-menu-button>
+                <paper-icon-button icon="cr:more-vert"
+                    class="dropdown-trigger">
+                </paper-icon-button>
+                <paper-menu id="actionMenu" class="dropdown-content"
+                    on-iron-activate="onActionMenuIronActivate_"
+                    attr-for-selected="menu-value">
+                  <paper-item
+                      hidden="[[!showAllowAction_]]"
+                      menu-value$="[[PermissionValues.ALLOW]]">
+                    $i18n{siteSettingsActionAllow}
+                  </paper-item>
+                  <paper-item
+                      hidden="[[!showBlockAction_]]"
+                      menu-value$="[[PermissionValues.BLOCK]]">
+                    $i18n{siteSettingsActionBlock}
+                  </paper-item>
+                  <paper-item
+                      hidden="[[!showSessionOnlyAction_]]"
+                      menu-value$="[[PermissionValues.SESSION_ONLY]]">
+                    $i18n{siteSettingsActionSessionOnly}
+                  </paper-item>
+                  <paper-item
+                      menu-value$="[[PermissionValues.DEFAULT]]">
+                    $i18n{siteSettingsActionReset}
+                  </paper-item>
+                </paper-menu>
+              </paper-menu-button>
+            </template>
           </div>
         </template>
 
