@@ -72,6 +72,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
+#include "core/page/SpatialNavigation.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/SecureTextInput.h"
 #include "platform/geometry/FloatQuad.h"
@@ -610,6 +611,12 @@ static DispatchEventResult dispatchSelectStart(const VisibleSelection& selection
     return selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart));
 }
 
+// The return value of |FrameSelection::modify()| is different based on
+// value of |userTriggered| parameter.
+// When |userTriggered| is |userTriggered|, |modify()| returns false if
+// "selectstart" event is dispatched and canceled, otherwise returns true.
+// When |userTriggered| is |NotUserTrigged|, return value specifies whether
+// selection is modified or not.
 bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, TextGranularity granularity, EUserTriggered userTriggered)
 {
     SelectionModifier selectionModifier(*frame(), selection(), m_xPosForVerticalArrowNavigation);
@@ -620,8 +627,17 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
         && dispatchSelectStart(selection()) != DispatchEventResult::NotCanceled) {
         return false;
     }
-    if (!modified)
-        return false;
+    if (!modified) {
+        if (userTriggered == NotUserTriggered)
+            return false;
+        // If spatial navigation enabled, focus navigator will move focus to
+        // another element. See snav-input.html and snav-textarea.html
+        if (isSpatialNavigationEnabled(m_frame))
+            return false;
+        // Even if selection isn't changed, we prevent to default action, e.g.
+        // scroll window when caret is at end of content editable.
+        return true;
+    }
 
     const SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
     setSelection(selectionModifier.selection(), options);

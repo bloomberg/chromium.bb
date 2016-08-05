@@ -178,6 +178,24 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree)
     EXPECT_EQ(PositionInFlatTree(two, 3), visibleSelectionInFlatTree().end());
 }
 
+TEST_F(FrameSelectionTest, ModifyWithUserTriggered)
+{
+    setBodyContent("<div id=sample>abc</div>");
+    Element* sample = document().getElementById("sample");
+    const Position endOfText(sample->firstChild(), 3);
+    selection().setSelection(VisibleSelection(endOfText));
+
+    EXPECT_FALSE(selection().modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity, NotUserTriggered))
+        << "Selection.modify() returns false for non-user-triggered call when selection isn't modified.";
+    EXPECT_EQ(endOfText, selection().start())
+        << "Selection isn't modified";
+
+    EXPECT_TRUE(selection().modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity, UserTriggered))
+        << "Selection.modify() returns true for user-triggered call";
+    EXPECT_EQ(endOfText, selection().start())
+        << "Selection isn't modified";
+}
+
 TEST_F(FrameSelectionTest, MoveRangeSelectionTest)
 {
     // "Foo Bar Baz,"
