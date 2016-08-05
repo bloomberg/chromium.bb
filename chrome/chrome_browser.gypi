@@ -394,6 +394,8 @@
       'browser/net/predictor_tab_helper.h',
       'browser/ntp_snippets/content_suggestions_service_factory.cc',
       'browser/ntp_snippets/content_suggestions_service_factory.h',
+      'browser/ntp_snippets/bookmark_last_visit_updater.cc',
+      'browser/ntp_snippets/bookmark_last_visit_updater.h',
       'browser/page_load_metrics/metrics_navigation_throttle.cc',
       'browser/page_load_metrics/metrics_navigation_throttle.h',
       'browser/page_load_metrics/metrics_web_contents_observer.cc',

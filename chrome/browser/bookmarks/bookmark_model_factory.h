@@ -21,6 +21,14 @@ class BookmarkModel;
 // Singleton that owns all BookmarkModels and associates them with Profiles.
 class BookmarkModelFactory : public BrowserContextKeyedServiceFactory {
  public:
+  static bookmarks::BookmarkModel* GetForBrowserContext(
+      content::BrowserContext* browser_context);
+
+  static bookmarks::BookmarkModel* GetForBrowserContextIfExists(
+      content::BrowserContext* browser_context);
+
+  // TODO(pke): Remove GetForProfile and GetForProfileIfExists and use
+  // GetForBrowserContext/GetForBrowserContextIfExists everywhere.
   static bookmarks::BookmarkModel* GetForProfile(Profile* profile);
 
   static bookmarks::BookmarkModel* GetForProfileIfExists(Profile* profile);

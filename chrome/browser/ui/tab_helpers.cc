@@ -60,6 +60,8 @@
 #include "chrome/browser/android/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/ntp_snippets/bookmark_last_visit_updater.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "components/offline_pages/offline_page_feature.h"
@@ -185,6 +187,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   banners::AppBannerManagerAndroid::CreateForWebContents(web_contents);
+  BookmarkLastVisitUpdater::CreateForWebContentsWithBookmarkModel(
+      web_contents,
+      BookmarkModelFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())));
   ContextMenuHelper::CreateForWebContents(web_contents);
   DataUseTabHelper::CreateForWebContents(web_contents);
 

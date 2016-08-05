@@ -12,6 +12,8 @@ if (is_android) {
 # GYP version: components/ntp_snippets.gypi:ntp_snippets
 static_library("ntp_snippets") {
   sources = [
+    "bookmarks/bookmark_last_visit_utils.cc",
+    "bookmarks/bookmark_last_visit_utils.h",
     "category.cc",
     "category.h",
     "category_factory.cc",
@@ -63,6 +65,7 @@ static_library("ntp_snippets") {
   ]
 
   deps = [
+    "//components/bookmarks/browser",
     "//components/data_use_measurement/core",
     "//components/image_fetcher",
     "//components/metrics",

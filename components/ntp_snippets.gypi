@@ -17,6 +17,7 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         '../third_party/icu/icu.gyp:icuuc',
+        'bookmarks_browser',
         'data_use_measurement_core',
         'image_fetcher',
         'keyed_service_core',
@@ -30,6 +31,8 @@
         'variations_net',
       ],
       'sources': [
+        'ntp_snippets/bookmarks/bookmark_last_visit_utils.cc',
+        'ntp_snippets/bookmarks/bookmark_last_visit_utils.h',
         'ntp_snippets/category_factory.cc',
         'ntp_snippets/category_factory.h',
         'ntp_snippets/category_status.cc',
