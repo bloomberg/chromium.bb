@@ -615,6 +615,8 @@
       'browser/ui/ash/network_connect_delegate_chromeos.h',
       'browser/ui/ash/networking_config_delegate_chromeos.cc',
       'browser/ui/ash/networking_config_delegate_chromeos.h',
+      'browser/ui/ash/palette_delegate_chromeos.cc',
+      'browser/ui/ash/palette_delegate_chromeos.h',
       'browser/ui/ash/session_state_delegate_chromeos.cc',
       'browser/ui/ash/session_state_delegate_chromeos.h',
       'browser/ui/ash/session_util.cc',

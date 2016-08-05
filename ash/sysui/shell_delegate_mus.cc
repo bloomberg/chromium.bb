@@ -7,6 +7,7 @@
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/media_delegate.h"
+#include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/sysui/app_list_presenter_mus.h"
@@ -193,6 +194,11 @@ NewWindowDelegate* ShellDelegateMus::CreateNewWindowDelegate() {
 MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
   NOTIMPLEMENTED() << " Using a stub MediaDelegate implementation";
   return new MediaDelegateStub;
+}
+
+std::unique_ptr<PaletteDelegate> ShellDelegateMus::CreatePaletteDelegate() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 std::unique_ptr<PointerWatcherDelegate>

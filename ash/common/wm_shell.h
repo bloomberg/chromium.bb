@@ -37,6 +37,7 @@ class KeyboardUI;
 class MaximizeModeController;
 class MruWindowTracker;
 class NewWindowDelegate;
+class PaletteDelegate;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
 class ShelfDelegate;
@@ -116,6 +117,8 @@ class ASH_EXPORT WmShell {
   void set_root_window_for_new_windows(WmWindow* root) {
     root_window_for_new_windows_ = root;
   }
+
+  PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
 
   ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
 
@@ -350,6 +353,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<MediaDelegate> media_delegate_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;
+  std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfModel> shelf_model_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;

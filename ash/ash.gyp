@@ -85,6 +85,7 @@
       'common/metrics/user_metrics_action.h',
       'common/multi_profile_uma.cc',
       'common/multi_profile_uma.h',
+      'common/palette_delegate.h',
       'common/pointer_watcher_delegate.h',
       'common/popup_message.cc',
       'common/popup_message.h',

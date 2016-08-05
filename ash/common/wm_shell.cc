@@ -12,6 +12,7 @@
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/new_window_delegate.h"
+#include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_delegate.h"
@@ -61,6 +62,7 @@ void WmShell::Initialize() {
   // instead of the WmShell constructor.
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
   media_delegate_.reset(delegate_->CreateMediaDelegate());
+  palette_delegate_ = delegate_->CreatePaletteDelegate();
   toast_manager_.reset(new ToastManager);
 
   // Create the app list item in the shelf data model.

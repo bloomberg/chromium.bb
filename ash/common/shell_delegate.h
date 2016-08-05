@@ -41,6 +41,7 @@ class AccessibilityDelegate;
 class GPUSupport;
 class MediaDelegate;
 class NewWindowDelegate;
+class PaletteDelegate;
 class PointerWatcherDelegate;
 class SessionStateDelegate;
 class ShelfDelegate;
@@ -122,6 +123,8 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a media delegate. Shell takes ownership of the delegate.
   virtual MediaDelegate* CreateMediaDelegate() = 0;
+
+  virtual std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() = 0;
 
   virtual std::unique_ptr<PointerWatcherDelegate>
   CreatePointerWatcherDelegate() = 0;

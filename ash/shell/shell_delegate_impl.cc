@@ -10,6 +10,7 @@
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/new_window_delegate.h"
+#include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
@@ -77,6 +78,15 @@ class MediaDelegateImpl : public MediaDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaDelegateImpl);
+};
+
+class PaletteDelegateImpl : public PaletteDelegate {
+ public:
+  PaletteDelegateImpl() {};
+  ~PaletteDelegateImpl() override {};
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaletteDelegateImpl);
 };
 
 class SessionStateDelegateImpl : public SessionStateDelegate {
@@ -241,6 +251,10 @@ ash::NewWindowDelegate* ShellDelegateImpl::CreateNewWindowDelegate() {
 
 ash::MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {
   return new MediaDelegateImpl;
+}
+
+std::unique_ptr<PaletteDelegate> ShellDelegateImpl::CreatePaletteDelegate() {
+  return base::WrapUnique(new PaletteDelegateImpl());
 }
 
 std::unique_ptr<ash::PointerWatcherDelegate>

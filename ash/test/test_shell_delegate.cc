@@ -12,6 +12,7 @@
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/new_window_delegate.h"
+#include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
@@ -184,6 +185,10 @@ NewWindowDelegate* TestShellDelegate::CreateNewWindowDelegate() {
 
 MediaDelegate* TestShellDelegate::CreateMediaDelegate() {
   return new MediaDelegateImpl;
+}
+
+std::unique_ptr<PaletteDelegate> TestShellDelegate::CreatePaletteDelegate() {
+  return nullptr;
 }
 
 std::unique_ptr<PointerWatcherDelegate>

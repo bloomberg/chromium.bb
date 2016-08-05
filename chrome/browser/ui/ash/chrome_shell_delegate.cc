@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/media_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
@@ -505,6 +506,11 @@ ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {
 
 ash::MediaDelegate* ChromeShellDelegate::CreateMediaDelegate() {
   return new MediaDelegateChromeOS;
+}
+
+std::unique_ptr<ash::PaletteDelegate>
+ChromeShellDelegate::CreatePaletteDelegate() {
+  return base::WrapUnique(new chromeos::PaletteDelegateChromeOS());
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
