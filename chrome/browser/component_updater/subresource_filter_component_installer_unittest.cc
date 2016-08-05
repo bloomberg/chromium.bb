@@ -30,6 +30,8 @@
 
 namespace {
 
+static const char kTestRulesetVersion[] = "1.2.3.4";
+
 class TestRulesetService : public subresource_filter::RulesetService {
  public:
   TestRulesetService(PrefService* local_state,
@@ -136,15 +138,17 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
     }
   }
 
-  void LoadSubresourceFilterRuleset() {
+  void LoadSubresourceFilterRuleset(int ruleset_format) {
     std::unique_ptr<base::DictionaryValue> manifest(new base::DictionaryValue);
+    manifest->SetInteger(
+        SubresourceFilterComponentInstallerTraits::kManifestRulesetFormatKey,
+        ruleset_format);
     ASSERT_TRUE(
         traits_->VerifyInstallation(*manifest, component_install_dir()));
-    const base::Version expected_version("1.2.3.4");
+    const base::Version expected_version(kTestRulesetVersion);
     traits_->ComponentReady(expected_version, component_install_dir(),
                             std::move(manifest));
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(expected_version.GetString(), service()->content_version());
   }
 
  private:
@@ -190,12 +194,26 @@ TEST_F(SubresourceFilterComponentInstallerTest, LoadEmptyRuleset) {
   ASSERT_TRUE(service());
   ASSERT_NO_FATAL_FAILURE(
       CreateTestSubresourceFilterRuleset(std::string(), nullptr));
-  ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset());
+  ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset(
+      SubresourceFilterComponentInstallerTraits::kCurrentRulesetFormat));
+  EXPECT_EQ(kTestRulesetVersion, service()->content_version());
   std::string actual_ruleset_contents;
   ASSERT_TRUE(base::ReadFileToString(service()->ruleset_path(),
                                      &actual_ruleset_contents));
   EXPECT_TRUE(actual_ruleset_contents.empty()) << actual_ruleset_contents;
   EXPECT_FALSE(base::PathExists(service()->license_path()));
+}
+
+TEST_F(SubresourceFilterComponentInstallerTest, FutureVersionIgnored) {
+  ASSERT_TRUE(service());
+  const std::string expected_ruleset_contents = "future stuff";
+  ASSERT_NO_FATAL_FAILURE(
+      CreateTestSubresourceFilterRuleset(expected_ruleset_contents, nullptr));
+  ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset(
+      SubresourceFilterComponentInstallerTraits::kCurrentRulesetFormat + 1));
+  EXPECT_EQ(std::string(), service()->content_version());
+  EXPECT_TRUE(service()->ruleset_path().empty());
+  EXPECT_TRUE(service()->license_path().empty());
 }
 
 TEST_F(SubresourceFilterComponentInstallerTest, LoadFileWithData) {
@@ -204,7 +222,9 @@ TEST_F(SubresourceFilterComponentInstallerTest, LoadFileWithData) {
   const std::string expected_license_contents = "license";
   ASSERT_NO_FATAL_FAILURE(CreateTestSubresourceFilterRuleset(
       expected_ruleset_contents, &expected_license_contents));
-  ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset());
+  ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset(
+      SubresourceFilterComponentInstallerTraits::kCurrentRulesetFormat));
+  EXPECT_EQ(kTestRulesetVersion, service()->content_version());
   std::string actual_ruleset_contents;
   std::string actual_license_contents;
   ASSERT_TRUE(base::ReadFileToString(service()->ruleset_path(),

@@ -22,6 +22,8 @@ class SubresourceFilterComponentInstallerTraits
  public:
   static const base::FilePath::CharType kRulesetDataFileName[];
   static const base::FilePath::CharType kLicenseFileName[];
+  static const char kManifestRulesetFormatKey[];
+  static const int kCurrentRulesetFormat;
 
   SubresourceFilterComponentInstallerTraits();
   ~SubresourceFilterComponentInstallerTraits() override;

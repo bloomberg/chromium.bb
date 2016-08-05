@@ -55,6 +55,14 @@ const base::FilePath::CharType
     SubresourceFilterComponentInstallerTraits::kLicenseFileName[] =
         FILE_PATH_LITERAL("LICENSE");
 
+// static
+const char
+    SubresourceFilterComponentInstallerTraits::kManifestRulesetFormatKey[] =
+        "ruleset_format";
+
+// static
+const int SubresourceFilterComponentInstallerTraits::kCurrentRulesetFormat = 1;
+
 SubresourceFilterComponentInstallerTraits::
     SubresourceFilterComponentInstallerTraits() {}
 
@@ -84,6 +92,12 @@ void SubresourceFilterComponentInstallerTraits::ComponentReady(
     std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK(!install_dir.empty());
   DVLOG(1) << "Subresource Filter Version Ready: " << install_dir.value();
+  int ruleset_format = 0;
+  if (!manifest->GetInteger(kManifestRulesetFormatKey, &ruleset_format) ||
+      ruleset_format != kCurrentRulesetFormat) {
+    DVLOG(1) << "Bailing out. Future ruleset version: " << ruleset_format;
+    return;
+  }
   subresource_filter::UnindexedRulesetInfo ruleset_info;
   ruleset_info.content_version = version.GetString();
   ruleset_info.ruleset_path = install_dir.Append(kRulesetDataFileName);
