@@ -336,7 +336,13 @@ unsigned char srgb_icc_data[] = {
     0x00, 0x00, 0x07, 0x94, 0x00, 0x00, 0xfd, 0x8f, 0xff, 0xff, 0xfb, 0xa1,
     0xff, 0xff, 0xfd, 0xa2, 0x00, 0x00, 0x03, 0xdb, 0x00, 0x00, 0xc0, 0x75};
 
-TEST(SimpleColorSpace, BT709toSRGBICC) {
+// MSan detects an uninitialized read in QCMS. https://crbug.com/635042
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_BT709toSRGBICC DISABLED_BT709toSRGBICC
+#else
+#define MAYBE_BT709toSRGBICC BT709toSRGBICC
+#endif
+TEST(SimpleColorSpace, MAYBE_BT709toSRGBICC) {
   ICCProfile srgb_icc = ICCProfile::FromData(
       reinterpret_cast<char*>(srgb_icc_data), arraysize(srgb_icc_data));
 
