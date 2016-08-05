@@ -105,6 +105,11 @@ class CssCheckerTest(SuperMoxTestBase):
 body.alternate-logo #logo {
   -webkit-mask-image: url(images/google_logo.png@2x);
   background: none;
+  @apply(--some-variable);
+}
+
+div {
+  -webkit-margin-start: 5px;
 }
 
 .stuff1 {
