@@ -1707,31 +1707,26 @@ def GenerateHtmlTimeline(timeline, rows, title):
       }
     </script>
 """
-  def GenRow(row):
+  def GenRow(entry, start, end):
     def GenDate(time):
       # Javascript months are 0..11 instead of 1..12
       return ('new Date(%d, %d, %d, %d, %d, %d)' %
               (time.year, time.month - 1, time.day,
                time.hour, time.minute, time.second))
-    # Skip stages that don't have a start time.
-    if row[0] is None or row[1] is None:
-      return None
-    # Treat stages without a finish time as ending now.
-    finish_time = row[2]
-    if finish_time is None:
-      finish_time = datetime.datetime.utcnow()
     return ('data.addRow(["%s", %s, %s]);\n' %
-            (row[0], GenDate(row[1]), GenDate(finish_time)))
+            (entry, GenDate(start), GenDate(end)))
 
-  javascript = _JAVASCRIPT_HEAD
-  for r in rows:
-    line = GenRow(r)
-    if line is not None:
-      javascript += line
-  javascript += _JAVASCRIPT_TAIL
+  now = datetime.datetime.utcnow()
+  rows = [(entry, start, end or now)
+          for (entry, start, end) in rows
+          if entry and start]
+
+  javascript = [_JAVASCRIPT_HEAD]
+  javascript += [GenRow(entry, start, end) for (entry, start, end) in rows]
+  javascript.append(_JAVASCRIPT_TAIL)
 
   data = {
-      'javascript': javascript,
+      'javascript': ''.join(javascript),
       'title': title if title else ''
   }
 

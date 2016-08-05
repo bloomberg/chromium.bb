@@ -615,7 +615,9 @@ class ReportStage(generic_stages.BuilderStage,
 
     # Gather information about this build from CIDB.
     stages = db.GetBuildStages(build_id)
-    rows = list((s['name'], s['start_time'], s['finish_time']) for s in stages)
+    epoch = datetime.datetime.fromtimestamp(0)
+    stages.sort(key=lambda stage: stage['start_time'] or epoch)
+    rows = ((s['name'], s['start_time'], s['finish_time']) for s in stages)
 
     # Prepare html head.
     title = ('Build Stages Timeline: %s / %s (%s config)' %
@@ -657,8 +659,10 @@ class ReportStage(generic_stages.BuilderStage,
     statuses = db.GetSlaveStatuses(build_id)
     if statuses is None or len(statuses) == 0:
       return None
-    rows = list(('%s - %s' % (s['build_config'], s['build_number']),
-                 s['start_time'], s['finish_time']) for s in statuses)
+    epoch = datetime.datetime.fromtimestamp(0)
+    statuses.sort(key=lambda stage: stage['start_time'] or epoch)
+    rows = (('%s - %s' % (s['build_config'], s['build_number']),
+             s['start_time'], s['finish_time']) for s in statuses)
 
     # Prepare html head.
     title = ('Slave Builds Timeline: %s / %s (%s config)' %
