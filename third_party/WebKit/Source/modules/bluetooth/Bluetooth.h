@@ -31,6 +31,8 @@ public:
 
     DEFINE_INLINE_TRACE() { }
 
+private:
+    bool promotedOriginTrial = false;
 };
 
 } // namespace blink
