@@ -34,6 +34,9 @@ void MetricsHandler::RegisterMessages() {
       base::Bind(&MetricsHandler::HandleRecordInHistogram,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "metricsHandler:recordTime",
+      base::Bind(&MetricsHandler::HandleRecordTime, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "metricsHandler:logEventTime",
       base::Bind(&MetricsHandler::HandleLogEventTime, base::Unretained(this)));
 }
@@ -75,6 +78,26 @@ void MetricsHandler::HandleRecordInHistogram(const base::ListValue* args) {
           histogram_name, 1, int_boundary_value, bucket_count + 1,
           base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->Add(int_value);
+}
+
+void MetricsHandler::HandleRecordTime(const base::ListValue* args) {
+  std::string histogram_name;
+  double value;
+
+  if (!args->GetString(0, &histogram_name) ||
+      !args->GetDouble(1, &value) ||
+      value < 0) {
+    NOTREACHED();
+    return;
+  }
+
+  base::TimeDelta time_value = base::TimeDelta::FromMilliseconds(value);
+
+  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
+      histogram_name, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromSeconds(10), 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  counter->AddTime(time_value);
 }
 
 void MetricsHandler::HandleLogEventTime(const base::ListValue* args) {

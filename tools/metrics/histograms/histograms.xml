@@ -18355,6 +18355,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.ResultsRenderedTime" units="ms">
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    Records the time taken to load the history Web UI and render (at least) a
+    screen full of items. This is roughly equivalent to 'time to first
+    meaningful paint' for the history page.
+  </summary>
+</histogram>
+
 <histogram name="History.ShownHeaderAboutOtherFormsOfBrowsingHistory"
     enum="BooleanShown">
   <owner>msramek@chromium.org</owner>

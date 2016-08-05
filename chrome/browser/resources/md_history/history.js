@@ -9,6 +9,8 @@ chrome.send('getForeignSessions');
 
 /** @type {Promise} */
 var upgradePromise = null;
+/** @type {boolean} */
+var resultsRendered = false;
 
 /**
  * @return {!Promise} Resolves once the history-app has been fully upgraded.
@@ -38,10 +40,18 @@ function historyResult(info, results) {
   waitForAppUpgrade().then(function() {
     /** @type {HistoryAppElement} */($('history-app'))
         .historyResult(info, results);
-    // TODO(tsergeant): Showing everything as soon as the list is ready is not
-    // ideal, as the sidebar can still pop in after. Fix this to show everything
-    // at once.
     document.body.classList.remove('loading');
+
+    if (!resultsRendered) {
+      resultsRendered = true;
+      // requestAnimationFrame allows measurement immediately before the next
+      // repaint, but after the first page of <iron-list> items has stamped.
+      requestAnimationFrame(function() {
+        chrome.send(
+            'metricsHandler:recordTime',
+            ['History.ResultsRenderedTime', window.performance.now()]);
+      });
+    }
   });
 }
 
