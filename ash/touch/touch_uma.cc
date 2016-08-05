@@ -14,6 +14,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>

@@ -9,6 +9,10 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/common/frame/default_header_painter.h"
+#include "ash/common/frame/frame_border_hit_test.h"
+#include "ash/common/frame/header_painter.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_observer.h"
@@ -17,10 +21,7 @@
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
-#include "ash/frame/header_painter.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
@@ -493,7 +494,7 @@ gfx::Rect CustomFrameViewAsh::GetWindowBoundsForClientBounds(
 }
 
 int CustomFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  return FrameBorderHitTestController::NonClientHitTest(
+  return FrameBorderNonClientHitTest(
       this, header_view_->caption_button_container(), point);
 }
 

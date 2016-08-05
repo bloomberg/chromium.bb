@@ -6,37 +6,24 @@
 #define ASH_FRAME_FRAME_BORDER_HITTEST_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 
 namespace aura {
 class Window;
 }
 
-namespace gfx {
-class Point;
-}
-
 namespace views {
-class NonClientFrameView;
 class Widget;
 }
 
 namespace ash {
-class FrameCaptionButtonContainerView;
 
 // Class which manages the hittest override bounds for |frame|.
+// TODO(sky): remove this class entirely. It isn't really needed.
 class ASH_EXPORT FrameBorderHitTestController {
  public:
   explicit FrameBorderHitTestController(views::Widget* frame);
   virtual ~FrameBorderHitTestController();
-
-  // Does the non client hit test on behalf of |view|. |point_in_widget| must be
-  // in the coordinates of |view|'s widget.
-  static int NonClientHitTest(
-      views::NonClientFrameView* view,
-      FrameCaptionButtonContainerView* caption_button_container,
-      const gfx::Point& point_in_widget);
 
  private:
   // The window whose hittest override bounds are being managed.

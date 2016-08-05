@@ -4,10 +4,11 @@
 
 #include "ash/wm/panels/panel_frame_view.h"
 
+#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/common/frame/default_header_painter.h"
+#include "ash/common/frame/frame_border_hit_test.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -126,8 +127,7 @@ gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!header_painter_)
     return HTNOWHERE;
-  return FrameBorderHitTestController::NonClientHitTest(
-      this, caption_button_container_, point);
+  return FrameBorderNonClientHitTest(this, caption_button_container_, point);
 }
 
 void PanelFrameView::OnPaint(gfx::Canvas* canvas) {

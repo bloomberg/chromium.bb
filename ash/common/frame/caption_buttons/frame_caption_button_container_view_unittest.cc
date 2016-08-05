@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 
 #include "ash/common/ash_layout_constants.h"
+#include "ash/common/frame/caption_buttons/frame_caption_button.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "grit/ash_resources.h"
 #include "ui/gfx/geometry/rect.h"

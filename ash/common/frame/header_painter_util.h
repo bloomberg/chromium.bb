@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_HEADER_PAINTER_UTIL_H_
-#define ASH_FRAME_HEADER_PAINTER_UTIL_H_
+#ifndef ASH_COMMON_FRAME_HEADER_PAINTER_UTIL_H_
+#define ASH_COMMON_FRAME_HEADER_PAINTER_UTIL_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -52,4 +52,4 @@ class ASH_EXPORT HeaderPainterUtil {
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_HEADER_PAINTER_UTIL_H_
+#endif  // ASH_COMMON_FRAME_HEADER_PAINTER_UTIL_H_

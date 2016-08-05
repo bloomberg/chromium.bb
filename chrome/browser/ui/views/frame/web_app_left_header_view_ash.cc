@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/web_app_left_header_view_ash.h"
 
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/common/frame/caption_buttons/frame_caption_button.h"
+#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ui/browser_commands.h"

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
-#define ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
+#ifndef ASH_COMMON_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
+#define ASH_COMMON_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/frame/caption_buttons/frame_size_button_delegate.h"
+#include "ash/common/frame/caption_buttons/frame_size_button_delegate.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -154,4 +154,4 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
+#endif  // ASH_COMMON_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_

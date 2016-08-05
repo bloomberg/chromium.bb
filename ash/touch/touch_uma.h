@@ -5,17 +5,22 @@
 #ifndef ASH_TOUCH_TOUCH_OBSERVER_UMA_H_
 #define ASH_TOUCH_TOUCH_OBSERVER_UMA_H_
 
-#include <map>
-
+#include "ash/ash_export.h"
 #include "ash/common/metrics/gesture_action_type.h"
-#include "ash/shell.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/views/widget/widget.h"
 
 namespace aura {
 class Window;
+}
+
+namespace ui {
+class GestureEvent;
+class TouchEvent;
+}
+
+namespace gfx {
+class Point;
 }
 
 namespace ash {

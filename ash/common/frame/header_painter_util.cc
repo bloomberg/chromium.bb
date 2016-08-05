@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/header_painter_util.h"
+#include "ash/common/frame/header_painter_util.h"
 
 #include <algorithm>
 
-#include "ui/aura/window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/font_list.h"
@@ -82,12 +83,12 @@ bool HeaderPainterUtil::CanAnimateActivation(views::Widget* widget) {
   // rate.
   // TODO(sky): Expose a better way to determine this rather than assuming the
   // parent is a toplevel container.
-  aura::Window* window = widget->GetNativeWindow();
-  if (!window->parent())
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget);
+  if (!window || !window->GetParent())
     return true;
 
   ui::LayerAnimator* parent_layer_animator =
-      window->parent()->layer()->GetAnimator();
+      window->GetParent()->GetLayer()->GetAnimator();
   return !parent_layer_animator->IsAnimatingProperty(
              ui::LayerAnimationElement::OPACITY) &&
          !parent_layer_animator->IsAnimatingProperty(

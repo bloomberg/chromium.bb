@@ -6,11 +6,11 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/common/frame/header_painter.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/header_painter.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "build/build_config.h"

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/default_header_painter.h"
+#include "ash/common/frame/default_header_painter.h"
 
 #include "ash/common/ash_layout_constants.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/header_painter_util.h"
+#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/common/frame/header_painter_util.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/web_app_left_header_view_ash.h"
 
-#include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "ash/common/frame/caption_buttons/frame_caption_button.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/values.h"
