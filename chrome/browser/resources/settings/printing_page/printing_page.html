@@ -36,20 +36,25 @@
       </neon-animatable>
 <if expr="chromeos">
       <template is="dom-if" name="cups-printers">
-        <settings-subpage page-title="$i18n{cupsPrintersTitle}">
+        <settings-subpage
+            associated-control="[[$$('#cupsPrinters')]]"
+            page-title="$i18n{cupsPrintersTitle}">
           <settings-cups-printers printers="{{cupsPrinters}}">
           </settings-cups-printers>
         </settings-subpage>
       </template>
       <template is="dom-if" name="cups-printer-details-page" restamp>
-        <settings-subpage page-title="$i18n{printerDetailsTitle}">
+        <settings-subpage no-associated-control
+            page-title="$i18n{printerDetailsTitle}">
           <settings-cups-printer-details-page printer="{{detailPrinter_}}">
           </settings-cups-printer-details-page>
         </settings-subpage>
       </template>
 </if>
       <template is="dom-if" name="cloud-printers">
-        <settings-subpage page-title="$i18n{cloudPrintersTitle}">
+        <settings-subpage
+            associated-control="[[$$('#cloudPrinters')]]"
+            page-title="$i18n{cloudPrintersTitle}">
           <settings-cloud-printers prefs="{{prefs}}">
           </settings-cloud-printers>
         </settings-subpage>

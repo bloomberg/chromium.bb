@@ -29,6 +29,22 @@ Polymer({
       notify: true,
       value: '',
     },
+
+    /** @type {?HTMLElement} */
+    associatedControl: {
+      type: Object,
+      value: null,
+    },
+
+    /**
+     * Indicates whether an associated control (an element that triggers the
+     * subpage) is not registered for this page. Used by the searching algorithm
+     * to show search bubbles.
+     */
+    noAssociatedControl: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private */

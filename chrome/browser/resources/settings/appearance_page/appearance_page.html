@@ -111,7 +111,8 @@
               menu-options="[[fontSizeOptions_]]" no-label-float>
           </settings-dropdown-menu>
         </div>
-        <div class="settings-box two-line single-column"
+        <div id="customize-fonts-subpage-trigger"
+            class="settings-box two-line single-column"
             on-tap="onCustomizeFontsTap_" actionable>
           <div>$i18n{customizeFonts}</div>
           <div class="secondary">$i18n{chooseFontsAndEncoding}</div>
@@ -125,7 +126,9 @@
         </div>
       </neon-animatable>
       <template is="dom-if" name="appearance-fonts">
-        <settings-subpage page-title="$i18n{customizeFonts}">
+        <settings-subpage
+            associated-control="[[$$('#customize-fonts-subpage-trigger')]]"
+            page-title="$i18n{customizeFonts}">
           <settings-appearance-fonts-page prefs="{{prefs}}">
           </settings-appearance-fonts-page>
         </settings-subpage>

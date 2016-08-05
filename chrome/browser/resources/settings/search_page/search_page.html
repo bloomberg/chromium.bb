@@ -31,7 +31,7 @@
             </paper-listbox>
           </paper-dropdown-menu>
         </div>
-        <div class="settings-box">
+        <div id="subpage-trigger" class="settings-box">
           <paper-button on-tap="onManageSearchEnginesTap_"
               class="primary-button">
             $i18n{searchEnginesManage}
@@ -39,7 +39,9 @@
         </div>
       </neon-animatable>
       <template is="dom-if" name="search-engines">
-        <settings-subpage page-title="$i18n{searchEnginesManage}">
+        <settings-subpage
+            associated-control="[[$$('#subpage-trigger')]]"
+            page-title="$i18n{searchEnginesManage}">
           <settings-search-engines-page></settings-search-engines-page>
         </settings-subpage>
       </template>
