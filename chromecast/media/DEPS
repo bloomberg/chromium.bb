@@ -1,10 +1,6 @@
 include_rules = [
   "+crypto",
-  "+gpu",
   "+media/audio",
   "+media/base",
   "+media/cdm",
-  "+media/media_features.h",
-  "+media/mojo",
-  "+media/renderers",
 ]
