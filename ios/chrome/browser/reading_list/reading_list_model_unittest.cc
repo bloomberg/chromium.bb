@@ -115,8 +115,8 @@ TEST_F(ReadingListModelTest, AddEntry) {
   ClearCounts();
   const ReadingListEntry entry =
       model_->AddEntry(GURL("http://example.com"), "sample");
-  EXPECT_EQ(GURL("http://example.com"), entry.url());
-  EXPECT_EQ("sample", entry.title());
+  EXPECT_EQ(GURL("http://example.com"), entry.URL());
+  EXPECT_EQ("sample", entry.Title());
 
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 0, 1);
   EXPECT_EQ(1ul, model_->unread_size());
@@ -124,8 +124,8 @@ TEST_F(ReadingListModelTest, AddEntry) {
   EXPECT_TRUE(model_->HasUnseenEntries());
 
   const ReadingListEntry other_entry = model_->GetUnreadEntryAtIndex(0);
-  EXPECT_EQ(GURL("http://example.com"), other_entry.url());
-  EXPECT_EQ("sample", other_entry.title());
+  EXPECT_EQ(GURL("http://example.com"), other_entry.URL());
+  EXPECT_EQ("sample", other_entry.Title());
 }
 
 TEST_F(ReadingListModelTest, ReadEntry) {
@@ -140,8 +140,8 @@ TEST_F(ReadingListModelTest, ReadEntry) {
   EXPECT_FALSE(model_->HasUnseenEntries());
 
   const ReadingListEntry other_entry = model_->GetReadEntryAtIndex(0);
-  EXPECT_EQ(GURL("http://example.com"), other_entry.url());
-  EXPECT_EQ("sample", other_entry.title());
+  EXPECT_EQ(GURL("http://example.com"), other_entry.URL());
+  EXPECT_EQ("sample", other_entry.Title());
 }
 
 TEST_F(ReadingListModelTest, BatchUpdates) {

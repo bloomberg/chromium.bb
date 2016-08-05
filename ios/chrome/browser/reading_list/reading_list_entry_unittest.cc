@@ -25,5 +25,28 @@ TEST(ReadingListEntry, CopyAreEquals) {
   const ReadingListEntry e2(e1);
 
   EXPECT_EQ(e1, e2);
-  EXPECT_EQ(e1.title(), e2.title());
+  EXPECT_EQ(e1.Title(), e2.Title());
+}
+
+TEST(ReadingListEntry, DistilledURL) {
+  ReadingListEntry e(GURL("http://example.com"), "bar");
+
+  EXPECT_FALSE(e.DistilledURL().is_valid());
+
+  const GURL distilled_url("http://distilled.example.com");
+  e.SetDistilledURL(distilled_url);
+  EXPECT_EQ(distilled_url, e.DistilledURL());
+}
+
+TEST(ReadingListEntry, DistilledState) {
+  ReadingListEntry e(GURL("http://example.com"), "bar");
+
+  EXPECT_EQ(ReadingListEntry::WAITING, e.DistilledState());
+
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  EXPECT_EQ(ReadingListEntry::ERROR, e.DistilledState());
+
+  const GURL distilled_url("http://distilled.example.com");
+  e.SetDistilledURL(distilled_url);
+  EXPECT_EQ(ReadingListEntry::PROCESSED, e.DistilledState());
 }

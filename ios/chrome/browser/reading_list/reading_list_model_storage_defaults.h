@@ -9,11 +9,20 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_storage.h"
 
 class ReadingListModel;
+#ifdef __OBJC__
+@class NSUserDefaults;
+#else
+typedef struct objc_object NSUserDefaults;
+#endif
 
 // Implementation of ReadingListModelStorage that stores reading list items in
 // the system user defaults.
 class ReadingListModelStorageDefaults : public ReadingListModelStorage {
  public:
+  ReadingListModelStorageDefaults();
+  ReadingListModelStorageDefaults(NSUserDefaults* backend);
+  ~ReadingListModelStorageDefaults();
+
   std::vector<ReadingListEntry> LoadPersistentReadList() override;
   std::vector<ReadingListEntry> LoadPersistentUnreadList() override;
   bool LoadPersistentHasUnseen() override;
@@ -23,6 +32,9 @@ class ReadingListModelStorageDefaults : public ReadingListModelStorage {
   void SavePersistentUnreadList(
       const std::vector<ReadingListEntry>& unread) override;
   void SavePersistentHasUnseen(bool has_unseen) override;
+
+ private:
+  NSUserDefaults* backend_;
 };
 
 #endif  // IOS_CHROME_BROWSER_READING_LIST_READING_LIST_MODEL_STORAGE_DEFAULTS_H_

@@ -17,6 +17,8 @@ NSString* const kReadingListUnreadElements = @"ReadingListUnreadElements";
 NSString* const kReadingListUnseenState = @"ReadingListUnseenState";
 NSString* const kReadingListEntryTitleKey = @"title";
 NSString* const kReadingListEntryURLKey = @"URL";
+NSString* const kReadingListEntryStateKey = @"state";
+NSString* const kReadingListEntryDistilledURLKey = @"distilledURL";
 
 ReadingListEntry DecodeReadingListEntry(NSData* data) {
   NSError* error = nil;
@@ -26,28 +28,75 @@ ReadingListEntry DecodeReadingListEntry(NSData* data) {
       [dictionary objectForKey:kReadingListEntryTitleKey]);
   NSURL* url = base::mac::ObjCCastStrict<NSURL>(
       [dictionary objectForKey:kReadingListEntryURLKey]);
+  auto state(static_cast<ReadingListEntry::DistillationState>(
+      [[dictionary objectForKey:kReadingListEntryStateKey] intValue]));
   DCHECK(title && url);
   GURL gurl(net::GURLWithNSURL(url));
   DCHECK(gurl.is_valid());
-  return ReadingListEntry(gurl, base::SysNSStringToUTF8(title));
+  ReadingListEntry entry(gurl, base::SysNSStringToUTF8(title));
+
+  switch (state) {
+    case ReadingListEntry::PROCESSED: {
+      NSURL* distilled_url = base::mac::ObjCCastStrict<NSURL>(
+          [dictionary objectForKey:kReadingListEntryDistilledURLKey]);
+      DCHECK(distilled_url);
+      GURL distilled_gurl(net::GURLWithNSURL(distilled_url));
+      DCHECK(distilled_gurl.is_valid());
+      entry.SetDistilledURL(distilled_gurl);
+      break;
+    }
+    case ReadingListEntry::PROCESSING:
+    case ReadingListEntry::WILL_RETRY:
+    case ReadingListEntry::ERROR:
+      entry.SetDistilledState(state);
+      break;
+    case ReadingListEntry::WAITING:
+      break;
+  }
+
+  return entry;
 }
 
 NSData* EncodeReadingListEntry(const ReadingListEntry& entry) {
-  NSDictionary* dictionary = @{
-    kReadingListEntryTitleKey : base::SysUTF8ToNSString(entry.title()),
-    kReadingListEntryURLKey : net::NSURLWithGURL(entry.url())
-  };
+  NSMutableDictionary* dictionary =
+      [NSMutableDictionary dictionaryWithDictionary:@{
+        kReadingListEntryTitleKey : base::SysUTF8ToNSString(entry.Title()),
+        kReadingListEntryURLKey : net::NSURLWithGURL(entry.URL()),
+        kReadingListEntryStateKey :
+            [NSNumber numberWithInt:entry.DistilledState()]
+      }];
+
+  const GURL distilled_gurl(entry.DistilledURL());
+  if (distilled_gurl.is_valid()) {
+    NSURL* distilled_url = net::NSURLWithGURL(distilled_gurl);
+    if (distilled_url)
+      [dictionary setObject:distilled_url
+                     forKey:kReadingListEntryDistilledURLKey];
+  }
   return [NSKeyedArchiver archivedDataWithRootObject:dictionary];
 }
 
 }  // namespace
 
+ReadingListModelStorageDefaults::ReadingListModelStorageDefaults() {
+  backend_ = [[NSUserDefaults standardUserDefaults] retain];
+}
+
+ReadingListModelStorageDefaults::ReadingListModelStorageDefaults(
+    NSUserDefaults* backend) {
+  DCHECK(backend);
+  backend_ = [backend retain];
+}
+
+ReadingListModelStorageDefaults::~ReadingListModelStorageDefaults() {
+  [backend_ release];
+}
+
 std::vector<ReadingListEntry>
 ReadingListModelStorageDefaults::LoadPersistentReadList() {
   std::vector<ReadingListEntry> read;
-  NSArray* readList =
-      base::mac::ObjCCastStrict<NSArray>([[NSUserDefaults standardUserDefaults]
-          objectForKey:kReadingListReadElements]);
+  NSArray* readList = base::mac::ObjCCastStrict<NSArray>(
+      [backend_ objectForKey:kReadingListReadElements]);
   if (readList) {
     for (NSData* entryData : readList) {
       read.push_back(DecodeReadingListEntry(entryData));
@@ -59,9 +108,8 @@ ReadingListModelStorageDefaults::LoadPersistentReadList() {
 std::vector<ReadingListEntry>
 ReadingListModelStorageDefaults::LoadPersistentUnreadList() {
   std::vector<ReadingListEntry> unread;
-  NSArray* unreadList =
-      base::mac::ObjCCastStrict<NSArray>([[NSUserDefaults standardUserDefaults]
-          objectForKey:kReadingListUnreadElements]);
+  NSArray* unreadList = base::mac::ObjCCastStrict<NSArray>(
+      [backend_ objectForKey:kReadingListUnreadElements]);
   if (unreadList) {
     for (NSData* entryData : unreadList) {
       unread.push_back(DecodeReadingListEntry(entryData));
@@ -71,8 +119,7 @@ ReadingListModelStorageDefaults::LoadPersistentUnreadList() {
 }
 
 bool ReadingListModelStorageDefaults::LoadPersistentHasUnseen() {
-  return [[[NSUserDefaults standardUserDefaults]
-      objectForKey:kReadingListUnseenState] boolValue];
+  return [[backend_ objectForKey:kReadingListUnseenState] boolValue];
 }
 
 void ReadingListModelStorageDefaults::SavePersistentReadList(
@@ -81,8 +128,7 @@ void ReadingListModelStorageDefaults::SavePersistentReadList(
   for (const ReadingListEntry& entry : read) {
     [read_list addObject:EncodeReadingListEntry(entry)];
   }
-  [[NSUserDefaults standardUserDefaults] setObject:read_list
-                                            forKey:kReadingListReadElements];
+  [backend_ setObject:read_list forKey:kReadingListReadElements];
 }
 
 void ReadingListModelStorageDefaults::SavePersistentUnreadList(
@@ -92,12 +138,10 @@ void ReadingListModelStorageDefaults::SavePersistentUnreadList(
   for (const ReadingListEntry& entry : unread) {
     [unread_list addObject:EncodeReadingListEntry(entry)];
   }
-  [[NSUserDefaults standardUserDefaults] setValue:unread_list
-                                           forKey:kReadingListUnreadElements];
+  [backend_ setObject:unread_list forKey:kReadingListUnreadElements];
 }
 
 void ReadingListModelStorageDefaults::SavePersistentHasUnseen(bool has_unseen) {
-  [[NSUserDefaults standardUserDefaults]
-      setObject:[NSNumber numberWithBool:has_unseen]
-         forKey:kReadingListUnseenState];
+  [backend_ setObject:[NSNumber numberWithBool:has_unseen]
+               forKey:kReadingListUnseenState];
 }
