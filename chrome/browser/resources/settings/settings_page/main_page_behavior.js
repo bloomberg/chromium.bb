@@ -36,7 +36,7 @@ var MainPageBehaviorImpl = {
   /** @override */
   attached: function() {
     if (this.domHost && this.domHost.parentNode.tagName == 'PAPER-HEADER-PANEL')
-      this.scroller = this.domHost.parentNode.$.mainContainer;
+      this.scroller = this.domHost.parentNode.scroller;
     else
       this.scroller = document.body; // Used in unit tests.
   },
