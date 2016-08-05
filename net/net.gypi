@@ -1604,7 +1604,6 @@
       'quic/chromium/quic_utils_chromium_test.cc',
       'quic/chromium/quic_chromium_client_session_peer.cc',
       'quic/chromium/quic_chromium_client_session_peer.h',
-      'quic/chromium/quic_connection_logger_unittest.cc',
       'quic/core/congestion_control/cubic_bytes_test.cc',
       'quic/core/congestion_control/cubic_test.cc',
       'quic/core/congestion_control/general_loss_algorithm_test.cc',

@@ -299,8 +299,6 @@ QuicConnectionLogger::QuicConnectionLogger(
       num_out_of_order_received_packets_(0),
       num_out_of_order_large_received_packets_(0),
       num_packets_received_(0),
-      num_truncated_acks_sent_(0),
-      num_truncated_acks_received_(0),
       num_frames_received_(0),
       num_duplicate_frames_received_(0),
       num_incorrect_connection_ids_(0),
@@ -316,10 +314,6 @@ QuicConnectionLogger::~QuicConnectionLogger() {
                        num_out_of_order_received_packets_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.OutOfOrderLargePacketsReceived",
                        num_out_of_order_large_received_packets_);
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksSent",
-                       num_truncated_acks_sent_);
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksReceived",
-                       num_truncated_acks_received_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.IncorrectConnectionIDsReceived",
                        num_incorrect_connection_ids_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.UndecryptablePacketsReceived",
@@ -363,29 +357,6 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_ACK_FRAME_SENT,
           base::Bind(&NetLogQuicAckFrameCallback, frame.ack_frame));
-      // Missing packets histogram only relevant for v33 and lower
-      // TODO(rch, rtenneti) sort out histograms for v34+
-      if (session_->connection()->version() > QUIC_VERSION_33) {
-        break;
-      }
-      const PacketNumberQueue& missing_packets = frame.ack_frame->packets;
-      const uint8_t max_ranges = std::numeric_limits<uint8_t>::max();
-      // Compute an upper bound on the number of NACK ranges. If the bound
-      // is below the max, then it clearly isn't truncated.
-      if (missing_packets.NumPacketsSlow() < max_ranges ||
-          (missing_packets.Max() - missing_packets.Min() -
-           missing_packets.NumPacketsSlow() + 1) < max_ranges) {
-        break;
-      }
-      size_t num_ranges = 0;
-      QuicPacketNumber last_missing = 0;
-      for (QuicPacketNumber packet : missing_packets) {
-        if (packet != last_missing + 1 && ++num_ranges >= max_ranges) {
-          ++num_truncated_acks_sent_;
-          break;
-        }
-        last_missing = packet;
-      }
       break;
     }
     case RST_STREAM_FRAME:
@@ -546,9 +517,6 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
       last_received_packet_size_ < kApproximateLargestSoloAckBytes) {
     received_acks_[static_cast<size_t>(last_received_packet_number_)] = true;
   }
-
-  if (frame.is_truncated)
-    ++num_truncated_acks_received_;
 
   if (frame.packets.Empty())
     return;

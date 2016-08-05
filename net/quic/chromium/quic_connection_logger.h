@@ -26,10 +26,6 @@ class HistogramBase;
 }
 
 namespace net {
-namespace test {
-class QuicConnectionLoggerPeer;
-}  // namespace test
-
 
 // This class is a debug visitor of a QuicConnection which logs
 // events to |net_log|.
@@ -92,8 +88,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   float ReceivedPacketLossRate() const;
 
  private:
-  friend class test::QuicConnectionLoggerPeer;
-
   // Do a factory get for a histogram for recording data, about individual
   // packet numbers, that was gathered in the vectors
   // received_packets_ and received_acks_. |statistic_name| identifies which
@@ -154,10 +148,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // If the network replicates packets, then this number may be slightly
   // different from the real number of distinct packets received.
   QuicPacketCount num_packets_received_;
-  // Number of times a truncated ACK frame was sent.
-  size_t num_truncated_acks_sent_;
-  // Number of times a truncated ACK frame was received.
-  size_t num_truncated_acks_received_;
   // The kCADR value provided by the server in ServerHello.
   IPEndPoint local_address_from_shlo_;
   // The first local address from which a packet was received.

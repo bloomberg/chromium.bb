@@ -30632,11 +30632,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.QuicSession.TruncatedAcksReceived">
   <owner>rch@chromium.org</owner>
+  <obsolete>
+    Deprecated 08/2016.
+  </obsolete>
   <summary>The number of truncated ACK frames received.</summary>
 </histogram>
 
 <histogram name="Net.QuicSession.TruncatedAcksSent">
   <owner>rch@chromium.org</owner>
+  <obsolete>
+    Deprecated 08/2016.
+  </obsolete>
   <summary>The number of truncated ACK frames sent.</summary>
 </histogram>
 
