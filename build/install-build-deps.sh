@@ -125,18 +125,19 @@ chromeos_lib_list="libpulse0 libbz2-1.0"
 lib_list="libatk1.0-0 libc6 libasound2 libcairo2 libcap2 libcups2 libexpat1
           libffi6 libfontconfig1 libfreetype6 libglib2.0-0 libgnome-keyring0
           libgtk2.0-0 libpam0g libpango1.0-0 libpci3 libpcre3 libpixman-1-0
-          libpng12-0 libspeechd2 libstdc++6 libsqlite3-0 libx11-6 libxau6
-          libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxdmcp6 libxext6
-          libxfixes3 libxi6 libxinerama1 libxrandr2 libxrender1 libxtst6
-          zlib1g $chromeos_lib_list"
+          libpng12-0 libspeechd2 libstdc++6 libsqlite3-0 libx11-6 libx11-xcb1
+          libxau6 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxdmcp6
+          libxext6 libxfixes3 libxi6 libxinerama1 libxrandr2 libxrender1
+          libxtst6 zlib1g $chromeos_lib_list"
 
 # Debugging symbols for all of the run-time libraries
 dbg_list="libatk1.0-dbg libc6-dbg libcairo2-dbg libffi6-dbg libfontconfig1-dbg
           libglib2.0-0-dbg libgtk2.0-0-dbg libpango1.0-0-dbg libpcre3-dbg
-          libpixman-1-0-dbg libsqlite3-0-dbg libx11-6-dbg libxau6-dbg
-          libxcb1-dbg libxcomposite1-dbg libxcursor1-dbg libxdamage1-dbg
-          libxdmcp6-dbg libxext6-dbg libxfixes3-dbg libxi6-dbg libxinerama1-dbg
-          libxrandr2-dbg libxrender1-dbg libxtst6-dbg zlib1g-dbg"
+          libpixman-1-0-dbg libsqlite3-0-dbg libx11-6-dbg libx11-xcb1-dbg
+          libxau6-dbg libxcb1-dbg libxcomposite1-dbg libxcursor1-dbg
+          libxdamage1-dbg libxdmcp6-dbg libxext6-dbg libxfixes3-dbg libxi6-dbg
+          libxinerama1-dbg libxrandr2-dbg libxrender1-dbg libxtst6-dbg
+          zlib1g-dbg"
 
 # Find the proper version of libstdc++6-4.x-dbg.
 if [ "x$lsb_release" = "xprecise" ]; then
