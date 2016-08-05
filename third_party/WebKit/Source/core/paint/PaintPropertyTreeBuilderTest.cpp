@@ -99,6 +99,7 @@ TEST_F(PaintPropertyTreeBuilderTest, FixedPosition)
     EXPECT_EQ(scrollerProperties->overflowClip(), target2Properties->overflowClip()->parent());
 
     CHECK_VISUAL_RECT(target1->layoutObject(), frameView->layoutView());
+    CHECK_VISUAL_RECT(target2->layoutObject(), frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)

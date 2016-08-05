@@ -178,7 +178,7 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
         if ((*it) != ancestorState.transform) {
             TransformationMatrix localTransformMatrix = (*it)->matrix();
             localTransformMatrix.applyTransformOrigin((*it)->origin());
-            transformMatrix = localTransformMatrix * transformMatrix;
+            transformMatrix =  transformMatrix * localTransformMatrix;
         }
 
         precomputedData.toAncestorTransforms.set(*it, transformMatrix);

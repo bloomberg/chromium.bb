@@ -162,6 +162,31 @@ TEST_F(GeometryMapperTest, NestedTransforms)
     EXPECT_EQ(rotateTransform, getPrecomputedDataForAncestor(rootPropertyTreeState()).toAncestorTransforms.get(transform1.get()));
 }
 
+TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation)
+{
+    TransformationMatrix scaleTransform;
+    scaleTransform.scale(2);
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, scaleTransform, FloatPoint3D());
+
+    TransformationMatrix translateTransform;
+    translateTransform.translate(100, 0);
+    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(transform1, translateTransform, FloatPoint3D());
+
+    PropertyTreeState localState = rootPropertyTreeState();
+    localState.transform = transform2.get();
+
+    FloatRect input(0, 0, 100, 100);
+    // Note: unlike NestedTransforms, the order of these transforms matters. This tests correct order of matrix multiplication.
+    TransformationMatrix final = scaleTransform * translateTransform;
+    FloatRect output = final.mapRect(input);
+
+    CHECK_MAPPINGS(input, output, output, final, rootClipNode->clipRect().rect(), localState, rootPropertyTreeState());
+
+    // Check the cached matrix for the intermediate transform.
+    EXPECT_EQ(scaleTransform, getPrecomputedDataForAncestor(rootPropertyTreeState()).toAncestorTransforms.get(transform1.get()));
+}
+
+
 TEST_F(GeometryMapperTest, NestedTransformsIntermediateDestination)
 {
     TransformationMatrix rotateTransform;
