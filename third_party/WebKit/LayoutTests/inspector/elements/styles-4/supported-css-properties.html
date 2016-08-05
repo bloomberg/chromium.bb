@@ -5,8 +5,7 @@
 function test()
 {
     var cssProperty = "box-shadow";
-    var properties = WebInspector.CSSMetadata.cssPropertiesMetainfo.startsWith(cssProperty);
-    if (properties.length)
+    if (WebInspector.CSSMetadata.cssPropertiesMetainfo.hasProperty(cssProperty))
         InspectorTest.addResult(cssProperty + " is supported");
     else
         InspectorTest.addResult(cssProperty + " is NOT supported");
