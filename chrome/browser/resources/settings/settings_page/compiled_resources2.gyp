@@ -38,6 +38,9 @@
     },
     {
       'target_name': 'settings_section',
+      'dependencies': [
+        '<(EXTERNS_GYP):web_animations',
+      ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

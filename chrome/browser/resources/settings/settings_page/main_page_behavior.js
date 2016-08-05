@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Fast out, slow in.
-var EASING_FUNCTION = 'cubic-bezier(0.4, 0, 0.2, 1)';
-var EXPAND_DURATION = 350;
-
 /**
  * Calls |readyTest| repeatedly until it returns true, then calls
  * |readyCallback|.
@@ -30,7 +26,7 @@ function doWhenReady(readyTest, readyCallback) {
  * @polymerBehavior Polymer.MainPageBehavior
  */
 var MainPageBehaviorImpl = {
-  /** @type {?Element} The scrolling container. */
+  /** @type {?HTMLElement} The scrolling container. */
   scroller: null,
 
   /** @override */
@@ -102,7 +98,7 @@ var MainPageBehaviorImpl = {
    * @param {!SettingsSectionElement} section
    */
   startExpandSection_: function(section) {
-    if (section.classList.contains('expanded'))
+    if (!section.canAnimateExpand())
       return;
 
     // Freeze the scroller and save its position.
@@ -115,7 +111,7 @@ var MainPageBehaviorImpl = {
     this.scroller.style.width = 'calc(100% - ' + scrollbarWidth + 'px)';
 
     // Freezes the section's height so its card can be removed from the flow.
-    this.freezeSection_(section);
+    section.setFrozen(true);
 
     // Expand the section's card to fill the parent.
     var animationPromise = this.playExpandSection_(section);
@@ -125,7 +121,7 @@ var MainPageBehaviorImpl = {
       this.toggleOtherSectionsHidden_(section.section, true);
     }.bind(this), function() {
       // Animation was canceled; restore the section.
-      this.unfreezeSection_(section);
+      section.setFrozen(false);
     }.bind(this)).then(function() {
       this.scroller.style.overflow = '';
       this.scroller.style.width = '';
@@ -151,7 +147,7 @@ var MainPageBehaviorImpl = {
       return;
     }
 
-    if (!section.classList.contains('expanded'))
+    if (!section.canAnimateCollapse())
       return;
 
     this.toggleOtherSectionsHidden_(section.section, false);
@@ -163,62 +159,11 @@ var MainPageBehaviorImpl = {
     this.scroller.style.width = 'calc(100% - ' + scrollbarWidth + 'px)';
 
     this.playCollapseSection_(section).then(function() {
-      this.unfreezeSection_(section);
+      section.setFrozen(false);
       this.scroller.style.overflow = '';
       this.scroller.style.width = '';
       section.classList.remove('collapsing');
     }.bind(this));
-  },
-
-  /**
-   * Freezes a section's height so its card can be removed from the flow without
-   * affecting the layout of the surrounding sections.
-   * @param {!SettingsSectionElement} section
-   * @private
-   */
-  freezeSection_: function(section) {
-    var card = section.$.card;
-    section.style.height = section.clientHeight + 'px';
-
-    var cardHeight = card.offsetHeight;
-    var cardWidth = card.offsetWidth;
-    // If the section is not displayed yet (e.g., navigated directly to a
-    // sub-page), cardHeight and cardWidth are 0, so do not set the height or
-    // width explicitly.
-    // TODO(michaelpg): Improve this logic when refactoring
-    // settings-animated-pages.
-    if (cardHeight && cardWidth) {
-      // TODO(michaelpg): Temporary hack to store the height the section should
-      // collapse to when it closes.
-      card.origHeight_ = cardHeight;
-
-      card.style.height = cardHeight + 'px';
-      card.style.width = cardWidth + 'px';
-    } else {
-      // Set an invalid value so we don't try to use it later.
-      card.origHeight_ = NaN;
-    }
-
-    // Place the section's card at its current position but removed from the
-    // flow.
-    card.style.top = card.getBoundingClientRect().top + 'px';
-    section.classList.add('frozen');
-  },
-
-  /**
-   * After freezeSection_, restores the section to its normal height.
-   * @param {!SettingsSectionElement} section
-   * @private
-   */
-  unfreezeSection_: function(section) {
-    if (!section.classList.contains('frozen'))
-      return;
-    var card = section.$.card;
-    section.classList.remove('frozen');
-    card.style.top = '';
-    card.style.height = '';
-    card.style.width = '';
-    section.style.height = '';
   },
 
   /**
@@ -228,49 +173,27 @@ var MainPageBehaviorImpl = {
    * @private
    */
   playExpandSection_: function(section) {
-    var card = section.$.card;
+    // We must be attached.
+    assert(this.scroller);
 
-    // The card should start at the top of the page.
-    var targetTop = this.scroller.getBoundingClientRect().top;
-
-    section.classList.add('expanding');
-
-    // Expand the card, using minHeight. (The card must span the container's
-    // client height, so it must be at least 100% in case the card is too short.
-    // If the card is already taller than the container's client height, we
-    // don't want to shrink the card to 100% or the content will overflow, so
-    // we can't use height, and animating height wouldn't look right anyway.)
-    var keyframes = [{
-      top: card.style.top,
-      minHeight: card.style.height,
-      easing: EASING_FUNCTION,
-    }, {
-      top: targetTop + 'px',
-      minHeight: 'calc(100% - ' + targetTop + 'px)',
-    }];
-    var options = /** @type {!KeyframeEffectOptions} */({
-      duration: EXPAND_DURATION
-    });
-    // TODO(michaelpg): Change elevation of sections.
     var promise;
-    if (keyframes[0].top && keyframes[0].minHeight)
-      promise = this.animateElement('section', card, keyframes, options);
-    else
+    var animationConfig = section.animateExpand(this.scroller);
+    if (animationConfig) {
+      promise = this.animateElement('section', animationConfig.card,
+          animationConfig.keyframes, animationConfig.options);
+    } else {
       promise = Promise.resolve();
+    }
 
+    var finished;
     promise.then(function() {
-      section.classList.add('expanded');
-      card.style.top = '';
+      finished = true;
       this.style.margin = 'auto';
-      section.$.header.hidden = true;
-      section.style.height = '';
     }.bind(this), function() {
       // The animation was canceled; catch the error and continue.
+      finished = false;
     }).then(function() {
-      // Whether finished or canceled, clean up the animation.
-      section.classList.remove('expanding');
-      card.style.height = '';
-      card.style.width = '';
+      section.cleanUpAnimateExpand(finished);
     });
 
     return promise;
@@ -283,58 +206,25 @@ var MainPageBehaviorImpl = {
    * @private
    */
   playCollapseSection_: function(section) {
-    var card = section.$.card;
+    // We must be attached.
+    assert(this.scroller);
 
     this.style.margin = '';
-    section.$.header.hidden = false;
 
-    var startingTop = this.scroller.getBoundingClientRect().top;
+    var promise;
+    var animationConfig =
+        section.animateCollapse(this.scroller, this.listScrollTop_);
+    if (animationConfig) {
+      promise = this.animateElement('section', animationConfig.card,
+          animationConfig.keyframes, animationConfig.options);
+    } else {
+      promise = Promise.resolve();
+    }
 
-    var cardHeightStart = card.clientHeight;
-    var cardWidthStart = card.clientWidth;
-
-    section.classList.add('collapsing');
-    section.classList.remove('expanding', 'expanded');
-
-    // If we navigated here directly, we don't know the original height of the
-    // section, so we skip the animation.
-    // TODO(michaelpg): remove this condition once sliding is implemented.
-    if (isNaN(card.origHeight_))
-      return Promise.resolve();
-
-    // Restore the section to its proper height to make room for the card.
-    section.style.height = section.clientHeight + card.origHeight_ + 'px';
-
-    // TODO(michaelpg): this should be in collapseSection(), but we need to wait
-    // until the full page height is available (setting the section height).
-    this.scroller.scrollTop = this.listScrollTop_;
-
-    // The card is unpositioned, so use its position as the ending state,
-    // but account for scroll.
-    var targetTop = card.getBoundingClientRect().top - this.scroller.scrollTop;
-
-    // Account for the section header.
-    var headerStyle = getComputedStyle(section.$.header);
-    targetTop += section.$.header.offsetHeight +
-        parseInt(headerStyle.marginBottom, 10) +
-        parseInt(headerStyle.marginTop, 10);
-
-    var keyframes = [{
-      top: startingTop + 'px',
-      minHeight: cardHeightStart + 'px',
-      easing: EASING_FUNCTION,
-    }, {
-      top: targetTop + 'px',
-      minHeight: card.origHeight_ + 'px',
-    }];
-    var options = /** @type {!KeyframeEffectOptions} */({
-      duration: EXPAND_DURATION
-    });
-
-    card.style.width = cardWidthStart + 'px';
-    var promise = this.animateElement('section', card, keyframes, options);
     promise.then(function() {
-      card.style.width = '';
+      section.cleanUpAnimateCollapse(true);
+    }, function() {
+      section.cleanUpAnimateCollapse(false);
     });
     return promise;
   },
