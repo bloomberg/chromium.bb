@@ -42,6 +42,7 @@
 #include "core/events/AddEventListenerOptionsResolved.h"
 #include "core/events/EventDispatchResult.h"
 #include "core/events/EventListenerMap.h"
+#include "core/frame/UseCounter.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
@@ -175,6 +176,10 @@ protected:
 private:
     LocalDOMWindow* executingWindow();
     void setDefaultAddEventListenerOptions(const AtomicString& eventType, AddEventListenerOptionsResolved&);
+
+    // UseCounts the event if it has the specified type. Returns true iff the event type matches.
+    bool checkTypeThenUseCount(const Event*, const AtomicString&, const UseCounter::Feature);
+
     bool fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
     void countLegacyEvents(const AtomicString& legacyTypeName, EventListenerVector*, EventListenerVector*);
 

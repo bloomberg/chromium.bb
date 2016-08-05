@@ -545,6 +545,17 @@ DispatchEventResult EventTarget::fireEventListeners(Event* event)
     return dispatchEventResult(*event);
 }
 
+bool EventTarget::checkTypeThenUseCount(
+    const Event* event, const AtomicString& eventTypeToCount, const UseCounter::Feature feature)
+{
+    if (event->type() == eventTypeToCount) {
+        if (LocalDOMWindow* executingWindow = this->executingWindow())
+            UseCounter::count(executingWindow->document(), feature);
+        return true;
+    }
+    return false;
+}
+
 bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventListenerVector& entry)
 {
     // Fire all listeners registered for this event. Don't fire listeners removed
@@ -552,38 +563,25 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     // dispatch. Conveniently, all new event listeners will be added after or at
     // index |size|, so iterating up to (but not including) |size| naturally excludes
     // new event listeners.
-    //
-    // TODO(mustaq): This code needs to be refactored, crbug.com/629601
 
-    if (event->type() == EventTypeNames::beforeunload) {
+    if (checkTypeThenUseCount(event, EventTypeNames::beforeunload, UseCounter::DocumentBeforeUnloadFired)) {
         if (LocalDOMWindow* executingWindow = this->executingWindow()) {
+            // TODO(mustaq): Is the |if| condition correct? crbug.com/635029
             if (executingWindow->top())
                 UseCounter::count(executingWindow->document(), UseCounter::SubFrameBeforeUnloadFired);
-            UseCounter::count(executingWindow->document(), UseCounter::DocumentBeforeUnloadFired);
         }
-    } else if (event->type() == EventTypeNames::unload) {
-        if (LocalDOMWindow* executingWindow = this->executingWindow())
-            UseCounter::count(executingWindow->document(), UseCounter::DocumentUnloadFired);
-    } else if (event->type() == EventTypeNames::DOMFocusIn || event->type() == EventTypeNames::DOMFocusOut) {
-        if (LocalDOMWindow* executingWindow = this->executingWindow())
-            UseCounter::count(executingWindow->document(), UseCounter::DOMFocusInOutEvent);
-    } else if (event->type() == EventTypeNames::focusin || event->type() == EventTypeNames::focusout) {
-        if (LocalDOMWindow* executingWindow = this->executingWindow())
-            UseCounter::count(executingWindow->document(), UseCounter::FocusInOutEvent);
-    } else if (event->type() == EventTypeNames::textInput) {
-        if (LocalDOMWindow* executingWindow = this->executingWindow())
-            UseCounter::count(executingWindow->document(), UseCounter::TextInputFired);
-    } else if (event->type() == EventTypeNames::touchstart) {
-        if (LocalDOMWindow* executingWindow = this->executingWindow())
-            UseCounter::count(executingWindow->document(), UseCounter::TouchStartFired);
-    } else if (event->type() == EventTypeNames::mousedown) {
-        if (LocalDOMWindow* executingWindow = this->executingWindow())
-            UseCounter::count(executingWindow->document(), UseCounter::MouseDownFired);
-    } else if (event->type() == EventTypeNames::pointerdown) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::unload, UseCounter::DocumentUnloadFired)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::DOMFocusIn, UseCounter::DOMFocusInOutEvent)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::DOMFocusOut, UseCounter::DOMFocusInOutEvent)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::focusin, UseCounter::FocusInOutEvent)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::focusout, UseCounter::FocusInOutEvent)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::textInput, UseCounter::TextInputFired)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::touchstart, UseCounter::TouchStartFired)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::mousedown, UseCounter::MouseDownFired)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::pointerdown, UseCounter::PointerDownFired)) {
         if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-            if (event->isPointerEvent() && static_cast<PointerEvent*>(event)->pointerType() == "touch")
+            if (static_cast<PointerEvent*>(event)->pointerType() == "touch")
                 UseCounter::count(executingWindow->document(), UseCounter::PointerDownFiredForTouch);
-            UseCounter::count(executingWindow->document(), UseCounter::PointerDownFired);
         }
     }
 
