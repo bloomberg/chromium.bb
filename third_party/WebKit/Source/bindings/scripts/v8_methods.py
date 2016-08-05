@@ -57,7 +57,9 @@ def method_is_visible(method, interface_is_partial):
 
 
 def conditionally_exposed(method):
-    return method['overloads']['exposed_test_all'] if 'overloads' in method else method['exposed_test']
+    exposed = method['overloads']['exposed_test_all'] if 'overloads' in method else method['exposed_test']
+    secure_context = method['overloads']['secure_context_test_all'] if 'overloads' in method else method['secure_context_test']
+    return exposed or secure_context
 
 
 def filter_conditionally_exposed(methods, interface_is_partial):
@@ -252,6 +254,7 @@ def method_context(interface, method, is_visible=True):
         'property_attributes': property_attributes(interface, method),
         'returns_promise': method.returns_promise,
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
+        'secure_context_test': v8_utilities.secure_context(method, interface),  # [SecureContext]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'use_local_result': use_local_result(method),

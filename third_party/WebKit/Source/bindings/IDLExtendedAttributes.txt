@@ -90,6 +90,7 @@ Replaceable
 RuntimeEnabled=*
 SameObject
 SaveSameObject
+SecureContext
 SetWrapperReferenceFrom=*
 SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptArguments|CurrentWindow|EnteredWindow

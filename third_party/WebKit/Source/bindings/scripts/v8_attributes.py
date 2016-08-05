@@ -168,6 +168,7 @@ def attribute_context(interface, attribute):
         'reflect_only': extended_attribute_value_as_list(attribute, 'ReflectOnly'),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'runtime_feature_name': v8_utilities.runtime_feature_name(attribute),  # [RuntimeEnabled]
+        'secure_context_test': v8_utilities.secure_context(attribute, interface),  # [SecureContext]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'world_suffixes': (
             ['', 'ForMainWorld']
@@ -188,6 +189,7 @@ def attribute_context(interface, attribute):
 def filter_has_accessor_configuration(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
+                 attribute['secure_context_test'] or
                  attribute['origin_trial_enabled_function'] or
                  attribute['runtime_enabled_function']) and
             not attribute['is_data_type_property'] and
@@ -197,6 +199,7 @@ def filter_has_accessor_configuration(attributes):
 def filter_has_attribute_configuration(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
+                 attribute['secure_context_test'] or
                  attribute['origin_trial_enabled_function'] or
                  attribute['runtime_enabled_function']) and
             attribute['is_data_type_property'] and
@@ -209,17 +212,18 @@ def filter_origin_trial_enabled(attributes):
             not attribute['exposed_test']]
 
 
-def filter_runtime_enabled(attributes):
+def filter_purely_runtime_enabled(attributes):
     return [attribute for attribute in attributes if
-            attribute['runtime_feature_name'] and
-            not attribute['exposed_test']]
+            not (attribute['exposed_test'] or
+                 attribute['secure_context_test']) and
+            attribute['runtime_feature_name']]
 
 
 def attribute_filters():
     return {'has_accessor_configuration': filter_has_accessor_configuration,
             'has_attribute_configuration': filter_has_attribute_configuration,
             'origin_trial_enabled_attributes': filter_origin_trial_enabled,
-            'runtime_enabled_attributes': filter_runtime_enabled}
+            'purely_runtime_enabled_attributes': filter_purely_runtime_enabled}
 
 
 ################################################################################

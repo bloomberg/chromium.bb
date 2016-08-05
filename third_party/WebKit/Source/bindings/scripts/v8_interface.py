@@ -558,10 +558,10 @@ def interface_context(interface):
 
     # Conditionally enabled members
     has_conditional_attributes_on_instance = any(
-        attribute['exposed_test'] and attribute['on_instance']
+        (attribute['exposed_test'] or attribute['secure_context_test']) and attribute['on_instance']
         for attribute in attributes)
     has_conditional_attributes_on_prototype = any(
-        attribute['exposed_test'] and attribute['on_prototype']
+        (attribute['exposed_test'] or attribute['secure_context_test']) and attribute['on_prototype']
         for attribute in attributes)
     context.update({
         'has_conditional_attributes_on_instance':
@@ -789,6 +789,7 @@ def overloads_context(interface, overloads):
         'runtime_determined_lengths': runtime_determined_lengths,
         'runtime_determined_maxargs': runtime_determined_maxargs,
         'runtime_enabled_function_all': common_value(overloads, 'runtime_enabled_function'),  # [RuntimeEnabled]
+        'secure_context_test_all': common_value(overloads, 'secure_context_test'),  # [SecureContext]
         'valid_arities': (lengths
                           # Only need to report valid arities if there is a gap in the
                           # sequence of possible lengths, otherwise invalid length means

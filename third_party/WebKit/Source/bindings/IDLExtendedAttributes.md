@@ -426,6 +426,12 @@ Summary: Signals that a `readonly` attribute that returns an object type always 
 
 This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it. If you want the binding layer to cache the resulting object, use `[SaveSameObject]`.
 
+### [SecureContext] _(a, i, m)_
+
+Standard: [SecureContext](https://heycam.github.io/webidl/#SecureContext)
+
+Summary: Interfaces and interface members with a `SecureContext` attribute are exposed only inside ["Secure Contexts"](https://w3c.github.io/webappsec-secure-contexts/).
+
 ### [TreatNullAs] _(a,p)_, [TreatUndefinedAs] _(a,p)_
 
 Standard: [TreatNullAs](http://heycam.github.io/webidl/#TreatNullAs)

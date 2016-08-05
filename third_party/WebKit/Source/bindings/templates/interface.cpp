@@ -911,11 +911,15 @@ prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopeables).Fr
 {% from 'attributes.cpp' import attribute_configuration with context %}
 ExecutionContext* executionContext = toExecutionContext(context);
 v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
-{% for attribute in attributes if attribute.exposed_test and attribute.on_prototype %}
+{% for attribute in attributes if (attribute.exposed_test or attribute.secure_context_test) and attribute.on_prototype %}
 {% filter exposed(attribute.exposed_test) %}
+{% filter secure_context(attribute.secure_context_test) %}
+{% filter runtime_enabled(attribute.runtime_enabled_function) %}
 const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
 V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
-{% endfilter %}
+{% endfilter %}{# runtime_enabled #}
+{% endfilter %}{# secure_context #}
+{% endfilter %}{# exposed #}
 {% endfor %}
 {% endmacro %}
 

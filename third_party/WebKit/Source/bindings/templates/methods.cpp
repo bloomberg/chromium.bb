@@ -687,6 +687,9 @@ v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTempla
 ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
 ASSERT(executionContext);
 {% for method in methods | conditionally_exposed(is_partial) %}
+{% filter secure_context(method.overloads.secure_context_test_all
+                         if method.overloads else
+                         method.secure_context_test) %}
 {% filter exposed(method.overloads.exposed_test_all
                   if method.overloads else
                   method.exposed_test) %}
@@ -697,6 +700,7 @@ const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration
 V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, {{method.name}}MethodConfiguration);
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}
+{% endfilter %}{# secure_context() #}
 {% endfor %}
 {% endif %}
 {%- endmacro %}

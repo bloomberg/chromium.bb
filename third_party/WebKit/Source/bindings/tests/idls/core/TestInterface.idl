@@ -116,6 +116,19 @@
     [LenientThis] attribute any lenientThisAttribute;
 
     [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingMethod(TestInterfaceEmpty testInterfaceEmptyArg);
+
+    [SecureContext] void secureContextMethod();
+    [SecureContext] attribute bool secureContextAttribute;
+    [SecureContext,RuntimeEnabled=SecureFeature] void secureContextRuntimeEnabledMethod();
+    [SecureContext,RuntimeEnabled=SecureFeature] attribute bool secureContextRuntimeEnabledAttribute;
+    [SecureContext,Exposed=Window] void secureContextWindowExposedMethod();
+    [SecureContext,Exposed=Window] attribute bool secureContextWindowExposedAttribute;
+    [SecureContext,Exposed=Worker] void secureContextWorkerExposedMethod();
+    [SecureContext,Exposed=Worker] attribute bool secureContextWorkerExposedAttribute;
+    [SecureContext,Exposed=Window,RuntimeEnabled=SecureFeature] void secureContextWindowExposedRuntimeEnabledMethod();
+    [SecureContext,Exposed=Window,RuntimeEnabled=SecureFeature] attribute bool secureContextWindowExposedRuntimeEnabledAttribute;
+    [SecureContext,Exposed=Worker,RuntimeEnabled=SecureFeature] void secureContextWorkerExposedRuntimeEnabledMethod();
+    [SecureContext,Exposed=Worker,RuntimeEnabled=SecureFeature] attribute bool secureContextWorkerExposedRuntimeEnabledAttribute;
 };
 
 TestInterface implements TestImplements;

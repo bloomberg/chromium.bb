@@ -297,7 +297,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
     prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
     {% endif %}
 
-    {%- for group in attributes | runtime_enabled_attributes | groupby('runtime_feature_name') %}{{newline}}
+    {%- for group in attributes | purely_runtime_enabled_attributes | groupby('runtime_feature_name') %}{{newline}}
     if ({{group.list[0].runtime_enabled_function}}()) {
         {% for attribute in group.list | unique_by('name') | sort %}
         {% if attribute.is_data_type_property %}

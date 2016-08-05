@@ -427,6 +427,7 @@ def initialize_jinja_env(cache_dir):
         'blink_capitalize': capitalize,
         'exposed': exposed_if,
         'for_origin_trial_feature': for_origin_trial_feature,
+        'secure_context': secure_context_if,
         'runtime_enabled': runtime_enabled_if,
         'unique_by': unique_by,
         })
@@ -449,6 +450,13 @@ def exposed_if(code, exposed_test):
     if not exposed_test:
         return code
     return generate_indented_conditional(code, 'executionContext && (%s)' % exposed_test)
+
+
+# [SecureContext]
+def secure_context_if(code, secure_context_test):
+    if not secure_context_test:
+        return code
+    return generate_indented_conditional(code, 'executionContext && (%s)' % secure_context_test)
 
 
 # [RuntimeEnabled]
