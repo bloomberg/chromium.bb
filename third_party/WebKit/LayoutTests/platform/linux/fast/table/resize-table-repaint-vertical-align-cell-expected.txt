@@ -9,16 +9,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable (positioned) TABLE id='table'",
-          "rect": [0, 150, 106, 380],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [0, 148, 106, 380],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [2, 52, 102, 476],
           "reason": "forced by layout"
@@ -37,14 +27,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable (positioned) TABLE id='table'",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutTableCell TD",
       "reason": "forced by layout"

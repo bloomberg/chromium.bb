@@ -19,52 +19,12 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [58, 58, 50, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [58, 58, 50, 100],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [58, 58, 50, 100],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [58, 58, 50, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [58, 58, 50, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [58, 8, 50, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [58, 8, 50, 100],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [58, 8, 50, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [58, 8, 50, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
           "rect": [58, 8, 50, 100],
           "reason": "bounds change"
         }
@@ -73,20 +33,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='spacer'",
-      "reason": "became visible"
-    },
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableSection TBODY",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTableCell TD",
@@ -94,7 +46,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV",

@@ -87,11 +87,11 @@
     },
     {
       "object": "LayoutSVGHiddenContainer defs",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGResourceClipper clipPath id='p'",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='r'",
@@ -111,11 +111,11 @@
     },
     {
       "object": "LayoutSVGHiddenContainer defs",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGResourceClipper clipPath id='p'",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='r'",

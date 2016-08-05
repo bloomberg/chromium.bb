@@ -19,16 +19,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='half'",
-          "rect": [8, 323, 60, 30],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='half'",
-          "rect": [8, 308, 60, 30],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV class='red half'",
           "rect": [8, 248, 60, 30],
           "reason": "bounds change"
@@ -47,11 +37,6 @@
           "object": "LayoutBlockFlow DIV class='green half'",
           "rect": [8, 188, 60, 30],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='div2' class='zero'",
-          "rect": [8, 188, 60, 30],
-          "reason": "became visible"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
@@ -102,11 +87,6 @@
           "object": "LayoutBlockFlow DIV id='div1' class='blue half'",
           "rect": [8, 8, 60, 30],
           "reason": "became invisible"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='innerDiv'",
-          "rect": [48, 308, 10, 15],
-          "reason": "became visible"
         }
       ]
     }
@@ -137,23 +117,11 @@
       "reason": "bounds change"
     },
     {
-      "object": "LayoutBlockFlow DIV id='div2' class='zero'",
-      "reason": "became visible"
-    },
-    {
       "object": "LayoutBlockFlow DIV class='green half'",
       "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow DIV class='red half'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='innerDiv'",
-      "reason": "became visible"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='half'",
       "reason": "bounds change"
     },
     {

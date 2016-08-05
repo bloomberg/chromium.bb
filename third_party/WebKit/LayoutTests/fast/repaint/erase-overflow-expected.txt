@@ -28,7 +28,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV class='square'",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='square'",

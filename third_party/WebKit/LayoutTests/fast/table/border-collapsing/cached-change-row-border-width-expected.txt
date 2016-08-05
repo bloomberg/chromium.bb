@@ -29,29 +29,9 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutTableSection TBODY",
-          "rect": [10, 10, 56, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [10, 60, 56, 50],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableRow TR id='row'",
           "rect": [10, 10, 56, 50],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [9, 9, 54, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [9, 59, 54, 50],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR id='row'",
@@ -85,10 +65,6 @@
       "reason": "incremental"
     },
     {
-      "object": "LayoutTableSection TBODY",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableRow TR id='row'",
       "reason": "style change"
     },
@@ -98,7 +74,7 @@
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTableCell TD",

@@ -12,11 +12,6 @@
           "object": "LayoutBlockFlow DIV id='outer'",
           "rect": [8, 8, 784, 500],
           "reason": "border box change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='inner'",
-          "rect": [8, 308, 784, 200],
-          "reason": "incremental"
         }
       ]
     }
@@ -25,10 +20,6 @@
     {
       "object": "LayoutBlockFlow DIV id='outer'",
       "reason": "border box change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='inner'",
-      "reason": "incremental"
     }
   ]
 }

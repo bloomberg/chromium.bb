@@ -9,11 +9,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTableRow TR id='row'",
-          "rect": [0, 202, 106, 100],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [2, 102, 102, 200],
           "reason": "forced by layout"
@@ -32,10 +27,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableRow TR id='row'",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutTableCell TD",
       "reason": "forced by layout"

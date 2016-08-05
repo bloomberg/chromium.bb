@@ -9,16 +9,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTableRow TR",
-          "rect": [50, 306, 412, 104],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [50, 156, 412, 104],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [256, 306, 204, 104],
           "reason": "bounds change"
@@ -50,10 +40,6 @@
     {
       "object": "LayoutTableCell TD id='target'",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "bounds change"
     },
     {
       "object": "LayoutTableCell TD",

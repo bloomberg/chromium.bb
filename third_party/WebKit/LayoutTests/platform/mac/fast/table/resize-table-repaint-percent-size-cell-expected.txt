@@ -9,11 +9,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable (positioned) TABLE id='table'",
-          "rect": [0, 150, 106, 380],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableRow TR",
           "rect": [0, 292, 106, 236],
           "reason": "bounds change"
@@ -67,10 +62,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable (positioned) TABLE id='table'",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutTableRow TR",
       "reason": "incremental"

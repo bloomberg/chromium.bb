@@ -49,14 +49,6 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBR BR",
       "reason": "became visible"
     },
     {

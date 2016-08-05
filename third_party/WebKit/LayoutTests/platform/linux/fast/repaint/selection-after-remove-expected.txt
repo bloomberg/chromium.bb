@@ -55,10 +55,6 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='test'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='test'",
       "reason": "forced by layout"
     },
     {
@@ -67,27 +63,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'hello '",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'hello '",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'world'",
-      "reason": "selection"
     },
     {
       "object": "LayoutText #text",

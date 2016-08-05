@@ -37,16 +37,6 @@
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [64, 8, 50, 106],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target1' class='narrow'",
-          "rect": [61, 11, 50, 50],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target2' class='short'",
-          "rect": [11, 211, 50, 50],
-          "reason": "incremental"
         }
       ]
     }
@@ -61,15 +51,7 @@
       "reason": "incremental"
     },
     {
-      "object": "LayoutBlockFlow DIV id='target1' class='narrow'",
-      "reason": "incremental"
-    },
-    {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='target2' class='short'",
       "reason": "incremental"
     },
     {

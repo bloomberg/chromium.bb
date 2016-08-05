@@ -17,16 +17,6 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [18, 192, 55, 55],
           "reason": "border box change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='b'",
-          "rect": [28, 222, 30, 20],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='a'",
-          "rect": [28, 122, 30, 20],
-          "reason": "incremental"
         }
       ]
     }
@@ -37,16 +27,8 @@
       "reason": "border box change"
     },
     {
-      "object": "LayoutBlockFlow DIV id='a'",
-      "reason": "incremental"
-    },
-    {
       "object": "LayoutBlockFlow DIV",
       "reason": "border box change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='b'",
-      "reason": "incremental"
     }
   ]
 }

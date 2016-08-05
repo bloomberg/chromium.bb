@@ -296,7 +296,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -312,7 +312,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -328,7 +328,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -340,23 +340,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
-    },
-    {
-      "object": "LayoutSVGRect rect id='rect'",
-      "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "SVG resource change"
-    },
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "SVG resource change"
-    },
-    {
-      "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -372,7 +356,23 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -384,7 +384,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -396,7 +396,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -408,7 +408,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -420,7 +420,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -432,7 +432,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -444,7 +444,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",

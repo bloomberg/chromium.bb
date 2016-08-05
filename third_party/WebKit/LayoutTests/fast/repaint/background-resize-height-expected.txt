@@ -7,13 +7,6 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='container'",
-          "rect": [8, 508, 600, 50],
-          "reason": "incremental"
-        }
-      ],
       "children": [
         {
           "name": "LayoutBlockFlow (positioned) DIV class='test image'",
@@ -327,10 +320,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='container'",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='test image'",
       "reason": "incremental"

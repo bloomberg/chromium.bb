@@ -24,49 +24,9 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [10, 110, 110, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [10, 110, 110, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [10, 60, 110, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [10, 10, 110, 50],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableSection TBODY id='tbody'",
           "rect": [9, 9, 107, 100],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [9, 109, 107, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [9, 109, 107, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [9, 59, 107, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [9, 9, 107, 50],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
@@ -166,7 +126,7 @@
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTableCell TD",
@@ -178,7 +138,7 @@
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTableCell TD",
@@ -186,15 +146,11 @@
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutTableSection TBODY",
       "reason": "bounds change"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTableCell TD",

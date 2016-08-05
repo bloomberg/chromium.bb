@@ -17,16 +17,6 @@
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
           "rect": [48, -156, 40, 20],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutListMarker (anonymous)",
-          "rect": [70, 94, 7, 19],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutListMarker (anonymous)",
-          "rect": [70, -156, 7, 19],
-          "reason": "bounds change"
         }
       ],
       "children": [
@@ -80,7 +70,7 @@
     },
     {
       "object": "LayoutListMarker (anonymous)",
-      "reason": "bounds change"
+      "reason": "location change"
     }
   ]
 }

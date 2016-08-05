@@ -40,24 +40,20 @@
       "reason": "layoutObject removal"
     },
     {
-      "object": "LayoutBlockFlow (floating) DIV id='container'",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV id='keep' class='item'",

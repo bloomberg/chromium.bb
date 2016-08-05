@@ -36,7 +36,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "none"
+      "reason": "location change"
     }
   ]
 }

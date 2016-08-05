@@ -14,11 +14,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [18, 18, 284, 18],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='inner-target'",
           "rect": [18, 18, 284, 18],
           "reason": "layoutObject removal"
@@ -60,10 +55,6 @@
     {
       "object": "LayoutBlockFlow DIV id='inner-target'",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "bounds change"
     }
   ]
 }

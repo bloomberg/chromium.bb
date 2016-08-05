@@ -14,27 +14,12 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 206, 60, 180],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [8, 146, 60, 180],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 146, 60, 180],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 326, 60, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 326, 60, 60],
           "reason": "bounds change"
         },
@@ -66,10 +51,6 @@
       "reason": "became visible"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "bounds change"
     },
@@ -79,10 +60,6 @@
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "bounds change"
     },
     {

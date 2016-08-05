@@ -24,24 +24,9 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [1, 1, 400, 200],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutEmbeddedObject OBJECT",
           "rect": [1, 1, 400, 200],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [1, 1, 400, 200],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [1, 1, 400, 200],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -54,24 +39,9 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 285, 135],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutEmbeddedObject OBJECT",
           "rect": [0, 0, 285, 135],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 285, 135],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 285, 135],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",
@@ -138,12 +108,8 @@
       "reason": "scroll"
     },
     {
-      "object": "LayoutView #document",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutBlockFlow HTML",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow BODY",
@@ -159,7 +125,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutView #document",
@@ -171,7 +137,7 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRoot svg",

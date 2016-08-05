@@ -28,7 +28,7 @@
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='poke'",

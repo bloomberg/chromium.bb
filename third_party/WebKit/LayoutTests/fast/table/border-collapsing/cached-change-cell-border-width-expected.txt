@@ -19,26 +19,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [10, 10, 111, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [10, 10, 111, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [9, 9, 107, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [9, 9, 107, 50],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD id='foo'",
           "rect": [8, 8, 60, 54],
           "reason": "style change"
@@ -80,12 +60,8 @@
       "reason": "incremental"
     },
     {
-      "object": "LayoutTableSection TBODY",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableRow TR",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTableCell TD id='foo'",

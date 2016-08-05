@@ -9,19 +9,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 52, 200, 200],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV class='item1'",
           "rect": [0, 52, 200, 200],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 2, 200, 200],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item1'",
@@ -43,7 +33,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='item2'",

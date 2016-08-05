@@ -12,11 +12,6 @@
           "object": "LayoutBlockFlow (positioned) DIV class='container'",
           "rect": [400, 0, 200, 1000],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='child'",
-          "rect": [400, 0, 200, 50],
-          "reason": "incremental"
         }
       ]
     }
@@ -24,10 +19,6 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='child'",
       "reason": "incremental"
     }
   ]

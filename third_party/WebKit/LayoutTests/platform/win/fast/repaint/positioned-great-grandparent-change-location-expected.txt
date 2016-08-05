@@ -33,16 +33,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
-      "reason": "bounds change"
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",

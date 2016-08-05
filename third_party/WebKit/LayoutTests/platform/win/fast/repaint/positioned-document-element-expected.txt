@@ -20,11 +20,6 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 16, 784, 18],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [8, 16, 784, 18],
           "reason": "forced by layout"
@@ -33,11 +28,6 @@
           "object": "LayoutBlockFlow (positioned) HTML class='changed'",
           "rect": [100, 100, 452, 50],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [108, 116, 436, 18],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow P",
@@ -68,7 +58,7 @@
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow P",

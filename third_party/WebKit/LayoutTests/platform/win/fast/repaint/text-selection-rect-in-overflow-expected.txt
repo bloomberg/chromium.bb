@@ -19,14 +19,6 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'Should have green background'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "bounds change"
     },
     {

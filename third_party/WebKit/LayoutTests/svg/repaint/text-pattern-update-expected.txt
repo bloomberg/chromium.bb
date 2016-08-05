@@ -31,11 +31,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "InlineTextBox 'X'",
-      "reason": "none"
+      "reason": "location change"
     }
   ]
 }

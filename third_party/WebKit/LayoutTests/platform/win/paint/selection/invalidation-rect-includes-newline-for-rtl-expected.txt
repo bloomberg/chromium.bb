@@ -31,18 +31,6 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'xx'",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'y'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "bounds change"
     },
     {

@@ -70,27 +70,11 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBR BR",
       "reason": "bounds change"
     },
     {
       "object": "InlineTextBox '\n'",
       "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "selection"
     },
     {
       "object": "LayoutBR BR",
@@ -110,27 +94,11 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBR BR",
       "reason": "bounds change"
     },
     {
       "object": "InlineTextBox '\n'",
       "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "selection"
     },
     {
       "object": "LayoutBR BR",
@@ -146,14 +114,6 @@
     },
     {
       "object": "InlineTextBox 'Bazz'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox '\n'",
       "reason": "selection"
     },
     {

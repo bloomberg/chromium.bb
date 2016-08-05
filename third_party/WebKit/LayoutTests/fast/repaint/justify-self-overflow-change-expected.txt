@@ -19,16 +19,6 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 52, 150, 150],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [-50, 52, 150, 150],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV class='item2'",
           "rect": [150, 52, 50, 300],
           "reason": "style change"
@@ -43,7 +33,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='item2'",

@@ -87,11 +87,11 @@
     },
     {
       "object": "LayoutSVGHiddenContainer defs",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGPath polygon id='triangle'",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect",

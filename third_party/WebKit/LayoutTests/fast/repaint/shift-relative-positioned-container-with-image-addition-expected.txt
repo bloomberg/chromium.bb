@@ -24,17 +24,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
-          "rect": [8, 180, 769, 641],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 86, 769, 641],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
           "rect": [8, 86, 769, 641],
           "reason": "bounds change"
         },
@@ -47,16 +37,6 @@
           "object": "LayoutBlockFlow HTML",
           "rect": [10, 88, 728, 90],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [10, 88, 728, 90],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [18, 96, 712, 74],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutImage IMG",
@@ -85,10 +65,6 @@
       "reason": "layoutObject insertion"
     },
     {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
       "reason": "bounds change"
     },
@@ -110,7 +86,7 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow HTML",
@@ -118,7 +94,7 @@
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutView #document",

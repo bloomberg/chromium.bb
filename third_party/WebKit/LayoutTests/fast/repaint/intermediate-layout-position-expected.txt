@@ -32,10 +32,6 @@
       "reason": "incremental"
     },
     {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "became visible"
-    },
-    {
       "object": "LayoutTable TABLE",
       "reason": "incremental"
     },

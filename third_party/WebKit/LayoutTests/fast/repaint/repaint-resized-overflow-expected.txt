@@ -9,6 +9,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 204, 784, 52],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutBlockFlow DIV id='s'",
           "rect": [8, 200, 108, 56],
           "reason": "incremental"
@@ -17,22 +22,17 @@
           "object": "LayoutBlockFlow DIV id='s'",
           "rect": [8, 204, 108, 52],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='t'",
-          "rect": [132, 200, 10, 52],
-          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='s'",
+      "object": "LayoutBlockFlow DIV",
       "reason": "incremental"
     },
     {
-      "object": "LayoutBlockFlow DIV id='t'",
+      "object": "LayoutBlockFlow DIV id='s'",
       "reason": "incremental"
     }
   ]

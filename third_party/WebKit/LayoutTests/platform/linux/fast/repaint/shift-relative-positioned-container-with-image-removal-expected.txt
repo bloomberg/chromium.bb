@@ -24,17 +24,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
-          "rect": [8, 191, 769, 642],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 92, 769, 642],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
           "rect": [8, 92, 769, 642],
           "reason": "bounds change"
         },
@@ -81,10 +71,6 @@
     {
       "object": "LayoutBlockFlow HTML",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
-      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",

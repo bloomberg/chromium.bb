@@ -12,11 +12,6 @@
           "object": "LayoutBlockFlow DIV id='container'",
           "rect": [1, 236, 185, 15],
           "reason": "scroll"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='child'",
-          "rect": [101, 51, 85, 185],
-          "reason": "incremental"
         }
       ]
     }
@@ -25,10 +20,6 @@
     {
       "object": "HorizontalScrollbar",
       "reason": "scroll"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='child'",
-      "reason": "incremental"
     }
   ]
 }

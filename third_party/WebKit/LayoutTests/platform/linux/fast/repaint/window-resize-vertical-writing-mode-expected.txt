@@ -153,16 +153,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [200, 0, 939, 235],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 939, 235],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 0, 939, 235],
           "reason": "full"
@@ -201,10 +191,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutBlockFlow BODY",
       "reason": "bounds change"

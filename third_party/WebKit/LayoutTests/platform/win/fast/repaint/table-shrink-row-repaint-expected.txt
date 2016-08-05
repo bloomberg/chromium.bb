@@ -34,17 +34,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 980, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 920, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 920, 769, 60],
           "reason": "bounds change"
         },
@@ -54,17 +44,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 860, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 800, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 800, 769, 60],
           "reason": "bounds change"
         },
@@ -74,17 +54,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 780, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 740, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 740, 769, 60],
           "reason": "bounds change"
         },
@@ -94,17 +64,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 720, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 680, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 680, 769, 60],
           "reason": "bounds change"
         },
@@ -114,17 +74,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 660, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 620, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 620, 769, 60],
           "reason": "bounds change"
         },
@@ -134,17 +84,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 600, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 560, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 560, 769, 60],
           "reason": "bounds change"
         },
@@ -154,17 +94,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 540, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 500, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 500, 769, 60],
           "reason": "bounds change"
         },
@@ -174,17 +104,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 480, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 440, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 440, 769, 60],
           "reason": "bounds change"
         },
@@ -194,17 +114,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 420, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 380, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 380, 769, 60],
           "reason": "bounds change"
         },
@@ -214,17 +124,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 360, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 320, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 320, 769, 60],
           "reason": "bounds change"
         },
@@ -234,17 +134,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 300, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 240, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 240, 769, 60],
           "reason": "bounds change"
         },
@@ -254,17 +144,7 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 180, 769, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
-          "rect": [8, 120, 769, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
           "rect": [8, 120, 769, 60],
           "reason": "bounds change"
         },
@@ -405,10 +285,6 @@
       "reason": "incremental"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "bounds change"
     },
@@ -422,10 +298,6 @@
     },
     {
       "object": "InlineTextBox '2'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "bounds change"
     },
     {
@@ -445,10 +317,6 @@
       "reason": "bounds change"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "bounds change"
     },
@@ -462,10 +330,6 @@
     },
     {
       "object": "InlineTextBox '4'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "bounds change"
     },
     {
@@ -485,10 +349,6 @@
       "reason": "bounds change"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "bounds change"
     },
@@ -502,10 +362,6 @@
     },
     {
       "object": "InlineTextBox '6'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "bounds change"
     },
     {
@@ -525,10 +381,6 @@
       "reason": "bounds change"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "bounds change"
     },
@@ -542,10 +394,6 @@
     },
     {
       "object": "InlineTextBox '8'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "bounds change"
     },
     {
@@ -565,10 +413,6 @@
       "reason": "bounds change"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "bounds change"
     },
@@ -582,10 +426,6 @@
     },
     {
       "object": "InlineTextBox '10'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "bounds change"
     },
     {
@@ -605,10 +445,6 @@
       "reason": "bounds change"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "bounds change"
     },
@@ -622,10 +458,6 @@
     },
     {
       "object": "InlineTextBox '12'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "bounds change"
     },
     {

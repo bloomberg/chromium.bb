@@ -21,12 +21,8 @@
       "reason": "scroll"
     },
     {
-      "object": "LayoutView #document",
-      "reason": "bounds change"
-    },
-    {
       "object": "LayoutBlockFlow HTML",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow BODY",
@@ -42,7 +38,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "none"
+      "reason": "location change"
     },
     {
       "object": "LayoutView #document",
@@ -54,7 +50,7 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutSVGRoot svg",

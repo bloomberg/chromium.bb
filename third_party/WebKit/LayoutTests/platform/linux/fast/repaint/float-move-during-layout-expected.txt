@@ -9,11 +9,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='t'",
-          "rect": [8, 110, 784, 100],
-          "reason": "became visible"
-        },
-        {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [8, 210, 100, 100],
           "reason": "forced by layout"
@@ -27,14 +22,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='t'",
-      "reason": "became visible"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='s'",
-      "reason": "bounds change"
-    },
     {
       "object": "LayoutBlockFlow (floating) DIV",
       "reason": "forced by layout"
