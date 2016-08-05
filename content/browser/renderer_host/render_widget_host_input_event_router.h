@@ -137,6 +137,11 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   TargetData bubbling_gesture_scroll_target_;
   TargetData first_bubbling_scroll_target_;
   int active_touches_;
+  // Keep track of when we are between GesturePinchBegin and GesturePinchEnd
+  // inclusive, as we need to route these events (and anything in between) to
+  // the main frame.
+  bool in_touchscreen_gesture_pinch_;
+  bool gesture_pinch_did_send_scroll_begin_;
   std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>
       hittest_data_;
 

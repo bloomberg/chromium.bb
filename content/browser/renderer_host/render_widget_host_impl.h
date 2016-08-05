@@ -263,6 +263,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Notifies the RenderWidgetHost that the View was destroyed.
   void ViewDestroyed();
 
+  // Signals if this host has forwarded a GestureScrollBegin without yet having
+  // forwarded a matching GestureScrollEnd/GestureFlingStart.
+  bool is_in_touchscreen_gesture_scroll() const {
+    return is_in_touchscreen_gesture_scroll_;
+  }
+
 #if defined(OS_MACOSX)
   // Pause for a moment to wait for pending repaint or resize messages sent to
   // the renderer to arrive. If pending resize messages are for an old window

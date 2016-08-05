@@ -7,6 +7,7 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/frame_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -94,7 +95,9 @@ bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
 }
 
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
-    : active_touches_(0) {}
+    : active_touches_(0),
+      in_touchscreen_gesture_pinch_(false),
+      gesture_pinch_did_send_scroll_begin_(false) {}
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
   // We may be destroyed before some of the owners in the map, so we must
@@ -319,7 +322,8 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
 void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
     RenderWidgetHostViewBase* view,
     const blink::WebGestureEvent& event) {
-  DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate);
+  DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate ||
+         event.type == blink::WebInputEvent::GesturePinchBegin);
   blink::WebGestureEvent scroll_begin(event);
   scroll_begin.type = blink::WebInputEvent::GestureScrollBegin;
   scroll_begin.data.scrollBegin.deltaXHint = event.data.scrollUpdate.deltaX;
@@ -332,7 +336,8 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
 void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
     RenderWidgetHostViewBase* view,
     const blink::WebGestureEvent& event) {
-  DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate);
+  DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate ||
+         event.type == blink::WebInputEvent::GesturePinchEnd);
   blink::WebGestureEvent scroll_end(event);
   scroll_end.type = blink::WebInputEvent::GestureScrollEnd;
   scroll_end.timeStampSeconds =
@@ -392,6 +397,43 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
     blink::WebGestureEvent* event,
     const ui::LatencyInfo& latency) {
   DCHECK_EQ(blink::WebGestureDeviceTouchscreen, event->sourceDevice);
+
+  if (event->type == blink::WebInputEvent::GesturePinchBegin) {
+    in_touchscreen_gesture_pinch_ = true;
+    // If the root view wasn't already receiving the gesture stream, then we
+    // need to wrap the diverted pinch events in a GestureScrollBegin/End.
+    // TODO(wjmaclean,kenrb,tdresser): When scroll latching lands, we can
+    // revisit how this code should work.
+    // https://crbug.com/526463
+    auto rwhi =
+        static_cast<RenderWidgetHostImpl*>(root_view->GetRenderWidgetHost());
+    // If the root view is the current gesture target, then we explicitly don't
+    // send a GestureScrollBegin, as by the time we see GesturePinchBegin there
+    // should have been one.
+    if (root_view != touchscreen_gesture_target_.target &&
+        !rwhi->is_in_touchscreen_gesture_scroll()) {
+      gesture_pinch_did_send_scroll_begin_ = true;
+      SendGestureScrollBegin(root_view, *event);
+    }
+  }
+
+  if (in_touchscreen_gesture_pinch_) {
+    root_view->ProcessGestureEvent(*event, latency);
+    if (event->type == blink::WebInputEvent::GesturePinchEnd) {
+      in_touchscreen_gesture_pinch_ = false;
+      // If the root view wasn't already receiving the gesture stream, then we
+      // need to wrap the diverted pinch events in a GestureScrollBegin/End.
+      auto rwhi =
+          static_cast<RenderWidgetHostImpl*>(root_view->GetRenderWidgetHost());
+      if (root_view != touchscreen_gesture_target_.target &&
+          gesture_pinch_did_send_scroll_begin_ &&
+          rwhi->is_in_touchscreen_gesture_scroll()) {
+        SendGestureScrollEnd(root_view, *event);
+      }
+      gesture_pinch_did_send_scroll_begin_ = false;
+    }
+    return;
+  }
 
   // We use GestureTapDown to detect the start of a gesture sequence since there
   // is no WebGestureEvent equivalent for ET_GESTURE_BEGIN. Note that this
