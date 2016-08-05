@@ -30,6 +30,7 @@
 #include "ash/common/display/display_info.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -1585,6 +1586,13 @@ class WaylandRemoteShell : public ash::ShellObserver,
     ash::Shell* shell = ash::Shell::GetInstance();
     shell->activation_client()->AddObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
+
+    layout_mode_ = ash::WmShell::Get()
+                           ->maximize_mode_controller()
+                           ->IsMaximizeModeWindowManagerEnabled()
+                       ? ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET
+                       : ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
+
     SendPrimaryDisplayMetrics();
     SendActivated(shell->activation_client()->GetActiveWindow(), nullptr);
   }
