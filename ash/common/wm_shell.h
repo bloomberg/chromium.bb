@@ -12,6 +12,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/media_delegate.h"
+#include "ash/common/metrics/gesture_action_type.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/wm/lock_state_observer.h"
 #include "base/observer_list.h"
@@ -221,6 +222,7 @@ class ASH_EXPORT WmShell {
 
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
 
+  virtual void RecordGestureAction(GestureActionType action) = 0;
   virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;
   virtual void RecordTaskSwitchMetric(TaskSwitchSource source) = 0;
 

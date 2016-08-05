@@ -13,7 +13,6 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button.h"
 #include "ash/shell.h"
-#include "ash/touch/touch_uma.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -334,10 +333,8 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
       action = UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE;
     }
 
-    if (event.IsGestureEvent()) {
-      TouchUMA::GetInstance()->RecordGestureAction(
-          TouchUMA::GESTURE_FRAMEMAXIMIZE_TAP);
-    }
+    if (event.IsGestureEvent())
+      WmShell::Get()->RecordGestureAction(GESTURE_FRAMEMAXIMIZE_TAP);
   } else if (sender == close_button_) {
     frame_->Close();
     action = UMA_WINDOW_CLOSE_BUTTON_CLICK;

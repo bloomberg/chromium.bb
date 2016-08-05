@@ -9,11 +9,11 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/touch/touch_uma.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/event.h"
 
 namespace ash {
 
@@ -87,16 +87,14 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   if (event->details().tap_count() != 2) {
-    TouchUMA::GetInstance()->RecordGestureAction(
-        TouchUMA::GESTURE_FRAMEVIEW_TAP);
+    WmShell::Get()->RecordGestureAction(GESTURE_FRAMEVIEW_TAP);
     return;
   }
 
   if (click_component_ == previous_target_component) {
     WmShell::Get()->RecordUserMetricsAction(
         UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE);
-    TouchUMA::GetInstance()->RecordGestureAction(
-        TouchUMA::GESTURE_MAXIMIZE_DOUBLETAP);
+    WmShell::Get()->RecordGestureAction(GESTURE_MAXIMIZE_DOUBLETAP);
     const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
     wm::GetWindowState(target)->OnWMEvent(&wm_event);
     event->StopPropagation();

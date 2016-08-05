@@ -8,22 +8,22 @@
 
 // static
 void TouchUMA::RecordGestureAction(GestureActionType action) {
-  ash::TouchUMA::GestureActionType type = ash::TouchUMA::GESTURE_UNKNOWN;
+  ash::GestureActionType type = ash::GESTURE_UNKNOWN;
   switch (action) {
     case GESTURE_TABSWITCH_TAP:
-      type = ash::TouchUMA::GESTURE_TABSWITCH_TAP;
+      type = ash::GESTURE_TABSWITCH_TAP;
       break;
     case GESTURE_TABNOSWITCH_TAP:
-      type = ash::TouchUMA::GESTURE_TABNOSWITCH_TAP;
+      type = ash::GESTURE_TABNOSWITCH_TAP;
       break;
     case GESTURE_TABCLOSE_TAP:
-      type = ash::TouchUMA::GESTURE_TABCLOSE_TAP;
+      type = ash::GESTURE_TABCLOSE_TAP;
       break;
     case GESTURE_NEWTAB_TAP:
-      type = ash::TouchUMA::GESTURE_NEWTAB_TAP;
+      type = ash::GESTURE_NEWTAB_TAP;
       break;
     case GESTURE_ROOTVIEWTOP_TAP:
-      type = ash::TouchUMA::GESTURE_ROOTVIEWTOP_TAP;
+      type = ash::GESTURE_ROOTVIEWTOP_TAP;
       break;
   }
   ash::TouchUMA::GetInstance()->RecordGestureAction(type);

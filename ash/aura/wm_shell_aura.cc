@@ -19,6 +19,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/shell.h"
+#include "ash/touch/touch_uma.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -131,6 +132,10 @@ std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
 
 void WmShellAura::RecordUserMetricsAction(UserMetricsAction action) {
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
+}
+
+void WmShellAura::RecordGestureAction(GestureActionType action) {
+  TouchUMA::GetInstance()->RecordGestureAction(action);
 }
 
 void WmShellAura::RecordTaskSwitchMetric(TaskSwitchSource source) {

@@ -255,6 +255,11 @@ std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
   return wm_windows;
 }
 
+void WmShellMus::RecordGestureAction(GestureActionType action) {
+  // TODO: http://crbug.com/616581.
+  NOTIMPLEMENTED();
+}
+
 void WmShellMus::RecordUserMetricsAction(UserMetricsAction action) {
   // TODO: http://crbug.com/616581.
   NOTIMPLEMENTED();

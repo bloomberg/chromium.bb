@@ -42,6 +42,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void LockCursor() override;
   void UnlockCursor() override;
   std::vector<WmWindow*> GetAllRootWindows() override;
+  void RecordGestureAction(GestureActionType action) override;
   void RecordUserMetricsAction(UserMetricsAction action) override;
   void RecordTaskSwitchMetric(TaskSwitchSource source) override;
   void ShowContextMenu(const gfx::Point& location_in_screen,

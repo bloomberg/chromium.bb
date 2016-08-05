@@ -220,7 +220,7 @@ void TouchUMA::UpdateTouchState(const ui::TouchEvent& event) {
   }
 }
 
-TouchUMA::GestureActionType TouchUMA::FindGestureActionType(
+GestureActionType TouchUMA::FindGestureActionType(
     aura::Window* window,
     const ui::GestureEvent& event) {
   if (!window || window->GetRootWindow() == window) {

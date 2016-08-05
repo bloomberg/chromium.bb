@@ -82,6 +82,7 @@
       'common/login_status.h',
       'common/material_design/material_design_controller.cc',
       'common/material_design/material_design_controller.h',
+      'common/metrics/gesture_action_type.h',
       'common/metrics/user_metrics_action.h',
       'common/multi_profile_uma.cc',
       'common/multi_profile_uma.h',
