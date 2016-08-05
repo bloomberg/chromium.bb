@@ -490,11 +490,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   ObjcEvilDoers::ZombieEnable(true, is_browser ? 10000 : 1000);
 
   SetUpBundleOverrides();
-
-  // Only enable the CFBundleBlocker in the browser. In child processes,
-  // the sandbox will block access to loadable bundle locations.
-  if (is_browser)
-    chrome::common::mac::EnableCFBundleBlocker();
+  chrome::common::mac::EnableCFBundleBlocker();
 #endif
 
   Profiling::ProcessStarted();
