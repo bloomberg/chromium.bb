@@ -291,6 +291,16 @@ public class InfoBarContainer extends SwipableOverlayView {
     }
 
     /**
+     * @return True if the next infobar added to this container will be visible, false otherwise.
+     */
+    @CalledByNative
+    public boolean nextInfoBarWillBeVisible() {
+        if (hasInfoBars()) return false;
+
+        return willBeVisible();
+    }
+
+    /**
      * Tells this class that a View with higher priority is occupying the same space.
      *
      * Causes this View to hide itself until the obscuring View goes away.

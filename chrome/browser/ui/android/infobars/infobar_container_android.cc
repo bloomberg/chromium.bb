@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "components/infobars/core/infobar.h"
@@ -62,6 +63,16 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
   if (android_bar->HasSetJavaInfoBar())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
+
+  if (Java_InfoBarContainer_nextInfoBarWillBeVisible(
+          env, weak_java_infobar_container_.get(env).obj())) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("InfoBar.Shown.Visible",
+                                android_bar->delegate()->GetIdentifier());
+  } else {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("InfoBar.Shown.Hidden",
+                                android_bar->delegate()->GetIdentifier());
+  }
+
   base::android::ScopedJavaLocalRef<jobject> java_infobar =
       android_bar->CreateRenderInfoBar(env);
   Java_InfoBarContainer_addInfoBar(

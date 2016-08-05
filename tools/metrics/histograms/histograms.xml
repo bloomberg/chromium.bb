@@ -18979,6 +18979,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InfoBar.Shown.Hidden" enum="InfoBarIdentifier">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records how many times a particular infobar was displayed in a hidden state
+    due to at least one other infobar existing or because it was auto-hidden.
+    Only recorded on Android.
+  </summary>
+</histogram>
+
+<histogram name="InfoBar.Shown.Visible" enum="InfoBarIdentifier">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records how many times a particular infobar was displayed in a visible state
+    due to no other infobars existing and no auto-hiding. Only recorded on
+    Android.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.ActiveCount">
   <owner>shuchen@chromium.org</owner>
   <summary>
