@@ -32,7 +32,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 #include "components/autofill/core/browser/autofill_assistant.h"
 #endif
 
@@ -538,7 +538,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Delegate used in test to get notifications on certain events.
   AutofillManagerTestDelegate* test_delegate_;
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   AutofillAssistant autofill_assistant_;
 #endif
 

@@ -27,9 +27,6 @@ void AutofillAssistant::Reset() {
 
 bool AutofillAssistant::CanShowCreditCardAssist(
     const std::vector<FormStructure*>& form_structures) {
-#if !defined(OS_ANDROID)
-  return false;
-#else
   if (!IsAutofillCreditCardAssistEnabled() || credit_card_form_data_)
     return false;
 
@@ -40,7 +37,6 @@ bool AutofillAssistant::CanShowCreditCardAssist(
     }
   }
   return !!credit_card_form_data_;
-#endif
 }
 
 void AutofillAssistant::ShowAssistForCreditCard(const CreditCard& card) {

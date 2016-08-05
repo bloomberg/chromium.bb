@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
@@ -22,6 +23,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
@@ -112,7 +114,14 @@ void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
 void AutofillClientIOS::ConfirmCreditCardFillAssist(
     const CreditCard& card,
     const base::Closure& callback) {
-  NOTREACHED();
+  auto infobar_delegate =
+      base::MakeUnique<AutofillCreditCardFillingInfoBarDelegateMobile>(
+          card, callback);
+  auto* raw_delegate = infobar_delegate.get();
+  if (infobar_manager_->AddInfoBar(
+          ::CreateConfirmInfoBar(std::move(infobar_delegate)))) {
+    raw_delegate->set_was_shown();
+  }
 }
 
 void AutofillClientIOS::LoadRiskData(

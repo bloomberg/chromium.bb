@@ -152,17 +152,12 @@ static_library("browser") {
     ]
   }
 
-  if (is_android) {
+  if (is_ios || is_android) {
     sources += [
       "autofill_assistant.cc",
       "autofill_assistant.h",
       "autofill_credit_card_filling_infobar_delegate_mobile.cc",
       "autofill_credit_card_filling_infobar_delegate_mobile.h",
-    ]
-  }
-
-  if (is_ios || is_android) {
-    sources += [
       "autofill_save_card_infobar_delegate_mobile.cc",
       "autofill_save_card_infobar_delegate_mobile.h",
       "autofill_save_card_infobar_mobile.h",
@@ -330,7 +325,7 @@ source_set("unit_tests") {
     "webdata/web_data_service_unittest.cc",
   ]
 
-  if (is_android) {
+  if (is_ios || is_android) {
     sources += [ "autofill_assistant_unittest.cc" ]
   }
 

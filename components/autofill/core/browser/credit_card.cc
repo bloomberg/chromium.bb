@@ -134,9 +134,6 @@ base::string16 CreditCard::TypeForDisplay(const std::string& type) {
   return ::autofill::TypeForFill(type);
 }
 
-// This method is not compiled on iOS because the resources are not used and
-// should not be shipped.
-#if !defined(OS_IOS)
 // static
 int CreditCard::IconResourceId(const std::string& type) {
   if (type == kAmericanExpressCard)
@@ -159,7 +156,6 @@ int CreditCard::IconResourceId(const std::string& type) {
   DCHECK_EQ(kGenericCard, type);
   return IDR_AUTOFILL_CC_GENERIC;
 }
-#endif  // #if !defined(OS_IOS)
 
 // static
 const char* CreditCard::GetCreditCardType(const base::string16& number) {

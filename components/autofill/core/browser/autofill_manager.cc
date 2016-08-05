@@ -208,7 +208,7 @@ AutofillManager::AutofillManager(
       user_did_accept_upload_prompt_(false),
       external_delegate_(NULL),
       test_delegate_(NULL),
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
       weak_ptr_factory_(this) {
@@ -1289,7 +1289,7 @@ void AutofillManager::Reset() {
       new AutofillMetrics::FormEventLogger(false /* is_for_credit_card */));
   credit_card_form_event_logger_.reset(
       new AutofillMetrics::FormEventLogger(true /* is_for_credit_card */));
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   autofill_assistant_.Reset();
 #endif
   has_logged_autofill_enabled_ = false;
@@ -1331,7 +1331,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       unmasking_query_id_(-1),
       external_delegate_(NULL),
       test_delegate_(NULL),
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
       weak_ptr_factory_(this) {
@@ -1782,7 +1782,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 #endif
   }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   // When a credit card form is parsed and conditions are met, show an infobar
   // prompt for credit card assisted filling. Upon accepting the infobar, the
   // form will automatically be filled with the user's information through this
