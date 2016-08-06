@@ -29,8 +29,8 @@ const char kMultilineEndString[] = "---------- END ----------\n\n";
 // The below thresholds were chosen arbitrarily to conveniently show small data
 // as part of the report itself without having to look into the system_logs.zip
 // file.
-const size_t kFeedbackMaxLength = 4 * 1024;
-const size_t kFeedbackMaxLineCount = 40;
+const size_t kFeedbackMaxLength = 1024;
+const size_t kFeedbackMaxLineCount = 10;
 
 const base::FilePath::CharType kLogsFilename[] =
     FILE_PATH_LITERAL("system_logs.txt");
@@ -53,9 +53,7 @@ bool BelowCompressionThreshold(const std::string& content) {
 }
 
 // Converts the system logs into a string that we can compress and send
-// with the report. This method only converts those logs that we want in
-// the compressed zip file sent with the report, hence it ignores any logs
-// below the size threshold of what we want compressed.
+// with the report.
 // TODO(dcheng): This should probably just take advantage of string's move
 // constructor.
 std::unique_ptr<std::string> LogsToString(
@@ -64,9 +62,6 @@ std::unique_ptr<std::string> LogsToString(
   for (const auto& iter : sys_info) {
     std::string key = iter.first;
     std::string value = iter.second;
-
-    if (BelowCompressionThreshold(value))
-      continue;
 
     base::TrimString(key, "\n ", &key);
     base::TrimString(value, "\n ", &value);
