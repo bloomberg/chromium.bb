@@ -18,15 +18,27 @@ back-references.
 """
 
 import optparse
+import os
 import re
 import subprocess
 import sys
 
 
-# We need to use shell=True with subprocess on Windows so that it
-# finds 'git' from the path, but can lead to undesired behavior on
-# Linux.
-_USE_SHELL = (sys.platform == 'win32')
+# We can't use shell=True because of the vast and sundry crazy characters we
+# try to pass through to git grep. depot_tools packages a git .bat around
+# a git.cmd around git.exe, which makes it impossible to escape the characters
+# properly. Instead, locate the git .exe up front here. We use cd / && pwd -W,
+# which first changes to the git install root. Inside git bash this "/" is where
+# it hosts a fake /usr, /bin, /etc, ..., but then we use -W to pwd to print the
+# Windows version of the path. Once we have the .exe directly, then we no longer
+# need to use shell=True to subprocess calls, so escaping becomes simply for
+# quotes for CreateProcess(), rather than |, <, >, etc. through multiple layers
+# of cmd.
+if sys.platform == 'win32':
+  _git = os.path.normpath(os.path.join(subprocess.check_output(
+      'git bash -c "cd / && pwd -W"', shell=True).strip(), 'bin\\git.exe'))
+else:
+  _git = 'git'
 
 
 def MultiFileFindReplace(original, replacement, file_globs):
@@ -54,10 +66,9 @@ def MultiFileFindReplace(original, replacement, file_globs):
   if sys.platform == 'win32':
     posix_ere_original = posix_ere_original.replace('"', '""')
   out, err = subprocess.Popen(
-      ['git', 'grep', '-E', '--name-only', posix_ere_original,
+      [_git, 'grep', '-E', '--name-only', posix_ere_original,
        '--'] + file_globs,
-      stdout=subprocess.PIPE,
-      shell=_USE_SHELL).communicate()
+      stdout=subprocess.PIPE).communicate()
   referees = out.splitlines()
 
   for referee in referees:
@@ -125,9 +136,8 @@ command line.''')
     return 1
 
   if not opts.force_unsafe_run:
-    out, err = subprocess.Popen(['git', 'status', '--porcelain'],
-                                stdout=subprocess.PIPE,
-                                shell=_USE_SHELL).communicate()
+    out, err = subprocess.Popen([_git, 'status', '--porcelain'],
+                                stdout=subprocess.PIPE).communicate()
     if out:
       print 'ERROR: This tool does not print any confirmation prompts,'
       print 'so you should only run it with a clean staging area and cache'
