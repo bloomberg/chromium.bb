@@ -48,10 +48,12 @@ ContentVideoView* ContentVideoView::GetInstance() {
 }
 
 ContentVideoView::ContentVideoView(Client* client,
-                                   ContentViewCore* content_view_core)
+                                   ContentViewCore* content_view_core,
+                                   const gfx::Size& video_natural_size)
     : client_(client), weak_factory_(this) {
   DCHECK(!g_content_video_view);
-  j_content_video_view_ = CreateJavaObject(content_view_core);
+  j_content_video_view_ =
+      CreateJavaObject(content_view_core, video_natural_size);
   g_content_video_view = this;
 }
 
@@ -159,7 +161,8 @@ void ContentVideoView::RecordExitFullscreenPlayback(
 }
 
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject(
-    ContentViewCore* content_view_core) {
+    ContentViewCore* content_view_core,
+    const gfx::Size& video_natural_size) {
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> j_content_view_core =
       content_view_core->GetJavaObject();
@@ -167,10 +170,9 @@ JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject(
     return JavaObjectWeakGlobalRef(env, nullptr);
 
   return JavaObjectWeakGlobalRef(
-      env,
-      Java_ContentVideoView_createContentVideoView(
-          env,
-          j_content_view_core.obj(),
-          reinterpret_cast<intptr_t>(this)).obj());
+      env, Java_ContentVideoView_createContentVideoView(
+               env, j_content_view_core.obj(), reinterpret_cast<intptr_t>(this),
+               video_natural_size.width(), video_natural_size.height())
+               .obj());
 }
 }  // namespace content

@@ -6,11 +6,16 @@ package org.chromium.android_webview;
 
 import android.content.Context;
 import android.content.Intent;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentViewClient;
@@ -24,6 +29,7 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     private final AwContents mAwContents;
     private final Context mContext;
     private FrameLayout mCustomView;
+    private View mProgressView;
 
     public AwContentViewClient(AwContentsClient awContentsClient, AwSettings awSettings,
             AwContents awContents, Context context) {
@@ -74,24 +80,40 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     }
 
     @Override
-    public void enterFullscreenVideo(View videoView) {
+    public void enterFullscreenVideo(View videoView, boolean isVideoLoaded) {
         if (mCustomView == null) {
             // enterFullscreenVideo will only be called after enterFullscreen, but
             // in this case exitFullscreen has been invoked in between them.
             // TODO(igsolla): Fix http://crbug/425926 and replace with assert.
             return;
         }
+
         mCustomView.addView(videoView, 0);
+
+        if (isVideoLoaded) return;
+
+        mProgressView = mAwContentsClient.getVideoLoadingProgressView();
+        if (mProgressView == null) {
+            mProgressView = new ProgressView(mContext);
+        }
+        mCustomView.addView(
+                mProgressView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                       ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+    }
+
+    @Override
+    public void fullscreenVideoLoaded() {
+        if (mCustomView == null) return;
+
+        if (mProgressView != null) {
+            mCustomView.removeView(mProgressView);
+            mProgressView = null;
+        }
     }
 
     @Override
     public void exitFullscreenVideo() {
         // Intentional no-op
-    }
-
-    @Override
-    public View getVideoLoadingProgressView() {
-        return mAwContentsClient.getVideoLoadingProgressView();
     }
 
     @Override
@@ -148,6 +170,7 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     public void exitFullscreen() {
         if (mCustomView != null) {
             mCustomView = null;
+            mProgressView = null;
             mAwContents.exitFullScreen();
             mAwContentsClient.onHideCustomView();
         }
@@ -156,5 +179,26 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     @Override
     public String getProductVersion() {
         return AwContentsStatics.getProductVersion();
+    }
+
+    private static class ProgressView extends LinearLayout {
+        private final ProgressBar mProgressBar;
+        private final TextView mTextView;
+
+        public ProgressView(Context context) {
+            super(context);
+            setOrientation(LinearLayout.VERTICAL);
+            setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            mProgressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleLarge);
+            mTextView = new TextView(context);
+
+            String videoLoadingText = context.getString(
+                    org.chromium.android_webview.R.string.media_player_loading_video);
+
+            mTextView.setText(videoLoadingText);
+            addView(mProgressBar);
+            addView(mTextView);
+        }
     }
 }

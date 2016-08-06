@@ -18,9 +18,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -50,6 +47,7 @@ public class ContentVideoView extends FrameLayout
     private SurfaceHolder mSurfaceHolder;
     private int mVideoWidth;
     private int mVideoHeight;
+    private boolean mIsVideoLoaded;
 
     // Native pointer to C++ ContentVideoView object.
     private long mNativeContentVideoView;
@@ -61,13 +59,9 @@ public class ContentVideoView extends FrameLayout
     private String mUnknownErrorText;
     private String mErrorButton;
     private String mErrorTitle;
-    private String mVideoLoadingText;
 
     // This view will contain the video.
     private VideoSurfaceView mVideoSurfaceView;
-
-    // Progress view when the video is loading.
-    private View mProgressView;
 
     private final ContentVideoViewEmbedder mEmbedder;
 
@@ -119,25 +113,6 @@ public class ContentVideoView extends FrameLayout
         }
     }
 
-    private static class ProgressView extends LinearLayout {
-
-        private final ProgressBar mProgressBar;
-        private final TextView mTextView;
-
-        public ProgressView(Context context, String videoLoadingText) {
-            super(context);
-            setOrientation(LinearLayout.VERTICAL);
-            setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
-            mProgressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleLarge);
-            mTextView = new TextView(context);
-            mTextView.setText(videoLoadingText);
-            addView(mProgressBar);
-            addView(mTextView);
-        }
-    }
-
     private final Runnable mExitFullscreenRunnable = new Runnable() {
         @Override
         public void run() {
@@ -146,16 +121,19 @@ public class ContentVideoView extends FrameLayout
     };
 
     private ContentVideoView(Context context, long nativeContentVideoView,
-            ContentVideoViewEmbedder embedder) {
+            ContentVideoViewEmbedder embedder, int videoWidth, int videoHeight) {
         super(context);
         mNativeContentVideoView = nativeContentVideoView;
         mEmbedder = embedder;
         mUmaRecorded = false;
         mPossibleAccidentalChange = false;
+        mIsVideoLoaded = videoWidth > 0 && videoHeight > 0;
         initResources(context);
         mVideoSurfaceView = new VideoSurfaceView(context);
         showContentVideoView();
         setVisibility(View.VISIBLE);
+        mEmbedder.enterFullscreenVideo(this, mIsVideoLoaded);
+        onVideoSizeChanged(videoWidth, videoHeight);
     }
 
     private ContentVideoViewEmbedder getContentVideoViewEmbedder() {
@@ -172,22 +150,11 @@ public class ContentVideoView extends FrameLayout
                 org.chromium.content.R.string.media_player_error_button);
         mErrorTitle = context.getString(
                 org.chromium.content.R.string.media_player_error_title);
-        mVideoLoadingText = context.getString(
-                org.chromium.content.R.string.media_player_loading_video);
     }
 
     private void showContentVideoView() {
         mVideoSurfaceView.getHolder().addCallback(this);
-        this.addView(mVideoSurfaceView, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                Gravity.CENTER));
-
-        mProgressView = mEmbedder.getVideoLoadingProgressView();
-        if (mProgressView == null) {
-            mProgressView = new ProgressView(getContext(), mVideoLoadingText);
-        }
-        this.addView(mProgressView, new FrameLayout.LayoutParams(
+        addView(mVideoSurfaceView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.CENTER));
@@ -250,11 +217,18 @@ public class ContentVideoView extends FrameLayout
     private void onVideoSizeChanged(int width, int height) {
         mVideoWidth = width;
         mVideoHeight = height;
+
+        // We take non-zero frame size as an indication that the video has been loaded.
+        if (!mIsVideoLoaded && mVideoWidth > 0 && mVideoHeight > 0) {
+            mIsVideoLoaded = true;
+            mEmbedder.fullscreenVideoLoaded();
+        }
+
         // This will trigger the SurfaceView.onMeasure() call.
         mVideoSurfaceView.getHolder().setFixedSize(mVideoWidth, mVideoHeight);
+
         if (mUmaRecorded) return;
 
-        mProgressView.setVisibility(View.GONE);
         try {
             if (Settings.System.getInt(getContext().getContentResolver(),
                     Settings.System.ACCELEROMETER_ROTATION) == 0) {
@@ -301,23 +275,25 @@ public class ContentVideoView extends FrameLayout
         }
     }
 
+    /**
+     * Creates ContentVideoView. The videoWidth and videoHeight parameters designate
+     * the video frame size if it is known at the time of this call, or should be 0.
+     * ContentVideoView assumes that zero size means video has not been loaded yet.
+     */
     @CalledByNative
-    private static ContentVideoView createContentVideoView(
-            ContentViewCore contentViewCore, long nativeContentVideoView) {
+    private static ContentVideoView createContentVideoView(ContentViewCore contentViewCore,
+            long nativeContentVideoView, int videoWidth, int videoHeight) {
         ThreadUtils.assertOnUiThread();
         Context context = contentViewCore.getContext();
         ContentVideoViewEmbedder embedder = contentViewCore.getContentVideoViewEmbedder();
-        ContentVideoView videoView =
-                new ContentVideoView(context, nativeContentVideoView, embedder);
-        embedder.enterFullscreenVideo(videoView);
+        ContentVideoView videoView = new ContentVideoView(
+                context, nativeContentVideoView, embedder, videoWidth, videoHeight);
         return videoView;
     }
 
-    public void removeSurfaceView() {
+    private void removeSurfaceView() {
         removeView(mVideoSurfaceView);
-        removeView(mProgressView);
         mVideoSurfaceView = null;
-        mProgressView = null;
     }
 
     @CalledByNative

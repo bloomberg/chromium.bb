@@ -412,15 +412,13 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
                 // passing an empty implementation.
                 return new ContentVideoViewEmbedder() {
                     @Override
-                    public void enterFullscreenVideo(View view) {}
+                    public void enterFullscreenVideo(View view, boolean isVideoLoaded) {}
+
+                    @Override
+                    public void fullscreenVideoLoaded() {}
 
                     @Override
                     public void exitFullscreenVideo() {}
-
-                    @Override
-                    public View getVideoLoadingProgressView() {
-                        return null;
-                    }
 
                     @Override
                     public void setSystemUiVisibility(boolean enterFullscreen) {}

@@ -565,7 +565,17 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   }
 
   // There's no ContentVideoView instance so create one.
-  video_view_.reset(new ContentVideoView(this, GetContentViewCore()));
+  // If we know the video frame size, use it.
+  gfx::Size natural_video_size;
+  MediaPlayerAndroid* player = GetFullscreenPlayer();
+  if (player && player->IsPlayerReady()) {
+    natural_video_size =
+        gfx::Size(player->GetVideoWidth(), player->GetVideoHeight());
+  }
+
+  video_view_.reset(
+      new ContentVideoView(this, GetContentViewCore(), natural_video_size));
+
   base::android::ScopedJavaLocalRef<jobject> j_content_video_view =
       video_view_->GetJavaObject(base::android::AttachCurrentThread());
   if (!j_content_video_view.is_null()) {

@@ -114,9 +114,6 @@
       <message name="IDS_MEDIA_PLAYER_ERROR_BUTTON" desc="OK button to dismiss an error dialog [CHAR-LIMIT=16]">
         OK
       </message>
-      <message name="IDS_MEDIA_PLAYER_LOADING_VIDEO" desc="Text shown while a video is loading [CHAR-LIMIT=16]">
-        Loading video
-      </message>
       <message name="IDS_PROFILER_STARTED_TOAST" desc="Toast notifying the user that profiler started">
         Profiler started
       </message>

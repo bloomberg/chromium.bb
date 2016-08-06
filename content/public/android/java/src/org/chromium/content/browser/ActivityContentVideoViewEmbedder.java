@@ -25,7 +25,7 @@ public class ActivityContentVideoViewEmbedder implements ContentVideoViewEmbedde
     }
 
     @Override
-    public void enterFullscreenVideo(View view) {
+    public void enterFullscreenVideo(View view, boolean isVideoLoaded) {
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.addView(view, 0,
                 new FrameLayout.LayoutParams(
@@ -37,16 +37,14 @@ public class ActivityContentVideoViewEmbedder implements ContentVideoViewEmbedde
     }
 
     @Override
+    public void fullscreenVideoLoaded() {}
+
+    @Override
     public void exitFullscreenVideo() {
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.removeView(mView);
         setSystemUiVisibility(false);
         mView = null;
-    }
-
-    @Override
-    public View getVideoLoadingProgressView() {
-        return null;
     }
 
     @Override

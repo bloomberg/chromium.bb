@@ -503,8 +503,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
             return new ActivityContentVideoViewEmbedder(getActivity()) {
                 @Override
-                public void enterFullscreenVideo(View view) {
-                    super.enterFullscreenVideo(view);
+                public void enterFullscreenVideo(View view, boolean isVideoLoaded) {
+                    super.enterFullscreenVideo(view, isVideoLoaded);
                     FullscreenManager fullscreenManager = getFullscreenManager();
                     if (fullscreenManager != null) {
                         fullscreenManager.setOverlayVideoMode(true);

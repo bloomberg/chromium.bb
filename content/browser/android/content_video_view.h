@@ -44,7 +44,9 @@ class ContentVideoView {
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
 
-  explicit ContentVideoView(Client* client, ContentViewCore* content_view_core);
+  explicit ContentVideoView(Client* client,
+                            ContentViewCore* content_view_core,
+                            const gfx::Size& video_natural_size);
   ~ContentVideoView();
 
   // To open another video on existing ContentVideoView.
@@ -53,7 +55,7 @@ class ContentVideoView {
   // Display an error dialog to the user.
   void OnMediaPlayerError(int error_type);
 
-  // Update the video size. The video will not be visible until this is called.
+  // Update the video size.
   void OnVideoSizeChanged(int width, int height);
 
   // Exit fullscreen and notify |client_| with |DidExitFullscreen|.
@@ -88,7 +90,8 @@ class ContentVideoView {
 
  private:
   // Creates the corresponding ContentVideoView Java object.
-  JavaObjectWeakGlobalRef CreateJavaObject(ContentViewCore* content_view_core);
+  JavaObjectWeakGlobalRef CreateJavaObject(ContentViewCore* content_view_core,
+                                           const gfx::Size& video_natural_size);
 
   Client* client_;
 

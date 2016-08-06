@@ -83,8 +83,8 @@ void BrowserSurfaceViewManager::OnCreateFullscreenSurface(
 
   ContentViewCore* cvc = ContentViewCore::FromWebContents(
       WebContents::FromRenderFrameHost(render_frame_host_));
-  content_video_view_.reset(new ContentVideoView(this, cvc));
-  OnNaturalSizeChanged(video_natural_size);
+  content_video_view_.reset(
+      new ContentVideoView(this, cvc, video_natural_size));
 }
 
 void BrowserSurfaceViewManager::OnNaturalSizeChanged(const gfx::Size& size) {

@@ -50,8 +50,8 @@ public class ShellManager extends FrameLayout {
             public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
                 return new ActivityContentVideoViewEmbedder((Activity) context) {
                     @Override
-                    public void enterFullscreenVideo(View view) {
-                        super.enterFullscreenVideo(view);
+                    public void enterFullscreenVideo(View view, boolean isVideoLoaded) {
+                        super.enterFullscreenVideo(view, isVideoLoaded);
                         setOverlayVideoMode(true);
                     }
 
