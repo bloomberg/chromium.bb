@@ -24,10 +24,24 @@ namespace {
 
 // Records the final request status UMA for an offlining request. This should
 // only be called once per Offliner::LoadAndSave request.
-void RecordOfflinerResultUMA(Offliner::RequestStatus request_status) {
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.Background.OfflinerRequestStatus",
-                            request_status,
-                            Offliner::RequestStatus::STATUS_COUNT);
+void RecordOfflinerResultUMA(const ClientId& client_id,
+                             Offliner::RequestStatus request_status) {
+  // TODO(dougarnett): Consider exposing AddHistogramSuffix from
+  // offline_page_model_impl.cc as visible utility method.
+  std::string histogram_name("OfflinePages.Background.OfflinerRequestStatus");
+  if (!client_id.name_space.empty()) {
+    histogram_name += "." + client_id.name_space;
+  }
+
+  // The histogram below is an expansion of the UMA_HISTOGRAM_ENUMERATION
+  // macro adapted to allow for a dynamically suffixed histogram name.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+      histogram_name, 1,
+      static_cast<int>(Offliner::RequestStatus::STATUS_COUNT),
+      static_cast<int>(Offliner::RequestStatus::STATUS_COUNT) + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(static_cast<int>(request_status));
 }
 
 }  // namespace
@@ -43,6 +57,7 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
       factory_(std::move(factory)),
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
+      active_request_(nullptr),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
       offliner_timeout_(base::TimeDelta::FromSeconds(
           policy_->GetSinglePageTimeLimitInSeconds())),
@@ -151,7 +166,12 @@ void RequestCoordinator::StopProcessing() {
   // Stopping offliner means it will not call callback.
   last_offlining_status_ =
       Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED;
-  RecordOfflinerResultUMA(last_offlining_status_);
+
+  if (active_request_) {
+    RecordOfflinerResultUMA(active_request_->client_id(),
+                            last_offlining_status_);
+    active_request_.reset();
+  }
 
   // Let the scheduler know we are done processing.
   scheduler_callback_.Run(true);
@@ -229,6 +249,7 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
 
   DCHECK(!is_busy_);
   is_busy_ = true;
+  active_request_.reset(new SavePageRequest(request));
 
   // Prepare an updated request to attempt.
   SavePageRequest updated_request(request);
@@ -264,10 +285,11 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   event_logger_.RecordSavePageRequestUpdated(request.client_id().name_space,
                                              status, request.request_id());
   last_offlining_status_ = status;
-  RecordOfflinerResultUMA(last_offlining_status_);
+  RecordOfflinerResultUMA(request.client_id(), last_offlining_status_);
   watchdog_timer_.Stop();
 
   is_busy_ = false;
+  active_request_.reset(nullptr);
 
   if (status == Offliner::RequestStatus::FOREGROUND_CANCELED) {
     // Update the request for the canceled attempt.

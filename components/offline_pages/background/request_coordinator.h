@@ -176,6 +176,8 @@ class RequestCoordinator : public KeyedService {
   std::unique_ptr<RequestQueue> queue_;
   // Scheduler. Used to request a callback when network is available.  Owned.
   std::unique_ptr<Scheduler> scheduler_;
+  // Holds copy of the active request, if any.
+  std::unique_ptr<SavePageRequest> active_request_;
   // Status of the most recent offlining.
   Offliner::RequestStatus last_offlining_status_;
   // Class to choose which request to schedule next
