@@ -3,7 +3,6 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
-
 function templateString()
 {
     console.log("The template string should not run and you should not see this log");
@@ -18,13 +17,7 @@ function test()
     {
         var callback;
         var promise = new Promise(fulfill => callback = fulfill);
-        var div = document.createElement("div");
-        var text = base + prefix;
-        div.textContent = text;
-        var range = document.createRange();
-        range.setStart(div.childNodes[0], base.length);
-        range.setEnd(div.childNodes[0], text.length);
-        WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext(div, range, false, checkExpected);
+        WebInspector.ExecutionContextSelector.completionsForTextInCurrentContext(base, prefix, false, checkExpected);
         return promise;
 
         function checkExpected(completions)

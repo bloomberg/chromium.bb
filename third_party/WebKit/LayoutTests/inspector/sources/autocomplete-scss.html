@@ -18,19 +18,22 @@ function test()
     }
 
     var testSuite = [
-        function testPropertyValueSuggestions(next)
+        function testPropertyValueSuggestionsBefore$(next)
         {
             dumpSuggestions([
                 "@mixin my-border-style($style) {",
                 "    border-style: |$;",
                 "}"
-            ]);
+            ]).then(next)
+        },
+
+        function testPropertyValueSuggestionsAfter$(next)
+        {
             dumpSuggestions([
                 "@mixin my-border-style($style) {",
                 "    border-style: $|;",
                 "}"
-            ]);
-            next();
+            ]).then(next);
         },
     ];
 }
