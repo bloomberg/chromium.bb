@@ -375,6 +375,10 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
     quadForFakeMouseMoveEvent = paintInvalidationContainer.localToAbsoluteQuad(quadForFakeMouseMoveEvent);
     frame->eventHandler().dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
 
+    Page* page = frame->page();
+    if (page)
+        page->chromeClient().clearToolTip();
+
     bool requiresPaintInvalidation = true;
 
     if (box().view()->compositor()->inCompositingMode()) {

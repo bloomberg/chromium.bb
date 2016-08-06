@@ -38,7 +38,9 @@ public:
     bool m_hasScheduledAnimation;
 };
 
-class FrameViewTestBase : public testing::Test {
+class FrameViewTestBase
+    : public testing::Test
+    , public testing::WithParamInterface<FrameSettingOverrideFunction> {
 protected:
     FrameViewTestBase()
         : m_chromeClient(new MockChromeClient)
@@ -56,6 +58,8 @@ protected:
         clients.chromeClient = m_chromeClient.get();
         m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients);
         m_pageHolder->page().settings().setAcceleratedCompositingEnabled(true);
+        if (GetParam())
+            (*GetParam())(m_pageHolder->page().settings());
     }
 
     Document& document() { return m_pageHolder->document(); }
@@ -100,17 +104,25 @@ private:
     RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
 
+INSTANTIATE_TEST_CASE_P(All, FrameViewTest, ::testing::Values(
+    nullptr,
+    &RootLayerScrollsFrameSettingOverride));
+
+INSTANTIATE_TEST_CASE_P(All, FrameViewSlimmingPaintV2Test, ::testing::Values(
+    nullptr,
+    &RootLayerScrollsFrameSettingOverride));
+
 // These tests ensure that FrameView informs the ChromeClient of changes to the
 // paint artifact so that they can be shown to the user (e.g. via the
 // compositor).
-TEST_F(FrameViewSlimmingPaintV2Test, PaintOnce)
+TEST_P(FrameViewSlimmingPaintV2Test, PaintOnce)
 {
     EXPECT_CALL(chromeClient(), didPaint(_));
     document().body()->setInnerHTML("Hello world", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
 }
 
-TEST_F(FrameViewSlimmingPaintV2Test, PaintAndRepaint)
+TEST_P(FrameViewSlimmingPaintV2Test, PaintAndRepaint)
 {
     EXPECT_CALL(chromeClient(), didPaint(_)).Times(2);
     document().body()->setInnerHTML("Hello", ASSERT_NO_EXCEPTION);
@@ -119,7 +131,7 @@ TEST_F(FrameViewSlimmingPaintV2Test, PaintAndRepaint)
     document().view()->updateAllLifecyclePhases();
 }
 
-TEST_F(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases)
+TEST_P(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases)
 {
     document().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
@@ -129,7 +141,7 @@ TEST_F(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases)
     EXPECT_FALSE(chromeClient().m_hasScheduledAnimation);
 }
 
-TEST_F(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases)
+TEST_P(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases)
 {
     document().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
@@ -146,13 +158,13 @@ TEST_F(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases)
 
 // If we don't hide the tooltip on scroll, it can negatively impact scrolling
 // performance. See crbug.com/586852 for details.
-TEST_F(FrameViewTest, HideTooltipWhenScrollPositionChanges)
+TEST_P(FrameViewTest, HideTooltipWhenScrollPositionChanges)
 {
     document().body()->setInnerHTML("<div style='width:1000px;height:1000px'></div>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
 
     EXPECT_CALL(chromeClient(), setToolTip(String(), _));
-    document().view()->setScrollPosition(DoublePoint(1, 1), UserScroll);
+    document().view()->layoutViewportScrollableArea()->setScrollPosition(DoublePoint(1, 1), UserScroll);
 }
 
 } // namespace
