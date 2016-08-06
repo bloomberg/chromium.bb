@@ -50,7 +50,9 @@ const int kDownloadTimeoutMs = 20000;
 // Returns the scope from |info| if it is specified. Otherwise, returns the
 // default scope.
 GURL GetScope(const ShortcutInfo& info) {
-  return (info.scope.is_valid()) ? info.scope : info.url.GetOrigin();
+  return (info.scope.is_valid())
+      ? info.scope
+      : ShortcutHelper::GetScopeFromURL(info.url);
 }
 
 // Computes a murmur2 hash of |bitmap|'s PNG encoded bytes.

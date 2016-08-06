@@ -283,6 +283,15 @@ bool ShortcutHelper::IsWebApkInstalled(const GURL& url) {
   return Java_ShortcutHelper_isWebApkInstalled(env, java_url.obj());
 }
 
+GURL ShortcutHelper::GetScopeFromURL(const GURL& url) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> java_url =
+      base::android::ConvertUTF8ToJavaString(env, url.spec());
+  ScopedJavaLocalRef<jstring> java_scope_url =
+      Java_ShortcutHelper_getScopeFromUrl(env, java_url.obj());
+  return GURL(base::android::ConvertJavaStringToUTF16(env, java_scope_url));
+}
+
 // Callback used by Java when the shortcut has been created.
 // |splash_image_callback| is a pointer to a base::Closure allocated in
 // AddShortcutInBackgroundWithSkBitmap, so reinterpret_cast it back and run it.

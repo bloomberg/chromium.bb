@@ -110,6 +110,10 @@ class ShortcutHelper {
   // can handle |url|.
   static bool IsWebApkInstalled(const GURL& url);
 
+  // Generates a scope URL based on the passed in |url|. It should be used
+  // when the Web Manifest does not specify a scope URL.
+  static GURL GetScopeFromURL(const GURL& url);
+
  private:
   ShortcutHelper() = delete;
   ~ShortcutHelper() = delete;
