@@ -9,6 +9,8 @@ namespace chromecast {
 CastSysInfoDummy::CastSysInfoDummy()
     : build_type_(BUILD_ENG),
       serial_number_("dummy.serial.number"),
+      product_name_("dummy product"),
+      device_model_("dummy model"),
       factory_country_("US"),
       factory_locale_("en-US") {
 }
