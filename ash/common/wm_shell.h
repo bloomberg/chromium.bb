@@ -18,6 +18,10 @@
 #include "base/observer_list.h"
 #include "ui/base/ui_base_types.h"
 
+namespace display {
+class Display;
+}
+
 namespace gfx {
 class Point;
 }
@@ -162,12 +166,21 @@ class ASH_EXPORT WmShell {
   WmWindow* GetRootWindowForNewWindows();
 
   // Retuns the display info associated with |display_id|.
-  // TODO(msw): Remove this when DisplayManager has been moved. crbug.com/622480
+  // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480
   virtual const DisplayInfo& GetDisplayInfo(int64_t display_id) const = 0;
 
   // Matches that of DisplayManager::IsActiveDisplayId().
-  // TODO: Remove this when DisplayManager has been moved. crbug.com/622480
+  // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480
   virtual bool IsActiveDisplayId(int64_t display_id) const = 0;
+
+  // Returns true if the desktop is in unified mode.
+  // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480
+  virtual bool IsInUnifiedMode() const = 0;
+
+  // Returns the first display; this is the first display listed by hardware,
+  // which corresponds to internal displays on devices with integrated displays.
+  // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480
+  virtual display::Display GetFirstDisplay() const = 0;
 
   // Returns true if the first window shown on first run should be
   // unconditionally maximized, overriding the heuristic that normally chooses

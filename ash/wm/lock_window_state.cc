@@ -12,8 +12,9 @@
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_util.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm/wm_screen_util.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/window_animations.h"
@@ -168,14 +169,9 @@ wm::WindowStateType LockWindowState::GetMaximizedOrCenteredWindowType(
 }
 
 gfx::Rect GetBoundsForLockWindow(aura::Window* window) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (display_manager->IsInUnifiedMode()) {
-    const display::Display& first =
-        display_manager->software_mirroring_display_list()[0];
-    return first.bounds();
-  } else {
-    return ScreenUtil::GetDisplayBoundsInParent(window);
-  }
+  if (WmShell::Get()->IsInUnifiedMode())
+    return WmShell::Get()->GetFirstDisplay().bounds();
+  return wm::GetDisplayBoundsInParent(WmWindowAura::Get(window));
 }
 
 void LockWindowState::UpdateBounds(wm::WindowState* window_state) {
@@ -190,9 +186,7 @@ void LockWindowState::UpdateBounds(wm::WindowState* window_state) {
       keyboard_controller->keyboard_visible()) {
     keyboard_bounds = keyboard_controller->current_keyboard_bounds();
   }
-  gfx::Rect bounds = ScreenUtil::GetShelfDisplayBoundsInRoot(
-      ash::WmWindowAura::GetAuraWindow(window_state->window()));
-
+  gfx::Rect bounds = wm::GetDisplayBoundsWithShelf(window_state->window());
   bounds.set_height(bounds.height() - keyboard_bounds.height());
 
   VLOG(1) << "Updating window bounds to: " << bounds.ToString();

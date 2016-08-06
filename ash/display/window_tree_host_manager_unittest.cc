@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/display/display_info.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm/wm_screen_util.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
@@ -1297,7 +1299,8 @@ class RootWindowTestObserver : public aura::WindowObserver {
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
-    shelf_display_bounds_ = ScreenUtil::GetShelfDisplayBoundsInRoot(window);
+    shelf_display_bounds_ =
+        wm::GetDisplayBoundsWithShelf(WmWindowAura::Get(window));
   }
 
   const gfx::Rect& shelf_display_bounds() const {
@@ -1312,8 +1315,8 @@ class RootWindowTestObserver : public aura::WindowObserver {
 
 }  // names
 
-// Make sure that GetShelfDisplayBoundsInRoot returns the correct bounds
-// when primary display gets replaced in a following scenario.
+// Make sure that GetDisplayBoundsWithShelf returns the correct bounds
+// when the primary display gets replaced in one of the following scenarios:
 // 1) Two displays connected: a) b)
 // 2) both are disconnected and new one with the same size as b) is connected
 // in one configuration event.

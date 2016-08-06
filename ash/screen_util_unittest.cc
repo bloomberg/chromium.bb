@@ -4,6 +4,9 @@
 
 #include "ash/screen_util.h"
 
+#include "ash/common/wm/wm_screen_util.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
@@ -129,30 +132,23 @@ TEST_P(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
 
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget);
 
   UpdateDisplay("500x400");
-  EXPECT_EQ("0,0 500x400",
-            ScreenUtil::GetShelfDisplayBoundsInRoot(widget->GetNativeWindow())
-                .ToString());
+  EXPECT_EQ("0,0 500x400", wm::GetDisplayBoundsWithShelf(window).ToString());
 
   UpdateDisplay("500x400,600x400");
-  EXPECT_EQ("0,0 500x400",
-            ScreenUtil::GetShelfDisplayBoundsInRoot(widget->GetNativeWindow())
-                .ToString());
+  EXPECT_EQ("0,0 500x400", wm::GetDisplayBoundsWithShelf(window).ToString());
 
   // Move to the 2nd physical display. Shelf's display still should be
   // the first.
   widget->SetBounds(gfx::Rect(800, 0, 100, 100));
   ASSERT_EQ("800,0 100x100", widget->GetWindowBoundsInScreen().ToString());
 
-  EXPECT_EQ("0,0 500x400",
-            ScreenUtil::GetShelfDisplayBoundsInRoot(widget->GetNativeWindow())
-                .ToString());
+  EXPECT_EQ("0,0 500x400", wm::GetDisplayBoundsWithShelf(window).ToString());
 
   UpdateDisplay("600x500");
-  EXPECT_EQ("0,0 600x500",
-            ScreenUtil::GetShelfDisplayBoundsInRoot(widget->GetNativeWindow())
-                .ToString());
+  EXPECT_EQ("0,0 600x500", wm::GetDisplayBoundsWithShelf(window).ToString());
 }
 
 }  // namespace test

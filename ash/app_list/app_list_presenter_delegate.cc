@@ -9,7 +9,10 @@
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm/wm_screen_util.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -78,11 +81,10 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(const gfx::Rect& button_bounds,
 // This calculation excludes the virtual keyboard area. If the height of the
 // display area is less than |minimum_height|, its bottom will be extended to
 // that height (so that the app list never starts above the top of the screen).
-gfx::Point GetCenterOfDisplayForView(const views::View* view,
-                                     int minimum_height) {
-  aura::Window* window = view->GetWidget()->GetNativeView();
-  gfx::Rect bounds = ScreenUtil::GetShelfDisplayBoundsInRoot(window);
-  bounds = ScreenUtil::ConvertRectToScreen(window->GetRootWindow(), bounds);
+gfx::Point GetCenterOfDisplayForView(views::View* view, int minimum_height) {
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(view->GetWidget());
+  gfx::Rect bounds = wm::GetDisplayBoundsWithShelf(window);
+  bounds = window->GetRootWindow()->ConvertRectToScreen(bounds);
 
   // If the virtual keyboard is active, subtract it from the display bounds, so
   // that the app list is centered in the non-keyboard area of the display.

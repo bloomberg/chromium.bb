@@ -53,32 +53,6 @@ gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
 }
 
 // static
-gfx::Rect ScreenUtil::GetShelfDisplayBoundsInRoot(aura::Window* window) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (display_manager->IsInUnifiedMode()) {
-    // In unified desktop mode, there is only one shelf in the 1st display.
-    const display::Display& first =
-        display_manager->software_mirroring_display_list()[0];
-    float scale =
-        static_cast<float>(window->GetRootWindow()->bounds().height()) /
-        first.size().height();
-    gfx::SizeF size(first.size());
-    size.Scale(scale, scale);
-    return gfx::Rect(gfx::ToCeiledSize(size));
-  }
-
-  if (Shell::GetInstance()->in_mus()) {
-    // In mus the RootWindow is the widget's root window, so use the display
-    // bounds.
-    display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-    return display.bounds();
-  }
-
-  return window->GetRootWindow()->bounds();
-}
-
-// static
 gfx::Rect ScreenUtil::ConvertRectToScreen(aura::Window* window,
                                           const gfx::Rect& rect) {
   gfx::Point point = rect.origin();

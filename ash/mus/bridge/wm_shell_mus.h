@@ -63,6 +63,8 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   const DisplayInfo& GetDisplayInfo(int64_t display_id) const override;
   bool IsActiveDisplayId(int64_t display_id) const override;
+  display::Display GetFirstDisplay() const override;
+  bool IsInUnifiedMode() const override;
   bool IsForceMaximizeOnFirstRun() override;
   bool IsPinned() override;
   void SetPinnedWindow(WmWindow* window) override;

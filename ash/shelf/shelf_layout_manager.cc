@@ -18,12 +18,12 @@
 #include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_bezel_event_filter.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -248,8 +248,8 @@ bool ShelfLayoutManager::IsVisible() const {
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
   const int shelf_size = GetShelfConstant(SHELF_SIZE);
-  gfx::Rect rect(
-      ScreenUtil::GetDisplayBoundsInParent(shelf_widget_->GetNativeView()));
+  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  gfx::Rect rect(wm::GetDisplayBoundsInParent(shelf_window));
   return SelectValueForShelfAlignment(
       gfx::Rect(rect.x(), rect.bottom() - shelf_size, rect.width(), shelf_size),
       gfx::Rect(rect.x(), rect.y(), shelf_size, rect.height()),
@@ -733,8 +733,8 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     GetLayer(shelf_widget_)->SetOpacity(target_bounds.opacity);
     // mash::wm::ShelfLayout manages window bounds when running in mash.
     if (!Shell::GetInstance()->in_mus()) {
-      shelf_widget_->SetBounds(ScreenUtil::ConvertRectToScreen(
-          shelf_widget_->GetNativeView()->parent(),
+      WmWindow* window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+      shelf_widget_->SetBounds(window->GetParent()->ConvertRectToScreen(
           target_bounds.shelf_bounds_in_root));
     }
 
@@ -755,10 +755,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     status_bounds.Offset(target_bounds.shelf_bounds_in_root.OffsetFromOrigin());
     // mash::wm::ShelfLayout manages window bounds when running mash.
     if (!Shell::GetInstance()->in_mus()) {
+      WmWindow* window = WmLookup::Get()->GetWindowForWidget(
+          shelf_widget_->status_area_widget());
       shelf_widget_->status_area_widget()->SetBounds(
-          ScreenUtil::ConvertRectToScreen(
-              shelf_widget_->status_area_widget()->GetNativeView()->parent(),
-              status_bounds));
+          window->GetParent()->ConvertRectToScreen(status_bounds));
     }
     // For crbug.com/622431, when the shelf alignment is BOTTOM_LOCKED, we
     // don't set display work area, as it is not real user-set alignment.
@@ -807,8 +807,8 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
     shelf_size = 0;
   }
 
-  gfx::Rect available_bounds =
-      ScreenUtil::GetShelfDisplayBoundsInRoot(root_window_);
+  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  gfx::Rect available_bounds = wm::GetDisplayBoundsWithShelf(shelf_window);
   available_bounds.Inset(0, chromevox_panel_height_, 0, 0);
   int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
   int shelf_height = PrimaryAxisValue(shelf_size, available_bounds.height());
@@ -892,16 +892,17 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
 
   available_bounds.Subtract(target_bounds->shelf_bounds_in_root);
   available_bounds.Subtract(keyboard_bounds_);
-  user_work_area_bounds_ =
-      ScreenUtil::ConvertRectToScreen(root_window_, available_bounds);
+
+  WmWindow* root = shelf_window->GetRootWindow();
+  user_work_area_bounds_ = root->ConvertRectToScreen(available_bounds);
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
   bool horizontal = IsHorizontalAlignment();
-  gfx::Rect available_bounds =
-      ScreenUtil::GetShelfDisplayBoundsInRoot(root_window_);
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  gfx::Rect available_bounds = wm::GetDisplayBoundsWithShelf(window);
   int resistance_free_region = 0;
 
   if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&

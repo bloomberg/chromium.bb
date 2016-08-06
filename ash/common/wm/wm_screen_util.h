@@ -22,6 +22,12 @@ ASH_EXPORT gfx::Rect GetDisplayWorkAreaBounds(WmWindow* window);
 ASH_EXPORT gfx::Rect GetDisplayBoundsInParent(WmWindow* window);
 ASH_EXPORT gfx::Rect GetMaximizedWindowBoundsInParent(WmWindow* window);
 
+// Returns the bounds of the physical display containing the shelf for |window|.
+// Physical displays can differ from logical displays in unified desktop mode.
+// TODO(oshima): Consider using physical displays in window layout, instead of
+// root windows, and only use logical display in display management code.
+ASH_EXPORT gfx::Rect GetDisplayBoundsWithShelf(WmWindow* window);
+
 }  // namespace wm
 }  // namespace ash
 

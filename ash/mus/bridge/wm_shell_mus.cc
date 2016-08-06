@@ -33,6 +33,7 @@
 #include "services/ui/common/util.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 namespace mus {
@@ -210,15 +211,27 @@ WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
 }
 
 const DisplayInfo& WmShellMus::GetDisplayInfo(int64_t display_id) const {
+  // TODO(mash): implement http://crbug.com/622480.
   NOTIMPLEMENTED();
   static DisplayInfo fake_info;
   return fake_info;
 }
 
 bool WmShellMus::IsActiveDisplayId(int64_t display_id) const {
-  // TODO: implement http://crbug.com/622480.
+  // TODO(mash): implement http://crbug.com/622480.
   NOTIMPLEMENTED();
   return true;
+}
+
+display::Display WmShellMus::GetFirstDisplay() const {
+  // TODO(mash): implement http://crbug.com/622480.
+  NOTIMPLEMENTED();
+  return display::Screen::GetScreen()->GetPrimaryDisplay();
+}
+
+bool WmShellMus::IsInUnifiedMode() const {
+  // TODO(mash): implement http://crbug.com/622480.
+  return false;
 }
 
 bool WmShellMus::IsForceMaximizeOnFirstRun() {

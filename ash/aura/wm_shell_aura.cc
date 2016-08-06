@@ -97,6 +97,16 @@ bool WmShellAura::IsActiveDisplayId(int64_t display_id) const {
   return Shell::GetInstance()->display_manager()->IsActiveDisplayId(display_id);
 }
 
+display::Display WmShellAura::GetFirstDisplay() const {
+  return Shell::GetInstance()
+      ->display_manager()
+      ->software_mirroring_display_list()[0];
+}
+
+bool WmShellAura::IsInUnifiedMode() const {
+  return Shell::GetInstance()->display_manager()->IsInUnifiedMode();
+}
+
 bool WmShellAura::IsForceMaximizeOnFirstRun() {
   return delegate()->IsForceMaximizeOnFirstRun();
 }
