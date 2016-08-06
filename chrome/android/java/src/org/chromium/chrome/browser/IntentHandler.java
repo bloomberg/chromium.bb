@@ -147,6 +147,11 @@ public class IntentHandler {
     public static final String EXTRA_EXTERNAL_NAV_PACKAGES = "org.chromium.chrome.browser.eenp";
 
     /**
+     * A hash code for the URL to verify intent data hasn't been modified.
+     */
+    public static final String EXTRA_DATA_HASH_CODE = "org.chromium.chrome.browser.data_hash";
+
+    /**
      * Fake ComponentName used in constructing TRUSTED_APPLICATION_CODE_EXTRA.
      */
     private static ComponentName sFakeComponentName = null;
@@ -155,6 +160,7 @@ public class IntentHandler {
 
     private static Pair<Integer, String> sPendingReferrer;
     private static int sReferrerId;
+    private static int sPendingHashCode;
 
     private static final String PACKAGE_GSA = "com.google.android.googlequicksearchbox";
     private static final String PACKAGE_GMAIL = "com.google.android.gm";
@@ -637,7 +643,15 @@ public class IntentHandler {
             if (!isInternal
                     && IntentUtils.safeGetBooleanExtra(
                                intent, EXTRA_OPEN_NEW_INCOGNITO_TAB, false)) {
-                return true;
+                // We also allow through intents from ExternalNavigationHandler that cannot be
+                // signed if they can be verified.
+                int hashCode = IntentUtils.safeGetIntExtra(intent, EXTRA_DATA_HASH_CODE, 0);
+                if (hashCode == 0
+                        || (intent.getData() != null && intent.getData().hashCode() != hashCode)
+                        || getPendingIncognitoIntentHashCode() != hashCode) {
+                    // Intent doesn't have EXTRA_DATA_HASH_CODE or the data field has been modified.
+                    return true;
+                }
             }
 
             // Now if we have an empty URL and the intent was ACTION_MAIN,
@@ -889,6 +903,9 @@ public class IntentHandler {
         return urlScheme != null && urlScheme.equals(GOOGLECHROME_SCHEME);
     }
 
+    // TODO(mariakhomenko): pending referrer and pending incognito intent could potentially
+    // not work correctly in multi-window. Store per-window information instead.
+
     /**
      * Records a pending referrer URL that we may be sending to ourselves through an intent.
      * @param intent The intent to which we add a referrer.
@@ -917,6 +934,33 @@ public class IntentHandler {
             return sPendingReferrer.second;
         }
         return null;
+    }
+
+    /**
+     * Keeps track of pending incognito intent, and verifies the URL hasn't been modified.
+     * @param intent The intent that will be sent.
+     */
+    public static void setPendingIncognitoIntent(Intent intent) {
+        if (intent.getData() != null) {
+            intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
+            int hashCode = intent.getData().hashCode();
+            intent.putExtra(IntentHandler.EXTRA_DATA_HASH_CODE, hashCode);
+            sPendingHashCode = hashCode;
+        }
+    }
+
+    /**
+     * Clears the pending incognito intent hash code.
+     */
+    public static void clearPendingIncognitoIntent() {
+        sPendingHashCode = 0;
+    }
+
+    /**
+     * @return Pending incognito intent hash code.
+     */
+    public static int getPendingIncognitoIntentHashCode() {
+        return sPendingHashCode;
     }
 
     /**

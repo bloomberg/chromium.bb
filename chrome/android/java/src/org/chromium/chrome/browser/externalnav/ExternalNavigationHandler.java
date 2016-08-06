@@ -366,6 +366,10 @@ public class ExternalNavigationHandler {
             IntentHandler.setPendingReferrer(intent, params.getReferrerUrl());
         }
 
+        if (params.isIncognito()) {
+            IntentHandler.setPendingIncognitoIntent(intent);
+        }
+
         // Make sure webkit can handle it internally before checking for specialized
         // handlers. If webkit can't handle it internally, we need to call
         // startActivityIfNeeded or startActivity.
