@@ -1,0 +1,97 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 677],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 677],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutIFrame (positioned) IFRAME",
+          "rect": [0, 0, 800, 677],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 600, 800, 77],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 800, 34],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 785, 677],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 784, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 8, 346, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [785, 0, 15, 677],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [785, 0, 15, 600],
+          "reason": "scroll"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Test passes if you see \"Success\" after window resizes.'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutIFrame (positioned) IFRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    }
+  ]
+}
+
