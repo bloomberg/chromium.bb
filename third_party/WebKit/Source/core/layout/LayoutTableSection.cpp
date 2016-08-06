@@ -1003,7 +1003,7 @@ void LayoutTableSection::layoutRows()
                 if (paginationStrutOnRow) {
                     // If there isn't room for at least one content row on a page with a header group, then
                     // we won't repeat the header on each page.
-                    if (r == 0 && table()->sectionAbove(this) == table()->header())
+                    if (!r && table()->header() && table()->sectionAbove(this) == table()->header())
                         state.setHeightOffsetForTableHeaders(state.heightOffsetForTableHeaders() - table()->header()->logicalHeight());
                     // If we have a header group we will paint it at the top of each page, move the rows
                     // down to accomodate it.
