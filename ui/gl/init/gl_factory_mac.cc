@@ -5,6 +5,7 @@
 #include "ui/gl/init/gl_factory.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
@@ -18,6 +19,11 @@
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_switches.h"
+
+namespace features {
+const base::Feature kDesktopCoreProfileGLOnMac{
+    "DesktopCoreProfileGLOnMac", base::FEATURE_DISABLED_BY_DEFAULT};
+}
 
 namespace gl {
 namespace init {
@@ -58,7 +64,8 @@ class NoOpGLSurface : public GLSurface {
 
 std::vector<GLImplementation> GetAllowedGLImplementations() {
   std::vector<GLImplementation> impls;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::FeatureList::IsEnabled(features::kDesktopCoreProfileGLOnMac) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableUnsafeES3APIs)) {
     impls.push_back(kGLImplementationDesktopGLCoreProfile);
   }

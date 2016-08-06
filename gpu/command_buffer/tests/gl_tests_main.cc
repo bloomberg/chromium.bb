@@ -5,6 +5,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -30,6 +31,7 @@ int RunHelper(base::TestSuite* testSuite) {
 #else
   base::MessageLoopForIO message_loop;
 #endif
+  base::FeatureList::InitializeInstance(std::string(), std::string());
   gpu::GPUInfo gpu_info;
   gpu::CollectBasicGraphicsInfo(&gpu_info);
   gpu::ApplyGpuDriverBugWorkarounds(gpu_info,
