@@ -400,6 +400,26 @@ android_library("chrome_test_java") {
     "//ui/android:ui_javatests",
     google_play_services_library,
   ]
+
+  data = [
+    "//chrome/test/data/android/",
+    "//chrome/test/data/banners/",
+    "//chrome/test/data/encoding_tests/auto_detect/Big5_with_no_encoding_specified.html",
+    "//chrome/test/data/geolocation/",
+    "//chrome/test/data/google/",
+    "//chrome/test/data/image_search/valid.png",
+    "//chrome/test/data/navigation_interception/",
+    "//chrome/test/data/notifications/",
+    "//chrome/test/data/popup_blocker/",
+    "//chrome/test/data/push_messaging/",
+    "//chrome/test/data/translate/",
+    "//chrome/test/data/webapps/",
+    "//chrome/test/media_router/resources/",
+    "//content/test/data/android/geolocation.html",
+    "//content/test/data/media/getusermedia.html",
+    "//content/test/data/media/session/",
+    "//content/test/data/media/webrtc_test_utilities.js",
+  ]
 }
 
 # Overrides icon / name defined in chrome_java_resources.
@@ -588,7 +608,6 @@ instrumentation_test_apk("chrome_public_test_apk") {
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
     "//net/android:net_test_support_apk",
   ]
-  isolate_file = "../chrome_public_test_apk.isolate"
   proguard_enabled = !is_java_debug
 }
 

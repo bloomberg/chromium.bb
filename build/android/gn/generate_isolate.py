@@ -29,6 +29,10 @@ _ANDROID_BLACKLIST = (
 
 _DEVICE_BLACKLIST = (
     r'.*\.py',  # Some test_support targets include python deps.
+
+    # v8's blobs get packaged into APKs.
+    r'.*natives_blob.*\.bin',
+    r'.*snapshot_blob.*\.bin',
 )
 
 _ASSERT_WHITELIST = (

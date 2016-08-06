@@ -102,6 +102,10 @@ android_library("mojo_javatests") {
     "//mojo/public/java:bindings",
     "//mojo/public/java:system",
   ]
+
+  data = [
+    "//mojo/public/interfaces/bindings/tests/data/validation/",
+  ]
 }
 
 shared_library("mojo_java_unittests") {
@@ -141,5 +145,4 @@ instrumentation_test_apk("mojo_test_apk") {
   shared_libraries = [ ":mojo_java_unittests" ]
   apk_name = "MojoTest"
   android_manifest = "javatests/AndroidManifest.xml"
-  isolate_file = "../mojo_test_apk.isolate"
 }

@@ -382,6 +382,14 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/webcontents/WebContentsTest.java",
     "javatests/src/org/chromium/content/common/CleanupReferenceTest.java",
   ]
+
+  data = [
+    "//content/test/data/android/",
+    "//content/test/data/media/session/",
+  ]
+  data_deps = [
+    "//net:test_support",
+  ]
 }
 
 # GYP: //content/content_tests.gypi:content_junit_tests

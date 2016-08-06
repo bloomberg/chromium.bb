@@ -2247,19 +2247,40 @@ if (enable_java_templates) {
   template("instrumentation_test_apk") {
     testonly = true
     _apk_target_name = "${target_name}__apk"
+    _gen_isolate_target_name = "${target_name}__isolate"
     _test_runner_target_name = "${target_name}__test_runner_script"
     _install_script_name = "install_$target_name"
+
+    _target_dir_name = get_label_info(":$target_name", "dir")
+    _device_isolate_path = "$root_out_dir/gen.runtime/$_target_dir_name/$target_name.device.isolate"
+    device_isolate(_gen_isolate_target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "public_deps",
+                             ])
+      output = _device_isolate_path
+    }
+
+    if (defined(invoker.isolate_file)) {
+      assert(invoker.isolate_file != "")
+    }
 
     test_runner_script(_test_runner_target_name) {
       forward_variables_from(invoker,
                              [
                                "additional_apks",
                                "apk_under_test",
-                               "isolate_file",
                              ])
       test_name = invoker.target_name
       test_type = "instrumentation"
       apk_target = ":$_apk_target_name"
+      isolate_file = _device_isolate_path
+      deps = [
+        ":$_gen_isolate_target_name",
+      ]
     }
 
     test_runner_script("${_test_runner_target_name}_incremental") {
@@ -2267,12 +2288,15 @@ if (enable_java_templates) {
                              [
                                "additional_apks",
                                "apk_under_test",
-                               "isolate_file",
                              ])
       test_name = "${invoker.target_name}_incremental"
       test_type = "instrumentation"
       apk_target = ":$_apk_target_name"
       incremental_install = true
+      isolate_file = _device_isolate_path
+      deps = [
+        ":$_gen_isolate_target_name",
+      ]
     }
 
     android_apk(_apk_target_name) {

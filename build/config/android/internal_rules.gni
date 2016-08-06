@@ -2386,6 +2386,7 @@ if (enable_java_templates) {
     group(target_name) {
       forward_variables_from(invoker,
                              [
+                               "data",
                                "data_deps",
                                "visibility",
                              ])
