@@ -30,6 +30,7 @@
 
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 
+#include "platform/inspector_protocol/Parser.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
@@ -649,10 +650,10 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(InspectedContext* context
     context->setReported(true);
     std::unique_ptr<protocol::Runtime::ExecutionContextDescription> description = protocol::Runtime::ExecutionContextDescription::create()
         .setId(context->contextId())
-        .setIsDefault(context->isDefault())
         .setName(context->humanReadableName())
-        .setOrigin(context->origin())
-        .setFrameId(context->frameId()).build();
+        .setOrigin(context->origin()).build();
+    if (!context->auxData().isEmpty())
+        description->setAuxData(protocol::DictionaryValue::cast(parseJSON(context->auxData())));
     m_frontend.executionContextCreated(std::move(description));
 }
 

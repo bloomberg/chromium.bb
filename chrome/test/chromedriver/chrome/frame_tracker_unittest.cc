@@ -42,6 +42,28 @@ TEST(FrameTracker, GetContextIdForFrame) {
             tracker.GetContextIdForFrame("f", &context_id).code());
 }
 
+TEST(FrameTracker, AuxData) {
+  StubDevToolsClient client;
+  FrameTracker tracker(&client);
+  int context_id = -1;
+  ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsError());
+  ASSERT_EQ(-1, context_id);
+
+  const char context[] = "{\"id\":100,\"auxData\":{}}";
+  base::DictionaryValue params;
+  params.Set("context", base::JSONReader::Read(context));
+  params.SetString("context.auxData.frameId", "f");
+  params.SetBoolean("context.auxData.isDefault", true);
+  ASSERT_EQ(kOk,
+            tracker.OnEvent(&client, "Runtime.executionContextCreated", params)
+                .code());
+  ASSERT_EQ(kNoSuchExecutionContext,
+            tracker.GetContextIdForFrame("foo", &context_id).code());
+  ASSERT_EQ(-1, context_id);
+  ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
+  ASSERT_EQ(100, context_id);
+}
+
 TEST(FrameTracker, CanUpdateFrameContextId) {
   StubDevToolsClient client;
   FrameTracker tracker(&client);

@@ -451,7 +451,8 @@ def main():
         load_domains_and_baselines(arg_values[1], domains, baseline_domains)
 
     expected_errors = [
-        "Debugger.globalObjectCleared: event has been removed"
+        "Debugger.globalObjectCleared: event has been removed",
+        "Runtime.executionContextCreated.context parameter->Runtime.ExecutionContextDescription.frameId: required property has been removed"
     ]
 
     errors = compare_schemas(baseline_domains, domains, False)

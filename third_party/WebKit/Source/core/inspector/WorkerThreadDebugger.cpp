@@ -86,7 +86,9 @@ int WorkerThreadDebugger::contextGroupId(ExecutionContext* context)
 
 void WorkerThreadDebugger::contextCreated(v8::Local<v8::Context> context)
 {
-    v8Inspector()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, m_workerThread->globalScope()->url().getString(), "", "", false));
+    V8ContextInfo contextInfo(context, workerContextGroupId, "");
+    contextInfo.origin = m_workerThread->globalScope()->url().getString();
+    v8Inspector()->contextCreated(contextInfo);
 }
 
 void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context)

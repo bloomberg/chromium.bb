@@ -329,8 +329,11 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       if (!params.GetInteger("context.id", &execution_context_id))
         return Status(kUnknownError, "missing or invalid 'context.id'");
       std::string frame_id;
-      if (!params.GetString("context.frameId", &frame_id))
-        return Status(kUnknownError, "missing or invalid 'context.frameId'");
+      if (!params.GetString("context.auxData.frameId", &frame_id)) {
+        // TODO(samuong): remove this when we stop supporting Chrome 53.
+        if (!params.GetString("context.frameId", &frame_id))
+          return Status(kUnknownError, "missing or invalid 'context.frameId'");
+      }
       if (frame_id == dummy_frame_id_)
         dummy_execution_context_id_ = execution_context_id;
       else

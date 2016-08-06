@@ -16,8 +16,7 @@ SimpleInspector::SimpleInspector(v8::Isolate* isolate, v8::Local<v8::Context> co
     : m_context(context)
 {
     m_inspector = V8Inspector::create(isolate, this);
-    m_inspector->contextCreated(V8ContextInfo(context, 1, true, "",
-        "NodeJS Main Context", "", false));
+    m_inspector->contextCreated(V8ContextInfo(context, 1, "NodeJS Main Context"));
 }
 
 SimpleInspector::~SimpleInspector()

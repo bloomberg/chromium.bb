@@ -132,10 +132,9 @@
                 "description": "Description of an isolated world.",
                 "properties": [
                     { "name": "id", "$ref": "ExecutionContextId", "description": "Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed." },
-                    { "name": "isDefault", "type": "boolean", "description": "Whether context is the default page context (as opposite to e.g. context of content script).", "hidden": true },
-                    { "name": "origin", "type": "string", "description": "Execution context origin.", "hidden": true},
-                    { "name": "name", "type": "string", "description": "Human readable name describing given context.", "hidden": true},
-                    { "name": "frameId", "type": "string", "description": "Id of the owning frame. May be an empty string if the context is not associated with a frame." }
+                    { "name": "origin", "type": "string", "description": "Execution context origin.", "hidden": true },
+                    { "name": "name", "type": "string", "description": "Human readable name describing given context.", "hidden": true },
+                    { "name": "auxData", "type": "object", "optional": true, "description": "Embedder-specific auxiliary data.", "hidden": true }
                 ]
             },
             {
@@ -191,7 +190,7 @@
                     { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name that can be used to release multiple objects." },
                     { "name": "includeCommandLineAPI", "type": "boolean", "optional": true, "description": "Determines whether Command Line API should be available during the evaluation.", "hidden": true },
                     { "name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true, "description": "Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state.", "hidden": true },
-                    { "name": "contextId", "$ref": "ExecutionContextId", "optional": true, "description": "Specifies in which isolated context to perform evaluation. Each content script lives in an isolated context and this parameter may be used to specify one of those contexts. If the parameter is omitted the evaluation will be performed in the context of the inspected page." },
+                    { "name": "contextId", "$ref": "ExecutionContextId", "optional": true, "description": "Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page." },
                     { "name": "returnByValue", "type": "boolean", "optional": true, "description": "Whether the result is expected to be a JSON object that should be sent by value." },
                     { "name": "generatePreview", "type": "boolean", "optional": true, "hidden": true, "description": "Whether preview should be generated for the result." },
                     { "name": "userGesture", "type": "boolean", "optional": true, "hidden": true, "description": "Whether execution should be treated as initiated by user in the UI." },
@@ -305,7 +304,7 @@
                     { "name": "expression", "type": "string", "description": "Expression to compile." },
                     { "name": "sourceURL", "type": "string", "description": "Source url to be set for the script." },
                     { "name": "persistScript", "type": "boolean", "description": "Specifies whether the compiled script should be persisted." },
-                    { "name": "executionContextId", "$ref": "ExecutionContextId", "optional": true, "description": "Specifies in which isolated context to perform script run. Each content script lives in an isolated context and this parameter is used to specify one of those contexts. If the parameter is omitted the evaluation will be performed in the context of the inspected page." }
+                    { "name": "executionContextId", "$ref": "ExecutionContextId", "optional": true, "description": "Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page." }
                 ],
                 "returns": [
                     { "name": "scriptId", "$ref": "ScriptId", "optional": true, "description": "Id of the script." },
@@ -319,7 +318,7 @@
                 "async": true,
                 "parameters": [
                     { "name": "scriptId", "$ref": "ScriptId", "description": "Id of the script to run." },
-                    { "name": "executionContextId", "$ref": "ExecutionContextId", "optional": true, "description": "Specifies in which isolated context to perform script run. Each content script lives in an isolated context and this parameter is used to specify one of those contexts. If the parameter is omitted the evaluation will be performed in the context of the inspected page." },
+                    { "name": "executionContextId", "$ref": "ExecutionContextId", "optional": true, "description": "Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page." },
                     { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name that can be used to release multiple objects." },
                     { "name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true, "description": "Specifies whether script run should stop on exceptions and mute console. Overrides setPauseOnException state." },
                     { "name": "includeCommandLineAPI", "type": "boolean", "optional": true, "description": "Determines whether Command Line API should be available during the evaluation." },
@@ -696,7 +695,7 @@
                     { "name": "endColumn", "type": "integer", "description": "Length of the last line of the script." },
                     { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "description": "Specifies script creation context.", "hidden": true },
                     { "name": "hash", "type": "string", "hidden": true, "description": "Content hash of the script."},
-                    { "name": "isContentScript", "type": "boolean", "optional": true, "description": "Determines whether this script is a user extension script." },
+                    { "name": "executionContextAuxData", "type": "object", "optional": true, "description": "Embedder-specific auxiliary data.", "hidden": true },
                     { "name": "isInternalScript", "type": "boolean", "optional": true, "description": "Determines whether this script is an internal script.", "hidden": true },
                     { "name": "isLiveEdit", "type": "boolean", "optional": true, "description": "True, if this script is generated as a result of the live edit operation.", "hidden": true },
                     { "name": "sourceMapURL", "type": "string", "optional": true, "description": "URL of source map associated with script (if any)." },
@@ -716,7 +715,7 @@
                     { "name": "endColumn", "type": "integer", "description": "Length of the last line of the script." },
                     { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "description": "Specifies script creation context.", "hidden": true },
                     { "name": "hash", "type": "string", "hidden": true, "description": "Content hash of the script."},
-                    { "name": "isContentScript", "type": "boolean", "optional": true, "description": "Determines whether this script is a user extension script." },
+                    { "name": "executionContextAuxData", "type": "object", "optional": true, "description": "Embedder-specific auxiliary data.", "hidden": true },
                     { "name": "isInternalScript", "type": "boolean", "optional": true, "description": "Determines whether this script is an internal script.", "hidden": true },
                     { "name": "sourceMapURL", "type": "string", "optional": true, "description": "URL of source map associated with script (if any)." },
                     { "name": "hasSourceURL", "type": "boolean", "optional": true, "description": "True, if this script has sourceURL.", "hidden": true },

@@ -49,30 +49,48 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
 
     int context_id;
     std::string frame_id;
-    if (!context->GetInteger("id", &context_id) ||
-        !context->GetString("frameId", &frame_id)) {
+    bool is_default = true;
+
+    if (!context->GetInteger("id", &context_id)) {
       std::string json;
       base::JSONWriter::Write(*context, &json);
       return Status(kUnknownError, method + " has invalid 'context': " + json);
     }
 
+    if (context->HasKey("auxData")) {
+      const base::DictionaryValue* auxData;
+      if (!context->GetDictionary("auxData", &auxData))
+        return Status(kUnknownError, method + " has invalid 'auxData' value");
+      if (!auxData->GetBoolean("isDefault", &is_default))
+        return Status(kUnknownError, method + " has invalid 'isDefault' value");
+      if (!auxData->GetString("frameId", &frame_id))
+        return Status(kUnknownError, method + " has invalid 'frameId' value");
+    }
+
     if (context->HasKey("isDefault")) {
-      bool is_default = false;
+      // TODO(samuong): remove this when we stop supporting Chrome 53.
       if (!context->GetBoolean("isDefault", &is_default))
         return Status(kUnknownError, method + " has invalid 'isDefault' value");
-      if (is_default)
-        frame_to_context_map_[frame_id] = context_id;
-    } else {
+    }
+
+    if (context->HasKey("frameId")) {
+      // TODO(samuong): remove this when we stop supporting Chrome 53.
+      if (!context->GetString("frameId", &frame_id))
+        return Status(kUnknownError, method + " has invalid 'frameId' value");
+    }
+
+    if (context->HasKey("type")) {
       // Before crrev.com/381172, the optional |type| field can be used to
       // determine whether we're looking at the default context.
       // TODO(samuong): remove this when we stop supporting Chrome 50.
       std::string type;
-      if (context->HasKey("type") && !context->GetString("type", &type))
+      if (!context->GetString("type", &type))
         return Status(kUnknownError, method + " has invalid 'context.type'");
-      if (type != "Extension")  // exclude content scripts
-        frame_to_context_map_[frame_id] = context_id;
+      is_default = type != "Extension";  // exclude content scripts
     }
 
+    if (is_default && !frame_id.empty())
+      frame_to_context_map_[frame_id] = context_id;
   } else if (method == "Runtime.executionContextDestroyed") {
     int execution_context_id;
     if (!params.GetInteger("executionContextId", &execution_context_id))

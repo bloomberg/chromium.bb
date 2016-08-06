@@ -61,6 +61,7 @@
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathResult.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8Inspector.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -145,7 +146,15 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     ASSERT(isMainThread());
     v8::HandleScope handles(scriptState->isolate());
     DOMWrapperWorld& world = scriptState->world();
-    v8Inspector()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame), scriptState->getExecutionContext()->isDocument()));
+    std::unique_ptr<protocol::DictionaryValue> auxData = protocol::DictionaryValue::create();
+    auxData->setBoolean("isDefault", world.isMainWorld());
+    auxData->setString("frameId", IdentifiersFactory::frameId(frame));
+    V8ContextInfo contextInfo(scriptState->context(), contextGroupId(frame), world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "");
+    if (origin)
+        contextInfo.origin = origin->toRawString();
+    contextInfo.auxData = auxData->toJSONString();
+    contextInfo.hasMemoryOnConsole = scriptState->getExecutionContext()->isDocument();
+    v8Inspector()->contextCreated(contextInfo);
 }
 
 void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
