@@ -3,6 +3,18 @@
 # found in the LICENSE file.
 
 # =============================================================================
+# WHAT IS THIS FILE?
+# =============================================================================
+#
+# This is the master GN build configuration. This file is loaded after the
+# build args (args.gn) for the build directory and after the toplevel ".gn"
+# file (which points to this file as the build configuration).
+#
+# This file will be executed and the resulting context will be used to execute
+# every other file in the build. So variables declared here (that don't start
+# with an underscore) will be implicitly global.
+
+# =============================================================================
 # PLATFORM SELECTION
 # =============================================================================
 #
@@ -69,31 +81,31 @@ if (current_os == "") {
 #
 # YOU SHOULD ALMOST NEVER NEED TO ADD FLAGS TO THIS FILE. GN allows any file in
 # the build to declare build flags. If you need a flag for a single component,
-# you can just declare it in the corresponding BUILD.gn file. If you need a
-# flag in multiple components, there are a few options:
+# you can just declare it in the corresponding BUILD.gn file.
 #
-# - If your feature is a single target, say //components/foo, and the targets
-#   depending on foo need to have some define set if foo is enabled: (1) Write
-#   a declare_args block in foo's BUILD.gn file listing your enable_foo build
-#   flag. (2) Write a config in that file listing the define, and list that
-#   config in foo's public_configs. This will propagate that define to all the
-#   targets depending on foo. (3) When foo is not enabled, just make it expand
-#   to an empty group (or whatever's appropriate for the "off" state of your
-#   feature).
+# - If your feature is a single target, say //components/foo, you can put
+#   a declare_args() block in //components/foo/BUILD.gn and use it there.
+#   Nobody else in the build needs to see the flag.
 #
-# - If a semi-random set of targets need to know about a define: (1) In the
-#   lowest level of the build that knows about this feature, add a declare_args
-#   block in the build file for your enable flag. (2) Write a config that adds
-#   a define conditionally based on that build flags. (3) Manually add that
-#   config to the "configs" applying to the targets that need the define.
+# - Defines based on build variables should be implemented via the generated
+#   build flag header system. See //build/buildflag_header.gni. You can put
+#   the buildflag_header target in the same file as the build flag itself. You
+#   should almost never set "defines" directly.
 #
-# - If a semi-random set of targets need to know about the build flag (to do
-#   file inclusion or exclusion, more than just defines): (1) Write a .gni file
-#   in the lowest-level directory that knows about the feature. (2) Put the
-#   declare_args block with your build flag in that .gni file. (3) Import that
-#   .gni file from the BUILD.gn files that need the flag.
+# - If your flag toggles a target on and off or toggles between different
+#   versions of similar things, write a "group" target that forwards to the
+#   right target (or no target) depending on the value of the build flag. This
+#   group can be in the same BUILD.gn file as the build flag, and targets can
+#   depend unconditionally on the group rather than duplicating flag checks
+#   across many targets.
 #
-# Other advice:
+# - If a semi-random set of build files REALLY needs to know about a define and
+#   the above pattern for isolating the build logic in a forwarding group
+#   doesn't work, you can put the argument in a .gni file. This should be put
+#   in the lowest level of the build that knows about this feature (which should
+#   almost always be outside of the //build directory!).
+#
+# Other flag advice:
 #
 # - Use boolean values when possible. If you need a default value that expands
 #   to some complex thing in the default case (like the location of the
