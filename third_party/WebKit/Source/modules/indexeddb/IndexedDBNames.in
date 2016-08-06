@@ -1,5 +1,7 @@
 namespace="IndexedDB"
 
+IndexedDB
+
 # http://www.w3.org/TR/IndexedDB/#idl-def-IDBCursorDirection
 next
 nextunique

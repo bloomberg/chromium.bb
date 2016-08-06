@@ -30,6 +30,7 @@
 
 #include "core/dom/DOMException.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBValue.h"
@@ -62,7 +63,7 @@ std::unique_ptr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(IDBRequest* req
 WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
     : m_request(request)
 {
-    InspectorInstrumentation::asyncTaskScheduled(m_request->getExecutionContext(), "IndexedDB", this, true);
+    InspectorInstrumentation::asyncTaskScheduled(m_request->getExecutionContext(), IndexedDBNames::IndexedDB, this, true);
 }
 
 WebIDBCallbacksImpl::~WebIDBCallbacksImpl()
