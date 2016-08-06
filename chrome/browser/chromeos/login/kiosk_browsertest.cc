@@ -940,14 +940,12 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NotSignedInWithGAIAAccount) {
       SigninManagerFactory::GetForProfile(app_profile)->IsAuthenticated());
 }
 
-// Disabled due to crashes; https://crbug.com/634807.
-IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_PRE_LaunchAppNetworkDown) {
+IN_PROC_BROWSER_TEST_F(KioskTest, PRE_LaunchAppNetworkDown) {
   // Tests the network down case for the initial app download and launch.
   RunAppLaunchNetworkDownTest();
 }
 
-// Disabled due to crashes; https://crbug.com/634807.
-IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppNetworkDown) {
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
   // Tests the network down case for launching an existing app that is
   // installed in PRE_LaunchAppNetworkDown.
   RunAppLaunchNetworkDownTest();
