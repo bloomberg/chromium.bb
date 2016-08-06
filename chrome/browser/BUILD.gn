@@ -744,12 +744,14 @@ split_static_library("browser") {
       ":delta_file_proto",
       ":jni_headers",
       "//blimp/client/public",
+      "//chrome/browser/android/webapk:proto",
       "//components/data_usage/android",
       "//components/precache/content",
       "//components/precache/core",
       "//components/resources:components_resources",
       "//components/toolbar",
       "//components/web_contents_delegate_android",
+      "//third_party/smhasher:murmurhash2",
     ]
   }
 

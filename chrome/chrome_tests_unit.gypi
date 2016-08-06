@@ -33,6 +33,7 @@
       'browser/android/preferences/pref_service_bridge_unittest.cc',
       'browser/android/shortcut_info_unittest.cc',
       'browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc',
+      'browser/android/webapk/webapk_installer_unittest.cc',
       'browser/app_controller_mac_unittest.mm',
       'browser/autocomplete/search_provider_unittest.cc',
       'browser/autocomplete/shortcuts_provider_extension_unittest.cc',

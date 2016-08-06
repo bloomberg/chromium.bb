@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/webapk/webapk_installer.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -64,6 +65,7 @@ void GetHomescreenIconAndSplashImageSizes() {
 
 // static
 void ShortcutHelper::AddToLauncherInBackgroundWithSkBitmap(
+    content::BrowserContext* browser_context,
     const ShortcutInfo& info,
     const std::string& webapp_id,
     const SkBitmap& icon_bitmap,
@@ -74,7 +76,7 @@ void ShortcutHelper::AddToLauncherInBackgroundWithSkBitmap(
       info.display == blink::WebDisplayModeFullscreen) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableWebApk)) {
-      InstallWebApkInBackgroundWithSkBitmap(info, webapp_id, icon_bitmap);
+      InstallWebApkInBackgroundWithSkBitmap(browser_context, info, icon_bitmap);
       return;
     }
     AddWebappInBackgroundWithSkBitmap(info, webapp_id, icon_bitmap,
@@ -86,43 +88,14 @@ void ShortcutHelper::AddToLauncherInBackgroundWithSkBitmap(
 
 // static
 void ShortcutHelper::InstallWebApkInBackgroundWithSkBitmap(
+    content::BrowserContext* browser_context,
     const ShortcutInfo& info,
-    const std::string& webapp_id,
     const SkBitmap& icon_bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  // TODO(pkotwicz): Send request to WebAPK server to generate WebAPK.
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, info.url.spec());
-  ScopedJavaLocalRef<jstring> java_scope_url =
-      base::android::ConvertUTF8ToJavaString(env, info.scope.spec());
-  ScopedJavaLocalRef<jstring> java_name =
-      base::android::ConvertUTF16ToJavaString(env, info.name);
-  ScopedJavaLocalRef<jstring> java_short_name =
-      base::android::ConvertUTF16ToJavaString(env, info.short_name);
-  ScopedJavaLocalRef<jstring> java_icon_url =
-      base::android::ConvertUTF8ToJavaString(env, info.icon_url.spec());
-  ScopedJavaLocalRef<jobject> java_bitmap;
-  if (icon_bitmap.getSize())
-    java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
-  ScopedJavaLocalRef<jstring> java_manifest_url =
-      base::android::ConvertUTF8ToJavaString(env, info.manifest_url.spec());
-
-  Java_ShortcutHelper_installWebApk(
-      env,
-      java_url.obj(),
-      java_scope_url.obj(),
-      java_name.obj(),
-      java_short_name.obj(),
-      java_icon_url.obj(),
-      java_bitmap.obj(),
-      info.display,
-      info.orientation,
-      info.theme_color,
-      info.background_color,
-      java_manifest_url.obj());
+  // WebApkInstaller destroys itself when it is done.
+  WebApkInstaller* installer = new WebApkInstaller(info, icon_bitmap);
+  installer->InstallAsync(browser_context,
+                          base::Bind(&ShortcutHelper::OnBuiltWebApk));
 }
 
 // static
@@ -192,6 +165,16 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
 
   Java_ShortcutHelper_addShortcut(env, java_url.obj(), java_user_title.obj(),
                                   java_bitmap.obj(), info.source);
+}
+
+void ShortcutHelper::OnBuiltWebApk(bool success) {
+  if (success) {
+    DVLOG(1) << "Sent request to install WebAPK. Seems to have worked.";
+  } else {
+    LOG(ERROR) << "WebAPK install failed.";
+  }
+  // TODO(pkotwicz): Figure out what to do when installing WebAPK fails.
+  // (crbug.com/626950)
 }
 
 int ShortcutHelper::GetIdealHomescreenIconSizeInDp() {

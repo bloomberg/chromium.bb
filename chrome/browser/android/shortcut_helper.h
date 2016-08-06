@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }  // namespace content
 
@@ -29,6 +30,7 @@ class ShortcutHelper {
   // or AddShortcutInBackgroundWithSkBitmap.
   // Must not be called on the UI thread.
   static void AddToLauncherInBackgroundWithSkBitmap(
+      content::BrowserContext* browser_context,
       const ShortcutInfo& info,
       const std::string& webapp_id,
       const SkBitmap& icon_bitmap,
@@ -37,8 +39,8 @@ class ShortcutHelper {
   // Installs WebAPK and adds shortcut to the launcher.
   // Must not be called on the UI thread.
   static void InstallWebApkInBackgroundWithSkBitmap(
+      content::BrowserContext* browser_context,
       const ShortcutInfo& info,
-      const std::string& webapp_id,
       const SkBitmap& icon_bitmap);
 
   // Adds a shortcut which opens in a fullscreen window to the launcher.
@@ -58,6 +60,15 @@ class ShortcutHelper {
   static void AddShortcutInBackgroundWithSkBitmap(
       const ShortcutInfo& info,
       const SkBitmap& icon_bitmap);
+
+  // Called after either:
+  // - A request to install the WebAPK has been sent.
+  // OR
+  // - WebAPK creation process fails.
+  // |success| indicates whether an installation request was sent. A "true"
+  // value of |success| does not guarantee that the WebAPK will be successfully
+  // installed.
+  static void OnBuiltWebApk(bool success);
 
   // Returns the ideal size for an icon representing a web app.
   static int GetIdealHomescreenIconSizeInDp();

@@ -33,14 +33,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.webapps.WebApkBuilder;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.common.ScreenOrientationConstants;
-import org.chromium.net.GURLUtils;
 import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -128,31 +126,6 @@ public class ShortcutHelper {
     @VisibleForTesting
     public static void setDelegateForTests(Delegate delegate) {
         sDelegate = delegate;
-    }
-
-    /**
-     * Installs a WebAPK.
-     * This method must not be called on the UI thread.
-     */
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private static void installWebApk(String url, String scopeUrl, final String name,
-            String shortName, String iconUrl, Bitmap icon, int displayMode, int orientation,
-            long themeColor, long backgroundColor, String manifestUrl) {
-        assert !ThreadUtils.runningOnUiThread();
-
-        Context context = ContextUtils.getApplicationContext();
-        WebApkBuilder apkBuilder = ((ChromeApplication) context).createWebApkBuilder();
-        if (apkBuilder == null) {
-            // TODO(pkotwicz): Figure out what to do when building WebAPK fails. (crbug.com/626950)
-            return;
-        }
-
-        if (TextUtils.isEmpty(scopeUrl)) {
-            scopeUrl = GURLUtils.getOrigin(url);
-        }
-        apkBuilder.buildWebApkAsync(url, scopeUrl, name, shortName, iconUrl, icon, displayMode,
-                orientation, themeColor, backgroundColor, manifestUrl);
     }
 
     /**
