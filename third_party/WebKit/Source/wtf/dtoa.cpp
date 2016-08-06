@@ -87,7 +87,7 @@ static inline const char* formatStringTruncatingTrailingZerosIfNeeded(NumberToSt
     return builder.Finalize();
 }
 
-const char* numberToFixedPrecisionString(double d, unsigned significantFigures, NumberToStringBuffer buffer, bool truncateTrailingZeros)
+const char* numberToFixedPrecisionString(double d, unsigned significantFigures, NumberToStringBuffer buffer)
 {
     // Mimic String::format("%.[precision]g", ...), but use dtoas rounding facilities.
     // "g": Signed value printed in f or e format, whichever is more compact for the given value and precision.
@@ -97,8 +97,6 @@ const char* numberToFixedPrecisionString(double d, unsigned significantFigures, 
     double_conversion::StringBuilder builder(buffer, NumberToStringBufferLength);
     const double_conversion::DoubleToStringConverter& converter = double_conversion::DoubleToStringConverter::EcmaScriptConverter();
     converter.ToPrecision(d, significantFigures, &builder);
-    if (!truncateTrailingZeros)
-        return builder.Finalize();
     // FIXME: Trailing zeros should never be added in the first place. The
     // current implementation does not strip when there is an exponent, eg.
     // 1.50000e+10.

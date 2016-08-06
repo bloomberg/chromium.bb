@@ -2127,8 +2127,7 @@ String Internals::getCurrentCursorInfo()
     }
     if (cursor.imageScaleFactor() != 1) {
         result.append(" scale=");
-        NumberToStringBuffer buffer;
-        result.append(numberToFixedPrecisionString(cursor.imageScaleFactor(), 8, buffer, true));
+        result.appendNumber(cursor.imageScaleFactor(), 8);
     }
 
     return result.toString();

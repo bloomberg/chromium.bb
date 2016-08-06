@@ -106,7 +106,7 @@ static String valueToDateTimeString(double value, AtomicString type)
 void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
 {
     String stepString = String::number(m_parameters.step);
-    String stepBaseString = String::number(m_parameters.stepBase, 11, WTF::TruncateTrailingZeros);
+    String stepBaseString = String::number(m_parameters.stepBase, 11);
     String todayLabelString;
     String otherDateLabelString;
     if (m_parameters.type == InputTypeNames::month) {

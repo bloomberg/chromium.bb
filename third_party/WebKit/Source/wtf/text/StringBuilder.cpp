@@ -241,10 +241,10 @@ void StringBuilder::appendNumber(unsigned long long number)
     appendIntegerInternal(*this, number);
 }
 
-void StringBuilder::appendNumber(double number, unsigned precision, TrailingZerosTruncatingPolicy trailingZerosTruncatingPolicy)
+void StringBuilder::appendNumber(double number, unsigned precision)
 {
     NumberToStringBuffer buffer;
-    append(numberToFixedPrecisionString(number, precision, buffer, trailingZerosTruncatingPolicy == TruncateTrailingZeros));
+    append(numberToFixedPrecisionString(number, precision, buffer));
 }
 
 } // namespace WTF

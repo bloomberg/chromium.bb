@@ -154,7 +154,7 @@ public:
     void appendNumber(unsigned long);
     void appendNumber(long long);
     void appendNumber(unsigned long long);
-    void appendNumber(double, unsigned precision = 6, TrailingZerosTruncatingPolicy = TruncateTrailingZeros);
+    void appendNumber(double, unsigned precision = 6);
 
     String toString();
     AtomicString toAtomicString();

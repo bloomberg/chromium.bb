@@ -112,7 +112,7 @@ public:
     static AtomicString number(long long);
     static AtomicString number(unsigned long long);
 
-    static AtomicString number(double, unsigned precision = 6, TrailingZerosTruncatingPolicy = TruncateTrailingZeros);
+    static AtomicString number(double, unsigned precision = 6);
 
     bool isNull() const { return m_string.isNull(); }
     bool isEmpty() const { return m_string.isEmpty(); }

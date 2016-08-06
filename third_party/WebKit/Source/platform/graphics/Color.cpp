@@ -212,10 +212,7 @@ String Color::serializedAsCSSComponentValue() const
     result.appendNumber(static_cast<unsigned char>(blue()));
     if (colorHasAlpha) {
         result.append(", ");
-
-        NumberToStringBuffer buffer;
-        const char* alphaString = numberToFixedPrecisionString(alpha() / 255.0f, 6, buffer, true);
-        result.append(alphaString, strlen(alphaString));
+        result.appendNumber(alpha() / 255.0f, 6);
     }
 
     result.append(')');

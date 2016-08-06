@@ -124,10 +124,10 @@ AtomicString AtomicString::number(unsigned long long number)
     return integerToAtomicString(number);
 }
 
-AtomicString AtomicString::number(double number, unsigned precision, TrailingZerosTruncatingPolicy trailingZerosTruncatingPolicy)
+AtomicString AtomicString::number(double number, unsigned precision)
 {
     NumberToStringBuffer buffer;
-    return AtomicString(numberToFixedPrecisionString(number, precision, buffer, trailingZerosTruncatingPolicy == TruncateTrailingZeros));
+    return AtomicString(numberToFixedPrecisionString(number, precision, buffer));
 }
 
 std::ostream& operator<<(std::ostream& out, const AtomicString& s)

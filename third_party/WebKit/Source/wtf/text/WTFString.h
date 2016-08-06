@@ -43,11 +43,6 @@ namespace WTF {
 class CString;
 struct StringHash;
 
-enum TrailingZerosTruncatingPolicy {
-    KeepTrailingZeros,
-    TruncateTrailingZeros
-};
-
 enum UTF8ConversionMode {
     LenientUTF8Conversion,
     StrictUTF8Conversion,
@@ -168,7 +163,7 @@ public:
     static String number(long long);
     static String number(unsigned long long);
 
-    static String number(double, unsigned precision = 6, TrailingZerosTruncatingPolicy = TruncateTrailingZeros);
+    static String number(double, unsigned precision = 6);
 
     // Number to String conversion following the ECMAScript definition.
     static String numberToStringECMAScript(double);
@@ -608,7 +603,6 @@ inline StringView::StringView(const String& string)
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(String);
 
 using WTF::CString;
-using WTF::KeepTrailingZeros;
 using WTF::StrictUTF8Conversion;
 using WTF::StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD;
 using WTF::String;

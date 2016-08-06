@@ -515,10 +515,10 @@ String String::number(unsigned long long number)
     return integerToString(number);
 }
 
-String String::number(double number, unsigned precision, TrailingZerosTruncatingPolicy trailingZerosTruncatingPolicy)
+String String::number(double number, unsigned precision)
 {
     NumberToStringBuffer buffer;
-    return String(numberToFixedPrecisionString(number, precision, buffer, trailingZerosTruncatingPolicy == TruncateTrailingZeros));
+    return String(numberToFixedPrecisionString(number, precision, buffer));
 }
 
 String String::numberToStringECMAScript(double number)

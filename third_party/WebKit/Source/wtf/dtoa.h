@@ -33,7 +33,7 @@ const unsigned NumberToStringBufferLength = 96;
 typedef char NumberToStringBuffer[NumberToStringBufferLength];
 
 WTF_EXPORT const char* numberToString(double, NumberToStringBuffer);
-WTF_EXPORT const char* numberToFixedPrecisionString(double, unsigned significantFigures, NumberToStringBuffer, bool truncateTrailingZeros = false);
+WTF_EXPORT const char* numberToFixedPrecisionString(double, unsigned significantFigures, NumberToStringBuffer);
 WTF_EXPORT const char* numberToFixedWidthString(double, unsigned decimalPlaces, NumberToStringBuffer);
 
 WTF_EXPORT double parseDouble(const LChar* string, size_t length, size_t& parsedLength);
