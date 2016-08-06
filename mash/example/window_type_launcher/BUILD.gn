@@ -8,32 +8,22 @@ import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-executable("window_type_launcher") {
-  output_name = "window_type_launcher_exe"
+service("window_type_launcher") {
   testonly = true
 
   sources = [
-    "main.cc",
     "window_type_launcher.cc",
     "window_type_launcher.h",
   ]
 
   deps = [
-    ":window_type_launcher_resources",
     "//base",
-    "//base:base_static",
-    "//base:i18n",
-    "//build/config/sanitizers:deps",
-    "//build/win:default_exe_manifest",
     "//mash/public/interfaces",
     "//mash/session/public/interfaces",
-    "//mojo/common:common_base",
-    "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
-    "//services/shell/runner:init",
-    "//services/shell/runner/common",
+    "//services/tracing/public/cpp",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",
@@ -42,8 +32,10 @@ executable("window_type_launcher") {
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
     "//ui/views",
-    "//ui/views/mus",
+    "//ui/views/mus:for_mojo_application",
   ]
+
+  resources = [ "$root_out_dir/views_mus_resources.pak" ]
 
   data_deps = [
     ":manifest",
@@ -51,20 +43,7 @@ executable("window_type_launcher") {
   ]
 }
 
-copy("window_type_launcher_resources") {
-  sources = [
-    "$root_out_dir/views_mus_resources.pak",
-  ]
-  outputs = [
-    "$root_out_dir/Packages/window_type_launcher_exe/resources/views_mus_resources.pak",
-  ]
-  deps = [
-    "//ui/views/mus:resources",
-  ]
-}
-
 service_manifest("manifest") {
-  type = "exe"
-  name = "window_type_launcher_exe"
+  name = "window_type_launcher"
   source = "manifest.json"
 }

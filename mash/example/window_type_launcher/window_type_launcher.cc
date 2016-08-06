@@ -12,8 +12,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "mash/session/public/interfaces/session.mojom.h"
+#include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -516,4 +519,9 @@ void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
 void WindowTypeLauncher::Create(const shell::Identity& remote_identity,
                                 mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
+}
+
+MojoResult ServiceMain(MojoHandle service_request_handle) {
+  return shell::ServiceRunner(new WindowTypeLauncher)
+      .Run(service_request_handle);
 }

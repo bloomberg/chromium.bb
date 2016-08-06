@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "exe:window_type_launcher_exe",
+  "name": "mojo:window_type_launcher",
   "display_name": "Window Type Launcher",
   "capabilities": {
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
