@@ -221,6 +221,7 @@ using blink::WebFrameContentDumper;
 using blink::WebGestureEvent;
 using blink::WebHistoryItem;
 using blink::WebHTTPBody;
+using blink::WebHitTestResult;
 using blink::WebIconURL;
 using blink::WebImage;
 using blink::WebInputElement;
@@ -266,10 +267,6 @@ using blink::WebRuntimeFeatures;
 using base::Time;
 using base::TimeDelta;
 
-#if defined(OS_ANDROID)
-using blink::WebContentDetectionResult;
-using blink::WebHitTestResult;
-#endif
 
 namespace content {
 
@@ -2805,8 +2802,11 @@ void RenderViewImpl::pageImportanceSignalsChanged() {
       main_render_frame_->GetRoutingID(), signals));
 }
 
+// TODO(dglazkov): Remove this ifdef. The content detection code
+// should not be platform-specific.
+// See http://crbug.com/635214 for details.
 #if defined(OS_ANDROID)
-WebContentDetectionResult RenderViewImpl::detectContentAround(
+WebURL RenderViewImpl::detectContentIntentAt(
     const WebHitTestResult& touch_hit) {
   DCHECK(touch_hit.node().isTextNode());
 
@@ -2815,11 +2815,10 @@ WebContentDetectionResult RenderViewImpl::detectContentAround(
   for (const auto& detector : content_detectors_) {
     ContentDetector::Result content = detector->FindTappedContent(touch_hit);
     if (content.valid) {
-      return WebContentDetectionResult(content.content_boundaries,
-          base::UTF8ToUTF16(content.text), content.intent_url);
+      return content.intent_url;
     }
   }
-  return WebContentDetectionResult();
+  return WebURL();
 }
 
 void RenderViewImpl::scheduleContentIntent(const WebURL& intent,

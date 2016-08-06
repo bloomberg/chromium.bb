@@ -327,7 +327,6 @@
       "web/WebColorSuggestion.h",
       "web/WebCompositionUnderline.h",
       "web/WebConsoleMessage.h",
-      "web/WebContentDetectionResult.h",
       "web/WebContentSecurityPolicy.h",
       "web/WebContentSettingsClient.h",
       "web/WebContextMenuData.h",

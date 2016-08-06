@@ -4469,14 +4469,14 @@ bool WebViewImpl::detectContentOnTouch(const GestureEventWithHitTestResults& tar
             return false;
     }
 
-    WebContentDetectionResult content = m_client->detectContentAround(touchHit);
-    if (!content.isValid())
+    WebURL intent = m_client->detectContentIntentAt(touchHit);
+    if (!intent.isValid())
         return false;
 
     // This code is called directly after hit test code, with no user code running in between,
     // thus it is assumed that the frame pointer is non-null.
     bool isMainFrame = node ? node->document().frame()->isMainFrame() : true;
-    m_client->scheduleContentIntent(content.intent(), isMainFrame);
+    m_client->scheduleContentIntent(intent, isMainFrame);
     return true;
 }
 

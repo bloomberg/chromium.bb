@@ -73,7 +73,6 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebCache.h"
-#include "public/web/WebContentDetectionResult.h"
 #include "public/web/WebDateTimeChooserCompletion.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "public/web/WebDocument.h"
@@ -1372,7 +1371,7 @@ class ContentDetectorClient : public FrameTestHelpers::TestWebViewClient {
 public:
     ContentDetectorClient() { reset(); }
 
-    WebContentDetectionResult detectContentAround(const WebHitTestResult& hitTest) override
+    WebURL detectContentIntentAt(const WebHitTestResult& hitTest) override
     {
         m_contentDetectionRequested = true;
         return m_contentDetectionResult;
@@ -1395,21 +1394,21 @@ public:
         m_pendingIntentsCancelled = false;
         m_scheduledIntentURL = WebURL();
         m_wasInMainFrame = false;
-        m_contentDetectionResult = WebContentDetectionResult();
+        m_contentDetectionResult = WebURL();
     }
 
     bool contentDetectionRequested() const { return m_contentDetectionRequested; }
     bool pendingIntentsCancelled() const { return m_pendingIntentsCancelled; }
     const WebURL& scheduledIntentURL() const { return m_scheduledIntentURL; }
     bool wasInMainFrame() const { return m_wasInMainFrame; }
-    void setContentDetectionResult(const WebContentDetectionResult& result) { m_contentDetectionResult = result; }
+    void setContentDetectionResult(const WebURL& result) { m_contentDetectionResult = result; }
 
 private:
     bool m_contentDetectionRequested;
     bool m_pendingIntentsCancelled;
     WebURL m_scheduledIntentURL;
     bool m_wasInMainFrame;
-    WebContentDetectionResult m_contentDetectionResult;
+    WebURL m_contentDetectionResult;
 };
 
 bool WebViewTest::tapElement(WebInputEvent::Type type, Element* element)
@@ -1479,7 +1478,7 @@ TEST_F(WebViewTest, DetectContentAroundPosition)
     EXPECT_FALSE(client.scheduledIntentURL().isValid());
 
     WebURL intentURL = toKURL(m_baseURL);
-    client.setContentDetectionResult(WebContentDetectionResult(WebRange(), WebString(), intentURL));
+    client.setContentDetectionResult(intentURL);
     EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, noListener));
     EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
     EXPECT_TRUE(client.wasInMainFrame());
@@ -1509,7 +1508,7 @@ TEST_F(WebViewTest, ContentDetectionInIframe)
     WebString frameName = WebString::fromUTF8("innerFrame");
 
     WebURL intentURL = toKURL(m_baseURL);
-    client.setContentDetectionResult(WebContentDetectionResult(WebRange(), WebString(), intentURL));
+    client.setContentDetectionResult(intentURL);
     Element* element = static_cast<Element*>(webView->findFrameByName(frameName)->document().getElementById(noListener));
     EXPECT_TRUE(tapElement(WebInputEvent::GestureTap, element));
     EXPECT_TRUE(client.scheduledIntentURL() == intentURL);

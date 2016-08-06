@@ -65,7 +65,6 @@
 #if defined(OS_ANDROID)
 #include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/renderer_date_time_picker.h"
-#include "third_party/WebKit/public/web/WebContentDetectionResult.h"
 #endif
 
 #if defined(COMPILER_MSVC)
@@ -390,7 +389,7 @@ class CONTENT_EXPORT RenderViewImpl
   void scheduleContentIntent(const blink::WebURL& intent,
                              bool is_main_frame) override;
   void cancelScheduledContentIntents() override;
-  blink::WebContentDetectionResult detectContentAround(
+  blink::WebURL detectContentIntentAt(
       const blink::WebHitTestResult& touch_hit) override;
 
   // Only used on Android since all other platforms implement

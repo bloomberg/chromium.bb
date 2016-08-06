@@ -35,7 +35,6 @@
 #include "../platform/WebPageVisibilityState.h"
 #include "../platform/WebString.h"
 #include "WebAXEnums.h"
-#include "WebContentDetectionResult.h"
 #include "WebFrame.h"
 #include "WebPopupType.h"
 #include "WebTextDirection.h"
@@ -237,10 +236,10 @@ public:
 
     // Content detection ----------------------------------------------------
 
-    // Retrieves detectable content (e.g., email addresses, phone numbers)
-    // around a hit test result. The embedder should use platform-specific
-    // content detectors to analyze the region around the hit test result.
-    virtual WebContentDetectionResult detectContentAround(const WebHitTestResult&) { return WebContentDetectionResult(); }
+    // Detects if the content at (or around) provided hit test result
+    // corresponds to an intent that could be handed by an embedder
+    // (e.g., email addresses, phone numbers).
+    virtual WebURL detectContentIntentAt(const WebHitTestResult&) { return WebURL(); }
 
     // Schedules a new content intent with the provided url.
     // The boolean flag is set to true when the user gesture has been applied
