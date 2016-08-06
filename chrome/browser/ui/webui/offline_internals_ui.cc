@@ -92,8 +92,7 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
       offline_pages::DeletePageResult value);
 
   // Turns a SavePageRequest::Status into logical string.
-  std::string GetStringFromSavePageStatus(
-      offline_pages::SavePageRequest::Status status);
+  std::string GetStringFromSavePageStatus();
 
   // Offline page model to call methods on.
   offline_pages::OfflinePageModel* offline_page_model_;
@@ -134,22 +133,8 @@ std::string OfflineInternalsUIMessageHandler::GetStringFromDeletePageResult(
   return "Unknown";
 }
 
-std::string OfflineInternalsUIMessageHandler::GetStringFromSavePageStatus(
-    offline_pages::SavePageRequest::Status status) {
-  switch (status) {
-    case offline_pages::SavePageRequest::Status::NOT_READY:
-      return "Not ready";
-    case offline_pages::SavePageRequest::Status::PENDING:
-      return "Pending";
-    case offline_pages::SavePageRequest::Status::STARTED:
-      return "Started";
-    case offline_pages::SavePageRequest::Status::FAILED:
-      return "Failed";
-    case offline_pages::SavePageRequest::Status::EXPIRED:
-      return "Expired";
-  }
-  NOTREACHED();
-  return "Unknown";
+std::string OfflineInternalsUIMessageHandler::GetStringFromSavePageStatus() {
+  return "Available";
 }
 
 void OfflineInternalsUIMessageHandler::HandleDeleteAllPages(
@@ -231,7 +216,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
                                    request.creation_time().ToJsTime());
       save_page_request->SetString(
           "status",
-          GetStringFromSavePageStatus(request.GetStatus(base::Time::Now())));
+          GetStringFromSavePageStatus());
       save_page_request->SetString("namespace", request.client_id().name_space);
       save_page_request->SetDouble("lastAttempt",
                                    request.last_attempt_time().ToJsTime());

@@ -16,17 +16,6 @@ namespace offline_pages {
 // Class representing a request to save page.
 class SavePageRequest {
  public:
-  enum class Status {
-    NOT_READY,  // Component requested a page be saved, but not until
-                // |activation_time_|.
-    PENDING,    // Page request is pending, and coordinator can attempt it
-                // when it gets a chance to.
-    STARTED,    // The request is currently being processed.
-    FAILED,     // Page request failed many times and will no longer be
-                // retried.
-    EXPIRED,    // Save page request expired without being fulfilled.
-  };
-
   SavePageRequest(int64_t request_id,
                   const GURL& url,
                   const ClientId& client_id,
@@ -40,9 +29,6 @@ class SavePageRequest {
                   const bool user_requested);
   SavePageRequest(const SavePageRequest& other);
   ~SavePageRequest();
-
-  // Status of this request.
-  Status GetStatus(const base::Time& now) const;
 
   // Updates the |last_attempt_time_| and increments |attempt_count_|.
   void MarkAttemptStarted(const base::Time& start_time);

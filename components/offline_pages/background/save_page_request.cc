@@ -45,26 +45,6 @@ SavePageRequest::SavePageRequest(const SavePageRequest& other)
 
 SavePageRequest::~SavePageRequest() {}
 
-// TODO(fgorski): Introduce policy parameter, once policy is available.
-SavePageRequest::Status SavePageRequest::GetStatus(
-    const base::Time& now) const {
-  if (now < activation_time_)
-    return Status::NOT_READY;
-
-  // TODO(fgorski): enable check once policy available.
-  // if (attempt_count_ >= policy.max_attempt_count)
-  // return Status::FAILED;
-
-  // TODO(fgorski): enable check once policy available.
-  // if (activation_time_+ policy.page_expiration_interval < now)
-  // return Status::EXPIRED;
-
-  if (creation_time_ < last_attempt_time_)
-    return Status::STARTED;
-
-  return Status::PENDING;
-}
-
 void SavePageRequest::MarkAttemptStarted(const base::Time& start_time) {
   DCHECK_LE(activation_time_, start_time);
   // TODO(fgorski): As part of introducing policy in GetStatus, we can make a
