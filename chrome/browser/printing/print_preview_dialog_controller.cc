@@ -19,7 +19,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/printing/print_view_manager.h"
-#include "chrome/browser/task_management/web_contents_tags.h"
+#include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -386,7 +386,7 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   waiting_for_new_preview_page_ = true;
 
   // Make the print preview WebContents show up in the task manager.
-  task_management::WebContentsTags::CreateForPrintingContents(preview_dialog);
+  task_manager::WebContentsTags::CreateForPrintingContents(preview_dialog);
 
   AddObservers(initiator);
   AddObservers(preview_dialog);

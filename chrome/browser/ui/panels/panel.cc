@@ -27,7 +27,7 @@
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/task_management/web_contents_tags.h"
+#include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/panels/native_panel.h"
@@ -542,7 +542,7 @@ void Panel::Initialize(const GURL& url,
     native_panel_->AttachWebContents(web_contents);
 
     // Make the panel show up in the task manager.
-    task_management::WebContentsTags::CreateForPanel(web_contents, this);
+    task_manager::WebContentsTags::CreateForPanel(web_contents, this);
   }
 
   // Close when the extension is unloaded or the browser is exiting.

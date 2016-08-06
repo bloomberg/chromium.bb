@@ -25,7 +25,7 @@ class TableView;
 class View;
 }  // namespace views
 
-namespace task_management {
+namespace task_manager {
 
 // The new task manager UI container.
 class TaskManagerView : public TableViewDelegate,
@@ -38,12 +38,12 @@ class TaskManagerView : public TableViewDelegate,
   ~TaskManagerView() override;
 
   // Shows the Task Manager window, or re-activates an existing one.
-  static task_management::TaskManagerTableModel* Show(Browser* browser);
+  static task_manager::TaskManagerTableModel* Show(Browser* browser);
 
   // Hides the Task Manager if it is showing.
   static void Hide();
 
-  // task_management::TableViewDelegate:
+  // task_manager::TableViewDelegate:
   bool IsColumnVisible(int column_id) const override;
   void SetColumnVisibility(int column_id, bool new_visibility) override;
   bool IsTableSorted() const override;
@@ -128,6 +128,6 @@ class TaskManagerView : public TableViewDelegate,
   DISALLOW_COPY_AND_ASSIGN(TaskManagerView);
 };
 
-}  // namespace task_management
+}  // namespace task_manager
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TASK_MANAGER_VIEW_H_

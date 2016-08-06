@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/task_management/task_manager_observer.h"
+#include "chrome/browser/task_manager/task_manager_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
@@ -20,7 +20,7 @@ namespace extensions {
 
 // Observes the Task Manager and routes the notifications as events to the
 // extension system.
-class ProcessesEventRouter : public task_management::TaskManagerObserver {
+class ProcessesEventRouter : public task_manager::TaskManagerObserver {
  public:
   explicit ProcessesEventRouter(content::BrowserContext* context);
   ~ProcessesEventRouter() override;
@@ -31,13 +31,13 @@ class ProcessesEventRouter : public task_management::TaskManagerObserver {
   // Called when an extension process with a listener exits or removes it.
   void ListenerRemoved();
 
-  // task_management::TaskManagerObserver:
-  void OnTaskAdded(task_management::TaskId id) override;
-  void OnTaskToBeRemoved(task_management::TaskId id) override;
-  void OnTasksRefreshed(const task_management::TaskIdList& task_ids) override {}
+  // task_manager::TaskManagerObserver:
+  void OnTaskAdded(task_manager::TaskId id) override;
+  void OnTaskToBeRemoved(task_manager::TaskId id) override;
+  void OnTasksRefreshed(const task_manager::TaskIdList& task_ids) override {}
   void OnTasksRefreshedWithBackgroundCalculations(
-      const task_management::TaskIdList& task_ids) override;
-  void OnTaskUnresponsive(task_management::TaskId id) override;
+      const task_manager::TaskIdList& task_ids) override;
+  void OnTaskUnresponsive(task_manager::TaskId id) override;
 
  private:
   friend class ::ProcessesApiTest;
@@ -53,7 +53,7 @@ class ProcessesEventRouter : public task_management::TaskManagerObserver {
   // Returns true if the task with the given |id| should be reported as created
   // or removed. |out_child_process_host_id| will be filled with the valid ID of
   // the process to report in the event.
-  bool ShouldReportOnCreatedOrOnExited(task_management::TaskId id,
+  bool ShouldReportOnCreatedOrOnExited(task_manager::TaskId id,
                                        int* out_child_process_host_id) const;
 
   // Updates the requested task manager refresh types flags depending on what
@@ -159,19 +159,19 @@ class ProcessesTerminateFunction : public UIThreadExtensionFunction {
 // details corresponding to the process IDs supplied as input.
 class ProcessesGetProcessInfoFunction :
     public UIThreadExtensionFunction,
-    public task_management::TaskManagerObserver {
+    public task_manager::TaskManagerObserver {
  public:
   ProcessesGetProcessInfoFunction();
 
   // UIThreadExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
 
-  // task_management::TaskManagerObserver:
-  void OnTaskAdded(task_management::TaskId id) override {}
-  void OnTaskToBeRemoved(task_management::TaskId id) override {}
-  void OnTasksRefreshed(const task_management::TaskIdList& task_ids) override;
+  // task_manager::TaskManagerObserver:
+  void OnTaskAdded(task_manager::TaskId id) override {}
+  void OnTaskToBeRemoved(task_manager::TaskId id) override {}
+  void OnTasksRefreshed(const task_manager::TaskIdList& task_ids) override;
   void OnTasksRefreshedWithBackgroundCalculations(
-      const task_management::TaskIdList& task_ids) override;
+      const task_manager::TaskIdList& task_ids) override;
 
   DECLARE_EXTENSION_FUNCTION("processes.getProcessInfo",
                              PROCESSES_GETPROCESSINFO);
@@ -185,7 +185,7 @@ class ProcessesGetProcessInfoFunction :
   // This function will be called by either OnTasksRefreshed() or
   // OnTasksRefreshedWithBackgroundCalculations() depending on whether memory is
   // requested.
-  void GatherDataAndRespond(const task_management::TaskIdList& task_ids);
+  void GatherDataAndRespond(const task_manager::TaskIdList& task_ids);
 
   std::vector<int> process_host_ids_;
   bool include_memory_ = false;

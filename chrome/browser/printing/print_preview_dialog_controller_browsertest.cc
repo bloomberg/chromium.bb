@@ -18,7 +18,7 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/task_management/mock_web_contents_task_manager.h"
+#include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -348,9 +348,8 @@ base::string16 GetExpectedPrefix() {
                                     base::string16());
 }
 
-const std::vector<task_management::WebContentsTag*>& GetTrackedTags() {
-  return task_management::WebContentsTagsManager::GetInstance()->
-      tracked_tags();
+const std::vector<task_manager::WebContentsTag*>& GetTrackedTags() {
+  return task_manager::WebContentsTagsManager::GetInstance()->tracked_tags();
 }
 
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
@@ -363,12 +362,12 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
   // Create a task manager and expect the pre-existing print previews are
   // provided.
-  task_management::MockWebContentsTaskManager task_manager;
+  task_manager::MockWebContentsTaskManager task_manager;
   EXPECT_TRUE(task_manager.tasks().empty());
   task_manager.StartObserving();
   ASSERT_EQ(3U, task_manager.tasks().size());
-  const task_management::Task* pre_existing_task = task_manager.tasks().back();
-  EXPECT_EQ(task_management::Task::RENDERER, pre_existing_task->GetType());
+  const task_manager::Task* pre_existing_task = task_manager.tasks().back();
+  EXPECT_EQ(task_manager::Task::RENDERER, pre_existing_task->GetType());
   const base::string16 pre_existing_title = pre_existing_task->title();
   const base::string16 expected_prefix = GetExpectedPrefix();
   EXPECT_TRUE(base::StartsWith(pre_existing_title,
@@ -387,8 +386,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   PrintPreview();
   EXPECT_EQ(3U, GetTrackedTags().size());
   ASSERT_EQ(3U, task_manager.tasks().size());
-  const task_management::Task* task = task_manager.tasks().back();
-  EXPECT_EQ(task_management::Task::RENDERER, task->GetType());
+  const task_manager::Task* task = task_manager.tasks().back();
+  EXPECT_EQ(task_manager::Task::RENDERER, task->GetType());
   const base::string16 title = task->title();
   EXPECT_TRUE(base::StartsWith(title,
                                expected_prefix,

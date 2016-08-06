@@ -56,12 +56,12 @@ void ChromeExtensionChooserDialog::ShowDialog(
 
 namespace chrome {
 
-task_management::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
-  return task_management::TaskManagerView::Show(browser);
+task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
+  return task_manager::TaskManagerView::Show(browser);
 }
 
 void HideTaskManager() {
-  task_management::TaskManagerView::Hide();
+  task_manager::TaskManagerView::Hide();
 }
 
 }  // namespace chrome

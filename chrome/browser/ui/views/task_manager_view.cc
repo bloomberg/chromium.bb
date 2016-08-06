@@ -10,8 +10,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/task_management/task_manager_interface.h"
-#include "chrome/browser/task_management/task_manager_observer.h"
+#include "chrome/browser/task_manager/task_manager_interface.h"
+#include "chrome/browser/task_manager/task_manager_observer.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -45,7 +45,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif  // defined(OS_WIN)
 
-namespace task_management {
+namespace task_manager {
 
 namespace {
 
@@ -59,8 +59,7 @@ TaskManagerView::~TaskManagerView() {
 }
 
 // static
-task_management::TaskManagerTableModel* TaskManagerView::Show(
-    Browser* browser) {
+task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   if (g_task_manager_view) {
     // If there's a Task manager window open already, just activate it.
     g_task_manager_view->SelectTaskOfActiveTab(browser);
@@ -362,4 +361,4 @@ void TaskManagerView::RetrieveSavedAlwaysOnTopState() {
     dictionary->GetBoolean("always_on_top", &is_always_on_top_);
 }
 
-}  // namespace task_management
+}  // namespace task_manager

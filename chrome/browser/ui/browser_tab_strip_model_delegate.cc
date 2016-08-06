@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/task_management/web_contents_tags.h"
+#include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -89,7 +89,7 @@ void BrowserTabStripModelDelegate::WillAddWebContents(
   TabHelpers::AttachTabHelpers(contents);
 
   // Make the tab show up in the task manager.
-  task_management::WebContentsTags::CreateForTabContents(contents);
+  task_manager::WebContentsTags::CreateForTabContents(contents);
 }
 
 int BrowserTabStripModelDelegate::GetDragActions() const {

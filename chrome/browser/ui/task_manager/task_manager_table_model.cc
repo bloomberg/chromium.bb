@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -29,7 +29,7 @@
 #include "ui/base/models/table_model_observer.h"
 #include "ui/base/text/bytes_formatting.h"
 
-namespace task_management {
+namespace task_manager {
 
 namespace {
 
@@ -840,5 +840,4 @@ bool TaskManagerTableModel::IsTaskFirstInGroup(int row_index) const {
       observed_task_manager()->GetProcessId(tasks_[row_index]);
 }
 
-
-}  // namespace task_management
+}  // namespace task_manager

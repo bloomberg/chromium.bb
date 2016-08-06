@@ -56,15 +56,15 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
       std::move(delegate), browser->profile(), virtual_url, already_bookmarked);
 }
 
-task_management::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser) {
+task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser) {
   // On platforms other than Mac, the Views task manager is shown unless
   // explicitly disabled. Assume that running with ToolkitViewsDialogsEnabled()
   // on Mac also means the Views task manager is desired.
-  return task_management::TaskManagerView::Show(browser);
+  return task_manager::TaskManagerView::Show(browser);
 }
 
 void HideTaskManagerViews() {
-  task_management::TaskManagerView::Hide();
+  task_manager::TaskManagerView::Hide();
 }
 
 void ContentSettingBubbleViewsBridge::Show(gfx::NativeView parent_view,

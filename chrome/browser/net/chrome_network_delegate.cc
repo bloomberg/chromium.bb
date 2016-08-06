@@ -34,7 +34,7 @@
 #include "chrome/browser/net/request_source_bandwidth_histograms.h"
 #include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -360,8 +360,7 @@ void ChromeNetworkDelegate::OnNetworkBytesReceived(net::URLRequest* request,
 #if defined(ENABLE_TASK_MANAGER)
   // Note: Currently, OnNetworkBytesReceived is only implemented for HTTP jobs,
   // not FTP or other types, so those kinds of bytes will not be reported here.
-  task_management::TaskManagerInterface::OnRawBytesRead(*request,
-                                                        bytes_received);
+  task_manager::TaskManagerInterface::OnRawBytesRead(*request, bytes_received);
 #endif  // defined(ENABLE_TASK_MANAGER)
 
   ReportDataUsageStats(request, 0 /* tx_bytes */, bytes_received);

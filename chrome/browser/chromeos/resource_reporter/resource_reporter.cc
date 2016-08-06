@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/browser/task_manager/task_manager_interface.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -81,11 +81,10 @@ struct TaskRecordMemoryLessThan {
 
 }  // namespace
 
-ResourceReporter::TaskRecord::TaskRecord(task_management::TaskId task_id)
-    : id(task_id), cpu_percent(0.0), memory_bytes(0), is_background(false) {
-}
+ResourceReporter::TaskRecord::TaskRecord(task_manager::TaskId task_id)
+    : id(task_id), cpu_percent(0.0), memory_bytes(0), is_background(false) {}
 
-ResourceReporter::TaskRecord::TaskRecord(task_management::TaskId the_id,
+ResourceReporter::TaskRecord::TaskRecord(task_manager::TaskId the_id,
                                          const std::string& task_name,
                                          double cpu_percent,
                                          int64_t memory_bytes,
@@ -94,8 +93,7 @@ ResourceReporter::TaskRecord::TaskRecord(task_management::TaskId the_id,
       task_name_for_rappor(task_name),
       cpu_percent(cpu_percent),
       memory_bytes(memory_bytes),
-      is_background(background) {
-}
+      is_background(background) {}
 
 ResourceReporter::~ResourceReporter() {
 }
@@ -112,7 +110,7 @@ void ResourceReporter::StartMonitoring() {
     return;
 
   is_monitoring_ = true;
-  task_management::TaskManagerInterface::GetTaskManager()->AddObserver(this);
+  task_manager::TaskManagerInterface::GetTaskManager()->AddObserver(this);
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&ResourceReporter::OnMemoryPressure, base::Unretained(this))));
 }
@@ -125,14 +123,14 @@ void ResourceReporter::StopMonitoring() {
 
   is_monitoring_ = false;
   memory_pressure_listener_.reset();
-  task_management::TaskManagerInterface::GetTaskManager()->RemoveObserver(this);
+  task_manager::TaskManagerInterface::GetTaskManager()->RemoveObserver(this);
 }
 
-void ResourceReporter::OnTaskAdded(task_management::TaskId id) {
+void ResourceReporter::OnTaskAdded(task_manager::TaskId id) {
   // Ignore this event.
 }
 
-void ResourceReporter::OnTaskToBeRemoved(task_management::TaskId id) {
+void ResourceReporter::OnTaskToBeRemoved(task_manager::TaskId id) {
   auto it = task_records_.find(id);
   if (it == task_records_.end())
     return;
@@ -157,7 +155,7 @@ void ResourceReporter::OnTaskToBeRemoved(task_management::TaskId id) {
 }
 
 void ResourceReporter::OnTasksRefreshed(
-    const task_management::TaskIdList& task_ids) {
+    const task_manager::TaskIdList& task_ids) {
   have_seen_first_task_manager_refresh_ = true;
 
   // A priority queue to sort the task records by their |cpu|. Greatest |cpu|
@@ -184,16 +182,16 @@ void ResourceReporter::OnTasksRefreshed(
     // don't have any privacy issues.
     const auto task_type = observed_task_manager()->GetType(id);
     switch (task_type) {
-      case task_management::Task::UNKNOWN:
-      case task_management::Task::ZYGOTE:
+      case task_manager::Task::UNKNOWN:
+      case task_manager::Task::ZYGOTE:
         break;
 
-      case task_management::Task::BROWSER:
+      case task_manager::Task::BROWSER:
         last_browser_process_cpu_ = cpu_usage;
         last_browser_process_memory_ = memory_usage >= 0 ? memory_usage : 0;
         break;
 
-      case task_management::Task::GPU:
+      case task_manager::Task::GPU:
         last_gpu_process_cpu_ = cpu_usage;
         last_gpu_process_memory_ = memory_usage >= 0 ? memory_usage : 0;
         break;
@@ -246,11 +244,10 @@ const size_t ResourceReporter::kTopConsumersCount = 10U;
 
 ResourceReporter::ResourceReporter()
     : TaskManagerObserver(base::TimeDelta::FromSeconds(kRefreshIntervalSeconds),
-                          task_management::REFRESH_TYPE_CPU |
-                              task_management::REFRESH_TYPE_MEMORY |
-                                  task_management::REFRESH_TYPE_PRIORITY),
-      system_cpu_cores_range_(GetCurrentSystemCpuCoresRange()) {
-}
+                          task_manager::REFRESH_TYPE_CPU |
+                              task_manager::REFRESH_TYPE_MEMORY |
+                              task_manager::REFRESH_TYPE_PRIORITY),
+      system_cpu_cores_range_(GetCurrentSystemCpuCoresRange()) {}
 
 // static
 std::unique_ptr<rappor::Sample> ResourceReporter::CreateRapporSample(

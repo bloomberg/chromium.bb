@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -56,11 +56,11 @@ IN_PROC_BROWSER_TEST_F(ProcessesApiTest, ProcessesApiListeners) {
   ASSERT_TRUE(listener2.WaitUntilSatisfied());
 
   // The memory refresh type must be enabled now.
-  const task_management::TaskManagerInterface* task_manager =
-      task_management::TaskManagerInterface::GetTaskManager();
+  const task_manager::TaskManagerInterface* task_manager =
+      task_manager::TaskManagerInterface::GetTaskManager();
   EXPECT_EQ(2, GetListenersCount());
   EXPECT_TRUE(task_manager->IsResourceRefreshEnabled(
-      task_management::REFRESH_TYPE_MEMORY));
+      task_manager::REFRESH_TYPE_MEMORY));
 
   // Unload the extensions and make sure the listeners count is updated.
   UnloadExtension(extension2->id());

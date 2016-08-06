@@ -14,7 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
@@ -39,7 +39,7 @@ NSString* ColumnIdentifier(int id) {
 
 @interface TaskManagerWindowController (Private)
 - (NSTableColumn*)addColumnWithData:
-    (const task_management::TableColumnData&)columnData;
+    (const task_manager::TableColumnData&)columnData;
 - (void)setUpTableColumns;
 - (void)setUpTableHeaderContextMenu;
 - (void)toggleColumn:(id)sender;
@@ -52,9 +52,8 @@ NSString* ColumnIdentifier(int id) {
 
 @implementation TaskManagerWindowController
 
-- (id)initWithTaskManagerMac:(task_management::TaskManagerMac*)taskManagerMac
-                  tableModel:
-                      (task_management::TaskManagerTableModel*)tableModel {
+- (id)initWithTaskManagerMac:(task_manager::TaskManagerMac*)taskManagerMac
+                  tableModel:(task_manager::TaskManagerTableModel*)tableModel {
   NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:@"TaskManager"
                                  ofType:@"nib"];
@@ -82,8 +81,8 @@ NSString* ColumnIdentifier(int id) {
     viewToModelMap_[i] = i;
 
   if (currentSortDescriptor_.sorted_column_id != -1) {
-    task_management::TaskManagerTableModel* tableModel = tableModel_;
-    task_management::TableSortDescriptor currentSortDescriptor =
+    task_manager::TaskManagerTableModel* tableModel = tableModel_;
+    task_manager::TableSortDescriptor currentSortDescriptor =
         currentSortDescriptor_;
     std::stable_sort(viewToModelMap_.begin(), viewToModelMap_.end(),
                      [tableModel, currentSortDescriptor](int a, int b) {
@@ -169,12 +168,12 @@ NSString* ColumnIdentifier(int id) {
   [self adjustSelectionAndEndProcessButton];
 }
 
-- (task_management::TableSortDescriptor)sortDescriptor {
+- (task_manager::TableSortDescriptor)sortDescriptor {
   return currentSortDescriptor_;
 }
 
 - (void)setSortDescriptor:
-    (const task_management::TableSortDescriptor&)sortDescriptor {
+    (const task_manager::TableSortDescriptor&)sortDescriptor {
   base::scoped_nsobject<NSSortDescriptor> nsSortDescriptor(
       [[NSSortDescriptor alloc]
           initWithKey:ColumnIdentifier(sortDescriptor.sorted_column_id)
@@ -232,7 +231,7 @@ NSString* ColumnIdentifier(int id) {
 // Adds a column which has the given string id as title. |isVisible| specifies
 // if the column is initially visible.
 - (NSTableColumn*)addColumnWithData:
-    (const task_management::TableColumnData&)columnData {
+    (const task_manager::TableColumnData&)columnData {
   base::scoped_nsobject<NSTableColumn> column([[NSTableColumn alloc]
       initWithIdentifier:ColumnIdentifier(columnData.id)]);
 
@@ -274,8 +273,8 @@ NSString* ColumnIdentifier(int id) {
   for (NSTableColumn* column in [tableView_ tableColumns])
     [tableView_ removeTableColumn:column];
 
-  for (size_t i = 0; i < task_management::kColumnsSize; ++i) {
-    const auto& columnData = task_management::kColumns[i];
+  for (size_t i = 0; i < task_manager::kColumnsSize; ++i) {
+    const auto& columnData = task_manager::kColumns[i];
     NSTableColumn* column = [self addColumnWithData:columnData];
 
     if (columnData.id == IDS_TASK_MANAGER_TASK_COLUMN) {
@@ -396,7 +395,7 @@ NSString* ColumnIdentifier(int id) {
   [tableView_ selectRowIndexes:groupIndexes byExtendingSelection:YES];
 
   bool enabled = [selection count] > 0 && allSelectionRowsAreKillableTasks &&
-                 task_management::TaskManagerInterface::IsEndProcessEnabled();
+                 task_manager::TaskManagerInterface::IsEndProcessEnabled();
   [endProcessButton_ setEnabled:enabled];
 }
 
@@ -525,7 +524,7 @@ NSString* ColumnIdentifier(int id) {
 
 @end
 
-namespace task_management {
+namespace task_manager {
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerMac implementation:
@@ -638,16 +637,16 @@ void TaskManagerMac::Hide() {
     [instance_->window_controller_ close];
 }
 
-}  // namespace task_management
+}  // namespace task_manager
 
 namespace chrome {
 
 // Declared in browser_dialogs.h.
-task_management::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
+task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
   if (chrome::ToolkitViewsDialogsEnabled())
     return chrome::ShowTaskManagerViews(browser);
 
-  return task_management::TaskManagerMac::Show();
+  return task_manager::TaskManagerMac::Show();
 }
 
 void HideTaskManager() {
@@ -656,7 +655,7 @@ void HideTaskManager() {
     return;
   }
 
-  task_management::TaskManagerMac::Hide();
+  task_manager::TaskManagerMac::Hide();
 }
 
 }  // namespace chrome

@@ -23,7 +23,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/task_management/web_contents_tags.h"
+#include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/prerender_messages.h"
@@ -264,7 +264,7 @@ void PrerenderContents::StartPrerendering(
 
   // Tag the prerender contents with the task manager specific prerender tag, so
   // that it shows up in the task manager.
-  task_management::WebContentsTags::CreateForPrerenderContents(
+  task_manager::WebContentsTags::CreateForPrerenderContents(
       prerender_contents_.get());
 
   web_contents_delegate_.reset(new WebContentsDelegateImpl(this));
@@ -652,7 +652,7 @@ std::unique_ptr<WebContents> PrerenderContents::ReleasePrerenderContents() {
 
   // Clear the task manager tag we added earlier to our
   // WebContents since it's no longer a prerender contents.
-  task_management::WebContentsTags::ClearTag(prerender_contents_.get());
+  task_manager::WebContentsTags::ClearTag(prerender_contents_.get());
 
   return std::move(prerender_contents_);
 }

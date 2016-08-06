@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
 
-namespace task_management {
+namespace task_manager {
 
 namespace {
 
@@ -129,4 +129,4 @@ std::string GetColumnIdAsString(int column_id) {
   }
 }
 
-}  // namespace task_management
+}  // namespace task_manager

@@ -36,7 +36,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/task_management/web_contents_tags.h"
+#include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/bluetooth/chrome_extension_bluetooth_chooser.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
@@ -367,8 +367,8 @@ void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
     case VIEW_TYPE_EXTENSION_POPUP:
     case VIEW_TYPE_LAUNCHER_PAGE:
       // These are the only types that are tracked by the ExtensionTag.
-      task_management::WebContentsTags::CreateForExtension(web_contents,
-                                                           view_type);
+      task_manager::WebContentsTags::CreateForExtension(web_contents,
+                                                        view_type);
       return;
 
     case VIEW_TYPE_BACKGROUND_CONTENTS:
@@ -376,10 +376,10 @@ void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
     case VIEW_TYPE_PANEL:
     case VIEW_TYPE_TAB_CONTENTS:
       // Those types are tracked by other tags:
-      // BACKGROUND_CONTENTS --> task_management::BackgroundContentsTag.
+      // BACKGROUND_CONTENTS --> task_manager::BackgroundContentsTag.
       // GUEST --> extensions::ChromeGuestViewManagerDelegate.
-      // PANEL --> task_management::PanelTag.
-      // TAB_CONTENTS --> task_management::TabContentsTag.
+      // PANEL --> task_manager::PanelTag.
+      // TAB_CONTENTS --> task_manager::TabContentsTag.
       // These tags are created and attached to the web_contents in other
       // locations, and they must be ignored here.
       return;

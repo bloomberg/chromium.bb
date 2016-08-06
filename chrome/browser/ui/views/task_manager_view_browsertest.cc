@@ -9,8 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/task_management/task_manager_browsertest_util.h"
-#include "chrome/browser/task_management/task_manager_tester.h"
+#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+#include "chrome/browser/task_manager/task_manager_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -33,7 +33,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/views/controls/table/table_view.h"
 
-namespace task_management {
+namespace task_manager {
 
 using browsertest_util::WaitForTaskManagerRows;
 
@@ -322,4 +322,4 @@ IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, SelectionConsistency) {
   EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[2]));
 }
 
-}  // namespace task_management
+}  // namespace task_manager

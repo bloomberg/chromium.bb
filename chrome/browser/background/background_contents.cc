@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/task_management/web_contents_tags.h"
+#include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -66,7 +66,7 @@ BackgroundContents::BackgroundContents(
       web_contents_.get());
 
   // Add the TaskManager-specific tag for the BackgroundContents.
-  task_management::WebContentsTags::CreateForBackgroundContents(
+  task_manager::WebContentsTags::CreateForBackgroundContents(
       web_contents_.get(), this);
 
   // Close ourselves when the application is shutting down.

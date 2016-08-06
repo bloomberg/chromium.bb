@@ -17,7 +17,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
-#include "chrome/browser/task_management/task_manager_observer.h"
+#include "chrome/browser/task_manager/task_manager_observer.h"
 #include "components/metrics/metrics_service.h"
 #include "components/rappor/sample.h"
 
@@ -27,21 +27,21 @@ namespace chromeos {
 // Chrome tasks and reports a weighted random sample of them via Rappor whenever
 // memory pressure is critical. The reporting is limited to once per
 // |kMinimumTimeBetweenReportsInMS|.
-class ResourceReporter : public task_management::TaskManagerObserver {
+class ResourceReporter : public task_manager::TaskManagerObserver {
  public:
   // A collection of the data of a task manager's task that the ResourceReporter
   // is interested in.
   struct TaskRecord {
-    explicit TaskRecord(task_management::TaskId task_id);
+    explicit TaskRecord(task_manager::TaskId task_id);
 
-    TaskRecord(task_management::TaskId task_id,
+    TaskRecord(task_manager::TaskId task_id,
                const std::string& task_name,
                double cpu_percent,
                int64_t memory_bytes,
                bool background);
 
     // The ID of the task.
-    task_management::TaskId id;
+    task_manager::TaskId id;
 
     // The canonicalized task name to be used to represent the task in a Rappor
     // sample.
@@ -70,10 +70,10 @@ class ResourceReporter : public task_management::TaskManagerObserver {
   void StartMonitoring();
   void StopMonitoring();
 
-  // task_management::TaskManagerObserver:
-  void OnTaskAdded(task_management::TaskId id) override;
-  void OnTaskToBeRemoved(task_management::TaskId id) override;
-  void OnTasksRefreshed(const task_management::TaskIdList& task_ids) override;
+  // task_manager::TaskManagerObserver:
+  void OnTaskAdded(task_manager::TaskId id) override;
+  void OnTaskToBeRemoved(task_manager::TaskId id) override;
+  void OnTasksRefreshed(const task_manager::TaskIdList& task_ids) override;
 
  private:
   friend struct base::DefaultSingletonTraits<ResourceReporter>;
@@ -164,7 +164,7 @@ class ResourceReporter : public task_management::TaskManagerObserver {
 
   // Contains the collected data about the currently running tasks from the most
   // recent task manager refresh.
-  std::map<task_management::TaskId, std::unique_ptr<TaskRecord>> task_records_;
+  std::map<task_manager::TaskId, std::unique_ptr<TaskRecord>> task_records_;
 
   // Contains the top |kTopConsumerCount| CPU consumer tasks sorted in a
   // descending order by their CPU usage.

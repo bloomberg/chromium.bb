@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/common/extensions/api/processes.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
@@ -43,17 +43,17 @@ base::LazyInstance<BrowserContextKeyedAPIFactory<ProcessesAPI>>
 int64_t GetRefreshTypesFlagOnlyEssentialData() {
   // This is the only non-optional data in the Process as defined by the API in
   // processes.idl.
-  return task_management::REFRESH_TYPE_NACL;
+  return task_manager::REFRESH_TYPE_NACL;
 }
 
 // This does not include memory. The memory refresh flag will only be added once
 // a listener to OnUpdatedWithMemory event is added.
 int64_t GetRefreshTypesForProcessOptionalData() {
-  return task_management::REFRESH_TYPE_CPU |
-      task_management::REFRESH_TYPE_NETWORK_USAGE |
-      task_management::REFRESH_TYPE_SQLITE_MEMORY |
-      task_management::REFRESH_TYPE_V8_MEMORY |
-      task_management::REFRESH_TYPE_WEBCACHE_STATS;
+  return task_manager::REFRESH_TYPE_CPU |
+      task_manager::REFRESH_TYPE_NETWORK_USAGE |
+      task_manager::REFRESH_TYPE_SQLITE_MEMORY |
+      task_manager::REFRESH_TYPE_V8_MEMORY |
+      task_manager::REFRESH_TYPE_WEBCACHE_STATS;
 }
 
 std::unique_ptr<api::processes::Cache> CreateCacheData(
@@ -65,37 +65,37 @@ std::unique_ptr<api::processes::Cache> CreateCacheData(
 }
 
 api::processes::ProcessType GetProcessType(
-    task_management::Task::Type task_type) {
+    task_manager::Task::Type task_type) {
   switch (task_type) {
-    case task_management::Task::BROWSER:
+    case task_manager::Task::BROWSER:
       return api::processes::PROCESS_TYPE_BROWSER;
 
-    case task_management::Task::RENDERER:
+    case task_manager::Task::RENDERER:
       return api::processes::PROCESS_TYPE_RENDERER;
 
-    case task_management::Task::EXTENSION:
-    case task_management::Task::GUEST:
+    case task_manager::Task::EXTENSION:
+    case task_manager::Task::GUEST:
       return api::processes::PROCESS_TYPE_EXTENSION;
 
-    case task_management::Task::PLUGIN:
+    case task_manager::Task::PLUGIN:
       return api::processes::PROCESS_TYPE_PLUGIN;
 
-    case task_management::Task::WORKER:
+    case task_manager::Task::WORKER:
       return api::processes::PROCESS_TYPE_WORKER;
 
-    case task_management::Task::NACL:
+    case task_manager::Task::NACL:
       return api::processes::PROCESS_TYPE_NACL;
 
-    case task_management::Task::UTILITY:
+    case task_manager::Task::UTILITY:
       return api::processes::PROCESS_TYPE_UTILITY;
 
-    case task_management::Task::GPU:
+    case task_manager::Task::GPU:
       return api::processes::PROCESS_TYPE_GPU;
 
-    case task_management::Task::UNKNOWN:
-    case task_management::Task::ARC:
-    case task_management::Task::SANDBOX_HELPER:
-    case task_management::Task::ZYGOTE:
+    case task_manager::Task::UNKNOWN:
+    case task_manager::Task::ARC:
+    case task_manager::Task::SANDBOX_HELPER:
+    case task_manager::Task::ZYGOTE:
       return api::processes::PROCESS_TYPE_OTHER;
   }
 
@@ -108,8 +108,8 @@ api::processes::ProcessType GetProcessType(
 // optional fields in |api::processes::Process| except for |private_memory|,
 // which should be filled later if needed.
 void FillProcessData(
-    task_management::TaskId id,
-    task_management::TaskManagerInterface* task_manager,
+    task_manager::TaskId id,
+    task_manager::TaskManagerInterface* task_manager,
     bool include_optional,
     api::processes::Process* out_process) {
   DCHECK(out_process);
@@ -121,7 +121,7 @@ void FillProcessData(
   out_process->nacl_debug_port = task_manager->GetNaClDebugStubPort(id);
 
   // Collect the tab IDs of all the tasks sharing this renderer if any.
-  const task_management::TaskIdList tasks_on_process =
+  const task_manager::TaskIdList tasks_on_process =
       task_manager->GetIdsOfTasksSharingSameProcess(id);
   for (const auto& task_id : tasks_on_process) {
     api::processes::TaskInfo task_info;
@@ -171,8 +171,8 @@ void FillProcessData(
 ////////////////////////////////////////////////////////////////////////////////
 
 ProcessesEventRouter::ProcessesEventRouter(content::BrowserContext* context)
-    : task_management::TaskManagerObserver(base::TimeDelta::FromSeconds(1),
-                                           task_management::REFRESH_TYPE_NONE),
+    : task_manager::TaskManagerObserver(base::TimeDelta::FromSeconds(1),
+                                        task_manager::REFRESH_TYPE_NONE),
       browser_context_(context),
       listeners_(0) {
 }
@@ -185,7 +185,7 @@ void ProcessesEventRouter::ListenerAdded() {
 
   if (listeners_++ == 0) {
     // The first listener to be added.
-    task_management::TaskManagerInterface::GetTaskManager()->AddObserver(this);
+    task_manager::TaskManagerInterface::GetTaskManager()->AddObserver(this);
   }
 }
 
@@ -194,12 +194,12 @@ void ProcessesEventRouter::ListenerRemoved() {
 
   if (--listeners_ == 0) {
     // Last listener to be removed.
-    task_management::TaskManagerInterface::GetTaskManager()->RemoveObserver(
+    task_manager::TaskManagerInterface::GetTaskManager()->RemoveObserver(
         this);
   }
 }
 
-void ProcessesEventRouter::OnTaskAdded(task_management::TaskId id) {
+void ProcessesEventRouter::OnTaskAdded(task_manager::TaskId id) {
   if (!HasEventListeners(api::processes::OnCreated::kEventName))
     return;
 
@@ -217,7 +217,7 @@ void ProcessesEventRouter::OnTaskAdded(task_management::TaskId id) {
                 api::processes::OnCreated::Create(process));
 }
 
-void ProcessesEventRouter::OnTaskToBeRemoved(task_management::TaskId id) {
+void ProcessesEventRouter::OnTaskToBeRemoved(task_manager::TaskId id) {
   if (!HasEventListeners(api::processes::OnExited::kEventName))
     return;
 
@@ -237,7 +237,7 @@ void ProcessesEventRouter::OnTaskToBeRemoved(task_management::TaskId id) {
 }
 
 void ProcessesEventRouter::OnTasksRefreshedWithBackgroundCalculations(
-    const task_management::TaskIdList& task_ids) {
+    const task_manager::TaskIdList& task_ids) {
   const bool has_on_updated_listeners =
       HasEventListeners(api::processes::OnUpdated::kEventName);
   const bool has_on_updated_with_memory_listeners =
@@ -308,7 +308,7 @@ void ProcessesEventRouter::OnTasksRefreshedWithBackgroundCalculations(
   }
 }
 
-void ProcessesEventRouter::OnTaskUnresponsive(task_management::TaskId id) {
+void ProcessesEventRouter::OnTaskUnresponsive(task_manager::TaskId id) {
   if (!HasEventListeners(api::processes::OnUnresponsive::kEventName))
     return;
 
@@ -341,7 +341,7 @@ bool ProcessesEventRouter::HasEventListeners(
 }
 
 bool ProcessesEventRouter::ShouldReportOnCreatedOrOnExited(
-    task_management::TaskId id,
+    task_manager::TaskId id,
     int* out_child_process_host_id) const {
   // Is it the first task to be created or the last one to be removed?
   if (observed_task_manager()->GetNumberOfTasksOnSameProcess(id) != 1)
@@ -362,7 +362,7 @@ bool ProcessesEventRouter::ShouldReportOnCreatedOrOnExited(
 }
 
 void ProcessesEventRouter::UpdateRefreshTypesFlagsBasedOnListeners() {
-  int64_t refresh_types = task_management::REFRESH_TYPE_NONE;
+  int64_t refresh_types = task_manager::REFRESH_TYPE_NONE;
   if (HasEventListeners(api::processes::OnCreated::kEventName) ||
       HasEventListeners(api::processes::OnUnresponsive::kEventName)) {
     refresh_types |= GetRefreshTypesFlagOnlyEssentialData();
@@ -372,7 +372,7 @@ void ProcessesEventRouter::UpdateRefreshTypesFlagsBasedOnListeners() {
     refresh_types |= GetRefreshTypesForProcessOptionalData();
 
   if (HasEventListeners(api::processes::OnUpdatedWithMemory::kEventName))
-    refresh_types |= task_management::REFRESH_TYPE_MEMORY;
+    refresh_types |= task_manager::REFRESH_TYPE_MEMORY;
 
   SetRefreshTypesFlags(refresh_types);
 }
@@ -558,7 +558,7 @@ ProcessesTerminateFunction::TerminateIfAllowed(base::ProcessHandle handle) {
 ////////////////////////////////////////////////////////////////////////////////
 
 ProcessesGetProcessInfoFunction::ProcessesGetProcessInfoFunction()
-    : task_management::TaskManagerObserver(
+    : task_manager::TaskManagerObserver(
           base::TimeDelta::FromSeconds(1),
           GetRefreshTypesFlagOnlyEssentialData()) {
 }
@@ -574,7 +574,7 @@ ExtensionFunction::ResponseAction ProcessesGetProcessInfoFunction::Run() {
 
   include_memory_ = params->include_memory;
   if (include_memory_)
-    AddRefreshType(task_management::REFRESH_TYPE_MEMORY);
+    AddRefreshType(task_manager::REFRESH_TYPE_MEMORY);
 
   // Keep this object alive until the first of either OnTasksRefreshed() or
   // OnTasksRefreshedWithBackgroundCalculations() is received depending on
@@ -583,13 +583,13 @@ ExtensionFunction::ResponseAction ProcessesGetProcessInfoFunction::Run() {
 
   // The task manager needs to be enabled for this function.
   // Start observing the task manager and wait for the next refresh event.
-  task_management::TaskManagerInterface::GetTaskManager()->AddObserver(this);
+  task_manager::TaskManagerInterface::GetTaskManager()->AddObserver(this);
 
   return RespondLater();
 }
 
 void ProcessesGetProcessInfoFunction::OnTasksRefreshed(
-    const task_management::TaskIdList& task_ids) {
+    const task_manager::TaskIdList& task_ids) {
   // Memory is background calculated and will be ready when
   // OnTasksRefreshedWithBackgroundCalculations() is invoked.
   if (include_memory_)
@@ -600,7 +600,7 @@ void ProcessesGetProcessInfoFunction::OnTasksRefreshed(
 
 void
 ProcessesGetProcessInfoFunction::OnTasksRefreshedWithBackgroundCalculations(
-    const task_management::TaskIdList& task_ids) {
+    const task_manager::TaskIdList& task_ids) {
   if (!include_memory_)
     return;
 
@@ -610,7 +610,7 @@ ProcessesGetProcessInfoFunction::OnTasksRefreshedWithBackgroundCalculations(
 ProcessesGetProcessInfoFunction::~ProcessesGetProcessInfoFunction() {}
 
 void ProcessesGetProcessInfoFunction::GatherDataAndRespond(
-    const task_management::TaskIdList& task_ids) {
+    const task_manager::TaskIdList& task_ids) {
   // If there are no process IDs specified, it means we need to return all of
   // the ones we know of.
   const bool specific_processes_requested = !process_host_ids_.empty();
@@ -682,7 +682,7 @@ void ProcessesGetProcessInfoFunction::GatherDataAndRespond(
       api::processes::GetProcessInfo::Results::Create(processes)));
 
   // Stop observing the task manager, and balance the AddRef() in Run().
-  task_management::TaskManagerInterface::GetTaskManager()->RemoveObserver(this);
+  task_manager::TaskManagerInterface::GetTaskManager()->RemoveObserver(this);
   Release();
 }
 

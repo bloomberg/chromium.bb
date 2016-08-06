@@ -22,7 +22,7 @@ namespace gfx {
 class ImageSkia;
 }
 
-namespace task_management {
+namespace task_manager {
 class TaskManagerMac;
 }
 
@@ -35,8 +35,8 @@ class TaskManagerMac;
  @private
   IBOutlet NSTableView* tableView_;
   IBOutlet NSButton* endProcessButton_;
-  task_management::TaskManagerMac* taskManagerMac_;     // weak
-  task_management::TaskManagerTableModel* tableModel_;  // weak
+  task_manager::TaskManagerMac* taskManagerMac_;     // weak
+  task_manager::TaskManagerTableModel* tableModel_;  // weak
 
   base::scoped_nsobject<WindowSizeAutosaver> size_saver_;
 
@@ -46,26 +46,25 @@ class TaskManagerMac;
   std::vector<int> modelToViewMap_;
 
   // Descriptor of the current sort column.
-  task_management::TableSortDescriptor currentSortDescriptor_;
+  task_manager::TableSortDescriptor currentSortDescriptor_;
 
   // Re-entrancy flag to allow meddling with the sort descriptor.
   BOOL withinSortDescriptorsDidChange_;
 }
 
 // Creates and shows the task manager's window.
-- (id)initWithTaskManagerMac:(task_management::TaskManagerMac*)taskManagerMac
-                  tableModel:
-                      (task_management::TaskManagerTableModel*)tableModel;
+- (id)initWithTaskManagerMac:(task_manager::TaskManagerMac*)taskManagerMac
+                  tableModel:(task_manager::TaskManagerTableModel*)tableModel;
 
 // Refreshes all data in the task manager table.
 - (void)reloadData;
 
 // Gets a copy of the current sort descriptor.
-- (task_management::TableSortDescriptor)sortDescriptor;
+- (task_manager::TableSortDescriptor)sortDescriptor;
 
 // Sets the current sort descriptor.
 - (void)setSortDescriptor:
-    (const task_management::TableSortDescriptor&)sortDescriptor;
+    (const task_manager::TableSortDescriptor&)sortDescriptor;
 
 // Returns YES if the specified column is visible.
 - (BOOL)visibilityOfColumnWithId:(int)columnId;
@@ -85,7 +84,7 @@ class TaskManagerMac;
 - (NSButton*)endProcessButtonForTesting;
 @end
 
-namespace task_management {
+namespace task_manager {
 
 // This class runs the Task Manager on the Mac.
 class TaskManagerMac : public ui::TableModelObserver,
@@ -148,6 +147,6 @@ class TaskManagerMac : public ui::TableModelObserver,
   DISALLOW_COPY_AND_ASSIGN(TaskManagerMac);
 };
 
-}  // namespace task_management
+}  // namespace task_manager
 
 #endif  // CHROME_BROWSER_UI_COCOA_TASK_MANAGER_MAC_H_
