@@ -1672,17 +1672,6 @@ private:
 
     static LayoutPoint uninitializedPaintOffset() { return LayoutPoint(LayoutUnit::max(), LayoutUnit::max()); }
 
-    // This stores the position in the paint invalidation backing's coordinate.
-    // It is used to detect layoutObject shifts that forces a full invalidation.
-    // This point does *not* account for composited scrolling. See adjustInvalidationRectForCompositedScrolling().
-    // For slimmingPaintInvalidation, this stores the previous paint offset.
-    // TODO(wangxianzhu): Rename this to m_previousPaintOffset when we enable slimmingPaintInvalidation.
-    LayoutPoint m_previousPositionFromPaintInvalidationBacking;
-
-    // This stores the paint invalidation rect from the previous frame. This rect does *not* account for composited scrolling. See
-    // adjustInvalidationRectForCompositedScrolling().
-    LayoutRect m_previousPaintInvalidationRect;
-
     RefPtr<ComputedStyle> m_style;
 
     // Oilpan: This untraced pointer to the owning Node is considered safe.
@@ -1957,6 +1946,17 @@ private:
 private:
     // Store state between styleWillChange and styleDidChange
     static bool s_affectsParentBlock;
+
+    // This stores the paint invalidation rect from the previous frame. This rect does *not* account for composited scrolling. See
+    // adjustInvalidationRectForCompositedScrolling().
+    LayoutRect m_previousPaintInvalidationRect;
+
+    // This stores the position in the paint invalidation backing's coordinate.
+    // It is used to detect layoutObject shifts that forces a full invalidation.
+    // This point does *not* account for composited scrolling. See adjustInvalidationRectForCompositedScrolling().
+    // For slimmingPaintInvalidation, this stores the previous paint offset.
+    // TODO(wangxianzhu): Rename this to m_previousPaintOffset when we enable slimmingPaintInvalidation.
+    LayoutPoint m_previousPositionFromPaintInvalidationBacking;
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer hit.
