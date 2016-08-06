@@ -8,10 +8,10 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "third_party/skia/include/core/SkPictureAnalyzer.h"
+#include "wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG
 #include "platform/graphics/LoggingCanvas.h"
-#include "wtf/text/StringBuilder.h"
 #include <stdio.h>
 #endif
 
@@ -580,8 +580,6 @@ void PaintController::checkUnderInvalidation()
 
 #endif // DCHECK_IS_ON()
 
-#ifndef NDEBUG
-
 String PaintController::displayItemListAsDebugString(const DisplayItemList& list) const
 {
     StringBuilder stringBuilder;
@@ -591,7 +589,11 @@ String PaintController::displayItemListAsDebugString(const DisplayItemList& list
         if (i)
             stringBuilder.append(",\n");
         stringBuilder.append(String::format("{index: %d, ", (int)i));
+#ifndef NDEBUG
         displayItem.dumpPropertiesAsDebugString(stringBuilder);
+#else
+        stringBuilder.append(String::format("clientDebugName: %s", displayItem.client().debugName().ascii().data()));
+#endif
         if (displayItem.hasValidClient()) {
             stringBuilder.append(", cacheIsValid: ");
             stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
@@ -612,7 +614,5 @@ void PaintController::showDebugData() const
     WTFLogAlways("current display item list: [%s]\n", displayItemListAsDebugString(m_currentPaintArtifact.getDisplayItemList()).utf8().data());
     WTFLogAlways("new display item list: [%s]\n", displayItemListAsDebugString(m_newDisplayItemList).utf8().data());
 }
-
-#endif // ifndef NDEBUG
 
 } // namespace blink

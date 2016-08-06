@@ -149,9 +149,7 @@ public:
 
     void appendDebugDrawingAfterCommit(const DisplayItemClient&, PassRefPtr<SkPicture>, const LayoutSize& offsetFromLayoutObject);
 
-#ifndef NDEBUG
     void showDebugData() const;
-#endif
 
 #if DCHECK_IS_ON()
     void assertDisplayItemClientsAreLive();
@@ -190,9 +188,7 @@ private:
     // Set new item state (cache skipping, etc) for a new item.
     void processNewItem(DisplayItem&);
 
-#ifndef NDEBUG
-    WTF::String displayItemListAsDebugString(const DisplayItemList&) const;
-#endif
+    String displayItemListAsDebugString(const DisplayItemList&) const;
 
     // Indices into PaintList of all DrawingDisplayItems and BeginSubsequenceDisplayItems of each client.
     // Temporarily used during merge to find out-of-order display items.
