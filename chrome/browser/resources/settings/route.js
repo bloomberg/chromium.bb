@@ -270,6 +270,10 @@ cr.define('settings', function() {
     attached: function() {
       assert(!routeObservers_.has(this));
       routeObservers_.add(this);
+
+      // Emulating Polymer data bindings, the observer is called when the
+      // element starts observing the route.
+      this.currentRouteChanged(currentRoute_, undefined);
     },
 
     /** @override */
@@ -325,10 +329,11 @@ cr.define('settings', function() {
    * @param {!URLSearchParams} queryParameters
    */
   var setCurrentRoute = function(route, queryParameters) {
+    var oldRoute = currentRoute_;
     currentRoute_ = route;
     currentQueryParameters_ = queryParameters;
     for (var observer of routeObservers_)
-      observer.currentRouteChanged();
+      observer.currentRouteChanged(currentRoute_, oldRoute);
   };
 
   /** @return {!settings.Route} */

@@ -12,14 +12,6 @@ Polymer({
 
   properties: {
     /**
-     * The current active route.
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * A message about whether Chrome is the default browser.
      */
     message_: {

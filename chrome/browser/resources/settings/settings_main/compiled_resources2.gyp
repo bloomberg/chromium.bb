@@ -9,7 +9,6 @@
         '../compiled_resources2.gyp:route',
         '../compiled_resources2.gyp:search_settings',
         '../settings_page/compiled_resources2.gyp:main_page_behavior',
-        '../settings_page/compiled_resources2.gyp:settings_router',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '../settings_page/compiled_resources2.gyp:settings_page_visibility',
         '../settings_ui/compiled_resources2.gyp:settings_ui_types',

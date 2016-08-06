@@ -11,12 +11,6 @@ Polymer({
   is: 'settings-internet-page',
 
   properties: {
-    /** The current active route. */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
     /** The network GUID for the detail subpage. */
     detailGuid: {
       type: String,

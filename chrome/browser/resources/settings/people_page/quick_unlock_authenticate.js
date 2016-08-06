@@ -16,9 +16,8 @@
  * Example:
  *
  * <settings-quick-unlock-authenticate
- *   set-modes="[[setModes]]"
- *   current-route="{{currentRoute}}"
- *   profile-name="[[profileName_]]">
+ *     set-modes="[[setModes]]"
+ *     profile-name="[[profileName_]]">
  * </settings-quick-unlock-authenticate>
  */
 
@@ -46,13 +45,9 @@ function checkAccountPassword_(password, onCheck) {
 Polymer({
   is: 'settings-quick-unlock-authenticate',
 
-  properties: {
-    /** @type {!settings.Route} */
-    currentRoute: {
-      type: Object,
-      observer: 'onRouteChanged_',
-    },
+  behavior: [settings.RouteObserverBehavior],
 
+  properties: {
     /**
      * A wrapper around chrome.quickUnlockPrivate.setModes with the account
      * password already supplied. If this is null, the authentication screen
@@ -85,14 +80,15 @@ Polymer({
     passwordInvalid_: Boolean
   },
 
-  /** @private */
-  onRouteChanged_: function(currentRoute) {
+  /** @protected */
+  currentRouteChanged: function() {
     // Clear local state if this screen is not active so if this screen shows
     // up again the user will get a fresh UI.
-    if (this.currentRoute != settings.Route.QUICK_UNLOCK_AUTHENTICATE) {
-      this.password_ = '';
-      this.passwordInvalid_ = false;
-    }
+    if (settings.getCurrentRoute() == settings.Route.QUICK_UNLOCK_AUTHENTICATE)
+      return;
+
+    this.password_ = '';
+    this.passwordInvalid_ = false;
   },
 
   /**

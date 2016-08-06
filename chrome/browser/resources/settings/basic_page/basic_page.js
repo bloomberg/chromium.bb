@@ -21,15 +21,6 @@ Polymer({
     },
 
     /**
-     * The current active route.
-     * @type {settings.Route}
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * True if the basic page should currently display the reset profile banner.
      * @private {boolean}
      */
@@ -39,7 +30,6 @@ Polymer({
         return loadTimeData.getBoolean('showResetProfileBanner');
       },
     },
-
   },
 
   onResetDone_: function() {

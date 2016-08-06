@@ -19,8 +19,7 @@
 <dom-module id="settings-device-page">
   <template>
     <style include="settings-shared"></style>
-    <settings-animated-pages id="pages" section="device"
-        current-route="{{currentRoute}}">
+    <settings-animated-pages id="pages" section="device">
       <neon-animatable id="main">
         <div id="pointersRow" class="settings-box first"
             on-tap="onPointersTap_" actionable>
@@ -69,8 +68,7 @@
           <settings-subpage
               associated-control="[[$$('#noteRow')]]"
               page-title="$i18n{noteTitle}">
-            <settings-note prefs="{{prefs}}" current-route="{{currentRoute}}">
-            </settings-note>
+            <settings-note prefs="{{prefs}}"></settings-note>
           </settings-subpage>
         </template>
       </template>

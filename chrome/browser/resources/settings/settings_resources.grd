@@ -739,14 +739,6 @@
                  file="route.js"
                  type="chrome_html"
                  preprocess="true" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_ROUTER_HTML"
-                 file="settings_page/settings_router.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_ROUTER_JS"
-                 file="settings_page/settings_router.js"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_SITE_DATA_HTML"
                  file="site_settings/site_data.html"
                  type="chrome_html" />

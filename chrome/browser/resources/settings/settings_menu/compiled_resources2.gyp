@@ -8,7 +8,6 @@
       'dependencies': [
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-ripple/compiled_resources2.gyp:paper-ripple-extracted',
         '../compiled_resources2.gyp:route',
-        '../settings_page/compiled_resources2.gyp:settings_router',
         '../settings_ui/compiled_resources2.gyp:settings_ui_types',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

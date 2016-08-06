@@ -25,11 +25,6 @@ var SettingsSectionElement = Polymer({
 
   properties: {
     /**
-     * The current active route.
-     */
-    currentRoute: Object,
-
-    /**
      * The section name should match a name specified in route.js. The
      * MainPageBehavior will expand this section if this section name matches
      * currentRoute.section.

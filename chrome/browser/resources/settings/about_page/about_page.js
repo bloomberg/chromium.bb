@@ -12,14 +12,6 @@ Polymer({
   behaviors: [WebUIListenerBehavior, RoutableBehavior, I18nBehavior],
 
   properties: {
-    /**
-     * The current active route.
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
     /** @private {?UpdateStatusChangedEvent} */
     currentUpdateStatusEvent_: Object,
 

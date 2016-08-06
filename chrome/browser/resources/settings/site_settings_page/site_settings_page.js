@@ -14,14 +14,6 @@ Polymer({
 
   properties: {
     /**
-     * The current active route.
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * The category selected by the user.
      */
     categorySelected: {

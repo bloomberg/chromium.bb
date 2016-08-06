@@ -37,12 +37,6 @@ Polymer({
   ],
 
   properties: {
-    /** The current active route. */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
     /** Whether bluetooth is enabled. */
     bluetoothEnabled: {
       type: Boolean,

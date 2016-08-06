@@ -20,14 +20,5 @@ Polymer({
       type: Object,
       notify: true,
     },
-
-    /**
-     * The current active route.
-     * @type {settings.Route}
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
   },
 });

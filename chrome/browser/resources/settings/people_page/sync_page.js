@@ -49,6 +49,7 @@ Polymer({
   behaviors: [
     I18nBehavior,
     WebUIListenerBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -66,14 +67,6 @@ Polymer({
     selectedPage_: {
       type: String,
       value: settings.PageStatus.SPINNER,
-    },
-
-    /**
-     * The current active route.
-     */
-    currentRoute: {
-      type: Object,
-      observer: 'currentRouteChanged_',
     },
 
     /**
@@ -131,22 +124,22 @@ Polymer({
     this.addWebUIListener('sync-prefs-changed',
                           this.handleSyncPrefsChanged_.bind(this));
 
-    if (this.currentRoute == settings.Route.SYNC)
+    if (settings.getCurrentRoute() == settings.Route.SYNC)
       this.onNavigateToPage_();
   },
 
   /** @override */
   detached: function() {
-    if (this.currentRoute == settings.Route.SYNC)
+    if (settings.getCurrentRoute() == settings.Route.SYNC)
       this.onNavigateAwayFromPage_();
   },
 
-  /** @private */
-  currentRouteChanged_: function() {
+  /** @protected */
+  currentRouteChanged: function() {
     if (!this.isAttached)
       return;
 
-    if (this.currentRoute == settings.Route.SYNC)
+    if (settings.getCurrentRoute() == settings.Route.SYNC)
       this.onNavigateToPage_();
     else
       this.onNavigateAwayFromPage_();
@@ -156,7 +149,7 @@ Polymer({
   onNavigateToPage_: function() {
     // The element is not ready for C++ interaction until it is attached.
     assert(this.isAttached);
-    assert(this.currentRoute == settings.Route.SYNC);
+    assert(settings.getCurrentRoute() == settings.Route.SYNC);
 
     if (this.unloadCallback_)
       return;
@@ -301,7 +294,7 @@ Polymer({
         this.selectedPage_ = pageStatus;
         return;
       case settings.PageStatus.DONE:
-        if (this.currentRoute == settings.Route.SYNC)
+        if (settings.getCurrentRoute() == settings.Route.SYNC)
           settings.navigateTo(settings.Route.PEOPLE);
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:

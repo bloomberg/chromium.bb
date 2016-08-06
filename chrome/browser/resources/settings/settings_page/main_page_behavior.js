@@ -243,15 +243,6 @@ var MainPageBehavior = [
  * @polymerBehavior RoutableBehavior
  */
 var RoutableBehaviorImpl = {
-  properties: {
-    /** Contains the current route. */
-    currentRoute: {
-      type: Object,
-      notify: true,
-      observer: 'currentRouteChanged_',
-    },
-  },
-
   /** @private */
   scrollToSection_: function() {
     doWhenReady(
@@ -261,12 +252,12 @@ var RoutableBehaviorImpl = {
         function() {
           // If the current section changes while we are waiting for the page to
           // be ready, scroll to the newest requested section.
-          this.getSection_(this.currentRoute.section).scrollIntoView();
+          this.getSection_(settings.getCurrentRoute().section).scrollIntoView();
         }.bind(this));
   },
 
   /** @private */
-  currentRouteChanged_: function(newRoute, oldRoute) {
+  currentRouteChanged: function(newRoute, oldRoute) {
     var newRouteIsSubpage = newRoute && newRoute.subpage.length;
     var oldRouteIsSubpage = oldRoute && oldRoute.subpage.length;
 
@@ -316,5 +307,6 @@ var RoutableBehaviorImpl = {
 /** @polymerBehavior */
 var RoutableBehavior = [
   MainPageBehavior,
+  settings.RouteObserverBehavior,
   RoutableBehaviorImpl
 ];

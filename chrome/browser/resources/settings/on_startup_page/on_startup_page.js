@@ -27,14 +27,6 @@ Polymer({
     },
 
     /**
-     * The current active route.
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * Enum values for the 'session.restore_on_startup' preference.
      * @private {!Object<string, number>}
      */

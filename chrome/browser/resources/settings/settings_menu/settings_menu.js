@@ -14,15 +14,6 @@ Polymer({
     advancedOpened_: Boolean,
 
     /**
-     * The current active route.
-     * @type {!settings.Route}
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * Dictionary defining page visibility.
      * @type {!GuestModePageVisibility}
      */
@@ -48,7 +39,7 @@ Polymer({
     }.bind(this));
 
     this.fire('toggle-advanced-page',
-              settings.Route.ADVANCED.contains(this.currentRoute));
+              settings.Route.ADVANCED.contains(settings.getCurrentRoute()));
   },
 
   /**

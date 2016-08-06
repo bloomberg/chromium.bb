@@ -117,7 +117,6 @@
       'target_name': 'quick_unlock_setup_pin',
       'dependencies': [
         '../compiled_resources2.gyp:route',
-        '../settings_page/compiled_resources2.gyp:settings_router',
         'quick_unlock_password_detect_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(EXTERNS_GYP):quick_unlock_private',

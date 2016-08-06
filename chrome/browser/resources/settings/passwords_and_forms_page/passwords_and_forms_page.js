@@ -313,12 +313,6 @@ Polymer({
       notify: true,
     },
 
-    /** The current active route. */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
     /**
      * An array of passwords to display.
      * @type {!Array<!PasswordManager.PasswordUiEntry>}

@@ -104,11 +104,6 @@ cr.define('settings_people_page_sync_page', function() {
         browserProxy = new TestSyncBrowserProxy();
         settings.SyncBrowserProxyImpl.instance_ = browserProxy;
 
-        // TODO(tommycli): Remove once settings.navigateTo is no longer a stub.
-        settings.navigateTo = function(route) {
-          syncPage.currentRoute = route;
-        };
-
         PolymerTest.clearBody();
         syncPage = document.createElement('settings-sync-page');
         settings.navigateTo(settings.Route.SYNC);

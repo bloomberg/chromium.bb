@@ -56,16 +56,12 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
     // failing to find its host element.
     test('scroll to section', function() {
       // Setting the page and section will cause a scrollToSection_.
-      self.getPage('basic').currentRoute = {
-        page: 'basic',
-        section: 'onStartup',
-        subpage: [],
-      };
+      settings.navigateTo(settings.Route.ON_STARTUP);
 
       return new Promise(function(resolve, reject) {
         var intervalId = window.setInterval(function() {
           var page = self.getPage('basic');
-          if (self.getSection(page, page.currentRoute.section)) {
+          if (self.getSection(page, settings.getCurrentRoute().section)) {
             window.clearInterval(intervalId);
             resolve();
           }

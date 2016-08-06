@@ -250,9 +250,6 @@ cr.define('site_list', function() {
       // Import necessary html before running suite.
       suiteSetup(function() {
         CrSettingsPrefs.setInitialized();
-        // Add a no-op stub to catch navigations during the test.
-        // TODO(tommycli): Remove once settings.navigateTo is no longer a stub.
-        settings.navigateTo = function(route) {};
         return PolymerTest.importHtml(
             'chrome://md-settings/site_settings/site_list.html');
       });

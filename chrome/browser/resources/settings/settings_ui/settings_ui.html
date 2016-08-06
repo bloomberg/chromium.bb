@@ -9,7 +9,6 @@
 <link rel="import" href="/icons.html">
 <link rel="import" href="/settings_main/settings_main.html">
 <link rel="import" href="/settings_menu/settings_menu.html">
-<link rel="import" href="/settings_page/settings_router.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-ui">
@@ -111,9 +110,6 @@
         overflow: auto;
       }
     </style>
-    <settings-router current-route="{{currentRoute}}"
-        current-route-titles="{{currentRouteTitles}}">
-    </settings-router>
     <!-- TODO(dpapad): Remove "coming soon" string once crbug.com/608535 fully
       addressed -->
     <cr-toolbar page-name="$i18n{settings}"
@@ -124,13 +120,12 @@
     <app-drawer swipe-open>
       <div class="drawer-header">$i18n{settings}</div>
       <div class="drawer-content">
-        <settings-menu current-route="{{currentRoute}}" id="sideNav"
-            page-visibility="[[pageVisibility_]]">
+        <settings-menu id="sideNav" page-visibility="[[pageVisibility_]]">
         </settings-menu>
       </div>
     </app-drawer>
     <paper-header-panel mode="waterfall">
-      <settings-main prefs="{{prefs}}" current-route="{{currentRoute}}"
+      <settings-main prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]">
       </settings-main>

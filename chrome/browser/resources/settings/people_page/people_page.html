@@ -72,8 +72,7 @@
         margin: 16px 0 2px;
       }
     </style>
-    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
-        section="people">
+    <settings-animated-pages id="pages" section="people">
       <neon-animatable id="main">
         <div id="picture-subpage-trigger" class="settings-box first two-line">
           <img id="profile-icon" src="[[profileIconUrl_]]"
@@ -239,8 +238,7 @@
         <settings-subpage
             associated-control="[[$$('#customize-sync')]]"
             page-title="$i18n{syncPageTitle}">
-          <settings-sync-page current-route="[[currentRoute]]">
-          </settings-sync-page>
+          <settings-sync-page></settings-sync-page>
         </settings-subpage>
       </template>
 <if expr="chromeos">
@@ -249,9 +247,8 @@
             associated-control="[[$$('#quick-unlock-subpage-trigger')]]"
             page-title="$i18n{quickUnlockTitle}">
           <settings-quick-unlock-authenticate
-            set-modes="{{quickUnlockSetModes}}"
-            current-route="{{currentRoute}}"
-            profile-name="[[profileName_]]">
+              set-modes="{{quickUnlockSetModes}}"
+              profile-name="[[profileName_]]">
           </settings-quick-unlock-authenticate>
         </settings-subpage>
       </template>
@@ -259,18 +256,14 @@
         <settings-subpage no-associated-control
             page-title="$i18n{quickUnlockTitle}">
           <settings-quick-unlock-choose-method
-            set-modes="[[quickUnlockSetModes]]"
-            current-route="{{currentRoute}}"
-            prefs="{{prefs}}">
+              set-modes="[[quickUnlockSetModes]]" prefs="{{prefs}}">
           </settings-quick-unlock-choose-method>
         </settings-subpage>
       </template>
       <template is="dom-if" name="quick-unlock-setup-pin">
         <settings-subpage no-associated-control
             page-title="$i18n{quickUnlockTitle}">
-          <settings-quick-unlock-setup-pin
-            set-modes="[[quickUnlockSetModes]]"
-            current-route="{{currentRoute}}">
+          <settings-quick-unlock-setup-pin set-modes="[[quickUnlockSetModes]]">
           </settings-quick-unlock-setup-pin>
         </settings-subpage>
       </template>

@@ -9,6 +9,8 @@
 Polymer({
   is: 'settings-main',
 
+  behaviors: [settings.RouteObserverBehavior],
+
   properties: {
     /**
      * Preferences state.
@@ -16,16 +18,6 @@ Polymer({
     prefs: {
       type: Object,
       notify: true,
-    },
-
-    /**
-     * The current active route.
-     * @type {!settings.Route}
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-      observer: 'currentRouteChanged_',
     },
 
     /** @private */
@@ -129,10 +121,8 @@ Polymer({
     return showBasicPage && !inSubpage;
   },
 
-  /**
-   * @private
-   */
-  currentRouteChanged_: function(newRoute) {
+  /** @protected */
+  currentRouteChanged: function(newRoute) {
     this.inSubpage_ = newRoute.subpage.length > 0;
     this.style.height = this.inSubpage_ ? '100%' : '';
 
@@ -171,12 +161,11 @@ Polymer({
    * @private
    */
   overscrollHeight_: function() {
-    if (!this.currentRoute || this.currentRoute.subpage.length != 0 ||
-        this.showPages_.about) {
+    var route = settings.getCurrentRoute();
+    if (route.subpage.length != 0 || this.showPages_.about)
       return 0;
-    }
 
-    var query = 'settings-section[section="' + this.currentRoute.section + '"]';
+    var query = 'settings-section[section="' + route.section + '"]';
     var topSection = this.$$('settings-basic-page').$$(query);
     if (!topSection && this.showPages_.advanced)
       topSection = this.$$('settings-advanced-page').$$(query);

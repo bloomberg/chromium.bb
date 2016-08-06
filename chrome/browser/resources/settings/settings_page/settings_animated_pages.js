@@ -9,30 +9,22 @@
  *
  * Example:
  *
- *    <settings-animated-pages current-route="{{currentRoute}}"
- *        section="privacy">
+ *    <settings-animated-pages section="privacy">
  *      <!-- Insert your section controls here -->
  *    </settings-animated-pages>
  */
 Polymer({
   is: 'settings-animated-pages',
 
-  properties: {
-    /**
-     * Contains the current route.
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-      observer: 'currentRouteChanged_',
-    },
+  behaviors: [settings.RouteObserverBehavior],
 
+  properties: {
     /**
      * Routes with this section activate this element. For instance, if this
      * property is 'search', and currentRoute.section is also set to 'search',
      * this element will display the subpage in currentRoute.subpage.
      *
-     * The section name must match the name specified in settings_router.js.
+     * The section name must match the name specified in route.js.
      */
     section: {
       type: String,
@@ -46,7 +38,9 @@ Polymer({
         this.lightDomChanged_.bind(this));
 
     this.addEventListener('subpage-back', function() {
-      settings.navigateTo(this.currentRoute.parent);
+      var parent = settings.getCurrentRoute().parent;
+      assert(parent);
+      settings.navigateTo(parent);
     }.bind(this));
   },
 
@@ -64,20 +58,20 @@ Polymer({
   },
 
   /**
-   * Calls currentRouteChanged_ with the deferred route change info.
+   * Calls currentRouteChanged with the deferred route change info.
    * @private
    */
   runQueuedRouteChange_: function() {
     if (!this.queuedRouteChange_)
       return;
-    this.async(this.currentRouteChanged_.bind(
+    this.async(this.currentRouteChanged.bind(
         this,
         this.queuedRouteChange_.newRoute,
         this.queuedRouteChange_.oldRoute));
   },
 
-  /** @private */
-  currentRouteChanged_: function(newRoute, oldRoute) {
+  /** @protected */
+  currentRouteChanged: function(newRoute, oldRoute) {
     if (newRoute.section == this.section && newRoute.subpage.length > 0) {
       this.switchToSubpage_(newRoute, oldRoute);
     } else {
@@ -139,7 +133,7 @@ Polymer({
    * @private
    */
   ensureSubpageInstance_: function() {
-    var id = this.currentRoute.subpage.slice(-1)[0];
+    var id = settings.getCurrentRoute().subpage.slice(-1)[0];
     var template = Polymer.dom(this).querySelector(
         'template[name="' + id + '"]');
 

@@ -20,14 +20,6 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
-    /**
-     * The current active route.
-     */
-    currentRoute: {
-      notify: true,
-      type: Object,
-    },
-
     /** @private {!settings.AppearanceBrowserProxy} */
     browserProxy_: Object,
 
@@ -186,11 +178,6 @@ Polymer({
   /** @private */
   resetTheme_: function() {
     this.browserProxy_.resetTheme();
-  },
-
-  /** @private */
-  showFontsPage_: function() {
-    return this.currentRoute == settings.Route.FONTS;
   },
 
   /**

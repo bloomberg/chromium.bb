@@ -6,6 +6,7 @@
     {
       'target_name': 'main_page_behavior',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         'settings_section',
         'transition_behavior',
         '<(EXTERNS_GYP):settings_private',
@@ -25,15 +26,6 @@
     },
     {
       'target_name': 'settings_page_visibility',
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'settings_router',
-      'dependencies': [
-        '../compiled_resources2.gyp:route',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
-      ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

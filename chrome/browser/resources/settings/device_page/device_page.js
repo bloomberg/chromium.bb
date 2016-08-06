@@ -12,16 +12,10 @@ Polymer({
   behaviors: [
     I18nBehavior,
     WebUIListenerBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
-    /** The current active route. */
-    currentRoute: {
-      type: Object,
-      notify: true,
-      observers: 'currentRouteChanged_',
-    },
-
     /** Preferences state. */
     prefs: {
       type: Object,
@@ -119,8 +113,8 @@ Polymer({
     settings.navigateTo(settings.Route.DISPLAY);
   },
 
-  /** @private */
-  currentRouteChanged_: function() {
+  /** @protected */
+  currentRouteChanged: function() {
     this.checkPointerSubpage_();
   },
 
@@ -140,7 +134,7 @@ Polymer({
    */
   checkPointerSubpage_: function() {
     if (!this.hasMouse_ && !this.hasTouchpad_ &&
-        this.currentRoute == settings.Route.POINTERS) {
+        settings.getCurrentRoute() == settings.Route.POINTERS) {
       this.$.pages.fire('subpage-back');
     }
   },

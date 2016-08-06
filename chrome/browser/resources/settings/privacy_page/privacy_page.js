@@ -10,6 +10,8 @@
 Polymer({
   is: 'settings-privacy-page',
 
+  behaviors: [settings.RouteObserverBehavior],
+
   properties: {
     /**
      * Preferences state.
@@ -19,19 +21,8 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * The current active route.
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
     /** @private */
-    showClearBrowsingDataDialog_: {
-      computed: 'computeShowClearBrowsingDataDialog_(currentRoute)',
-      type: Boolean,
-    },
+    showClearBrowsingDataDialog_: Boolean,
 
     /**
      * Dictionary defining page visibility.
@@ -44,13 +35,10 @@ Polymer({
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
   },
 
-  /**
-   * @return {boolean} Whether the Clear Browsing Data dialog should be showing.
-   * @private
-   */
-  computeShowClearBrowsingDataDialog_: function() {
-    var route = this.currentRoute;
-    return route && route.dialog == 'clear-browsing-data';
+  /** @protected */
+  currentRouteChanged: function() {
+    this.showClearBrowsingDataDialog_ =
+        settings.getCurrentRoute().dialog == 'clear-browsing-data';
   },
 
   /** @private */

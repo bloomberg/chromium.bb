@@ -15,14 +15,6 @@ Polymer({
 
   properties: {
     /**
-     * The current active route.
-     */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * Preferences state.
      */
     prefs: {

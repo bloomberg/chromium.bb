@@ -142,12 +142,6 @@ cr.define('device_page_tests', function() {
     suiteSetup(function() {
       // Disable animations so sub-pages open within one event loop.
       testing.Test.disableAnimationsAndTransitions();
-
-      // Update the device page route for navigations.
-      // TODO(tommycli): Remove once settings.navigateTo is no longer a stub.
-      settings.navigateTo = function(route) {
-        devicePage.currentRoute = route;
-      };
     });
 
     setup(function(done) {
@@ -156,7 +150,6 @@ cr.define('device_page_tests', function() {
 
       PolymerTest.clearBody();
       devicePage = document.createElement('settings-device-page');
-      devicePage.currentRoute = settings.Route.BASIC;
       devicePage.prefs = getFakePrefs();
       settings.DevicePageBrowserProxyImpl.instance_ =
           new TestDevicePageBrowserProxy();
@@ -178,8 +171,8 @@ cr.define('device_page_tests', function() {
         devicePage.$.pages.addEventListener('neon-animation-finish', resolve);
         MockInteractions.tap(row);
       }).then(function() {
-        assertEquals('device', devicePage.currentRoute.section);
-        assertEquals(subpage, devicePage.currentRoute.subpage[0]);
+        assertEquals('device', settings.getCurrentRoute().section);
+        assertEquals(subpage, settings.getCurrentRoute().subpage[0]);
         var page = devicePage.$$('#' + subpage + ' settings-' + subpage);
         return assert(page);
       });
@@ -226,15 +219,15 @@ cr.define('device_page_tests', function() {
       });
 
       test('subpage responds to pointer attach/detach', function() {
-        assertEquals('pointers', devicePage.currentRoute.subpage[0]);
-        assertTrue(devicePage.currentRoute == settings.Route.POINTERS);
+        assertEquals('pointers', settings.getCurrentRoute().subpage[0]);
+        assertTrue(settings.getCurrentRoute() == settings.Route.POINTERS);
         assertLT(0, pointersPage.$.mouse.offsetHeight);
         assertLT(0, pointersPage.$.touchpad.offsetHeight);
         assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
         assertLT(0, pointersPage.$$('#touchpad h2').offsetHeight);
 
         cr.webUIListenerCallback('has-touchpad-changed', false);
-        assertEquals('pointers', devicePage.currentRoute.subpage[0]);
+        assertEquals('pointers', settings.getCurrentRoute().subpage[0]);
         assertLT(0, pointersPage.$.mouse.offsetHeight);
         assertEquals(0, pointersPage.$.touchpad.offsetHeight);
         assertEquals(0, pointersPage.$$('#mouse h2').offsetHeight);
@@ -246,7 +239,7 @@ cr.define('device_page_tests', function() {
 
           cr.webUIListenerCallback('has-mouse-changed', false);
         }).then(function() {
-          assertEquals(0, devicePage.currentRoute.subpage.length);
+          assertEquals(0, settings.getCurrentRoute().subpage.length);
           assertEquals(0, devicePage.$$('#main #pointersRow').offsetHeight);
 
           cr.webUIListenerCallback('has-touchpad-changed', true);
@@ -259,7 +252,7 @@ cr.define('device_page_tests', function() {
           assertEquals(0, pointersPage.$$('#touchpad h2').offsetHeight);
 
           cr.webUIListenerCallback('has-mouse-changed', true);
-          assertEquals('pointers', devicePage.currentRoute.subpage[0]);
+          assertEquals('pointers', settings.getCurrentRoute().subpage[0]);
           assertLT(0, pointersPage.$.mouse.offsetHeight);
           assertLT(0, pointersPage.$.touchpad.offsetHeight);
           assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
