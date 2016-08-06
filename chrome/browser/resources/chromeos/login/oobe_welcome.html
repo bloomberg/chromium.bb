@@ -21,33 +21,76 @@
 <dom-module name="oobe-welcome-md">
   <link rel="stylesheet" href="oobe_welcome.css">
   <template>
-    <oobe-card id="welcomeSection" class="fit" hidden="[[networkSelectionScreenShown]]">
+    <oobe-card id="welcomeSection" class="fit" hidden="[[!welcomeScreenShown]]">
       <div class="header flex vertical layout end-justified start">
         <h1 class="welcome-message" i18n-content="networkScreenGreeting"></h1>
       </div>
       <div class="footer flex vertical layout justified">
         <div class="welcome-next flex vertical layout center">
-          <oobe-next-button id="welcomeNextButton" on-tap="onWelcomeNextButtonClicked_"></oobe-next-button>
+          <oobe-next-button id="welcomeNextButton"
+              on-tap="onWelcomeNextButtonClicked_">
+          </oobe-next-button>
         </div>
         <div class="flex horizontal layout justified">
-          <div class="buttonbox layout vertical">
-            <iron-icon icon="icons:language" class="bottom-button self-center"></iron-icon>
+          <div class="buttonbox layout vertical"
+              on-tap="onWelcomeSelectLanguageButtonClicked_">
+            <iron-icon icon="icons:language" class="bottom-button self-center">
+            </iron-icon>
             <div id="currentLanguage">[[currentLanguage]]</div>
           </div>
           <div class="buttonbox layout vertical">
-            <iron-icon icon="icons:accessibility" class="bottom-button self-center"></iron-icon>
+            <iron-icon icon="icons:accessibility"
+                class="bottom-button self-center">
+            </iron-icon>
             <div id="accessibilityLabel" i18n-content="accessibilityLink"></div>
           </div>
         </div>
       </div>
     </oobe-card>
-    <oobe-dialog id="networkSection" class="fit" hidden="[[!networkSelectionScreenShown]]">
+    <oobe-dialog class="fit" hidden="[[!languageSelectionScreenShown]]"
+        has-buttons>
+      <iron-icon icon="icons:language" class="oobe-icon"></iron-icon>
+      <div class="header flex layout vertical end-justified start">
+        <h1 class="welcome-message" i18n-content="languageSectionTitle"></h1>
+      </div>
+      <div class="footer layout vertical">
+        <template is="dom-if" if="[[enabled]]">
+          <div id="languageDropdownContainer"
+              class="flex layout horizontal justified language-selection-entry">
+            <div class="layout vertical center-justified"
+                i18n-content="languageDropdownTitle">
+            </div>
+            <oobe-i18n-dropdown id="languageSelect" items="[[languages]]"
+                on-select-item="onLanguageSelected_"
+                label="$i18n{languageDropdownTitle}">
+            </oobe-i18n-dropdown>
+          </div>
+          <div id="keyboardDropdownContainer"
+              class="flex layout horizontal justified language-selection-entry">
+            <div class="layout vertical center-justified"
+                i18n-content="keyboardDropdownTitle">
+            </div>
+            <oobe-i18n-dropdown id="keyboardSelect" items="[[keyboards]]"
+                on-select-item="onKeyboardSelected_"
+                label="$i18n{keyboardDropdownTitle}">
+            </oobe-i18n-dropdown>
+          </div>
+        </template>
+      </div>
+      <div class="bottom-buttons layout horizontal">
+        <oobe-text-button inverse on-tap="closeLanguageSection_"
+          i18n-content="oobeOKButtonText">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+    <oobe-dialog id="networkSection" class="fit"
+        hidden="[[!networkSelectionScreenShown]]">
       <iron-icon icon="oobe-welcome:wifi" class="oobe-icon"></iron-icon>
-      <div class="header flex vertical layout end-justified start">
+      <div class="header flex layout vertical end-justified start">
         <h1 class="welcome-message" i18n-content="networkSectionTitle"></h1>
         <h1 class="welcome-message-hint" i18n-content="networkSectionHint"></h1>
       </div>
-      <div class="footer flex vertical layout justified">
+      <div class="footer flex layout vertical justified">
         <cr-network-select id="networkSelect"
             on-network-connected="onNetworkConnected_"
             on-network-item-selected="onNetworkListNetworkItemSelected_"

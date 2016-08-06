@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This inclusion should go first, as <{controller,host}-paring-screen> depend
-// of it.
+// This inclusion is types-only. No actual code to execute.
+<include src="oobe_types.js">
+
+// This inclusion should go before other non-trivial includes, as
+// <{controller,host}-paring-screen> depend of it.
 <include src="oobe-screen.js">
 
 <include src="controller-pairing-screen.js">
@@ -24,4 +27,5 @@
 <include src="oobe_buttons.js">
 <include src="oobe_card.js">
 <include src="oobe_dialog.js">
+<include src="oobe_i18n_dropdown.js">
 <include src="oobe_welcome.js">

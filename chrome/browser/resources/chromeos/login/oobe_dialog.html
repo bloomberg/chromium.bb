@@ -17,6 +17,8 @@
       </div>
       <oobe-input-form class="footer" ...>
       </oobe-input-form>
+      <oobe-text-button class="footer" label="OK" ...>
+      </oobe-text-button>
     </oobe-dialog>
 
   Add class |header| to all which you want to go inside the header.  Similar
@@ -37,9 +39,12 @@
       <div class="footer-container flex vertical layout">
         <content select=".footer"></content>
       </div>
-      <div id="bottom-overlay" class="overlay"></div>
     </div>
-    <div id="full-overlay" class="overlay"></div>
+    <template is="dom-if" if="[[hasButtons]]">
+      <div id="oobe-bottom" class="layout horizontal end-justified">
+        <content select=".bottom-buttons"></content>
+      </div>
+    </template>
   </template>
 </dom-module>
 

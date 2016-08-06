@@ -38,3 +38,24 @@ Polymer({
       e.stopPropagation();
   }
 });
+
+Polymer({
+  is: 'oobe-text-button',
+
+  properties: {
+    disabled: {type: Boolean, value: false, reflectToAttribute: true},
+
+    label: String,
+
+    inverse: Boolean,
+  },
+
+  focus: function() {
+    this.$.textButton.focus();
+  },
+
+  onClick_: function(e) {
+    if (this.disabled)
+      e.stopPropagation();
+  }
+});

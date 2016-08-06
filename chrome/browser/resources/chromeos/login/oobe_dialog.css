@@ -33,6 +33,12 @@
   padding: 24px 40px 34px;
 }
 
+#oobe-bottom {
+  box-shadow: 0 -1px 1px rgba(0, 0, 0, 0.14);
+  padding: 24px 40px 34px;
+  z-index: 1;
+}
+
 ::content div.oobe-body-text {
   margin-bottom: 24px;
 }
@@ -58,17 +64,4 @@
   margin-bottom: 0;
 }
 
-.overlay {
-  background-color: rgba(0, 0, 0, 0.5);
-  display: none;
-  height: 100%;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
-  z-index: 11;
-}
-
-:host(.full-disabled) #full-overlay,
-:host(.disabled) #bottom-overlay,
 

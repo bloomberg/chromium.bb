@@ -305,12 +305,17 @@ cr.define('cr.ui.Oobe', function() {
       Oobe.setupSelect($('timezone-select'), data.timezoneList);
 
       // ---------- Welcome screen
-      $('oobe-welcome-md').currentLanguage =
-          Oobe.getSelectedTitle(data.languageList);
-
       if (data.newOobeUI == 'on') {
+        var welcomeScreen = $('oobe-welcome-md');
+        welcomeScreen.currentLanguage =
+            Oobe.getSelectedTitle(data.languageList);
+        welcomeScreen.languages = data.languageList;
+
+        welcomeScreen.keyboards = data.inputMethodsList;
+
         $('oobe-connect').hidden = true;
-        $('oobe-welcome-md').hidden = false;
+        welcomeScreen.hidden = false;
+        welcomeScreen.enabled = true;
       } else {
         $('oobe-connect').hidden = false;
         $('oobe-welcome-md').hidden = true;

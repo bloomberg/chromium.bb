@@ -164,8 +164,13 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("debuggingFeaturesLink", IDS_NETWORK_ENABLE_DEV_FEATURES_LINK);
 
   // MD-OOBE
-  builder->Add("networkSectionTitle", IDS_NETWORK_SECTION_TITE);
+  builder->Add("oobeOKButtonText", IDS_OOBE_OK_BUTTON_TEXT);
+  builder->Add("languageSectionTitle", IDS_LANGUAGE_SECTION_TITLE);
+  builder->Add("networkSectionTitle", IDS_NETWORK_SECTION_TITLE);
   builder->Add("networkSectionHint", IDS_NETWORK_SECTION_HINT);
+
+  builder->Add("languageDropdownTitle", IDS_LANGUAGE_DROPDOWN_TITLE);
+  builder->Add("keyboardDropdownTitle", IDS_KEYBOARD_DROPDOWN_TITLE);
   builder->Add("proxySettingsMenuName", IDS_PROXY_SETTINGS_MENU_NAME);
   builder->Add("addWiFiNetworkMenuName", IDS_ADD_WI_FI_NETWORK_MENU_NAME);
   builder->Add("addMobileNetworkMenuName", IDS_ADD_MOBILE_NETWORK_MENU_NAME);

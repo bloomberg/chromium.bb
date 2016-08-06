@@ -11,20 +11,69 @@ Polymer({
 
   properties: {
     /**
-     * Currently selected system language.
+     * Currently selected system language (display name).
      */
     currentLanguage: {
       type: String,
-      value: 'English (US)',
+      value: '',
     },
 
     /**
-     * Flag that switches Welcome screen to Network Selection screen.
+     * List of languages for language selector dropdown.
+     * @type {!Array<OobeTypes.LanguageDsc>}
+     */
+    languages: {
+      type: Array,
+    },
+
+    /**
+     * List of keyboards for keyboard selector dropdown.
+     * @type {!Array<OobeTypes.IMEDsc>}
+     */
+    keyboards: {
+      type: Array,
+    },
+
+    /**
+     * Flag that shows Welcome screen.
+     */
+    welcomeScreenShown: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
+     * Flag that shows Language Selection screen.
+     */
+    languageSelectionScreenShown: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Flag that shows Network Selection screen.
      */
     networkSelectionScreenShown: {
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Flag that enables MD-OOBE.
+     */
+    enabled: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
+  /**
+   * Hides all screens to help switching from one screen to another.
+   */
+  hideAllScreens_: function() {
+    this.welcomeScreenShown = false;
+    this.networkSelectionScreenShown = false;
+    this.languageSelectionScreenShown = false;
   },
 
   /**
@@ -85,7 +134,18 @@ Polymer({
    * @private
    */
   onWelcomeNextButtonClicked_: function() {
+    this.hideAllScreens_();
     this.networkSelectionScreenShown = true;
+  },
+
+  /**
+   * Handle "Language" button for "Welcome" screen.
+   *
+   * @private
+   */
+  onWelcomeSelectLanguageButtonClicked_: function() {
+    this.hideAllScreens_();
+    this.languageSelectionScreenShown = true;
   },
 
   /**
@@ -180,9 +240,44 @@ Polymer({
 
   /**
    * @param {!Event} event
+   * @private
    */
   onNetworkListCustomItemSelected_: function(e) {
     var itemState = e.detail;
     itemState.customData.onTap();
+  },
+
+  /**
+   * Handle language selection.
+   *
+   * @param {!{detail: {!OobeTypes.LanguageDsc}}} event
+   * @private
+   */
+  onLanguageSelected_: function(event) {
+    var item = event.detail;
+    var languageId = item.value;
+    this.screen.onLanguageSelected_(languageId);
+  },
+
+  /**
+   * Handle keyboard layout selection.
+   *
+   * @param {!{detail: {!OobeTypes.IMEDsc}}} event
+   * @private
+   */
+  onKeyboardSelected_: function(event) {
+    var item = event.detail;
+    var inputMethodId = item.value;
+    this.screen.onKeyboardSelected_(inputMethodId);
+  },
+
+  /**
+   * Handle "OK" button for "LanguageSelection" screen.
+   *
+   * @private
+   */
+  closeLanguageSection_: function() {
+    this.hideAllScreens_();
+    this.welcomeScreenShown = true;
   },
 });

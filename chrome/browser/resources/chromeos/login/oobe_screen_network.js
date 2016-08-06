@@ -27,27 +27,27 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
     /** @override */
     decorate: function() {
-      var self = this;
-
       Oobe.setupSelect($('language-select'),
                        loadTimeData.getValue('languageList'),
-                       function(languageId) {
-                         self.context.set(CONTEXT_KEY_LOCALE, languageId);
-                         self.commitContextChanges();
-                       });
+                       this.onLanguageSelected_.bind(this));
       Oobe.setupSelect($('keyboard-select'),
                        loadTimeData.getValue('inputMethodsList'),
-                       function(inputMethodId) {
-                         self.context.set(CONTEXT_KEY_INPUT_METHOD,
-                                          inputMethodId);
-                         self.commitContextChanges();
-                       });
+                       this.onKeyboardSelected_.bind(this));
       Oobe.setupSelect($('timezone-select'),
                        loadTimeData.getValue('timezoneList'),
-                       function(timezoneId) {
-                         self.context.set(CONTEXT_KEY_TIMEZONE, timezoneId);
-                         self.commitContextChanges();
-                       });
+                       this.onTimezoneSelected_.bind(this));
+
+      // ---------- Welcome screen
+      var welcomeScreen = $('oobe-welcome-md');
+      welcomeScreen.screen = this;
+
+      var languageList = loadTimeData.getValue('languageList');
+      welcomeScreen.languages = languageList;
+      welcomeScreen.currentLanguage = Oobe.getSelectedTitle(languageList);
+
+      var inputMethodsList = loadTimeData.getValue('inputMethodsList');
+      welcomeScreen.keyboards = inputMethodsList;
+      // -------------------------
 
       this.dropdown_ = $('networks-list');
       cr.ui.DropDown.decorate(this.dropdown_);
@@ -79,6 +79,21 @@ login.createScreen('NetworkScreen', 'connect', function() {
                                function(enabled) {
         $('continue-button').disabled = !enabled;
       });
+    },
+
+    onLanguageSelected_: function(languageId) {
+      this.context.set(CONTEXT_KEY_LOCALE, languageId);
+      this.commitContextChanges();
+    },
+
+    onKeyboardSelected_: function(inputMethodId) {
+      this.context.set(CONTEXT_KEY_INPUT_METHOD, inputMethodId);
+      this.commitContextChanges();
+    },
+
+    onTimezoneSelected_: function(timezoneId) {
+      this.context.set(CONTEXT_KEY_TIMEZONE, timezoneId);
+      this.commitContextChanges();
     },
 
     onBeforeShow: function(data) {

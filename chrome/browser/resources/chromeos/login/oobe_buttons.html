@@ -47,3 +47,30 @@
   </template>
 </dom-module>
 
+<!--
+  Material design square button for text-labelled buttons.
+  By default, text is blue, background is white.
+  |inverse| makes text white on a blue background.
+
+  Example:
+    <oobe-icon-button label="OK" inverse></oobe-icon-button>
+    <oobe-icon-button label="CANCEL"></oobe-icon-button>
+
+  Attributes:
+    'label' - text on a button
+    'disabled' - button is disabled when the attribute is set.
+    'inverse' - makes text white and background blue
+-->
+<dom-module id="oobe-text-button">
+  <link rel="stylesheet" href="oobe_text_button.css">
+  <template>
+    <div on-click="onClick_" on-tap="onClick_">
+      <paper-button id="textButton" disabled="[[disabled]]"
+          inverse$="[[inverse]]">
+        [[label]]
+        <content></content>
+      </paper-button>
+    </div>
+  </template>
+</dom-module>
+

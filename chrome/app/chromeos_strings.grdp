@@ -1632,7 +1632,19 @@ Press any key to continue exploring.
   <message name="IDS_NETWORK_ENABLE_DEV_FEATURES_LINK" desc="Text shown on continue button" meaning="Link shown on OOBE screens that opens enable debugging features dialog">
     Enable debugging features
   </message>
-  <message name="IDS_NETWORK_SECTION_TITE" desc="Tile of newtork selection screen" meaning="A title of the dialog where user should select network to connect to Internet">
+  <message name="IDS_LANGUAGE_DROPDOWN_TITLE" desc="Title of language selection dropdown menu" meaning="Small title near language dropdown menu suggesting that this is a language selector.">
+    Language
+  </message>
+  <message name="IDS_KEYBOARD_DROPDOWN_TITLE" desc="Title of keyboard selection dropdown menu" meaning="Small title near keyboard dropdown menu suggesting that this is a keyboard layout selector.">
+    Keyboard
+  </message>
+  <message name="IDS_OOBE_OK_BUTTON_TEXT" desc="Text on 'OK' button" meaning="This is 'OK' text for all 'OK' buttons on ChromeOS initial device setup screens.">
+    OK
+  </message>
+  <message name="IDS_LANGUAGE_SECTION_TITLE" desc="Title of language selection screen" meaning="A title of the dialog where user should select ChromeOS UI language and default keyboard layout during initial device setup.">
+    Choose your language &amp; keyboard
+  </message>
+  <message name="IDS_NETWORK_SECTION_TITLE" desc="Title of network selection screen" meaning="A title of the dialog where user should select network to connect to Internet">
     Connect to network
   </message>
   <message name="IDS_NETWORK_SECTION_HINT" desc="Under-title line on the network selection screen" meaning="A hint to the user why device should be connected to the network">
