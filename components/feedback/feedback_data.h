@@ -42,12 +42,6 @@ class FeedbackData : public FeedbackCommon {
   void AttachAndCompressFileData(
       std::unique_ptr<std::string> attached_filedata);
 
-  // Called once we have compressed our system logs.
-  void OnCompressLogsComplete(std::unique_ptr<std::string> compressed_logs);
-
-  // Called once we have compressed our attached file.
-  void OnCompressFileComplete(std::unique_ptr<std::string> compressed_file);
-
   // Returns true if we've completed all the tasks needed before we can send
   // feedback - at this time this is includes getting the feedback page data
   // and compressing the system logs.

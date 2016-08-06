@@ -238,18 +238,6 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
 
   const FeedbackInfo &feedback_info = params->feedback;
 
-  std::string attached_file_uuid;
-  if (feedback_info.attached_file_blob_uuid &&
-      !feedback_info.attached_file_blob_uuid->empty()) {
-    attached_file_uuid = *feedback_info.attached_file_blob_uuid;
-  }
-
-  std::string screenshot_uuid;
-  if (feedback_info.screenshot_blob_uuid &&
-      !feedback_info.screenshot_blob_uuid->empty()) {
-    screenshot_uuid = *feedback_info.screenshot_blob_uuid;
-  }
-
   // Populate feedback data.
   scoped_refptr<FeedbackData> feedback_data(new FeedbackData());
   feedback_data->set_context(GetProfile());
@@ -263,18 +251,20 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
     feedback_data->set_page_url(*feedback_info.page_url);
   if (feedback_info.email)
     feedback_data->set_user_email(*feedback_info.email);
+  if (feedback_info.trace_id)
+    feedback_data->set_trace_id(*feedback_info.trace_id);
 
-  if (!attached_file_uuid.empty()) {
+  if (feedback_info.attached_file_blob_uuid &&
+      !feedback_info.attached_file_blob_uuid->empty()) {
     feedback_data->set_attached_filename(
         StripFakepath((*feedback_info.attached_file).name));
-    feedback_data->set_attached_file_uuid(attached_file_uuid);
+    feedback_data->set_attached_file_uuid(
+        *feedback_info.attached_file_blob_uuid);
   }
 
-  if (!screenshot_uuid.empty())
-    feedback_data->set_screenshot_uuid(screenshot_uuid);
-
-  if (feedback_info.trace_id) {
-    feedback_data->set_trace_id(*feedback_info.trace_id);
+  if (feedback_info.screenshot_blob_uuid &&
+      !feedback_info.screenshot_blob_uuid->empty()) {
+    feedback_data->set_screenshot_uuid(*feedback_info.screenshot_blob_uuid);
   }
 
   std::unique_ptr<FeedbackData::SystemLogsMap> sys_logs(

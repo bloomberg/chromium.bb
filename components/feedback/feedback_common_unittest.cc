@@ -37,6 +37,8 @@ class FeedbackCommonTest : public testing::Test {
 
   ~FeedbackCommonTest() override {}
 
+  void CompressLogs() { feedback_->CompressLogs(); }
+
   bool FeedbackHasProductId() const { return feedback_->HasProductId(); }
 
   scoped_refptr<FeedbackCommon> feedback_;
@@ -92,7 +94,7 @@ TEST_F(FeedbackCommonTest, TestCompression) {
   // added with the right name.
   feedback_->AddLog(kOne, kTwo);
   feedback_->AddLog(kThree, kLongLog);
-  feedback_->CompressLogs();
+  CompressLogs();
   feedback_->PrepareReport(&report_);
 
   EXPECT_EQ(1, report_.product_specific_binary_data_size());

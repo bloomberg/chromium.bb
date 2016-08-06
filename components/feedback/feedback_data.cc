@@ -60,12 +60,11 @@ void FeedbackData::SetAndCompressSystemInfo(
     }
   }
 
-  if (sys_info.get()) {
+  if (sys_info) {
     ++pending_op_count_;
     AddLogs(std::move(sys_info));
     BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
-        base::Bind(&FeedbackCommon::CompressLogs, this),
+        FROM_HERE, base::Bind(&FeedbackData::CompressLogs, this),
         base::Bind(&FeedbackData::OnCompressComplete, this));
   }
 }
@@ -74,15 +73,13 @@ void FeedbackData::SetAndCompressHistograms(
     std::unique_ptr<std::string> histograms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!histograms.get())
+  if (!histograms)
     return;
   ++pending_op_count_;
   BrowserThread::PostBlockingPoolTaskAndReply(
       FROM_HERE,
-      base::Bind(&FeedbackCommon::CompressFile,
-                 this,
-                 base::FilePath(kHistogramsFilename),
-                 kHistogramsAttachmentName,
+      base::Bind(&FeedbackData::CompressFile, this,
+                 base::FilePath(kHistogramsFilename), kHistogramsAttachmentName,
                  base::Passed(&histograms)),
       base::Bind(&FeedbackData::OnCompressComplete, this));
 }
@@ -91,18 +88,14 @@ void FeedbackData::AttachAndCompressFileData(
     std::unique_ptr<std::string> attached_filedata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!attached_filedata.get() || attached_filedata->empty())
+  if (!attached_filedata || attached_filedata->empty())
     return;
   ++pending_op_count_;
   base::FilePath attached_file =
                   base::FilePath::FromUTF8Unsafe(attached_filename_);
   BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&FeedbackCommon::CompressFile,
-                 this,
-                 attached_file,
-                 std::string(),
-                 base::Passed(&attached_filedata)),
+      FROM_HERE, base::Bind(&FeedbackData::CompressFile, this, attached_file,
+                            std::string(), base::Passed(&attached_filedata)),
       base::Bind(&FeedbackData::OnCompressComplete, this));
 }
 
