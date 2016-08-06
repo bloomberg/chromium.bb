@@ -32,6 +32,10 @@ pid_t sys_gettid(void) {
   return syscall(__NR_gettid);
 }
 
+ssize_t sys_write(int fd, const char* buffer, size_t buffer_size) {
+  return syscall(__NR_write, fd, buffer, buffer_size);
+}
+
 long sys_clone(unsigned long flags,
                std::nullptr_t child_stack,
                pid_t* ptid,
