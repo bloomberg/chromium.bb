@@ -168,7 +168,10 @@ Polymer({
 </if>
         return this.i18n('aboutUpgradeUpdating');
       default:
-        return this.currentUpdateStatusEvent_.message || '';
+        var message = this.currentUpdateStatusEvent_.message;
+        return message ?
+            parseHtmlSubset('<b>' + message + '</b>').firstChild.innerHTML :
+            '';
     }
   },
 

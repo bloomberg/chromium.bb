@@ -9,6 +9,7 @@
         'about_page_browser_proxy',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:parse_html_subset',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '../compiled_resources2.gyp:lifetime_browser_proxy',
         '../compiled_resources2.gyp:route',

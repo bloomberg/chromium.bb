@@ -85,13 +85,14 @@
               <div class="start">
                 <div id="updateStatusMessage"
                     hidden="[[!shouldShowUpdateStatusMessage_(
-                        currentUpdateStatusEvent_)]]">
+                        currentUpdateStatusEvent_)]]"
 <if expr="not chromeos">
-                  [[getUpdateStatusMessage_(currentUpdateStatusEvent_)]]
+                    inner-h-t-m-l="[[getUpdateStatusMessage_(
+                        currentUpdateStatusEvent_)]]">
 </if>
 <if expr="chromeos">
-                  [[getUpdateStatusMessage_(
-                      currentUpdateStatusEvent_, targetChannel_)]]
+                    inner-h-t-m-l="[[getUpdateStatusMessage_(
+                        currentUpdateStatusEvent_, targetChannel_)]]">
 </if>
                 </div>
                 <span id="deprecationWarning"
