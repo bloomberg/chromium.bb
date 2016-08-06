@@ -2043,7 +2043,7 @@ bool LayoutBox::paintedOutputOfObjectHasNoEffect() const
         return false;
 
     // Cannot skip paint invalidation if the box has real things to paint.
-    if (getSelectionState() != SelectionNone || hasBoxDecorationBackground() || styleRef().hasVisualOverflowingEffect())
+    if (getSelectionState() != SelectionNone || hasBoxDecorationBackground() || styleRef().hasBoxDecorations() || styleRef().hasVisualOverflowingEffect())
         return false;
 
     // If the box has clip, we need issue a paint invalidation to cover the changed part of
@@ -4056,7 +4056,7 @@ PaintInvalidationReason LayoutBox::getPaintInvalidationReason(const PaintInvalid
     if (oldBorderBoxSize.height() != newBorderBoxSize.height() && mustInvalidateBackgroundOrBorderPaintOnHeightChange())
         return PaintInvalidationBorderBoxChange;
 
-    return PaintInvalidationIncremental;
+    return styleRef().hasBackground() || styleRef().hasBoxDecorations() ? PaintInvalidationIncremental : invalidationReason;
 }
 
 void LayoutBox::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
