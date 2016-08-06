@@ -186,7 +186,6 @@
         '../inspector_protocol/ValueConversions.h',
 
         'Atomics.h',
-        'IgnoreExceptionsScope.h',
         'InjectedScript.cpp',
         'InjectedScript.h',
         'InjectedScriptNative.cpp',
