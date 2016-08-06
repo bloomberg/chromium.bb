@@ -332,6 +332,15 @@ if (is_mac) {
   }
 }
 
+if (is_ios) {
+  binary_symlink("dump_syms") {
+    binary_label = ":$target_name($host_toolchain)"
+  }
+  binary_symlink("symupload") {
+    binary_label = ":$target_name($host_toolchain)"
+  }
+}
+
 if (is_mac) {
   static_library("utilities") {
     sources = [
