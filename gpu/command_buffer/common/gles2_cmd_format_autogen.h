@@ -13628,55 +13628,6 @@ static_assert(
     offsetof(ScheduleCALayerSharedStateCHROMIUM, shm_offset) == 20,
     "offset of ScheduleCALayerSharedStateCHROMIUM shm_offset should be 20");
 
-struct ScheduleCALayerFilterEffectsCHROMIUMImmediate {
-  typedef ScheduleCALayerFilterEffectsCHROMIUMImmediate ValueType;
-  static const CommandId kCmdId =
-      kScheduleCALayerFilterEffectsCHROMIUMImmediate;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLCALayerFilterEffect) * 1 *
-                                 count);  // NOLINT
-  }
-
-  static uint32_t ComputeSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
-  }
-
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
-  }
-
-  void Init(GLsizei _count, const GLCALayerFilterEffect* _effects) {
-    SetHeader(_count);
-    count = _count;
-    memcpy(ImmediateDataAddress(this), _effects, ComputeDataSize(_count));
-  }
-
-  void* Set(void* cmd, GLsizei _count, const GLCALayerFilterEffect* _effects) {
-    static_cast<ValueType*>(cmd)->Init(_count, _effects);
-    const uint32_t size = ComputeSize(_count);
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
-  }
-
-  gpu::CommandHeader header;
-  int32_t count;
-};
-
-static_assert(
-    sizeof(ScheduleCALayerFilterEffectsCHROMIUMImmediate) == 8,
-    "size of ScheduleCALayerFilterEffectsCHROMIUMImmediate should be 8");
-static_assert(offsetof(ScheduleCALayerFilterEffectsCHROMIUMImmediate, header) ==
-                  0,
-              "offset of ScheduleCALayerFilterEffectsCHROMIUMImmediate header "
-              "should be 0");
-static_assert(offsetof(ScheduleCALayerFilterEffectsCHROMIUMImmediate, count) ==
-                  4,
-              "offset of ScheduleCALayerFilterEffectsCHROMIUMImmediate count "
-              "should be 4");
-
 struct ScheduleCALayerCHROMIUM {
   typedef ScheduleCALayerCHROMIUM ValueType;
   static const CommandId kCmdId = kScheduleCALayerCHROMIUM;

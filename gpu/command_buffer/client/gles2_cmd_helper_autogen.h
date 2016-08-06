@@ -2765,20 +2765,6 @@ void ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
   }
 }
 
-void ScheduleCALayerFilterEffectsCHROMIUMImmediate(
-    GLsizei count,
-    const GLCALayerFilterEffect* effects) {
-  const uint32_t size =
-      gles2::cmds::ScheduleCALayerFilterEffectsCHROMIUMImmediate::ComputeSize(
-          count);
-  gles2::cmds::ScheduleCALayerFilterEffectsCHROMIUMImmediate* c =
-      GetImmediateCmdSpaceTotalSize<
-          gles2::cmds::ScheduleCALayerFilterEffectsCHROMIUMImmediate>(size);
-  if (c) {
-    c->Init(count, effects);
-  }
-}
-
 void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                              GLuint background_color,
                              GLuint edge_aa_mask,

@@ -47,7 +47,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkBitmap.h"

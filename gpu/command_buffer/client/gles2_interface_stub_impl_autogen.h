@@ -1007,9 +1007,6 @@ void GLES2InterfaceStub::ScheduleCALayerSharedStateCHROMIUM(
     const GLfloat* /* clip_rect */,
     GLint /* sorting_context_id */,
     const GLfloat* /* transform */) {}
-void GLES2InterfaceStub::ScheduleCALayerFilterEffectsCHROMIUM(
-    GLsizei /* count */,
-    const GLCALayerFilterEffect* /* effects */) {}
 void GLES2InterfaceStub::ScheduleCALayerCHROMIUM(
     GLuint /* contents_texture_id */,
     const GLfloat* /* contents_rect */,

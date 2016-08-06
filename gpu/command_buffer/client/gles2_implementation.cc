@@ -6150,26 +6150,6 @@ GLuint GLES2Implementation::CreateGpuMemoryBufferImageCHROMIUM(
   return image_id;
 }
 
-void GLES2Implementation::ScheduleCALayerFilterEffectsCHROMIUM(
-      GLsizei count,
-      const GLCALayerFilterEffect* effects) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix()
-                     << "] ScheduleCALayerFilterEffectsCHROMIUM(" << count
-                     << ", " << static_cast<const void*>(effects) << ")");
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < count; ++i) {
-      const GLCALayerFilterEffect& effect = effects[i];
-      GPU_CLIENT_LOG("  " << i << ": " << effect.type << " " << effect.amount
-                          << " " << effect.drop_shadow_offset_x << " "
-                          << effect.drop_shadow_offset_y << " "
-                          << effect.drop_shadow_color);
-    }
-  });
-  helper_->ScheduleCALayerFilterEffectsCHROMIUMImmediate(count, effects);
-  CheckGLError();
-}
-
 bool GLES2Implementation::ValidateSize(const char* func, GLsizeiptr size) {
   if (size < 0) {
     SetGLError(GL_INVALID_VALUE, func, "size < 0");

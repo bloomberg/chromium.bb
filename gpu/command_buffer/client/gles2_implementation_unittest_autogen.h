@@ -1138,6 +1138,42 @@ TEST_F(GLES2ImplementationTest, Hint) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, InvalidateFramebuffer) {
+  GLenum data[2][1] = {{0}};
+  struct Cmds {
+    cmds::InvalidateFramebufferImmediate cmd;
+    GLenum data[2][1];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 2; ++ii) {
+    for (int jj = 0; jj < 1; ++jj) {
+      data[ii][jj] = static_cast<GLenum>(ii * 1 + jj);
+    }
+  }
+  expected.cmd.Init(GL_FRAMEBUFFER, 2, &data[0][0]);
+  gl_->InvalidateFramebuffer(GL_FRAMEBUFFER, 2, &data[0][0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, InvalidateSubFramebuffer) {
+  GLenum data[2][1] = {{0}};
+  struct Cmds {
+    cmds::InvalidateSubFramebufferImmediate cmd;
+    GLenum data[2][1];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 2; ++ii) {
+    for (int jj = 0; jj < 1; ++jj) {
+      data[ii][jj] = static_cast<GLenum>(ii * 1 + jj);
+    }
+  }
+  expected.cmd.Init(GL_FRAMEBUFFER, 2, &data[0][0], 4, 5, 6, 7);
+  gl_->InvalidateSubFramebuffer(GL_FRAMEBUFFER, 2, &data[0][0], 4, 5, 6, 7);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, IsBuffer) {
   struct Cmds {
     cmds::IsBuffer cmd;
@@ -2742,6 +2778,24 @@ TEST_F(GLES2ImplementationTest, ReleaseTexImage2DCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, DiscardFramebufferEXT) {
+  GLenum data[2][1] = {{0}};
+  struct Cmds {
+    cmds::DiscardFramebufferEXTImmediate cmd;
+    GLenum data[2][1];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 2; ++ii) {
+    for (int jj = 0; jj < 1; ++jj) {
+      data[ii][jj] = static_cast<GLenum>(ii * 1 + jj);
+    }
+  }
+  expected.cmd.Init(1, 2, &data[0][0]);
+  gl_->DiscardFramebufferEXT(1, 2, &data[0][0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, LoseContextCHROMIUM) {
   struct Cmds {
     cmds::LoseContextCHROMIUM cmd;
@@ -2751,6 +2805,24 @@ TEST_F(GLES2ImplementationTest, LoseContextCHROMIUM) {
 
   gl_->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                            GL_GUILTY_CONTEXT_RESET_ARB);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, DrawBuffersEXT) {
+  GLenum data[1][1] = {{0}};
+  struct Cmds {
+    cmds::DrawBuffersEXTImmediate cmd;
+    GLenum data[1][1];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 1; ++ii) {
+    for (int jj = 0; jj < 1; ++jj) {
+      data[ii][jj] = static_cast<GLenum>(ii * 1 + jj);
+    }
+  }
+  expected.cmd.Init(1, &data[0][0]);
+  gl_->DrawBuffersEXT(1, &data[0][0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

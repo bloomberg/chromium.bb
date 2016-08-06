@@ -764,9 +764,6 @@ error::Error DoScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
                                                   const GLfloat* clip_rect,
                                                   GLint sorting_context_id,
                                                   const GLfloat* transform);
-error::Error DoScheduleCALayerFilterEffectsCHROMIUM(
-    GLuint n,
-    const GLCALayerFilterEffect* effects);
 error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                        const GLfloat* contents_rect,
                                        GLuint background_color,

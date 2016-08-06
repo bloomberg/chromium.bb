@@ -759,9 +759,6 @@ virtual void ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
                                                 const GLfloat* clip_rect,
                                                 GLint sorting_context_id,
                                                 const GLfloat* transform) = 0;
-virtual void ScheduleCALayerFilterEffectsCHROMIUM(
-    GLsizei count,
-    const GLCALayerFilterEffect* effects) = 0;
 virtual void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                      const GLfloat* contents_rect,
                                      GLuint background_color,
