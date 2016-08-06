@@ -14,7 +14,7 @@ from webkitpy.common.webkit_finder import WebKitFinder
 WPT_DEST_NAME = 'wpt'
 CSS_DEST_NAME = 'csswg-test'
 
-POLL_DELAY_SECONDS = 300
+POLL_DELAY_SECONDS = 900
 
 
 class DepsUpdater(object):
@@ -347,6 +347,7 @@ class DepsUpdater(object):
     def has_failing_results(self):
         while True:
             time.sleep(POLL_DELAY_SECONDS)
+            self.print_('Still waiting...')
             _, out = self.run(['git', 'cl', 'try-results'])
             results = self.parse_try_job_results(out)
             if results.get('Started') or results.get('Scheduled'):
