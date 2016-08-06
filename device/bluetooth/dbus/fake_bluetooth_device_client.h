@@ -180,6 +180,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   // we can emulate.
   static const char kPairedDevicePath[];
   static const char kPairedDeviceName[];
+  static const char kPairedDeviceAlias[];
   static const char kPairedDeviceAddress[];
   static const uint32_t kPairedDeviceClass;
 
@@ -245,6 +246,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
 
   static const char kPairedUnconnectableDevicePath[];
   static const char kPairedUnconnectableDeviceName[];
+  static const char kPairedUnconnectableDeviceAlias[];
   static const char kPairedUnconnectableDeviceAddress[];
   static const uint32_t kPairedUnconnectableDeviceClass;
 
