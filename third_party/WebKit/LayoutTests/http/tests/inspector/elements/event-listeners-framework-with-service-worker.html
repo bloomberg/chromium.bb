@@ -22,12 +22,6 @@ function test()
         return InspectorTest.isDedicatedWorker(target);
     }
 
-    function forceUpdate()
-    {
-        objectEventListenersPane.revealWidget();
-        objectEventListenersPane.update();
-    }
-
     function step1(target)
     {
         InspectorTest.waitForExecutionContextInTarget(target, step2);
@@ -39,7 +33,10 @@ function test()
         InspectorTest.selectThread(executionContext.target());
         InspectorTest.addResult("Context is dedicated worker: " + isDedicatedWorker());
         InspectorTest.addResult("Dumping listeners");
-        InspectorTest.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, forceUpdate, step3);
+        objectEventListenersPane.revealView().then(() => {
+            objectEventListenersPane.update();
+            InspectorTest.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, step3);
+        });
     }
 
     function step3()
@@ -48,7 +45,7 @@ function test()
         InspectorTest.selectThread(WebInspector.targetManager.mainTarget());
         InspectorTest.addResult("Context is dedicated worker: " + isDedicatedWorker());
         InspectorTest.addResult("Dumping listeners");
-        InspectorTest.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, forceUpdate, step4);
+        InspectorTest.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, step4);
     }
 
     function step4()

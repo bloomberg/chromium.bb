@@ -15,19 +15,10 @@ var initialize_Animations = function() {
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.TabbedPane.prototype, "changeTabView", onChangeTabView, true);
     WebInspector.viewManager.showView("animations");
-    var timeline;
-
-    function onChangeTabView(id, view)
-    {
-        if (!timeline && id === "animations") {
-            timeline = view;
-            InspectorTest.assertTrue(timeline instanceof WebInspector.AnimationTimeline);
-            InspectorTest.evaluateInPage("startAnimation()");
-            InspectorTest.addSniffer(WebInspector.AnimationModel.prototype, "animationStarted", animationStarted);
-        }
-    }
+    var timeline = self.runtime.sharedInstance(WebInspector.AnimationTimeline);
+    InspectorTest.evaluateInPage("startAnimation()");
+    InspectorTest.addSniffer(WebInspector.AnimationModel.prototype, "animationStarted", animationStarted);
 
     function animationStarted()
     {

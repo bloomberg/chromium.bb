@@ -8,7 +8,7 @@ var foo = 123
 var test = function()
 {
     var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
-    watchExpressionsPane.revealWidget();
+    watchExpressionsPane.revealView();
     watchExpressionsPane.addExpression("#$%");
 
     InspectorTest.deprecatedRunAfterPendingDispatches(step1);

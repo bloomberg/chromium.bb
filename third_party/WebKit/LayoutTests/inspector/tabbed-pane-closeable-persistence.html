@@ -4,29 +4,40 @@
 <script type="text/javascript">
 var test = function()
 {
-    function logPersistenceSetting()
-    {
-        InspectorTest.addResult("Closeable tabs to restore: " + JSON.stringify(tabbedPaneController._closeableTabSetting.get()));
-    }
+    var tabbedLocation = WebInspector.viewManager.createTabbedLocation();
+    logPersistenceSetting();
 
-    var tabbedPaneController = WebInspector.inspectorView._drawerTabbedLocation;
-    logPersistenceSetting();
     // Show a closeable tab.
-    tabbedPaneController.showView("sensors");
+    var sensors = new WebInspector.SimpleView("sensors");
+    sensors.isCloseable = function() { return true; }
+    tabbedLocation.showView(sensors);
     logPersistenceSetting();
-    tabbedPaneController.showView("sensors");
+
+    // Repeat.
+    tabbedLocation.showView(sensors);
     logPersistenceSetting();
+
     // Show a permanent tab.
-    tabbedPaneController.showView("console");
+    var console = new WebInspector.SimpleView("console");
+    tabbedLocation.showView(console);
     logPersistenceSetting();
-    // Show temporary tab.
-    tabbedPaneController.showView("sources.history");
+
+    // Show transient tab.
+    var history = new WebInspector.SimpleView("history");
+    history.isTransient = function() { return true; }
+    tabbedLocation.showView(history);
     logPersistenceSetting();
+
     // Close closeable tab.
-    tabbedPaneController.tabbedPane().closeTab("sensors");
+    tabbedLocation.tabbedPane().closeTab("sensors");
     logPersistenceSetting();
 
     InspectorTest.completeTest();
+
+    function logPersistenceSetting()
+    {
+        InspectorTest.addResult("Closeable tabs to restore: " + JSON.stringify(tabbedLocation._closeableTabSetting.get()));
+    }
 }
 </script>
 </head>

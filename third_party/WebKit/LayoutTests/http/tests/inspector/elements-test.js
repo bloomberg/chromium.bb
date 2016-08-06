@@ -437,13 +437,13 @@ InspectorTest.toggleMatchedStyleProperty = function(propertyName, checked)
 InspectorTest.eventListenersWidget = function()
 {
     var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
-    sidebarPane.revealWidget();
+    sidebarPane.revealView();
     return sidebarPane;
 }
 
 InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 {
-    InspectorTest.expandAndDumpEventListeners(InspectorTest.eventListenersWidget()._eventListenersView, null, callback);
+    InspectorTest.expandAndDumpEventListeners(InspectorTest.eventListenersWidget()._eventListenersView, callback);
 }
 
 InspectorTest.dumpObjectPropertySectionDeep = function(section)

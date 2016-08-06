@@ -7,7 +7,7 @@ InspectorTest.showAccessibilityView = function()
 {
     var sidebarPane = _getAccessibilitySidebarPane();
     if (sidebarPane) {
-        sidebarPane.revealWidget();
+        sidebarPane.revealView();
         return InspectorTest.waitForAccessibilityNodeUpdate();
     } else {
         return _waitForViewsLoaded()

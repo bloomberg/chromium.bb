@@ -60,19 +60,11 @@ function test()
     // Override animation color for testing
     // FIXME: Set animation name of Web Animation instead; not supported yet
     WebInspector.AnimationUI.Color = function() { return "black"; }
-    var timeline;
-    InspectorTest.addSniffer(WebInspector.TabbedPane.prototype, "changeTabView", onChangeTabView, true);
-    WebInspector.viewManager.showView("animations");
 
-    function onChangeTabView(id, view)
-    {
-        if (!timeline && id === "animations") {
-            timeline = view;
-            InspectorTest.assertTrue(timeline instanceof WebInspector.AnimationTimeline);
-            InspectorTest.waitForAnimationAdded(step2);
-            InspectorTest.evaluateInPage("startAnimationWithDelay()");
-        }
-    }
+    WebInspector.viewManager.showView("animations");
+    var timeline = self.runtime.sharedInstance(WebInspector.AnimationTimeline);
+    InspectorTest.evaluateInPage("startAnimationWithDelay()");
+    InspectorTest.waitForAnimationAdded(step2);
 
     function step2(group)
     {

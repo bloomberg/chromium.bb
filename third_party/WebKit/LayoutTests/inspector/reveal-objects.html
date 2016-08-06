@@ -100,7 +100,7 @@ function test() {
         InspectorTest.addSniffer(WebInspector.ElementsPanel.prototype, "revealAndSelectNode", nodeRevealed, true);
         InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "showUILocation", uiLocationRevealed, true);
         InspectorTest.addSniffer(WebInspector.ResourcesPanel.prototype, "showResource", resourceRevealed, true);
-        InspectorTest.addSniffer(WebInspector.NetworkPanel.prototype, "revealAndHighlightRequest", revealWidgeted, true);
+        InspectorTest.addSniffer(WebInspector.NetworkPanel.prototype, "revealAndHighlightRequest", revealed, true);
     }
 
     function nodeRevealed(node)
@@ -118,7 +118,7 @@ function test() {
         InspectorTest.addResult("Resource " + resource.displayName + " revealed in the Resources panel");
     }
 
-    function revealWidgeted(request)
+    function revealed(request)
     {
         InspectorTest.addResult("Request " + new WebInspector.ParsedURL(request.url).lastPathComponent + " revealed in the Network panel");
     }

@@ -369,12 +369,9 @@ InspectorTest.dumpObjectPropertyTreeElement = function(treeElement)
     }
 }
 
-InspectorTest.expandAndDumpEventListeners = function(eventListenersView, updateCallback, callback)
+InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callback)
 {
     InspectorTest.addSniffer(WebInspector.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
-
-    if (updateCallback)
-        updateCallback();
 
     function listenersArrived()
     {

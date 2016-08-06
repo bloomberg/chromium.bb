@@ -24,13 +24,13 @@ var test = function()
     function step1()
     {
         watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
-        watchExpressionsPane.revealWidget();
-        watchExpressionsPane.addExpression("window.document");
-        watchExpressionsPane.addExpression("windowa.document");
-
-        var testName = InspectorTest.mainTarget.inspectedURL();
-        testName = testName.substring(testName.lastIndexOf('/') + 1);
-        InspectorTest.showScriptSource(testName, didShowScriptSource);
+        watchExpressionsPane.revealView().then(() => {
+            watchExpressionsPane.addExpression("window.document");
+            watchExpressionsPane.addExpression("windowa.document");
+            var testName = InspectorTest.mainTarget.inspectedURL();
+            testName = testName.substring(testName.lastIndexOf('/') + 1);
+            InspectorTest.showScriptSource(testName, didShowScriptSource);
+        });
     }
 
     function didShowScriptSource(sourceFrame)

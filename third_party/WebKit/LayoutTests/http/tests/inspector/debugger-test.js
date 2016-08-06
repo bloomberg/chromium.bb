@@ -43,21 +43,21 @@ InspectorTest.completeDebuggerTest = function()
     Promise.prototype.then = function()
     {
         var result = origThen.apply(this, arguments);
-        origThen.call(result, undefined, onUncaughtPromiseReject);
+        origThen.call(result, undefined, onUncaughtPromiseReject.bind(null, new Error().stack));
         return result;
     }
 
     Promise.prototype.catch = function()
     {
         var result = origCatch.apply(this, arguments);
-        origThen.call(result, undefined, onUncaughtPromiseReject);
+        origThen.call(result, undefined, onUncaughtPromiseReject.bind(null, new Error().stack));
         return result;
     }
 
-    function onUncaughtPromiseReject(e)
+    function onUncaughtPromiseReject(stack, e)
     {
         var message = (typeof e === "object" && e.stack) || e;
-        InspectorTest.addResult("FAIL: Uncaught exception in promise: " + message);
+        InspectorTest.addResult("FAIL: Uncaught exception in promise: " + message + " " + stack);
         InspectorTest.completeDebuggerTest();
     }
 })();

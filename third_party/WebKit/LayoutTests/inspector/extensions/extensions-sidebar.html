@@ -19,7 +19,7 @@ function initialize_extensionsSidebarTest()
     {
         var sidebar = InspectorTest._extensionSidebar(panelName);
         InspectorTest.deprecatedRunAfterPendingDispatches(function() {
-            sidebar.revealWidget();
+            sidebar.revealView();
             callback();
         });
     }
