@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -24,6 +25,8 @@ struct VideoMemoryUsageStats;
 
 namespace task_management {
 
+class SharedSampler;
+
 // Defines a group of tasks tracked by the task manager which belong to the same
 // process. This class lives on the UI thread.
 class TaskGroup {
@@ -32,6 +35,7 @@ class TaskGroup {
       base::ProcessHandle proc_handle,
       base::ProcessId proc_id,
       const base::Closure& on_background_calculations_done,
+      const scoped_refptr<SharedSampler>& shared_sampler,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner);
   ~TaskGroup();
 
@@ -124,6 +128,8 @@ class TaskGroup {
   const base::Closure on_background_calculations_done_;
 
   scoped_refptr<TaskGroupSampler> worker_thread_sampler_;
+
+  scoped_refptr<SharedSampler> shared_sampler_;
 
   // Lists the Tasks in this TaskGroup.
   // Tasks are not owned by the TaskGroup. They're owned by the TaskProviders.

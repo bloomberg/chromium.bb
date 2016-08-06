@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "build/build_config.h"
+#include "chrome/browser/task_management/sampling/shared_sampler.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "content/public/browser/browser_thread.h"
@@ -65,11 +66,13 @@ TaskGroup::TaskGroup(
     base::ProcessHandle proc_handle,
     base::ProcessId proc_id,
     const base::Closure& on_background_calculations_done,
+    const scoped_refptr<SharedSampler>& shared_sampler,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner)
     : process_handle_(proc_handle),
       process_id_(proc_id),
       on_background_calculations_done_(on_background_calculations_done),
       worker_thread_sampler_(nullptr),
+      shared_sampler_(shared_sampler),
       expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
       current_on_bg_done_flags_(0),
       cpu_usage_(0.0),
@@ -107,9 +110,14 @@ TaskGroup::TaskGroup(
                            base::Bind(&TaskGroup::OnProcessPriorityDone,
                                       weak_ptr_factory_.GetWeakPtr())));
   worker_thread_sampler_.swap(sampler);
+
+  shared_sampler_->RegisterCallbacks(
+      process_id_, base::Bind(&TaskGroup::OnIdleWakeupsRefreshDone,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 TaskGroup::~TaskGroup() {
+  shared_sampler_->UnregisterCallbacks(process_id_);
 }
 
 void TaskGroup::AddTask(Task* task) {
@@ -167,13 +175,24 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
   }
 #endif  // !defined(DISABLE_NACL)
 
+  int64_t shared_refresh_flags =
+      refresh_flags & shared_sampler_->GetSupportedFlags();
+
+  // 5- Refresh resources via SharedSampler if the current platform
+  // implementation supports that. The actual work is done on the worker thread.
+  // At the moment this is supported only on OS_WIN.
+  if (shared_refresh_flags != 0) {
+    shared_sampler_->Refresh(process_id_, shared_refresh_flags);
+    refresh_flags &= ~shared_refresh_flags;
+  }
+
   // The remaining resource refreshes are time consuming and cannot be done on
   // the UI thread. Do them all on the worker thread using the TaskGroupSampler.
-  // 5- CPU usage.
-  // 6- Memory usage.
-  // 7- Idle Wakeups per second.
-  // 8- (Linux and ChromeOS only) The number of file descriptors current open.
-  // 9- Process priority (foreground vs. background).
+  // 6-  CPU usage.
+  // 7-  Memory usage.
+  // 8-  Idle Wakeups per second.
+  // 9-  (Linux and ChromeOS only) The number of file descriptors current open.
+  // 10- Process priority (foreground vs. background).
   worker_thread_sampler_->Refresh(refresh_flags);
 }
 

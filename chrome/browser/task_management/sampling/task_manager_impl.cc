@@ -16,6 +16,7 @@
 #include "chrome/browser/task_management/providers/browser_process_task_provider.h"
 #include "chrome/browser/task_management/providers/child_process_task_provider.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_task_provider.h"
+#include "chrome/browser/task_management/sampling/shared_sampler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_frame_host.h"
@@ -44,10 +45,11 @@ base::LazyInstance<TaskManagerImpl> lazy_task_manager_instance =
 }  // namespace
 
 TaskManagerImpl::TaskManagerImpl()
-    : on_background_data_ready_callback_(base::Bind(
-          &TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone,
-          base::Unretained(this))),
+    : on_background_data_ready_callback_(
+          base::Bind(&TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone,
+                     base::Unretained(this))),
       blocking_pool_runner_(GetBlockingPoolRunner()),
+      shared_sampler_(new SharedSampler(blocking_pool_runner_)),
       is_running_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -384,7 +386,7 @@ void TaskManagerImpl::TaskAdded(Task* task) {
   if (!task_group)
     task_group.reset(new TaskGroup(task->process_handle(), proc_id,
                                    on_background_data_ready_callback_,
-                                   blocking_pool_runner_));
+                                   shared_sampler_, blocking_pool_runner_));
 
   task_group->AddTask(task);
 

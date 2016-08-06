@@ -71,13 +71,8 @@ const TableColumnData kColumns[] = {
   { IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN, ui::TableColumn::RIGHT,
     -1, 0, arraysize("2000.0K (2000.0 live)") * kCharWidth, -1, true, false,
     false },
-
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-  // TODO(port): Port the idle wakeups per second to platforms other than Linux
-  // and MacOS (http://crbug.com/120488).
   { IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN, ui::TableColumn::RIGHT, -1, 0,
     arraysize("idlewakeups") * kCharWidth, -1, true, false, false },
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_LINUX)
   { IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN, ui::TableColumn::RIGHT, -1, 0,

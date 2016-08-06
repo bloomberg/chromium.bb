@@ -40,8 +40,8 @@ struct MemoryUsageStats {
 // pool thread.
 class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
  public:
-  // The below are the types of the callbacks to the UI thread upon their
-  // corresponding refresh are done on the worker thread.
+  // Below are the types of callbacks that are invoked on the UI thread upon
+  // completion of corresponding refresh tasks on the worker thread.
   using OnCpuRefreshCallback = base::Callback<void(double)>;
   using OnMemoryRefreshCallback = base::Callback<void(MemoryUsageStats)>;
   using OnIdleWakeupsCallback = base::Callback<void(int)>;

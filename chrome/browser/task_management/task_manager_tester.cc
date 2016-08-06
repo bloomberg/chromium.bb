@@ -106,6 +106,9 @@ void TaskManagerTester::ToggleColumnVisibility(ColumnSpecifier column) {
     case ColumnSpecifier::V8_MEMORY:
       column_id = IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN;
       break;
+    case ColumnSpecifier::IDLE_WAKEUPS:
+      column_id = IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN;
+      break;
   }
   model_->ToggleColumnVisibility(column_id);
 }
@@ -127,6 +130,10 @@ int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
       break;
     case ColumnSpecifier::SQLITE_MEMORY_USED:
       value = task_manager()->GetSqliteMemoryUsed(task_id);
+      success = true;
+      break;
+    case ColumnSpecifier::IDLE_WAKEUPS:
+      value = task_manager()->GetIdleWakeupsPerSecond(task_id);
       success = true;
       break;
   }

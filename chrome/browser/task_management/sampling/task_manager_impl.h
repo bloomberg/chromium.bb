@@ -9,6 +9,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -23,6 +26,8 @@
 #include "gpu/ipc/common/memory_stats.h"
 
 namespace task_management {
+
+class SharedSampler;
 
 // Defines a concrete implementation of the TaskManagerInterface.
 class TaskManagerImpl :
@@ -151,6 +156,10 @@ class TaskManagerImpl :
   // The specific blocking pool SequencedTaskRunner that will be used to make
   // sure TaskGroupSampler posts their refreshes serially.
   scoped_refptr<base::SequencedTaskRunner> blocking_pool_runner_;
+
+  // A special sampler shared with all instances of TaskGroup that calculates a
+  // subset of resources for all processes at once.
+  scoped_refptr<SharedSampler> shared_sampler_;
 
   // This will be set to true while there are observers and the task manager is
   // running.

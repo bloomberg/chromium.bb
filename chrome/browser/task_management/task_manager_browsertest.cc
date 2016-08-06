@@ -861,6 +861,34 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
 }
 
+// Checks that task manager counts idle wakeups.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
+                       IdleWakeups) {
+  ShowTaskManager();
+  model()->ToggleColumnVisibility(ColumnSpecifier::IDLE_WAKEUPS);
+
+  ui_test_utils::NavigateToURL(browser(), GetTestURL());
+
+  std::string test_js =
+    "function myWait() {\n"
+    "  setTimeout(function() { myWait(); }, 1)\n"
+    "}\n"
+    "myWait();\n"
+    "window.domAutomationController.send(\"okay\");\n";
+
+  std::string ok;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(), test_js, &ok));
+  ASSERT_EQ("okay", ok);
+
+  // The script above should trigger a lot of idle wakeups - up to 1000 per
+  // second. Let's make sure we get at least 100 (in case the test runs slow).
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("title1.html"), ColumnSpecifier::IDLE_WAKEUPS, 100));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+}
+
 // Checks that task manager counts utility process JS heap size.
 IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
                        UtilityJSHeapMemory) {
