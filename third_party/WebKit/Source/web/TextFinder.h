@@ -61,16 +61,32 @@ public:
         bool wrapWithinFrame, bool* activeNow = nullptr);
     void clearActiveFindMatch();
     void stopFindingAndClearSelection();
-    void scopeStringMatches(
-        int identifier, const WebString& searchText, const WebFindOptions&,
-        bool reset);
-    void cancelPendingScopingEffort();
     void increaseMatchCount(int identifier, int count);
-    void resetMatchCount();
     int findMatchMarkersVersion() const { return m_findMatchMarkersVersion; }
     WebFloatRect activeFindMatchRect();
     void findMatchRects(WebVector<WebFloatRect>&);
     int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect);
+
+    // Counts how many times a particular string occurs within the frame.  It
+    // also retrieves the location of the string and updates a vector in the
+    // frame so that tick-marks and highlighting can be drawn.  This function
+    // does its work asynchronously, by running for a certain time-slice and
+    // then scheduling itself (co-operative multitasking) to be invoked later
+    // (repeating the process until all matches have been found).  This allows
+    // multiple frames to be searched at the same time and provides a way to
+    // cancel at any time (see cancelPendingScopingEffort).  The parameter
+    // searchText specifies what to look for and |reset| signals whether this is
+    // a brand new request or a continuation of the last scoping effort.
+    void scopeStringMatches(
+        int identifier, const WebString& searchText, const WebFindOptions&,
+        bool reset);
+
+    // Cancels any outstanding requests for scoping string matches on the frame.
+    void cancelPendingScopingEffort();
+
+    // This function is called to reset the total number of matches found during
+    // the scoping effort.
+    void resetMatchCount();
 
     // Return the index in the find-in-page cache of the match closest to the
     // provided point in find-in-page coordinates, or -1 in case of error.

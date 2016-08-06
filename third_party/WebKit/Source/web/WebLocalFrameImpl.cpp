@@ -1955,6 +1955,60 @@ void WebLocalFrameImpl::didCallIsSearchProviderInstalled()
     UseCounter::count(frame(), UseCounter::ExternalIsSearchProviderInstalled);
 }
 
+void WebLocalFrameImpl::requestFind(int identifier, const WebString& searchText, const WebFindOptions& options)
+{
+    // Send "no results" if this frame has no visible content.
+    if (!hasVisibleContent()) {
+        client()->reportFindInPageMatchCount(identifier, 0 /* count */, true /* finalUpdate */);
+        return;
+    }
+
+    WebRange currentSelection = selectionRange();
+
+    bool result = false;
+    bool activeNow = false;
+
+    // Search for an active match only if this frame is focused or if this is a
+    // find next request.
+    if (isFocused() || options.findNext) {
+        result = find(identifier, searchText, options, false /* wrapWithinFrame */, &activeNow);
+    }
+
+    if (result && !options.findNext) {
+        // Indicate that at least one match has been found. 1 here means
+        // possibly more matches could be coming.
+        client()->reportFindInPageMatchCount(identifier, 1 /* count */, false /* finalUpdate */);
+    }
+
+    // There are three cases in which scoping is needed:
+    //
+    // 1) This is an initial find request (|options.findNext| is false). This
+    // will be the first scoping effort for this find session.
+    //
+    // 2) Something has been selected since the last search. This means that we
+    // cannot just increment the current match ordinal; we need to re-generate
+    // it.
+    //
+    // 3) TextFinder::Find() could not locate the next active find match, so it
+    // needs to be re-scoped.
+    //
+    // If none of these cases are true, then we just report the current match
+    // count without scoping.
+    if (options.findNext && currentSelection.isNull() && activeNow) {
+        // Force report of the actual count.
+        increaseMatchCount(0, identifier);
+        return;
+    }
+
+    // Scoping effort begins.
+    ensureTextFinder().resetMatchCount();
+    textFinder()->cancelPendingScopingEffort();
+
+    // Start a new scoping request. If the scoping function determines that it
+    // needs to scope, it will defer until later.
+    textFinder()->scopeStringMatches(identifier, searchText, options, true /* reset */);
+}
+
 bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, bool* activeNow)
 {
     if (!frame())
@@ -1962,11 +2016,6 @@ bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const 
 
     // Unlikely, but just in case we try to find-in-page on a detached frame.
     DCHECK(frame()->host());
-
-    // Search for an active match only if this frame is focused or if this is a
-    // find next request.
-    if (!isFocused() && !options.findNext)
-        return false;
 
     // Up-to-date, clean tree is required for finding text in page, since it relies
     // on TextIterator to look over the text.
@@ -1997,25 +2046,9 @@ void WebLocalFrameImpl::stopFinding(StopFindAction action)
     }
 }
 
-void WebLocalFrameImpl::scopeStringMatches(int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
-{
-    ensureTextFinder().scopeStringMatches(identifier, searchText, options, reset);
-}
-
-void WebLocalFrameImpl::cancelPendingScopingEffort()
-{
-    if (m_textFinder)
-        m_textFinder->cancelPendingScopingEffort();
-}
-
 void WebLocalFrameImpl::increaseMatchCount(int count, int identifier)
 {
     ensureTextFinder().increaseMatchCount(identifier, count);
-}
-
-void WebLocalFrameImpl::resetMatchCount()
-{
-    ensureTextFinder().resetMatchCount();
 }
 
 void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)

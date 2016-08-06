@@ -319,6 +319,12 @@ public:
         StopFindActionActivateSelection
     };
 
+    // Begins a find request, which includes finding the next find match (using
+    // find()) and scoping the frame for find matches if needed.
+    virtual void requestFind(int identifier,
+        const WebString& searchText,
+        const WebFindOptions&) = 0;
+
     // Searches a frame for a given string.
     //
     // If a match is found, this function will select it (scrolling down to
@@ -335,40 +341,17 @@ public:
         bool wrapWithinFrame,
         bool* activeNow = nullptr) = 0;
 
-    // Notifies the frame that we are no longer interested in searching.
-    // This will abort any asynchronous scoping effort already under way
-    // (see the function scopeStringMatches for details) and erase all
+    // Notifies the frame that we are no longer interested in searching.  This
+    // will abort any asynchronous scoping effort already under way (see the
+    // function TextFinder::scopeStringMatches for details) and erase all
     // tick-marks and highlighting from the previous search.  It will also
     // follow the specified StopFindAction.
     virtual void stopFinding(StopFindAction) = 0;
-
-    // Counts how many times a particular string occurs within the frame.
-    // It also retrieves the location of the string and updates a vector in
-    // the frame so that tick-marks and highlighting can be drawn.  This
-    // function does its work asynchronously, by running for a certain
-    // time-slice and then scheduling itself (co-operative multitasking) to
-    // be invoked later (repeating the process until all matches have been
-    // found).  This allows multiple frames to be searched at the same time
-    // and provides a way to cancel at any time (see
-    // cancelPendingScopingEffort).  The parameter searchText specifies
-    // what to look for and |reset| signals whether this is a brand new
-    // request or a continuation of the last scoping effort.
-    virtual void scopeStringMatches(int identifier,
-        const WebString& searchText,
-        const WebFindOptions&,
-        bool reset) = 0;
-
-    // Cancels any outstanding requests for scoping string matches on the frame.
-    virtual void cancelPendingScopingEffort() = 0;
 
     // This function is called during the scoping effort to keep a running tally
     // of the accumulated total match-count in the frame.  After updating the
     // count it will notify the WebViewClient about the new count.
     virtual void increaseMatchCount(int count, int identifier) = 0;
-
-    // This function is called to reset the total number of matches found during
-    // the scoping effort.
-    virtual void resetMatchCount() = 0;
 
     // Returns a counter that is incremented when the find-in-page markers are
     // changed on the frame. Switching the active marker doesn't change the

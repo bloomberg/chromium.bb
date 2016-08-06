@@ -3544,7 +3544,6 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find.html");
     ASSERT_TRUE(webViewHelper.webView()->mainFrameImpl());
-    webViewHelper.webView()->setFocus(true);
     WebLocalFrame* frame = webViewHelper.webView()->mainFrameImpl();
     const int findIdentifier = 12345;
     WebFindOptions options;
@@ -3733,7 +3732,6 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
     webViewHelper.resize(WebSize(640, 480));
     webViewHelper.webView()->setMaximumLegibleScale(1.f);
     webViewHelper.webView()->updateAllLifecyclePhases();
-    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     // Note that the 'result 19' in the <select> element is not expected to
@@ -3748,10 +3746,10 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
     WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
 
-    mainFrame->resetMatchCount();
+    mainFrame->ensureTextFinder().resetMatchCount();
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
+    for (WebLocalFrameImpl* frame = mainFrame; frame; frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+        frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -3796,7 +3794,6 @@ TEST_F(WebFrameTest, FindInPageActiveIndex)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "find_match_count.html", true, &client);
     webViewHelper.webView()->resize(WebSize(640, 480));
-    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char* kFindString = "a";
@@ -3807,17 +3804,17 @@ TEST_F(WebFrameTest, FindInPageActiveIndex)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
-    mainFrame->resetMatchCount();
+    mainFrame->ensureTextFinder().resetMatchCount();
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
+    for (WebLocalFrameImpl* frame = mainFrame; frame; frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+        frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
     mainFrame->stopFinding(WebLocalFrame::StopFindActionClearSelection);
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
+    for (WebLocalFrameImpl* frame = mainFrame; frame; frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+        frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -3827,10 +3824,10 @@ TEST_F(WebFrameTest, FindInPageActiveIndex)
     WebString searchTextNew = WebString::fromUTF8(kFindStringNew);
 
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchTextNew, options, false));
-    mainFrame->resetMatchCount();
+    mainFrame->ensureTextFinder().resetMatchCount();
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchTextNew, options, true);
+    for (WebLocalFrameImpl* frame = mainFrame; frame; frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+        frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchTextNew, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -3846,7 +3843,6 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find_in_page.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
-    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "result";
@@ -3866,10 +3862,10 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
 
-    mainFrame->resetMatchCount();
+    mainFrame->ensureTextFinder().resetMatchCount();
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
+    for (WebLocalFrameImpl* frame = mainFrame; frame; frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+        frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -3884,7 +3880,6 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find_in_page.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
-    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "result";
@@ -3894,10 +3889,8 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false)) {
-        webViewHelper.webView()->setFocusedFrame(frame);
+    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false));
-    }
 
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
@@ -3905,10 +3898,10 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     // Detach the frame between finding and scoping.
     removeElementById(mainFrame, "frame");
 
-    mainFrame->resetMatchCount();
+    mainFrame->ensureTextFinder().resetMatchCount();
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
+    for (WebLocalFrameImpl* frame = mainFrame; frame; frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+        frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -3923,7 +3916,6 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find_in_page.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
-    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "result";
@@ -3933,18 +3925,16 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false)) {
-        webViewHelper.webView()->setFocusedFrame(frame);
+    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false));
-    }
 
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
 
-    mainFrame->resetMatchCount();
+    mainFrame->ensureTextFinder().resetMatchCount();
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
+    for (WebLocalFrameImpl* frame = mainFrame; frame; frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext(false)))
+        frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     // The first scopeStringMatches will have reset the state. Detach before it actually scopes.
     removeElementById(mainFrame, "frame");
@@ -3961,7 +3951,6 @@ TEST_P(ParameterizedWebFrameTest, ResetMatchCount)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find_in_generated_frame.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
-    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "result";
@@ -3980,7 +3969,7 @@ TEST_P(ParameterizedWebFrameTest, ResetMatchCount)
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
 
-    mainFrame->resetMatchCount();
+    mainFrame->ensureTextFinder().resetMatchCount();
 }
 
 TEST_P(ParameterizedWebFrameTest, SetTickmarks)
@@ -3991,7 +3980,6 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
-    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "foo";
@@ -4002,8 +3990,8 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks)
     WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
 
-    mainFrame->resetMatchCount();
-    mainFrame->scopeStringMatches(kFindIdentifier, searchText, options, true);
+    mainFrame->ensureTextFinder().resetMatchCount();
+    mainFrame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -4045,18 +4033,17 @@ TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOM)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
-    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
-    WebLocalFrame* frame = webViewHelper.webView()->mainFrameImpl();
+    WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
     const int findIdentifier = 12345;
     static const char* kFindString = "foo";
     WebString searchText = WebString::fromUTF8(kFindString);
     WebFindOptions options;
     bool activeNow;
 
-    frame->resetMatchCount();
-    frame->scopeStringMatches(findIdentifier, searchText, options, true);
+    frame->ensureTextFinder().resetMatchCount();
+    frame->ensureTextFinder().scopeStringMatches(findIdentifier, searchText, options, true);
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
 

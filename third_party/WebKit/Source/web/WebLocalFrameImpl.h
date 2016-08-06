@@ -224,16 +224,13 @@ public:
     void didCallAddSearchProvider() override;
     void didCallIsSearchProviderInstalled() override;
     void replaceSelection(const WebString&) override;
+    void requestFind(int identifier, const WebString& searchText,
+        const WebFindOptions&) override;
     bool find(
         int identifier, const WebString& searchText, const WebFindOptions&,
         bool wrapWithinFrame, bool* activeNow = nullptr) override;
     void stopFinding(StopFindAction) override;
-    void scopeStringMatches(
-        int identifier, const WebString& searchText, const WebFindOptions&,
-        bool reset) override;
-    void cancelPendingScopingEffort() override;
     void increaseMatchCount(int count, int identifier) override;
-    void resetMatchCount() override;
     int findMatchMarkersVersion() const override;
     WebFloatRect activeFindMatchRect() override;
     void findMatchRects(WebVector<WebFloatRect>&) override;
@@ -375,7 +372,7 @@ private:
     WebContentSettingsClient* m_contentSettingsClient;
     std::unique_ptr<SharedWorkerRepositoryClientImpl> m_sharedWorkerRepositoryClient;
 
-    // Will be initialized after first call to find() or scopeStringMatches().
+    // Will be initialized after first call to ensureTextFinder().
     Member<TextFinder> m_textFinder;
 
     // Valid between calls to BeginPrint() and EndPrint(). Containts the print

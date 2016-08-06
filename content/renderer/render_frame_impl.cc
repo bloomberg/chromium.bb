@@ -5213,47 +5213,7 @@ void RenderFrameImpl::OnFind(int request_id,
     return;
   }
 
-  // Send "no results" if this frame has no visible content.
-  if (!frame_->hasVisibleContent()) {
-    SendFindReply(request_id, 0 /* match_count */, 0 /* ordinal */,
-                  gfx::Rect(), true /* final_status_update */ );
-    return;
-  }
-
-  bool active_now = false;
-
-  // If something is selected when we start searching it means we cannot just
-  // increment the current match ordinal; we need to re-generate it.
-  WebRange current_selection = frame_->selectionRange();
-
-  bool result = frame_->find(request_id, search_text, options,
-                             false /* wrapWithinFrame */, &active_now);
-  if (result && !options.findNext) {
-    // Indicate that at least one match has been found. 1 here means possibly
-    // more matches could be coming. -1 here means that the exact active match
-    // ordinal is not yet known.
-    SendFindReply(request_id, 1 /* match_count */, -1 /* ordinal */,
-                  gfx::Rect(), false /* final_status_update */ );
-  }
-
-  if (options.findNext && current_selection.isNull() && active_now) {
-    // Force report of the actual count.
-    frame_->increaseMatchCount(0, request_id);
-    return;
-  }
-
-  // Scoping effort begins.
-  frame_->resetMatchCount();
-
-  // Cancel all old scoping requests before starting a new one.
-  frame_->cancelPendingScopingEffort();
-
-  // Start new scoping request. If the scoping function determines that it
-  // needs to scope, it will defer until later.
-  frame_->scopeStringMatches(request_id,
-                             search_text,
-                             options,
-                             true);  // reset the tickmarks
+  frame_->requestFind(request_id, search_text, options);
 }
 
 void RenderFrameImpl::OnClearActiveFindMatch() {
