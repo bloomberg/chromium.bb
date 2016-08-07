@@ -608,6 +608,38 @@ const char kBundleResourcesDir_Help[] =
     "\n"
     "  See \"gn help bundle_root_dir\" for examples.\n";
 
+const char kBundleDepsFilter[] = "bundle_deps_filter";
+const char kBundleDepsFilter_HelpShort[] =
+    "bundle_deps_filter: [label list] A list of labels that are filtered out.";
+const char kBundleDepsFilter_Help[] =
+    "bundle_deps_filter: [label list] A list of labels that are filtered out.\n"
+    "\n"
+    "  A list of target labels.\n"
+    "\n"
+    "  This list contains target label patterns that should be filtered out\n"
+    "  when creating the bundle. Any target matching one of those label will\n"
+    "  be removed from the dependencies of the create_bundle target.\n"
+    "\n"
+    "  This is mostly useful when creating application extension bundle as\n"
+    "  the application extension has access to runtime resources from the\n"
+    "  application bundle and thus do not require a second copy.\n"
+    "\n"
+    "  See \"gn help create_bundle\" for more information.\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  create_bundle(\"today_extension\") {\n"
+    "    deps = [\n"
+    "      \"//base\"\n"
+    "    ]\n"
+    "    bundle_root_dir = \"$root_out_dir/today_extension.appex\"\n"
+    "    bundle_deps_filter = [\n"
+    "      # The extension uses //base but does not use any function calling\n"
+    "      # into third_party/icu and thus does not need the icudtl.dat file.\n"
+    "      \"//third_party/icu:icudata\",\n"
+    "    ]\n"
+    "  }\n";
+
 const char kBundleExecutableDir[] = "bundle_executable_dir";
 const char kBundleExecutableDir_HelpShort[] =
     "bundle_executable_dir: "
@@ -1811,6 +1843,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(AssertNoDeps)
     INSERT_VARIABLE(BundleRootDir)
     INSERT_VARIABLE(BundleResourcesDir)
+    INSERT_VARIABLE(BundleDepsFilter)
     INSERT_VARIABLE(BundleExecutableDir)
     INSERT_VARIABLE(BundlePlugInsDir)
     INSERT_VARIABLE(Cflags)

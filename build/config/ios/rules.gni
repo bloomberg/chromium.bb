@@ -194,10 +194,11 @@ template("ios_app_bundle") {
                              "*",
                              [
                                "bundle_deps",
+                               "bundle_deps_filter",
                                "bundle_extension",
-                               "extra_system_frameworks",
                                "entitlements_path",
                                "extra_substitutions",
+                               "extra_system_frameworks",
                                "info_plist",
                                "info_plist_target",
                                "output_name",
@@ -321,11 +322,12 @@ template("ios_app_bundle") {
                              "*",
                              [
                                "bundle_deps",
+                               "bundle_deps_filter",
                                "bundle_extension",
-                               "extra_system_frameworks",
                                "data_deps",
                                "entitlements_path",
                                "extra_substitutions",
+                               "extra_system_frameworks",
                                "info_plist",
                                "info_plist_target",
                                "output_name",
@@ -471,6 +473,7 @@ template("ios_app_bundle") {
     create_bundle(target_name) {
       forward_variables_from(invoker,
                              [
+                               "bundle_deps_filter",
                                "data_deps",
                                "deps",
                                "public_deps",
@@ -592,6 +595,9 @@ template("ios_app_bundle") {
   }
   if (defined(invoker.bundle_deps)) {
     assert(invoker.bundle_deps != [], "mark bundle_deps as used")
+  }
+  if (defined(invoker.bundle_deps_filter)) {
+    assert(invoker.bundle_deps_filter != [], "mark bundle_deps_filter as used")
   }
 }
 

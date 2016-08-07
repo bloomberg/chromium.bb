@@ -1334,7 +1334,7 @@
   }
 
   bundle_data("base_unittests_bundle_data]") {
-    sources = [ "test/data" ]
+    sources = [ "test/data" ]
     outputs = [
       "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
           "{{source_file_part}}"
@@ -1500,8 +1500,8 @@
 
 ```
   bundle_root_dir*, bundle_resources_dir*, bundle_executable_dir*,
-  bundle_plugins_dir*, deps, data_deps, public_deps, visibility,
-  product_type, code_signing_args, code_signing_script,
+  bundle_plugins_dir*, bundle_deps_filter, deps, data_deps, public_deps,
+  visibility, product_type, code_signing_args, code_signing_script,
   code_signing_sources, code_signing_outputs
   * = required
 
@@ -4827,6 +4827,40 @@
   "gn help data_deps" and "gn help runtime_deps".
 
   See also "public_deps".
+
+
+```
+## **bundle_deps_filter**: [label list] A list of labels that are filtered out.
+
+```
+  A list of target labels.
+
+  This list contains target label patterns that should be filtered out
+  when creating the bundle. Any target matching one of those label will
+  be removed from the dependencies of the create_bundle target.
+
+  This is mostly useful when creating application extension bundle as
+  the application extension has access to runtime resources from the
+  application bundle and thus do not require a second copy.
+
+  See "gn help create_bundle" for more information.
+
+```
+
+### **Example**
+
+```
+  create_bundle("today_extension") {
+    deps = [
+      "//base"
+    ]
+    bundle_root_dir = "$root_out_dir/today_extension.appex"
+    bundle_deps_filter = [
+      # The extension uses //base but does not use any function calling
+      # into third_party/icu and thus does not need the icudtl.dat file.
+      "//third_party/icu:icudata",
+    ]
+  }
 
 
 ```

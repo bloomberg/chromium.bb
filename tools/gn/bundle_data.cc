@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "tools/gn/filesystem_utils.h"
+#include "tools/gn/label_pattern.h"
 #include "tools/gn/output_file.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/substitution_writer.h"
@@ -52,6 +53,10 @@ BundleData::~BundleData() {}
 
 void BundleData::AddBundleData(const Target* target) {
   DCHECK_EQ(target->output_type(), Target::BUNDLE_DATA);
+  for (const auto& pattern : bundle_deps_filter_) {
+    if (pattern.Matches(target->label()))
+      return;
+  }
   bundle_deps_.push_back(target);
 }
 

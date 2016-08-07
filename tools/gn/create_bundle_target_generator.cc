@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "tools/gn/filesystem_utils.h"
+#include "tools/gn/label_pattern.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/substitution_type.h"
@@ -53,6 +54,9 @@ void CreateBundleTargetGenerator::DoRun() {
     return;
 
   if (!FillCodeSigningArgs())
+    return;
+
+  if (!FillBundleDepsFilter())
     return;
 }
 
@@ -192,4 +196,25 @@ bool CreateBundleTargetGenerator::FillCodeSigningArgs() {
     return false;
 
   return target_->bundle_data().code_signing_args().Parse(*value, err_);
+}
+
+bool CreateBundleTargetGenerator::FillBundleDepsFilter() {
+  const Value* value = scope_->GetValue(variables::kBundleDepsFilter, true);
+  if (!value)
+    return true;
+
+  if (!value->VerifyTypeIs(Value::LIST, err_))
+    return false;
+
+  const SourceDir& current_dir = scope_->GetSourceDir();
+  std::vector<LabelPattern>& bundle_deps_filter =
+      target_->bundle_data().bundle_deps_filter();
+  for (const auto& item : value->list_value()) {
+    bundle_deps_filter.push_back(
+        LabelPattern::GetPattern(current_dir, item, err_));
+    if (err_->has_error())
+      return false;
+  }
+
+  return true;
 }

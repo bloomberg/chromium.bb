@@ -15,6 +15,7 @@
 #include "tools/gn/substitution_list.h"
 #include "tools/gn/unique_vector.h"
 
+class LabelPattern;
 class OutputFile;
 class Settings;
 class Target;
@@ -120,6 +121,13 @@ class BundleData {
     return code_signing_args_;
   }
 
+  std::vector<LabelPattern>& bundle_deps_filter() {
+    return bundle_deps_filter_;
+  }
+  const std::vector<LabelPattern>& bundle_deps_filter() const {
+    return bundle_deps_filter_;
+  }
+
   // Recursive collection of all bundle_data that the target depends on.
   const UniqueTargets& bundle_deps() const { return bundle_deps_; }
 
@@ -128,6 +136,7 @@ class BundleData {
   std::vector<const Target*> assets_catalog_deps_;
   BundleFileRules file_rules_;
   UniqueTargets bundle_deps_;
+  std::vector<LabelPattern> bundle_deps_filter_;
 
   // All those values are subdirectories relative to root_build_dir, and apart
   // from root_dir, they are either equal to root_dir_ or subdirectories of it.
