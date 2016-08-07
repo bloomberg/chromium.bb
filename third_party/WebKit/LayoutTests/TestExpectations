@@ -887,13 +887,6 @@ crbug.com/630671 imported/wpt/pointerevents/pointerevent_capture_suppressing_mou
 crbug.com/630671 imported/wpt/pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual.html [ Skip ]
 crbug.com/630671 imported/wpt/pointerevents/pointerevent_setpointercapture_relatedtarget-manual.html [ Skip ]
 
-# These fail in the leak detector: http://crbug.com/612924#c4
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html [ Pass ]
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_pointerout_after_pointercancel_touch-manual.html [ Pass ]
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_touch-action-auto-css_touch-manual.html  [ Pass ]
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_releasepointercapture_onpointercancel_touch-manual.html [ Pass ]
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y_touch-manual.html  [ Pass ]
-
 # The commented lines here for Mac is due to the fact that there is a more
 # generic skip rule in the next block of rules. However, when they get fixed
 # these should be uncommented as there is no touch support on Mac.
@@ -923,13 +916,6 @@ crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-in
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html  [ Skip ]
-
-
-
-
-
-
-
 
 # These are errors even when running the tests manually.
 crbug.com/629722 imported/wpt/pointerevents/pointerevent_lostpointercapture_is_first-manual.html  [ Skip ]
