@@ -89,27 +89,6 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
     DCHECK(m_contentRange);
 }
 
-Range* SurroundingText::rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent)
-{
-    if (startOffsetInContent >= endOffsetInContent || endOffsetInContent > content().length())
-        return nullptr;
-
-    CharacterIterator iterator(m_contentRange->startPosition(), m_contentRange->endPosition());
-
-    DCHECK(!iterator.atEnd());
-    iterator.advance(startOffsetInContent);
-
-    Position start = iterator.startPosition();
-
-    DCHECK(!iterator.atEnd());
-    iterator.advance(endOffsetInContent - startOffsetInContent);
-
-    Position end = iterator.startPosition();
-
-    DCHECK(start.document());
-    return Range::create(*start.document(), start, end);
-}
-
 String SurroundingText::content() const
 {
     if (m_contentRange)

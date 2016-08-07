@@ -72,10 +72,6 @@ public:
     // End offset of the initial text in the text content.
     BLINK_EXPORT size_t endOffsetInTextContent() const;
 
-    // Convert start/end positions in the content text string into a WebKit text
-    // range.
-    BLINK_EXPORT WebRange rangeFromContentOffsets(size_t startOffsetInContent, size_t endOffsetInContent);
-
 protected:
     std::unique_ptr<SurroundingText> m_private;
 };

@@ -51,8 +51,6 @@ public:
     unsigned startOffsetInContent() const;
     unsigned endOffsetInContent() const;
 
-    Range* rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent);
-
 private:
     void initialize(const Position&, const Position&, unsigned maxLength);
 

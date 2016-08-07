@@ -2813,9 +2813,9 @@ WebURL RenderViewImpl::detectContentIntentAt(
   // Process the position with all the registered content detectors until
   // a match is found. Priority is provided by their relative order.
   for (const auto& detector : content_detectors_) {
-    ContentDetector::Result content = detector->FindTappedContent(touch_hit);
-    if (content.valid) {
-      return content.intent_url;
+    WebURL intent = detector->FindTappedContent(touch_hit);
+    if (intent.isValid()) {
+      return intent;
     }
   }
   return WebURL();

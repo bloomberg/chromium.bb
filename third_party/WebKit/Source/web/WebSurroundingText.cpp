@@ -80,11 +80,6 @@ size_t WebSurroundingText::endOffsetInTextContent() const
     return m_private->endOffsetInContent();
 }
 
-WebRange WebSurroundingText::rangeFromContentOffsets(size_t startOffsetInContent, size_t endOffsetInContent)
-{
-    return m_private->rangeFromContentOffsets(startOffsetInContent, endOffsetInContent);
-}
-
 bool WebSurroundingText::isNull() const
 {
     return !m_private.get();

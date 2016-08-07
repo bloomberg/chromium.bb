@@ -9,54 +9,36 @@
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebSurroundingText.h"
 
-using blink::WebRange;
+using blink::WebURL;
+using blink::WebHitTestResult;
 using blink::WebSurroundingText;
 
 namespace content {
 
-ContentDetector::Result::Result() : valid(false) {}
-
-ContentDetector::Result::Result(const blink::WebRange& content_boundaries,
-                                const std::string& text,
-                                const GURL& intent_url)
-  : valid(true),
-    content_boundaries(content_boundaries),
-    text(text),
-    intent_url(intent_url) {
-}
-
-ContentDetector::Result::Result(const Result& other) = default;
-
-ContentDetector::Result::~Result() {}
-
-ContentDetector::Result ContentDetector::FindTappedContent(
-    const blink::WebHitTestResult& hit_test) {
+WebURL ContentDetector::FindTappedContent(const WebHitTestResult& hit_test) {
   if (hit_test.isNull())
-    return Result();
+    return WebURL();
 
   std::string content_text;
-  blink::WebRange range = FindContentRange(hit_test, &content_text);
-  if (range.isNull())
-    return Result();
+  if (!FindContentRange(hit_test, &content_text))
+    return WebURL();
 
-  GURL intent_url = GetIntentURL(content_text);
-  return Result(range, content_text, intent_url);
+  return GetIntentURL(content_text);
 }
 
-WebRange ContentDetector::FindContentRange(
-    const blink::WebHitTestResult& hit_test,
-    std::string* content_text) {
+bool ContentDetector::FindContentRange(const WebHitTestResult& hit_test,
+                                       std::string* content_text) {
   // As the surrounding text extractor looks at maxLength/2 characters on
   // either side of the hit point, we need to double max content length here.
   WebSurroundingText surrounding_text;
   surrounding_text.initialize(hit_test.node(), hit_test.localPoint(),
                               GetMaximumContentLength() * 2);
   if (surrounding_text.isNull())
-    return WebRange();
+    return false;
 
   base::string16 content = surrounding_text.textContent();
   if (content.empty())
-    return WebRange();
+    return false;
 
   size_t selected_offset = surrounding_text.hitOffsetInTextContent();
   for (size_t start_offset = 0; start_offset < content.length();) {
@@ -69,18 +51,14 @@ WebRange ContentDetector::FindContentRange(
       size_t content_end = start_offset + relative_end;
       DCHECK(content_end <= content.length());
 
-      if (selected_offset >= content_start && selected_offset < content_end) {
-        WebRange range = surrounding_text.rangeFromContentOffsets(
-            content_start, content_end);
-        DCHECK(!range.isNull());
-        return range;
-      } else {
+      if (selected_offset >= content_start && selected_offset < content_end)
+        return true;
+      else
         start_offset += relative_end;
-      }
     }
   }
 
-  return WebRange();
+  return false;
 }
 
 }  // namespace content
