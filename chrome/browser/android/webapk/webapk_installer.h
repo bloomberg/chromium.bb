@@ -45,9 +45,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                   const SkBitmap& shorcut_icon);
   ~WebApkInstaller() override;
 
-  // Register JNI methods.
-  static bool Register(JNIEnv* env);
-
   // Talks to the Chrome WebAPK server to generate a WebAPK on the server and to
   // Google Play to install the generated WebAPK. Calls |callback| after the
   // request to install the WebAPK is sent to Google Play.
