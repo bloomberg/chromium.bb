@@ -214,7 +214,7 @@ size_t TextResourceDecoder::checkForBOM(const char* data, size_t len)
         setEncoding(UTF8Encoding(), AutoDetectedEncoding);
         lengthOfBOM = 3;
     } else if (m_encodingDetectionOption != AlwaysUseUTF8ForText) {
-        if (c1 == 0xFF && c2 == 0xFE) {
+        if (c1 == 0xFF && c2 == 0xFE && bufferLength + len >= 4) {
             if (c3 || c4) {
                 setEncoding(UTF16LittleEndianEncoding(), AutoDetectedEncoding);
                 lengthOfBOM = 2;
@@ -369,8 +369,17 @@ bool TextResourceDecoder::shouldAutoDetect() const
 String TextResourceDecoder::decode(const char* data, size_t len)
 {
     size_t lengthOfBOM = 0;
-    if (!m_checkedForBOM)
+    if (!m_checkedForBOM) {
         lengthOfBOM = checkForBOM(data, len);
+
+        // BOM check can fail when the available data is not enough.
+        if (!m_checkedForBOM) {
+            DCHECK_EQ(0u, lengthOfBOM);
+            m_buffer.append(data, len);
+            return emptyString();
+        }
+    }
+    DCHECK_LE(lengthOfBOM, m_buffer.size() + len);
 
     bool movedDataToBuffer = false;
 

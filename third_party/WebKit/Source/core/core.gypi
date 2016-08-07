@@ -4164,6 +4164,7 @@
             'html/parser/HTMLSrcsetParserTest.cpp',
             'html/parser/HTMLTokenizerTest.cpp',
             'html/parser/HTMLTreeBuilderSimulatorTest.cpp',
+            'html/parser/TextResourceDecoderTest.cpp',
             'html/shadow/MediaControlsTest.cpp',
             'html/track/TextTrackListTest.cpp',
             'html/track/vtt/BufferedLineReaderTest.cpp',
