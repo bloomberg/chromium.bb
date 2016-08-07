@@ -78,6 +78,7 @@ class WebApkInstallerRunner {
     // WebApkInstaller owns itself.
     WebApkInstaller* installer = new TestWebApkInstaller(info, SkBitmap());
 
+    installer->SetTimeoutMs(20);
     installer->InstallAsyncWithURLRequestContextGetter(
         url_request_context_getter_.get(),
         base::Bind(&WebApkInstallerRunner::OnCompleted,
@@ -108,13 +109,13 @@ class WebApkInstallerRunner {
   DISALLOW_COPY_AND_ASSIGN(WebApkInstallerRunner);
 };
 
-// Builds a webapk::CreateWebApkResponse with |download_url| as the WebAPK
-// download URL.
-std::unique_ptr<net::test_server::HttpResponse> BuildValidCreateWebApkResponse(
+// Builds a webapk::WebApkResponse with |download_url| as the WebAPK download
+// URL.
+std::unique_ptr<net::test_server::HttpResponse> BuildValidWebApkResponse(
     const GURL& download_url) {
-  std::unique_ptr<webapk::CreateWebApkResponse> response_proto(
-      new webapk::CreateWebApkResponse);
-  response_proto->set_webapk_package_name(kDownloadedWebApkPackageName);
+  std::unique_ptr<webapk::WebApkResponse> response_proto(
+      new webapk::WebApkResponse);
+  response_proto->set_package_name(kDownloadedWebApkPackageName);
   response_proto->set_signed_download_url(download_url.spec());
   std::string response_content;
   response_proto->SerializeToString(&response_content);
@@ -131,7 +132,7 @@ std::unique_ptr<net::test_server::HttpResponse> BuildValidCreateWebApkResponse(
 class WebApkInstallerTest : public ::testing::Test {
  public:
   typedef base::Callback<std::unique_ptr<net::test_server::HttpResponse>(void)>
-      CreateWebApkResponseBuilder;
+      WebApkResponseBuilder;
 
   WebApkInstallerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
@@ -155,10 +156,9 @@ class WebApkInstallerTest : public ::testing::Test {
   }
 
   // Sets the function that should be used to build the response to the
-  // webapk::CreateWebApkRequest.
-  void SetCreateWebApkResponseBuilder(
-      const CreateWebApkResponseBuilder& builder) {
-    create_webapk_response_builder_ = builder;
+  // WebAPK creation request.
+  void SetWebApkResponseBuilder(const WebApkResponseBuilder& builder) {
+    webapk_response_builder_ = builder;
   }
 
   net::test_server::EmbeddedTestServer* test_server() { return &test_server_; }
@@ -169,22 +169,22 @@ class WebApkInstallerTest : public ::testing::Test {
     GURL server_url = test_server_.GetURL(kServerUrl);
     SetWebApkServerUrl(server_url);
     GURL download_url = test_server_.GetURL(kDownloadUrl);
-    SetCreateWebApkResponseBuilder(
-        base::Bind(&BuildValidCreateWebApkResponse, download_url));
+    SetWebApkResponseBuilder(
+        base::Bind(&BuildValidWebApkResponse, download_url));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleCreateWebApkRequest(
       const net::test_server::HttpRequest& request) {
     return (request.relative_url == kServerUrl)
-               ? create_webapk_response_builder_.Run()
+               ? webapk_response_builder_.Run()
                : std::unique_ptr<net::test_server::HttpResponse>();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
   net::EmbeddedTestServer test_server_;
 
-  // Builds response to the webapk::CreateWebApkRequest.
-  CreateWebApkResponseBuilder create_webapk_response_builder_;
+  // Builds response to the WebAPK creation request.
+  WebApkResponseBuilder webapk_response_builder_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApkInstallerTest);
 };
@@ -196,7 +196,7 @@ TEST_F(WebApkInstallerTest, Success) {
   EXPECT_TRUE(runner.success());
 }
 
-// Test that installation fails if the CreateWebApkRequest times out.
+// Test that installation fails if the WebAPK creation request times out.
 TEST_F(WebApkInstallerTest, CreateWebApkRequestTimesOut) {
   GURL server_url = test_server()->GetURL("/slow?1000");
   SetWebApkServerUrl(server_url);
@@ -209,8 +209,7 @@ TEST_F(WebApkInstallerTest, CreateWebApkRequestTimesOut) {
 // Test that installation fails if the WebAPK download times out.
 TEST_F(WebApkInstallerTest, WebApkDownloadTimesOut) {
   GURL download_url = test_server()->GetURL("/slow?1000");
-  SetCreateWebApkResponseBuilder(
-      base::Bind(&BuildValidCreateWebApkResponse, download_url));
+  SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, download_url));
 
   WebApkInstallerRunner runner;
   runner.Run();
@@ -220,8 +219,7 @@ TEST_F(WebApkInstallerTest, WebApkDownloadTimesOut) {
 // Test that installation fails if the WebAPK download fails.
 TEST_F(WebApkInstallerTest, WebApkDownloadFails) {
   GURL download_url = test_server()->GetURL("/nocontent");
-  SetCreateWebApkResponseBuilder(
-      base::Bind(&BuildValidCreateWebApkResponse, download_url));
+  SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, download_url));
 
   WebApkInstallerRunner runner;
   runner.Run();
@@ -230,10 +228,9 @@ TEST_F(WebApkInstallerTest, WebApkDownloadFails) {
 
 namespace {
 
-// Returns an HttpResponse which cannot be parsed as a
-// webapk::CreateWebApkResponse.
+// Returns an HttpResponse which cannot be parsed as a webapk::WebApkResponse.
 std::unique_ptr<net::test_server::HttpResponse>
-BuildUnparsableCreateWebApkResponse() {
+BuildUnparsableWebApkResponse() {
   std::unique_ptr<net::test_server::BasicHttpResponse> response(
       new net::test_server::BasicHttpResponse());
   response->set_code(net::HTTP_OK);
@@ -243,11 +240,10 @@ BuildUnparsableCreateWebApkResponse() {
 
 }  // anonymous namespace
 
-// Test that an HTTP response which cannot be parsed as
-// a webapk::CreateWebApkResponse is handled properly.
+// Test that an HTTP response which cannot be parsed as a webapk::WebApkResponse
+// is handled properly.
 TEST_F(WebApkInstallerTest, UnparsableCreateWebApkResponse) {
-  SetCreateWebApkResponseBuilder(
-      base::Bind(&BuildUnparsableCreateWebApkResponse));
+  SetWebApkResponseBuilder(base::Bind(&BuildUnparsableWebApkResponse));
 
   WebApkInstallerRunner runner;
   runner.Run();

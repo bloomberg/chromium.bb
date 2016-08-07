@@ -32,7 +32,7 @@ class URLRequestContextGetter;
 }
 
 namespace webapk {
-class CreateWebApkRequest;
+class WebApk;
 }
 
 // Talks to Chrome WebAPK server and Google Play to generate a WebAPK on the
@@ -55,6 +55,9 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   void InstallAsyncWithURLRequestContextGetter(
       net::URLRequestContextGetter* request_context_getter,
       const FinishCallback& callback);
+
+  // Sets the timeout for the server requests.
+  void SetTimeoutMs(int timeout_ms);
 
  protected:
   // Starts installation of the downloaded WebAPK. Returns whether the install
@@ -80,7 +83,7 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // Called with the URL of generated WebAPK and the package name that the
   // WebAPK should be installed at.
-  void OnGotWebApkDownloadUrl(const std::string& download_url,
+  void OnGotWebApkDownloadUrl(const GURL& download_url,
                               const std::string& package_name);
 
   // Called once the WebAPK has been downloaded. Installs the WebAPK if the
@@ -91,8 +94,8 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                           const std::string& package_name,
                           FileDownloader::Result result);
 
-  // Populates webapk::CreateWebApkRequest and returns it.
-  std::unique_ptr<webapk::CreateWebApkRequest> BuildCreateWebApkRequest();
+  // Populates webapk::WebApk and returns it.
+  std::unique_ptr<webapk::WebApk> BuildWebApkProto();
 
   // Called when the request to the WebAPK server times out or when the WebAPK
   // download times out.
@@ -130,6 +133,13 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // WebAPK server URL.
   GURL server_url_;
+
+  // The number of milliseconds to wait for the WebAPK download URL from the
+  // WebAPK server.
+  int webapk_download_url_timeout_ms_;
+
+  // The number of milliseconds to wait for the WebAPK download to complete.
+  int download_timeout_ms_;
 
   // Used to get |weak_ptr_| on the IO thread.
   base::WeakPtrFactory<WebApkInstaller> io_weak_ptr_factory_;

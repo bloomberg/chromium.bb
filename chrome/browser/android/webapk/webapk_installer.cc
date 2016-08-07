@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,12 +41,13 @@ const char kProtoMimeType[] = "application/x-protobuf";
 // The seed to use the murmur2 hash of the app icon.
 const uint32_t kMurmur2HashSeed = 0;
 
-// The number of milliseconds to wait for the WebAPK download URL from the
-// WebAPK server.
-const int kWebApkDownloadUrlTimeoutMs = 4000;
+// The default number of milliseconds to wait for the WebAPK download URL from
+// the WebAPK server.
+const int kWebApkDownloadUrlTimeoutMs = 60000;
 
-// The number of milliseconds to wait for the WebAPK download to complete.
-const int kDownloadTimeoutMs = 20000;
+// The default number of milliseconds to wait for the WebAPK download to
+// complete.
+const int kDownloadTimeoutMs = 60000;
 
 // Returns the scope from |info| if it is specified. Otherwise, returns the
 // default scope.
@@ -56,10 +58,12 @@ GURL GetScope(const ShortcutInfo& info) {
 }
 
 // Computes a murmur2 hash of |bitmap|'s PNG encoded bytes.
-uint64_t ComputeBitmapHash(const SkBitmap& bitmap) {
+std::string ComputeBitmapHash(const SkBitmap& bitmap) {
   std::vector<unsigned char> png_bytes;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_bytes);
-  return MurmurHash64B(&png_bytes.front(), png_bytes.size(), kMurmur2HashSeed);
+  uint64_t hash =
+      MurmurHash64B(&png_bytes.front(), png_bytes.size(), kMurmur2HashSeed);
+  return base::Uint64ToString(hash);
 }
 
 // Converts a color from the format specified in content::Manifest to a CSS
@@ -82,6 +86,8 @@ WebApkInstaller::WebApkInstaller(const ShortcutInfo& shortcut_info,
                                  const SkBitmap& shortcut_icon)
     : shortcut_info_(shortcut_info),
       shortcut_icon_(shortcut_icon),
+      webapk_download_url_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
+      download_timeout_ms_(kDownloadTimeoutMs),
       io_weak_ptr_factory_(this) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   server_url_ =
@@ -115,6 +121,11 @@ void WebApkInstaller::InstallAsyncWithURLRequestContextGetter(
   SendCreateWebApkRequest();
 }
 
+void WebApkInstaller::SetTimeoutMs(int timeout_ms) {
+  webapk_download_url_timeout_ms_ = timeout_ms;
+  download_timeout_ms_ = timeout_ms;
+}
+
 bool WebApkInstaller::StartDownloadedWebApkInstall(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
@@ -136,20 +147,19 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string response_string;
   source->GetResponseAsString(&response_string);
 
-  std::unique_ptr<webapk::CreateWebApkResponse> response(
-      new webapk::CreateWebApkResponse);
+  std::unique_ptr<webapk::WebApkResponse> response(
+      new webapk::WebApkResponse);
   if (!response->ParseFromString(response_string)) {
     OnFailure();
     return;
   }
 
-  if (response->signed_download_url().empty() ||
-      response->webapk_package_name().empty()) {
+  GURL signed_download_url(response->signed_download_url());
+  if (!signed_download_url.is_valid() || response->package_name().empty()) {
     OnFailure();
     return;
   }
-  OnGotWebApkDownloadUrl(response->signed_download_url(),
-                         response->webapk_package_name());
+  OnGotWebApkDownloadUrl(signed_download_url, response->package_name());
 }
 
 void WebApkInstaller::InitializeRequestContextGetterOnUIThread(
@@ -167,11 +177,10 @@ void WebApkInstaller::InitializeRequestContextGetterOnUIThread(
 
 void WebApkInstaller::SendCreateWebApkRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  std::unique_ptr<webapk::CreateWebApkRequest> request =
-      BuildCreateWebApkRequest();
+  std::unique_ptr<webapk::WebApk> webapk_proto = BuildWebApkProto();
 
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMilliseconds(kWebApkDownloadUrlTimeoutMs),
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
+                              webapk_download_url_timeout_ms_),
                base::Bind(&WebApkInstaller::OnTimeout,
                           io_weak_ptr_factory_.GetWeakPtr()));
 
@@ -179,12 +188,12 @@ void WebApkInstaller::SendCreateWebApkRequest() {
       net::URLFetcher::Create(server_url_, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(request_context_getter_);
   std::string serialized_request;
-  request->SerializeToString(&serialized_request);
+  webapk_proto->SerializeToString(&serialized_request);
   url_fetcher_->SetUploadData(kProtoMimeType, serialized_request);
   url_fetcher_->Start();
 }
 
-void WebApkInstaller::OnGotWebApkDownloadUrl(const std::string& download_url,
+void WebApkInstaller::OnGotWebApkDownloadUrl(const GURL& download_url,
                                              const std::string& package_name) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -194,13 +203,14 @@ void WebApkInstaller::OnGotWebApkDownloadUrl(const std::string& download_url,
   // directory.
   // TODO(pkotwicz): Figure out when downloaded WebAPK should be deleted.
 
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kDownloadTimeoutMs),
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromMilliseconds(download_timeout_ms_),
                base::Bind(&WebApkInstaller::OnTimeout,
                           io_weak_ptr_factory_.GetWeakPtr()));
 
   base::FilePath output_path = output_dir.AppendASCII(package_name);
   downloader_.reset(new FileDownloader(
-      GURL(download_url), output_path, true, request_context_getter_,
+      download_url, output_path, true, request_context_getter_,
       base::Bind(&WebApkInstaller::OnWebApkDownloaded,
                  io_weak_ptr_factory_.GetWeakPtr(), output_path,
                  package_name)));
@@ -231,12 +241,8 @@ void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,
     OnFailure();
 }
 
-std::unique_ptr<webapk::CreateWebApkRequest>
-WebApkInstaller::BuildCreateWebApkRequest() {
-  std::unique_ptr<webapk::CreateWebApkRequest> request(
-      new webapk::CreateWebApkRequest);
-
-  webapk::WebApk* webapk = request->mutable_webapk();
+std::unique_ptr<webapk::WebApk> WebApkInstaller::BuildWebApkProto() {
+  std::unique_ptr<webapk::WebApk> webapk(new webapk::WebApk);
   webapk->set_manifest_url(shortcut_info_.manifest_url.spec());
   webapk->set_requester_application_package(
       base::android::BuildInfo::GetInstance()->package_name());
@@ -263,7 +269,7 @@ WebApkInstaller::BuildCreateWebApkRequest() {
   gfx::PNGCodec::EncodeBGRASkBitmap(shortcut_icon_, false, &png_bytes);
   image->set_image_data(&png_bytes.front(), png_bytes.size());
 
-  return request;
+  return webapk;
 }
 
 void WebApkInstaller::OnTimeout() {

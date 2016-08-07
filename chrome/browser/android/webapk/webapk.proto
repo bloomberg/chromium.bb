@@ -8,35 +8,32 @@ option optimize_for = LITE_RUNTIME;
 
 package webapk;
 
-// Creates a WebAPK on the server and returns URL to download WebAPK from Google
-// Play.
-message CreateWebApkRequest {
-  optional WebApk webapk = 1;
-}
-
-// Response to CreateWebApkRequest.
-message CreateWebApkResponse {
+// Response to "create" request.
+message WebApkResponse {
   // Package name to install WebAPK at.
-  optional string webapk_package_name = 1;
+  optional string package_name = 1;
 
   // URL to download WebAPK.
-  optional string signed_download_url = 2;
+  optional string signed_download_url = 3;
+
+  reserved 2, 4;
 }
 
+// Sent as part of request to create a WebAPK.
 message WebApk {
   // The URL of the Web App Manifest.
-  optional string manifest_url = 2;
+  optional string manifest_url = 3;
 
   // Chrome's package name.
-  optional string requester_application_package = 4;
+  optional string requester_application_package = 5;
 
   // Chrome's version.
-  optional string requester_application_version = 5;
+  optional string requester_application_version = 6;
 
   // The Web App Manifest.
-  optional WebAppManifest manifest = 6;
+  optional WebAppManifest manifest = 7;
 
-  reserved 1, 3;
+  reserved 1, 2, 4;
 }
 
 // Contains data from the Web App Manifest.
@@ -60,7 +57,7 @@ message Image {
 
   // Murmur2 hash of the icon's bytes. There should not be any transformations
   // applied to the icon's bytes prior to taking the Murmur2 hash.
-  optional uint64 hash = 5;
+  optional string hash = 5;
 
   // Actual bytes of the image. This image may be re-encoded from the original
   // image and may not match the murmur2 hash field above.
