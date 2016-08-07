@@ -45,7 +45,8 @@ const char kOfflinePagesColumns[] =
     " client_id VARCHAR NOT NULL,"
     " online_url VARCHAR NOT NULL,"
     " offline_url VARCHAR NOT NULL DEFAULT '',"
-    " file_path VARCHAR NOT NULL"
+    " file_path VARCHAR NOT NULL,"
+    " title VARCHAR NOT NULL DEFAULT ''"
     ")";
 
 // This is cloned from //content/browser/appcache/appcache_database.cc
@@ -68,12 +69,13 @@ enum : int {
   OP_ACCESS_COUNT,
   OP_STATUS,
   OP_USER_INITIATED,
-  OP_EXPIRATION_TIME,
+  OP_EXPIRATION_TIME,  // Added in M53.
   OP_CLIENT_NAMESPACE,
   OP_CLIENT_ID,
   OP_ONLINE_URL,
   OP_OFFLINE_URL,
   OP_FILE_PATH,
+  OP_TITLE,  // Added in M54.
 };
 
 bool CreateTable(sql::Connection* db, const TableInfo& table_info) {
@@ -83,7 +85,7 @@ bool CreateTable(sql::Connection* db, const TableInfo& table_info) {
   return db->Execute(sql.c_str());
 }
 
-bool RefreshColumns(sql::Connection* db) {
+bool RefreshColumnsFrom52To54(sql::Connection* db) {
   if (!db->Execute("ALTER TABLE " OFFLINE_PAGES_TABLE_NAME
                    " RENAME TO temp_" OFFLINE_PAGES_TABLE_NAME)) {
     return false;
@@ -108,6 +110,31 @@ bool RefreshColumns(sql::Connection* db) {
   return true;
 }
 
+bool RefreshColumnsFrom53To54(sql::Connection* db) {
+  if (!db->Execute("ALTER TABLE " OFFLINE_PAGES_TABLE_NAME
+                   " RENAME TO temp_" OFFLINE_PAGES_TABLE_NAME)) {
+    return false;
+  }
+  if (!CreateTable(db, kOfflinePagesTable))
+    return false;
+  if (!db->Execute(
+          "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
+          " (offline_id, creation_time, file_size, version, last_access_time, "
+          "access_count, status, user_initiated, client_namespace, client_id, "
+          "online_url, offline_url, file_path, expiration_time) "
+          "SELECT offline_id, creation_time, file_size, version, "
+          "last_access_time, "
+          "access_count, status, user_initiated, client_namespace, client_id, "
+          "online_url, offline_url, file_path, expiration_time "
+          "FROM temp_" OFFLINE_PAGES_TABLE_NAME)) {
+    return false;
+  }
+  if (!db->Execute("DROP TABLE IF EXISTS temp_" OFFLINE_PAGES_TABLE_NAME))
+    return false;
+
+  return true;
+}
+
 bool CreateSchema(sql::Connection* db) {
   // If you create a transaction but don't Commit() it is automatically
   // rolled back by its destructor when it falls out of scope.
@@ -121,7 +148,10 @@ bool CreateSchema(sql::Connection* db) {
   }
 
   if (!db->DoesColumnExist(kOfflinePagesTable.table_name, "expiration_time")) {
-    if (!RefreshColumns(db))
+    if (!RefreshColumnsFrom52To54(db))
+      return false;
+  } else if (!db->DoesColumnExist(kOfflinePagesTable.table_name, "title")) {
+    if (!RefreshColumnsFrom53To54(db))
       return false;
   }
 
@@ -162,6 +192,7 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   item.access_count = statement->ColumnInt(OP_ACCESS_COUNT);
   item.expiration_time =
       base::Time::FromInternalValue(statement->ColumnInt64(OP_EXPIRATION_TIME));
+  item.title = statement->ColumnString16(OP_TITLE);
   return item;
 }
 
@@ -170,9 +201,9 @@ bool InsertOrReplace(sql::Connection* db, const OfflinePageItem& item) {
       "INSERT OR REPLACE INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, online_url, client_namespace, client_id, file_path, "
       "file_size, creation_time, last_access_time, version, access_count, "
-      "expiration_time)"
+      "expiration_time, title)"
       " VALUES "
-      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, item.offline_id);
@@ -193,6 +224,7 @@ bool InsertOrReplace(sql::Connection* db, const OfflinePageItem& item) {
   statement.BindInt(8, item.version);
   statement.BindInt(9, item.access_count);
   statement.BindInt64(10, item.expiration_time.ToInternalValue());
+  statement.BindString16(11, item.title);
   return statement.Run();
 }
 
