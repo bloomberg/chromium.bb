@@ -888,57 +888,59 @@ crbug.com/630671 imported/wpt/pointerevents/pointerevent_releasepointercapture_e
 crbug.com/630671 imported/wpt/pointerevents/pointerevent_setpointercapture_relatedtarget-manual.html [ Skip ]
 
 # These fail in the leak detector: http://crbug.com/612924#c4
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html [ Skip ]
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_pointerout_after_pointercancel_touch-manual.html [ Skip ]
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_touch-action-auto-css_touch-manual.html  [ Skip ]
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_releasepointercapture_onpointercancel_touch-manual.html [ Skip ]
-crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y_touch-manual.html  [ Skip ]
+crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html [ Pass ]
+crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_pointerout_after_pointercancel_touch-manual.html [ Pass ]
+crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_touch-action-auto-css_touch-manual.html  [ Pass ]
+crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_releasepointercapture_onpointercancel_touch-manual.html [ Pass ]
+crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y_touch-manual.html  [ Pass ]
 
 # The commented lines here for Mac is due to the fact that there is a more
 # generic skip rule in the next block of rules. However, when they get fixed
 # these should be uncommented as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html [ Skip ]
-# crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerenter_nohover-manual.html [ Skip ]
-# crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerleave_after_pointerup_nohover-manual.html [ Skip ]
-# crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerleave_after_pointercancel_touch-manual.html [ Skip ]
-# crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointercancel_touch-manual.html [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerenter_nohover-manual.html [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerleave_after_pointerup_nohover-manual.html [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerleave_after_pointercancel_touch-manual.html [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointercancel_touch-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerout_after_pointerup_nohover-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointertype_touch-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_releasepointercapture_onpointercancel_touch-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerout_after_pointercancel_touch-manual.html [ Skip ]
-# crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerleave_touch-manual.html [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_pointerleave_touch-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-auto-css_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-css_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y-pan-y_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pan-y-css_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_highest-parent-none_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-span-test_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-svg-test_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-none-css_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html  [ Skip ]
 
-# These are crashing on Linux debug builds and timing out on Mac as it doesn't support touch
-crbug.com/619060 imported/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html  [ Skip ]
-crbug.com/619060 imported/wpt/pointerevents/pointerevent_lostpointercapture_is_first-manual.html  [ Skip ]
-crbug.com/619060 imported/wpt/pointerevents/pointerevent_pointercancel_touch-manual.html  [ Skip ]
-crbug.com/619060 imported/wpt/pointerevents/pointerevent_pointerenter_nohover-manual.html  [ Skip ]
-crbug.com/619060 imported/wpt/pointerevents/pointerevent_pointerleave_after_pointercancel_touch-manual.html  [ Skip ]
-crbug.com/619060 imported/wpt/pointerevents/pointerevent_pointerleave_after_pointerup_nohover-manual.html  [ Skip ]
-crbug.com/619060 imported/wpt/pointerevents/pointerevent_pointerleave_touch-manual.html  [ Skip ]
 
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_suppress_compat_events_on_click.html [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_suppress_compat_events_on_drag_mouse.html [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-inherit_highest-parent-none_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-keyboard-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-none-css_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-pan-x-css_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y-pan-y_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-pan-y-css_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-span-test_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-svg-test_touch-manual.html  [ Skip ]
-crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html  [ Skip ]
 
+
+
+
+
+
+# These are errors even when running the tests manually.
+crbug.com/629722 imported/wpt/pointerevents/pointerevent_lostpointercapture_is_first-manual.html  [ Skip ]
+crbug.com/629722 imported/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html  [ Skip ]
+
+# There is no assoicated JS file to support automated user inputs.
+crbug.com/629724 imported/wpt/pointerevents/pointerevent_suppress_compat_events_on_click.html [ Skip ]
+crbug.com/629724 imported/wpt/pointerevents/pointerevent_suppress_compat_events_on_drag_mouse.html [ Skip ]
+
+# We should send PointerLeave events for stylus devices.
 crbug.com/583413 imported/wpt/pointerevents/pointerevent_pointerleave_pen-manual.html  [ Failure ]
-
-crbug.com/627716 imported/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ Skip ]
 
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html

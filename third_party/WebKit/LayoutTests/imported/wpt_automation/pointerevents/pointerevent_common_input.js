@@ -55,33 +55,71 @@ function mouseScrollLeft() {
 }
 
 // Touch actions
+const scrollOffset = 30;
+const boundaryOffset = 5;
+const touchSourceType = 1;
 function touchTapInTarget(targetId) {
   if (window.chrome && chrome.gpuBenchmarking) {
     var target = document.getElementById(targetId);
+    target.scrollIntoViewIfNeeded();
     var targetRect = target.getBoundingClientRect();
-    window.scrollTo(targetRect.left, targetRect.top);
+    chrome.gpuBenchmarking.tap(targetRect.left+boundaryOffset, targetRect.top+boundaryOffset);
+  }
+}
+
+function scrollPageIfNeeded(targetRect, startX, startY) {
+  if (startY > window.innerHeight) {
+    window.scrollTo(0, targetRect.top);
+  }
+  if (startX > window.innerWidth) {
+    window.scrollTo(targetRect.left, 0);
+  }
+}
+
+// TODO(nzolghadr): these two functions can be removed if we know the ID of the elements where we want to touch, see https://crbug.com/633672.
+function touchSmoothScrollUp(target) {
+  if (window.chrome && chrome.gpuBenchmarking) {
+    var targetRect = target.getBoundingClientRect();
+    var startX = targetRect.left+targetRect.width/2;
+    var startY = targetRect.top+targetRect.height/2;
+    scrollPageIfNeeded(targetRect, startX, startY);
     targetRect = target.getBoundingClientRect();
-    chrome.gpuBenchmarking.tap(targetRect.left+5, targetRect.top+5);
+    startX = targetRect.left+targetRect.width/2;
+    startY = targetRect.top+targetRect.height/2;
+    chrome.gpuBenchmarking.smoothScrollBy(scrollOffset, function() {}, startX, startY, touchSourceType, "down");
+  }
+}
+
+function touchSmoothScrollLeft(target, callback_func) {
+  if (window.chrome && chrome.gpuBenchmarking) {
+    var targetRect = target.getBoundingClientRect();
+    var startX = targetRect.left+targetRect.width/2;
+    var startY = targetRect.top+targetRect.height/2;
+    scrollPageIfNeeded(targetRect, startX, startY);
+    targetRect = target.getBoundingClientRect();
+    startX = targetRect.left+targetRect.width/2;
+    startY = targetRect.top+targetRect.height/2;
+    chrome.gpuBenchmarking.smoothScrollBy(scrollOffset, callback_func, startX, startY, touchSourceType, "right");
   }
 }
 
 function touchScrollUpInTarget(targetId) {
   if (window.chrome && chrome.gpuBenchmarking) {
     var target = document.getElementById(targetId);
-    var targetRect = target.getBoundingClientRect();
-    window.scrollTo(targetRect.left, targetRect.top);
-    targetRect = target.getBoundingClientRect();
-    chrome.gpuBenchmarking.smoothDrag(targetRect.left, targetRect.bottom-5, targetRect.left, targetRect.top+5);
+    touchSmoothScrollUp(target);
   }
 }
 
-function touchScrollLeftInTarget(targetId) {
+function touchScrollLeftInTarget(targetId, callback_func) {
   if (window.chrome && chrome.gpuBenchmarking) {
     var target = document.getElementById(targetId);
-    var targetRect = target.getBoundingClientRect();
-    window.scrollTo(targetRect.left, targetRect.top);
-    targetRect = target.getBoundingClientRect();
-    chrome.gpuBenchmarking.smoothDrag(targetRect.right-5, targetRect.top+5, targetRect.left+5, targetRect.top+5);
+    touchSmoothScrollLeft(target, callback_func);
+  }
+}
+
+function touchScrollByPosition(x, y, offset, direction, callback_func) {
+  if (window.chrome && chrome.gpuBenchmarking) {
+    chrome.gpuBenchmarking.smoothScrollBy(offset, callback_func, x, y, 1, direction);
   }
 }
 
@@ -100,12 +138,12 @@ function penClickIntoTarget(target) {
 // Keyboard actions
 function keyboardScrollUp() {
   if (window.eventSender)
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
 }
 
 function keyboardScrollLeft() {
   if (window.eventSender)
-    eventSender.keyDown('rightArrow');
+    eventSender.keyDown('ArrowRight');
 }
 
 // Defined in every test

@@ -5,4 +5,3 @@ function inject_input() {
   touchScrollLeftInTarget('target0');
   touchTapInTarget('btnComplete');
 }
-

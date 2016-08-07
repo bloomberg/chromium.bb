@@ -4,4 +4,3 @@ function inject_input() {
   touchScrollUpInTarget('target0');
   touchScrollLeftInTarget('target0');
 }
-
