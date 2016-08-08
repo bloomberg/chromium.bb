@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -247,6 +248,11 @@ public class ChromeLauncherActivity extends Activity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIRST_RUN_EXPERIENCE_REQUEST_CODE) {
+            if (mIsCustomTabIntent) {
+                CustomTabsConnection.getInstance(getApplication())
+                        .sendFirstRunCallbackIfNecessary(
+                                getIntent(), resultCode == Activity.RESULT_OK);
+            }
             if (resultCode == Activity.RESULT_OK) {
                 // User might have opted out during FRE, so check again.
                 if (mIsCustomTabIntent) {

@@ -540,6 +540,13 @@ public class CustomTabsConnection {
     void showSignInToastIfNecessary(CustomTabsSessionToken session, Intent intent) { }
 
     /**
+     * Sends a callback using {@link CustomTabsCallback} about the first run result if necessary.
+     * @param intent The initial VIEW intent that initiated first run.
+     * @param resultOK Whether first run was successful.
+     */
+    public void sendFirstRunCallbackIfNecessary(Intent intent, boolean resultOK) { }
+
+    /**
      * Notifies the application of a navigation event.
      *
      * Delivers the {@link CustomTabsConnectionCallback#onNavigationEvent}
