@@ -41,6 +41,8 @@ source_set("base") {
     "device_capabilities_impl.h",
     "error_codes.cc",
     "error_codes.h",
+    "file_utils.cc",
+    "file_utils.h",
     "init_command_line_shlib.cc",
     "init_command_line_shlib.h",
     "path_utils.cc",

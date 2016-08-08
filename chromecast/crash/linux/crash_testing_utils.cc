@@ -143,7 +143,8 @@ bool AppendLockFile(const std::string& lockfile_path,
   return WriteLockFile(lockfile_path, contents.get()) == 0;
 }
 
-bool SetRatelimitPeriodStart(const std::string& metadata_path, time_t start) {
+bool SetRatelimitPeriodStart(const std::string& metadata_path,
+                             const base::Time& start) {
   std::unique_ptr<base::Value> contents = ParseMetadataFile(metadata_path);
 
   base::DictionaryValue* dict;
@@ -153,10 +154,7 @@ bool SetRatelimitPeriodStart(const std::string& metadata_path, time_t start) {
     return false;
   }
 
-  std::string period_start_str =
-      base::StringPrintf("%lld", static_cast<long long>(start));
-  ratelimit_params->SetString(kRatelimitPeriodStartKey, period_start_str);
-
+  ratelimit_params->SetDouble(kRatelimitPeriodStartKey, start.ToDoubleT());
   return WriteMetadataFile(metadata_path, contents.get()) == 0;
 }
 

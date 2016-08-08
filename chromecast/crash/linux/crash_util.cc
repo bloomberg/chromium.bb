@@ -67,7 +67,6 @@ bool CrashUtil::RequestUploadCrashDump(
         new MinidumpWriter(&minidump_generator, filename.value(), params));
   }
   bool success = false;
-  writer->set_non_blocking(false);
   success = (0 == writer->Write());  // error already logged.
 
   // In case the file is still in $TEMP, remove it. Note that DeleteFile() will

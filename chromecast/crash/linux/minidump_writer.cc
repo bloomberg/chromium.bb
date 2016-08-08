@@ -61,7 +61,7 @@ MinidumpWriter::MinidumpWriter(MinidumpGenerator* minidump_generator,
 MinidumpWriter::~MinidumpWriter() {
 }
 
-int MinidumpWriter::DoWork() {
+bool MinidumpWriter::DoWork() {
   // If path is not absolute, append it to |dump_path_|.
   if (!minidump_path_.value().empty() && minidump_path_.value()[0] != '/')
     minidump_path_ = dump_path_.Append(minidump_path_);
@@ -70,33 +70,32 @@ int MinidumpWriter::DoWork() {
   if (dump_path_ != minidump_path_.DirName()) {
     LOG(INFO) << "The absolute path: " << minidump_path_.value() << " is not"
               << "in the correct directory: " << dump_path_.value();
-    return -1;
+    return false;
   }
 
   // Generate a minidump at the specified |minidump_path_|.
   if (!minidump_generator_->Generate(minidump_path_.value())) {
     LOG(ERROR) << "Generate minidump failed " << minidump_path_.value();
-    return -1;
+    return false;
   }
 
   // Run the dumpstate callback.
   DCHECK(!dump_state_cb_.is_null());
   if (dump_state_cb_.Run(minidump_path_.value()) < 0) {
     LOG(ERROR) << "DumpState callback failed.";
-    return -1;
+    return false;
   }
 
   // Add this entry to the lockfile.
   const DumpInfo info(minidump_path_.value(),
                       minidump_path_.value() + kDumpStateSuffix,
-                      time(nullptr),
-                      params_);
-  if (AddEntryToLockFile(info) < 0) {
+                      base::Time::Now(), params_);
+  if (!AddEntryToLockFile(info)) {
     LOG(ERROR) << "lockfile logging failed";
-    return -1;
+    return false;
   }
 
-  return 0;
+  return true;
 }
 
 }  // namespace crash_manager

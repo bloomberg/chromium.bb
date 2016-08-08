@@ -4,17 +4,8 @@
 
 #include "chromecast/crash/linux/synchronized_minidump_manager.h"
 
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <sys/file.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
 
 #include <utility>
 
@@ -22,8 +13,10 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "chromecast/base/file_utils.h"
 #include "chromecast/base/path_utils.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/crash/linux/dump_info.h"
@@ -40,8 +33,6 @@ namespace chromecast {
 
 namespace {
 
-const mode_t kDirMode = 0770;
-const mode_t kFileMode = 0660;
 const char kLockfileName[] = "lockfile";
 const char kMetadataName[] = "metadata";
 const char kMinidumpsDir[] = "minidumps";
@@ -49,7 +40,7 @@ const char kMinidumpsDir[] = "minidumps";
 const char kLockfileRatelimitKey[] = "ratelimit";
 const char kLockfileRatelimitPeriodStartKey[] = "period_start";
 const char kLockfileRatelimitPeriodDumpsKey[] = "period_dumps";
-const std::size_t kLockfileNumRatelimitParams = 2;
+const uint64_t kLockfileNumRatelimitParams = 2;
 
 // Gets the ratelimit parameter dictionary given a deserialized |metadata|.
 // Returns nullptr if invalid.
@@ -65,39 +56,32 @@ base::DictionaryValue* GetRatelimitParams(base::Value* metadata) {
 }
 
 // Returns the time of the current ratelimit period's start in |metadata|.
-// Returns (time_t)-1 if an error occurs.
-time_t GetRatelimitPeriodStart(base::Value* metadata) {
-  time_t result = static_cast<time_t>(-1);
+// Returns base::Time() if an error occurs.
+base::Time GetRatelimitPeriodStart(base::Value* metadata) {
   base::DictionaryValue* ratelimit_params = GetRatelimitParams(metadata);
-  RCHECK(ratelimit_params, result);
+  RCHECK(ratelimit_params, base::Time());
 
-  std::string period_start_str;
-  RCHECK(ratelimit_params->GetString(kLockfileRatelimitPeriodStartKey,
-                                     &period_start_str),
-         result);
+  double seconds = 0.0;
+  RCHECK(
+      ratelimit_params->GetDouble(kLockfileRatelimitPeriodStartKey, &seconds),
+      base::Time());
 
-  errno = 0;
-  result = static_cast<time_t>(strtoll(period_start_str.c_str(), nullptr, 0));
-  if (errno != 0) {
-    return static_cast<time_t>(-1);
-  }
-
-  return result;
+  // Return value of 0 indicates "not initialized", so we need to explicitly
+  // check for it and return time_t = 0 equivalent.
+  return seconds ? base::Time::FromDoubleT(seconds) : base::Time::UnixEpoch();
 }
 
 // Sets the time of the current ratelimit period's start in |metadata| to
-// |period_start|. Returns 0 on success, < 0 on error.
-int SetRatelimitPeriodStart(base::Value* metadata, time_t period_start) {
-  DCHECK_GE(period_start, 0);
+// |period_start|. Returns true on success, false on error.
+bool SetRatelimitPeriodStart(base::Value* metadata, base::Time period_start) {
+  DCHECK(!period_start.is_null());
 
   base::DictionaryValue* ratelimit_params = GetRatelimitParams(metadata);
-  RCHECK(ratelimit_params, -1);
+  RCHECK(ratelimit_params, false);
 
-  std::string period_start_str =
-      base::StringPrintf("%lld", static_cast<long long>(period_start));
-  ratelimit_params->SetString(kLockfileRatelimitPeriodStartKey,
-                              period_start_str);
-  return 0;
+  ratelimit_params->SetDouble(kLockfileRatelimitPeriodStartKey,
+                              period_start.ToDoubleT());
+  return true;
 }
 
 // Gets the number of dumps added to |metadata| in the current ratelimit
@@ -116,16 +100,16 @@ int GetRatelimitPeriodDumps(base::Value* metadata) {
 }
 
 // Sets the current ratelimit period's number of dumps in |metadata| to
-// |period_dumps|. Returns 0 on success, < 0 on error.
-int SetRatelimitPeriodDumps(base::Value* metadata, int period_dumps) {
+// |period_dumps|. Returns true on success, false on error.
+bool SetRatelimitPeriodDumps(base::Value* metadata, int period_dumps) {
   DCHECK_GE(period_dumps, 0);
 
   base::DictionaryValue* ratelimit_params = GetRatelimitParams(metadata);
-  RCHECK(ratelimit_params, -1);
+  RCHECK(ratelimit_params, false);
 
   ratelimit_params->SetInteger(kLockfileRatelimitPeriodDumpsKey, period_dumps);
 
-  return 0;
+  return true;
 }
 
 // Returns true if |metadata| contains valid metadata, false otherwise.
@@ -137,7 +121,7 @@ bool ValidateMetadata(base::Value* metadata) {
 
   return ratelimit_params &&
          ratelimit_params->size() == kLockfileNumRatelimitParams &&
-         GetRatelimitPeriodStart(metadata) >= 0 &&
+         !GetRatelimitPeriodStart(metadata).is_null() &&
          GetRatelimitPeriodDumps(metadata) >= 0;
 }
 
@@ -148,12 +132,10 @@ const int SynchronizedMinidumpManager::kRatelimitPeriodSeconds = 24 * 3600;
 const int SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps = 100;
 
 SynchronizedMinidumpManager::SynchronizedMinidumpManager()
-    : non_blocking_(false),
-      dump_path_(GetHomePathASCII(kMinidumpsDir)),
+    : dump_path_(GetHomePathASCII(kMinidumpsDir)),
       lockfile_path_(dump_path_.Append(kLockfileName).value()),
       metadata_path_(dump_path_.Append(kMetadataName).value()),
-      lockfile_fd_(-1) {
-}
+      lockfile_fd_(-1) {}
 
 SynchronizedMinidumpManager::~SynchronizedMinidumpManager() {
   // Release the lock if held.
@@ -162,87 +144,79 @@ SynchronizedMinidumpManager::~SynchronizedMinidumpManager() {
 
 // TODO(slan): Move some of this pruning logic to ReleaseLockFile?
 int SynchronizedMinidumpManager::GetNumDumps(bool delete_all_dumps) {
-  DIR* dirp;
-  struct dirent* dptr;
   int num_dumps = 0;
 
-  // folder does not exist
-  dirp = opendir(dump_path_.value().c_str());
-  if (dirp == NULL) {
+  base::DirReaderPosix reader(dump_path_.value().c_str());
+  if (!reader.IsValid()) {
     LOG(ERROR) << "Unable to open directory " << dump_path_.value();
     return 0;
   }
 
-  while ((dptr = readdir(dirp)) != NULL) {
-    struct stat buf;
-    const std::string file_fullname = dump_path_.value() + "/" + dptr->d_name;
-    if (lstat(file_fullname.c_str(), &buf) == -1 || !S_ISREG(buf.st_mode)) {
-      // if we cannot lstat this file, it is probably bad, so skip
-      // if the file is not regular, skip
+  while (reader.Next()) {
+    if (strcmp(reader.name(), ".") == 0 || strcmp(reader.name(), "..") == 0)
       continue;
-    }
 
-    // 'lockfile' and 'metadata' is not counted
-    if (lockfile_path_ != file_fullname && metadata_path_ != file_fullname) {
+    const base::FilePath dump_file(dump_path_.Append(reader.name()));
+    // If file cannot be found, skip.
+    if (!base::PathExists(dump_file))
+      continue;
+
+    // Do not count |lockfile_path_| and |metadata_path_|.
+    if (lockfile_path_ != dump_file && metadata_path_ != dump_file) {
       ++num_dumps;
       if (delete_all_dumps) {
-        LOG(INFO) << "Removing " << dptr->d_name
+        LOG(INFO) << "Removing " << reader.name()
                   << "which was not in the lockfile";
-        if (remove(file_fullname.c_str()) < 0) {
-          LOG(INFO) << "remove failed. error " << strerror(errno);
-        }
+        if (!base::DeleteFile(dump_file, false))
+          PLOG(INFO) << "Removing " << dump_file.value() << " failed";
       }
     }
   }
 
-  closedir(dirp);
   return num_dumps;
 }
 
-int SynchronizedMinidumpManager::AcquireLockAndDoWork() {
-  int success = -1;
-  if (AcquireLockFile() >= 0) {
+bool SynchronizedMinidumpManager::AcquireLockAndDoWork() {
+  bool success = false;
+  if (AcquireLockFile()) {
     success = DoWork();
     ReleaseLockFile();
   }
   return success;
 }
 
-int SynchronizedMinidumpManager::AcquireLockFile() {
+bool SynchronizedMinidumpManager::AcquireLockFile() {
   DCHECK_LT(lockfile_fd_, 0);
   // Make the directory for the minidumps if it does not exist.
-  if (mkdir(dump_path_.value().c_str(), kDirMode) < 0 && errno != EEXIST) {
-    LOG(ERROR) << "mkdir for " << dump_path_.value().c_str()
-               << " failed. error = " << strerror(errno);
-    return -1;
+  base::File::Error error;
+  if (!CreateDirectoryAndGetError(dump_path_, &error)) {
+    LOG(ERROR) << "Failed to create directory " << dump_path_.value()
+               << ". error = " << error;
+    return false;
   }
 
   // Open the lockfile. Create it if it does not exist.
-  lockfile_fd_ = open(lockfile_path_.c_str(), O_RDWR | O_CREAT, kFileMode);
+  base::File lockfile(lockfile_path_, base::File::FLAG_OPEN_ALWAYS);
 
   // If opening or creating the lockfile failed, we don't want to proceed
   // with dump writing for fear of exhausting up system resources.
-  if (lockfile_fd_ < 0) {
-    LOG(ERROR) << "open lockfile failed " << lockfile_path_;
-    return -1;
+  if (!lockfile.IsValid()) {
+    LOG(ERROR) << "open lockfile failed " << lockfile_path_.value();
+    return false;
   }
 
-  // Acquire the lock on the file. Whether or not we are in non-blocking mode,
-  // flock failure means that we did not acquire it and this method should fail.
-  int operation_mode = non_blocking_ ? (LOCK_EX | LOCK_NB) : LOCK_EX;
-  if (flock(lockfile_fd_, operation_mode) < 0) {
+  if ((lockfile_fd_ = OpenAndLockFile(lockfile_path_, false)) < 0) {
     ReleaseLockFile();
-    LOG(INFO) << "flock lockfile failed, error = " << strerror(errno);
-    return -1;
+    return false;
   }
 
   // The lockfile is open and locked. Parse it to provide subclasses with a
   // record of all the current dumps.
-  if (ParseFiles() < 0) {
+  if (!ParseFiles()) {
     LOG(ERROR) << "Lockfile did not parse correctly. ";
-    if (InitializeFiles() < 0 || ParseFiles() < 0) {
+    if (!InitializeFiles() || !ParseFiles()) {
       LOG(ERROR) << "Failed to create a new lock file!";
-      return -1;
+      return false;
     }
   }
 
@@ -250,16 +224,16 @@ int SynchronizedMinidumpManager::AcquireLockFile() {
   DCHECK(metadata_);
 
   // We successfully have acquired the lock.
-  return 0;
+  return true;
 }
 
-int SynchronizedMinidumpManager::ParseFiles() {
+bool SynchronizedMinidumpManager::ParseFiles() {
   DCHECK_GE(lockfile_fd_, 0);
   DCHECK(!dumps_);
   DCHECK(!metadata_);
 
   std::string lockfile;
-  RCHECK(ReadFileToString(base::FilePath(lockfile_path_), &lockfile), -1);
+  RCHECK(ReadFileToString(lockfile_path_, &lockfile), false);
 
   std::vector<std::string> lines = base::SplitString(
       lockfile, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -273,49 +247,46 @@ int SynchronizedMinidumpManager::ParseFiles() {
       continue;
     std::unique_ptr<base::Value> dump_info = DeserializeFromJson(line);
     DumpInfo info(dump_info.get());
-    RCHECK(info.valid(), -1);
+    RCHECK(info.valid(), false);
     dumps->Append(std::move(dump_info));
   }
 
   std::unique_ptr<base::Value> metadata =
-      DeserializeJsonFromFile(base::FilePath(metadata_path_));
-  RCHECK(ValidateMetadata(metadata.get()), -1);
+      DeserializeJsonFromFile(metadata_path_);
+  RCHECK(ValidateMetadata(metadata.get()), false);
 
   dumps_ = std::move(dumps);
   metadata_ = std::move(metadata);
-  return 0;
+  return true;
 }
 
-int SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
-                                            const base::Value* metadata) {
+bool SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
+                                             const base::Value* metadata) {
   DCHECK(dumps);
   DCHECK(metadata);
   std::string lockfile;
 
   for (const auto& elem : *dumps) {
     std::unique_ptr<std::string> dump_info = SerializeToJson(*elem);
-    RCHECK(dump_info, -1);
+    RCHECK(dump_info, false);
     lockfile += *dump_info;
     lockfile += "\n";  // Add line seperatators
   }
 
-  if (WriteFile(base::FilePath(lockfile_path_),
-                lockfile.c_str(),
-                lockfile.size()) < 0) {
-    return -1;
+  if (WriteFile(lockfile_path_, lockfile.c_str(), lockfile.size()) < 0) {
+    return false;
   }
 
-  return SerializeJsonToFile(base::FilePath(metadata_path_), *metadata) ? 0
-                                                                        : -1;
+  return SerializeJsonToFile(metadata_path_, *metadata);
 }
 
-int SynchronizedMinidumpManager::InitializeFiles() {
+bool SynchronizedMinidumpManager::InitializeFiles() {
   std::unique_ptr<base::DictionaryValue> metadata =
       base::WrapUnique(new base::DictionaryValue());
 
   base::DictionaryValue* ratelimit_fields = new base::DictionaryValue();
   metadata->Set(kLockfileRatelimitKey, base::WrapUnique(ratelimit_fields));
-  ratelimit_fields->SetString(kLockfileRatelimitPeriodStartKey, "0");
+  ratelimit_fields->SetDouble(kLockfileRatelimitPeriodStartKey, 0.0);
   ratelimit_fields->SetInteger(kLockfileRatelimitPeriodDumpsKey, 0);
 
   std::unique_ptr<base::ListValue> dumps =
@@ -324,23 +295,23 @@ int SynchronizedMinidumpManager::InitializeFiles() {
   return WriteFiles(dumps.get(), metadata.get());
 }
 
-int SynchronizedMinidumpManager::AddEntryToLockFile(const DumpInfo& dump_info) {
-  DCHECK_LE(0, lockfile_fd_);
+bool SynchronizedMinidumpManager::AddEntryToLockFile(
+    const DumpInfo& dump_info) {
+  DCHECK_GE(lockfile_fd_, 0);
   DCHECK(dumps_);
 
   // Make sure dump_info is valid.
   if (!dump_info.valid()) {
     LOG(ERROR) << "Entry to be added is invalid";
-    return -1;
+    return false;
   }
 
   dumps_->Append(dump_info.GetAsValue());
-
-  return 0;
+  return true;
 }
 
-int SynchronizedMinidumpManager::RemoveEntryFromLockFile(int index) {
-  return dumps_->Remove(static_cast<size_t>(index), nullptr) ? 0 : -1;
+bool SynchronizedMinidumpManager::RemoveEntryFromLockFile(int index) {
+  return dumps_->Remove(static_cast<uint64_t>(index), nullptr);
 }
 
 void SynchronizedMinidumpManager::ReleaseLockFile() {
@@ -350,10 +321,7 @@ void SynchronizedMinidumpManager::ReleaseLockFile() {
     if (dumps_)
       WriteFiles(dumps_.get(), metadata_.get());
 
-    flock(lockfile_fd_, LOCK_UN);
-    close(lockfile_fd_);
-
-    // We may use this object again, so we should reset this.
+    UnlockAndCloseFile(lockfile_fd_);
     lockfile_fd_ = -1;
   }
 
@@ -371,27 +339,27 @@ ScopedVector<DumpInfo> SynchronizedMinidumpManager::GetDumps() {
   return dumps;
 }
 
-int SynchronizedMinidumpManager::SetCurrentDumps(
+bool SynchronizedMinidumpManager::SetCurrentDumps(
     const ScopedVector<DumpInfo>& dumps) {
   dumps_->Clear();
 
   for (DumpInfo* dump : dumps)
     dumps_->Append(dump->GetAsValue());
 
-  return 0;
+  return true;
 }
 
-int SynchronizedMinidumpManager::IncrementNumDumpsInCurrentPeriod() {
+bool SynchronizedMinidumpManager::IncrementNumDumpsInCurrentPeriod() {
   DCHECK(metadata_);
   int last_dumps = GetRatelimitPeriodDumps(metadata_.get());
-  RCHECK(last_dumps >= 0, -1);
+  RCHECK(last_dumps >= 0, false);
 
   return SetRatelimitPeriodDumps(metadata_.get(), last_dumps + 1);
 }
 
 bool SynchronizedMinidumpManager::CanUploadDump() {
-  time_t cur_time = time(nullptr);
-  time_t period_start = GetRatelimitPeriodStart(metadata_.get());
+  base::Time cur_time = base::Time::Now();
+  base::Time period_start = GetRatelimitPeriodStart(metadata_.get());
   int period_dumps_count = GetRatelimitPeriodDumps(metadata_.get());
 
   // If we're in invalid state, or we passed the period, reset the ratelimit.
@@ -400,8 +368,9 @@ bool SynchronizedMinidumpManager::CanUploadDump() {
   // |period_start| invalid when |cur_time| is less if |cur_time| is not very
   // close to 0.
   if (period_dumps_count < 0 ||
-      (cur_time < period_start && cur_time > kRatelimitPeriodSeconds) ||
-      difftime(cur_time, period_start) >= kRatelimitPeriodSeconds) {
+      (cur_time < period_start &&
+       cur_time.ToDoubleT() > kRatelimitPeriodSeconds) ||
+      (cur_time - period_start).InSeconds() >= kRatelimitPeriodSeconds) {
     period_start = cur_time;
     period_dumps_count = 0;
     SetRatelimitPeriodStart(metadata_.get(), period_start);
@@ -414,7 +383,7 @@ bool SynchronizedMinidumpManager::CanUploadDump() {
 bool SynchronizedMinidumpManager::HasDumps() {
   // Check if lockfile has entries.
   int64_t size = 0;
-  if (GetFileSize(base::FilePath(lockfile_path_), &size) && size > 0)
+  if (base::GetFileSize(lockfile_path_, &size) && size > 0)
     return true;
 
   // Check if any files are in minidump directory
@@ -428,7 +397,7 @@ bool SynchronizedMinidumpManager::HasDumps() {
     if (strcmp(reader.name(), ".") == 0 || strcmp(reader.name(), "..") == 0)
       continue;
 
-    const std::string file_path = dump_path_.Append(reader.name()).value();
+    const base::FilePath file_path = dump_path_.Append(reader.name());
     if (file_path != lockfile_path_ && file_path != metadata_path_)
       return true;
   }

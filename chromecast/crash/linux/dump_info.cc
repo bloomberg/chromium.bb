@@ -9,14 +9,15 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 
 namespace chromecast {
 
 namespace {
 
-const char kDumpTimeFormat[] = "%Y-%m-%d %H:%M:%S";
-const unsigned kDumpTimeMaxLen = 255;
+// "%Y-%m-%d %H:%M:%S";
+const char kDumpTimeFormat[] = "%04d-%02d-%02d %02d:%02d:%02d";
 
 const int kNumRequiredParams = 5;
 
@@ -40,25 +41,13 @@ DumpInfo::DumpInfo(const base::Value* entry) : valid_(ParseEntry(entry)) {
 
 DumpInfo::DumpInfo(const std::string& crashed_process_dump,
                    const std::string& logfile,
-                   const time_t& dump_time,
+                   const base::Time& dump_time,
                    const MinidumpParams& params)
     : crashed_process_dump_(crashed_process_dump),
       logfile_(logfile),
       dump_time_(dump_time),
       params_(params),
-      valid_(false) {
-
-  // Validate the time passed in.
-  struct tm* tm = gmtime(&dump_time);
-  char buf[kDumpTimeMaxLen];
-  int n = strftime(buf, kDumpTimeMaxLen, kDumpTimeFormat, tm);
-  if (n <= 0) {
-    LOG(INFO) << "strftime failed";
-    return;
-  }
-
-  valid_ = true;
-}
+      valid_(true) {}
 
 DumpInfo::~DumpInfo() {
 }
@@ -70,11 +59,11 @@ std::unique_ptr<base::Value> DumpInfo::GetAsValue() const {
   result->GetAsDictionary(&entry);
   entry->SetString(kNameKey, params_.process_name);
 
-  struct tm* tm = gmtime(&dump_time_);
-  char buf[kDumpTimeMaxLen];
-  int n = strftime(buf, kDumpTimeMaxLen, kDumpTimeFormat, tm);
-  DCHECK_GT(n, 0);
-  std::string dump_time(buf);
+  base::Time::Exploded ex;
+  dump_time_.LocalExplode(&ex);
+  std::string dump_time =
+      base::StringPrintf(kDumpTimeFormat, ex.year, ex.month, ex.day_of_month,
+                         ex.hour, ex.minute, ex.second);
   entry->SetString(kDumpTimeKey, dump_time);
 
   entry->SetString(kDumpKey, crashed_process_dump_);
@@ -152,13 +141,14 @@ bool DumpInfo::ParseEntry(const base::Value* entry) {
 }
 
 bool DumpInfo::SetDumpTimeFromString(const std::string& timestr) {
-  struct tm tm = {0};
-  char* text = strptime(timestr.c_str(), kDumpTimeFormat, &tm);
-  dump_time_ = mktime(&tm);
-  if (!text || dump_time_ < 0) {
+  base::Time::Exploded ex = {0};
+  if (sscanf(timestr.c_str(), kDumpTimeFormat, &ex.year, &ex.month,
+             &ex.day_of_month, &ex.hour, &ex.minute, &ex.second) < 6) {
     LOG(INFO) << "Failed to convert dump time invalid";
     return false;
   }
+
+  dump_time_ = base::Time::FromLocalExploded(ex);
   return true;
 }
 

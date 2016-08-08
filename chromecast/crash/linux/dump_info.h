@@ -5,11 +5,11 @@
 #ifndef CHROMECAST_CRASH_LINUX_DUMP_INFO_H_
 #define CHROMECAST_CRASH_LINUX_DUMP_INFO_H_
 
-#include <ctime>
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chromecast/crash/linux/minidump_params.h"
 
 namespace base {
@@ -34,7 +34,7 @@ class DumpInfo {
   // -params: a structure containing other useful crash information
   DumpInfo(const std::string& crashed_process_dump,
            const std::string& crashed_process_logfile,
-           const time_t& dump_time,
+           const base::Time& dump_time,
            const MinidumpParams& params);
 
   ~DumpInfo();
@@ -43,7 +43,7 @@ class DumpInfo {
     return crashed_process_dump_;
   }
   const std::string& logfile() const { return logfile_; }
-  const time_t& dump_time() const { return dump_time_; }
+  const base::Time& dump_time() const { return dump_time_; }
 
   // Return a deep copy of the entry's JSON representation.
   // The format is:
@@ -73,7 +73,7 @@ class DumpInfo {
 
   std::string crashed_process_dump_;
   std::string logfile_;
-  time_t dump_time_;
+  base::Time dump_time_;
   MinidumpParams params_;
   bool valid_;
 

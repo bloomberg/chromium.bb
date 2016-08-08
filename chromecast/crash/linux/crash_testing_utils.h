@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/scoped_vector.h"
+#include "base/time/time.h"
 
 namespace chromecast {
 
@@ -42,7 +43,8 @@ bool AppendLockFile(const std::string& lockfile_path,
 
 // Set the ratelimit period start in the metadata file at |metadata_path| to
 // |start|. Returns true on success, false on error.
-bool SetRatelimitPeriodStart(const std::string& metadata_path, time_t start);
+bool SetRatelimitPeriodStart(const std::string& metadata_path,
+                             const base::Time& start);
 
 }  // namespace chromecast
 

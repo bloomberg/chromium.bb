@@ -46,11 +46,11 @@ class MinidumpWriter : public SynchronizedMinidumpManager {
   // Acquires exclusive access to the minidumps directory and generates a
   // minidump and a log to be uploaded later. Returns 0 if successful, -1
   // otherwise.
-  int Write() { return AcquireLockAndDoWork(); }
+  int Write() { return AcquireLockAndDoWork() ? 0 : -1; }
 
  protected:
   // MinidumpManager implementation:
-  int DoWork() override;
+  bool DoWork() override;
 
  private:
   MinidumpGenerator* const minidump_generator_;

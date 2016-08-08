@@ -47,15 +47,14 @@ TEST(DumpInfoTest, AllRequiredFieldsIsValid) {
                      "\"uptime\": \"123456789\","
                      "\"logfile\": \"logfile.log\""
                      "}"));
-  struct tm tm = {0};
-  tm.tm_isdst = 0;
-  tm.tm_sec = 1;
-  tm.tm_min = 31;
-  tm.tm_hour = 18;
-  tm.tm_mday = 12;
-  tm.tm_mon = 10;
-  tm.tm_year = 101;
-  time_t dump_time = mktime(&tm);
+  base::Time::Exploded ex = {0};
+  ex.second = 1;
+  ex.minute = 31;
+  ex.hour = 18;
+  ex.day_of_month = 12;
+  ex.month = 11;
+  ex.year = 2001;
+  base::Time dump_time = base::Time::FromLocalExploded(ex);
 
   ASSERT_TRUE(info->valid());
   ASSERT_EQ("name", info->params().process_name);
@@ -86,15 +85,14 @@ TEST(DumpInfoTest, SomeRequiredFieldsEmptyIsValid) {
                      "\"uptime\": \"\","
                      "\"logfile\": \"\""
                      "}"));
-  struct tm tm = {0};
-  tm.tm_isdst = 0;
-  tm.tm_sec = 1;
-  tm.tm_min = 31;
-  tm.tm_hour = 18;
-  tm.tm_mday = 12;
-  tm.tm_mon = 10;
-  tm.tm_year = 101;
-  time_t dump_time = mktime(&tm);
+  base::Time::Exploded ex = {0};
+  ex.second = 1;
+  ex.minute = 31;
+  ex.hour = 18;
+  ex.day_of_month = 12;
+  ex.month = 11;
+  ex.year = 2001;
+  base::Time dump_time = base::Time::FromLocalExploded(ex);
 
   ASSERT_TRUE(info->valid());
   ASSERT_EQ("name", info->params().process_name);
@@ -120,15 +118,14 @@ TEST(DumpInfoTest, AllOptionalFieldsIsValid) {
                      "\"build_number\": \"BUILD_NUMBER\","
                      "\"reason\": \"foo\""
                      "}"));
-  struct tm tm = {0};
-  tm.tm_isdst = 0;
-  tm.tm_sec = 1;
-  tm.tm_min = 31;
-  tm.tm_hour = 18;
-  tm.tm_mday = 12;
-  tm.tm_mon = 10;
-  tm.tm_year = 101;
-  time_t dump_time = mktime(&tm);
+  base::Time::Exploded ex = {0};
+  ex.second = 1;
+  ex.minute = 31;
+  ex.hour = 18;
+  ex.day_of_month = 12;
+  ex.month = 11;
+  ex.year = 2001;
+  base::Time dump_time = base::Time::FromLocalExploded(ex);
 
   ASSERT_TRUE(info->valid());
   ASSERT_EQ("name", info->params().process_name);
@@ -155,15 +152,14 @@ TEST(DumpInfoTest, SomeOptionalFieldsIsValid) {
                      "\"suffix\": \"suffix\","
                      "\"prev_app_name\": \"previous_app\""
                      "}"));
-  struct tm tm = {0};
-  tm.tm_isdst = 0;
-  tm.tm_sec = 1;
-  tm.tm_min = 31;
-  tm.tm_hour = 18;
-  tm.tm_mday = 12;
-  tm.tm_mon = 10;
-  tm.tm_year = 101;
-  time_t dump_time = mktime(&tm);
+  base::Time::Exploded ex = {0};
+  ex.second = 1;
+  ex.minute = 31;
+  ex.hour = 18;
+  ex.day_of_month = 12;
+  ex.month = 11;
+  ex.year = 2001;
+  base::Time dump_time = base::Time::FromLocalExploded(ex);
 
   ASSERT_TRUE(info->valid());
   ASSERT_EQ("name", info->params().process_name);

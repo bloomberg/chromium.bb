@@ -48,7 +48,7 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
   SynchronizedMinidumpManagerSimple()
       : SynchronizedMinidumpManager(),
         work_done_(false),
-        add_entry_return_code_(-1),
+        add_entry_return_code_(false),
         lockfile_path_(dump_path_.Append(kLockfileName).value()) {}
   ~SynchronizedMinidumpManagerSimple() override {}
 
@@ -56,14 +56,14 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
     dump_info_ = std::move(dump_info);
   }
 
-  int DoWorkLocked() { return AcquireLockAndDoWork(); }
+  bool DoWorkLocked() { return AcquireLockAndDoWork(); }
 
   // SynchronizedMinidumpManager implementation:
-  int DoWork() override {
+  bool DoWork() override {
     if (dump_info_)
       add_entry_return_code_ = AddEntryToLockFile(*dump_info_);
     work_done_ = true;
-    return 0;
+    return true;
   }
 
   // Accessors for testing.
@@ -71,11 +71,11 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
   const std::string& dump_path() { return dump_path_.value(); }
   const std::string& lockfile_path() { return lockfile_path_; }
   bool work_done() { return work_done_; }
-  int add_entry_return_code() { return add_entry_return_code_; }
+  bool add_entry_return_code() { return add_entry_return_code_; }
 
  private:
   bool work_done_;
-  int add_entry_return_code_;
+  bool add_entry_return_code_;
   std::string lockfile_path_;
   std::unique_ptr<DumpInfo> dump_info_;
 };
@@ -92,19 +92,19 @@ class FakeSynchronizedMinidumpUploader : public SynchronizedMinidumpManager {
       : SynchronizedMinidumpManager(), can_upload_return_val_(false) {}
   ~FakeSynchronizedMinidumpUploader() override {}
 
-  int DoWorkLocked() { return AcquireLockAndDoWork(); }
+  bool DoWorkLocked() { return AcquireLockAndDoWork(); }
 
   // SynchronizedMinidumpManager implementation:
-  int DoWork() override {
+  bool DoWork() override {
     can_upload_return_val_ = CanUploadDump();
 
-    if (RemoveEntryFromLockFile(0) < 0)
-      return -1;
+    if (!RemoveEntryFromLockFile(0))
+      return false;
 
-    if (IncrementNumDumpsInCurrentPeriod() < 0)
-      return -1;
+    if (!IncrementNumDumpsInCurrentPeriod())
+      return false;
 
-    return 0;
+    return true;
   }
 
   // Accessors for testing.
@@ -124,7 +124,7 @@ class SleepySynchronizedMinidumpManagerSimple
   ~SleepySynchronizedMinidumpManagerSimple() override {}
 
   // SynchronizedMinidumpManager implementation:
-  int DoWork() override {
+  bool DoWork() override {
     // The lock has been acquired. Fall asleep for |kSleepDurationMs|, then
     // write the file.
     base::PlatformThread::Sleep(
@@ -174,8 +174,8 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
 // Have |producer| generate |num_dumps| while checking there are no errors.
 void produce_dumps(SynchronizedMinidumpManagerSimple& producer, int num_dumps) {
   for (int i = 0; i < num_dumps; ++i) {
-    ASSERT_EQ(0, producer.DoWorkLocked());
-    ASSERT_EQ(0, producer.add_entry_return_code());
+    ASSERT_TRUE(producer.DoWorkLocked());
+    ASSERT_TRUE(producer.add_entry_return_code());
   }
 }
 
@@ -183,7 +183,7 @@ void produce_dumps(SynchronizedMinidumpManagerSimple& producer, int num_dumps) {
 // errors.
 void consume_dumps(FakeSynchronizedMinidumpUploader& consumer, int num_dumps) {
   for (int i = 0; i < num_dumps; ++i) {
-    ASSERT_EQ(0, consumer.DoWorkLocked());
+    ASSERT_TRUE(consumer.DoWorkLocked());
     ASSERT_TRUE(consumer.can_upload_return_val());
   }
 }
@@ -204,7 +204,7 @@ TEST_F(SynchronizedMinidumpManagerTest, AcquireLockOnNonExistentDirectory) {
   ASSERT_FALSE(base::PathExists(minidump_dir_));
 
   SynchronizedMinidumpManagerSimple manager;
-  ASSERT_EQ(0, manager.DoWorkLocked());
+  ASSERT_TRUE(manager.DoWorkLocked());
   ASSERT_TRUE(manager.work_done());
 
   // Verify the directory and the lockfile both exist.
@@ -218,7 +218,7 @@ TEST_F(SynchronizedMinidumpManagerTest, AcquireLockOnExistingEmptyDirectory) {
   ASSERT_FALSE(base::PathExists(lockfile_));
 
   SynchronizedMinidumpManagerSimple manager;
-  ASSERT_EQ(0, manager.DoWorkLocked());
+  ASSERT_TRUE(manager.DoWorkLocked());
   ASSERT_TRUE(manager.work_done());
 
   // Verify the directory and the lockfile both exist.
@@ -229,7 +229,7 @@ TEST_F(SynchronizedMinidumpManagerTest, AcquireLockOnExistingEmptyDirectory) {
 TEST_F(SynchronizedMinidumpManagerTest,
        AcquireLockOnExistingDirectoryWithLockfile) {
   SynchronizedMinidumpManagerSimple manager;
-  ASSERT_EQ(0, manager.DoWorkLocked());
+  ASSERT_TRUE(manager.DoWorkLocked());
   ASSERT_TRUE(manager.work_done());
 
   // Verify the directory and the lockfile both exist.
@@ -245,8 +245,8 @@ TEST_F(SynchronizedMinidumpManagerTest,
   // Test that the manager tried to log the entry and failed.
   SynchronizedMinidumpManagerSimple manager;
   manager.SetDumpInfoToWrite(base::WrapUnique(new DumpInfo(&val)));
-  ASSERT_EQ(0, manager.DoWorkLocked());
-  ASSERT_EQ(-1, manager.add_entry_return_code());
+  ASSERT_TRUE(manager.DoWorkLocked());
+  ASSERT_FALSE(manager.add_entry_return_code());
 
   // Verify the lockfile is untouched.
   ScopedVector<DumpInfo> dumps;
@@ -257,7 +257,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
 TEST_F(SynchronizedMinidumpManagerTest,
        AddEntryToLockFile_SucceedsWithValidEntries) {
   // Sample parameters.
-  time_t now = time(0);
+  base::Time now = base::Time::Now();
   MinidumpParams params;
   params.process_name = "process";
 
@@ -265,8 +265,8 @@ TEST_F(SynchronizedMinidumpManagerTest,
   SynchronizedMinidumpManagerSimple manager;
   manager.SetDumpInfoToWrite(
       base::WrapUnique(new DumpInfo("dump1", "log1", now, params)));
-  ASSERT_EQ(0, manager.DoWorkLocked());
-  ASSERT_EQ(0, manager.add_entry_return_code());
+  ASSERT_TRUE(manager.DoWorkLocked());
+  ASSERT_TRUE(manager.add_entry_return_code());
 
   // Test that the manager was successful in logging the entry.
   ScopedVector<DumpInfo> dumps;
@@ -276,39 +276,17 @@ TEST_F(SynchronizedMinidumpManagerTest,
   // Write the second entry.
   manager.SetDumpInfoToWrite(
       base::WrapUnique(new DumpInfo("dump2", "log2", now, params)));
-  ASSERT_EQ(0, manager.DoWorkLocked());
-  ASSERT_EQ(0, manager.add_entry_return_code());
+  ASSERT_TRUE(manager.DoWorkLocked());
+  ASSERT_TRUE(manager.add_entry_return_code());
 
   // Test that the second entry is also valid.
   ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   ASSERT_EQ(2u, dumps.size());
 }
 
-TEST_F(SynchronizedMinidumpManagerTest,
-       AcquireLockFile_FailsWhenNonBlockingAndFileLocked) {
-  ASSERT_TRUE(CreateFiles(lockfile_.value(), metadata_.value()));
-  // Lock the lockfile here. Note that the Chromium base::File tools permit
-  // multiple locks on the same process to succeed, so we must use POSIX system
-  // calls to accomplish this.
-  int fd = open(lockfile_.value().c_str(), O_RDWR | O_CREAT, 0660);
-  ASSERT_GE(fd, 0);
-  ASSERT_EQ(0, flock(fd, LOCK_EX));
-
-  SynchronizedMinidumpManagerSimple manager;
-  manager.set_non_blocking(true);
-  ASSERT_EQ(-1, manager.DoWorkLocked());
-  ASSERT_FALSE(manager.work_done());
-
-  // Test that the manager was not able to log the crash dump.
-  ScopedVector<DumpInfo> dumps;
-  ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
-  ASSERT_EQ(0u, dumps.size());
-}
-
-TEST_F(SynchronizedMinidumpManagerTest,
-       AcquireLockFile_WaitsForOtherThreadWhenBlocking) {
+TEST_F(SynchronizedMinidumpManagerTest, AcquireLockFile_WaitsForOtherThread) {
   // Create some parameters for a minidump.
-  time_t now = time(0);
+  base::Time now = base::Time::Now();
   MinidumpParams params;
   params.process_name = "process";
 
@@ -337,14 +315,13 @@ TEST_F(SynchronizedMinidumpManagerTest,
   SynchronizedMinidumpManagerSimple manager;
   manager.SetDumpInfoToWrite(
       base::WrapUnique(new DumpInfo("dump", "log", now, params)));
-  manager.set_non_blocking(false);
 
-  EXPECT_EQ(0, manager.DoWorkLocked());
-  EXPECT_EQ(0, manager.add_entry_return_code());
+  EXPECT_TRUE(manager.DoWorkLocked());
+  EXPECT_TRUE(manager.add_entry_return_code());
   EXPECT_TRUE(manager.work_done());
 
   // Check that the other manager was also successful.
-  EXPECT_EQ(0, sleepy_manager.add_entry_return_code());
+  EXPECT_TRUE(sleepy_manager.add_entry_return_code());
   EXPECT_TRUE(sleepy_manager.work_done());
 
   // Test that both entries were logged.
@@ -357,41 +334,9 @@ TEST_F(SynchronizedMinidumpManagerTest,
 // of all tests in this thread. Figure out how to lock the file more cleanly
 // from another process.
 TEST_F(SynchronizedMinidumpManagerTest,
-       DISABLED_AcquireLockFile_FailsWhenNonBlockingAndLockedFromOtherProcess) {
-  // Fork the process.
-  pid_t pid = base::ForkWithFlags(0u, nullptr, nullptr);
-  if (pid != 0) {
-    // The child process should instantiate a manager which immediately grabs
-    // the lock, and falls aleep for some period of time, then writes a dump,
-    // and finally releases the lock.
-    SleepySynchronizedMinidumpManagerSimple sleepy_manager(100);
-    ASSERT_EQ(0, sleepy_manager.DoWorkLocked());
-    ASSERT_TRUE(sleepy_manager.work_done());
-    return;
-  }
-
-  // Meanwhile, this process should wait brielfy to allow the other thread to
-  // grab the lock.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
-
-  SynchronizedMinidumpManagerSimple manager;
-  manager.set_non_blocking(true);
-  ASSERT_EQ(-1, manager.DoWorkLocked());
-  ASSERT_FALSE(manager.work_done());
-
-  // Test that the manager was not able to log the crash dump.
-  ScopedVector<DumpInfo> dumps;
-  ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
-  ASSERT_EQ(0u, dumps.size());
-}
-
-// TODO(slan): These tests are passing but forking them is creating duplicates
-// of all tests in this thread. Figure out how to lock the file more cleanly
-// from another process.
-TEST_F(SynchronizedMinidumpManagerTest,
-       DISABLED_AcquireLockFile_WaitsForOtherProcessWhenBlocking) {
+       DISABLED_AcquireLockFile_WaitsForOtherProcess) {
   // Create some parameters for a minidump.
-  time_t now = time(0);
+  base::Time now = base::Time::Now();
   MinidumpParams params;
   params.process_name = "process";
 
@@ -404,7 +349,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
     SleepySynchronizedMinidumpManagerSimple sleepy_manager(100);
     sleepy_manager.SetDumpInfoToWrite(
         base::WrapUnique(new DumpInfo("dump", "log", now, params)));
-    ASSERT_EQ(0, sleepy_manager.DoWorkLocked());
+    ASSERT_TRUE(sleepy_manager.DoWorkLocked());
     ASSERT_TRUE(sleepy_manager.work_done());
     return;
   }
@@ -421,10 +366,9 @@ TEST_F(SynchronizedMinidumpManagerTest,
   SynchronizedMinidumpManagerSimple manager;
   manager.SetDumpInfoToWrite(
       base::WrapUnique(new DumpInfo("dump", "log", now, params)));
-  manager.set_non_blocking(false);
 
-  EXPECT_EQ(0, manager.DoWorkLocked());
-  EXPECT_EQ(0, manager.add_entry_return_code());
+  EXPECT_TRUE(manager.DoWorkLocked());
+  EXPECT_TRUE(manager.add_entry_return_code());
   EXPECT_TRUE(manager.work_done());
 
   // Test that both entries were logged.
@@ -436,7 +380,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
 TEST_F(SynchronizedMinidumpManagerTest,
        Upload_SucceedsWhenDumpLimitsNotExceeded) {
   // Sample parameters.
-  time_t now = time(0);
+  base::Time now = base::Time::Now();
   MinidumpParams params;
   params.process_name = "process";
 
@@ -452,7 +396,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
 
 TEST_F(SynchronizedMinidumpManagerTest, Upload_FailsWhenTooManyRecentDumps) {
   // Sample parameters.
-  time_t now = time(0);
+  base::Time now = base::Time::Now();
   MinidumpParams params;
   params.process_name = "process";
 
@@ -466,13 +410,13 @@ TEST_F(SynchronizedMinidumpManagerTest, Upload_FailsWhenTooManyRecentDumps) {
   consume_dumps(uploader, max_dumps);
 
   // Should fail with too many dumps
-  ASSERT_EQ(0, uploader.DoWorkLocked());
+  ASSERT_TRUE(uploader.DoWorkLocked());
   ASSERT_FALSE(uploader.can_upload_return_val());
 }
 
 TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
   // Sample parameters.
-  time_t now = time(0);
+  base::Time now = base::Time::Now();
   MinidumpParams params;
   params.process_name = "process";
 
@@ -489,15 +433,17 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
     consume_dumps(uploader, max_dumps);
 
     // Should fail with too many dumps
-    ASSERT_EQ(0, uploader.DoWorkLocked());
+    ASSERT_TRUE(uploader.DoWorkLocked());
     ASSERT_FALSE(uploader.can_upload_return_val());
 
-    int64_t period = SynchronizedMinidumpManager::kRatelimitPeriodSeconds;
+    base::TimeDelta period = base::TimeDelta::FromSeconds(
+        SynchronizedMinidumpManager::kRatelimitPeriodSeconds);
+    base::Time now = base::Time::Now();
 
     // Half period shouldn't trigger reset
     produce_dumps(producer, 1);
     SetRatelimitPeriodStart(metadata_.value(), now - period / 2);
-    ASSERT_EQ(0, uploader.DoWorkLocked());
+    ASSERT_TRUE(uploader.DoWorkLocked());
     ASSERT_FALSE(uploader.can_upload_return_val());
 
     // Set period starting time to trigger a reset
@@ -515,7 +461,7 @@ TEST_F(SynchronizedMinidumpManagerTest, HasDumpsWithoutDumps) {
 
 TEST_F(SynchronizedMinidumpManagerTest, HasDumpsWithDumps) {
   // Sample parameters.
-  time_t now = time(0);
+  base::Time now = base::Time::Now();
   MinidumpParams params;
   params.process_name = "process";
 

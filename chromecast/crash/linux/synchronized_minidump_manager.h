@@ -5,10 +5,6 @@
 #ifndef CHROMECAST_CRASH_LINUX_SYNCHRONIZED_MINIDUMP_MANAGER_H_
 #define CHROMECAST_CRASH_LINUX_SYNCHRONIZED_MINIDUMP_MANAGER_H_
 
-#include <time.h>
-
-#include <string>
-
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -54,43 +50,37 @@ class SynchronizedMinidumpManager {
 
   virtual ~SynchronizedMinidumpManager();
 
-  // Returns whether this object's file locking method is nonblocking or not.
-  bool non_blocking() { return non_blocking_; }
-
-  // Sets the file locking mechansim to be nonblocking or not.
-  void set_non_blocking(bool non_blocking) { non_blocking_ = non_blocking; }
-
  protected:
   SynchronizedMinidumpManager();
 
   // Acquires the lock, calls DoWork(), then releases the lock when DoWork()
   // returns. Derived classes should expose a method which calls this. Returns
-  // the status of DoWork(), or -1 if the lock was not successfully acquired.
-  int AcquireLockAndDoWork();
+  // the status of DoWork(), or false if the lock was not successfully acquired.
+  bool AcquireLockAndDoWork();
 
   // Derived classes must implement this method. It will be called from
   // DoWorkLocked after the lock has been successfully acquired. The lockfile
   // shall be accessed and mutated only through the methods below. All other
   // files shall be managed as needed by the derived class.
-  virtual int DoWork() = 0;
+  virtual bool DoWork() = 0;
 
   // Get the current dumps in the lockfile.
   ScopedVector<DumpInfo> GetDumps();
 
   // Set |dumps| as the dumps in |lockfile_|, replacing current list of dumps.
-  int SetCurrentDumps(const ScopedVector<DumpInfo>& dumps);
+  bool SetCurrentDumps(const ScopedVector<DumpInfo>& dumps);
 
   // Serialize |dump_info| and append it to the lockfile. Note that the child
   // class must only call this inside DoWork(). This should be the only method
   // used to write to the lockfile. Only call this if the minidump has been
-  // generated in the minidumps directory successfully. Returns 0 on success,
-  // -1 otherwise.
-  int AddEntryToLockFile(const DumpInfo& dump_info);
+  // generated in the minidumps directory successfully. Returns true on success,
+  // false otherwise.
+  bool AddEntryToLockFile(const DumpInfo& dump_info);
 
   // Remove the lockfile entry at |index| in the current in memory
-  // representation of the lockfile. If the index is invalid returns -1.
-  // Otherwise returns 0.
-  int RemoveEntryFromLockFile(int index);
+  // representation of the lockfile. If the index is invalid returns false,
+  // otherwise returns true.
+  bool RemoveEntryFromLockFile(int index);
 
   // Get the number of un-uploaded dumps in the dump_path directory.
   // If delete_all_dumps is true, also delete all these files, this is used to
@@ -98,8 +88,8 @@ class SynchronizedMinidumpManager {
   int GetNumDumps(bool delete_all_dumps);
 
   // Increment the number of dumps in the current ratelimit period.
-  // Returns 0 on success, < 0 on error.
-  int IncrementNumDumpsInCurrentPeriod();
+  // Returns true on success, false on error.
+  bool IncrementNumDumpsInCurrentPeriod();
 
   // Returns true when dumps uploaded in current rate limit period is less than
   // |kRatelimitPeriodMaxDumps|. Resets rate limit period if period time has
@@ -111,35 +101,33 @@ class SynchronizedMinidumpManager {
   // Used to avoid unnecessary file locks in consumers.
   bool HasDumps();
 
-  // If true, the flock on the lockfile will be nonblocking.
-  bool non_blocking_;
-
   // Cached path for the minidumps directory.
   const base::FilePath dump_path_;
 
  private:
   // Acquire the lock file. Blocks if another process holds it, or if called
-  // a second time by the same process. Returns the fd of the lockfile if
-  // successful, or -1 if failed.
-  int AcquireLockFile();
+  // a second time by the same process. Returns true if successful, or false
+  // otherwise.
+  bool AcquireLockFile();
 
   // Parse the lockfile and metadata file, populating |dumps_| and |metadata_|
-  // for modifier functions to use. Return -1 if an error occurred. Otherwise,
-  // return 0. This must not be called unless |this| has acquired the lock.
-  int ParseFiles();
+  // for modifier functions to use. Returns false if an error occurred,
+  // otherwise returns true. This must not be called unless |this| has acquired
+  // the lock.
+  bool ParseFiles();
 
   // Write deserialized |dumps| to |lockfile_path_| and the deserialized
   // |metadata| to |metadata_path_|.
-  int WriteFiles(const base::ListValue* dumps, const base::Value* metadata);
+  bool WriteFiles(const base::ListValue* dumps, const base::Value* metadata);
 
   // Creates an empty lock file and an initialized metadata file.
-  int InitializeFiles();
+  bool InitializeFiles();
 
   // Release the lock file with the associated *fd*.
   void ReleaseLockFile();
 
-  const std::string lockfile_path_;
-  const std::string metadata_path_;
+  const base::FilePath lockfile_path_;
+  const base::FilePath metadata_path_;
   int lockfile_fd_;
   std::unique_ptr<base::Value> metadata_;
   std::unique_ptr<base::ListValue> dumps_;
