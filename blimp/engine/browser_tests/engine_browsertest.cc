@@ -59,11 +59,16 @@ class EngineBrowserTest : public BlimpBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(EngineBrowserTest, LoadUrl) {
+  testing::InSequence s;
+
   EXPECT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/hello.html");
 
   EXPECT_CALL(client_rw_feature_delegate_, OnRenderWidgetCreated(1));
-  EXPECT_CALL(client_nav_feature_delegate_, OnUrlChanged(kDummyTabId, url))
+  EXPECT_CALL(client_nav_feature_delegate_,
+              OnTitleChanged(kDummyTabId, url.GetContent()));
+  EXPECT_CALL(client_nav_feature_delegate_,
+              OnTitleChanged(kDummyTabId, "hello"))
       .WillOnce(InvokeWithoutArgs(this, &EngineBrowserTest::QuitRunLoop));
 
   // Skip assigner. Engine info is already available.
