@@ -1,6 +1,5 @@
 CONSOLE WARNING: The <keygen> element is deprecated and will be removed in M54, around October 2016. See https://www.chromestatus.com/features/5716060992962560 for more details.
 CONSOLE MESSAGE: line 44: Test if state of stateless form control types are not saved.
-CONSOLE WARNING: line 81: Navigating in the unload handler is deprecated and will be removed.
 PASS There is a state for hidden
 PASS There is a state for text
 PASS There is a state for tel

@@ -44,41 +44,29 @@
 console.log('Test if state of stateless form control types are not saved.');
 jsTestIsAsync = true;
 
-function dumpFormState() {
-    if (window.internals) {
-        var statefulTypes = ['hidden', 'text', 'tel', 'url', 'email', 'number', 'range', 'checkbox',
-                             'radio', 'file', 'select-one', 'select-multiple', 'textarea'];
-        var statelessTypes = ['fieldset', 'password', 'submit', 'reset', 'button', 'keygen', 'output'];
+if (window.internals) {
+    var statefulTypes = ['hidden', 'text', 'tel', 'url', 'email', 'number', 'range', 'checkbox',
+                            'radio', 'file', 'select-one', 'select-multiple', 'textarea'];
+    var statelessTypes = ['fieldset', 'password', 'submit', 'reset', 'button', 'keygen', 'output'];
 
-        var states = internals.formControlStateOfHistoryItem();
-        for (var i = 0; i < statefulTypes.length; ++i) {
-            if (states.indexOf(statefulTypes[i]) >= 0)
-                testPassed('There is a state for ' + statefulTypes[i]);
-            else
-                testFailed('There no state for ' + statefulTypes[i]);
-        }
-
-        for (var i = 0; i < statelessTypes.length; ++i) {
-            if (states.indexOf(statelessTypes[i]) < 0)
-                testPassed('There is no state for ' + statelessTypes[i]);
-            else
-                testFailed('There is a state for ' + statelessTypes[i]);
-        }
+    var states = internals.formControlStateOfHistoryItem();
+    for (var i = 0; i < statefulTypes.length; ++i) {
+        if (states.indexOf(statefulTypes[i]) >= 0)
+            testPassed('There is a state for ' + statefulTypes[i]);
+        else
+            testFailed('There no state for ' + statefulTypes[i]);
     }
-    // Remove the input elements from the document to avoid a bunch of trailing
-    // whitespace in the test output.
-    document.body.removeChild(document.getElementById("elements"));
-    finishJSTest();
-}
 
-window.onload = function() {
-    setTimeout(function() {
-        location.reload();
-    }, 0);
-};
-window.onunload = function() {
-    dumpFormState();
-    location.hash = "#done";
-};
+    for (var i = 0; i < statelessTypes.length; ++i) {
+        if (states.indexOf(statelessTypes[i]) < 0)
+            testPassed('There is no state for ' + statelessTypes[i]);
+        else
+            testFailed('There is a state for ' + statelessTypes[i]);
+    }
+}
+// Remove the input elements from the document to avoid a bunch of trailing
+// whitespace in the test output.
+document.body.removeChild(document.getElementById("elements"));
+finishJSTest();
 </script>
 </body>
