@@ -1115,8 +1115,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ("cache_name", response2.cache_storage_cache_name);
 }
 
+// Disabled because console_listener->OnReportConsoleMessageOnUI() will be
+// called before WaitForConsoleMessages() is called to set the expected number
+// of messages.  https://crbug.com/635599
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       FetchEvent_respondWithRejection) {
+                       DISABLED_FetchEvent_respondWithRejection) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
