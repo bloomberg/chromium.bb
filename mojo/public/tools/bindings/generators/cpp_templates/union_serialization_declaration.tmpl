@@ -72,7 +72,7 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
     return size;
   }
 
-  static void Serialize({{mojom_type}}Ptr& input,
+  static void Serialize(MaybeConstUserType& input,
                         Buffer* buffer,
                         {{data_type}}** output,
                         bool inlined,
@@ -156,7 +156,7 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
   }
 
   static bool Deserialize({{data_type}}* input,
-                          {{mojom_type}}Ptr* output,
+                          UserType* output,
                           SerializationContext* context) {
     if (!input || input->is_null())
       return CallSetToNullIfExists<Traits>(output);

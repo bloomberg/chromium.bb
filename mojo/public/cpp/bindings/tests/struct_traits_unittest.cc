@@ -170,6 +170,12 @@ class StructTraitsTest : public testing::Test,
     callback.Run(std::move(e));
   }
 
+  void EchoUnionWithTraits(
+      std::unique_ptr<test::UnionWithTraitsBase> u,
+      const EchoUnionWithTraitsCallback& callback) override {
+    callback.Run(std::move(u));
+  }
+
   base::MessageLoop loop_;
 
   ChromiumRectServiceImpl chromium_service_;
@@ -449,6 +455,52 @@ TEST_F(StructTraitsTest, TypemapUniquePtr) {
     base::RunLoop loop;
     proxy->EchoNullableStructWithTraitsForUniquePtr(
         nullptr, base::Bind(&ExpectUniquePtr, nullptr, loop.QuitClosure()));
+    loop.Run();
+  }
+}
+
+TEST_F(StructTraitsTest, EchoUnionWithTraits) {
+  TraitsTestServicePtr proxy = GetTraitsTestProxy();
+
+  {
+    std::unique_ptr<test::UnionWithTraitsBase> input(
+        new test::UnionWithTraitsInt32(1234));
+    base::RunLoop loop;
+    proxy->EchoUnionWithTraits(
+        std::move(input),
+        base::Bind(
+            [](const base::Closure& quit_closure,
+               std::unique_ptr<test::UnionWithTraitsBase> passed) {
+              ASSERT_EQ(test::UnionWithTraitsBase::Type::INT32, passed->type());
+              EXPECT_EQ(1234,
+                        static_cast<test::UnionWithTraitsInt32*>(passed.get())
+                            ->value());
+              quit_closure.Run();
+
+            },
+            loop.QuitClosure()));
+    loop.Run();
+  }
+
+  {
+    std::unique_ptr<test::UnionWithTraitsBase> input(
+        new test::UnionWithTraitsStruct(4321));
+    base::RunLoop loop;
+    proxy->EchoUnionWithTraits(
+        std::move(input),
+        base::Bind(
+            [](const base::Closure& quit_closure,
+               std::unique_ptr<test::UnionWithTraitsBase> passed) {
+              ASSERT_EQ(test::UnionWithTraitsBase::Type::STRUCT,
+                        passed->type());
+              EXPECT_EQ(4321,
+                        static_cast<test::UnionWithTraitsStruct*>(passed.get())
+                            ->get_struct()
+                            .value);
+              quit_closure.Run();
+
+            },
+            loop.QuitClosure()));
     loop.Run();
   }
 }

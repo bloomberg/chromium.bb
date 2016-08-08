@@ -114,6 +114,47 @@ class MoveOnlyStructWithTraitsImpl {
   DISALLOW_COPY_AND_ASSIGN(MoveOnlyStructWithTraitsImpl);
 };
 
+class UnionWithTraitsBase {
+ public:
+  enum class Type { INT32, STRUCT };
+
+  virtual ~UnionWithTraitsBase() {}
+
+  Type type() const { return type_; }
+
+ protected:
+  Type type_ = Type::INT32;
+};
+
+class UnionWithTraitsInt32 : public UnionWithTraitsBase {
+ public:
+  UnionWithTraitsInt32() {}
+  explicit UnionWithTraitsInt32(int32_t value) : value_(value) {}
+
+  ~UnionWithTraitsInt32() override;
+
+  int32_t value() const { return value_; }
+  void set_value(int32_t value) { value_ = value; }
+
+ private:
+  int32_t value_ = 0;
+};
+
+class UnionWithTraitsStruct : public UnionWithTraitsBase {
+ public:
+  UnionWithTraitsStruct() { type_ = Type::STRUCT; }
+  explicit UnionWithTraitsStruct(int32_t value) : struct_(value) {
+    type_ = Type::STRUCT;
+  }
+  ~UnionWithTraitsStruct() override;
+
+  NestedStructWithTraitsImpl& get_mutable_struct() { return struct_; }
+  const NestedStructWithTraitsImpl& get_struct() const { return struct_; }
+
+ private:
+  NestedStructWithTraitsImpl struct_;
+};
+
 }  // namespace test
 }  // namespace mojo
 

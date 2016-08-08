@@ -137,6 +137,53 @@ struct StructTraits<test::StructWithTraitsForUniquePtr, std::unique_ptr<int>> {
   }
 };
 
+template <>
+struct UnionTraits<test::UnionWithTraits,
+                   std::unique_ptr<test::UnionWithTraitsBase>> {
+  static bool IsNull(const std::unique_ptr<test::UnionWithTraitsBase>& data) {
+    return !data;
+  }
+  static void SetToNull(std::unique_ptr<test::UnionWithTraitsBase>* data) {
+    data->reset();
+  }
+
+  static test::UnionWithTraits::DataView::Tag GetTag(
+      const std::unique_ptr<test::UnionWithTraitsBase>& data) {
+    if (data->type() == test::UnionWithTraitsBase::Type::INT32)
+      return test::UnionWithTraits::DataView::Tag::F_INT32;
+
+    return test::UnionWithTraits::DataView::Tag::F_STRUCT;
+  }
+
+  static int32_t f_int32(
+      const std::unique_ptr<test::UnionWithTraitsBase>& data) {
+    return static_cast<test::UnionWithTraitsInt32*>(data.get())->value();
+  }
+
+  static const test::NestedStructWithTraitsImpl& f_struct(
+      const std::unique_ptr<test::UnionWithTraitsBase>& data) {
+    return static_cast<test::UnionWithTraitsStruct*>(data.get())->get_struct();
+  }
+
+  static bool Read(test::UnionWithTraits::DataView data,
+                   std::unique_ptr<test::UnionWithTraitsBase>* out) {
+    switch (data.tag()) {
+      case test::UnionWithTraits::DataView::Tag::F_INT32: {
+        out->reset(new test::UnionWithTraitsInt32(data.f_int32()));
+        return true;
+      }
+      case test::UnionWithTraits::DataView::Tag::F_STRUCT: {
+        auto* struct_object = new test::UnionWithTraitsStruct();
+        out->reset(struct_object);
+        return data.ReadFStruct(&struct_object->get_mutable_struct());
+      }
+    }
+
+    NOTREACHED();
+    return false;
+  }
+};
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_STRUCT_WITH_TRAITS_IMPL_TRAITS_H_

@@ -53,6 +53,11 @@ struct StructWithTraitsForUniquePtr {
   int32 f_int32;
 };
 
+union UnionWithTraits {
+  int32 f_int32;
+  NestedStructWithTraits f_struct;
+};
+
 interface TraitsTestService {
   EchoStructWithTraits(StructWithTraits s) => (StructWithTraits passed);
 
@@ -72,4 +77,6 @@ interface TraitsTestService {
 
   EchoNullableStructWithTraitsForUniquePtr(StructWithTraitsForUniquePtr? e) => (
       StructWithTraitsForUniquePtr? passed);
+
+  EchoUnionWithTraits(UnionWithTraits u) => (UnionWithTraits passed);
 };
