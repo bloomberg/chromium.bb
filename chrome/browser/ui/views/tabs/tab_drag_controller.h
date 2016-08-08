@@ -585,6 +585,10 @@ class TabDragController : public views::WidgetObserver,
   // Non-null for the duration of RunMoveLoop.
   views::Widget* move_loop_widget_;
 
+  // Whether TabDragController has been added an observer to
+  // |move_loop_widget_|. Only meaningful if |move_loop_widget_| is non-null.
+  bool added_observer_to_move_loop_widget_ = false;
+
   // See description above getter.
   bool is_mutating_;
 
