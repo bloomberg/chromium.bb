@@ -30,10 +30,11 @@ namespace JNI_HashSet {
 // Step 2: method stubs.
 
 static base::subtle::AtomicWord g_HashSet_dummy = 0;
-static void Java_HashSet_dummy(JNIEnv* env, jobject obj) __attribute__
-    ((unused));
-static void Java_HashSet_dummy(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+static void Java_HashSet_dummy(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) __attribute__ ((unused));
+static void Java_HashSet_dummy(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       HashSet_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -43,7 +44,7 @@ static void Java_HashSet_dummy(JNIEnv* env, jobject obj) {
       "()V",
       &g_HashSet_dummy);
 
-     env->CallVoidMethod(obj,
+     env->CallVoidMethod(obj.obj(),
           method_id);
   jni_generator::CheckException(env);
 

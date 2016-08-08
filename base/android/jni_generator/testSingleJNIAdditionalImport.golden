@@ -39,7 +39,8 @@ void Java_org_chromium_foo_Foo_nativeDoSomething(JNIEnv* env, jclass jcaller,
 }
 
 static base::subtle::AtomicWord g_Foo_calledByNative = 0;
-static void Java_Foo_calledByNative(JNIEnv* env, jobject callback) {
+static void Java_Foo_calledByNative(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& callback) {
   CHECK_CLAZZ(env, Foo_clazz(env),
       Foo_clazz(env));
   jmethodID method_id =
@@ -55,7 +56,7 @@ static void Java_Foo_calledByNative(JNIEnv* env, jobject callback) {
       &g_Foo_calledByNative);
 
      env->CallStaticVoidMethod(Foo_clazz(env),
-          method_id, callback);
+          method_id, callback.obj());
   jni_generator::CheckException(env);
 
 }

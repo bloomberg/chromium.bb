@@ -26,7 +26,9 @@ ScopedJavaLocalFrame::ScopedJavaLocalFrame(JNIEnv* env, int capacity)
   DCHECK(!failed);
 }
 
-ScopedJavaLocalFrame::~ScopedJavaLocalFrame() { env_->PopLocalFrame(NULL); }
+ScopedJavaLocalFrame::~ScopedJavaLocalFrame() {
+  env_->PopLocalFrame(nullptr);
+}
 
 #if DCHECK_IS_ON()
 // This constructor is inlined when DCHECKs are disabled; don't add anything
@@ -69,20 +71,20 @@ void JavaRef<jobject>::ResetLocalRef(JNIEnv* env) {
   if (obj_) {
     DCHECK_EQ(env, AttachCurrentThread());  // Is |env| on correct thread.
     env->DeleteLocalRef(obj_);
-    obj_ = NULL;
+    obj_ = nullptr;
   }
 }
 
 void JavaRef<jobject>::ResetGlobalRef() {
   if (obj_) {
     AttachCurrentThread()->DeleteGlobalRef(obj_);
-    obj_ = NULL;
+    obj_ = nullptr;
   }
 }
 
 jobject JavaRef<jobject>::ReleaseInternal() {
   jobject obj = obj_;
-  obj_ = NULL;
+  obj_ = nullptr;
   return obj;
 }
 

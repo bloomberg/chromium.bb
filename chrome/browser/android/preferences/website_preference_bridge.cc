@@ -72,7 +72,11 @@ HostContentSettingsMap* GetHostContentSettingsMap(bool is_incognito) {
       GetActiveUserProfile(is_incognito));
 }
 
-typedef void (*InfoListInsertionFunction)(JNIEnv*, jobject, jstring, jstring);
+typedef void (*InfoListInsertionFunction)(
+    JNIEnv*,
+    const base::android::JavaRefOrBare<jobject>&,
+    const base::android::JavaRefOrBare<jstring>&,
+    const base::android::JavaRefOrBare<jstring>&);
 
 void GetOrigins(JNIEnv* env,
                 ContentSettingsType content_type,

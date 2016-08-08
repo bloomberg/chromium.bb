@@ -33,13 +33,13 @@ base::subtle::AtomicWord g_InfoBar_clazz __attribute__((unused)) = 0;
 
 static base::subtle::AtomicWord g_TestJni_showConfirmInfoBar = 0;
 static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_showConfirmInfoBar(JNIEnv* env, jobject obj, JniIntWrapper
-    nativeInfoBar,
-    jstring buttonOk,
-    jstring buttonCancel,
-    jstring title,
-    jobject icon) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_showConfirmInfoBar(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper nativeInfoBar,
+    const base::android::JavaRefOrBare<jstring>& buttonOk,
+    const base::android::JavaRefOrBare<jstring>& buttonCancel,
+    const base::android::JavaRefOrBare<jstring>& title,
+    const base::android::JavaRefOrBare<jobject>& icon) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -58,21 +58,21 @@ static base::android::ScopedJavaLocalRef<jobject>
       &g_TestJni_showConfirmInfoBar);
 
   jobject ret =
-      env->CallObjectMethod(obj,
-          method_id, as_jint(nativeInfoBar), buttonOk, buttonCancel, title,
-              icon);
+      env->CallObjectMethod(obj.obj(),
+          method_id, as_jint(nativeInfoBar), buttonOk.obj(), buttonCancel.obj(),
+              title.obj(), icon.obj());
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_showAutoLoginInfoBar = 0;
 static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_showAutoLoginInfoBar(JNIEnv* env, jobject obj, JniIntWrapper
-    nativeInfoBar,
-    jstring realm,
-    jstring account,
-    jstring args) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_showAutoLoginInfoBar(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper nativeInfoBar,
+    const base::android::JavaRefOrBare<jstring>& realm,
+    const base::android::JavaRefOrBare<jstring>& account,
+    const base::android::JavaRefOrBare<jstring>& args) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -90,15 +90,17 @@ static base::android::ScopedJavaLocalRef<jobject>
       &g_TestJni_showAutoLoginInfoBar);
 
   jobject ret =
-      env->CallObjectMethod(obj,
-          method_id, as_jint(nativeInfoBar), realm, account, args);
+      env->CallObjectMethod(obj.obj(),
+          method_id, as_jint(nativeInfoBar), realm.obj(), account.obj(),
+              args.obj());
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_InfoBar_dismiss = 0;
-static void Java_InfoBar_dismiss(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+static void Java_InfoBar_dismiss(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       InfoBar_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -111,17 +113,18 @@ static void Java_InfoBar_dismiss(JNIEnv* env, jobject obj) {
 "V",
       &g_InfoBar_dismiss);
 
-     env->CallVoidMethod(obj,
+     env->CallVoidMethod(obj.obj(),
           method_id);
   jni_generator::CheckException(env);
 
 }
 
 static base::subtle::AtomicWord g_TestJni_shouldShowAutoLogin = 0;
-static jboolean Java_TestJni_shouldShowAutoLogin(JNIEnv* env, jobject view,
-    jstring realm,
-    jstring account,
-    jstring args) {
+static jboolean Java_TestJni_shouldShowAutoLogin(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& view,
+    const base::android::JavaRefOrBare<jstring>& realm,
+    const base::android::JavaRefOrBare<jstring>& account,
+    const base::android::JavaRefOrBare<jstring>& args) {
   CHECK_CLAZZ(env, TestJni_clazz(env),
       TestJni_clazz(env), false);
   jmethodID method_id =
@@ -141,14 +144,14 @@ static jboolean Java_TestJni_shouldShowAutoLogin(JNIEnv* env, jobject view,
 
   jboolean ret =
       env->CallStaticBooleanMethod(TestJni_clazz(env),
-          method_id, view, realm, account, args);
+          method_id, view.obj(), realm.obj(), account.obj(), args.obj());
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_TestJni_openUrl = 0;
 static base::android::ScopedJavaLocalRef<jobject> Java_TestJni_openUrl(JNIEnv*
-    env, jstring url) {
+    env, const base::android::JavaRefOrBare<jstring>& url) {
   CHECK_CLAZZ(env, TestJni_clazz(env),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
@@ -165,19 +168,19 @@ static base::android::ScopedJavaLocalRef<jobject> Java_TestJni_openUrl(JNIEnv*
 
   jobject ret =
       env->CallStaticObjectMethod(TestJni_clazz(env),
-          method_id, url);
+          method_id, url.obj());
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_activateHardwareAcceleration = 0;
-static void Java_TestJni_activateHardwareAcceleration(JNIEnv* env, jobject obj,
-    jboolean activated,
+static void Java_TestJni_activateHardwareAcceleration(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj, jboolean activated,
     JniIntWrapper iPid,
     JniIntWrapper iType,
     JniIntWrapper iPrimaryID,
     JniIntWrapper iSecondaryID) {
-  CHECK_CLAZZ(env, obj,
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -195,7 +198,7 @@ static void Java_TestJni_activateHardwareAcceleration(JNIEnv* env, jobject obj,
 "V",
       &g_TestJni_activateHardwareAcceleration);
 
-     env->CallVoidMethod(obj,
+     env->CallVoidMethod(obj.obj(),
           method_id, activated, as_jint(iPid), as_jint(iType),
               as_jint(iPrimaryID), as_jint(iSecondaryID));
   jni_generator::CheckException(env);
@@ -203,9 +206,9 @@ static void Java_TestJni_activateHardwareAcceleration(JNIEnv* env, jobject obj,
 }
 
 static base::subtle::AtomicWord g_TestJni_uncheckedCall = 0;
-static void Java_TestJni_uncheckedCall(JNIEnv* env, jobject obj, JniIntWrapper
-    iParam) {
-  CHECK_CLAZZ(env, obj,
+static void Java_TestJni_uncheckedCall(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper iParam) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -219,15 +222,16 @@ static void Java_TestJni_uncheckedCall(JNIEnv* env, jobject obj, JniIntWrapper
 "V",
       &g_TestJni_uncheckedCall);
 
-     env->CallVoidMethod(obj,
+     env->CallVoidMethod(obj.obj(),
           method_id, as_jint(iParam));
 
 }
 
 static base::subtle::AtomicWord g_TestJni_returnByteArray = 0;
 static base::android::ScopedJavaLocalRef<jbyteArray>
-    Java_TestJni_returnByteArray(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_returnByteArray(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -241,7 +245,7 @@ static base::android::ScopedJavaLocalRef<jbyteArray>
       &g_TestJni_returnByteArray);
 
   jbyteArray ret =
-      static_cast<jbyteArray>(env->CallObjectMethod(obj,
+      static_cast<jbyteArray>(env->CallObjectMethod(obj.obj(),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jbyteArray>(env, ret);
@@ -249,8 +253,9 @@ static base::android::ScopedJavaLocalRef<jbyteArray>
 
 static base::subtle::AtomicWord g_TestJni_returnBooleanArray = 0;
 static base::android::ScopedJavaLocalRef<jbooleanArray>
-    Java_TestJni_returnBooleanArray(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_returnBooleanArray(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -264,7 +269,7 @@ static base::android::ScopedJavaLocalRef<jbooleanArray>
       &g_TestJni_returnBooleanArray);
 
   jbooleanArray ret =
-      static_cast<jbooleanArray>(env->CallObjectMethod(obj,
+      static_cast<jbooleanArray>(env->CallObjectMethod(obj.obj(),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jbooleanArray>(env, ret);
@@ -272,8 +277,9 @@ static base::android::ScopedJavaLocalRef<jbooleanArray>
 
 static base::subtle::AtomicWord g_TestJni_returnCharArray = 0;
 static base::android::ScopedJavaLocalRef<jcharArray>
-    Java_TestJni_returnCharArray(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_returnCharArray(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -287,7 +293,7 @@ static base::android::ScopedJavaLocalRef<jcharArray>
       &g_TestJni_returnCharArray);
 
   jcharArray ret =
-      static_cast<jcharArray>(env->CallObjectMethod(obj,
+      static_cast<jcharArray>(env->CallObjectMethod(obj.obj(),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jcharArray>(env, ret);
@@ -295,8 +301,9 @@ static base::android::ScopedJavaLocalRef<jcharArray>
 
 static base::subtle::AtomicWord g_TestJni_returnShortArray = 0;
 static base::android::ScopedJavaLocalRef<jshortArray>
-    Java_TestJni_returnShortArray(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_returnShortArray(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -310,7 +317,7 @@ static base::android::ScopedJavaLocalRef<jshortArray>
       &g_TestJni_returnShortArray);
 
   jshortArray ret =
-      static_cast<jshortArray>(env->CallObjectMethod(obj,
+      static_cast<jshortArray>(env->CallObjectMethod(obj.obj(),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jshortArray>(env, ret);
@@ -318,8 +325,9 @@ static base::android::ScopedJavaLocalRef<jshortArray>
 
 static base::subtle::AtomicWord g_TestJni_returnIntArray = 0;
 static base::android::ScopedJavaLocalRef<jintArray>
-    Java_TestJni_returnIntArray(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_returnIntArray(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -333,7 +341,7 @@ static base::android::ScopedJavaLocalRef<jintArray>
       &g_TestJni_returnIntArray);
 
   jintArray ret =
-      static_cast<jintArray>(env->CallObjectMethod(obj,
+      static_cast<jintArray>(env->CallObjectMethod(obj.obj(),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jintArray>(env, ret);
@@ -341,8 +349,9 @@ static base::android::ScopedJavaLocalRef<jintArray>
 
 static base::subtle::AtomicWord g_TestJni_returnLongArray = 0;
 static base::android::ScopedJavaLocalRef<jlongArray>
-    Java_TestJni_returnLongArray(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_returnLongArray(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -356,7 +365,7 @@ static base::android::ScopedJavaLocalRef<jlongArray>
       &g_TestJni_returnLongArray);
 
   jlongArray ret =
-      static_cast<jlongArray>(env->CallObjectMethod(obj,
+      static_cast<jlongArray>(env->CallObjectMethod(obj.obj(),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jlongArray>(env, ret);
@@ -364,8 +373,9 @@ static base::android::ScopedJavaLocalRef<jlongArray>
 
 static base::subtle::AtomicWord g_TestJni_returnDoubleArray = 0;
 static base::android::ScopedJavaLocalRef<jdoubleArray>
-    Java_TestJni_returnDoubleArray(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_returnDoubleArray(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -379,7 +389,7 @@ static base::android::ScopedJavaLocalRef<jdoubleArray>
       &g_TestJni_returnDoubleArray);
 
   jdoubleArray ret =
-      static_cast<jdoubleArray>(env->CallObjectMethod(obj,
+      static_cast<jdoubleArray>(env->CallObjectMethod(obj.obj(),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jdoubleArray>(env, ret);
@@ -387,8 +397,9 @@ static base::android::ScopedJavaLocalRef<jdoubleArray>
 
 static base::subtle::AtomicWord g_TestJni_returnObjectArray = 0;
 static base::android::ScopedJavaLocalRef<jobjectArray>
-    Java_TestJni_returnObjectArray(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_returnObjectArray(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -402,7 +413,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
       &g_TestJni_returnObjectArray);
 
   jobjectArray ret =
-      static_cast<jobjectArray>(env->CallObjectMethod(obj,
+      static_cast<jobjectArray>(env->CallObjectMethod(obj.obj(),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobjectArray>(env, ret);
@@ -410,8 +421,9 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
 
 static base::subtle::AtomicWord g_TestJni_returnArrayOfByteArray = 0;
 static base::android::ScopedJavaLocalRef<jobjectArray>
-    Java_TestJni_returnArrayOfByteArray(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_returnArrayOfByteArray(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -425,7 +437,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
       &g_TestJni_returnArrayOfByteArray);
 
   jobjectArray ret =
-      static_cast<jobjectArray>(env->CallObjectMethod(obj,
+      static_cast<jobjectArray>(env->CallObjectMethod(obj.obj(),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobjectArray>(env, ret);
@@ -433,8 +445,9 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
 
 static base::subtle::AtomicWord g_TestJni_getCompressFormat = 0;
 static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_getCompressFormat(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_getCompressFormat(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -448,7 +461,7 @@ static base::android::ScopedJavaLocalRef<jobject>
       &g_TestJni_getCompressFormat);
 
   jobject ret =
-      env->CallObjectMethod(obj,
+      env->CallObjectMethod(obj.obj(),
           method_id);
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
@@ -456,8 +469,9 @@ static base::android::ScopedJavaLocalRef<jobject>
 
 static base::subtle::AtomicWord g_TestJni_getCompressFormatList = 0;
 static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_getCompressFormatList(JNIEnv* env, jobject obj) {
-  CHECK_CLAZZ(env, obj,
+    Java_TestJni_getCompressFormatList(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj) {
+  CHECK_CLAZZ(env, obj.obj(),
       TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -471,7 +485,7 @@ static base::android::ScopedJavaLocalRef<jobject>
       &g_TestJni_getCompressFormatList);
 
   jobject ret =
-      env->CallObjectMethod(obj,
+      env->CallObjectMethod(obj.obj(),
           method_id);
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);

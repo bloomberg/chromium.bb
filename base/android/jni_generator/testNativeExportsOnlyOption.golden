@@ -74,9 +74,9 @@ jint
 }
 
 static base::subtle::AtomicWord g_SampleForTests_testMethodWithParam = 0;
-static void Java_SampleForTests_testMethodWithParam(JNIEnv* env, jobject obj,
-    JniIntWrapper iParam) {
-  CHECK_CLAZZ(env, obj,
+static void Java_SampleForTests_testMethodWithParam(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper iParam) {
+  CHECK_CLAZZ(env, obj.obj(),
       SampleForTests_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -90,7 +90,7 @@ static void Java_SampleForTests_testMethodWithParam(JNIEnv* env, jobject obj,
 "V",
       &g_SampleForTests_testMethodWithParam);
 
-     env->CallVoidMethod(obj,
+     env->CallVoidMethod(obj.obj(),
           method_id, as_jint(iParam));
   jni_generator::CheckException(env);
 
@@ -99,9 +99,9 @@ static void Java_SampleForTests_testMethodWithParam(JNIEnv* env, jobject obj,
 static base::subtle::AtomicWord g_SampleForTests_testMethodWithParamAndReturn =
     0;
 static base::android::ScopedJavaLocalRef<jstring>
-    Java_SampleForTests_testMethodWithParamAndReturn(JNIEnv* env, jobject obj,
-    JniIntWrapper iParam) {
-  CHECK_CLAZZ(env, obj,
+    Java_SampleForTests_testMethodWithParamAndReturn(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper iParam) {
+  CHECK_CLAZZ(env, obj.obj(),
       SampleForTests_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
@@ -116,7 +116,7 @@ static base::android::ScopedJavaLocalRef<jstring>
       &g_SampleForTests_testMethodWithParamAndReturn);
 
   jstring ret =
-      static_cast<jstring>(env->CallObjectMethod(obj,
+      static_cast<jstring>(env->CallObjectMethod(obj.obj(),
           method_id, as_jint(iParam)));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jstring>(env, ret);

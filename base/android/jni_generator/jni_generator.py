@@ -153,7 +153,11 @@ def JavaDataTypeToCForCalledByNativeParam(java_type):
   if java_type == 'int':
     return 'JniIntWrapper'
   else:
-    return JavaDataTypeToC(java_type)
+    c_type = JavaDataTypeToC(java_type)
+    if re.match(RE_SCOPED_JNI_TYPES, c_type):
+      return 'const base::android::JavaRefOrBare<' + c_type + '>&'
+    else:
+      return c_type
 
 
 def JavaReturnValueToC(java_type):
@@ -1032,8 +1036,12 @@ ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
     return template.substitute(values)
 
   def GetArgument(self, param):
-    return ('as_jint(' + param.name + ')'
-            if param.datatype == 'int' else param.name)
+    if param.datatype == 'int':
+      return 'as_jint(' + param.name + ')'
+    elif re.match(RE_SCOPED_JNI_TYPES, JavaDataTypeToC(param.datatype)):
+      return param.name + '.obj()'
+    else:
+      return param.name
 
   def GetArgumentsInCall(self, params):
     """Return a string of arguments to call from native into Java"""
@@ -1046,8 +1054,9 @@ ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
       first_param_in_declaration = ''
       first_param_in_call = ('%s_clazz(env)' % java_class)
     else:
-      first_param_in_declaration = ', jobject obj'
-      first_param_in_call = 'obj'
+      first_param_in_declaration = (
+          ', const base::android::JavaRefOrBare<jobject>& obj')
+      first_param_in_call = 'obj.obj()'
     params_in_declaration = self.GetCalledByNativeParamsInDeclaration(
         called_by_native)
     if params_in_declaration:
