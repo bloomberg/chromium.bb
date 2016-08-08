@@ -525,6 +525,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel
     self.Fail('deqp/functional/gles3/shaderderivate_dfdx.html',
         ['linux', 'intel'], bug=618408)
+    self.Fail('deqp/functional/gles3/fbomultisample.2_samples.html',
+        ['linux', 'intel'], bug=635528)
+    self.Fail('deqp/functional/gles3/fbomultisample.4_samples.html',
+        ['linux', 'intel'], bug=635528)
 
     # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
@@ -578,6 +582,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'intel'], bug=598902)
 
     # Linux Intel with ANGLE only
+    self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
+        ['linux', 'nvidia', 'opengl'], bug=635528)
     self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
         ['linux', 'intel', 'opengl'], bug=598902)
 
