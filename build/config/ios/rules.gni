@@ -402,7 +402,12 @@ template("ios_app_bundle") {
                ] + rebase_path(inputs, root_build_dir)
 
         if (enable_dsyms) {
-          outputs += [ "$root_out_dir/$_output_name.dSYM/" ]
+          _dsyms_dir = "$root_out_dir/$_output_name.dSYM/"
+          outputs += [
+            "$_dsyms_dir/",
+            "$_dsyms_dir/Contents/Info.plist",
+            "$_dsyms_dir/Contents/Resources/DWARF/$_output_name",
+          ]
           args +=
               [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
         }
@@ -485,14 +490,17 @@ template("ios_app_bundle") {
         deps = []
       }
       deps += [ ":$_bundle_data_info_plist" ]
+      if (!defined(public_deps)) {
+        public_deps = []
+      }
       if (ios_enable_code_signing) {
         if (_is_fat_build) {
-          deps += [ ":$_lipo_executable" ]
+          public_deps += [ ":$_lipo_executable" ]
         } else {
-          deps += [ ":$_link_executable" ]
+          public_deps += [ ":$_link_executable" ]
         }
       } else {
-        deps += [ ":$_bundle_data_executable" ]
+        public_deps += [ ":$_bundle_data_executable" ]
         if (defined(invoker.extra_system_frameworks)) {
           deps += [ ":${_target_name}_extra_system_frameworks" ]
         }
@@ -1122,7 +1130,12 @@ template("ios_framework_bundle") {
                ] + rebase_path(inputs, root_build_dir)
 
         if (enable_dsyms) {
-          outputs += [ "$root_out_dir/$_output_name.dSYM/" ]
+          _dsyms_dir = "$root_out_dir/$_output_name.dSYM/"
+          outputs += [
+            "$_dsyms_dir/",
+            "$_dsyms_dir/Contents/Info.plist",
+            "$_dsyms_dir/Contents/Resources/DWARF/$_output_name",
+          ]
           args +=
               [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
         }
@@ -1477,7 +1490,12 @@ template("ios_xctest_test") {
                ] + rebase_path(inputs, root_build_dir)
 
         if (enable_dsyms) {
-          outputs += [ "$root_out_dir/$_xctest_output.dSYM/" ]
+          _dsyms_dir = "$root_out_dir/$_output_name.dSYM/"
+          outputs += [
+            "$_dsyms_dir/",
+            "$_dsyms_dir/Contents/Info.plist",
+            "$_dsyms_dir/Contents/Resources/DWARF/$_output_name",
+          ]
           args +=
               [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
         }

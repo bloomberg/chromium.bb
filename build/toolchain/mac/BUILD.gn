@@ -114,8 +114,14 @@ template("mac_toolchain") {
     # If dSYMs are enabled, this flag will be added to the link tools.
     if (_enable_dsyms) {
       dsym_switch = " -Wcrl,dsym,{{root_out_dir}} "
-      _dsym_output =
-          "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/"
+      dsym_output_dir =
+          "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM"
+      dsym_output = [
+        "$dsym_output_dir/",
+        "$dsym_output_dir/Contents/Info.plist",
+        "$dsym_output_dir/Contents/Resources/DWARF/" +
+            "{{target_output_name}}{{output_extension}}",
+      ]
     } else {
       dsym_switch = ""
     }
@@ -249,7 +255,7 @@ template("mac_toolchain") {
       depend_output = tocname
 
       if (_enable_dsyms) {
-        outputs += [ _dsym_output ]
+        outputs += dsym_output
       }
       if (_save_unstripped_output) {
         outputs += [ _unstripped_output ]
@@ -284,7 +290,7 @@ template("mac_toolchain") {
       ]
 
       if (_enable_dsyms) {
-        outputs += [ _dsym_output ]
+        outputs += dsym_output
       }
       if (_save_unstripped_output) {
         outputs += [ _unstripped_output ]
@@ -312,7 +318,7 @@ template("mac_toolchain") {
       ]
 
       if (_enable_dsyms) {
-        outputs += [ _dsym_output ]
+        outputs += dsym_output
       }
       if (_save_unstripped_output) {
         outputs += [ _unstripped_output ]
