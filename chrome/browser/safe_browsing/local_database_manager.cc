@@ -293,11 +293,8 @@ LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
   enable_csd_whitelist_ =
       !cmdline->HasSwitch(switches::kDisableClientSidePhishingDetection);
 
-  // TODO(noelutz): remove this boolean variable since it should always be true
-  // if SafeBrowsing is enabled.  Unfortunately, we have no test data for this
-  // list right now.  This means that we need to be able to disable this list
-  // for the SafeBrowsing test to pass.
-  enable_download_whitelist_ = enable_csd_whitelist_;
+  // We download the download-whitelist if download protection is enabled.
+  enable_download_whitelist_ = enable_download_protection_;
 
   // TODO(kalman): there really shouldn't be a flag for this.
   enable_extension_blacklist_ =
