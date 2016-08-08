@@ -281,15 +281,7 @@ public:
     virtual bool isCharacterDataNode() const { return false; }
     virtual bool isFrameOwnerElement() const { return false; }
 
-    // StyledElements allow inline style (style="border: 1px"), presentational attributes (ex. color),
-    // class names (ex. class="foo bar") and other non-basic styling features. They and also control
-    // if this element can participate in style sharing.
-    //
-    // FIXME: The only things that ever go through StyleResolver that aren't StyledElements are
-    // PseudoElements and VTTElements. It's possible we can just eliminate all the checks
-    // since those elements will never have class names, inline style, or other things that
-    // this apparently guards against.
-    bool isStyledElement() const { return isHTMLElement() || isSVGElement(); }
+    bool isStyledElement() const;
 
     bool isDocumentNode() const;
     bool isTreeScope() const;

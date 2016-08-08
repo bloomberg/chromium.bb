@@ -29,6 +29,7 @@
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "core/HTMLNames.h"
+#include "core/MathMLNames.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
@@ -944,6 +945,19 @@ bool Node::canStartSelection() const
     }
     ContainerNode* parent = FlatTreeTraversal::parent(*this);
     return parent ? parent->canStartSelection() : true;
+}
+
+// StyledElements allow inline style (style="border: 1px"), presentational attributes (ex. color),
+// class names (ex. class="foo bar") and other non-basic styling features. They also control
+// if this element can participate in style sharing.
+//
+// FIXME: The only things that ever go through StyleResolver that aren't StyledElements are
+// PseudoElements and VTTElements. It's possible we can just eliminate all the checks
+// since those elements will never have class names, inline style, or other things that
+// this apparently guards against.
+bool Node::isStyledElement() const
+{
+    return isHTMLElement() || isSVGElement() || (isElementNode() && toElement(this)->namespaceURI() == MathMLNames::mathmlNamespaceURI);
 }
 
 bool Node::canParticipateInFlatTree() const
