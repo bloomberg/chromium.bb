@@ -1144,7 +1144,7 @@ bool V4L2VideoEncodeAccelerator::CreateInputBuffers() {
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
   // Driver will modify to the appropriate number of buffers.
-  reqbufs.count = 1;
+  reqbufs.count = kInputBufferCount;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   // TODO(posciak): Once we start doing zero-copy, we should decide based on
   // the current pipeline setup which memory type to use. This should probably
