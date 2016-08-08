@@ -3724,12 +3724,6 @@
         },
         "test": "wtf_unittests"
       }
-    ],
-    "scripts": [
-      {
-        "name": "nacl_integration",
-        "script": "nacl_integration.py"
-      }
     ]
   },
   "ClangToTWin tester": {
