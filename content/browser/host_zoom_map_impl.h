@@ -149,8 +149,6 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
   // Page scale factor data for each renderer.
   ViewPageScaleFactorsAreOne view_page_scale_factors_are_one_;
 
-  // Don't expect more than a couple of tabs that are using a temporary zoom
-  // level, so vector is fine for now.
   TemporaryZoomLevels temporary_zoom_levels_;
 
   // Used around accesses to |host_zoom_levels_|, |default_zoom_level_|,

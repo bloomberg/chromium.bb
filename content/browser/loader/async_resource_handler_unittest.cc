@@ -97,7 +97,6 @@ class RecordingResourceMessageFilter : public ResourceMessageFilter {
             nullptr,
             nullptr,
             nullptr,
-            nullptr,
             base::Bind(&RecordingResourceMessageFilter::GetContexts,
                        base::Unretained(this))),
         resource_context_(resource_context),
