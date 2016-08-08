@@ -572,33 +572,6 @@ typedef enum aom_scaling_mode_1d {
   AOME_ONETWO = 3
 } AOM_SCALING_MODE;
 
-/*!\brief Temporal layering mode enum for AV1 SVC.
- *
- * This set of macros define the different temporal layering modes.
- * Supported codecs: AV1 (in SVC mode)
- *
- */
-typedef enum av1e_temporal_layering_mode {
-  /*!\brief No temporal layering.
-   * Used when only spatial layering is used.
-   */
-  AV1E_TEMPORAL_LAYERING_MODE_NOLAYERING = 0,
-
-  /*!\brief Bypass mode.
-   * Used when application needs to control temporal layering.
-   * This will only work when the number of spatial layers equals 1.
-   */
-  AV1E_TEMPORAL_LAYERING_MODE_BYPASS = 1,
-
-  /*!\brief 0-1-0-1... temporal layering scheme with two temporal layers.
-   */
-  AV1E_TEMPORAL_LAYERING_MODE_0101 = 2,
-
-  /*!\brief 0-2-1-2... temporal layering scheme with three temporal layers.
-   */
-  AV1E_TEMPORAL_LAYERING_MODE_0212 = 3
-} AV1E_TEMPORAL_LAYERING_MODE;
-
 /*!\brief  aom region of interest map
  *
  * These defines the data structures for the region of interest map
@@ -690,10 +663,6 @@ AOM_CTRL_USE_TYPE(AOME_SET_ACTIVEMAP, aom_active_map_t *)
 AOM_CTRL_USE_TYPE(AOME_SET_SCALEMODE, aom_scaling_mode_t *)
 #define AOM_CTRL_AOME_SET_SCALEMODE
 
-AOM_CTRL_USE_TYPE(AV1E_SET_SVC, int)
-#define AOM_CTRL_AV1E_SET_SVC
-AOM_CTRL_USE_TYPE(AV1E_SET_SVC_PARAMETERS, void *)
-#define AOM_CTRL_AV1E_SET_SVC_PARAMETERS
 AOM_CTRL_USE_TYPE(AV1E_REGISTER_CX_CALLBACK, void *)
 #define AOM_CTRL_AV1E_REGISTER_CX_CALLBACK
 

@@ -155,16 +155,10 @@ typedef uint32_t aom_codec_er_flags_t;
  * extend this list to provide additional functionality.
  */
 enum aom_codec_cx_pkt_kind {
-  AOM_CODEC_CX_FRAME_PKT,   /**< Compressed video frame */
-  AOM_CODEC_STATS_PKT,      /**< Two-pass statistics for this frame */
-  AOM_CODEC_FPMB_STATS_PKT, /**< first pass mb statistics for this frame */
-  AOM_CODEC_PSNR_PKT,       /**< PSNR statistics for this frame */
-// Spatial SVC is still experimental and may be removed before the next ABI
-// bump.
-#if AOM_ENCODER_ABI_VERSION > (5 + AOM_CODEC_ABI_VERSION)
-  AOM_CODEC_SPATIAL_SVC_LAYER_SIZES, /**< Sizes for each layer in this frame*/
-  AOM_CODEC_SPATIAL_SVC_LAYER_PSNR,  /**< PSNR for each layer in this frame*/
-#endif
+  AOM_CODEC_CX_FRAME_PKT,    /**< Compressed video frame */
+  AOM_CODEC_STATS_PKT,       /**< Two-pass statistics for this frame */
+  AOM_CODEC_FPMB_STATS_PKT,  /**< first pass mb statistics for this frame */
+  AOM_CODEC_PSNR_PKT,        /**< PSNR statistics for this frame */
   AOM_CODEC_CUSTOM_PKT = 256 /**< Algorithm extensions  */
 };
 
@@ -199,12 +193,6 @@ typedef struct aom_codec_cx_pkt {
       double psnr[4];          /**< PSNR, total/y/u/v */
     } psnr;                    /**< data for PSNR packet */
     aom_fixed_buf_t raw;       /**< data for arbitrary packets */
-// Spatial SVC is still experimental and may be removed before the next
-// ABI bump.
-#if AOM_ENCODER_ABI_VERSION > (5 + AOM_CODEC_ABI_VERSION)
-    size_t layer_sizes[AOM_SS_MAX_LAYERS];
-    struct aom_psnr_pkt layer_psnr[AOM_SS_MAX_LAYERS];
-#endif
 
     /* This packet size is fixed to allow codecs to extend this
      * interface without having to manage storage for raw packets,
