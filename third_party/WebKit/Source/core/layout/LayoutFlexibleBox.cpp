@@ -478,35 +478,35 @@ LayoutUnit LayoutFlexibleBox::crossAxisExtentForChild(const LayoutBox& child) co
 
 static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(const LayoutBox& child)
 {
+    // TODO(cbiesinger): scrollbar height?
     LayoutUnit childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
     return child.constrainLogicalHeightByMinMax(childIntrinsicContentLogicalHeight + child.borderAndPaddingLogicalHeight(), childIntrinsicContentLogicalHeight);
 }
 
-LayoutUnit LayoutFlexibleBox::childIntrinsicHeight(const LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::childIntrinsicLogicalHeight(const LayoutBox& child) const
 {
-    if (child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
+    // This should only be called if the logical height is the cross size
+    DCHECK(!hasOrthogonalFlow(child));
+    if (needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
-    // If our height is auto, make sure that our returned height is unaffected by earlier layouts by
-    // returning the max preferred height (=logical width)
-    if (!child.isHorizontalWritingMode() && child.styleRef().height().isAuto())
-        return child.maxPreferredLogicalWidth();
-    return child.size().height();
+    return child.logicalHeight();
 }
 
-LayoutUnit LayoutFlexibleBox::childIntrinsicWidth(const LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::childIntrinsicLogicalWidth(const LayoutBox& child) const
 {
-    if (!child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
-        return constrainedChildIntrinsicContentLogicalHeight(child);
-    if (child.isHorizontalWritingMode() && child.styleRef().width().isAuto()) {
-        // This value is already clamped by min/max-width
+    // This should only be called if the logical width is the cross size
+    DCHECK(hasOrthogonalFlow(child));
+    // If our height is auto, make sure that our returned height is unaffected by earlier layouts by
+    // returning the max preferred logical width
+    if (!crossAxisLengthIsDefinite(child, child.styleRef().logicalWidth()))
         return child.maxPreferredLogicalWidth();
-    }
-    return child.size().width();
+
+    return child.logicalWidth();
 }
 
 LayoutUnit LayoutFlexibleBox::crossAxisIntrinsicExtentForChild(const LayoutBox& child) const
 {
-    return isHorizontalFlow() ? childIntrinsicHeight(child) : childIntrinsicWidth(child);
+    return hasOrthogonalFlow(child) ? childIntrinsicLogicalWidth(child) : childIntrinsicLogicalHeight(child);
 }
 
 LayoutUnit LayoutFlexibleBox::mainAxisExtentForChild(const LayoutBox& child) const
@@ -1569,8 +1569,7 @@ bool LayoutFlexibleBox::needToStretchChildLogicalHeight(const LayoutBox& child) 
     if (isHorizontalFlow() != child.styleRef().isHorizontalWritingMode())
         return false;
 
-    // TODO(cbiesinger): what about indefinite percentage heights?
-    return isHorizontalFlow() ? child.styleRef().height().isAuto() : child.styleRef().width().isAuto();
+    return child.styleRef().logicalHeight().isAuto();
 }
 
 bool LayoutFlexibleBox::childHasIntrinsicMainAxisSize(const LayoutBox& child) const
@@ -1859,7 +1858,7 @@ void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts)
 void LayoutFlexibleBox::applyStretchAlignmentToChild(LayoutBox& child, LayoutUnit lineCrossAxisExtent)
 {
     if (!hasOrthogonalFlow(child) && child.style()->logicalHeight().isAuto()) {
-        LayoutUnit heightBeforeStretching = needToStretchChildLogicalHeight(child) ? constrainedChildIntrinsicContentLogicalHeight(child) : child.logicalHeight();
+        LayoutUnit heightBeforeStretching = childIntrinsicLogicalHeight(child);
         LayoutUnit stretchedLogicalHeight = std::max(child.borderAndPaddingLogicalHeight(), heightBeforeStretching + availableAlignmentSpaceForChildBeforeStretching(lineCrossAxisExtent, child));
         DCHECK(!child.needsLayout());
         LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, heightBeforeStretching - child.borderAndPaddingLogicalHeight());

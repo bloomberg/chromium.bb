@@ -117,8 +117,8 @@ private:
     Length flexBasisForChild(const LayoutBox& child) const;
     LayoutUnit crossAxisExtentForChild(const LayoutBox& child) const;
     LayoutUnit crossAxisIntrinsicExtentForChild(const LayoutBox& child) const;
-    LayoutUnit childIntrinsicHeight(const LayoutBox& child) const;
-    LayoutUnit childIntrinsicWidth(const LayoutBox& child) const;
+    LayoutUnit childIntrinsicLogicalHeight(const LayoutBox& child) const;
+    LayoutUnit childIntrinsicLogicalWidth(const LayoutBox& child) const;
     LayoutUnit mainAxisExtentForChild(const LayoutBox& child) const;
     LayoutUnit mainAxisContentExtentForChild(const LayoutBox& child) const;
     LayoutUnit crossAxisExtent() const;
