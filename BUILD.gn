@@ -101,13 +101,9 @@ config("icu_code") {
       # ICU has some code with the pattern:
       #   if (found = uprv_getWindowsTimeZoneInfo(...))
       "-Wno-parentheses",
-      # ICU generally has no unused variables, but there are a few places where
-      # this warning triggers.
-      # See https://codereview.chromium.org/1222643002/ and
-      # http://www.icu-project.org/trac/ticket/11759.
-      "-Wno-unused-const-variable",
       # ucnv2022.cpp contains three functions that are only used when
       # certain preprocessor defines are set.
+      # unistr.cpp also has an unused function for non-component builds.
       "-Wno-unused-function",
     ]
     if (is_win) {
@@ -115,6 +111,8 @@ config("icu_code") {
         # See http://bugs.icu-project.org/trac/ticket/11122
         "-Wno-inline-new-delete",
         "-Wno-implicit-exception-spec-mismatch",
+        # See http://www.icu-project.org/trac/ticket/11759.
+        "-Wno-unused-const-variable",
       ]
     }
   }
