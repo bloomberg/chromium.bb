@@ -169,11 +169,16 @@ void MainThreadDebugger::exceptionThrown(ExecutionContext* context, ErrorEvent* 
     ScriptState* scriptState = nullptr;
     if (context->isDocument()) {
         frame = toDocument(context)->frame();
+        if (!frame)
+            return;
         scriptState = event->world() ? ScriptState::forWorld(frame, *event->world()) : nullptr;
-    }
-    if (context->isMainThreadWorkletGlobalScope()) {
+    } else if (context->isMainThreadWorkletGlobalScope()) {
         frame = toMainThreadWorkletGlobalScope(context)->frame();
+        if (!frame)
+            return;
         scriptState = toMainThreadWorkletGlobalScope(context)->scriptController()->getScriptState();
+    } else {
+        NOTREACHED();
     }
 
     frame->console().reportMessageToClient(JSMessageSource, ErrorMessageLevel, event->messageForConsole(), event->location());
