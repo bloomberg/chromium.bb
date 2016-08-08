@@ -32,6 +32,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/security_style.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -90,7 +91,9 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
 
   response->head.effective_connection_type =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  if (info->IsMainFrame()) {
+
+  if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
+    DCHECK(info->IsMainFrame());
     net::NetworkQualityEstimator* estimator =
         request->context()->network_quality_estimator();
     if (estimator) {

@@ -28,6 +28,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -589,19 +590,22 @@ class ResourceLoaderTest : public testing::Test,
 
   // Replaces loader_ with a new one for |request|.
   void SetUpResourceLoader(std::unique_ptr<net::URLRequest> request,
-                           bool is_main_frame) {
+                           ResourceType resource_type,
+                           bool belongs_to_main_frame) {
     raw_ptr_to_request_ = request.get();
 
-    ResourceType resource_type =
-        is_main_frame ? RESOURCE_TYPE_MAIN_FRAME : RESOURCE_TYPE_SUB_FRAME;
+    // A request marked as a main frame request must also belong to a main
+    // frame.
+    ASSERT_TRUE((resource_type != RESOURCE_TYPE_MAIN_FRAME) ||
+                belongs_to_main_frame);
 
     RenderFrameHost* rfh = web_contents_->GetMainFrame();
     ResourceRequestInfo::AllocateForTesting(
         request.get(), resource_type, &resource_context_,
         rfh->GetProcess()->GetID(), rfh->GetRenderViewHost()->GetRoutingID(),
-        rfh->GetRoutingID(), is_main_frame, false /* parent_is_main_frame */,
-        true /* allow_download */, false /* is_async */,
-        false /* is_using_lofi_ */);
+        rfh->GetRoutingID(), belongs_to_main_frame,
+        false /* parent_is_main_frame */, true /* allow_download */,
+        false /* is_async */, false /* is_using_lofi_ */);
     std::unique_ptr<ResourceHandlerStub> resource_handler(
         new ResourceHandlerStub(request.get()));
     raw_ptr_resource_handler_ = resource_handler.get();
@@ -623,7 +627,7 @@ class ResourceLoaderTest : public testing::Test,
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             test_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */));
-    SetUpResourceLoader(std::move(request), true);
+    SetUpResourceLoader(std::move(request), RESOURCE_TYPE_MAIN_FRAME, true);
   }
 
   void TearDown() override {
@@ -1112,7 +1116,7 @@ TEST_F(HTTPSSecurityInfoResourceLoaderTest, SecurityInfoOnHTTPSResource) {
   std::unique_ptr<net::URLRequest> request(
       resource_context_.GetRequestContext()->CreateRequest(
           test_https_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */));
-  SetUpResourceLoader(std::move(request), true);
+  SetUpResourceLoader(std::move(request), RESOURCE_TYPE_MAIN_FRAME, true);
 
   // Send the request and wait until it completes.
   loader_->StartRequest();
@@ -1151,7 +1155,7 @@ TEST_F(HTTPSSecurityInfoResourceLoaderTest,
       resource_context_.GetRequestContext()->CreateRequest(
           test_https_redirect_url(), net::DEFAULT_PRIORITY,
           nullptr /* delegate */));
-  SetUpResourceLoader(std::move(request), true);
+  SetUpResourceLoader(std::move(request), RESOURCE_TYPE_MAIN_FRAME, true);
 
   // Send the request and wait until it completes.
   loader_->StartRequest();
@@ -1186,7 +1190,8 @@ TEST_F(HTTPSSecurityInfoResourceLoaderTest,
 class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {
  public:
   void VerifyEffectiveConnectionType(
-      bool is_main_frame,
+      ResourceType resource_type,
+      bool belongs_to_main_frame,
       net::EffectiveConnectionType set_type,
       net::EffectiveConnectionType expected_type) {
     network_quality_estimator()->set_effective_connection_type(set_type);
@@ -1195,7 +1200,8 @@ class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             test_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */));
-    SetUpResourceLoader(std::move(request), is_main_frame);
+    SetUpResourceLoader(std::move(request), resource_type,
+                        belongs_to_main_frame);
 
     // Send the request and wait until it completes.
     loader_->StartRequest();
@@ -1210,20 +1216,31 @@ class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {
 
 // Tests that the effective connection type is set on main frame requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, Slow2G) {
-  VerifyEffectiveConnectionType(true, net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+  VerifyEffectiveConnectionType(RESOURCE_TYPE_MAIN_FRAME, true,
+                                net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
                                 net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 }
 
 // Tests that the effective connection type is set on main frame requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, 3G) {
-  VerifyEffectiveConnectionType(true, net::EFFECTIVE_CONNECTION_TYPE_3G,
+  VerifyEffectiveConnectionType(RESOURCE_TYPE_MAIN_FRAME, true,
+                                net::EFFECTIVE_CONNECTION_TYPE_3G,
                                 net::EFFECTIVE_CONNECTION_TYPE_3G);
+}
+
+// Tests that the effective connection type is not set on requests that belong
+// to main frame.
+TEST_F(EffectiveConnectionTypeResourceLoaderTest, BelongsToMainFrame) {
+  VerifyEffectiveConnectionType(RESOURCE_TYPE_OBJECT, true,
+                                net::EFFECTIVE_CONNECTION_TYPE_3G,
+                                net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 }
 
 // Tests that the effective connection type is not set on non-main frame
 // requests.
-TEST_F(EffectiveConnectionTypeResourceLoaderTest, NotAMainFrame) {
-  VerifyEffectiveConnectionType(false, net::EFFECTIVE_CONNECTION_TYPE_3G,
+TEST_F(EffectiveConnectionTypeResourceLoaderTest, DoesNotBelongToMainFrame) {
+  VerifyEffectiveConnectionType(RESOURCE_TYPE_OBJECT, false,
+                                net::EFFECTIVE_CONNECTION_TYPE_3G,
                                 net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 }
 
