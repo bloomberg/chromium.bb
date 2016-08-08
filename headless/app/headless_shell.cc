@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell_switches.h"
+#include "headless/public/domains/emulation.h"
 #include "headless/public/domains/page.h"
 #include "headless/public/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -34,6 +35,7 @@ using headless::HeadlessBrowser;
 using headless::HeadlessBrowserContext;
 using headless::HeadlessDevToolsClient;
 using headless::HeadlessWebContents;
+namespace emulation = headless::emulation;
 namespace page = headless::page;
 namespace runtime = headless::runtime;
 
@@ -56,7 +58,9 @@ bool ParseWindowSize(std::string window_size, gfx::Size* parsed_window_size) {
 }  // namespace
 
 // A sample application which demonstrates the use of the headless API.
-class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
+class HeadlessShell : public HeadlessWebContents::Observer,
+                      emulation::ExperimentalObserver,
+                      page::Observer {
  public:
   HeadlessShell()
       : browser_(nullptr),
@@ -76,6 +80,8 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
     base::CommandLine::StringVector args =
         base::CommandLine::ForCurrentProcess()->GetArgs();
 
+    // TODO(alexclarke): Should we navigate to about:blank first if using
+    // virtual time?
     if (!args.empty() && !args[0].empty())
       builder.SetInitialURL(GURL(args[0]));
 
@@ -92,6 +98,7 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
     if (!web_contents_)
       return;
     if (!RemoteDebuggingEnabled()) {
+      devtools_client_->GetEmulation()->GetExperimental()->RemoveObserver(this);
       devtools_client_->GetPage()->RemoveObserver(this);
       web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
     }
@@ -110,7 +117,26 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
     devtools_client_->GetPage()->Enable();
     // Check if the document had already finished loading by the time we
     // attached.
-    PollReadyState();
+
+    devtools_client_->GetEmulation()->GetExperimental()->AddObserver(this);
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            headless::switches::kVirtualTimeBudget)) {
+      std::string budget_ms_ascii =
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              headless::switches::kVirtualTimeBudget);
+      int budget_ms;
+      CHECK(base::StringToInt(budget_ms_ascii, &budget_ms))
+          << "Expected an integer value for --virtual-time-budget=";
+      devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
+          emulation::SetVirtualTimePolicyParams::Builder()
+              .SetPolicy(emulation::VirtualTimePolicy::
+                             PAUSE_IF_NETWORK_FETCHES_PENDING)
+              .SetBudget(budget_ms)
+              .Build());
+    } else {
+      PollReadyState();
+    }
     // TODO(skyostil): Implement more features to demonstrate the devtools API.
   }
 
@@ -139,8 +165,18 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
     }
   }
 
+  // emulation::Observer implementation:
+  void OnVirtualTimeBudgetExpired(
+      const emulation::VirtualTimeBudgetExpiredParams& params) override {
+    OnPageReady();
+  }
+
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            headless::switches::kVirtualTimeBudget)) {
+      return;
+    }
     OnPageReady();
   }
 
