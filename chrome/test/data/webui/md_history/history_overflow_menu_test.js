@@ -59,7 +59,6 @@ cr.define('md_history.history_overflow_menu_test', function() {
 
         sharedMenu.closeMenu();
         assertFalse(sharedMenu.menuOpen);
-        assertEquals(MENU_EVENT.detail.target, sharedMenu.lastAnchor_);
       });
 
       test('menu closes when search changes', function() {

@@ -20,6 +20,13 @@ suite('cr-shared-menu', function() {
     });
   }
 
+  function afterClose(callback) {
+    menu.addEventListener('iron-overlay-closed', function f() {
+      menu.removeEventListener('iron-overlay-closed', f);
+      callback();
+    });
+  }
+
   suiteSetup(function() {
     return PolymerTest.importHtml(
         'chrome://resources/polymer/v1_0/paper-item/paper-item.html');
@@ -39,13 +46,15 @@ suite('cr-shared-menu', function() {
     menu.appendChild(item3);
 
     button = document.createElement('button');
-    button.addEventListener('tap', function() {
+    button.addEventListener('tap', function(e) {
       menu.toggleMenu(button, {});
+      e.stopPropagation();  // Prevent 'tap' from closing the dialog.
     });
 
     button2 = document.createElement('button');
-    button2.addEventListener('tap', function() {
+    button2.addEventListener('tap', function(e) {
       menu.toggleMenu(button2, {});
+      e.stopPropagation();  // Prevent 'tap' from closing the dialog.
     });
 
     document.body.appendChild(menu);
@@ -89,12 +98,14 @@ suite('cr-shared-menu', function() {
       assertEquals(item1, menu.shadowRoot.activeElement);
 
       menu.closeMenu();
-      assertFalse(menu.menuOpen);
 
-      // Button should regain focus after closing the menu.
-      assertEquals(button, document.activeElement);
+      afterClose(function() {
+        assertFalse(menu.menuOpen);
+        // Button should regain focus after closing the menu.
+        assertEquals(button, document.activeElement);
+        done();
+      });
 
-      done();
     });
   });
 
@@ -109,8 +120,10 @@ suite('cr-shared-menu', function() {
 
       afterOpen(function() {
         menu.closeMenu();
-        assertEquals(button2, document.activeElement);
-        done();
+        afterClose(function() {
+          assertEquals(button2, document.activeElement);
+          done();
+        });
       });
     });
   });
@@ -125,9 +138,11 @@ suite('cr-shared-menu', function() {
     afterOpen(function() {
       input.focus();
       menu.closeMenu();
-      assertEquals(input, document.activeElement);
 
-      done();
+      afterClose(function() {
+        assertEquals(input, document.activeElement);
+        done();
+      });
     });
   });
 

@@ -127,7 +127,6 @@ Polymer({
       this.$.dropdown.restoreFocusOnClose = false;
     }
     this.menuOpen = false;
-    this.$.dropdown.restoreFocusOnClose = true;
   },
 
   /**
@@ -136,6 +135,12 @@ Polymer({
    * @param {!Object} itemData The contextual item's data.
    */
   openMenu: function(anchor, itemData) {
+    if (this.lastAnchor_ == anchor && this.menuOpen)
+      return;
+
+    if (this.menuOpen)
+      this.closeMenu();
+
     this.itemData = itemData;
     this.lastAnchor_ = anchor;
     this.$.dropdown.restoreFocusOnClose = true;
@@ -196,8 +201,10 @@ Polymer({
    * @private
    */
   menuOpenChanged_: function() {
-    if (!this.menuOpen)
+    if (!this.menuOpen) {
       this.itemData = null;
+      this.lastAnchor_ = null;
+    }
   },
 
   /**
