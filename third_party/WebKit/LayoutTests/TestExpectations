@@ -1032,6 +1032,8 @@ crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [
 crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Failure ]
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
 
+crbug.com/632333 fast/repaint/selection-after-remove.html [ NeedsRebaseline ]
+
 crbug.com/582230 fast/css-grid-layout/relayout-align-items-changed.html [ Skip ]
 crbug.com/582230 fast/repaint/align-items-change.html [ Skip ]
 crbug.com/582230 fast/repaint/align-items-overflow-change.html [ Skip ]

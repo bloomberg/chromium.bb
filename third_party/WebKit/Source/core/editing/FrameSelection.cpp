@@ -419,15 +419,12 @@ void FrameSelection::nodeWillBeRemoved(Node& node)
     m_frameCaret->nodeWillBeRemoved(node);
 }
 
-static bool intersectsNode(const VisibleSelection& selection, Node* node)
+static SelectionState selectionStateOf(const Node& node)
 {
-    if (selection.isNone())
-        return false;
-    Position start = selection.start().parentAnchoredEquivalent();
-    Position end = selection.end().parentAnchoredEquivalent();
-    TrackExceptionState exceptionState;
-    // TODO(yosin) We should avoid to use |Range::intersectsNode()|.
-    return Range::intersectsNode(node, start, end, exceptionState) && !exceptionState.hadException();
+    const LayoutObject* layoutObject = node.layoutObject();
+    if (!layoutObject)
+        return SelectionNone;
+    return layoutObject->getSelectionState();
 }
 
 void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved)
@@ -464,11 +461,11 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
             m_selectionEditor->setWithoutValidation(selection().start(), selection().end());
         else
             m_selectionEditor->setWithoutValidation(selection().end(), selection().start());
-    } else if (intersectsNode(selection(), &node)) {
-        // If we did nothing here, when this node's layoutObject was destroyed, the rect that it
-        // occupied would be invalidated, but, selection gaps that change as a result of
-        // the removal wouldn't be invalidated.
-        // FIXME: Don't do so much unnecessary invalidation.
+    } else if (selectionStateOf(node) != SelectionNone) {
+        // When node to be removed is part of selection, we invalidate
+        // selection to paint again.
+        // TODO(yosin): We should paint changed area only rather than whole
+        // selected range.
         clearLayoutTreeSelection = true;
     }
 
