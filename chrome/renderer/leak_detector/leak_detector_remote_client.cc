@@ -28,17 +28,6 @@ LeakDetectorRemoteClient::~LeakDetectorRemoteClient() {
   metrics::LeakDetector::GetInstance()->RemoveObserver(this);
 }
 
-void LeakDetectorRemoteClient::OnParamsReceived(
-    mojo::StructPtr<metrics::mojom::LeakDetectorParams> result) {
-  metrics::MemoryLeakReportProto::Params params;
-  metrics::leak_detector::protobuf_to_mojo_converter::MojoToParams(*result,
-                                                                   &params);
-
-  metrics::LeakDetector* detector = metrics::LeakDetector::GetInstance();
-  detector->AddObserver(this);
-  detector->Init(params, base::ThreadTaskRunnerHandle::Get());
-}
-
 void LeakDetectorRemoteClient::OnLeaksFound(
     const std::vector<metrics::MemoryLeakReportProto>& reports) {
   std::vector<mojo::StructPtr<metrics::mojom::MemoryLeakReport>> result;
@@ -52,4 +41,21 @@ void LeakDetectorRemoteClient::OnLeaksFound(
   }
 
   remote_service_->SendLeakReports(std::move(result));
+}
+
+void LeakDetectorRemoteClient::OnRenderProcessShutdown() {
+  remote_service_.reset();
+}
+
+void LeakDetectorRemoteClient::OnParamsReceived(
+    mojo::StructPtr<metrics::mojom::LeakDetectorParams> result) {
+  metrics::MemoryLeakReportProto::Params params;
+  metrics::leak_detector::protobuf_to_mojo_converter::MojoToParams(*result,
+                                                                   &params);
+
+  if (params.sampling_rate() > 0) {
+    metrics::LeakDetector* detector = metrics::LeakDetector::GetInstance();
+    detector->AddObserver(this);
+    detector->Init(params, base::ThreadTaskRunnerHandle::Get());
+  }
 }

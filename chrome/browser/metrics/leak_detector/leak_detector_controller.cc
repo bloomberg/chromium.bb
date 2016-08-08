@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/metrics/leak_detector/gnu_build_id_reader.h"
 #include "components/variations/variations_associated_data.h"
@@ -16,12 +17,24 @@ namespace metrics {
 
 namespace {
 
-// Reads parameters for the field trial variation. Any parameters not present in
-// the variation info or that cannot be parsed will be filled in with default
-// values. Returns a MemoryLeakReportProto with the parameter fields filled in.
-MemoryLeakReportProto::Params GetVariationParameters() {
-  // Variation parameter names.
+using ParamsMap = std::map<std::string, std::string>;
+
+// Returns a mapping of param names to param values, obtained from the
+// variations system. Both names and values are strings.
+ParamsMap GetRawVariationParams() {
   const char kFieldTrialName[] = "RuntimeMemoryLeakDetector";
+  ParamsMap result;
+  variations::GetVariationParams(kFieldTrialName, &result);
+  return result;
+}
+
+// Reads the raw variation parameters and parses them to obtain values for the
+// parameters used by the memory leak detector itself. Any parameters not
+// present in the variation info or that cannot be parsed will be filled in with
+// default values. Returns a MemoryLeakReportProto with the parameter fields
+// filled in.
+MemoryLeakReportProto::Params GetLeakDetectorParams() {
+  // Variation parameter names.
   const char kSamplingRateParam[] = "sampling_rate";
   const char kMaxStackDepthParam[] = "max_stack_depth";
   const char kAnalysisIntervalKbParam[] = "analysis_interval_kb";
@@ -42,9 +55,7 @@ MemoryLeakReportProto::Params GetVariationParameters() {
   uint32_t size_suspicion_threshold = 0;
   uint32_t call_stack_suspicion_threshold = 0;
 
-  // Get a mapping of param names to param values.
-  std::map<std::string, std::string> params;
-  variations::GetVariationParams(kFieldTrialName, &params);
+  const ParamsMap params = GetRawVariationParams();
 
   // Even if the variation param data does not exist and |params| ends up empty,
   // the below code will assign default values.
@@ -87,19 +98,80 @@ MemoryLeakReportProto::Params GetVariationParameters() {
   return result;
 }
 
+// Parses the parameters related to randomly enabling leak detector on different
+// processes, from the raw parameter strings provided by the variations.
+// Args:
+// - browser_probability: probability that the leak detector will be enabled on
+//                        browser process (spawned once per session).
+// - renderer_probability: probability that the leak detector will be enabled on
+//                         renderer process (spawned many times per session).
+// - max_renderer_processes_enabled: The maximum number of renderer processes on
+//                                   which the leak detector can be enabled
+//                                   simultaneously.
+//
+// Probabilities are in the range [0, 1]. Anything higher or lower will not be
+// clamped but it will not affect the outcome, since these probabilities are
+// compared against the value of base::RandDouble() (aka the "dice roll"), which
+// will be within this range.
+void GetLeakDetectorEnableParams(double* browser_probability,
+                                 double* renderer_probability,
+                                 int* max_renderer_processes_enabled) {
+  const char kBrowserEnableProbabilityParam[] =
+      "browser_process_enable_probability";
+  const char kRendererEnableProbabilityParam[] =
+      "renderer_process_enable_probability";
+  const char kMaxRendererProcessesEnabledParam[] =
+      "max_renderer_processes_enabled";
+  const double kDefaultProbability = 0.0;
+  const int kDefaultNumProcessesEnabled = 0;
+
+  const ParamsMap params = GetRawVariationParams();
+  auto iter = params.find(kBrowserEnableProbabilityParam);
+  if (iter == params.end() ||
+      !base::StringToDouble(iter->second, browser_probability)) {
+    *browser_probability = kDefaultProbability;
+  }
+  iter = params.find(kRendererEnableProbabilityParam);
+  if (iter == params.end() ||
+      !base::StringToDouble(iter->second, renderer_probability)) {
+    *renderer_probability = kDefaultProbability;
+  }
+  iter = params.find(kMaxRendererProcessesEnabledParam);
+  if (iter == params.end() ||
+      !base::StringToInt(iter->second, max_renderer_processes_enabled)) {
+    *max_renderer_processes_enabled = kDefaultNumProcessesEnabled;
+  }
+}
+
 }  // namespace
 
 LeakDetectorController::LeakDetectorController()
-    : params_(GetVariationParameters()) {
+    : params_(GetLeakDetectorParams()),
+      browser_process_enable_probability_(0),
+      renderer_process_enable_probability_(0),
+      max_renderer_processes_with_leak_detector_enabled_(0),
+      num_renderer_processes_with_leak_detector_enabled_(0) {
   // Read the build ID once and store it.
   leak_detector::gnu_build_id_reader::ReadBuildID(&build_id_);
 
-  LeakDetector* detector = LeakDetector::GetInstance();
-  detector->AddObserver(this);
+  GetLeakDetectorEnableParams(
+      &browser_process_enable_probability_,
+      &renderer_process_enable_probability_,
+      &max_renderer_processes_with_leak_detector_enabled_);
 
-  // Leak detector parameters are stored in |params_|.
-  detector->Init(params_, content::BrowserThread::GetTaskRunnerForThread(
-                              content::BrowserThread::UI));
+  // Register the LeakDetectorController with the remote controller, so this
+  // class can send/receive data to/from remote processes.
+  LeakDetectorRemoteController::SetLocalControllerInstance(this);
+
+  // Conditionally launch browser process based on probability.
+  if (base::RandDouble() < browser_process_enable_probability_) {
+    LeakDetector* detector = LeakDetector::GetInstance();
+    detector->AddObserver(this);
+
+    // Leak detector parameters are stored in |params_|.
+    detector->Init(params_, content::BrowserThread::GetTaskRunnerForThread(
+                                content::BrowserThread::UI));
+  }
 }
 
 LeakDetectorController::~LeakDetectorController() {
@@ -119,8 +191,16 @@ void LeakDetectorController::OnLeaksFound(
   StoreLeakReports(reports, MemoryLeakReportProto::BROWSER_PROCESS);
 }
 
-MemoryLeakReportProto_Params LeakDetectorController::GetParams() const {
-  return params_;
+MemoryLeakReportProto_Params
+LeakDetectorController::GetParamsAndRecordRequest() {
+  if (ShouldRandomlyEnableLeakDetectorOnRendererProcess()) {
+    ++num_renderer_processes_with_leak_detector_enabled_;
+    return params_;
+  }
+  // If the leak detector is not to be enabled on the remote process, send an
+  // empty MemoryLeakReportProto_Params protobuf. The remote process will not
+  // initialize the leak detector since |sampling_rate| is 0.
+  return MemoryLeakReportProto_Params();
 }
 
 void LeakDetectorController::SendLeakReports(
@@ -129,7 +209,15 @@ void LeakDetectorController::SendLeakReports(
 }
 
 void LeakDetectorController::OnRemoteProcessShutdown() {
-  // TODO(sque): Handle remote process shutdown.
+  DCHECK_GT(num_renderer_processes_with_leak_detector_enabled_, 0);
+  --num_renderer_processes_with_leak_detector_enabled_;
+}
+
+bool LeakDetectorController::ShouldRandomlyEnableLeakDetectorOnRendererProcess()
+    const {
+  return base::RandDouble() < renderer_process_enable_probability_ &&
+         num_renderer_processes_with_leak_detector_enabled_ <
+             max_renderer_processes_with_leak_detector_enabled_;
 }
 
 void LeakDetectorController::StoreLeakReports(

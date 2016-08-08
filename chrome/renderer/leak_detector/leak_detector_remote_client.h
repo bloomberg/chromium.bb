@@ -8,8 +8,10 @@
 #include "base/macros.h"
 #include "components/metrics/leak_detector/leak_detector.h"
 #include "components/metrics/leak_detector/leak_detector.mojom.h"
+#include "content/public/renderer/render_thread_observer.h"
 
-class LeakDetectorRemoteClient : public metrics::LeakDetector::Observer {
+class LeakDetectorRemoteClient : public content::RenderThreadObserver,
+                                 public metrics::LeakDetector::Observer {
  public:
   LeakDetectorRemoteClient();
   ~LeakDetectorRemoteClient() override;
@@ -19,6 +21,9 @@ class LeakDetectorRemoteClient : public metrics::LeakDetector::Observer {
       const std::vector<metrics::MemoryLeakReportProto>& reports) override;
 
  private:
+  // contents::RenderThreadObserver:
+  void OnRenderProcessShutdown() override;
+
   // Callback for remote function LeakDetectorRemote::GetParams().
   void OnParamsReceived(
       mojo::StructPtr<metrics::mojom::LeakDetectorParams> result);

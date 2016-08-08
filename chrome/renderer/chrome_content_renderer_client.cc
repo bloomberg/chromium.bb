@@ -439,6 +439,11 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     WebSecurityPolicy::addSchemeToBypassSecureContextWhitelist(
         WebString::fromUTF8(scheme));
   }
+
+#if defined(OS_CHROMEOS)
+  leak_detector_remote_client_.reset(new LeakDetectorRemoteClient());
+  thread->AddObserver(leak_detector_remote_client_.get());
+#endif
 }
 
 void ChromeContentRendererClient::RenderFrameCreated(

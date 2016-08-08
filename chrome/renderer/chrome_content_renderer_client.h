@@ -20,6 +20,10 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "v8/include/v8.h"
 
+#if defined (OS_CHROMEOS)
+#include "chrome/renderer/leak_detector/leak_detector_remote_client.h"
+#endif
+
 class ChromeRenderThreadObserver;
 #if defined(ENABLE_PRINT_PREVIEW)
 class ChromePDFPrintClient;
@@ -227,6 +231,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 #if defined(ENABLE_PLUGINS)
   std::set<std::string> allowed_camera_device_origins_;
   std::set<std::string> allowed_compositor_origins_;
+#endif
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<LeakDetectorRemoteClient> leak_detector_remote_client_;
 #endif
 };
 

@@ -35,12 +35,20 @@ class LeakDetectorController
   void OnLeaksFound(const std::vector<MemoryLeakReportProto>& reports) override;
 
   // LeakDetectorRemoteController::LocalController:
-  MemoryLeakReportProto::Params GetParams() const override;
+  MemoryLeakReportProto::Params GetParamsAndRecordRequest() override;
   void SendLeakReports(
       const std::vector<MemoryLeakReportProto>& reports) override;
   void OnRemoteProcessShutdown() override;
 
  private:
+  // Returns true to indicate that LeakDetector should be enabled on a renderer
+  // process. This is determined as follows:
+  // 1. If the number of processes running LeakDetector is not at max, returns
+  //    true with a probability of |per_process_enable_probability_|.
+  // 2. If the number of processes running LeakDetector has reached the max,
+  //    returns false.
+  bool ShouldRandomlyEnableLeakDetectorOnRendererProcess() const;
+
   // Stores a given array of leak reports in |stored_reports_|. |process_type|
   // is the type of process that generated these reports. The reports must all
   // come from the same process type.
@@ -57,6 +65,22 @@ class LeakDetectorController
 
   // The build ID of the current Chrome binary.
   std::vector<uint8_t> build_id_;
+
+  // The probability that each process will have the leak detector enabled on
+  // it. For remote processes, this is determined by sending |params_| for
+  // initialization. If the remote process is not to have leak detector enabled,
+  // |params_.sampling_rate()| will be set to 0. Whether or not to enable for a
+  // particular process is independent of the decision for all other processes.
+  double browser_process_enable_probability_;
+  double renderer_process_enable_probability_;
+
+  // The maximum allowed number of renderer processes with leak detector running
+  // simultaneously.
+  int max_renderer_processes_with_leak_detector_enabled_;
+
+  // The number of renderer processes on which the leak detector has been
+  // enabled and is running.
+  int num_renderer_processes_with_leak_detector_enabled_;
 
   // For thread safety.
   base::ThreadChecker thread_checker_;

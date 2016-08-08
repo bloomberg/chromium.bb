@@ -27,8 +27,10 @@ class LeakDetectorRemoteController : public mojom::LeakDetector {
     virtual ~LocalController() {}
 
     // Returns a set of leak detection params to be used when initializing the
-    // leak detector on a remote process.
-    virtual MemoryLeakReportProto::Params GetParams() const = 0;
+    // leak detector on a remote process. The controller may vary the parameters
+    // between each call to this function, and to change its internal state.
+    // Hence this is function is not const.
+    virtual MemoryLeakReportProto::Params GetParamsAndRecordRequest() = 0;
 
     // Pass a vector of memory leak reports provided by a remote process to the
     // local controller class.
@@ -56,7 +58,15 @@ class LeakDetectorRemoteController : public mojom::LeakDetector {
  private:
   explicit LeakDetectorRemoteController(mojom::LeakDetectorRequest request);
 
+  // Gets called when the remote process terminates and the Mojo connection gets
+  // closed as a result.
+  void OnRemoteProcessShutdown();
+
   mojo::StrongBinding<mojom::LeakDetector> binding_;
+
+  // Indicates whether remote process received MemoryLeakReportProto::Params
+  // with a non-zero sampling rate, i.e. enabled leak detector.
+  bool leak_detector_enabled_on_remote_process_;
 
   DISALLOW_COPY_AND_ASSIGN(LeakDetectorRemoteController);
 };

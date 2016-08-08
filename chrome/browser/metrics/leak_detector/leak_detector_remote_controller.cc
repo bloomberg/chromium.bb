@@ -32,7 +32,10 @@ void LeakDetectorRemoteController::GetParams(
   // should not initialize anything if the params are empty.
   MemoryLeakReportProto_Params params;
   if (g_local_controller) {
-    params = g_local_controller->GetParams();
+    params = g_local_controller->GetParamsAndRecordRequest();
+    // A non-zero sampling rate tells the remote process to enable the leak
+    // detector. Otherwise, the remote process will not initialize it.
+    leak_detector_enabled_on_remote_process_ = params.sampling_rate() > 0;
   }
 
   mojo::StructPtr<mojom::LeakDetectorParams> mojo_params =
@@ -58,9 +61,21 @@ void LeakDetectorRemoteController::SendLeakReports(
   g_local_controller->SendLeakReports(report_protos);
 }
 
+void LeakDetectorRemoteController::OnRemoteProcessShutdown() {
+  if (leak_detector_enabled_on_remote_process_) {
+    DCHECK(g_local_controller);
+    g_local_controller->OnRemoteProcessShutdown();
+  }
+}
+
 LeakDetectorRemoteController::LeakDetectorRemoteController(
     mojom::LeakDetectorRequest request)
-    : binding_(this, std::move(request)) {}
+    : binding_(this, std::move(request)),
+      leak_detector_enabled_on_remote_process_(false) {
+  binding_.set_connection_error_handler(
+      base::Bind(&LeakDetectorRemoteController::OnRemoteProcessShutdown,
+                 base::Unretained(this)));
+}
 
 // static
 void LeakDetectorRemoteController::SetLocalControllerInstance(
