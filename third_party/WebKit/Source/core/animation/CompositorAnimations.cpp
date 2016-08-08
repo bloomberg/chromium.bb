@@ -438,12 +438,12 @@ void addCompositorKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, 
         return;
     }
 
-    switch (timingFunction->type()) {
-    case TimingFunction::kLinearFunction:
+    switch (timingFunction->getType()) {
+    case TimingFunction::Type::LINEAR:
         curve.addLinearKeyframe(keyframe);
         break;
 
-    case TimingFunction::kCubicBezierFunction: {
+    case TimingFunction::Type::CUBIC_BEZIER: {
         const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timingFunction);
         if (cubic.getEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM)
             curve.addCubicBezierKeyframe(keyframe, cubic.x1(), cubic.y1(), cubic.x2(), cubic.y2());
@@ -452,7 +452,7 @@ void addCompositorKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, 
         break;
     }
 
-    case TimingFunction::kStepsFunction: {
+    case TimingFunction::Type::STEPS: {
         const StepsTimingFunction& steps = toStepsTimingFunction(*timingFunction);
         curve.addStepsKeyframe(keyframe, steps.numberOfSteps(), steps.getStepPosition());
         break;
@@ -471,12 +471,12 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
         return;
     }
 
-    switch (timingFunction->type()) {
-    case TimingFunction::kLinearFunction:
+    switch (timingFunction->getType()) {
+    case TimingFunction::Type::LINEAR:
         curve.setLinearTimingFunction();
         break;
 
-    case TimingFunction::kCubicBezierFunction: {
+    case TimingFunction::Type::CUBIC_BEZIER: {
         const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timingFunction);
         if (cubic.getEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM)
             curve.setCubicBezierTimingFunction(cubic.x1(), cubic.y1(), cubic.x2(), cubic.y2());
@@ -485,7 +485,7 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
         break;
     }
 
-    case TimingFunction::kStepsFunction: {
+    case TimingFunction::Type::STEPS: {
         const StepsTimingFunction& steps = toStepsTimingFunction(*timingFunction);
         curve.setStepsTimingFunction(steps.numberOfSteps(), steps.getStepPosition());
         break;

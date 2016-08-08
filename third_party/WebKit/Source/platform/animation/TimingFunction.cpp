@@ -162,12 +162,12 @@ double StepsTimingFunction::evaluate(double fraction, double) const
 // Equals operators
 bool operator==(const LinearTimingFunction& lhs, const TimingFunction& rhs)
 {
-    return rhs.type() == TimingFunction::kLinearFunction;
+    return rhs.getType() == TimingFunction::Type::LINEAR;
 }
 
 bool operator==(const CubicBezierTimingFunction& lhs, const TimingFunction& rhs)
 {
-    if (rhs.type() != TimingFunction::kCubicBezierFunction)
+    if (rhs.getType() != TimingFunction::Type::CUBIC_BEZIER)
         return false;
 
     const CubicBezierTimingFunction& ctf = toCubicBezierTimingFunction(rhs);
@@ -179,7 +179,7 @@ bool operator==(const CubicBezierTimingFunction& lhs, const TimingFunction& rhs)
 
 bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
 {
-    if (rhs.type() != TimingFunction::kStepsFunction)
+    if (rhs.getType() != TimingFunction::Type::STEPS)
         return false;
 
     const StepsTimingFunction& stf = toStepsTimingFunction(rhs);
@@ -190,16 +190,16 @@ bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
 // non-generic operator== otherwise it will end up calling itself.
 bool operator==(const TimingFunction& lhs, const TimingFunction& rhs)
 {
-    switch (lhs.type()) {
-    case TimingFunction::kLinearFunction: {
+    switch (lhs.getType()) {
+    case TimingFunction::Type::LINEAR: {
         const LinearTimingFunction& linear = toLinearTimingFunction(lhs);
         return (linear == rhs);
     }
-    case TimingFunction::kCubicBezierFunction: {
+    case TimingFunction::Type::CUBIC_BEZIER: {
         const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(lhs);
         return (cubic == rhs);
     }
-    case TimingFunction::kStepsFunction: {
+    case TimingFunction::Type::STEPS: {
         const StepsTimingFunction& step = toStepsTimingFunction(lhs);
         return (step == rhs);
     }

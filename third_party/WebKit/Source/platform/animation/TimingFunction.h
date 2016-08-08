@@ -40,14 +40,11 @@ namespace blink {
 
 class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
 public:
-
-    enum FunctionType {
-        kLinearFunction, kCubicBezierFunction, kStepsFunction
-    };
+    using Type = cc::TimingFunction::Type;
 
     virtual ~TimingFunction() { }
 
-    FunctionType type() const { return m_type; }
+    Type getType() const { return m_type; }
 
     virtual String toString() const = 0;
 
@@ -60,13 +57,13 @@ public:
     virtual void range(double* minValue, double* maxValue) const = 0;
 
 protected:
-    TimingFunction(FunctionType type)
+    TimingFunction(Type type)
         : m_type(type)
     {
     }
 
 private:
-    FunctionType m_type;
+    Type m_type;
 };
 
 class PLATFORM_EXPORT LinearTimingFunction final : public TimingFunction {
@@ -85,7 +82,7 @@ public:
     void range(double* minValue, double* maxValue) const override;
 private:
     LinearTimingFunction()
-        : TimingFunction(kLinearFunction)
+        : TimingFunction(Type::LINEAR)
     {
     }
 };
@@ -137,7 +134,7 @@ public:
 
 private:
     explicit CubicBezierTimingFunction(EaseType easeType, double x1, double y1, double x2, double y2)
-        : TimingFunction(kCubicBezierFunction)
+        : TimingFunction(Type::CUBIC_BEZIER)
         , m_bezier(x1, y1, x2, y2)
         , m_x1(x1)
         , m_y1(y1)
@@ -199,7 +196,7 @@ public:
 
 private:
     StepsTimingFunction(int steps, StepPosition stepPosition)
-        : TimingFunction(kStepsFunction)
+        : TimingFunction(Type::STEPS)
         , m_steps(steps)
         , m_stepPosition(stepPosition)
     {
@@ -216,15 +213,15 @@ PLATFORM_EXPORT bool operator==(const StepsTimingFunction&, const TimingFunction
 PLATFORM_EXPORT bool operator==(const TimingFunction&, const TimingFunction&);
 PLATFORM_EXPORT bool operator!=(const TimingFunction&, const TimingFunction&);
 
-#define DEFINE_TIMING_FUNCTION_TYPE_CASTS(typeName) \
+#define DEFINE_TIMING_FUNCTION_TYPE_CASTS(typeName, enumName) \
     DEFINE_TYPE_CASTS( \
         typeName##TimingFunction, TimingFunction, value, \
-        value->type() == TimingFunction::k##typeName##Function, \
-        value.type() == TimingFunction::k##typeName##Function)
+        value->getType() == TimingFunction::Type::enumName, \
+        value.getType() == TimingFunction::Type::enumName)
 
-DEFINE_TIMING_FUNCTION_TYPE_CASTS(Linear);
-DEFINE_TIMING_FUNCTION_TYPE_CASTS(CubicBezier);
-DEFINE_TIMING_FUNCTION_TYPE_CASTS(Steps);
+DEFINE_TIMING_FUNCTION_TYPE_CASTS(Linear, LINEAR);
+DEFINE_TIMING_FUNCTION_TYPE_CASTS(CubicBezier, CUBIC_BEZIER);
+DEFINE_TIMING_FUNCTION_TYPE_CASTS(Steps, STEPS);
 
 } // namespace blink
 

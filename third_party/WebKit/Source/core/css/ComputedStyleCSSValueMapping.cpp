@@ -1062,8 +1062,8 @@ static CSSValue* valueForAnimationPlayState(EAnimPlayState playState)
 
 static CSSValue* createTimingFunctionValue(const TimingFunction* timingFunction)
 {
-    switch (timingFunction->type()) {
-    case TimingFunction::kCubicBezierFunction:
+    switch (timingFunction->getType()) {
+    case TimingFunction::Type::CUBIC_BEZIER:
         {
             const CubicBezierTimingFunction* bezierTimingFunction = toCubicBezierTimingFunction(timingFunction);
             if (bezierTimingFunction->getEaseType() != CubicBezierTimingFunction::EaseType::CUSTOM) {
@@ -1090,7 +1090,7 @@ static CSSValue* createTimingFunctionValue(const TimingFunction* timingFunction)
             return CSSCubicBezierTimingFunctionValue::create(bezierTimingFunction->x1(), bezierTimingFunction->y1(), bezierTimingFunction->x2(), bezierTimingFunction->y2());
         }
 
-    case TimingFunction::kStepsFunction:
+    case TimingFunction::Type::STEPS:
         {
             const StepsTimingFunction* stepsTimingFunction = toStepsTimingFunction(timingFunction);
             StepsTimingFunction::StepPosition position = stepsTimingFunction->getStepPosition();
