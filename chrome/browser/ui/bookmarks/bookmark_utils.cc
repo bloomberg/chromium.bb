@@ -184,8 +184,8 @@ bool ShouldRemoveBookmarkOpenPagesUI(Profile* profile) {
 int GetBookmarkDragOperation(content::BrowserContext* browser_context,
                              const BookmarkNode* node) {
   PrefService* prefs = user_prefs::UserPrefs::Get(browser_context);
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(browser_context);
 
   int move = ui::DragDropTypes::DRAG_MOVE;
   if (!prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled) ||
@@ -224,7 +224,7 @@ int GetBookmarkDropOperation(Profile* profile,
   if (!IsValidBookmarkDropLocation(profile, data, parent, index))
     return ui::DragDropTypes::DRAG_NONE;
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
   if (!model->client()->CanBeEditedByUser(parent))
     return ui::DragDropTypes::DRAG_NONE;
 
@@ -257,7 +257,7 @@ bool IsValidBookmarkDropLocation(Profile* profile,
   if (!data.is_valid())
     return false;
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
   if (!model->client()->CanBeEditedByUser(drop_parent))
     return false;
 

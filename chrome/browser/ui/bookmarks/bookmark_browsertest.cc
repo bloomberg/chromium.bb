@@ -83,7 +83,7 @@ class BookmarkBrowsertest : public InProcessBrowserTest {
 
   BookmarkModel* WaitForBookmarkModel(Profile* profile) {
     BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForProfile(profile);
+        BookmarkModelFactory::GetForBrowserContext(profile);
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
     return bookmark_model;
   }

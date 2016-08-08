@@ -188,9 +188,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if BUILDFLAG(ANDROID_JAVA_UI)
   banners::AppBannerManagerAndroid::CreateForWebContents(web_contents);
   BookmarkLastVisitUpdater::CreateForWebContentsWithBookmarkModel(
-      web_contents,
-      BookmarkModelFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())));
+      web_contents, BookmarkModelFactory::GetForBrowserContext(
+                        web_contents->GetBrowserContext()));
   ContextMenuHelper::CreateForWebContents(web_contents);
   DataUseTabHelper::CreateForWebContents(web_contents);
 

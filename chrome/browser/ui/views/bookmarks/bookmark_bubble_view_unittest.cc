@@ -35,7 +35,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
 
     profile()->CreateBookmarkModel(true);
     BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForProfile(profile());
+        BookmarkModelFactory::GetForBrowserContext(profile());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 
     bookmarks::AddIfNotBookmarked(

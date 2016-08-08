@@ -100,8 +100,8 @@ class DeclarativeContentIsBookmarkedConditionTrackerTest
   DeclarativeContentIsBookmarkedConditionTrackerTest() {
     profile()->CreateBookmarkModel(true);
     bookmarks::test::WaitForBookmarkModelToLoad(
-        BookmarkModelFactory::GetForProfile(profile()));
-    bookmark_model_ = BookmarkModelFactory::GetForProfile(profile());
+        BookmarkModelFactory::GetForBrowserContext(profile()));
+    bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(profile());
     tracker_.reset(new DeclarativeContentIsBookmarkedConditionTracker(
         profile(),
         &delegate_));

@@ -29,7 +29,7 @@ int DropBookmarks(Profile* profile,
                   const BookmarkNode* parent_node,
                   int index,
                   bool copy) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
 #if !defined(OS_ANDROID)
   bookmarks::ScopedGroupBookmarkActions group_drops(model);
 #endif

@@ -91,7 +91,7 @@ TEST_F(BookmarkButtonTest, FolderAndEmptyOrNot) {
   // Since this returns (does not actually begin a modal drag), success!
   [button beginDrag:downEvent];
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* node = model->bookmark_bar_node();
   [cell setBookmarkNode:node];
   EXPECT_FALSE([button isEmpty]);
@@ -144,7 +144,7 @@ TEST_F(BookmarkButtonTest, DragToTrash) {
   [button setDelegate:delegate];
 
   // Add a deletable bookmark to the button.
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* barNode = model->bookmark_bar_node();
   const BookmarkNode* node = model->AddURL(barNode, 0,
                                            base::ASCIIToUTF16("hi mom"),

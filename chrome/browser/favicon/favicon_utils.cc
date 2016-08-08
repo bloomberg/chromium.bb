@@ -28,7 +28,7 @@ void CreateContentFaviconDriverForWebContents(
                         original_profile, ServiceAccessType::IMPLICIT_ACCESS),
       HistoryServiceFactory::GetForProfile(original_profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
-      BookmarkModelFactory::GetForProfileIfExists(original_profile));
+      BookmarkModelFactory::GetForBrowserContextIfExists(original_profile));
 }
 
 bool ShouldDisplayFavicon(content::WebContents* web_contents) {

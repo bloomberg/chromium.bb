@@ -166,7 +166,8 @@ std::unique_ptr<SearchResult> OmniboxResult::Duplicate() const {
 }
 
 void OmniboxResult::UpdateIcon() {
-  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile_);
   bool is_bookmarked =
       bookmark_model && bookmark_model->IsBookmarked(match_.destination_url);
 

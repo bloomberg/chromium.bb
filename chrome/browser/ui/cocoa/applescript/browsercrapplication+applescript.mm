@@ -81,7 +81,8 @@ using bookmarks::BookmarkModel;
     return nil;
   }
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(lastProfile);
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(lastProfile);
   if (!model->loaded()) {
     AppleScript::SetError(AppleScript::errBookmarkModelLoad);
     return nil;
@@ -105,7 +106,8 @@ using bookmarks::BookmarkModel;
     return nil;
   }
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(lastProfile);
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(lastProfile);
   if (!model->loaded()) {
     AppleScript::SetError(AppleScript::errBookmarkModelLoad);
     return NULL;

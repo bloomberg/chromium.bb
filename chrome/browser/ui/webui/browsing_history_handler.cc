@@ -619,7 +619,7 @@ void BrowsingHistoryHandler::HandleClearBrowsingData(
 void BrowsingHistoryHandler::HandleRemoveBookmark(const base::ListValue* args) {
   base::string16 url = ExtractStringValue(args);
   Profile* profile = Profile::FromWebUI(web_ui());
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
   bookmarks::RemoveAllBookmarks(model, GURL(url));
 }
 
@@ -671,7 +671,8 @@ void BrowsingHistoryHandler::MergeDuplicateResults(
 
 void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile);
   SupervisedUserService* supervised_user_service = NULL;
 #if defined(ENABLE_SUPERVISED_USERS)
   if (profile->IsSupervised())

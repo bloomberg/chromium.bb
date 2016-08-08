@@ -1551,7 +1551,7 @@ bool IsTabDetachingInFullscreenEnabled() {
         browser_.get(), url, alreadyMarked);
   } else {
     BookmarkModel* model =
-        BookmarkModelFactory::GetForProfile(browser_->profile());
+        BookmarkModelFactory::GetForBrowserContext(browser_->profile());
     bookmarks::ManagedBookmarkService* managed =
         ManagedBookmarkServiceFactory::GetForProfile(browser_->profile());
     const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url);

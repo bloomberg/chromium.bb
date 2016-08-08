@@ -24,7 +24,7 @@ class BookmarkModelObserverForCocoaTest : public CocoaProfileTest {
 
 
 TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0, base::ASCIIToUTF16("super"),
                                            GURL("http://www.google.com"));

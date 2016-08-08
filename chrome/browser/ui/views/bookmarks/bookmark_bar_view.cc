@@ -1661,7 +1661,7 @@ void BookmarkBarView::Init() {
 
   set_context_menu_controller(this);
 
-  model_ = BookmarkModelFactory::GetForProfile(browser_->profile());
+  model_ = BookmarkModelFactory::GetForBrowserContext(browser_->profile());
   managed_ = ManagedBookmarkServiceFactory::GetForProfile(browser_->profile());
   if (model_) {
     model_->AddObserver(this);

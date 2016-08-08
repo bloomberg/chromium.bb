@@ -138,7 +138,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
   profile2.CreateBookmarkModel(true);
 
   BookmarkModel* bookmark_model2 =
-      BookmarkModelFactory::GetForProfile(&profile2);
+      BookmarkModelFactory::GetForBrowserContext(&profile2);
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model2);
   bookmarks::AddIfNotBookmarked(
       bookmark_model2, GURL("http://www.bing.com"), base::ASCIIToUTF16("Bing"));
@@ -147,7 +147,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
 
   CreateImportedBookmarksEntries();
   BookmarkModel* bookmark_model1 =
-      BookmarkModelFactory::GetForProfile(&profile1);
+      BookmarkModelFactory::GetForBrowserContext(&profile1);
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model1);
 
   scoped_refptr<TestProfileWriter> profile_writer(
@@ -171,7 +171,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksAfterWritingDataTwice) {
 
   CreateImportedBookmarksEntries();
   BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(&profile);
+      BookmarkModelFactory::GetForBrowserContext(&profile);
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 
   scoped_refptr<TestProfileWriter> profile_writer(

@@ -118,7 +118,7 @@ void BookmarkMenuDelegate::SetPageNavigator(PageNavigator* navigator) {
 }
 
 const BookmarkModel* BookmarkMenuDelegate::GetBookmarkModel() const {
-  return BookmarkModelFactory::GetForProfile(profile_);
+  return BookmarkModelFactory::GetForBrowserContext(profile_);
 }
 
 bookmarks::ManagedBookmarkService*

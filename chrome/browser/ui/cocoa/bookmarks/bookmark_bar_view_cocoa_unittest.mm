@@ -223,7 +223,7 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
   [info reset];
 
   BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(profile());
+      BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* node =
       bookmark_model->AddURL(bookmark_model->bookmark_bar_node(),
                              0,
@@ -264,7 +264,7 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
   other_profile->CreateBookmarkModel(true);
 
   BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(profile());
+      BookmarkModelFactory::GetForBrowserContext(profile());
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 
   const BookmarkNode* node =
@@ -285,7 +285,8 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
   [info setDragDataType:ui::ClipboardUtil::UTIForPasteboardType(
                             kBookmarkButtonDragType)];
   [info setButton:dragged_button.get()];
-  [info setBookmarkModel:BookmarkModelFactory::GetForProfile(other_profile)];
+  [info setBookmarkModel:BookmarkModelFactory::GetForBrowserContext(
+                             other_profile)];
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
   EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
   EXPECT_TRUE([info dragButtonToPong]);

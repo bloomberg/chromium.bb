@@ -40,7 +40,8 @@ class BookmarkFolderTargetTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(profile());
     bmbNode_ = model->bookmark_bar_node();
   }
 

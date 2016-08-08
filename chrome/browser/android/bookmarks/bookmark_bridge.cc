@@ -101,7 +101,7 @@ BookmarkBridge::BookmarkBridge(JNIEnv* env, jobject obj, jobject j_profile)
       partner_bookmarks_shim_(NULL) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   profile_ = ProfileAndroid::FromProfileAndroid(j_profile);
-  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
+  bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(profile_);
   managed_bookmark_service_ =
       ManagedBookmarkServiceFactory::GetForProfile(profile_);
 

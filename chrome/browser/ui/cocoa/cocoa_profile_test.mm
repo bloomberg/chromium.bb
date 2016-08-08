@@ -72,7 +72,7 @@ void CocoaProfileTest::SetUp() {
 
   profile_->CreateBookmarkModel(true);
   bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(profile_));
+      BookmarkModelFactory::GetForBrowserContext(profile_));
 
   browser_.reset(CreateBrowser());
   ASSERT_TRUE(browser_.get());

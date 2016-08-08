@@ -306,7 +306,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     }
 
     BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForProfile(profile);
+        BookmarkModelFactory::GetForBrowserContext(profile);
     ASSERT_TRUE(bookmark_model);
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 

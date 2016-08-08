@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest,
   updater->ExecuteCommand(IDC_SHOW_BOOKMARK_BAR);
 
   BookmarkModel* model =
-      BookmarkModelFactory::GetForProfile(browser()->profile());
+      BookmarkModelFactory::GetForBrowserContext(browser()->profile());
   bookmarks::AddIfNotBookmarked(
       model, GURL("http://foo.com"), base::ASCIIToUTF16("Foo"));
 

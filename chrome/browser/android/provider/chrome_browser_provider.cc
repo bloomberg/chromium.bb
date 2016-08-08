@@ -825,7 +825,7 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
       handling_extensive_changes_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   profile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
-  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
+  bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(profile_);
   top_sites_ = TopSitesFactory::GetForProfile(profile_);
   favicon_service_ = FaviconServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS),

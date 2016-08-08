@@ -76,9 +76,8 @@ BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
       bookmark_model_(NULL),
       delegate_(NULL),
       bookmark_drag_(NULL) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
+  bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(
+      web_contents->GetBrowserContext());
   if (bookmark_model_)
     bookmark_model_->AddObserver(this);
 }

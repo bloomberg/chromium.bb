@@ -30,7 +30,7 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
 
     profile()->CreateBookmarkModel(true);
 
-    model_ = BookmarkModelFactory::GetForProfile(profile());
+    model_ = BookmarkModelFactory::GetForBrowserContext(profile());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
 
     AddTestData();

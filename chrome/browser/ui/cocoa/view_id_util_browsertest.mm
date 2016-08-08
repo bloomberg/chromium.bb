@@ -56,7 +56,7 @@ class ViewIDTest : public InProcessBrowserTest {
 
     // Create a bookmark to test VIEW_ID_BOOKMARK_BAR_ELEMENT
     BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForProfile(browser()->profile());
+        BookmarkModelFactory::GetForBrowserContext(browser()->profile());
     if (bookmark_model) {
       if (!bookmark_model->loaded())
         bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);

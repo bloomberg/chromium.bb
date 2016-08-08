@@ -79,8 +79,8 @@ void DragBookmarks(Profile* profile,
                                            pressure:1.0];
 
   // TODO(avi): Do better than this offset.
-  NSImage* drag_image = MakeDragImage(
-      BookmarkModelFactory::GetForProfile(profile), nodes);
+  NSImage* drag_image =
+      MakeDragImage(BookmarkModelFactory::GetForBrowserContext(profile), nodes);
   NSSize image_size = [drag_image size];
   position.x -= std::floor(image_size.width / 2);
   position.y -= std::floor(image_size.height / 5);

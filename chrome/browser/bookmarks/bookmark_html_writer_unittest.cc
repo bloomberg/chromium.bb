@@ -156,7 +156,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   profile.CreateFaviconService();
   profile.CreateBookmarkModel(true);
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(&profile);
   bookmarks::test::WaitForBookmarkModelToLoad(model);
 
   // Create test PNG representing favicon for url1.

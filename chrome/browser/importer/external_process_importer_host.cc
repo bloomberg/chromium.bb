@@ -12,6 +12,7 @@
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/search_engines/template_url_service.h"
@@ -94,7 +95,7 @@ void ExternalProcessImporterHost::NotifyImportEnded() {
 ExternalProcessImporterHost::~ExternalProcessImporterHost() {
   if (installed_bookmark_observer_) {
     DCHECK(profile_);
-    BookmarkModelFactory::GetForProfile(profile_)->RemoveObserver(this);
+    BookmarkModelFactory::GetForBrowserContext(profile_)->RemoveObserver(this);
   }
 }
 
@@ -192,7 +193,7 @@ void ExternalProcessImporterHost::CheckForLoadedModels(uint16_t items) {
   // BookmarkModel should be loaded before adding IE favorites. So we observe
   // the BookmarkModel if needed, and start the task after it has been loaded.
   if ((items & importer::FAVORITES) && !writer_->BookmarkModelIsLoaded()) {
-    BookmarkModelFactory::GetForProfile(profile_)->AddObserver(this);
+    BookmarkModelFactory::GetForBrowserContext(profile_)->AddObserver(this);
     waiting_for_bookmarkbar_model_ = true;
     installed_bookmark_observer_ = true;
   }

@@ -239,7 +239,7 @@ bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
 
 void ShowBookmarkAllTabsDialog(Browser* browser) {
   Profile* profile = browser->profile();
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
   DCHECK(model && model->loaded());
 
   const BookmarkNode* parent = model->GetParentForNewNodes();

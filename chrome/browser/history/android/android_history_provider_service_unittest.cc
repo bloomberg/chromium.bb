@@ -58,7 +58,7 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
 
     testing_profile_->CreateBookmarkModel(true);
     bookmarks::test::WaitForBookmarkModelToLoad(
-        BookmarkModelFactory::GetForProfile(testing_profile_));
+        BookmarkModelFactory::GetForBrowserContext(testing_profile_));
     ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));
     service_.reset(new AndroidHistoryProviderService(testing_profile_));
   }
@@ -66,7 +66,7 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
   void TearDown() override {
     testing_profile_->DestroyHistoryService();
     profile_manager_.DeleteTestingProfile(chrome::kInitialProfile);
-    testing_profile_=NULL;
+    testing_profile_ = nullptr;
   }
 
  protected:
@@ -85,11 +85,7 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
 class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
  public:
   CallbackHelper()
-      : success_(false),
-        statement_(NULL),
-        cursor_position_(0),
-        count_(0) {
-  }
+      : success_(false), statement_(nullptr), cursor_position_(0), count_(0) {}
 
   bool success() const {
     return success_;
@@ -113,7 +109,7 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
   }
 
   void OnQueryResult(AndroidStatement* statement) {
-    success_ = statement != NULL;
+    success_ = statement != nullptr;
     statement_ = statement;
     base::MessageLoop::current()->QuitWhenIdle();
   }

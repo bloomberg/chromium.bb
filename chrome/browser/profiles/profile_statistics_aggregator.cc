@@ -191,7 +191,7 @@ void ProfileStatisticsAggregator::WaitOrCountBookmarks() {
     return;
 
   bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfileIfExists(profile_);
+      BookmarkModelFactory::GetForBrowserContextIfExists(profile_);
 
   if (bookmark_model) {
     if (bookmark_model->loaded()) {

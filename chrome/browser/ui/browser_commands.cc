@@ -132,7 +132,7 @@ namespace {
 bool CanBookmarkCurrentPageInternal(const Browser* browser,
                                     bool check_remove_bookmark_ui) {
   BookmarkModel* model =
-      BookmarkModelFactory::GetForProfile(browser->profile());
+      BookmarkModelFactory::GetForBrowserContext(browser->profile());
   return browser_defaults::bookmarks_enabled &&
       browser->profile()->GetPrefs()->GetBoolean(
           bookmarks::prefs::kEditBookmarksEnabled) &&
@@ -727,7 +727,7 @@ void BookmarkCurrentPageIgnoringExtensionOverrides(Browser* browser) {
   content::RecordAction(UserMetricsAction("Star"));
 
   BookmarkModel* model =
-      BookmarkModelFactory::GetForProfile(browser->profile());
+      BookmarkModelFactory::GetForBrowserContext(browser->profile());
   if (!model || !model->loaded())
     return;  // Ignore requests until bookmarks are loaded.
 

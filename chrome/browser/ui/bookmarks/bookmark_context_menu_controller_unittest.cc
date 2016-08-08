@@ -55,7 +55,7 @@ class BookmarkContextMenuControllerTest : public testing::Test {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
     profile_->CreateBookmarkModel(true);
-    model_ = BookmarkModelFactory::GetForProfile(profile_.get());
+    model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
     AddTestData(model_);
   }
@@ -240,7 +240,7 @@ TEST_F(BookmarkContextMenuControllerTest, DisableIncognito) {
       TestingProfile::Builder().BuildIncognito(profile_.get());
 
   incognito->CreateBookmarkModel(true);
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(incognito);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(incognito);
   bookmarks::test::WaitForBookmarkModelToLoad(model);
   AddTestData(model);
 

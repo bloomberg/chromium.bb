@@ -32,7 +32,7 @@ using bookmarks::BookmarkNode;
 - (id)initWithProfile:(Profile*)profile {
   if ((self = [super init])) {
     base::string16 empty;
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+    BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     nodes_[0] = model->AddURL(bookmark_bar, 0, empty, GURL("http://0.com"));
     nodes_[1] = model->AddURL(bookmark_bar, 1, empty, GURL("http://1.com"));

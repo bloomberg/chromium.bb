@@ -531,7 +531,8 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ConvertUTF16ToJavaString(env, match.fill_into_edit);
   ScopedJavaLocalRef<jstring> destination_url =
       ConvertUTF8ToJavaString(env, match.destination_url.spec());
-  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile_);
   return Java_AutocompleteController_buildOmniboxSuggestion(
       env,
       match.type,

@@ -230,7 +230,7 @@ void SigninManagerAndroid::OnPolicyFetchDone(bool success) {
 
 void SigninManagerAndroid::OnBrowsingDataRemoverDone(
     const base::android::ScopedJavaGlobalRef<jobject>& callback) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile_);
   model->RemoveAllUserBookmarks();
 
   // All the Profile data has been wiped. Clear the last signed in username as

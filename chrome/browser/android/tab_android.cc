@@ -756,7 +756,7 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
   bookmarks::ManagedBookmarkService* managed =
       ManagedBookmarkServiceFactory::GetForProfile(profile);
   bookmarks::BookmarkModel* model =
-      BookmarkModelFactory::GetForProfile(profile);
+      BookmarkModelFactory::GetForBrowserContext(profile);
 
   model->GetNodesByURL(url, &nodes);
   std::sort(nodes.begin(), nodes.end(), &bookmarks::MoreRecentlyAdded);

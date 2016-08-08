@@ -137,7 +137,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   // SyncSessionsClient implementation.
   bookmarks::BookmarkModel* GetBookmarkModel() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    return BookmarkModelFactory::GetForProfile(profile_);
+    return BookmarkModelFactory::GetForBrowserContext(profile_);
   }
   favicon::FaviconService* GetFaviconService() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -229,7 +229,7 @@ PrefService* ChromeSyncClient::GetPrefService() {
 
 bookmarks::BookmarkModel* ChromeSyncClient::GetBookmarkModel() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return BookmarkModelFactory::GetForProfile(profile_);
+  return BookmarkModelFactory::GetForBrowserContext(profile_);
 }
 
 favicon::FaviconService* ChromeSyncClient::GetFaviconService() {

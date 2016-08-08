@@ -67,7 +67,7 @@ void BookmarkAppleScriptTest::SetUp() {
   [appDelegate_.get() setTest:this];
   DCHECK([NSApp delegate] == nil);
   [NSApp setDelegate:appDelegate_];
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string modelString("a f1:[ b d c ] d f2:[ e f g ] h ");
   bookmarks::test::AddNodesFromModelString(model, root, modelString);

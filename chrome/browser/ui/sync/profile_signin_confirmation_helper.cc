@@ -33,7 +33,8 @@ namespace {
 const int kHistoryEntriesBeforeNewProfilePrompt = 10;
 
 bool HasBookmarks(Profile* profile) {
-  BookmarkModel* bookmarks = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* bookmarks =
+      BookmarkModelFactory::GetForBrowserContext(profile);
   bool has_bookmarks = bookmarks && bookmarks->HasBookmarks();
   if (has_bookmarks)
     DVLOG(1) << "SigninConfirmationHelper: profile contains bookmarks";

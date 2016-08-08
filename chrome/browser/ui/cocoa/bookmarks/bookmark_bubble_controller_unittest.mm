@@ -82,7 +82,8 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
       [controller_ close];
       controller_ = nil;
     }
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(profile());
     bookmarks::ManagedBookmarkService* managed =
         ManagedBookmarkServiceFactory::GetForProfile(profile());
     controller_ = [[BookmarkBubbleController alloc]
@@ -101,7 +102,7 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
   }
 
   BookmarkModel* GetBookmarkModel() {
-    return BookmarkModelFactory::GetForProfile(profile());
+    return BookmarkModelFactory::GetForBrowserContext(profile());
   }
 
   const BookmarkNode* CreateTestBookmark() {
@@ -391,7 +392,7 @@ TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
 // the user clicking the star, then sending the "cancel" command to represent
 // them pressing escape. The bookmark should not be there.
 TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   bookmarks::ManagedBookmarkService* managed =
       ManagedBookmarkServiceFactory::GetForProfile(profile());
   const BookmarkNode* node = CreateTestBookmark();

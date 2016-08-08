@@ -803,8 +803,8 @@ AppMenu::AppMenu(Browser* browser, int run_flags)
 
 AppMenu::~AppMenu() {
   if (bookmark_menu_delegate_.get()) {
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(
-        browser_->profile());
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(browser_->profile());
     if (model)
       model->RemoveObserver(this);
   }
@@ -841,8 +841,8 @@ void AppMenu::RunMenu(views::MenuButton* host) {
       views::MenuRunner::MENU_DELETED)
     return;
   if (bookmark_menu_delegate_.get()) {
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(
-        browser_->profile());
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(browser_->profile());
     if (model)
       model->RemoveObserver(this);
   }
@@ -1234,7 +1234,7 @@ void AppMenu::CreateBookmarkMenu() {
     return;  // Already created the menu.
 
   BookmarkModel* model =
-      BookmarkModelFactory::GetForProfile(browser_->profile());
+      BookmarkModelFactory::GetForBrowserContext(browser_->profile());
   if (!model->loaded())
     return;
 

@@ -88,7 +88,7 @@ BookmarkModel* BookmarkModelSQLHandler::Task::GetBookmarkModel() {
   Profile* profile = ProfileManager::GetLastUsedProfile();
   if (!profile)
     return NULL;
-  return BookmarkModelFactory::GetForProfile(profile);
+  return BookmarkModelFactory::GetForBrowserContext(profile);
 }
 
 BookmarkModelSQLHandler::BookmarkModelSQLHandler(

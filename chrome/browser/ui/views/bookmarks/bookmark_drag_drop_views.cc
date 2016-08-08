@@ -36,7 +36,7 @@ void DragBookmarks(Profile* profile,
       base::MessageLoop::current());
 
   int operation = ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
   if (bookmarks::CanAllBeEditedByUser(model->client(), nodes))
     operation |= ui::DragDropTypes::DRAG_MOVE;
 

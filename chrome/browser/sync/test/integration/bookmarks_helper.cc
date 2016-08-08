@@ -255,15 +255,15 @@ void SetFaviconImpl(Profile* profile,
                     const GURL& icon_url,
                     const gfx::Image& image,
                     bookmarks_helper::FaviconSource favicon_source) {
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
 
-    FaviconChangeObserver observer(model, node);
-    favicon::FaviconService* favicon_service =
-        FaviconServiceFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS);
-    if (favicon_source == bookmarks_helper::FROM_UI) {
-      favicon_service->SetFavicons(
-          node->url(), icon_url, favicon_base::FAVICON, image);
+  FaviconChangeObserver observer(model, node);
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  if (favicon_source == bookmarks_helper::FROM_UI) {
+    favicon_service->SetFavicons(node->url(), icon_url, favicon_base::FAVICON,
+                                 image);
     } else {
       ProfileSyncService* pss =
           ProfileSyncServiceFactory::GetForProfile(profile);
@@ -454,7 +454,7 @@ void FindNodeInVerifier(BookmarkModel* foreign_model,
 namespace bookmarks_helper {
 
 BookmarkModel* GetBookmarkModel(int index) {
-  return BookmarkModelFactory::GetForProfile(
+  return BookmarkModelFactory::GetForBrowserContext(
       sync_datatype_helper::test()->GetProfile(index));
 }
 
@@ -477,7 +477,7 @@ const BookmarkNode* GetManagedNode(int index) {
 }
 
 BookmarkModel* GetVerifierBookmarkModel() {
-  return BookmarkModelFactory::GetForProfile(
+  return BookmarkModelFactory::GetForBrowserContext(
       sync_datatype_helper::test()->verifier());
 }
 

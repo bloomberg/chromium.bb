@@ -30,28 +30,16 @@ using bookmarks::BookmarkModel;
 
 // static
 BookmarkModel* BookmarkModelFactory::GetForBrowserContext(
-    content::BrowserContext* browser_context) {
+    content::BrowserContext* context) {
   return static_cast<BookmarkModel*>(
-      GetInstance()->GetServiceForBrowserContext(browser_context, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
 BookmarkModel* BookmarkModelFactory::GetForBrowserContextIfExists(
-    content::BrowserContext* browser_context) {
+    content::BrowserContext* context) {
   return static_cast<BookmarkModel*>(
-      GetInstance()->GetServiceForBrowserContext(browser_context, false));
-}
-
-// static
-BookmarkModel* BookmarkModelFactory::GetForProfile(Profile* profile) {
-  return static_cast<BookmarkModel*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
-}
-
-// static
-BookmarkModel* BookmarkModelFactory::GetForProfileIfExists(Profile* profile) {
-  return static_cast<BookmarkModel*>(
-      GetInstance()->GetServiceForBrowserContext(profile, false));
+      GetInstance()->GetServiceForBrowserContext(context, false));
 }
 
 // static

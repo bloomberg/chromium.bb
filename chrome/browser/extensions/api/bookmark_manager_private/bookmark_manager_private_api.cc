@@ -158,7 +158,7 @@ bookmark_manager_private::BookmarkNodeData CreateApiBookmarkNodeData(
 
   if (node_data.same_profile) {
     std::vector<const BookmarkNode*> nodes = data.GetNodes(
-        BookmarkModelFactory::GetForProfile(profile), profile_path);
+        BookmarkModelFactory::GetForBrowserContext(profile), profile_path);
     for (size_t i = 0; i < nodes.size(); ++i) {
       node_data.elements.push_back(
           CreateNodeDataElementFromBookmarkNode(*nodes[i]));
@@ -280,8 +280,7 @@ void BookmarkManagerPrivateAPI::OnListenerAdded(
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
   event_router_.reset(new BookmarkManagerPrivateEventRouter(
       browser_context_,
-      BookmarkModelFactory::GetForProfile(
-          Profile::FromBrowserContext(browser_context_))));
+      BookmarkModelFactory::GetForBrowserContext(browser_context_)));
 }
 
 BookmarkManagerPrivateDragEventRouter::BookmarkManagerPrivateDragEventRouter(
@@ -400,7 +399,8 @@ bool BookmarkManagerPrivatePasteFunction::RunOnReady() {
 
   std::unique_ptr<Paste::Params> params(Paste::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(GetProfile());
   const BookmarkNode* parent_node = GetNodeFromString(model, params->parent_id);
   if (!CanBeModified(parent_node))
     return false;
@@ -435,7 +435,8 @@ bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
     return true;
   }
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(GetProfile());
   const BookmarkNode* parent_node = GetNodeFromString(model, params->parent_id);
   if (!parent_node) {
     error_ = bookmark_keys::kNoParentError;
@@ -454,7 +455,8 @@ bool BookmarkManagerPrivateSortChildrenFunction::RunOnReady() {
       SortChildren::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(GetProfile());
   const BookmarkNode* parent_node = GetNodeFromString(model, params->parent_id);
   if (!CanBeModified(parent_node))
     return false;
@@ -552,7 +554,8 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
   std::unique_ptr<StartDrag::Params> params(StartDrag::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(GetProfile());
   std::vector<const BookmarkNode*> nodes;
   EXTENSION_FUNCTION_VALIDATE(
       GetNodesFromVector(model, params->id_list, &nodes));
@@ -578,7 +581,8 @@ bool BookmarkManagerPrivateDropFunction::RunOnReady() {
   std::unique_ptr<Drop::Params> params(Drop::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(GetProfile());
 
   const BookmarkNode* drop_parent = GetNodeFromString(model, params->parent_id);
   if (!CanBeModified(drop_parent))
@@ -625,7 +629,8 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
   const BookmarkNode* node = NULL;
 
   if (params->id.empty()) {
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(GetProfile());
     node = model->root_node();
   } else {
     node = GetBookmarkNodeFromId(params->id);
@@ -663,7 +668,8 @@ bool BookmarkManagerPrivateCreateWithMetaInfoFunction::RunOnReady() {
       CreateWithMetaInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(GetProfile());
   const BookmarkNode* node = CreateBookmarkNode(
       model, params->bookmark, &params->meta_info.additional_properties);
   if (!node)
@@ -714,7 +720,8 @@ bool BookmarkManagerPrivateGetMetaInfoFunction::RunOnReady() {
       return true;
     }
 
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(GetProfile());
     const BookmarkNode* node = model->root_node();
 
     GetMetaInfo::Results::Value result;
@@ -744,7 +751,8 @@ bool BookmarkManagerPrivateSetMetaInfoFunction::RunOnReady() {
   if (!CanBeModified(node))
     return false;
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(GetProfile());
   if (model->is_permanent_node(node)) {
     error_ = bookmark_keys::kModifySpecialError;
     return false;
@@ -769,7 +777,8 @@ bool BookmarkManagerPrivateUpdateMetaInfoFunction::RunOnReady() {
   if (!CanBeModified(node))
     return false;
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(GetProfile());
   if (model->is_permanent_node(node)) {
     error_ = bookmark_keys::kModifySpecialError;
     return false;

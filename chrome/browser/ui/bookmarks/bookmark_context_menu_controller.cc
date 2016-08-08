@@ -53,7 +53,7 @@ BookmarkContextMenuController::BookmarkContextMenuController(
       navigator_(navigator),
       parent_(parent),
       selection_(selection),
-      model_(BookmarkModelFactory::GetForProfile(profile)),
+      model_(BookmarkModelFactory::GetForBrowserContext(profile)),
       weak_factory_(this) {
   DCHECK(profile_);
   DCHECK(model_->loaded());

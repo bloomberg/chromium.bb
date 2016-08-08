@@ -77,14 +77,13 @@ HistoryServiceFactory::~HistoryServiceFactory() {
 
 KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
   std::unique_ptr<history::HistoryService> history_service(
       new history::HistoryService(
           base::WrapUnique(new ChromeHistoryClient(
-              BookmarkModelFactory::GetForProfile(profile))),
-          base::WrapUnique(new history::ContentVisitDelegate(profile))));
+              BookmarkModelFactory::GetForBrowserContext(context))),
+          base::WrapUnique(new history::ContentVisitDelegate(context))));
   if (!history_service->Init(
-          history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
+          history::HistoryDatabaseParamsForPath(context->GetPath()))) {
     return nullptr;
   }
   return history_service.release();

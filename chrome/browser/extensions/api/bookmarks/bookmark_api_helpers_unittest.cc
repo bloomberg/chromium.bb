@@ -43,7 +43,7 @@ class ExtensionBookmarksTest : public testing::Test {
 
   void SetUp() override {
     profile_.CreateBookmarkModel(false);
-    model_ = BookmarkModelFactory::GetForProfile(&profile_);
+    model_ = BookmarkModelFactory::GetForBrowserContext(&profile_);
     managed_ = ManagedBookmarkServiceFactory::GetForProfile(&profile_);
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
 

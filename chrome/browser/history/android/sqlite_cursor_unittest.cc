@@ -64,7 +64,7 @@ class SQLiteCursorTest : public testing::Test,
 
     testing_profile_->CreateBookmarkModel(true);
     bookmarks::test::WaitForBookmarkModelToLoad(
-        BookmarkModelFactory::GetForProfile(testing_profile_));
+        BookmarkModelFactory::GetForBrowserContext(testing_profile_));
 
     testing_profile_->CreateFaviconService();
     ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));

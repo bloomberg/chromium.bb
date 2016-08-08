@@ -230,7 +230,7 @@ void DeclarativeContentApiTest::CheckBookmarkEvents(bool match_is_bookmarked) {
 
   // Check rule evaluation on add/remove bookmark.
   bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(browser()->profile());
+      BookmarkModelFactory::GetForBrowserContext(browser()->profile());
   const bookmarks::BookmarkNode* node =
       bookmark_model->AddURL(bookmark_model->other_node(), 0,
                              base::ASCIIToUTF16("title"),

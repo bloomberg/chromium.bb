@@ -202,7 +202,7 @@ void BookmarkMenuBridge::ObserveBookmarkModel() {
 BookmarkModel* BookmarkMenuBridge::GetBookmarkModel() {
   if (!profile_)
     return NULL;
-  return BookmarkModelFactory::GetForProfile(profile_);
+  return BookmarkModelFactory::GetForBrowserContext(profile_);
 }
 
 Profile* BookmarkMenuBridge::GetProfile() {

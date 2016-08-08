@@ -44,7 +44,8 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
     //             b-30
     //             b-31
     //            b-4
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(profile());
     const BookmarkNode* root = model->bookmark_bar_node();
     folder_a_ = model->AddFolder(root, 0, ASCIIToUTF16("a"));
     model->AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
@@ -107,7 +108,7 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   EXPECT_EQ(4, root->child_count());
   // a
@@ -187,7 +188,7 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, CreateTwoFolders) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bar = model->bookmark_bar_node();
   // Create 2 folders which are children of the bar.
   [controller_ selectTestNodeInBrowser:bar];
@@ -201,7 +202,7 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateTwoFolders) {
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, SelectedFolderDeleted) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   [controller_ selectTestNodeInBrowser:folder_b_3_];
   EXPECT_EQ(folder_b_3_, [controller_ selectedNode]);
 
@@ -213,7 +214,7 @@ TEST_F(BookmarkEditorBaseControllerTest, SelectedFolderDeleted) {
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, SelectedFoldersParentDeleted) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   [controller_ selectTestNodeInBrowser:folder_b_3_];
   EXPECT_EQ(folder_b_3_, [controller_ selectedNode]);
@@ -226,7 +227,7 @@ TEST_F(BookmarkEditorBaseControllerTest, SelectedFoldersParentDeleted) {
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, FolderAdded) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
 
   // Add a folder node to the model, and verify it can be selected in the tree:
@@ -240,7 +241,7 @@ TEST_F(BookmarkEditorBaseControllerTest, FolderAdded) {
 
 // Verifies expandeNodes and getExpandedNodes.
 TEST_F(BookmarkEditorBaseControllerTest, ExpandedState) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
 
   // Sets up the state we're going to expand.
   BookmarkExpandedStateTracker::Nodes nodes;

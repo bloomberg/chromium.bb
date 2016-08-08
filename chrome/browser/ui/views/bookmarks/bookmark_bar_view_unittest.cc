@@ -85,13 +85,14 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
 
   void WaitForBookmarkModelToLoad() {
     bookmarks::test::WaitForBookmarkModelToLoad(
-        BookmarkModelFactory::GetForProfile(profile()));
+        BookmarkModelFactory::GetForBrowserContext(profile()));
   }
 
   // Adds nodes to the bookmark bar node from |string|. See
   // bookmarks::test::AddNodesFromModelString() for details on |string|.
   void AddNodesToBookmarkBarFromModelString(const std::string& string) {
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(profile());
     bookmarks::test::AddNodesFromModelString(model, model->bookmark_bar_node(),
                                              string);
   }
@@ -196,7 +197,7 @@ TEST_F(BookmarkBarViewTest, OverflowVisibility) {
 TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
   profile()->CreateBookmarkModel(true);
   WaitForBookmarkModelToLoad();
-  EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile())->loaded());
+  EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile())->loaded());
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   CreateBookmarkBarView();
   EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
@@ -214,7 +215,7 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
 // Verifies buttons are added as the model and size change.
 TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAdded) {
   CreateBookmarkModelAndBookmarkBarView();
-  EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile())->loaded());
+  EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile())->loaded());
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
   SizeUntilButtonsVisible(1);
@@ -239,7 +240,7 @@ TEST_F(BookmarkBarViewTest, AddNodesWhenBarAlreadySized) {
 // Various assertions for removing nodes.
 TEST_F(BookmarkBarViewTest, RemoveNode) {
   CreateBookmarkModelAndBookmarkBarView();
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
@@ -258,7 +259,7 @@ TEST_F(BookmarkBarViewTest, RemoveNode) {
 // Assertions for moving a node on the bookmark bar.
 TEST_F(BookmarkBarViewTest, MoveNode) {
   CreateBookmarkModelAndBookmarkBarView();
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
@@ -290,7 +291,7 @@ TEST_F(BookmarkBarViewTest, MoveNode) {
 // Assertions for changing the title of a node.
 TEST_F(BookmarkBarViewTest, ChangeTitle) {
   CreateBookmarkModelAndBookmarkBarView();
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());

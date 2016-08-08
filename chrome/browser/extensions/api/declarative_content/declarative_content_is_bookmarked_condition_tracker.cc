@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -130,8 +129,8 @@ UpdateState(bool request_evaluation_if_unchanged) {
 bool DeclarativeContentIsBookmarkedConditionTracker::PerWebContentsTracker::
 IsCurrentUrlBookmarked() {
   bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+      BookmarkModelFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
   // BookmarkModel can be null during unit test execution.
   return bookmark_model &&
       bookmark_model->IsBookmarked(web_contents()->GetVisibleURL());
@@ -153,7 +152,7 @@ DeclarativeContentIsBookmarkedConditionTracker(content::BrowserContext* context,
       extensive_bookmark_changes_in_progress_(0),
       scoped_bookmarks_observer_(this) {
   bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(Profile::FromBrowserContext(context));
+      BookmarkModelFactory::GetForBrowserContext(context);
   // Can be null during unit test execution.
   if (bookmark_model)
     scoped_bookmarks_observer_.Add(bookmark_model);

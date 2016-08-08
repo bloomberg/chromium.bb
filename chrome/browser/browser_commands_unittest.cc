@@ -158,7 +158,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   // We use profile() here, since it's a TestingProfile.
   profile()->CreateBookmarkModel(true);
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   bookmarks::test::WaitForBookmarkModelToLoad(model);
 
   // Navigate to a url.

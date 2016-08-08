@@ -518,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   // Use the existing profile as profile 1.
   Profile* profile1 = browser()->profile();
   bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(profile1));
+      BookmarkModelFactory::GetForBrowserContext(profile1));
 
   // Create profile 2.
   base::FilePath path2 = profile_manager->GenerateNextProfileDirectoryPath();
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
       Profile::CreateProfile(path2, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
   profile_manager->RegisterTestingProfile(profile2, false, true);
   bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(profile2));
+      BookmarkModelFactory::GetForBrowserContext(profile2));
 
   // Switch to profile 1, create bookmark 1 and force the menu to build.
   [ac windowChangedToProfile:profile1];

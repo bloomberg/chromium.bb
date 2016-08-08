@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Bookmarks) {
   // Add test managed and supervised bookmarks to verify that the bookmarks API
   // can read them and can't modify them.
   Profile* profile = browser()->profile();
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
   bookmarks::ManagedBookmarkService* managed =
       ManagedBookmarkServiceFactory::GetForProfile(profile);
   bookmarks::test::WaitForBookmarkModelToLoad(model);

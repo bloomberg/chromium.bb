@@ -127,9 +127,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   // Create the BookmarkSuggestionsProvider.
   if (base::FeatureList::IsEnabled(
           ntp_snippets::kBookmarkSuggestionsFeature)) {
-    // TODO(pke): GetForBrowserContext
     BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForProfile(profile);
+        BookmarkModelFactory::GetForBrowserContext(profile);
     std::unique_ptr<BookmarkSuggestionsProvider> bookmark_suggestions_provider =
         base::MakeUnique<BookmarkSuggestionsProvider>(
             service, service->category_factory(), bookmark_model);

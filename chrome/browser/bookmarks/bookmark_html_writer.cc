@@ -25,6 +25,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_codec.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/favicon/core/favicon_service.h"
@@ -409,10 +410,12 @@ BookmarkFaviconFetcher::~BookmarkFaviconFetcher() {
 }
 
 void BookmarkFaviconFetcher::ExportBookmarks() {
-  ExtractUrls(BookmarkModelFactory::GetForProfile(
-      profile_)->bookmark_bar_node());
-  ExtractUrls(BookmarkModelFactory::GetForProfile(profile_)->other_node());
-  ExtractUrls(BookmarkModelFactory::GetForProfile(profile_)->mobile_node());
+  ExtractUrls(BookmarkModelFactory::GetForBrowserContext(profile_)
+                  ->bookmark_bar_node());
+  ExtractUrls(
+      BookmarkModelFactory::GetForBrowserContext(profile_)->other_node());
+  ExtractUrls(
+      BookmarkModelFactory::GetForBrowserContext(profile_)->mobile_node());
   if (!bookmark_urls_.empty())
     FetchNextFavicon();
   else
@@ -448,10 +451,11 @@ void BookmarkFaviconFetcher::ExecuteWriter() {
   BookmarkCodec codec;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&Writer::DoWrite,
-                 new Writer(codec.Encode(BookmarkModelFactory::GetForProfile(
-                                profile_)),
-                            path_, favicons_map_.release(), observer_)));
+      base::Bind(
+          &Writer::DoWrite,
+          new Writer(codec.Encode(
+                         BookmarkModelFactory::GetForBrowserContext(profile_)),
+                     path_, favicons_map_.release(), observer_)));
   if (g_fetcher) {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, g_fetcher);
     g_fetcher = nullptr;

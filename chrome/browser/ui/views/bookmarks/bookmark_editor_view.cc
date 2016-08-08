@@ -64,7 +64,7 @@ BookmarkEditorView::BookmarkEditorView(
       title_tf_(NULL),
       parent_(parent),
       details_(details),
-      bb_model_(BookmarkModelFactory::GetForProfile(profile)),
+      bb_model_(BookmarkModelFactory::GetForBrowserContext(profile)),
       running_menu_for_root_(false),
       show_tree_(configuration == SHOW_TREE) {
   DCHECK(profile);

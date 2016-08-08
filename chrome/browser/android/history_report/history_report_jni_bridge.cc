@@ -52,7 +52,7 @@ HistoryReportJniBridge::HistoryReportJniBridge(JNIEnv* env, jobject obj)
   usage_reports_buffer_service_.reset(
       new UsageReportsBufferService(profile->GetPath()));
   usage_reports_buffer_service_->Init();
-  bookmark_model_.reset(BookmarkModelFactory::GetForProfile(profile));
+  bookmark_model_.reset(BookmarkModelFactory::GetForBrowserContext(profile));
   base::Callback<void(void)> on_change = base::Bind(
       &history_report::HistoryReportJniBridge::NotifyDataChanged,
       base::Unretained(this));

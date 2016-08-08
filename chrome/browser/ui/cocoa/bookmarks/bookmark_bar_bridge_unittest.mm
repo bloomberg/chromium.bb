@@ -100,7 +100,7 @@ class BookmarkBarBridgeTest : public CocoaProfileTest {
 
 // Call all the callbacks; make sure they are all redirected to the objc object.
 TEST_F(BookmarkBarBridgeTest, TestRedirect) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
 
   base::scoped_nsobject<NSView> parentView(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)]);

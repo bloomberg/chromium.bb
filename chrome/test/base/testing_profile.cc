@@ -194,18 +194,17 @@ class TestExtensionURLRequestContextGetter
 
 std::unique_ptr<KeyedService> BuildHistoryService(
     content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
   return base::WrapUnique(new history::HistoryService(
       base::WrapUnique(new ChromeHistoryClient(
-          BookmarkModelFactory::GetForProfile(profile))),
-      base::WrapUnique(new history::ContentVisitDelegate(profile))));
+          BookmarkModelFactory::GetForBrowserContext(context))),
+      base::WrapUnique(new history::ContentVisitDelegate(context))));
 }
 
 std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   std::unique_ptr<InMemoryURLIndex> in_memory_url_index(
-      new InMemoryURLIndex(BookmarkModelFactory::GetForProfile(profile),
+      new InMemoryURLIndex(BookmarkModelFactory::GetForBrowserContext(profile),
                            HistoryServiceFactory::GetForProfile(
                                profile, ServiceAccessType::IMPLICIT_ACCESS),
                            TemplateURLServiceFactory::GetForProfile(profile),

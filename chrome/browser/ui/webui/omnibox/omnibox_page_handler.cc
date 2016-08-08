@@ -21,6 +21,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -149,7 +150,8 @@ void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
           controller_->providers());
 
   // Fill AutocompleteMatch::starred.
-  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile_);
   if (bookmark_model) {
     for (size_t i = 0; i < result->combined_results.size(); ++i) {
       result->combined_results[i]->starred = bookmark_model->IsBookmarked(

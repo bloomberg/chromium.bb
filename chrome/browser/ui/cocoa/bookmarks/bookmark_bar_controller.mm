@@ -300,7 +300,8 @@ CGFloat BookmarkRightMargin() {
 
     browser_ = browser;
     initialWidth_ = initialWidth;
-    bookmarkModel_ = BookmarkModelFactory::GetForProfile(browser_->profile());
+    bookmarkModel_ =
+        BookmarkModelFactory::GetForBrowserContext(browser_->profile());
     managedBookmarkService_ =
         ManagedBookmarkServiceFactory::GetForProfile(browser_->profile());
     buttons_.reset([[NSMutableArray alloc] init]);

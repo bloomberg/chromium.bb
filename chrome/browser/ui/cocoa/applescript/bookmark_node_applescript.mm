@@ -124,7 +124,8 @@ using bookmarks::BookmarkNode;
     return NULL;
   }
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(lastProfile);
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(lastProfile);
   if (!model->loaded()) {
     AppleScript::SetError(AppleScript::errBookmarkModelLoad);
     return NULL;

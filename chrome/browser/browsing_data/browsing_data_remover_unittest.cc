@@ -1590,7 +1590,7 @@ TEST_F(BrowsingDataRemoverTest, ExpireBookmarkFavicons) {
   TestingProfile* profile = GetProfile();
   profile->CreateBookmarkModel(true);
   bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(profile);
+      BookmarkModelFactory::GetForBrowserContext(profile);
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
   bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
                          base::ASCIIToUTF16("a"), bookmarked_page);

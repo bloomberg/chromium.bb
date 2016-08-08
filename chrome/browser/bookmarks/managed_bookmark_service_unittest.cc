@@ -56,7 +56,7 @@ class ManagedBookmarkServiceTest : public testing::Test {
 
   void ResetModel() {
     profile_.CreateBookmarkModel(false);
-    model_ = BookmarkModelFactory::GetForProfile(&profile_);
+    model_ = BookmarkModelFactory::GetForBrowserContext(&profile_);
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
     model_->AddObserver(&observer_);
     managed_ = ManagedBookmarkServiceFactory::GetForProfile(&profile_);

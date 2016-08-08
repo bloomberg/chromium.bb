@@ -43,7 +43,7 @@ class DurableStorageBrowserTest : public InProcessBrowserTest {
 
   void Bookmark(Browser* browser) {
     bookmarks::BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForProfile(browser->profile());
+        BookmarkModelFactory::GetForBrowserContext(browser->profile());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
     bookmarks::AddIfNotBookmarked(bookmark_model, url_, base::ASCIIToUTF16(""));
   }
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, BookmarkThenUnbookmark) {
   EXPECT_TRUE(is_persistent);
 
   bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(browser()->profile());
+      BookmarkModelFactory::GetForBrowserContext(browser()->profile());
   bookmarks::RemoveAllBookmarks(bookmark_model, url_);
 
   // Unbookmarking doesn't change the permission.

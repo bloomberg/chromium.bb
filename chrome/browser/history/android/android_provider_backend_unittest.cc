@@ -186,7 +186,8 @@ class AndroidProviderBackendTest : public testing::Test {
     TestingProfile* testing_profile = profile_manager_.CreateTestingProfile(
         chrome::kInitialProfile);
     testing_profile->CreateBookmarkModel(true);
-    bookmark_model_ = BookmarkModelFactory::GetForProfile(testing_profile);
+    bookmark_model_ =
+        BookmarkModelFactory::GetForBrowserContext(testing_profile);
     history_client_.reset(new ChromeHistoryClient(bookmark_model_));
     history_backend_client_ = history_client_->CreateBackendClient();
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);

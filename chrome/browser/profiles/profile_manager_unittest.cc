@@ -300,9 +300,9 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
       profile1, ServiceAccessType::EXPLICIT_ACCESS));
   profile1->CreateBookmarkModel(true);
-  EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile1));
+  EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile1));
   profile2->CreateBookmarkModel(true);
-  EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile2));
+  EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile2));
   ASSERT_TRUE(profile2->CreateHistoryService(true, false));
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
       profile2, ServiceAccessType::EXPLICIT_ACCESS));

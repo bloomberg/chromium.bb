@@ -342,7 +342,7 @@ NSString* const kOkEnabledName = @"okEnabled";
 #pragma mark Folder Tree Management
 
 - (BookmarkModel*)bookmarkModel {
-  return BookmarkModelFactory::GetForProfile(profile_);
+  return BookmarkModelFactory::GetForBrowserContext(profile_);
 }
 
 - (Profile*)profile {
@@ -481,7 +481,7 @@ NSString* const kOkEnabledName = @"okEnabled";
   // of ancestor nodes.  Then crawl down the folderTreeArray looking
   // for each ancestor in order while building up the selectionPath.
   std::stack<const BookmarkNode*> nodeStack;
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile_);
   const BookmarkNode* rootNode = model->root_node();
   const BookmarkNode* node = desiredNode;
   while (node != rootNode) {
@@ -539,7 +539,7 @@ NSString* const kOkEnabledName = @"okEnabled";
 
 - (void)buildFolderTree {
   // Build up a tree of the current folder configuration.
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile_);
   const BookmarkNode* rootNode = model->root_node();
   NSMutableArray* baseArray = [self addChildFoldersFromNode:rootNode];
   DCHECK(baseArray);
