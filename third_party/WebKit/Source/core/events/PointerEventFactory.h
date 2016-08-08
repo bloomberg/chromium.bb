@@ -102,6 +102,11 @@ private:
         unsigned buttons);
     void setBubblesAndCancelable(PointerEventInit&, const AtomicString& type);
 
+    // Creates pointerevents like boundary and capture events from another
+    // pointerevent (i.e. up/down/move events).
+    PointerEvent* createPointerEventFrom(
+        PointerEvent*, const AtomicString&, EventTarget*);
+
     static const int s_invalidId;
 
     int m_currentId;

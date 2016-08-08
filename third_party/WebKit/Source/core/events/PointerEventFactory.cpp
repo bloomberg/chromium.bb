@@ -25,7 +25,7 @@ const char* pointerTypeNameForWebPointPointerType(WebPointerProperties::PointerT
     case WebPointerProperties::PointerType::Mouse:
         return "mouse";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return "";
 }
 
@@ -47,7 +47,7 @@ const AtomicString& pointerEventNameForMouseEventName(
 
 #undef RETURN_CORRESPONDING_PE_NAME
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return emptyAtom;
 }
 
@@ -78,13 +78,16 @@ void PointerEventFactory::setIdTypeButtons(PointerEventInit& pointerEventInit,
     pointerEventInit.setIsPrimary(isPrimary(pointerId));
 }
 
-void PointerEventFactory::setBubblesAndCancelable(PointerEventInit& pointerEventInit,
-    const AtomicString& type)
+void PointerEventFactory::setBubblesAndCancelable(
+    PointerEventInit& pointerEventInit, const AtomicString& type)
 {
     pointerEventInit.setBubbles(type != EventTypeNames::pointerenter
         && type != EventTypeNames::pointerleave);
     pointerEventInit.setCancelable(type != EventTypeNames::pointerenter
-        && type != EventTypeNames::pointerleave && type != EventTypeNames::pointercancel);
+        && type != EventTypeNames::pointerleave
+        && type != EventTypeNames::pointercancel
+        && type != EventTypeNames::gotpointercapture
+        && type != EventTypeNames::lostpointercapture);
 }
 
 PointerEvent* PointerEventFactory::create(
@@ -193,7 +196,7 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
 PointerEvent* PointerEventFactory::createPointerCancelEvent(
     const int pointerId, const WebPointerProperties::PointerType pointerType)
 {
-    ASSERT(m_pointerIdMapping.contains(pointerId));
+    DCHECK(m_pointerIdMapping.contains(pointerId));
     m_pointerIdMapping.set(pointerId, PointerAttributes(m_pointerIdMapping.get(pointerId).incomingId, false));
 
     PointerEventInit pointerEventInit;
@@ -207,33 +210,11 @@ PointerEvent* PointerEventFactory::createPointerCancelEvent(
     return PointerEvent::create(EventTypeNames::pointercancel, pointerEventInit);
 }
 
-PointerEvent* PointerEventFactory::createPointerCaptureEvent(
-    PointerEvent* pointerEvent,
-    const AtomicString& type)
-{
-    ASSERT(type == EventTypeNames::gotpointercapture
-        || type == EventTypeNames::lostpointercapture);
-
-    PointerEventInit pointerEventInit;
-    pointerEventInit.setPointerId(pointerEvent->pointerId());
-    pointerEventInit.setPointerType(pointerEvent->pointerType());
-    pointerEventInit.setIsPrimary(pointerEvent->isPrimary());
-    pointerEventInit.setBubbles(true);
-    pointerEventInit.setCancelable(false);
-
-    return PointerEvent::create(type, pointerEventInit);
-}
-
-PointerEvent* PointerEventFactory::createPointerBoundaryEvent(
+PointerEvent* PointerEventFactory::createPointerEventFrom(
     PointerEvent* pointerEvent,
     const AtomicString& type,
     EventTarget* relatedTarget)
 {
-    ASSERT(type == EventTypeNames::pointerout
-        || type == EventTypeNames::pointerleave
-        || type == EventTypeNames::pointerover
-        || type == EventTypeNames::pointerenter);
-
     PointerEventInit pointerEventInit;
 
     pointerEventInit.setPointerId(pointerEvent->pointerId());
@@ -258,6 +239,30 @@ PointerEvent* PointerEventFactory::createPointerBoundaryEvent(
         pointerEventInit.setRelatedTarget(relatedTarget);
 
     return PointerEvent::create(type, pointerEventInit);
+}
+
+PointerEvent* PointerEventFactory::createPointerCaptureEvent(
+    PointerEvent* pointerEvent,
+    const AtomicString& type)
+{
+    DCHECK(type == EventTypeNames::gotpointercapture
+        || type == EventTypeNames::lostpointercapture);
+
+    return createPointerEventFrom(
+        pointerEvent, type, pointerEvent->relatedTarget());
+}
+
+PointerEvent* PointerEventFactory::createPointerBoundaryEvent(
+    PointerEvent* pointerEvent,
+    const AtomicString& type,
+    EventTarget* relatedTarget)
+{
+    DCHECK(type == EventTypeNames::pointerout
+        || type == EventTypeNames::pointerleave
+        || type == EventTypeNames::pointerover
+        || type == EventTypeNames::pointerenter);
+
+    return createPointerEventFrom(pointerEvent, type, relatedTarget);
 }
 
 PointerEventFactory::PointerEventFactory()

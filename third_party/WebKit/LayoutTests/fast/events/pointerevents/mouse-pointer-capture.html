@@ -41,6 +41,54 @@ var rect = document.getElementById("blue").getBoundingClientRect();
 var x3 = rect.left + 5;
 var y3 = rect.top + 5;
 
+var lastPointerEvent = null;
+var pointereventProperties = [
+    "clientX",
+    "clientY",
+    "layerX",
+    "layerY",
+    "movementX",
+    "movementY",
+    "offsetX",
+    "offsetY",
+    "pageX",
+    "pageY",
+    "screenX",
+    "screenY",
+    "x",
+    "y",
+    "button",
+    "buttons",
+    "pressure",
+    "tiltX",
+    "tiltY",
+    "width",
+    "height"
+];
+
+function checkPointerCaptureProperties(lastPointerEvent, currentPointerEvent) {
+  if (lastPointerEvent == null)
+    return false;
+
+  var isImmediateRelease = (lastPointerEvent.type == 'pointerup') &&
+                           (currentPointerEvent.type == 'lostpointercapture');
+  var isDelayedCapture = lastPointerEvent.type.includes('pointercapture');
+
+  if (!isImmediateRelease && !isDelayedCapture)
+    return false;
+
+  for (var i = 0; i< pointereventProperties. length; i++) {
+    var property = pointereventProperties[i];
+    if (lastPointerEvent[property] !== currentPointerEvent[property]) {
+      debug("Capture pointer event attributes are incorrect!");
+      return true;
+    }
+  }
+
+  debug("Capture pointer event attributes are correct!");
+  return true
+}
+
 function init() {
   var eventList = ["mouseenter", "mouseleave", "mouseover", "mouseout", "mousemove", "mousedown", "mouseup",
                    "pointerenter", "pointerleave", "pointerover", "pointerout", "pointermove", "pointerdown", "pointerup",
@@ -49,6 +97,7 @@ function init() {
   document.addEventListener("lostpointercapture", function(event) {
     if (event.eventPhase == Event.AT_TARGET) {
       debug("document received " + event.type);
+      lastPointerEvent = event;
     }
   });
   ["grey", "green", "blue"].forEach(function(id) {
@@ -72,6 +121,12 @@ function init() {
               targetDiv.parentNode.removeChild(targetDiv);
               removeElement = false;
             }
+          }
+          if (checkPointerCaptureProperties(lastPointerEvent, event)) {
+              lastPointerEvent = null;
+          } else {
+            if (event.type.includes('pointer'))
+              lastPointerEvent = event;
           }
         }
       });

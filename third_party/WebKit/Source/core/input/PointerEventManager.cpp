@@ -528,10 +528,16 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
 
     // This is for when the mouse is released outside of the page.
     if (pointerEvent->type() == EventTypeNames::pointermove
-        && !pointerEvent->buttons()
-        && pointerEvent->isPrimary()) {
-        m_preventMouseEventForPointerType[toPointerTypeIndex(
-            mouseEvent.pointerProperties().pointerType)] = false;
+        && !pointerEvent->buttons()) {
+
+        releasePointerCapture(pointerEvent->pointerId());
+        // Send got/lostpointercapture rightaway if necessary.
+        processPendingPointerCapture(pointerEvent);
+
+        if (pointerEvent->isPrimary()) {
+            m_preventMouseEventForPointerType[toPointerTypeIndex(
+                mouseEvent.pointerProperties().pointerType)] = false;
+        }
     }
 
     EventTarget* pointerEventTarget = processCaptureAndPositionOfPointerEvent(pointerEvent, target,
@@ -575,9 +581,10 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
             nullptr, clickCount));
     }
 
-    if (pointerEvent->buttons() == 0) {
-        releasePointerCapture(pointerEvent->pointerId());
+    if (pointerEvent->type() == EventTypeNames::pointerup
+        || pointerEvent->type() == EventTypeNames::pointercancel) {
 
+        releasePointerCapture(pointerEvent->pointerId());
         // Send got/lostpointercapture rightaway if necessary.
         processPendingPointerCapture(pointerEvent);
 

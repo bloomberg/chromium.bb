@@ -18,6 +18,7 @@ green received pointerdown
 green received mousedown
 green received gotpointercapture
 green received pointermove
+Capture pointer event attributes are correct!
 green received mousemove
     **** Move to grey box & jiggle ***** 
 green received pointermove
@@ -39,6 +40,7 @@ green received mousemove
 green received pointerup
 green received mouseup
 green received lostpointercapture
+Capture pointer event attributes are correct!
     **** Jiggle in blue box ***** 
 green received pointerout
 green received pointerleave
@@ -73,6 +75,7 @@ green received pointerdown
 green received mousedown
 green received gotpointercapture
 green received pointermove
+Capture pointer event attributes are correct!
 green received mousemove
     **** Move to grey box & jiggle ***** 
 green received pointermove
@@ -83,9 +86,10 @@ green received mousemove
 green received pointermove
 green received mousemove
     **** Release the mouse outside of the page & move back to blue box ****
-green received pointermove
-green received mousemove
 green received lostpointercapture
+green received pointermove
+Capture pointer event attributes are correct!
+green received mousemove
 green received pointerout
 green received pointerleave
 grey received pointerleave
@@ -119,6 +123,7 @@ green received pointerdown
 green received mousedown
 green received gotpointercapture
 green received pointermove
+Capture pointer event attributes are correct!
 green received mousemove
     **** Move to grey box & jiggle ***** 
 green received pointermove
@@ -131,6 +136,7 @@ green received pointermove
 green received mousemove
 green received lostpointercapture
 green received pointermove
+Capture pointer event attributes are correct!
 green received mousemove
 green received pointerout
 green received pointerleave
@@ -195,6 +201,7 @@ green received pointerdown
 green received mousedown
 green received gotpointercapture
 green received pointermove
+Capture pointer event attributes are correct!
 green received mousemove
     **** Move to grey box & jiggle ***** 
 green received pointermove
@@ -207,6 +214,7 @@ green received pointermove
 grey received mousemove
 document received lostpointercapture
 green received pointermove
+Capture pointer event attributes are correct!
 green received mousemove
 blue received pointerover
 blue received pointerenter
