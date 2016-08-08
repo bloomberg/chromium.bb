@@ -479,15 +479,14 @@ int RendererHistoryLength(Shell* shell) {
   return value;
 }
 
-// Similar to the ones from content_browser_test_utils.
-bool NavigateToURLAndReplace(Shell* shell, const GURL& url) {
+// Does a renderer-initiated location.replace navigation to |url|, replacing the
+// current entry.
+bool RendererLocationReplace(Shell* shell, const GURL& url) {
   WebContents* web_contents = shell->web_contents();
   WaitForLoadStop(web_contents);
   TestNavigationObserver same_tab_observer(web_contents, 1);
-  NavigationController::LoadURLParams params(url);
-  params.should_replace_current_entry = true;
-  web_contents->GetController().LoadURLWithParams(params);
-  web_contents->Focus();
+  EXPECT_TRUE(
+      ExecuteScript(shell, "window.location.replace('" + url.spec() + "');"));
   same_tab_observer.Wait();
   if (!IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL))
     return false;
@@ -507,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(1, RendererHistoryLength(shell()));
 
-  EXPECT_TRUE(NavigateToURLAndReplace(shell(), GURL("data:text/html,page1a")));
+  EXPECT_TRUE(RendererLocationReplace(shell(), GURL("data:text/html,page1a")));
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(1, RendererHistoryLength(shell()));
 
@@ -527,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_TRUE(controller.CanGoForward());
 
-  EXPECT_TRUE(NavigateToURLAndReplace(shell(), GURL("data:text/html,page1b")));
+  EXPECT_TRUE(RendererLocationReplace(shell(), GURL("data:text/html,page1b")));
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(3, RendererHistoryLength(shell()));
   EXPECT_TRUE(controller.CanGoForward());
@@ -581,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_NE(-1, shell()->web_contents()->GetMaxPageID());
 
   // Now navigate and replace the current entry.
-  NavigateToURLAndReplace(shell(), page_url);
+  RendererLocationReplace(shell(), page_url);
   EXPECT_EQ(1, controller.GetEntryCount());
 
   // Page ID should be updated.
@@ -975,7 +974,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // See https://crbug.com/596707.
   {
     FrameNavigateParamsCapturer capturer(root);
-    NavigateToURLAndReplace(shell(), error_url);
+    RendererLocationReplace(shell(), error_url);
     capturer.Wait();
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
     NavigationEntry* entry = controller.GetLastCommittedEntry();
@@ -993,7 +992,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // above.)
   {
     FrameNavigateParamsCapturer capturer(root);
-    NavigateToURLAndReplace(shell(), error_url);
+    RendererLocationReplace(shell(), error_url);
     capturer.Wait();
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
     NavigationEntry* entry = controller.GetLastCommittedEntry();

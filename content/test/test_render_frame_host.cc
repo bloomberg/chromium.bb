@@ -316,6 +316,26 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // Simulate Blink assigning an item sequence number to the navigation.
   params.item_sequence_number = base::Time::Now().ToDoubleT() * 1000000;
 
+  // When the user hits enter in the Omnibox without changing the URL, Blink
+  // behaves similarly to a reload and does not change the item and document
+  // sequence numbers. Simulate this behavior here too.
+  if (transition == ui::PAGE_TRANSITION_TYPED) {
+    const NavigationEntryImpl* entry =
+        static_cast<NavigationEntryImpl*>(frame_tree_node()
+                                              ->navigator()
+                                              ->GetController()
+                                              ->GetLastCommittedEntry());
+    if (entry && entry->GetURL() == url) {
+      FrameNavigationEntry* frame_entry =
+          entry->GetFrameEntry(frame_tree_node());
+      if (frame_entry) {
+        params.item_sequence_number = frame_entry->item_sequence_number();
+        params.document_sequence_number =
+            frame_entry->document_sequence_number();
+      }
+    }
+  }
+
   // In most cases, the origin will match the URL's origin.  Tests that need to
   // check corner cases (like about:blank) should specify the origin param
   // manually.
