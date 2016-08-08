@@ -32,6 +32,34 @@ class ChooserContentViewController;
   base::scoped_nsobject<NSButton> helpButton_;
   std::unique_ptr<ChooserController> chooserController_;
   std::unique_ptr<ChooserContentViewController> chooserContentViewController_;
+
+  CGFloat titleHeight_;
+  CGFloat statusHeight_;
+  CGFloat rescanButtonHeight_;
+  CGFloat connectButtonWidth_;
+  CGFloat connectButtonHeight_;
+  CGFloat cancelButtonWidth_;
+  CGFloat cancelButtonHeight_;
+  CGFloat messageHeight_;
+
+  struct FrameAndOrigin {
+    NSRect scroll_view_frame;
+    NSPoint connect_button_origin;
+    NSPoint cancel_button_origin;
+  };
+
+  // The cached |scrollView_| frame and |connectButton_| and |cancelButton_|
+  // origins for views layout:
+  // When |status_| is shown.
+  FrameAndOrigin statusShown_;
+  // When |rescanButton_| is shown.
+  FrameAndOrigin rescanButtonShown_;
+  // When neither |status_| nor |rescanButton_| is shown.
+  FrameAndOrigin noStatusOrRescanButtonShown_;
+
+  // The cached |status_| and |rescanButton_| origins.
+  NSPoint statusOrigin_;
+  NSPoint rescanButtonOrigin_;
 }
 
 // Designated initializer.
@@ -60,6 +88,24 @@ class ChooserContentViewController;
 // Creates a hyperlink button with |text|.
 - (base::scoped_nsobject<NSButton>)createHyperlinkButtonWithText:
     (NSString*)text;
+
+// Calculates the frame for the |scrollView_|.
+- (NSRect)calculateScrollViewFrame:(CGFloat)buttonRowHeight;
+
+// Calculates the origin for the |status_| text.
+- (NSPoint)calculateStatusOrigin:(CGFloat)buttonRowHeight;
+
+// Calculates the origin for the "Re-scan" button.
+- (NSPoint)calculateRescanButtonOrigin:(CGFloat)buttonRowHeight;
+
+// Calculates the origin for the "Connect" button.
+- (NSPoint)calculateConnectButtonOrigin:(CGFloat)buttonRowHeight;
+
+// Calculates the origin for the "Cancel" button.
+- (NSPoint)calculateCancelButtonOrigin:(CGFloat)buttonRowHeight;
+
+// Updates the origin and size of the view.
+- (void)updateView;
 
 // Gets the table view for the chooser.
 - (NSTableView*)tableView;
