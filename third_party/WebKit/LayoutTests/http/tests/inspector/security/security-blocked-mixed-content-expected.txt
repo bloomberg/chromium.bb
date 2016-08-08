@@ -27,4 +27,16 @@ View 1 request in Network Panel
         </DIV>
     </DIV>
 </DIV>
+<DIV class=security-explanation security-explanation-secure >
+    <DIV class=security-property security-property-secure >
+    </DIV>
+    <DIV class=security-explanation-text >
+        <DIV class=security-explanation-title >
+Secure Resources
+        </DIV>
+        <DIV >
+All resources on this page are served securely.
+        </DIV>
+    </DIV>
+</DIV>
 
