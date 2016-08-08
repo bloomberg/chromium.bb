@@ -470,22 +470,7 @@ void DownloadItemNotification::UpdateNotificationData(
 
     image_decode_status_ = IN_PROGRESS;
 
-    bool maybe_image = false;
-    if (mime_util::IsSupportedImageMimeType(item_->GetMimeType())) {
-      maybe_image = true;
-    } else {
-      std::string mime;
-      base::FilePath::StringType extension_with_dot =
-          item_->GetTargetFilePath().FinalExtension();
-      if (!extension_with_dot.empty() &&
-          net::GetWellKnownMimeTypeFromExtension(extension_with_dot.substr(1),
-                                                 &mime) &&
-          mime_util::IsSupportedImageMimeType(mime)) {
-        maybe_image = true;
-      }
-    }
-
-    if (maybe_image) {
+    if (model.HasSupportedImageMimeType()) {
       base::FilePath file_path = item_->GetFullPath();
       base::PostTaskAndReplyWithResult(
           content::BrowserThread::GetBlockingPool(), FROM_HERE,

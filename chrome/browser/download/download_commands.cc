@@ -27,7 +27,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/mime_util/mime_util.h"
 #include "grit/theme_resources.h"
 #include "net/base/url_util.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -383,23 +382,11 @@ bool DownloadCommands::CanOpenPdfInSystemViewer() const {
 void DownloadCommands::CopyFileAsImageToClipboard() const {
   if (download_item_->GetState() != content::DownloadItem::COMPLETE ||
       download_item_->GetReceivedBytes() > kMaxImageClipboardSize) {
-      return;
+    return;
   }
 
-  // TODO(yoshiki): Refine the code by combining the common logic with the
-  // preview in DownloadItemNotification.
-  std::string mime = download_item_->GetMimeType();
-  if (!mime_util::IsSupportedImageMimeType(mime)) {
-    base::FilePath::StringType extension_with_dot =
-        download_item_->GetTargetFilePath().FinalExtension();
-    if (extension_with_dot.empty() ||
-        !net::GetWellKnownMimeTypeFromExtension(extension_with_dot.substr(1),
-                                                &mime) ||
-        !mime_util::IsSupportedImageMimeType(mime)) {
-      // It seems a non-image file.
-      return;
-    }
-  }
+  if (!DownloadItemModel(download_item_).HasSupportedImageMimeType())
+    return;
 
   base::FilePath file_path = download_item_->GetFullPath();
   ImageClipboardCopyManager::Start(file_path);

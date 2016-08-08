@@ -91,6 +91,10 @@ class DownloadItemModel {
   // Implies IsDangerous() and MightBeMalicious().
   bool IsMalicious() const;
 
+  // Does this download have a MIME type (either explicit or inferred from its
+  // extension) suggesting that it is a supported image type?
+  bool HasSupportedImageMimeType() const;
+
   // Is safe browsing download feedback feature available for this download?
   bool ShouldAllowDownloadFeedback() const;
 

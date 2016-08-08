@@ -14,4 +14,4 @@ bool IsPaletteEnabled() {
       switches::kAshEnablePalette);
 }
 
-}  // namespace chromeos
+}  // namespace ash
