@@ -126,12 +126,14 @@ static const int kMaxCORSRedirects = 20;
 
 void DocumentThreadableLoader::loadResourceSynchronously(Document& document, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
-    (new DocumentThreadableLoader(document, &client, LoadSynchronously, options, resourceLoaderOptions))->start(request);
+    // The loader will be deleted as soon as this function exits.
+    std::unique_ptr<DocumentThreadableLoader> loader = wrapUnique(new DocumentThreadableLoader(document, &client, LoadSynchronously, options, resourceLoaderOptions));
+    loader->start(request);
 }
 
-DocumentThreadableLoader* DocumentThreadableLoader::create(Document& document, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+std::unique_ptr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document& document, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
-    return new DocumentThreadableLoader(document, client, LoadAsynchronously, options, resourceLoaderOptions);
+    return wrapUnique(new DocumentThreadableLoader(document, client, LoadAsynchronously, options, resourceLoaderOptions));
 }
 
 DocumentThreadableLoader::DocumentThreadableLoader(Document& document, ThreadableLoaderClient* client, BlockingBehavior blockingBehavior, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
@@ -170,6 +172,7 @@ void DocumentThreadableLoader::start(const ResourceRequest& request)
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().getString(), "Cross origin requests are not supported."));
+        // |this| may be dead here.
         return;
     }
 
@@ -250,22 +253,26 @@ void DocumentThreadableLoader::start(const ResourceRequest& request)
             m_fallbackRequestForServiceWorker.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::Controlling);
         }
         loadRequest(newRequest, m_resourceLoaderOptions);
+        // |this| may be dead here.
         return;
     }
 
     dispatchInitialRequest(newRequest);
+    // |this| may be dead here in async mode.
 }
 
 void DocumentThreadableLoader::dispatchInitialRequest(const ResourceRequest& request)
 {
     if (!request.isExternalRequest() && (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)) {
         loadRequest(request, m_resourceLoaderOptions);
+        // |this| may be dead here in async mode.
         return;
     }
 
     ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl || request.isExternalRequest());
 
     makeCrossOriginAccessRequest(request);
+    // |this| may be dead here in async mode.
 }
 
 void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceRequest& request)
@@ -283,6 +290,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, request.url().getString(), "Cross origin requests are only supported for protocol schemes: " + SchemeRegistry::listOfCORSEnabledURLSchemes() + "."));
+        // |this| may be dead here in async mode.
         return;
     }
 
@@ -291,6 +299,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, request.url().getString(), "Requests to internal network resources are not allowed from non-secure contexts (see https://goo.gl/Y0ZkNV). This is an experimental restriction which is part of 'https://mikewest.github.io/cors-rfc1918/'."));
+        // |this| may be dead here in async mode.
         return;
     }
 
@@ -310,6 +319,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
             crossOriginRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrerAfterRedirect.referrerPolicy, crossOriginRequest.url(), m_referrerAfterRedirect.referrer));
         }
         loadRequest(crossOriginRequest, crossOriginOptions);
+        // |this| may be dead here in async mode.
     } else {
         m_crossOriginNonSimpleRequest = true;
         // Do not set the Origin header for preflight requests.
@@ -328,12 +338,14 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         bool canSkipPreflight = CrossOriginPreflightResultCache::shared().canSkipPreflight(getSecurityOrigin()->toString(), m_actualRequest.url(), effectiveAllowCredentials(), m_actualRequest.httpMethod(), m_actualRequest.httpHeaderFields());
         if (canSkipPreflight && !shouldForcePreflight) {
             loadActualRequest();
+            // |this| may be dead here in async mode.
         } else {
             ResourceRequest preflightRequest = createAccessControlPreflightRequest(m_actualRequest, getSecurityOrigin());
             // Create a ResourceLoaderOptions for preflight.
             ResourceLoaderOptions preflightOptions = m_actualOptions;
             preflightOptions.allowCredentials = DoNotAllowStoredCredentials;
             loadRequest(preflightRequest, preflightOptions);
+            // |this| may be dead here in async mode.
         }
     }
 }
@@ -373,6 +385,7 @@ void DocumentThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds
 void DocumentThreadableLoader::cancel()
 {
     cancelWithError(ResourceError());
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
@@ -393,6 +406,7 @@ void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
     ThreadableLoaderClient* client = m_client;
     clear();
     client->didFail(errorForCallback);
+    // |this| may be dead here in async mode.
 }
 
 void DocumentThreadableLoader::setDefersLoading(bool value)
@@ -425,6 +439,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         reportResponseReceived(resource->identifier(), redirectResponse);
 
         handlePreflightFailure(redirectResponse.url().getString(), "Response for preflight is invalid (redirect)");
+        // |this| may be dead here.
 
         request = ResourceRequest();
 
@@ -467,6 +482,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFailRedirectCheck();
+        // |this| may be dead here.
 
         request = ResourceRequest();
 
@@ -484,7 +500,10 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFailRedirectCheck();
+        // |this| may be dead here.
+
         request = ResourceRequest();
+
         return;
     }
 
@@ -513,7 +532,10 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, redirectResponse.url().getString(), accessControlErrorDescription));
+        // |this| may be dead here.
+
         request = ResourceRequest();
+
         return;
     }
 
@@ -559,6 +581,7 @@ void DocumentThreadableLoader::redirectBlocked()
     ThreadableLoaderClient* client = m_client;
     clear();
     client->didFailRedirectCheck();
+    // |this| may be dead here
 }
 
 void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -568,6 +591,7 @@ void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long b
     ASSERT(m_async);
 
     m_client->didSendData(bytesSent, totalBytesToBeSent);
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength)
@@ -578,6 +602,7 @@ void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength
     ASSERT(m_async);
 
     m_client->didDownloadData(dataLength);
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::didReceiveResourceTiming(Resource* resource, const ResourceTimingInfo& info)
@@ -587,6 +612,7 @@ void DocumentThreadableLoader::didReceiveResourceTiming(Resource* resource, cons
     ASSERT(m_async);
 
     m_client->didReceiveResourceTiming(info);
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
@@ -598,6 +624,7 @@ void DocumentThreadableLoader::responseReceived(Resource* resource, const Resour
         m_isUsingDataConsumerHandle = true;
 
     handleResponse(resource->identifier(), response, std::move(handle));
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& response)
@@ -606,16 +633,19 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
 
     if (!passesAccessControlCheck(response, effectiveAllowCredentials(), getSecurityOrigin(), accessControlErrorDescription, m_requestContext)) {
         handlePreflightFailure(response.url().getString(), "Response to preflight request doesn't pass access control check: " + accessControlErrorDescription);
+        // |this| may be dead here in async mode.
         return;
     }
 
     if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
         handlePreflightFailure(response.url().getString(), accessControlErrorDescription);
+        // |this| may be dead here in async mode.
         return;
     }
 
     if (m_actualRequest.isExternalRequest() && !passesExternalPreflightCheck(response, accessControlErrorDescription)) {
         handlePreflightFailure(response.url().getString(), accessControlErrorDescription);
+        // |this| may be dead here in async mode.
         return;
     }
 
@@ -624,6 +654,7 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
         || !preflightResult->allowsCrossOriginMethod(m_actualRequest.httpMethod(), accessControlErrorDescription)
         || !preflightResult->allowsCrossOriginHeaders(m_actualRequest.httpHeaderFields(), accessControlErrorDescription)) {
         handlePreflightFailure(response.url().getString(), accessControlErrorDescription);
+        // |this| may be dead here in async mode.
         return;
     }
 
@@ -651,6 +682,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     if (!m_actualRequest.isNull()) {
         reportResponseReceived(identifier, response);
         handlePreflightResponse(response);
+        // |this| may be dead here in async mode.
         return;
     }
 
@@ -663,6 +695,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
             ASSERT(!m_fallbackRequestForServiceWorker.isNull());
             reportResponseReceived(identifier, response);
             loadFallbackRequestForServiceWorker();
+            // |this| may be dead here in async mode.
             return;
         }
         m_fallbackRequestForServiceWorker = ResourceRequest();
@@ -690,6 +723,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
             ThreadableLoaderClient* client = m_client;
             clear();
             client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, response.url().getString(), accessControlErrorDescription));
+            // |this| may be dead here.
             return;
         }
     }
@@ -702,6 +736,7 @@ void DocumentThreadableLoader::setSerializedCachedMetadata(Resource*, const char
     if (!m_actualRequest.isNull())
         return;
     m_client->didReceiveCachedMetadata(data, size);
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, size_t dataLength)
@@ -715,6 +750,7 @@ void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data
     // TODO(junov): Fix the ThreadableLoader ecosystem to use size_t.
     // Until then, we use safeCast to trap potential overflows.
     handleReceivedData(data, safeCast<unsigned>(dataLength));
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::handleReceivedData(const char* data, size_t dataLength)
@@ -728,6 +764,7 @@ void DocumentThreadableLoader::handleReceivedData(const char* data, size_t dataL
     ASSERT(m_fallbackRequestForServiceWorker.isNull());
 
     m_client->didReceiveData(data, dataLength);
+    // |this| may be dead here in async mode.
 }
 
 void DocumentThreadableLoader::notifyFinished(Resource* resource)
@@ -738,8 +775,10 @@ void DocumentThreadableLoader::notifyFinished(Resource* resource)
 
     if (resource->errorOccurred()) {
         handleError(resource->resourceError());
+        // |this| may be dead here.
     } else {
         handleSuccessfulFinish(resource->identifier(), resource->loadFinishTime());
+        // |this| may be dead here.
     }
 }
 
@@ -754,15 +793,17 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
         ASSERT(!m_sameOriginRequest);
         ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
         loadActualRequest();
+        // |this| may be dead here in async mode.
         return;
     }
 
     ThreadableLoaderClient* client = m_client;
     // Protect the resource in |didFinishLoading| in order not to release the
     // downloaded file.
-    Persistent<Resource> protect = resource();
+    Persistent<Resource> resource = m_resource;
     clear();
     client->didFinishLoading(identifier, finishTime);
+    // |this| may be dead here in async mode.
 }
 
 void DocumentThreadableLoader::didTimeout(TimerBase* timer)
@@ -775,6 +816,7 @@ void DocumentThreadableLoader::didTimeout(TimerBase* timer)
     ResourceError error("net", timeoutError, resource()->url(), String());
     error.setIsTimeout(true);
     cancelWithError(error);
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::loadFallbackRequestForServiceWorker()
@@ -783,6 +825,7 @@ void DocumentThreadableLoader::loadFallbackRequestForServiceWorker()
     ResourceRequest fallbackRequest(m_fallbackRequestForServiceWorker);
     m_fallbackRequestForServiceWorker = ResourceRequest();
     dispatchInitialRequest(fallbackRequest);
+    // |this| may be dead here in async mode.
 }
 
 void DocumentThreadableLoader::loadActualRequest()
@@ -803,6 +846,7 @@ void DocumentThreadableLoader::loadActualRequest()
     actualRequest.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
 
     loadRequest(actualRequest, actualOptions);
+    // |this| may be dead here in async mode.
 }
 
 void DocumentThreadableLoader::handlePreflightFailure(const String& url, const String& errorDescription)
@@ -815,6 +859,7 @@ void DocumentThreadableLoader::handlePreflightFailure(const String& url, const S
     ThreadableLoaderClient* client = m_client;
     clear();
     client->didFailAccessControlCheck(error);
+    // |this| may be dead here in async mode.
 }
 
 void DocumentThreadableLoader::handleError(const ResourceError& error)
@@ -827,6 +872,7 @@ void DocumentThreadableLoader::handleError(const ResourceError& error)
     ThreadableLoaderClient* client = m_client;
     clear();
     client->didFail(copiedError);
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, ResourceLoaderOptions resourceLoaderOptions)
@@ -862,6 +908,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
             setResource(RawResource::fetch(newRequest, document().fetcher()));
 
         // setResource() might call notifyFinished() synchronously, and thus
+        // clear() might be called and |this| may be dead here.
         if (!self)
             return;
 
@@ -875,6 +922,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
             if (!client)
                 return;
             client->didFail(ResourceError(errorDomainBlinkInternal, 0, requestURL.getString(), "Failed to start loading."));
+            // |this| may be dead here.
             return;
         }
 
@@ -967,13 +1015,6 @@ Document& DocumentThreadableLoader::document() const
 {
     ASSERT(m_document);
     return *m_document;
-}
-
-DEFINE_TRACE(DocumentThreadableLoader)
-{
-    visitor->trace(m_resource);
-    visitor->trace(m_document);
-    ThreadableLoader::trace(visitor);
 }
 
 } // namespace blink

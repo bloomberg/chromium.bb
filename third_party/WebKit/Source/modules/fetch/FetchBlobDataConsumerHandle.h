@@ -25,7 +25,7 @@ class MODULES_EXPORT FetchBlobDataConsumerHandle final : public FetchDataConsume
 public:
     class MODULES_EXPORT LoaderFactory : public GarbageCollectedFinalized<LoaderFactory> {
     public:
-        virtual ThreadableLoader* create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) = 0;
+        virtual std::unique_ptr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) = 0;
         virtual ~LoaderFactory() { }
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };

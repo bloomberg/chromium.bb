@@ -404,7 +404,7 @@ void AssociatedURLLoader::cancelLoader()
 
     if (m_loader) {
         m_loader->cancel();
-        m_loader = nullptr;
+        m_loader.reset();
     }
     m_clientAdapter.reset();
 }

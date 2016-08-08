@@ -33,12 +33,15 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/DocumentThreadableLoader.h"
+#include "core/loader/ThreadableLoaderClientWrapper.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerThread.h"
+#include <memory>
 
 namespace blink {
 
-ThreadableLoader* ThreadableLoader::create(ExecutionContext& context, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+std::unique_ptr<ThreadableLoader> ThreadableLoader::create(ExecutionContext& context, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
     ASSERT(client);
 

@@ -84,7 +84,7 @@ private:
     // An adapter which converts the DocumentThreadableLoaderClient method
     // calls into the WebURLLoaderClient method calls.
     std::unique_ptr<ClientAdapter> m_clientAdapter;
-    Persistent<DocumentThreadableLoader> m_loader;
+    std::unique_ptr<DocumentThreadableLoader> m_loader;
 
     // A ContextLifecycleObserver for cancelling |m_loader| when the Document
     // is detached.

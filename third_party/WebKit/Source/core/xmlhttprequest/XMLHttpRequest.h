@@ -265,7 +265,7 @@ private:
     Member<Blob> m_responseBlob;
     Member<Stream> m_responseLegacyStream;
 
-    Member<ThreadableLoader> m_loader;
+    std::unique_ptr<ThreadableLoader> m_loader;
     State m_state;
 
     ResourceResponse m_response;

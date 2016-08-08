@@ -34,7 +34,6 @@
 #include "core/CoreExport.h"
 #include "core/fileapi/FileError.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/PtrUtil.h"
@@ -124,7 +123,7 @@ private:
 
     KURL m_urlForReading;
     bool m_urlForReadingIsStream;
-    Persistent<ThreadableLoader> m_loader;
+    std::unique_ptr<ThreadableLoader> m_loader;
 
     std::unique_ptr<ArrayBufferBuilder> m_rawData;
     bool m_isRawDataConverted;

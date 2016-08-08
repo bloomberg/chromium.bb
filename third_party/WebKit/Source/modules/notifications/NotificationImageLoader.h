@@ -46,10 +46,7 @@ public:
     void didFail(const ResourceError&) override;
     void didFailRedirectCheck() override;
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_threadableLoader);
-    }
+    DEFINE_INLINE_TRACE() {}
 
 private:
     void runCallbackWithEmptyBitmap();
@@ -58,7 +55,7 @@ private:
     double m_startTime;
     RefPtr<SharedBuffer> m_data;
     std::unique_ptr<ImageCallback> m_imageCallback;
-    Member<ThreadableLoader> m_threadableLoader;
+    std::unique_ptr<ThreadableLoader> m_threadableLoader;
 };
 
 } // namespace blink

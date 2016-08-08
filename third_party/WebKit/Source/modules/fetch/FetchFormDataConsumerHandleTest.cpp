@@ -52,14 +52,14 @@ public:
     explicit LoaderFactory(std::unique_ptr<WebDataConsumerHandle> handle)
         : m_client(nullptr)
         , m_handle(std::move(handle)) {}
-    ThreadableLoader* create(ExecutionContext&, ThreadableLoaderClient* client, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
+    std::unique_ptr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient* client, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
     {
         m_client = client;
 
-        MockThreadableLoader* loader = MockThreadableLoader::create();
+        std::unique_ptr<MockThreadableLoader> loader = MockThreadableLoader::create();
         EXPECT_CALL(*loader, start(_)).WillOnce(InvokeWithoutArgs(this, &LoaderFactory::handleDidReceiveResponse));
         EXPECT_CALL(*loader, cancel()).Times(1);
-        return loader;
+        return std::move(loader);
     }
 
 private:

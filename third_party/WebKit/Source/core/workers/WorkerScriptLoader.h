@@ -114,7 +114,7 @@ private:
     std::unique_ptr<WTF::Closure> m_responseCallback;
     std::unique_ptr<WTF::Closure> m_finishedCallback;
 
-    Persistent<ThreadableLoader> m_threadableLoader;
+    std::unique_ptr<ThreadableLoader> m_threadableLoader;
     String m_responseEncoding;
     std::unique_ptr<TextResourceDecoder> m_decoder;
     StringBuilder m_script;

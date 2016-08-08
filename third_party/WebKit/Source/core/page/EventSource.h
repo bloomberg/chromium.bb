@@ -122,7 +122,7 @@ private:
     State m_state;
 
     Member<EventSourceParser> m_parser;
-    Member<ThreadableLoader> m_loader;
+    std::unique_ptr<ThreadableLoader> m_loader;
     Timer<EventSource> m_connectTimer;
 
     unsigned long long m_reconnectDelay;

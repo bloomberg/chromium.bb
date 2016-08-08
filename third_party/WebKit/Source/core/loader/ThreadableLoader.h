@@ -34,7 +34,6 @@
 #include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/CrossThreadCopier.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include <memory>
@@ -127,7 +126,7 @@ struct CrossThreadCopier<ThreadableLoaderOptions> {
 // - ResourceLoaderOptions argument will be passed to the FetchRequest
 //   that this ThreadableLoader creates. It can be altered e.g. when
 //   redirect happens.
-class CORE_EXPORT ThreadableLoader : public GarbageCollectedFinalized<ThreadableLoader> {
+class CORE_EXPORT ThreadableLoader {
     WTF_MAKE_NONCOPYABLE(ThreadableLoader);
 public:
     // ThreadableLoaderClient methods may not destroy the ThreadableLoader
@@ -168,7 +167,7 @@ public:
     // - may call cancel()
     // - can destroy the ThreadableLoader instance in them (by clearing
     //   std::unique_ptr<ThreadableLoader>).
-    static ThreadableLoader* create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+    static std::unique_ptr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
     // The methods on the ThreadableLoaderClient passed on create() call
     // may be called synchronous to start() call.
@@ -184,8 +183,6 @@ public:
     virtual void cancel() = 0;
 
     virtual ~ThreadableLoader() { }
-
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
 
 protected:
     ThreadableLoader() { }

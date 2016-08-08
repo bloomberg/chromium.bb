@@ -1952,6 +1952,7 @@
             'loader/TextTrackLoader.h',
             'loader/ThreadableLoader.cpp',
             'loader/ThreadableLoaderClient.h',
+            'loader/ThreadableLoaderClientWrapper.h',
             'loader/WorkerThreadableLoader.cpp',
             'loader/WorkerThreadableLoader.h',
             'loader/appcache/ApplicationCache.cpp',
