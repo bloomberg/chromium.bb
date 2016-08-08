@@ -3343,6 +3343,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     if ([self isMainFrameNavigationAction:action])
       [self stopLoading];
 
+    // Purge web view if last committed URL is different from the document URL.
+    // This can happen if external URL was added to the navigation stack and was
+    // loaded using Go Back or Go Forward navigation (in which case document URL
+    // will point to the previous page).
+    GURL lastCommittedURL =
+        self.webState->GetNavigationManager()->GetLastCommittedItem()->GetURL();
+    if (lastCommittedURL != _documentURL) {
+      [self requirePageReconstruction];
+      [self setDocumentURL:lastCommittedURL];
+    }
+
     if ([_delegate openExternalURL:requestURL
                        linkClicked:isNavigationTypeLinkActivated]) {
       // Record the URL so that errors reported following the 'NO' reply can be
