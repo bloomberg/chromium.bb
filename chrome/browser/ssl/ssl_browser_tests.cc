@@ -92,6 +92,8 @@
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_job.h"
 
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/net/nss_context.h"
@@ -275,6 +277,33 @@ void CheckSSLStatusesEquals(const content::SSLStatus& one,
   EXPECT_TRUE(one_without_cert_id.Equals(two_without_cert_id));
 }
 
+class HungJob : public net::URLRequestJob {
+ public:
+  HungJob(net::URLRequest* request, net::NetworkDelegate* network_delegate)
+      : net::URLRequestJob(request, network_delegate) {}
+
+  void Start() override {
+  }
+};
+
+class FaviconFilter : public net::URLRequestInterceptor {
+ public:
+  FaviconFilter() {}
+  ~FaviconFilter() override {}
+
+  // net::URLRequestInterceptor implementation
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    if (request->url().path() == "/favicon.ico")
+      return new HungJob(request, network_delegate);
+    return nullptr;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FaviconFilter);
+};
+
 }  // namespace
 
 class SSLUITest
@@ -295,6 +324,16 @@ class SSLUITest
     https_server_mismatched_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
     https_server_mismatched_.AddDefaultHandlers(base::FilePath(kDocRoot));
+
+    // TODO(estark): once http://crbug.com/634171 is fixed and certificate
+    // errors for subresources don't generate DISPLAYED_INSECURE_CONTENT remove
+    // these filters.
+    std::unique_ptr<net::URLRequestInterceptor> interceptor(new FaviconFilter);
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "https", "127.0.0.1", std::move(interceptor));
+    interceptor.reset(new FaviconFilter);
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "https", "localhost", std::move(interceptor));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1828,14 +1867,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCNInvalidStickiness) {
       tab, net::CERT_STATUS_COMMON_NAME_INVALID, AuthState::NONE);
 }
 
-#if defined(OS_CHROMEOS)
-// This test seems to be flaky and hang on chromiumos.
-// http://crbug.com/84419
-#define MAYBE_TestRefNavigation DISABLED_TestRefNavigation
-#else
-#define MAYBE_TestRefNavigation TestRefNavigation
-#endif
-
 // Test that navigating to a #ref does not change a bad security state.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
   ASSERT_TRUE(https_server_expired_.Start());
@@ -2330,8 +2361,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       tab, "window.domAutomationController.send(IsFooSet());", &js_result));
   EXPECT_TRUE(js_result);
+  // TODO(estark): once http://crbug.com/634171 is fixed and certificate errors
+  // for subresources don't generate DISPLAYED_INSECURE_CONTENT switch this back
+  // to AuthState::NONE.
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 AuthState::NONE);
+                                 AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
 // Like the test above, but only displaying inactive content (an image).

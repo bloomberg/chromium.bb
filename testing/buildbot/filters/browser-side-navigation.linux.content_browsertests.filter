@@ -10,4 +10,3 @@
 -RequestDataResourceDispatcherHostBrowserTest.*
 -ServiceWorker*
 -SitePerProcessIgnoreCertErrorsBrowserTest.CrossSiteRedirectCertificateStore
--SitePerProcessIgnoreCertErrorsBrowserTest.SubresourceWithRedundantCertificateErrors
