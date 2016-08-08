@@ -104,22 +104,21 @@
         -webkit-margin-end: 12px;
       }
 
-      #bookmark-star {
+      #star-container {
         -webkit-margin-end: 4px;
         -webkit-margin-start: 12px;
+        width: 32px;
+      }
+
+      #bookmark-star {
         color: rgb(68, 136, 255);
         height: 32px;
-        visibility: hidden;
         width: 32px;
       }
 
       #bookmark-star iron-icon {
         height: 16px;
         width: 16px;
-      }
-
-      :host([starred]) #bookmark-star {
-        visibility: visible;
       }
 
       #time-gap-separator {
@@ -147,19 +146,21 @@
             </a>
             <span id="domain">[[item.domain]]</span>
           </div>
-          <button is="paper-icon-button-light" id="bookmark-star"
-              title="$i18n{removeBookmark}" on-tap="onRemoveBookmarkTap_">
-            <iron-icon icon="cr:star"></iron-icon>
-          </button>
+          <div id="star-container">
+            <template is="dom-if" if="[[item.starred]]">
+              <button is="paper-icon-button-light" id="bookmark-star"
+                  title="$i18n{removeBookmark}" on-tap="onRemoveBookmarkTap_">
+                <iron-icon icon="cr:star"></iron-icon>
+              </button>
+            </template>
+          </div>
           <button is="paper-icon-button-light" id="menu-button"
               class="icon-button" title="$i18n{moreActionsButton}"
               on-tap="onMenuButtonTap_">
             <iron-icon icon="cr:more-vert"></iron-icon>
           </button>
         </div>
-        <template is="dom-if" if="[[hasTimeGap]]">
-          <div id="time-gap-separator"></div>
-        </template>
+        <div id="time-gap-separator" hidden="[[!hasTimeGap]]"></div>
       </div>
     </div>
   </template>

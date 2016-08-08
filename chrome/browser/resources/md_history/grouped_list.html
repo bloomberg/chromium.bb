@@ -96,7 +96,6 @@
                   <template is="dom-repeat" items="[[domain.visits]]"
                       as="item" initial-count="5" index-as="itemIndex">
                     <history-item item="[[item]]"
-                        starred="[[item.starred]]"
                         selected="{{item.selected}}"
                         has-time-gap="[[needsTimeGap_(
                             groupIndex, domainIndex, itemIndex)]]"

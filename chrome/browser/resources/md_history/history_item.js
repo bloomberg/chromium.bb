@@ -11,9 +11,6 @@ cr.define('md_history', function() {
       // from the history backend, as well as fields computed by history-list.
       item: {type: Object, observer: 'showIcon_'},
 
-      // True if the website is a bookmarked page.
-      starred: {type: Boolean, reflectToAttribute: true},
-
       // Search term used to obtain this history-item.
       searchTerm: {type: String},
 
@@ -50,7 +47,10 @@ cr.define('md_history', function() {
      * @private
      */
     onRemoveBookmarkTap_: function() {
-      if (this.$['bookmark-star'] == this.root.activeElement)
+      if (!this.item.starred)
+        return;
+
+      if (this.$$('#bookmark-star') == this.root.activeElement)
         this.$['menu-button'].focus();
 
       md_history.BrowserService.getInstance()

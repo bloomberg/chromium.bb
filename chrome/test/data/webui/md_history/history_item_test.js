@@ -81,23 +81,19 @@ cr.define('md_history.history_item_test', function() {
         return flush().then(function() {
           element.set('historyData_.1.starred', true);
           element.set('historyData_.5.starred', true);
+          return flush();
+        }).then(function() {
 
           items = Polymer.dom(element.root).querySelectorAll('history-item');
 
-          items[1].$['bookmark-star'].focus();
-          MockInteractions.tap(items[1].$['bookmark-star']);
+          items[1].$$('#bookmark-star').focus();
+          MockInteractions.tap(items[1].$$('#bookmark-star'));
 
           // Check that focus is shifted to overflow menu icon.
           assertEquals(items[1].root.activeElement, items[1].$['menu-button']);
           // Check that all items matching this url are unstarred.
           assertEquals(element.historyData_[1].starred, false);
           assertEquals(element.historyData_[5].starred, false);
-          assertEquals(
-              window.getComputedStyle(items[1].$['bookmark-star']).visibility,
-              'hidden');
-          assertEquals(
-              window.getComputedStyle(items[5].$['bookmark-star']).visibility,
-              'hidden');
         });
       });
 
