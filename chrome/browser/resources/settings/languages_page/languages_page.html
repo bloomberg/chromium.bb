@@ -194,9 +194,8 @@
               prefs="{{prefs}}"></settings-manage-languages-page>
         </settings-subpage>
       </template>
-      <template is="dom-if" name="language-detail">
-        <settings-subpage no-associated-control
-            page-title="[[detailLanguage_.language.displayName]]">
+      <template is="dom-if" name="language-detail" no-search>
+        <settings-subpage page-title="[[detailLanguage_.language.displayName]]">
           <settings-language-detail-page id="languageDetailPage"
               prefs="{{prefs}}" detail="[[detailLanguage_]]">
           </settings-language-detail-page>

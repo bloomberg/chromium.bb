@@ -147,6 +147,11 @@ Polymer({
         .querySelector('settings-subpage');
     if (!subpage.id)
       subpage.id = id;
+    // Carry over the 'no-search' attribute from the template to the stamped
+    // instance, such that the stamped instance will also be ignored by the
+    // searching algorithm.
+    if (template.hasAttribute('no-search'))
+      subpage.setAttribute('no-search', '');
 
     // Render synchronously so neon-animated-pages can select the subpage.
     template.if = true;

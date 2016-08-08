@@ -13,6 +13,12 @@ cr.define('settings', function() {
   var SEARCH_BUBBLE_CSS_CLASS = 'search-bubble';
 
   /**
+   * A CSS attribute indicating that a node shoud be ignored during searching.
+   * @const {string}
+   */
+  var SKIP_SEARCH_CSS_ATTRIBUTE = 'no-search';
+
+  /**
    * List of elements types that should not be searched at all.
    * The only DOM-MODULE node is in <body> which is not searched, therefore
    * DOM-MODULE is not needed in this set.
@@ -116,14 +122,16 @@ cr.define('settings', function() {
     var foundMatches = false;
     function doSearch(node) {
       if (node.nodeName == 'TEMPLATE' && node.hasAttribute('name') &&
-          !node.if) {
+          !node.if && !node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE)) {
         getSearchManager().queue_.addRenderTask(
             new RenderTask(request, node));
         return;
       }
 
-      if (IGNORED_ELEMENTS.has(node.nodeName))
+      if (IGNORED_ELEMENTS.has(node.nodeName) ||
+          (node.hasAttribute && node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE))) {
         return;
+      }
 
       if (node.nodeType == Node.TEXT_NODE) {
         var textContent = node.nodeValue.trim();
@@ -199,12 +207,10 @@ cr.define('settings', function() {
           parent.host : parent.parentNode;
       if (parent.nodeName == 'SETTINGS-SUBPAGE') {
         // TODO(dpapad): Cast to SettingsSubpageElement here.
-        if (!parent.noAssociatedControl) {
-          associatedControl = assert(
-              parent.associatedControl,
-              'An associated control was expected for SETTINGS-SUBPAGE ' +
-                  parent.pageTitle + ', but was not found.');
-        }
+        associatedControl = assert(
+            parent.associatedControl,
+            'An associated control was expected for SETTINGS-SUBPAGE ' +
+                parent.pageTitle + ', but was not found.');
       }
     }
     if (parent)

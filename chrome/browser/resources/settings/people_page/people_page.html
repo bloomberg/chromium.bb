@@ -169,7 +169,7 @@
         <!-- TODO(jdufault): Disable navigating to /quickUnlock/* if pin is
           disabled. -->
         <template is="dom-if" if=[[quickUnlockEnabled_]]>
-          <div id="quick-unlock-subpage-trigger" class="settings-box">
+          <div class="settings-box">
             <paper-button on-tap="onQuickUnlockTap_" class="primary-button">
               $i18n{quickUnlockTitle}
             </paper-button>
@@ -242,27 +242,23 @@
         </settings-subpage>
       </template>
 <if expr="chromeos">
-      <template is="dom-if" name="quick-unlock-authenticate">
-        <settings-subpage
-            associated-control="[[$$('#quick-unlock-subpage-trigger')]]"
-            page-title="$i18n{quickUnlockTitle}">
+      <template is="dom-if" name="quick-unlock-authenticate" no-search>
+        <settings-subpage page-title="$i18n{quickUnlockTitle}">
           <settings-quick-unlock-authenticate
               set-modes="{{quickUnlockSetModes}}"
               profile-name="[[profileName_]]">
           </settings-quick-unlock-authenticate>
         </settings-subpage>
       </template>
-      <template is="dom-if" name="quick-unlock-choose-method">
-        <settings-subpage no-associated-control
-            page-title="$i18n{quickUnlockTitle}">
+      <template is="dom-if" name="quick-unlock-choose-method" no-search>
+        <settings-subpage page-title="$i18n{quickUnlockTitle}">
           <settings-quick-unlock-choose-method
               set-modes="[[quickUnlockSetModes]]" prefs="{{prefs}}">
           </settings-quick-unlock-choose-method>
         </settings-subpage>
       </template>
-      <template is="dom-if" name="quick-unlock-setup-pin">
-        <settings-subpage no-associated-control
-            page-title="$i18n{quickUnlockTitle}">
+      <template is="dom-if" name="quick-unlock-setup-pin" no-search>
+        <settings-subpage page-title="$i18n{quickUnlockTitle}">
           <settings-quick-unlock-setup-pin set-modes="[[quickUnlockSetModes]]">
           </settings-quick-unlock-setup-pin>
         </settings-subpage>

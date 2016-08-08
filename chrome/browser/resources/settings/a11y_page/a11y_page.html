@@ -26,7 +26,7 @@
               checked="{{prefs.settings.a11y.enable_menu.value}}">
           </paper-toggle-button>
         </div>
-        <div class="settings-box">
+        <div id="subpage-trigger" class="settings-box">
           <paper-button class="primary-button"
               on-tap="onManageAccessibilityFeaturesTap_">
             $i18n{manageAccessibilityFeatures}
@@ -34,7 +34,9 @@
         </div>
       </neon-animatable>
       <template is="dom-if" name="manage-a11y">
-        <settings-subpage page-title="$i18n{manageAccessibilityFeatures}">
+        <settings-subpage
+            associated-control="[[$$('#subpage-trigger')]]"
+            page-title="$i18n{manageAccessibilityFeatures}">
           <settings-manage-a11y-page prefs="{{prefs}}">
           </settings-manage-a11y-page>
         </settings-subpage>

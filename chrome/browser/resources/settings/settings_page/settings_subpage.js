@@ -30,20 +30,15 @@ Polymer({
       value: '',
     },
 
-    /** @type {?HTMLElement} */
+    /**
+     * Indicates which element triggers this subpage. Used by the searching
+     * algorithm to show search bubbles. It is |null| for subpages that are
+     * skipped during searching.
+     * @type {?HTMLElement}
+     */
     associatedControl: {
       type: Object,
       value: null,
-    },
-
-    /**
-     * Indicates whether an associated control (an element that triggers the
-     * subpage) is not registered for this page. Used by the searching algorithm
-     * to show search bubbles.
-     */
-    noAssociatedControl: {
-      type: Boolean,
-      value: false,
     },
   },
 
