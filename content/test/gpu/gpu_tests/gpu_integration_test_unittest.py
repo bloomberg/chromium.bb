@@ -78,12 +78,6 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
   def RunActualGpuTest(self, file_path, *args):
     if file_path == 'failure.html':
       self.fail('Expected failure')
-    elif file_path == 'restart.html':
-      try:
-        # This will fail because the browser is already started
-        self.StartBrowser()
-      finally:
-        self.StopBrowser()
     elif file_path == 'flaky.html':
       if self.__class__._num_flaky_runs_to_fail > 0:
         self.__class__._num_flaky_runs_to_fail -= 1
@@ -92,22 +86,24 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
       raise Exception('Expected exception')
 
 
-# TODO(eyaich@): add the actual unittest for start-up retrying logic.
 class BrowserStartFailureIntegrationUnittest(
   gpu_integration_test.GpuIntegrationTest):
-  # Must be class-scoped since instances aren't reused across runs.
-  _num_restart_failures = 0
+
+  _num_browser_crashes = 0
+  _num_browser_starts = 0
 
   @classmethod
   def setUpClass(cls):
-    finder_options = fakes.CreateBrowserFinderOptions()
-    finder_options.browser_options.platform = fakes.FakeLinuxPlatform()
-    finder_options.output_formats = ['none']
-    finder_options.suppress_gtest_report = True
-    finder_options.output_dir = None
-    finder_options .upload_bucket = 'public'
-    finder_options .upload_results = False
-    cls._finder_options = finder_options
+    cls._fake_browser_options = \
+        fakes.CreateBrowserFinderOptions(execute_on_startup=cls.CrashOnStart)
+    cls._fake_browser_options.browser_options.platform = \
+        fakes.FakeLinuxPlatform()
+    cls._fake_browser_options.output_formats = ['none']
+    cls._fake_browser_options.suppress_gtest_report = True
+    cls._fake_browser_options.output_dir = None
+    cls._fake_browser_options .upload_bucket = 'public'
+    cls._fake_browser_options .upload_results = False
+    cls._finder_options = cls._fake_browser_options
     cls.platform = None
     cls.browser = None
     cls.SetBrowserOptions(cls._finder_options)
@@ -122,6 +118,13 @@ class BrowserStartFailureIntegrationUnittest(
     return expectations
 
   @classmethod
+  def CrashOnStart(cls):
+    cls._num_browser_starts += 1
+    if cls._num_browser_crashes < 2:
+      cls._num_browser_crashes += 1
+      raise
+
+  @classmethod
   def Name(cls):
     return 'browser_start_failure_integration_unittest'
 
@@ -131,12 +134,10 @@ class BrowserStartFailureIntegrationUnittest(
     yield ('restart', 'restart.html', ())
 
   def RunActualGpuTest(self, file_path, *args):
-    if file_path == 'restart.html':
-      try:
-        # This will fail because the browser is already started
-        self.StartBrowser()
-      finally:
-        self.StopBrowser()
+    # The logic of this test is run when the browser starts, it fails twice
+    # and then succeeds on the third time so we are just testing that this
+    # is successful based on the parameters.
+    pass
 
 
 class GpuIntegrationTestUnittest(unittest.TestCase):
@@ -156,7 +157,11 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def testIntegrationUnittestWithBrowserFailure(
       self, mockInitDependencyManager):
     self._RunIntegrationTest(
-      'browser_start_failure_integration_unittest', ['restart'], [])
+      'browser_start_failure_integration_unittest', [], ['restart'])
+    self.assertEquals( \
+      BrowserStartFailureIntegrationUnittest._num_browser_crashes, 2)
+    self.assertEquals( \
+      BrowserStartFailureIntegrationUnittest._num_browser_starts, 3)
 
   def _RunIntegrationTest(self, test_name, failures, successes):
     options = browser_test_runner.TestRunOptions()
