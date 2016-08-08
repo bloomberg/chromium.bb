@@ -771,6 +771,8 @@
         'browser/chromeos/net/wake_on_wifi_connection_observer.h',
         'browser/chromeos/net/wake_on_wifi_manager.cc',
         'browser/chromeos/net/wake_on_wifi_manager.h',
+        'browser/chromeos/note_taking_app_utils.cc',
+        'browser/chromeos/note_taking_app_utils.h',
         'browser/chromeos/options/cert_library.cc',
         'browser/chromeos/options/cert_library.h',
         'browser/chromeos/options/network_config_view.cc',
