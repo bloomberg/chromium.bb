@@ -32,18 +32,16 @@
         padding: 8px 0;
       }
 
-      #open-tabs {
-        -webkit-margin-start: 20px;
-        color: rgb(102, 136, 238);
-        cursor: pointer;
-      }
-
       #last-update-time {
         color: var(--secondary-text-color);
       }
 
-      .card-title .icon-button {
+      #right-buttons {
         -webkit-margin-end: 4px;
+      }
+
+      #menu-button {
+        -webkit-margin-end: 8px;
       }
 
       #collapse {
@@ -77,11 +75,17 @@
           [[device]]
           <span id="last-update-time">[[lastUpdateTime]]</span>
         </div>
-        <button is="paper-icon-button-light" class="icon-button"
-            title$="[[getCollapseTitle_(cardOpen_)]]">
-          <iron-icon icon="cr:expand-less" id="dropdown-indicator">
-          </iron-icon>
-        </button>
+        <div id="right-buttons">
+          <button is="paper-icon-button-light" id="menu-button"
+              class="icon-button" on-tap="onMenuButtonTap_">
+            <iron-icon icon="cr:more-vert"></iron-icon>
+          </button>
+          <button is="paper-icon-button-light" class="icon-button"
+              title$="[[getCollapseTitle_(cardOpen_)]]">
+            <iron-icon icon="cr:expand-less" id="dropdown-indicator">
+            </iron-icon>
+          </button>
+        </div>
       </div>
 
       <iron-collapse opened="{{cardOpen_}}" id="collapse">
@@ -99,9 +103,6 @@
                 hidden$="[[!isWindowSeparatorIndex_(index, separatorIndexes)]]">
             </div>
           </template>
-          <div class="item-container">
-            <p on-tap="openAllTabs_" id="open-tabs">$i18n{openAll}</p>
-          </div>
         </div>
       </iron-collapse>
     </div>

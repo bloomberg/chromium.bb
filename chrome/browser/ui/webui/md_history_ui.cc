@@ -49,6 +49,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
   source->AddLocalizedString("deleteConfirm",
                              IDS_HISTORY_DELETE_PRIOR_VISITS_CONFIRM_BUTTON);
+  source->AddLocalizedString("deleteSession",
+                             IDS_HISTORY_OTHER_SESSIONS_HIDE_FOR_NOW);
   source->AddLocalizedString(
       "deleteWarning", IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING_NO_INCOGNITO);
   source->AddLocalizedString("expandSessionButton",

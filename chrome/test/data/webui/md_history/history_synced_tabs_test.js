@@ -96,8 +96,8 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals(2, cards.length);
 
           // Ensure separators between windows are added appropriately.
-          assertEquals(1, numWindowSeparators(cards[0]));
-          assertEquals(2, numWindowSeparators(cards[1]));
+          assertEquals(0, numWindowSeparators(cards[0]));
+          assertEquals(1, numWindowSeparators(cards[1]));
         });
       });
 
@@ -128,7 +128,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals(2, cards.length);
 
           // There are now 2 windows in the first device.
-          assertEquals(2, numWindowSeparators(cards[0]));
+          assertEquals(1, numWindowSeparators(cards[0]));
 
           // Check that the actual link changes.
           assertEquals(
@@ -161,18 +161,18 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals(2, cards.length);
 
           // Ensure separators between windows are added appropriately.
-          assertEquals(1, numWindowSeparators(cards[0]));
-          assertEquals(3, numWindowSeparators(cards[1]));
+          assertEquals(0, numWindowSeparators(cards[0]));
+          assertEquals(2, numWindowSeparators(cards[1]));
           element.searchTerm = 'g';
 
           return flush();
         }).then(function() {
           var cards = getCards();
 
-          assertEquals(1, numWindowSeparators(cards[0]));
+          assertEquals(0, numWindowSeparators(cards[0]));
           assertEquals(1, cards[0].tabs.length);
           assertEquals('http://www.google.com', cards[0].tabs[0].title);
-          assertEquals(2, numWindowSeparators(cards[1]));
+          assertEquals(1, numWindowSeparators(cards[1]));
           assertEquals(3, cards[1].tabs.length);
           assertEquals('http://www.gmail.com', cards[1].tabs[0].title);
           assertEquals('http://www.gmail.com', cards[1].tabs[1].title);

@@ -57,6 +57,10 @@ Polymer({
     }
   },
 
+  listeners: {
+    'toggle-menu': 'onToggleMenu_',
+  },
+
   /** @override */
   attached: function() {
     // Update the sign in state.
@@ -80,13 +84,13 @@ Polymer({
         tab.windowId = windowId;
       });
 
+      var windowAdded = false;
       if (!this.searchTerm) {
         // Add all the tabs if there is no search term.
         tabs = tabs.concat(newTabs);
-        separatorIndexes.push(tabs.length - 1);
+        windowAdded = true;
       } else {
         var searchText = this.searchTerm.toLowerCase();
-        var windowAdded = false;
         for (var j = 0; j < newTabs.length; j++) {
           var tab = newTabs[j];
           if (tab.title.toLowerCase().indexOf(searchText) != -1) {
@@ -94,10 +98,9 @@ Polymer({
             windowAdded = true;
           }
         }
-        if (windowAdded)
-          separatorIndexes.push(tabs.length - 1);
       }
-
+      if (windowAdded && i != session.windows.length - 1)
+        separatorIndexes.push(tabs.length - 1);
     }
     return {
       device: session.name,
@@ -109,10 +112,25 @@ Polymer({
     };
   },
 
-
   onSignInTap_: function() {
     chrome.send('SyncSetupShowSetupUI');
     chrome.send('SyncSetupStartSignIn', [false]);
+  },
+
+  onToggleMenu_: function(e) {
+    this.$.menu.toggleMenu(e.detail.target, e.detail.tag);
+  },
+
+  onOpenAllTap_: function() {
+    md_history.BrowserService.getInstance().openForeignSessionAllTabs(
+        this.$.menu.itemData);
+    this.$.menu.closeMenu();
+  },
+
+  onDeleteSessionTap_: function() {
+    md_history.BrowserService.getInstance().deleteForeignSession(
+        this.$.menu.itemData);
+    this.$.menu.closeMenu();
   },
 
   /** @private */

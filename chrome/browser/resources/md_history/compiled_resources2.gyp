@@ -125,6 +125,8 @@
     {
       'target_name': 'synced_device_manager',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
+        'browser_service',
         'synced_device_card',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],

@@ -69,6 +69,13 @@ cr.define('md_history', function() {
       ]);
     },
 
+    /**
+     * @param {string} sessionTag
+     */
+    deleteForeignSession: function(sessionTag) {
+      chrome.send('deleteForeignSession', [sessionTag]);
+    },
+
     openClearBrowsingData: function() {
       chrome.send('clearBrowsingData');
     },

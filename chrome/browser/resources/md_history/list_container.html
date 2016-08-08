@@ -6,10 +6,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://history/grouped_list.html">
 <link rel="import" href="chrome://history/history_list.html">
+<link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-list-container">
   <template>
-    <style include="cr-shared-style">
+    <style include="shared-style cr-shared-style">
       :host {
         display: block;
         height: 100%;
@@ -23,13 +24,6 @@
 
       #dialog .body {
         white-space: pre-wrap;
-      }
-
-      paper-item {
-        -webkit-user-select: none;
-        cursor: pointer;
-        font: inherit;
-        white-space: nowrap;
       }
     </style>
     <iron-pages id="content" attr-for-selected="id"
@@ -61,10 +55,12 @@
     </dialog>
 
     <cr-shared-menu id="sharedMenu">
-      <paper-item id="menuMoreButton" on-tap="onMoreFromSiteTap_">
+      <paper-item id="menuMoreButton" class="menu-item"
+          on-tap="onMoreFromSiteTap_">
         $i18n{moreFromSite}
       </paper-item>
-      <paper-item id="menuRemoveButton" on-tap="onRemoveFromHistoryTap_">
+      <paper-item id="menuRemoveButton" class="menu-item"
+          on-tap="onRemoveFromHistoryTap_">
         $i18n{removeFromHistory}
       </paper-item>
     </cr-shared-menu>

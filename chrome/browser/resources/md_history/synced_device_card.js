@@ -7,10 +7,10 @@ Polymer({
 
   properties: {
     // Name of the synced device.
-    device: {type: String, value: ''},
+    device: String,
 
     // When the device information was last updated.
-    lastUpdateTime: {type: String, value: ''},
+    lastUpdateTime: String,
 
     /**
      * The list of tabs open for this device.
@@ -35,16 +35,8 @@ Polymer({
 
     searchTerm: String,
 
+    // Internal identifier for the device.
     sessionTag: String,
-  },
-
-  /**
-   * Opens all the tabs displayed on the device in separate tabs.
-   * @private
-   */
-  openAllTabs_: function() {
-    md_history.BrowserService.getInstance().openForeignSessionAllTabs(
-        this.sessionTag);
   },
 
   /**
@@ -96,5 +88,17 @@ Polymer({
   getCollapseTitle_: function(cardOpen) {
     return cardOpen ? loadTimeData.getString('collapseSessionButton') :
                       loadTimeData.getString('expandSessionButton');
+  },
+
+  /**
+   * @param {CustomEvent} e
+   * @private
+   */
+  onMenuButtonTap_: function(e) {
+    this.fire('toggle-menu', {
+      target: Polymer.dom(e).localTarget,
+      tag: this.sessionTag
+    });
+    e.stopPropagation();  // Prevent iron-collapse.
   },
 });
