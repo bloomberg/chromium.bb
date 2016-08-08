@@ -278,8 +278,8 @@ bool BlinkTestController::PrepareForLayoutTest(
   accumulated_layout_test_runtime_flags_changes_.Clear();
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
-  if (test_url.spec().find("compositing/") != std::string::npos)
-    is_compositing_test_ = true;
+  is_compositing_test_ =
+      test_url.spec().find("compositing/") != std::string::npos;
   initial_size_ = Shell::GetShellDefaultSize();
   // The W3C SVG layout tests use a different size than the other layout tests.
   if (test_url.spec().find("W3C-SVG-1.1") != std::string::npos)
@@ -311,6 +311,13 @@ bool BlinkTestController::PrepareForLayoutTest(
         ->WasResized();
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
+
+    // Compositing tests override the default preferences (see
+    // BlinkTestController::OverrideWebkitPrefs) so we force them to be
+    // calculated again to ensure is_compositing_test_ changes are picked up.
+    default_prefs_ = render_view_host->GetWebkitPreferences();
+    OverrideWebkitPrefs(&default_prefs_);
+
     render_view_host->UpdateWebkitPreferences(default_prefs_);
     HandleNewRenderFrameHost(render_view_host->GetMainFrame());
 
