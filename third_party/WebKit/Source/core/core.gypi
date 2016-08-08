@@ -543,6 +543,8 @@
             'layout/api/SelectionState.h',
             'layout/ng/NGConstraintSpace.cpp',
             'layout/ng/NGConstraintSpace.h',
+            'layout/ng/NGFragment.cpp',
+            'layout/ng/NGFragment.h',
             'layout/BidiRun.h',
             'layout/BidiRunForLine.cpp',
             'layout/BidiRunForLine.h',
