@@ -23,9 +23,9 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/request_priority.h"
 #include "net/cert/signed_certificate_timestamp.h"
+#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_response_info.h"
 #include "net/nqe/effective_connection_type.h"
-#include "net/ssl/signed_certificate_timestamp_and_status.h"
 #include "net/url_request/redirect_info.h"
 
 #ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
