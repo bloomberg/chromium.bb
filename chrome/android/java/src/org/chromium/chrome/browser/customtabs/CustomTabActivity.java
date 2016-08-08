@@ -383,9 +383,7 @@ public class CustomTabActivity extends ChromeActivity {
         }
         DataUseTabUIManager.onCustomTabInitialNavigation(mMainTab, packageName, url);
 
-        if (mHasCreatedTabEarly) {
-            if (!mMainTab.isLoading()) postDeferredStartupIfNeeded();
-        } else {
+        if (!mHasCreatedTabEarly) {
             loadUrlInTab(mMainTab, new LoadUrlParams(url),
                     IntentHandler.getTimestampFromIntent(getIntent()));
         }
@@ -464,7 +462,6 @@ public class CustomTabActivity extends ChromeActivity {
         setActiveContentHandler(mCustomTabContentHandler);
 
         if (getSavedInstanceState() != null || !mIsInitialStart) {
-
             if (mIntentDataProvider.isOpenedByChrome()) {
                 RecordUserAction.record("ChromeGeneratedCustomTab.StartedReopened");
             } else {
@@ -482,6 +479,7 @@ public class CustomTabActivity extends ChromeActivity {
                 RecordUserAction.record("CustomTabs.StartedInitially");
             }
         }
+        if (mHasCreatedTabEarly && !mMainTab.isLoading()) postDeferredStartupIfNeeded();
         mIsInitialStart = false;
     }
 

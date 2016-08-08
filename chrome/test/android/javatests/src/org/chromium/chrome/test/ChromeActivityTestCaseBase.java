@@ -464,7 +464,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
             @Override
             public boolean isSatisfied() {
-                return DeferredStartupHandler.getInstance().isDeferredStartupComplete();
+                return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
             }
         });
 
@@ -826,7 +826,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
                 final int maxIndex = Math.min(annotation.traceNames().length, Math.min(
                         annotation.graphNames().length, annotation.seriesNames().length));
 
-                List<String> allNames = new LinkedList<String>();
+                List<String> allNames = new LinkedList<>();
                 for (int i = 0; i < maxIndex; ++i) {
                     // Prune out all of ',' and ';' from the strings.  Replace them with '-'.
                     String name = annotation.traceNames()[i].replaceAll("[,;]", "-");

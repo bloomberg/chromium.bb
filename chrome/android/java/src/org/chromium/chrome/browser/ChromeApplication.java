@@ -277,6 +277,7 @@ public class ChromeApplication extends ContentApplication {
      * activity.
      */
     private void onForegroundSessionStart() {
+        UmaUtils.recordForegroundStartTime();
         ChildProcessLauncher.onBroughtToForeground();
         mBackgroundProcessing.startTimers();
         updatePasswordEchoState();
@@ -445,38 +446,61 @@ public class ChromeApplication extends ContentApplication {
         if (mInitializedSharedClasses) return;
         mInitializedSharedClasses = true;
 
-        ForcedSigninProcessor.start(this);
-        AccountsChangedReceiver.addObserver(new AccountsChangedReceiver.AccountsChangedObserver() {
+        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
             @Override
-            public void onAccountsChanged(Context context, Intent intent) {
-                ThreadUtils.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ForcedSigninProcessor.start(ChromeApplication.this);
-                    }
-                });
+            public void run() {
+                ForcedSigninProcessor.start(getApplicationContext());
+                AccountsChangedReceiver.addObserver(
+                        new AccountsChangedReceiver.AccountsChangedObserver() {
+                            @Override
+                            public void onAccountsChanged(Context context, Intent intent) {
+                                ThreadUtils.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ForcedSigninProcessor.start(getApplicationContext());
+                                    }
+                                });
+                            }
+                        });
             }
         });
-        GoogleServicesManager.get(this).onMainActivityStart();
-        RevenueStats.getInstance();
 
-        mDevToolsServer = new DevToolsServer(DEV_TOOLS_SERVER_SOCKET_PREFIX);
-        mDevToolsServer.setRemoteDebuggingEnabled(
-                true, DevToolsServer.Security.ALLOW_DEBUG_PERMISSION);
+        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                GoogleServicesManager.get(getApplicationContext()).onMainActivityStart();
+                RevenueStats.getInstance();
+            }
+        });
 
-        startApplicationActivityTracker();
+        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                mDevToolsServer = new DevToolsServer(DEV_TOOLS_SERVER_SOCKET_PREFIX);
+                mDevToolsServer.setRemoteDebuggingEnabled(
+                        true, DevToolsServer.Security.ALLOW_DEBUG_PERMISSION);
 
-        // Add process check to diagnose http://crbug.com/606309. Remove this after the bug is
-        // fixed.
-        assert !CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE);
-        if (!CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE)) {
-            DownloadController.setDownloadNotificationService(
-                    DownloadManagerService.getDownloadManagerService(this));
-        }
+                startApplicationActivityTracker();
+            }
+        });
 
-        if (ApiCompatibilityUtils.isPrintingSupported()) {
-            mPrintingController = PrintingControllerFactory.create(getApplicationContext());
-        }
+        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                // Add process check to diagnose http://crbug.com/606309. Remove this after the bug
+                // is fixed.
+                assert !CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE);
+                if (!CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE)) {
+                    DownloadController.setDownloadNotificationService(
+                            DownloadManagerService.getDownloadManagerService(
+                                    getApplicationContext()));
+                }
+
+                if (ApiCompatibilityUtils.isPrintingSupported()) {
+                    mPrintingController = PrintingControllerFactory.create(getApplicationContext());
+                }
+            }
+        });
     }
 
     /**
