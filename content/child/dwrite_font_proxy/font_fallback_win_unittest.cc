@@ -25,7 +25,8 @@ namespace {
 class FontFallbackUnitTest : public testing::Test {
  public:
   FontFallbackUnitTest() {
-    CreateDWriteFactory(&factory_);
+    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+                        &factory_);
 
     factory_->CreateNumberSubstitution(DWRITE_NUMBER_SUBSTITUTION_METHOD_NONE,
                                        L"en-us", true /* ignoreUserOverride */,
@@ -45,22 +46,6 @@ class FontFallbackUnitTest : public testing::Test {
 
     mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
         &collection_, factory_.Get(), fake_collection_->GetSender());
-  }
-
-  void CreateDWriteFactory(IUnknown** factory) {
-    using DWriteCreateFactoryProc = decltype(DWriteCreateFactory)*;
-    HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
-    if (!dwrite_dll)
-      return;
-
-    DWriteCreateFactoryProc dwrite_create_factory_proc =
-        reinterpret_cast<DWriteCreateFactoryProc>(
-            GetProcAddress(dwrite_dll, "DWriteCreateFactory"));
-    if (!dwrite_create_factory_proc)
-      return;
-
-    dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_SHARED,
-                               __uuidof(IDWriteFactory), factory);
   }
 
   scoped_refptr<FakeFontCollection> fake_collection_;

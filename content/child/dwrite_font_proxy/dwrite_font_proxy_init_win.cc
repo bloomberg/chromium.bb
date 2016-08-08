@@ -33,33 +33,13 @@ IPC::Sender* g_sender_override = nullptr;
 // Windows-only DirectWrite support. These warm up the DirectWrite paths
 // before sandbox lock down to allow Skia access to the Font Manager service.
 void CreateDirectWriteFactory(IDWriteFactory** factory) {
-  typedef decltype(DWriteCreateFactory)* DWriteCreateFactoryProc;
-  HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
-  // TODO(scottmg): Temporary code to track crash in http://crbug.com/387867.
-  if (!dwrite_dll) {
-    DWORD load_library_get_last_error = GetLastError();
-    base::debug::Alias(&dwrite_dll);
-    base::debug::Alias(&load_library_get_last_error);
-    CHECK(false);
-  }
-
   // This shouldn't be necessary, but not having this causes breakage in
   // content_browsertests, and possibly other high-stress cases.
   PatchServiceManagerCalls();
 
-  DWriteCreateFactoryProc dwrite_create_factory_proc =
-      reinterpret_cast<DWriteCreateFactoryProc>(
-          GetProcAddress(dwrite_dll, "DWriteCreateFactory"));
-  // TODO(scottmg): Temporary code to track crash in http://crbug.com/387867.
-  if (!dwrite_create_factory_proc) {
-    DWORD get_proc_address_get_last_error = GetLastError();
-    base::debug::Alias(&dwrite_create_factory_proc);
-    base::debug::Alias(&get_proc_address_get_last_error);
-    CHECK(false);
-  }
-  CHECK(SUCCEEDED(dwrite_create_factory_proc(
-      DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory),
-      reinterpret_cast<IUnknown**>(factory))));
+  CHECK(SUCCEEDED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_ISOLATED,
+                                      __uuidof(IDWriteFactory),
+                                      reinterpret_cast<IUnknown**>(factory))));
 }
 
 }  // namespace
