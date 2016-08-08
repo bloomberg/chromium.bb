@@ -9,6 +9,8 @@
 
 namespace content {
 
+class MojoShellConnection;
+
 // This class contains different "stages" to be executed by |BrowserMain()|,
 // Each stage is represented by a single BrowserMainParts method, called from
 // the corresponding method in |BrowserMainLoop| (e.g., EarlyInitialization())
@@ -69,6 +71,8 @@ class CONTENT_EXPORT BrowserMainParts {
   // been run), and the toolkit has been initialized. Returns the error code
   // (or 0 if no error).
   virtual int PreCreateThreads();
+
+  virtual void MojoShellConnectionStarted(MojoShellConnection* connection) {}
 
   // This is called just before the main message loop is run.  The
   // various browser threads have all been created at this point

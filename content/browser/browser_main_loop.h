@@ -175,6 +175,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   void MainMessageLoopRun();
 
+  void InitializeMojo();
   base::FilePath GetStartupTraceFileName(
       const base::CommandLine& command_line) const;
   void InitStartupTracingForDuration(const base::CommandLine& command_line);

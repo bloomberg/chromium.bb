@@ -9,6 +9,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(USE_AURA)
+#include "base/run_loop.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/runner/common/client_util.h"
@@ -46,21 +47,24 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 #endif
 }
 
-void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
+void ChromeBrowserMainExtraPartsViews::MojoShellConnectionStarted(
+    content::MojoShellConnection* connection) {
+  DCHECK(connection);
 #if defined(USE_AURA)
-  content::MojoShellConnection* mojo_shell_connection =
-      content::MojoShellConnection::GetForProcess();
-  if (mojo_shell_connection && shell::ShellIsRemote()) {
+  if (shell::ShellIsRemote()) {
+    // TODO(rockot): Remove the blocking wait for init.
+    // http://crbug.com/594852.
+    base::RunLoop wait_loop;
+    connection->SetInitializeHandler(wait_loop.QuitClosure());
+    wait_loop.Run();
+
     input_device_client_.reset(new ui::InputDeviceClient());
     ui::mojom::InputDeviceServerPtr server;
-    mojo_shell_connection->GetConnector()->ConnectToInterface("mojo:ui",
-                                                              &server);
+    connection->GetConnector()->ConnectToInterface("mojo:ui", &server);
     input_device_client_->Connect(std::move(server));
 
     window_manager_connection_ = views::WindowManagerConnection::Create(
-        mojo_shell_connection->GetConnector(),
-        mojo_shell_connection->GetIdentity());
+        connection->GetConnector(), connection->GetIdentity());
   }
 #endif  // defined(USE_AURA)
-  ChromeBrowserMainExtraParts::PreProfileInit();
 }

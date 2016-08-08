@@ -1219,6 +1219,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
+void ChromeBrowserMainParts::MojoShellConnectionStarted(
+    content::MojoShellConnection* connection) {
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->MojoShellConnectionStarted(connection);
+}
+
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(USE_AURA)
   if (content::MojoShellConnection::GetForProcess() && shell::ShellIsRemote()) {

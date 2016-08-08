@@ -70,6 +70,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
   int PreCreateThreads() override;
+  void MojoShellConnectionStarted(
+      content::MojoShellConnection* connection) override;
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;

@@ -33,7 +33,8 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   // Overridden from ChromeBrowserMainExtraParts:
   void ToolkitInitialized() override;
   void PreCreateThreads() override;
-  void PreProfileInit() override;
+  void MojoShellConnectionStarted(
+      content::MojoShellConnection* connection) override;
 
  private:
   std::unique_ptr<views::ViewsDelegate> views_delegate_;

@@ -277,16 +277,6 @@ static void SetUpGLibLogHandler() {
 }
 #endif  // defined(USE_GLIB)
 
-#if defined(USE_AURA)
-void WaitForMojoShellInitialize() {
-  // TODO(rockot): Remove this. http://crbug.com/594852.
-  base::RunLoop wait_loop;
-  MojoShellConnection::GetForProcess()->SetInitializeHandler(
-      wait_loop.QuitClosure());
-  wait_loop.Run();
-}
-#endif  // defined(USE_AURA)
-
 void OnStoppedStartupTracing(const base::FilePath& trace_file) {
   VLOG(0) << "Completed startup tracing to " << trace_file.value();
 }
@@ -1179,36 +1169,17 @@ void BrowserMainLoop::InitializeMainThread() {
 int BrowserMainLoop::BrowserThreadsStarted() {
   TRACE_EVENT0("startup", "BrowserMainLoop::BrowserThreadsStarted");
 
-  // Bring up Mojo IPC and shell as early as possible.
+  // Bring up Mojo IPC and shell as early as possible. Initializaing mojo
+  // requires the IO thread to have been initialized first. So this cannot
+  // happen any earlier than this.
+  InitializeMojo();
 
-  if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
-    // Disallow mojo sync calls in the browser process. Note that we allow sync
-    // calls in single-process mode since renderer IPCs are made from a browser
-    // thread.
-    bool sync_call_allowed = false;
-    MojoResult result = mojo::edk::SetProperty(
-        MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED, &sync_call_allowed);
-    DCHECK_EQ(MOJO_RESULT_OK, result);
-  }
-
-  mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
-      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
-          ->task_runner()));
-
-  mojo_shell_context_.reset(new MojoShellContext);
 #if defined(USE_AURA)
-  // TODO(rockot): Remove the blocking wait for init.
-  // http://crbug.com/594852.
-  if (shell::ShellIsRemote() && MojoShellConnection::GetForProcess()) {
+  if (shell::ShellIsRemote()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kIsRunningInMash);
-    WaitForMojoShellInitialize();
   }
 #endif
-
-#if defined(OS_MACOSX)
-  mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
-#endif  // defined(OS_MACOSX)
 
   indexed_db_thread_.reset(new base::Thread("IndexedDB"));
   indexed_db_thread_->Start();
@@ -1423,6 +1394,29 @@ void BrowserMainLoop::MainMessageLoopRun() {
   base::RunLoop run_loop;
   run_loop.Run();
 #endif
+}
+
+void BrowserMainLoop::InitializeMojo() {
+  if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
+    // Disallow mojo sync calls in the browser process. Note that we allow sync
+    // calls in single-process mode since renderer IPCs are made from a browser
+    // thread.
+    bool sync_call_allowed = false;
+    MojoResult result = mojo::edk::SetProperty(
+        MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED, &sync_call_allowed);
+    DCHECK_EQ(MOJO_RESULT_OK, result);
+  }
+
+  mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
+      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
+          ->task_runner()));
+
+  mojo_shell_context_.reset(new MojoShellContext);
+#if defined(OS_MACOSX)
+  mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
+#endif  // defined(OS_MACOSX)
+  if (parts_)
+    parts_->MojoShellConnectionStarted(MojoShellConnection::GetForProcess());
 }
 
 base::FilePath BrowserMainLoop::GetStartupTraceFileName(

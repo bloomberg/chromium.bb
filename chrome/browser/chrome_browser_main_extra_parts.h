@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_H_
 
+namespace content {
+class MojoShellConnection;
+}
+
 // Interface class for Parts owned by ChromeBrowserMainParts.
 // The default implementation for all methods is empty.
 
@@ -34,6 +38,8 @@ class ChromeBrowserMainExtraParts {
 
   // MainMessageLoopRun methods.
   virtual void PreCreateThreads() {}
+  virtual void MojoShellConnectionStarted(
+      content::MojoShellConnection* connection) {}
   virtual void PreProfileInit() {}
   virtual void PostProfileInit() {}
   virtual void PreBrowserStart() {}
