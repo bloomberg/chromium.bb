@@ -24,6 +24,7 @@
 #include "content/public/browser/download_manager.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/hover_button.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 using content::DownloadItem;
 
@@ -83,7 +84,6 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 - (void)removeTrackingArea;
 - (void)willEnterFullscreen;
 - (void)didExitFullscreen;
-- (void)updateDownloadItemView;
 - (void)updateCloseButton;
 @end
 
@@ -482,12 +482,8 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 - (void)didExitFullscreen {
   isFullscreen_ = NO;
   [self updateCloseButton];
-  [self updateDownloadItemView];
-}
-
-- (void)updateDownloadItemView {
   for (DownloadItemController* controller in downloadItemControllers_.get())
-    [controller updateDownloadItemView];
+    [[controller view] cr_recursivelySetNeedsDisplay:YES];
 }
 
 - (void)updateCloseButton {
