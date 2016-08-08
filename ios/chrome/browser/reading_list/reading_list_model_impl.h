@@ -46,12 +46,21 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
 
   void MarkReadByURL(const GURL& url) override;
 
+  void SetEntryTitle(const GURL& url, const std::string& title) override;
+  void SetEntryDistilledURL(const GURL& url,
+                            const GURL& distilled_url) override;
+  void SetEntryDistilledState(
+      const GURL& url,
+      ReadingListEntry::DistillationState state) override;
+
  protected:
   void EndBatchUpdates() override;
 
  private:
-  std::vector<ReadingListEntry> unread_;
-  std::vector<ReadingListEntry> read_;
+  typedef std::vector<ReadingListEntry> ReadingListEntries;
+
+  ReadingListEntries unread_;
+  ReadingListEntries read_;
   std::unique_ptr<ReadingListModelStorage> storageLayer_;
   bool hasUnseen_;
   bool loaded_;

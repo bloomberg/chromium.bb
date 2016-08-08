@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "ios/chrome/browser/reading_list/reading_list_entry.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_observer.h"
 
 class GURL;
-class ReadingListEntry;
 class ReadingListModel;
 
 namespace ios {
@@ -71,6 +71,15 @@ class ReadingListModel {
   // the reading list and read, move it to the top of unread if it is not here
   // already. This may trigger deletion of old read entries.
   virtual void MarkReadByURL(const GURL& url) = 0;
+
+  // Methods to mutate an entry. Will locate the relevant entry by URL. Does
+  // nothing if the entry is not found.
+  virtual void SetEntryTitle(const GURL& url, const std::string& title) = 0;
+  virtual void SetEntryDistilledURL(const GURL& url,
+                                    const GURL& distilled_url) = 0;
+  virtual void SetEntryDistilledState(
+      const GURL& url,
+      ReadingListEntry::DistillationState state) = 0;
 
   // Observer registration methods.
   void AddObserver(ReadingListModelObserver* observer);

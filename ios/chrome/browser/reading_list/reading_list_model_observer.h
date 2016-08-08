@@ -57,7 +57,13 @@ class ReadingListModelObserver {
   virtual void ReadingListWillAddReadEntry(const ReadingListModel* model,
                                            const ReadingListEntry& entry) {}
 
-  // Called after all th"e changes signaled by calls to the "Will" methods are
+  // Invoked when an entry is about to change.
+  virtual void ReadingListWillUpdateUnreadEntry(const ReadingListModel* model,
+                                                size_t index) {}
+  virtual void ReadingListWillUpdateReadEntry(const ReadingListModel* model,
+                                              size_t index) {}
+
+  // Called after all the changes signaled by calls to the "Will" methods are
   // done. All the "Will" methods are called as necessary, then the changes
   // are applied and then this method is called.
   virtual void ReadingListDidApplyChanges(ReadingListModel* model) {}
