@@ -1996,7 +1996,7 @@
       }
     ]
   },
-  "ClangToTAndroidASan tester": {
+  "ClangToTAndroidASan": {
     "junit_tests": [
       {
         "test": "base_junit_tests"
