@@ -90,7 +90,6 @@ void ApplicationContextImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
   registry->RegisterBooleanPref(prefs::kLastSessionUsedWKWebViewControlGroup,
                                 false);
-  registry->RegisterBooleanPref(prefs::kDroppedSafeBrowsingCookies, false);
 }
 
 void ApplicationContextImpl::PreCreateThreads() {

@@ -149,9 +149,4 @@ const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
 const char kRateThisAppDialogLastShownTime[] =
     "ios.ratethisapp.dialog_last_shown_time";
 
-// TODO(vasilii): drop the pref in M54.
-// True if the safe browsing cookie store was deleted on the disk.
-extern const char kDroppedSafeBrowsingCookies[] =
-    "safebrowsing.cookie_store_deleted";
-
 }  // namespace prefs
