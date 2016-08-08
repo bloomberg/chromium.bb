@@ -52,25 +52,16 @@ void GlCursor::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
   SetCursorPosition(cursor_x_, cursor_y_);
 }
 
-void GlCursor::SetCanvasSize(int width, int height) {
-  canvas_width_ = width;
-  canvas_height_ = height;
-  SetCursorPosition(cursor_x_, cursor_y_);
-}
-
 void GlCursor::SetCursorPosition(int x, int y) {
   cursor_x_ = x;
   cursor_y_ = y;
-  if (!canvas_width_ || !canvas_height_ || !current_cursor_data_) {
+  if (!current_cursor_data_) {
     return;
   }
   std::array<float, 8> positions;
   FillRectangleVertexPositions(
-      (x - current_cursor_hotspot_x_) / ((float)canvas_width_),
-      (y - current_cursor_hotspot_y_) / ((float)canvas_height_),
-      ((float)current_cursor_width_) / canvas_width_,
-      ((float)current_cursor_height_) / canvas_height_,
-      &positions);
+      x - current_cursor_hotspot_x_, y - current_cursor_hotspot_y_,
+      current_cursor_width_, current_cursor_height_, &positions);
   if (layer_) {
     layer_->SetVertexPositions(positions);
   }

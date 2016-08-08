@@ -38,15 +38,15 @@ class GlRenderLayer {
                      int height,
                      int stride);
 
-  // Sets the positions of four vertices of the texture in normalized
-  // coordinates. The default values are (0, 0), (0, 1), (1, 0), (1, 1),
-  // i.e. stretching the texture to fit the whole canvas.
+  // Sets the positions of four vertices of the texture in pixel with respect to
+  // the canvas.
   // positions: [ x_upperleft, y_upperleft, x_lowerleft, y_lowerleft,
   //              x_upperright, y_upperright, x_lowerright, y_lowerright ]
   void SetVertexPositions(const std::array<float, 8>& positions);
 
-  // Sets the visible area of the texture. The default values are (0, 0),
-  // (0, 1), (1, 0), (1, 1), i.e. showing the whole texture.
+  // Sets the visible area of the texture in percentage of the width and height
+  // of the texture. The default values are (0, 0), (0, 1), (1, 0), (1, 1),
+  // i.e. showing the whole texture.
   // positions: [ x_upperleft, y_upperleft, x_lowerleft, y_lowerleft,
   //              x_upperright, y_upperright, x_lowerright, y_lowerright ]
   void SetTextureVisibleArea(const std::array<float, 8>& positions);
@@ -63,6 +63,8 @@ class GlRenderLayer {
 
   // true IFF the texture is already set by calling SetTexture().
   bool texture_set_ = false;
+
+  bool vertex_position_set_ = false;
 
   // Used in OpenGL ES 2 context which doesn't support GL_UNPACK_ROW_LENGTH to
   // tightly pack dirty regions before sending them to GPU.

@@ -39,10 +39,7 @@ void GlRenderer::RequestCanvasSize() {
 void GlRenderer::OnPixelTransformationChanged(
     const std::array<float, 9>& matrix) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::array<float, 9> normalized_matrix = matrix;
-  NormalizeTransformationMatrix(view_width_, view_height_, canvas_width_,
-                                canvas_height_, &normalized_matrix);
-  canvas_->SetNormalizedTransformation(normalized_matrix);
+  canvas_->SetTransformationMatrix(matrix);
   RequestRender();
 }
 
@@ -54,10 +51,7 @@ void GlRenderer::OnCursorMoved(int x, int y) {
 
 void GlRenderer::OnCursorInputFeedback(int x, int y, float diameter) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  cursor_feedback_.StartAnimation(static_cast<float>(x) / canvas_width_,
-                                  static_cast<float>(y) / canvas_height_,
-                                  diameter / canvas_width_,
-                                  diameter / canvas_height_);
+  cursor_feedback_.StartAnimation(x, y, diameter);
   RequestRender();
 }
 
@@ -78,7 +72,6 @@ void GlRenderer::OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
     }
     canvas_width_ = frame->size().width();
     canvas_height_ = frame->size().height();
-    cursor_.SetCanvasSize(canvas_width_, canvas_height_);
   }
 
   desktop_.SetVideoFrame(std::move(frame));
@@ -104,10 +97,7 @@ void GlRenderer::OnSurfaceCreated(int gl_version) {
 
 void GlRenderer::OnSurfaceChanged(int view_width, int view_height) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(view_width > 0 && view_height > 0);
-  glViewport(0, 0, view_width, view_height);
-  view_width_ = view_width;
-  view_height_ = view_height;
+  canvas_->SetViewSize(view_width, view_height);
   RequestRender();
 }
 

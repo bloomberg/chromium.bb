@@ -12,22 +12,6 @@
 
 namespace remoting {
 
-// See GlCanvas::SetNormalizedTransformation for definition of the
-// transformation matrix.
-//
-// Converts a pixel based transformation matrix to a texture coordinates based
-// transformation matrix.
-// 3 by 3 transformation matrix, [ m0, m1, m2, m3, m4, m5, m6, m7, m8 ].
-//
-// | m0, m1, m2, |   | x |
-// | m3, m4, m5, | * | y |
-// | m6, m7, m8  |   | 1 |
-void NormalizeTransformationMatrix(int view_width,
-                                   int view_height,
-                                   int canvas_width,
-                                   int canvas_height,
-                                   std::array<float, 9>* matrix);
-
 // Transposes matrix [ m0, m1, m2, m3, m4, m5, m6, m7, m8 ]:
 //
 // | m0, m1, m2, |   | x |

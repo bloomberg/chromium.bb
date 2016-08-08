@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "remoting/client/gl_canvas.h"
+#include "remoting/client/gl_math.h"
 #include "remoting/client/gl_render_layer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -37,6 +38,10 @@ void GlDesktop::SetVideoFrame(std::unique_ptr<webrtc::DesktopFrame> frame) {
   if (!frame->size().equals(last_desktop_size_)) {
     layer_->SetTexture(frame->data(), frame->size().width(),
                        frame->size().height());
+    std::array<float, 8> positions;
+    FillRectangleVertexPositions(0, 0, frame->size().width(),
+                                 frame->size().height(), &positions);
+    layer_->SetVertexPositions(positions);
     last_desktop_size_.set(frame->size().width(), frame->size().height());
   } else {
     for (webrtc::DesktopRegion::Iterator i(frame->updated_region());

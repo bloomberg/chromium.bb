@@ -6,42 +6,15 @@
 
 #include <sstream>
 
-namespace {
-
-// | m0, m1, m2, |   | Scale_x  Skew_x   Offset_x |
-// | m3, m4, m5, | = | Skew_y   Scale_y  Offset_y |
-// | m6, m7, m8  |   | 0        0        1        |
-
-const int kXScaleKey = 0;
-const int kXSkewKey = 1;
-const int kXOffsetKey = 2;
-
-const int kYSkewKey = 3;
-const int kYScaleKey = 4;
-const int kYOffsetKey = 5;
-
-const int kXOffsetTransposedKey = 6;
-const int kYOffsetTransposedKey = 7;
-
-}  // namespace
-
 namespace remoting {
 
-void NormalizeTransformationMatrix(int view_width,
-                                   int view_height,
-                                   int canvas_width,
-                                   int canvas_height,
-                                   std::array<float, 9>* matrix) {
-  (*matrix)[kXScaleKey] = canvas_width * (*matrix)[kXScaleKey] / view_width;
-  (*matrix)[kYScaleKey] = canvas_height * (*matrix)[kYScaleKey] / view_height;
-  (*matrix)[kXOffsetKey] /= view_width;
-  (*matrix)[kYOffsetKey] /= view_height;
-}
-
 void TransposeTransformationMatrix(std::array<float, 9>* matrix) {
-  std::swap((*matrix)[kXOffsetKey], (*matrix)[kXOffsetTransposedKey]);
-  std::swap((*matrix)[kYOffsetKey], (*matrix)[kYOffsetTransposedKey]);
-  std::swap((*matrix)[kXSkewKey], (*matrix)[kYSkewKey]);
+  // | ??, m1, m2, |    | ??, m3, m6 |
+  // | m3, ??, m5, | -> | m1, ??, m7 |
+  // | m6, m7, ??  |    | m2, m5, ?? |
+  std::swap((*matrix)[1], (*matrix)[3]);
+  std::swap((*matrix)[2], (*matrix)[6]);
+  std::swap((*matrix)[5], (*matrix)[7]);
 }
 
 void FillRectangleVertexPositions(float left,

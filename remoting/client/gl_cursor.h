@@ -27,8 +27,6 @@ class GlCursor {
 
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape);
 
-  void SetCanvasSize(int width, int height);
-
   // Sets the cursor hotspot positions. Does nothing if the cursor shape or the
   // canvas size has not been set.
   void SetCursorPosition(int x, int y);
@@ -59,8 +57,6 @@ class GlCursor {
 
   int cursor_x_ = 0;
   int cursor_y_ = 0;
-  int canvas_width_ = 0;
-  int canvas_height_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GlCursor);
 };

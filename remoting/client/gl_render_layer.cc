@@ -18,7 +18,7 @@ const float kVertices[] = {
     // Points order: upper-left, bottom-left, upper-right, bottom-right.
 
     // Positions to draw the texture on the normalized canvas coordinate.
-    0, 0, 0, 1, 1, 0, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0,
 
     // Region of the texture to be used (normally the whole texture).
     0, 0, 0, 1, 1, 0, 1, 1};
@@ -123,6 +123,7 @@ void GlRenderLayer::SetVertexPositions(const std::array<float, 8>& positions) {
   glBindBuffer(GL_ARRAY_BUFFER, buffer_handle_);
   glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(kVertices) / 2, positions.data());
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  vertex_position_set_ = true;
 }
 
 void GlRenderLayer::SetTextureVisibleArea(
@@ -136,7 +137,7 @@ void GlRenderLayer::SetTextureVisibleArea(
 
 void GlRenderLayer::Draw(float alpha_multiplier) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(texture_set_);
+  DCHECK(texture_set_ && vertex_position_set_);
   canvas_->DrawTexture(texture_id_, texture_handle_, buffer_handle_,
                        alpha_multiplier);
 }

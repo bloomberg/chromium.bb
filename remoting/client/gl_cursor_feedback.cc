@@ -38,14 +38,10 @@ void GlCursorFeedback::SetCanvas(GlCanvas* canvas) {
                      GlCursorFeedbackTexture::kTextureWidth);
 }
 
-void GlCursorFeedback::StartAnimation(float normalized_x,
-                                      float normalized_y,
-                                      float normalized_width,
-                                      float normalized_height) {
-  max_width_ = normalized_width;
-  max_height_ = normalized_height;
-  cursor_x_ = normalized_x;
-  cursor_y_ = normalized_y;
+void GlCursorFeedback::StartAnimation(int x, int y, float diameter) {
+  cursor_x_ = x;
+  cursor_y_ = y;
+  max_diameter_ = diameter;
   animation_start_time_ = base::TimeTicks::Now();
 }
 
@@ -60,11 +56,11 @@ bool GlCursorFeedback::Draw() {
     animation_start_time_ = base::TimeTicks();
     return false;
   }
-  float width = progress * max_width_;
-  float height = progress * max_height_;
+  float diameter = progress * max_diameter_;
   std::array<float, 8> positions;
-  FillRectangleVertexPositions(cursor_x_ - width / 2, cursor_y_ - height / 2,
-                               width, height, &positions);
+  FillRectangleVertexPositions(cursor_x_ - diameter / 2,
+                               cursor_y_ - diameter / 2,
+                               diameter, diameter, &positions);
   layer_->SetVertexPositions(positions);
   layer_->Draw(1.f - progress);
   return true;

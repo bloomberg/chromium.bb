@@ -113,8 +113,6 @@ class GlRenderer {
 
   bool render_scheduled_ = false;
 
-  int view_width_ = 0;
-  int view_height_ = 0;
   int canvas_width_ = 0;
   int canvas_height_ = 0;
 

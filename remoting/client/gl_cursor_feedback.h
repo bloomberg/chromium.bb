@@ -28,10 +28,7 @@ class GlCursorFeedback {
   // If |canvas| is nullptr, nothing will happen when calling Draw().
   void SetCanvas(GlCanvas* canvas);
 
-  void StartAnimation(float normalized_x,
-                      float normalized_y,
-                      float normalized_width,
-                      float normalized_height);
+  void StartAnimation(int x, int y, float diameter);
 
   // Returns true if animation is not finished, false otherwise. Does nothing
   // if the animation has stopped.
@@ -39,8 +36,7 @@ class GlCursorFeedback {
 
  private:
   std::unique_ptr<GlRenderLayer> layer_;
-  float max_width_ = 0;
-  float max_height_ = 0;
+  float max_diameter_ = 0;
   float cursor_x_ = 0;
   float cursor_y_ = 0;
   base::TimeTicks animation_start_time_;

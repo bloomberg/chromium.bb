@@ -18,9 +18,14 @@ const char kTexCoordToViewVert[] =
     "varying vec2 v_texCoord;\n"
     "attribute vec2 a_texCoord;\n"
 
-    // Positions to draw the texture on the texture coordinates.
+    // Position to draw the texture on the canvas.
     "attribute vec2 a_position;\n"
+
+    // Defines the zoom and pan configurations of the canvas.
     "uniform mat3 u_transform;\n"
+
+    // Size of the view in pixel.
+    "uniform vec2 u_viewSize;\n"
 
     // This matrix translates normalized texture coordinates
     // ([0, 1] starting at upper-left corner) to the view coordinates
@@ -31,9 +36,14 @@ const char kTexCoordToViewVert[] =
     "                              -1, 1, 0);\n"
     "void main() {\n"
     "  v_texCoord = a_texCoord;\n"
+
        // Transforms coordinates related to the canvas to coordinates
        // related to the view.
     "  vec3 trans_position = u_transform * vec3(a_position, 1.0);\n"
+
+       // Normalize the position by the size of the view.
+    "  trans_position.xy /= u_viewSize;\n"
+
        // Transforms texture coordinates to view coordinates and adds
        // projection component 1.
     "  gl_Position = vec4(tex_to_view * trans_position, 1.0);\n"
@@ -62,6 +72,7 @@ GlCanvas::GlCanvas(int gl_version) : gl_version_(gl_version) {
   glUseProgram(program_);
 
   transform_location_ = glGetUniformLocation(program_, "u_transform");
+  view_size_location_ = glGetUniformLocation(program_, "u_viewSize");
   texture_location_ = glGetUniformLocation(program_, "u_texture");
   alpha_multiplier_location_ =
       glGetUniformLocation(program_, "u_alpha_multiplier");
@@ -83,7 +94,7 @@ GlCanvas::~GlCanvas() {
   glDeleteShader(fragment_shader_);
 }
 
-void GlCanvas::SetNormalizedTransformation(const std::array<float, 9>& matrix) {
+void GlCanvas::SetTransformationMatrix(const std::array<float, 9>& matrix) {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::array<float, 9> transposed_matrix = matrix;
   TransposeTransformationMatrix(&transposed_matrix);
@@ -92,12 +103,20 @@ void GlCanvas::SetNormalizedTransformation(const std::array<float, 9>& matrix) {
   transformation_set_ = true;
 }
 
+void GlCanvas::SetViewSize(int width, int height) {
+  DCHECK(width > 0 && height > 0);
+  glViewport(0, 0, width, height);
+  float view_size[2] {width, height};
+  glUniform2fv(view_size_location_, 1, view_size);
+  view_size_set_ = true;
+}
+
 void GlCanvas::DrawTexture(int texture_id,
                            GLuint texture_handle,
                            GLuint vertex_buffer,
                            float alpha_multiplier) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!transformation_set_) {
+  if (!view_size_set_ || !transformation_set_) {
     return;
   }
   glActiveTexture(GL_TEXTURE0 + texture_id);
