@@ -40,6 +40,8 @@ class ChromeImpl : public Chrome {
   Status ActivateWebView(const std::string& id) override;
   bool IsMobileEmulationEnabled() const override;
   bool HasTouchScreen() const override;
+  std::string page_load_strategy() const override;
+  void set_page_load_strategy(std::string strategy) override;
   Status Quit() override;
 
  protected:
@@ -55,6 +57,7 @@ class ChromeImpl : public Chrome {
   std::unique_ptr<DevToolsClient> devtools_websocket_client_;
 
  private:
+  std::string page_load_strategy_;
   typedef std::list<linked_ptr<WebViewImpl> > WebViewList;
 
   // Web views in this list are in the same order as they are opened.

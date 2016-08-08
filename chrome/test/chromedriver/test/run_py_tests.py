@@ -557,6 +557,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     alert_button.Click()
     self.assertTrue(self._driver.IsAlertOpen())
 
+  def testPageLoadStrategyIsNormalByDefault(self):
+    self.assertEquals('normal',
+                      self._driver.capabilities['pageLoadStrategy'])
+
   def testClearElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     text = self._driver.ExecuteScript(
@@ -1731,6 +1735,35 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
         mobile_emulation = {'deviceName': 'Google Nexus 5'})
     self.assertIn('hasTouchScreen', driver.capabilities)
     self.assertTrue(driver.capabilities['hasTouchScreen'])
+
+  def testDoesntWaitWhenPageLoadStrategyIsNone(self):
+    class HandleRequest(object):
+      def __init__(self):
+        self.sent_hello = threading.Event()
+
+      def slowPage(self, request):
+        self.sent_hello.wait(2)
+        return {}, """
+        <html>
+        <body>hello</body>
+        </html>"""
+
+    handler = HandleRequest()
+    self._http_server.SetCallbackForPath('/slow', handler.slowPage)
+
+    driver = self.CreateDriver(page_load_strategy='none')
+    self.assertEquals('none', driver.capabilities['pageLoadStrategy'])
+
+    driver.Load(self._http_server.GetUrl() + '/chromedriver/empty.html')
+    driver.Load(self._http_server.GetUrl() + '/slow')
+    self.assertFalse('hello' in driver.GetPageSource())
+    handler.sent_hello.set()
+    self.WaitForCondition(lambda: 'hello' in driver.GetPageSource())
+    self.assertTrue('hello' in driver.GetPageSource())
+
+  def testUnsupportedPageLoadStrategyRaisesException(self):
+    self.assertRaises(chromedriver.UnknownError,
+                      self.CreateDriver, page_load_strategy="unsupported")
 
   def testNetworkConnectionDisabledByDefault(self):
     driver = self.CreateDriver()

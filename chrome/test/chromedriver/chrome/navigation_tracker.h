@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
+#include "chrome/test/chromedriver/chrome/page_load_strategy.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
 namespace base {
@@ -25,14 +26,9 @@ class Status;
 class Timeout;
 
 // Tracks the navigation state of the page.
-class NavigationTracker : public DevToolsEventListener {
+class NavigationTracker : public DevToolsEventListener,
+                          public PageLoadStrategy {
  public:
-  enum LoadingState {
-    kUnknown,
-    kLoading,
-    kNotLoading,
-  };
-
   NavigationTracker(DevToolsClient* client,
                     const BrowserInfo* browser_info,
                     const JavaScriptDialogManager* dialog_manager);
@@ -44,15 +40,15 @@ class NavigationTracker : public DevToolsEventListener {
 
   ~NavigationTracker() override;
 
+  // Overriden from PageLoadStrategy:
   // Gets whether a navigation is pending for the specified frame. |frame_id|
   // may be empty to signify the main frame.
   Status IsPendingNavigation(const std::string& frame_id,
                              const Timeout* timeout,
-                             bool* is_pending);
+                             bool* is_pending) override;
+  void set_timed_out(bool timed_out) override;
 
   Status CheckFunctionExists(const Timeout* timeout, bool* exists);
-
-  void set_timed_out(bool timed_out);
 
   // Overridden from DevToolsEventListener:
   Status OnConnected(DevToolsClient* client) override;

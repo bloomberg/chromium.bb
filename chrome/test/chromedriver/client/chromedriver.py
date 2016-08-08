@@ -72,7 +72,8 @@ class ChromeDriver(object):
                chrome_extensions=None, chrome_log_path=None,
                debugger_address=None, logging_prefs=None,
                mobile_emulation=None, experimental_options=None,
-               download_dir=None, network_connection=None):
+               download_dir=None, page_load_strategy=None,
+               network_connection=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
@@ -143,6 +144,10 @@ class ChromeDriver(object):
         'loggingPrefs': logging_prefs
       }
     }
+
+    if page_load_strategy:
+      assert type(page_load_strategy) is str
+      params['desiredCapabilities']['pageLoadStrategy'] = page_load_strategy
 
     if network_connection:
       params['desiredCapabilities']['networkConnectionEnabled'] = (

@@ -142,6 +142,8 @@ struct Capabilities {
   // If set, enable minidump for chrome crashes and save to this directory.
   std::string minidump_path;
 
+  std::string page_load_strategy;
+
   bool network_emulation_enabled;
 
   PerfLoggingPrefs perf_logging_prefs;

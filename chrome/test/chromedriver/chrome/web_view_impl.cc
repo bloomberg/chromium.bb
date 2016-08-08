@@ -28,6 +28,8 @@
 #include "chrome/test/chromedriver/chrome/mobile_emulation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
 #include "chrome/test/chromedriver/chrome/network_conditions_override_manager.h"
+#include "chrome/test/chromedriver/chrome/non_blocking_navigation_tracker.h"
+#include "chrome/test/chromedriver/chrome/page_load_strategy.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/net/timeout.h"
@@ -123,15 +125,16 @@ const char* GetAsString(KeyEventType type) {
 WebViewImpl::WebViewImpl(const std::string& id,
                          const BrowserInfo* browser_info,
                          std::unique_ptr<DevToolsClient> client,
-                         const DeviceMetrics* device_metrics)
+                         const DeviceMetrics* device_metrics,
+                         std::string page_load_strategy)
     : id_(id),
       browser_info_(browser_info),
       dom_tracker_(new DomTracker(client.get())),
       frame_tracker_(new FrameTracker(client.get())),
       dialog_manager_(new JavaScriptDialogManager(client.get())),
-      navigation_tracker_(new NavigationTracker(client.get(),
-                                                browser_info,
-                                                dialog_manager_.get())),
+      navigation_tracker_(PageLoadStrategy::Create(
+          page_load_strategy, client.get(),
+          browser_info, dialog_manager_.get())),
       mobile_emulation_override_manager_(
           new MobileEmulationOverrideManager(client.get(), device_metrics)),
       geolocation_override_manager_(
@@ -278,8 +281,7 @@ Status WebViewImpl::CallFunction(const std::string& frame,
   std::unique_ptr<base::Value> temp_result;
   Status status = EvaluateScript(frame, expression, &temp_result);
   if (status.IsError())
-    return status;
-
+      return status;
   return internal::ParseCallFunctionResult(*temp_result, result);
 }
 

@@ -10,6 +10,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
+#include "chrome/test/chromedriver/chrome/page_load_strategy.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 #include "chrome/test/chromedriver/net/port_server.h"
@@ -78,7 +79,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
         }
         web_views_.push_back(make_linked_ptr(new WebViewImpl(
             view.id, devtools_http_client_->browser_info(), std::move(client),
-            devtools_http_client_->device_metrics())));
+            devtools_http_client_->device_metrics(), page_load_strategy_)));
       }
     }
   }
@@ -129,6 +130,15 @@ bool ChromeImpl::HasTouchScreen() const {
   return false;
 }
 
+std::string ChromeImpl::page_load_strategy() const {
+  return page_load_strategy_;
+}
+
+void ChromeImpl::set_page_load_strategy(std::string strategy) {
+  // Support for page load strategy already checked when capability is parsed.
+  page_load_strategy_ = strategy;
+}
+
 Status ChromeImpl::Quit() {
   Status status = QuitImpl();
   if (status.IsOk())
@@ -144,6 +154,7 @@ ChromeImpl::ChromeImpl(
     : quit_(false),
       devtools_http_client_(std::move(http_client)),
       devtools_websocket_client_(std::move(websocket_client)),
+      page_load_strategy_(PageLoadStrategy::kNormal),
       port_reservation_(std::move(port_reservation)) {
   devtools_event_listeners_.swap(devtools_event_listeners);
 }

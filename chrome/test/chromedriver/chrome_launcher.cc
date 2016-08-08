@@ -197,7 +197,7 @@ Status WaitForDevToolsAndCheckVersion(
 
   std::unique_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
       address, context_getter, socket_factory, std::move(device_metrics),
-      std::move(window_types)));
+      std::move(window_types), capabilities->page_load_strategy));
   base::TimeTicks deadline =
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(60);
   Status status = client->Init(deadline - base::TimeTicks::Now());
@@ -289,7 +289,7 @@ Status LaunchRemoteChromeSession(
   std::unique_ptr<DevToolsHttpClient> devtools_http_client;
   status = WaitForDevToolsAndCheckVersion(
       capabilities.debugger_address, context_getter, socket_factory,
-      NULL, &devtools_http_client);
+      &capabilities, &devtools_http_client);
   if (status.IsError()) {
     return Status(kUnknownError, "cannot connect to chrome at " +
                       capabilities.debugger_address.ToString(),

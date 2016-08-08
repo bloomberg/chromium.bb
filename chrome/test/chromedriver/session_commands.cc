@@ -97,6 +97,7 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   caps->SetString("version", chrome->GetBrowserInfo()->browser_version);
   caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
   caps->SetString("platform", chrome->GetOperatingSystemName());
+  caps->SetString("pageLoadStrategy", chrome->page_load_strategy());
   caps->SetBoolean("javascriptEnabled", true);
   caps->SetBoolean("takesScreenshot", true);
   caps->SetBoolean("takesHeapSnapshot", true);
@@ -198,6 +199,8 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
                         &session->chrome);
   if (status.IsError())
     return status;
+
+  session->chrome->set_page_load_strategy(capabilities.page_load_strategy);
 
   std::list<std::string> web_view_ids;
   status = session->chrome->GetWebViewIds(&web_view_ids);

@@ -32,6 +32,8 @@ class HeapSnapshotTaker;
 struct KeyEvent;
 struct MouseEvent;
 class NavigationTracker;
+class NonBlockingNavigationTracker;
+class PageLoadStrategy;
 class Status;
 
 class WebViewImpl : public WebView {
@@ -42,7 +44,8 @@ class WebViewImpl : public WebView {
   WebViewImpl(const std::string& id,
               const BrowserInfo* browser_info,
               std::unique_ptr<DevToolsClient> client,
-              const DeviceMetrics* device_metrics);
+              const DeviceMetrics* device_metrics,
+              std::string page_load_strategy);
   ~WebViewImpl() override;
 
   // Overridden from WebView:
@@ -129,7 +132,7 @@ class WebViewImpl : public WebView {
   std::unique_ptr<DomTracker> dom_tracker_;
   std::unique_ptr<FrameTracker> frame_tracker_;
   std::unique_ptr<JavaScriptDialogManager> dialog_manager_;
-  std::unique_ptr<NavigationTracker> navigation_tracker_;
+  std::unique_ptr<PageLoadStrategy> navigation_tracker_;
   std::unique_ptr<MobileEmulationOverrideManager>
       mobile_emulation_override_manager_;
   std::unique_ptr<GeolocationOverrideManager> geolocation_override_manager_;
