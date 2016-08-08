@@ -14,7 +14,7 @@ import android.support.annotation.WorkerThread;
 import android.support.v4.util.AtomicFile;
 import android.text.TextUtils;
 import android.util.Pair;
-import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 
 import org.chromium.base.ContextUtils;
@@ -1014,7 +1014,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private int readSavedStateFile(DataInputStream stream, OnTabStateReadCallback callback,
-            SparseArray<Boolean> tabIds, boolean forMerge) throws IOException {
+            SparseBooleanArray tabIds, boolean forMerge) throws IOException {
         if (stream == null) return 0;
         long time = SystemClock.uptimeMillis();
         int nextId = 0;
@@ -1247,7 +1247,7 @@ public class TabPersistentStore extends TabPersister {
         private final boolean mDeleteAllFiles;
         private String[] mTabFileNames;
         private String[] mThumbnailFileNames;
-        private SparseArray<Boolean> mOtherTabIds;
+        private SparseBooleanArray mOtherTabIds;
         /**
          * Creates a new AsyncTask to delete tab files. If deleteAllFiles is true, all tab files
          * will be deleted regardless of whether they currently belong to a tab model. If it is
@@ -1267,7 +1267,7 @@ public class TabPersistentStore extends TabPersister {
             String thumbnailDirectory = PathUtils.getThumbnailCacheDirectory(mContext);
             mThumbnailFileNames = new File(thumbnailDirectory).list();
 
-            mOtherTabIds = new SparseArray<Boolean>();
+            mOtherTabIds = new SparseBooleanArray();
             if (!mDeleteAllFiles) getTabsFromOtherStateFiles(mOtherTabIds);
             return null;
         }
@@ -1306,16 +1306,16 @@ public class TabPersistentStore extends TabPersister {
 
         private boolean shouldDeleteTabFile(int tabId, TabWindowManager tabWindowManager) {
             return mDeleteAllFiles || (!tabWindowManager.tabExistsInAnySelector(tabId)
-                                              && mOtherTabIds.get(tabId) == null);
+                                              && !mOtherTabIds.get(tabId));
         }
     }
 
     /**
      * Gets the IDs of all tabs in TabModelSelectors other than the currently selected one. IDs for
      * custom tabs are excluded.
-     * @param tabIds SparseArray to populate with TabIds.
+     * @param tabIds SparseBooleanArray to populate with TabIds.
      */
-    private void getTabsFromOtherStateFiles(SparseArray<Boolean> tabIds) {
+    private void getTabsFromOtherStateFiles(SparseBooleanArray tabIds) {
         for (int i = 0; i < TabWindowManager.MAX_SIMULTANEOUS_SELECTORS; i++) {
             // Although we check all selectors before deleting, we can only be sure that our own
             // selector will not go away between now and then. So, we read from disk all other state
