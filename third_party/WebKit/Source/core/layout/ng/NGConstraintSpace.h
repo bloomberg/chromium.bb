@@ -17,10 +17,10 @@ class NGFragment;
 class NGLayoutOpportunityIterator;
 
 enum NGExclusionType {
-    ClearNone = 0,
-    ClearFloatLeft = 1,
-    ClearFloatRight = 2,
-    ClearFragment = 4
+    NGClearNone = 0,
+    NGClearFloatLeft = 1,
+    NGClearFloatRight = 2,
+    NGClearFragment = 4
 };
 
 enum NGFragmentationType {
@@ -102,7 +102,7 @@ public:
     DoublyLinkedList<const NGExclusion> exclusions(unsigned options = 0) const;
 
     NGLayoutOpportunityIterator layoutOpportunities(
-        unsigned clear = ClearNone,
+        unsigned clear = NGClearNone,
         NGExclusionFlowType avoid = ExcludeNone) const;
 
     // Modifies constraint space to account for a placed fragment. Depending on
