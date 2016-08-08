@@ -824,7 +824,7 @@ private:
     bool m_safeToPropagateScrollToParent;
 
     unsigned m_visuallyNonEmptyCharacterCount;
-    unsigned m_visuallyNonEmptyPixelCount;
+    uint64_t m_visuallyNonEmptyPixelCount;
     bool m_isVisuallyNonEmpty;
 
     Member<Node> m_fragmentAnchor;
@@ -952,7 +952,7 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(const IntSize& size)
 {
     if (m_isVisuallyNonEmpty)
         return;
-    m_visuallyNonEmptyPixelCount += size.width() * size.height();
+    m_visuallyNonEmptyPixelCount += size.area();
     // Use a threshold value to prevent very small amounts of visible content from triggering didMeaningfulLayout.
     static const unsigned visualPixelThreshold = 32 * 32;
     if (m_visuallyNonEmptyPixelCount > visualPixelThreshold)
