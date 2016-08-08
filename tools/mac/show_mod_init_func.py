@@ -54,7 +54,7 @@ def GetModuleInitializers(binary):
 def SymbolizeAddresses(binary, addresses):
   """Given a |binary| and a list of |addresses|, symbolizes them using atos.
   """
-  atos = ['atos', '-o', binary] + addresses
+  atos = ['xcrun', 'atos', '-o', binary] + addresses
   lines = subprocess.check_output(atos).strip().split('\n')
   return lines
 
