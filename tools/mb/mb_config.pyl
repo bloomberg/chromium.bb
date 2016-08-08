@@ -7,6 +7,10 @@
   # config names (where each config name is a key in the 'configs' dict,
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
+    'chromeos.chrome': {
+      'amd64-generic Trusty (Informational)': 'cros_chrome_sdk_gn',
+    },
+
     # Take care when changing any of these builders to ensure that you do not
     # include a configuration with 'chrome_with_codecs' since these builders
     # generated publicly advertised non-Official builds which are not allowed
