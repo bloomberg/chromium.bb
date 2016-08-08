@@ -16,7 +16,6 @@
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/blacklist/crashpad_helper.h"
 #include "chrome_elf/chrome_elf_constants.h"
-#include "chrome_elf/chrome_elf_security.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/crash_keys.h"
 
@@ -121,9 +120,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
 #endif
 
     install_static::InitializeProcessType();
-    if (install_static::g_process_type ==
-        install_static::ProcessType::BROWSER_PROCESS)
-      EarlyBrowserSecurity();
 
     __try {
       blacklist::Initialize(false);  // Don't force, abort if beacon is present.

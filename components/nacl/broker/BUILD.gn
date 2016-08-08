@@ -108,7 +108,6 @@ if (current_cpu == "x86") {
       "//chrome:nacl64_exe_version",
       "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
       "//components/nacl/loader:nacl_helper_win_64",
-      "//content/public/common:static_features",
       "//content/public/common:static_switches",
       "//ppapi/proxy:ipc",
       "//sandbox",

@@ -31,7 +31,6 @@
 #include "base/win/windows_version.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -725,10 +724,8 @@ sandbox::ResultCode StartSandboxedProcess(
       sandbox::MITIGATION_IMAGE_LOAD_NO_REMOTE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_LOW_LABEL;
 
-  if (base::FeatureList::IsEnabled(features::kWinSboxDisableExtensionPoints))
-    mitigations |= sandbox::MITIGATION_EXTENSION_POINT_DISABLE;
-
   sandbox::ResultCode result = sandbox::SBOX_ERROR_GENERIC;
+
   result = policy->SetProcessMitigations(mitigations);
 
   if (result != sandbox::SBOX_ALL_OK)
