@@ -57,7 +57,7 @@ def get_device_info(args, failures):
     return {}
 
   with common.temporary_file() as tempfile_path:
-    rc = common.run_command([
+    test_cmd = [
         sys.executable,
         os.path.join(args.paths['checkout'],
                      'third_party',
@@ -69,8 +69,12 @@ def get_device_info(args, failures):
                      'device_status.py'),
         '--json-output', tempfile_path,
         '--blacklist-file', os.path.join(
-            args.paths['checkout'], 'out', 'bad_devices.json')])
+              args.paths['checkout'], 'out', 'bad_devices.json')
+    ]
+    if args.args:
+      test_cmd.extend(args.args)
 
+    rc = common.run_command(test_cmd)
     if rc:
       failures.append('device_status')
       return {}
