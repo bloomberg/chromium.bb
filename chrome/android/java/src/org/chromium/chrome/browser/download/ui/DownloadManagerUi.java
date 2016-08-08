@@ -5,6 +5,11 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,14 +26,20 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
+import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.widget.Toast;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Displays and manages the UI for the download manager.
  */
+
 public class DownloadManagerUi implements OnMenuItemClickListener {
 
     /**
@@ -52,25 +63,31 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         public void onDestroy(DownloadManagerUi manager);
     }
 
+    private static final String TAG = "download_ui";
+
     private final DownloadHistoryAdapter mHistoryAdapter;
     private final FilterAdapter mFilterAdapter;
     private final ObserverList<DownloadUiObserver> mObservers = new ObserverList<>();
 
-    private Activity mActivity;
-    private ViewGroup mMainView;
-    private DownloadManagerToolbar mToolbar;
-    private SpaceDisplay mSpaceDisplay;
-    private ListView mFilterView;
-    private RecyclerView mRecyclerView;
+    private final Activity mActivity;
+    private final ViewGroup mMainView;
+    private final DownloadManagerToolbar mToolbar;
+    private final SpaceDisplay mSpaceDisplay;
+    private final ListView mFilterView;
+    private final RecyclerView mRecyclerView;
+
     private BasicNativePage mNativePage;
 
     public DownloadManagerUi(Activity activity) {
         mActivity = activity;
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
+
         mHistoryAdapter = new DownloadHistoryAdapter();
         mHistoryAdapter.initialize(this);
+
         mFilterAdapter = new FilterAdapter();
         mFilterAdapter.initialize(this);
+
         mToolbar = (DownloadManagerToolbar) mMainView.findViewById(R.id.action_bar);
         mToolbar.initialize(this);
         mToolbar.setOnMenuItemClickListener(this);
@@ -171,6 +188,38 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
      */
     Activity getActivity() {
         return mActivity;
+    }
+
+    /** Called when a particular download item has been clicked. */
+    void onDownloadItemClicked(DownloadItem item) {
+        boolean success = false;
+
+        String mimeType = item.getDownloadInfo().getMimeType();
+        String filePath = item.getDownloadInfo().getFilePath();
+        Uri fileUri = Uri.fromFile(new File(filePath));
+
+        // Check if any apps can open the file.
+        Intent fileIntent = new Intent();
+        fileIntent.setAction(Intent.ACTION_VIEW);
+        fileIntent.setDataAndType(fileUri, mimeType);
+        fileIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        List<ResolveInfo> handlers = ContextUtils.getApplicationContext().getPackageManager()
+                .queryIntentActivities(fileIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        if (handlers.size() > 0) {
+            Intent chooserIntent = Intent.createChooser(fileIntent, null);
+            chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                mActivity.startActivity(chooserIntent);
+                success = true;
+            } catch (ActivityNotFoundException e) {
+                // Can't launch the Intent.
+            }
+        }
+
+        if (!success) {
+            Toast.makeText(mActivity, mActivity.getString(R.string.download_cant_open_file),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     /** Called when the filter has been changed by the user. */

@@ -30,6 +30,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     /** Holds onto a View that displays information about a downloaded file. */
     static class ItemViewHolder extends RecyclerView.ViewHolder {
+        public View mItemView;
         public ImageView mIconView;
         public TextView mFilenameView;
         public TextView mHostnameView;
@@ -37,6 +38,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
         public ItemViewHolder(View itemView) {
             super(itemView);
+            mItemView = itemView;
             mIconView = (ImageView) itemView.findViewById(R.id.icon_view);
             mFilenameView = (TextView) itemView.findViewById(R.id.filename_view);
             mHostnameView = (TextView) itemView.findViewById(R.id.hostname_view);
@@ -53,10 +55,12 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private final List<DownloadItem> mFilteredItems = new ArrayList<>();
 
     private int mFilter = DownloadFilter.FILTER_ALL;
+    private DownloadManagerUi mManager;
 
     @Override
     public void initialize(DownloadManagerUi manager) {
         manager.addObserver(this);
+        mManager = manager;
     }
 
     /** Called when the user's download history has been gathered into a List of DownloadItems. */
@@ -89,14 +93,21 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     @Override
     public void bindViewHolderForTimedItem(ViewHolder current, TimedItem timedItem) {
+        final DownloadItem item = (DownloadItem) timedItem;
+
         ItemViewHolder holder = (ItemViewHolder) current;
         Context context = holder.mFilesizeView.getContext();
-        DownloadItem item = (DownloadItem) timedItem;
         holder.mFilenameView.setText(item.getDownloadInfo().getFileName());
         holder.mHostnameView.setText(
                 UrlUtilities.formatUrlForSecurityDisplay(item.getDownloadInfo().getUrl(), false));
         holder.mFilesizeView.setText(
                 Formatter.formatFileSize(context, item.getDownloadInfo().getContentLength()));
+        holder.mItemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mManager.onDownloadItemClicked(item);
+            }
+        });
 
         // Pick what icon to display for the item.
         int fileType = convertMimeTypeToFilterType(item.getDownloadInfo().getMimeType());
@@ -150,6 +161,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     @Override
     public void onDestroy(DownloadManagerUi manager) {
         manager.removeObserver(this);
+        mManager = null;
     }
 
     /** Filters the list of downloads to show only files of a specific type. */

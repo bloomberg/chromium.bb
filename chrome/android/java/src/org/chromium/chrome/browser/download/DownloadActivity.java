@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 
@@ -38,11 +39,12 @@ public class DownloadActivity extends SnackbarActivity {
 
     /**
      * Convenience method for launching this Activity.
-     * @param context Context to use when starting this Activity.
+     * @param activity Activity that is launching this the Downloads page.
      */
-    public static void launch(Context context) {
+    public static void launch(Activity activity) {
         Intent intent = new Intent();
-        intent.setClass(context, DownloadActivity.class);
-        context.startActivity(intent);
+        intent.setClass(activity, DownloadActivity.class);
+        intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
+        activity.startActivity(intent);
     }
 }

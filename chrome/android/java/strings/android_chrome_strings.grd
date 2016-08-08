@@ -1699,6 +1699,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSED" desc="Download notification to be displayed when a download pauses.">
         Download paused.
       </message>
+      <message name="IDS_DOWNLOAD_CANT_OPEN_FILE" desc="Toast that appears when a downloaded file can't be opened.">
+        Can't open file
+      </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSE_BUTTON" desc="Text on the button that pauses a download.">
         Pause
       </message>
