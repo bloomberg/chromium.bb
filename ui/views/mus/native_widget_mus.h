@@ -232,6 +232,12 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
     return window_tree_host();
   }
 
+  // Returns true if this NativeWidgetMus exists on the window manager side
+  // to provide the frame decorations.
+  bool is_parallel_widget_in_window_manager() {
+    return is_parallel_widget_in_window_manager_;
+  }
+
   void set_last_cursor(ui::mojom::Cursor cursor) { last_cursor_ = cursor; }
   void SetShowState(ui::mojom::ShowState show_state);
 
@@ -248,7 +254,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
-  const ui::mojom::SurfaceType surface_type_;
+  const bool is_parallel_widget_in_window_manager_;
   ui::mojom::ShowState show_state_before_fullscreen_;
 
   // See class documentation for Widget in widget.h for a note about ownership.

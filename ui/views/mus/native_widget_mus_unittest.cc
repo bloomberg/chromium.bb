@@ -9,6 +9,7 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/tests/window_tree_client_private.h"
 #include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -24,6 +25,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -545,6 +547,66 @@ TEST_F(NativeWidgetMusTest, DontShowTwice) {
   // hidden. So, as long as this only invokes aura::Window::Show() once the
   // DCHECK in aura::Window::Show() won't fire.
   widget->Show();
+}
+
+namespace {
+
+// See description of test for details.
+class IsMaximizedObserver : public ui::WindowObserver {
+ public:
+  IsMaximizedObserver() {}
+  ~IsMaximizedObserver() override {}
+
+  void set_widget(Widget* widget) { widget_ = widget; }
+
+  bool got_change() const { return got_change_; }
+
+  // ui::WindowObserver:
+  void OnWindowSharedPropertyChanged(
+      ui::Window* window,
+      const std::string& name,
+      const std::vector<uint8_t>* old_data,
+      const std::vector<uint8_t>* new_data) override {
+    // Expect only one change for the show state.
+    ASSERT_FALSE(got_change_);
+    got_change_ = true;
+    EXPECT_EQ(ui::mojom::WindowManager::kShowState_Property, name);
+    EXPECT_TRUE(widget_->IsMaximized());
+  }
+
+ private:
+  bool got_change_ = false;
+  Widget* widget_ =  nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(IsMaximizedObserver);
+};
+
+}  // namespace
+
+// Verifies that asking for Widget::IsMaximized() from within
+// OnWindowSharedPropertyChanged() returns the right thing.
+TEST_F(NativeWidgetMusTest, IsMaximized) {
+  ASSERT_TRUE(WindowManagerConnection::Exists());
+  ui::Window* window = WindowManagerConnection::Get()->NewWindow(
+      std::map<std::string, std::vector<uint8_t>>());
+  IsMaximizedObserver observer;
+  // NOTE: the order here is important, we purposefully add the
+  // ui::WindowObserver before creating NativeWidgetMus, which also adds its
+  // own observer.
+  window->AddObserver(&observer);
+
+  std::unique_ptr<Widget> widget(new Widget());
+  observer.set_widget(widget.get());
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = initial_bounds();
+  params.native_widget = new NativeWidgetMus(widget.get(), window,
+                                             ui::mojom::SurfaceType::DEFAULT);
+  widget->Init(params);
+  window->SetSharedProperty<int32_t>(
+      ui::mojom::WindowManager::kShowState_Property,
+      static_cast<uint32_t>(ui::mojom::ShowState::MAXIMIZED));
+  EXPECT_TRUE(widget->IsMaximized());
 }
 
 }  // namespace views

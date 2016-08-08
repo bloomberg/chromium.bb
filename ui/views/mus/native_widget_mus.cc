@@ -372,6 +372,17 @@ void OnMoveLoopEnd(bool* out_success,
   quit_closure.Run();
 }
 
+ui::mojom::ShowState GetShowState(const ui::Window* window) {
+  if (!window ||
+      !window->HasSharedProperty(
+          ui::mojom::WindowManager::kShowState_Property)) {
+    return ui::mojom::ShowState::DEFAULT;
+  }
+
+  return static_cast<ui::mojom::ShowState>(window->GetSharedProperty<int32_t>(
+      ui::mojom::WindowManager::kShowState_Property));
+}
+
 }  // namespace
 
 class NativeWidgetMus::MusWindowObserver : public ui::WindowObserver {
@@ -385,8 +396,6 @@ class NativeWidgetMus::MusWindowObserver : public ui::WindowObserver {
   ~MusWindowObserver() override {
     mus_window()->RemoveObserver(this);
   }
-
-  ui::mojom::ShowState show_state() { return show_state_; }
 
   // ui::WindowObserver:
   void OnWindowVisibilityChanging(ui::Window* window) override {
@@ -407,9 +416,7 @@ class NativeWidgetMus::MusWindowObserver : public ui::WindowObserver {
       const std::vector<uint8_t>* new_data) override {
     if (name != ui::mojom::WindowManager::kShowState_Property)
       return;
-    ui::mojom::ShowState show_state =
-        static_cast<ui::mojom::ShowState>(window->GetSharedProperty<int32_t>(
-            ui::mojom::WindowManager::kShowState_Property));
+    const ui::mojom::ShowState show_state = GetShowState(window);
     if (show_state == show_state_)
       return;
     show_state_ = show_state;
@@ -509,7 +516,8 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
     : window_(window),
       last_cursor_(ui::mojom::Cursor::CURSOR_NULL),
       native_widget_delegate_(delegate),
-      surface_type_(surface_type),
+      is_parallel_widget_in_window_manager_(surface_type ==
+                                            ui::mojom::SurfaceType::UNDERLAY),
       show_state_before_fullscreen_(ui::mojom::ShowState::DEFAULT),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       content_(new aura::Window(this)),
@@ -527,7 +535,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
   ui::ContextFactory* default_context_factory =
       aura::Env::GetInstance()->context_factory();
   if (!default_context_factory) {
-    context_factory_.reset(new SurfaceContextFactory(window_, surface_type_));
+    context_factory_.reset(new SurfaceContextFactory(window_, surface_type));
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   }
 
@@ -610,6 +618,9 @@ void NativeWidgetMus::OnActivationChanged(bool active) {
 }
 
 void NativeWidgetMus::UpdateClientArea() {
+  if (is_parallel_widget_in_window_manager())
+    return;
+
   NonClientView* non_client_view =
       native_widget_delegate_->AsWidget()->non_client_view();
   if (!non_client_view || !non_client_view->client_view())
@@ -648,7 +659,7 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
   (*properties)[ui::mojom::WindowManager::kWindowType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
           mojo::ConvertTo<ui::mojom::WindowType>(init_params.type)));
-  if (!init_params.delegate &&
+  if (init_params.delegate &&
       properties->count(ui::mojom::WindowManager::kResizeBehavior_Property) ==
           0) {
     (*properties)[ui::mojom::WindowManager::kResizeBehavior_Property] =
@@ -694,7 +705,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   // TODO(erg): Remove this check when ash/mus/frame/move_event_handler.cc's
   // direct usage of ui::Window::SetPredefinedCursor() is switched to a
   // private method on WindowManagerClient.
-  if (surface_type_ == ui::mojom::SurfaceType::DEFAULT) {
+  if (!is_parallel_widget_in_window_manager()) {
     cursor_manager_.reset(new wm::CursorManager(
         base::WrapUnique(new NativeCursorManagerMus(window_))));
     aura::client::SetCursorClient(hosted_window, cursor_manager_.get());
@@ -834,6 +845,8 @@ ui::InputMethod* NativeWidgetMus::GetInputMethod() {
 }
 
 void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
+  if (is_parallel_widget_in_window_manager())
+    return;
   // TODO(beng): clear user-placed property and set preferred size property.
   window_->SetSharedProperty<gfx::Size>(
       ui::mojom::WindowManager::kPreferredSize_Property, size);
@@ -852,7 +865,7 @@ void NativeWidgetMus::GetWindowPlacement(
 }
 
 bool NativeWidgetMus::SetWindowTitle(const base::string16& title) {
-  if (!window_)
+  if (!window_ || is_parallel_widget_in_window_manager())
     return false;
   const char* kWindowTitle_Property =
       ui::mojom::WindowManager::kWindowTitle_Property;
@@ -868,6 +881,9 @@ bool NativeWidgetMus::SetWindowTitle(const base::string16& title) {
 
 void NativeWidgetMus::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                      const gfx::ImageSkia& app_icon) {
+  if (is_parallel_widget_in_window_manager())
+    return;
+
   const char* const kWindowAppIcon_Property =
       ui::mojom::WindowManager::kWindowAppIcon_Property;
 
@@ -1057,13 +1073,11 @@ void NativeWidgetMus::Minimize() {
 }
 
 bool NativeWidgetMus::IsMaximized() const {
-  return mus_window_observer_ &&
-         mus_window_observer_->show_state() == ui::mojom::ShowState::MAXIMIZED;
+  return GetShowState(window_) == ui::mojom::ShowState::MAXIMIZED;
 }
 
 bool NativeWidgetMus::IsMinimized() const {
-  return mus_window_observer_ &&
-         mus_window_observer_->show_state() == ui::mojom::ShowState::MINIMIZED;
+  return GetShowState(window_) == ui::mojom::ShowState::MINIMIZED;
 }
 
 void NativeWidgetMus::Restore() {
@@ -1074,7 +1088,7 @@ void NativeWidgetMus::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() == fullscreen)
     return;
   if (fullscreen) {
-    show_state_before_fullscreen_ = mus_window_observer_->show_state();
+    show_state_before_fullscreen_ = GetShowState(window_);
     // TODO(markdittmer): Fullscreen not implemented in ui::Window.
   } else {
     switch (show_state_before_fullscreen_) {
@@ -1097,8 +1111,7 @@ void NativeWidgetMus::SetFullscreen(bool fullscreen) {
 }
 
 bool NativeWidgetMus::IsFullscreen() const {
-  return mus_window_observer_ &&
-         mus_window_observer_->show_state() == ui::mojom::ShowState::FULLSCREEN;
+  return GetShowState(window_) == ui::mojom::ShowState::FULLSCREEN;
 }
 
 void NativeWidgetMus::SetOpacity(float opacity) {
@@ -1221,7 +1234,7 @@ bool NativeWidgetMus::IsTranslucentWindowOpacitySupported() const {
 }
 
 void NativeWidgetMus::OnSizeConstraintsChanged() {
-  if (!window_)
+  if (!window_ || is_parallel_widget_in_window_manager())
     return;
 
   window_->SetSharedProperty<int32_t>(
@@ -1411,7 +1424,7 @@ void NativeWidgetMus::OnMusWindowVisibilityChanged(ui::Window* window) {
 void NativeWidgetMus::UpdateHitTestMask() {
   // The window manager (or other underlay window provider) is not allowed to
   // set a hit test mask, as that could interfere with a client app mask.
-  if (surface_type_ == ui::mojom::SurfaceType::UNDERLAY)
+  if (is_parallel_widget_in_window_manager())
     return;
 
   if (!native_widget_delegate_->HasHitTestMask()) {
