@@ -33,32 +33,6 @@ using ntp_snippets::KnownCategories;
 
 namespace {
 
-std::unique_ptr<base::DictionaryValue> PrepareSnippet(
-    const ntp_snippets::NTPSnippet& snippet,
-    int index,
-    bool dismissed) {
-  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-  entry->SetString("snippetId", snippet.id());
-  entry->SetString("title", snippet.title());
-  entry->SetString("siteTitle", snippet.best_source().publisher_name);
-  entry->SetString("snippet", snippet.snippet());
-  entry->SetString("published",
-                   TimeFormatShortDateAndTime(snippet.publish_date()));
-  entry->SetString("expires",
-                   TimeFormatShortDateAndTime(snippet.expiry_date()));
-  entry->SetString("url", snippet.best_source().url.spec());
-  entry->SetString("ampUrl", snippet.best_source().amp_url.spec());
-  entry->SetString("salientImageUrl", snippet.salient_image_url().spec());
-  entry->SetDouble("score", snippet.score());
-
-  if (dismissed)
-    entry->SetString("id", "dismissed-snippet-" + base::IntToString(index));
-  else
-    entry->SetString("id", "snippet-" + base::IntToString(index));
-
-  return entry;
-}
-
 std::unique_ptr<base::DictionaryValue> PrepareSuggestion(
     const ContentSuggestion& suggestion,
     int index) {
@@ -121,22 +95,6 @@ SnippetsInternalsMessageHandler::SnippetsInternalsMessageHandler()
 
 SnippetsInternalsMessageHandler::~SnippetsInternalsMessageHandler() {}
 
-void SnippetsInternalsMessageHandler::OnNewSuggestions() {
-  if (!dom_loaded_)
-    return;
-  SendContentSuggestions();
-}
-
-void SnippetsInternalsMessageHandler::OnCategoryStatusChanged(
-    Category category,
-    CategoryStatus new_status) {
-  if (!dom_loaded_)
-    return;
-  SendContentSuggestions();
-}
-
-void SnippetsInternalsMessageHandler::ContentSuggestionsServiceShutdown() {}
-
 void SnippetsInternalsMessageHandler::RegisterMessages() {
   // additional initialization (web_ui() does not work from the constructor)
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -153,17 +111,8 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "clear", base::Bind(&SnippetsInternalsMessageHandler::HandleClear,
-                          base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
       "download", base::Bind(&SnippetsInternalsMessageHandler::HandleDownload,
                              base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "clearDismissed",
-      base::Bind(&SnippetsInternalsMessageHandler::HandleClearDismissed,
-                 base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "clearCachedSuggestions",
@@ -177,6 +126,22 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
           base::Unretained(this)));
 }
 
+void SnippetsInternalsMessageHandler::OnNewSuggestions() {
+  if (!dom_loaded_)
+    return;
+  SendContentSuggestions();
+}
+
+void SnippetsInternalsMessageHandler::OnCategoryStatusChanged(
+    Category category,
+    CategoryStatus new_status) {
+  if (!dom_loaded_)
+    return;
+  SendContentSuggestions();
+}
+
+void SnippetsInternalsMessageHandler::ContentSuggestionsServiceShutdown() {}
+
 void SnippetsInternalsMessageHandler::HandleRefreshContent(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
@@ -186,20 +151,6 @@ void SnippetsInternalsMessageHandler::HandleRefreshContent(
   SendAllContent();
 }
 
-void SnippetsInternalsMessageHandler::HandleClear(const base::ListValue* args) {
-  DCHECK_EQ(0u, args->GetSize());
-
-  ntp_snippets_service_->ClearCachedSuggestionsForDebugging();
-}
-
-void SnippetsInternalsMessageHandler::HandleClearDismissed(
-    const base::ListValue* args) {
-  DCHECK_EQ(0u, args->GetSize());
-
-  ntp_snippets_service_->ClearDismissedSuggestionsForDebugging();
-  SendDismissedSnippets();
-}
-
 void SnippetsInternalsMessageHandler::HandleDownload(
     const base::ListValue* args) {
   DCHECK_EQ(1u, args->GetSize());
@@ -207,7 +158,7 @@ void SnippetsInternalsMessageHandler::HandleDownload(
   SendString("hosts-status", std::string());
 
   std::string hosts_string;
-  args->GetString(0, &hosts_string);
+  DCHECK(args->GetString(0, &hosts_string));
 
   std::vector<std::string> hosts_vector = base::SplitString(
       hosts_string, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -218,16 +169,28 @@ void SnippetsInternalsMessageHandler::HandleDownload(
 
 void SnippetsInternalsMessageHandler::HandleClearCachedSuggestions(
     const base::ListValue* args) {
-  DCHECK_EQ(0u, args->GetSize());
+  DCHECK_EQ(1u, args->GetSize());
 
-  content_suggestions_service_->ClearCachedSuggestionsForDebugging();
+  int category_id;
+  DCHECK(args->GetInteger(0, &category_id));
+  Category category =
+      content_suggestions_service_->category_factory()->FromIDValue(
+          category_id);
+  content_suggestions_service_->ClearCachedSuggestionsForDebugging(category);
+  SendContentSuggestions();
 }
 
 void SnippetsInternalsMessageHandler::HandleClearDismissedSuggestions(
     const base::ListValue* args) {
-  DCHECK_EQ(0u, args->GetSize());
+  DCHECK_EQ(1u, args->GetSize());
 
-  content_suggestions_service_->ClearDismissedSuggestionsForDebugging();
+  int category_id;
+  DCHECK(args->GetInteger(0, &category_id));
+  Category category =
+      content_suggestions_service_->category_factory()->FromIDValue(
+          category_id);
+  content_suggestions_service_->ClearDismissedSuggestionsForDebugging(category);
+  SendContentSuggestions();
 }
 
 void SnippetsInternalsMessageHandler::SendAllContent() {
@@ -265,41 +228,7 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
       base::StringValue(
           ntp_snippets_service_->snippets_fetcher()->last_json()));
 
-  SendSnippets();
-  SendDismissedSnippets();
   SendContentSuggestions();
-}
-
-void SnippetsInternalsMessageHandler::SendSnippets() {
-  std::unique_ptr<base::ListValue> snippets_list(new base::ListValue);
-
-  int index = 0;
-  for (const std::unique_ptr<ntp_snippets::NTPSnippet>& snippet :
-       ntp_snippets_service_->snippets())
-    snippets_list->Append(PrepareSnippet(*snippet, index++, false));
-
-  base::DictionaryValue result;
-  result.Set("list", std::move(snippets_list));
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.SnippetsInternals.receiveSnippets", result);
-
-  const std::string& status =
-      ntp_snippets_service_->snippets_fetcher()->last_status();
-  if (!status.empty())
-    SendString("hosts-status", "Finished: " + status);
-}
-
-void SnippetsInternalsMessageHandler::SendDismissedSnippets() {
-  std::unique_ptr<base::ListValue> snippets_list(new base::ListValue);
-
-  int index = 0;
-  for (const auto& snippet : ntp_snippets_service_->dismissed_snippets())
-    snippets_list->Append(PrepareSnippet(*snippet, index++, true));
-
-  base::DictionaryValue result;
-  result.Set("list", std::move(snippets_list));
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.SnippetsInternals.receiveDismissedSnippets", result);
 }
 
 void SnippetsInternalsMessageHandler::SendHosts() {
@@ -329,17 +258,30 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
         content_suggestions_service_->GetCategoryStatus(category);
     const std::vector<ContentSuggestion>& suggestions =
         content_suggestions_service_->GetSuggestionsForCategory(category);
+    std::vector<ContentSuggestion> dismissed_suggestions =
+        content_suggestions_service_->GetDismissedSuggestionsForDebugging(
+            category);
 
     std::unique_ptr<base::ListValue> suggestions_list(new base::ListValue);
     for (const ContentSuggestion& suggestion : suggestions) {
       suggestions_list->Append(PrepareSuggestion(suggestion, index++));
     }
 
+    std::unique_ptr<base::ListValue> dismissed_list(new base::ListValue);
+    for (const ContentSuggestion& suggestion : dismissed_suggestions) {
+      dismissed_list->Append(PrepareSuggestion(suggestion, index++));
+    }
+
     std::unique_ptr<base::DictionaryValue> category_entry(
         new base::DictionaryValue);
+    category_entry->SetInteger("categoryId", category.id());
+    category_entry->SetString(
+        "dismissedContainerId",
+        "dismissed-suggestions-" + base::IntToString(category.id()));
     category_entry->SetString("title", GetCategoryTitle(category));
     category_entry->SetString("status", GetCategoryStatusName(status));
     category_entry->Set("suggestions", std::move(suggestions_list));
+    category_entry->Set("dismissedSuggestions", std::move(dismissed_list));
     categories_list->Append(std::move(category_entry));
   }
 

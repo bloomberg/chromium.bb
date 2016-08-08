@@ -105,17 +105,31 @@ class ContentSuggestionsService : public KeyedService,
 
   // Only for debugging use through the internals page.
   // Removes all suggestions from all caches or internal stores in all
-  // providers. It does, however, not remove any suggestions from the provider's
-  // sources, so if their configuration hasn't changed, they should return the
-  // same results when they fetch the next time. In particular, calling this
-  // method will not mark any suggestions as dismissed.
-  void ClearCachedSuggestionsForDebugging();
+  // providers. See |ClearCachedSuggestionsForDebugging|.
+  void ClearAllCachedSuggestionsForDebugging();
+
+  // Only for debugging use through the internals page.
+  // Removes all suggestions of the given |category| from all caches or internal
+  // stores in the service and the corresponding provider. It does, however, not
+  // remove any suggestions from the provider's sources, so if its configuration
+  // hasn't changed, it might return the same results when it fetches the next
+  // time. In particular, calling this method will not mark any suggestions as
+  // dismissed.
+  void ClearCachedSuggestionsForDebugging(Category category);
+
+  // Only for debugging use through the internals page.
+  // Retrieves suggestions of the given |category| that have previously been
+  // dismissed and are still stored in the respective provider. If the
+  // provider doesn't store dismissed suggestions, this returns an empty vector.
+  std::vector<ContentSuggestion> GetDismissedSuggestionsForDebugging(
+      Category category);
 
   // Only for debugging use through the internals page. Some providers
   // internally store a list of dismissed suggestions to prevent them from
-  // reappearing. This function clears all such lists in all providers, making
-  // dismissed suggestions reappear (only for certain providers).
-  void ClearDismissedSuggestionsForDebugging();
+  // reappearing. This function clears all suggestions of the given |category|
+  // from such lists, making dismissed suggestions reappear (if the provider
+  // supports it).
+  void ClearDismissedSuggestionsForDebugging(Category category);
 
   CategoryFactory* category_factory() { return &category_factory_; }
 

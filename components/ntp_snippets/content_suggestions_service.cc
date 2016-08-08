@@ -79,19 +79,42 @@ void ContentSuggestionsService::FetchSuggestionImage(
                                                          callback);
 }
 
-void ContentSuggestionsService::ClearCachedSuggestionsForDebugging() {
+void ContentSuggestionsService::ClearAllCachedSuggestionsForDebugging() {
   suggestions_by_category_.clear();
   id_category_map_.clear();
-  for (auto& category_provider_pair : providers_by_category_) {
-    category_provider_pair.second->ClearCachedSuggestionsForDebugging();
+  for (const auto& category_provider_pair : providers_by_category_) {
+    category_provider_pair.second->ClearCachedSuggestionsForDebugging(
+        category_provider_pair.first);
   }
   FOR_EACH_OBSERVER(Observer, observers_, OnNewSuggestions());
 }
 
-void ContentSuggestionsService::ClearDismissedSuggestionsForDebugging() {
-  for (auto& category_provider_pair : providers_by_category_) {
-    category_provider_pair.second->ClearDismissedSuggestionsForDebugging();
+void ContentSuggestionsService::ClearCachedSuggestionsForDebugging(
+    Category category) {
+  for (const ContentSuggestion& suggestion :
+       suggestions_by_category_[category]) {
+    id_category_map_.erase(suggestion.id());
   }
+  suggestions_by_category_[category].clear();
+  auto iterator = providers_by_category_.find(category);
+  if (iterator != providers_by_category_.end())
+    iterator->second->ClearCachedSuggestionsForDebugging(category);
+}
+
+std::vector<ContentSuggestion>
+ContentSuggestionsService::GetDismissedSuggestionsForDebugging(
+    Category category) {
+  auto iterator = providers_by_category_.find(category);
+  if (iterator == providers_by_category_.end())
+    return std::vector<ContentSuggestion>();
+  return iterator->second->GetDismissedSuggestionsForDebugging(category);
+}
+
+void ContentSuggestionsService::ClearDismissedSuggestionsForDebugging(
+    Category category) {
+  auto iterator = providers_by_category_.find(category);
+  if (iterator != providers_by_category_.end())
+    iterator->second->ClearDismissedSuggestionsForDebugging(category);
 }
 
 void ContentSuggestionsService::DismissSuggestion(

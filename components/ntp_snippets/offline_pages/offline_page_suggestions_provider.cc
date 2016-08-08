@@ -49,6 +49,7 @@ std::vector<Category> OfflinePageSuggestionsProvider::GetProvidedCategories() {
 
 CategoryStatus OfflinePageSuggestionsProvider::GetCategoryStatus(
     Category category) {
+  DCHECK_EQ(category, provided_category_);
   return category_status_;
 }
 
@@ -67,11 +68,23 @@ void OfflinePageSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
 }
 
-void OfflinePageSuggestionsProvider::ClearCachedSuggestionsForDebugging() {
+void OfflinePageSuggestionsProvider::ClearCachedSuggestionsForDebugging(
+    Category category) {
+  DCHECK_EQ(category, provided_category_);
   // Ignored.
 }
 
-void OfflinePageSuggestionsProvider::ClearDismissedSuggestionsForDebugging() {
+std::vector<ContentSuggestion>
+OfflinePageSuggestionsProvider::GetDismissedSuggestionsForDebugging(
+    Category category) {
+  DCHECK_EQ(category, provided_category_);
+  // TODO(pke): Implement when dismissed suggestions are supported.
+  return std::vector<ContentSuggestion>();
+}
+
+void OfflinePageSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
+    Category category) {
+  DCHECK_EQ(category, provided_category_);
   // TODO(pke): Implement when dismissed suggestions are supported.
 }
 

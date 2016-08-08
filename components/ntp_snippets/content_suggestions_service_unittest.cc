@@ -80,8 +80,10 @@ class MockProvider : public ContentSuggestionsProvider {
     observer()->OnCategoryStatusChanged(this, category, new_status);
   }
 
-  MOCK_METHOD0(ClearCachedSuggestionsForDebugging, void());
-  MOCK_METHOD0(ClearDismissedSuggestionsForDebugging, void());
+  MOCK_METHOD1(ClearCachedSuggestionsForDebugging, void(Category category));
+  MOCK_METHOD1(GetDismissedSuggestionsForDebugging,
+               std::vector<ContentSuggestion>(Category category));
+  MOCK_METHOD1(ClearDismissedSuggestionsForDebugging, void(Category category));
   MOCK_METHOD1(DismissSuggestion, void(const std::string& suggestion_id));
   MOCK_METHOD2(FetchSuggestionImage,
                void(const std::string& suggestion_id,
