@@ -3,19 +3,38 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v4.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
 
-    <!-- MAIN CONTENT -->
+    <LinearLayout
+        android:id="@+id/drawer_layout"
+        android:layout_width="256dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#ffffff"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/drawer_margin_large" >
+
+        <include layout="@layout/download_manager_ui_space_widget" />
+
+        <ListView
+            android:id="@+id/section_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="@null"
+            android:dividerHeight="0dp" />
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#ffffff"
         android:orientation="vertical" >
-        
+
         <org.chromium.chrome.browser.download.ui.DownloadManagerToolbar
             android:id="@id/action_bar"
             android:layout_width="match_parent"
@@ -27,36 +46,12 @@
             android:layout_width="match_parent"
             android:layout_height="10dp"
             android:layout_marginBottom="-10dp" />
-    
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
-
     </LinearLayout>
 
-    <!-- NAVIGATION DRAWER
-         We can't assign a paddingStart or paddingEnd because the section highlights are full-bleed.
-    -->
-    <LinearLayout
-        android:id="@+id/drawer_layout"
-        android:layout_width="@dimen/drawer_width"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:paddingTop="@dimen/drawer_margin_large"
-        android:orientation="vertical"
-        android:background="#ffffff" >
-
-        <include layout="@layout/download_manager_ui_space_widget"/>
-
-        <ListView
-            android:id="@+id/section_list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:divider="@null"
-            android:dividerHeight="0dp" />
-    </LinearLayout>
-
-</android.support.v4.widget.DrawerLayout>
+</LinearLayout>

@@ -23,6 +23,9 @@ public class UrlConstants {
     public static final String
             BOOKMARKS_UNCATEGORIZED_URL = "chrome-native://bookmarks/uncategorized/";
     public static final String BOOKMARKS_HOST = "bookmarks";
+    public static final String DOWNLOADS_URL = "chrome-native://downloads/";
+    public static final String DOWNLOADS_FILTER_URL = "chrome-native://downloads/filter/";
+    public static final String DOWNLOADS_HOST = "downloads";
     public static final String RECENT_TABS_URL = "chrome-native://recent-tabs/";
     public static final String RECENT_TABS_HOST = "recent-tabs";
     public static final String HISTORY_URL = "chrome://history/";

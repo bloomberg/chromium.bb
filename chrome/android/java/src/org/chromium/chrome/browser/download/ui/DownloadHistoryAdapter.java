@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
+import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 /** Bridges the user's download history and the UI used to display it. */
-public class DownloadHistoryAdapter extends DateDividedAdapter {
+public class DownloadHistoryAdapter extends DateDividedAdapter implements DownloadUiObserver {
 
     /** Holds onto a View that displays information about a downloaded file. */
     static class ItemViewHolder extends RecyclerView.ViewHolder {
@@ -43,14 +44,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter {
         }
     }
 
-    static final int FILTER_ALL = 0;
-    static final int FILTER_PAGE = 1;
-    static final int FILTER_VIDEO = 2;
-    static final int FILTER_AUDIO = 3;
-    static final int FILTER_IMAGE = 4;
-    static final int FILTER_DOCUMENT = 5;
-    static final int FILTER_OTHER = 6;
-
     private static final String MIMETYPE_VIDEO = "video";
     private static final String MIMETYPE_AUDIO = "audio";
     private static final String MIMETYPE_IMAGE = "image";
@@ -59,30 +52,18 @@ public class DownloadHistoryAdapter extends DateDividedAdapter {
     private final List<DownloadItem> mAllItems = new ArrayList<>();
     private final List<DownloadItem> mFilteredItems = new ArrayList<>();
 
-    private int mFilter = FILTER_ALL;
+    private int mFilter = DownloadFilter.FILTER_ALL;
+
+    @Override
+    public void initialize(DownloadManagerUi manager) {
+        manager.addObserver(this);
+    }
 
     /** Called when the user's download history has been gathered into a List of DownloadItems. */
     public void onAllDownloadsRetrieved(List<DownloadItem> list) {
         mAllItems.clear();
         mAllItems.addAll(list);
-        filter(FILTER_ALL);
-    }
-
-    /** Filters the list of downloads to show only files of a specific type. */
-    public void filter(int filterType) {
-        mFilter = filterType;
-        mFilteredItems.clear();
-        if (filterType == FILTER_ALL) {
-            mFilteredItems.addAll(mAllItems);
-        } else {
-            for (int i = 0; i < mAllItems.size(); i++) {
-                int currentFiletype =
-                        convertMimeTypeToFileType(mAllItems.get(i).getDownloadInfo().getMimeType());
-                if (currentFiletype == filterType) mFilteredItems.add(mAllItems.get(i));
-            }
-        }
-
-        loadItems(mFilteredItems);
+        filter(DownloadFilter.FILTER_ALL);
     }
 
     /** Returns the total size of all the downloaded items. */
@@ -118,22 +99,22 @@ public class DownloadHistoryAdapter extends DateDividedAdapter {
                 Formatter.formatFileSize(context, item.getDownloadInfo().getContentLength()));
 
         // Pick what icon to display for the item.
-        int fileType = convertMimeTypeToFileType(item.getDownloadInfo().getMimeType());
+        int fileType = convertMimeTypeToFilterType(item.getDownloadInfo().getMimeType());
         int iconResource = R.drawable.ic_drive_file_white_24dp;
         switch (fileType) {
-            case FILTER_PAGE:
+            case DownloadFilter.FILTER_PAGE:
                 iconResource = R.drawable.ic_drive_site_white_24dp;
                 break;
-            case FILTER_VIDEO:
+            case DownloadFilter.FILTER_VIDEO:
                 iconResource = R.drawable.ic_play_arrow_white_24dp;
                 break;
-            case FILTER_AUDIO:
+            case DownloadFilter.FILTER_AUDIO:
                 iconResource = R.drawable.ic_music_note_white_24dp;
                 break;
-            case FILTER_IMAGE:
+            case DownloadFilter.FILTER_IMAGE:
                 iconResource = R.drawable.ic_image_white_24dp;
                 break;
-            case FILTER_DOCUMENT:
+            case DownloadFilter.FILTER_DOCUMENT:
                 iconResource = R.drawable.ic_drive_text_white_24dp;
                 break;
             default:
@@ -161,23 +142,50 @@ public class DownloadHistoryAdapter extends DateDividedAdapter {
         filter(mFilter);
     }
 
+    @Override
+    public void onFilterChanged(int filter) {
+        filter(filter);
+    }
+
+    @Override
+    public void onDestroy(DownloadManagerUi manager) {
+        manager.removeObserver(this);
+    }
+
+    /** Filters the list of downloads to show only files of a specific type. */
+    private void filter(int filterType) {
+        mFilter = filterType;
+        mFilteredItems.clear();
+        if (filterType == DownloadFilter.FILTER_ALL) {
+            mFilteredItems.addAll(mAllItems);
+        } else {
+            for (int i = 0; i < mAllItems.size(); i++) {
+                int currentFiletype = convertMimeTypeToFilterType(
+                        mAllItems.get(i).getDownloadInfo().getMimeType());
+                if (currentFiletype == filterType) mFilteredItems.add(mAllItems.get(i));
+            }
+        }
+
+        loadItems(mFilteredItems);
+    }
+
     /** Identifies the type of file represented by the given MIME type string. */
-    private static int convertMimeTypeToFileType(String mimeType) {
-        if (TextUtils.isEmpty(mimeType)) return FILTER_OTHER;
+    private static int convertMimeTypeToFilterType(String mimeType) {
+        if (TextUtils.isEmpty(mimeType)) return DownloadFilter.FILTER_OTHER;
 
         String[] pieces = mimeType.toLowerCase(Locale.getDefault()).split("/");
-        if (pieces.length != 2) return FILTER_OTHER;
+        if (pieces.length != 2) return DownloadFilter.FILTER_OTHER;
 
         if (MIMETYPE_VIDEO.equals(pieces[0])) {
-            return FILTER_VIDEO;
+            return DownloadFilter.FILTER_VIDEO;
         } else if (MIMETYPE_AUDIO.equals(pieces[0])) {
-            return FILTER_AUDIO;
+            return DownloadFilter.FILTER_AUDIO;
         } else if (MIMETYPE_IMAGE.equals(pieces[0])) {
-            return FILTER_IMAGE;
+            return DownloadFilter.FILTER_IMAGE;
         } else if (MIMETYPE_DOCUMENT.equals(pieces[0])) {
-            return FILTER_DOCUMENT;
+            return DownloadFilter.FILTER_DOCUMENT;
         } else {
-            return FILTER_OTHER;
+            return DownloadFilter.FILTER_OTHER;
         }
     }
 }

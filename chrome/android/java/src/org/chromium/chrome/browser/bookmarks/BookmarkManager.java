@@ -17,6 +17,7 @@ import android.widget.ViewSwitcher;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
@@ -47,7 +48,7 @@ public class BookmarkManager implements BookmarkDelegate {
     private final ObserverList<BookmarkUIObserver> mUIObservers =
             new ObserverList<BookmarkUIObserver>();
     private Set<BookmarkId> mSelectedBookmarks = new HashSet<>();
-    private BookmarkStateChangeListener mUrlChangeListener;
+    private BasicNativePage mNativePage;
     private BookmarkContentView mContentView;
     private BookmarkSearchView mSearchView;
     private ViewSwitcher mViewSwitcher;
@@ -195,8 +196,8 @@ public class BookmarkManager implements BookmarkDelegate {
     /**
      * Sets the listener that reacts upon the change of the UI state of bookmark manager.
      */
-    public void setUrlChangeListener(BookmarkStateChangeListener urlListner) {
-        mUrlChangeListener = urlListner;
+    public void setBasicNativePage(BasicNativePage nativePage) {
+        mNativePage = nativePage;
     }
 
     /**
@@ -245,7 +246,7 @@ public class BookmarkManager implements BookmarkDelegate {
      * <p>
      * If the given state is not valid, all_bookmark state will be shown. Afterwards, this method
      * checks the current state: if currently in loading state, it pops it out and adds the new
-     * state to the back stack. It also notifies the {@link #mUrlChangeListener} (if any) that the
+     * state to the back stack. It also notifies the {@link #mNativePage} (if any) that the
      * url has changed.
      * <p>
      * Also note that even if we store states to {@link #mStateStack}, on tablet the back navigation
@@ -271,8 +272,8 @@ public class BookmarkManager implements BookmarkDelegate {
             // Loading state may be pushed to the stack but should never be stored in preferences.
             BookmarkUtils.setLastUsedUrl(mActivity, state.mUrl);
             // If a loading state is replaced by another loading state, do not notify this change.
-            if (mUrlChangeListener != null) {
-                mUrlChangeListener.onBookmarkUIStateChange(state.mUrl);
+            if (mNativePage != null) {
+                mNativePage.onStateChange(state.mUrl);
             }
         }
 

@@ -7,27 +7,22 @@ package org.chromium.chrome.browser.download;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
-import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadManagerUiDelegate;
 
 /**
  * Activity for managing downloads handled through Chrome.
  */
-public class DownloadActivity extends SnackbarActivity implements DownloadManagerUiDelegate {
+public class DownloadActivity extends SnackbarActivity {
     private DownloadManagerUi mDownloadManagerUi;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mDownloadManagerUi =
-                (DownloadManagerUi) LayoutInflater.from(this).inflate(R.layout.download_main, null);
-        mDownloadManagerUi.initialize(this, this);
-        setContentView(mDownloadManagerUi);
+        mDownloadManagerUi = new DownloadManagerUi(this);
+        setContentView(mDownloadManagerUi.getView());
     }
 
     @Override
@@ -36,8 +31,9 @@ public class DownloadActivity extends SnackbarActivity implements DownloadManage
     }
 
     @Override
-    public void onCloseButtonClicked(DownloadManagerUi ui) {
-        finish();
+    protected void onDestroy() {
+        mDownloadManagerUi.onDestroyed();
+        super.onDestroy();
     }
 
     /**

@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkPage;
+import org.chromium.chrome.browser.download.DownloadPage;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebDiagnosticsPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -40,6 +41,10 @@ public class NativePageFactory {
             return new BookmarkPage(activity, tab);
         }
 
+        protected NativePage buildDownloadsPage(Activity activity, Tab tab) {
+            return new DownloadPage(activity, tab);
+        }
+
         protected NativePage buildRecentTabsPage(Activity activity, Tab tab) {
             RecentTabsManager recentTabsManager =
                     new RecentTabsManager(tab, tab.getProfile(), activity);
@@ -52,7 +57,7 @@ public class NativePageFactory {
     }
 
     enum NativePageType {
-        NONE, CANDIDATE, NTP, BOOKMARKS, RECENT_TABS, PHYSICAL_WEB
+        NONE, CANDIDATE, NTP, BOOKMARKS, RECENT_TABS, PHYSICAL_WEB, DOWNLOADS,
     }
 
     private static NativePageType nativePageType(String url, NativePage candidatePage,
@@ -73,6 +78,8 @@ public class NativePageFactory {
             return NativePageType.NTP;
         } else if (UrlConstants.BOOKMARKS_HOST.equals(host)) {
             return NativePageType.BOOKMARKS;
+        } else if (UrlConstants.DOWNLOADS_HOST.equals(host)) {
+            return NativePageType.DOWNLOADS;
         } else if (UrlConstants.RECENT_TABS_HOST.equals(host) && !isIncognito) {
             return NativePageType.RECENT_TABS;
         } else if (UrlConstants.PHYSICAL_WEB_HOST.equals(host)) {
@@ -121,6 +128,9 @@ public class NativePageFactory {
                 break;
             case BOOKMARKS:
                 page = sNativePageBuilder.buildBookmarksPage(activity, tab);
+                break;
+            case DOWNLOADS:
+                page = sNativePageBuilder.buildDownloadsPage(activity, tab);
                 break;
             case RECENT_TABS:
                 page = sNativePageBuilder.buildRecentTabsPage(activity, tab);

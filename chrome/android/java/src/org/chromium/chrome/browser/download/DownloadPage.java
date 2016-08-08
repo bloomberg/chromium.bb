@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.bookmarks;
+package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
 import android.view.View;
@@ -10,13 +10,14 @@ import android.view.View;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
- * A native page holding a {@link BookmarkManager} on _tablet_.
+ * Native page for managing downloads handled through Chrome.
  */
-public class BookmarkPage extends BasicNativePage {
-    private BookmarkManager mManager;
+public class DownloadPage extends BasicNativePage {
+    private DownloadManagerUi mManager;
     private String mTitle;
 
     /**
@@ -24,15 +25,15 @@ public class BookmarkPage extends BasicNativePage {
      * @param activity The activity to get context and manage fragments.
      * @param tab The tab to load urls.
      */
-    public BookmarkPage(Activity activity, Tab tab) {
+    public DownloadPage(Activity activity, Tab tab) {
         super(activity, tab);
     }
 
     @Override
     protected void initialize(Activity activity) {
-        mManager = new BookmarkManager(activity, false);
+        mManager = new DownloadManagerUi(activity);
         mManager.setBasicNativePage(this);
-        mTitle = activity.getString(R.string.bookmarks);
+        mTitle = activity.getString(R.string.download_manager_ui_all_downloads);
     }
 
     @Override
@@ -47,7 +48,7 @@ public class BookmarkPage extends BasicNativePage {
 
     @Override
     public String getHost() {
-        return UrlConstants.BOOKMARKS_HOST;
+        return UrlConstants.DOWNLOADS_HOST;
     }
 
     @Override
@@ -58,7 +59,7 @@ public class BookmarkPage extends BasicNativePage {
 
     @Override
     public void destroy() {
-        mManager.destroy();
+        mManager.onDestroyed();
         mManager = null;
         super.destroy();
     }
