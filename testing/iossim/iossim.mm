@@ -84,6 +84,10 @@ void LogError(NSString* format, ...) {
   [_task setStandardError:error];
 }
 
+- (void)runWithoutWait {
+  [_task launch];
+}
+
 - (void)run {
   [_task launch];
   [_task waitUntilExit];
@@ -204,11 +208,11 @@ void KillSimulator() {
   [task run];
 }
 
-void RunApplication(NSString* app_path,
-                    NSString* xctest_path,
-                    NSString* udid,
-                    NSMutableDictionary* app_env,
-                    NSString* cmd_args) {
+int RunApplication(NSString* app_path,
+                   NSString* xctest_path,
+                   NSString* udid,
+                   NSMutableDictionary* app_env,
+                   NSString* cmd_args) {
   NSString* tempFilePath = [NSTemporaryDirectory()
       stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]];
   [[NSFileManager defaultManager] createFileAtPath:tempFilePath
@@ -253,6 +257,39 @@ void RunApplication(NSString* app_path,
                     format:NSPropertyListXMLFormat_v1_0
           errorDescription:&error];
   [data writeToFile:tempFilePath atomically:YES];
+
+  // Tail the simulator system.log to grab the exit code.
+  NSString* path = [NSString
+      stringWithFormat:@"~/Library/Logs/CoreSimulator/%@/system.log", udid];
+  path = ResolvePath(path);
+  XCRunTask* retcode_task = [[[XCRunTask alloc]
+      initWithArguments:@[ @"tail", @"-n0", @"-f", path ]] autorelease];
+  NSPipe* stdout_pipe = [NSPipe pipe];
+  __block int ret_code = kExitSuccess;
+  NSError* regerror = NULL;
+  NSString* pattern = @"com\\.apple\\.CoreSimulator\\.SimDevice.*Service "
+                      @"exited .*\\: (\\d+)";
+  NSRegularExpression* regex =
+      [NSRegularExpression regularExpressionWithPattern:pattern
+                                                options:0
+                                                  error:&regerror];
+  stdout_pipe.fileHandleForReading.readabilityHandler =
+      ^(NSFileHandle* handle) {
+        NSString* log =
+            [[[NSString alloc] initWithData:handle.availableData
+                                   encoding:NSUTF8StringEncoding] autorelease];
+        NSArray* matches = [regex matchesInString:log
+                                          options:0
+                                            range:NSMakeRange(0, [log length])];
+        for (NSTextCheckingResult* match in matches) {
+          NSRange matchRange = [match rangeAtIndex:1];
+          NSString* matchText = [log substringWithRange:matchRange];
+          ret_code = [matchText intValue];
+        }
+      };
+  [retcode_task setStandardOutput:stdout_pipe];
+  [retcode_task runWithoutWait];
+
   XCRunTask* task = [[[XCRunTask alloc] initWithArguments:@[
     @"xcodebuild", @"-xctestrun", tempFilePath, @"-destination",
     [@"platform=iOS Simulator,id=" stringByAppendingString:udid],
@@ -281,9 +318,14 @@ void RunApplication(NSString* app_path,
     [task setStandardError:stderr_pipe];
   }
   [task run];
+  // Sleep 2 seconds to give |retcode_task| a moment to catch any crash logs.
+  [NSThread sleepForTimeInterval:2];
+  return ret_code;
 }
 
 int main(int argc, char* const argv[]) {
+  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
   NSString* app_path = nil;
   NSString* xctest_path = nil;
   NSString* cmd_args = nil;
@@ -393,9 +435,10 @@ int main(int argc, char* const argv[]) {
     exit(kExitInvalidArguments);
   }
 
-  RunApplication(app_path, xctest_path, udid, app_env, cmd_args);
+  int ret_code = RunApplication(app_path, xctest_path, udid, app_env, cmd_args);
   KillSimulator();
-  return kExitSuccess;
+  [pool drain];
+  return ret_code;
 }
 #else
 #import <Appkit/Appkit.h>
