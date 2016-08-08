@@ -22,6 +22,9 @@ typedef base::Callback<void(std::unique_ptr<V4Store>)>
 // hash).
 typedef size_t PrefixSize;
 
+// A hash prefix sent by the SafeBrowsing PVer4 service.
+typedef std::string HashPrefix;
+
 // The sorted list of hash prefixes.
 typedef std::string HashPrefixes;
 
@@ -34,6 +37,9 @@ typedef base::hash_map<PrefixSize, HashPrefixes> HashPrefixMap;
 // For instance: {4:iter(3), 5:iter(1)} means that we have already merged
 // 3 hash prefixes of length 4, and 1 hash prefix of length 5.
 typedef base::hash_map<PrefixSize, HashPrefixes::const_iterator> IteratorMap;
+
+// A full SHA256 hash.
+typedef HashPrefix FullHash;
 
 // Enumerate different failure events while parsing the file read from disk for
 // histogramming purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
