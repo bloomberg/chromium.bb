@@ -150,11 +150,7 @@ NSString* ColumnIdentifier(int id) {
   // Sort.
   [self sortShuffleArray];
 
-  // Clear the selection and reload the NSTableView. Note that it is important
-  // to clear the selection before reloading the data, and to reload the
-  // selection after reloading the data, because otherwise the table will adjust
-  // the selection in ways that are not desirable.
-  [tableView_ deselectAll:nil];
+  // Reload the data.
   [tableView_ reloadData];
 
   // Reload the selection.
