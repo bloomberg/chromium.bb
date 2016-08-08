@@ -218,9 +218,6 @@ const char kDisableDeviceDiscoveryNotifications[] =
 // Disables Domain Reliability Monitoring.
 const char kDisableDomainReliability[]      = "disable-domain-reliability";
 
-// Disable download notification.
-const char kDisableDownloadNotification[] = "disable-download-notification";
-
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 

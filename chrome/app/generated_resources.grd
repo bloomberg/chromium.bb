@@ -5865,12 +5865,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Allow a download button to show up when opening a page with media url.
         </message>
       </if>
-      <message name="IDS_FLAGS_DOWNLOAD_NOTIFICATION_NAME" desc="Title for the flag to enable experimental download notification feature.">
-        Download Status in Notification Center
-      </message>
-      <message name="IDS_FLAGS_DOWNLOAD_NOTIFICATION_DESCRIPTION" desc="Description for the flag to enable experimental download notification feature.">
-        Download status is displayed as a notification, instead of an item in download bar.
-      </message>
       <message name="IDS_FLAGS_SOFTWARE_RASTERIZER_NAME" desc="Title for the flag for using a software rasterizer.">
         3D software rasterizer
       </message>

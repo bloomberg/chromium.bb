@@ -16,8 +16,6 @@ class DownloadNotificationManagerForProfile;
 
 class DownloadNotificationManager : public DownloadUIController::Delegate {
  public:
-  static bool IsEnabled();
-
   explicit DownloadNotificationManager(Profile* profile);
   ~DownloadNotificationManager() override;
 

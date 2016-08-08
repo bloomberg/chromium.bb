@@ -893,11 +893,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MEDIA_DOCUMENT_DOWNLOAD_BUTTON_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kMediaDocumentDownloadButton)},
 #endif
-#if defined(OS_CHROMEOS)
-    {"download-notification", IDS_FLAGS_DOWNLOAD_NOTIFICATION_NAME,
-     IDS_FLAGS_DOWNLOAD_NOTIFICATION_DESCRIPTION, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableDownloadNotification)},
-#endif
 #if defined(ENABLE_PLUGINS)
     {"allow-nacl-socket-api", IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME,
      IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION, kOsDesktop,

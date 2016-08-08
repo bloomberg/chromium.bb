@@ -26,11 +26,6 @@
 // DownloadNotificationManager implementation:
 ///////////////////////////////////////////////////////////////////////////////
 
-bool DownloadNotificationManager::IsEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDownloadNotification);
-}
-
 DownloadNotificationManager::DownloadNotificationManager(Profile* profile)
     : main_profile_(profile),
       items_deleter_(&manager_for_profile_) {

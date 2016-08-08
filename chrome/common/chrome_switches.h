@@ -73,7 +73,6 @@ extern const char kDisableComponentUpdate[];
 extern const char kDisableDefaultApps[];
 extern const char kDisableDeviceDiscoveryNotifications[];
 extern const char kDisableDomainReliability[];
-extern const char kDisableDownloadNotification[];
 extern const char kDisableExtensions[];
 extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensionsHttpThrottling[];

@@ -121,15 +121,14 @@ DownloadUIController::DownloadUIController(content::DownloadManager* manager,
 #if defined(OS_ANDROID)
   if (!delegate_)
     delegate_.reset(new AndroidUIControllerDelegate());
-#else
-#if defined(OS_CHROMEOS)
-  if (!delegate_ && DownloadNotificationManager::IsEnabled()) {
+#elif defined(OS_CHROMEOS)
+  if (!delegate_) {
     // The Profile is guaranteed to be valid since DownloadUIController is owned
     // by DownloadService, which in turn is a profile keyed service.
     delegate_.reset(new DownloadNotificationManager(
         Profile::FromBrowserContext(manager->GetBrowserContext())));
   }
-#endif  // defined(OS_CHROMEOS)
+#else  // defined(OS_CHROMEOS)
   if (!delegate_) {
     delegate_.reset(new DownloadShelfUIControllerDelegate(
         Profile::FromBrowserContext(manager->GetBrowserContext())));

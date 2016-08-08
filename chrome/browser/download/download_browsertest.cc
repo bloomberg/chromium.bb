@@ -301,11 +301,13 @@ bool WasAutoOpened(DownloadItem* item) {
   return item->GetAutoOpened();
 }
 
+#if !defined(OS_CHROMEOS)
 // Called when a download starts. Marks the download as hidden.
 void SetHiddenDownloadCallback(DownloadItem* item,
                                content::DownloadInterruptReason reason) {
   DownloadItemModel(item).SetShouldShowInShelf(false);
 }
+#endif
 
 // Callback for HistoryObserver; used in DownloadHistoryCheck
 bool HasDataAndName(const history::DownloadRow& row) {
@@ -1977,7 +1979,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   CheckDownload(browser(), file, file);
 }
 
-// Download an extension.  Expect a dangerous download warning.
+// Download an extension. Expect a dangerous download warning.
 // Deny the download.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
   FeatureSwitch::ScopedOverride enable_easy_off_store_install(
@@ -3415,17 +3417,11 @@ IN_PROC_BROWSER_TEST_F(
 }
 #endif  // FULL_SAFE_BROWSING
 
-class DownloadTestWithShelf : public DownloadTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-#if defined(OS_CHROMEOS)
-    command_line->AppendSwitch(switches::kDisableDownloadNotification);
-#endif
-    DownloadTest::SetUpCommandLine(command_line);
-  }
-};
-
+// The rest of these tests rely on the download shelf, which ChromeOS doesn't
+// use.
+#if !defined(OS_CHROMEOS)
 // Test that the download shelf is shown by starting a download.
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, DownloadAndWait) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadAndWait) {
   GURL url = net::URLRequestMockHTTPJob::GetMockUrl("downloads/a_zip_file.zip");
   DownloadAndWait(browser(), url);
 
@@ -3436,7 +3432,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, DownloadAndWait) {
 // Test that the download shelf is per-window by starting a download in one
 // tab, opening a second tab, closing the shelf, going back to the first tab,
 // and checking that the shelf is closed.
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, PerWindowShelf) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl("download-test3.gif"));
   base::FilePath download_file(
       FILE_PATH_LITERAL("download-test3-attachment.gif"));
@@ -3472,7 +3468,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, PerWindowShelf) {
 
 // Check whether the downloads shelf is closed when the downloads tab is
 // invoked.
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, CloseShelfOnDownloadsTab) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, CloseShelfOnDownloadsTab) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path));
 
   // Download the file and wait.  We do not expect the Select File dialog.
@@ -3488,9 +3484,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, CloseShelfOnDownloadsTab) {
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
 
-// Test that when downloading an item in Incognito mode, check that the
-// download shelf is not visible after closing the Incognito window.
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, IncognitoDownload) {
+// Test that when downloading an item in Incognito mode, the download shelf is
+// not visible after closing the Incognito window.
+IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownloadShelfVisibility) {
   Browser* incognito = CreateIncognitoBrowser();
   ASSERT_TRUE(incognito);
 
@@ -3516,7 +3512,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, IncognitoDownload) {
 // Verify that we have 1 window, and the download shelf is not visible.
 //
 // Regression test for http://crbug.com/44454
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, NewWindow) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path));
 #if !defined(OS_MACOSX)
   // See below.
@@ -3531,7 +3527,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, NewWindow) {
   // the first window.
   ExpectWindowCountAfterDownload(2);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  // Download shelf should close. Download panel stays open on ChromeOS.
+  // Download shelf should close.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // The download shelf SHOULD be visible in the second window.
@@ -3563,14 +3559,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, NewWindow) {
 #endif
 
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  // Download shelf should close. Download panel stays open on ChromeOS.
+  // Download shelf should close.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   CheckDownload(browser(), file, file);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, PRE_DownloadTest_History) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, PRE_DownloadTest_History) {
   // Download a file and wait for it to be stored.
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path));
   HistoryObserver observer(browser()->profile());
@@ -3584,13 +3580,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, PRE_DownloadTest_History) {
   content::RunMessageLoop();
 }
 
-#if defined(OS_CHROMEOS)
-// Times out on ChromeOS: http://crbug.com/217810
-#define MAYBE_DownloadTest_History DISABLED_DownloadTest_History
-#else
-#define MAYBE_DownloadTest_History DownloadTest_History
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, MAYBE_DownloadTest_History) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_History) {
   // This starts up right after PRE_DownloadTest_History and shares the same
   // profile directory.
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path));
@@ -3622,7 +3612,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, MAYBE_DownloadTest_History) {
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, HiddenDownload) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path));
 
   DownloadManager* download_manager = DownloadManagerForBrowser(browser());
@@ -3645,8 +3635,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, HiddenDownload) {
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
 
-// Test to make sure auto-open works.
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, AutoOpen) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpenClosesShelf) {
   base::FilePath file(FILE_PATH_LITERAL("download-autoopen.txt"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl("download-autoopen.txt"));
 
@@ -3655,13 +3644,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, AutoOpen) {
 
   DownloadAndWait(browser(), url);
 
-  // Download shelf should close. Download panel stays open on ChromeOS.
+  // Download shelf should close.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
 
-// Download an extension.  Expect a dangerous download warning.
-// Deny the download.
-IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, CrxDenyInstall) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstallClosesShelf) {
   FeatureSwitch::ScopedOverride enable_easy_off_store_install(
       FeatureSwitch::easy_off_store_install(), true);
 
@@ -3678,3 +3665,4 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, CrxDenyInstall) {
   // Download shelf should close.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
+#endif  // defined(OS_CHROMEOS)
