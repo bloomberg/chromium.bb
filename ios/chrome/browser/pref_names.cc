@@ -68,6 +68,10 @@ const char kIosBookmarkPromoAlreadySeen[] = "ios.bookmark.promo_already_seen";
 // devices that share an iCloud account.
 const char kIosHandoffToOtherDevices[] = "ios.handoff_to_other_devices";
 
+// Whether the user has enabled the Physical Web feature to surface URLs
+// broadcast by nearby devices.
+const char kIosPhysicalWebEnabled[] = "ios.physical_web_enabled";
+
 // True if the previous session exited cleanly.
 // This can be different from kStabilityExitedCleanly, because the last run of
 // the program may not have included a browsing session, and thus the last run

@@ -72,6 +72,9 @@ extern const char kPrivacyLearnMoreURL[];
 // "Learn more" URL for the "Do not track" setting in the privacy section.
 extern const char kDoNotTrackLearnMoreURL[];
 
+// "Learn more" URL for the Physical Web setting in the privacy section.
+extern const char kPhysicalWebLearnMoreURL[];
+
 // The URL for the "Learn more" page on sync encryption.
 extern const char kSyncEncryptionHelpURL[];
 

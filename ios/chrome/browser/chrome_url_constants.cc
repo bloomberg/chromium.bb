@@ -67,6 +67,9 @@ const char kPrivacyLearnMoreURL[] =
 const char kDoNotTrackLearnMoreURL[] =
     "https://support.google.com/chrome/answer/2942429?p=mobile_do_not_track";
 
+const char kPhysicalWebLearnMoreURL[] =
+    "https://support.google.com/chrome/answer/6239299?p=physical_web";
+
 const char kSyncEncryptionHelpURL[] =
     "https://support.google.com/chrome/answer/1181035?p=settings_encryption";
 

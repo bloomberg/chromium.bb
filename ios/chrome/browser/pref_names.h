@@ -23,6 +23,7 @@ extern const char kHttpServerProperties[];
 extern const char kIosBookmarkFolderDefault[];
 extern const char kIosBookmarkPromoAlreadySeen[];
 extern const char kIosHandoffToOtherDevices[];
+extern const char kIosPhysicalWebEnabled[];
 extern const char kLastSessionExitedCleanly[];
 extern const char kLastSessionUsedWKWebViewControlGroup[];
 extern const char kMetricsReportingWifiOnly[];

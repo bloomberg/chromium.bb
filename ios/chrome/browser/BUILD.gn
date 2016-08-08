@@ -317,6 +317,7 @@ source_set("browser") {
     "passwords/passwords_ui_delegate.h",
     "passwords/update_password_infobar_controller.h",
     "passwords/update_password_infobar_controller.mm",
+    "physical_web/physical_web_constants.h",
     "pref_names.cc",
     "pref_names.h",
     "prefs/browser_prefs.h",

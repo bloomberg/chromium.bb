@@ -453,6 +453,7 @@
         'browser/passwords/passwords_ui_delegate.h',
         'browser/passwords/update_password_infobar_controller.h',
         'browser/passwords/update_password_infobar_controller.mm',
+        'browser/physical_web/physical_web_constants.h',
         'browser/pref_names.cc',
         'browser/pref_names.h',
         'browser/prefs/browser_prefs.h',
