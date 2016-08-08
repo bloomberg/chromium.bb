@@ -36,7 +36,10 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
     // Set if this thread was detached.
     std::unique_ptr<Thread> detached_thread;
 
-    outer_->delegate_->OnMainEntry(outer_);
+    outer_->delegate_->OnMainEntry(
+        outer_, outer_->last_detach_time_.is_null()
+                    ? TimeDelta::Max()
+                    : TimeTicks::Now() - outer_->last_detach_time_);
 
     // A SchedulerWorker starts out waiting for work.
     WaitForWork();
@@ -248,7 +251,10 @@ std::unique_ptr<SchedulerWorker::Thread> SchedulerWorker::Detach() {
   // If a wakeup is pending, then a WakeUp() came in while we were deciding to
   // detach. This means we can't go away anymore since we would break the
   // guarantee that we call GetWork() after a successful wakeup.
-  return thread_->IsWakeUpPending() ? nullptr : std::move(thread_);
+  if (thread_->IsWakeUpPending())
+    return nullptr;
+  last_detach_time_ = TimeTicks::Now();
+  return std::move(thread_);
 }
 
 void SchedulerWorker::CreateThread() {

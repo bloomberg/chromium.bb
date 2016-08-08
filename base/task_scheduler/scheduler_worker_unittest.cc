@@ -22,13 +22,39 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::Mock;
+using testing::Ne;
+using testing::StrictMock;
 
 namespace base {
 namespace internal {
 namespace {
 
 const size_t kNumSequencesPerTest = 150;
+
+class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
+ public:
+  SchedulerWorkerDefaultDelegate() = default;
+
+  // SchedulerWorker::Delegate:
+  void OnMainEntry(SchedulerWorker* worker,
+                   const TimeDelta& detach_duration) override {}
+  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+    return nullptr;
+  }
+  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
+    ADD_FAILURE() << "Unexpected call to ReEnqueueSequence()";
+  }
+  TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
+  bool CanDetach(SchedulerWorker* worker) override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerDefaultDelegate);
+};
 
 // The test parameter is the number of Tasks per Sequence returned by GetWork().
 class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
@@ -93,14 +119,14 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
   std::unique_ptr<SchedulerWorker> worker_;
 
  private:
-  class TestSchedulerWorkerDelegate
-      : public SchedulerWorker::Delegate {
+  class TestSchedulerWorkerDelegate : public SchedulerWorkerDefaultDelegate {
    public:
     TestSchedulerWorkerDelegate(TaskSchedulerWorkerTest* outer)
         : outer_(outer) {}
 
     // SchedulerWorker::Delegate:
-    void OnMainEntry(SchedulerWorker* worker) override {
+    void OnMainEntry(SchedulerWorker* worker,
+                     const TimeDelta& detach_duration) override {
       outer_->worker_set_.Wait();
       EXPECT_EQ(outer_->worker_.get(), worker);
 
@@ -169,14 +195,6 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
       outer_->re_enqueued_sequences_.push_back(std::move(sequence));
       EXPECT_LE(outer_->re_enqueued_sequences_.size(),
                 outer_->created_sequences_.size());
-    }
-
-    TimeDelta GetSleepTimeout() override {
-      return TimeDelta::Max();
-    }
-
-    bool CanDetach(SchedulerWorker* worker) override {
-      return false;
     }
 
    private:
@@ -295,7 +313,7 @@ INSTANTIATE_TEST_CASE_P(TwoTasksPerSequence,
 
 namespace {
 
-class ControllableDetachDelegate : public SchedulerWorker::Delegate {
+class ControllableDetachDelegate : public SchedulerWorkerDefaultDelegate {
  public:
   ControllableDetachDelegate()
       : work_processed_(WaitableEvent::ResetPolicy::MANUAL,
@@ -306,7 +324,8 @@ class ControllableDetachDelegate : public SchedulerWorker::Delegate {
   ~ControllableDetachDelegate() override = default;
 
   // SchedulerWorker::Delegate:
-  void OnMainEntry(SchedulerWorker* worker) override {}
+  MOCK_METHOD2(OnMainEntry,
+               void(SchedulerWorker* worker, const TimeDelta& detach_duration));
 
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker)
       override {
@@ -322,15 +341,6 @@ class ControllableDetachDelegate : public SchedulerWorker::Delegate {
         TaskTraits(), TimeDelta()));
     sequence->PushTask(std::move(task));
     return sequence;
-  }
-
-  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
-    ADD_FAILURE() <<
-        "GetWork() returns a sequence of one, so there's nothing to reenqueue.";
-  }
-
-  TimeDelta GetSleepTimeout() override {
-    return TimeDelta::Max();
   }
 
   bool CanDetach(SchedulerWorker* worker) override {
@@ -368,14 +378,17 @@ class ControllableDetachDelegate : public SchedulerWorker::Delegate {
 TEST(TaskSchedulerWorkerTest, WorkerDetaches) {
   TaskTracker task_tracker;
   // Will be owned by SchedulerWorker.
-  ControllableDetachDelegate* delegate = new ControllableDetachDelegate;
+  ControllableDetachDelegate* delegate =
+      new StrictMock<ControllableDetachDelegate>;
   delegate->set_can_detach(true);
+  EXPECT_CALL(*delegate, OnMainEntry(_, TimeDelta::Max()));
   std::unique_ptr<SchedulerWorker> worker =
       SchedulerWorker::Create(
           ThreadPriority::NORMAL, WrapUnique(delegate), &task_tracker,
           SchedulerWorker::InitialState::ALIVE);
   worker->WakeUp();
   delegate->WaitForWorkToRun();
+  Mock::VerifyAndClear(delegate);
   delegate->WaitForDetachRequest();
   // Sleep to give a chance for the detach to happen. A yield is too short.
   PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
@@ -385,14 +398,17 @@ TEST(TaskSchedulerWorkerTest, WorkerDetaches) {
 TEST(TaskSchedulerWorkerTest, WorkerDetachesAndWakes) {
   TaskTracker task_tracker;
   // Will be owned by SchedulerWorker.
-  ControllableDetachDelegate* delegate = new ControllableDetachDelegate;
+  ControllableDetachDelegate* delegate =
+      new StrictMock<ControllableDetachDelegate>;
   delegate->set_can_detach(true);
+  EXPECT_CALL(*delegate, OnMainEntry(_, TimeDelta::Max()));
   std::unique_ptr<SchedulerWorker> worker =
       SchedulerWorker::Create(
           ThreadPriority::NORMAL, WrapUnique(delegate), &task_tracker,
           SchedulerWorker::InitialState::ALIVE);
   worker->WakeUp();
   delegate->WaitForWorkToRun();
+  Mock::VerifyAndClear(delegate);
   delegate->WaitForDetachRequest();
   // Sleep to give a chance for the detach to happen. A yield is too short.
   PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
@@ -400,8 +416,12 @@ TEST(TaskSchedulerWorkerTest, WorkerDetachesAndWakes) {
 
   delegate->ResetState();
   delegate->set_can_detach(false);
+  // When SchedulerWorker recreates its thread, expect OnMainEntry() to be
+  // called with a detach duration which is not TimeDelta::Max().
+  EXPECT_CALL(*delegate, OnMainEntry(worker.get(), Ne(TimeDelta::Max())));
   worker->WakeUp();
   delegate->WaitForWorkToRun();
+  Mock::VerifyAndClear(delegate);
   delegate->WaitForDetachRequest();
   PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
   ASSERT_TRUE(worker->ThreadAliveForTesting());
@@ -411,14 +431,17 @@ TEST(TaskSchedulerWorkerTest, WorkerDetachesAndWakes) {
 TEST(TaskSchedulerWorkerTest, CreateDetached) {
   TaskTracker task_tracker;
   // Will be owned by SchedulerWorker.
-  ControllableDetachDelegate* delegate = new ControllableDetachDelegate;
+  ControllableDetachDelegate* delegate =
+      new StrictMock<ControllableDetachDelegate>;
   std::unique_ptr<SchedulerWorker> worker =
       SchedulerWorker::Create(
           ThreadPriority::NORMAL, WrapUnique(delegate), &task_tracker,
           SchedulerWorker::InitialState::DETACHED);
   ASSERT_FALSE(worker->ThreadAliveForTesting());
+  EXPECT_CALL(*delegate, OnMainEntry(worker.get(), TimeDelta::Max()));
   worker->WakeUp();
   delegate->WaitForWorkToRun();
+  Mock::VerifyAndClear(delegate);
   delegate->WaitForDetachRequest();
   ASSERT_TRUE(worker->ThreadAliveForTesting());
   worker->JoinForTesting();
@@ -426,7 +449,7 @@ TEST(TaskSchedulerWorkerTest, CreateDetached) {
 
 namespace {
 
-class ExpectThreadPriorityDelegate : public SchedulerWorker::Delegate {
+class ExpectThreadPriorityDelegate : public SchedulerWorkerDefaultDelegate {
  public:
   ExpectThreadPriorityDelegate()
       : priority_verified_in_get_work_event_(
@@ -443,15 +466,15 @@ class ExpectThreadPriorityDelegate : public SchedulerWorker::Delegate {
   }
 
   // SchedulerWorker::Delegate:
-  void OnMainEntry(SchedulerWorker* worker) override { VerifyThreadPriority(); }
+  void OnMainEntry(SchedulerWorker* worker,
+                   const TimeDelta& detach_duration) override {
+    VerifyThreadPriority();
+  }
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     VerifyThreadPriority();
     priority_verified_in_get_work_event_.Signal();
     return nullptr;
   }
-  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {}
-  TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
-  bool CanDetach(SchedulerWorker* worker) override { return false; }
 
  private:
   void VerifyThreadPriority() {

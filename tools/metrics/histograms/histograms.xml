@@ -60043,6 +60043,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TaskScheduler.DetachDuration" units="ms">
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <summary>
+    Time elapsed between when the thread managed by a SchedulerWorker is
+    detached and when the main function of a new thread managed by the same
+    SchedulerWorker is entered (following a wake up). Recorded each time that a
+    thread is recreated for a given SchedulerWorker.
+  </summary>
+</histogram>
+
 <histogram name="ThreadWatcher.ResponseTime" units="ms">
   <owner>rtenneti@chromium.org</owner>
   <summary>
@@ -102261,6 +102273,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Tabs.SwitchFromExitLatency"/>
   <affected-histogram name="Tabs.SwitchFromNewLatency"/>
   <affected-histogram name="Tabs.SwitchFromUserLatency"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="TaskSchedulerWorkerPool" separator=".">
+  <suffix name="BackgroundFileIO"
+      label="Applies to the BackgroundFileIO worker pool."/>
+  <suffix name="Background" label="Applies to the Background worker pool."/>
+  <suffix name="ForegroundFileIO"
+      label="Applies to the ForegroundFileIO worker pool."/>
+  <suffix name="Foreground" label="Applies to the Foreground worker pool."/>
+  <affected-histogram name="TaskScheduler.DetachDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ThreadWatcher" separator=".">

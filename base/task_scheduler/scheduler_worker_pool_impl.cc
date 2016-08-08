@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -28,6 +29,9 @@ namespace base {
 namespace internal {
 
 namespace {
+
+constexpr char kDetachDurationHistogramPrefix[] =
+    "TaskScheduler.DetachDuration.";
 
 // SchedulerWorker that owns the current thread, if any.
 LazyInstance<ThreadLocalPointer<const SchedulerWorker>>::Leaky
@@ -201,7 +205,8 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   }
 
   // SchedulerWorker::Delegate:
-  void OnMainEntry(SchedulerWorker* worker) override;
+  void OnMainEntry(SchedulerWorker* worker,
+                   const TimeDelta& detach_duration) override;
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
   TimeDelta GetSleepTimeout() override;
@@ -424,13 +429,17 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     ~SchedulerWorkerDelegateImpl() = default;
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
-    SchedulerWorker* worker) {
+    SchedulerWorker* worker,
+    const TimeDelta& detach_duration) {
 #if DCHECK_IS_ON()
   // Wait for |outer_->workers_created_| to avoid traversing
   // |outer_->workers_| while it is being filled by Initialize().
   outer_->workers_created_.Wait();
   DCHECK(ContainsWorker(outer_->workers_, worker));
 #endif
+
+  if (!detach_duration.is_max())
+    outer_->detach_duration_histogram_->AddTime(detach_duration);
 
   PlatformThread::SetName(
       StringPrintf("TaskScheduler%sWorker%d", outer_->name_.c_str(), index_));
@@ -561,6 +570,12 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
       workers_created_(WaitableEvent::ResetPolicy::MANUAL,
                        WaitableEvent::InitialState::NOT_SIGNALED),
 #endif
+      detach_duration_histogram_(
+          Histogram::FactoryTimeGet(kDetachDurationHistogramPrefix + name_,
+                                    TimeDelta::FromMilliseconds(1),
+                                    TimeDelta::FromHours(1),
+                                    50,
+                                    HistogramBase::kUmaTargetedHistogramFlag)),
       task_tracker_(task_tracker),
       delayed_task_manager_(delayed_task_manager) {
   DCHECK(task_tracker_);

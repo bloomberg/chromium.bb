@@ -33,6 +33,7 @@
 
 namespace base {
 
+class HistogramBase;
 class TimeDelta;
 
 namespace internal {
@@ -170,6 +171,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Signaled when all workers have been created.
   WaitableEvent workers_created_;
 #endif
+
+  // TaskScheduler.DetachDuration.[worker pool name] histogram. Is never
+  // deleted.
+  HistogramBase* const detach_duration_histogram_;
 
   TaskTracker* const task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;

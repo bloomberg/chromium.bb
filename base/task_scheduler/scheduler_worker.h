@@ -43,8 +43,11 @@ class BASE_EXPORT SchedulerWorker {
     virtual ~Delegate() = default;
 
     // Called by a thread managed by |worker| when it enters its main function.
-    // If a thread is recreated after detachment, this call will occur again.
-    virtual void OnMainEntry(SchedulerWorker* worker) = 0;
+    // If a thread is recreated after detachment, |detach_duration| is the time
+    // elapsed since detachment. Otherwise, if this is the first thread created
+    // for |worker|, |detach_duration| is TimeDelta::Max().
+    virtual void OnMainEntry(SchedulerWorker* worker,
+                             const TimeDelta& detach_duration) = 0;
 
     // Called by a thread managed by |worker| to get a Sequence from which to
     // run a Task.
@@ -129,11 +132,15 @@ class BASE_EXPORT SchedulerWorker {
 
   bool ShouldExitForTesting() const;
 
-  // Synchronizes access to |thread_|
+  // Synchronizes access to |thread_|.
   mutable SchedulerLock thread_lock_;
 
   // The underlying thread for this SchedulerWorker.
   std::unique_ptr<Thread> thread_;
+
+  // Time of the last successful Detach(). Is only accessed from the thread
+  // managed by this SchedulerWorker.
+  TimeTicks last_detach_time_;
 
   const ThreadPriority priority_hint_;
   const std::unique_ptr<Delegate> delegate_;
