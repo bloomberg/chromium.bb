@@ -205,9 +205,10 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
     case ThreadPriority::DISPLAY:
     case ThreadPriority::REALTIME_AUDIO:
       return thread_priority;
+    default:
+      NOTREACHED() << "Unknown priority.";
+      return ThreadPriority::NORMAL;
   }
-  NOTREACHED() << "Unknown priority.";
-  return ThreadPriority::NORMAL;
 }
 
 size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {

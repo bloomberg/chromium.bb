@@ -260,9 +260,9 @@ class ThreadPriorityTestThread : public FunctionTestThread {
 // Test changing a created thread's priority (which has different semantics on
 // some platforms).
 TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
-  const bool increased_priority_allowed =
+  const bool increase_priority_allowed =
       PlatformThread::CanIncreaseCurrentThreadPriority();
-  if (increased_priority_allowed) {
+  if (increase_priority_allowed) {
     // Bump the priority in order to verify that new threads are started with
     // normal priority.
     PlatformThread::SetCurrentThreadPriority(ThreadPriority::DISPLAY);
@@ -270,7 +270,7 @@ TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
 
   // Toggle each supported priority on the thread and confirm it affects it.
   for (size_t i = 0; i < arraysize(kThreadPriorityTestValues); ++i) {
-    if (!increased_priority_allowed &&
+    if (!increase_priority_allowed &&
         kThreadPriorityTestValues[i] >
             PlatformThread::GetCurrentThreadPriority()) {
       continue;
