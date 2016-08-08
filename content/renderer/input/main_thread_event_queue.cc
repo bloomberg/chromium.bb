@@ -26,21 +26,22 @@ bool EventWithDispatchType::CanCoalesceWith(
 void EventWithDispatchType::CoalesceWith(const EventWithDispatchType& other) {
   // If we are blocking and are coalescing touch, make sure to keep
   // the touch ids that need to be acked.
-  if (dispatch_type_ == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) {
+  if (dispatch_type_ == DISPATCH_TYPE_BLOCKING) {
     // We should only have blocking touch events that need coalescing.
-    DCHECK(blink::WebInputEvent::isTouchEventType(other.event().type));
     eventsToAck_.push_back(
         WebInputEventTraits::GetUniqueTouchEventId(other.event()));
   }
   ScopedWebInputEventWithLatencyInfo::CoalesceWith(other);
 }
 
-MainThreadEventQueue::MainThreadEventQueue(int routing_id,
-                                           MainThreadEventQueueClient* client)
+MainThreadEventQueue::MainThreadEventQueue(
+    int routing_id,
+    MainThreadEventQueueClient* client,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
     : routing_id_(routing_id),
       client_(client),
       is_flinging_(false),
-      sent_notification_to_main_(false) {}
+      main_task_runner_(main_task_runner) {}
 
 MainThreadEventQueue::~MainThreadEventQueue() {}
 
@@ -58,55 +59,58 @@ bool MainThreadEventQueue::HandleEvent(
                       ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING;
 
   InputEventDispatchType dispatch_type =
-      non_blocking ? DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN
-                   : DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN;
+      non_blocking ? DISPATCH_TYPE_NON_BLOCKING : DISPATCH_TYPE_BLOCKING;
 
   bool is_wheel = event->type == blink::WebInputEvent::MouseWheel;
   bool is_touch = blink::WebInputEvent::isTouchEventType(event->type);
 
-  if (is_wheel || is_touch) {
-    std::unique_ptr<EventWithDispatchType> cloned_event(
-        new EventWithDispatchType(*event, latency, dispatch_type));
+  std::unique_ptr<EventWithDispatchType> cloned_event(
+      new EventWithDispatchType(*event, latency, dispatch_type));
 
+  if (is_touch) {
+    blink::WebTouchEvent& touch_event =
+        static_cast<blink::WebTouchEvent&>(cloned_event->event());
+    touch_event.dispatchedDuringFling = is_flinging_;
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.
     if (non_blocking) {
-      if (is_wheel) {
-        static_cast<blink::WebMouseWheelEvent&>(cloned_event->event())
-            .dispatchType = blink::WebInputEvent::ListenersNonBlockingPassive;
-      } else if (is_touch) {
-        static_cast<blink::WebTouchEvent&>(cloned_event->event()).dispatchType =
-            blink::WebInputEvent::ListenersNonBlockingPassive;
-      }
+      touch_event.dispatchType =
+          blink::WebInputEvent::ListenersNonBlockingPassive;
     }
-
-    if (is_touch) {
-      static_cast<blink::WebTouchEvent&>(cloned_event->event())
-          .dispatchedDuringFling = is_flinging_;
-    }
-
-    if (sent_notification_to_main_) {
-      events_.Queue(std::move(cloned_event));
-    } else {
-      if (non_blocking) {
-        sent_notification_to_main_ = true;
-        client_->SendEventToMainThread(routing_id_, &cloned_event->event(),
-                                       latency, dispatch_type);
-      } else {
-        // If there is nothing in the event queue and the event is
-        // blocking pass the |original_dispatch_type| to avoid
-        // having the main thread call us back as an optimization.
-        client_->SendEventToMainThread(routing_id_, &cloned_event->event(),
-                                       latency, original_dispatch_type);
-      }
-    }
-  } else {
-    client_->SendEventToMainThread(routing_id_, event, latency,
-                                   original_dispatch_type);
   }
+  if (is_wheel && non_blocking) {
+    // Adjust the |dispatchType| on the event since the compositor
+    // determined all event listeners are passive.
+    static_cast<blink::WebMouseWheelEvent&>(cloned_event->event())
+        .dispatchType = blink::WebInputEvent::ListenersNonBlockingPassive;
+  }
+
+  QueueEvent(std::move(cloned_event));
 
   // send an ack when we are non-blocking.
   return non_blocking;
+}
+
+void MainThreadEventQueue::PopEventOnMainThread() {
+  {
+    base::AutoLock lock(event_queue_lock_);
+    if (!events_.empty())
+      in_flight_event_ = events_.Pop();
+  }
+
+  if (in_flight_event_) {
+    InputEventDispatchType dispatch_type = in_flight_event_->dispatchType();
+    if (!in_flight_event_->eventsToAck().empty() &&
+        dispatch_type == DISPATCH_TYPE_BLOCKING) {
+      dispatch_type = DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN;
+    }
+
+    client_->HandleEventOnMainThread(routing_id_, &in_flight_event_->event(),
+                                     in_flight_event_->latencyInfo(),
+                                     dispatch_type);
+  }
+
+  in_flight_event_.reset();
 }
 
 void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
@@ -115,16 +119,26 @@ void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
     // Send acks for blocking touch events.
     for (const auto id : in_flight_event_->eventsToAck())
       client_->SendInputEventAck(routing_id_, type, ack_result, id);
-    }
-    if (!events_.empty()) {
-      in_flight_event_ = events_.Pop();
-      client_->SendEventToMainThread(routing_id_, &in_flight_event_->event(),
-                                     in_flight_event_->latencyInfo(),
-                                     in_flight_event_->dispatchType());
-    } else {
-      in_flight_event_.reset();
-      sent_notification_to_main_ = false;
-    }
+  }
+}
+
+void MainThreadEventQueue::SendEventNotificationToMainThread() {
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MainThreadEventQueue::PopEventOnMainThread,
+                            base::Unretained(this)));
+}
+
+void MainThreadEventQueue::QueueEvent(
+    std::unique_ptr<EventWithDispatchType> event) {
+  bool send_notification = false;
+  {
+    base::AutoLock lock(event_queue_lock_);
+    size_t size_before = events_.size();
+    events_.Queue(std::move(event));
+    send_notification = events_.size() != size_before;
+  }
+  if (send_notification)
+    SendEventNotificationToMainThread();
 }
 
 }  // namespace content

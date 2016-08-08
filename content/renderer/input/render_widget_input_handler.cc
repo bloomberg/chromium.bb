@@ -420,12 +420,11 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
 
-  // Note that we can't use handling_event_type_ here since it will be overriden
-  // by reentrant calls for events after the paused one.
+  // Note that we can't use handling_event_type_ here since it will be
+  // overridden by reentrant calls for events after the paused one.
   bool can_send_ack = !(ignore_ack_for_mouse_move_from_debugger_ &&
                         input_event.type == WebInputEvent::MouseMove);
-  if (dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN ||
-      dispatch_type == DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN) {
+  if (dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) {
     // |non_blocking| means it was ack'd already by the InputHandlerProxy
     // so let the delegate know the event has been handled.
     delegate_->NotifyInputEventHandled(input_event.type, ack_result);

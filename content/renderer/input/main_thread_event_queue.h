@@ -42,13 +42,14 @@ class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
 
 class CONTENT_EXPORT MainThreadEventQueueClient {
  public:
-  // Send an |event| that was previously queued (possibly
+  // Handle an |event| that was previously queued (possibly
   // coalesced with another event) to the |routing_id|'s
   // channel. Implementors must implement this callback.
-  virtual void SendEventToMainThread(int routing_id,
-                                     const blink::WebInputEvent* event,
-                                     const ui::LatencyInfo& latency,
-                                     InputEventDispatchType dispatch_type) = 0;
+  virtual void HandleEventOnMainThread(
+      int routing_id,
+      const blink::WebInputEvent* event,
+      const ui::LatencyInfo& latency,
+      InputEventDispatchType dispatch_type) = 0;
 
   virtual void SendInputEventAck(int routing_id,
                                  blink::WebInputEvent::Type type,
@@ -56,15 +57,10 @@ class CONTENT_EXPORT MainThreadEventQueueClient {
                                  uint32_t touch_event_id) = 0;
 };
 
-// MainThreadEventQueue implements a series of queues (one touch
-// and one mouse wheel) for events that need to be queued between
-// the compositor and main threads. When an event is sent
-// from the compositor to main it can either be sent directly if no
-// outstanding events of that type are in flight; or it needs to
-// wait in a queue until the main thread has finished processing
-// the in-flight event. This class tracks the state and queues
-// for the event types. Methods on this class should only be called
-// from the compositor thread.
+// MainThreadEventQueue implements a queue for events that need to be
+// queued between the compositor and main threads. This queue is managed
+// by a lock where events are enqueued by the compositor thread
+// and dequeued by the main thread.
 //
 // Below some example flows are how the code behaves.
 // Legend: B=Browser, C=Compositor, M=Main Thread, NB=Non-blocking
@@ -73,29 +69,37 @@ class CONTENT_EXPORT MainThreadEventQueueClient {
 // Normal blocking event sent to main thread.
 //   B        C        M
 //   ---(BL)-->
+//         (queue)
 //            ---(PT)-->
+//                  (deque)
 //   <-------(ACK)------
 //
 // Non-blocking event sent to main thread.
 //   B        C        M
 //   ---(NB)-->
+//         (queue)
 //            ---(PT)-->
-//            <--(PT)---
+//                  (deque)
 //
 // Non-blocking followed by blocking event sent to main thread.
 //   B        C        M
 //   ---(NB)-->
+//         (queue)
 //            ---(PT)-->
 //   ---(BL)-->
-//            <--(PT)---     // Notify from NB event.
-//            ---(PT)-->     // Release blocking event.
-//            <--(PT)---     // Notify from BL event.
+//         (queue)
+//            ---(PT)-->
+//                  (deque)
+//                  (deque)
 //   <-------(ACK)------
 //
-class CONTENT_EXPORT MainThreadEventQueue {
+class CONTENT_EXPORT MainThreadEventQueue
+    : public base::RefCountedThreadSafe<MainThreadEventQueue> {
  public:
-  MainThreadEventQueue(int routing_id, MainThreadEventQueueClient* client);
-  ~MainThreadEventQueue();
+  MainThreadEventQueue(
+      int routing_id,
+      MainThreadEventQueueClient* client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
 
   // Called once the compositor has handled |event| and indicated that it is
   // a non-blocking event to be queued to the main thread.
@@ -112,13 +116,24 @@ class CONTENT_EXPORT MainThreadEventQueue {
   void set_is_flinging(bool is_flinging) { is_flinging_ = is_flinging; }
 
  private:
+  friend class base::RefCountedThreadSafe<MainThreadEventQueue>;
+  ~MainThreadEventQueue();
+  void QueueEvent(std::unique_ptr<EventWithDispatchType> event);
+  void SendEventNotificationToMainThread();
+  void PopEventOnMainThread();
+  void SendEventToMainThread(const blink::WebInputEvent* event,
+                             const ui::LatencyInfo& latency,
+                             InputEventDispatchType original_dispatch_type);
+
   friend class MainThreadEventQueueTest;
   int routing_id_;
   MainThreadEventQueueClient* client_;
   WebInputEventQueue<EventWithDispatchType> events_;
   std::unique_ptr<EventWithDispatchType> in_flight_event_;
   bool is_flinging_;
-  bool sent_notification_to_main_;
+
+  base::Lock event_queue_lock_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueue);
 };

@@ -253,6 +253,7 @@
       'browser/message_port_provider_browsertest.cc',
       'browser/net_info_browsertest.cc',
       'browser/renderer_host/input/composited_scrolling_browsertest.cc',
+      'browser/renderer_host/input/main_thread_event_queue_browsertest.cc',
       'browser/renderer_host/input/non_blocking_event_browsertest.cc',
       'browser/renderer_host/input/touch_action_browsertest.cc',
       'browser/renderer_host/input/touch_input_browsertest.cc',

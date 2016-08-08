@@ -42,6 +42,9 @@ class CONTENT_EXPORT InputHandlerManagerClient {
 
   // Called from the main thread.
   virtual void SetBoundHandler(const Handler& handler) = 0;
+  virtual void NotifyInputEventHandled(int routing_id,
+                                       blink::WebInputEvent::Type type,
+                                       InputEventAckState ack_result) = 0;
 
   // Called from the compositor thread.
   virtual void RegisterRoutingID(int routing_id) = 0;
@@ -50,9 +53,6 @@ class CONTENT_EXPORT InputHandlerManagerClient {
                              const DidOverscrollParams& params) = 0;
   virtual void DidStartFlinging(int routing_id) = 0;
   virtual void DidStopFlinging(int routing_id) = 0;
-  virtual void NotifyInputEventHandled(int routing_id,
-                                       blink::WebInputEvent::Type type,
-                                       InputEventAckState ack_result) = 0;
 
  protected:
   InputHandlerManagerClient() {}

@@ -212,18 +212,18 @@ TEST_F(InputEventFilterTest, Basic) {
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
   EXPECT_EQ(2 * arraysize(kEvents), event_recorder_.record_count());
-  EXPECT_EQ(arraysize(kEvents), message_recorder_.message_count());
+  EXPECT_EQ(1u, message_recorder_.message_count());
 
-  for (size_t i = 0; i < arraysize(kEvents); ++i) {
-    const IPC::Message& message = message_recorder_.message_at(i);
+  {
+    const IPC::Message& message = message_recorder_.message_at(0);
 
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
     const WebInputEvent* event = std::get<0>(params);
 
-    EXPECT_EQ(kEvents[i].size, event->size);
-    EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
+    EXPECT_EQ(kEvents[2].size, event->size);
+    EXPECT_TRUE(memcmp(&kEvents[2], event, event->size) == 0);
   }
 
   // Now reset everything, and test that DidHandleInputEvent is called.
@@ -313,7 +313,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
 
 TEST_F(InputEventFilterTest, NonBlockingWheel) {
   WebMouseWheelEvent kEvents[4] = {
-      SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, 53, 0, false),
+      SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, 53, 1, false),
       SyntheticWebMouseWheelEventBuilder::Build(20, 20, 0, 53, 0, false),
       SyntheticWebMouseWheelEventBuilder::Build(30, 30, 0, 53, 1, false),
       SyntheticWebMouseWheelEventBuilder::Build(30, 30, 0, 53, 1, false),
@@ -327,27 +327,7 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
   EXPECT_EQ(arraysize(kEvents), event_recorder_.record_count());
   ASSERT_EQ(4u, ipc_sink_.message_count());
 
-  // First event is sent right away.
-  EXPECT_EQ(1u, message_recorder_.message_count());
-
-  // Second event was queued; ack the first.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel,
-                                   INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(4u, ipc_sink_.message_count());
-  EXPECT_EQ(2u, message_recorder_.message_count());
-
-  // Third event won't be coalesced into the second because modifiers are
-  // different.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel,
-                                   INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3u, message_recorder_.message_count());
-
-  // The last events will be coalesced.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel,
-                                   INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::RunLoop().RunUntilIdle();
+  // All events are handled, one is coalesced.
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   // First two messages should be identical.
@@ -364,7 +344,7 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
     kEvents[i].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
+    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 
@@ -384,7 +364,7 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
     EXPECT_EQ(kEvents[2].size, event->size);
     EXPECT_EQ(kEvents[2].deltaX + kEvents[3].deltaX, event->deltaX);
     EXPECT_EQ(kEvents[2].deltaY + kEvents[3].deltaY, event->deltaY);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
+    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 }
@@ -408,27 +388,7 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
   EXPECT_EQ(arraysize(kEvents), event_recorder_.record_count());
   ASSERT_EQ(4u, ipc_sink_.message_count());
 
-  // First event is sent right away.
-  EXPECT_EQ(1u, message_recorder_.message_count());
-
-  // Second event was queued; ack the first.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchStart,
-                                   INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(4u, ipc_sink_.message_count());
-  EXPECT_EQ(2u, message_recorder_.message_count());
-
-  // Third event won't be coalesced into the second because modifiers are
-  // different.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchMove,
-                                   INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3u, message_recorder_.message_count());
-
-  // The last events will be coalesced.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchMove,
-                                   INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::RunLoop().RunUntilIdle();
+  // All events are handled and one set was coalesced.
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   // First two messages should be identical.
@@ -445,7 +405,7 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
     kEvents[i].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
+    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 
@@ -464,7 +424,7 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
     EXPECT_EQ(1u, kEvents[3].touchesLength);
     EXPECT_EQ(kEvents[3].touches[0].position.x, event->touches[0].position.x);
     EXPECT_EQ(kEvents[3].touches[0].position.y, event->touches[0].position.y);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
+    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 }
@@ -488,11 +448,9 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
   EXPECT_EQ(arraysize(kEvents) + arraysize(kBlockingEvents),
             event_recorder_.record_count());
   ASSERT_EQ(3u, event_recorder_.record_count());
+  EXPECT_EQ(3u, message_recorder_.message_count());
 
   {
-    // First event is sent right away.
-    EXPECT_EQ(1u, message_recorder_.message_count());
-
     const IPC::Message& message = message_recorder_.message_at(0);
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
@@ -504,17 +462,11 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     kEvents[0].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[0], event, event->size) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
+    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 
   {
-    // Second event was queued; ack the first.
-    filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchStart,
-                                     INPUT_EVENT_ACK_STATE_CONSUMED);
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(2u, message_recorder_.message_count());
-
     const IPC::Message& message = message_recorder_.message_at(1);
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
@@ -526,17 +478,11 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     kEvents[1].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[1], event, event->size) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
+    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
 
   {
-    // Third event should be put in the queue.
-    filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchEnd,
-                                     INPUT_EVENT_ACK_STATE_CONSUMED);
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(3u, message_recorder_.message_count());
-
     const IPC::Message& message = message_recorder_.message_at(2);
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
@@ -546,8 +492,7 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
 
     EXPECT_EQ(kBlockingEvents[0].size, event->size);
     EXPECT_TRUE(memcmp(&kBlockingEvents[0], event, event->size) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN,
-              dispatch_type);
+    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_BLOCKING, dispatch_type);
   }
 }
 

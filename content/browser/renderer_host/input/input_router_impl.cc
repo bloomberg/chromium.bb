@@ -79,7 +79,6 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       frame_tree_node_id_(-1),
       select_message_pending_(false),
       move_caret_pending_(false),
-      mouse_move_pending_(false),
       current_ack_source_(ACK_SOURCE_NONE),
       flush_requested_(false),
       active_renderer_fling_count_(0),
@@ -188,21 +187,8 @@ void InputRouterImpl::SendTouchEvent(
 // TouchpadTapSuppressionController.
 void InputRouterImpl::SendMouseEventImmediately(
     const MouseEventWithLatencyInfo& mouse_event) {
-  // Avoid spamming the renderer with mouse move events.  It is important
-  // to note that WM_MOUSEMOVE events are anyways synthetic, but since our
-  // thread is able to rapidly consume WM_MOUSEMOVE events, we may get way
-  // more WM_MOUSEMOVE events than we wish to send to the renderer.
-  if (mouse_event.event.type == WebInputEvent::MouseMove) {
-    if (mouse_move_pending_) {
-      if (!next_mouse_move_)
-        next_mouse_move_.reset(new MouseEventWithLatencyInfo(mouse_event));
-      else
-        next_mouse_move_->CoalesceWith(mouse_event);
-      return;
-    }
-    mouse_move_pending_ = true;
-    current_mouse_move_ = mouse_event;
-  }
+  if (mouse_event.event.type == blink::WebInputEvent::MouseMove)
+    mouse_move_queue_.push_back(mouse_event);
 
   FilterAndSendWebInputEvent(mouse_event.event, mouse_event.latency);
 }
@@ -243,7 +229,7 @@ void InputRouterImpl::RequestNotificationWhenFlushed() {
 
 bool InputRouterImpl::HasPendingEvents() const {
   return !touch_event_queue_.empty() || !gesture_event_queue_.empty() ||
-         !key_queue_.empty() || mouse_move_pending_ ||
+         !key_queue_.empty() || !mouse_move_queue_.empty() ||
          wheel_event_queue_.has_pending() || select_message_pending_ ||
          move_caret_pending_ || active_renderer_fling_count_ > 0;
 }
@@ -370,9 +356,6 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                          "step", "SendInputEventUI",
                          "frameTreeNodeId", frame_tree_node_id_);
 
-  // Any input event cancels a pending mouse move event.
-  next_mouse_move_.reset();
-
   OfferToHandlers(input_event, latency_info);
 }
 
@@ -408,7 +391,6 @@ bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
     case INPUT_EVENT_ACK_STATE_CONSUMED:
     case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
       // Send the ACK and early exit.
-      next_mouse_move_.reset();
       ProcessInputEventAck(
           input_event.type, filter_ack, latency_info,
           WebInputEventTraits::GetUniqueTouchEventId(input_event), CLIENT);
@@ -597,17 +579,13 @@ void InputRouterImpl::ProcessMouseAck(blink::WebInputEvent::Type type,
   if (type != WebInputEvent::MouseMove)
     return;
 
-  current_mouse_move_.latency.AddNewLatencyFrom(latency);
-  ack_handler_->OnMouseEventAck(current_mouse_move_, ack_result);
-
-  DCHECK(mouse_move_pending_);
-  mouse_move_pending_ = false;
-
-  if (next_mouse_move_) {
-    DCHECK(next_mouse_move_->event.type == WebInputEvent::MouseMove);
-    std::unique_ptr<MouseEventWithLatencyInfo> next_mouse_move =
-        std::move(next_mouse_move_);
-    SendMouseEvent(*next_mouse_move);
+  if (mouse_move_queue_.empty()) {
+    ack_handler_->OnUnexpectedEventAck(InputAckHandler::UNEXPECTED_ACK);
+  } else {
+    MouseEventWithLatencyInfo front_item = mouse_move_queue_.front();
+    front_item.latency.AddNewLatencyFrom(latency);
+    mouse_move_queue_.pop_front();
+    ack_handler_->OnMouseEventAck(front_item, ack_result);
   }
 }
 

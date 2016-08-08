@@ -72,7 +72,8 @@ void InputEventFilter::SetIsFlingingInMainThreadEventQueue(int routing_id,
 void InputEventFilter::RegisterRoutingID(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
-  route_queues_[routing_id].reset(new MainThreadEventQueue(routing_id, this));
+  route_queues_[routing_id] =
+      new MainThreadEventQueue(routing_id, this, main_task_runner_);
 }
 
 void InputEventFilter::UnregisterRoutingID(int routing_id) {
@@ -104,12 +105,17 @@ void InputEventFilter::DidStopFlinging(int routing_id) {
 void InputEventFilter::NotifyInputEventHandled(int routing_id,
                                                blink::WebInputEvent::Type type,
                                                InputEventAckState ack_result) {
-  DCHECK(target_task_runner_->BelongsToCurrentThread());
-  RouteQueueMap::iterator iter = route_queues_.find(routing_id);
-  if (iter == route_queues_.end() || !iter->second)
-    return;
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  scoped_refptr<MainThreadEventQueue> queue;
+  {
+    base::AutoLock locked(routes_lock_);
+    RouteQueueMap::iterator iter = route_queues_.find(routing_id);
+    if (iter == route_queues_.end() || !iter->second)
+      return;
+    queue = iter->second;
+  }
 
-  iter->second->EventHandled(type, ack_result);
+  queue->EventHandled(type, ack_result);
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Sender* sender) {
@@ -213,8 +219,6 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
 }
 
 void InputEventFilter::SendMessage(std::unique_ptr<IPC::Message> message) {
-  DCHECK(target_task_runner_->BelongsToCurrentThread());
-
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&InputEventFilter::SendMessageOnIOThread, this,
                             base::Passed(&message)));
@@ -230,17 +234,16 @@ void InputEventFilter::SendMessageOnIOThread(
   sender_->Send(message.release());
 }
 
-void InputEventFilter::SendEventToMainThread(
+void InputEventFilter::HandleEventOnMainThread(
     int routing_id,
     const blink::WebInputEvent* event,
     const ui::LatencyInfo& latency_info,
     InputEventDispatchType dispatch_type) {
-  TRACE_EVENT_INSTANT0(
-      "input", "InputEventFilter::ForwardToHandler::SendEventToMainThread",
-      TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("input", "InputEventFilter::HandlEventOnMainThread",
+                       TRACE_EVENT_SCOPE_THREAD);
   IPC::Message new_msg =
       InputMsg_HandleInputEvent(routing_id, event, latency_info, dispatch_type);
-  main_task_runner_->PostTask(FROM_HERE, base::Bind(main_listener_, new_msg));
+  main_listener_.Run(new_msg);
 }
 
 void InputEventFilter::SendInputEventAck(int routing_id,

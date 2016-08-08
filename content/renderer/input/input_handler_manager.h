@@ -111,10 +111,6 @@ class CONTENT_EXPORT InputHandlerManager {
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
-  void NotifyInputEventHandledOnCompositorThread(int routing_id,
-                                                 blink::WebInputEvent::Type,
-                                                 InputEventAckState);
-
   typedef base::ScopedPtrHashMap<int,  // routing_id
                                  std::unique_ptr<InputHandlerWrapper>>
       InputHandlerMap;

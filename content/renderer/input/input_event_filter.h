@@ -78,10 +78,10 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // MainThreadEventQueueClient methods:
-  void SendEventToMainThread(int routing_id,
-                             const blink::WebInputEvent* event,
-                             const ui::LatencyInfo& latency,
-                             InputEventDispatchType dispatch_type) override;
+  void HandleEventOnMainThread(int routing_id,
+                               const blink::WebInputEvent* event,
+                               const ui::LatencyInfo& latency,
+                               InputEventDispatchType dispatch_type) override;
   // Send an InputEventAck IPC message. |touch_event_id| represents
   // the unique event id for the original WebTouchEvent and should
   // be 0 if otherwise. See WebInputEventTraits::GetUniqueTouchEventId.
@@ -116,7 +116,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   std::set<int> routes_;
 
   using RouteQueueMap =
-      std::unordered_map<int, std::unique_ptr<MainThreadEventQueue>>;
+      std::unordered_map<int, scoped_refptr<MainThreadEventQueue>>;
   RouteQueueMap route_queues_;
 
   // Used to intercept overscroll notifications while an event is being

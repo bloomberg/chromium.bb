@@ -213,20 +213,16 @@ class CONTENT_EXPORT InputRouterImpl
   // message ack.
   std::deque<IPC::Message*> pending_select_messages_;
 
-  // (Similar to |mouse_move_pending_|.) True while waiting for MoveCaret_ACK.
+  // True while waiting for MoveCaret_ACK.
   bool move_caret_pending_;
 
-  // (Similar to |next_mouse_move_|.) The next MoveCaret to send, if any.
+  // The next MoveCaret to send, if any.
   std::unique_ptr<IPC::Message> next_move_caret_;
 
-  // True if a mouse move event was sent to the render view and we are waiting
-  // for a corresponding InputHostMsg_HandleInputEvent_ACK message.
-  bool mouse_move_pending_;
-
-  // The next mouse move event to send (only non-null while mouse_move_pending_
-  // is true).
-  std::unique_ptr<MouseEventWithLatencyInfo> next_mouse_move_;
-  MouseEventWithLatencyInfo current_mouse_move_;
+  // A queue of the mouse move events sent to the renderer. Similar
+  // to |key_queue_|.
+  typedef std::deque<MouseEventWithLatencyInfo> MouseMoveQueue;
+  MouseMoveQueue mouse_move_queue_;
 
   // A queue of keyboard events. We can't trust data from the renderer so we
   // stuff key events into a queue and pop them out on ACK, feeding our copy
