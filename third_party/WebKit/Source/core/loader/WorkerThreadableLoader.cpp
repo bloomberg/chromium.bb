@@ -224,7 +224,7 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& worker
 
 WorkerThreadableLoader::~WorkerThreadableLoader()
 {
-    DCHECK(!m_mainThreadLoaderHolder);
+    DCHECK(!m_peer);
     DCHECK(!m_client);
 }
 
@@ -240,7 +240,7 @@ void WorkerThreadableLoader::start(const ResourceRequest& originalRequest)
         eventWithTasks = WaitableEventWithTasks::create();
 
     m_workerLoaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(
-        &MainThreadLoaderHolder::createAndStart,
+        &Peer::createAndStart,
         wrapCrossThreadPersistent(this),
         m_workerLoaderProxy,
         wrapCrossThreadPersistent(m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext()),
@@ -278,17 +278,17 @@ void WorkerThreadableLoader::start(const ResourceRequest& originalRequest)
 void WorkerThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
 {
     DCHECK(!isMainThread());
-    if (!m_mainThreadLoaderHolder)
+    if (!m_peer)
         return;
-    m_workerLoaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&MainThreadLoaderHolder::overrideTimeout, m_mainThreadLoaderHolder, timeoutMilliseconds));
+    m_workerLoaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::overrideTimeout, m_peer, timeoutMilliseconds));
 }
 
 void WorkerThreadableLoader::cancel()
 {
     DCHECK(!isMainThread());
-    if (m_mainThreadLoaderHolder) {
-        m_workerLoaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&MainThreadLoaderHolder::cancel, m_mainThreadLoaderHolder));
-        m_mainThreadLoaderHolder = nullptr;
+    if (m_peer) {
+        m_workerLoaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::cancel, m_peer));
+        m_peer = nullptr;
     }
 
     if (!m_client)
@@ -304,17 +304,17 @@ void WorkerThreadableLoader::cancel()
     DCHECK(!m_client);
 }
 
-void WorkerThreadableLoader::didStart(MainThreadLoaderHolder* mainThreadLoaderHolder)
+void WorkerThreadableLoader::didStart(Peer* peer)
 {
     DCHECK(!isMainThread());
-    DCHECK(!m_mainThreadLoaderHolder);
-    DCHECK(mainThreadLoaderHolder);
+    DCHECK(!m_peer);
+    DCHECK(peer);
     if (!m_client) {
         // The loading is already cancelled.
         return;
     }
 
-    m_mainThreadLoaderHolder = mainThreadLoaderHolder;
+    m_peer = peer;
 }
 
 void WorkerThreadableLoader::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -358,7 +358,7 @@ void WorkerThreadableLoader::didFinishLoading(unsigned long identifier, double f
         return;
     auto* client = m_client;
     m_client = nullptr;
-    m_mainThreadLoaderHolder = nullptr;
+    m_peer = nullptr;
     client->didFinishLoading(identifier, finishTime);
 }
 
@@ -369,7 +369,7 @@ void WorkerThreadableLoader::didFail(const ResourceError& error)
         return;
     auto* client = m_client;
     m_client = nullptr;
-    m_mainThreadLoaderHolder = nullptr;
+    m_peer = nullptr;
     client->didFail(error);
 }
 
@@ -380,7 +380,7 @@ void WorkerThreadableLoader::didFailAccessControlCheck(const ResourceError& erro
         return;
     auto* client = m_client;
     m_client = nullptr;
-    m_mainThreadLoaderHolder = nullptr;
+    m_peer = nullptr;
     client->didFailAccessControlCheck(error);
 }
 
@@ -391,7 +391,7 @@ void WorkerThreadableLoader::didFailRedirectCheck()
         return;
     auto* client = m_client;
     m_client = nullptr;
-    m_mainThreadLoaderHolder = nullptr;
+    m_peer = nullptr;
     client->didFailRedirectCheck();
 }
 
@@ -419,7 +419,7 @@ DEFINE_TRACE(WorkerThreadableLoader)
     ThreadableLoader::trace(visitor);
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::createAndStart(
+void WorkerThreadableLoader::Peer::createAndStart(
     WorkerThreadableLoader* workerLoader,
     PassRefPtr<WorkerLoaderProxy> passLoaderProxy,
     WorkerThreadLifecycleContext* workerThreadLifecycleContext,
@@ -437,25 +437,25 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::createAndStart(
     else
         forwarder = new AsyncTaskForwarder(loaderProxy);
 
-    MainThreadLoaderHolder* mainThreadLoaderHolder = new MainThreadLoaderHolder(forwarder, workerThreadLifecycleContext);
-    if (mainThreadLoaderHolder->wasContextDestroyedBeforeObserverCreation()) {
+    Peer* peer = new Peer(forwarder, workerThreadLifecycleContext);
+    if (peer->wasContextDestroyedBeforeObserverCreation()) {
         // The thread is already terminating.
         forwarder->abort();
-        mainThreadLoaderHolder->m_forwarder = nullptr;
+        peer->m_forwarder = nullptr;
         return;
     }
-    mainThreadLoaderHolder->m_workerLoader = workerLoader;
-    mainThreadLoaderHolder->start(*toDocument(executionContext), std::move(request), options, resourceLoaderOptions);
-    forwarder->forwardTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didStart, wrapCrossThreadPersistent(workerLoader), wrapCrossThreadPersistent(mainThreadLoaderHolder)));
+    peer->m_workerLoader = workerLoader;
+    peer->start(*toDocument(executionContext), std::move(request), options, resourceLoaderOptions);
+    forwarder->forwardTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didStart, wrapCrossThreadPersistent(workerLoader), wrapCrossThreadPersistent(peer)));
 }
 
-WorkerThreadableLoader::MainThreadLoaderHolder::~MainThreadLoaderHolder()
+WorkerThreadableLoader::Peer::~Peer()
 {
     DCHECK(isMainThread());
     DCHECK(!m_workerLoader);
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::overrideTimeout(unsigned long timeoutMilliseconds)
+void WorkerThreadableLoader::Peer::overrideTimeout(unsigned long timeoutMilliseconds)
 {
     DCHECK(isMainThread());
     if (!m_mainThreadLoader)
@@ -463,7 +463,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::overrideTimeout(unsigned lo
     m_mainThreadLoader->overrideTimeout(timeoutMilliseconds);
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::cancel()
+void WorkerThreadableLoader::Peer::cancel()
 {
     DCHECK(isMainThread());
     if (!m_mainThreadLoader)
@@ -472,7 +472,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::cancel()
     m_mainThreadLoader = nullptr;
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
+void WorkerThreadableLoader::Peer::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -481,7 +481,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didSendData(unsigned long l
     m_forwarder->forwardTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didSendData, workerLoader, bytesSent, totalBytesToBeSent));
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
+void WorkerThreadableLoader::Peer::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -490,7 +490,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveResponse(unsigned
     m_forwarder->forwardTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didReceiveResponse, workerLoader, identifier, response, passed(std::move(handle))));
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveData(const char* data, unsigned dataLength)
+void WorkerThreadableLoader::Peer::didReceiveData(const char* data, unsigned dataLength)
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -499,7 +499,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveData(const char* 
     m_forwarder->forwardTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didReceiveData, workerLoader, passed(createVectorFromMemoryRegion(data, dataLength))));
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didDownloadData(int dataLength)
+void WorkerThreadableLoader::Peer::didDownloadData(int dataLength)
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -508,7 +508,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didDownloadData(int dataLen
     m_forwarder->forwardTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didDownloadData, workerLoader, dataLength));
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveCachedMetadata(const char* data, int dataLength)
+void WorkerThreadableLoader::Peer::didReceiveCachedMetadata(const char* data, int dataLength)
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -517,7 +517,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveCachedMetadata(co
     m_forwarder->forwardTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didReceiveCachedMetadata, workerLoader, passed(createVectorFromMemoryRegion(data, dataLength))));
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didFinishLoading(unsigned long identifier, double finishTime)
+void WorkerThreadableLoader::Peer::didFinishLoading(unsigned long identifier, double finishTime)
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -527,7 +527,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didFinishLoading(unsigned l
     m_forwarder = nullptr;
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didFail(const ResourceError& error)
+void WorkerThreadableLoader::Peer::didFail(const ResourceError& error)
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -537,7 +537,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didFail(const ResourceError
     m_forwarder = nullptr;
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didFailAccessControlCheck(const ResourceError& error)
+void WorkerThreadableLoader::Peer::didFailAccessControlCheck(const ResourceError& error)
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -547,7 +547,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didFailAccessControlCheck(c
     m_forwarder = nullptr;
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didFailRedirectCheck()
+void WorkerThreadableLoader::Peer::didFailRedirectCheck()
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -557,7 +557,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didFailRedirectCheck()
     m_forwarder = nullptr;
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveResourceTiming(const ResourceTimingInfo& info)
+void WorkerThreadableLoader::Peer::didReceiveResourceTiming(const ResourceTimingInfo& info)
 {
     DCHECK(isMainThread());
     CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
@@ -566,7 +566,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveResourceTiming(co
     m_forwarder->forwardTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didReceiveResourceTiming, workerLoader, info));
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::contextDestroyed()
+void WorkerThreadableLoader::Peer::contextDestroyed()
 {
     DCHECK(isMainThread());
     if (m_forwarder) {
@@ -577,21 +577,21 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::contextDestroyed()
     cancel();
 }
 
-DEFINE_TRACE(WorkerThreadableLoader::MainThreadLoaderHolder)
+DEFINE_TRACE(WorkerThreadableLoader::Peer)
 {
     visitor->trace(m_forwarder);
     visitor->trace(m_mainThreadLoader);
     WorkerThreadLifecycleObserver::trace(visitor);
 }
 
-WorkerThreadableLoader::MainThreadLoaderHolder::MainThreadLoaderHolder(TaskForwarder* forwarder, WorkerThreadLifecycleContext* context)
+WorkerThreadableLoader::Peer::Peer(TaskForwarder* forwarder, WorkerThreadLifecycleContext* context)
     : WorkerThreadLifecycleObserver(context)
     , m_forwarder(forwarder)
 {
     DCHECK(isMainThread());
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::start(
+void WorkerThreadableLoader::Peer::start(
     Document& document,
     std::unique_ptr<CrossThreadResourceRequestData> request,
     const ThreadableLoaderOptions& options,

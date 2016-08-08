@@ -341,7 +341,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
 DocumentThreadableLoader::~DocumentThreadableLoader()
 {
     CHECK(!m_client);
-    DCHECK(!resource());
+    DCHECK(!m_resource);
 }
 
 void DocumentThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
@@ -971,9 +971,9 @@ Document& DocumentThreadableLoader::document() const
 
 DEFINE_TRACE(DocumentThreadableLoader)
 {
+    visitor->trace(m_resource);
     visitor->trace(m_document);
     ThreadableLoader::trace(visitor);
-    ResourceOwner<RawResource>::trace(visitor);
 }
 
 } // namespace blink
