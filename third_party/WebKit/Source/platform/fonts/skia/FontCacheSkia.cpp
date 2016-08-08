@@ -90,7 +90,7 @@ AtomicString FontCache::getFamilyNameForCharacter(SkFontMgr* fm, UChar32 c, cons
         bcp47Locales[localeCount++] = contentLocale->localeForSkFontMgr();
     if (fallbackPriority == FontFallbackPriority::EmojiEmoji)
         bcp47Locales[localeCount++] = kAndroidColorEmojiLocale;
-    ASSERT_WITH_SECURITY_IMPLICATION(localeCount < kMaxLocales);
+    SECURITY_DCHECK(localeCount <= kMaxLocales);
     RefPtr<SkTypeface> typeface = adoptRef(fm->matchFamilyStyleCharacter(0, SkFontStyle(), bcp47Locales, localeCount, c));
     if (!typeface)
         return emptyAtom;
