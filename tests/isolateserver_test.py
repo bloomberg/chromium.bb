@@ -482,7 +482,7 @@ class IsolateServerStorageApiTest(TestCase):
     else:
       response = {'content': base64.b64encode(data[offset:])}
     return (
-      server + '/api/isolateservice/v1/retrieve',
+      server + '/_ah/api/isolateservice/v1/retrieve',
       {
           'data': {
               'digest': item,
@@ -501,7 +501,7 @@ class IsolateServerStorageApiTest(TestCase):
   @staticmethod
   def mock_server_details_request(server):
     return (
-        server + '/api/isolateservice/v1/server_details',
+        server + '/_ah/api/isolateservice/v1/server_details',
         {'data': {}},
         {'server_version': 'such a good version'}
     )
@@ -520,7 +520,7 @@ class IsolateServerStorageApiTest(TestCase):
   @staticmethod
   def mock_contains_request(
       server, namespace, request, response, compression=''):
-    url = server + '/api/isolateservice/v1/preupload'
+    url = server + '/_ah/api/isolateservice/v1/preupload'
     digest_collection = dict(request, namespace={
         'compression': compression,
         'digest_hash': 'sha-1',
@@ -530,7 +530,7 @@ class IsolateServerStorageApiTest(TestCase):
 
   @staticmethod
   def mock_upload_request(server, content, ticket, response=None):
-    url = server + '/api/isolateservice/v1/store_inline'
+    url = server + '/_ah/api/isolateservice/v1/store_inline'
     request = {'content': content, 'upload_ticket': ticket}
     return (url, {'data': request}, response)
 
@@ -697,7 +697,7 @@ class IsolateServerStorageApiTest(TestCase):
         None,
       ),
       (
-        server + '/api/isolateservice/v1/finalize_gs_upload',
+        server + '/_ah/api/isolateservice/v1/finalize_gs_upload',
         {'data': {'upload_ticket': 'ticket!'}},
         None,
       ),
@@ -741,7 +741,7 @@ class IsolateServerStorageApiTest(TestCase):
     self.assertEqual(set(missing), set(result.keys()))
     for i, (_item, push_state) in enumerate(result.iteritems()):
       self.assertEqual(
-          push_state.upload_url, 'api/isolateservice/v1/store_inline')
+          push_state.upload_url, '_ah/api/isolateservice/v1/store_inline')
       self.assertEqual(push_state.finalize_url, None)
 
   def test_contains_network_failure(self):
@@ -940,7 +940,7 @@ class IsolateServerDownloadTest(TestCase):
     server = 'http://example.com'
     requests = [
       (
-        server + '/api/isolateservice/v1/retrieve',
+        server + '/_ah/api/isolateservice/v1/retrieve',
         {
             'data': {
                 'digest': h.encode('utf-8'),
@@ -998,7 +998,7 @@ class IsolateServerDownloadTest(TestCase):
     requests.append((isolated_hash, isolated_data))
     requests = [
       (
-        server + '/api/isolateservice/v1/retrieve',
+        server + '/_ah/api/isolateservice/v1/retrieve',
         {
             'data': {
                 'digest': h.encode('utf-8'),
@@ -1100,7 +1100,7 @@ class IsolateServerDownloadTest(TestCase):
     requests.append((isolated_hash, isolated_data))
     requests = [
       (
-        server + '/api/isolateservice/v1/retrieve',
+        server + '/_ah/api/isolateservice/v1/retrieve',
         {
             'data': {
                 'digest': h.encode('utf-8'),
