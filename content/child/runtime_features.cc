@@ -261,6 +261,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(features::kWebPayments));
 #endif
 
+  if (base::FeatureList::IsEnabled(features::kSpeculativeLaunchServiceWorker))
+    WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(true);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

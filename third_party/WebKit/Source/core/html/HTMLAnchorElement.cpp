@@ -238,9 +238,8 @@ void HTMLAnchorElement::defaultEventHandler(Event* event)
             return;
         }
 
-        // TODO(horo): Call NavigationHintSender::handleEvent() when
-        // SpeculativeLaunchServiceWorker feature is enabled.
-        // ensureNavigationHintSender()->handleEvent(event);
+        if (RuntimeEnabledFeatures::speculativeLaunchServiceWorkerEnabled())
+            ensureNavigationHintSender()->handleEvent(event);
 
         if (isLinkClick(event) && isLiveLink()) {
             handleClick(event);

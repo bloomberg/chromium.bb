@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,8 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -514,6 +517,88 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
                        OtherOriginCORSCredentials) {
   EXPECT_EQ(GetRequestStringForPNACL(),
             ExecutePNACLUrlLoaderTest("OtherCORSCredentials"));
+}
+
+class ServiceWorkerSpeculativeLaunchTest : public ChromeServiceWorkerTest {
+ protected:
+  ServiceWorkerSpeculativeLaunchTest() {}
+  ~ServiceWorkerSpeculativeLaunchTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kEnableFeatures,
+        features::kSpeculativeLaunchServiceWorker.name);
+  }
+
+  base::HistogramTester histogram_tester_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSpeculativeLaunchTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerSpeculativeLaunchTest, MouseDown) {
+  WriteFile(
+      FILE_PATH_LITERAL("sw.js"),
+      "self.onfetch = function(e) {"
+      "  e.respondWith(new Response('<title>Done</title>',"
+      "                             {headers: {'Content-Type': 'text/html'}}));"
+      "};");
+  WriteFile(
+      FILE_PATH_LITERAL("test.html"),
+      "<script>"
+      "navigator.serviceWorker.register('./sw.js', {scope: './scope/'})"
+      "  .then(function(reg) {"
+      "      reg.addEventListener('updatefound', function() {"
+      "          var worker = reg.installing;"
+      "          worker.addEventListener('statechange', function() {"
+      "              if (worker.state == 'activated')"
+      "                document.title = 'READY';"
+      "            });"
+      "        });"
+      "    });"
+      "</script>"
+      "<body style='margin:0; padding:0;'>"
+      "<a href='./scope/' style='position:fixed; width:1px; height:1px;'></a>"
+      "</body>");
+
+  embedded_test_server()->ServeFilesFromDirectory(service_worker_dir_.path());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::ServiceWorkerContext* sw_context =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetServiceWorkerContext();
+
+  const base::string16 expected_title1 = base::ASCIIToUTF16("READY");
+  content::TitleWatcher title_watcher1(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title1);
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/test.html"));
+  EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
+
+  histogram_tester_.ExpectBucketCount("ServiceWorker.StartNewWorker.Status",
+                                      0 /* SERVICE_WORKER_OK */, 1);
+
+  sw_context->StopAllServiceWorkersForOrigin(
+      embedded_test_server()->base_url());
+
+  const base::string16 expected_title2 = base::ASCIIToUTF16("Done");
+  content::TitleWatcher title_watcher2(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title2);
+
+  histogram_tester_.ExpectTotalCount(
+      "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT_LINK_MOUSE_"
+      "DOWN",
+      0);
+  content::SimulateMouseClickAt(
+      browser()->tab_strip_model()->GetActiveWebContents(), 0,
+      blink::WebMouseEvent::ButtonLeft, gfx::Point(0, 0));
+  EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
+
+  // The service worker must be started by a navigation hint.
+  histogram_tester_.ExpectBucketCount(
+      "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT_LINK_MOUSE_"
+      "DOWN",
+      0 /* SERVICE_WORKER_OK */, 1);
 }
 
 }  // namespace

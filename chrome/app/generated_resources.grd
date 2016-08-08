@@ -6311,6 +6311,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_V8_CACHE_STRATEGIES_FOR_CACHE_STORAGE_AGGRESSIVE" desc="The V8 cache for CacheStorage supports three strategies: disabled; caching same as if the script is in HTTPCache; force caching on the first load. This option describes the 3rd of these, force caching on the first load.">
         Aggressive
       </message>
+      <message name="IDS_FLAGS_SPECULATIVE_LAUNCH_SERVICE_WORKER_NAME" desc="Name of the about::flags setting for speculative launch of service workers.">
+        Speculative launch of service workers.
+      </message>
+      <message name="IDS_FLAGS_SPECULATIVE_LAUNCH_SERVICE_WORKER_DESCRIPTION" desc="Description of the about::flags setting for speculative launch of service workers.">
+        Speculatively launch service workers using touch and mouse events.
+      </message>
 
       <!-- Data Reduction Proxy -->
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about::flags experiment title to enable/disable Data Saver Lo-Fi" translateable="false">

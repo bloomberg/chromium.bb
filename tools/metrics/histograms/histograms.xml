@@ -82818,6 +82818,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-667517406" label="overscroll-history-navigation"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
+  <int value="-650504533" label="enable-speculative-launch-service-worker"/>
   <int value="-649956990" label="enable-harfbuzz-rendertext"/>
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
   <int value="-631740127" label="inert-visual-viewport"/>

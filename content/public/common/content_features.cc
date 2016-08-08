@@ -112,6 +112,10 @@ const base::Feature kRenderingPipelineThrottling{
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Speculatively launches Service Workers on mouse/touch events.
+const base::Feature kSpeculativeLaunchServiceWorker{
+    "SpeculativeLaunchServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables implementation of the Cache-Control: stale-while-revalidate directive
 // which permits servers to allow the use of stale resources while revalidation
 // proceeds in the background. See http://crbug.com/348877

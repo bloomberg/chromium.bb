@@ -1119,6 +1119,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SUGGESTIONS_WITH_SUB_STRING_MATCH_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(
          autofill::switches::kEnableSuggestionsWithSubstringMatch)},
+    {"enable-speculative-launch-service-worker",
+     IDS_FLAGS_SPECULATIVE_LAUNCH_SERVICE_WORKER_NAME,
+     IDS_FLAGS_SPECULATIVE_LAUNCH_SERVICE_WORKER_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kSpeculativeLaunchServiceWorker)},
     {"enable-supervised-user-managed-bookmarks-folder",
      IDS_FLAGS_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME,
      IDS_FLAGS_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_DESCRIPTION, kOsAll,

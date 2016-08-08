@@ -230,6 +230,11 @@ void WebRuntimeFeatures::enableSlimmingPaintV2(bool enable)
     RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(enable);
 }
 
+void WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(bool enable)
+{
+    RuntimeEnabledFeatures::setSpeculativeLaunchServiceWorkerEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableTouch(bool enable)
 {
     RuntimeEnabledFeatures::setTouchEnabled(enable);

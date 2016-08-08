@@ -37,6 +37,7 @@ CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPointerEvents;
 CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
+CONTENT_EXPORT extern const base::Feature kSpeculativeLaunchServiceWorker;
 CONTENT_EXPORT extern const base::Feature kStaleWhileRevalidate;
 CONTENT_EXPORT extern const base::Feature kTokenBinding;
 CONTENT_EXPORT extern const base::Feature kWeakMemoryCache;

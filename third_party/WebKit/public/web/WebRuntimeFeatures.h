@@ -103,6 +103,7 @@ public:
     BLINK_EXPORT static void enableScrollAnchoring(bool);
     BLINK_EXPORT static void enableSharedWorker(bool);
     BLINK_EXPORT static void enableSlimmingPaintV2(bool);
+    BLINK_EXPORT static void enableSpeculativeLaunchServiceWorker(bool);
     BLINK_EXPORT static void enableTouch(bool);
     BLINK_EXPORT static void enableUnsafeES3APIs(bool);
     BLINK_EXPORT static void enableV8IdleTasks(bool);
