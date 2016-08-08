@@ -253,6 +253,64 @@ def ActionsForPatch(change, action_history):
   return actions_for_patch
 
 
+def ActionsForOldPatches(change, action_history):
+  """Get CL actions for old patches.
+
+  Args:
+    change: GerritPatch instance.
+    action_history: List of CLActions.
+
+  Returns:
+    List of CLActions of 'change' with smaller patch_number.
+  """
+  patch_number = int(change.patch_number)
+  change_number = int(change.gerrit_number)
+  change_source = BoolToChangeSource(change.internal)
+
+  actions_for_old_patches = [a for a in action_history
+                             if (a.change_source == change_source and
+                                 a.change_number == change_number and
+                                 a.patch_number < patch_number)]
+  return actions_for_old_patches
+
+
+def GetOldPreCQBuildActions(change, action_history,
+                            min_timestamp=datetime.datetime.min):
+  """Get old pre-cq build actions.
+
+  Args:
+    change: GerritPatch instance.
+    action_history: List of CLActions.
+    min_timestamp: Minimum timestamp requirement for the cl actions.
+
+  Returns:
+    CL actions for pre-cq runs which were launched after min_timestamp
+    and not cancelled.
+  """
+  if not isinstance(min_timestamp, datetime.datetime):
+    raise ValueError(" %s type %s isn't an instance of datetime.datetime."
+                     % (min_timestamp, type(min_timestamp)))
+
+  actions_for_old_patches = ActionsForOldPatches(change, action_history)
+  cancelled_builds = GetCancelledPreCQBuilds(action_history)
+
+  old_pre_cq_build_actions = [
+      a for a in actions_for_old_patches
+      if (a.action == constants.CL_ACTION_TRYBOT_LAUNCHING and
+          a.buildbucket_id is not None and
+          a.buildbucket_id not in cancelled_builds and
+          a.timestamp is not None and
+          a.timestamp > min_timestamp)]
+
+  return old_pre_cq_build_actions
+
+def GetCancelledPreCQBuilds(action_history):
+  """Get buildbucket_id set of cancelled pre-cq builds."""
+  return set([a.buildbucket_id
+              for a in action_history
+              if a.buildbucket_id is not None and
+              a.action == constants.CL_ACTION_TRYBOT_CANCELLED])
+
 def GetRequeuedOrSpeculative(change, action_history, is_speculative):
   """For a |change| get either a requeued or speculative action if necessary.
 

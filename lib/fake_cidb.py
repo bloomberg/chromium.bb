@@ -116,13 +116,16 @@ class FakeCIDBConnection(object):
       action = cl_action.action
       reason = cl_action.reason
       buildbucket_id = cl_action.buildbucket_id
+
+      timestamp = cl_action.timestamp or timestamp or datetime.datetime.now()
+
       rows.append({
           'build_id' : build_id,
           'change_source' : change_source,
           'change_number': change_number,
           'patch_number' : patch_number,
           'action' : action,
-          'timestamp': timestamp or datetime.datetime.now(),
+          'timestamp': timestamp,
           'reason' : reason,
           'buildbucket_id': buildbucket_id})
 

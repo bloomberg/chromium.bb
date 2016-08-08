@@ -15,6 +15,7 @@ import shutil
 import time
 import tempfile
 
+from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -724,6 +725,9 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
         constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL, 1,
         constants.PRE_CQ_LAUNCHER_CONFIG, 'bot-hostname')
 
+    self.PatchObject(buildbucket_lib, 'GetServiceAccount', return_value=True)
+    self.PatchObject(buildbucket_lib, 'BuildBucketAuth', return_value=True)
+
     super(PreCQLauncherStageTest, self)._Prepare(
         bot_id, build_id=build_id, **kwargs)
 
@@ -1253,6 +1257,63 @@ pre-cq-configs: link-pre-cq
     map_2 = self.sync_stage.GetConfigBuildbucketIdMap(test_output)
     self.assertEqual(map_2, {'test-config': 'test-id'})
 
+  def test_CancelPreCQIfNeeded(self):
+    """Test _CancelPreCQIfNeeded."""
+    db = mock.Mock()
+    stated_content = {'build': {'status': 'STARTED'}}
+    scheduled_content = {'build': {'status': 'SCHEDULED'}}
+    completed_content = {'build': {'status': 'COMPLETED'}}
+    cancel_content = {'build': {'status': 'COMPLETED'}}
+    self.PatchObject(cidb.CIDBConnection, 'InsertCLActions')
+    self.PatchObject(buildbucket_lib, 'GetBuildBucket',
+                     return_value=stated_content)
+    mock_cancel = self.PatchObject(buildbucket_lib, 'CancelBuildBucket',
+                                   return_value=cancel_content)
+    old_build_action = clactions.CLAction(
+        0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        'binhost-pre-cq', 'config', 1, 2, 'external',
+        datetime.datetime.now() - datetime.timedelta(hours=1), '100')
+    self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
+    mock_cancel.assert_called_once_with(
+        '100', True, False, dryrun=self.sync_stage._run.options.debug)
+
+    self.PatchObject(buildbucket_lib, 'GetBuildBucket',
+                     return_value=scheduled_content)
+    self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
+    mock_cancel.assert_called_twice_with(
+        '100', True, False, dryrun=self.sync_stage._run.options.debug)
+
+    self.PatchObject(buildbucket_lib, 'GetBuildBucket',
+                     return_value=completed_content)
+    self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
+    mock_cancel.assert_called_twice_with(
+        '100', True, False, dryrun=self.sync_stage._run.options.debug)
+
+  def test_ProcessOldPatchPreCQRuns(self):
+    """Test _ProcessOldPatchPreCQRuns."""
+    db = mock.Mock()
+    change = metadata_lib.GerritPatchTuple(1, 3, False)
+    c1 = clactions.CLAction(
+        0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        'binhost-pre-cq', 'config', 1, 1, 'external',
+        datetime.datetime.now() - datetime.timedelta(hours=5), '100')
+    c2 = clactions.CLAction(
+        0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        'binhost-pre-cq', 'config', 1, 2, 'external',
+        datetime.datetime.now() - datetime.timedelta(hours=1), '100')
+    c3 = clactions.CLAction(
+        0, 1, constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
+        'binhost-pre-cq', 'config', 1, 3, 'external',
+        datetime.datetime.now(), None)
+    c4 = clactions.CLAction(
+        0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        'binhost-pre-cq', 'config', 1, 3, 'external',
+        datetime.datetime.now(), '101')
+    action_history = clactions.CLActionHistory([c1, c2, c3, c4])
+    mock_cancel = self.PatchObject(sync_stages.PreCQLauncherStage,
+                                   '_CancelPreCQIfNeeded')
+    self.sync_stage._ProcessOldPatchPreCQRuns(db, change, action_history)
+    mock_cancel.assert_called_once_with(db, c2, testjob=False)
 
 class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
   """Unit tests for MasterSlaveLKGMSyncStage"""

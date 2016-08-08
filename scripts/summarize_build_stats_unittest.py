@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import datetime
-import itertools
 import mock
 import random
 
@@ -49,7 +48,8 @@ class TestCLActionLogic(cros_test_lib.TestCase):
     passed_status = {'status': constants.FINAL_STATUS_PASSED}
     failed_status = {'status': constants.FINAL_STATUS_FAILED}
 
-    t = itertools.count()
+    t = datetime.datetime.now()
+    delta = datetime.timedelta(hours=1)
     bot_config = (constants.CQ_MASTER if cq
                   else constants.PRE_CQ_DEFAULT_CONFIGS[0])
 
@@ -68,7 +68,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                             'results' : [],
                             'status' : failed_status,
                             'changes': [c1p1._asdict()]}
-          ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()),
+          ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t+delta),
       # Build 3 picks up c1p1 and c2p1 and rejects both.
       # c3p1 is not included in the run because it fails to apply.
       metadata_lib.CBuildbotMetadata(
@@ -78,11 +78,11 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                             'status' : failed_status,
                             'changes': [c1p1._asdict(),
                                         c2p1._asdict()]}
-          ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
-          ).RecordCLAction(c2p1, constants.CL_ACTION_PICKED_UP, t.next()
-          ).RecordCLAction(c1p1, constants.CL_ACTION_KICKED_OUT, t.next()
-          ).RecordCLAction(c2p1, constants.CL_ACTION_KICKED_OUT, t.next()
-          ).RecordCLAction(c3p1, constants.CL_ACTION_KICKED_OUT, t.next()),
+          ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t+delta
+          ).RecordCLAction(c2p1, constants.CL_ACTION_PICKED_UP, t+delta
+          ).RecordCLAction(c1p1, constants.CL_ACTION_KICKED_OUT, t+delta
+          ).RecordCLAction(c2p1, constants.CL_ACTION_KICKED_OUT, t+delta
+          ).RecordCLAction(c3p1, constants.CL_ACTION_KICKED_OUT, t+delta),
       # Build 4 picks up c4p1 and does nothing with it.
       # c4p2 isn't picked up because it fails to apply.
       metadata_lib.CBuildbotMetadata(
@@ -91,8 +91,8 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                             'results' : [],
                             'status' : failed_status,
                             'changes': [c4p1._asdict()]}
-          ).RecordCLAction(c4p1, constants.CL_ACTION_PICKED_UP, t.next()
-          ).RecordCLAction(c4p2, constants.CL_ACTION_KICKED_OUT, t.next()),
+          ).RecordCLAction(c4p1, constants.CL_ACTION_PICKED_UP, t+delta
+          ).RecordCLAction(c4p2, constants.CL_ACTION_KICKED_OUT, t+delta),
     ]
     if cq:
       test_metadata += [
@@ -107,14 +107,14 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                               'status' : passed_status,
                               'changes': [c1p1._asdict(),
                                           c2p2._asdict()]}
-            ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
-            ).RecordCLAction(c2p2, constants.CL_ACTION_PICKED_UP, t.next()
-            ).RecordCLAction(c3p2, constants.CL_ACTION_PICKED_UP, t.next()
-            ).RecordCLAction(c4p1, constants.CL_ACTION_PICKED_UP, t.next()
-            ).RecordCLAction(c1p1, constants.CL_ACTION_SUBMITTED, t.next()
-            ).RecordCLAction(c2p2, constants.CL_ACTION_SUBMITTED, t.next()
-            ).RecordCLAction(c3p2, constants.CL_ACTION_SUBMITTED, t.next()
-            ).RecordCLAction(c4p2, constants.CL_ACTION_SUBMITTED, t.next()),
+            ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t+delta
+            ).RecordCLAction(c2p2, constants.CL_ACTION_PICKED_UP, t+delta
+            ).RecordCLAction(c3p2, constants.CL_ACTION_PICKED_UP, t+delta
+            ).RecordCLAction(c4p1, constants.CL_ACTION_PICKED_UP, t+delta
+            ).RecordCLAction(c1p1, constants.CL_ACTION_SUBMITTED, t+delta
+            ).RecordCLAction(c2p2, constants.CL_ACTION_SUBMITTED, t+delta
+            ).RecordCLAction(c3p2, constants.CL_ACTION_SUBMITTED, t+delta
+            ).RecordCLAction(c4p2, constants.CL_ACTION_SUBMITTED, t+delta),
       ]
     else:
       test_metadata += [
@@ -124,16 +124,16 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                               'results' : [],
                               'status' : failed_status,
                               'changes': [c4p1._asdict()]}
-            ).RecordCLAction(c4p1, constants.CL_ACTION_PICKED_UP, t.next()
-            ).RecordCLAction(c4p1, constants.CL_ACTION_KICKED_OUT, t.next()),
+            ).RecordCLAction(c4p1, constants.CL_ACTION_PICKED_UP, t+delta
+            ).RecordCLAction(c4p1, constants.CL_ACTION_KICKED_OUT, t+delta),
         metadata_lib.CBuildbotMetadata(
             ).UpdateWithDict({'build-number' : 6,
                               'bot-config' : bot_config,
                               'results' : [],
                               'status' : failed_status,
                               'changes': [c4p1._asdict()]}
-            ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
-            ).RecordCLAction(c1p1, constants.CL_ACTION_KICKED_OUT, t.next())
+            ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t+delta
+            ).RecordCLAction(c1p1, constants.CL_ACTION_KICKED_OUT, t+delta)
       ]
     # pylint: enable=bad-continuation
 
@@ -186,9 +186,9 @@ class TestCLActionLogic(cros_test_lib.TestCase):
           'bad_cl_candidates': {
               CQ: [metadata_lib.GerritChangeTuple(gerrit_number=2,
                                                   internal=True)],
-              PRE_CQ: [metadata_lib.GerritChangeTuple(gerrit_number=2,
+              PRE_CQ: [metadata_lib.GerritChangeTuple(gerrit_number=4,
                                                       internal=True),
-                       metadata_lib.GerritChangeTuple(gerrit_number=4,
+                       metadata_lib.GerritChangeTuple(gerrit_number=2,
                                                       internal=True)],
           },
           'rejections': 10}

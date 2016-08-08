@@ -722,6 +722,9 @@ CL_ACTION_IRRELEVANT_TO_SLAVE = 'irrelevant_to_slave'
 # config. The |reason| field of the action will be the config.
 CL_ACTION_TRYBOT_LAUNCHING = 'trybot_launching'
 
+# Recorded by pre-cq-launcher when it cancels a trybot.
+CL_ACTION_TRYBOT_CANCELLED = 'trybot_cancelled'
+
 
 CL_ACTIONS = (CL_ACTION_PICKED_UP,
               CL_ACTION_SUBMITTED,
@@ -742,7 +745,8 @@ CL_ACTIONS = (CL_ACTION_PICKED_UP,
               CL_ACTION_SPECULATIVE,
               CL_ACTION_FORGIVEN,
               CL_ACTION_PRE_CQ_FULLY_VERIFIED,
-              CL_ACTION_PRE_CQ_RESET)
+              CL_ACTION_PRE_CQ_RESET,
+              CL_ACTION_TRYBOT_CANCELLED)
 
 # Actions taken by a builder when making a decision about a CL.
 CL_DECISION_ACTIONS = (

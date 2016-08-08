@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import json
-import mock
 import os
 import shutil
 import time
@@ -47,8 +46,6 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
     self.options.cache_dir = self.tempdir
     self.checkout_dir = os.path.join(self.tempdir, 'test_checkout')
     self.int_mirror, self.ext_mirror = None, None
-
-    self.PatchObject(remote_try.RemoteTryJob, '_BuildBucketAuth', mock.Mock())
 
   def _RunGitSingleOutput(self, cwd, cmd):
     result = git.RunGit(cwd, cmd)

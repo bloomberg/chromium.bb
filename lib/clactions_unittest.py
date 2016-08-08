@@ -142,6 +142,75 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     action_history = self.fake_db.GetActionsForChanges([change])
     return clactions.GetCLPreCQStatus(change, action_history)
 
+  def testGetOldPreCQBuildActions(self):
+    """Test GetOldPreCQBuildActions."""
+    c1 = metadata_lib.GerritPatchTuple(1, 1, False)
+    c2 = metadata_lib.GerritPatchTuple(1, 2, False)
+    changes = [c1, c2]
+
+    build_id = self.fake_db.InsertBuild('n', 'w', 1, 'c', 'h')
+
+
+    a1 = clactions.CLAction.FromGerritPatchAndAction(
+        c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        reason='binhost-pre-cq',
+        timestamp=datetime.datetime.now() - datetime.timedelta(hours=5))
+    a2 = clactions.CLAction.FromGerritPatchAndAction(
+        c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        reason='binhost-pre-cq',
+        timestamp=datetime.datetime.now() - datetime.timedelta(hours=4),
+        buildbucket_id='1')
+    a3 = clactions.CLAction.FromGerritPatchAndAction(
+        c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        reason='binhost-pre-cq',
+        timestamp=datetime.datetime.now() - datetime.timedelta(hours=3),
+        buildbucket_id='2')
+    a4 = clactions.CLAction.FromGerritPatchAndAction(
+        c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        reason='pbinhost-pre-cq',
+        timestamp=datetime.datetime.now() - datetime.timedelta(hours=3),
+        buildbucket_id='3')
+    a5 = clactions.CLAction.FromGerritPatchAndAction(
+        c1, constants.CL_ACTION_TRYBOT_CANCELLED,
+        reason='binhost-pre-cq',
+        timestamp=datetime.datetime.now() - datetime.timedelta(hours=3),
+        buildbucket_id='3')
+    a6 = clactions.CLAction.FromGerritPatchAndAction(
+        c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        reason='binhost-pre-cq',
+        timestamp=datetime.datetime.now() - datetime.timedelta(hours=1),
+        buildbucket_id='4')
+    a7 = clactions.CLAction.FromGerritPatchAndAction(
+        c2, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        reason='binhost-pre-cq',
+        timestamp=datetime.datetime.now(),
+        buildbucket_id='5')
+
+    cl_actions = [a1, a2, a3, a4, a5, a6, a7]
+
+    self.fake_db.InsertCLActions(build_id, cl_actions)
+    action_history = self.fake_db.GetActionsForChanges(changes)
+
+    timestamp = datetime.datetime.now() - datetime.timedelta(hours=2)
+    c1_old_actions = clactions.GetOldPreCQBuildActions(
+        c1, action_history, timestamp)
+    c2_old_actions = clactions.GetOldPreCQBuildActions(
+        c2, action_history, timestamp)
+    self.assertTrue(len(c1_old_actions) == 0)
+    self.assertTrue(len(c2_old_actions) == 1)
+    self.assertEqual([c.buildbucket_id for c in c2_old_actions],
+                     [a6.buildbucket_id])
+
+    c1_old_actions = clactions.GetOldPreCQBuildActions(
+        c1, action_history)
+    c2_old_actions = clactions.GetOldPreCQBuildActions(
+        c2, action_history)
+    self.assertTrue(len(c1_old_actions) == 0)
+    self.assertTrue(len(c2_old_actions) == 3)
+    self.assertEqual([c.buildbucket_id for c in c2_old_actions],
+                     [a2.buildbucket_id, a3.buildbucket_id,
+                      a6.buildbucket_id])
+
   def testGetRequeuedOrSpeculative(self):
     """Tests GetRequeuedOrSpeculative function."""
     change = metadata_lib.GerritPatchTuple(1, 1, False)

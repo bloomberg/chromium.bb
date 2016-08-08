@@ -26,9 +26,15 @@ from chromite.lib import retry_util
 # from third_party
 import httplib2
 
+# Methods
 PUT_METHOD = 'PUT'
 POST_METHOD = 'POST'
 GET_METHOD = 'GET'
+
+# Statuses
+STARTED_STATUS = 'STARTED'
+SCHEDULED_STATUS = 'SCHEDULED'
+COMPLETED_STATUS = 'COMPLETED'
 
 def GetServiceAccount(service_account=None):
   """Get service account file.
@@ -72,7 +78,7 @@ def BuildBucketRequest(http, url, method, body, dryrun):
     http: Http instance.
     url: Buildbucket url to send requests.
     method: Request method.
-    body: Body of http request.
+    body: Body of http request (string object).
     dryrun: Whether a dryrun.
 
   Returns:
@@ -93,7 +99,7 @@ def BuildBucketRequest(http, url, method, body, dryrun):
 
     if int(response['status']) // 100 != 2:
       raise Exception('Got a %s response from buildbucket '
-                      'with url: %s content: %s'
+                      'with url: %s\ncontent: %s'
                       % (response['status'], url, content))
 
     # Return content_dict
@@ -113,9 +119,9 @@ def PutBuildBucket(body, http, testjob, dryrun):
   Returns:
     Content if request succeeds.
   """
-  url = (
-      'https://{hostname}/_ah/api/buildbucket/v1/builds'.format(
-          hostname=GetHost(testjob)))
+  url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds' % {
+      'hostname': GetHost(testjob)
+  }
 
   return BuildBucketRequest(http, url, PUT_METHOD, body, dryrun)
 
@@ -131,11 +137,12 @@ def GetBuildBucket(buildbucket_id, http, testjob, dryrun):
   Returns:
     Content if request succeeds.
   """
-  url = (
-      'https://{hostname}/_ah/api/buildbucket/v1/builds/{id}'.format(
-          hostname=GetHost(testjob), id=buildbucket_id))
+  url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s' % {
+      'hostname': GetHost(testjob),
+      'id': buildbucket_id
+  }
 
-  return BuildBucketRequest(http, url, GET_METHOD, {}, dryrun)
+  return BuildBucketRequest(http, url, GET_METHOD, None, dryrun)
 
 def CancelBuildBucket(buildbucket_id, http, testjob, dryrun):
   """Send Cancel request to buildbucket server.
@@ -149,11 +156,12 @@ def CancelBuildBucket(buildbucket_id, http, testjob, dryrun):
   Returns:
     Content if request succeeds.
   """
-  url = (
-      'https://{hostname}/_ah/api/buildbucket/v1/builds/{id}/cancel'.format(
-          hostname=GetHost(testjob), id=buildbucket_id))
+  url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s/cancel' % {
+      'hostname': GetHost(testjob),
+      'id': buildbucket_id
+  }
 
-  return BuildBucketRequest(http, url, POST_METHOD, {}, dryrun)
+  return BuildBucketRequest(http, url, POST_METHOD, '{}', dryrun)
 
 def CancelBatchBuildBucket(buildbucket_ids, http, testjob, dryrun):
   """Send CancelBatch request to buildbucket server.
@@ -167,9 +175,10 @@ def CancelBatchBuildBucket(buildbucket_ids, http, testjob, dryrun):
   Returns:
     Content if request succeeds.
   """
-  url = (
-      'https://{hostname}/_ah/api/buildbucket/v1/builds/cancel'.format(
-          hostname=GetHost(testjob)))
+  url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/cancel' % {
+      'hostname': GetHost(testjob)
+  }
+
   body = json.dumps({'build_ids': buildbucket_ids})
 
   return BuildBucketRequest(http, url, POST_METHOD, body, dryrun)

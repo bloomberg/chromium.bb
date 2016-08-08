@@ -1185,10 +1185,19 @@ class PreCQLauncherStage(SyncStage):
   # tree after building up a large backlog.
   MAX_LAUNCHES_PER_CYCLE_DERIVATIVE = 20
 
+  # Delta time constant for checking buildbucket. Do not check status or
+  # cancel builds which were launched >= BUILDBUCKET_DELTA_TIME_HOUR ago.
+  BUILDBUCKET_DELTA_TIME_HOUR = 4
+
   def __init__(self, builder_run, **kwargs):
     super(PreCQLauncherStage, self).__init__(builder_run, **kwargs)
     self.skip_sync = True
     self.last_cycle_launch_count = 0
+    self.buildbucket_http = None
+    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
+      self.buildbucket_http = buildbucket_lib.BuildBucketAuth(
+          service_account=buildbucket_lib.GetServiceAccount(
+              constants.CHROMEOS_SERVICE_ACCOUNT))
 
 
   def _HasTimedOut(self, start, now, timeout_minutes):
@@ -1513,6 +1522,63 @@ class PreCQLauncherStage(SyncStage):
         pool.RemoveReady(change, reason=config)
         pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
 
+  def _CancelPreCQIfNeeded(self, db, old_build_action, testjob=False):
+    """Cancel the pre-cq if it's still running.
+
+    Args:
+      db: CIDB connection instance.
+      old_build_action: Old patch build action.
+      testjob: Whether to use the test instance of the buildbucket server.
+    """
+    buildbucket_id = old_build_action.buildbucket_id
+    get_content = buildbucket_lib.GetBuildBucket(
+        buildbucket_id, self.buildbucket_http, testjob,
+        dryrun=self._run.options.debug)
+
+    status = buildbucket_lib.GetBuildStatus(get_content)
+    if status in [buildbucket_lib.STARTED_STATUS,
+                  buildbucket_lib.SCHEDULED_STATUS]:
+      logging.info('Cancelling old build %s %s', buildbucket_id, status)
+      cancel_content = buildbucket_lib.CancelBuildBucket(
+          buildbucket_id, self.buildbucket_http, testjob,
+          dryrun=self._run.options.debug)
+      cancel_status = buildbucket_lib.GetBuildStatus(cancel_content)
+      if cancel_status:
+        logging.info('Cancelled buildbucket_id: %s status: %s \ncontent: %s',
+                     buildbucket_id, cancel_status, cancel_content)
+        if db:
+          cancel_action = old_build_action._replace(
+              action=constants.CL_ACTION_TRYBOT_CANCELLED)
+          db.InsertCLActions(cancel_action.build_id, [cancel_action])
+      else:
+        # If the old pre-cq build already completed, CANCEL response will
+        # give 200 returncode with error reasons.
+        logging.debug('Failed to cancel buildbucket_id: %s reason: %s',
+                      buildbucket_id,
+                      buildbucket_lib.GetErrorReason(cancel_content))
+
+  def _ProcessOldPatchPreCQRuns(self, db, change, action_history):
+    """Process Pre-cq runs for change with old patch numbers.
+
+    Args:
+      db: CIDB connection instance.
+      change: GerritPatch instance to process.
+      action_history: List of CLActions.
+    """
+    min_timestamp = datetime.datetime.now() - datetime.timedelta(
+        hours=self.BUILDBUCKET_DELTA_TIME_HOUR)
+    old_pre_cq_build_actions = clactions.GetOldPreCQBuildActions(
+        change, action_history, min_timestamp)
+    for old_build_action in old_pre_cq_build_actions:
+      try:
+        self._CancelPreCQIfNeeded(
+            db, old_build_action, testjob=self._run.options.test_tryjob)
+      except Exception as e:
+        # Log errors; do not raise exceptions.
+        logging.error('_CancelPreCQIfNeeded failed. '
+                      'change: %s old_build_action: %s error: %r',
+                      change, old_build_action, e)
+
   def _ProcessVerified(self, change, can_submit, will_submit):
     """Process a change that is fully pre-cq verified.
 
@@ -1569,6 +1635,11 @@ class PreCQLauncherStage(SyncStage):
     """
     _, db = self._run.GetCIDBHandle()
     action_history = db.GetActionsForChanges(changes)
+
+    if self.buildbucket_http is not None:
+      for change in changes:
+        self._ProcessOldPatchPreCQRuns(db, change, action_history)
+
     for change in changes:
       self._ProcessRequeuedAndSpeculative(change, action_history)
 
