@@ -359,7 +359,7 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
         if (m_document->frame()) {
             ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
             if (scriptState)
-                ScriptStreamer::startStreaming(m_parserBlockingScript.get(), ScriptStreamer::ParsingBlocking, m_document->frame()->settings(), scriptState, TaskRunnerHelper::getLoadingTaskRunner(m_document));
+                ScriptStreamer::startStreaming(m_parserBlockingScript.get(), ScriptStreamer::ParsingBlocking, m_document->frame()->settings(), scriptState, TaskRunnerHelper::get(TaskType::Networking, m_document));
         }
 
         m_parserBlockingScript->watchForLoad(this);
@@ -375,7 +375,7 @@ void HTMLScriptRunner::requestDeferredScript(Element* element)
     if (m_document->frame() && !pendingScript->isReady()) {
         ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
         if (scriptState)
-            ScriptStreamer::startStreaming(pendingScript, ScriptStreamer::Deferred, m_document->frame()->settings(), scriptState, TaskRunnerHelper::getLoadingTaskRunner(m_document));
+            ScriptStreamer::startStreaming(pendingScript, ScriptStreamer::Deferred, m_document->frame()->settings(), scriptState, TaskRunnerHelper::get(TaskType::Networking, m_document));
     }
 
     ASSERT(pendingScript->resource());

@@ -3031,7 +3031,7 @@ void Document::didRemoveAllPendingStylesheet()
 
 void Document::didLoadAllScriptBlockingResources()
 {
-    TaskRunnerHelper::getLoadingTaskRunner(this)->postTask(BLINK_FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
+    TaskRunnerHelper::get(TaskType::Networking, this)->postTask(BLINK_FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
 
     if (isHTMLDocument() && body()) {
         // For HTML if we have no more stylesheets to load and we're past the body
