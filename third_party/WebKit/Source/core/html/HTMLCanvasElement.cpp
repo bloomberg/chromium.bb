@@ -713,7 +713,7 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback, const String& mimeType, c
 
     if (!isPaintable()) {
         // If the canvas element's bitmap has no pixels
-        TaskRunnerHelper::getUnthrottledTaskRunner(&document())->postTask(BLINK_FROM_HERE, WTF::bind(&BlobCallback::handleEvent, wrapPersistent(callback), nullptr));
+        TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, &document())->postTask(BLINK_FROM_HERE, WTF::bind(&BlobCallback::handleEvent, wrapPersistent(callback), nullptr));
         return;
     }
 
