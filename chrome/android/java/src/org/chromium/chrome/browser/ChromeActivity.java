@@ -1411,6 +1411,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             FeatureUtilities.setIsInMultiWindowMode(
                     MultiWindowUtils.getInstance().isInMultiWindowMode(this));
         }
+
+        super.onMultiWindowModeChanged(isInMultiWindowMode);
     }
 
     /**

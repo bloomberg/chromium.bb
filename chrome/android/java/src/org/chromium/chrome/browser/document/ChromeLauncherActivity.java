@@ -115,6 +115,7 @@ public class ChromeLauncherActivity extends Activity
      * you add _absolutely has_ to be here.
      */
     @Override
+    @SuppressLint("MissingSuperCall") // Called in doOnCreate.
     public void onCreate(Bundle savedInstanceState) {
         // Third-party code adds disk access to Activity.onCreate. http://crbug.com/619824
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();

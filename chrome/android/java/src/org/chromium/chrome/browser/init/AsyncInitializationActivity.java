@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.init;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -200,6 +201,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      * be called on that order.
      */
     @Override
+    @SuppressLint("MissingSuperCall")  // Called in onCreateInternal.
     protected final void onCreate(Bundle savedInstanceState) {
         TraceEvent.begin("AsyncInitializationActivity.onCreate()");
         onCreateInternal(savedInstanceState);
