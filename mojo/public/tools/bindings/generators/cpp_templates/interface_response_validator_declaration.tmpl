@@ -1,4 +1,4 @@
-class {{interface.name}}ResponseValidator : public mojo::MessageFilter {
+class {{export_attribute}} {{interface.name}}ResponseValidator : public NON_EXPORTED_BASE(mojo::MessageFilter) {
  public:
   explicit {{interface.name}}ResponseValidator(mojo::MessageReceiver* sink = nullptr);
 

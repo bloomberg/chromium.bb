@@ -37,8 +37,8 @@ class Generator(object):
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all
   # files to stdout.
   def __init__(self, module, output_dir=None, typemap=None, variant=None,
-               bytecode_path=None, for_blink=False,
-               use_new_wrapper_types=False):
+               bytecode_path=None, for_blink=False, use_new_wrapper_types=False,
+               export_attribute=None, export_header=None):
     self.module = module
     self.output_dir = output_dir
     self.typemap = typemap or {}
@@ -46,6 +46,8 @@ class Generator(object):
     self.bytecode_path = bytecode_path
     self.for_blink = for_blink
     self.use_new_wrapper_types = use_new_wrapper_types
+    self.export_attribute = export_attribute
+    self.export_header = export_header
 
   def GetStructsFromMethods(self):
     result = []

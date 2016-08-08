@@ -1,6 +1,6 @@
 {% from "enum_macros.tmpl" import enum_decl -%}
 
-class {{struct.name}} {
+class {{export_attribute}} {{struct.name}} {
  public:
   using DataView = {{struct.name}}DataView;
   using Data_ = internal::{{struct.name}}_Data;

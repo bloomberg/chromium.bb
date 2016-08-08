@@ -99,6 +99,10 @@ struct DataViewTraits<{{kind|get_qualified_name_for_kind}}DataView> {
 #include "{{header}}"
 {%- endfor %}
 
+{%- if export_header %}
+#include "{{export_header}}"
+{%- endif %}
+
 {#--- Enums #}
 {%- if enums %}
 {{namespace_begin()}}

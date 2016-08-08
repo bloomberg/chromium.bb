@@ -1,7 +1,7 @@
 {%- import "interface_macros.tmpl" as interface_macros %}
-class {{interface.name}}Proxy
+class {{export_attribute}} {{interface.name}}Proxy
     : public {{interface.name}},
-      public mojo::internal::ControlMessageProxy {
+      public NON_EXPORTED_BASE(mojo::internal::ControlMessageProxy) {
  public:
   explicit {{interface.name}}Proxy(mojo::MessageReceiverWithResponder* receiver);
 

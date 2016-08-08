@@ -1,4 +1,4 @@
-class {{interface.name}}Stub : public mojo::MessageReceiverWithResponderStatus {
+class {{export_attribute}} {{interface.name}}Stub : public NON_EXPORTED_BASE(mojo::MessageReceiverWithResponderStatus) {
  public:
   {{interface.name}}Stub();
   ~{{interface.name}}Stub() override;

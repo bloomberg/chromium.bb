@@ -76,7 +76,6 @@ target(modules_target_type, "modules") {
     "//device/vr:mojo_bindings_blink",
     "//media/mojo/interfaces:image_capture_blink",
     "//third_party/WebKit/Source/core",
-    "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/icu",
     "//third_party/sqlite",
     "//third_party/zlib",

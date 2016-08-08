@@ -234,10 +234,7 @@ group("for_content_tests") {
 }
 
 mojom("mojo_bindings") {
-  # This interface is internal to content. However, this is not exported from
-  # the content component shared library. Code in content but outside of the
-  # content component (content/test or content/shell) should link to this
-  # directly.
+  # This interface is internal to content.
   visibility = [ "//content/*" ]
 
   sources = [
@@ -267,4 +264,8 @@ mojom("mojo_bindings") {
   ]
 
   use_new_wrapper_types = false
+
+  export_class_attribute = "CONTENT_EXPORT"
+  export_define = "CONTENT_IMPLEMENTATION=1"
+  export_header = "content/common/content_export.h"
 }

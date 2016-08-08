@@ -163,7 +163,9 @@ class MojomProcessor(object):
             module, args.output_dir, typemap=self._typemap.get(language, {}),
             variant=args.variant, bytecode_path=args.bytecode_path,
             for_blink=args.for_blink,
-            use_new_wrapper_types=args.use_new_wrapper_types)
+            use_new_wrapper_types=args.use_new_wrapper_types,
+            export_attribute=args.export_attribute,
+            export_header=args.export_header)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -289,6 +291,14 @@ def main():
       "--use_new_wrapper_types", action="store_true",
       help="Map mojom array/map/string to STL (for chromium variant) or WTF "
       "(for blink variant) types directly.")
+  generate_parser.add_argument(
+      "--export_attribute", type=str, default="",
+      help="Optional attribute to specify on class declaration to export it "
+      "for the component build.")
+  generate_parser.add_argument(
+      "--export_header", type=str, default="",
+      help="Optional header to include in the generated headers to support the "
+      "component build.")
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",

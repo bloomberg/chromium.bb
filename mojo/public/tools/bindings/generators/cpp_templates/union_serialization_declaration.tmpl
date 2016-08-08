@@ -7,7 +7,7 @@ template <typename MojomType>
 struct UnionSerializerImpl;
 
 template <>
-struct UnionSerializerImpl<{{mojom_type}}Ptr> {
+struct {{export_attribute}} UnionSerializerImpl<{{mojom_type}}Ptr> {
   static size_t PrepareToSerialize({{mojom_type}}Ptr& input,
                                    bool inlined,
                                    SerializationContext* context);
@@ -24,7 +24,7 @@ struct UnionSerializerImpl<{{mojom_type}}Ptr> {
 };
 
 template <typename MaybeConstUserType>
-struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType>
+struct {{export_attribute}} Serializer<{{mojom_type}}Ptr, MaybeConstUserType>
     : public UnionSerializerImpl<{{mojom_type}}Ptr> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
 

@@ -503,6 +503,8 @@ class Generator(generator.Generator):
       "extra_public_headers": self.GetExtraPublicHeaders(),
       "for_blink": self.for_blink,
       "use_new_wrapper_types": self.use_new_wrapper_types,
+      "export_attribute": self.export_attribute,
+      "export_header": self.export_header,
     }
 
   @staticmethod

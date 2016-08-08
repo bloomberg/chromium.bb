@@ -7,7 +7,7 @@ class {{interface.name}}RequestValidator;
 class {{interface.name}}ResponseValidator;
 {%- endif %}
 
-class {{interface.name}} {
+class {{export_attribute}} {{interface.name}} {
  public:
   static const char Name_[];
   static const uint32_t Version_ = {{interface.version}};

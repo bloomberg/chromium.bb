@@ -78,11 +78,41 @@ foreach(configuration, _bindings_configurations) {
 #       TODO(yzshen):
 #         - convert all users to use the new mode;
 #         - remove support for the old mode.
+#
+# The following parameters are used to support the component build. They are
+# needed so that bindings which are linked with a component can use the same
+# export settings for classes. The first three are for the chromium variant, and
+# the last three are for the blink variant.
+#   export_class_attribute (optional)
+#       The attribute to add to the class declaration. e.g. "CONTENT_EXPORT"
+#   export_define (optional)
+#       A define to be added to the source_set which is needed by the export
+#       header. e.g. "CONTENT_IMPLEMENTATION=1"
+#   export_header (optional)
+#       A header to be added to the generated bindings to support the component
+#       build. e.g. "content/common/content_export.h"
+#   export_class_attribute_blink (optional)
+#   export_define_blink (optional)
+#   export_header_blink (optional)
+#       These three parameters are the blink variants of the previous 3.
 template("mojom") {
   assert(
       defined(invoker.sources) || defined(invoker.deps) ||
           defined(invoker.public_deps),
       "\"sources\" or \"deps\" must be defined for the $target_name template.")
+  if (defined(invoker.export_class_attribute) ||
+      defined(invoker.export_define) || defined(invoker.export_header)) {
+    assert(defined(invoker.export_class_attribute))
+    assert(defined(invoker.export_define))
+    assert(defined(invoker.export_header))
+  }
+  if (defined(invoker.export_class_attribute_blink) ||
+      defined(invoker.export_define_blink) ||
+      defined(invoker.export_header_blink)) {
+    assert(defined(invoker.export_class_attribute_blink))
+    assert(defined(invoker.export_define_blink))
+    assert(defined(invoker.export_header_blink))
+  }
 
   all_deps = []
   if (defined(invoker.deps)) {
@@ -227,6 +257,23 @@ template("mojom") {
         if (defined(bindings_configuration.for_blink) &&
             bindings_configuration.for_blink) {
           args += [ "--for_blink" ]
+          if (defined(invoker.export_class_attribute_blink)) {
+            args += [
+              "--export_attribute",
+              invoker.export_class_attribute_blink,
+              "--export_header",
+              invoker.export_header_blink,
+            ]
+          }
+        } else {
+          if (defined(invoker.export_class_attribute)) {
+            args += [
+              "--export_attribute",
+              invoker.export_class_attribute,
+              "--export_header",
+              invoker.export_header,
+            ]
+          }
         }
 
         if (!defined(invoker.use_new_wrapper_types) ||
@@ -325,8 +372,15 @@ template("mojom") {
     # this target *except* mojo/public/cpp/bindings and other *_cpp_sources
     # targets.
     source_set(cpp_sources_target_name) {
+      defines = []
       if (defined(invoker.testonly)) {
         testonly = invoker.testonly
+      }
+      if (defined(invoker.export_define)) {
+        defines += [ invoker.export_define ]
+      }
+      if (defined(invoker.export_define_blink)) {
+        defines += [ invoker.export_define_blink ]
       }
       if (enabled_sources != []) {
         sources = process_file_template(enabled_sources, generator_cpp_outputs)
