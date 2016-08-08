@@ -68,5 +68,8 @@ NaClBrowserTestGLibc.PPAPICore
 # https://crbug.com/589174
 WebContentsImplBrowserTest.SetTitleOnUnload
 
-$ https://crbug.com/621466
+# https://crbug.com/621466
 CrossSiteTransferTest.PostWithFileData
+
+# https://crbug.com/622387
+DumpAccessibilityTreeTest.AccessibilityIframeTransform
