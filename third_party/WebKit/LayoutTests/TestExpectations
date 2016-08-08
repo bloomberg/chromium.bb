@@ -1211,7 +1211,6 @@ crbug.com/155836 fast/text/emphasis-ellipsis-complextext.html [ Failure Pass ]
 
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
 
-crbug.com/634199 http/tests/serviceworker/fetch-event-network-error.html [ Crash Pass ]
 crbug.com/635390 fast/repaint/scrollbar-damage-and-full-viewport-repaint.html [ Failure Pass ]
 crbug.com/634264 http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Crash Timeout ]
 
