@@ -54,6 +54,7 @@
 #include "components/safe_browsing_db/metadata.pb.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -484,7 +485,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
                                    SBFullHashResult* full_hash) {
     std::string host;
     std::string path;
-    CanonicalizeUrl(url, &host, &path, nullptr);
+    V4ProtocolManagerUtil::CanonicalizeUrl(url, &host, &path, nullptr);
     full_hash->hash = SBFullHashForString(host + path);
     full_hash->list_id = list_id;
   }

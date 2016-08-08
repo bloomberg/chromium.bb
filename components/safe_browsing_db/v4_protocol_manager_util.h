@@ -13,6 +13,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/hash.h"
+#include "base/strings/string_piece.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -22,6 +23,12 @@ class HttpRequestHeaders;
 }  // namespace net
 
 namespace safe_browsing {
+
+// A hash prefix sent by the SafeBrowsing PVer4 service.
+typedef std::string HashPrefix;
+
+// A full SHA256 hash.
+typedef HashPrefix FullHash;
 
 typedef FetchThreatListUpdatesRequest::ListUpdateRequest ListUpdateRequest;
 typedef FetchThreatListUpdatesResponse::ListUpdateResponse ListUpdateResponse;
@@ -70,6 +77,9 @@ struct UpdateListIdentifier {
 
 std::ostream& operator<<(std::ostream& os, const UpdateListIdentifier& id);
 
+const UpdateListIdentifier GetUrlMalwareId();
+const UpdateListIdentifier GetUrlSocEngId();
+
 // The set of interesting lists and ASCII filenames for their hash prefix
 // stores. The stores are created inside the user-data directory.
 // For instance, the UpdateListIdentifier could be for URL expressions for UwS
@@ -117,14 +127,29 @@ enum V4OperationResult {
 // A class that provides static methods related to the Pver4 protocol.
 class V4ProtocolManagerUtil {
  public:
-  // Record HTTP response code when there's no error in fetching an HTTP
-  // request, and the error code, when there is.
-  // |metric_name| is the name of the UMA metric to record the response code or
-  // error code against, |status| represents the status of the HTTP request, and
-  // |response code| represents the HTTP response code received from the server.
-  static void RecordHttpResponseOrErrorCode(const char* metric_name,
-                                            const net::URLRequestStatus& status,
-                                            int response_code);
+  // Canonicalizes url as per Google Safe Browsing Specification.
+  // See: https://developers.google.com/safe-browsing/v4/urls-hashing
+  static void CanonicalizeUrl(const GURL& url,
+                              std::string* canonicalized_hostname,
+                              std::string* canonicalized_path,
+                              std::string* canonicalized_query);
+
+  // This method returns the host suffix combinations from the hostname in the
+  // URL, as described here:
+  // https://developers.google.com/safe-browsing/v4/urls-hashing
+  static void GenerateHostVariantsToCheck(const std::string& host,
+                                          std::vector<std::string>* hosts);
+
+  // This method returns the path prefix combinations from the path in the
+  // URL, as described here:
+  // https://developers.google.com/safe-browsing/v4/urls-hashing
+  static void GeneratePathVariantsToCheck(const std::string& path,
+                                          const std::string& query,
+                                          std::vector<std::string>* paths);
+
+  // Given a URL, returns all the patterns we need to check.
+  static void GeneratePatternsToCheck(const GURL& url,
+                                      std::vector<std::string>* urls);
 
   // Generates a Pver4 request URL and sets the appropriate header values.
   // |request_base64| is the serialized request protocol buffer encoded in
@@ -145,12 +170,26 @@ class V4ProtocolManagerUtil {
   static base::TimeDelta GetNextBackOffInterval(size_t* error_count,
                                                 size_t* multiplier);
 
+  // Record HTTP response code when there's no error in fetching an HTTP
+  // request, and the error code, when there is.
+  // |metric_name| is the name of the UMA metric to record the response code or
+  // error code against, |status| represents the status of the HTTP request, and
+  // |response code| represents the HTTP response code received from the server.
+  static void RecordHttpResponseOrErrorCode(const char* metric_name,
+                                            const net::URLRequestStatus& status,
+                                            int response_code);
+
+  // Generate the set of FullHashes to check for |url|.
+  static void UrlToFullHashes(const GURL& url,
+                              base::hash_set<FullHash>* full_hashes);
+
  private:
   V4ProtocolManagerUtil(){};
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerUtilTest,
-                           TestBackOffLogic);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerUtilTest,
+  FRIEND_TEST_ALL_PREFIXES(V4ProtocolManagerUtilTest, TestBackOffLogic);
+  FRIEND_TEST_ALL_PREFIXES(V4ProtocolManagerUtilTest,
                            TestGetRequestUrlAndUpdateHeaders);
+  FRIEND_TEST_ALL_PREFIXES(V4ProtocolManagerUtilTest, UrlParsing);
+  FRIEND_TEST_ALL_PREFIXES(V4ProtocolManagerUtilTest, CanonicalizeUrl);
 
   // Composes a URL using |prefix|, |method| (e.g.: encodedFullHashes).
   // |request_base64|, |client_id|, |version| and |key_param|. |prefix|
@@ -162,6 +201,18 @@ class V4ProtocolManagerUtil {
 
   // Sets the HTTP headers expected by a standard PVer4 request.
   static void UpdateHeaders(net::HttpRequestHeaders* headers);
+
+  // Given a URL, returns all the hosts we need to check.  They are returned
+  // in order of size (i.e. b.c is first, then a.b.c).
+  static void GenerateHostsToCheck(const GURL& url,
+                                   std::vector<std::string>* hosts);
+
+  // Given a URL, returns all the paths we need to check.
+  static void GeneratePathsToCheck(const GURL& url,
+                                   std::vector<std::string>* paths);
+
+  static std::string RemoveConsecutiveChars(base::StringPiece str,
+                                            const char c);
 
   DISALLOW_COPY_AND_ASSIGN(V4ProtocolManagerUtil);
 };

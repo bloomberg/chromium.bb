@@ -155,6 +155,7 @@ static_library("util") {
     "util.h",
   ]
   deps = [
+    ":v4_protocol_manager_util",
     "//base",
     "//base:base",
     "//crypto",
