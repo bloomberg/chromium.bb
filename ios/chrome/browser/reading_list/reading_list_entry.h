@@ -44,10 +44,6 @@ class ReadingListEntry {
   // Sets the state to one of PROCESSING, WILL_RETRY or ERROR.
   void SetDistilledState(DistillationState distilled_state);
 
-  // DEPRECATED.
-  const GURL& url() const;
-  const std::string title() const;
-
  private:
   GURL url_;
   std::string title_;

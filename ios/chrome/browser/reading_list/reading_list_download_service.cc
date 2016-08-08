@@ -87,13 +87,13 @@ void ReadingListDownloadService::DownloadAllEntries() {
 
 void ReadingListDownloadService::DownloadEntry(const ReadingListEntry& entry) {
   DCHECK(reading_list_model_->loaded());
-  url_downloader_->DownloadOfflineURL(entry.url());
+  url_downloader_->DownloadOfflineURL(entry.URL());
 }
 
 void ReadingListDownloadService::RemoveDownloadedEntry(
     const ReadingListEntry& entry) {
   DCHECK(reading_list_model_->loaded());
-  url_downloader_->RemoveOfflineURL(entry.url());
+  url_downloader_->RemoveOfflineURL(entry.URL());
 }
 
 void ReadingListDownloadService::OnDownloadEnd(const GURL& url, bool success) {

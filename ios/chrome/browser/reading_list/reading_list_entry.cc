@@ -60,11 +60,3 @@ void ReadingListEntry::SetDistilledState(DistillationState distilled_state) {
   distilled_state_ = distilled_state;
   distilled_url_ = GURL();
 }
-
-// DEPRECATED
-const GURL& ReadingListEntry::url() const {
-  return url_;
-}
-const std::string ReadingListEntry::title() const {
-  return title_;
-}
