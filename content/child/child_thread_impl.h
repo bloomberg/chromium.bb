@@ -64,6 +64,8 @@ class QuotaDispatcher;
 class QuotaMessageFilter;
 class ResourceDispatcher;
 class ThreadSafeSender;
+class WebSocketDispatcher;
+class WebSocketMessageFilter;
 struct RequestInfo;
 
 // The main thread of a child process derives from this class.
@@ -137,6 +139,10 @@ class CONTENT_EXPORT ChildThreadImpl
     return resource_dispatcher_.get();
   }
 
+  WebSocketDispatcher* websocket_dispatcher() const {
+    return websocket_dispatcher_.get();
+  }
+
   FileSystemDispatcher* file_system_dispatcher() const {
     return file_system_dispatcher_.get();
   }
@@ -178,6 +184,10 @@ class CONTENT_EXPORT ChildThreadImpl
 
   ChildResourceMessageFilter* child_resource_message_filter() const {
     return resource_message_filter_.get();
+  }
+
+  WebSocketMessageFilter* websocket_message_filter() const {
+    return websocket_message_filter_.get();
   }
 
   base::MessageLoop* message_loop() const { return message_loop_; }
@@ -266,6 +276,8 @@ class CONTENT_EXPORT ChildThreadImpl
   // Handles resource loads for this process.
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
 
+  std::unique_ptr<WebSocketDispatcher> websocket_dispatcher_;
+
   // The OnChannelError() callback was invoked - the channel is dead, don't
   // attempt to communicate.
   bool on_channel_error_called_;
@@ -283,6 +295,8 @@ class CONTENT_EXPORT ChildThreadImpl
   scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
 
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
+
+  scoped_refptr<WebSocketMessageFilter> websocket_message_filter_;
 
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 

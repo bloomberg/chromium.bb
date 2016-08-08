@@ -132,8 +132,8 @@ enum BadMessageReason {
   RDHI_WRONG_STORAGE_PARTITION = 107,
   RDH_INVALID_REQUEST_ID = 108,
   BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN = 109,
-  WSI_UNEXPECTED_ADD_CHANNEL_REQUEST = 110,
-  WSI_UNEXPECTED_SEND_FRAME = 111,
+  WSH_SEND_BLOB_DURING_BLOB_SEND = 110,
+  WSH_SEND_FRAME_DURING_BLOB_SEND = 111,
   RFH_UNEXPECTED_LOAD_START = 112,
   NMF_INVALID_ARGUMENT = 113,
   RFH_INVALID_ORIGIN_ON_COMMIT = 114,
@@ -149,7 +149,7 @@ enum BadMessageReason {
   DBMF_INVALID_ORIGIN_ON_GET_SPACE = 124,
   DBMF_INVALID_ORIGIN_ON_MODIFIED = 125,
   DBMF_INVALID_ORIGIN_ON_CLOSED = 126,
-  WSI_INVALID_HEADER_VALUE = 127,
+  WSH_INVALID_HEADER_VALUE = 127,
   SWDH_SET_HOSTED_VERSION_INVALID_HOST = 128,
   SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH = 129,
   MSDH_INVALID_FRAME_ID = 130,
@@ -168,9 +168,6 @@ enum BadMessageReason {
 // the UI thread. Logs the event, records a histogram metric for the |reason|,
 // and terminates the process for |host|.
 void ReceivedBadMessage(RenderProcessHost* host, BadMessageReason reason);
-
-// Equivalent to the above, but callable from any thread.
-void ReceivedBadMessage(int render_process_id, BadMessageReason reason);
 
 // Called when a browser message filter receives a bad IPC message from a
 // renderer or other child process. Logs the event, records a histogram metric

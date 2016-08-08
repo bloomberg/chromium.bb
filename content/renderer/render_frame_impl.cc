@@ -45,6 +45,7 @@
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/webmessageportchannel_impl.h"
+#include "content/child/websocket_bridge.h"
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/clipboard_messages.h"
@@ -133,7 +134,6 @@
 #include "content/renderer/web_frame_utils.h"
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/websharedworker_proxy.h"
-#include "content/renderer/websockethandle_impl.h"
 #include "crypto/sha2.h"
 #include "gin/modules/module_registry.h"
 #include "media/audio/audio_output_device.h"
@@ -4284,6 +4284,11 @@ void RenderFrameImpl::requestStorageQuota(
       QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 
+void RenderFrameImpl::willOpenWebSocket(blink::WebSocketHandle* handle) {
+  WebSocketBridge* impl = static_cast<WebSocketBridge*>(handle);
+  impl->set_render_frame_id(routing_id_);
+}
+
 blink::WebPresentationClient* RenderFrameImpl::presentationClient() {
   if (!presentation_dispatcher_)
     presentation_dispatcher_ = new PresentationDispatcher(this);
@@ -4294,15 +4299,6 @@ blink::WebPushClient* RenderFrameImpl::pushClient() {
   if (!push_messaging_dispatcher_)
     push_messaging_dispatcher_ = new PushMessagingDispatcher(this);
   return push_messaging_dispatcher_;
-}
-
-void RenderFrameImpl::willOpenWebSocket(blink::WebSocketHandle* handle) {
-  // Initialize the WebSocketHandle with our InterfaceProvider to provide the
-  // WebSocket implementation with context about this frame. This is important
-  // so that the browser can show UI associated with the WebSocket (e.g., for
-  // certificate errors).
-  static_cast<WebSocketHandleImpl*>(handle)->Initialize(
-      blink_interface_provider_.get());
 }
 
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(

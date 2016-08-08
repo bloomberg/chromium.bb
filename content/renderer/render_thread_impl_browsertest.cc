@@ -21,6 +21,7 @@
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/resource_messages.h"
+#include "content/common/websocket_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -231,6 +232,7 @@ TEST_F(RenderThreadImplBrowserTest,
        WILL_LEAK(NonResourceDispatchIPCTasksDontGoThroughScheduler)) {
   // NOTE other than not being a resource message, the actual message is
   // unimportant.
+  test_helper_->Sender()->Send(new WebSocketMsg_NotifyFailure(1, ""));
   test_helper_->Sender()->Send(new TestMsg_QuitRunLoop());
 
   base::RunLoop().Run();

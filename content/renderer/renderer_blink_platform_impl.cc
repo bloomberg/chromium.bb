@@ -74,7 +74,6 @@
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
-#include "content/renderer/websockethandle_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -397,10 +396,6 @@ void RendererBlinkPlatformImpl::createMessageChannel(
     blink::WebMessagePortChannel** channel2) {
   WebMessagePortChannelImpl::CreatePair(
       default_task_runner_, channel1, channel2);
-}
-
-blink::WebSocketHandle* RendererBlinkPlatformImpl::createWebSocketHandle() {
-  return new WebSocketHandleImpl(loading_task_runner_);
 }
 
 blink::WebPrescientNetworking*
