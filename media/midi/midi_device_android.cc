@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/android/jni_string.h"
 #include "jni/MidiDeviceAndroid_jni.h"
 #include "media/midi/midi_output_port_android.h"
 
@@ -13,6 +14,16 @@ using base::android::ScopedJavaLocalRef;
 
 namespace media {
 namespace midi {
+
+namespace {
+
+std::string ConvertMaybeJavaString(JNIEnv* env,
+                                   const base::android::JavaRef<jstring>& str) {
+  if (!str.obj())
+    return std::string();
+  return base::android::ConvertJavaStringToUTF8(str);
+}
+}
 
 MidiDeviceAndroid::MidiDeviceAndroid(JNIEnv* env,
                                      jobject raw_device,
@@ -40,26 +51,20 @@ MidiDeviceAndroid::~MidiDeviceAndroid() {}
 
 std::string MidiDeviceAndroid::GetManufacturer() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> ret =
-      Java_MidiDeviceAndroid_getManufacturer(env, raw_device_.obj());
-  return std::string(env->GetStringUTFChars(ret.obj(), nullptr),
-                     env->GetStringUTFLength(ret.obj()));
+  return ConvertMaybeJavaString(
+      env, Java_MidiDeviceAndroid_getManufacturer(env, raw_device_.obj()));
 }
 
 std::string MidiDeviceAndroid::GetProductName() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> ret =
-      Java_MidiDeviceAndroid_getProduct(env, raw_device_.obj());
-  return std::string(env->GetStringUTFChars(ret.obj(), nullptr),
-                     env->GetStringUTFLength(ret.obj()));
+  return ConvertMaybeJavaString(
+      env, Java_MidiDeviceAndroid_getProduct(env, raw_device_.obj()));
 }
 
 std::string MidiDeviceAndroid::GetDeviceVersion() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> ret =
-      Java_MidiDeviceAndroid_getVersion(env, raw_device_.obj());
-  return std::string(env->GetStringUTFChars(ret.obj(), nullptr),
-                     env->GetStringUTFLength(ret.obj()));
+  return ConvertMaybeJavaString(
+      env, Java_MidiDeviceAndroid_getVersion(env, raw_device_.obj()));
 }
 
 }  // namespace midi
