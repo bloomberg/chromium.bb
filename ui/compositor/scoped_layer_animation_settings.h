@@ -17,7 +17,6 @@ namespace ui {
 
 class ImplicitAnimationObserver;
 class LayerAnimationObserver;
-class InvertingObserver;
 
 // Scoped settings allow you to temporarily change the animator's settings and
 // these changes are reverted when the object is destroyed. NOTE: when the
@@ -45,14 +44,6 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   void SetPreemptionStrategy(LayerAnimator::PreemptionStrategy strategy);
   LayerAnimator::PreemptionStrategy GetPreemptionStrategy() const;
 
-  // Sets the base layer whose animation will be countered.
-  void SetInverselyAnimatedBaseLayer(Layer* base);
-
-  // Adds the layer to be counter-animated when a transform animation is
-  // scheduled on the animator_. Must call SetInverselyAnimatedBaseLayer with
-  // the layer associated with animator_ before animating.
-  void AddInverselyAnimatedLayer(Layer* inverse_layer);
-
  private:
   scoped_refptr<LayerAnimator> animator_;
   bool old_is_transition_duration_locked_;
@@ -60,7 +51,6 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   gfx::Tween::Type old_tween_type_;
   LayerAnimator::PreemptionStrategy old_preemption_strategy_;
   std::set<ImplicitAnimationObserver*> observers_;
-  std::unique_ptr<InvertingObserver> inverse_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedLayerAnimationSettings);
 };

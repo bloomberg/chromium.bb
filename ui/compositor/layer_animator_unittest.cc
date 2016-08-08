@@ -2376,35 +2376,6 @@ TEST(LayerAnimatorTest, TestSetterRespectEnqueueStrategy) {
   EXPECT_EQ(start_opacity, delegate.GetOpacityForAnimation());
 }
 
-TEST(LayerAnimatorTest, TestScopedCounterAnimation) {
-  Layer parent, child;
-  parent.Add(&child);
-
-  gfx::Transform parent_begin, parent_end;
-
-  parent_end.Scale3d(2.0, 0.5, 1.0);
-
-  // Parent animates from identity to the end value. The counter animation will
-  // start at the end value and animate back to identity.
-  gfx::Transform child_begin(parent_end);
-
-  child.SetTransform(child_begin);
-  parent.SetTransform(parent_begin);
-
-  EXPECT_FALSE(child.GetAnimator()->is_animating());
-
-  ScopedLayerAnimationSettings settings(parent.GetAnimator());
-  settings.SetInverselyAnimatedBaseLayer(&parent);
-  settings.AddInverselyAnimatedLayer(&child);
-
-  parent.SetTransform(parent_end);
-
-  EXPECT_TRUE(child.GetAnimator()->is_animating());
-  EXPECT_TRUE(child.GetTargetTransform().IsIdentity())
-    << child.GetTargetTransform().ToString();
-
-}
-
 class CollectionLayerAnimationDelegate : public TestLayerAnimationDelegate {
  public:
   CollectionLayerAnimationDelegate() : collection(NULL) {}

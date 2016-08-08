@@ -19,65 +19,6 @@ const int kDefaultTransitionDurationMs = 200;
 
 namespace ui {
 
-// InvertingObserver -----------------------------------------------------------
-class InvertingObserver : public ImplicitAnimationObserver {
-  public:
-    InvertingObserver()
-      : base_layer_(NULL) {
-    }
-
-    ~InvertingObserver() override {}
-
-    void SetLayer(Layer* base_layer) { base_layer_ = base_layer; }
-
-    Layer* layer() { return base_layer_; }
-
-    void AddInverselyAnimatedLayer(Layer* inverse_layer) {
-      inverse_layers_.push_back(inverse_layer);
-    }
-
-    void OnImplicitAnimationsCompleted() override {}
-
-    void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override {
-      DCHECK(base_layer_  != NULL)
-        << "Must set base layer with ScopedLayerAnimationSettings::"
-        << "SetInverslyAnimatedBaseLayer";
-      gfx::Transform base_transform = base_layer_->transform();
-      std::unique_ptr<LayerAnimationElement> inverse =
-          GetInverseElement(sequence, base_transform);
-
-      for (std::vector<Layer*>::const_iterator i =
-          inverse_layers_.begin(); i != inverse_layers_.end(); ++i) {
-        (*i)->GetAnimator()->StartAnimation(new LayerAnimationSequence(
-            LayerAnimationElement::CloneInverseTransformElement(
-                inverse.get())));
-      }
-    }
-  private:
-   std::unique_ptr<LayerAnimationElement> GetInverseElement(
-       LayerAnimationSequence* sequence,
-       gfx::Transform base) const {
-     const size_t expected_size = 1;
-     DCHECK_EQ(expected_size, sequence->size())
-         << "Inverse supported only for single element sequences.";
-
-     LayerAnimationElement* element = sequence->FirstElement();
-     DCHECK_EQ(static_cast<LayerAnimationElement::AnimatableProperties>(
-                   LayerAnimationElement::TRANSFORM),
-               element->properties())
-         << "Only transform animations are currently invertible.";
-
-     std::unique_ptr<LayerAnimationElement> to_return(
-         LayerAnimationElement::CreateInverseTransformElement(base, element));
-     return to_return;
-    }
-
-    Layer* base_layer_;
-    // child layers
-    std::vector<Layer*> inverse_layers_;
-};
-
-
 // ScopedLayerAnimationSettings ------------------------------------------------
 ScopedLayerAnimationSettings::ScopedLayerAnimationSettings(
     scoped_refptr<LayerAnimator> animator)
@@ -86,8 +27,7 @@ ScopedLayerAnimationSettings::ScopedLayerAnimationSettings(
           animator->is_transition_duration_locked_),
       old_transition_duration_(animator->GetTransitionDuration()),
       old_tween_type_(animator->tween_type()),
-      old_preemption_strategy_(animator->preemption_strategy()),
-      inverse_observer_(new InvertingObserver()) {
+      old_preemption_strategy_(animator->preemption_strategy()) {
   SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kDefaultTransitionDurationMs));
 }
@@ -103,10 +43,6 @@ ScopedLayerAnimationSettings::~ScopedLayerAnimationSettings() {
        observers_.begin(); i != observers_.end(); ++i) {
     animator_->observers_.RemoveObserver(*i);
     (*i)->SetActive(true);
-  }
-
-  if (inverse_observer_->layer()) {
-    animator_->observers_.RemoveObserver(inverse_observer_.get());
   }
 }
 
@@ -145,20 +81,6 @@ void ScopedLayerAnimationSettings::SetPreemptionStrategy(
 LayerAnimator::PreemptionStrategy
 ScopedLayerAnimationSettings::GetPreemptionStrategy() const {
   return animator_->preemption_strategy();
-}
-
-void ScopedLayerAnimationSettings::SetInverselyAnimatedBaseLayer(Layer* base) {
-  if (inverse_observer_->layer() && !base) {
-      animator_->RemoveObserver(inverse_observer_.get());
-  } else if (base && !(inverse_observer_->layer())) {
-      animator_->AddObserver(inverse_observer_.get());
-  }
-  inverse_observer_->SetLayer(base);
-}
-
-void ScopedLayerAnimationSettings::AddInverselyAnimatedLayer(
-    Layer* inverse_layer) {
-  inverse_observer_->AddInverselyAnimatedLayer(inverse_layer);
 }
 
 }  // namespace ui
