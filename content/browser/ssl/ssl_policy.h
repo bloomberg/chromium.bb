@@ -83,9 +83,6 @@ class SSLPolicy {
   // it with the default style for its URL.
   void InitializeEntryIfNeeded(NavigationEntryImpl* entry);
 
-  // Mark |origin| as having run insecure content in the process with ID |pid|.
-  void OriginRanInsecureContent(const std::string& origin, int pid);
-
   // The backend we use to enact our decisions.
   SSLPolicyBackend* backend_;
 

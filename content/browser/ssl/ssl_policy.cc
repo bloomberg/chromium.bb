@@ -259,10 +259,4 @@ void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {
       entry->GetURL(), entry->GetSSL().cert_id, entry->GetSSL().cert_status);
 }
 
-void SSLPolicy::OriginRanInsecureContent(const std::string& origin, int pid) {
-  GURL parsed_origin(origin);
-  if (parsed_origin.SchemeIsCryptographic())
-    backend_->HostRanInsecureContent(parsed_origin.host(), pid);
-}
-
 }  // namespace content
