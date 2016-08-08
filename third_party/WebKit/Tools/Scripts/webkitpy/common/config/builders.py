@@ -91,12 +91,12 @@ BUILDERS = {
         "is_try_builder": True,
     },
     "mac10.10_blink_rel": {
-        "port_name": "mac-mac10.9",
+        "port_name": "mac-mac10.10",
         "specifiers": ['Mac10.', 'Release'],
         "is_try_builder": True,
     },
     "mac10.11_blink_rel": {
-        "port_name": "mac-mac10.9",
+        "port_name": "mac-mac10.11",
         "specifiers": ['Mac10.11', 'Release'],
         "is_try_builder": True,
     },
@@ -111,8 +111,8 @@ BUILDERS = {
         "is_try_builder": True,
     },
     "win10_blink_rel": {
-        "port_name": "win-win7",
-        "specifiers": ['Win7', 'Release'],
+        "port_name": "win-win10",
+        "specifiers": ['Win10', 'Release'],
         "is_try_builder": True,
     },
     # TODO(qyearsley): Add android_blink_rel.
