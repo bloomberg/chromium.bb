@@ -9,7 +9,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/LayoutTextFragment.h"
-#include "core/layout/line/InlineBox.h"
+#include "core/layout/line/InlineTextBox.h"
 #include <ostream> // NOLINT
 
 namespace blink {
@@ -244,6 +244,18 @@ TEST_F(VisibleUnitsTest, computeInlineBoxPosition)
 
     EXPECT_EQ(computeInlineBoxPosition(PositionInFlatTree(five, 0), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInFlatTree(*five, 0)));
     EXPECT_EQ(computeInlineBoxPosition(PositionInFlatTree(five, 1), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInFlatTree(*five, 1)));
+}
+
+TEST_F(VisibleUnitsTest, computeInlineBoxPositionBidiIsolate)
+{
+    // "|" is bidi-level 0, and "foo" and "bar" are bidi-level 2
+    setBodyContent("|<span id=sample style='unicode-bidi: isolate;'>foo<br>bar</span>|");
+
+    Element* sample = document().getElementById("sample");
+    Node* text = sample->firstChild();
+
+    const InlineBoxPosition& actual = computeInlineBoxPosition(Position(text, 0), TextAffinity::Downstream);
+    EXPECT_EQ(toLayoutText(text->layoutObject())->firstTextBox(), actual.inlineBox);
 }
 
 TEST_F(VisibleUnitsTest, endOfDocument)

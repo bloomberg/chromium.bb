@@ -1971,6 +1971,20 @@ PositionTemplate<Strategy> upstreamIgnoringEditingBoundaries(PositionTemplate<St
     return position;
 }
 
+// Returns true if |inlineBox| starts different direction of embedded text ru.
+// See [1] for details.
+// [1] UNICODE BIDIRECTIONAL ALGORITHM, http://unicode.org/reports/tr9/
+static bool isStartOfDifferentDirection(const InlineBox* inlineBox)
+{
+    InlineBox* prevBox = inlineBox->prevLeafChild();
+    if (!prevBox)
+        return true;
+    if (prevBox->direction() == inlineBox->direction())
+        return true;
+    DCHECK_NE(prevBox->bidiLevel(), inlineBox->bidiLevel());
+    return prevBox->bidiLevel() > inlineBox->bidiLevel();
+}
+
 template <typename Strategy>
 static InlineBoxPosition computeInlineBoxPositionTemplate(const PositionTemplate<Strategy>& position, TextAffinity affinity, TextDirection primaryDirection)
 {
@@ -2064,11 +2078,10 @@ static InlineBoxPosition computeInlineBoxPositionTemplate(const PositionTemplate
             return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
         }
 
-        InlineBox* prevBox = inlineBox->prevLeafChild();
-        if (!prevBox || prevBox->bidiLevel() >= level)
+        if (isStartOfDifferentDirection(inlineBox))
             return InlineBoxPosition(inlineBox, caretOffset);
 
-        level = prevBox->bidiLevel();
+        level = inlineBox->prevLeafChild()->bidiLevel();
         InlineBox* nextBox = inlineBox;
         do {
             nextBox = nextBox->nextLeafChild();
