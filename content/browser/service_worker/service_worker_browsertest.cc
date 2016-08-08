@@ -384,14 +384,15 @@ class ConsoleListener : public EmbeddedWorkerInstance::Listener {
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override {
-    messages_.push_back(message);
-    if (!quit_.is_null() && messages_.size() == expected_message_count_) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_);
-      quit_.Reset();
-    }
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&ConsoleListener::OnReportConsoleMessageOnUI,
+                   base::Unretained(this), message));
   }
 
   void WaitForConsoleMessages(size_t expected_message_count) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (messages_.size() >= expected_message_count)
       return;
 
@@ -407,6 +408,14 @@ class ConsoleListener : public EmbeddedWorkerInstance::Listener {
   const std::vector<base::string16>& messages() const { return messages_; }
 
  private:
+  void OnReportConsoleMessageOnUI(const base::string16& message) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    messages_.push_back(message);
+    if (messages_.size() == expected_message_count_)
+      quit_.Run();
+  }
+
+  // These parameters must be accessed on the UI thread.
   std::vector<base::string16> messages_;
   size_t expected_message_count_;
   base::Closure quit_;
@@ -939,22 +948,16 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                     SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED);
 }
 
-// Has errors under TSan. See https://crbug.com/631323.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_InstallWithWaitUntil_RejectConsoleMessage \
-  DISABLED_InstallWithWaitUntil_RejectConsoleMessage
-#else
-#define MAYBE_InstallWithWaitUntil_RejectConsoleMessage \
-  InstallWithWaitUntil_RejectConsoleMessage
-#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       MAYBE_InstallWithWaitUntil_RejectConsoleMessage) {
+                       InstallWithWaitUntil_RejectConsoleMessage) {
   RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread,
                            base::Unretained(this),
                            "/service_worker/worker_install_rejected.js"));
 
   ConsoleListener console_listener;
-  version_->embedded_worker()->AddListener(&console_listener);
+  RunOnIOThread(base::Bind(&EmbeddedWorkerInstance::AddListener,
+                           base::Unretained(version_->embedded_worker()),
+                           &console_listener));
 
   // Dispatch install on a worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
@@ -971,7 +974,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   console_listener.WaitForConsoleMessages(1);
   ASSERT_NE(base::string16::npos,
             console_listener.messages()[0].find(expected));
-  version_->embedded_worker()->RemoveListener(&console_listener);
+  RunOnIOThread(base::Bind(&EmbeddedWorkerInstance::RemoveListener,
+                           base::Unretained(version_->embedded_worker()),
+                           &console_listener));
 }
 
 class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
@@ -979,6 +984,7 @@ class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
   explicit WaitForLoaded(const base::Closure& quit) : quit_(quit) {}
 
   void OnThreadStarted() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_);
   }
   bool OnMessageReceived(const IPC::Message& message) override { return false; }
@@ -987,14 +993,7 @@ class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
   base::Closure quit_;
 };
 
-// Has errors under TSan. See https://crbug.com/631323.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_TimeoutStartingWorker DISABLED_TimeoutStartingWorker
-#else
-#define MAYBE_TimeoutStartingWorker TimeoutStartingWorker
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       MAYBE_TimeoutStartingWorker) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutStartingWorker) {
   RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread,
                            base::Unretained(this),
                            "/service_worker/while_true_worker.js"));
@@ -1004,13 +1003,17 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   base::RunLoop start_run_loop;
   base::RunLoop load_run_loop;
   WaitForLoaded wait_for_load(load_run_loop.QuitClosure());
-  version_->embedded_worker()->AddListener(&wait_for_load);
+  RunOnIOThread(base::Bind(&EmbeddedWorkerInstance::AddListener,
+                           base::Unretained(version_->embedded_worker()),
+                           &wait_for_load));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&self::StartOnIOThread, base::Unretained(this),
                  start_run_loop.QuitClosure(), &status));
   load_run_loop.Run();
-  version_->embedded_worker()->RemoveListener(&wait_for_load);
+  RunOnIOThread(base::Bind(&EmbeddedWorkerInstance::RemoveListener,
+                           base::Unretained(version_->embedded_worker()),
+                           &wait_for_load));
 
   // The script has loaded but start has not completed yet.
   ASSERT_EQ(SERVICE_WORKER_ERROR_FAILED, status);
@@ -1112,15 +1115,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ("cache_name", response2.cache_storage_cache_name);
 }
 
-// Has errors under TSan. See https://crbug.com/631323.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_FetchEvent_respondWithRejection \
-  DISABLED_FetchEvent_respondWithRejection
-#else
-#define MAYBE_FetchEvent_respondWithRejection FetchEvent_respondWithRejection
-#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       MAYBE_FetchEvent_respondWithRejection) {
+                       FetchEvent_respondWithRejection) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
@@ -1130,7 +1126,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                            "/service_worker/fetch_event_rejected.js"));
 
   ConsoleListener console_listener;
-  version_->embedded_worker()->AddListener(&console_listener);
+  RunOnIOThread(base::Bind(&EmbeddedWorkerInstance::AddListener,
+                           base::Unretained(version_->embedded_worker()),
+                           &console_listener));
 
   FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
   const base::string16 expected1 = base::ASCIIToUTF16(
@@ -1141,7 +1139,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ASSERT_NE(base::string16::npos,
             console_listener.messages()[0].find(expected1));
   ASSERT_EQ(0u, console_listener.messages()[1].find(expected2));
-  version_->embedded_worker()->RemoveListener(&console_listener);
+  RunOnIOThread(base::Bind(&EmbeddedWorkerInstance::RemoveListener,
+                           base::Unretained(version_->embedded_worker()),
+                           &console_listener));
 
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
   EXPECT_EQ(0, response.status_code);
