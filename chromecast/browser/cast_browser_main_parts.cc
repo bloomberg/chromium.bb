@@ -304,7 +304,9 @@ CastBrowserMainParts::GetMediaTaskRunner() {
 #else
   if (!media_thread_) {
     media_thread_.reset(new base::Thread("CastMediaThread"));
-    CHECK(media_thread_->Start());
+    base::Thread::Options options;
+    options.priority = base::ThreadPriority::REALTIME_AUDIO;
+    CHECK(media_thread_->StartWithOptions(options));
   }
   return media_thread_->task_runner();
 #endif
