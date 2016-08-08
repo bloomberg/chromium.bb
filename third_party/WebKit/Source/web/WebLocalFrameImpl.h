@@ -241,6 +241,7 @@ public:
     void copyImageAt(const WebPoint&) override;
     void saveImageAt(const WebPoint&) override;
     void clearActiveFindMatch() override;
+    void usageCountChromeLoadTimes(const WebString& metric) override;
 
     // WebFrameImplBase methods:
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& uniqueName) override;

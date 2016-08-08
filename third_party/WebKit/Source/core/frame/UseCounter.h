@@ -1259,6 +1259,21 @@ public:
         SVGSMILAdditiveAnimation = 1484,
         SendBeaconWithNonSimpleContentType = 1485,
 
+        ChromeLoadTimesRequestTime = 1486,
+        ChromeLoadTimesStartLoadTime = 1487,
+        ChromeLoadTimesCommitLoadTime = 1488,
+        ChromeLoadTimesFinishDocumentLoadTime = 1489,
+        ChromeLoadTimesFinishLoadTime = 1490,
+        ChromeLoadTimesFirstPaintTime = 1491,
+        ChromeLoadTimesFirstPaintAfterLoadTime = 1492,
+        ChromeLoadTimesNavigationType = 1493,
+        ChromeLoadTimesWasFetchedViaSpdy = 1494,
+        ChromeLoadTimesWasNpnNegotiated = 1495,
+        ChromeLoadTimesNpnNegotiatedProtocol = 1496,
+        ChromeLoadTimesWasAlternateProtocolAvailable = 1497,
+        ChromeLoadTimesConnectionInfo = 1498,
+        ChromeLoadTimesUnknown = 1499,
+
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/

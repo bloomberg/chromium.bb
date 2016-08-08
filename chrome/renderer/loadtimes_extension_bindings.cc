@@ -109,7 +109,10 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   static void LoadtimesGetter(
       v8::Local<v8::Name> name,
       const v8::PropertyCallbackInfo<v8::Value>& info) {
-    // TODO(panicker): Add Usage counter.
+    if (WebLocalFrame* frame = WebLocalFrame::frameForCurrentContext()) {
+      frame->usageCountChromeLoadTimes(blink::WebString::fromUTF8(
+          *v8::String::Utf8Value(name)));
+    }
     info.GetReturnValue().Set(info.Data());
   }
 

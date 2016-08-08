@@ -2188,4 +2188,37 @@ void WebLocalFrameImpl::clearActiveFindMatch()
     ensureTextFinder().clearActiveFindMatch();
 }
 
+void WebLocalFrameImpl::usageCountChromeLoadTimes(const WebString& metric)
+{
+    UseCounter::Feature feature = UseCounter::ChromeLoadTimesUnknown;
+    if (metric == "requestTime") {
+        feature = UseCounter::ChromeLoadTimesRequestTime;
+    } else if (metric == "startLoadTime") {
+        feature = UseCounter::ChromeLoadTimesStartLoadTime;
+    } else if (metric == "commitLoadTime") {
+        feature = UseCounter::ChromeLoadTimesCommitLoadTime;
+    } else if (metric == "finishDocumentLoadTime") {
+        feature = UseCounter::ChromeLoadTimesFinishDocumentLoadTime;
+    } else if (metric == "finishLoadTime") {
+        feature = UseCounter::ChromeLoadTimesFinishLoadTime;
+    } else if (metric == "firstPaintTime") {
+        feature = UseCounter::ChromeLoadTimesFirstPaintTime;
+    } else if (metric == "firstPaintAfterLoadTime") {
+        feature = UseCounter::ChromeLoadTimesFirstPaintAfterLoadTime;
+    } else if (metric == "navigationType") {
+        feature = UseCounter::ChromeLoadTimesNavigationType;
+    } else if (metric == "wasFetchedViaSpdy") {
+        feature = UseCounter::ChromeLoadTimesWasFetchedViaSpdy;
+    } else if (metric == "wasNpnNegotiated") {
+        feature = UseCounter::ChromeLoadTimesWasNpnNegotiated;
+    } else if (metric == "npnNegotiatedProtocol") {
+        feature = UseCounter::ChromeLoadTimesNpnNegotiatedProtocol;
+    } else if (metric == "wasAlternateProtocolAvailable") {
+        feature = UseCounter::ChromeLoadTimesWasAlternateProtocolAvailable;
+    } else if (metric == "connectionInfo") {
+        feature = UseCounter::ChromeLoadTimesConnectionInfo;
+    }
+    UseCounter::count(frame(), feature);
+}
+
 } // namespace blink

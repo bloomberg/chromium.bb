@@ -78073,6 +78073,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1483" label="StarInTimingAllowOrigin"/>
   <int value="1484" label="SVGSMILAdditiveAnimation"/>
   <int value="1485" label="SendBeaconWithNonSimpleContentType"/>
+  <int value="1486" label="ChromeLoadTimesRequestTime"/>
+  <int value="1487" label="ChromeLoadTimesStartLoadTime"/>
+  <int value="1488" label="ChromeLoadTimesCommitLoadTime"/>
+  <int value="1489" label="ChromeLoadTimesFinishDocumentLoadTime"/>
+  <int value="1490" label="ChromeLoadTimesFinishLoadTime"/>
+  <int value="1491" label="ChromeLoadTimesFirstPaintTime"/>
+  <int value="1492" label="ChromeLoadTimesFirstPaintAfterLoadTime"/>
+  <int value="1493" label="ChromeLoadTimesNavigationType"/>
+  <int value="1494" label="ChromeLoadTimesWasFetchedViaSpdy"/>
+  <int value="1495" label="ChromeLoadTimesWasNpnNegotiated"/>
+  <int value="1496" label="ChromeLoadTimesNpnNegotiatedProtocol"/>
+  <int value="1497" label="ChromeLoadTimesWasAlternateProtocolAvailable"/>
+  <int value="1498" label="ChromeLoadTimesConnectionInfo"/>
+  <int value="1499" label="ChromeLoadTimesUnknown"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

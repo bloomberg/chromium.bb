@@ -405,6 +405,10 @@ public:
     // coordinates.
     virtual void saveImageAt(const WebPoint&) = 0;
 
+    // TEMP: Usage count for chrome.loadtimes deprecation.
+    // This will be removed following the deprecation.
+    virtual void usageCountChromeLoadTimes(const WebString& metric) = 0;
+
 protected:
     explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) { }
 
