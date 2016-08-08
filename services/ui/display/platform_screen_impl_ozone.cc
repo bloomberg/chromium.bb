@@ -15,8 +15,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/public/ozone_platform.h"
 
-namespace ui {
-
 namespace display {
 namespace {
 
@@ -98,10 +96,9 @@ void PlatformScreenImplOzone::OnDisplayModeChanged(
 
 void PlatformScreenImplOzone::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,
-    MultipleDisplayState failed_new_state) {
+    ui::MultipleDisplayState failed_new_state) {
   LOG(ERROR) << "OnDisplayModeChangeFailed from DisplayConfigurator";
   callback_.Reset();
 }
 
 }  // namespace display
-}  // namespace ui

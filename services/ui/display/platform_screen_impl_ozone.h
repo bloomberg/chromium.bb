@@ -14,7 +14,6 @@
 #include "services/ui/display/platform_screen.h"
 #include "ui/display/chromeos/display_configurator.h"
 
-namespace ui {
 namespace display {
 
 // PlatformScreenImplOzone provides the necessary functionality to configure all
@@ -37,7 +36,7 @@ class PlatformScreenImplOzone : public PlatformScreen,
       const ui::DisplayConfigurator::DisplayStateList& displays) override;
   void OnDisplayModeChangeFailed(
       const ui::DisplayConfigurator::DisplayStateList& displays,
-      MultipleDisplayState failed_new_state) override;
+      ui::MultipleDisplayState failed_new_state) override;
 
   ui::DisplayConfigurator display_configurator_;
 
@@ -48,6 +47,5 @@ class PlatformScreenImplOzone : public PlatformScreen,
 };
 
 }  // namespace display
-}  // namespace ui
 
 #endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_OZONE_H_

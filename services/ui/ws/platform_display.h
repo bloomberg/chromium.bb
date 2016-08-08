@@ -74,7 +74,7 @@ class PlatformDisplay {
 
   virtual void SetCursorById(int32_t cursor) = 0;
 
-  virtual ::display::Display::Rotation GetRotation() = 0;
+  virtual display::Display::Rotation GetRotation() = 0;
 
   virtual float GetDeviceScaleFactor() = 0;
 
@@ -120,7 +120,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void ReleaseCapture() override;
   void SetCursorById(int32_t cursor) override;
   float GetDeviceScaleFactor() override;
-  ::display::Display::Rotation GetRotation() override;
+  display::Display::Rotation GetRotation() override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
   bool IsFramePending() const override;

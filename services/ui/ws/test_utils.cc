@@ -49,8 +49,8 @@ class TestPlatformDisplay : public PlatformDisplay {
   void SetCapture() override {}
   void ReleaseCapture() override {}
   void SetCursorById(int32_t cursor) override { *cursor_id_storage_ = cursor; }
-  ::display::Display::Rotation GetRotation() override {
-    return ::display::Display::Rotation::ROTATE_0;
+  display::Display::Rotation GetRotation() override {
+    return display::Display::Rotation::ROTATE_0;
   }
   float GetDeviceScaleFactor() override {
     return display_metrics_.device_scale_factor;

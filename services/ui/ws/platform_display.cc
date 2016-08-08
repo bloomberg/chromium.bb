@@ -142,7 +142,7 @@ float DefaultPlatformDisplay::GetDeviceScaleFactor() {
   return metrics_.device_scale_factor;
 }
 
-::display::Display::Rotation DefaultPlatformDisplay::GetRotation() {
+display::Display::Rotation DefaultPlatformDisplay::GetRotation() {
   // TODO(sky): implement me.
   return display::Display::ROTATE_0;
 }

@@ -96,8 +96,8 @@ mojom::WsDisplayPtr Display::ToWsDisplay() const {
   return display_ptr;
 }
 
-::display::Display Display::ToDisplay() const {
-  ::display::Display display(GetId());
+display::Display Display::ToDisplay() const {
+  display::Display display(GetId());
 
   // TODO(sky): Display should know its origin.
   display.set_bounds(gfx::Rect(0, 0, root_->bounds().size().width(),
@@ -107,7 +107,7 @@ mojom::WsDisplayPtr Display::ToWsDisplay() const {
   display.set_device_scale_factor(platform_display_->GetDeviceScaleFactor());
   display.set_rotation(platform_display_->GetRotation());
   display.set_touch_support(
-      ::display::Display::TouchSupport::TOUCH_SUPPORT_UNKNOWN);
+      display::Display::TouchSupport::TOUCH_SUPPORT_UNKNOWN);
 
   return display;
 }
@@ -129,7 +129,7 @@ void Display::ScheduleSurfaceDestruction(ServerWindow* window) {
   window->AddObserver(this);
 }
 
-::display::Display::Rotation Display::GetRotation() const {
+display::Display::Rotation Display::GetRotation() const {
   return platform_display_->GetRotation();
 }
 

@@ -10,8 +10,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace ui {
-
 namespace display {
 namespace {
 
@@ -40,4 +38,3 @@ void PlatformScreenImpl::ConfigurePhysicalDisplay(
 }
 
 }  // namespace display
-}  // namespace ui

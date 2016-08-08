@@ -39,6 +39,10 @@
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #endif
 
+namespace display {
+class PlatformScreen;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -48,14 +52,8 @@ class Connector;
 }
 
 namespace ui {
+
 class PlatformEventSource;
-}
-
-namespace ui {
-
-namespace display {
-class PlatformScreen;
-}
 
 namespace ws {
 class ForwardingWindowManager;

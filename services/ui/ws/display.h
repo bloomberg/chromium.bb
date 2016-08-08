@@ -78,7 +78,7 @@ class Display : public PlatformDisplayDelegate,
   mojom::WsDisplayPtr ToWsDisplay() const;
 
   // Returns a display::Display for the specficied display.
-  ::display::Display ToDisplay() const;
+  display::Display ToDisplay() const;
 
   // Schedules a paint for the specified region in the coordinates of |window|.
   void SchedulePaint(const ServerWindow* window, const gfx::Rect& bounds);
@@ -88,7 +88,7 @@ class Display : public PlatformDisplayDelegate,
   // drawn, otherwise destruction is immediate.
   void ScheduleSurfaceDestruction(ServerWindow* window);
 
-  ::display::Display::Rotation GetRotation() const;
+  display::Display::Rotation GetRotation() const;
   gfx::Size GetSize() const;
 
   WindowServer* window_server() { return window_server_; }

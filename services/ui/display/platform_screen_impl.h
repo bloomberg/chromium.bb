@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "services/ui/display/platform_screen.h"
 
-namespace ui {
 namespace display {
 
 // PlatformScreenImpl provides the necessary functionality to configure all
@@ -30,6 +29,5 @@ class PlatformScreenImpl : public PlatformScreen {
 };
 
 }  // namespace display
-}  // namespace ui
 
 #endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_H_

@@ -7,13 +7,14 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 
 namespace gfx {
 class Rect;
 }
 
-namespace ui {
 namespace display {
 
 // PlatformScreen provides the necessary functionality to configure all
@@ -38,6 +39,5 @@ class PlatformScreen {
 };
 
 }  // namespace display
-}  // namespace ui
 
 #endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_H_
