@@ -25,6 +25,9 @@ RenderWidgetScreenMetricsEmulator::RenderWidgetScreenMetricsEmulator(
 }
 
 RenderWidgetScreenMetricsEmulator::~RenderWidgetScreenMetricsEmulator() {
+  // needs_resize_ack was handled during OnResize() and may cause a DCHECK to
+  // fail in RenderWidget if not cleared (crbug.com/635560).
+  original_resize_params_.needs_resize_ack = false;
   delegate_->Resize(original_resize_params_);
   delegate_->SetScreenMetricsEmulationParameters(false, emulation_params_);
   delegate_->SetScreenRects(original_view_screen_rect_,
