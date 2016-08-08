@@ -5,10 +5,13 @@
 #ifndef ASH_SHELF_SHELF_BEZEL_EVENT_FILTER_H_
 #define ASH_SHELF_SHELF_BEZEL_EVENT_FILTER_H_
 
-#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/geometry/rect.h"
+
+namespace gfx {
+class Point;
+class Rect;
+}
 
 namespace ash {
 class ShelfLayoutManager;
@@ -17,7 +20,7 @@ class ShelfLayoutManager;
 // shelf.
 class ShelfBezelEventFilter : public ui::EventHandler {
  public:
-  explicit ShelfBezelEventFilter(ShelfLayoutManager* shelf);
+  explicit ShelfBezelEventFilter(ShelfLayoutManager* shelf_layout_manager);
   ~ShelfBezelEventFilter() override;
 
   // Overridden from ui::EventHandler:
@@ -26,9 +29,9 @@ class ShelfBezelEventFilter : public ui::EventHandler {
  private:
   bool IsShelfOnBezel(const gfx::Rect& screen, const gfx::Point& point) const;
 
-  ShelfLayoutManager* shelf_;  // non-owned
+  ShelfLayoutManager* shelf_layout_manager_;
   bool in_touch_drag_;
-  ShelfGestureHandler gesture_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(ShelfBezelEventFilter);
 };
 

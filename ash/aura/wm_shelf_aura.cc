@@ -133,10 +133,11 @@ gfx::Rect WmShelfAura::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
       WmWindowAura::GetAuraWindow(window));
 }
 
-bool WmShelfAura::ProcessGestureEvent(const ui::GestureEvent& event,
-                                      WmWindow* target_window) {
-  return gesture_handler_.ProcessGestureEvent(
-      event, WmWindowAura::GetAuraWindow(target_window));
+bool WmShelfAura::ProcessGestureEvent(const ui::GestureEvent& event) {
+  // Can be called at login screen.
+  if (!shelf_layout_manager_)
+    return false;
+  return shelf_layout_manager_->ProcessGestureEvent(event);
 }
 
 void WmShelfAura::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {

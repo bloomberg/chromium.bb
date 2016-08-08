@@ -9,7 +9,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -57,8 +56,7 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   gfx::Rect GetUserWorkAreaBounds() const override;
   void UpdateIconPositionForWindow(WmWindow* window) override;
   gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) override;
-  bool ProcessGestureEvent(const ui::GestureEvent& event,
-                           WmWindow* target_window) override;
+  bool ProcessGestureEvent(const ui::GestureEvent& event) override;
   void UpdateAutoHideForMouseEvent(ui::MouseEvent* event) override;
   void UpdateAutoHideForGestureEvent(ui::GestureEvent* event) override;
   void AddObserver(WmShelfObserver* observer) override;
@@ -82,9 +80,6 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
 
   // Cached separately because it may be destroyed before |shelf_|.
   ShelfLayoutManager* shelf_layout_manager_ = nullptr;
-
-  // Handler for swipe and drag gestures.
-  ShelfGestureHandler gesture_handler_;
 
   base::ObserverList<WmShelfObserver> observers_;
 

@@ -86,7 +86,7 @@ void StatusAreaWidgetDelegate::OnGestureEvent(ui::GestureEvent* event) {
       static_cast<views::View*>(event->target())->GetWidget();
   WmWindow* target_window = WmLookup::Get()->GetWindowForWidget(target_widget);
   WmShelf* shelf = target_window->GetRootWindowController()->GetShelf();
-  if (shelf->ProcessGestureEvent(*event, target_window))
+  if (shelf->ProcessGestureEvent(*event))
     event->StopPropagation();
   else
     views::AccessiblePaneView::OnGestureEvent(event);

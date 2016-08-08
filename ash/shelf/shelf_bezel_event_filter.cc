@@ -9,12 +9,15 @@
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
-ShelfBezelEventFilter::ShelfBezelEventFilter(ShelfLayoutManager* shelf)
-    : shelf_(shelf), in_touch_drag_(false) {
+ShelfBezelEventFilter::ShelfBezelEventFilter(
+    ShelfLayoutManager* shelf_layout_manager)
+    : shelf_layout_manager_(shelf_layout_manager), in_touch_drag_(false) {
   Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
@@ -32,7 +35,7 @@ void ShelfBezelEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   if ((!screen.Contains(point_in_screen) &&
        IsShelfOnBezel(screen, point_in_screen)) ||
       in_touch_drag_) {
-    if (gesture_handler_.ProcessGestureEvent(*event, target)) {
+    if (shelf_layout_manager_->ProcessGestureEvent(*event)) {
       switch (event->type()) {
         case ui::ET_GESTURE_SCROLL_BEGIN:
           in_touch_drag_ = true;
@@ -51,9 +54,9 @@ void ShelfBezelEventFilter::OnGestureEvent(ui::GestureEvent* event) {
 
 bool ShelfBezelEventFilter::IsShelfOnBezel(const gfx::Rect& screen,
                                            const gfx::Point& point) const {
-  return shelf_->SelectValueForShelfAlignment(point.y() >= screen.bottom(),
-                                              point.x() <= screen.x(),
-                                              point.x() >= screen.right());
+  return shelf_layout_manager_->SelectValueForShelfAlignment(
+      point.y() >= screen.bottom(), point.x() <= screen.x(),
+      point.x() >= screen.right());
 }
 
 }  // namespace ash

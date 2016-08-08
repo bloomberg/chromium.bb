@@ -297,13 +297,6 @@ void EventGenerator::PressMoveAndReleaseTouchToCenterOf(EventTarget* window) {
   PressMoveAndReleaseTouchTo(CenterOfWindow(window));
 }
 
-void EventGenerator::GestureEdgeSwipe() {
-  GestureEventDetails details(ET_GESTURE_WIN8_EDGE_SWIPE);
-  details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
-  GestureEvent gesture(0, 0, 0, ui::EventTimeForNow(), details);
-  Dispatch(&gesture);
-}
-
 void EventGenerator::GestureTapAt(const gfx::Point& location) {
   const int kTouchId = 2;
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, location, kTouchId,

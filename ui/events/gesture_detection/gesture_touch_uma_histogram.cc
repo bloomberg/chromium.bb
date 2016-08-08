@@ -119,8 +119,6 @@ UMAEventType GestureTouchUMAHistogram::UMAEventTypeFromEvent(
         return UMA_ET_GESTURE_SWIPE_3;
       return UMA_ET_GESTURE_SWIPE_4P;
     }
-    case ET_GESTURE_WIN8_EDGE_SWIPE:
-      return UMA_ET_GESTURE_WIN8_EDGE_SWIPE;
     case ET_GESTURE_TAP_CANCEL:
       return UMA_ET_GESTURE_TAP_CANCEL;
     case ET_GESTURE_SHOW_PRESS:

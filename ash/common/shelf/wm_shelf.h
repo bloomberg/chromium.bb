@@ -76,12 +76,11 @@ class ASH_EXPORT WmShelf {
   // no item for the specified window an empty rect is returned.
   virtual gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) = 0;
 
-  // Handles a gesture |event| coming from a |target_window| outside the shelf
+  // Handles a gesture |event| coming from a source outside the shelf widget
   // (e.g. the status area widget). Allows support for behaviors like toggling
-  // auto-hide with an edge swipe, even if that gesture event hits another
-  // window. Returns true if the event was handled.
-  virtual bool ProcessGestureEvent(const ui::GestureEvent& event,
-                                   WmWindow* target_window) = 0;
+  // auto-hide with a swipe, even if that gesture event hits another window.
+  // Returns true if the event was handled.
+  virtual bool ProcessGestureEvent(const ui::GestureEvent& event) = 0;
 
   // TODO(jamescook): Nuke when ash_sysui is removed. http://crbug.com/621112
   virtual void UpdateAutoHideForMouseEvent(ui::MouseEvent* event) = 0;

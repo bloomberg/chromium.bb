@@ -406,12 +406,6 @@ void ImmersiveFullscreenController::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   switch (event->type()) {
-#if defined(OS_WIN)
-    case ui::ET_GESTURE_WIN8_EDGE_SWIPE:
-      UpdateRevealedLocksForSwipe(GetSwipeType(event));
-      event->SetHandled();
-      break;
-#endif
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (ShouldHandleGestureEvent(GetEventLocationInScreen(*event))) {
         gesture_begun_ = true;
@@ -858,10 +852,6 @@ void ImmersiveFullscreenController::OnSlideClosedAnimationCompleted() {
 
 ImmersiveFullscreenController::SwipeType
 ImmersiveFullscreenController::GetSwipeType(ui::GestureEvent* event) const {
-#if defined(OS_WIN)
-  if (event->type() == ui::ET_GESTURE_WIN8_EDGE_SWIPE)
-    return SWIPE_OPEN;
-#endif
   if (event->type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return SWIPE_NONE;
   // Make sure that it is a clear vertical gesture.

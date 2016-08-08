@@ -1543,10 +1543,7 @@ void ShelfView::ViewHierarchyChanged(
 }
 
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
-  aura::Window* target_window = static_cast<views::View*>(event->target())
-                                    ->GetWidget()
-                                    ->GetNativeWindow();
-  if (gesture_handler_.ProcessGestureEvent(*event, target_window))
+  if (wm_shelf_->ProcessGestureEvent(*event))
     event->StopPropagation();
 }
 

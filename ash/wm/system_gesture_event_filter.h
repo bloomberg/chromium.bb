@@ -12,7 +12,6 @@
 
 namespace ash {
 class OverviewGestureHandler;
-class ShelfGestureHandler;
 
 namespace test {
 class SystemGestureEventFilterTest;
@@ -34,7 +33,6 @@ class SystemGestureEventFilter : public ui::EventHandler {
   friend class ash::test::SystemGestureEventFilterTest;
 
   std::unique_ptr<OverviewGestureHandler> overview_gesture_handler_;
-  std::unique_ptr<ShelfGestureHandler> shelf_gesture_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilter);
 };

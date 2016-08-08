@@ -15,7 +15,6 @@
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/common/shelf/shelf_tooltip_manager.h"
-#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
@@ -408,8 +407,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Amount content is inset on the left edge (or top edge for vertical
   // alignment).
   int leading_inset_;
-
-  ShelfGestureHandler gesture_handler_;
 
   // True when an item being inserted or removed in the model cancels a drag.
   bool cancelling_drag_model_changed_;

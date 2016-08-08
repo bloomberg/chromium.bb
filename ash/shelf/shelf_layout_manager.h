@@ -18,7 +18,6 @@
 #include "ash/common/wm/workspace/workspace_types.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -120,12 +119,10 @@ class ASH_EXPORT ShelfLayoutManager
   void AddObserver(ShelfLayoutManagerObserver* observer);
   void RemoveObserver(ShelfLayoutManagerObserver* observer);
 
-  // Gesture related functions:
-  void OnGestureEdgeSwipe(const ui::GestureEvent& gesture);
-  void StartGestureDrag(const ui::GestureEvent& gesture);
-  void UpdateGestureDrag(const ui::GestureEvent& gesture);
-  void CompleteGestureDrag(const ui::GestureEvent& gesture);
-  void CancelGestureDrag();
+  // Processes a gesture event and updates the status of the shelf when
+  // appropriate. Returns true if the gesture has been handled and it should not
+  // be processed any further, false otherwise.
+  bool ProcessGestureEvent(const ui::GestureEvent& event);
 
   // Set an animation duration override for the show / hide animation of the
   // shelf. Specifying 0 leads to use the default.
@@ -294,6 +291,16 @@ class ASH_EXPORT ShelfLayoutManager
   // Compute |target_bounds| opacity based on gesture and shelf visibility.
   float ComputeTargetOpacity(const State& state);
 
+  // Returns true if there is a fullscreen window open that causes the shelf
+  // to be hidden.
+  bool IsShelfHiddenForFullscreen() const;
+
+  // Gesture related functions:
+  void StartGestureDrag(const ui::GestureEvent& gesture);
+  void UpdateGestureDrag(const ui::GestureEvent& gesture);
+  void CompleteGestureDrag(const ui::GestureEvent& gesture);
+  void CancelGestureDrag();
+
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being
   // deleted too.
@@ -329,8 +336,6 @@ class ASH_EXPORT ShelfLayoutManager
   std::unique_ptr<ShelfBezelEventFilter> bezel_event_filter_;
 
   base::ObserverList<ShelfLayoutManagerObserver> observers_;
-
-  ShelfGestureHandler gesture_handler_;
 
   // The shelf reacts to gesture-drags, and can be set to auto-hide for certain
   // gestures. Some shelf behaviour (e.g. visibility state, background color

@@ -28,7 +28,6 @@
 #include "ash/shelf/shelf_bezel_event_filter.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell.h"
-#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
@@ -302,10 +301,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
         workspace_controller_->GetWindowState());
     switch (window_state) {
       case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN: {
-        const WmWindow* fullscreen_window = wm::GetWindowForFullscreenMode(
-            WmLookup::Get()->GetWindowForWidget(shelf_widget_));
-        if (fullscreen_window &&
-            fullscreen_window->GetWindowState()->hide_shelf_when_fullscreen()) {
+        if (IsShelfHiddenForFullscreen()) {
           SetState(SHELF_HIDDEN);
         } else {
           // The shelf is sometimes not hidden when in immersive fullscreen.
@@ -370,10 +366,8 @@ void ShelfLayoutManager::UpdateAutoHideForGestureEvent(
     return;
 
   aura::Window* target_window = static_cast<aura::Window*>(event->target());
-  if (IsShelfWindow(target_window)) {
-    if (gesture_handler_.ProcessGestureEvent(*event, target_window))
-      event->StopPropagation();
-  }
+  if (IsShelfWindow(target_window) && ProcessGestureEvent(*event))
+    event->StopPropagation();
 }
 
 void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
@@ -389,108 +383,37 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// ShelfLayoutManager, Gesture functions:
+bool ShelfLayoutManager::ProcessGestureEvent(const ui::GestureEvent& event) {
+  // The gestures are disabled in the lock/login screen.
+  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
+  if (!delegate->NumberOfLoggedInUsers() || delegate->IsScreenLocked())
+    return false;
 
-void ShelfLayoutManager::OnGestureEdgeSwipe(const ui::GestureEvent& gesture) {
-  if (visibility_state() == SHELF_AUTO_HIDE) {
-    gesture_drag_auto_hide_state_ = SHELF_AUTO_HIDE_SHOWN;
-    gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
-    UpdateVisibilityState();
-    gesture_drag_status_ = GESTURE_DRAG_NONE;
-  }
-}
+  if (IsShelfHiddenForFullscreen())
+    return false;
 
-void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
-  gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
-  gesture_drag_amount_ = 0.f;
-  gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
-                                      ? auto_hide_state()
-                                      : SHELF_AUTO_HIDE_SHOWN;
-  UpdateShelfBackground(BACKGROUND_CHANGE_ANIMATE);
-}
-
-void ShelfLayoutManager::UpdateGestureDrag(const ui::GestureEvent& gesture) {
-  gesture_drag_amount_ += PrimaryAxisValue(gesture.details().scroll_y(),
-                                           gesture.details().scroll_x());
-  LayoutShelf();
-}
-
-void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
-  bool horizontal = IsHorizontalAlignment();
-  bool should_change = false;
-  if (gesture.type() == ui::ET_GESTURE_SCROLL_END) {
-    // The visibility of the shelf changes only if the shelf was dragged X%
-    // along the correct axis. If the shelf was already visible, then the
-    // direction of the drag does not matter.
-    const float kDragHideThreshold = 0.4f;
-    gfx::Rect bounds = GetIdealBounds();
-    float drag_ratio = fabs(gesture_drag_amount_) /
-                       (horizontal ? bounds.height() : bounds.width());
-    if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN) {
-      should_change = drag_ratio > kDragHideThreshold;
-    } else {
-      bool correct_direction = false;
-      switch (GetAlignment()) {
-        case SHELF_ALIGNMENT_BOTTOM:
-        case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        case SHELF_ALIGNMENT_RIGHT:
-          correct_direction = gesture_drag_amount_ < 0;
-          break;
-        case SHELF_ALIGNMENT_LEFT:
-          correct_direction = gesture_drag_amount_ > 0;
-          break;
-      }
-      should_change = correct_direction && drag_ratio > kDragHideThreshold;
-    }
-  } else if (gesture.type() == ui::ET_SCROLL_FLING_START) {
-    if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN) {
-      should_change = horizontal ? fabs(gesture.details().velocity_y()) > 0
-                                 : fabs(gesture.details().velocity_x()) > 0;
-    } else {
-      should_change =
-          SelectValueForShelfAlignment(gesture.details().velocity_y() < 0,
-                                       gesture.details().velocity_x() > 0,
-                                       gesture.details().velocity_x() < 0);
-    }
-  } else {
-    NOTREACHED();
+  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+    StartGestureDrag(event);
+    return true;
   }
 
-  if (!should_change) {
-    CancelGestureDrag();
-    return;
-  }
-  if (shelf_widget_) {
-    shelf_widget_->Deactivate();
-    shelf_widget_->status_area_widget()->Deactivate();
-  }
-  gesture_drag_auto_hide_state_ =
-      gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN
-          ? SHELF_AUTO_HIDE_HIDDEN
-          : SHELF_AUTO_HIDE_SHOWN;
-  ShelfAutoHideBehavior new_auto_hide_behavior =
-      gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN
-          ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
-          : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  if (gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS)
+    return false;
 
-  // When in fullscreen and the shelf is forced to be auto hidden, the auto hide
-  // behavior affects neither the visibility state nor the auto hide state. Set
-  // |gesture_drag_status_| to GESTURE_DRAG_COMPLETE_IN_PROGRESS to set the auto
-  // hide state to |gesture_drag_auto_hide_state_|.
-  gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
-  Shelf* shelf = shelf_widget_->shelf();
-  if (shelf->auto_hide_behavior() != new_auto_hide_behavior)
-    shelf->SetAutoHideBehavior(new_auto_hide_behavior);
-  else
-    UpdateVisibilityState();
-  gesture_drag_status_ = GESTURE_DRAG_NONE;
-}
+  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+    UpdateGestureDrag(event);
+    return true;
+  }
 
-void ShelfLayoutManager::CancelGestureDrag() {
-  gesture_drag_status_ = GESTURE_DRAG_CANCEL_IN_PROGRESS;
-  UpdateVisibilityState();
-  gesture_drag_status_ = GESTURE_DRAG_NONE;
+  if (event.type() == ui::ET_GESTURE_SCROLL_END ||
+      event.type() == ui::ET_SCROLL_FLING_START) {
+    CompleteGestureDrag(event);
+    return true;
+  }
+
+  // Unexpected event. Reset the state and let the event fall through.
+  CancelGestureDrag();
+  return false;
 }
 
 void ShelfLayoutManager::SetAnimationDurationOverride(
@@ -1190,6 +1113,108 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) {
                : 0.0f;
   }
   return (state.visibility_state == SHELF_AUTO_HIDE) ? 1.0f : 0.0f;
+}
+
+bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
+  const WmWindow* fullscreen_window = wm::GetWindowForFullscreenMode(
+      WmLookup::Get()->GetWindowForWidget(shelf_widget_));
+  return fullscreen_window &&
+         fullscreen_window->GetWindowState()->hide_shelf_when_fullscreen();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShelfLayoutManager, Gesture functions:
+
+void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
+  gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
+  gesture_drag_amount_ = 0.f;
+  gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
+                                      ? auto_hide_state()
+                                      : SHELF_AUTO_HIDE_SHOWN;
+  UpdateShelfBackground(BACKGROUND_CHANGE_ANIMATE);
+}
+
+void ShelfLayoutManager::UpdateGestureDrag(const ui::GestureEvent& gesture) {
+  gesture_drag_amount_ += PrimaryAxisValue(gesture.details().scroll_y(),
+                                           gesture.details().scroll_x());
+  LayoutShelf();
+}
+
+void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
+  bool horizontal = IsHorizontalAlignment();
+  bool should_change = false;
+  if (gesture.type() == ui::ET_GESTURE_SCROLL_END) {
+    // The visibility of the shelf changes only if the shelf was dragged X%
+    // along the correct axis. If the shelf was already visible, then the
+    // direction of the drag does not matter.
+    const float kDragHideThreshold = 0.4f;
+    gfx::Rect bounds = GetIdealBounds();
+    float drag_ratio = fabs(gesture_drag_amount_) /
+                       (horizontal ? bounds.height() : bounds.width());
+    if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN) {
+      should_change = drag_ratio > kDragHideThreshold;
+    } else {
+      bool correct_direction = false;
+      switch (GetAlignment()) {
+        case SHELF_ALIGNMENT_BOTTOM:
+        case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+        case SHELF_ALIGNMENT_RIGHT:
+          correct_direction = gesture_drag_amount_ < 0;
+          break;
+        case SHELF_ALIGNMENT_LEFT:
+          correct_direction = gesture_drag_amount_ > 0;
+          break;
+      }
+      should_change = correct_direction && drag_ratio > kDragHideThreshold;
+    }
+  } else if (gesture.type() == ui::ET_SCROLL_FLING_START) {
+    if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN) {
+      should_change = horizontal ? fabs(gesture.details().velocity_y()) > 0
+                                 : fabs(gesture.details().velocity_x()) > 0;
+    } else {
+      should_change =
+          SelectValueForShelfAlignment(gesture.details().velocity_y() < 0,
+                                       gesture.details().velocity_x() > 0,
+                                       gesture.details().velocity_x() < 0);
+    }
+  } else {
+    NOTREACHED();
+  }
+
+  if (!should_change) {
+    CancelGestureDrag();
+    return;
+  }
+  if (shelf_widget_) {
+    shelf_widget_->Deactivate();
+    shelf_widget_->status_area_widget()->Deactivate();
+  }
+  gesture_drag_auto_hide_state_ =
+      gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN
+          ? SHELF_AUTO_HIDE_HIDDEN
+          : SHELF_AUTO_HIDE_SHOWN;
+  ShelfAutoHideBehavior new_auto_hide_behavior =
+      gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN
+          ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
+          : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+
+  // When in fullscreen and the shelf is forced to be auto hidden, the auto hide
+  // behavior affects neither the visibility state nor the auto hide state. Set
+  // |gesture_drag_status_| to GESTURE_DRAG_COMPLETE_IN_PROGRESS to set the auto
+  // hide state to |gesture_drag_auto_hide_state_|.
+  gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
+  Shelf* shelf = shelf_widget_->shelf();
+  if (shelf->auto_hide_behavior() != new_auto_hide_behavior)
+    shelf->SetAutoHideBehavior(new_auto_hide_behavior);
+  else
+    UpdateVisibilityState();
+  gesture_drag_status_ = GESTURE_DRAG_NONE;
+}
+
+void ShelfLayoutManager::CancelGestureDrag() {
+  gesture_drag_status_ = GESTURE_DRAG_CANCEL_IN_PROGRESS;
+  UpdateVisibilityState();
+  gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 
 }  // namespace ash

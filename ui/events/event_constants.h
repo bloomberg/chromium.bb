@@ -58,9 +58,6 @@ enum EventType {
   ET_GESTURE_SWIPE,
   ET_GESTURE_SHOW_PRESS,
 
-  // Sent by Win8+ metro when the user swipes from the bottom or top.
-  ET_GESTURE_WIN8_EDGE_SWIPE,
-
   // Scroll support.
   // TODO[davemoore] we need to unify these events w/ touch and gestures.
   ET_SCROLL,
