@@ -29,6 +29,8 @@ public:
     void enqueueToCurrentQueue(Element*, CustomElementReaction*);
     void enqueueToBackupQueue(Element*, CustomElementReaction*);
 
+    static CustomElementReactionStack& current();
+
 private:
     using ElementReactionQueueMap =
         HeapHashMap<Member<Element>, Member<CustomElementReactionQueue>>;

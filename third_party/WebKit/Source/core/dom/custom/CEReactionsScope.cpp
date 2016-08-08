@@ -7,7 +7,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementReactionStack.h"
-#include "core/frame/FrameHost.h"
 
 namespace blink {
 
@@ -17,19 +16,16 @@ void CEReactionsScope::enqueueToCurrentQueue(
     Element* element,
     CustomElementReaction* reaction)
 {
-    if (!m_frameHost.get()) {
-        m_frameHost = element->document().frameHost();
-        m_frameHost->customElementReactionStack().push();
-    } else {
-        DCHECK_EQ(m_frameHost, element->document().frameHost());
+    if (!m_workToDo) {
+        m_workToDo = true;
+        CustomElementReactionStack::current().push();
     }
-    m_frameHost->customElementReactionStack().enqueueToCurrentQueue(
-        element, reaction);
+    CustomElementReactionStack::current().enqueueToCurrentQueue(element, reaction);
 }
 
 void CEReactionsScope::invokeReactions()
 {
-    m_frameHost->customElementReactionStack().popInvokingReactions();
+    CustomElementReactionStack::current().popInvokingReactions();
 }
 
 } // namespace blink

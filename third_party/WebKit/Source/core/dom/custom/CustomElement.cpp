@@ -12,7 +12,6 @@
 #include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
@@ -197,8 +196,7 @@ void CustomElement::enqueue(Element* element, CustomElementReaction* reaction)
 
     // If the custom element reactions stack is empty, then
     // Add element to the backup element queue.
-    element->document().frameHost()->customElementReactionStack()
-        .enqueueToBackupQueue(element, reaction);
+    CustomElementReactionStack::current().enqueueToBackupQueue(element, reaction);
 }
 
 void CustomElement::enqueueConnectedCallback(Element* element)

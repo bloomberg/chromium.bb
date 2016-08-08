@@ -42,7 +42,6 @@ namespace blink {
 
 class ChromeClient;
 class ConsoleMessageStorage;
-class CustomElementReactionStack;
 class Deprecation;
 class EventHandlerRegistry;
 class OverscrollController;
@@ -117,9 +116,6 @@ public:
     ConsoleMessageStorage& consoleMessageStorage();
     const ConsoleMessageStorage& consoleMessageStorage() const;
 
-    CustomElementReactionStack& customElementReactionStack();
-    const CustomElementReactionStack& customElementReactionStack() const;
-
     DECLARE_TRACE();
 
     // Don't allow more than a certain number of frames in a page.
@@ -144,7 +140,6 @@ private:
     const Member<OverscrollController> m_overscrollController;
     const Member<EventHandlerRegistry> m_eventHandlerRegistry;
     const Member<ConsoleMessageStorage> m_consoleMessageStorage;
-    const Member<CustomElementReactionStack> m_customElementReactionStack;
 
     AtomicString m_overrideEncoding;
     int m_subframeCount;

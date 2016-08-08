@@ -12,6 +12,16 @@
 
 namespace blink {
 
+namespace {
+
+CustomElementReactionStack& customElementReactionStack()
+{
+    DEFINE_STATIC_LOCAL(CustomElementReactionStack, customElementReactionStack, (new CustomElementReactionStack));
+    return customElementReactionStack;
+}
+
+} // namespace
+
 // TODO(dominicc): Consider using linked heap structures, avoiding
 // finalizers, to make short-lived entries fast.
 
@@ -101,6 +111,11 @@ void CustomElementReactionStack::invokeBackupQueue()
     DCHECK(isMainThread());
     invokeReactions(*m_backupQueue);
     m_backupQueue->clear();
+}
+
+CustomElementReactionStack& CustomElementReactionStack::current()
+{
+    return customElementReactionStack();
 }
 
 } // namespace blink

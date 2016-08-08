@@ -15,7 +15,6 @@ namespace blink {
 
 class CustomElementReaction;
 class Element;
-class FrameHost;
 
 // https://html.spec.whatwg.org/multipage/scripting.html#cereactions
 class CORE_EXPORT CEReactionsScope final {
@@ -29,13 +28,14 @@ public:
 
     CEReactionsScope()
         : m_prev(s_topOfStack)
+        , m_workToDo(false)
     {
         s_topOfStack = this;
     }
 
     ~CEReactionsScope()
     {
-        if (m_frameHost.get())
+        if (m_workToDo)
             invokeReactions();
         s_topOfStack = s_topOfStack->m_prev;
     }
@@ -48,7 +48,7 @@ private:
     void invokeReactions();
 
     CEReactionsScope* m_prev;
-    Member<FrameHost> m_frameHost;
+    bool m_workToDo;
 };
 
 } // namespace blink
