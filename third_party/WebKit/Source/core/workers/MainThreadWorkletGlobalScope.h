@@ -26,9 +26,6 @@ public:
     void evaluateScript(const ScriptSourceCode&) final;
     void terminateWorkletGlobalScope() final;
 
-    // WorkerOrWorkletGlobalScope
-    bool isClosing() const final { return false; }
-
     using LocalFrameLifecycleObserver::frame;
     void addConsoleMessage(ConsoleMessage*) final;
     void exceptionThrown(ErrorEvent*) final;

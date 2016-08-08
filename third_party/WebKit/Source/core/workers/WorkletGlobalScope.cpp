@@ -53,6 +53,11 @@ void WorkletGlobalScope::disableEval(const String& errorMessage)
     m_scriptController->disableEval(errorMessage);
 }
 
+bool WorkletGlobalScope::isJSExecutionForbidden() const
+{
+    return m_scriptController->isExecutionForbidden();
+}
+
 bool WorkletGlobalScope::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
 {
     // Until there are APIs that are available in worklets and that

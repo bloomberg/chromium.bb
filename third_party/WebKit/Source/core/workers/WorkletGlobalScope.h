@@ -25,7 +25,7 @@ class CORE_EXPORT WorkletGlobalScope : public GarbageCollectedFinalized<WorkletG
     USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
 public:
     ~WorkletGlobalScope() override;
-    virtual void dispose();
+    void dispose() override;
 
     bool isWorkletGlobalScope() const final { return true; }
 
@@ -33,12 +33,17 @@ public:
     ScriptWrappable* getScriptWrappable() const final { return const_cast<WorkletGlobalScope*>(this); }
     WorkerOrWorkletScriptController* scriptController() final { return m_scriptController.get(); }
 
+    // Always returns false here as worklets don't have a #close() method on
+    // the global.
+    bool isClosing() const final { return false; }
+
     // ScriptWrappable
     v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) final;
     v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) final;
 
     // ExecutionContext
     void disableEval(const String& errorMessage) final;
+    bool isJSExecutionForbidden() const final;
     String userAgent() const final { return m_userAgent; }
     SecurityContext& securityContext() final { return *this; }
     EventQueue* getEventQueue() const final { NOTREACHED(); return nullptr; } // WorkletGlobalScopes don't have an event queue.
