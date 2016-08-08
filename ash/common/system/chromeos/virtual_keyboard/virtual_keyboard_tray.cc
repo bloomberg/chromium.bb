@@ -21,60 +21,48 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/views/controls/image_view.h"
 
 namespace ash {
 
 VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf), button_(nullptr) {
-  button_ = new views::ImageButton(this);
+    : TrayBackgroundView(wm_shelf), icon_(new views::ImageView) {
   if (MaterialDesignController::IsShelfMaterial()) {
     gfx::ImageSkia image_md =
         CreateVectorIcon(gfx::VectorIconId::SHELF_KEYBOARD, kShelfIconColor);
-    button_->SetImage(views::CustomButton::STATE_NORMAL, &image_md);
+    icon_->SetImage(image_md);
   } else {
     gfx::ImageSkia* image_non_md =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD);
-    button_->SetImage(views::CustomButton::STATE_NORMAL, image_non_md);
+    icon_->SetImage(image_non_md);
   }
-  button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                             views::ImageButton::ALIGN_MIDDLE);
 
-  tray_container()->AddChildView(button_);
-  button_->SetFocusBehavior(FocusBehavior::NEVER);
+  SetIconBorderForShelfAlignment();
+  tray_container()->AddChildView(icon_);
   SetContentsBackground();
   // The Shell may not exist in some unit tests.
   if (WmShell::HasInstance())
     WmShell::Get()->keyboard_ui()->AddObserver(this);
+  // Try observing keyboard controller, in case it is already constructed.
+  ObserveKeyboardController();
 }
 
 VirtualKeyboardTray::~VirtualKeyboardTray() {
+  // Try unobserving keyboard controller, in case it still exists.
+  UnobserveKeyboardController();
   // The Shell may not exist in some unit tests.
   if (WmShell::HasInstance())
     WmShell::Get()->keyboard_ui()->RemoveObserver(this);
 }
 
 void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
+  if (alignment == shelf_alignment())
+    return;
+
   TrayBackgroundView::SetShelfAlignment(alignment);
-  tray_container()->SetBorder(views::Border::NullBorder());
-
-  // Pad button size to align with other controls in the system tray.
-  const gfx::ImageSkia image =
-      button_->GetImage(views::CustomButton::STATE_NORMAL);
-  const int size = GetTrayConstant(VIRTUAL_KEYBOARD_BUTTON_SIZE);
-  const int vertical_padding = (size - image.height()) / 2;
-  int horizontal_padding = (size - image.width()) / 2;
-  if (!ash::MaterialDesignController::IsShelfMaterial() &&
-      IsHorizontalAlignment(alignment)) {
-    // Square up the padding if horizontally aligned. Avoid extra padding when
-    // vertically aligned as the button would violate the width constraint on
-    // the shelf.
-    horizontal_padding += std::max(0, vertical_padding - horizontal_padding);
-  }
-
-  button_->SetBorder(views::Border::CreateEmptyBorder(
-      gfx::Insets(vertical_padding, horizontal_padding)));
+  SetIconBorderForShelfAlignment();
 }
 
 base::string16 VirtualKeyboardTray::GetAccessibleNameForTray() {
@@ -92,14 +80,51 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
   return true;
 }
 
-void VirtualKeyboardTray::ButtonPressed(views::Button* sender,
-                                        const ui::Event& event) {
-  DCHECK_EQ(button_, sender);
-  PerformAction(event);
+void VirtualKeyboardTray::OnKeyboardEnabledStateChanged(bool new_enabled) {
+  SetVisible(new_enabled);
+  if (new_enabled) {
+    // Observe keyboard controller to detect when the virtual keyboard is
+    // shown/hidden.
+    ObserveKeyboardController();
+  } else {
+    // Try unobserving keyboard controller, in case it is not yet destroyed.
+    UnobserveKeyboardController();
+  }
 }
 
-void VirtualKeyboardTray::OnKeyboardEnabledStateChanged(bool new_value) {
-  SetVisible(WmShell::Get()->keyboard_ui()->IsEnabled());
+void VirtualKeyboardTray::OnKeyboardBoundsChanging(
+    const gfx::Rect& new_bounds) {
+  SetDrawBackgroundAsActive(!new_bounds.IsEmpty());
+}
+
+void VirtualKeyboardTray::SetIconBorderForShelfAlignment() {
+  const gfx::ImageSkia& image = icon_->GetImage();
+  const int size = GetTrayConstant(VIRTUAL_KEYBOARD_BUTTON_SIZE);
+  const int vertical_padding = (size - image.height()) / 2;
+  int horizontal_padding = (size - image.width()) / 2;
+  if (!ash::MaterialDesignController::IsShelfMaterial() &&
+      IsHorizontalAlignment(shelf_alignment())) {
+    // Square up the padding if horizontally aligned. Avoid extra padding when
+    // vertically aligned as the button would violate the width constraint on
+    // the shelf.
+    horizontal_padding += std::max(0, vertical_padding - horizontal_padding);
+  }
+  icon_->SetBorder(views::Border::CreateEmptyBorder(
+      gfx::Insets(vertical_padding, horizontal_padding)));
+}
+
+void VirtualKeyboardTray::ObserveKeyboardController() {
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
+    keyboard_controller->AddObserver(this);
+}
+
+void VirtualKeyboardTray::UnobserveKeyboardController() {
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
+    keyboard_controller->RemoveObserver(this);
 }
 
 }  // namespace ash

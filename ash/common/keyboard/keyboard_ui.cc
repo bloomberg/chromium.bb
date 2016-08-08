@@ -17,7 +17,7 @@ namespace ash {
 
 class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
  public:
-  KeyboardUIImpl() {
+  KeyboardUIImpl() : enabled_(false) {
     WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
   }
 
@@ -41,11 +41,18 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
   // AccessibilityObserver:
   void OnAccessibilityModeChanged(
       AccessibilityNotificationVisibility notify) override {
+    bool enabled = IsEnabled();
+    if (enabled_ == enabled)
+      return;
+
+    enabled_ = enabled;
     FOR_EACH_OBSERVER(KeyboardUIObserver, *observers(),
-                      OnKeyboardEnabledStateChanged(IsEnabled()));
+                      OnKeyboardEnabledStateChanged(enabled));
   }
 
  private:
+  bool enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIImpl);
 };
 

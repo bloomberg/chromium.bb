@@ -8,18 +8,18 @@
 #include "ash/common/keyboard/keyboard_ui_observer.h"
 #include "ash/common/system/tray/tray_background_view.h"
 #include "base/macros.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace views {
-class ImageButton;
+class ImageView;
 }
 
 namespace ash {
 
 // TODO(sky): make this visible on non-chromeos platforms.
 class VirtualKeyboardTray : public TrayBackgroundView,
-                            public views::ButtonListener,
-                            public KeyboardUIObserver {
+                            public KeyboardUIObserver,
+                            public keyboard::KeyboardControllerObserver {
  public:
   explicit VirtualKeyboardTray(WmShelf* wm_shelf);
   ~VirtualKeyboardTray() override;
@@ -31,14 +31,22 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   void ClickedOutsideBubble() override;
   bool PerformAction(const ui::Event& event) override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // KeyboardUIObserver:
-  void OnKeyboardEnabledStateChanged(bool new_value) override;
+  void OnKeyboardEnabledStateChanged(bool new_enabled) override;
+
+  // keyboard::KeyboardControllerObserver:
+  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
  private:
-  views::ImageButton* button_;  // Not owned.
+  // Creates a new border for the icon. The padding is determined based on the
+  // alignment of the shelf.
+  void SetIconBorderForShelfAlignment();
+
+  void ObserveKeyboardController();
+  void UnobserveKeyboardController();
+
+  // Weak pointer, will be parented by TrayContainer for its lifetime.
+  views::ImageView* icon_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardTray);
 };

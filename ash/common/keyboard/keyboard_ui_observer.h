@@ -12,7 +12,7 @@ namespace ash {
 
 class ASH_EXPORT KeyboardUIObserver {
  public:
-  virtual void OnKeyboardEnabledStateChanged(bool new_value) = 0;
+  virtual void OnKeyboardEnabledStateChanged(bool new_enabled) = 0;
 
  protected:
   virtual ~KeyboardUIObserver() {}
