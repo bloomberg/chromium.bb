@@ -1222,7 +1222,9 @@ crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-window.html [ Failure Pass ]
-
+crbug.com/67848 fast/forms/search/search-rtl.html [ NeedsRebaseline ]
+crbug.com/67848 fast/forms/placeholder-position.html [ NeedsRebaseline ]
+crbug.com/67848 fast/css/text-overflow-input.html [ NeedsRebaseline ]
 crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
 
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
