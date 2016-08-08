@@ -5,8 +5,8 @@
 cr.define('chrome.SnippetsInternals', function() {
   'use strict';
 
-  // Stores the list of suggestions we received in receiveContentSuggestions.
-  var lastSuggestions = [];
+  // Stores the list of snippets we received in receiveSnippets.
+  var lastSnippets = [];
 
   function initialize() {
     $('submit-download').addEventListener('click', function(event) {
@@ -14,8 +14,13 @@ cr.define('chrome.SnippetsInternals', function() {
       event.preventDefault();
     });
 
+    $('submit-clear').addEventListener('click', function(event) {
+      chrome.send('clear');
+      event.preventDefault();
+    });
+
     $('submit-dump').addEventListener('click', function(event) {
-      downloadJson(JSON.stringify(lastSuggestions));
+      downloadJson(JSON.stringify(lastSnippets));
       event.preventDefault();
     });
 
@@ -25,6 +30,23 @@ cr.define('chrome.SnippetsInternals', function() {
 
     $('last-json-dump').addEventListener('click', function(event) {
       downloadJson($('last-json-text').innerText);
+      event.preventDefault();
+    });
+
+    $('dismissed-snippets-clear').addEventListener('click', function(event) {
+      chrome.send('clearDismissed');
+      event.preventDefault();
+    });
+
+    $('submit-clear-cached-suggestions')
+        .addEventListener('click', function(event) {
+      chrome.send('clearCachedSuggestions');
+      event.preventDefault();
+    });
+
+    $('submit-clear-dismissed-suggestions')
+        .addEventListener('click', function(event) {
+      chrome.send('clearDismissedSuggestions');
       event.preventDefault();
     });
 
@@ -52,34 +74,19 @@ cr.define('chrome.SnippetsInternals', function() {
       function(host) { return host.url;}).join(' ');
   }
 
+  function receiveSnippets(snippets) {
+    lastSnippets = snippets;
+    displayList(snippets, 'snippets', 'snippet-title');
+  }
+
+  function receiveDismissedSnippets(dismissedSnippets) {
+    displayList(dismissedSnippets, 'dismissed-snippets',
+                'dismissed-snippet-title');
+  }
+
   function receiveContentSuggestions(categoriesList) {
-    lastSuggestions = categoriesList;
     displayList(categoriesList, 'content-suggestions',
-                'hidden-toggler');
-
-    var clearCachedButtons =
-        document.getElementsByClassName('submit-clear-cached-suggestions');
-    for (var button of clearCachedButtons) {
-      button.addEventListener('click', onClearCachedButtonClicked);
-    }
-
-    var clearDismissedButtons =
-        document.getElementsByClassName('submit-clear-dismissed-suggestions');
-    for (var button of clearDismissedButtons) {
-      button.addEventListener('click', onClearDismissedButtonClicked);
-    }
-  }
-
-  function onClearCachedButtonClicked(event) {
-    event.preventDefault();
-    var id = parseInt(event.currentTarget.getAttribute('category-id'), 10);
-    chrome.send('clearCachedSuggestions', [id]);
-  }
-
-  function onClearDismissedButtonClicked(event) {
-    event.preventDefault();
-    var id = parseInt(event.currentTarget.getAttribute('category-id'), 10);
-    chrome.send('clearDismissedSuggestions', [id]);
+                'content-suggestion-title');
   }
 
   function receiveJson(json) {
@@ -113,7 +120,7 @@ cr.define('chrome.SnippetsInternals', function() {
     $(id).classList.toggle('hidden');
   }
 
-  function displayList(object, domId, toggleClass) {
+  function displayList(object, domId, titleClass) {
     jstProcess(new JsEvalContext(object), $(domId));
 
     var text;
@@ -130,7 +137,7 @@ cr.define('chrome.SnippetsInternals', function() {
     if ($(domId + '-empty')) $(domId + '-empty').textContent = text;
     if ($(domId + '-clear')) $(domId + '-clear').style.display = display;
 
-    var links = document.getElementsByClassName(toggleClass);
+    var links = document.getElementsByClassName(titleClass);
     for (var link of links) {
       link.addEventListener('click', toggleHidden);
     }
@@ -142,6 +149,8 @@ cr.define('chrome.SnippetsInternals', function() {
     setHostRestricted: setHostRestricted,
     receiveProperty: receiveProperty,
     receiveHosts: receiveHosts,
+    receiveSnippets: receiveSnippets,
+    receiveDismissedSnippets: receiveDismissedSnippets,
     receiveContentSuggestions: receiveContentSuggestions,
     receiveJson: receiveJson,
   };

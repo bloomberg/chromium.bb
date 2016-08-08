@@ -90,23 +90,15 @@ class ContentSuggestionsProvider {
   virtual void FetchSuggestionImage(const std::string& suggestion_id,
                                     const ImageFetchedCallback& callback) = 0;
 
-  // Used only for debugging purposes. Clears all caches for the given category,
-  // so that the next fetch starts from scratch.
-  virtual void ClearCachedSuggestionsForDebugging(Category category) = 0;
-
-  // Used only for debugging purposes. Retrieves suggestions for the given
-  // |category| that have previously been dismissed and are still stored in the
-  // provider. If the provider doesn't store dismissed suggestions for the given
-  // |category|, it always returns an empty vector.
-  virtual std::vector<ContentSuggestion> GetDismissedSuggestionsForDebugging(
-      Category category) = 0;
+  // Used only for debugging purposes. Clears all caches so that the next
+  // fetch starts from scratch.
+  virtual void ClearCachedSuggestionsForDebugging() = 0;
 
   // Used only for debugging purposes. Clears the cache of dismissed
-  // suggestions for the given |category|, if present, so that no suggestions
-  // are suppressed. This does not necessarily make previously dismissed
-  // suggestions reappear, as they may have been permanently deleted, depending
-  // on the provider implementation.
-  virtual void ClearDismissedSuggestionsForDebugging(Category category) = 0;
+  // suggestions, if present, so that no suggestions are suppressed. This does
+  // not necessarily make previously dismissed suggestions reappear, as they may
+  // have been permanently deleted, depending on the provider implementation.
+  virtual void ClearDismissedSuggestionsForDebugging() = 0;
 
  protected:
   ContentSuggestionsProvider(Observer* observer,

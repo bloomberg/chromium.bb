@@ -274,9 +274,37 @@ std::vector<Category> NTPSnippetsService::GetProvidedCategories() {
   return std::vector<Category>({provided_category_});
 }
 
-CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
-  DCHECK(category.IsKnownCategory(KnownCategories::ARTICLES));
-  return category_status_;
+void NTPSnippetsService::FetchSuggestionImage(
+    const std::string& suggestion_id,
+    const ImageFetchedCallback& callback) {
+  std::string snippet_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
+  database_->LoadImage(
+      snippet_id,
+      base::Bind(&NTPSnippetsService::OnSnippetImageFetchedFromDatabase,
+                 base::Unretained(this), snippet_id, callback));
+}
+
+void NTPSnippetsService::ClearCachedSuggestionsForDebugging() {
+  if (!initialized())
+    return;
+
+  if (snippets_.empty())
+    return;
+
+  database_->DeleteSnippets(snippets_);
+  snippets_.clear();
+
+  NotifyNewSuggestions();
+}
+
+std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
+  // |suggestions_service_| can be null in tests.
+  if (!suggestions_service_)
+    return std::set<std::string>();
+
+  // TODO(treib): This should just call GetSnippetHostsFromPrefs.
+  return GetSuggestionsHostsImpl(
+      suggestions_service_->GetSuggestionsDataFromCache());
 }
 
 void NTPSnippetsService::DismissSuggestion(const std::string& suggestion_id) {
@@ -302,55 +330,7 @@ void NTPSnippetsService::DismissSuggestion(const std::string& suggestion_id) {
   snippets_.erase(it);
 }
 
-void NTPSnippetsService::FetchSuggestionImage(
-    const std::string& suggestion_id,
-    const ImageFetchedCallback& callback) {
-  std::string snippet_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
-  database_->LoadImage(
-      snippet_id,
-      base::Bind(&NTPSnippetsService::OnSnippetImageFetchedFromDatabase,
-                 base::Unretained(this), snippet_id, callback));
-}
-
-void NTPSnippetsService::ClearCachedSuggestionsForDebugging(Category category) {
-  DCHECK_EQ(category, provided_category_);
-  if (!initialized())
-    return;
-
-  if (snippets_.empty())
-    return;
-
-  database_->DeleteSnippets(snippets_);
-  snippets_.clear();
-
-  NotifyNewSuggestions();
-}
-
-std::vector<ContentSuggestion>
-NTPSnippetsService::GetDismissedSuggestionsForDebugging(Category category) {
-  DCHECK_EQ(category, provided_category_);
-  std::vector<ContentSuggestion> result;
-  for (const std::unique_ptr<NTPSnippet>& snippet : dismissed_snippets_) {
-    if (!snippet->is_complete())
-      continue;
-    ContentSuggestion suggestion(
-        MakeUniqueID(provided_category_, snippet->id()),
-        snippet->best_source().url);
-    suggestion.set_amp_url(snippet->best_source().amp_url);
-    suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
-    suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
-    suggestion.set_publish_date(snippet->publish_date());
-    suggestion.set_publisher_name(
-        base::UTF8ToUTF16(snippet->best_source().publisher_name));
-    suggestion.set_score(snippet->score());
-    result.emplace_back(std::move(suggestion));
-  }
-  return result;
-}
-
-void NTPSnippetsService::ClearDismissedSuggestionsForDebugging(
-    Category category) {
-  DCHECK_EQ(category, provided_category_);
+void NTPSnippetsService::ClearDismissedSuggestionsForDebugging() {
   if (!initialized())
     return;
 
@@ -361,14 +341,9 @@ void NTPSnippetsService::ClearDismissedSuggestionsForDebugging(
   dismissed_snippets_.clear();
 }
 
-std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
-  // |suggestions_service_| can be null in tests.
-  if (!suggestions_service_)
-    return std::set<std::string>();
-
-  // TODO(treib): This should just call GetSnippetHostsFromPrefs.
-  return GetSuggestionsHostsImpl(
-      suggestions_service_->GetSuggestionsDataFromCache());
+CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
+  DCHECK(category.IsKnownCategory(KnownCategories::ARTICLES));
+  return category_status_;
 }
 
 // static
@@ -689,8 +664,8 @@ void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
 }
 
 void NTPSnippetsService::EnterStateDisabled() {
-  ClearCachedSuggestionsForDebugging(provided_category_);
-  ClearDismissedSuggestionsForDebugging(provided_category_);
+  ClearCachedSuggestionsForDebugging();
+  ClearDismissedSuggestionsForDebugging();
 
   expiry_timer_.Stop();
   suggestions_service_subscription_.reset();

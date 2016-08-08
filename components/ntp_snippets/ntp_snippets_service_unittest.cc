@@ -341,11 +341,9 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   }
 
   std::string MakeUniqueID(const std::string& within_category_id) {
-    return service()->MakeUniqueID(articles_category(), within_category_id);
-  }
-
-  Category articles_category() {
-    return category_factory_.FromKnownCategory(KnownCategories::ARTICLES);
+    return service()->MakeUniqueID(
+        category_factory_.FromKnownCategory(KnownCategories::ARTICLES),
+        within_category_id);
   }
 
  protected:
@@ -396,8 +394,8 @@ TEST_F(NTPSnippetsServiceTest, Full) {
   std::string json_str(GetTestJson({GetSnippet()}));
 
   LoadFromJSONString(json_str);
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
-  const NTPSnippet& snippet = *service()->GetSnippetsForTesting().front();
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
+  const NTPSnippet& snippet = *service()->snippets().front();
 
   EXPECT_EQ(snippet.id(), kSnippetUrl);
   EXPECT_EQ(snippet.title(), kSnippetTitle);
@@ -412,22 +410,21 @@ TEST_F(NTPSnippetsServiceTest, Clear) {
   std::string json_str(GetTestJson({GetSnippet()}));
 
   LoadFromJSONString(json_str);
-  EXPECT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  EXPECT_THAT(service()->snippets(), SizeIs(1));
 
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  service()->ClearCachedSuggestionsForDebugging();
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
   std::string first("http://first");
   LoadFromJSONString(GetTestJson({GetSnippetWithUrl(first)}));
-  EXPECT_THAT(service()->GetSnippetsForTesting(), ElementsAre(IdEq(first)));
+  EXPECT_THAT(service()->snippets(), ElementsAre(IdEq(first)));
 
   std::string second("http://second");
   LoadFromJSONString(GetTestJson({GetSnippetWithUrl(second)}));
   // The snippet loaded last should be at the first position in the list now.
-  EXPECT_THAT(service()->GetSnippetsForTesting(),
-              ElementsAre(IdEq(second), IdEq(first)));
+  EXPECT_THAT(service()->snippets(), ElementsAre(IdEq(second), IdEq(first)));
 }
 
 TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
@@ -444,47 +441,47 @@ TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
   }
 
   LoadFromJSONString(GetTestJson(snippets1));
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(snippets1.size()));
+  ASSERT_THAT(service()->snippets(), SizeIs(snippets1.size()));
 
   LoadFromJSONString(GetTestJson(snippets2));
-  EXPECT_THAT(service()->GetSnippetsForTesting(), SizeIs(max_snippet_count));
+  EXPECT_THAT(service()->snippets(), SizeIs(max_snippet_count));
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
   LoadFromJSONString(GetTestJson({GetInvalidSnippet()}));
   EXPECT_THAT(service()->snippets_fetcher()->last_status(),
               StartsWith("Received invalid JSON"));
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJsonWithExistingSnippets) {
   LoadFromJSONString(GetTestJson({GetSnippet()}));
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
   ASSERT_EQ("OK", service()->snippets_fetcher()->last_status());
 
   LoadFromJSONString(GetTestJson({GetInvalidSnippet()}));
   EXPECT_THAT(service()->snippets_fetcher()->last_status(),
               StartsWith("Received invalid JSON"));
   // This should not have changed the existing snippets.
-  EXPECT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  EXPECT_THAT(service()->snippets(), SizeIs(1));
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadIncompleteJson) {
   LoadFromJSONString(GetTestJson({GetIncompleteSnippet()}));
   EXPECT_EQ("Invalid / empty list.",
             service()->snippets_fetcher()->last_status());
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadIncompleteJsonWithExistingSnippets) {
   LoadFromJSONString(GetTestJson({GetSnippet()}));
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
 
   LoadFromJSONString(GetTestJson({GetIncompleteSnippet()}));
   EXPECT_EQ("Invalid / empty list.",
             service()->snippets_fetcher()->last_status());
   // This should not have changed the existing snippets.
-  EXPECT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  EXPECT_THAT(service()->snippets(), SizeIs(1));
 }
 
 TEST_F(NTPSnippetsServiceTest, Dismiss) {
@@ -497,48 +494,45 @@ TEST_F(NTPSnippetsServiceTest, Dismiss) {
 
   LoadFromJSONString(json_str);
 
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
 
   // Dismissing a non-existent snippet shouldn't do anything.
   service()->DismissSuggestion(MakeUniqueID("http://othersite.com"));
-  EXPECT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  EXPECT_THAT(service()->snippets(), SizeIs(1));
 
   // Dismiss the snippet.
   service()->DismissSuggestion(MakeUniqueID(kSnippetUrl));
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // Make sure that fetching the same snippet again does not re-add it.
   LoadFromJSONString(json_str);
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // The snippet should stay dismissed even after re-creating the service.
   RecreateSnippetsService();
   LoadFromJSONString(json_str);
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // The snippet can be added again after clearing dismissed snippets.
-  service()->ClearDismissedSuggestionsForDebugging(articles_category());
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  service()->ClearDismissedSuggestionsForDebugging();
+  EXPECT_THAT(service()->snippets(), IsEmpty());
   LoadFromJSONString(json_str);
-  EXPECT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  EXPECT_THAT(service()->snippets(), SizeIs(1));
 }
 
 TEST_F(NTPSnippetsServiceTest, GetDismissed) {
   LoadFromJSONString(GetTestJson({GetSnippet()}));
 
   service()->DismissSuggestion(MakeUniqueID(kSnippetUrl));
-  std::vector<ContentSuggestion> suggestions =
-      service()->GetDismissedSuggestionsForDebugging(articles_category());
-  EXPECT_EQ(1u, suggestions.size());
-  for (auto& suggestion : suggestions) {
-    EXPECT_EQ(MakeUniqueID(kSnippetUrl), suggestion.id());
+  const NTPSnippet::PtrVector& snippets = service()->dismissed_snippets();
+  EXPECT_EQ(1u, snippets.size());
+  for (auto& snippet : snippets) {
+    EXPECT_EQ(kSnippetUrl, snippet->id());
   }
 
   // There should be no dismissed snippet after clearing the list.
-  service()->ClearDismissedSuggestionsForDebugging(articles_category());
-  EXPECT_EQ(0u, service()
-                    ->GetDismissedSuggestionsForDebugging(articles_category())
-                    .size());
+  service()->ClearDismissedSuggestionsForDebugging();
+  EXPECT_EQ(0u, service()->dismissed_snippets().size());
 }
 
 TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
@@ -547,8 +541,8 @@ TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
       NTPSnippet::TimeToJsonString(GetDefaultExpirationTime()))}));
 
   LoadFromJSONString(json_str);
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
-  const NTPSnippet& snippet = *service()->GetSnippetsForTesting().front();
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
+  const NTPSnippet& snippet = *service()->snippets().front();
   EXPECT_EQ(snippet.id(), kSnippetUrl);
   EXPECT_EQ(snippet.title(), kSnippetTitle);
   EXPECT_EQ(snippet.snippet(), kSnippetText);
@@ -559,7 +553,7 @@ TEST_F(NTPSnippetsServiceTest, RemoveExpiredContent) {
   std::string json_str(GetTestJson({GetExpiredSnippet()}));
 
   LoadFromJSONString(json_str);
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
@@ -571,8 +565,8 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
-  const NTPSnippet& snippet = *service()->GetSnippetsForTesting().front();
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
+  const NTPSnippet& snippet = *service()->snippets().front();
   EXPECT_EQ(snippet.sources().size(), 1u);
   EXPECT_EQ(snippet.id(), kSnippetUrl);
   EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
@@ -589,7 +583,7 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMalformedUrl) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMissingData) {
@@ -601,7 +595,7 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMissingData) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, TestMultipleSources) {
@@ -616,8 +610,8 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleSources) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
-  const NTPSnippet& snippet = *service()->GetSnippetsForTesting().front();
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
+  const NTPSnippet& snippet = *service()->snippets().front();
   // Expect the first source to be chosen
   EXPECT_EQ(snippet.sources().size(), 2u);
   EXPECT_EQ(snippet.id(), kSnippetUrl);
@@ -640,9 +634,9 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
-    const NTPSnippet& snippet = *service()->GetSnippetsForTesting().front();
+    const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 2u);
     EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source2.com"));
@@ -650,7 +644,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
   }
 
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
+  service()->ClearCachedSuggestionsForDebugging();
   // Set Source 1 to have no AMP url, and Source 2 to have no publisher name
   // Source 1 should win in this case since we prefer publisher name to AMP url
   source_urls.clear();
@@ -666,9 +660,9 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)});
 
   LoadFromJSONString(json_str);
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
-    const NTPSnippet& snippet = *service()->GetSnippetsForTesting().front();
+    const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 2u);
     EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
@@ -676,7 +670,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
   }
 
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
+  service()->ClearCachedSuggestionsForDebugging();
   // Set source 1 to have no AMP url and no source, and source 2 to only have
   // amp url. There should be no snippets since we only add sources we consider
   // complete
@@ -693,7 +687,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)});
 
   LoadFromJSONString(json_str);
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
@@ -712,9 +706,9 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
-    const NTPSnippet& snippet = *service()->GetSnippetsForTesting().front();
+    const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 3u);
     EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
@@ -723,7 +717,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   }
 
   // Test 2 complete sources, we should choose the first complete source
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
+  service()->ClearCachedSuggestionsForDebugging();
   source_urls.clear();
   source_urls.push_back(std::string("http://source1.com"));
   source_urls.push_back(std::string("http://source2.com"));
@@ -740,9 +734,9 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)});
 
   LoadFromJSONString(json_str);
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
-    const NTPSnippet& snippet = *service()->GetSnippetsForTesting().front();
+    const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 3u);
     EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source2.com"));
@@ -751,7 +745,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   }
 
   // Test 3 complete sources, we should choose the first complete source
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
+  service()->ClearCachedSuggestionsForDebugging();
   source_urls.clear();
   source_urls.push_back(std::string("http://source1.com"));
   source_urls.push_back(std::string("http://source2.com"));
@@ -768,9 +762,9 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
       GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)});
 
   LoadFromJSONString(json_str);
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
-    const NTPSnippet& snippet = *service()->GetSnippetsForTesting().front();
+    const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 3u);
     EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source2.com"));
@@ -851,15 +845,15 @@ TEST_F(NTPSnippetsServiceTest, DismissShouldRespectAllKnownUrls) {
   // Add the snippet from the mashable domain.
   LoadFromJSONString(GetTestJson({GetSnippetWithUrlAndTimesAndSources(
       source_urls[0], creation, expiry, source_urls, publishers, amp_urls)}));
-  ASSERT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
   // Dismiss the snippet via the mashable source corpus ID.
   service()->DismissSuggestion(MakeUniqueID(source_urls[0]));
-  EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // The same article from the AOL domain should now be detected as dismissed.
   LoadFromJSONString(GetTestJson({GetSnippetWithUrlAndTimesAndSources(
       source_urls[1], creation, expiry, source_urls, publishers, amp_urls)}));
-  ASSERT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
+  ASSERT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, StatusChanges) {
@@ -870,8 +864,7 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
   service()->OnDisabledReasonChanged(DisabledReason::SIGNED_OUT);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::DISABLED, service()->state_);
-  EXPECT_THAT(service()->GetSnippetsForTesting(),
-              IsEmpty());  // No fetch should be made.
+  EXPECT_THAT(service()->snippets(), IsEmpty());  // No fetch should be made.
 
   // Simulate user sign in. The service should be ready again and load snippets.
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
@@ -883,7 +876,7 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
               OnCategoryStatusChanged(_, _, CategoryStatus::AVAILABLE));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::READY, service()->state_);
-  EXPECT_FALSE(service()->GetSnippetsForTesting().empty());
+  EXPECT_FALSE(service()->snippets().empty());
 }
 
 }  // namespace ntp_snippets

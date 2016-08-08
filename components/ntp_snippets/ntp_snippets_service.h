@@ -109,6 +109,15 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
                               bool force_request);
 
+  // Available snippets.
+  const NTPSnippet::PtrVector& snippets() const { return snippets_; }
+
+  // Returns the list of snippets previously dismissed by the user (that are
+  // not expired yet).
+  const NTPSnippet::PtrVector& dismissed_snippets() const {
+    return dismissed_snippets_;
+  }
+
   const NTPSnippetsFetcher* snippets_fetcher() const {
     return snippets_fetcher_.get();
   }
@@ -124,26 +133,21 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   void RescheduleFetching();
 
   // ContentSuggestionsProvider implementation
+  // TODO(pke): At some point reorder the implementations in the .cc file
+  // accordingly.
   std::vector<Category> GetProvidedCategories() override;
   CategoryStatus GetCategoryStatus(Category category) override;
   void DismissSuggestion(const std::string& suggestion_id) override;
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback) override;
-  void ClearCachedSuggestionsForDebugging(Category category) override;
-  std::vector<ContentSuggestion> GetDismissedSuggestionsForDebugging(
-      Category category) override;
-  void ClearDismissedSuggestionsForDebugging(Category category) override;
+  void ClearCachedSuggestionsForDebugging() override;
+  void ClearDismissedSuggestionsForDebugging() override;
 
   // Returns the lists of suggestion hosts the snippets are restricted to.
   std::set<std::string> GetSuggestionsHosts() const;
 
   // Returns the maximum number of snippets that will be shown at once.
   static int GetMaxSnippetCountForTesting();
-
-  // Available snippets, only for unit tests.
-  const NTPSnippet::PtrVector& GetSnippetsForTesting() const {
-    return snippets_;
-  }
 
  private:
   friend class NTPSnippetsServiceTest;

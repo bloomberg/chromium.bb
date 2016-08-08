@@ -40,7 +40,52 @@ found in the LICENSE file.
   </div>
 
   <div id="snippets">
-    <h2>NTPSnippetsService</h2>
+    <h2>Snippets directly from NTPSnippetsService
+      <span class="detail">(click for details)</span>
+    </h2>
+    <table class="section-details">
+      <tr jsselect="list" style="display:none">
+        <td class="title-link">
+          <span class="snippet-title" jsvalues="hidden-id:id">
+              <span jscontent="title"></span>&gt;&gt;</span>
+          <div jsvalues="id:id" class="snippet-detail hidden">
+            <table>
+              <tr>
+                <td>ID
+                <td jscontent="snippetId">
+              <tr>
+                <td>Validity
+                <td class="expiry">
+                  <span class="date" jscontent="published"></span> &ndash; 
+                  <span class="date" jscontent="expires"></span>
+              <tr>
+                <td>Site title
+                <td jscontent="siteTitle">
+              <tr>
+                <td>Text
+                <td jscontent="snippet">
+              <tr>
+                <td>URL
+                <td><a class="url" jsvalues="href:url" jscontent="url"></a>
+              <tr>
+                <td>Favicon
+                <td><a class="url" jsvalues="href:faviconUrl"
+                    jscontent="faviconUrl"></a>
+              <tr>
+                <td>Salient image
+                <td><a class="url" jsvalues="href:salientImageUrl" 
+                    jscontent="salientImageUrl"></a>
+              <tr>
+                <td>Score
+                <td jscontent="score">
+            </table>
+          </div>
+    </table>
+    <div class="detail" id="snippets-empty"></div>
+    <div class="forms">
+      <input id="submit-clear" type="submit" value="Clear the list">
+      <input id="submit-dump" type="submit" value="Dump the list">
+    </div>
     <div class="forms">
       <input id="submit-download" type="submit" value="Add snippets">
       <span id="hosts-restrict">from hosts <span class="detail">(specify at 
@@ -51,16 +96,56 @@ found in the LICENSE file.
       <span id="hosts-status" class="detail"></span>
     </div>
   </div>
-
+  
   <div id="last-json" class="hidden">
-    <h2>Last JSON from Server</h2>
+    <h2>Last JSON</h2>
     <a id="last-json-button">Show the last JSON &gt;&gt;</a>
     <div id="last-json-container" class="hidden">
       <div id="last-json-text"></div>
       <input id="last-json-dump" type="submit" value="Dump the last JSON">
     </div>
   </div>
-
+  
+  <div id="dismissed-snippets">
+    <h2>Dismissed snippets <span class="detail">(click for details)</span></h2>
+    <table class="section-details">
+      <tr jsselect="list" style="display:none">
+        <td class="title-link">
+          <span class="dismissed-snippet-title" jsvalues="hidden-id:id">
+              <span jscontent="title"></span> &gt;&gt;</span>
+          <div jsvalues="id:id" class="snippet-detail hidden">
+            <table>
+              <tr>
+                <td>Validity
+                <td class="expiry">
+                  <span class="date" jscontent="published"></span> &ndash;
+                  <span class="date" jscontent="expires"></span>
+              <tr>
+                <td>Site title
+                <td jscontent="siteTitle">
+              <tr>
+                <td>Text
+                <td jscontent="snippet">
+              <tr>
+                <td>URL
+                <td><a class="url" jsvalues="href:url" jscontent="url"></a>
+              <tr>
+                <td>Favicon
+                <td><a class="url" jsvalues="href:faviconUrl" 
+                    jscontent="faviconUrl"></a>
+              <tr>
+                <td>Salient image
+                <td><a class="url" jsvalues="href:salientImageUrl" 
+                    jscontent="salientImageUrl"></a>
+            </table>
+          </div>
+    </table>
+    <div class="detail" id="dismissed-snippets-empty"></div>
+    <div class="forms">
+      <input id="dismissed-snippets-clear" type="submit" value="Clear list">
+    </div>
+  </div>
+  
   <div id="hosts">
     <h2>Suggestion hosts</h2>
     <table class="section-details">
@@ -69,11 +154,10 @@ found in the LICENSE file.
     </table>
     <div class="detail" id="hosts-empty"></div>
   </div>
-
+  
   <div id="content-suggestions">
     <h2>Content suggestions by category
       <span class="detail">(click for details)</span>
-      <input id="submit-dump" type="submit" value="Dump the list">
     </h2>
     <div jsselect="list" style="display:none">
       <h3>
@@ -81,22 +165,12 @@ found in the LICENSE file.
         <span class="detail">
           (<span jscontent="status"></span>)
         </span>
-
-        <input jsvalues="category-id:categoryId" type="submit"
-            class="submit-clear-cached-suggestions"
-            value="Clear cached suggestions">
-        <input jsvalues="hidden-id:dismissedContainerId" type="submit"
-            class="hidden-toggler"
-            value="Show dismissed suggestions">
-        <input jsvalues="category-id:categoryId" type="submit"
-            class="submit-clear-dismissed-suggestions"
-            value="Clear dismissed suggestions">
       </h3>
-
+      
       <table class="section-details">
         <tr jsselect="suggestions" style="display:none">
           <td class="title-link">
-            <span class="hidden-toggler content-suggestion-title"
+            <span class="content-suggestion-title"
                 jsvalues="hidden-id:id">
               <span jscontent="title"></span>&gt;&gt;
             </span>
@@ -111,46 +185,7 @@ found in the LICENSE file.
                 <tr>
                   <td>AMP URL
                   <td>
-                    <a class="amp-url" jsvalues="href:ampUrl"
-                        jscontent="ampUrl"></a>
-                <tr>
-                  <td>Snippet text
-                  <td jscontent="snippetText">
-                <tr>
-                  <td>Publish date
-                  <td class="expiry">
-                    <span class="date" jscontent="publishDate"></span>
-                <tr>
-                  <td>Publisher name
-                  <td jscontent="publisherName">
-              </table>
-            </div>
-      </table>
-
-      <table jsvalues="id:dismissedContainerId"
-          class="section-details hidden">
-        <thead>
-          <tr>
-            <th style="text-align:left">Dismissed suggestions
-        </thead>
-        <tr jsselect="dismissedSuggestions" style="display:none">
-          <td class="title-link">
-            <span class="hidden-toggler content-suggestion-title"
-                jsvalues="hidden-id:id">
-              <span jscontent="title"></span> (dismissed)&gt;&gt;
-            </span>
-            <div jsvalues="id:id" class="content-suggestion-detail hidden">
-              <table>
-                <tr>
-                  <td>ID
-                  <td jscontent="suggestionId">
-                <tr>
-                  <td>URL
-                  <td><a class="url" jsvalues="href:url" jscontent="url"></a>
-                <tr>
-                  <td>AMP URL
-                  <td>
-                    <a class="amp-url" jsvalues="href:ampUrl"
+                    <a class="amp-url" jsvalues="href:ampUrl" 
                         jscontent="ampUrl"></a>
                 <tr>
                   <td>Snippet text
@@ -167,5 +202,11 @@ found in the LICENSE file.
       </table>
     </div>
     <div class="detail" id="content-suggestions-empty"></div>
+    <div class="forms">
+      <input id="submit-clear-cached-suggestions" type="submit"
+          value="Clear cached suggestions">
+      <input id="submit-clear-dismissed-suggestions" type="submit"
+          value="Clear dismissed suggestions">
+    </div>
   </div>
 </div>
