@@ -4185,6 +4185,7 @@ interface OffscreenCanvas
 interface OffscreenCanvasRenderingContext2D
     attribute @@toStringTag
     getter fillStyle
+    getter filter
     getter imageSmoothingEnabled
     getter imageSmoothingQuality
     getter lineCap
@@ -4233,6 +4234,7 @@ interface OffscreenCanvasRenderingContext2D
     method transform
     method translate
     setter fillStyle
+    setter filter
     setter imageSmoothingEnabled
     setter imageSmoothingQuality
     setter lineCap

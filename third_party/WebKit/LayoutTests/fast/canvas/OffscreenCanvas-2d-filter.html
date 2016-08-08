@@ -1,0 +1,101 @@
+<!DOCTYPE HTML>
+<svg style="display: block; width: 0; height: 0">
+  <defs>
+    <filter id="merge-clean">
+      <feColorMatrix type="matrix" values="0 0 0 1 0  0 0 0 1 0  0 0 0 1 0  0 0 0 0 1" />
+      <feMerge>
+        <feMergeNode></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+        <feMergeNode in="SourceAlpha"></feMergeNode>
+        <feMergeNode in="FillPaint"></feMergeNode>
+        <feMergeNode in="StrokePaint"></feMergeNode>
+      </feMerge>
+    </filter>
+    <circle id="circle" r="100" fill="blue" />
+  </defs>
+</svg><script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+function testFilterValue(ctx)
+{
+    // testing filter value
+    assert_equals(ctx.filter, 'none');
+    ctx.filter = 'blur(5px)';
+    assert_equals(ctx.filter, 'blur(5px)');
+
+    ctx.save();
+    ctx.filter = 'none';
+    assert_equals(ctx.filter, 'none');
+    ctx.restore();
+    assert_equals(ctx.filter, 'blur(5px)');
+
+    // Invalid filter should be ignored
+    ctx.filter = 'blur(10)';
+    assert_equals(ctx.filter, 'blur(5px)');
+
+    // verify that exact string is preserved
+    ctx.filter = 'blur(  5px)';
+    assert_equals(ctx.filter, 'blur(  5px)');
+};
+
+function testFilterFillPaintColor(ctx)
+{
+   ctx.filter = 'drop-shadow(0px 10px black)';
+   ctx.fillStyle = '#0f0';
+   ctx.fillRect(25, 25, 50, 50);
+   
+   // the color of pixel (50, 50) must be #0f0
+   var colorData = ctx.getImageData(50, 50, 1, 1).data;
+   assert_equals(colorData[0], 0);
+   assert_equals(colorData[1], 255);
+   assert_equals(colorData[2], 0);
+   assert_equals(colorData[3], 255);
+
+   // the color of pixel (60, 80) must be black
+   colorData = ctx.getImageData(60, 80, 1, 1).data;
+   assert_equals(colorData[0], 0);
+   assert_equals(colorData[1], 0);
+   assert_equals(colorData[2], 0);
+   assert_equals(colorData[3], 0);
+}
+
+function testCSSShorthandFilter(ctx)
+{
+    ctx.filter = 'hue-rotate(45deg) drop-shadow(16px 16px blue)';
+    ctx.fillStyle = '#f00';
+    ctx.fillRect(15, 15, 50, 50);
+    var colorData = ctx.getImageData(60, 60, 1, 1).data;
+    assert_equals(colorData[0], 255);
+    assert_equals(colorData[1], 0);
+    assert_equals(colorData[2], 0);
+    assert_equals(colorData[3], 255);
+    var colorData2 = ctx.getImageData(70, 70, 1, 1).data;
+    assert_equals(colorData2[0], 0);
+    assert_equals(colorData2[1], 255);
+    assert_equals(colorData2[2], 0);
+    assert_equals(colorData2[3], 255);
+}
+
+function testWhitelistedSVGFilterNontaintness(ctx)
+{
+    ctx.fillStyle = '#00f';
+    ctx.fillRect(15, 15, 50, 50);
+    ctx.filter = 'blur(5px) url(#merge-clean) blur(5px)';
+    var colorData = ctx.getImageData(25, 25, 1, 1).data;
+    assert_equals(colorData[0], 0);
+    assert_equals(colorData[1], 0);
+    assert_equals(colorData[2], 255);
+    assert_equals(colorData[3], 255);
+}
+
+test(function() {
+    var ocanvas = new OffscreenCanvas(100, 100);
+    var ctx = ocanvas.getContext('2d');
+
+    testFilterValue(ctx);
+    testFilterFillPaintColor(ctx);
+    testCSSShorthandFilter(ctx);
+    testWhitelistedSVGFilterNontaintness(ctx);
+}, 'testFilter should not return any error');
+</script>
+

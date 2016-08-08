@@ -76,6 +76,8 @@
     [RaisesException] ImageData getImageData(double sx, double sy, double sw, double sh);
     [RaisesException] void putImageData(ImageData imagedata, double dx, double dy);
     [RaisesException] void putImageData(ImageData imagedata, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight);
+
+    [Exposed=Window] attribute DOMString filter;
 };
 
 OffscreenCanvasRenderingContext2D implements CanvasPathMethods;
