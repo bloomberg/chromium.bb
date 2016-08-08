@@ -476,10 +476,9 @@ LayoutUnit LayoutFlexibleBox::crossAxisExtentForChild(const LayoutBox& child) co
     return isHorizontalFlow() ? child.size().height() : child.size().width();
 }
 
-static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(const LayoutBox& child)
+static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(const LayoutBox& child, LayoutUnit childIntrinsicContentLogicalHeight)
 {
     // TODO(cbiesinger): scrollbar height?
-    LayoutUnit childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
     return child.constrainLogicalHeightByMinMax(childIntrinsicContentLogicalHeight + child.borderAndPaddingLogicalHeight(), childIntrinsicContentLogicalHeight);
 }
 
@@ -487,8 +486,12 @@ LayoutUnit LayoutFlexibleBox::childIntrinsicLogicalHeight(const LayoutBox& child
 {
     // This should only be called if the logical height is the cross size
     DCHECK(!hasOrthogonalFlow(child));
-    if (needToStretchChildLogicalHeight(child))
-        return constrainedChildIntrinsicContentLogicalHeight(child);
+    if (needToStretchChildLogicalHeight(child)) {
+        LayoutUnit childIntrinsicContentLogicalHeight;
+        if (!child.styleRef().containsSize())
+            childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
+        return constrainedChildIntrinsicContentLogicalHeight(child, childIntrinsicContentLogicalHeight);
+    }
     return child.logicalHeight();
 }
 
@@ -859,6 +862,9 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child,
     if (mainAxisLengthIsDefinite(child, flexBasis))
         return std::max(LayoutUnit(), computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis));
 
+    if (child.styleRef().containsSize())
+        return LayoutUnit();
+
     LayoutUnit mainAxisExtent;
     if (childFlexBaseSizeRequiresLayout(child)) {
         if (childLayoutType == NeverLayout)
@@ -1114,7 +1120,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
         // computeMainAxisExtentForChild can return -1 when the child has a percentage
         // min size, but we have an indefinite size in that axis.
         minExtent = std::max(LayoutUnit(), minExtent);
-    } else if (min.isAuto() && mainAxisOverflowForChild(child) == OverflowVisible && !(isColumnFlow() && child.isFlexibleBox())) {
+    } else if (min.isAuto() && !child.styleRef().containsSize() && mainAxisOverflowForChild(child) == OverflowVisible && !(isColumnFlow() && child.isFlexibleBox())) {
         // TODO(cbiesinger): For now, we do not handle min-height: auto for nested column flexboxes. We need
         // to implement https://drafts.csswg.org/css-flexbox/#intrinsic-sizes before that produces
         // reasonable results. Tracking bug: https://crbug.com/581553

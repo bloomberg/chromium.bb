@@ -710,6 +710,11 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     if (object->isLayoutScrollbarPart())
         return false;
 
+    // In general we can't relayout a flex item independently of its container; not only is the result
+    // incorrect due to the override size that's set, it also messes with the cached main size on the flexbox.
+    if (object->isBox() && toLayoutBox(object)->isFlexItem())
+        return false;
+
     // Inside multicol it's generally problematic to allow relayout roots. The multicol container
     // itself may be scheduled for relayout as well (due to other changes that may have happened
     // since the previous layout pass), which might affect the column heights, which may affect how
