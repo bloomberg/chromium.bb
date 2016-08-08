@@ -239,6 +239,13 @@
       Hvis denne innstillingen angis som sann, prøver <ph name="PRODUCT_OS_NAME" /> å laste ned nyttelaster med automatisk oppdatering via HTTP. Hvis innstillingen angis som usann eller ikke angis i det hele tatt, blir HTTPS brukt til å laste ned nyttelaster med automatisk oppdatering.</translation>
 <translation id="2006530844219044261">Strømstyring</translation>
 <translation id="201557587962247231">Frekvensen for opplasting av statusrapporter for enheter</translation>
+<translation id="2018836497795982119">Angir perioden i millisekunder for når tjenesten for enhetsbehandling skal spørres om brukerinnstillinger.
+
+      Hvis du angir denne regelen, overstyres standardverdien på tre timer. Gyldige verdier for denne regelen er i området mellom 1800000 (30 minutter) og 86400000 (én dag). Eventuelle verdier som ikke er i dette området, blir endret til den respektive grensen. Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for nye innlastinger til 24 timer, fordi det forventes at varsler om brudd på reglene tvinger nye innlastinger automatisk når regelen endres.
+
+      Hvis du ikke spesifiserer noen periode, bruker <ph name="PRODUCT_NAME" /> standardverdien på tre timer.
+
+      Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for nye innlastinger til 24 timer (dette ignorerer alle standarder og verdier i regelen), fordi det forventes at varsler om brudd på reglene tvinger nye innlastinger automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
 <translation id="2024476116966025075">Konfigurer det nødvendige domenenavnet for klienter med ekstern tilgang</translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="206623763829450685">Spesifiserer hvilke HTTP-autentiseringsskjemaer som støttes av <ph name="PRODUCT_NAME" />.
@@ -1046,11 +1053,6 @@
       Selv om selve regelen støttes på plattformene ovenfor, kan funksjonene som slås på, være tilgjengelige på færre plattformer. Ikke alle avviklede nettplattformfunksjoner kan slås på igjen. Bare funksjonene som uttrykkelig listes opp nedenfor, kan slås på igjen for en begrenset periode. Perioden varierer fra funksjon til funksjon. Det generelle formatet for streng-taggene er [NavnetPåDenAvvikledeFunksjonen]_EffectiveUntil[ååååmmdd]. Som referanse kan du gå til https://bit.ly/blinkintents for å se formålet med endringene av nettplattformfunksjonene.
       </translation>
 <translation id="4442582539341804154">Aktiver lås når enheten blir inaktiv eller suspendert</translation>
-<translation id="4445684791305970001">Deaktiverer utviklerverktøyene og JavaScript-konsollen.
-
-      Hvis du aktiverer denne innstillingen, har man ingen tilgang til utviklerverktøyene, og nettstedelementene kan ikke inspiseres lenger. Alle tastatursnarveier og eventuelle oppføringer i menyer eller kontekstmenyer som kan åpne utviklerverktøyene eller JavaScript-konsollen, blir deaktivert.
-
-      Hvis dette alternativet deaktiveres eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.</translation>
 <translation id="4449545651113180484">Rotér skjermen 270 grader med klokken</translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
 <translation id="4474167089968829729">Slå på lagring av passord i passordbehandleren</translation>
@@ -1305,6 +1307,13 @@
       Hvis denne innstillingen angis, skjer det en automatisk pålogging etter en gitt periode av brukerinaktivitet. Den offentlige økten må allerede være konfigurert (se |DeviceLocalAccounts|).
 
      Hvis denne innstillingen ikke angis, skjer det ingen automatisk pålogging.</translation>
+<translation id="5529037166721644841">Angir perioden i millisekunder for når tjenesten for enhetsbehandling skal forespørres om brukerinnstillinger.
+
+      Hvis du angir denne regelen, overstyres standardverdien på tre timer. Gyldige verdier for denne regelen er i området mellom 1800000 (30 minutter) og 86400000 (én dag). Eventuelle verdier som ikke er i dette området, blir endret til den respektive grensen.
+
+      Hvis du ikke spesifiserer noen periode, bruker <ph name="PRODUCT_OS_NAME" /> standardverdien på tre timer.
+
+      Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for nye innlastinger til 24 timer (dette ignorerer alle standarder og verdier i regelen), fordi det forventes at varsler om brudd på reglene tvinger nye innlastinger automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
 <translation id="5535957389335373033">Hvor ofte (i millisekunder) nettverkspakker for overvåking sendes.
 
       Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 minutter.
@@ -1865,6 +1874,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
          Denne retningslinjen gjelder bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="7302043767260300182">Skjermlåsforsinkelse når du bruker strømadapteren</translation>
+<translation id="7311458740754205918">Hvis denne regelen er angitt som «true» (sann) eller ikke er angitt, kan nye faner vise innholdsforslag som er basert på brukerens nettleserlogg, interesser eller steder.
+
+      Hvis den er angitt som «false» (usann), vises ikke automatisk genererte innholdsforslag på nye faner.</translation>
 <translation id="7323896582714668701">Ytterligere kommandolinjeparametere for <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på batteristrøm.
 
@@ -2007,6 +2019,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7763479091692861127"> Tilkoblingstypene som tillates for oppdateringer av operativsystem. Oppdateringer av operativsystem legger potensielt beslag på store deler av kapasiteten som følge av at de er omfattende operasjoner, og det kan påløpe ekstra kostnader. Derfor er slike oppdateringer som standard ikke slått på for tilkoblingstyper som anses som kostbare, herunder WiMax, Bluetooth og mobilnettverk.
 
       Identifikatorene som gjenkjennes for tilkoblingstyper er "ethernet", "wifi", "wimax", "bluetooth" og "cellular".</translation>
+<translation id="7763614521440615342">Vis innholdsforslag på nye faner</translation>
 <translation id="7766336524667238790">Rapportér informasjon om den aktive kioskøkten, for eksempel
       app-ID og -versjon.
 
@@ -2025,7 +2038,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7796141075993499320">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får kjøre programtillegg.
 
           Hvis denne retningslinjen ikke angis, brukes den globale verdien for alle nettsteder, enten fra retningslinjenDefaultPluginsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte innstillingen ikke er angitt.</translation>
-<translation id="7801886189430766248">Når denne regelen er satt til true (sann), lastes Android-appdata opp til Android Backup Service og gjenopprettes derfra når kompatible apper installeres på nytt.
+<translation id="7801886189430766248">Når denne regelen er satt til true (sann), lastes Android-appdata opp til Android Backup-tjenere og gjenopprettes derfra når kompatible apper installeres på nytt.
 
       Når denne regelen settes til false (usann), blir Android Backup Service slått av.
 

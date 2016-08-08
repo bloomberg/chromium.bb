@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Le certificat du serveur relatif à <ph name="HOST_NAME" /> semble être contrefait.</translation>
 <translation id="2889159643044928134">Ne pas actualiser</translation>
 <translation id="2896499918916051536">Ce plug-in n'est pas compatible.</translation>
+<translation id="2900469785430194048">Google Chrome n'avait pas suffisamment de mémoire pour afficher cette page Web.</translation>
 <translation id="2909946352844186028">Un changement de réseau a été détecté.</translation>
 <translation id="2915500479781995473">Nous n'avons pas pu vérifier qu'il s'agissait du domaine <ph name="DOMAIN" />, car son certificat de sécurité a expiré. Cela peut être dû à une mauvaise configuration ou à une tentative d'interception de la connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement : <ph name="CURRENT_TIME" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis réinitialiser la page.</translation>
 <translation id="2922350208395188000">Impossible de vérifier le certificat du serveur.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Contournement dû à la session publique</translation>
 <translation id="6358450015545214790">Qu'est-ce que c'est ?</translation>
 <translation id="6387478394221739770">Vous souhaitez bénéficier de nouvelles fonctionnalités Chrome passionnantes ? Essayez notre version bêta à l'adresse chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium n'avait pas suffisamment de mémoire pour afficher cette page Web.</translation>
 <translation id="641480858134062906">Échec du chargement de la page <ph name="URL" /></translation>
 <translation id="6417515091412812850">Impossible de vérifier si le certificat a été révoqué.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> n'autorise pas la connexion.</translation>
@@ -630,7 +632,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8647750283161643317">Rétablir tous les tests par défaut</translation>
 <translation id="8680787084697685621">Les informations de connexion au compte sont obsolètes.</translation>
 <translation id="8703575177326907206">Votre connexion à <ph name="DOMAIN" /> n'est pas chiffrée.</translation>
-<translation id="8713130696108419660">Signature initiale incorrecte.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8728672262656704056">Vous êtes passé en mode navigation privée</translation>
 <translation id="8730621377337864115">OK</translation>

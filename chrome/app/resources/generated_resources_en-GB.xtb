@@ -75,7 +75,7 @@
 <translation id="1104652314727136854">Enable OS integration of file associations for Chrome Apps.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" adds these apps and extensions for <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
-<translation id="1108685299869803282">More than 80% of people who see this warning go back to safety instead of risking malware. However, if you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" /> before the dangerous programmes have been removed.</translation>
+<translation id="1108685299869803282">More than 80% of people who see this warning go back to safety instead of risking malware. However, if you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" /> before the dangerous programs have been removed.</translation>
 <translation id="110918622319006905">Third Party VPN</translation>
 <translation id="1110155001042129815">Wait</translation>
 <translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{Continue Download}other{Continue Downloads}}</translation>
@@ -522,7 +522,6 @@
 <translation id="1673103856845176271">The file could not be accessed for security reasons.</translation>
 <translation id="1675023460278456180">Material Hybrid</translation>
 <translation id="167832068858235403">vol. down</translation>
-<translation id="1678331212993975953">Site Details</translation>
 <translation id="1679068421605151609">Developer Tools</translation>
 <translation id="1681120471812444678">Set up to add printers…</translation>
 <translation id="1682324559341535203">Enrol <ph name="DEVICE_TYPE" /></translation>
@@ -1012,7 +1011,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2371076942591664043">Open when &amp;done</translation>
 <translation id="2372036074421194686">Chrome found an unwanted program (<ph name="UWS_NAME" />) installed on your computer. You may be able to remove it by running the Chrome Clean-Up Tool.</translation>
 <translation id="2375701438512326360">Force touchscreen support to always be enabled or disabled, or to be enabled when a touchscreen is detected on startup (Automatic, the default).</translation>
-<translation id="2377619091472055321">Reset Altered <ph name="IDS_SHORT_PRODUCT_NAME" /> Settings</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> files selected</translation>
 <translation id="2378982052244864789">Select the extension directory.</translation>
 <translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
@@ -1067,7 +1065,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2448312741937722512">Types</translation>
 <translation id="2449267011068443460">Disallow</translation>
 <translation id="2450223707519584812">You will not be able to add users because Google API keys are missing. See <ph name="DETAILS_URL" /> for details.</translation>
-<translation id="2450531422290975480">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" /> (not recommended) before the dangerous programmes have been removed.</translation>
+<translation id="2450531422290975480">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" /> (not recommended) before the dangerous programs have been removed.</translation>
 <translation id="2452539774207938933">Switch to user: <ph name="PROFILE_NAME" /></translation>
 <translation id="2453021845418314664">Advanced sync settings</translation>
 <translation id="2453576648990281505">File already exists</translation>
@@ -1477,7 +1475,7 @@ I don't think this site should be blocked!</translation>
 <translation id="295947108480905647">"<ph name="CHROME_EXTENSION_NAME" />" wants to connect to:</translation>
 <translation id="2959614062380389916">Disabled by administrator</translation>
 <translation id="2960393411257968125">How the password manager handles autofill for the sync credential.</translation>
-<translation id="29611076221683977">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programmes on your Mac that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
+<translation id="29611076221683977">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programs on your Mac that steal or delete your information (for example photos, passwords, messages and credit cards).</translation>
 <translation id="2961695502793809356">Click to go forward, hold to see history</translation>
 <translation id="296216853343927883">Google branding in the context menu</translation>
 <translation id="2963151496262057773">The following plug-in is unresponsive: <ph name="PLUGIN_NAME" />Would you like to stop it?</translation>
@@ -1559,6 +1557,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3058212636943679650">If you ever need to restore your computer's operating system, you'll need a recovery SD card or USB memory stick.</translation>
 <translation id="305932878998873762">The Simple Cache for HTTP is a new cache. It relies on the file system for disk space allocation.</translation>
 <translation id="3062606427884046423">Use Android MediaStyle notifications for Chrome media notifications.</translation>
+<translation id="3063224679438508013">Auto-launch the note-app</translation>
 <translation id="3063844757726132584">Access all of your apps from this handy launcher. Play games, video chat, listen to music, edit documents or get more apps.</translation>
 <translation id="3064388234319122767">Transliteration (zdravo → здраво)</translation>
 <translation id="3065041951436100775">Tab killed feedback.</translation>
@@ -1649,6 +1648,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3172213052701798825">Google Smart Lock for Passwords</translation>
 <translation id="317583078218509884">New site permissions settings will take effect after reloading the page.</translation>
 <translation id="3177048931975664371">Click to hide password</translation>
+<translation id="3177909033752230686">Page language:</translation>
 <translation id="3180365125572747493">Please enter a password to encrypt this certificate file.</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
 <translation id="3184560914950696195">Cannot save to $1. Edited images will be saved in the Downloads folder.</translation>
@@ -1999,6 +1999,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3612673635130633812">Downloaded by &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Show <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Open in new tab</translation>
+<translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Clear Browsing Data...</translation>
 <translation id="3618849550573277856">Look Up “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">All backed up!</translation>
@@ -2085,7 +2086,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3728067901555601989">OTP:</translation>
 <translation id="3730639321086573427">Local destinations</translation>
 <translation id="3733127536501031542">SSL Server with Step-up</translation>
-<translation id="3736520371357197498">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" /> before the dangerous programmes have been removed.</translation>
+<translation id="3736520371357197498">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" /> before the dangerous programs have been removed.</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739798227959604811">Delay before repeat:</translation>
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> will now appear in the Admin Console</translation>
@@ -2295,7 +2296,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3994878504415702912">&amp;Zoom</translation>
 <translation id="3995964755286119116">Adobe Flash Player camera settings are different.</translation>
 <translation id="39964277676607559">Could not load JavaScript '<ph name="RELATIVE_PATH" />' for content script.</translation>
-<translation id="3996912167543967198">Resetting...</translation>
 <translation id="3997015411467176489">Experimental canvas features</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="40027638859996362">Word move</translation>
@@ -2392,6 +2392,7 @@ All users must sign out to continue.</translation>
 <translation id="4140559601186535628">Push Messages</translation>
 <translation id="4146026355784316281">Always Open With System Viewer</translation>
 <translation id="4146175323503586871"><ph name="SERVICE_NAME" /> wants to check if your Chrome OS device is eligible for an offer. <ph name="MORE_INFO_LINK" /></translation>
+<translation id="4150201353443180367">Display</translation>
 <translation id="4151403195736952345">Use global default (Detect)</translation>
 <translation id="4152177296285305182">Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to reset sync.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tabs}}</translation>
@@ -2456,6 +2457,7 @@ All users must sign out to continue.</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4253168017788158739">Note</translation>
+<translation id="4254813446494774748">Translation language:</translation>
 <translation id="425573743389990240">Battery Discharge Rate in Watts (Negative value means battery is charging)</translation>
 <translation id="4256316378292851214">Sa&amp;ve Video As...</translation>
 <translation id="4258348331913189841">File System</translation>
@@ -2533,6 +2535,7 @@ Press any key to continue exploring.</translation>
 <translation id="4365673000813822030">Whoops, Sync has stopped working.</translation>
 <translation id="4366509400410520531">Allowed by you</translation>
 <translation id="4367782753568896354">We were unable to install:</translation>
+<translation id="436904870295243580">Find more note-taking applications</translation>
 <translation id="4370975561335139969">The email and password that you entered don't match.</translation>
 <translation id="437184764829821926">Advanced font settings</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -3214,6 +3217,7 @@ Press any key to continue exploring.</translation>
 <translation id="5324674707192845912">You are about to unenrol this <ph name="DEVICE_TYPE" /> with Google to disable the ability to remotely locate, wipe and lock the device. This will require a reboot. Do you wish to continue?</translation>
 <translation id="5324780743567488672">Set time zone automatically using your location</translation>
 <translation id="5325120507747984426">Uses a stable window ordering in overview mode which attempts to minimise movement of windows when entering/exiting overview and between overview sessions.</translation>
+<translation id="5326182685622510062">There are multiple implementations of the graphics rendering pipeline for the 2D canvas. These different implementations have different performance characteristics. Turning on this flag allows canvas 2D contexts to switch between these implementations on the fly based on how the canvas is used in order to increase performance. For example, going from an implementation that uses the GPU to one that doesn't.</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5328031682234198929">8</translation>
 <translation id="5329858601952122676">&amp;Delete</translation>
@@ -3346,7 +3350,6 @@ Press any key to continue exploring.</translation>
 <translation id="54870580363317966">Choose an avatar for this supervised user.</translation>
 <translation id="5488468185303821006">Allow in incognito</translation>
 <translation id="5489390182170331803">Document Level Event Listeners Passive Default</translation>
-<translation id="5489789060051091748">Select-to-speak: Hold down Search and click or drag to speak anything</translation>
 <translation id="549294555051714732">Substring matching for Auto-fill suggestions</translation>
 <translation id="5493996328530898436">New audio rendering mixing strategy</translation>
 <translation id="5494362494988149300">Open When &amp;Finished</translation>
@@ -3703,9 +3706,6 @@ Press any key to continue exploring.</translation>
 <translation id="5991049340509704927">Magnify</translation>
 <translation id="5991774521050363748">Enable customised layouts for Web Notifications. They will have subtle layout improvements that are otherwise not possible.</translation>
 <translation id="5993332328670040093">Your data use will no longer be measured.</translation>
-<translation id="5996258716334177896">Your profile could not be opened correctly.
-
-Some features may be unavailable.  Please check that the profile exists and you have permission to read and write its contents.</translation>
 <translation id="6001799583597751002">PIN's don't match:</translation>
 <translation id="6003177993629630467"><ph name="PRODUCT_NAME" /> may not be able to keep itself updated.</translation>
 <translation id="6003294706906016758">Enables the web app style frame for hosted apps</translation>
@@ -4155,7 +4155,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6637362044401670482">Enables virtual keyboard overscroll support.</translation>
 <translation id="6639554308659482635">SQLite memory</translation>
 <translation id="6643016212128521049">Clear</translation>
-<translation id="6644756108386233011">Reset altered <ph name="IDS_SHORT_PRODUCT_NAME" /> settings?</translation>
 <translation id="6647228709620733774">Netscape Certification Authority Revocation URL</translation>
 <translation id="6647838571840953560">Currently on <ph name="CHANNEL_NAME" /></translation>
 <translation id="6649018507441623493">Just a sec...</translation>
@@ -4263,7 +4262,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6810613314571580006">Automatically sign in to websites using stored credentials. When the feature is disabled, you will be asked for confirmation every time before signing in to a website.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> cannot be run as root.</translation>
 <translation id="6812841287760418429">Keep changes</translation>
-<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME" /> detected that your browser settings may have been changed without your knowledge. Would you like to reset them to their original defaults?</translation>
 <translation id="6815551780062710681">edit</translation>
 <translation id="6817358880000653228">Saved passwords for this site:</translation>
 <translation id="6820008762872335722">Reset to ask</translation>
@@ -4381,6 +4379,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 (requires previous password)</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="6981992744085917617">Choose the method you would like to use to log back in to your account:</translation>
+<translation id="698231206551913481">All files and local data associated with this user will be permanently deleted once this user is removed.</translation>
 <translation id="6982896539684144327">Printer from <ph name="VENDOR_NAME" /> detected</translation>
 <translation id="6983783921975806247">Registered OID</translation>
 <translation id="6983991971286645866">All edits will be saved to $1.</translation>
@@ -4467,6 +4466,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7073555242265688099">If you have other Chrome devices, they’ll be synced automatically, so your phone will unlock them too.</translation>
 <translation id="707392107419594760">Select your keyboard:</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 With RSA Encryption</translation>
+<translation id="7075625805486468288">Manage HTTPS/SSL certificates and settings</translation>
 <translation id="7076293881109082629">Signing in</translation>
 <translation id="7077829361966535409">The sign-in page failed to load using the current proxy settings. Please <ph name="GAIA_RELOAD_LINK_START" />try to sign in again<ph name="GAIA_RELOAD_LINK_END" /> or use different <ph name="PROXY_SETTINGS_LINK_START" />proxy settings<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="7077872827894353012">Ignored protocol handlers</translation>
@@ -4514,7 +4514,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7141105143012495934">Sign-in failed because your account details could not be retrieved. Please contact your administrator or try again.</translation>
 <translation id="7143207342074048698">Connecting ...</translation>
 <translation id="7144878232160441200">Retry</translation>
-<translation id="7148311641502571842"><ph name="PLUGIN_NAME" /> has been disabled. To re-enable it, please go to <ph name="CHROME_PLUGINS_LINK" />.</translation>
 <translation id="715118844758971915">Classic printers</translation>
 <translation id="7154130902455071009">Change your start page to: <ph name="START_PAGE" /></translation>
 <translation id="715487527529576698">Initial Chinese mode is Simplified Chinese</translation>
@@ -4793,6 +4792,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7540972813190816353">An error occurred while checking for updates: <ph name="ERROR" /></translation>
 <translation id="7541121857749629630">Image exceptions</translation>
 <translation id="7543104066686362383">Enable debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME" /> device</translation>
+<translation id="7543393759143837504">Go to <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome help<ph name="END_LINK_CHROMIUM" /> if you can't find what you're looking for.</translation>
 <translation id="7544853251252956727">Shuffle</translation>
 <translation id="7545288882499673859">Memory discard strategy for advanced pressure handling</translation>
 <translation id="7545415673537747415">Control how Google uses your browsing history to personalise Search, ads and other Google services from <ph name="BEGIN_LINK" />Google Activity Controls<ph name="END_LINK" />.</translation>
@@ -5030,7 +5030,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7879478708475862060">Follow input mode</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" adds these apps and extensions:</translation>
 <translation id="7881969471599061635">Disable subtitles</translation>
-<translation id="7884988936047469945">Experimental acecssibility features</translation>
 <translation id="7885253890047913815">Recent destinations</translation>
 <translation id="7887192723714330082">Respond to "OK Google" when the screen is on and unlocked</translation>
 <translation id="7887334752153342268">Duplicate</translation>
@@ -5098,6 +5097,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7974067550340408553">Get notified on your phone every time that Smart Lock unlocks your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="7974566588408714340">Retry using <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Overscan</translation>
+<translation id="7976960358280528247">Enable window cycle UI (visual feedback for Alt+Tab).</translation>
 <translation id="7977551819349545646">Updating Chromebox...</translation>
 <translation id="7978412674231730200">Private key</translation>
 <translation id="7979036127916589816">Sync Error</translation>
@@ -5125,6 +5125,7 @@ Key File: <ph name="KEY_FILE" />
 
 Keep your key file in a safe place. You will need it to create new versions of your extension.</translation>
 <translation id="799923393800005025">Can view</translation>
+<translation id="8000066093800657092">No network</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8007030362289124303">Battery Low</translation>
 <translation id="8008356846765065031">Internet disconnected. Please check your Internet connection.</translation>
@@ -5199,6 +5200,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8116190140324504026">More info...</translation>
 <translation id="8116483400482790018">Custom spelling dictionary</translation>
 <translation id="8116972784401310538">&amp;Bookmark manager</translation>
+<translation id="8117838550640702864">Note settings</translation>
 <translation id="8117957376775388318">Dayi input method</translation>
 <translation id="8118860139461251237">Manage your downloads</translation>
 <translation id="8119572489781388874">Modify settings</translation>
@@ -5293,7 +5295,7 @@ Calculating remaining time</translation>
 <translation id="8226222018808695353">Forbidden</translation>
 <translation id="8226742006292257240">Below is the randomly generated TPM password that has been assigned to your computer:</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
-<translation id="8230421197304563332">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programmes on your computer that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
+<translation id="8230421197304563332">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programs on your computer that steal or delete your information (for example photos, passwords, messages and credit cards).</translation>
 <translation id="8233254008506535819">Include the option to whitelist important sites in the clear browsing data dialogue.</translation>
 <translation id="8236231079192337250">Chrome Web Store Gallery app for printer drivers</translation>
 <translation id="8238649969398088015">Help tip</translation>
@@ -5479,7 +5481,6 @@ Calculating time until full</translation>
 <translation id="8472623782143987204">hardware-backed</translation>
 <translation id="8475313423285172237">Another programme on your computer added an extension that may change the way Chrome works.</translation>
 <translation id="8475647382427415476">Google Drive was unable to sync "<ph name="FILENAME" />" right now. Google Drive will try again later.</translation>
-<translation id="8476195663057048998">Clear &amp; Reset</translation>
 <translation id="8477241577829954800">Superseded</translation>
 <translation id="8477384620836102176">&amp;General</translation>
 <translation id="8480417584335382321">Page zoom:</translation>
@@ -5709,7 +5710,6 @@ Calculating time until full</translation>
 <translation id="8785135611469711856">Plug-in Unresponsive</translation>
 <translation id="8787254343425541995">Allow proxies for shared networks</translation>
 <translation id="878763818693997570">This name is too long</translation>
-<translation id="8787865569533773240">Reset altered <ph name="IDS_SHORT_PRODUCT_NAME" /> settings</translation>
 <translation id="8789375980715484686">Manage other users</translation>
 <translation id="8791534160414513928">Send a "Do Not Track" request with your browsing traffic</translation>
 <translation id="8795668016723474529">Add a credit card</translation>

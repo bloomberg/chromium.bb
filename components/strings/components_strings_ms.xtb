@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Sijil pelayan di <ph name="HOST_NAME" /> nampaknya palsu.</translation>
 <translation id="2889159643044928134">Jangan Muat Semula</translation>
 <translation id="2896499918916051536">Pemalam ini tidak disokong.</translation>
+<translation id="2900469785430194048">Google Chrome kehabisan memori semasa cuba memaparkan halaman web ini.</translation>
 <translation id="2909946352844186028">Perubahan rangkaian dikesan.</translation>
 <translation id="2915500479781995473">Pelayan ini tidak dapat membuktikan bahawa ia adalah <ph name="DOMAIN" /> ; sijil keselamatannya tamat tempoh. Ini mungkin disebabkan oleh salah konfigurasi atau penyerang memintas sambungan anda. Jam komputer anda buat masa ini ditetapkan kepada <ph name="CURRENT_TIME" />. Betulkah itu? Jika tidak, anda perlu membetulkan jam sistem anda dan kemudian muatkan semula halaman ini.</translation>
 <translation id="2922350208395188000">Sijil pelayan tidak boleh diperiksa.</translation>
@@ -454,6 +455,7 @@
 <translation id="6355080345576803305">Pembatalan sesi awam</translation>
 <translation id="6358450015545214790">Apakah maksudnya?</translation>
 <translation id="6387478394221739770">Berminat dengan ciri Chrome baharu yang hebat? Cuba saluran beta kami di chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium kehabisan memori semasa cuba memaparkan halaman web ini.</translation>
 <translation id="641480858134062906"><ph name="URL" /> gagal untuk muatkan</translation>
 <translation id="6417515091412812850">Tidak dapat memeriksa sama ada sijil telah dibatalkan.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> enggan menyambung.</translation>
@@ -631,7 +633,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8647750283161643317">Tetapkan semula semua kepada lalai</translation>
 <translation id="8680787084697685621">Butiran log masuk akaun sudah lapuk.</translation>
 <translation id="8703575177326907206">Sambungan anda ke <ph name="DOMAIN" /> tidak disulitkan.</translation>
-<translation id="8713130696108419660">Tandatangan parap tidak elok</translation>
 <translation id="8725066075913043281">Cuba lagi</translation>
 <translation id="8728672262656704056">Anda menggunakan mod inkognito</translation>
 <translation id="8730621377337864115">Selesai</translation>

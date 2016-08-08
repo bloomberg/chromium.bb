@@ -40,6 +40,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1864458292167284385">Chromov zaganjalnik aplikacij se poslavlja.</translation>
 <translation id="1877026089748256423">Chrome je zastarel</translation>
 <translation id="1924381329666691588">Google Chroma ni mogoče prikazati v tem jeziku.</translation>
+<translation id="2063848847527508675">Če želite namestiti posodobitev, morate znova zagnati OS Chrome.</translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
 <translation id="2084710999043359739">Dodaj v Chrome</translation>
 <translation id="2246246234298806438">Google Chrome ne more odpreti predogleda tiskanja, če ni vgrajenega pregledovalnika datotek PDF.</translation>
@@ -56,6 +57,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 Če se boste kljub temu prijavili, bodo podatki v Chromu, na primer zaznamki, zgodovina in druge nastavitve, združeni v računu <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Prikaz Chromovega menija</translation>
 <translation id="2429317896000329049">Google Chrome ni mogel sinhronizirati podatkov, ker sinhronizacija ni na voljo za vašo domeno.</translation>
+<translation id="2446511512801740068">Chrome je zastarel, ker ga že nekaj časa niste znova zagnali. Na voljo je posodobitev, ki bo nameščena, takoj ko ga znova zaženete.</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
 <translation id="2580411288591421699">Ni mogoče namestiti različice Google Chroma, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome in poskusite znova.</translation>
 <translation id="2582790009689336987">Ta računalnik kmalu ne bo več prejemal posodobitev za Google Chrome, ker ta sistem Linux ne bo več podprt.</translation>

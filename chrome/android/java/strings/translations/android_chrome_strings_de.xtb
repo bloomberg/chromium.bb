@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
-<translation id="1040144152982955218">Es wird nach Geräten gesucht… <ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Warnung</translation>
 <translation id="10614374240317010">Nie speichern für…</translation>
 <translation id="1061441684050139317">Chrome benötigt Zugriff auf das Mikrofon, um es für diese Website freizugeben.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">Entdecken Sie Webseiten, die von Objekten in Ihrer Nähe übermittelt werden. Chrome trägt Webseiten zusammen, die sich auf Objekte in Ihrer Nähe beziehen, und schickt diese anonym an einen Google-Dienst. Die Webseiten, die für Sie besonders nützlich sind, werden Ihnen dann angezeigt.
 
 Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktiviert sein.</translation>
-<translation id="1250508505624960884">Chrome Beta-Lesezeichen</translation>
 <translation id="1254090737195733114">Daten importieren?</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -88,7 +86,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1946821392246652573">Akzeptierte Karten</translation>
 <translation id="1966710179511230534">Bitte aktualisieren Sie Ihre Anmeldeinformationen.</translation>
 <translation id="1974060860693918893">Erweitert</translation>
-<translation id="1984321224716884559">Chrome Dev-Lesezeichen</translation>
 <translation id="1984937141057606926">Zugelassen, außer Cookies Dritter</translation>
 <translation id="1994173015038366702">Website-URL</translation>
 <translation id="2001120796168634316">Verlinkte Seite für später speichern</translation>
@@ -159,9 +156,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2742271047622814453">Auf Websites gespeicherte Einstellungen werden möglicherweise gelöscht</translation>
 <translation id="2748463065602559597">Dies ist eine sichere Google Chrome-Seite.</translation>
 <translation id="2762000892062317888">gerade eben</translation>
-<translation id="2770465223704140727">Aus Liste entfernen</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> Sekunden übrig</translation>
-<translation id="278029852808208386">Keine Bluetooth-Geräte gefunden. <ph name="BEGIN_LINK" />Wiederholen Sie die Suche.<ph name="END_LINK" /></translation>
 <translation id="2781151931089541271">1 Sekunde übrig</translation>
 <translation id="2811892995384186721">Ihr Gerät ist nicht zu sehen? <ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tippen Sie zum Beenden des Vollbildmodus auf die Zurück-Taste.</translation>
@@ -232,7 +227,6 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 
 Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entsprechenden Begriff. Sie können Ihre Suche auch verfeinern, indem Sie das Feld ganz nach oben schieben und auf das Suchfeld tippen.</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3623048332793834136">Chrome Canary-Lesezeichen</translation>
 <translation id="3632295766818638029">Passwort anzeigen</translation>
 <translation id="363596933471559332">Sie werden mit gespeicherten Anmeldedaten automatisch auf Websites angemeldet. Wenn das Kästchen nicht angeklickt ist, werden Sie jedes Mal aufgefordert, sich manuell auf einer Website anzumelden.</translation>
 <translation id="3656115297268584622">Aktivieren Sie den Standortdienst in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />.</translation>
@@ -285,7 +279,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> nie übersetzen</translation>
 <translation id="4275663329226226506">Medien</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
-<translation id="4297410240212242334">Tabs und Apps separat anzeigen</translation>
 <translation id="4307992518367153382">Grundeinstellungen</translation>
 <translation id="4334294535648607276">Download abgeschlossen.</translation>
 <translation id="4351244548802238354">Dialogfeld schließen</translation>
@@ -309,10 +302,8 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4645575059429386691">Von deinen Eltern verwaltet</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> wurde Ihrem Startbildschirm hinzugefügt.</translation>
-<translation id="4668044310199835006">Chrome for Work-Lesezeichen</translation>
 <translation id="4684427112815847243">Alles synchronisieren</translation>
 <translation id="4686372254213217147">Originalgröße</translation>
-<translation id="4690286298542128877">Tabs werden in einen Tab-Wechsler in Chrome verschoben.</translation>
 <translation id="4698413471314543145">Es fehlen wichtige Funktionen zur Ausführung von Chrome. Ihre Chrome-Installation ist entweder unvollständig oder nicht mit dieser Android-Version kompatibel.</translation>
 <translation id="4699172675775169585">Bilder und Dateien im Cache</translation>
 <translation id="4710672574193412565">Fügen Sie ein Google-Konto über die Seite "Konten" der App "Einstellungen" Ihres Geräts hinzu.</translation>
@@ -354,7 +345,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5127805178023152808">Synchronisierung ist deaktiviert</translation>
 <translation id="5131405117025179004">Gespeichertes Konto bearbeiten</translation>
 <translation id="5138299137310274655">Diese Seite ist auf <ph name="SOURCE_LANGUAGE" />. In <ph name="TARGET_LANGUAGE" /> übersetzen?</translation>
-<translation id="5150703642582475397">Tabs und Apps zusammen anzeigen</translation>
 <translation id="515227803646670480">Gespeich. Daten löschen</translation>
 <translation id="5156656584247937086">Dies ist ein Kinderkonto.</translation>
 <translation id="5161254044473106830">Titel erforderlich</translation>
@@ -367,7 +357,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
-<translation id="5275558766013849309">Tabs und letzte Apps werden zusammengefasst.</translation>
 <translation id="528192093759286357">Ziehen Sie zum Beenden des Vollbildmodus von oben und tippen Sie auf die Zurück-Taste.</translation>
 <translation id="5284584623296338184">Änderungen an Ihren Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Ihre vorhandenen Daten bleiben aber in Ihrem Google-Konto gespeichert.</translation>
 <translation id="5301954838959518834">OK</translation>
@@ -450,7 +439,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
 <translation id="6112702117600201073">Aktualisierung der Seite</translation>
 <translation id="6127379762771434464">Eintrag entfernt</translation>
-<translation id="6134870457258083164">Ihr Gerät ist nicht zu sehen? <ph name="BEGIN_LINK1" />Rufen Sie die Hilfe auf<ph name="END_LINK1" /> oder <ph name="BEGIN_LINK2" />wiederholen Sie die Suche<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Für Mobilgeräte optimierte Seite</translation>
 <translation id="6140912465461743537">Land/Region</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
@@ -482,7 +470,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6476911854266661814">"<ph name="VIDEO_TITLE" />" pausiert</translation>
 <translation id="6477460825583319731">Ungültige E-Mail-Adresse</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, weil nicht genügend Speicherplatz vorhanden ist.</translation>
-<translation id="6541922744811587456">Chrome-Lesezeichen</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Tab zum Beamen auswählen</translation>
 <translation id="6545017243486555795">Alle Daten löschen</translation>
@@ -554,7 +541,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7220786058474068424">Verarbeitung läuft</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> zeigt Ihnen lokale Suchergebnisse basierend auf Ihrem Standort.</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hilfe<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Lesezeichen löschen</translation>
 <translation id="7301833672208172928">Synchronisierung des Verlaufs aktivieren</translation>
 <translation id="7327835590071894791">Ihr Tab ist jetzt im Hintergrund.</translation>
@@ -565,7 +551,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7378627244592794276">Nein</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Das Video kann aufgrund von Websitebeschränkungen nicht übertragen werden.</translation>
-<translation id="7408644312175185557">Auf dem Übersichtsbildschirm Ihres Smartphones sehen Sie Ihre Tabs mit anderen zuletzt verwendeten Apps.</translation>
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="7445411102860286510">Automatische Wiedergabe stummgeschalteter Videos auf Websites zulassen (empfohlen)</translation>

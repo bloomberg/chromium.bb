@@ -51,6 +51,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2535480412977113886">Impossible de synchroniser vos données dans Chromium OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="2558641060352364164">Ce site utilise le plug-in Chromium Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis passer à un navigateur récent.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2587578672395088481">Redémarrez Chromium OS pour appliquer la mise à jour.</translation>
 <translation id="2595977381794111014">Utilisez le raccourci <ph name="APPS_ICON_IMAGE" /> dans la barre de favoris Chromium pour continuer d'accéder à vos applications.</translation>
 <translation id="2605472041568654097">Aidez-nous à améliorer Chromium en nous signalant vos paramètres actuels.</translation>
 <translation id="2636877269779209383">Chromium doit accéder à la caméra pour la partager avec ce site.</translation>
@@ -114,6 +115,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4330585738697551178">Ce module n'est pas compatible avec Chromium.</translation>
 <translation id="4423735387467980091">Personnaliser et contrôler Chromium</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
+<translation id="4469812139324097969">Chromium n'est plus à jour, car il n'a pas été relancé depuis quelque temps. La mise à jour disponible sera installée dès que vous le relancerez.</translation>
 <translation id="4549794359424059447">Les futures versions de Chromium ne seront plus compatibles avec Windows XP et Windows Vista.</translation>
 <translation id="4567424176335768812">Vous êtes connecté avec l'adresse e-mail <ph name="USER_EMAIL_ADDRESS" />. Vous pouvez maintenant accéder à vos favoris, à l'historique et aux autres paramètres sur tous les appareils sur lesquels vous êtes connecté.</translation>
 <translation id="457845228957001925">Information importante concernant vos données Chromium</translation>

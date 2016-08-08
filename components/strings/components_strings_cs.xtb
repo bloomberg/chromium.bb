@@ -168,6 +168,7 @@
 <translation id="284702764277384724">Zdá se, že certifikát serveru webu <ph name="HOST_NAME" /> je podvrh.</translation>
 <translation id="2889159643044928134">Nenačítat znovu</translation>
 <translation id="2896499918916051536">Tento plugin není podporován.</translation>
+<translation id="2900469785430194048">Prohlížeč Google Chrome k zobrazení této webové stránky neměl dostatek paměti.</translation>
 <translation id="2909946352844186028">Byla zjištěna změna sítě.</translation>
 <translation id="2915500479781995473">Tento server nemohl prokázat, že patří do domény <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_TIME" />. Je to správně? Pokud ne, měli byste čas v počítači opravit a poté tuto stránku načíst znovu.</translation>
 <translation id="2922350208395188000">Certifikát serveru nelze zkontrolovat.</translation>
@@ -446,6 +447,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6355080345576803305">Přepsání veřejné relace</translation>
 <translation id="6358450015545214790">Nápověda</translation>
 <translation id="6387478394221739770">Zajímají vás nové funkce Chromu? Vyzkoušejte kanál beta na adrese chrome.com/beta.</translation>
+<translation id="6389758589412724634">Prohlížeč Chromium k zobrazení této webové stránky neměl dostatek paměti.</translation>
 <translation id="641480858134062906">Stránku <ph name="URL" /> se nepodařilo se načíst.</translation>
 <translation id="6417515091412812850">Nelze ověřit, zda byl certifikát zrušen.</translation>
 <translation id="6433595998831338502">Web <ph name="HOST_NAME" /> odmítl připojení.</translation>
@@ -623,7 +625,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8647750283161643317">Obnovit u všech experimentů výchozí nastavení</translation>
 <translation id="8680787084697685621">Přihlašovací údaje k účtu jsou zastaralé.</translation>
 <translation id="8703575177326907206">Vaše spojení se serverem <ph name="DOMAIN" /> není šifrované.</translation>
-<translation id="8713130696108419660">Nesprávný počáteční podpis</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8728672262656704056">Jste v anonymním režimu</translation>
 <translation id="8730621377337864115">Hotovo</translation>

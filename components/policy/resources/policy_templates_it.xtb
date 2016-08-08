@@ -218,6 +218,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma viene impostata su true, <ph name="PRODUCT_OS_NAME" /> tenterà di scaricare payload di aggiornamento automatico tramite HTTP. Se la norma viene impostata su false o non viene impostata, per il download di payload di aggiornamento automatico verrà utilizzato HTTPS.</translation>
 <translation id="2006530844219044261">Gestione dell'alimentazione</translation>
 <translation id="201557587962247231">Frequenza dei caricamenti del rapporto sullo stato del dispositivo</translation>
+<translation id="2018836497795982119">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sulle norme relative agli utenti al servizio di gestione del dispositivo.
+
+      Se questa norma viene impostata, il valore predefinito di tre ore viene ignorato. L'intervallo dei valori validi per questa norma è compreso tra 1800000 (30 minuti) e 86400000 (un giorno). I valori non compresi in questo intervallo verranno bloccati al relativo limite. Se la piattaforma supporta le notifiche relative alle norme, il ritardo dell'aggiornamento verrà impostato su 24 ore perché è previsto che le notifiche relative alle norme forzino l'aggiornamento automatico quando cambiano le norme.
+
+      Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il valore predefinito di tre ore.
+
+      Se la piattaforma supporta le notifiche relative alle norme, il ritardo dell'aggiornamento verrà impostato su 24 ore (vengono ignorati tutti i valori predefiniti e il valore di questa norma) perché è previsto che le notifiche relative alle norme forzino l'aggiornamento automatico quando cambiano le norme, rendendo superflui aggiornamenti più frequenti.</translation>
 <translation id="2024476116966025075">Configura il nome di dominio richiesto per i client di accesso remoto</translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="206623763829450685">Consente di specificare gli schemi di autenticazione HTTP supportati da <ph name="PRODUCT_NAME" />.
@@ -991,7 +998,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       La norma stessa è supportata sulle piattaforme precedenti, ma la funzione attivata dalla norma potrebbe essere disponibile su meno piattaforme. Non è possibile riattivare tutte le funzioni ritirate della piattaforma web, ma soltanto quelle elencate esplicitamente di seguito e soltanto per un periodo di tempo limitato, che è diverso per ogni funzione. Il formato generico del tag string sarà [NomeFunzioneRitirata]_EffectiveUntil[aaaammgg]. È possibile conoscere lo scopo delle modifiche alle funzioni della piattaforma web all'indirizzo https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Attiva il blocco quando lo stato del dispositivo diventa inattivo o sospeso</translation>
-<translation id="4445684791305970001">Consente di disattivare gli Strumenti per sviluppatori e la Console JavaScript. Se attivi questa impostazione, gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile eseguire un'ispezione degli elementi del sito web. Le scorciatoie da tastiera e le voci dei menu contestuali e di altri menu che consentono di aprire gli Strumenti per sviluppatori o la Console JavaScript verranno disattivate. Se disattivi questa opzione o non la imposti sarà possibile utilizzare gli Strumenti per sviluppatori e la Console JavaScript.</translation>
 <translation id="4449545651113180484">Ruota lo schermo in senso orario di 270°</translation>
 <translation id="4467952432486360968">Blocca cookie di terze parti</translation>
 <translation id="4474167089968829729">Attiva il salvataggio delle password in Gestione password</translation>
@@ -1209,6 +1215,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. La sessione pubblica deve essere già configurata (vedi |DeviceLocalAccounts|).
 
       Se questa norma non è impostata, non avverrà l'accesso automatico.</translation>
+<translation id="5529037166721644841">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sulle norme relative agli utenti al servizio di gestione del dispositivo.
+
+      Se questa norma viene impostata, il valore predefinito di tre ore viene ignorato. L'intervallo dei valori validi per questa norma è compreso tra 1800000 (30 minuti) e 86400000 (un giorno). I valori non compresi in questo intervallo verranno bloccati al relativo limite.
+
+      Se questa norma non viene impostata, <ph name="PRODUCT_OS_NAME" /> utilizzerà il valore predefinito di tre ore.
+
+      Se la piattaforma supporta le notifiche relative alle norme, il ritardo dell'aggiornamento verrà impostato su 24 ore (vengono ignorati tutti i valori predefiniti e il valore di questa norma) perché è previsto che le notifiche relative alle norme forzino l'aggiornamento automatico quando cambiano le norme, rendendo superflui aggiornamenti più frequenti.</translation>
 <translation id="5535957389335373033">Consente di stabilire la frequenza di invio, in millisecondi, dei pacchetti di rete di monitoraggio.
 
       Se la norma non viene impostata, la frequenza predefinita è pari a tre minuti. La frequenza minima è pari a 30 secondi, la massima a 24 ore. I valori che non rientrano in questo intervallo verranno fatti rientrare.</translation>
@@ -1725,6 +1738,9 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 
           Questa norma viene rispettata solo se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="7302043767260300182">Ritardo blocco schermo in caso di utilizzo di CA</translation>
+<translation id="7311458740754205918">Se questa norma viene impostata su true o non viene impostata, nella pagina Nuova scheda potrebbero essere mostrati suggerimenti di contenuti basati sulla cronologia di navigazione, sugli interessi o sulla posizione dell'utente.
+
+      Se viene impostata su false, i suggerimenti di contenuti generati automaticamente non vengono mostrati nella pagina Nuova scheda.</translation>
 <translation id="7323896582714668701">Parametri aggiuntivi della riga di comando per <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene utilizzata la batteria.
 
@@ -1856,6 +1872,7 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7763479091692861127"> I tipi di connessioni utilizzabili per aggiornamenti del sistema operativo. Gli aggiornamenti del sistema operativo possono mettere a dura prova la connessione a causa delle loro dimensioni e potrebbero generare costi aggiuntivi. Pertanto, per impostazione predefinita non sono abilitati per i tipi di connessione che sono considerati costosi, fra cui WiMax, Bluetooth e cellulare, al momento.
 
       Gli identificatori dei tipi di connessione riconosciuti sono "ethernet", "wifi", "wimax", "bluetooth" e "cellulare".</translation>
+<translation id="7763614521440615342">Mostra suggerimenti di contenuti nella pagina Nuova scheda</translation>
 <translation id="7766336524667238790">Consente di segnalare informazioni sulla sessione kiosk attiva, ad esempio l'ID e la versione dell'applicazione.
 
       Se la norma viene impostata su false, le informazioni relative alla sessione non vengono segnalate. Se viene impostata su true o non viene impostata, tali informazioni vengono segnalate.</translation>

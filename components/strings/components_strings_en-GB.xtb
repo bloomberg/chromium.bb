@@ -170,6 +170,7 @@
 <translation id="284702764277384724">The server certificate at <ph name="HOST_NAME" /> appears to be a forgery.</translation>
 <translation id="2889159643044928134">Don't reload</translation>
 <translation id="2896499918916051536">This plug-in is not supported.</translation>
+<translation id="2900469785430194048">Google Chrome ran out of memory while trying to display this web page.</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
 <translation id="2915500479781995473">This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_TIME" />. Does that look right? If not, you should correct your system's clock and then refresh this page.</translation>
 <translation id="2922350208395188000">Server's certificate cannot be checked.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Public session override</translation>
 <translation id="6358450015545214790">What do these mean?</translation>
 <translation id="6387478394221739770">Interested in cool new Chrome features? Try our beta channel at chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium ran out of memory while trying to display this web page.</translation>
 <translation id="641480858134062906"><ph name="URL" /> failed to load</translation>
 <translation id="6417515091412812850">Unable to check whether the certificate has been revoked.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> refused to connect.</translation>
@@ -630,7 +632,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8647750283161643317">Reset all to default</translation>
 <translation id="8680787084697685621">Account sign-in details are out of date.</translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
-<translation id="8713130696108419660">Bad intial signature</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
 <translation id="8730621377337864115">Finished</translation>

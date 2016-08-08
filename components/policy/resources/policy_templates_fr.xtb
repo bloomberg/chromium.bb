@@ -243,6 +243,13 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si cette règle est définie sur "True", le téléchargement des charges utiles de mise à jour automatique est effectué par <ph name="PRODUCT_OS_NAME" /> via HTTP. Si cette règle est définie sur "False", ou si elle n'est pas configurée, HTTPS est utilisé pour le téléchargement des charges utiles de mise à jour automatique.</translation>
 <translation id="2006530844219044261">Gestion de l'alimentation</translation>
 <translation id="201557587962247231">Fréquence d'importation des rapports sur l'état de l'appareil</translation>
+<translation id="2018836497795982119">Indique la fréquence en millisecondes à laquelle le service de gestion des appareils est interrogé sur les informations concernant les règles utilisateur.
+
+      La définition de cette règle remplace la valeur par défaut de 3 heures. Les valeurs valides pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86,4 millions (1 jour). Toutes les valeurs non comprises dans cette plage seront nivelées à la limite respective. Si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation est défini par défaut sur 24 heures. De plus, la règle est actualisée automatiquement chaque fois qu'elle est modifiée.
+
+      Si cette règle n'est pas définie, la valeur par défaut de 3 heures est appliquée dans <ph name="PRODUCT_NAME" />.
+
+      Notez que si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation sera défini sur 24 heures (ignorant ainsi toutes les valeurs par défaut et celle de cette règle). En effet, les notifications relatives aux règles forceront une actualisation automatique chaque fois qu'une règle est modifiée, ce qui rend inutile toute actualisation supplémentaire.</translation>
 <translation id="2024476116966025075">Configurer le nom de domaine requis pour les clients d'accès à distance</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
 <translation id="206623763829450685">Indique les modèles d'authentification HTTP compatibles avec <ph name="PRODUCT_NAME" />.
@@ -931,7 +938,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
        Elle répertorie les extensions qui sont automatiquement installées pour l'utilisateur de la démonstration sur les appareils en mode "point de vente". Celles-ci sont enregistrées dans l'appareil. Elles peuvent être installées hors connexion, une fois l'installation terminée.
 
        Chaque entrée de la liste contient un dictionnaire qui doit inclure l'identifiant d'extension dans le champ "extension-id", ainsi que son adresse URL dans le champ "update-url".</translation>
-<translation id="388237772682176890">Cette règle a été abandonnée dans la version M53 et supprimée dans la version M54, car le protocole SPDY 3.1 n'est plus disponible.
+<translation id="388237772682176890">Cette règle a été abandonnée dans la version M53 et supprimée dans la version M54, car le protocole SPDY 3.1 n'est plus pris en charge.
 
       Elle désactive l'utilisation du protocole SPDY dans <ph name="PRODUCT_NAME" />.
 
@@ -1089,11 +1096,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Bien que la règle elle-même soit compatible avec les plates-formes citées, la fonctionnalité qu'elle active peut n'être disponible que sur un nombre plus restreint de plates-formes. Les fonctionnalités abandonnées de la plate-forme en ligne ne peuvent pas toutes être réactivées. Seules celles qui sont énumérées ci-dessous peuvent l'être pendant une durée limitée, qui varie selon la fonctionnalité. Le format général de la balise de chaîne est [FonctionnalitéAbandonnée]_EffectiveUntil[aaaammjj]. Pour information, vous pouvez découvrir les raisons pour lesquelles des motivations ont été apportées aux fonctionnalités des plates-formes en ligne en consultant la page https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Activer le verrouillage lorsque l'appareil est inactif ou en veille</translation>
-<translation id="4445684791305970001">Désactive les outils de développement et la console JavaScript. 
-
-Si vous activez ce paramètre, les outils de développement ne sont plus accessibles et les éléments du site Web ne peuvent plus être  inspectés. Tous les raccourcis clavier et toutes les entrées de menu ou de menu contextuel permettant d'ouvrir les outils de développement ou la console JavaScript sont désactivés. 
-
-Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur peut utiliser les outils de développement et la console JavaScript.</translation>
 <translation id="4449545651113180484">Faire pivoter l'écran vers la droite de 270 degrés</translation>
 <translation id="4467952432486360968">Bloquer les cookies tiers</translation>
 <translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
@@ -1274,7 +1276,7 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 
       Elle active la prédiction réseau dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
 
-      Cela permet non seulement de contrôler la prélecture DNS, mais également la préconnexion TCP et SSL, et le préchargement des pages Web. Le nom de la règle fait référence à la prélecture DNS pour des raisons historiques.
+      Cela permet non seulement de contrôler la prélecture DNS, mais également la préconnexion TCP et SSL et le préchargement des pages Web. Le nom de la règle, qui fait référence à la prélecture DNS, est hérité des anciennes versions.
 
       Que vous activiez ou désactiviez ce paramètre, les utilisateurs ne peuvent pas le modifier ni le remplacer dans <ph name="PRODUCT_NAME" />.
 
@@ -1361,6 +1363,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie, le système se connecte automatiquement à la session spécifiée après expiration du délai d'inactivité. La session publique doit être configurée au préalable (voir |DeviceLocalAccounts|).
 
       Si cette règle n'est pas définie, aucune connexion automatique n'a lieu.</translation>
+<translation id="5529037166721644841">Indique la fréquence en millisecondes à laquelle le service de gestion des appareils est interrogé sur les informations concernant les règles relatives aux appareils.
+
+      La définition de cette règle remplace la valeur par défaut de 3 heures. Les valeurs valides pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86,4 millions (1 jour). Les valeurs situées en dehors de cette plage sont remplacées par la valeur limite la plus proche.
+
+      Si cette règle n'est pas définie, la valeur par défaut de 3 heures est appliquée dans <ph name="PRODUCT_OS_NAME" />.
+
+      Notez que si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation sera défini sur 24 heures (ignorant ainsi toutes les valeurs par défaut et celle de cette règle). En effet, les notifications relatives aux règles forceront une actualisation automatique chaque fois qu'une règle est modifiée, ce qui rend inutile toute actualisation supplémentaire.</translation>
 <translation id="5535957389335373033">Indiquer la fréquence d'envoi de paquets réseau de contrôle, en millisecondes
 
       Si cette règle n'est pas définie, le délai par défaut entre deux paquets est de 3 minutes.
@@ -1925,6 +1934,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="7302043767260300182">Délai de verrouillage de l'écran (secteur)</translation>
+<translation id="7311458740754205918">Si cette règle est définie sur "True" ou n'est pas définie, la page "Nouvel onglet" peut proposer des recommandations de contenus en fonction de l'historique de navigation, des centres d'intérêt ou de la position de l'utilisateur.
+
+      Si cette règle est définie sur "False", aucune recommandation de contenus générée automatiquement ne s'affiche sur la page "Nouvel onglet".</translation>
 <translation id="7323896582714668701">Paramètres de ligne de commande supplémentaires pour <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Indiquer le délai d'inactivité au terme duquel l'écran s'éteint en cas d'utilisation de la batterie
 
@@ -2068,6 +2080,7 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
 <translation id="7763479091692861127"> Types de connexions autorisés pour les mises à jour du système d'exploitation. En raison de leur taille, les mises à jour du système d'exploitation peuvent considérablement ralentir la connexion et impliquent parfois des frais supplémentaires. C'est pourquoi elles ne sont pas activées par défaut pour les types de connexion jugés onéreux, tels que WiMax, Bluetooth et Cellulaire.
 
       Les identifiants des types de connexion reconnus sont "ethernet", "wifi", "wimax", "bluetooth" et "cellular".</translation>
+<translation id="7763614521440615342">Afficher des recommandations de contenus sur la page "Nouvel onglet"</translation>
 <translation id="7766336524667238790">Transmettre des informations sur la session kiosque active,
       telles que l'ID et la version de l'application.
 
@@ -2093,7 +2106,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
       Si ce paramètre est configuré, les utilisateurs ne peuvent pas le modifier eux-mêmes.
 
-      Si ce paramètre n'est pas configuré, les utilisateurs ne peuvent pas activer ni désactiver Android Backup Service dans l'application Paramètres de leur appareil Android.</translation>
+      Si ce paramètre n'est pas configuré, les utilisateurs peuvent activer et désactiver Android Backup Service dans l'application Paramètres de leur appareil Android.</translation>
 <translation id="7818131573217430250">Définir l'état par défaut du mode Contraste élevé sur l'écran de connexion</translation>
 <translation id="7831595031698917016">Spécifie le délai maximal en millisecondes entre la réception du rejet d'une règle et la récupération de la nouvelle règle auprès du service de gestion de l'appareil.
 

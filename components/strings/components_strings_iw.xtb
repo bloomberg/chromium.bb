@@ -170,6 +170,7 @@
 <translation id="284702764277384724">אישור השרת ב-<ph name="HOST_NAME" /> נראה מזויף.</translation>
 <translation id="2889159643044928134">אל תטען מחדש</translation>
 <translation id="2896499918916051536">הפלאגין הזה אינו נתמך.</translation>
+<translation id="2900469785430194048">‏אזל הזיכרון הזמין ל-Google Chrome בעת ניסיון להציג דף אינטרנט זה.</translation>
 <translation id="2909946352844186028">אותר שינוי ברשת.</translation>
 <translation id="2915500479781995473">לשרת זה לא הייתה אפשרות להוכיח שהוא <ph name="DOMAIN" />; פג תוקפו של אישור האבטחה שלו. ייתכן שמצב זה נגרם בשל תצורה שגויה או שתוקף מיירט את החיבור שלך. שעון המחשב שלך מוגדר כעת ל-<ph name="CURRENT_TIME" />. האם השעה נכונה? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן דף זה.</translation>
 <translation id="2922350208395188000">לא ניתן לבדוק את אישור השרת.</translation>
@@ -458,6 +459,7 @@ Del</translation>
 <translation id="6355080345576803305">שינוי הפעלה ציבורית</translation>
 <translation id="6358450015545214790">מה זה אומר?</translation>
 <translation id="6387478394221739770">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את ערוץ הביטא שלנו בכתובת chrome.com/beta.</translation>
+<translation id="6389758589412724634">‏אזל הזיכרון הזמין ל-Chromium בעת ניסיון להציג דף אינטרנט זה.</translation>
 <translation id="641480858134062906">נכשלה הטעינה של <ph name="URL" /></translation>
 <translation id="6417515091412812850">לא ניתן לבדוק אם האישור נשלל.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> סירב להתחבר.</translation>
@@ -635,7 +637,6 @@ Del</translation>
 <translation id="8647750283161643317">אפס הכל לברירת המחדל</translation>
 <translation id="8680787084697685621">פרטי הכניסה לחשבון אינם מעודכנים.</translation>
 <translation id="8703575177326907206">ההתחברות שלך אל <ph name="DOMAIN" /> אינה מוצפנת.</translation>
-<translation id="8713130696108419660">חתימה ראשונית פגומה</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8728672262656704056">עברת למצב גלישה בסתר</translation>
 <translation id="8730621377337864115">בוצע</translation>

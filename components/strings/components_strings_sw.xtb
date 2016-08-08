@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Cheti cha seva kilchopo kwenye <ph name="HOST_NAME" /> kinaonekana ghushi.</translation>
 <translation id="2889159643044928134">Usipakie Upya</translation>
 <translation id="2896499918916051536">Programu-jalizi hii haitumiki.</translation>
+<translation id="2900469785430194048">Nafasi ya kuhifadhi kwenye Google Chrome iliisha ilipokuwa ikijaribu kuonyesha ukurasa huu wa wavuti.</translation>
 <translation id="2909946352844186028">Mabadiliko ya mtandao yamegunduliwa.</translation>
 <translation id="2915500479781995473">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kilikwisha muda. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako. Saa ya kompyuta yako imewekwa kwenye saa <ph name="CURRENT_TIME" /> kwa sasa. Hiyo ni sawa? Ikiwa si sawa, unapaswa kurekebisha mfumo wako wa saa kisha uonyeshe upya ukurasa huu.</translation>
 <translation id="2922350208395188000">Cheti cha seva hakiwezi kukaguliwa.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Kipindi cha umma kimebatilishwa</translation>
 <translation id="6358450015545214790">Je, hii inamaanisha nini?</translation>
 <translation id="6387478394221739770">Unavutiwa na vipengee vipya vizuri vya Chrome? Jaribu kituo chetu cha beta katika chrome.com/beta.</translation>
+<translation id="6389758589412724634">Nafasi ya kuhifadhi kwenye Chromium iliisha ilipokuwa ikijaribu kuonyesha ukurasa huu wa wavuti.</translation>
 <translation id="641480858134062906"><ph name="URL" /> ilishindwa kupakia</translation>
 <translation id="6417515091412812850">Haiwezi kukagua ikiwa cheti kimebatilishwa.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> imekataa kuunganisha.</translation>
@@ -630,7 +632,6 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8647750283161643317">Weka upya zote kwa chaguo-msingi</translation>
 <translation id="8680787084697685621">Maelezo ya kuingia kwenye akaunti yamechina.</translation>
 <translation id="8703575177326907206">Muunganisho wako kwa <ph name="DOMAIN" /> haujasimbwa.</translation>
-<translation id="8713130696108419660">Sahihi mbaya ya mwanzo</translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
 <translation id="8728672262656704056">Unavinjari katika hali fiche.</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>

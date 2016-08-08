@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1040144152982955218">正在搜尋裝置… <ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">警告</translation>
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="1061441684050139317">Chrome 需要存取麥克風，才能與這個網站分享。</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">探索附近物件傳送的網頁。Chrome 會收集與您附近物件相關聯的網頁，將這些資訊以匿名方式傳送給 Google 服務，藉此找出並顯示對您最實用的資訊。
 
 您必須開啟藍牙和定位功能，才能使用實體化網路。</translation>
-<translation id="1250508505624960884">Chrome 測試版書籤</translation>
 <translation id="1254090737195733114">要匯入資料嗎？</translation>
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">停止</translation>
@@ -88,7 +86,6 @@
 <translation id="1946821392246652573">接受的信用卡</translation>
 <translation id="1966710179511230534">請更新您的登入詳細資料。</translation>
 <translation id="1974060860693918893">進階</translation>
-<translation id="1984321224716884559">Chrome 開發版書籤</translation>
 <translation id="1984937141057606926">允許 (第三方網站除外)</translation>
 <translation id="1994173015038366702">網站網址</translation>
 <translation id="2001120796168634316">儲存連結的網頁以供日後使用</translation>
@@ -159,9 +156,7 @@
 <translation id="2742271047622814453">已儲存的網站偏好設定可能會遭到刪除</translation>
 <translation id="2748463065602559597">您正在瀏覽安全型 Google Chrome 網頁。</translation>
 <translation id="2762000892062317888">剛剛</translation>
-<translation id="2770465223704140727">從清單中移除</translation>
 <translation id="2777555524387840389">還剩 <ph name="SECONDS" /> 秒</translation>
-<translation id="278029852808208386">找不到藍牙裝置，請<ph name="BEGIN_LINK" />重新搜尋<ph name="END_LINK" />。</translation>
 <translation id="2781151931089541271">還剩 1 秒</translation>
 <translation id="2811892995384186721">找不到您的裝置嗎？<ph name="BEGIN_LINK" />尋求協助<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">輕觸返回按鈕即可結束全螢幕模式。</translation>
@@ -232,7 +227,6 @@
 
 如要調整搜尋字詞，直接長按即可選取。如要修正搜尋，請將面板滑動到最上方，再輕觸搜尋框。</translation>
 <translation id="3616113530831147358">音訊</translation>
-<translation id="3623048332793834136">Chrome Canary 版書籤</translation>
 <translation id="3632295766818638029">取消密碼遮罩</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
 <translation id="3656115297268584622">前往 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />開啟位置資訊設定。</translation>
@@ -285,7 +279,6 @@
 <translation id="4271185234001491831">一律不翻譯<ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">媒體</translation>
 <translation id="4278390842282768270">允許</translation>
-<translation id="4297410240212242334">區隔分頁與應用程式</translation>
 <translation id="4307992518367153382">基本選項</translation>
 <translation id="4334294535648607276">下載完成。</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
@@ -309,10 +302,8 @@
 <translation id="4645575059429386691">您的家長已停用這項功能</translation>
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」已加入您的主畫面</translation>
-<translation id="4668044310199835006">Chrome for Work 版書籤</translation>
 <translation id="4684427112815847243">同步處理所有資料</translation>
 <translation id="4686372254213217147">原始大小</translation>
-<translation id="4690286298542128877">分頁將改為顯示在 Chrome 的分頁切換選項中。</translation>
 <translation id="4698413471314543145">找不到執行 Chrome 所需的重要功能；Chrome 安裝程序可能未完成，或是 Chrome 與這個 Android 版本不相容。</translation>
 <translation id="4699172675775169585">快取圖片和檔案</translation>
 <translation id="4710672574193412565">在裝置的「設定」應用程式中開啟「帳戶」頁面，從中新增 Google 帳戶。</translation>
@@ -354,7 +345,6 @@
 <translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5131405117025179004">編輯已儲存的帳戶</translation>
 <translation id="5138299137310274655">這是<ph name="SOURCE_LANGUAGE" />網頁，需要翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
-<translation id="5150703642582475397">合併分頁與應用程式</translation>
 <translation id="515227803646670480">清除儲存的資料</translation>
 <translation id="5156656584247937086">這是兒童帳戶</translation>
 <translation id="5161254044473106830">請輸入標題</translation>
@@ -367,7 +357,6 @@
 <translation id="5222676887888702881">登出</translation>
 <translation id="5233638681132016545">新增分頁</translation>
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
-<translation id="5275558766013849309">分頁和最近使用的應用程式將會並列顯示。</translation>
 <translation id="528192093759286357">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="5284584623296338184">您更改過的書籤、歷史紀錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
 <translation id="5301954838959518834">好，我瞭解了</translation>
@@ -450,7 +439,6 @@
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6112702117600201073">重新整理網頁</translation>
 <translation id="6127379762771434464">已移除項目</translation>
-<translation id="6134870457258083164">找不到您的裝置嗎？建議您<ph name="BEGIN_LINK1" />尋求協助<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新搜尋<ph name="END_LINK2" />。</translation>
 <translation id="6138140242378429169">讓網頁適合透過行動裝置瀏覽</translation>
 <translation id="6140912465461743537">國家/地區</translation>
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據流量</translation>
@@ -482,7 +470,6 @@
 <translation id="6476911854266661814">「<ph name="VIDEO_TITLE" />」已暫停</translation>
 <translation id="6477460825583319731">電子郵件地址無效</translation>
 <translation id="6482749332252372425">儲存空間不足，因此無法下載 <ph name="FILE_NAME" />。</translation>
-<translation id="6541922744811587456">Chrome 書籤</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">選取要傳輸的分頁</translation>
 <translation id="6545017243486555795">清除所有資料</translation>
@@ -554,7 +541,6 @@
 <translation id="7220786058474068424">處理中</translation>
 <translation id="7243308994586599757">選項在接近畫面底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 會使用您的位置資訊來顯示當地搜尋結果</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />說明<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">刪除書籤</translation>
 <translation id="7301833672208172928">開啟歷史紀錄同步處理功能</translation>
 <translation id="7327835590071894791">您的分頁現已傳送到背景了。</translation>
@@ -565,7 +551,6 @@
 <translation id="7378627244592794276">不需要</translation>
 <translation id="7400418766976504921">網址</translation>
 <translation id="7400448254438078120">由於網站設有限制，因此無法投放影片</translation>
-<translation id="7408644312175185557">手機的「總覽」畫面會顯示您的分頁和其他最近使用過的應用程式。</translation>
 <translation id="7423098979219808738">先詢問我</translation>
 <translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="7445411102860286510">允許網站自動播放靜音的影片 (建議)</translation>

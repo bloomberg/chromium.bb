@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1091157412887719337">أخفق التعيين.  لا يتوفر محرك.</translation>
+<translation id="117738548141695034">‏تبديل Blimp</translation>
 <translation id="1416550906796893042">إصدار التطبيق</translation>
 <translation id="1750179245464827362">عرض معلومات تصحيح الأخطاء</translation>
 <translation id="2004526128230838685">أخفق التعيين. مشكلة غير معروفة.</translation>
 <translation id="2023631438558435272">أخفق التعيين.  استجابة غير صالحة.</translation>
 <translation id="2078561879028077171">معلومات الإصدار</translation>
 <translation id="2117453604279487107">‏عنوان URL للمعيّن</translation>
+<translation id="2218944627481691815">‏تم تغيير تبديل Blimp، يُرجى إعادة تشغيل التطبيق.</translation>
 <translation id="2353984724370197742">أخفق التعيين.  أخفق طلب الشبكة.</translation>
 <translation id="2789927415041640472">يُرجى إعادة تشغيل التطبيق لاستخدام تهيئة المعيّن الجديدة.</translation>
 <translation id="3046825211487065480">أخفق التعيين. تم إرسال الطلب الثاني قبل استجابة الطلب الأول.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">‏المحرك غير متصل، والسبب: %1$s</translation>
 <translation id="7596558890252710462">نظام التشغيل</translation>
 <translation id="7608553142876436780">‏عنوان IP للمحرك</translation>
+<translation id="7795546637165553439">‏إعدادات Blimp</translation>
 <translation id="7961542533680218955">تم نجاح التعيين.</translation>
 <translation id="8514856595257368555">تم استرداد الرمز المميز.</translation>
 <translation id="8880704056643418312">عمليات التنفيذ</translation>

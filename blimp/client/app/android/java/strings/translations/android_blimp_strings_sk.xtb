@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1091157412887719337">Priradenie zlyhalo. Nie je k dispozícii žiadny nástroj.</translation>
+<translation id="117738548141695034">Spínač Blimp</translation>
 <translation id="1416550906796893042">Verzia aplikácie</translation>
 <translation id="1750179245464827362">Zobraziť informácie o ladení</translation>
 <translation id="2004526128230838685">Priradenie zlyhalo. Neznáma chyba.</translation>
 <translation id="2023631438558435272">Priradenie zlyhalo. Neplatná odpoveď.</translation>
 <translation id="2078561879028077171">Informácie o verzii</translation>
 <translation id="2117453604279487107">Webová adresa postupiteľa</translation>
+<translation id="2218944627481691815">Spínač Blimp bol zmenený. Reštartujte aplikáciu.</translation>
 <translation id="2353984724370197742">Priradenie zlyhalo. Zlyhala žiadosť do siete.</translation>
 <translation id="2789927415041640472">Ak chcete použiť novú konfiguráciu postupiteľa, reštartujte aplikáciu.</translation>
 <translation id="3046825211487065480">Priradenie zlyhalo. Druhá žiadosť bola odoslaná ešte pred odpoveďou na prvú žiadosť.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Nástroj bol odpojený. Dôvod: %1$s</translation>
 <translation id="7596558890252710462">Operačný systém</translation>
 <translation id="7608553142876436780">Adresa IP nástroja</translation>
+<translation id="7795546637165553439">Nastavenia spínača Blimp</translation>
 <translation id="7961542533680218955">Priradenie bolo úspešné.</translation>
 <translation id="8514856595257368555">Token bol načítaný.</translation>
 <translation id="8880704056643418312">Odoslania</translation>

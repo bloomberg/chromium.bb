@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Chrome Uygulama Başlatıcı kullanımdan kaldırılıyor.</translation>
 <translation id="1877026089748256423">Chrome sürümü eski</translation>
 <translation id="1924381329666691588">Google Chrome bu dilde görüntülenemiyor.</translation>
+<translation id="2063848847527508675">Güncellemenin uygulanması için Chrome OS yeniden başlatılmalıdır.</translation>
 <translation id="2077129598763517140">Kullanılabilir olduğunda donanım ivmesini kullan</translation>
 <translation id="2084710999043359739">Chrome'a ekle</translation>
 <translation id="2246246234298806438">Google Chrome, dahili PDF görüntüleyici yokken baskı önizlemeyi gösteremez.</translation>
@@ -52,6 +53,7 @@
 Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarlarınız gibi Chrome bilgileriniz <ph name="ACCOUNT_EMAIL_NEW" /> ile birleştirilecektir.</translation>
 <translation id="2397416548179033562">Chrome menüsünü göster</translation>
 <translation id="2429317896000329049">Senkronizasyon, alan adınızda kullanılamadığından Google Chrome, verilerinizi senkronize edemedi.</translation>
+<translation id="2446511512801740068">Bir süredir çalıştırılmadığından Chrome güncel değil. Kullanılabilir bir güncelleme var ve yeniden başlattığınızda hemen uygulanacak.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
 <translation id="2580411288591421699">Şu anda çalışmakta olan Google Chrome ile aynı sürüm yüklenemez. Lütfen Google Chrome'u kapatın ve tekrar deneyin.</translation>
 <translation id="2582790009689336987">Bu Linux sistemi artık desteklenmeyeceğinden, bu bilgisayar yakında Google Chrome güncellemeleri almayı durduracaktır.</translation>

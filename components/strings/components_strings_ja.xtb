@@ -170,6 +170,7 @@
 <translation id="284702764277384724"><ph name="HOST_NAME" /> のサーバー証明書は偽造されたもののようです。</translation>
 <translation id="2889159643044928134">再読み込みを中止</translation>
 <translation id="2896499918916051536">このプラグインはサポートされていません。</translation>
+<translation id="2900469785430194048">このウェブページを表示しようとしましたが、Google Chrome のメモリが不足しています。</translation>
 <translation id="2909946352844186028">ネットワークの変更が検出されました。</translation>
 <translation id="2915500479781995473">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の期限が切れています。原因として、設定が不適切か、悪意のあるユーザーが接続を妨害している可能性があります。パソコンの時計は現在 <ph name="CURRENT_TIME" /> に設定されています。この時刻が正しくない場合は、システムの時計を修正して、このページを更新してください。</translation>
 <translation id="2922350208395188000">サーバーの証明書を確認できません。</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">公開セッションのオーバーライド</translation>
 <translation id="6358450015545214790">ヘルプ</translation>
 <translation id="6387478394221739770">Chrome の新しい機能に関心をお持ちでしたら、chrome.com/beta から Beta チャンネルをお試しください。</translation>
+<translation id="6389758589412724634">このウェブページを表示しようとしましたが、Chromium のメモリが不足しています。</translation>
 <translation id="641480858134062906"><ph name="URL" /> の読み込みに失敗しました</translation>
 <translation id="6417515091412812850">証明書が取り消されたかどうかを確認できません。</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> で接続が拒否されました。</translation>
@@ -630,7 +632,6 @@
 <translation id="8647750283161643317">すべてデフォルトに戻す</translation>
 <translation id="8680787084697685621">アカウントのログイン情報が古くなっています。</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> への接続は暗号化されていません。</translation>
-<translation id="8713130696108419660">無効なイニシャル署名です</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8728672262656704056">シークレット モードです</translation>
 <translation id="8730621377337864115">完了</translation>

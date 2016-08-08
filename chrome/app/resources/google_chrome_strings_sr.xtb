@@ -40,6 +40,7 @@
 <translation id="1864458292167284385">Покретач Chrome апликација се укида.</translation>
 <translation id="1877026089748256423">Chrome је застарео</translation>
 <translation id="1924381329666691588">Google Chrome не може да се приказује на овом језику.</translation>
+<translation id="2063848847527508675">Треба да рестартујете Chrome OS да бисте применили ажурирање.</translation>
 <translation id="2077129598763517140">Користи хардверско убрзање када је доступно</translation>
 <translation id="2084710999043359739">Додавање у Chrome</translation>
 <translation id="2246246234298806438">Google Chrome не може да покаже приказ пре штампања када недостаје уграђени PDF приказивач.</translation>
@@ -56,6 +57,7 @@
 Ако се ипак пријавите, Chrome информације као што су обележивачи, историја и друга подешавања ће бити обједињене на <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Приказ Chrome менија</translation>
 <translation id="2429317896000329049">Google Chrome не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
+<translation id="2446511512801740068">Chrome је застарео јер дуго није поново покренут. Ажурирање је доступно и биће примењено чим га поново покренете.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2580411288591421699">Није могуће инсталирати верзију Google Chrome прегледача која је иста као тренутно покренута верзија. Затворите Google Chrome и покушајте поново.</translation>
 <translation id="2582790009689336987">Овај рачунар ће ускоро престати да добија ажурирања за Google Chrome јер овај Linux систем више неће бити подржан.</translation>

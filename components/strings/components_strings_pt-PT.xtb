@@ -170,6 +170,7 @@
 <translation id="284702764277384724">O certificado do servidor de <ph name="HOST_NAME" /> parece ser uma falsificação.</translation>
 <translation id="2889159643044928134">Não atualizar</translation>
 <translation id="2896499918916051536">Este plug-in não é compatível.</translation>
+<translation id="2900469785430194048">O Google Chrome ficou sem memória ao tentar apresentar esta página Web.</translation>
 <translation id="2909946352844186028">Foi detetada uma alteração de rede.</translation>
 <translation id="2915500479781995473">Este servidor não conseguir provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança expirou. Isto pode ser o resultado de uma configuração incorreta ou de um atacante a intercetar a sua ligação. Atualmente, o relógio do computador está definido para as <ph name="CURRENT_TIME" />. Esta hora parece-lhe correta? Em caso negativo, corrija o relógio do sistema e, em seguida, atualize esta página.</translation>
 <translation id="2922350208395188000">Não é possível verificar o certificado do servidor.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Substituição da sessão pública</translation>
 <translation id="6358450015545214790">O que significam?</translation>
 <translation id="6387478394221739770">Está interessado nas novas e fantásticas funcionalidades do Chrome? Experimente o nosso canal beta em chrome.com/beta.</translation>
+<translation id="6389758589412724634">O Chromium ficou sem memória ao tentar apresentar esta página Web.</translation>
 <translation id="641480858134062906">Falha ao carregar <ph name="URL" /></translation>
 <translation id="6417515091412812850">Não é possível verificar se o certificado foi revogado.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> recusou estabelecer ligação.</translation>
@@ -630,7 +632,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8647750283161643317">Repor todas as predefinições</translation>
 <translation id="8680787084697685621">Os detalhes de início de sessão na conta estão desactualizados.</translation>
 <translation id="8703575177326907206">A sua ligação a <ph name="DOMAIN" /> não está encriptada.</translation>
-<translation id="8713130696108419660">Rubrica incorreta</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8728672262656704056">Está anónimo</translation>
 <translation id="8730621377337864115">Concluído</translation>

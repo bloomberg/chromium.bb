@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Certifikat poslužitelja na hostu <ph name="HOST_NAME" /> izgleda kao falsifikat.</translation>
 <translation id="2889159643044928134">Ne učitavaj ponovo</translation>
 <translation id="2896499918916051536">Taj dodatak nije podržan.</translation>
+<translation id="2900469785430194048">Google Chrome ostao je bez memorije dok je pokušavao prikazati ovu web-stranicu.</translation>
 <translation id="2909946352844186028">Otkrivena je promjena mreže.</translation>
 <translation id="2915500479781995473">Poslužitelj nije mogao dokazati da se radi o domeni <ph name="DOMAIN" />. Njezin je sigurnosni certifikat istekao. Uzrok može biti pogrešna konfiguracija ili napadač koji ometa vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME" />. Je li to u redu? Ako nije, podesite sat svog sustava, a zatim osvježite ovu stranicu.</translation>
 <translation id="2922350208395188000">Certifikat poslužitelja nije moguće provjeriti.</translation>
@@ -452,6 +453,7 @@
 <translation id="6355080345576803305">Nadjačavanje javne sesije</translation>
 <translation id="6358450015545214790">Što to znači?</translation>
 <translation id="6387478394221739770">Zanimaju li vas nove, kul značajke preglednika Chrome? Isprobajte naš beta kanal na stranici chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium je ostao bez memorije dok je pokušavao prikazati ovu web-stranicu.</translation>
 <translation id="641480858134062906">Adresa <ph name="URL" /> nije učitana</translation>
 <translation id="6417515091412812850">Nije moguće provjeriti je li certifikat opozvan.</translation>
 <translation id="6433595998831338502">Host <ph name="HOST_NAME" /> odbio je povezivanje.</translation>
@@ -629,7 +631,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8647750283161643317">Vrati sve na zadano</translation>
 <translation id="8680787084697685621">Pojedinosti prijave na račun su zastarjele.</translation>
 <translation id="8703575177326907206">Vaša veza s <ph name="DOMAIN" /> nije šifrirana.</translation>
-<translation id="8713130696108419660">Pogrešan početni potpis</translation>
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="8728672262656704056">Radite u anonimnom načinu</translation>
 <translation id="8730621377337864115">Gotovo</translation>

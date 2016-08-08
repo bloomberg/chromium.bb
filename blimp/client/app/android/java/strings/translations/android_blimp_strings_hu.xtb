@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1091157412887719337">A hozzárendelés nem sikerült. Nem áll rendelkezésre motor.</translation>
+<translation id="117738548141695034">Blimp kapcsoló</translation>
 <translation id="1416550906796893042">Alkalmazás verziószáma</translation>
 <translation id="1750179245464827362">Hibakeresési adatok megjelenítése</translation>
 <translation id="2004526128230838685">A hozzárendelés nem sikerült. Ismeretlen hiba történt.</translation>
 <translation id="2023631438558435272">A hozzárendelés nem sikerült. Érvénytelen válasz.</translation>
 <translation id="2078561879028077171">Verzióinformáció</translation>
 <translation id="2117453604279487107">Hozzárendelő URL-je</translation>
+<translation id="2218944627481691815">A Blimp kapcsoló megváltozott. Indítsa újra az alkalmazást.</translation>
 <translation id="2353984724370197742">A hozzárendelés nem sikerült. Sikertelen hálózati kérés.</translation>
 <translation id="2789927415041640472">Kérjük, indítsa újra az alkalmazást az új hozzárendelői konfiguráció használatához.</translation>
 <translation id="3046825211487065480">A hozzárendelés nem sikerült. Második kérést küldtek az első kérés megválaszolása előtt.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Motor leválasztva, ok: %1$s</translation>
 <translation id="7596558890252710462">Operációs rendszer</translation>
 <translation id="7608553142876436780">Motor IP-címe</translation>
+<translation id="7795546637165553439">Blimp beállításai</translation>
 <translation id="7961542533680218955">A hozzárendelés sikerült.</translation>
 <translation id="8514856595257368555">Token lekérve.</translation>
 <translation id="8880704056643418312">Végrehajtások</translation>

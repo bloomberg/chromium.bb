@@ -72,7 +72,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">ಮುಂದಿನ ಗ್ರಾಫಿಕ್</translation>
 <translation id="1781173782405573156">ಕೀ ಮೂಲಕ ಹಾದುಹೋಗುತ್ತವೆ</translation>
-<translation id="1787176709638001873">ಪಾಸ್‌ವರ್ಡ್ ಸಂಪಾದನೆ ಪಠ್ಯ</translation>
+<translation id="1787176709638001873">ಪಾಸ್‌ವರ್ಡ್ ಎಡಿಟ್ ಪಠ್ಯ</translation>
 <translation id="1802710350767629429">ಅಪ್‌ಡೇಟ್ ಟಿಪ್ಪಣಿಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1810107444790159527">ಪಟ್ಟಿಯ ಬಾಕ್ಸ್</translation>
 <translation id="1828385960365606039">ಮೇ</translation>
@@ -396,7 +396,7 @@
 <translation id="4877261390094455813">ಹುಡುಕಾಟದ ಪ್ರಶ್ನೆಯನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">ಆಂತರಿಕ ಲಿಂಕ್</translation>
-<translation id="4953585991029886728">ಪಠ್ಯ ಸಂಪಾದಿಸಿ</translation>
+<translation id="4953585991029886728">ಪಠ್ಯ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="4954534434583049121">ಹಿಂದಿನ ನಿರ್ಬಂಧನೆಯ ಖೋಟ್</translation>
 <translation id="4973717656530883744">ಗರಿಷ್ಟ <ph name="X" /></translation>
 <translation id="4973762002207131920"><ph name="KEY" /> ಗೆ ಬದಲಿಸಲಾಗಿದೆ.</translation>
@@ -472,7 +472,7 @@
 <translation id="5561345396546889625">ಮುಂದಿನ ಪಟ್ಟಿ</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5585044216466955529">ಪಠ್ಯ ಸಂಪಾದಿಸಿ, ಇಮೇಲ್ ನಮೂದಿಸಿ</translation>
+<translation id="5585044216466955529">ಪಠ್ಯ ಎಡಿಟ್ ಮಾಡಿ, ಇಮೇಲ್ ನಮೂದಿಸಿ</translation>
 <translation id="5597170376237141345">ಮುಂದಿನ ಚೆಕ್‌ಬಾಕ್ಸ್</translation>
 <translation id="5597933780944041114">ಯಾವುದೇ ಮುಂದಿನ ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, ರೇಡಿಯೊ ಬಟನ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಲಿಲ್ಲ</translation>
@@ -609,7 +609,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7037042857287298941">ಹಿಂದಿನ ಪಟ್ಟಿ</translation>
 <translation id="7041173719775863268">ಆಯ್ಕೆಯನ್ನು ಕೊನೆಗೊಳಿಸಿ</translation>
 <translation id="7086377898680121060">ಪ್ರಖರತೆ ಹೆಚ್ಚು ಮಾಡಿ</translation>
-<translation id="7095834689119144465">ಪಠ್ಯ ಸಂಖ್ಯೆ ಮಾತ್ರ ಸಂಪಾದಿಸಿ</translation>
+<translation id="7095834689119144465">ಪಠ್ಯ ಸಂಖ್ಯೆ ಮಾತ್ರ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="7096001299300236431">ಹಿಂದಿನ ಮಾಧ್ಯಮ</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">ಪದ ಎಕೋ</translation>
@@ -670,7 +670,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7663318257180412551">ಶೀರ್ಷಿಕೆ 2</translation>
 <translation id="7674576868851035240">ಮುಂದಿನ ಲಿಂಕ್</translation>
 <translation id="7674768236845044097">ಗುರುತು</translation>
-<translation id="7684431668231950609">ಪಠ್ಯ ಸಂಪಾದಿಸಿ, URL ನಮೂದಿಸಿ</translation>
+<translation id="7684431668231950609">ಪಠ್ಯ ಎಡಿಟ್ ಮಾಡಿ, URL ನಮೂದಿಸಿ</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">ಹಿಂದಿನ ರೇಡಿಯೊ ಬಟನ್</translation>
 <translation id="7701196182766842984">autolst</translation>
@@ -697,7 +697,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8009786657110126785">{COUNT,plural, =1{ಉದ್ದರಣ}one{# ಉದ್ದರಣ ಚಿಹ್ನೆಗಳು}other{# ಉದ್ದರಣ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="8033827949643255796">ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8035962149453661158">ಗರಿಷ್ಟ:<ph name="X" /></translation>
-<translation id="8042761080832772327">ಪಠ್ಯ ಸಂಪಾದಿಸಿ, ಹುಡುಕಾಟ ನಮೂದಿಸಿ</translation>
+<translation id="8042761080832772327">ಪಠ್ಯ ಎಡಿಟ್ ಮಾಡಿ, ಹುಡುಕಾಟ ನಮೂದಿಸಿ</translation>
 <translation id="8049189770492311300">ಟೈಮರ್</translation>
 <translation id="8065607967589909823">ಆಯ್ಕೆಯು</translation>
 <translation id="8066678206530322333">ಬ್ಯಾನರ್</translation>

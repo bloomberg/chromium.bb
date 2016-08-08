@@ -228,6 +228,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si esta política está establecida en True, <ph name="PRODUCT_OS_NAME" /> intentará descargar cargas de actualizaciones automáticas a través de HTTP. Si está establecida en False o no está configurada, se utilizará HTTPS para descargar cargas de actualizaciones automáticas.</translation>
 <translation id="2006530844219044261">Administración de energía</translation>
 <translation id="201557587962247231">Frecuencia de cargas del informe de estado del dispositivo</translation>
+<translation id="2018836497795982119">Especifica el período en milisegundos en el que se consultará el servicio de administración del dispositivo para obtener la información de política del usuario.
+
+      Si estableces esta política, se anula el valor predeterminado de tres horas. Los valores válidos para esta política van de 1800000 (30 minutos) a 86400000 (1 día). Cualquier valor que esté fuera de este rango se ajustará al límite más cercano. Si la plataforma es compatible con notificaciones de política, el retraso de actualización se establecerá en 24 horas ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie.
+
+      Si no estableces esta política, <ph name="PRODUCT_NAME" /> usará el valor predeterminado de 3 horas.
+
+      Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política) ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave del proveedor de búsqueda predeterminado</translation>
 <translation id="206623763829450685">Especifica qué esquemas de autenticación de HTTP son compatibles con <ph name="PRODUCT_NAME" />.
@@ -865,7 +872,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Elabora una lista de las extensiones que se instalan automáticamente para el usuario de demostración, para los dispositivos en modo de venta. Estas extensiones se guardan en el dispositivo y se pueden instalar sin conexión, después de la instalación.
 
       Cada entrada de la lista contiene un diccionario que debe incluir el ID de extensión en el campo "extension-id" y su URL de actualización en el campo "update-url".</translation>
-<translation id="388237772682176890">Esta política ya no está disponible en M53 y se quitó en M54, porque se quitó la compatibilidad con SPDY/3.1.
+<translation id="388237772682176890">Esta política ya no está disponible en M53 y se quitó en M54 porque se quitó la compatibilidad con SPDY/3.1.
 
       Inhabilita el uso del protocolo SPDY en <ph name="PRODUCT_NAME" />.
 
@@ -1017,7 +1024,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si bien la política se admite en plataformas posteriores, es posible que la función que habilita no esté disponible en todas ellas. No todas las funciones de Web Platform que dejaron de estar disponibles se pueden volver a habilitar; solo las que se indican explícitamente a continuación y durante un período limitado que varía según cada función. El formato general de la etiqueta de cadena será [NombreDeFunciónNoDisponible]_EffectiveUntil[aaaammdd]. Como referencia, se puede encontrar el propósito de los cambios de la función de Web Platform en https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
-<translation id="4445684791305970001">Inhabilita las herramientas del programador y la consola de JavaScript. Si se habilita esta configuración, no se podrá acceder a las herramientas del programador y los elementos del sitio web ya no se podrán inspeccionar. Se inhabilitarán todos los accesos directos del teclado y todas las entradas de menú o de menú contextual para abrir las herramientas del programador o la consola de JavaScript. Si se inhabilita o no se configura esta opción, el usuario podrá usar las herramientas del programador y la consola de JavaScript.</translation>
 <translation id="4449545651113180484">Rotar la pantalla hacia la derecha 270 grados</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el guardado de contraseñas en el administrador de contraseñas</translation>
@@ -1166,7 +1172,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si habilitas o inhabilitas esta configuración, los usuarios no pueden cambiarla ni anularla en <ph name="PRODUCT_NAME" />.
 
-      Si esta política se deja sin configurar, esta se habilitará pero el usuario podrá cambiarla.</translation>
+      Si esta política se deja sin configurar, esta se habilitará, pero el usuario podrá cambiarla.</translation>
 <translation id="5208240613060747912">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="5226033722357981948">Indicar si el buscador de complemento se debe inhabilitar.</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
@@ -1233,6 +1239,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si se establece esta política, se accederá automáticamente a la sesión especificada después de que haya transcurrido un período en la pantalla de acceso sin la interacción del usuario. La sesión pública ya debe estar configurada (ver |DeviceLocalAccounts|).
 
       Si no se establece esta política, no habrá acceso automático.</translation>
+<translation id="5529037166721644841">Especifica el período en milisegundos en el que se consultará el servicio de administración del dispositivo para obtener la información de política del usuario.
+
+      Si estableces esta política, se anula el valor predeterminado de tres horas. Los valores válidos para esta política van de 1800000 (30 minutos) a 86400000 (1 día). Cualquier valor que esté fuera de este rango se ajustará al límite más cercano.
+
+      Si no estableces esta política, <ph name="PRODUCT_OS_NAME" /> usará el valor predeterminado de 3 horas.
+
+      Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política) ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
 <translation id="5535957389335373033">La frecuencia de envío de paquetes de red de control, en milisegundos.
 
       Si esta política no se configura, la frecuencia predeterminada es 3 minutos.
@@ -1756,6 +1769,9 @@ desactivarlo).</translation>
 
           Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="7302043767260300182">Demora de bloqueo de pantalla con alimentación de CA</translation>
+<translation id="7311458740754205918">Si esta política se establece como verdadera o no se establece, la página Nueva pestaña mostrará sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
+
+      Si se establece como falsa, la página Nueva pestaña no mostrará sugerencias de contenido generadas de forma automática.</translation>
 <translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Especifica el período de tiempo sin intervención del usuario luego del cual se apaga la pantalla si se usa alimentación de la batería.
 
@@ -1888,6 +1904,7 @@ desactivarlo).</translation>
 <translation id="7763479091692861127"> Los tipos de conexiones que se pueden utilizar para las actualizaciones del SO. Estas actualizaciones pueden constituir una carga para la conexión debido a su tamaño y podrían implicar costos adicionales. Por lo tanto, están inhabilitadas de forma predeterminada para los tipos de conexión que se consideran caros, que por el momento incluyen WiMax, Bluetooth y Celular.
 
       Los identificadores de tipos de conexión reconocidos son "ethernet", "wifi", "wimax", "bluetooth" y "celular".</translation>
+<translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7766336524667238790">Informa datos sobre la sesión de kiosco activa, como el ID de aplicación y la versión.
 
       Si la política se establece en false, no se informarán los datos de la sesión. Si se establece en true o no se establece, se informarán los datos de la sesión.</translation>

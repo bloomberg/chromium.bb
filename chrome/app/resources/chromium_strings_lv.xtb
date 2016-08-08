@@ -50,6 +50,7 @@
 <translation id="2535480412977113886">Chromium OS nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="2558641060352364164">Šajā vietnē tiek izmantots spraudnis Chromium Frame, kas drīzumā vairs netiks atbalstīts. Lūdzu, atinstalējiet to un veiciet jaunināšanu uz modernu pārlūku.</translation>
 <translation id="2572494885440352020">Chromium palīgs</translation>
+<translation id="2587578672395088481">Lai lietotu atjauninājumu, operētājsistēma Chromium ir jārestartē.</translation>
 <translation id="2595977381794111014">Lai turpmāk varētu piekļūt savām lietotnēm, izmantojiet saīsni <ph name="APPS_ICON_IMAGE" /> Chromium grāmatzīmju joslā.</translation>
 <translation id="2605472041568654097">Palīdziet uzlabot pārlūku Chromium, ziņojot par pašreizējiem iestatījumiem.</translation>
 <translation id="2636877269779209383">Chromium sistēmām ir nepieciešama piekļuve kamerai, lai kopīgotu to ar šo vietni.</translation>
@@ -113,6 +114,7 @@
 <translation id="4330585738697551178">Ir zināms, ka šis modulis konfliktē ar Chromium.</translation>
 <translation id="4423735387467980091">Pielāgot un kontrolēt Chromium</translation>
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
+<translation id="4469812139324097969">Pārlūks Chromium ir novecojis, jo jau kādu laiku tas nav restartēts. Atjauninājums ir pieejams un tiks lietots, tiklīdz veiksiet atkārtotu palaišanu.</translation>
 <translation id="4549794359424059447">Nākamajās Chromium versijās vairs netiks atbalstītas operētājsistēmas Windows XP un Windows Vista.</translation>
 <translation id="4567424176335768812">Jūs esat pierakstījies kā <ph name="USER_EMAIL_ADDRESS" />. Tagad varat piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="457845228957001925">Svarīga informācija par jūsu datiem operētājsistēmā Chromium</translation>

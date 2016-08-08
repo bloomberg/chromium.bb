@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Mukhang peke ang certificate ng server sa <ph name="HOST_NAME" />.</translation>
 <translation id="2889159643044928134">Huwag I-reload</translation>
 <translation id="2896499918916051536">Hindi sinusuportahan ang plugin na ito.</translation>
+<translation id="2900469785430194048">Naubusan ng memory ang Google Chrome habang sinusubukang ipakita ang webpage na ito.</translation>
 <translation id="2909946352844186028">May nakitang pagbabago sa network.</translation>
 <translation id="2915500479781995473">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; nag-expire na ang certificate ng seguridad nito. Maaaring sanhi ito ng maling configuration o ng panghihimasok ng isang attacker sa iyong koneksyon. Kasalukuyang nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_TIME" />. Mukha bang tama ito? Kung hindi, dapat mong iwasto ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.</translation>
 <translation id="2922350208395188000">Hindi masuri ang certificate ng server.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Override sa pampublikong session</translation>
 <translation id="6358450015545214790">Ano ang ibig sabihin ng mga ito?</translation>
 <translation id="6387478394221739770">Interesado sa mga astig at bagong tampok sa Chrome? Subukan ang aming beta channel sa chrome.com/beta.</translation>
+<translation id="6389758589412724634">Naubusan ng memory ang Chromium habang sinusubukang ipakita ang webpage na ito.</translation>
 <translation id="641480858134062906">Nabigo sa pagload ang <ph name="URL" /></translation>
 <translation id="6417515091412812850">Hindi nagawang masuri kung nabawi na ang certificate.</translation>
 <translation id="6433595998831338502">Tumangging kumonekta ang <ph name="HOST_NAME" />.</translation>
@@ -630,7 +632,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8647750283161643317">I-reset ang lahat sa default</translation>
 <translation id="8680787084697685621">Wala sa panahon ang mga detalye sa pag-sign-in sa account.</translation>
 <translation id="8703575177326907206">Ang iyong koneksyon sa <ph name="DOMAIN" /> ay hindi naka-encrypt.</translation>
-<translation id="8713130696108419660">Maling lagda ng inisyal</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8728672262656704056">Naging incognito ka</translation>
 <translation id="8730621377337864115">Tapos na</translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1040144152982955218">Đang tìm kiếm thiết bị… <ph name="BEGIN_LINK" />nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Cảnh báo</translation>
 <translation id="10614374240317010">Không bao giờ được lưu</translation>
 <translation id="1061441684050139317">Chrome cần quyền truy cập micrô để chia sẻ micrô với trang web này.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">Khám phá trang web do các đối tượng lân cận gửi. Chrome tập hợp các trang web được liên kết với các đối tượng xung quanh bạn, chuyển chúng một cách ẩn danh tới dịch vụ của Google để tìm những trang web hữu ích nhất cho bạn, sau đó hiển thị các trang đó.
 
 Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc sống.</translation>
-<translation id="1250508505624960884">Dấu trang Chrome Beta</translation>
 <translation id="1254090737195733114">Nhập dữ liệu?</translation>
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Dừng</translation>
@@ -88,7 +86,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1946821392246652573">Thẻ được chấp nhận</translation>
 <translation id="1966710179511230534">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
-<translation id="1984321224716884559">Dấu trang Chrome Dev</translation>
 <translation id="1984937141057606926">Được cho phép, ngoại trừ cookie của bên thứ ba</translation>
 <translation id="1994173015038366702">URL trang web</translation>
 <translation id="2001120796168634316">Lưu trang liên kết để xem sau</translation>
@@ -159,9 +156,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="2742271047622814453">Tùy chọn đã lưu trên trang web có thể bị xóa</translation>
 <translation id="2748463065602559597">Bạn đang xem trang Google Chrome an toàn.</translation>
 <translation id="2762000892062317888">vừa xong</translation>
-<translation id="2770465223704140727">Xóa khỏi danh sách</translation>
 <translation id="2777555524387840389">Còn <ph name="SECONDS" /> giây</translation>
-<translation id="278029852808208386">Không tìm thấy thiết bị bluetooth. <ph name="BEGIN_LINK" />Tìm kiếm lại<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Còn 1 giây</translation>
 <translation id="2811892995384186721">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
@@ -232,7 +227,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 
 Để điều chỉnh cụm từ tìm kiếm của bạn, nhấn và giữ để chọn. Để tinh chỉnh tìm kiếm của bạn, trượt bảng điều khiển theo mọi hướng lên trên rồi chạm vào hộp tìm kiếm.</translation>
 <translation id="3616113530831147358">Âm thanh</translation>
-<translation id="3623048332793834136">Dấu trang Chrome Canary</translation>
 <translation id="3632295766818638029">Hiển thị mật khẩu</translation>
 <translation id="363596933471559332">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Khi tính năng này tắt, bạn sẽ luôn được yêu cầu xác minh trước khi đăng nhập vào trang web.</translation>
 <translation id="3656115297268584622">Bật vị trí trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
@@ -285,7 +279,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4271185234001491831">Không bao giờ dịch <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Truyền thông</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
-<translation id="4297410240212242334">Phân tách tab và ứng dụng</translation>
 <translation id="4307992518367153382">Cơ bản</translation>
 <translation id="4334294535648607276">Quá trình tải xuống hoàn tất.</translation>
 <translation id="4351244548802238354">Đóng hộp thoại</translation>
@@ -309,10 +302,8 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4645575059429386691">Do cha mẹ của bạn quản lý</translation>
 <translation id="4663756553811254707">Đã xóa <ph name="NUMBER_OF_BOOKMARKS" /> dấu trang</translation>
 <translation id="4665282149850138822">Đã thêm <ph name="NAME" /> vào Màn hình chính của bạn</translation>
-<translation id="4668044310199835006">Dấu trang Chrome Work</translation>
 <translation id="4684427112815847243">Đồng bộ hóa tất cả</translation>
 <translation id="4686372254213217147">Kích thước ban đầu</translation>
-<translation id="4690286298542128877">Tab sẽ chuyển sang trình chuyển đổi tab bên trong Chrome.</translation>
 <translation id="4698413471314543145">Chức năng quan trọng cần có để chạy Chrome bị thiếu; quá trình cài đặt Chrome của bạn chưa hoàn tất hoặc không tương thích với phiên bản Android này.</translation>
 <translation id="4699172675775169585">Tệp và hình ảnh được lưu trong bộ nhớ cache</translation>
 <translation id="4710672574193412565">Thêm Tài khoản Google từ trang Tài khoản trong ứng dụng Cài đặt trên thiết bị của bạn.</translation>
@@ -354,7 +345,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="5127805178023152808">Đồng bộ hóa đã tắt</translation>
 <translation id="5131405117025179004">Chỉnh sửa tài khoản đã lưu</translation>
 <translation id="5138299137310274655">Trang này bằng <ph name="SOURCE_LANGUAGE" />. Dịch sang <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="5150703642582475397">Kết hợp tab và ứng dụng</translation>
 <translation id="515227803646670480">Xóa dữ liệu đã lưu trữ</translation>
 <translation id="5156656584247937086">Đây là tài khoản của trẻ em</translation>
 <translation id="5161254044473106830">Cần có tiêu đề</translation>
@@ -367,7 +357,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="5233638681132016545">Tab mới</translation>
 <translation id="5271967389191913893">Thiết bị không thể mở nội dung được tải xuống.</translation>
-<translation id="5275558766013849309">Tab sẽ hoạt động cùng với các ứng dụng gần đây.</translation>
 <translation id="528192093759286357">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="5284584623296338184">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và cài đặt khác sẽ không còn được đồng bộ hóa với Tài khoản Google của bạn. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong tài khoản Google của bạn.</translation>
 <translation id="5301954838959518834">OK</translation>
@@ -450,7 +439,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6108923351542677676">Đang thiết lập…</translation>
 <translation id="6112702117600201073">Làm mới trang</translation>
 <translation id="6127379762771434464">Đã xóa mục</translation>
-<translation id="6134870457258083164">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK1" />Nhận trợ giúp<ph name="END_LINK1" /> hoặc <ph name="BEGIN_LINK2" />tìm kiếm lại<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Đặt trang ở chế độ thân thiện với thiết bị di động</translation>
 <translation id="6140912465461743537">Quốc gia/Vùng</translation>
 <translation id="6159335304067198720">Tiết kiệm <ph name="PERCENT" /> dữ liệu</translation>
@@ -482,7 +470,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6476911854266661814">Đã tạm dừng “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6477460825583319731">Địa chỉ email không hợp lệ</translation>
 <translation id="6482749332252372425">Tải xuống <ph name="FILE_NAME" /> không thành công do thiếu dung lượng bộ nhớ.</translation>
-<translation id="6541922744811587456">Dấu trang Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Chọn một tab để chiếu</translation>
 <translation id="6545017243486555795">Xóa tất cả dữ liệu</translation>
@@ -554,7 +541,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7220786058474068424">Đang xử lý</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Trợ giúp<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Xóa dấu trang</translation>
 <translation id="7301833672208172928">Bật đồng bộ hóa lịch sử</translation>
 <translation id="7327835590071894791">Hiện tab của bạn đã ở trong nền.</translation>
@@ -565,7 +551,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7378627244592794276">Không</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Không thể truyền video do giới hạn trang web</translation>
-<translation id="7408644312175185557">Xem các tab của bạn với các ứng dụng gần đây khác trên màn hình Tổng quan của điện thoại.</translation>
 <translation id="7423098979219808738">Hỏi trước</translation>
 <translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>
 <translation id="7445411102860286510">Cho phép trang web tự động phát video tắt tiếng (được đề xuất)</translation>

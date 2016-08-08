@@ -171,6 +171,7 @@
 <translation id="284702764277384724">Das Serverzertifikat bei <ph name="HOST_NAME" /> ist anscheinend eine Fälschung.</translation>
 <translation id="2889159643044928134">Nicht neu laden</translation>
 <translation id="2896499918916051536">Dieses Plug-in wird nicht unterstützt.</translation>
+<translation id="2900469785430194048">Beim Versuch, diese Webseite aufzurufen, hat Google Chrome das Arbeitsspeicherlimit erreicht.</translation>
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
 <translation id="2915500479781995473">Dieser Server konnte nicht nachweisen, dass es sich dabei um <ph name="DOMAIN" /> handelt, da das Sicherheitszertifikat abgelaufen ist. Der Grund hierfür könnte eine fehlerhafte Konfiguration oder ein Angreifer sein, der Ihre Verbindung abfängt. Die Uhr Ihres Computers zeigt derzeit <ph name="CURRENT_TIME" /> an. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie dann diese Seite.</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Überschreibung öffentlicher Sitzung</translation>
 <translation id="6358450015545214790">Was bedeuten diese Hinweise?</translation>
 <translation id="6387478394221739770">Interessiert an coolen neuen Chrome-Funktionen? Testen Sie unsere Betaversion unter chrome.com/beta.</translation>
+<translation id="6389758589412724634">Beim Versuch, diese Webseite aufzurufen, hat Chromium das Arbeitsspeicherlimit erreicht.</translation>
 <translation id="641480858134062906"><ph name="URL" /> konnte nicht geladen werden</translation>
 <translation id="6417515091412812850">Überprüfung, ob das Zertifikat zurückgerufen wurde, nicht möglich</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> hat die Verbindung abgelehnt.</translation>
@@ -630,7 +632,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8647750283161643317">Alle auf Standardeinstellung zurücksetzen</translation>
 <translation id="8680787084697685621">Die Anmeldeinformationen für dieses Konto sind veraltet.</translation>
 <translation id="8703575177326907206">Die Verbindung zu <ph name="DOMAIN" /> ist nicht verschlüsselt.</translation>
-<translation id="8713130696108419660">Erste Signatur ungültig</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8728672262656704056">Sie haben den Inkognitomodus aktiviert</translation>
 <translation id="8730621377337864115">Fertig</translation>

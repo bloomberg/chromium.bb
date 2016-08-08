@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Tjenersertifikatet på <ph name="HOST_NAME" /> ser ut til å være forfalsket.</translation>
 <translation id="2889159643044928134">Ikke last inn på nytt</translation>
 <translation id="2896499918916051536">Dette programtillegget støttes ikke.</translation>
+<translation id="2900469785430194048">Google Chrome gikk tom for minne under forsøket på å vise denne nettsiden.</translation>
 <translation id="2909946352844186028">En nettverksendring ble oppdaget.</translation>
 <translation id="2915500479781995473">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat er utløpt. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din. Datamaskinens klokke er for øyeblikket satt til <ph name="CURRENT_TIME" />. Ser det riktig ut? Hvis det ikke gjør det, bør du korrigere systemets klokke og deretter laste inn denne siden på nytt.</translation>
 <translation id="2922350208395188000">Tjenerens sertifikat kan ikke kontrolleres.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Offentlig økt-overstyring</translation>
 <translation id="6358450015545214790">Hva innebærer dette?</translation>
 <translation id="6387478394221739770">Interessert i nye kule Chrome-funksjoner? Prøv betakanalen vår på chrome.com/beta</translation>
+<translation id="6389758589412724634">Chromium gikk tom for minne under forsøket på å vise denne nettsiden.</translation>
 <translation id="641480858134062906">Fikk ikke lastet inn <ph name="URL" /></translation>
 <translation id="6417515091412812850">Kan ikke kontrollere hvorvidt sertifikatet har blitt tilbakekalt.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avviste tilkoblingsforsøket.</translation>
@@ -630,7 +632,6 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8647750283161643317">Tilbakestill alle til standard</translation>
 <translation id="8680787084697685621">Kontoens påloggingsdetaljer er utdaterte.</translation>
 <translation id="8703575177326907206">Tilkoblingen til <ph name="DOMAIN" /> er ikke kryptert.</translation>
-<translation id="8713130696108419660">Feil innledende signatur</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8728672262656704056">Du er nå i inkognitomodus</translation>
 <translation id="8730621377337864115">Ferdig</translation>

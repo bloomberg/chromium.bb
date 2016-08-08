@@ -52,6 +52,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2535480412977113886">Det gick inte att synkronisera data med Chromium eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="2558641060352364164">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och uppgradera till en modern webbläsare.</translation>
 <translation id="2572494885440352020">Hjälp för Chromium</translation>
+<translation id="2587578672395088481">Chromium OS måste startas om för att uppdateringen ska börja gälla.</translation>
 <translation id="2595977381794111014">Använd genvägen <ph name="APPS_ICON_IMAGE" /> i bokmärkesfältet i Chromium om du fortfarande vill ha tillgång till apparna.</translation>
 <translation id="2605472041568654097">Hjälp oss att förbättra Chromium genom att rapportera dina aktuella inställningar.</translation>
 <translation id="2636877269779209383">Chromium behöver tillgång till kameran för att kunna dela den på den här webbplatsen.</translation>
@@ -115,6 +116,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4330585738697551178">Den här modulen har tidigare varit i konflikt med Chromium.</translation>
 <translation id="4423735387467980091">Anpassa och kontrollera Chromium</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
+<translation id="4469812139324097969">Chromium är inaktuellt eftersom det inte har startats om på ett tag. Det finns en uppdatering tillgänglig som tillämpas så snart du startar om.</translation>
 <translation id="4549794359424059447">Framtida versioner av Chromium kommer inte att ha stöd för Windows XP och Windows Vista.</translation>
 <translation id="4567424176335768812">Du är inloggad som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du komma åt dina bokmärken, historik och andra inställningar på alla enheter som du är inloggad på.</translation>
 <translation id="457845228957001925">Viktig information om uppgifter i Chromium</translation>

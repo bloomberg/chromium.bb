@@ -38,6 +38,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1864458292167284385">Čoskoro ukončíme používanie Spúšťača aplikácií Chrome.</translation>
 <translation id="1877026089748256423">Prehliadač Chrome je zastaraný</translation>
 <translation id="1924381329666691588">Google Chrome nie je možné zobraziť v tomto jazyku.</translation>
+<translation id="2063848847527508675">Ak chcete uplatniť aktualizáciu, musíte reštartovať systém Chrome OS.</translation>
 <translation id="2077129598763517140">Používať hardvérovú akceleráciu (keď je dostupná)</translation>
 <translation id="2084710999043359739">Pridať do prehliadača Chrome</translation>
 <translation id="2246246234298806438">Ak vstavaný zobrazovač súborov PDF chýba, prehliadač Google Chrome nemôže zobraziť ukážku pred tlačou.</translation>
@@ -54,6 +55,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako sú záložky, história a iné nastavenia, sa priradia k účtu <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Zobraziť Ponuku Chrome</translation>
 <translation id="2429317896000329049">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje, pretože možnosť synchronizácie nie je pre vašu doménu k dispozícii.</translation>
+<translation id="2446511512801740068">Chrome je zastaraný, pretože nebol dlhší čas reštartovaný. K dispozícii je aktualizácia, ktorá bude uplatnená po najbližšom opätovnom spustení.</translation>
 <translation id="2485422356828889247">Odinštalovať</translation>
 <translation id="2580411288591421699">Nie je možné nainštalovať rovnakú verziu prehliadača Google Chrome, ako je aktuálne spustená verzia. Zavrite Google Chrome a skúste znova.</translation>
 <translation id="2582790009689336987">Tento počítač čoskoro prestane dostávať aktualizácie prehliadača Google Chrome, pretože táto verzia systému Linux už nebude ďalej podporovaná.</translation>

@@ -65,6 +65,7 @@
 <translation id="2819276065543622893">നിങ്ങൾ ഇപ്പോൾ സൈൻ ഔട്ട് ചെയ്യും.</translation>
 <translation id="2825619548187458965">ഷെൽഫ്</translation>
 <translation id="2844169650293029770">USB-C ഉപകരണം (ഇടത് വശത്ത് മുൻഭാഗത്തെ പോർട്ട്)</translation>
+<translation id="2850666676745651490">പാലറ്റ്</translation>
 <translation id="2857608528410806398">QU ഫീച്ചർ അറിയിപ്പിന്റെ ഉള്ളടക്കം ഇവിടെയുണ്ട്. QU ഫീച്ചർ അറിയിപ്പ് ബോഡി ഇവിടെയുണ്ട്. QU ഫീച്ചർ അറിയിപ്പ് ബോഡി ഇവിടെയുണ്ട്. QU ഫീച്ചർ അറിയിപ്പ് ബോഡി ഇവിടെയുണ്ട്. QU ഫീച്ചർ അറിയിപ്പ് ബോഡി ഇവിടെയുണ്ട്.</translation>
 <translation id="2872961005593481000">അടയ്ക്കുക</translation>
 <translation id="2942516765047364088">ഷെൽഫ് സ്ഥാനം</translation>
@@ -177,7 +178,7 @@
 <translation id="6459472438155181876">സ്‌ക്രീൻ <ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് വികസിപ്പിക്കുന്നു</translation>
 <translation id="6490471652906364588">USB-C ഉപകരണം (വലത് പോർട്ട്)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നു</translation>
-<translation id="6550675742724504774">ഐച്ഛികങ്ങള്‍‌</translation>
+<translation id="6550675742724504774">ഓപ്ഷനുകൾ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6596816719288285829">IP വിലാസം</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
-<translation id="1040144152982955218">Buscando dispositivos… <ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Advertencia</translation>
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1061441684050139317">Chrome necesita acceso al micrófono para compartirlo con este sitio.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">Descubre las páginas web de los objetos cercanos. Chrome reúne páginas web asociadas con objetos que te rodean, las envía de forma anónima a un servicio de Google a fin de encontrar las que te pueden resultar más útiles y luego las muestra.
 
 Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</translation>
-<translation id="1250508505624960884">Marcadores de Chrome Beta</translation>
 <translation id="1254090737195733114">¿Importar datos?</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Interrumpir</translation>
@@ -88,7 +86,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1946821392246652573">Las tarjetas que se aceptan</translation>
 <translation id="1966710179511230534">Actualiza los datos de acceso.</translation>
 <translation id="1974060860693918893">Avanzada</translation>
-<translation id="1984321224716884559">Marcadores de Chrome Dev</translation>
 <translation id="1984937141057606926">Permitidas, salvo de terceros</translation>
 <translation id="1994173015038366702">URL del sitio</translation>
 <translation id="2001120796168634316">Guardar la página vinculada</translation>
@@ -159,9 +156,7 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="2742271047622814453">Es posible que se borren las preferencias guardadas en sitios</translation>
 <translation id="2748463065602559597">Estás viendo una página segura de Google Chrome.</translation>
 <translation id="2762000892062317888">recién</translation>
-<translation id="2770465223704140727">Eliminar de la lista</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
-<translation id="278029852808208386">No se encontraron dispositivos Bluetooth. <ph name="BEGIN_LINK" />Vuelve a buscar<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 segundo restante</translation>
 <translation id="2811892995384186721">¿No ves el dispositivo? <ph name="BEGIN_LINK" />Obtén ayuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toca el botón Atrás para salir de la pantalla completa.</translation>
@@ -232,7 +227,6 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 
 Para ajustar el término de búsqueda, mantén presionado el texto y selecciónalo. Para perfeccionar la búsqueda, desliza el panel hacia arriba y toca el cuadro de búsqueda.</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3623048332793834136">Marcadores de Chrome Canary</translation>
 <translation id="3632295766818638029">Quitar máscara de la contraseña</translation>
 <translation id="363596933471559332">Permite acceder automáticamente a los sitios web con las credenciales almacenadas Si la función está desactivada, siempre se solicitará verificación antes de acceder a un sitio web.</translation>
 <translation id="3656115297268584622">Activar ubicación en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" /></translation>
@@ -285,7 +279,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4271185234001491831">Nunca traducir <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitido</translation>
-<translation id="4297410240212242334">Separar pestañas y aplicaciones</translation>
 <translation id="4307992518367153382">Básicas</translation>
 <translation id="4334294535648607276">Descarga completa</translation>
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
@@ -309,10 +302,8 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4645575059429386691">Administrado por tus padres</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> marcadores eliminados</translation>
 <translation id="4665282149850138822">Se agregó <ph name="NAME" /> a la pantalla principal</translation>
-<translation id="4668044310199835006">Marcadores de Work Chrome</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
 <translation id="4686372254213217147">Tamaño original</translation>
-<translation id="4690286298542128877">Las pestañas se trasladarán a un alternador de pestañas en Chrome.</translation>
 <translation id="4698413471314543145">Faltan funciones esenciales para que Chrome se ejecute. Es posible que no se haya completado la instalación de Chrome o que tu versión de Android no sea compatible.</translation>
 <translation id="4699172675775169585">Imágenes y archivos almacenados en caché</translation>
 <translation id="4710672574193412565">Agrega una cuenta de Google desde la página Cuentas en la app de Configuración del dispositivo.</translation>
@@ -354,7 +345,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5127805178023152808">La sincronización está desactivada.</translation>
 <translation id="5131405117025179004">Editar cuenta guardada</translation>
 <translation id="5138299137310274655">Esta página está en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="5150703642582475397">Combinar pestañas y aplicaciones</translation>
 <translation id="515227803646670480">Borrar datos almacenados</translation>
 <translation id="5156656584247937086">Esta cuenta pertenece a un niño</translation>
 <translation id="5161254044473106830">Se requiere un título</translation>
@@ -367,7 +357,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5222676887888702881">Salir</translation>
 <translation id="5233638681132016545">Nueva pestaña</translation>
 <translation id="5271967389191913893">El dispositivo no puede abrir el contenido que se descargará.</translation>
-<translation id="5275558766013849309">Las pestañas se encontrarán junto a las aplicaciones recientes.</translation>
 <translation id="528192093759286357">Arrastra el dedo desde la parte superior y toca el botón Atrás para salir de la pantalla completa.</translation>
 <translation id="5284584623296338184">Los cambios que hagas en tus marcadores, historial, contraseñas y otras opciones de configuración se seguirán sincronizando con tu cuenta de Google. Sin embargo, tus datos existentes seguirán almacenados en tu cuenta de Google.</translation>
 <translation id="5301954838959518834">Entendido</translation>
@@ -450,7 +439,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="6112702117600201073">Actualizando la página</translation>
 <translation id="6127379762771434464">Se eliminó el elemento</translation>
-<translation id="6134870457258083164">¿No ves el dispositivo? <ph name="BEGIN_LINK1" />Obtén ayuda<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />vuelve a buscarlo<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Optimizar la página para celulares</translation>
 <translation id="6140912465461743537">País o región</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de ahorro de datos</translation>
@@ -482,7 +470,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6476911854266661814">Se pausó "<ph name="VIDEO_TITLE" />".</translation>
 <translation id="6477460825583319731">Dirección de correo electrónico no válida</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> no se pudo descargar debido a la falta de espacio de almacenamiento.</translation>
-<translation id="6541922744811587456">Marcadores de Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Elige una pestaña para transmitir.</translation>
 <translation id="6545017243486555795">Borrar todos los datos</translation>
@@ -554,7 +541,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7220786058474068424">Procesando</translation>
 <translation id="7243308994586599757">Opciones disponibles junto a la parte inferior de la pantalla</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa tu ubicación para mostrar resultados de la búsqueda a nivel local.</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ayuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Eliminar marcador</translation>
 <translation id="7301833672208172928">Activar la sincronización del historial</translation>
 <translation id="7327835590071894791">La pestaña ahora está en segundo plano.</translation>
@@ -565,7 +551,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7378627244592794276">No</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">No se puede transmitir el video debido a las restricciones del sitio.</translation>
-<translation id="7408644312175185557">Consulta las pestañas con otras apps recientes en la pantalla Recientes del teléfono.</translation>
 <translation id="7423098979219808738">Preguntar primero</translation>
 <translation id="7437998757836447326">Salir de Chrome</translation>
 <translation id="7445411102860286510">Permitir que los sitios reproduzcan videos silenciados de forma automática (recomendado)</translation>

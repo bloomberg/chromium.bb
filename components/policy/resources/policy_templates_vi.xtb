@@ -239,6 +239,13 @@
       Nếu chính sách này được đặt thành true, <ph name="PRODUCT_OS_NAME" /> sẽ cố gắng tải xuống các phần tải dữ liệu tự động cập nhật qua HTTP. Nếu chính sách được đặt thành false hoặc không được đặt, HTTPS sẽ không được sử dụng để tải xuống các phần tải dữ liệu tự động cập nhật.</translation>
 <translation id="2006530844219044261">Quản lý nguồn</translation>
 <translation id="201557587962247231">Tần suất tải lên báo cáo trạng thái thiết bị</translation>
+<translation id="2018836497795982119">Chỉ định khoảng thời gian tính bằng mili giây mà dịch vụ quản lý thiết bị được truy vấn về thông tin chính sách người dùng.
+
+      Đặt chính sách này sẽ ghi đè giá trị mặc định là 3 giờ. Các giá trị hợp lệ dành cho chính sách này nằm trong khoảng từ 1800000 (30 phút) tới 86400000 (1 ngày). Mọi giá trị không nằm trong khoảng này sẽ được giới hạn ở mức tương ứng. Nếu nền tảng hỗ trợ thông báo chính sách, độ trễ làm mới sẽ được đặt thành 24 giờ vì thông báo chính sách được kỳ vọng sẽ buộc làm mới tự động bất cứ khi nào chính sách thay đổi.
+
+      Không đặt chính sách này sẽ cho phép <ph name="PRODUCT_NAME" /> sử dụng giá trị mặc định là 3 giờ.
+
+      Xin lưu ý rằng nếu nền tảng hỗ trợ thông báo chính sách, độ trễ làm mới sẽ được đặt thành 24 giờ (bỏ qua tất cả các cài đặt mặc định và giá trị của chính sách này) vì thông báo chính sách được kỳ vọng sẽ buộc làm mới tự động bất cứ khi nào chính sách thay đổi, giúp việc làm mới thường xuyên hơn trở nên không cần thiết.</translation>
 <translation id="2024476116966025075">Định cấu hình tên miền được yêu cầu cho ứng dụng truy cập từ xa</translation>
 <translation id="2030905906517501646">Từ khóa nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="206623763829450685">Chỉ định các cơ chế xác thực HTTP mà <ph name="PRODUCT_NAME" /> hỗ trợ.
@@ -1070,11 +1077,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Mặc dù chính sách được hỗ trợ trên các nền tảng ở trên, tính năng mà chính sách đang bật có thể khả dụng trên ít nền tảng hơn. Không phải tất cả tính năng trên Nền tảng web không dùng nữa đều có thể bật lại được. Chỉ có thể bật lại các tính năng được liệt kê rõ ràng bên dưới trong một khoảng thời gian giới hạn, khoảng thời gian này khác nhau tùy theo tính năng. Định dạng chung của thẻ chuỗi sẽ là [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Để tham khảo, bạn có thể tìm ý nghĩa ẩn sau các thay đổi về tính năng trên Nền tảng web tại https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Bật khóa khi thiết bị không hoạt động hoặc bị tạm ngừng</translation>
-<translation id="4445684791305970001">Tắt các Công cụ dành cho nhà phát triển và bảng điều khiển JavaScript.
-
-      Nếu bạn bật cài đặt này, sẽ không thể truy cập các Công cụ dành cho nhà phát triển cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở các Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript sẽ bị tắt.
-
-      Đặt thành tắt hoặc không đặt tùy chọn này sẽ cho phép người dùng sử dụng các Công cụ dành cho nhà phát triển và bảng điều khiển JavaScript.</translation>
 <translation id="4449545651113180484">Xoay màn hình 270 độ theo chiều kim đồng hồ</translation>
 <translation id="4467952432486360968">Chặn cookie của bên thứ ba</translation>
 <translation id="4474167089968829729">Bật lưu mật khẩu cho trình quản lý mật khẩu</translation>
@@ -1337,6 +1339,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt, sẽ tự động đăng nhập vào phiên được chỉ định sau khi một khoảng thời gian trôi qua ở màn hình đăng nhập mà không có tương tác của người dùng (xem |DeviceLocalAccounts|).
 
       Nếu chính sách này không được đặt, tự động đăng nhập sẽ không xảy ra.</translation>
+<translation id="5529037166721644841">Chỉ định khoảng thời gian tính bằng mili giây mà dịch vụ quản lý thiết bị được truy vấn về thông tin chính sách thiết bị.
+
+      Đặt chính sách này sẽ ghi đè giá trị mặc định là 3 giờ. Các giá trị hợp lệ dành cho chính sách này nằm trong khoảng từ 1800000 (30 phút) tới 86400000 (1 ngày). Mọi giá trị không nằm trong khoảng này được giới hạn ở mức tương ứng.
+
+      Nếu không đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng giá trị mặc định là 3 giờ.
+
+      Xin lưu ý rằng nếu nền tảng hỗ trợ thông báo chính sách, độ trễ làm mới sẽ được đặt thành 24 giờ (bỏ qua tất cả các cài đặt mặc định và giá trị của chính sách này) vì thông báo chính sách được kỳ vọng sẽ bắt buộc làm mới tự động bất cứ khi nào chính sách thay đổi, giúp việc làm mới thường xuyên hơn trở nên không cần thiết.</translation>
 <translation id="5535957389335373033">Tần suất gửi thông tin theo dõi gói mạng, bằng mili giây.
 
       Nếu chính sách này không được đặt thì tần suất mặc định là 3 phút. Tần suất
@@ -1895,6 +1904,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="7302043767260300182">Độ trễ khóa màn hình khi chạy trên nguồn AC</translation>
+<translation id="7311458740754205918">Nếu giá trị này được đặt thành true hoặc không được đặt, trang Tab mới có thể hiển thị đề xuất nội dung dựa trên lịch sử duyệt web, sở thích hoặc vị trí của người dùng.
+
+      Nếu giá trị này được đặt thành false, các đề xuất nội dung được tạo tự động sẽ không hiển thị trên trang Tab mới.</translation>
 <translation id="7323896582714668701">Tham số dòng lệnh bổ sung cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị tắt khi chạy trên nguồn pin.
 
@@ -2030,6 +2042,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7763479091692861127"> Các loại kết nối được phép sử dụng cho cập nhật hệ điều hành. Các cập nhật hệ điều hành có khả năng gây quá tải cho kết nối do kích thước của chúng và có thể phải chịu thêm phí. Do đó, theo mặc định chúng không được bật cho các loại kết nối hiện được xem là đắt đỏ, gồm có WiMax, Bluetooth và kết nối di động.
 
       Các mã định danh loại kết nối được nhận dạng là "ethernet", "wifi", "wimax", "bluetooth" và "cellular".</translation>
+<translation id="7763614521440615342">Hiển thị các đề xuất nội dung trên trang Tab mới</translation>
 <translation id="7766336524667238790">Báo cáo thông tin về phiên kiosk hiện hoạt, chẳng hạn như
       ID và phiên bản ứng dụng.
 

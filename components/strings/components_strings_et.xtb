@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Hosti <ph name="HOST_NAME" /> serveri sertifikaat näib olevat võltsing.</translation>
 <translation id="2889159643044928134">Ära laadi uuesti</translation>
 <translation id="2896499918916051536">Seda pistikprogrammi ei toetata.</translation>
+<translation id="2900469785430194048">Google Chrome'il pole selle veebilehe kuvamiseks piisavalt mälu.</translation>
 <translation id="2909946352844186028">Tuvastati võrgumuudatus.</translation>
 <translation id="2915500479781995473">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />; selle turvasertifikaat on aegunud. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse. Teie arvuti kell on praegu <ph name="CURRENT_TIME" />. Kas see on õige? Kui see pole õige, korrigeerige süsteemi kellaaega ja värskendage lehte.</translation>
 <translation id="2922350208395188000">Serveri sertifikaati ei saa kontrollida.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Avaliku seansi alistamine</translation>
 <translation id="6358450015545214790">Mida need tähendavad?</translation>
 <translation id="6387478394221739770">Kas olete huvitatud Chrome'i uutest lahedatest funktsioonidest? Proovige meie beetakanalit aadressil chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromiumil pole selle veebilehe kuvamiseks piisavalt mälu.</translation>
 <translation id="641480858134062906">Aadressilt <ph name="URL" /> laadimine ebaõnnestus</translation>
 <translation id="6417515091412812850">Ei saa kontrollida sertifikaadi võimalikku tühistamist.</translation>
 <translation id="6433595998831338502">Host <ph name="HOST_NAME" /> keeldus ühendamast.</translation>
@@ -630,7 +632,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8647750283161643317">Lähtesta kõik vaikeolekusse</translation>
 <translation id="8680787084697685621">Konto sisselogimisüksikasjad on aegunud.</translation>
 <translation id="8703575177326907206">Teie ühendus <ph name="DOMAIN" />'ga pole krüptitud.</translation>
-<translation id="8713130696108419660">Sobimatu esialgne allkiri</translation>
 <translation id="8725066075913043281">Proovi uuesti</translation>
 <translation id="8728672262656704056">Olete inkognito režiimis</translation>
 <translation id="8730621377337864115">Valmis</translation>

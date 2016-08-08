@@ -230,6 +230,13 @@ Diese Richtlinien sind nur aktiv, wenn der Chrome Remote Desktop-Host installier
       Ist diese Richtlinie auf "true" gesetzt, versucht <ph name="PRODUCT_OS_NAME" />, die Nutzdaten automatischer Updates über HTTP herunterzuladen. Ist die Richtlinie auf "false" gesetzt oder nicht festgelegt, wird für solche Downloads HTTPS verwendet.</translation>
 <translation id="2006530844219044261">Energieverwaltung</translation>
 <translation id="201557587962247231">Häufigkeit von Uploads mit Berichten zum Gerätestatus</translation>
+<translation id="2018836497795982119">Gibt den Zeitraum in Millisekunden an, in dem Nutzerrichtlinieninformationen vom Geräteverwaltungsdienst abgefragt werden.
+
+      Durch das Festlegen dieser Richtlinie wird der Standardwert von 3 Stunden außer Kraft gesetzt. Gültige Werte für diese Richtlinie liegen im Bereich zwischen 1.800.000 (30 Minuten) und 86.400.000 (1 Tag). Alle Werte, die nicht in diesem Bereich liegen, werden auf den jeweiligen Grenzwert gesetzt. Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, gilt in <ph name="PRODUCT_NAME" /> der Standardwert von 3 Stunden.
+
+      Hinweis: Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt und alle Standardwerte der Richtlinie werden ignoriert, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen. Daher ist ein kürzeres Intervall zwischen den Aktualisierungen nicht erforderlich.</translation>
 <translation id="2024476116966025075">Erforderlichen Domainnamen für Remotezugriff-Clients konfigurieren</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="206623763829450685">Gibt an, welche HTTP-Authentifizierungsschemas von <ph name="PRODUCT_NAME" /> unterstützt werden.
@@ -1024,7 +1031,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Die Richtlinie selbst wird zwar auf den genannten Plattformen unterstützt, die damit aktivierten Funktionen sind aber möglicherweise nicht auf allen Plattformen verfügbar. Nicht alle eingestellten Webplattformfunktionen können wieder aktiviert werden. Nur die nachfolgend ausdrücklich aufgeführten Funktionen können für einen begrenzten Zeitraum wieder aktiviert werden. Der Zeitraum variiert je nach Funktion. Das allgemeine Format des String-Tags lautet [Name der veralteten Funktion]_EffectiveUntil[jjjjmmtt]. Weitere Informationen zu Änderungen an den Webplattformfunktionen erhalten Sie unter http://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Sperre aktivieren, wenn das Gerät inaktiv ist oder angehalten wird</translation>
-<translation id="4445684791305970001">Deaktiviert die Entwickler-Tools und die JavaScript-Konsole. Wenn Sie diese Einstellung aktivieren, besteht kein Zugriff mehr auf die Entwickler-Tools, sodass Website-Elemente nicht mehr überprüft werden können. Jegliche Tastenkombinationen und Menü- und Kontextmenüeinträge zum Öffnen der Entwickler-Tools oder der JavaScript-Konsole werden deaktiviert. Ist diese Option deaktiviert oder nicht konfiguriert, so können die Entwickler-Tools und die JavaScript-Konsole verwendet werden.</translation>
 <translation id="4449545651113180484">Bildschirm um 270 Grad im Uhrzeigersinn drehen</translation>
 <translation id="4467952432486360968">Drittanbieter-Cookies blockieren</translation>
 <translation id="4474167089968829729">Aktiviert das Speichern von Passwörtern im Passwortmanager</translation>
@@ -1244,6 +1250,13 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
       Ist diese Richtlinie festgelegt, wird der Nutzer nach Ablauf einer bestimmten Zeitspanne der Inaktivität beim Anmeldebildschirm automatisch in der angegebenen Sitzung angemeldet. Die öffentliche Sitzung muss vorher konfiguriert werden, siehe |DeviceLocalAccounts|.
 
       Ist die Richtlinie nicht festgelegt, wird der Nutzer nicht automatisch angemeldet.</translation>
+<translation id="5529037166721644841">Gibt den Zeitraum in Millisekunden an, in dem Geräterichtlinieninformationen vom Geräteverwaltungsdienst abgefragt werden.
+
+      Durch das Festlegen dieser Richtlinie wird der Standardwert von 3 Stunden außer Kraft gesetzt. Gültige Werte für diese Richtlinie liegen im Bereich zwischen 1.800.000 (30 Minuten) und 86.400.000 (1 Tag). Alle Werte, die nicht in diesem Bereich liegen, werden auf den jeweiligen Grenzwert gesetzt.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, gilt in <ph name="PRODUCT_OS_NAME" /> der Standardwert von 3 Stunden.
+
+      Hinweis: Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt und alle Standardwerte der Richtlinie werden ignoriert, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen. Daher ist ein kürzeres Intervall zwischen den Aktualisierungen nicht erforderlich.</translation>
 <translation id="5535957389335373033">Durch diese Richtlinie wird festgelegt, wie oft Kontrollnetzwerkpakete gesendet werden (in Millisekunden).
 
       Wenn die Richtlinie nicht konfiguriert ist, beträgt die standardmäßige
@@ -1766,6 +1779,9 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
           Diese Richtlinie wird nur befolgt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="7302043767260300182">Verzögerung für die Bildschirmsperre im Netzbetrieb</translation>
+<translation id="7311458740754205918">Wenn für diese Richtlinie "true" festgelegt wird oder wenn sie nicht konfiguriert wird, werden auf der "Neuer Tab"-Seite unter Umständen Inhaltsvorschläge auf Basis des Browserverlaufs, der Interessen oder des Standorts des Nutzers angezeigt.
+
+      Wenn für diese Richtlinie "false" festgelegt wird, werden auf der "Neuer Tab"-Seite keine automatisch generierten Inhaltsvorschläge angezeigt.</translation>
 <translation id="7323896582714668701">Zusätzliche Befehlszeilenparameter für <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb abgeschaltet wird.
 
@@ -1898,6 +1914,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7763479091692861127"> Die Verbindungstypen, die für Betriebssystemaktualisierungen zulässig sind. Betriebssystemaktualisierungen beanspruchen die Verbindung aufgrund ihrer Größe potenziell stark und können zusätzliche Kosten verursachen. Deshalb sind sie für als kostenintensiv geltende Verbindungstypen standardmäßig nicht aktiviert. Dazu gehören derzeit beispielsweise WiMax, Bluetooth und Mobilfunkverbindungen.
 
       Zu den erkannten Verbindungstypkennungen gehören "ethernet", "wifi", "wimax", "bluetooth" und "cellular".</translation>
+<translation id="7763614521440615342">Inhaltsvorschläge auf der "Neuer Tab"-Seite anzeigen</translation>
 <translation id="7766336524667238790">Durch diese Richtlinie werden Informationen zur aktiven Kiosksitzung gesendet, etwa
       Anwendungs-ID und -version.
 

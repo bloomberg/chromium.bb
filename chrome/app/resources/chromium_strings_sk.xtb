@@ -52,6 +52,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2535480412977113886">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
 <translation id="2558641060352364164">Táto stránka používa doplnok Chromium Frame, ktorého podpora sa čoskoro ukončí. Odinštalujte ho a inovujte na moderný prehliadač.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2587578672395088481">Ak chcete uplatniť aktualizáciu, musíte reštartovať systém Chromium OS.</translation>
 <translation id="2595977381794111014">K aplikáciám môžete naďalej pristupovať pomocou skratky <ph name="APPS_ICON_IMAGE" /> na paneli so záložkami prehliadača Chromium.</translation>
 <translation id="2605472041568654097">Nahláste aktuálne nastavenia a pomôžte tak zlepšiť prehliadač Chromium</translation>
 <translation id="2636877269779209383">Chromium musí mať najprv prístup k fotoaparátu, aby ho mohol s týmito webovými stránkami zdieľať.</translation>
@@ -115,6 +116,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4330585738697551178">Tento modul zvykne spôsobovať konflikt s prehliadačom Chromium.</translation>
 <translation id="4423735387467980091">Prispôsobiť a spravovať Chromium</translation>
 <translation id="4458285410772214805">Ak chcete, aby sa zmeny prejavili, odhláste sa a znova sa prihláste.</translation>
+<translation id="4469812139324097969">Chromium je zastaraný, pretože nebol dlhší čas reštartovaný. K dispozícii je aktualizácia, ktorá bude uplatnená po najbližšom opätovnom spustení.</translation>
 <translation id="4549794359424059447">Budúce verzie prehliadača Chromium už nebudú podporovať systémy Windows XP a Windows Vista.</translation>
 <translation id="4567424176335768812">Ste prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS" />. Teraz môžete na všetkých zariadeniach, kde ste prihlásený/-á, pristupovať k svojim záložkám, histórii a ďalším nastaveniam.</translation>
 <translation id="457845228957001925">Dôležité informácie týkajúce sa údajov prehliadača Chromium</translation>

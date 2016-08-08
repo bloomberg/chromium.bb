@@ -38,6 +38,7 @@
 <translation id="1864458292167284385">‏إيقاف Launcher تطبيقات Chrome.</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="1924381329666691588">‏لا يمكن عرض Google Chrome بهذه اللغة.</translation>
+<translation id="2063848847527508675">‏يلزم إعادة تشغيل نظام التشغيل Chrome حتى يتم تطبيق التحديث.</translation>
 <translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
 <translation id="2084710999043359739">‏إضافة إلى Chrome</translation>
 <translation id="2246246234298806438">‏لا يمكن لـ Google Chrome عرض معاينة الطباعة عندما يكون عارض PDF المضمّن مفقودًا.</translation>
@@ -54,6 +55,7 @@
 سيؤدي تسجيل الدخول على أية حال إلى دمج معلومات Chrome مثل الإشارات المرجعية والسجل والإعدادات الأخرى مع <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">‏لإظهار قائمة Chrome</translation>
 <translation id="2429317896000329049">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
+<translation id="2446511512801740068">‏Chrome غير محدّث لأنه لم تتم إعادة تشغيله منذ فترة. هناك تحديث متوفر وسيتم تطبيقه بمجرد إعادة تشغيله.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. الرجاء إغلاق Google Chrome وإعادة المحاولة.</translation>
 <translation id="2582790009689336987">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقي تحديثات Google Chrome نظرًا لأن نظام Linux هذا لم يعد مدعومًا.</translation>

@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1091157412887719337">Hindi naitalaga.  Walang available na engine.</translation>
+<translation id="117738548141695034">Blimp Switch</translation>
 <translation id="1416550906796893042">Bersyon ng application</translation>
 <translation id="1750179245464827362">Ipakita ang Impormasyon sa Pag-debug</translation>
 <translation id="2004526128230838685">Hindi naitalaga.  May hindi matukoy na isyu.</translation>
 <translation id="2023631438558435272">Hindi naitalaga.  Di-wasto ang tugon.</translation>
 <translation id="2078561879028077171">Impormasyon ng bersyon</translation>
 <translation id="2117453604279487107">Assigner URL</translation>
+<translation id="2218944627481691815">Binago ang blimp switch, paki-restart ang application.</translation>
 <translation id="2353984724370197742">Hindi naitalaga.  Hindi naisagawa ang kahilingan sa network.</translation>
 <translation id="2789927415041640472">Paki-restart ang application upang gamitin ang bagong assigner configuration.</translation>
 <translation id="3046825211487065480">Hindi naitalaga.  Nagpadala ng pangalawang kahilingan bago pa natugunan ang unang kahilingan.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Nadiskonekta ang engine, dahilan: %1$s</translation>
 <translation id="7596558890252710462">Operating system</translation>
 <translation id="7608553142876436780">Engine IP</translation>
+<translation id="7795546637165553439">Mga Setting ng Blimp</translation>
 <translation id="7961542533680218955">Naging matagumpay ang pagtatalaga.</translation>
 <translation id="8514856595257368555">Nabawi ang token.</translation>
 <translation id="8880704056643418312">Mga Pag-commit</translation>

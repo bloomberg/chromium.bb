@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
-<translation id="1040144152982955218">جارٍ البحث عن أجهزة... <ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">تحذير</translation>
 <translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
 <translation id="1061441684050139317">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الميكرفون لمشاركته مع هذا الموقع.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">‏تعرَّف على صفحات الويب التي أرسلتها الأجهزة المجاورة. يُجمِّع Chrome صفحات الويب المرتبطة بالأجهزة حولك ويُرسلها دون الكشف عن هويتها إلى خدمة Google لمعرفة أكثرها نفعًا لك ثم يعرضها.
 
 يتعين عليك تشغيل خدمتى البلوتوث والموقع لاستخدام الشبكة المادية.</translation>
-<translation id="1250508505624960884">‏الإشارات المرجعية للإصدار التجريبي من متصفح Chrome</translation>
 <translation id="1254090737195733114">هل تريد استيراد البيانات؟</translation>
 <translation id="1258753120186372309">‏رسم الشعار المبتكر من Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">إيقاف</translation>
@@ -88,7 +86,6 @@
 <translation id="1946821392246652573">البطاقات المقبولة</translation>
 <translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
-<translation id="1984321224716884559">‏الإشارات المرجعية لإصدار مطوّري البرامج من Chrome</translation>
 <translation id="1984937141057606926">مسموح باستثناء الجهات الخارجية</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
 <translation id="2001120796168634316">حفظ الصفحة المرتبطة لوقت لاحق</translation>
@@ -159,9 +156,7 @@
 <translation id="2742271047622814453">قد يتم حذف التفضيلات المحفوظة على المواقع</translation>
 <translation id="2748463065602559597">‏أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="2762000892062317888">الآن</translation>
-<translation id="2770465223704140727">إزالة من القائمة</translation>
 <translation id="2777555524387840389">عدد الثواني المتبقية: <ph name="SECONDS" /></translation>
-<translation id="278029852808208386">لم يتم العثور على أجهزة بلوتوث. <ph name="BEGIN_LINK" />ابحث مرة أخرى<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">يتبقى ثانية واحدة</translation>
 <translation id="2811892995384186721">ألا ترى جهازك؟ <ph name="BEGIN_LINK" />احصل على المساعدة<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
@@ -230,7 +225,6 @@
 
 لضبط عبارة البحث، اضغط مع الاستمرار للتحديد. لتحسين البحث، مرّر اللوحة للأعلى والمس مربع البحث.</translation>
 <translation id="3616113530831147358">الصوت</translation>
-<translation id="3623048332793834136">‏الإشارات المرجعية لمتصفح Chrome Canary</translation>
 <translation id="3632295766818638029">كشف كلمة المرور</translation>
 <translation id="363596933471559332">يمكن تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدم الاعتمادات المخزّنة. وعندما تكون الميزة معطّلة، فسيُطلب منك التحقق كل مرة قبل تسجيل الدخول إلى مواقع الويب.</translation>
 <translation id="3656115297268584622">‏تشغيل الموقع في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
@@ -283,7 +277,6 @@
 <translation id="4271185234001491831">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">الوسائط</translation>
 <translation id="4278390842282768270">مسموح بها</translation>
-<translation id="4297410240212242334">فصل علامات التبويب والتطبيقات</translation>
 <translation id="4307992518367153382">أساسيّات</translation>
 <translation id="4334294535648607276">اكتمل التنزيل.</translation>
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
@@ -308,10 +301,8 @@
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
-<translation id="4668044310199835006">‏الإشارات المرجعية لمتصفح Work Chrome</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
 <translation id="4686372254213217147">الحجم الأصلي</translation>
-<translation id="4690286298542128877">‏سيتم نقل علامات التبويب إلى مبدّل علامات التبويب في Chrome.</translation>
 <translation id="4698413471314543145">‏هناك وظائف مفقودة تعد ذات أهمية كبيرة لتشغيل Chrome؛ إما أن يكون الإصدار الذي تستخدمه من Chrome غير مكتمل، أو ليس متوافقًا مع هذا الإصدار من Android.</translation>
 <translation id="4699172675775169585">الصور والملفات المخزنة مؤقتًا</translation>
 <translation id="4710672574193412565">‏أضف حساب Google من صفحة "الحسابات" في تطبيق إعدادات جهازك.</translation>
@@ -353,7 +344,6 @@
 <translation id="5127805178023152808">المزامنة معطلة</translation>
 <translation id="5131405117025179004">تعديل حساب محفوظ</translation>
 <translation id="5138299137310274655">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE" /> هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE" />؟</translation>
-<translation id="5150703642582475397">دمج علامات التبويب والتطبيقات</translation>
 <translation id="515227803646670480">محو البيانات المخزنة</translation>
 <translation id="5156656584247937086">هذا حساب طفل</translation>
 <translation id="5161254044473106830">العنوان مطلوب</translation>
@@ -366,7 +356,6 @@
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
-<translation id="5275558766013849309">ستوجد علامات التبويب مع التطبيقات الحديثة.</translation>
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="5284584623296338184">‏لن تتم مزامنة التغييرات الطارئة على الإشارات المرجعية والسجل وكلمات المرور وغيرها من الإعدادات بحسابك في Google. ومع ذلك، ستظل بياناتك الحالية مخزنة في حسابك في Google.</translation>
 <translation id="5301954838959518834">موافق وأعي ذلك</translation>
@@ -449,7 +438,6 @@
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
-<translation id="6134870457258083164">ألا ترى جهازك؟ <ph name="BEGIN_LINK1" />احصل على المساعدة<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />ابحث مرة أخرى<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">جعل الصفحة متوافقة مع الجوّال</translation>
 <translation id="6140912465461743537">الدولة/الإقليم</translation>
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
@@ -481,7 +469,6 @@
 <translation id="6476911854266661814">تم إيقاف "<ph name="VIDEO_TITLE" />" مؤقتًا</translation>
 <translation id="6477460825583319731">عنوان البريد الإلكتروني غير صالح</translation>
 <translation id="6482749332252372425">أخفق تنزيل الملف <ph name="FILE_NAME" /> لعدم توفر مساحة لتخزين.</translation>
-<translation id="6541922744811587456">‏الإشارات المرجعية لمتصفح Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">حدد علامة تبويب لإرسالها باستخدام الشعاع</translation>
 <translation id="6545017243486555795">مسح جميع البيانات</translation>
@@ -553,7 +540,6 @@
 <translation id="7220786058474068424">جارٍ المعالجة</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />مساعدة<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">حذف الإشارة المرجعية</translation>
 <translation id="7301833672208172928">تشغيل مزامنة السجل</translation>
 <translation id="7327835590071894791">توجد الآن علامة التبويب في الخلفية.</translation>
@@ -564,7 +550,6 @@
 <translation id="7378627244592794276">لا</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7400448254438078120">يتعذر إرسال مقطع الفيديو نظرًا لوجود قيود على الموقع</translation>
-<translation id="7408644312175185557">يمكن عرض علامات التبويب بشأن التطبيقات الأخيرة الأخرى على شاشة النظرة العامة على الهاتف.</translation>
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>
 <translation id="7445411102860286510">السماح للمواقع بتشغيل مقاطع الفيديو مكتومة الصوت تلقائيًا (مُستحسن)</translation>

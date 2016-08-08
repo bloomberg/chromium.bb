@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="1091157412887719337">指派失敗。沒有可用的引擎。</translation>
+<translation id="117738548141695034">Blimp 切換</translation>
 <translation id="1416550906796893042">應用程式版本</translation>
 <translation id="1750179245464827362">顯示偵錯資訊</translation>
 <translation id="2004526128230838685">指派失敗。發生不明問題。</translation>
 <translation id="2023631438558435272">指派失敗。回應無效。</translation>
 <translation id="2078561879028077171">版本資訊</translation>
 <translation id="2117453604279487107">指派者網址</translation>
+<translation id="2218944627481691815">Blimp 切換設定已變更，請重新啟動應用程式。</translation>
 <translation id="2353984724370197742">指派失敗。網路要求失敗。</translation>
 <translation id="2789927415041640472">請重新啟動應用程式，以使用新的指派器設定。</translation>
 <translation id="3046825211487065480">指派失敗。第一個要求尚未回應即送出第二個要求。</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">引擎連線已中斷 (原因：%1$s)</translation>
 <translation id="7596558890252710462">作業系統</translation>
 <translation id="7608553142876436780">引擎 IP</translation>
+<translation id="7795546637165553439">Blimp 設定</translation>
 <translation id="7961542533680218955">指派成功。</translation>
 <translation id="8514856595257368555">已擷取憑證。</translation>
 <translation id="8880704056643418312">認可數</translation>

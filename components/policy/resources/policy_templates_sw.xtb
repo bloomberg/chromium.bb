@@ -235,6 +235,13 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Sera hii ikiwekwa kuwa ndivyo, <ph name="PRODUCT_OS_NAME" /> itajaribu kupakua sasisho za data  kiotomatiki kupitia HTTP. Sera ikiwekwa kuwa sivyo ama isiwekwe, HTTPS itatumika kupakua sasisho za data kiotomatiki.</translation>
 <translation id="2006530844219044261">Usimamizi wa nishati</translation>
 <translation id="201557587962247231">Idadi ya upakiaji wa ripoti ya hali ya kifaa</translation>
+<translation id="2018836497795982119">Hubainisha kipindi kwa kipimo cha milisekunde ambapo huduma ya kudhibiti kifaa huulizwa maelezo ya sera ya mtumiaji
+
+      Kuweka sera hii hubatilisha thamani chaguo-msingi ya saa 3. Thamani sahihi za sera hii ziko kuanzia 1800000 (dakika 30) hadi 86400000 (siku 1). Thamani zozote ambazo hazipo katika masafa haya zitawekwa katika mpaka husika. Ikiwa mfumo unatumia arifa za sera, ucheleweshwaji wa kuonyesha upya utawekwa kuwa saa 24 kwa sababu unatarajiwa kwamba arifa za sera zitalazimisha kuonyesha upya kiotomatiki wakati wowote ambao sera itabadilika.
+
+      Kuacha sera hii bila kuwekwa kutafanya <ph name="PRODUCT_NAME" /> itumie thamani chaguo-msingi ya saa 3.
+
+      Kumbuka kwamba ikiwa mfumo huu unatumia arifa za sera, ucheleweshwaji wa kuonyesha upya utawekwa kuwa saa 24 (ukipuuza chaguo-msingi zote na thamani ya sera hii) kwa sababu inatarajiwa kwamba arifa za sera zitalazimisha kuonyesha upya kiotomatiki wakati wowote ambao sera itabadilika, hivyo kuondoa haja ya kuonyesha upya mara kwa mara.</translation>
 <translation id="2024476116966025075">Weka mipangilio ya jina la kikoa linalohitajika kwa ajili ya seva teja za ufikiaji wa mbali</translation>
 <translation id="2030905906517501646">Nenomsingi la mtoa huduma chaguo-msingi wa utafutaji</translation>
 <translation id="206623763829450685">Hubainisha mipango ya uthibitishaji wa HTTP inayotumia na <ph name="PRODUCT_NAME" />.
@@ -1060,11 +1067,6 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
      Ingawa sera yenyewe inaweza kutumiwa kwenye mbinu zilizo hapo juu, kipengele inachokiwasha kinaweza kupatikana kwenye mbinu chache. Si vipengele vyote vilivyoacha kuendesha huduma vya Mbinu ya Wavuti vinaweza kuwashwa tena. Vilivyoorodheshwa hapa chini pekee ndivyo vinavyoweza kuwashwa tena kwa muda mfupi, muda huo ni tofauti kwa kila kipengele. Muundo wa jumla wa lebo ya mfuatano utakuwa [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Kama rejeleo, unaweza kupata lengo la yaliyochangia mabadiliko ya kipengele cha Mbinu ya Wavuti https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Wawezesha kufunga wakati kifaa kinapokuwa hakifanyi kitu au kimesimamishwa</translation>
-<translation id="4445684791305970001">Inalemaza Zana za Msanidi Programu na kiweko cha JavaScript.
-
-      Ukiwezesha mpangilio huu, Zana za Msanidi Programu haziwezi kufikiwa na vipengee vya tovuti haviwezi kukaguliwa tena. Mikato yoyote ya kibodi na menyu yoyote au maingizo yoyote ya menyu ya muktadha ya kufungua Zana za Msanidi Programu au Kiweko cha JavaScript vitalemazwa.
-
-      Kulemaza chaguo hii au kuiacha bila kuwekwa kutaruhusu mtumiaji kutumia Zana za Msanidi Programu na kiweko cha JavaScript.</translation>
 <translation id="4449545651113180484">Zungusha skrini kwa mwendo wa saa kwa digrii 270</translation>
 <translation id="4467952432486360968">Zuia vidakuzi vya wengine</translation>
 <translation id="4474167089968829729">Washa kipengele cha kuhifadhi manenosiri kwenye kidhibiti cha nenosiri</translation>
@@ -1323,6 +1325,13 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Endapo sera imewekwa, kipindi kilichobainishwa kitawekewa kumbukumbu kiotomatiki baada ya kipindi cha muda kupita katika skrini ya kuingia bila muingiliano wa mtumiaji. Kipindi cha umma lazima kiwe kimesanidiwa tayari (tazama |DeviceLocalAccounts|).
 
       Endapo sera hii haijawekwa, hakutakuwa na kuingia kiotomatiki.</translation>
+<translation id="5529037166721644841">Hubainisha muda kwa kipimo cha milisekunde ambacho huduma ya kudhibiti kifaa ambao huulizwa maelezo ya sera ya kifaa.
+
+      Kuweka sera hii kutafuta thamani chaguo-msingi ya saa 3. Thamani sahihi za sera hii ziko kuanzia 1800000 (dakika 30) hadi 86400000 (siku 1). Thamani zozote ambazo haziko katika masafa haya zitawekwa katika mpaka husika.
+
+      Kuacha sera hii bila kuiweka kutafanya <ph name="PRODUCT_OS_NAME" /> itumie thamani chaguo-msingi ya saa 3.
+
+      Kumbuka kwamba ikiwa mfumo unatumia arifa za sera, ucheleweshwaji wa kuonyesha upya utawekwa kuwa saa 24 (ukipuuza chaguo-msingi zote na thamani ya sera hii) kwa sababu inatarajiwa kwamba arifa za sera zitalazimisha kuonyesha upya kiotomatiki wakati wowote ambao sera itabadilika, hivyo kuondoa haja ya kuonyesha upya mara kwa mara.</translation>
 <translation id="5535957389335373033">Mara ambazo vifurushi vya mtandao vya ufuatiliaji hutumwa, katika milisekunde.
 
      Sera hii isipowekwa, idadi chaguo-msingi ni dakika 3. Idadi ya chini
@@ -1880,6 +1889,9 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Sera hii inazingatiwa tu iwapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="7302043767260300182">Ufungaji wa skrini unachelewa wakati nishati ya AC inapotimika</translation>
+<translation id="7311458740754205918">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, ukurasa wa Kichupo Kipya utaonyesha mapendekezo ya maudhui kulingana na historia ya kuvinjari, mambo yanayovutia, mahali alipo mtumiaji.
+
+      Sera hii ikiwekwa kuwa sivyo, mapendekezo ya maudhui yanayozalishwa kiotomatiki hayataonyeshwa katika ukurasa wa Kichupo Kipya.</translation>
 <translation id="7323896582714668701">Vigezo vya ziada vya mstari wa amri vya <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Hubainisha urefu wa muda bila mchango wa mtumiaji ambapo baadaye skrini inazimwa inapoendeshwa kwenye nishati ya betri.
 
@@ -2022,6 +2034,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7763479091692861127"> Aina za miunganisho zinazoruhusiwa kutumia sasisho za Mfumo wa Uendeshaji. Sasisho za Mfumo wa Uendeshaji zinaweza kuweka vichujo vizito kwenye muunganisho kwa sababu ya ukubwa wavyo na huenda vikasababisha gharama ya ziada. Kwa hivyo, haviwashwi kwa chaguo-msingi kwa aina za miunganisho zinazoonekana kuwa ghali, zinazojumuisha WiMax, Bluetooth na Simu ya Mkononi kwa wakati huu.
 
       Vitambulisho vinavyotambuliwa vya aina vya muunganisho ni "ethaneti", "wifi", "wimax", "bluetooth"  na "simu ya mkononi".</translation>
+<translation id="7763614521440615342">Onyesha mapendekezo ya maudhui kwenye ukurasa wa Kichupo Kipya</translation>
 <translation id="7766336524667238790">Ripoti maelezo kuhusu kipindi cha skrini nzima kinachoendelea, kama vile
       Kitambulisho cha programu na toleo.
 

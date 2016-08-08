@@ -168,6 +168,7 @@
 <translation id="284702764277384724">Zdá sa, že certifikát servera na webe <ph name="HOST_NAME" /> je falošný.</translation>
 <translation id="2889159643044928134">Nenačítať znova</translation>
 <translation id="2896499918916051536">Tento doplnok nie je podporovaný</translation>
+<translation id="2900469785430194048">Pri pokuse o zobrazenie tejto webovej stránky došlo miesto v pamäti prehliadača Google Chrome.</translation>
 <translation id="2909946352844186028">Zistila sa zmena siete.</translation>
 <translation id="2915500479781995473">Tento server nedokázal potvrdiť, že ide o doménu <ph name="DOMAIN" />, pretože vypršala platnosť bezpečnostného certifikátu. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom. Hodiny vášho počítača sú momentálne nastavené na <ph name="CURRENT_TIME" />. Je tento čas správny? Ak nie, opravte čas na hodinách systému a potom obnovte túto stránku.</translation>
 <translation id="2922350208395188000">Certifikát servera sa nedá overiť.</translation>
@@ -446,6 +447,7 @@
 <translation id="6355080345576803305">Prepísanie verejnej relácie</translation>
 <translation id="6358450015545214790">Čo znamenajú tieto položky?</translation>
 <translation id="6387478394221739770">Máte záujem o skvelé nové funkcie prehliadača Chrome? Vyskúšajte verziu beta na stránke chrome.com/beta.</translation>
+<translation id="6389758589412724634">Pri pokuse o zobrazenie tejto webovej stránky došlo miesto v pamäti prehliadača Google Chromium.</translation>
 <translation id="641480858134062906">Adresu <ph name="URL" /> sa nepodarilo načítať</translation>
 <translation id="6417515091412812850">Nie je možné skontrolovať, či bol certifikát odmietnutý.</translation>
 <translation id="6433595998831338502">Web <ph name="HOST_NAME" /> zamietol pripojenie.</translation>
@@ -623,7 +625,6 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8647750283161643317">Obnoviť predvolené nastavenia všetkých experimentov</translation>
 <translation id="8680787084697685621">Informácie o prihlásení do účtu sú neaktuálne.</translation>
 <translation id="8703575177326907206">Vaše pripojenie k doméne <ph name="DOMAIN" /> sa nešifruje.</translation>
-<translation id="8713130696108419660">Nesprávny počiatočný podpis</translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="8728672262656704056">Ste v režime inkognito</translation>
 <translation id="8730621377337864115">Hotovo</translation>

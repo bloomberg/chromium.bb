@@ -170,6 +170,7 @@
 <translation id="284702764277384724"><ph name="HOST_NAME" /> ana makinesindeki sunucu sertifikası sahte görünüyor.</translation>
 <translation id="2889159643044928134">Yeniden Yükleme</translation>
 <translation id="2896499918916051536">Bu eklenti desteklenmiyor.</translation>
+<translation id="2900469785430194048">Bu web sayfası görüntülenmeye çalışılırken Google Chrome'da bellek kalmadı.</translation>
 <translation id="2909946352844186028">Bir ağ değişikliği algılandı.</translation>
 <translation id="2915500479781995473">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının süresi dolmuş. Bu durum, bir yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati şu anda <ph name="CURRENT_TIME" /> değerine ayarlı. Saat doğru mu? Değilse sistem saatinizi düzeltmeniz ve ardından bu sayfayı yenilemeniz gerekir.</translation>
 <translation id="2922350208395188000">Sunucunun sertifikası kontrol edilemiyor.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Herkese açık oturumu geçersiz kılma</translation>
 <translation id="6358450015545214790">Bunlar ne anlama geliyor?</translation>
 <translation id="6387478394221739770">Chrome'daki etkileyici, yeni özellikler ilginizi çekiyor mu? chrome.com/beta adresinden beta kanalımızı deneyin.</translation>
+<translation id="6389758589412724634">Bu web sayfası görüntülenmeye çalışılırken Chromium'da bellek kalmadı.</translation>
 <translation id="641480858134062906"><ph name="URL" /> yüklenemedi</translation>
 <translation id="6417515091412812850">Sertifikanın iptal edilip edilmediği kontrol edilemiyor.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> bağlanmayı reddetti.</translation>
@@ -630,7 +632,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8647750283161643317">Tümünü varsayılan değerlere sıfırla</translation>
 <translation id="8680787084697685621">Hesap oturum açma ayrıntıları eski.</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> bağlantınız şifrelenmedi.</translation>
-<translation id="8713130696108419660">Başlangıç anahtarlı imza bozuk</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8728672262656704056">Gizli moda geçtiniz</translation>
 <translation id="8730621377337864115">Bitti</translation>

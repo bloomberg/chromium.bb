@@ -40,6 +40,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1864458292167284385">El menú de aplicaciones de Chrome va a desaparecer.</translation>
 <translation id="1877026089748256423">Chrome no está actualizado</translation>
 <translation id="1924381329666691588">Google Chrome no se puede mostrar en este idioma.</translation>
+<translation id="2063848847527508675">Chrome OS se debe reiniciar para que se aplique la actualización.</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2084710999043359739">Añadir a Chrome</translation>
 <translation id="2246246234298806438">Google Chrome no puede mostrar la vista previa de impresión si falta el visor de PDF integrado.</translation>
@@ -56,6 +57,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 Si decides iniciar sesión de todas formas, se fusionará la información de Chrome, como marcadores, historial y otras opciones, con la de <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Mostrar menú de Chrome</translation>
 <translation id="2429317896000329049">Google Chrome no ha podido sincronizar los datos porque la función de sincronización no está disponible para tu dominio.</translation>
+<translation id="2446511512801740068">Chrome no está actualizado porque hace algún tiempo que no se reinicia. Hay una actualización disponible, que se aplicará en cuanto lo reinicies.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando. Cierra el navegador y vuelve a intentarlo.</translation>
 <translation id="2582790009689336987">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque este sistema Linux dejará de ser compatible.</translation>

@@ -248,6 +248,13 @@
       Bu politika doğru seçeneğine ayarlanırsa <ph name="PRODUCT_OS_NAME" /> otomatik güncelleme verilerini HTTP aracılığıyla indirmeye çalışır. Politika yanlış seçeneğine ayarlanırsa veya hiç ayarlanmazsa otomatik güncelleme verilerini indirmek için HTTPS kullanılır.</translation>
 <translation id="2006530844219044261">Güç yönetimi</translation>
 <translation id="201557587962247231">Cihaz durumu raporlarının yüklenme sıklığı</translation>
+<translation id="2018836497795982119">Cihaz yönetim hizmetinin, kullanıcı politikası bilgileri için sorgulanma süresini milisaniye olarak belirtir.
+
+      Bu politika ayarlandığında varsayılan değer (3 saat) geçersiz olur. Bu politika için geçerli değerler 1800000 (30 dakika) ile 86400000 (1 gün) aralığındadır. Bu aralıkta bulunmayan değerler ilgili sınıra çekilir. Politika değiştiğinde politika bildirimlerinin otomatik olarak bir yenilemeyi zorlaması beklendiğinden, platform politika bildirimlerini destekliyorsa yenileme gecikmesi 24 saate ayarlanır.
+
+      Bu politika ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" /> varsayılan değeri (3 saat) kullanır.
+
+      Platform politika bildirimlerini destekliyorsa yenileme gecikmesinin 24 saate ayarlanacağını (tüm varsayılanların ve bu politikanın değerinin yoksayılacağını) unutmayın. Bunun nedeni, politika değiştiğinde politika bildirimlerinin otomatik olarak bir yenilemeyi zorlamasının beklenmesi ve bu yüzden, daha sık yenileme yapılmasına gerek olmamasıdır.</translation>
 <translation id="2024476116966025075">Uzaktan erişim istemcileri için gereken alan adını yapılandır</translation>
 <translation id="2030905906517501646">Varsayılan arama sağlayıcı anahtar kelimesi</translation>
 <translation id="206623763829450685"><ph name="PRODUCT_NAME" /> tarafından desteklenen HTTP kimlik doğrulaması şemalarını belirtir.
@@ -1082,11 +1089,6 @@ politikayı geçersiz kılamaz.
       Politikanın kendisi yukarıdaki platformlarda desteklense de, etkinleştirdiği özellik daha az sayıda platformda kullanılabilir. Kullanımdan kaldırılmış Web Platformu özelliklerinin tümü yeniden etkinleştirilemez. Sadece açık şekilde aşağıda listelenenler, özelliğe göre farklı olan sınırlı bir süre için etkinleştirilebilir. Dize etiketinin genel biçimi [KullanımdanKaldırılmışÖzelliğinAdı]_EffectiveUntil[yyyyaagg] olacaktır. Referans olarak, Web Platformu özelliklerinde değişiklik yapılmasının amacını şu adresten öğrenebilirsiniz: https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Cihaz boşta olduğunda veya askıya alındığında kilidi etkinleştir</translation>
-<translation id="4445684791305970001">Geliştirici Araçları'nı ve JavaScript konsolunu devre dışı bırakır.
-
-      Bu ayarı etkinleştirirseniz, Geliştirici Araçları'na erişilemez ve web sitesi öğeleri bundan sonra incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmak için kullanılan menüler veya bağlam menüsü girişleri devre dışı bırakılır.
-
-      Bu seçeneğin devre dışı olarak ayarlanması veya ayarlanmadan bırakılması, Geliştirici Araçları ve JavaScript konsolunun kullanımına olanak tanır.</translation>
 <translation id="4449545651113180484">Ekranı saat yönünde 270 derece döndür</translation>
 <translation id="4467952432486360968">Üçüncü taraf çerezlerini engelle</translation>
 <translation id="4474167089968829729">Şifrelerin, şifre yöneticisine kaydedilmesini etkinleştir</translation>
@@ -1347,6 +1349,13 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanırsa, giriş ekranında kullanıcı etkileşimi olmadan bir süre geçtikten sonra, belirlenen oturuma otomatik olarak giriş yapılır. Herkese açık oturumun önceden yapılandırılmış olması gerekir (Bkz. |DeviceLocalAccounts|).
 
       Bu politika ayarlanmazsa, otomatik giriş yapılmaz.</translation>
+<translation id="5529037166721644841">Cihaz yönetim hizmetinin, cihaz politika bilgileri için sorgulanma süresini milisaniye olarak belirtir.
+
+      Bu politika ayarlandığında varsayılan değer (3 saat) geçersiz olur. Bu politika için geçerli değerler 1800000 (30 dakika) ile 86400000 (1 gün) aralığındadır. Bu aralıkta bulunmayan değerler ilgili sınıra çekilir.
+
+      Bu politika ayarlanmadan bırakılırsa <ph name="PRODUCT_OS_NAME" /> varsayılan değer (3 saat) kullanır.
+
+      Platform politika bildirimlerini destekliyorsa yenileme gecikmesinin 24 saate ayarlanacağını (tüm varsayılanların ve bu politikanın değerinin yoksayılacağını) unutmayın. Bunun nedeni, politika değiştiğinde politika bildirimlerinin otomatik olarak bir yenilemeyi zorlamasının beklenmesi ve bu yüzden, daha sık yenileme yapılmasına gerek olmamasıdır.</translation>
 <translation id="5535957389335373033">İzleme amaçlı ağ paketlerinin ne kadar sık gönderileceğini (milisaniye olarak) belirtir.
 
       Bu politika ayarlanmazsa, varsayılan sıklık 3 dakikadır. Minimum
@@ -1912,6 +1921,9 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 
           Bu politika yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse uygulanır.</translation>
 <translation id="7302043767260300182">AC güçle çalışırken ekran kilidi gecikmesi</translation>
+<translation id="7311458740754205918">Bunun için doğru (true) değeri ayarlanır veya herhangi bir değer belirtilmezse Yeni Sekme sayfasında kullanıcının tarama geçmişi, ilgi alanları veya konumuna dayalı içerik önerileri gösterilebilir.
+
+Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otomatik oluşturulan içerik önerileri gösterilmez.</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> için ek komut satırı parametreleri</translation>
 <translation id="7329842439428490522">Pil gücüyle çalışırken, ekran kapatılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
@@ -2054,6 +2066,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="7763479091692861127"> İşletim sistemi güncellemeleri için kullanılmasına izin verilen bağlantı türleri. İşletim sistemi güncellemeleri, boyutları nedeniyle muhtemelen bağlantı üzerine ağır yük getirir ve ek maliyete neden olabilir. Bu nedenle, aralarında WiMax, Bluetooth ve Hücresel bağlantıların da yer aldığı, pahalı kabul edilen bağlantı türleri için şu anda varsayılan olarak etkin değildir.
 
       Tanınan bağlantı türü tanıtıcıları şunlardır: "ethernet", "wifi", "wimax", "bluetooth" ve "cellular".</translation>
+<translation id="7763614521440615342">Yeni Sekme sayfasında içerik önerileri göster</translation>
 <translation id="7766336524667238790">Uygulama kimliği ve sürümü gibi aktif kiosk oturumuyla ilgili bilgileri rapor edin.
 
       Bu politika yanlış seçeneğine ayarlanırsa, oturum bilgileri rapor

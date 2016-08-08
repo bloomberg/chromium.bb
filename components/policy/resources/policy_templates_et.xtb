@@ -241,6 +241,13 @@
       Kui reegel on seatud väärtusele Tõene, proovib <ph name="PRODUCT_OS_NAME" /> automaatsete värskenduste laste alla laadida HTTP kaudu. Kui reegel on seatud väärtusele Väär või on määramata, kasutatakse automaatsete värskenduste lastide allalaadimiseks HTTPS-i.</translation>
 <translation id="2006530844219044261">Toitehaldus</translation>
 <translation id="201557587962247231">Seadme oleku aruannete üleslaadimise sagedus</translation>
+<translation id="2018836497795982119">Määrab perioodi millisekundites, mille jooksul seadme haldusteenusele esitatakse päring kasutajareegli teabe hankimiseks.
+
+      Selle reegli määramisel alistatakse vaikeväärtus 3 tundi. Selle reegli kehtivad väärtused jäävad vahemikku 1 800 000 (30 minutit) kuni 86 400 000 (1 päev). Sellest vahemikust välja jäävad väärtused surutakse vastavatesse piiridesse. Kui platvorm toetab reeglite märguandeid, määratakse värskendamise viiteks 24 tundi, kuna eeldatakse, et reegli märguanded jõustavad värskendamise reegli muutmisel automaatselt.
+
+      Kui see reegel jäetakse määramata, kasutab teenus <ph name="PRODUCT_NAME" /> vaikeväärtust 3 tundi.
+
+      Pange tähele, et kui platvorm toetab reeglite märguandeid, määratakse värskendamise viiteks 24 tundi (eirates kõiki vaikeväärtusi ja selle reegli väärtust), kuna eeldatakse, et reegli märguanded jõustavad reegli muutmisel automaatse värskendamise, mis muudab sagedasemad värskendused ebavajalikuks.</translation>
 <translation id="2024476116966025075">Vajaliku domeeninime seadistamine kaugjuurdepääsuga klientidele</translation>
 <translation id="2030905906517501646">Vaikeotsingupakkuja märksõna</translation>
 <translation id="206623763829450685">Määrab, milliseid HTTP autentimisskeeme rakendus <ph name="PRODUCT_NAME" /> toetab.
@@ -1068,11 +1075,6 @@
       Reegel on küll toetatud ülalnimetatud platvormidel, kuid lubatud funktsioon ei pruugi olla saadaval kõikidel platvormidel. Kõiki katkestatud toega veebiplatvormi funktsioone ei saa uuesti lubada. Piiratud ajaks saab lubada ainult allnimetatud funktsioone ja iga funktsiooni ajalimiit on erinev. Stringimärgendi üldine vorming on [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Veebiplatvormi funktsiooni muudatuste eesmärgi kohta leiate lisateavet aadressilt https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Luba lukustamine, kui seade on ootel või peatatud</translation>
-<translation id="4445684791305970001">Keelab arendaja tööriistad ja JavaScripti konsooli.
-
-      Seade lubamisel ei saa arendaja tööriistu kasutada ega veebisaitide elemente uurida. Kõik klaviatuuri otseteed ning arendaja tööriistade ja JavaScripti konsooli avamise käsud menüüdes ja kontekstimenüüdes keelatakse.
-
-      Kui keelate valiku või jätate selle määramata, siis saab arendaja tööriistu ja JavaScripti konsooli kasutada.</translation>
 <translation id="4449545651113180484">Ekraani pööramine 270 kraadi päripäeva</translation>
 <translation id="4467952432486360968">Blokeeri kolmanda osapoole küpsised</translation>
 <translation id="4474167089968829729">Luba paroolide salvestamine paroolihaldurisse</translation>
@@ -1333,6 +1335,13 @@
       Kui selle reegli määrate, logitakse määratud seanssi automaatselt sisse pärast teatud perioodi möödumist sisselogimisekraanil ilma kasutaja interaktsioonita. Avalik seanss peab olema juba seadistatud (vt |DeviceLocalAccounts|).
 
       Kui te seda reeglit ei määra, siis automaatset sisselogimist ei toimu.</translation>
+<translation id="5529037166721644841">Määrab perioodi millisekundites, mille jooksul seadme haldusteenusele esitatakse päring kasutajareegli teabe hankimiseks.
+
+      Selle reegli määramisel alistatakse vaikeväärtus 3 tundi. Selle reegli kehtivad väärtused jäävad vahemikku 1 800 000 (30 minutit) kuni 86 400 000 (1 päev). Sellest vahemikust välja jäävad väärtused surutakse vastavatesse piiridesse.
+
+      Kui see reegel jäetakse määramata, kasutab teenus <ph name="PRODUCT_OS_NAME" /> vaikeväärtust 3 tundi.
+
+      Pange tähele, et kui platvorm toetab reeglite märguandeid, määratakse värskendamise viiteks 24 tundi (eirates kõiki vaikeväärtusi ja selle reegli väärtust), kuna eeldatakse, et reegli märguanded jõustavad reegli muutmisel automaatse värskendamise, mis muudab sagedasemad värskendused ebavajalikuks.</translation>
 <translation id="5535957389335373033">Jälgitavate võrgupakettide saatmise sagedus (millisekundites).
 
       Kui see reegel on määramata, on vaikesageduseks kolm minutit. Minimaalne
@@ -1902,6 +1911,9 @@
 
           See reegel kehtib vaid siis, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="7302043767260300182">Ekraani lukustamise viiteaeg võrgutoite kasutamisel</translation>
+<translation id="7311458740754205918">Kui selle väärtuseks määratakse Tõene või seda ei määrata, võidakse uuel vahelehel näidata sisu soovitusi kasutaja sirvimisajaloo, huvide või asukoha põhjal.
+
+      Kui selle väärtuseks määratakse Väär, ei näidata uuel vahelehel automaatselt loodud sisu soovitusi.</translation>
 <translation id="7323896582714668701">Rakenduse <ph name="PRODUCT_NAME" /> täiendavad käsureaparameetrid</translation>
 <translation id="7329842439428490522">Määrab aja, pärast mida ekraan akutoitega töötamisel välja lülitatakse, kui kasutaja pole midagi sisestanud.
 
@@ -2043,6 +2055,7 @@
 <translation id="7763479091692861127"> Ühendustüübid, mis on lubatud kasutamiseks OS-i värskendamiseks. OS-i värskendused võivad oma mahu tõttu panna ühendusele suure koormuse ja sellega võib kaasneda ka lisakulu. Seepärast pole need vaikimisi lubatud ühendustüüpidele, mida peetakse kalliteks ja mille hulka praegu kuuluvad WiMax, Bluetooth ja Cellular.
 
       Tunnustatud ühendustüübi identifikaatorid on „ethernet”, „wifi”, „wimax”, „bluetooth” ja „cellular”.</translation>
+<translation id="7763614521440615342">Kuva uuel vahelehel sisu soovitused</translation>
 <translation id="7766336524667238790">Saadab teavet kioski aktiivse seansi kohta (nt
       rakenduse ID ja versioon).
 

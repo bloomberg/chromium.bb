@@ -50,6 +50,7 @@
 <translation id="2535480412977113886">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="2558641060352364164">‏האתר הזה משתמש בפלאגין Chromium Frame. התמיכה בפלאגין הזה תסתיים בקרוב. הסר את ההתקנה שלו ושדרג לדפדפן מודרני.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2587578672395088481">‏כדי להחיל עדכון זה, יש להפעיל מחדש את Chromium OS.</translation>
 <translation id="2595977381794111014">‏השתמש בקיצור הדרך <ph name="APPS_ICON_IMAGE" /> בסרגל הסימניות של Chromium כדי להמשיך לגשת לאפליקציות שלך.</translation>
 <translation id="2605472041568654097">‏עזור לשפר את Chromium על ידי דיווח על ההגדרות הנוכחיות.</translation>
 <translation id="2636877269779209383">‏Chromium זקוק לגישה אל המצלמה כדי לשתף אותה עם האתר הזה.</translation>
@@ -111,6 +112,7 @@
 <translation id="4330585738697551178">‏מודול זה מתנגש עם Chromium.</translation>
 <translation id="4423735387467980091">‏התאם אישית ושלוט ב-Chromium</translation>
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
+<translation id="4469812139324097969">‏Chromium אינו מעודכן מכיוון שהוא לא הופעל בזמן האחרון. יש עדכון זמין והוא יחול ברגע שתבצע הפעלה מחדש.</translation>
 <translation id="4549794359424059447">‏גרסאות עתידיות של Chromium כבר לא יתמכו ב-Windows XP וב-Windows Vista.</translation>
 <translation id="4567424176335768812">נכנסת למערכת בתור <ph name="USER_EMAIL_ADDRESS" />. כעת אתה יכול לגשת אל הסימניות, ההיסטוריה והגדרות אחרות שלך בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="457845228957001925">‏מידע חשוב בנוגע לנתונים שלך ב-Chromium</translation>

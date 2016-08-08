@@ -240,6 +240,13 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará descargar cargas útiles de actualizaciones automáticas a través de HTTP. Si la política se establece en False o no se configura, se utilizará HTTPS para descargar cargas útiles de actualizaciones automáticas.</translation>
 <translation id="2006530844219044261">Administración de energía</translation>
 <translation id="201557587962247231">Frecuencia de subida de informes de estado del dispositivo</translation>
+<translation id="2018836497795982119">Permite especificar el período en milisegundos en el que se solicita información sobre políticas del usuario al servicio de administración de dispositivos.
+
+      Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1.800.000 (30 minutos) y 86.400.000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente. Si la plataforma admite notificaciones sobre políticas, el tiempo de actualización se establecerá en 24 horas, ya que se espera que estas notificaciones fuercen una actualización automática en cuanto se produzca algún cambio en una política.
+
+      Si no se establece esta política, <ph name="PRODUCT_NAME" /> usará el valor predeterminado de tres horas.
+
+      Ten en cuenta que si la plataforma admite notificaciones sobre políticas, el tiempo de actualización se establecerá en 24 horas (ignorando todos los valores predeterminados y el valor de esta política), ya que se espera que estas notificaciones fuercen una actualización automática en cuanto se produzca algún cambio en una política. De esta forma, no será necesario realizar actualizaciones con mayor frecuencia.</translation>
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
 <translation id="206623763829450685">Especifica los esquemas de autenticación HTTP admitidos por <ph name="PRODUCT_NAME" />.
@@ -1077,11 +1084,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Aunque la política en sí es compatible con las plataformas anteriores, es posible que la función que habilita no esté disponible en todas ellas. No todas las funciones de Web Platform obsoletas se pueden volver a habilitar. Solo es posible hacerlo con las indicadas específicamente y durante un período de tiempo limitado diferente para cada función. El formato general de la etiqueta de cadena será:[NombreDeFunciónObsoleta]_EffectiveUntil[aaaammdd]. Como referencia, puedes consultar los intentos detrás de los cambios de la función Web Platform en la página https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
-<translation id="4445684791305970001">Permite inhabilitar las Herramientas para desarrolladores y la Consola JavaScript.
-
-      Si habilitas esta opción, no se podrá acceder a las Herramientas para desarrolladores ni se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o de menús contextuales que permiten abrir las Herramientas para desarrolladores o la Consola JavaScript.
-
-      Si se inhabilita esta opción o si no se establece, se podrán usar las Herramientas para desarrolladores y la Consola JavaScript.</translation>
 <translation id="4449545651113180484">Girar la pantalla 270 grados hacia la derecha</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el almacenamiento de contraseñas en el administrador de contraseñas</translation>
@@ -1264,7 +1266,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si habilitas o inhabilitas esta opción, los usuarios no pueden cambiarla ni anularla en <ph name="PRODUCT_NAME" />.
 
-      Si esta política no se configura, la predicción de red se habilitará pero los usuarios podrán cambiarla.</translation>
+      Si esta política no se configura, la predicción de red se habilitará, pero los usuarios podrán cambiarla.</translation>
 <translation id="5208240613060747912">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -1346,6 +1348,13 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se establece esta política, se iniciará automáticamente la sesión especificada una vez que haya transcurrido un tiempo sin que el usuario haya realizado ninguna acción en la pantalla de inicio de sesión. La sesión pública tendrá que estar configurada previamente (ver | DeviceLocalAccounts|).
 
       Si no se establece esta política, no se realiza el inicio de sesión automático.</translation>
+<translation id="5529037166721644841">Permite especificar el período en milisegundos en el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos.
+
+      Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1.800.000 (30 minutos) y 86.400.000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.
+
+      Si no se establece esta política, <ph name="PRODUCT_OS_NAME" /> usará el valor predeterminado de tres horas.
+
+      Ten en cuenta que si la plataforma admite notificaciones sobre políticas, el tiempo de actualización se establecerá en 24 horas (ignorando todos los valores predeterminados y el valor de esta política), ya que se espera que estas notificaciones fuercen una actualización automática en cuanto se produzca algún cambio en una política. De esta forma, no será necesario realizar actualizaciones con mayor frecuencia.</translation>
 <translation id="5535957389335373033">Frecuencia con la que se envían paquetes de red de supervisión (en milisegundos).
 
       Si esta política no se configura, la frecuencia predeterminada es de tres minutos. La frecuencia mínima es de 30 segundos y la máxima de 24 horas (los valores que no se encuentren en este intervalo se redondearán a este).</translation>
@@ -1902,6 +1911,9 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
           Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="7302043767260300182">Retraso de bloqueo de pantalla cuando el dispositivo está conectado a la red</translation>
+<translation id="7311458740754205918">Si se asigna True o si no se establece ningún valor, la página Nueva pestaña puede mostrar sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
+
+     Si se asigna el valor False, no se mostrarán las sugerencias de contenido generadas automáticamente en la página Nueva pestaña.</translation>
 <translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Permite especificar el tiempo transcurrido hasta la desconexión de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo funciona con la batería.
 
@@ -2044,6 +2056,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7763479091692861127"> Indica los tipos de conexiones que se pueden utilizar para actualizar el sistema operativo. Estas actualizaciones pueden constituir un lastre para la conexión por su tamaño y pueden suponer costes adicionales. Por tanto, están inhabilitadas de forma predeterminada en los tipos de conexiones que se consideran más costosos, entre los que se incluyen WiMAX, Bluetooth y redes móviles.
 
       Los identificadores de tipos de conexiones reconocidos son Ethernet, Wi-Fi, WiMAX, Bluetooth y redes móviles.</translation>
+<translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7766336524667238790">Proporciona información sobre la sesión del kiosco activa, como el ID de la aplicación y la versión.
       
 Si se asigna el valor false a la política, no se proporcionará información sobre la sesión. Si se asigna el valor true o si la política no se configura, sí se proporcionará información sobre la sesión.</translation>

@@ -52,6 +52,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2535480412977113886">Chromium OS ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="2558641060352364164">To spletno mesto uporablja vtičnik Chromium Frame, za katerega podpora kmalu ne bo več na voljo. Odstranite ga in nadgradite na sodoben brskalnik.</translation>
 <translation id="2572494885440352020">Pomoč za Chromium</translation>
+<translation id="2587578672395088481">Če želite namestiti posodobitev, morate znova zagnati OS Chromium.</translation>
 <translation id="2595977381794111014">Če želite še naprej dostopati do aplikacij, uporabite bližnjico <ph name="APPS_ICON_IMAGE" /> v zaznamkih v Chromiumu.</translation>
 <translation id="2605472041568654097">Pomagajte izboljšati Chromium s poročanjem o trenutnih nastavitvah.</translation>
 <translation id="2636877269779209383">Chromium potrebuje dostop do kamere, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
@@ -115,6 +116,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4330585738697551178">Za ta modul je znano, da je v sporu s Chromiumom.</translation>
 <translation id="4423735387467980091">Prilagajanje in nadziranje Chromiuma</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
+<translation id="4469812139324097969">Chromium je zastarel, ker ga že nekaj časa niste znova zagnali. Na voljo je posodobitev, ki bo nameščena, takoj ko ga znova zaženete.</translation>
 <translation id="4549794359424059447">Prihodnje različice Chromiuma ne bodo več podpirale sistema Windows XP ali Windows Vista.</translation>
 <translation id="4567424176335768812">Prijavljeni ste kot <ph name="USER_EMAIL_ADDRESS" />. Zdaj imate dostop do zaznamkov, zgodovine in drugih nastavitev v vseh napravah, v katerih ste prijavljeni.</translation>
 <translation id="457845228957001925">Pomembne informacije o vaših podatkih v Chromiumu</translation>

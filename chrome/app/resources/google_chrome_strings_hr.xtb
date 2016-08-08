@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Povlačimo Pokretač aplikacija za Chrome.</translation>
 <translation id="1877026089748256423">Chrome je zastario</translation>
 <translation id="1924381329666691588">Google Chrome ne može se prikazati na tom jeziku.</translation>
+<translation id="2063848847527508675">Potrebno je ponovo pokrenuti Chrome OS kako bi se ažuriranje primijenilo.</translation>
 <translation id="2077129598763517140">Upotrijebi hardversko ubrzanje kada je dostupno</translation>
 <translation id="2084710999043359739">Dodajte u Chrome</translation>
 <translation id="2246246234298806438">Google Chrome ne može prikazati pregled ispisa ako nema ugrađeni preglednik PDF-a.</translation>
@@ -52,6 +53,7 @@
 Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i ostale postavke spojit će se s korisnikom <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Prikaži izbornik Chrome</translation>
 <translation id="2429317896000329049">Google Chrome nije mogao sinkronizirati vaše podatke jer sinkronizacija nije dostupna za vašu domenu.</translation>
+<translation id="2446511512801740068">Chrome je zastario jer dulje vrijeme nije ponovo pokrenut. Ažuriranje je dostupno i primijenit će se čim ponovo pokrenete proizvod.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="2580411288591421699">Nije moguće instalirati istu verziju programa Google Chrome koja je trenutačno pokrenuta. Zatvorite Google Chrome i pokušajte ponovo.</translation>
 <translation id="2582790009689336987">Ovo će računalo uskoro prestati primati ažuriranja za Google Chrome jer taj sustav Linuxa više neće biti podržan.</translation>

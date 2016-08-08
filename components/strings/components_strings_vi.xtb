@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Có vẻ như chứng chỉ máy chủ tại <ph name="HOST_NAME" /> là giả mạo.</translation>
 <translation id="2889159643044928134">Không tải lại</translation>
 <translation id="2896499918916051536">Plugin này không được hỗ trợ.</translation>
+<translation id="2900469785430194048">Google Chrome đã hết bộ nhớ khi cố gắng hiển thị trang web này.</translation>
 <translation id="2909946352844186028">Đã phát hiện thấy thay đổi mạng.</translation>
 <translation id="2915500479781995473">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Đồng hồ trên máy tính của bạn hiện được đặt là <ph name="CURRENT_TIME" />. Giờ này có đúng không? Nếu không đúng, bạn phải sửa lại giờ hệ thống rồi làm mới trang này.</translation>
 <translation id="2922350208395188000">Không thể kiểm tra chứng chỉ của máy chủ.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Ghi đè phiên công khai</translation>
 <translation id="6358450015545214790">Những phần này có ý nghĩa gì?</translation>
 <translation id="6387478394221739770">Bạn quan tâm đến các tính năng mới thú vị của Chrome? Hãy dùng thử kênh thử nghiệm beta của chúng tôi tại chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium đã hết bộ nhớ khi cố gắng hiển thị trang web này.</translation>
 <translation id="641480858134062906">Không tải được <ph name="URL" /></translation>
 <translation id="6417515091412812850">Không thể kiểm tra liệu chứng chỉ đã bị thu hồi hay chưa.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> đã từ chối kết nối.</translation>
@@ -630,7 +632,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8647750283161643317">Đặt lại tất cả về mặc định</translation>
 <translation id="8680787084697685621">Chi tiết đăng nhập tài khoản đã lỗi thời.</translation>
 <translation id="8703575177326907206">Kết nối của bạn đến <ph name="DOMAIN" /> không được mã hóa.</translation>
-<translation id="8713130696108419660">Chữ ký ban đầu không hợp lệ</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728672262656704056">Bạn đã truy cập ẩn danh</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>

@@ -233,6 +233,13 @@
       Se esta política for definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> tentará transferir payloads de atualização automática através de HTTP. Se esta política for definida como falsa ou não for definida, será utilizado HTTPS para transferir payloads de atualização automática.</translation>
 <translation id="2006530844219044261">Gestão de energia</translation>
 <translation id="201557587962247231">Frequência de carregamentos de relatórios de estado do dispositivo</translation>
+<translation id="2018836497795982119">Especifica o período em milissegundos no qual o serviço de gestão de dispositivos é consultado quanto a informações da política do utilizador.
+
+      A definição desta política substitui o valor predefinido de 3 horas. Os valores válidos para esta política encontram-se no intervalo de 1 800 000 (30 minutos) a 86 400 000 (1 dia). Quaisquer valores que não se encontrem neste intervalo são ajustados para o respetivo limite. Se a plataforma suportar notificações sobre políticas, o atraso de atualização é definido para 24 horas porque é esperado que as notificações sobre políticas forcem uma atualização automaticamente, sempre que a política sofrer alterações.
+
+      Deixar esta política por definir faz com que o <ph name="PRODUCT_NAME" /> utilize o valor predefinido de três horas.
+
+      Tenha em atenção que, se a plataforma suportar notificações sobre políticas, o atraso de atualização é definido para 24 horas (ao ignorar todas as predefinições e o valor desta política) porque é esperado que as notificações sobre políticas forcem uma atualização automaticamente, sempre que a política sofrer alterações, o que torna desnecessárias as atualizações mais frequentes.</translation>
 <translation id="2024476116966025075">Configurar o nome do domínio obrigatório para clientes de acesso remoto</translation>
 <translation id="2030905906517501646">Palavra-chave do fornecedor de pesquisas predefinido</translation>
 <translation id="206623763829450685">Especifica quais os esquemas de autenticação HTTP que o <ph name="PRODUCT_NAME" /> suporta.
@@ -1024,7 +1031,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Embora a política em si seja suportada nas plataformas acima, a funcionalidade que está a ativar pode estar disponível em menos plataformas. Nem todas as funcionalidades de plataformas Web descontinuadas podem ser reativadas. Apenas podem ser reativadas por um período limitado de tempo as que estão indicadas explicitamente na lista abaixo, o que difere consoante a funcionalidade. O formato geral da etiqueta de string é [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Como referência, pode encontrar a intenção por detrás das alterações às funcionalidades de plataformas Web em https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo fica inativo ou entra em suspensão.</translation>
-<translation id="4445684791305970001">Desativa as Ferramentas do Programador e a Consola de JavaScript. Se ativar esta definição, não será possível aceder às Ferramentas do Programador e os elementos de Web sites deixarão de ser inspecionados. Todos os atalhos de teclado e entradas de menu ou de menu de contexto para abrir as Ferramentas do Programador ou a Consola de JavaScript serão desativados. Se desativar ou não definir esta opção, permitirá que o utilizador use as Ferramentas do Programador e a Consola de JavaScript.</translation>
 <translation id="4449545651113180484">Rodar o ecrã 270 graus para a direita</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Permitir guardar palavras-passe no gestor de palavras-passe</translation>
@@ -1244,6 +1250,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida, a sessão especificada será iniciada automaticamente após ter decorrido um período de tempo no ecrã de início de sessão sem a interação do utilizador. A sessão pública já tem de estar configurada (ver |DeviceLocalAccounts|).
 
       Se esta política não estiver definida, o início de sessão automático não irá ocorrer.</translation>
+<translation id="5529037166721644841">Especifica o período em milissegundos no qual o serviço de gestão de dispositivos é consultado quanto a informações da política do utilizador.
+
+      A definição desta política substitui o valor predefinido de 3 horas. Os valores válidos para esta política encontram-se no intervalo de 1 800 000 (30 minutos) a 86 400 000 (1 dia). Quaisquer valores que não se encontrem neste intervalo são ajustados para o respetivo limite.
+
+      Deixar esta política por definir faz com que o <ph name="PRODUCT_OS_NAME" /> utilize o valor predefinido de 3 horas.
+
+      Tenha em atenção que, se a plataforma suportar notificações sobre políticas, o atraso de atualização é definido para 24 horas (ao ignorar todas as predefinições e o valor desta política) porque é esperado que as notificações sobre políticas forcem uma atualização automaticamente, sempre que a política sofrer alterações, o que torna desnecessárias as atualizações mais frequentes.</translation>
 <translation id="5535957389335373033">Com que frequência são enviados os pacotes de monitorização de rede, em milissegundos.
 
       Se esta política não for definida, a frequência predefinida é de 3 minutos. A frequência
@@ -1773,6 +1786,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="7302043767260300182">Atraso do bloqueio do ecrã quando o dispositivo está ligado à eletricidade</translation>
+<translation id="7311458740754205918">Se esta política for definida para verdadeira ou não for definida, a página Novo separador pode mostrar sugestões de conteúdo com base no histórico de navegação, nos interesses ou na localização do utilizador.
+
+      Se for definida para falsa, as sugestões de conteúdo geradas automaticamente não são mostradas na página Novo separador.</translation>
 <translation id="7323896582714668701">Parâmetros da linha de comandos adicionais para <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Especifica o período de tempo sem atividade por parte do utilizador após o qual se desliga o ecrã quando o dispositivo está a utilizar a energia da bateria.
 
@@ -1905,6 +1921,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7763479091692861127"> Os tipos de ligação permitidos para utilização em atualizações do SO. As atualizações do SO podem sobrecarregar a ligação devido ao seu tamanho, o que pode implicar custos adicionais. Por conseguinte, por predefinição, não estão ativadas para tipos de ligação considerados caros, nomeadamente WiMax, Bluetooth e Celular.
 
       Os identificadores dos tipos de ligação reconhecidos são "ethernet", "wifi", "wimax", "bluetooth" e "celular".</translation>
+<translation id="7763614521440615342">Mostrar sugestões de conteúdo na página Novo separador</translation>
 <translation id="7766336524667238790">Comunica informações acerca da sessão ativa do quiosque, como
       o ID e a versão da aplicação.
 

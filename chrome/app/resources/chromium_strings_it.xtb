@@ -27,7 +27,7 @@
 <translation id="1779356040007214683">Per rendere Chromium più sicuro, abbiamo disattivato alcune estensioni che non sono elencate nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e potrebbero essere state aggiunte a tua insaputa.</translation>
 <translation id="1808667845054772817">Reinstalla Chromium</translation>
 <translation id="1816404578968201294">Chromium deve avere accesso alla posizione per condividerla con questo sito.</translation>
-<translation id="1869480248812203386">Puoi contribuire a rendere Chromium più sicuro e più facile da utilizzare segnalando automaticamente a Google dettagli dei possibili incidenti di sicurezza.</translation>
+<translation id="1869480248812203386">Puoi contribuire a rendere Chromium più sicuro e più facile da utilizzare segnalando automaticamente a Google i dettagli dei possibili problemi di sicurezza.</translation>
 <translation id="1881322772814446296">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Chromium. I tuoi dati di Chromium, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. Se preferisci puoi creare un nuovo profilo per mantenere separati i dati di Chromium esistenti. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium non risponde. Riavviarlo ora?</translation>
 <translation id="1967743265616885482">Un modulo con lo stesso nome risulta in conflitto con Chromium.</translation>
@@ -50,6 +50,7 @@
 <translation id="2535480412977113886">Impossibile sincronizzare i dati in Chromium OS perché i dati di accesso dell'account sono obsoleti.</translation>
 <translation id="2558641060352364164">Questo sito utilizza il plug-in Chromium Frame che a breve non sarà più supportato. Disinstallalo ed esegui l'upgrade a un browser recente.</translation>
 <translation id="2572494885440352020">Supporto Chromium</translation>
+<translation id="2587578672395088481">Per applicare l'aggiornamento è necessario riavviare Chromium OS.</translation>
 <translation id="2595977381794111014">Per continuare ad accedere alle tue app, utilizza la scorciatoia <ph name="APPS_ICON_IMAGE" /> nella barra dei Preferiti di Chromium.</translation>
 <translation id="2605472041568654097">Contribuisci a migliorare Chromium indicando le impostazioni attuali.</translation>
 <translation id="2636877269779209383">Chromium deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
@@ -113,6 +114,7 @@
 <translation id="4330585738697551178">Questo modulo risulta in conflitto con Chromium.</translation>
 <translation id="4423735387467980091">Personalizza e controlla Chromium</translation>
 <translation id="4458285410772214805">Esci ed esegui di nuovo l'accesso per applicare la modifica.</translation>
+<translation id="4469812139324097969">Chromium non è aggiornato perché non viene riavviato da un po'. È disponibile un aggiornamento che verrà applicato non appena riavvierai.</translation>
 <translation id="4549794359424059447">Le versioni future di Chromium non supporteranno più Windows XP o Windows Vista.</translation>
 <translation id="4567424176335768812">Hai eseguito l'accesso come <ph name="USER_EMAIL_ADDRESS" />. Ora puoi accedere ai tuoi Preferiti, alla tua cronologia e ad altre impostazioni su tutti i tuoi dispositivi su cui esegui l'accesso.</translation>
 <translation id="457845228957001925">Informazioni importanti relative ai tuoi dati Chromium</translation>

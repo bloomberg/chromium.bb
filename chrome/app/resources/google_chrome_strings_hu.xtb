@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">A Chrome Alkalmazásindító meg fog szűnni.</translation>
 <translation id="1877026089748256423">A Chrome elavult</translation>
 <translation id="1924381329666691588">A Google Chrome nem jeleníthető meg ezen a nyelven</translation>
+<translation id="2063848847527508675">A frissítés alkalmazásához újra kell indítani a Chrome OS-t.</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="2084710999043359739">Hozzáadás a Chrome-hoz</translation>
 <translation id="2246246234298806438">A Google Chrome nem tudja megjeleníteni a nyomtatási előnézetet, ha nincs beépített PDF-megjelenítő.</translation>
@@ -52,6 +53,7 @@
 Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" /> fiókkal az olyan Chrome-adatokat, mint a könyvjelzők, az előzmények és más beállítások.</translation>
 <translation id="2397416548179033562">A Chrome-menü megjelenítése</translation>
 <translation id="2429317896000329049">A Google Chrome nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
+<translation id="2446511512801740068">A Chrome elavult, mert nem volt újraindítva egy ideje. Megjelent egy frissítés, amelyik az újraindítás után azonnal érvénybe lép.</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
 <translation id="2580411288591421699">Nem lehet ugyanazt a Google Chrome verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome-ot, és próbálja újra.</translation>
 <translation id="2582790009689336987">Ez a számítógép hamarosan nem fog több Google Chrome-frissítést kapni, mert a böngésző többé nem fogja támogatni ezt a Linux rendszert.</translation>

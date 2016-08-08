@@ -170,6 +170,7 @@
 <translation id="284702764277384724"><ph name="HOST_NAME" />의 서버 인증서가 위조된 것 같습니다.</translation>
 <translation id="2889159643044928134">새로고침 안함</translation>
 <translation id="2896499918916051536">이 플러그인은 지원되지 않습니다.</translation>
+<translation id="2900469785430194048">이 웹페이지를 표시하려는 동안 Chrome에 메모리가 부족합니다.</translation>
 <translation id="2909946352844186028">네트워크 변경이 감지되었습니다.</translation>
 <translation id="2915500479781995473">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 만료되었습니다. 서버를 잘못 설정했거나 해커가 연결을 가로채고 있기 때문일 수 있습니다. 컴퓨터의 시계가 현재 <ph name="CURRENT_TIME" />(으)로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 다음 이 페이지를 새로고침하세요.</translation>
 <translation id="2922350208395188000">서버 인증서를 확인할 수 없습니다.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">공개 세션 무시</translation>
 <translation id="6358450015545214790">자세히 알아보기</translation>
 <translation id="6387478394221739770">Chrome의 멋진 새 기능에 관심이 있으십니까? chrome.com/beta 페이지에서 베타 채널을 방문해 보세요.</translation>
+<translation id="6389758589412724634">이 웹페이지를 표시하려는 동안 Chromium에 메모리가 부족합니다.</translation>
 <translation id="641480858134062906"><ph name="URL" />을(를) 로드하지 못했습니다.</translation>
 <translation id="6417515091412812850">인증서가 취소되었는지 확인할 수 없습니다.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" />에서 연결을 거부했습니다.</translation>
@@ -630,7 +632,6 @@
 <translation id="8647750283161643317">기본값으로 재설정</translation>
 <translation id="8680787084697685621">계정 로그인 세부정보의 유효기간이 만료되었습니다.</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" />로의 연결은 암호화되지 않습니다.</translation>
-<translation id="8713130696108419660">잘못된 초기 서명</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8728672262656704056">시크릿 모드로 전환됨</translation>
 <translation id="8730621377337864115">완료</translation>

@@ -52,6 +52,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2535480412977113886">Chromium OS nemůže synchronizovat data, protože vaše přihlašovací údaje k účtu jsou zastaralé.</translation>
 <translation id="2558641060352364164">Tento web používá plugin Chromium Frame, jehož podpora bude brzy ukončena. Odinstalujte jej a přejděte na moderní prohlížeč.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2587578672395088481">Aktualizace se použije po restartování systému Chromium OS.</translation>
 <translation id="2595977381794111014">K aplikacím přistupujte pomocí zástupce <ph name="APPS_ICON_IMAGE" /> na liště záložek prohlížeče Chromium.</translation>
 <translation id="2605472041568654097">Pomozte s vylepšováním prohlížeče Chromium prostřednictvím nahlášení aktuálního nastavení.</translation>
 <translation id="2636877269779209383">Prohlížeč Chromium potřebuje přístup k fotoaparátu, aby jej mohl sdílet s těmito stránkami.</translation>
@@ -115,6 +116,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4330585738697551178">O tomto modulu je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="4423735387467980091">Přizpůsobit a ovládat Chromium</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
+<translation id="4469812139324097969">Prohlížeč Chromium není aktuální, protože nějakou dobu nebyl restartován. Je k dispozici aktualizace, která bude použita po restartování.</translation>
 <translation id="4549794359424059447">Budoucí verze prohlížeče Chromium již nebudou podporovat systémy Windows XP a Windows Vista.</translation>
 <translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="457845228957001925">Důležité informace o datech prohlížeče Chromium</translation>

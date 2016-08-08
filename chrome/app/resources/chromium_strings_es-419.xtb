@@ -50,6 +50,7 @@
 <translation id="2535480412977113886">El Sistema operativo Chromium no pudo sincronizar los datos porque la información de acceso de la cuenta está desactualizada.</translation>
 <translation id="2558641060352364164">Este sitio está usando el complemento Chromium Frame, que pronto dejará de ser compatible. Desinstálalo y obtén un navegador moderno.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2587578672395088481">El Sistema operativo Chromium debe reiniciarse para que se aplique la actualización.</translation>
 <translation id="2595977381794111014">Para seguir accediendo a tus apps, usa el acceso directo de <ph name="APPS_ICON_IMAGE" /> que aparece en la barra de marcadores de Chromium.</translation>
 <translation id="2605472041568654097">Informa tu configuración actual para ayudarnos a mejorar Chromium.</translation>
 <translation id="2636877269779209383">Chromium necesita acceso a la cámara para compartirla con el sitio.</translation>
@@ -111,6 +112,7 @@
 <translation id="4330585738697551178">Este módulo provoca un conflicto con Chromium.</translation>
 <translation id="4423735387467980091">Personaliza y controla Chromium</translation>
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
+<translation id="4469812139324097969">Chromium no está actualizado porque no se reinició por un tiempo. Cuando lo reinicies, se aplicará la actualización disponible.</translation>
 <translation id="4549794359424059447">Las próximas versiones de Chromium ya no serán compatibles con Windows XP o Windows Vista.</translation>
 <translation id="4567424176335768812">Accediste como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes ir a los marcadores, al historial y a otras opciones en todos los dispositivos en los que hayas accedido.</translation>
 <translation id="457845228957001925">Información importante sobre tus datos de Chromium</translation>

@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1091157412887719337">การมอบหมายล้มเหลว ไม่มีเครื่องที่พร้อมใช้งาน</translation>
+<translation id="117738548141695034">สวิตช์เปิดปิดการใช้งาน</translation>
 <translation id="1416550906796893042">เวอร์ชันของแอปพลิเคชัน</translation>
 <translation id="1750179245464827362">แสดงข้อมูลการแก้ไขข้อบกพร่อง</translation>
 <translation id="2004526128230838685">การมอบหมายล้มเหลว ไม่ทราบปัญหา</translation>
 <translation id="2023631438558435272">การมอบหมายล้มเหลว การตอบกลับไม่ถูกต้อง</translation>
 <translation id="2078561879028077171">ข้อมูลเวอร์ชัน</translation>
 <translation id="2117453604279487107">URL ผู้กำหนด</translation>
+<translation id="2218944627481691815">เปลี่ยนสวิตช์เปิดปิดการใช้งานแล้ว โปรดรีสตาร์ทแอปพลิเคชัน</translation>
 <translation id="2353984724370197742">การมอบหมายล้มเหลว คำขอเครือข่ายล้มเหลว</translation>
 <translation id="2789927415041640472">โปรดรีสตาร์ทแอปพลิเคชันเพื่อใช้การกำหนดค่าใหม่ของผู้กำหนด</translation>
 <translation id="3046825211487065480">การมอบหมายล้มเหลว คำขอที่ 2 ถูกส่งออกไปก่อนที่จะมีการตอบกลับคำขอแรก</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">ยกเลิกการเชื่อมต่อเครื่องมือแล้ว เหตุผลคือ %1$s</translation>
 <translation id="7596558890252710462">ระบบปฏิบัติการ</translation>
 <translation id="7608553142876436780">IP ของเครื่องมือ</translation>
+<translation id="7795546637165553439">การตั้งค่าเปิดปิดการใช้งาน</translation>
 <translation id="7961542533680218955">การมอบหมายสำเร็จ</translation>
 <translation id="8514856595257368555">ดึงข้อมูลโทเค็นแล้ว</translation>
 <translation id="8880704056643418312">คอมมิต</translation>

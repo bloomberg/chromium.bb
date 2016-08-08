@@ -241,6 +241,13 @@
       Jei ši politika galioja, „<ph name="PRODUCT_OS_NAME" />“ bandys atsisiųsti automatinį naudingųjų apkrovų naujinį naudodama HTTP. Jei ši politika negalioja arba yra nenustatyta, automatinis naudingųjų apkrovų naujinys bus atsisiunčiamas naudojant HTTPS.</translation>
 <translation id="2006530844219044261">Maitinimo valdymas</translation>
 <translation id="201557587962247231">Įrenginio būsenos ataskaitų įkėlimo dažnis</translation>
+<translation id="2018836497795982119">Milisekundėmis nurodomas laikotarpis, per kurį įrenginio tvarkymo paslaugai pateikiama užklausa dėl naudotojo politikos informacijos.
+
+      Nustačius šią politiką nepaisoma numatytosios 3 valandų vertės. Tinkamos šios politikos vertės svyruoja nuo 1 800 000 (30 minučių) iki 86 400 000 (1 diena). Vertės už šio diapazono ribų bus nustatytos į šio diapazono vertę. Jei platformoje palaikomi politikos pranešimai, atnaujinimo delsa bus nustatyta į 24 val., nes tikimasi, kad politikos pranešimai suaktyvins atnaujinimą kaskart, kai politika bus pakeista.
+
+      Jei ši politika nebus nustatyta, „<ph name="PRODUCT_NAME" />“ naudos numatytąją vertę – 3 val.
+
+      Atminkite, kad jei platformoje palaikomi politikos pranešimai, atnaujinimo delsa bus nustatyta į 24 val. (bus nepaisoma visų numatytųjų nustatymų ir šios politikos vertės), nes tikimasi, kad politikos pranešimai automatiškai suaktyvins atnaujinimą kaskart, kai politika bus pakeista, todėl nereikės dažniau atnaujinti.</translation>
 <translation id="2024476116966025075">Būtino nuotolinės prieigos klientų domeno pavadinimo konfigūravimas</translation>
 <translation id="2030905906517501646">Numatytojo paieškos teikėjo raktinis žodis</translation>
 <translation id="206623763829450685">Nurodoma, kurios HTTP autentifikavimo schemos palaikomos „<ph name="PRODUCT_NAME" />“.
@@ -1083,11 +1090,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Politika palaikoma anksčiau nurodytose platformose, tačiau įgalinama funkcija gali būti pasiekiama mažiau platformų. Ne visas nebenaudojamas žiniatinklio platformos funkcijas galima įgalinti. Tik šiame sąraše pateiktas funkcijas galima laikinai (atsižvelgiant į funkciją) įgalinti. Bendra eilutės žymos forma [NebeteikiamosFunkcijosPavadinimas]_GaliojaIki[yyyymmdd]. Informacijos apie žiniatinklio platformos funkcijos pakeitimus galite gauti apsilankę adresu https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Įgalinti užraktą, kai įrenginys nenaudojamas arba laikinai sustabdytas</translation>
-<translation id="4445684791305970001">Neleidžiami kūrėjo įrankiai ir „JavaScript“ pultas.
-
-      Jei įgalinsite šį nustatymą, daugiau nebus galima pasiekti kūrėjo įrankių ir patikrinti svetainės elementų. Bus neleidžiami visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ konsolei atidaryti.
-
-      Neleidus šios parinkties ar jos nenustačius, naudotojas (-a) galės naudoti kūrėjo įrankius ir „JavaScript“ konsolę.</translation>
 <translation id="4449545651113180484">Sukti ekraną pagal laikrodžio rodyklę 270 laipsnių kampu</translation>
 <translation id="4467952432486360968">Blokuoti trečiosios šalies slapukus</translation>
 <translation id="4474167089968829729">Įgalinti slaptažodžių saugojimą slaptažodžių tvarkytuvėje</translation>
@@ -1263,7 +1265,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei ši politika nenustatyta ar nustatyta „Ne“, kūrėjo režimas liks pasiekiamas įrenginiui.</translation>
 <translation id="5203271367506489164">Vietoje šios politikos M48 naudojama „NetworkPredictionOptions“ ir ji pašalinta iš M54.
 
-      Įgalinamas tinklo numatymas „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama naudotojams keisti šio nustatymo.
+      Įgalinamas tinklo numatymas „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama keisti šio nustatymo.
 
       Pagal šią politiką valdomas ne tik išankstinis DNS pateikimas, bet ir išankstinis TCP bei SSL ryšys ir tinklalapių pateikimas. Politikos pavadinime išankstinis DNS pateikimas įtrauktas atsižvelgiant į istoriją.
 
@@ -1351,6 +1353,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei ši politika nenustatyta, prie nurodytos sesijos bus automatiškai prisijungta prisijungimo ekrane praėjus tam tikram laikui be naudotojo sąveikos. Vieša sesija jau turi būti sukonfigūruota (žr. |DeviceLocalAccounts|).
 
       Jei ši politika nenustatyta, nebus automatiškai prijungiama.</translation>
+<translation id="5529037166721644841">Milisekundėmis nurodomas laikotarpis, per kurį įrenginio tvarkymo paslaugai pateikiama užklausa dėl įrenginio politikos informacijos.
+
+      Nustačius šią politiką nepaisoma numatytosios 3 valandų vertės. Tinkamos šios politikos vertės svyruoja nuo 1 800 000 (30 minučių) iki 86 400 000 (1 diena). Vertės už šio diapazono ribų bus nustatytos į šio diapazono vertę.
+
+      Jei ši politika nebus nustatyta, „<ph name="PRODUCT_OS_NAME" />“ naudos numatytąją vertę – 3 val.
+
+      Atminkite, kad jei platformoje palaikomi politikos pranešimai, atnaujinimo delsa bus nustatyta į 24 val. (bus nepaisoma visų numatytųjų nustatymų ir šios politikos vertės), nes tikimasi, kad politikos pranešimai automatiškai suaktyvins atnaujinimą kaskart, kai politika bus pakeista, todėl nereikės dažniau atnaujinti.</translation>
 <translation id="5535957389335373033">Stebėjimo tinklo paketų siuntimo dažnis milisekundėmis.
 
       Jei ši politika nenustatyta, numatytasis dažnis bus 3 minutės. Minimalus
@@ -1917,6 +1926,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Ši politika taikoma, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="7302043767260300182">Ekrano užrakto delsa, kai naudojama kintamosios srovės energija</translation>
+<translation id="7311458740754205918">Jei ši politika nustatyta kaip „true“ arba nenustatyta, naujo skirtuko puslapyje gali būti rodomi turinio pasiūlymai.
+
+      Jei ši politika nustatyta kaip „false“, automatiškai sugeneruoti turinio pasiūlymai naujo skirtuko puslapyje nerodomi.</translation>
 <translation id="7323896582714668701">Papildomi „<ph name="PRODUCT_NAME" />“ komandinės eilutės parametrai</translation>
 <translation id="7329842439428490522">Nurodoma laiko trukmė be naudotojo įvesties, po kurios ekranas išjungiamas, kai naudojama akumuliatoriaus energija.
 
@@ -2059,6 +2071,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7763479091692861127"> Ryšių, leidžiamų naudoti OS naujiniams, tipai. OS naujiniai potencialiai apsunkina ryšį dėl savo dydžio, todėl gali būti taikomi papildomi mokesčiai. Taigi pagal numatytuosius nustatymus jie nėra įgalinti brangiais laikomiems ryšių tipams, įskaitant šiuo metu naudojamus „WiMax“, „Bluetooth“ ir „Cellular“.
 
       Atpažįstami ryšio tipo identifikatoriai yra „ethernet“, „wifi“, „wimax“, „bluetooth“ ir „cellular“.</translation>
+<translation id="7763614521440615342">Rodyti turinio pasiūlymus naujo skirtuko puslapyje</translation>
 <translation id="7766336524667238790">Pateikiama informacija apie aktyvią viešojo terminalo sesiją, pvz.,
       programos ID ir versija.
 
@@ -2080,7 +2093,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis papildinių nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
 <translation id="7801886189430766248">Kai ši politika nustatyta kaip „true“, „Android“ programos duomenys įkeliami į „Android“ atsarginių kopijų serverius ir pakartotinai diegiant suderinamas programas yra atkuriami iš šių serverių.
 
-      Kai ši politika nustatyta kaip „false“, „Android“ atsarginių kopijų kūrimo paslauga bus išjungta.
+      Kai ši politika nustatyta kaip „false“, „Android“ atsarginių kopijų kūrimo paslauga yra išjungta.
 
       Jei šis nustatymas sukonfigūruotas, naudotojai negali pakeisti jo patys.
 

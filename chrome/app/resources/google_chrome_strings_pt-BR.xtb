@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">O Iniciador de aplicativos do Google Chrome será desativado.</translation>
 <translation id="1877026089748256423">O Google Chrome está desatualizado</translation>
 <translation id="1924381329666691588">Não é possível exibir o Google Chrome neste idioma.</translation>
+<translation id="2063848847527508675">É necessário reiniciar o Chrome OS para aplicar a atualização.</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2084710999043359739">Adicionar ao Google Chrome</translation>
 <translation id="2246246234298806438">O Google Chrome não consegue mostrar a visualização de impressão quando não há visualizador de PDF integrado.</translation>
@@ -52,6 +53,7 @@
 Se você decidir fazer login assim mesmo, as informações do Google Chrome, como favoritos, histórico e outras configurações serão mescladas com as informações de <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Exibir o menu do Google Chrome</translation>
 <translation id="2429317896000329049">O Google Chrome não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
+<translation id="2446511512801740068">O Chrome está desatualizado porque não foi reiniciado durante algum tempo. Uma atualização está disponível e será aplicada assim que você reiniciá-lo.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome que está em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="2582790009689336987">Em breve, este computador parará de receber atualizações do Google Chrome, porque este sistema Linux não será mais compatível.</translation>

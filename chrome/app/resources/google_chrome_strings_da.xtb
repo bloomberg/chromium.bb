@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Chrome-applisten forsvinder.</translation>
 <translation id="1877026089748256423">Chrome er forældet</translation>
 <translation id="1924381329666691588">Google Chrome kan ikke vises på dette sprog.</translation>
+<translation id="2063848847527508675">Chrome OS skal genstartes, før opdateringen kan anvendes.</translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
 <translation id="2084710999043359739">Føj til Chrome</translation>
 <translation id="2246246234298806438">Google Chrome kan ikke vise udskrifter, når den indbyggede PDF-fremviser mangler.</translation>
@@ -52,6 +53,7 @@
 Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker, historik and andre indstillinger, med <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Vis Chrome-menuen</translation>
 <translation id="2429317896000329049">Google Chrome kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængelig for dit domæne.</translation>
+<translation id="2446511512801740068">Chrome er forældet, da den ikke er blevet genstartet i et stykke tid. Der er en tilgængelig opdatering, som anvendes, så snart du genstarter.</translation>
 <translation id="2485422356828889247">Afinstaller</translation>
 <translation id="2580411288591421699">Det er ikke muligt at installere den samme version af Google Chrome, som allerede kører. Luk Google Chrome, og prøv igen.</translation>
 <translation id="2582790009689336987">Denne computer holder snart op med at modtage Google Chrome-opdateringer, da dette Linux-system ikke længere understøttes.</translation>

@@ -119,7 +119,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> wymaga nazwy użytkownika i hasła.</translation>
 <translation id="2328300916057834155">Zignorowano nieprawidłową zakładkę w indeksie <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Inne zakładki</translation>
-<translation id="2359808026110333948">Kontynuuj</translation>
+<translation id="2359808026110333948">Dalej</translation>
 <translation id="2365563543831475020">Raport o awarii utworzony w dniu: <ph name="CRASH_TIME" /> nie został przesłany</translation>
 <translation id="2367567093518048410">Poziom</translation>
 <translation id="237718015863234333">Brak dostępnych alternatywnych interfejsów</translation>
@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Certyfikat serwera <ph name="HOST_NAME" /> wydaje się sfałszowany.</translation>
 <translation id="2889159643044928134">Nie ładuj ponownie</translation>
 <translation id="2896499918916051536">Ta wtyczka nie jest obsługiwana.</translation>
+<translation id="2900469785430194048">Podczas próby wyświetlenia tej strony w Google Chrome zabrakło pamięci.</translation>
 <translation id="2909946352844186028">Wykryto zmianę sieci.</translation>
 <translation id="2915500479781995473">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. Zegar Twojego komputera jest obecnie ustawiony na <ph name="CURRENT_TIME" />. Czy to poprawny czas? Jeśli nie, ustaw go, a następnie odśwież stronę.</translation>
 <translation id="2922350208395188000">Nie można sprawdzić certyfikatu serwera.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Zastąpienie sesji publicznej</translation>
 <translation id="6358450015545214790">Co to oznacza?</translation>
 <translation id="6387478394221739770">Interesują Cię nowe, przydatne funkcje Chrome? Wypróbuj wersję beta ze strony chrome.com/beta.</translation>
+<translation id="6389758589412724634">Podczas próby wyświetlenia tej strony w Chromium zabrakło pamięci.</translation>
 <translation id="641480858134062906">Nie można załadować adresu <ph name="URL" /></translation>
 <translation id="6417515091412812850">Nie można sprawdzić, czy certyfikat został unieważniony.</translation>
 <translation id="6433595998831338502">Serwer <ph name="HOST_NAME" /> odrzucił połączenie.</translation>
@@ -630,7 +632,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8647750283161643317">Przywróć wszystkie ustawienia domyślne</translation>
 <translation id="8680787084697685621">Dane logowania na konto są nieaktualne.</translation>
 <translation id="8703575177326907206">Połączenie z witryną <ph name="DOMAIN" /> nie jest szyfrowane.</translation>
-<translation id="8713130696108419660">Błędny podpis wstępny</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8728672262656704056">Jesteś w trybie incognito</translation>
 <translation id="8730621377337864115">Gotowe</translation>

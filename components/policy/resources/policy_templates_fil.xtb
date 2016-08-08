@@ -239,6 +239,13 @@
       Kung itinakda sa true ang patakarang ito, susubukang i-download ng <ph name="PRODUCT_OS_NAME" /> ang mga auto-update payload sa pamamagitan ng HTTP. Kung itinakda sa false ang patakarang ito o hindi nakatakda, gagamitin ang HTTPS sa pagda-download ng mga auto-update payload.</translation>
 <translation id="2006530844219044261">Pamamahala ng power</translation>
 <translation id="201557587962247231">Dalas ng pag-upload ng mga ulat ng status ng device</translation>
+<translation id="2018836497795982119">Tinutukoy ang tagal sa mga millisecond kung gaano katagal na-query ang serbisyo ng pamamahala sa device para sa impormasyon ng patakaran ng user.
+
+      Kapag itinakda ang patakarang ito, mao-override ang default na value na 3 oras. Ang mga wastong value para sa patakarang ito ay nasa saklaw mula 1800000 (30 minuto) hanggang 86400000 (1 araw). Maka-clamp sa kaukulang hangganan ang anumang mga value na wala sa saklaw na ito. Kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran.
+
+      Kapag hindi itinakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang default na value na 3 oras.
+
+      Tandaan na kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras (nang hindi pinapansin ang lahat ng default at ang value ng patakarang ito) dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran, kaya hindi na kailangang madalas na mag-refresh.</translation>
 <translation id="2024476116966025075">I-configure ang kinakailangang domain name para sa mga client ng malayuang pag-access</translation>
 <translation id="2030905906517501646">Default na keyword ng provider ng paghahanap</translation>
 <translation id="206623763829450685">Tinutukoy kung aling mga scheme ng pagpapatotoo ng HTTP ang sinusuportahan ng <ph name="PRODUCT_NAME" />.
@@ -1072,11 +1079,6 @@
       Kahit ang mismong patakaran ay sinusuportahan sa mga platform sa itaas, maaaring available sa mas kaunting platform ang ine-enable nitong feature. Hindi lahat ng mga hindi na ginagamit na feature ng Web Platform ay maaaring i-enable muli. Sa mga feature lang na nakikitang nakalista sa ibaba ang maaaring maging sa limitadong yugto ng panahon, na magkakaiba para sa bawat feature. Ang pangkalahatang format ng string tag ay magiging [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Bilang sanggunian, makikita mo ang layunin sa likod ng mga pagbabago ng feature ng Web Platform sa https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Paganahin ang lock kapag naging idle o nasuspinde ang device.</translation>
-<translation id="4445684791305970001">Hindi pinapagana ang Mga Tool ng Developer at ang console ng JavaScript.
-
-      Kung pinagana mo ang setting na ito, hindi maa-access ang Mga Tool ng Developer at hindi na maaaring siyasatin ang mga elemento ng web-site. Hindi papaganahin ang anumang mga keyboard shortcut at anumang mga entry ng menu o menu ng konteksto upang buksan ang Mga Tool ng Developer o ang Console ng JavaScript.
-
-      Bibigyang-daan ng pagtatakda sa pagpipiliang ito na hindi pinagana o pag-iwan ditong hindi nakatakda ang user na gamitin ang Mga Tool ng Developer at ang console ng JavaScript.</translation>
 <translation id="4449545651113180484">I-rotate ang screen pakanan nang 270 degrees</translation>
 <translation id="4467952432486360968">I-block ang cookies ng third party</translation>
 <translation id="4474167089968829729">I-enable ang pagse-save ng mga password sa password manager</translation>
@@ -1338,6 +1340,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung nakatakda ang patakarang ito, ang tinukoy na session ay awtomatikong mala-log in kapag lumipas na ang isang takdang panahon sa screen sa pag-log in nang walang pakikipag-ugnayan ng user. Dapat ay naka-configure na ang pampublikong session (tingnan ang |DeviceLocalAccounts|).
 
       Kung hindi nakatakda ang patakarang ito, walang magaganap na awtomatikong pag-log in.</translation>
+<translation id="5529037166721644841">Tinutukoy ang tagal sa mga millisecond kung gaano katagal na-query ang serbisyo ng pamamahala sa device para sa impormasyon ng patakaran ng device.
+
+      Kapag itinakda ang patakarang ito, mao-override ang default na value na 3 oras. Ang mga wastong value para sa patakarang ito ay nasa saklaw mula 1800000 (30 minuto) hanggang 86400000 (1 araw).  Maka-clamp sa kaukulang hangganan ang anumang mga value na wala sa saklaw na ito.
+
+      Kapag hindi itinakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang default na value na 3 oras.
+
+      Tandaan na kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras (nang hindi pinapansin ang lahat ng default at value ng patakarang ito) dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran, kaya hindi na kailangang madalas na mag-refresh.</translation>
 <translation id="5535957389335373033">Gaano kadalas ipinapadala ang mga sinusubaybayang network packet, sa mga millisecond.
 
       Kung hindi nakatakda ang patakarang ito, ang default na dalas ay 3 minuto. Ang minimum
@@ -1905,6 +1914,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Sinusunod lang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled'.</translation>
 <translation id="7302043767260300182">Delay ng screen lock kapag tumatakbo habang nakasaksak sa kuryente</translation>
+<translation id="7311458740754205918">Kung itinakda ito sa true o hindi ito itinakda, ang page ng Bagong Tab ay maaaring magpakita ng mga suhestyon sa content batay sa history ng pagba-browse, mga interes o lokasyon ng user.
+
+      Kung itinakda ito sa false, hindi makikita ang awtomatikong ginawang suhestyon sa content sa page ng Bagong Tab.</translation>
 <translation id="7323896582714668701">Mga karagdagang command line na parameter para sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay i-o-off ang screen kapag tumatakbo gamit ang power ng baterya.
 
@@ -2048,6 +2060,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7763479091692861127"> Ang mga uri ng koneksyon na pinapayagang gamitin para sa mga pag-update sa OS. Potensyal na nakakapagpabagal ng koneksyon ang mga pag-update sa OS dahil sa laki ng mga ito at maaari itong makaipon ng karagdagang gastusin. Samakatuwid, hindi naka-enable ang mga ito bilang default para sa mga uri ng koneksyon na itinuturing na mahal, na kinabibilangan ng WiMax, Bluetooth at Cellular sa ngayon.
 
       Ang mga kilalang identifier ng uri ng koneksyon ay "ethernet," "wifi," "wimax," "bluetooth" at "cellular."</translation>
+<translation id="7763614521440615342">Ipakita ang mga suhestyon sa content sa page ng Bagong Tab</translation>
 <translation id="7766336524667238790">Nag-uulat ng impormasyon tungkol sa aktibong session sa kiosk, gaya ng
       application ID at bersyon.
 

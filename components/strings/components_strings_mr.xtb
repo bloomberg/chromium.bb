@@ -12,7 +12,7 @@
         या URL ला विनंती पाठविण्याची अनुमती तात्पुरती रद्द केली गेली आहे.</translation>
 <translation id="106701514854093668">डेस्‍कटॉप बुकमार्क</translation>
 <translation id="1080116354587839789">रूंदीत फिट करा</translation>
-<translation id="1103523840287552314">नेहमी अनुवाद करा <ph name="LANGUAGE" /></translation>
+<translation id="1103523840287552314">नेहमी भाषांतर करा <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">चेक केल्यास, अधिक जलद फॉर्म भरण्यासाठी या डिव्हाइसवर Chrome आपल्या कार्डची एक प्रत संचयित करेल.</translation>
 <translation id="1113869188872983271">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
 <translation id="112840717907525620">धोरण कॅशे ठीक</translation>
@@ -34,7 +34,7 @@
 <translation id="1232569758102978740">अशीर्षकांकित</translation>
 <translation id="1254117744268754948">फोल्डर निवडा</translation>
 <translation id="1264126396475825575"><ph name="CRASH_TIME" /> वाजता क्रॅश अहवाल कॅप्चर केला (अद्याप अपलोड केलेला नाही किंवा दुर्लक्ष केले)</translation>
-<translation id="1285320974508926690">या साइटचा कधीही अनुवाद करु नका</translation>
+<translation id="1285320974508926690">या साइटचा कधीही भाषांतर करु नका</translation>
 <translation id="129553762522093515">अलीकडे बंद केलेले</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />आपल्या कुकीज साफ करून पहा<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">नावनोंदणी डोमेन:</translation>
@@ -170,6 +170,7 @@
 <translation id="284702764277384724"><ph name="HOST_NAME" /> वरील सर्व्हर प्रमाणपत्र खोटे असल्याचे दिसते.</translation>
 <translation id="2889159643044928134">रीलोड करु नका</translation>
 <translation id="2896499918916051536">हे प्लगिन समर्थित नाही.</translation>
+<translation id="2900469785430194048">हे वेबपृष्ठ प्रदर्शित करण्याचा प्रयत्न करताना Google Chrome ची मेमरी संपली आहे.</translation>
 <translation id="2909946352844186028">एक नेटवर्क बदल आढळला.</translation>
 <translation id="2915500479781995473">हे सर्व्हर ते <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकले नाही; त्याचे सुरक्षितता प्रमाणपत्र कालबाह्य झाले आहे. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. आपल्या संगणकाचे घड्याळ सध्या <ph name="CURRENT_TIME" /> वर सेट केले आहे. ते बरोबर वाटते आहे? नसल्यास, आपण आपल्या प्रणालीचे घड्याळ दुरुस्त करावे आणि नंतर हे पृष्ठ रीफ्रेश करावे.</translation>
 <translation id="2922350208395188000">सर्व्हरचे प्रमाणपत्र तपासणे शक्य नाही.</translation>
@@ -265,7 +266,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />प्रॉक्सी, फायरवॉल आणि DNS कॉन्फिगरेशन तपासणे<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">आपण कॉपी केलेल्याचा दुवा जोडा</translation>
 <translation id="3744899669254331632">Chromium प्रक्रिया करू शकत नसलेले सरमिसळ केलेले क्रेडेन्‍शियल वेबसाइटने पाठविल्‍याने आपण आत्ता <ph name="SITE" /> ला भेट देऊ शकत नाही. नेटवर्क त्रुटी आणि आक्रमण सहसा तात्पुरते आहेत त्यामुळे संभवत: हे पृष्‍ठ नंतर कार्य करेल.</translation>
-<translation id="375403751935624634">सर्व्हर त्रुटीमुळे अनुवाद अयशस्वी झाला.</translation>
+<translation id="375403751935624634">सर्व्हर त्रुटीमुळे भाषांतर अयशस्वी झाला.</translation>
 <translation id="3759461132968374835">आपण अलीकडे कोणतेही क्रॅश नोंदवले नाहीत. क्रॅश नोंदवणे अक्षम असताना झालेले क्रॅश येथे दिसून येणार नाहीत.</translation>
 <translation id="3788090790273268753">या साइटसाठी असलेले प्रमाणपत्र 2016 मध्‍ये कालबाह्य होते आणि प्रमाणपत्र श्रृंखलेमध्‍ये SHA-1 वापरून स्वाक्षरी केलेले प्रमाणपत्र असते.</translation>
 <translation id="382518646247711829">आपण प्रॉक्सी सर्व्हर वापरत असल्यास...</translation>
@@ -355,7 +356,7 @@
 <translation id="5019198164206649151">समर्थन संचयन खराब स्थितीत</translation>
 <translation id="5023310440958281426">आपल्या प्रशासकाची धोरणे तपासा</translation>
 <translation id="5029568752722684782">कॉपी साफ करा</translation>
-<translation id="5031870354684148875">Google अनुवाद बद्दल</translation>
+<translation id="5031870354684148875">Google भाषांतर बद्दल</translation>
 <translation id="5040262127954254034">गोपनीयता</translation>
 <translation id="5045550434625856497">अयोग्य संकेतशब्द</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />प्रॉक्सी पत्ता तपासणे<ph name="END_LINK" /></translation>
@@ -454,6 +455,7 @@
 <translation id="6355080345576803305">सार्वजनिक सत्र अधिशून्य</translation>
 <translation id="6358450015545214790">याचा अर्थ काय आहे?</translation>
 <translation id="6387478394221739770">छान नवीन Chrome वैशिष्ट्यांमध्ये स्वारस्य आहे? chrome.com/beta वरील आमचे बीटा चॅनेल वापरून पहा.</translation>
+<translation id="6389758589412724634">हे वेबपृष्ठ प्रदर्शित करण्याचा प्रयत्न करताना Chromium ची मेमरी संपली आहे.</translation>
 <translation id="641480858134062906"><ph name="URL" /> लोड करण्‍यात अयशस्वी</translation>
 <translation id="6417515091412812850">प्रमाणपत्र मागे घेतले की नाही हे तपासण्यात अक्षम.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> नी कनेक्ट करण्यास नकार दिला.</translation>
@@ -481,7 +483,7 @@
 <translation id="6757797048963528358">आपले डिव्हाइस निष्क्रीय झाले.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> येथील वेबपृष्ठ सध्या अनुपलब्ध आहे. ते ओव्हरलोड असावे किंवा देखरेखीसाठी डाउन असावे.</translation>
-<translation id="6831043979455480757">अनुवाद करा</translation>
+<translation id="6831043979455480757">भाषांतर करा</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
 <translation id="6874604403660855544">&amp;जोडा पुन्हा करा</translation>
 <translation id="6891596781022320156">धोरण स्तर समर्थित नाही.</translation>
@@ -546,12 +548,12 @@
 <translation id="7549584377607005141">हे वेबपृष्ठ योग्यरितीने प्रदर्शित केले जाण्यासाठी आपण पूर्वी प्रविष्ट केलेला डेटा आवश्यक आहे. आपण हा डेटा पुन्हा पाठवू शकता, परंतु असे केल्याने या पृष्ठाने मागे केलेली कोणत्याही क्रियेची पुनरावृत्ती आपण कराल.</translation>
 <translation id="7554791636758816595">नवीन टॅब</translation>
 <translation id="7567204685887185387">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र कदाचित लबाडीने जारी केले असावे. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
-<translation id="7568593326407688803">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE" />मध्ये आहे आपण याचा अनुवाद करु इच्छिता?</translation>
+<translation id="7568593326407688803">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE" />मध्ये आहे आपण याचा भाषांतर करु इच्छिता?</translation>
 <translation id="7569952961197462199">Chrome मधून क्रेडिट कार्ड काढायचे?</translation>
 <translation id="7578104083680115302">आपण Google सह जतन केलेल्या कार्डचा वापर करून डिव्‍हाइसेसवरून द्रुतपणे साइट आणि अॅप्सवर देय द्या.</translation>
 <translation id="7592362899630581445">सर्व्हरचे प्रमाणपत्र नाव मर्यादांचे उल्लंघन करते.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> सध्या ही विनंती हाताळण्यात अक्षम आहे.</translation>
-<translation id="7600965453749440009">कधीही <ph name="LANGUAGE" /> चा अनुवाद करु नका</translation>
+<translation id="7600965453749440009">कधीही <ph name="LANGUAGE" /> चा भाषांतर करु नका</translation>
 <translation id="7610193165460212391">मूल्य <ph name="VALUE" /> श्रेणीच्या बाहेर आहे.</translation>
 <translation id="7613889955535752492">कालबाह्य: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">आपल्याकडे आधीपासूनच डेटा आहे जो आपल्या Google खाते संकेतशब्दाची विभिन्न आवृत्ती वापरुन कूटबद्ध करण्‍यात आला आहे. कृपया तो खाली प्रविष्‍ट करा.</translation>
@@ -587,7 +589,7 @@
 <translation id="7956713633345437162">Mobile बुकमार्क</translation>
 <translation id="7961015016161918242">कधीही नाही</translation>
 <translation id="7962083544045318153">क्रॅश ID <ph name="CRASH_LOCAL_ID" /></translation>
-<translation id="7983301409776629893"> नेहमी <ph name="ORIGINAL_LANGUAGE" /> मधून <ph name="TARGET_LANGUAGE" /> मध्ये अनुवाद करा</translation>
+<translation id="7983301409776629893"> नेहमी <ph name="ORIGINAL_LANGUAGE" /> मधून <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतर करा</translation>
 <translation id="7995512525968007366">निर्दिष्ट केलेले नाही</translation>
 <translation id="8012647001091218357">आम्ही याक्षणी आपल्या पालकांपर्यंत पोहोचू शकलो नाही. कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="8034522405403831421">हे पृष्‍ठ <ph name="SOURCE_LANGUAGE" /> मध्ये आहे. त्यास <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतरीत करायचे?</translation>
@@ -609,7 +611,7 @@
 <translation id="8289355894181816810">याचा निश्चित अर्थ आपल्याला माहिती नसल्यास आपल्या नेटवर्क प्रशासकाशी संपर्क साधा.</translation>
 <translation id="8293206222192510085">बुकमार्क जोडा</translation>
 <translation id="8294431847097064396">स्रोत</translation>
-<translation id="8308427013383895095">नेटवर्क कनेक्शनसह समस्या असल्यामुळे अनुवाद अयशस्वी झाला.</translation>
+<translation id="8308427013383895095">नेटवर्क कनेक्शनसह समस्या असल्यामुळे भाषांतर अयशस्वी झाला.</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> मधील प्रवेश नाकारला</translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
 <translation id="8363502534493474904">विमान मोड बंद करा</translation>
@@ -622,7 +624,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> नी प्रतिसाद देण्यात बराच वेळ घेतला.</translation>
 <translation id="8530504477309582336">या प्रकारचे कार्ड Google Payments द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
 <translation id="8550022383519221471">समक्रमित सेवा आपल्या डोमेनसाठी उपलब्ध नाही.</translation>
-<translation id="8553075262323480129">अनुवाद करण्यात अयशस्वी कारण पृष्ठाची भाषा निर्धारित करणे शक्य नाही.</translation>
+<translation id="8553075262323480129">भाषांतर करण्यात अयशस्वी कारण पृष्ठाची भाषा निर्धारित करणे शक्य नाही.</translation>
 <translation id="8559762987265718583">आपल्या डिव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्याने <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन स्थापित केले जाऊ शकले नाही.</translation>
 <translation id="856992080682148">या साइटसाठी असलेले प्रमाणपत्र 2017 किंवा त्यानंतर कालबाह्य होते आणि प्रमाणपत्र श्रृंखलेमध्‍ये SHA-1 वापरून स्वाक्षरी केलेले प्रमाणपत्र असते.</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" /> मध्ये पृष्ठ अनुवादित करत आहे...</translation>
@@ -631,7 +633,6 @@
 <translation id="8647750283161643317">सर्व डीफॉल्टमध्ये रीसेट करा</translation>
 <translation id="8680787084697685621">खाते साइन-इन तपशील कालबाह्य झाला.</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> चे आपले कनेक्शन कूटबद्ध केलेले नाही.</translation>
-<translation id="8713130696108419660">खराब मूळ स्वाक्षरी</translation>
 <translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8728672262656704056">आपण गुप्त झाला आहात</translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>

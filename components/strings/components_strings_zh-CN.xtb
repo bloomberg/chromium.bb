@@ -61,7 +61,7 @@
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1645368109819982629">协议不受支持</translation>
 <translation id="1655462015569774233">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
-<translation id="1676269943528358898"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Google Chrome 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Google Chrome 尚未进行任何数据交换便停止了连接。</translation>
+<translation id="1676269943528358898"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Google Chrome 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Google Chrome 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="168841957122794586">服务器证书包含弱加密密钥。</translation>
 <translation id="1701955595840307032">获取推荐内容</translation>
 <translation id="1706954506755087368">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书明天才会生效。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书 # 天后才会生效。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。}}</translation>
@@ -169,6 +169,7 @@
 <translation id="284702764277384724"><ph name="HOST_NAME" /> 上的服务器证书似乎是伪造的。</translation>
 <translation id="2889159643044928134">不重新加载</translation>
 <translation id="2896499918916051536">不支持该插件。</translation>
+<translation id="2900469785430194048">Google Chrome 在尝试显示此网页时内存不足。</translation>
 <translation id="2909946352844186028">检测到了网络变化。</translation>
 <translation id="2915500479781995473">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书已过期。出现此问题的原因可能是配置有误或您的连接被拦截了。计算机的时钟目前已设为<ph name="CURRENT_TIME" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。</translation>
 <translation id="2922350208395188000">无法核实服务器证书。</translation>
@@ -448,6 +449,7 @@
 <translation id="6355080345576803305">覆盖公用自助终端</translation>
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6387478394221739770">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/beta，试用我们的测试版！</translation>
+<translation id="6389758589412724634">Chromium 在尝试显示此网页时内存不足。</translation>
 <translation id="641480858134062906">无法加载 <ph name="URL" /></translation>
 <translation id="6417515091412812850">无法检查证书是否已吊销。</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒绝了我们的连接请求。</translation>
@@ -625,7 +627,6 @@
 <translation id="8647750283161643317">全部重置为默认值</translation>
 <translation id="8680787084697685621">帐户登录详细信息已过期。</translation>
 <translation id="8703575177326907206">您与 <ph name="DOMAIN" /> 的连接未加密。</translation>
-<translation id="8713130696108419660">初始签名错误</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8728672262656704056">您已进入隐身模式</translation>
 <translation id="8730621377337864115">完成</translation>
@@ -664,7 +665,7 @@
 <translation id="9050666287014529139">密码</translation>
 <translation id="9065203028668620118">修改</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" /> 网页无法正常运作</translation>
-<translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
+<translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9148507642005240123">撤消修改(&amp;U)</translation>
 <translation id="9157595877708044936">正在设置...</translation>

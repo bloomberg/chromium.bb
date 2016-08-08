@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Videti je, da je potrdilo strežnika na <ph name="HOST_NAME" /> ponarejeno.</translation>
 <translation id="2889159643044928134">Ne naloži znova</translation>
 <translation id="2896499918916051536">Ta vtičnik ni podprt.</translation>
+<translation id="2900469785430194048">Google Chromu je med poskusom prikazovanja te spletne strani zmanjkalo pomnilnika.</translation>
 <translation id="2909946352844186028">Zaznana je bila sprememba omrežja.</translation>
 <translation id="2915500479781995473">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME" />. Je to pravilno? Če ni, popravite uro v sistemu in osvežite stran.
 </translation>
@@ -454,6 +455,7 @@
 <translation id="6355080345576803305">Preglasitev javne seje</translation>
 <translation id="6358450015545214790">Več o teh nastavitvah</translation>
 <translation id="6387478394221739770">Vas zanimajo super nove funkcije Chroma? Preskusite naš kanal za različice beta na chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromiumu je med poskusom prikazovanja te spletne strani zmanjkalo pomnilnika.</translation>
 <translation id="641480858134062906">Nalaganje <ph name="URL" /> ni uspelo</translation>
 <translation id="6417515091412812850">Ni mogoče preveriti, ali je bilo potrdilo preklicano.</translation>
 <translation id="6433595998831338502">Spletno mesto <ph name="HOST_NAME" /> ni dovolilo povezave.</translation>
@@ -631,7 +633,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8647750283161643317">Ponastavi vse na privzete</translation>
 <translation id="8680787084697685621">Podrobnosti prijave v račun so zastarele.</translation>
 <translation id="8703575177326907206">Vaša povezava z <ph name="DOMAIN" /> ni kodirana.</translation>
-<translation id="8713130696108419660">Napačen začetni podpis</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8728672262656704056">Uporabljate način brez beleženja zgodovine</translation>
 <translation id="8730621377337864115">Končano</translation>

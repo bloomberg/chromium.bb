@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1091157412887719337">Ошибка. Поисковая система недоступна.</translation>
+<translation id="117738548141695034">Переключатель Blimp</translation>
 <translation id="1416550906796893042">Версия приложения</translation>
 <translation id="1750179245464827362">Показать сведения об отладке</translation>
 <translation id="2004526128230838685">Неизвестная ошибка.</translation>
 <translation id="2023631438558435272">Ошибка. Недействительный ответ.</translation>
 <translation id="2078561879028077171">Версия</translation>
 <translation id="2117453604279487107">URL указателя</translation>
+<translation id="2218944627481691815">Положение переключателя Blimp изменено. Перезапустите приложение.</translation>
 <translation id="2353984724370197742">Ошибка. Не удалось обработать запрос.</translation>
 <translation id="2789927415041640472">Чтобы использовать новую конфигурацию, перезапустите приложение.</translation>
 <translation id="3046825211487065480">Ошибка. Второй запрос был отправлен раньше, чем пришел ответ на первый.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Соединение прервано. Причина: %1$s.</translation>
 <translation id="7596558890252710462">Операционная система</translation>
 <translation id="7608553142876436780">IP-адрес поисковой системы</translation>
+<translation id="7795546637165553439">Настройки Blimp</translation>
 <translation id="7961542533680218955">Готово.</translation>
 <translation id="8514856595257368555">Токен получен.</translation>
 <translation id="8880704056643418312">Число фиксаций</translation>

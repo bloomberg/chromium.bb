@@ -225,6 +225,13 @@
       Jeśli ustawisz tu wartość prawda, <ph name="PRODUCT_OS_NAME" /> będzie próbować pobierać ładunki aktualizacji automatycznych przez HTTP. Jeśli nie skonfigurujesz tej zasady lub ustawisz w niej wartość fałsz, do pobierania ładunków aktualizacji automatycznych będzie używany protokół HTTPS.</translation>
 <translation id="2006530844219044261">Zarządzanie energią</translation>
 <translation id="201557587962247231">Częstotliwość pobierania raportów o stanie urządzenia</translation>
+<translation id="2018836497795982119">Określa, co ile milisekund do usługi zarządzania urządzeniami będzie wysyłane zapytanie o zasady dotyczące użytkowników.
+
+      Skonfigurowanie tej zasady powoduje zastąpienie wartości domyślnej 3 godzin. Dozwolone są wartości od 1 800 000 (30 minut) do 86 400 000 (1 dzień). Wartości spoza tego zakresu zostaną sprowadzone do odpowiedniej wartości granicznej. Jeśli platforma obsługuje powiadomienia o naruszeniach zasad, czas odświeżania będzie ustawiony na 24 godziny, ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad.
+
+      Pozostawienie tej zasady nieskonfigurowanej powoduje, że <ph name="PRODUCT_NAME" /> używa wartości domyślnej 3 godzin.
+
+      Uwaga: jeśli platforma obsługuje powiadomienia o naruszeniach zasad, czas odświeżania będzie ustawiony na 24 godziny (wartości domyślne i wartość tej zasady będą ignorowane), ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad, przez co częstsze odświeżanie jest niepotrzebne.</translation>
 <translation id="2024476116966025075">Konfiguracja wymaganej nazwy domeny dla klientów zdalnego dostępu</translation>
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="206623763829450685">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME" />.
@@ -1022,7 +1029,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Mimo że zasada działa na tych platformach, włączana przez nią funkcja może być dostępna tylko na niektórych z nich. Nie wszystkie wycofane funkcje platform internetowych można ponownie włączyć. Zasada pozwala włączyć tylko te wymienione poniżej – na określony czas, który różni się w zależności od funkcji. Ogólny format tagu z ciągiem znaków to [NazwaWycofanejFunkcji]_EffectiveUntil[rrrrmmdd]. Przyczyny zmian funkcji platform internetowych możesz w razie potrzeby znaleźć na https://bit.ly/blinkintents
       </translation>
 <translation id="4442582539341804154">Włącz blokadę w przypadku bezczynności lub zawieszenia działania urządzenia</translation>
-<translation id="4445684791305970001">Wyłącza narzędzia dla programistów i konsolę JavaScript. Jeśli włączysz to ustawienie, niemożliwe będzie uzyskanie dostępu do narzędzi dla programistów i dokonanie przeglądu elementów witryny. Wszelkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą nieaktywne. Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
 <translation id="4449545651113180484">Obróć ekran w prawo o 270 stopni</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
 <translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
@@ -1242,6 +1248,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada jest ustawiona, użytkownik zostanie automatycznie zalogowany do określonej sesji po upływie określonego czasu nieaktywności na ekranie logowania. Sesja publiczna musi zostać wcześniej skonfigurowana (zobacz zasadę |DeviceLocalAccounts|).
 
       Jeśli ta zasada jest nieustawiona, automatyczne logowanie nie działa.</translation>
+<translation id="5529037166721644841">Określa, co ile milisekund do usługi zarządzania urządzeniami będzie wysyłane zapytanie o zasady dotyczące urządzeń.
+
+      Skonfigurowanie tej zasady powoduje zastąpienie wartości domyślnej 3 godzin. Dozwolone są wartości od 1 800 000 (30 minut) do 86 400 000 (1 dzień). Wartości spoza tego zakresu zostaną sprowadzone do odpowiedniej wartości granicznej.
+
+      Pozostawienie tej zasady nieskonfigurowanej powoduje, że <ph name="PRODUCT_OS_NAME" /> używa wartości domyślnej 3 godzin.
+
+      Uwaga: jeśli platforma obsługuje powiadomienia o zasadach, czas odświeżania będzie ustawiony na 24 godziny (wartości domyślne i wartość tej zasady będą ignorowane), ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad, przez co częstsze odświeżanie jest niepotrzebne.</translation>
 <translation id="5535957389335373033">Częstotliwość wysyłania pakietów sieciowych monitorowania (w milisekundach).
 
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy minuty.
@@ -1761,6 +1774,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Ta zasada jest stosowana tylko wtedy, gdy włączono zasadę „DefaultSearchProviderEnabled”.</translation>
 <translation id="7302043767260300182">Opóźnienie blokady ekranu przy zasilaniu sieciowym</translation>
+<translation id="7311458740754205918">Jeśli ta zasada ma wartość prawda lub nie jest skonfigurowana, na stronie Nowa karta mogą pojawiać się polecane treści wybrane na podstawie historii przeglądania, zainteresowań lub lokalizacji użytkownika.
+
+      Jeśli ta zasada ma wartość fałsz, automatycznie wybierane polecane treści nie będą wyświetlać się na stronie Nowa karta.</translation>
 <translation id="7323896582714668701">Dodatkowe parametry wiersza poleceń dla <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Określa, po jakim czasie nieaktywności użytkownika wyłączany jest ekran przy zasilaniu z baterii.
 
@@ -1893,6 +1909,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7763479091692861127"> Typy połączeń, które mogą być używane do aktualizowania systemu operacyjnego. Z powodu swojego rozmiaru aktualizacje te silnie wykorzystują połączenie, co może skutkować dodatkowymi kosztami. Dlatego domyślnie są wyłączone w przypadku połączeń uznanych za „kosztowne”, czyli aktualnie dla WiMax, Bluetooth i komórek.
 
       Rozpoznawane identyfikatory typów połączeń to  „ethernet”, „wifi”, „wimax”, „bluetooth” i „cellular”.</translation>
+<translation id="7763614521440615342">Pokazuj polecane treści na stronie Nowa karta</translation>
 <translation id="7766336524667238790">Przesyłaj informacje o aktywnej sesji publicznej, np.
       dotyczące identyfikatora i wersji aplikacji.
 

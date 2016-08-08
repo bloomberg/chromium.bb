@@ -245,6 +245,13 @@
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan cuba memuat turun beban bayar auto kemas kini melalui HTTP. Jika dasar ini ditetapkan kepada palsu atau tidak ditetapkan, HTTPS akan digunakan untuk memuat turun beban bayar auto kemas kini.</translation>
 <translation id="2006530844219044261">Pengurusan kuasa</translation>
 <translation id="201557587962247231">Kekerapan muat naik laporan status peranti</translation>
+<translation id="2018836497795982119">Menentukan tempoh dalam milisaat ketika perkhidmatan pengurusan peranti diminta maklumat dasar pengguna.
+
+      Tindakan menetapkan dasar ini akan mengatasi nilai lalai iaitu 3 jam. Nilai yang sah untuk dasar ini ialah dalam julat 1800000 (30 minit) hingga 86400000 (1 hari). Sebarang nilai yang tidak berada dalam julat ini akan diapit ke sempadan masing-masing. Jika platform menyokong pemberitahuan dasar, kelewatan muat semula akan ditetapkan kepada 24 jam kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah.
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan nilai lalai 3 jam.
+
+      Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, kelewatan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
 <translation id="2024476116966025075">Konfigurasikan nama domain yang diperlukan untuk pelanggan akses jauh</translation>
 <translation id="2030905906517501646">Kata kunci pembekal carian lalai</translation>
 <translation id="206623763829450685">Menetapkan skim pengesahan HTTP yang disokong oleh <ph name="PRODUCT_NAME" />.
@@ -1086,11 +1093,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Walaupun dasar ini sendiri disokong pada platform di atas, ciri yang didayakannya mungkin tersedia pada lagi kurang platform. Bukan semua ciri Platform Web yang ditamatkan boleh didayakan semula. Hanya ciri yang disenaraikan dengan jelas di bawah ini boleh didayakan semula untuk tempoh yang terhad, yang berbeza bagi setiap ciri. Format umum bagi tanda rentetan ialah [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Sebagai rujukan, anda boleh dapati tujuan di sebalik perubahan ciri Platform Web di https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Dayakan kunci apabila peranti melahu atau digantung</translation>
-<translation id="4445684791305970001">Melumpuhkan Alat Pembangun dan konsol JavaScript.
-
-      Jika anda mendayakan tetapan ini, Alat Pembangun tidak boleh diakses dan elemen tapak web tidak lagi boleh diperiksa. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.
-
-      Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan, akan membolehkan pengguna menggunakan Alat Pembangun dan konsol JavaScript.</translation>
 <translation id="4449545651113180484">Putar skrin 270 darjah mengikut arah jam</translation>
 <translation id="4467952432486360968">Sekat kuki pihak ketiga</translation>
 <translation id="4474167089968829729">Dayakan penyimpanan kata laluan pada pengurus kata laluan</translation>
@@ -1351,6 +1353,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika dasar ini ditetapkan, sesi yang dinyatakan akan log masuk secara automatik selepas berlalunya suatu tempoh pada skrin log masuk tanpa interaksi pengguna. Sesi terbuka hendaklah telah dikonfigurasi (lihat |DeviceLocalAccounts|).
 
       Jika dasar ini tidak ditetapkan, log masuk automatik tidak akan berlaku.</translation>
+<translation id="5529037166721644841">Menentukan tempoh dalam milisaat ketika perkhidmatan pengurusan peranti diminta maklumat dasar peranti.
+
+      Tindakan menetapkan dasar ini akan mengatasi nilai lalai iaitu 3 jam. Nilai yang sah untuk dasar ini ialah dalam julat 1800000 (30 minit) hingga 86400000 (1 hari).
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan menggunakan nilai lalai 3 jam.
+
+      Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, kelewatan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
 <translation id="5535957389335373033">Kekerapan pemantauan bingkisan rangkaian dihantar, dalam milisaat.
 
       Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 minit. Kekerapan minimum
@@ -1919,6 +1928,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Dasar ini hanya dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="7302043767260300182">Kelewatan kunci skrin apabila dijalankan dengan kuasa AC</translation>
+<translation id="7311458740754205918">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, halaman Tab Baharu boleh menunjukkan cadangan kandungan berdasarkan sejarah penyemakan imbas, minat atau lokasi pengguna.
+
+      Jika dasar ini ditetapkan kepada palsu, cadangan kandungan yang dihasilkan secara automatik tidak ditunjukkan pada halaman Tab Baharu.</translation>
 <translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Menyatakan panjang masa tanpa input pengguna dan skrin akan dimatikan selepas masa ini tamat apabila dijalankan dengan kuasa bateri.
 
@@ -2061,6 +2073,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7763479091692861127"> Jenis sambungan yang dibenarkan untuk digunakan bagi kemas kini OS. Kemas kini OS mungkin akan membebankan sambungan disebabkan oleh saiznya dan boleh menyebabkan kos tambahan. Oleh itu, kemas kini ini tidak didayakan secara lalai untuk jenis sambungan yang dianggap mahal, yang merangkumi WiMax, Bluetooth dan Selular pada masa ini.
 
       Pengecam jenis sambungan yang diperakui ialah "ethernet", "wifi", "wimax", "bluetooth" dan "selular".</translation>
+<translation id="7763614521440615342">Tunjukkan cadangan kandungan pada halaman Tab Baharu</translation>
 <translation id="7766336524667238790">Laporkan maklumat tentang sesi kios yang aktif, seperti ID
       dan versi aplikasi.
 
@@ -2080,13 +2093,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7796141075993499320">Membolehkan anda menentukan senarai pola url yang dibenarkan untuk menjalankan pemalam.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPluginsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
-<translation id="7801886189430766248">Apabila dasar ini ditetapkan kepada benar, data apl Android dimuat naik ke pelayan Sandaran Android dan dipulihkan daripadanya semasa pemasangan semula apl untuk apl yang serasi.
+<translation id="7801886189430766248">Apabila dasar ini ditetapkan kepada benar, data apl Android dimuat naik ke pelayan Android Backup dan dipulihkan daripadanya semasa pemasangan semula apl untuk apl yang serasi.
 
-      Apabila dasar ini ditetapkan kepada palsu, Perkhidmatan Sandaran Android akan dimatikan.
+      Apabila dasar ini ditetapkan kepada palsu, Android Backup Service akan dimatikan.
 
       Jika tetapan ini dikonfigurasikan, maka pengguna tidak akan dapat mengubahnya sendiri.
 
-      Jika tetapan ini tidak dikonfigurasikan, maka pengguna akan dapat menghidupkan dan mematikan Perkhidmatan Sandaran Android dalam apl Tetapan Android.</translation>
+      Jika tetapan ini tidak dikonfigurasikan, maka pengguna akan dapat menghidupkan dan mematikan Android Backup Service dalam apl Tetapan Android.</translation>
 <translation id="7818131573217430250">Tetapkan keadaan lalai mod kontras tinggi pada skrin log masuk</translation>
 <translation id="7831595031698917016">Menentukan kelewatan maksimum dalam milisaat antara menerima pentaksahan dan mengambil dasar baharu dari perkhidmatan pengurusan peranti.
 

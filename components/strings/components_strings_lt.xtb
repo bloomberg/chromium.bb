@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Panašu, kad <ph name="HOST_NAME" /> serverio sertifikatas yra suklastotas.</translation>
 <translation id="2889159643044928134">Neįkelti iš naujo</translation>
 <translation id="2896499918916051536">Šis papildinys nepalaikomas.</translation>
+<translation id="2900469785430194048">„Google Chrome“ trūksta atminties šiam tinklalapiui pateikti.</translation>
 <translation id="2909946352844186028">Aptiktas tinklo pasikeitimas.</translation>
 <translation id="2915500479781995473">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nebegalioja. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo. Šiuo metu jūsų kompiuterio laikrodis nustatytas į <ph name="CURRENT_TIME" />. Ar tai tinkamas laikas? Jei netinkamas, turėtumėte pakeisti sistemos laikrodžio laiką ir atnaujinti šį puslapį.</translation>
 <translation id="2922350208395188000">Neįmanoma patikrinti serverio sertifikato.</translation>
@@ -454,6 +455,7 @@
 <translation id="6355080345576803305">Viešosios sesijos nepaisymas</translation>
 <translation id="6358450015545214790">Ką tai reiškia?</translation>
 <translation id="6387478394221739770">Domina naujos „Chrome“ funkcijos? Išbandykite mūsų beta kanalą adresu chrome.com/beta.</translation>
+<translation id="6389758589412724634">„Chromium“ trūksta atminties šiam tinklalapiui pateikti.</translation>
 <translation id="641480858134062906"><ph name="URL" /> nepavyko įkelti</translation>
 <translation id="6417515091412812850">Nepavyksta patikrinti, ar sertifikatas buvo panaikintas.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> atsisakė prisijungti.</translation>
@@ -631,7 +633,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8647750283161643317">Viską nustatyti į numatytuosius nustatymus</translation>
 <translation id="8680787084697685621">Išsami prisijungimo prie paskyros informacija pasenusi.</translation>
 <translation id="8703575177326907206">Jūsų ryšys su <ph name="DOMAIN" /> nekoduotas.</translation>
-<translation id="8713130696108419660">Netinkamas pradinis parašas</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8728672262656704056">Veikia inkognito režimas</translation>
 <translation id="8730621377337864115">Atlikta</translation>

@@ -229,6 +229,13 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si aquesta política es configura com a "true", <ph name="PRODUCT_OS_NAME" /> provarà de baixar les càrregues útils d'actualització automàtica mitjançant HTTP. Si la política es configura com a "false" o si no es configura, s'utilitzarà HTTPS per baixar les càrregues útils d'actualització automàtica.</translation>
 <translation id="2006530844219044261">Gestió de l'alimentació</translation>
 <translation id="201557587962247231">Freqüència amb què s'envien càrregues per informar sobre l'estat del dispositiu</translation>
+<translation id="2018836497795982119">Especifica la freqüència en mil·lisegons amb què se sol·licita informació sobre la política del dispositiu al servei de gestió de dispositius.
+
+      Si aquesta política s'estableix, el valor predeterminat de tres hores se substituirà per un dels valors vàlids, que es troben en un interval d'1.800.000 (30 minuts) a 86.400.000 mil·lisegons (un dia). Els valors que no es trobin dins d'aquest interval s'ajustaran al límit respectiu. Si la plataforma admet notificacions de la política, el retard d'actualització s'establirà en 24 hores, ja que es preveu que les notificacions de la política obliguin a fer una actualització automàtica cada vegada que canviï la política.
+
+      Si aquesta política no s'estableix, <ph name="PRODUCT_NAME" /> utilitzarà el valor predeterminat de tres hores.
+
+      Tingues en compte que, si la plataforma admet les notificacions de la política, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que les notificacions de la política obliguin a fer una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
 <translation id="2024476116966025075">Configura el nom de domini requerit per a clients d'accés remot</translation>
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
 <translation id="206623763829450685">Especifica quins esquemes d'autenticació HTTP són compatibles amb <ph name="PRODUCT_NAME" />.
@@ -881,9 +888,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
       Si aquesta política està activada, el protocol SPDY no estarà disponible a <ph name="PRODUCT_NAME" />.
 
-      Si estableixes aquesta política com a desactivada, es permetrà l'ús d'SPDY.
+      Si desactives aquesta política, es permetrà l'ús d'SPDY.
 
-      Si la deixes sense establir, SPDY estarà disponible.</translation>
+      Si no hi dus a terme cap acció, SPDY estarà disponible.</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
 <translation id="3898060089412156345">Permet o denega la captura d'àudio.
 
@@ -1022,7 +1029,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       Tot i que la política s'admet en les plataformes anteriors, pot ser que la funció que activi no estigui disponible en totes les plataformes. No totes les funcions obsoletes de la plataforma web es poden tornar a activar; només les que s'indiquin explícitament a continuació durant un període de temps limitat, que varia segons la funció. El format general de l'etiqueta de cadena és el següent: [FuncióObsoleta]_EffectiveUntil[aaaammdd]. Com a referència, podeu consultar la finalitat dels canvis de la funció de la plataforma web a la pàgina https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Activació del bloqueig quan el dispositiu està inactiu o se suspèn</translation>
-<translation id="4445684791305970001">Desactiva les eines per a desenvolupador i la consola de JavaScript. Si activeu aquest paràmetre, no es podrà accedir a les eines per a desenvolupadors i no es podran inspeccionar més els elements del lloc web. Les tecles de drecera i les entrades dels menús o dels menús contextuals per obrir les eines per a desenvolupadors es desactivaran. Si es desactiva o no es defineix aquesta opció, es podran utilitzar les eines per a desenvolupadors i la consola de JavaScript.</translation>
 <translation id="4449545651113180484">Gira la pantalla 270 graus en el sentit de les agulles del rellotge</translation>
 <translation id="4467952432486360968">Bloqueja les galetes de tercers</translation>
 <translation id="4474167089968829729">Permet que el gestor de contrasenyes desi contrasenyes</translation>
@@ -1167,11 +1173,11 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
       Activa la predicció de xarxa a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
 
-      No només controla la baixada prèvia de DNS, sinó també la connexió i la renderització prèvies de TCP i SSL de les pàgines web. El nom de la política fa referència a la baixada prèvia de DNS per qüestions relacionades amb l'historial.
+      No només controla la baixada prèvia de DNS, sinó també la connexió prèvia de TCP i SSL i la renderització prèvia de pàgines web. El nom de la política fa referència a la baixada prèvia de DNS per qüestions històriques.
 
       Si actives o desactives aquesta opció de configuració, els usuaris no la podran canviar ni substituir a <ph name="PRODUCT_NAME" />.
 
-      Si aquesta política es deixa sense establir, l'opció s'activarà però l'usuari podrà canviar-la.</translation>
+      Si no hi dus a terme cap acció, l'opció s'activarà però l'usuari podrà canviar-la.</translation>
 <translation id="5208240613060747912">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès mostrar notificacions. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultNotificationsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="5226033722357981948">Indica si s'ha de desactivar el cercador de connectors</translation>
 <translation id="523505283826916779">Configuració d'accessibilitat</translation>
@@ -1242,6 +1248,13 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       Si aquesta política es defineix, s'iniciarà automàticament la sessió especificada després d'un període de temps a la pantalla d'inici de sessió sense interacció de l'usuari. La sessió pública ja ha d'estar configurada (consulteu |DeviceLocalAccounts|).
 
       Si aquesta política no es defineix, no hi haurà cap inici de sessió automàtic.</translation>
+<translation id="5529037166721644841">Especifica la freqüència en mil·lisegons amb què se sol·licita informació sobre la política del dispositiu al servei de gestió de dispositius.
+
+      Si aquesta política s'estableix, el valor predeterminat de tres hores se substituirà per un dels valors vàlids, que es troben en un interval d'1.800.000 (30 minuts) a 86.400.000 mil·lisegons (un dia). Els valors que no es trobin dins d'aquest interval s'ajustaran al límit respectiu.
+
+      Si aquesta política no s'estableix, <ph name="PRODUCT_OS_NAME" /> utilitzarà el valor predeterminat de tres hores.
+
+      Tingues en compte que, si la plataforma admet les notificacions de la política, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que les notificacions de la política obliguin a fer una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
 <translation id="5535957389335373033">La freqüència, en mil·lisegons, amb què s'envien paquets de xarxa de supervisió.
 
       Si aquesta política no s'estableix, s'envien cada 3 minuts de manera predeterminada. La freqüència màxima és de 30 segons i la mínima de 24 hores. Tots els valors que no es trobin dins d'aquest interval es restringiran igualment al límit de l'interval.</translation>
@@ -1769,6 +1782,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="7302043767260300182">Retard del bloqueig de pantalla quan s'utilitza alimentació</translation>
+<translation id="7311458740754205918">Si s'estableix en "true" o no s'estableix, és possible que a la pàgina Pestanya nova es mostrin suggeriments de contingut basats en l'historial de navegació, en els interessos o en la ubicació de l'usuari.
+
+      Si s'estableix en "false", a la pàgina Pestanya nova no es mostraran suggeriments de contingut generats automàticament.</translation>
 <translation id="7323896582714668701">Paràmetres de línia d'ordres de <ph name="PRODUCT_NAME" /> addicionals</translation>
 <translation id="7329842439428490522">Indica el temps sense activitat per part de l'usuari després del qual la pantalla es desactiva quan el dispositiu funciona amb bateria.
 
@@ -1901,6 +1917,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7763479091692861127"> Tipus de connexions que es poden utilitzar per a les actualitzacions del sistema operatiu (SO). Les actualitzacions del SO poden saturar la connexió a causa de la seva mida i poden comportar costos addicionals. Per tant, no estan activades de manera predeterminada en tipus de connexió que es consideren cares, entre les quals hi ha, en aquests moments, WiMax, Bluetooth i connexió mòbil.
 
       Els identificadors de tipus de connexió reconeguts són "ethernet", "wifi", "wimax", "bluetooth" i "xarxes mòbils".</translation>
+<translation id="7763614521440615342">Mostra suggeriments de contingut a la pàgina Pestanya nova</translation>
 <translation id="7766336524667238790">Ofereix informació de la sessió de quiosc activa, com ara
       l'identificador i la versió de l'aplicació.
 

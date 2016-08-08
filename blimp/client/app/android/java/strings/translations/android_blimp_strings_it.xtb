@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1091157412887719337">Assegnazione non riuscita. Nessun motore disponibile.</translation>
+<translation id="117738548141695034">Blimp</translation>
 <translation id="1416550906796893042">Versione applicazione</translation>
 <translation id="1750179245464827362">Mostra informazioni di debug</translation>
 <translation id="2004526128230838685">Assegnazione non riuscita. Problema sconosciuto.</translation>
 <translation id="2023631438558435272">Assegnazione non riuscita. Risposta non valida.</translation>
 <translation id="2078561879028077171">Info versione</translation>
 <translation id="2117453604279487107">URL assegnatore</translation>
+<translation id="2218944627481691815">Blimp cambiato. Riavvia l'applicazione.</translation>
 <translation id="2353984724370197742">Assegnazione non riuscita. Richiesta di rete non riuscita.</translation>
 <translation id="2789927415041640472">Riavvia l'applicazione per utilizzare la nuova configurazione dell'assegnatore.</translation>
 <translation id="3046825211487065480">Assegnazione non riuscita. Seconda richiesta inviata prima che la precedente sia stata ricevuta.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Motore disconnesso. Motivo: %1$s</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7608553142876436780">IP del motore</translation>
+<translation id="7795546637165553439">Impostazioni blimp</translation>
 <translation id="7961542533680218955">Assegnazione riuscita.</translation>
 <translation id="8514856595257368555">Token recuperato.</translation>
 <translation id="8880704056643418312">Commit</translation>

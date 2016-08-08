@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Šķiet, ka servera sertifikāts vietnē <ph name="HOST_NAME" /> ir viltojums.</translation>
 <translation id="2889159643044928134">Neielādēt atkārtoti</translation>
 <translation id="2896499918916051536">Šis spraudnis netiek atbalstīts.</translation>
+<translation id="2900469785430194048">Mēģinot parādīt šo tīmekļa lapu, pārlūka Google Chrome atmiņā nepietika vietas.</translation>
 <translation id="2909946352844186028">Konstatētas tīkla izmaiņas.</translation>
 <translation id="2915500479781995473">Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; tā drošības sertifikāts vairs nav derīgs. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_TIME" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.</translation>
 <translation id="2922350208395188000">Servera sertifikātu nevar pārbaudīt.</translation>
@@ -452,6 +453,7 @@
 <translation id="6355080345576803305">Publiskas sesijas ignorēšana</translation>
 <translation id="6358450015545214790">Ko tas nozīmē?</translation>
 <translation id="6387478394221739770">Vai jūs interesē jaunas Chrome funkcijas? Izmēģiniet mūsu Beta versiju, kas pieejama vietnē chrome.com/beta.</translation>
+<translation id="6389758589412724634">Mēģinot parādīt šo tīmekļa lapu, pārlūka Chromium atmiņā nepietika vietas.</translation>
 <translation id="641480858134062906"><ph name="URL" /> neizdevās ielādēt</translation>
 <translation id="6417515091412812850">Nevar pārbaudīt, vai sertifikāts ir atsaukts.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> noraidīja savienojuma izveidi.</translation>
@@ -629,7 +631,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8647750283161643317">Atiestatīt visiem to noklusējuma iestatījumus</translation>
 <translation id="8680787084697685621">Konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="8703575177326907206">Jūsu savienojums ar <ph name="DOMAIN" /> nav kodēts.</translation>
-<translation id="8713130696108419660">Nederīgs sākotnējais paraksts</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8728672262656704056">Jūs esat atvēris inkognito režīmu</translation>
 <translation id="8730621377337864115">Gatavs</translation>

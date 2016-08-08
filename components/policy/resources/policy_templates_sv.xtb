@@ -245,6 +245,13 @@
       Om policyn är inställd på sant kommer <ph name="PRODUCT_OS_NAME" /> att försöka ladda ned betalningar med automatisk uppdatering via HTTP. Om policyn är inställd på falskt eller inte har angetts kommer HTTPS att användas för att ladda ned betalningar med automatisk uppdatering.</translation>
 <translation id="2006530844219044261">Energibesparing (DPMS)</translation>
 <translation id="201557587962247231">Frekvens för antal uppladdningar av statusrapport för enhet</translation>
+<translation id="2018836497795982119">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten avfrågas för principinformation.
+
+      När den här principen har ställts in åsidosätts standardvärdet tre timmar. Giltiga värden är från 1800000 (30 minuter) till 86400000 (en dag). Värden utanför intervallet ändras till närmaste gräns. Om plattformen stöder principmeddelanden används 24 timmar som uppdateringsfördröjning, eftersom uppdateringar då sker automatiskt så fort en princip förändras.
+
+      Om den här principen inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_NAME" />.
+
+      Observera att om plattformen stöder principmeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta principvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort en princip förändras.</translation>
 <translation id="2024476116966025075">Konfigurera domännamnet som krävs för fjärråtkomstklienter</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="206623763829450685">Anger vilka scheman för HTTP-autentisering som stöds av <ph name="PRODUCT_NAME" />.
@@ -1086,11 +1093,6 @@
       Även om själva policyn stöds av plattformarna ovan kanske inte den återaktiverade funktionen stöds av alla dessa plattformar. Det är inte alla utfasade webbplattformsfunktioner som kan återaktiveras. Endast de funktioner som uttryckligen tas upp i listan nedan kan återaktiveras under en begränsad tid som varierar mellan olika funktioner. Strängtaggens allmänna format är [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. För information om ändringarna av webbplattformsfunktioner hänvisar vi till http://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Aktivera lås när enheten är i viloläge eller vänteläge</translation>
-<translation id="4445684791305970001">Policyn inaktiverar utvecklarverktygen och JavaScript-konsolen.
-
-      Om du aktiverar inställningen går det inte att använda utvecklarverktygen och det går inte att inspektera webbplatselement. Alla kortkommandon och alla objekt på menyer och snabbmenyer som öppnar utvecklarverktygen eller JavaScript-konsolen inaktiveras.
-
-      Om det här alternativet inaktiveras eller inte anges kan utvecklarverktygen och JavaScript-konsolen användas.</translation>
 <translation id="4449545651113180484">Rotera skärmen 270 grader medurs</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
 <translation id="4474167089968829729">Aktivera lösenordshanteraren för sparade lösenord</translation>
@@ -1355,6 +1357,13 @@
       Om policyn har angetts kommer den angivna sessionen automatiskt att loggas in efter att en viss tid har förflutit på inloggningsskärmen utan åtgärder från användaren. Den offentliga sessionen måste redan vara konfigurerad (se |DeviceLocalAccounts|).
 
       Om policyn inte har angetts sker ingen automatisk inloggning.</translation>
+<translation id="5529037166721644841">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten avfrågas för principinformation.
+
+       När den här principen har ställts åsidosätts standardvärdet tre timmar. Giltiga värden är från 1800000 (30 minuter) till 86400000 (en dag). Värden utanför intervallet ändras till närmaste gräns.
+
+      Om den här principen inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_OS_NAME" />.
+
+      Observera att om plattformen stöder principmeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta principvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort en princip förändras. Det gör tätare uppdateringar överflödiga.</translation>
 <translation id="5535957389335373033">Hur ofta nätverkspaket för övervakning skickas, i millisekunder.
 
       Om policyn inte har angetts är standardfrekvensen 3 minuter. Den lägsta
@@ -1921,6 +1930,9 @@
 
           Den här policyn gäller bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="7302043767260300182">Skärmlåsningstid när enheten är ansluten till elnätet</translation>
+<translation id="7311458740754205918">Om principen är inställd på sant eller inte inställd alls kan förslag på innehåll utifrån användarens webbhistorik, intressen eller plats visas på sidan Ny flik.
+
+      Om principen är inställd på falskt visas inte förslag på innehåll som genererats automatiskt på sidan Ny flik.</translation>
 <translation id="7323896582714668701">Ytterligare kommandoradsparametrar för <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska stängas av när enheten drivs av batteriet.
 
@@ -2063,6 +2075,7 @@
 <translation id="7763479091692861127"> De typer av anslutningar som är tillåtna att använda uppdateringar av operativsystem. Uppdateringar av operativsystem belastar anslutningen hårt på grund av dess storlek och kan medföra extra kostnader. Därför är de inte aktiverade som standard för anslutningstyper som anses vara dyra. Det gäller bland annat WiMax, Bluetooth och Cellular.
 
       Identifierarna för giltiga anslutningstyper är ”ethernet”, ”wifi”, ”wimax”, ”bluetooth” och ”cellular”.</translation>
+<translation id="7763614521440615342">Visa förslag på innehåll på sidan Ny flik</translation>
 <translation id="7766336524667238790">Rapporterar information om den aktiva kiosksessionen, bland annat
       app-id och appversion.
 

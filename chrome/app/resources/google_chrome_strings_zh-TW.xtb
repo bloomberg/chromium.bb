@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Chrome 應用程式啟動器即將停止服務。</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
 <translation id="1924381329666691588">Google Chrome 的介面文字無法設為這種語言。</translation>
+<translation id="2063848847527508675">Chrome 作業系統必須重新啟動，才能套用更新。</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2084710999043359739">加到 Chrome</translation>
 <translation id="2246246234298806438">缺乏內建的 PDF 檢視器時，Google Chrome 無法顯示列印預覽。</translation>
@@ -52,6 +53,7 @@
 如果您仍要繼續登入帳戶，各項 Chrome 資訊 (例如書籤、紀錄和其他設定) 則會合併至 <ph name="ACCOUNT_EMAIL_NEW" />。</translation>
 <translation id="2397416548179033562">顯示 Chrome 選單</translation>
 <translation id="2429317896000329049">您的網域無法使用「同步功能」，因此 Google Chrome 無法同步處理您的資料。</translation>
+<translation id="2446511512801740068">Chrome 已經一段時間未重新啟動，因此現已版本過舊。重新啟動後，即會套用可用的更新。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2580411288591421699">您無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
 <translation id="2582790009689336987">Google Chrome 將停止支援這種 Linux 系統，因此這部電腦很快就不會再收到 Google Chrome 更新。</translation>

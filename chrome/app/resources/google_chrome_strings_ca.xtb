@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">El menú d'aplicacions de Chrome deixarà de funcionar.</translation>
 <translation id="1877026089748256423">Chrome no està actualitzat</translation>
 <translation id="1924381329666691588">Google Chrome no es pot mostrar en aquest idioma.</translation>
+<translation id="2063848847527508675">Cal reiniciar Chrome OS per aplicar l'actualització.</translation>
 <translation id="2077129598763517140">Utilitza l'acceleració per maquinari quan estigui disponible</translation>
 <translation id="2084710999043359739">Afegeix a Chrome</translation>
 <translation id="2246246234298806438">Google Chrome no pot mostrar la previsualització d'impressió perquè falta el lector de PDF incorporat.</translation>
@@ -52,6 +53,7 @@
 En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name="ACCOUNT_EMAIL_NEW" /> la informació de Chrome com ara adreces d'interès, historial i altres configuracions.</translation>
 <translation id="2397416548179033562">Mostra el menú de Chrome</translation>
 <translation id="2429317896000329049">Google Chrome no ha pogut sincronitzar les dades perquè la sincronització no està disponible per al vostre domini.</translation>
+<translation id="2446511512801740068">Chrome està obsolet perquè fa temps que no s'inicia. Hi ha una actualització disponible i s'aplicarà tan aviat com el tornis a iniciar.</translation>
 <translation id="2485422356828889247">Desinstal·la</translation>
 <translation id="2580411288591421699">No es pot instal·lar la mateixa versió de Google Chrome que s'executa actualment. Tanqueu Google Chrome i torneu-ho a provar.</translation>
 <translation id="2582790009689336987">Aquest ordinador aviat deixarà de rebre actualitzacions de Google Chrome perquè aquest sistema Linux ja no serà compatible.</translation>
@@ -246,7 +248,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="8037887340639533879">No s'ha trobat cap instal·lació de Google Chrome pendent d'actualització.</translation>
 <translation id="8129812357326543296">Quant a &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome emmagatzemarà de manera segura les vostres dades personals perquè no les hàgiu de tornar a escriure</translation>
-<translation id="8205111949707227942">Opcional: ajudeu-nos a millorar Chrome OS enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
+<translation id="8205111949707227942">Opcional: ajuda'ns a millorar Chrome OS enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="8211929904040702368">Amb aquesta acció, se suprimiran almenys <ph name="TOTAL_COUNT" /> elements d'aquest dispositiu de manera permanent. Per recuperar les vostres dades més endavant, inicieu la sessió a Chrome com a $2.</translation>
 <translation id="8227755444512189073">Google Chrome ha d'iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME" />. L'enllaç sol·licitat és <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome està utilitzant la càmera i el micròfon.</translation>

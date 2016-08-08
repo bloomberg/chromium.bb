@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Servercertifikatet på <ph name="HOST_NAME" /> verkar vara falskt.</translation>
 <translation id="2889159643044928134">Läs inte in sidan igen</translation>
 <translation id="2896499918916051536">Det här pluginprogrammet stöds inte.</translation>
+<translation id="2900469785430194048">Minnet tog slut när den här webbsidan skulle visas i Google Chrome.</translation>
 <translation id="2909946352844186028">En nätverksförändring upptäcktes.</translation>
 <translation id="2915500479781995473">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat har upphört att gälla. Detta kan bero på en felaktig inställning eller att en angripare har manipulerat anslutningen. Klockan på datorn är för närvarande inställd på <ph name="CURRENT_TIME" />. Stämmer det inte? Korrigera systemets klocka och uppdatera sedan sidan.</translation>
 <translation id="2922350208395188000">Servercertifikatet kan inte kontrolleras.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Åsidosätt offentlig session</translation>
 <translation id="6358450015545214790">Vad innebär dessa?</translation>
 <translation id="6387478394221739770">Är du intresserad av häftiga nya funktioner i Chrome? Pröva vår betakanal på chrome.com/beta.</translation>
+<translation id="6389758589412724634">Minnet tog slut när den här webbsidan skulle visas i Chromium.</translation>
 <translation id="641480858134062906"><ph name="URL" /> kunde inte laddas</translation>
 <translation id="6417515091412812850">Det gick inte att kontrollera om certifikatet har återkallats.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avvisade anslutningen.</translation>
@@ -630,7 +632,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8647750283161643317">Återställ alla till standardvärden</translation>
 <translation id="8680787084697685621">Inloggningsuppgifterna för kontot är inte aktuella.</translation>
 <translation id="8703575177326907206">Din anslutning till <ph name="DOMAIN" /> är inte krypterad.</translation>
-<translation id="8713130696108419660">Dålig initial signatur</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8728672262656704056">Du surfar inkognito.</translation>
 <translation id="8730621377337864115">Klart</translation>

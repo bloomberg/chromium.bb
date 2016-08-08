@@ -237,6 +237,13 @@
       Als dit beleid is ingesteld op 'true' (waar), probeert <ph name="PRODUCT_OS_NAME" /> nettoladingen voor automatische updates te downloaden via HTTP. Als het beleid is ingesteld op 'false' (onwaar) of niet is geconfigureerd, wordt HTTPS gebruikt voor het downloaden van nettoladingen voor automatische updates.</translation>
 <translation id="2006530844219044261">Energiebeheer</translation>
 <translation id="201557587962247231">De frequentie van uploads van rapporten over de apparaatstatus</translation>
+<translation id="2018836497795982119">Hiermee wordt de periode in milliseconden gespecificeerd waarna de apparaatbeheerservice wordt gevraagd om informatie over het gebruikersbeleid.
+
+      Als je dit beleid instelt, wordt de standaardwaarde van 3 uur overschreven. Geldige waarden voor dit beleid liggen tussen 1800000 (30 minuten) en 86400000 (1 dag). Alle waarden die niet binnen dit bereik vallen, worden afgerond tot de betreffende minimum- of maximumgrens. Als het platform beleidsmeldingen ondersteunt, wordt de vernieuwingsvertraging ingesteld op 24 uur omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd.
+
+      Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> de standaardwaarde van 3 uur.
+
+      Houd er rekening mee dat als het platform beleidsmeldingen ondersteunt, de vernieuwingsvertraging wordt ingesteld op 24 uur (hierbij worden alle standaardinstellingen en de waarde van dit beleid genegeerd) omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd, waardoor frequentere vernieuwingen overbodig zijn.</translation>
 <translation id="2024476116966025075">De vereiste domeinnaam configureren voor clients voor externe toegang</translation>
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
 <translation id="206623763829450685">Hiermee wordt gespecificeerd welke HTTP-verificatieschema's door <ph name="PRODUCT_NAME" /> worden ondersteund.
@@ -1078,11 +1085,6 @@
       Hoewel het beleid zelf op de bovenstaande platforms wordt ondersteund, is de functie die ermee wordt ingeschakeld mogelijk op minder platforms beschikbaar. Niet alle verouderde webplatformfuncties kunnen opnieuw worden ingeschakeld. Alleen de webplatformfuncties die hieronder worden vermeld, kunnen tijdelijk opnieuw worden ingeschakeld, waarbij de periode per functie verschilt. De algemene indeling van de stringtag is [NaamVerouderdeFunctie]_EffectiveUntil[jjjjmmdd]. De reden voor de wijzigingen van webplatformfuncties vind je op https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Vergrendeling inschakelen wanneer het apparaat inactief wordt of overschakelt op de slaapstand</translation>
-<translation id="4445684791305970001">Hiermee worden de ontwikkelaarstools en de JavaScript-console uitgeschakeld.
-
-      Als je deze instelling inschakelt, kunnen de ontwikkelaarstools niet meer worden geopend en kunnen website-elementen niet meer worden geïnspecteerd. Alle sneltoetsen en menu- en contextmenu-opties voor het openen van de ontwikkelaarstools of de JavaScript-console worden uitgeschakeld.
-
-      Als je deze optie uitschakelt of niet instelt, kunnen ontwikkelaarstools en de JavaScript-console worden gebruikt.</translation>
 <translation id="4449545651113180484">Scherm 270 graden met de klok mee draaien</translation>
 <translation id="4467952432486360968">Indirecte cookies blokkeren</translation>
 <translation id="4474167089968829729">Opslaan van wachtwoorden in wachtwoordbeheer inschakelen</translation>
@@ -1343,6 +1345,13 @@
       Als dit beleid is ingesteld, wordt de opgegeven sessie automatisch ingelogd na een tijdsperiode zonder gebruikersinteractie op het inlogscherm is verstreken. De openbare sessie moet al zijn geconfigureerd (zie |DeviceLocalAccounts|).
 
       Als dit beleid niet is ingesteld, wordt er niet automatisch ingelogd.</translation>
+<translation id="5529037166721644841">Hiermee wordt de periode in milliseconden gespecificeerd waarna de apparaatbeheerservice wordt gevraagd om informatie over het apparaatbeleid.
+
+      Als je dit beleid instelt, wordt de standaardwaarde van 3 uur overschreven. Geldige waarden voor dit beleid liggen tussen 1800000 (30 minuten) en 86400000 (1 dag). Alle waarden die niet binnen dit bereik vallen, worden afgerond tot de betreffende minimum- of maximumgrens.
+
+      Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_OS_NAME" /> de standaardwaarde van 3 uur.
+
+      Houd er rekening mee dat als het platform beleidsmeldingen ondersteunt, de vernieuwingsvertraging wordt ingesteld op 24 uur (hierbij worden alle standaardinstellingen en de waarde van dit beleid genegeerd) omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd, waardoor frequentere vernieuwingen overbodig zijn.</translation>
 <translation id="5535957389335373033">Hoe vaak netwerkpakketten voor bijhouden worden verzonden, in milliseconden.
 
       Als dit beleid niet is ingesteld, is de standaardfrequentie 3 minuten. De minimumfrequentie is 30 seconden en de maximumfrequentie is 24 uur. Waarden die buiten dit bereik vallen, worden afgerond tot dit bereik.</translation>
@@ -1901,6 +1910,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="7302043767260300182">Vertraging van schermvergrendeling wanneer op netstroom wordt gewerkt</translation>
+<translation id="7311458740754205918">Als dit beleid is ingesteld op 'waar' of niet is ingesteld, kunnen op de nieuwe tabbladpagina contentsuggesties worden weergegeven op basis van de browsegeschiedenis, interesses en locatie van de gebruiker.
+
+      Als dit is ingesteld op 'onwaar', worden er geen automatisch gegenereerde contentsuggesties weergegeven op de nieuwe tabbladpagina.</translation>
 <translation id="7323896582714668701">Extra opdrachtregelparameters voor <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt uitgeschakeld als er op de accu wordt gewerkt.
 
@@ -2043,6 +2055,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7763479091692861127"> De verbindingstypen die mogen worden gebruikt voor updates voor het besturingssysteem. Updates voor het besturingssysteem kunnen de verbinding zwaar belasten door hun grootte en kunnen extra kosten tot gevolg hebben. Updates voor het besturingssysteem zijn daarom standaard uitgeschakeld voor dure verbindingstypen. Dit omvat momenteel de verbindingstypen WiMax, Bluetooth en Mobiel.
 
       De herkende verbindingstypen zijn 'ethernet', 'wifi', 'wimax', 'bluetooth' en 'mobiel'.</translation>
+<translation id="7763614521440615342">Contentsuggesties weergeven op de nieuwe tabbladpagina</translation>
 <translation id="7766336524667238790">Informatie rapporteren over de actie kiosksessie, zoals
       de ID en versie van de app.
 

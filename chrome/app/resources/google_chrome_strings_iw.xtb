@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">‏Chrome App Launcher יוצא משימוש.</translation>
 <translation id="1877026089748256423">‏Chrome אינו מעודכן</translation>
 <translation id="1924381329666691588">‏לא ניתן להציג את Google Chrome בשפה זו.</translation>
+<translation id="2063848847527508675">‏יש להפעיל מחדש את Chrome OS כדי להחיל את העדכון.</translation>
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
 <translation id="2084710999043359739">‏הוסף ל-Chrome</translation>
 <translation id="2246246234298806438">‏Google Chrome אינו יכול להצג תצוגה מקדימה של ההדפסה כאשר מציג ה-‏PDF המובנה חסר.</translation>
@@ -52,6 +53,7 @@
 אם תמשיך ותיכנס, המידע ב-Chrome, כמו סימניות, היסטוריה והגדרות אחרות, ימוזג עם <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">‏הצג את תפריט Chrome</translation>
 <translation id="2429317896000329049">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך מפני שהסנכרון אינו זמין עבור הדומיין שלך.</translation>
+<translation id="2446511512801740068">‏Chrome אינו מעודכן מכיוון שהוא לא הופעל לאחרונה. יש עדכון זמין והוא יחול ברגע שתבצע הפעלה מחדש.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="2580411288591421699">‏אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
 <translation id="2582790009689336987">‏בקרוב המחשב הזה יפסיק לקבל עדכונים של Google Chrome בשל הפסקת התמיכה במערכת Linux זו.</translation>

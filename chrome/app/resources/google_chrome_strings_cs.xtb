@@ -40,6 +40,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1864458292167284385">Spouštěč aplikací Chrome již nebude podporován</translation>
 <translation id="1877026089748256423">Chrome je zastaralý</translation>
 <translation id="1924381329666691588">Google Chrome v tomto jazyce nelze zobrazit.</translation>
+<translation id="2063848847527508675">Aktualizace se použije po restartování systému Chrome OS.</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2084710999043359739">Přidat do prohlížeče Chrome</translation>
 <translation id="2246246234298806438">Pokud chybí integrovaný program k zobrazení souborů PDF, nemůže Google Chrome zobrazit náhled tisku.</translation>
@@ -56,6 +57,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například záložky, historie a další nastavení) sloučena s účtem <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Zobrazit nabídku Chrome</translation>
 <translation id="2429317896000329049">Google Chrome nemohl synchronizovat vaše data, protože Synchronizace ve vaší doméně není k dispozici.</translation>
+<translation id="2446511512801740068">Prohlížeč Chrome není aktuální, protože nějakou dobu nebyl restartován. Je k dispozici aktualizace, která bude použita po restartování.</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
 <translation id="2580411288591421699">Nelze nainstalovat verzi aplikace Google Chrome, která je právě spuštěná. Ukončete aplikaci Google Chrome a opakujte akci.</translation>
 <translation id="2582790009689336987">Google Chrome se v tomto počítači již brzy přestane aktualizovat, protože tento systém Linux již nebude podporován.</translation>

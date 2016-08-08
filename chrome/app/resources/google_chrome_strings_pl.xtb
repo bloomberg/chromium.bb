@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Wycofujemy Menu z aplikacjami Chrome.</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
 <translation id="1924381329666691588">Google Chrome nie może działać w tym języku.</translation>
+<translation id="2063848847527508675">Zastosowanie aktualizacji wymaga ponownego uruchomienia systemu operacyjnego Chrome.</translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
 <translation id="2084710999043359739">Dodaj do Chrome</translation>
 <translation id="2246246234298806438">Google Chrome nie może pokazać podglądu wydruku, gdy nie ma wbudowanej przeglądarki PDF.</translation>
@@ -52,6 +53,7 @@
 Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, historia i inne ustawienia, zostaną połączone z kontem <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Pokaż menu Chrome</translation>
 <translation id="2429317896000329049">Google Chrome nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
+<translation id="2446511512801740068">Chrome jest nieaktualny, ponieważ od pewnego czasu nie był uruchamiany ponownie. Dostępna jest aktualizacja, która zostanie zastosowana natychmiast po ponownym uruchomieniu.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
 <translation id="2582790009689336987">Google Chrome wkrótce przestanie aktualizować się na tym komputerze, bo ten system Linux nie będzie już obsługiwany.</translation>

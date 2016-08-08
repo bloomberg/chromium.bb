@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="1091157412887719337">Falha na atribuição. Nenhum mecanismo disponível.</translation>
+<translation id="117738548141695034">Interruptor Blimp</translation>
 <translation id="1416550906796893042">Versão do aplicativo</translation>
 <translation id="1750179245464827362">Exibir informações de depuração</translation>
 <translation id="2004526128230838685">Falha na atribuição. Problema desconhecido.</translation>
 <translation id="2023631438558435272">Falha na atribuição. Resposta inválida.</translation>
 <translation id="2078561879028077171">Informações da versão</translation>
 <translation id="2117453604279487107">URL do atribuidor</translation>
+<translation id="2218944627481691815">Interruptor Blimp alterado. Reinicie o app.</translation>
 <translation id="2353984724370197742">Falha na atribuição. Falha na solicitação de rede.</translation>
 <translation id="2789927415041640472">Reinicie o aplicativo para usar a configuração do novo atribuidor.</translation>
 <translation id="3046825211487065480">Falha na atribuição. Segunda solicitação enviada antes de a primeira solicitação responder.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Mecanismo desconectado, motivo: %1$s</translation>
 <translation id="7596558890252710462">Sistema operacional</translation>
 <translation id="7608553142876436780">IP do mecanismo</translation>
+<translation id="7795546637165553439">Configurações do Blimp</translation>
 <translation id="7961542533680218955">Atribuição concluída.</translation>
 <translation id="8514856595257368555">Token recuperado.</translation>
 <translation id="8880704056643418312">Commits</translation>

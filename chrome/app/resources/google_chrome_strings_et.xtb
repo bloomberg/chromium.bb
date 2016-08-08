@@ -38,6 +38,7 @@
 <translation id="1864458292167284385">Lõpetame Chrome'i rakenduste käivitaja toe pakkumise.</translation>
 <translation id="1877026089748256423">Chrome on aegunud</translation>
 <translation id="1924381329666691588">Google Chrome'i ei saa selles keeles kuvada.</translation>
+<translation id="2063848847527508675">Chrome OS tuleb värskenduse rakendamiseks taaskäivitada.</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
 <translation id="2084710999043359739">Chrome'i lisamine</translation>
 <translation id="2246246234298806438">Google Chrome ei saa kuvada printimise eelvaadet, kui sisseehitatud PDF-vaatur puudub.</translation>
@@ -54,6 +55,7 @@
 Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu ja muud seaded, kontoga <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Kuva Chrome'i menüü</translation>
 <translation id="2429317896000329049">Google Chrome ei saa teie andmeid sünkroonida, sest sünkroonimine pole teie domeenil saadaval.</translation>
+<translation id="2446511512801740068">Chrome on aegunud, kuna seda ei ole tükk aega taaskäivitatud. Saadaval on värskendus, mis rakendatakse taaskäivitamisel.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="2580411288591421699">Töötava Google Chrome'i versiooniga sama versiooni ei saa installida. Sulgege Google Chrome ja proovige uuesti.</translation>
 <translation id="2582790009689336987">See arvuti ei saa peagi enam Google Chrome'i värskendusi, kuna seda Linuxi süsteemi enam ei toetata.</translation>

@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1091157412887719337">ההקצאה נכשלה. אין מנוע זמין.</translation>
+<translation id="117738548141695034">‏מתג Blimp</translation>
 <translation id="1416550906796893042">גרסת אפליקציה</translation>
 <translation id="1750179245464827362">הצג מידע של ניפוי באגים</translation>
 <translation id="2004526128230838685">ההקצאה נכשלה. בעיה לא ידועה.</translation>
 <translation id="2023631438558435272">ההקצאה נכשלה. תגובה לא חוקית.</translation>
 <translation id="2078561879028077171">פרטי גירסה</translation>
 <translation id="2117453604279487107">כתובת אתר של המקצה</translation>
+<translation id="2218944627481691815">‏מתג Blimp השתנה. הפעל מחדש את האפליקציה.</translation>
 <translation id="2353984724370197742">ההקצאה נכשלה. בקשת הרשת נכשלה.</translation>
 <translation id="2789927415041640472">הפעל מחדש את האפליקציה כדי להשתמש בהגדרות המקצה החדשות.</translation>
 <translation id="3046825211487065480">ההקצאה נכשלה. הבקשה השנייה נשלחה לפני התגובה לבקשה הראשונה.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">‏המנוע מנותק. הסיבה: %1$s</translation>
 <translation id="7596558890252710462">מערכת הפעלה</translation>
 <translation id="7608553142876436780">‏כתובת IP של המנוע</translation>
+<translation id="7795546637165553439">‏הגדרות Blimp</translation>
 <translation id="7961542533680218955">ההקצאה הצליחה.</translation>
 <translation id="8514856595257368555">האסימון אוחזר.</translation>
 <translation id="8880704056643418312">פעולות שבוצעו</translation>

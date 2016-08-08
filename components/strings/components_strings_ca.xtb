@@ -168,6 +168,7 @@
 <translation id="284702764277384724">Sembla que el certificat de servidor disponible a <ph name="HOST_NAME" /> és una falsificació.</translation>
 <translation id="2889159643044928134">No tornis a carregar</translation>
 <translation id="2896499918916051536">Aquest connector no és compatible.</translation>
+<translation id="2900469785430194048">Google Chrome s'ha quedat sense memòria en provar de mostrar aquesta pàgina web.</translation>
 <translation id="2909946352844186028">S'ha detectat un canvi a la xarxa.</translation>
 <translation id="2915500479781995473">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat ha caducat. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió. Actualment, el rellotge de l'ordinador està definit com a <ph name="CURRENT_TIME" />. Creieu que és correcte? Si no és així, corregiu el rellotge del sistema i actualitzeu aquesta pàgina.</translation>
 <translation id="2922350208395188000">No es pot comprovar el certificat del servidor.</translation>
@@ -451,6 +452,7 @@
 <translation id="6355080345576803305">Substitueix en sessions públiques</translation>
 <translation id="6358450015545214790">Què vol dir tot això?</translation>
 <translation id="6387478394221739770">Esteu interessat en les funcions de Chrome noves i interessants? Proveu el nostre canal beta a la pàgina chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium s'ha quedat sense memòria en provar de mostrar aquesta pàgina web.</translation>
 <translation id="641480858134062906">No s'ha pogut carregar <ph name="URL" /></translation>
 <translation id="6417515091412812850">No es pot comprovar si s'ha revocat el certificat.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> no ens ha permès establir la connexió.</translation>
@@ -587,7 +589,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="7983301409776629893">Tradueix sempre de: <ph name="ORIGINAL_LANGUAGE" /> a: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">No especificat</translation>
 <translation id="8012647001091218357">En aquests moments no ens hem pogut posar en contacte amb els pares. Torneu-ho a provar.</translation>
-<translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE" />. Voleu traduir-la a <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE" />. Vols traduir-la a <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">No s'ha trobat cap entrada a l'historial.</translation>
 <translation id="8088680233425245692">No s'ha pogut consultar l'article.</translation>
 <translation id="8091372947890762290">L'activació està pendent al servidor</translation>
@@ -628,7 +630,6 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8647750283161643317">Restableix-ho tot als valors predeterminats</translation>
 <translation id="8680787084697685621">Les dades d'inici de sessió del compte no estan actualitzades.</translation>
 <translation id="8703575177326907206">La teva connexió a <ph name="DOMAIN" /> no està xifrada.</translation>
-<translation id="8713130696108419660">Signatura inicial incorrecta</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8728672262656704056">Heu passat al mode d'incògnit.</translation>
 <translation id="8730621377337864115">Fet</translation>

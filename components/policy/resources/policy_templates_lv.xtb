@@ -240,6 +240,13 @@
       Ja šai politikai ir iestatīta vērtība Patiesa, <ph name="PRODUCT_OS_NAME" /> mēģinās lejupielādēt automātiskās atjaunināšanas vērtumus, izmantojot HTTP. Ja šai politikai ir iestatīta vērtība Nepatiesa vai politika nav iestatīta, automātiskās atjaunināšanas vērtumu lejupielādei tiks izmantots HTTPS.</translation>
 <translation id="2006530844219044261">Barošanas pārvaldība</translation>
 <translation id="201557587962247231">Ierīces statusa pārskatu augšupielādes biežums</translation>
+<translation id="2018836497795982119">Norāda laika periodu milisekundēs, pēc kura ierīces pārvaldības pakalpojumam tiek vaicāti lietotāja politikas dati.
+
+      Iestatot šo politiku, tiek ignorēta noklusējuma vērtība (3 stundas). Šīs politikas derīgo vērtību diapazons ir no 1 800 000 (30 minūtēm) līdz 86 400 000 (1 dienai). Jebkura vērtība ārpus šī diapazona tiks pieskaņota attiecīgajai robežvērtībai. Ja platformā tiek atbalstīti politikas paziņojumi, tiks iestatīts atsvaidzināšanas aizkaves laiks 24 stundas, jo ir paredzēts, ka ar politikas paziņojumiem atsvaidzināšana tiks veikta piespiedu kārtā katru reizi, kad tiks mainīta politika.
+
+      Atstājot šo politiku neiestatītu, <ph name="PRODUCT_NAME" /> izmanto noklusējuma vērtību (3 stundas).
+
+      Ņemiet vērā: ja platformā tiek atbalstīti politikas paziņojumi, tiks iestatīts atsvaidzināšanas aizkaves laiks 24 stundas (ignorējot visas noklusējuma vērtības un šīs politikas vērtību), jo ir paredzēts, ka ar politikas paziņojumiem atsvaidzināšana tiks veikta piespiedu kārtā katru reizi, kad tiks mainīta politika, un biežāka atsvaidzināšana nebūs nepieciešama.</translation>
 <translation id="2024476116966025075">Nepieciešamā domēna nosaukuma konfigurēšana attālās piekļuves klientiem</translation>
 <translation id="2030905906517501646">Noklusējuma meklētājprogrammas atslēgvārds</translation>
 <translation id="206623763829450685">Norāda <ph name="PRODUCT_NAME" /> atbalstītās HTTP autentifikācijas shēmas.
@@ -1074,11 +1081,6 @@
       Lai gan šī politika ir atbalstīta iepriekš minētajās platformās, ne visas iespējotās funkcijas var būt pieejamas visās platformās. Ne visas novecojušās tīmekļa platformas funkcijas var iespējot atkārtoti. Var iespējot tikai tālāk norādītās funkcijas, un katrai funkcijai ir atšķirīgs derīguma laiks. Virknes taga vispārīgais formāts ir [NovecojušāsFunkcijasNosaukums]_SpēkāLīdz[ggggmmdd]. Ja vēlaties uzzināt vairāk, vietnē https://bit.ly/blinkintents ir minēti iemesli, kādēļ tīmekļa platformas funkcijās ir veiktas izmaiņas.
       </translation>
 <translation id="4442582539341804154">Bloķēšanas iespējošana, ja ierīce pāriet dīkstāvē vai tās darbība tiek apturēta</translation>
-<translation id="4445684791305970001">Atspējo izstrādātāju rīkus un JavaScript konsoli.
-
-      Ja šis iestatījums ir iespējots, nevar piekļūt izstrādātāju rīkiem un vairs nevar pārbaudīt vietņu elementus. Tiks atspējoti visi īsinājumtaustiņi un visi izvēļņu vai kontekstizvēlņu ieraksti, ar kuriem tiek atvērti izstrādātāju rīki vai JavaScript konsole.
-
-      Ja šis iestatījums ir atspējots vai nav iestatīts, izstrādātāju rīkus un JavaScript konsoli varēs lietot.</translation>
 <translation id="4449545651113180484">Pagriezt ekrānu pulksteņrādītāju kustības virzienā par 270 grādiem</translation>
 <translation id="4467952432486360968">Bloķē trešo pušu sīkfailus</translation>
 <translation id="4474167089968829729">Iespējot paroļu saglabāšanu paroļu pārvaldniekā</translation>
@@ -1343,6 +1345,13 @@
       Ja šī politika ir iestatīta, pēc tam, kad noteiktu laika periodu lietotājs pieteikšanās ekrānā nebūs veicis nekādas darbības, notiks automātiska pieteikšanās norādītajā sesijā. Publiskajai sesijai jau ir jābūt konfigurētai (skatiet politiku |DeviceLocalAccounts|).
 
       Ja šī politika nav iestatīta, automātiska pieteikšanās netiks veikta.</translation>
+<translation id="5529037166721644841">Norāda laika periodu milisekundēs, pēc kura ierīces pārvaldības pakalpojumam tiek vaicāti ierīces politikas dati.
+
+      Iestatot šo politiku, tiek ignorēta noklusējuma vērtība (3 stundas). Šīs politikas derīgo vērtību diapazons ir no 1 800 000 (30 minūtēm) līdz 86 400 000 (1 dienai). Jebkura vērtība ārpus šī diapazona tiks pieskaņota attiecīgajai robežvērtībai.
+
+      Ja šī politika nav iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek izmantota noklusējuma vērtība (3 stundas).
+
+      Ņemiet vērā: ja platformā tiek atbalstīti politikas paziņojumi, tiks iestatīts atsvaidzināšanas aizkaves laiks 24 stundas (ignorējot visas noklusējuma vērtības un šīs politikas vērtību), jo ir paredzēts, ka ar politikas paziņojumiem atsvaidzināšana tiks veikta piespiedu kārtā katru reizi, kad tiks mainīta politika, un biežāka atsvaidzināšana nebūs nepieciešama.</translation>
 <translation id="5535957389335373033">Pārraudzības tīkla pakešu sūtīšanas biežums (milisekundēs).
 
       Ja šī politika netiek iestatīta, noklusējuma biežums ir 3 minūtes.
@@ -1906,6 +1915,9 @@
 
           Šī politika tiek lietota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Aizkave līdz ekrāna bloķēšanai, ja ierīce darbojas ar maiņstrāvu</translation>
+<translation id="7311458740754205918">Ja šai politikai ir iestatīta vērtība “Patiesa” vai tā nav iestatīta, lapā “Jauna cilne” var tikt rādīti satura ieteikumi, pamatojoties uz lietotāja pārlūkošanas vēsturi, interesēm vai atrašanās vietu.
+
+      Ja šai politikai ir iestatīta vērtība “Nepatiesa”, lapā “Jauna cilne” netiek rādīti automātiski veidoti satura ieteikumi.</translation>
 <translation id="7323896582714668701">Papildu komandrindas parametri pārlūkprogrammai <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek izslēgts, ja ierīce darbojas ar akumulatora jaudu.
 
@@ -2048,6 +2060,7 @@
 <translation id="7763479091692861127"> Savienojumu veidi, kurus ir atļauts izmantot OS atjauninājumiem. OS atjauninājumi var ievērojami noslogot savienojumu sava lieluma dēļ, kā arī var radīt papildu izmaksas. Šī iemesla dēļ pēc noklusējuma tie nav iespējoti tiem savienojumu veidiem, kas tiek uzskatīti par dārgiem, tostarp WiMax, Bluetooth un mobilajam savienojumam (pašlaik).
 
       Atpazītie savienojumu veidu identifikatori ir “ethernet”, “wifi”, “wimax”, “bluetooth” un “cellular”.</translation>
+<translation id="7763614521440615342">Rādīt satura ieteikumus lapā “Jauna cilne”</translation>
 <translation id="7766336524667238790">Tiek sniegta informācija par aktīvo kioska režīma sesiju,
       piemēram, lietojumprogrammas ID un versiju.
 

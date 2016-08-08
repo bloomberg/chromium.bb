@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
-<translation id="1040144152982955218">A procurar dispositivos… <ph name="BEGIN_LINK" />obter ajuda<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Aviso</translation>
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="1061441684050139317">O Chrome necessita de acesso ao microfone para o partilhar com este site.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">Descubra páginas Web enviadas por objetos próximos. O Chrome reúne páginas Web associadas a objetos à sua volta, envia-as anonimamente para um serviço Google para procurar as que lhe são mais úteis e, em seguida, apresenta-as.
 
 Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web física.</translation>
-<translation id="1250508505624960884">Marcadores do Chrome Beta</translation>
 <translation id="1254090737195733114">Pretende importar dados?</translation>
 <translation id="1258753120186372309">Doodle da Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Parar</translation>
@@ -88,7 +86,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1946821392246652573">Cartões aceites</translation>
 <translation id="1966710179511230534">Atualize os detalhes de início de sessão.</translation>
 <translation id="1974060860693918893">Avançadas</translation>
-<translation id="1984321224716884559">Marcadores do Chrome Dev</translation>
 <translation id="1984937141057606926">Permitidos, exceto de terceiros</translation>
 <translation id="1994173015038366702">URL do site</translation>
 <translation id="2001120796168634316">Guardar pág. ligação p/ depois</translation>
@@ -159,9 +156,7 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="2742271047622814453">As preferências guardadas nos sites podem ser eliminadas</translation>
 <translation id="2748463065602559597">Está a ver uma página segura do Google Chrome.</translation>
 <translation id="2762000892062317888">agora mesmo</translation>
-<translation id="2770465223704140727">Remover da lista</translation>
 <translation id="2777555524387840389">Faltam <ph name="SECONDS" /> segundos</translation>
-<translation id="278029852808208386">Não foram encontrados dispositivos Bluetooth. <ph name="BEGIN_LINK" />Procure novamente<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Falta 1 segundo</translation>
 <translation id="2811892995384186721">Não vê o seu dispositivo? <ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toque no botão de retrocesso para sair do ecrã inteiro.</translation>
@@ -232,7 +227,6 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 
 Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="3616113530831147358">Áudio</translation>
-<translation id="3623048332793834136">Marcadores do Chrome Canary</translation>
 <translation id="3632295766818638029">Desmascarar palavra-passe</translation>
 <translation id="363596933471559332">Inicie automaticamente sessão em Websites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
 <translation id="3656115297268584622">Ative a localização nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
@@ -285,7 +279,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4271185234001491831">Nunca traduzir de <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Multimédia</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
-<translation id="4297410240212242334">Separar separadores e aplicações</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
 <translation id="4334294535648607276">Transferência concluída.</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
@@ -309,10 +302,8 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4645575059429386691">Gerido pelos teus pais</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> marcadores eliminados</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado ao seu Ecrã principal</translation>
-<translation id="4668044310199835006">Marcadores do Work Chrome</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
 <translation id="4686372254213217147">Tamanho original</translation>
-<translation id="4690286298542128877">Os separadores são movidos para um comutador de separadores no Chrome.</translation>
 <translation id="4698413471314543145">Uma funcionalidade crítica, necessária para executar o Chrome, está em falta. A instalação do Chrome pode estar incompleta ou não ser compatível com esta versão do Android.</translation>
 <translation id="4699172675775169585">Imagens e ficheiros em cache</translation>
 <translation id="4710672574193412565">Adicione uma Conta Google na página Contas na aplicação Definições do dispositivo.</translation>
@@ -354,7 +345,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5127805178023152808">A sincronização está desativada</translation>
 <translation id="5131405117025179004">Editar conta guardada</translation>
 <translation id="5138299137310274655">Esta página está em <ph name="SOURCE_LANGUAGE" />. Pretende traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="5150703642582475397">Unir separadores e aplicações</translation>
 <translation id="515227803646670480">Limpar dados armazenados</translation>
 <translation id="5156656584247937086">Esta conta pertence a uma criança</translation>
 <translation id="5161254044473106830">Título obrigatório</translation>
@@ -367,7 +357,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5222676887888702881">Terminar sessão</translation>
 <translation id="5233638681132016545">Novo separador</translation>
 <translation id="5271967389191913893">O dispositivo não consegue abrir o conteúdo a transferir.</translation>
-<translation id="5275558766013849309">Os separadores são apresentados em conjunto com as aplicações recentes.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão de retrocesso para sair do ecrã inteiro.</translation>
 <translation id="5284584623296338184">As alterações aos marcadores, ao histórico, às palavras-passe e a outras definições deixam de ser sincronizadas com a Conta Google. Contudo, os dados existentes permanecem armazenados na Conta Google.</translation>
 <translation id="5301954838959518834">OK, já percebi</translation>
@@ -450,7 +439,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6108923351542677676">Configuração em curso…</translation>
 <translation id="6112702117600201073">A atualizar a página</translation>
 <translation id="6127379762771434464">Item removido</translation>
-<translation id="6134870457258083164">Não vê o seu dispositivo? <ph name="BEGIN_LINK1" />Obtenha ajuda<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />pesquise novamente<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Tornar a página compatível com dispositivos móveis</translation>
 <translation id="6140912465461743537">País/região</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de poupança de dados</translation>
@@ -482,7 +470,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6476911854266661814">"<ph name="VIDEO_TITLE" />" em pausa</translation>
 <translation id="6477460825583319731">Endereço de email inválido</translation>
 <translation id="6482749332252372425">A transferência de <ph name="FILE_NAME" /> falhou devido à falta de espaço de armazenamento.</translation>
-<translation id="6541922744811587456">Marcadores do Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Selecione um separador a transmitir</translation>
 <translation id="6545017243486555795">Limpar todos os dados</translation>
@@ -554,7 +541,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7220786058474068424">A processar</translation>
 <translation id="7243308994586599757">Opções disponíveis junto à parte inferior do ecrã</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza a sua localização para mostrar resultados da pesquisa locais</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Eliminar marcador</translation>
 <translation id="7301833672208172928">Ativar sincronização do histórico</translation>
 <translation id="7327835590071894791">O separador está agora em segundo plano.</translation>
@@ -565,7 +551,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7378627244592794276">Não</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Não é possível transmitir vídeo devido a restrições do site</translation>
-<translation id="7408644312175185557">Veja os separadores com outras aplicações recentes no ecrã Vista geral do telemóvel.</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7437998757836447326">Terminar sessão no Chrome</translation>
 <translation id="7445411102860286510">Permitir que os sites reproduzam automaticamente vídeos com o som desativado (recomendado)</translation>

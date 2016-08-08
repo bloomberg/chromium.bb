@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
-<translation id="1040144152982955218">Recherche d'appareils… <ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Avertissement</translation>
 <translation id="10614374240317010">Jamais enregistrés</translation>
 <translation id="1061441684050139317">Chrome doit disposer de l'accès au micro pour le partager avec ce site.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">Découvrez des pages Web envoyées par des objets à proximité. Chrome réunit les pages Web associées aux objets qui vous entourent, les envoie de manière anonyme à un service Google pour déterminer celles qui vous sont les plus utiles, puis les affiche.
 
 Vous devez activer le Bluetooth et les services de localisation pour utiliser le Web physique.</translation>
-<translation id="1250508505624960884">Favoris de la version bêta de Chrome</translation>
 <translation id="1254090737195733114">Importer les données ?</translation>
 <translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Arrêter</translation>
@@ -88,7 +86,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1946821392246652573">Cartes acceptées</translation>
 <translation id="1966710179511230534">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
-<translation id="1984321224716884559">Favoris de la version en développement de Chrome</translation>
 <translation id="1984937141057606926">Autorisés, sauf cookies tiers</translation>
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="2001120796168634316">Page liée à consulter plus tard</translation>
@@ -159,9 +156,7 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="2742271047622814453">Les préférences enregistrées sur les sites sont susceptibles d'être supprimées.</translation>
 <translation id="2748463065602559597">Cette page Google Chrome est sécurisée.</translation>
 <translation id="2762000892062317888">à l'instant</translation>
-<translation id="2770465223704140727">Retirer de la liste</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> secondes restantes</translation>
-<translation id="278029852808208386">Aucun appareil Bluetooth trouvé. <ph name="BEGIN_LINK" />Relancez la recherche<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 seconde restante</translation>
 <translation id="2811892995384186721">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Appuyez sur le bouton Retour pour quitter le mode plein écran.</translation>
@@ -232,8 +227,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 
 Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée afin de le sélectionner. Pour affiner la recherche, faites glisser le panneau jusqu'en haut et appuyez sur le champ de recherche.</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3623048332793834136">Favoris de Chrome Canary</translation>
-<translation id="3632295766818638029">Annuler le masquage du mot de passe</translation>
+<translation id="3632295766818638029">Afficher le mot de passe</translation>
 <translation id="363596933471559332">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
 <translation id="3656115297268584622">Activez le service de localisation dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Les sites tiers peuvent enregistrer et lire les données des cookies.</translation>
@@ -285,7 +279,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4271185234001491831">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Médias</translation>
 <translation id="4278390842282768270">Autorisé</translation>
-<translation id="4297410240212242334">Séparer les onglets et les applications</translation>
 <translation id="4307992518367153382">Options de base</translation>
 <translation id="4334294535648607276">Le téléchargement a bien été effectué.</translation>
 <translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
@@ -309,10 +302,8 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4645575059429386691">Géré par ton papa/ta maman</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoris ont été supprimés.</translation>
 <translation id="4665282149850138822">Le site "<ph name="NAME" />" a bien été ajouté à votre écran d'accueil.</translation>
-<translation id="4668044310199835006">Favoris de Work Chrome</translation>
 <translation id="4684427112815847243">Tout synchroniser</translation>
 <translation id="4686372254213217147">Taille initiale</translation>
-<translation id="4690286298542128877">Les onglets vont être déplacés dans un sélecteur d'onglets au sein de Chrome.</translation>
 <translation id="4698413471314543145">Une fonctionnalité essentielle à l'exécution de Google Chrome est manquante. Soit vous n'avez pas terminé d'installer Google Chrome, soit la version installée n'est pas compatible avec cette version d'Android.</translation>
 <translation id="4699172675775169585">Images et fichiers en cache</translation>
 <translation id="4710672574193412565">Ajoutez un compte Google depuis la page "Comptes" dans l'application Paramètres de votre appareil.</translation>
@@ -354,7 +345,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5127805178023152808">La synchronisation est désactivée.</translation>
 <translation id="5131405117025179004">Modifier un compte enregistré</translation>
 <translation id="5138299137310274655">Cette page est rédigée en <ph name="SOURCE_LANGUAGE" />. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE" /> ?</translation>
-<translation id="5150703642582475397">Fusionner les onglets et les applications</translation>
 <translation id="515227803646670480">Effacer les données stockées</translation>
 <translation id="5156656584247937086">Ce compte appartient à un enfant.</translation>
 <translation id="5161254044473106830">Veuillez saisir un titre.</translation>
@@ -367,7 +357,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="5271967389191913893">Impossible d'ouvrir le contenu à télécharger sur l'appareil.</translation>
-<translation id="5275558766013849309">Les onglets figureront aux côtés des applications récentes.</translation>
 <translation id="528192093759286357">Pour quitter le mode plein écran, faites glisser un doigt du haut vers le bas, puis appuyez sur le bouton Retour.</translation>
 <translation id="5284584623296338184">Les modifications apportées à vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisées avec votre compte Google. Vos données resteront cependant conservées dans votre compte Google.</translation>
 <translation id="5301954838959518834">OK</translation>
@@ -450,7 +439,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="6108923351542677676">Configuration en cours…</translation>
 <translation id="6112702117600201073">Actualisation de la page</translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
-<translation id="6134870457258083164">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK1" />Obtenez de l'aide<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />effectuez une nouvelle recherche<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Ouvrir la page adaptée aux mobiles</translation>
 <translation id="6140912465461743537">Pays/Région</translation>
 <translation id="6159335304067198720">Économies de données de <ph name="PERCENT" /></translation>
@@ -482,7 +470,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6476911854266661814">La vidéo "<ph name="VIDEO_TITLE" />" a été mise en pause.</translation>
 <translation id="6477460825583319731">Adresse e-mail non valide</translation>
 <translation id="6482749332252372425">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage insuffisant.</translation>
-<translation id="6541922744811587456">Favoris de Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Sélectionnez un onglet à partager.</translation>
 <translation id="6545017243486555795">Supprimer toutes les données</translation>
@@ -554,7 +541,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7220786058474068424">Traitement en cours</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Aide<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Supprimer le favori</translation>
 <translation id="7301833672208172928">Activer la synchronisation de l'historique</translation>
 <translation id="7327835590071894791">L'onglet est maintenant affiché en arrière-plan.</translation>
@@ -565,7 +551,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7378627244592794276">Non</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Impossible de caster la vidéo en raison de restrictions liées au site.</translation>
-<translation id="7408644312175185557">Affichez vos onglets ainsi que d'autres applications récemment utilisées sur l'écran "Aperçu" de votre téléphone.</translation>
 <translation id="7423098979219808738">Demander d'abord</translation>
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>
 <translation id="7445411102860286510">Autoriser les sites à lire automatiquement des vidéos dont le son est coupé (recommandé)</translation>

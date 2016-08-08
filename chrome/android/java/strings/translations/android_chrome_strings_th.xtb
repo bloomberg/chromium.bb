@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="1040144152982955218">กำลังค้นหาอุปกรณ์… <ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">คำเตือน</translation>
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="1061441684050139317">Chrome ต้องการเข้าถึงไมโครโฟนเพื่อแชร์กับเว็บไซต์นี้</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">ค้นพบหน้าเว็บที่ส่งมาจากออบเจ็กต์ใกล้เคียง Chrome รวบรวมหน้าเว็บที่เชื่อมโยงกับออบเจ็กต์รอบตัวคุณ ส่งหน้าเว็บดังกล่าวแบบไม่ระบุตัวตนไปยังบริการของ Google เพื่อค้นหาสิ่งที่มีประโยชน์ต่อคุณมากที่สุด แล้วแสดงขึ้นมา
 
 คุณต้องเปิดใช้บลูทูธและตำแหน่งเพื่อที่จะใช้ Physical Web</translation>
-<translation id="1250508505624960884">บุ๊กมาร์กของ Chrome เบต้า</translation>
 <translation id="1254090737195733114">นำเข้าข้อมูลไหม</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">หยุด</translation>
@@ -88,7 +86,6 @@
 <translation id="1946821392246652573">บัตรที่รับ</translation>
 <translation id="1966710179511230534">โปรดอัปเดตรายละเอียดการลงชื่อเข้าใช้ของคุณ</translation>
 <translation id="1974060860693918893">ขั้นสูง</translation>
-<translation id="1984321224716884559">บุ๊กมาร์กของ Chrome Dev</translation>
 <translation id="1984937141057606926">อนุญาต ยกเว้นบุคคลที่สาม</translation>
 <translation id="1994173015038366702">URL ของเว็บไซต์</translation>
 <translation id="2001120796168634316">เก็บหน้าที่ลิงก์ไว้ดูทีหลัง</translation>
@@ -159,9 +156,7 @@
 <translation id="2742271047622814453">ค่ากำหนดที่บันทึกไว้บนเว็บไซต์อาจถูกลบ</translation>
 <translation id="2748463065602559597">คุณกำลังดูหน้าเว็บ Google Chrome ที่ปลอดภัย</translation>
 <translation id="2762000892062317888">เมื่อสักครู่</translation>
-<translation id="2770465223704140727">ลบจากรายการ</translation>
 <translation id="2777555524387840389">เหลือ <ph name="SECONDS" /> วิ</translation>
-<translation id="278029852808208386">ไม่พบอุปกรณ์บลูทูธ โปรด<ph name="BEGIN_LINK" />ค้นหาอีกครั้ง<ph name="END_LINK" /></translation>
 <translation id="2781151931089541271">เหลือ 1 วิ</translation>
 <translation id="2811892995384186721">หากไม่เห็นอุปกรณ์ของคุณ โปรด<ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">แตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
@@ -232,7 +227,6 @@
 
 หากต้องการแก้ไขข้อความค้นหา ให้กดค้างไว้เพื่อเลือก หากต้องการปรับการค้นหา ให้เลื่อนแผงขึ้นและแตะช่องค้นหา</translation>
 <translation id="3616113530831147358">เสียง</translation>
-<translation id="3623048332793834136">บุ๊กมาร์กของ Chrome Canary</translation>
 <translation id="3632295766818638029">เปิดเผยรหัสผ่าน</translation>
 <translation id="363596933471559332">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลรับรองที่เก็บไว้ เมื่อคุณลักษณะนี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนที่จะลงชื่อเข้าใช้เว็บไซต์</translation>
 <translation id="3656115297268584622">เปิดตำแหน่งใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
@@ -285,7 +279,6 @@
 <translation id="4271185234001491831">ไม่ต้องแปลภาษา<ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">สื่อ</translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
-<translation id="4297410240212242334">แยกแท็บและแอป</translation>
 <translation id="4307992518367153382">พื้นฐาน</translation>
 <translation id="4334294535648607276">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
@@ -309,10 +302,8 @@
 <translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS" /> รายการแล้ว</translation>
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
-<translation id="4668044310199835006">บุ๊กมาร์กของ Work Chrome</translation>
 <translation id="4684427112815847243">ซิงค์ทุกอย่าง</translation>
 <translation id="4686372254213217147">ขนาดต้นฉบับ</translation>
-<translation id="4690286298542128877">แท็บจะย้ายไปยังตัวเปิดปิดแท็บใน Chrome</translation>
 <translation id="4698413471314543145">ฟังก์ชันที่จำเป็นต่อการเรียกใช้ Chrome ขาดหายไป อาจเป็นเพราะการติดตั้ง Chrome ของคุณไม่สมบูรณ์หรือไม่สามารถทำงานร่วมกับ Android เวอร์ชันนี้ได้</translation>
 <translation id="4699172675775169585">รูปภาพและไฟล์ในแคช</translation>
 <translation id="4710672574193412565">เพิ่มบัญชี Google จากหน้า "บัญชี" ในแอปการตั้งค่าของอุปกรณ์</translation>
@@ -354,7 +345,6 @@
 <translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>
 <translation id="5131405117025179004">แก้ไขบัญชีที่บันทึก</translation>
 <translation id="5138299137310274655">หน้านี้อยู่ในภาษา<ph name="SOURCE_LANGUAGE" /> ต้องการแปลเป็นภาษา<ph name="TARGET_LANGUAGE" />ไหม</translation>
-<translation id="5150703642582475397">รวมแท็บและแอป</translation>
 <translation id="515227803646670480">ล้างข้อมูลที่เก็บไว้</translation>
 <translation id="5156656584247937086">นี่เป็นบัญชีของเด็ก</translation>
 <translation id="5161254044473106830">ต้องระบุชื่อ</translation>
@@ -367,7 +357,6 @@
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
 <translation id="5271967389191913893">อุปกรณ์ไม่สามารถเปิดเนื้อหาที่จะดาวน์โหลดได้</translation>
-<translation id="5275558766013849309">แท็บจะแสดงร่วมกับแอปล่าสุด</translation>
 <translation id="528192093759286357">ลากจากด้านบน แล้วแตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
 <translation id="5284584623296338184">การเปลี่ยนแปลงบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะไม่ซิงค์กับบัญชี Google ของคุณอีกต่อไป อย่างไรก็ตาม ข้อมูลที่คุณมีจะยังคงจัดเก็บอยู่ในบัญชี Google ของคุณ</translation>
 <translation id="5301954838959518834">ตกลง เข้าใจแล้ว</translation>
@@ -450,7 +439,6 @@
 <translation id="6108923351542677676">กำลังดำเนินการตั้งค่า…</translation>
 <translation id="6112702117600201073">กำลังรีเฟรชหน้า</translation>
 <translation id="6127379762771434464">นำรายการออกแล้ว</translation>
-<translation id="6134870457258083164">หากไม่เห็นอุปกรณ์ของคุณ โปรด<ph name="BEGIN_LINK1" />ขอความช่วยเหลือ<ph name="END_LINK1" />หรือ<ph name="BEGIN_LINK2" />ค้นหาอีกครั้ง<ph name="END_LINK2" /></translation>
 <translation id="6138140242378429169">ทำให้หน้าเหมาะกับอุปกรณ์เคลื่อนที่</translation>
 <translation id="6140912465461743537">ประเทศ/ภูมิภาค</translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
@@ -482,7 +470,6 @@
 <translation id="6476911854266661814">หยุด “<ph name="VIDEO_TITLE" />” ชั่วคราวแล้ว</translation>
 <translation id="6477460825583319731">ที่อยู่อีเมลไม่ถูกต้อง</translation>
 <translation id="6482749332252372425">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะพื้นที่เก็บข้อมูลไม่เพียงพอ</translation>
-<translation id="6541922744811587456">บุ๊กมาร์กของ Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">เลือกแท็บที่จะบีม</translation>
 <translation id="6545017243486555795">ล้างข้อมูลทั้งหมด</translation>
@@ -527,7 +514,7 @@
 <translation id="6978479750597523876">รีเซ็ตการตั้งค่าการแปล</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="6990079615885386641">รับแอปจาก Google Play สโตร์: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">รายงานรายละเอียดของเหตุการณ์ความปลอดภัยที่เป็นไปได้ต่อ Google โดยอัตโนมัติ</translation>
+<translation id="699220179437400583">รายงานรายละเอียดของเหตุการณ์ด้านความปลอดภัยที่อาจจะเกิดขึ้นต่อ Google โดยอัตโนมัติ</translation>
 <translation id="6992289844737586249">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ใช้ไมโครโฟน (แนะนำ)</translation>
 <translation id="6999892069268112724">ยืนยันบัญชี Google</translation>
 <translation id="7021515813996758557">ดาวน์โหลด <ph name="FILE_NAME" /> แล้ว</translation>
@@ -554,7 +541,6 @@
 <translation id="7220786058474068424">กำลังดำเนินการ</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> ใช้ตำแหน่งเพื่อแสดงผลการค้นหาในท้องถิ่น</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />ความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">นำออกบุ๊กมาร์ก</translation>
 <translation id="7301833672208172928">เปิดการซิงค์ประวัติการเข้าชม</translation>
 <translation id="7327835590071894791">ตอนนี้แท็บของคุณอยู่ในพื้นหลัง</translation>
@@ -565,7 +551,6 @@
 <translation id="7378627244592794276">ไม่</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">ไม่สามารถส่งวิดีโอเนื่องจากข้อจำกัดของเว็บไซต์</translation>
-<translation id="7408644312175185557">ดูแท็บด้วยแอปล่าสุดอื่นๆ บนหน้าจอภาพรวมของโทรศัพท์</translation>
 <translation id="7423098979219808738">ถามก่อน</translation>
 <translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="7445411102860286510">อนุญาตให้เว็บไซต์เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติ (แนะนำ)</translation>

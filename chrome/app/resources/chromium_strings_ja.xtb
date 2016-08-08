@@ -50,6 +50,7 @@
 <translation id="2535480412977113886">アカウントのログイン情報が最新ではないため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="2558641060352364164">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、最新のブラウザにアップグレードしてください。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2587578672395088481">アップデートを適用するには Chromium OS を再起動する必要があります。</translation>
 <translation id="2595977381794111014">今後アプリにアクセスするには、Chromium ブックマーク バーの <ph name="APPS_ICON_IMAGE" /> ショートカットを使用してください。</translation>
 <translation id="2605472041568654097">現在の設定を送信して Chromium の品質向上にご協力ください。</translation>
 <translation id="2636877269779209383">このサイトとカメラを共有するには、Chromium にカメラへのアクセスを許可する必要があります。</translation>
@@ -113,6 +114,7 @@
 <translation id="4330585738697551178">このモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
+<translation id="4469812139324097969">Chromium はしばらく再起動していないため最新ではありません。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="4549794359424059447">Chromium の今後のバージョンでは Windows XP と Windows Vista はサポートされなくなります。</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="457845228957001925">Chromium データに関する重要な情報</translation>

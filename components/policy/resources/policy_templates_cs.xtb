@@ -223,6 +223,13 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
       Pokud tuto zásadu nastavíte na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> se bude pokoušet stahovat datové části automatických aktualizací prostřednictvím protokolu HTTP. Pokud tuto zásadu nastavíte na hodnotu false nebo ji nenastavíte, ke stahování datových částí automatických aktualizací se bude používat protokol HTTPS.</translation>
 <translation id="2006530844219044261">Správa možností napájení</translation>
 <translation id="201557587962247231">Frekvence nahrávání hlášení o stavu zařízení</translation>
+<translation id="2018836497795982119">Určuje interval (v ms), ve kterém budou službě správy zařízení zasílány požadavky na informace o zásadách pro uživatele.
+
+      Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty pro tuto zásadu jsou v rozsahu od 1800000 (30 minut) do 86400000 (1 den). Místo hodnot mimo tento rozsah bude použita příslušná mezní hodnota. Pokud platforma podporuje oznámení o zásadách, bude interval aktualizací nastaven na 24 hodin, protože se očekává, že při změně zásad bude aktualizace vynucena automaticky prostřednictvím oznámení.
+
+      Pokud tuto zásadu nenastavíte, použije <ph name="PRODUCT_NAME" /> výchozí hodnotu, což jsou 3 hodiny.
+
+      Upozorňujeme, že pokud platforma podporuje oznámení o zásadách, budou všechna výchozí nastavení i hodnota této zásady ignorovány a interval aktualizací bude nastaven na 24 hodin. Očekává se totiž, že při změně zásad bude aktualizace vynucena automaticky prostřednictvím oznámení.</translation>
 <translation id="2024476116966025075">Konfigurace povinného názvu domény pro klienty vzdáleného přístupu</translation>
 <translation id="2030905906517501646">Klíčové slovo výchozího poskytovatele vyhledávání</translation>
 <translation id="206623763829450685">Určuje, která schémata ověření v protokolu HTTP bude prohlížeč <ph name="PRODUCT_NAME" /> podporovat.
@@ -1036,11 +1043,6 @@ Pokud je tato zásada ponechána nenastavená nebo je seznam prázdný či neodp
 Samotná zásada je na výše uvedených platformách podporována. Funkce, které zásada podporuje, však mohou být k dispozici na méně platformách. Některé zastaralé funkce platformy Web Platform nelze znovu povolit. Po různě dlouhou omezenou dobu lze povolit pouze ty, které jsou výslovně uvedeny níže. Obecný formát řetězcové značky je [NázevZastaraléFunkce]_EffectiveUntil[RRRRMMDD]. Důvody změny funkcí platformy Web Platform a informace naleznete zde: https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Aktivovat zámek, pokud jsou zařízení nečinná nebo pozastavená</translation>
-<translation id="4445684791305970001">Deaktivuje nástroje pro vývojáře a konzoli JavaScriptu.
-
-      Pokud toto nastavení aktivujete, nebude možné přistupovat k nástrojům pro vývojáře ani kontrolovat prvky webových stránek. Deaktivovány budou také veškeré klávesové zkratky a položky klasických či kontextových nabídek, pomocí kterých lze nástroje pro vývojáře nebo konzoli JavaScriptu otevřít.
-
-      Pokud tuto možnost deaktivujete nebo nenastavíte, umožníte uživatelům používat nástroje pro vývojáře nebo konzoli JavaScript.</translation>
 <translation id="4449545651113180484">Otočit obrazovku ve směru hodinových ručiček o 270 stupňů</translation>
 <translation id="4467952432486360968">Blokovat soubory cookie třetích stran</translation>
 <translation id="4474167089968829729">Povolit ukládání hesel do správce hesel</translation>
@@ -1303,6 +1305,13 @@ Až bude okamžité přihlašování podporovat všechny přihlašovací procesy
       Pokud je zásada nastavena, zařízení se po uplynutí určité doby nečinnosti uživatele na přihlašovací obrazovce automaticky přihlásí do určené relace. Veřejná relace již musí být nakonfigurována (viz |DeviceLocalAccounts|).
 
       Pokud zásada nastavena není, k automatickému přihlášení nedojde.</translation>
+<translation id="5529037166721644841">Určuje interval (v ms), ve kterém budou službě správy zařízení zasílány požadavky na informace o zásadách pro zařízení.
+
+      Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty pro tuto zásadu jsou v rozsahu od 1800000 (30 minut) do 86400000 (1 den). Místo hodnot mimo tento rozsah bude použita příslušná mezní hodnota.
+
+      Pokud tato zásada nebude nastavena, použije systém <ph name="PRODUCT_OS_NAME" /> výchozí hodnotu, což jsou 3 hodiny.
+
+      Upozorňujeme, že pokud platforma podporuje oznámení o zásadách, budou všechna výchozí nastavení i hodnota této zásady ignorovány a interval aktualizací bude nastaven na 24 hodin. Očekává se totiž, že při změně zásad bude aktualizace vynucena automaticky prostřednictvím oznámení.</translation>
 <translation id="5535957389335373033">Frekvence odesílání sledovacích síťových paketů (v ms).
 
       Je-li tato zásada ponechána nenastavená, výchozí frekvence je tři minuty. Minimální frekvence je 30 sekund a maximální 24 hodin – hodnoty mimo tento rozsah budou přizpůsobeny příslušné hranici.</translation>
@@ -1856,6 +1865,9 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 
           Tato zásada platí pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Prodleva uzamčení obrazovky při napájení ze sítě</translation>
+<translation id="7311458740754205918">Pokud je tato zásada nastavena na hodnotu True nebo je ponechána nenastavená, na stránce Nová karta se mohou zobrazovat návrhy obsahu na základě historie procházení, zájmů nebo polohy uživatele.
+
+      Pokud je tato zásada nastavena na hodnotu False, automaticky generované návrhy obsahu se na stránce Nová karta nezobrazují.</translation>
 <translation id="7323896582714668701">Dodatečné parametry příkazového řádku pro <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Udává dobu nečinnosti uživatele, po které bude obrazovka při napájení z baterie vypnuta.
 
@@ -1997,6 +2009,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
           Pokud tuto zásadu nenastavíte, bude použita zásada AllowImages a uživatelé ji budou moci změnit.</translation>
 <translation id="7763479091692861127"> Typy připojení, které lze používat pro aktualizaci operačního systému. Aktualizace operačního systému může vzhledem k objemu dat velmi zatěžovat připojení a může mít za následek dodatečné poplatky. Z tohoto důvodu jsou ve výchozím nastavení zakázány pro typy připojení, které jsou považovány za nákladné, což je v současnosti mimo jiné připojení WiMax, Bluetooth nebo mobilní připojení.
       Podporované identifikátory typu připojení jsou „ethernet“, „wifi“, „wimax“, „bluetooth“ a „cellular“.</translation>
+<translation id="7763614521440615342">Zobrazovat na stránce Nová karta návrhy obsahu</translation>
 <translation id="7766336524667238790">Hlášení informací o aktivní relaci veřejného terminálu, např. ID a verze aplikace.
 
 Pokud je tato zásada nastavena na hodnotu False, informace o relaci se hlásit nebudou. Pokud je nastavena na hodnotu True nebo nastavena není, informace o relaci se hlásit budou.</translation>

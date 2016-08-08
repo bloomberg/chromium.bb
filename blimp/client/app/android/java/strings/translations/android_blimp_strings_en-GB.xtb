@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1091157412887719337">Assignment failed. No engine available.</translation>
+<translation id="117738548141695034">Blimp Switch</translation>
 <translation id="1416550906796893042">Application version</translation>
 <translation id="1750179245464827362">Show Debug Info</translation>
 <translation id="2004526128230838685">Assignment failed. Unknown issue.</translation>
 <translation id="2023631438558435272">Assignment failed. Invalid response.</translation>
 <translation id="2078561879028077171">Version Info</translation>
 <translation id="2117453604279487107">Assigner URL</translation>
+<translation id="2218944627481691815">Blimp switch changed, Please restart the application.</translation>
 <translation id="2353984724370197742">Assignment failed. Network request failed.</translation>
 <translation id="2789927415041640472">Please restart the application to use the new assigner configuration.</translation>
 <translation id="3046825211487065480">Assignment failed. Second request sent before first request responded.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Engine disconnected, reason: %1$s</translation>
 <translation id="7596558890252710462">Operating system</translation>
 <translation id="7608553142876436780">Engine IP</translation>
+<translation id="7795546637165553439">Blimp Settings</translation>
 <translation id="7961542533680218955">Assignment succeeded.</translation>
 <translation id="8514856595257368555">Token retrieved.</translation>
 <translation id="8880704056643418312">Commits</translation>

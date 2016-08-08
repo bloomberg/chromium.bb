@@ -52,6 +52,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2535480412977113886">Hindi ma-sync ng Chromium OS ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in sa iyong account.</translation>
 <translation id="2558641060352364164">Ginagamit ng site na ito ang plugin na Chromium Frame na malapit nang hindi suportahan. Paki-uninstall ito at mag-upgrade sa isang modernong browser.</translation>
 <translation id="2572494885440352020">Helper ng Chromium</translation>
+<translation id="2587578672395088481">Kailangang ma-restart ang Chromium OS upang mailapat ang update.</translation>
 <translation id="2595977381794111014">Gamitin ang shortcut ng <ph name="APPS_ICON_IMAGE" /> sa Chromium bookmarks bar upang patuloy na ma-access ang iyong mga app.</translation>
 <translation id="2605472041568654097">Tumulong na mas pahusayin ang Chromium sa pamamagitan ng pag-uulat sa mga kasalukuyang setting.</translation>
 <translation id="2636877269779209383">Nangangailangan ang Chromium ng access sa camera upang maibahagi ito sa site na ito.</translation>
@@ -115,6 +116,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4330585738697551178">Natuklasang sumasalungat sa Chromium ang module na ito.</translation>
 <translation id="4423735387467980091">I-customize at kontrolin ang Chromium</translation>
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
+<translation id="4469812139324097969">Luma na ang Chromium dahil matagal na itong hindi muling nailunsad. Available ang isang update at ilalapat ito sa sandaling muli mo itong inilunsad.</translation>
 <translation id="4549794359424059447">Hindi na susuportahan ng mga bersyon ng Chromium ang Windows XP o Windows Vista sa hinaharap.</translation>
 <translation id="4567424176335768812">Naka-sign in ka bilang <ph name="USER_EMAIL_ADDRESS" />. Maaari mo na ngayong i-access ang iyong mga bookmark, kasaysayan, at iba pang setting sa lahat ng iyong device na naka-sign in.</translation>
 <translation id="457845228957001925">Mahalagang impormasyon patungkol sa iyong data sa Chromium</translation>

@@ -233,6 +233,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik er angivet til Sand, vil <ph name="PRODUCT_OS_NAME" /> forsøge at downloade automatisk opdaterede nyttedata via HTTP. Hvis politikken er angivet til Falsk eller ikke er angivet, anvendes HTTPS til at downloade automatisk opdaterede nyttedata.</translation>
 <translation id="2006530844219044261">Strømstyring</translation>
 <translation id="201557587962247231">Hyppighed for upload af rapporter om enhedsstatus</translation>
+<translation id="2018836497795982119">Angiver den periode i millisekunder, hvor enhedsadministrationstjenesten anmodes om brugerpolitikoplysninger.
+
+      Angivelse af denne politik tilsidesætter standardværdien på tre timer. Gyldige værdier for denne politik ligger i intervallet fra 1800000 (30 minutter) til 86400000 (ét døgn). Alle værdier, der ikke ligger inden for dette interval, fastgøres til den respektive grænse. Hvis platformen understøtter underretninger vedrørende politik, angives forsinkelsen af opdateringen til 24 timer, da det forventes, at underretninger vedrørende politik automatisk gennemtvinger en opdatering, når politikken ændres.
+
+      Hvis denne politik ikke angives, bruger <ph name="PRODUCT_NAME" /> standardværdien på tre timer.
+
+      Bemærk! Hvis platformen understøtter underretninger vedrørende politik, angives forsinkelsen af opdateringen til 24 timer (der ses bort fra alle standardindstillingerne og værdierne for denne politik), da det forventes, at underretninger vedrørende politik automatisk gennemtvinger en opdatering, når politikken ændres. Dermed er hyppige opdateringer ikke nødvendige.</translation>
 <translation id="2024476116966025075">Konfigurer det påkrævede domænenavn for klienter med fjernadgang</translation>
 <translation id="2030905906517501646">Søgeord til standardsøgemaskine</translation>
 <translation id="206623763829450685">Angiver, hvilke skemaer for HTTP-godkendelse der understøttes af <ph name="PRODUCT_NAME" />.
@@ -1033,7 +1040,6 @@ Hvis denne politik ikke er indstillet, eller hvis listen er tom eller ikke stemm
 Mens selve politikken understøttes på ovenstående platforme, kan den funktion, som politikken aktiverer, være tilgængelig på færre platforme. Det er ikke alle funktioner på webplatforme, der kan genaktiveres. Det er kun de funktioner, der er angivet på listen nedenfor, som kan genaktiveres i en begrænset periode, hvis længde afhænger af funktionen. Det overordnede format for strengtagget er [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Du kan se hensigten med ændringerne af funktionen Webplatform på https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Aktivér låsen, hvis enheden bliver inaktiv eller suspenderes</translation>
-<translation id="4445684791305970001">Deaktiverer udviklerværktøjerne og JavaScript-konsollen. Hvis du aktiverer denne indstilling, kan man ikke få adgang til udviklerværktøjerne, og webstedselementer kan ikke inspiceres. Alle tastaturgenveje og menuer eller genvejsmenuer, der åbner udviklerværktøjerne eller JavaScript-konsollen, vil blive deaktiveret. Hvis du deaktiverer denne indstilling eller ikke angiver den, tillades brugen af udviklerværktøjer og JavaScript-konsollen.</translation>
 <translation id="4449545651113180484">Roter skærmen 270 grader med uret</translation>
 <translation id="4467952432486360968">Bloker cookies fra tredjeparter</translation>
 <translation id="4474167089968829729">Aktivér lagring af adgangskoder i adgangskodeadministratoren</translation>
@@ -1261,6 +1267,13 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Hvis denne politik er angivet, logges den angivne session automatisk ind efter et stykke tid ved loginskærmen uden brugerinteraktion. Den offentlige session skal i forvejen være konfigureret (se |DeviceLocalAccounts|).
 
       Hvis denne politik ikke er angivet, aktiveres automatisk login ikke.</translation>
+<translation id="5529037166721644841">Angiver den periode i millisekunder, hvor enhedsadministrationstjenesten anmodes om brugerpolitikoplysninger.
+
+      Angivelse af denne politik tilsidesætter standardværdien på tre timer. Gyldige værdier for denne politik ligger i intervallet fra 1800000 (30 minutter) til 86400000 (ét døgn). Alle værdier, der ikke ligger inden for dette interval, fastgøres til den respektive grænse.
+
+      Hvis denne politik ikke angives, bruger <ph name="PRODUCT_OS_NAME" /> standardværdien på tre timer.
+
+      Bemærk! Hvis platformen understøtter underretninger vedrørende politik, angives forsinkelsen af opdateringen til 24 timer (der ses bort fra alle standardindstillingerne og værdierne for denne politik), da det forventes, at underretninger vedrørende politik automatisk gennemtvinger en opdatering, når politikken ændres. Dermed er hyppige opdateringer ikke nødvendige.</translation>
 <translation id="5535957389335373033">Hvor ofte netværkspakker til overvågning sendes (angivet i millisekunder).
 
 Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimumsfrekvensen er 30 sekunder, og maksimumsfrekvensen er 24 timer. Alle værdier uden for dette interval justeres automatisk, så de ligger inden for dette interval.</translation>
@@ -1783,6 +1796,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
            Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="7302043767260300182">Skærmlåsforsinkelse, når strømforsyning er tilsluttet</translation>
+<translation id="7311458740754205918">Hvis denne politik er angivet som Sand eller ikke er angivet, viser siden Ny fane muligvis forslag til indhold baseret på brugerens browserhistorik, interesser eller placering.
+
+      Hvis politikken er angivet som Falsk, vises automatisk genererede forslag til indhold ikke på siden Ny fane.</translation>
 <translation id="7323896582714668701">Yderligere kommandolinjeparametre for <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Angiver den tid uden brugerinput, der udløser skærmsluk, når batteriet bruges.
 
@@ -1919,6 +1935,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7763479091692861127"> De forbindelsestyper, der er tilladt at bruge ved OS-opdateringer. OS-opdateringer kan lægge et stort pres på forbindelsen, fordi de fylder meget, og kan forårsage yderligere omkostninger. Derfor er de som standard ikke aktiveret for forbindelsestyper, der betragtes som dyre, hvilket i øjeblikket er WiMax, Bluetooth og mobil.
 
       De genkendte forbindelsestype-id'er er "ethernet", "wifi", "wimax", "bluetooth" og "mobil".</translation>
+<translation id="7763614521440615342">Vis forslag til indhold på siden Ny fane</translation>
 <translation id="7766336524667238790">Rapportér oplysninger om aktive terminalsessioner, f.eks.
       applikations-id og -version.
 
@@ -1942,7 +1959,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne indstilling konfigureres, kan brugerne ikke selv ændre den.
 
-      Hvis denne indstilling ikke konfigureres, kan brugerne selv slå Android-tjenesten til sikkerhedskopiering til eller fra i appen Android Indstillinger.</translation>
+      Hvis denne indstilling ikke konfigureres, kan brugerne selv slå Android Backup Service til eller fra i appen Android Indstillinger.</translation>
 <translation id="7818131573217430250">Indstil standardtilstanden for høj kontrast på loginskærmen</translation>
 <translation id="7831595031698917016">Specificerer den maksimale forsinkelse i millisekunder mellem modtagelse af en ugyldiggørelse af en politik og hentningen af den nye politik fra tjenesten til enhedshåndtering.
 

@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Sivustolla <ph name="HOST_NAME" /> oleva palvelimen varmenne vaikuttaa väärennökseltä.</translation>
 <translation id="2889159643044928134">Älä päivitä</translation>
 <translation id="2896499918916051536">Tätä laajennusta ei tueta.</translation>
+<translation id="2900469785430194048">Google Chromen muisti loppui verkkosivua näytettäessä.</translation>
 <translation id="2909946352844186028">Verkossa havaittiin muutos.</translation>
 <translation id="2915500479781995473">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on vanhentunut. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä. Tietokoneesi kellon aika on tällä hetkellä <ph name="CURRENT_TIME" />. Onko se oikeassa? Jos ei, siirrä kello oikeaan aikaan ja päivitä sivu.</translation>
 <translation id="2922350208395188000">Palvelimen varmennetta ei voi tarkistaa.</translation>
@@ -454,6 +455,7 @@
 <translation id="6355080345576803305">Julkisen istunnon ohitus</translation>
 <translation id="6358450015545214790">Mitä nämä tarkoittavat?</translation>
 <translation id="6387478394221739770">Oletko kiinnostunut Chromen uusista jännittävistä ominaisuuksista? Kokeile beta-kanavaa osoitteessa chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromiumin muisti loppui verkkosivua näytettäessä.</translation>
 <translation id="641480858134062906"><ph name="URL" />-lataus epäonnistui</translation>
 <translation id="6417515091412812850">Ei voida tarkistaa, onko varmenne kumottu.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> kieltäytyi muodostamasta yhteyttä.</translation>
@@ -631,7 +633,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8647750283161643317">Palauta kaikki oletusarvoon</translation>
 <translation id="8680787084697685621">Tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="8703575177326907206">Yhteyttäsi verkkotunnukseen <ph name="DOMAIN" /> ei ole salattu.</translation>
-<translation id="8713130696108419660">Virheelliset nimikirjaimet</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8728672262656704056">Olet muuttunut näkymättömäksi</translation>
 <translation id="8730621377337864115">Valmis</translation>

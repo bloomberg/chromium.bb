@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1091157412887719337">Tildelingen mislykkedes. Der var ingen tilgængelig maskine.</translation>
+<translation id="117738548141695034">Blimp-kontakten</translation>
 <translation id="1416550906796893042">Appversion</translation>
 <translation id="1750179245464827362">Vis oplysninger om fejlretning</translation>
 <translation id="2004526128230838685">Tildelingen mislykkedes. Ukendt problem.</translation>
 <translation id="2023631438558435272">Tildelingen mislykkedes. Ugyldigt svar.</translation>
 <translation id="2078561879028077171">Oplysninger om version</translation>
 <translation id="2117453604279487107">Tildelerwebadresse</translation>
+<translation id="2218944627481691815">Blimp-kontakten blev ændret. Genstart appen.</translation>
 <translation id="2353984724370197742">Tildelingen mislykkedes. Netværksanmodningen mislykkedes.</translation>
 <translation id="2789927415041640472">Genstart applikationen for at bruge den nye tildelerkonfiguration.</translation>
 <translation id="3046825211487065480">Tildelingen mislykkedes. Anden anmodning blev sendt, før første anmodning reagerede.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Forbindelsen til maskinen blev afbrudt. Årsag: %1$s</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7608553142876436780">IP-adresse for maskinen</translation>
+<translation id="7795546637165553439">Indstillinger for Blimp</translation>
 <translation id="7961542533680218955">Tildelingen lykkedes.</translation>
 <translation id="8514856595257368555">Tokenet blev hentet.</translation>
 <translation id="8880704056643418312">Udfører</translation>

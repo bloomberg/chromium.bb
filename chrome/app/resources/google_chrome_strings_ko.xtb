@@ -40,6 +40,7 @@
 <translation id="1864458292167284385">Chrome 앱 런처 서비스 중단 예정</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
 <translation id="1924381329666691588">Chrome을 이 언어로 표시할 수 없습니다.</translation>
+<translation id="2063848847527508675">업데이트를 적용하려면 Chrome OS를 다시 시작해야 합니다.</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="2084710999043359739">Chrome에 추가</translation>
 <translation id="2246246234298806438">기본 제공되는 PDF 뷰어가 없는 경우 Chrome에서 인쇄 미리보기를 표시할 수 없습니다.</translation>
@@ -56,6 +57,7 @@
 로그인하면 북마크, 방문 기록 및 기타 설정과 같은 Chrome 정보가 <ph name="ACCOUNT_EMAIL_NEW" />에 병합됩니다.</translation>
 <translation id="2397416548179033562">Chrome 메뉴 표시</translation>
 <translation id="2429317896000329049">도메인에서 동기화를 사용할 수 없어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
+<translation id="2446511512801740068">한동안 사용하지 않아 Chrome의 버전이 오래되었습니다. 업데이트를 사용할 수 있으며 다시 시작하면 바로 업데이트됩니다.</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="2580411288591421699">현재 실행 중인 Chrome과 동일한 버전은 설치할 수 없습니다. Chrome을 닫고 다시 시도하세요.</translation>
 <translation id="2582790009689336987">이 Linux 시스템이 더 이상 지원되지 않을 예정이므로 곧 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>

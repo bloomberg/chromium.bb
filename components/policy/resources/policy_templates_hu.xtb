@@ -234,6 +234,13 @@
       Ha a házirend értéke igaz, akkor a <ph name="PRODUCT_OS_NAME" /> az automatikusan frissülő hasznos tartalmakat HTTP-kapcsolaton keresztül kísérli meg letölteni. Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor a rendszer mindig HTTPS-kapcsolatot használ az automatikusan frissülő hasznos tartalmak letöltésére.</translation>
 <translation id="2006530844219044261">Energiagazdálkodás</translation>
 <translation id="201557587962247231">Az eszköz állapotával kapcsolatos jelentések feltöltési gyakorisága</translation>
+<translation id="2018836497795982119">Azt az időtartamot adja meg ezredmásodpercben, amilyen rendszerességgel az eszközkezelő szolgáltatás lekérdezi a felhasználói szabályzattal kapcsolatos információkat.
+
+      A házirend beállításával felülírja a 3 órás alapértelmezett értéket. Az érték 1800000 (30 perc) és 86400000 (1 nap) között lehet. A tartományon kívül eső értékeket a rendszer a közelebbi tartományhatárra állítja. Ha az operációs rendszer támogatja a házirendekkel kapcsolatos értesítéseket, akkor a frissítési időszak 24 órás lesz, ugyanis a házirenddel kapcsolatos értesítéseknek automatikusan ki kell kényszeríteniük a frissítést, amikor egy házirend megváltozik.
+
+      Ha nem állítja be a házirendet, akkor a <ph name="PRODUCT_NAME" /> az alapértelmezett 3 órás értéket fogja használni.
+
+      Felhívjuk figyelmét, hogy ha az operációs rendszer támogatja a házirendekkel kapcsolatos értesítéseket, akkor a frissítési időszak 24 órás lesz (azaz a böngésző nem veszi figyelembe sem az alapértelmezett, sem a beállított értékeket), ugyanis a házirenddel kapcsolatos értesítéseknek automatikusan ki kell kényszeríteniük a frissítést, amikor egy házirend megváltozik, így szükségtelen gyakrabban frissíteni.</translation>
 <translation id="2024476116966025075">A kötelező domainnév konfigurálása a távoli hozzáférésű ügyfeleknél</translation>
 <translation id="2030905906517501646">Alapértelmezett keresési szolgáltató kulcsszava</translation>
 <translation id="206623763829450685">Meghatározza, hogy a <ph name="PRODUCT_NAME" /> milyen HTTP-hitelesítési sémákat támogat.
@@ -1024,7 +1031,6 @@
       Bár magát a házirendet támogatja az összes fenti platform, előfordulhat, hogy maga az engedélyezett funkció kevesebb platformon áll rendelkezésre. Nem lehet újraengedélyezni az összes elavult Web Platform-funkciót. Kizárólag a lent felsoroltakat lehet engedélyezni korlátozott időtartamra, amely időtartam eltérő az egyes funkciók esetében. A karakterlánccímkék általános formátuma a következő: [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. A https://bit.ly/blinkintents webhelyen további információkat talál a Web Platform-funkciók módosításának hátterében álló szándékokról.
       </translation>
 <translation id="4442582539341804154">Lezárás engedélyezése, ha az eszköz tétlen vagy felfüggesztett</translation>
-<translation id="4445684791305970001">Kikapcsolja a fejlesztői eszközöket és a JavaScript-konzolt. Ha engedélyezi ezt a beállítást, a fejlesztői eszközöket nem lehet elérni, és a webhelyek elemeit nem lehet ellenőrizni többé. Bármely billentyűparancs, menü vagy helyi menüpont le lesz tiltva, amely megnyitná a fejlesztői eszközöket vagy a JavaScript-konzolt. Ha letiltja ezt a beállítást, vagy konfigurálatlanul hagyja, akkor a felhasználó használhatja a felhasználói eszközöket és a JavaScript-konzolt.</translation>
 <translation id="4449545651113180484">Képernyő elforgatása 270 fokkal</translation>
 <translation id="4467952432486360968">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="4474167089968829729">Jelszavak mentésének aktiválása a jelszókezelőben</translation>
@@ -1244,6 +1250,13 @@
       Ha a házirend be van állítva, a meghatározott munkamenetet a rendszer automatikusan bejelentkezteti, ha felhasználói interakció nélkül telik el a megadott időtartam a bejelentkezési képernyőn. A nyilvános munkamenetet előre be kell állítani (tekintse meg a következőt: |DeviceLocalAccounts|).
 
       Ha nincs beállítva a házirend, nem lesz automatikus bejelentkezés.</translation>
+<translation id="5529037166721644841">Azt az időtartamot adja meg ezredmásodpercben, amilyen rendszerességgel az eszközkezelő szolgáltatás lekérdezi az eszközszabályzattal kapcsolatos információkat.
+
+      A házirend beállításával felülírja a 3 órás alapértelmezett értéket. Az érték 1800000 (30 perc) és 86400000 (1 nap) között lehet. A tartományon kívül eső értékeket a rendszer a közelebbi tartományhatárra állítja.
+
+      Ha nem állítja be a házirendet, akkor a <ph name="PRODUCT_OS_NAME" /> az alapértelmezett 3 órás értéket fogja használni.
+
+      Felhívjuk figyelmét, hogy ha az operációs rendszer támogatja a házirendekkel kapcsolatos értesítéseket, akkor a frissítési időszak 24 órás lesz (azaz a böngésző nem veszi figyelembe sem az alapértelmezett, sem a beállított értékeket), ugyanis a házirenddel kapcsolatos értesítéseknek automatikusan ki kell kényszeríteniük a frissítést, amikor egy házirend megváltozik, így szükségtelen gyakrabban frissíteni.</translation>
 <translation id="5535957389335373033">A böngésző által küldött ellenőrző hálózati csomagok gyakorisága (ezredmásodpercben).
 
       Ha nem állítja be az irányelvet, az alapértelmezett gyakoriság három perc.
@@ -1773,6 +1786,9 @@
 
           Az alkalmazás csak akkor veszi figyelembe ezt a házirendet, ha a „DefaultSearchProviderEnabled” házirend is engedélyezve van.</translation>
 <translation id="7302043767260300182">Képernyőzár késleltetése hálózati áramról való működés során</translation>
+<translation id="7311458740754205918">Ha igazra van állítva, vagy ha nincs beállítva, az Új lap oldalon megjelenhetnek javaslatok a felhasználó böngészési előzményei, érdeklődési körei vagy tartózkodási helye alapján.
+
+      Ha a beállítás hamis, akkor nem jelennek meg automatikusan generált tartalomjavaslatok az Új lap oldalon.</translation>
 <translation id="7323896582714668701">A(z) <ph name="PRODUCT_NAME" /> további parancssori paraméterei</translation>
 <translation id="7329842439428490522">Megadja azt a felhasználói bevitel nélküli időtartamot, amely után a rendszer kikapcsolja a képernyőt, ha akkumulátorról működik.
 
@@ -1905,6 +1921,7 @@
 <translation id="7763479091692861127"> Az operációs rendszer frissítéseihez használható kapcsolattípusok. Előfordulhat, hogy az operációs rendszer frissítései a méretük miatt nagyon megterhelik a kapcsolatot, és esetlegesen további költségeket eredményezhetnek. Ezért alapértelmezés szerint nincsenek engedélyezve a drágának tartott kapcsolattípusok, amelyek jelenleg a WiMax-, Bluetooth- és mobilkapcsolatokat jelentik.
 
       A felismert kapcsolattípus-azonosítók a következők: Ethernet, Wi-Fi, WiMax, Bluetooth és mobil.</translation>
+<translation id="7763614521440615342">Tartalomjavaslatok az Új lap oldalon</translation>
 <translation id="7766336524667238790">Információk (például alkalmazásazonosító és -verzió) jelentése
       az aktív kioszkmunkamenetről.
 

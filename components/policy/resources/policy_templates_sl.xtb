@@ -241,6 +241,13 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če je ta pravilnik nastavljen na »true«, poskuša <ph name="PRODUCT_OS_NAME" /> samoposodobitvene pakete prenesti prek HTTP. Če je ta pravilnik nastavljen na »false« ali ni nastavljen, se za prenos samoposodobitvenih paketov uporabi HTTPS.</translation>
 <translation id="2006530844219044261">Upravljanje porabe</translation>
 <translation id="201557587962247231">Pogostost nalaganja poročil o stanju naprave</translation>
+<translation id="2018836497795982119">Določa obdobje v milisekundah, po katerem se storitvi za upravljanje naprave pošlje poizvedba za uporabniške podatke pravilnika.
+
+      Z nastavitvijo tega pravilnika se preglasi privzeta vrednost 3 ur. Veljavne vrednosti za ta pravilnik so med 1.800.000 (30 minut) in 86.400.000 (1 dan). Vrednosti, ki niso v tem obsegu, bodo spremenjene na ustrezno mejo obsega. Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur, ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev.
+
+      Če tega pravilnika ne nastavitev, bo brskalnik <ph name="PRODUCT_NAME" /> uporabljal privzeto vrednost 3 ur.
+
+      Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur (prezrejo se vse privzete nastavitve in vrednost tega pravilnika), ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev, zaradi česar so pogostejše osvežitve nepotrebne.</translation>
 <translation id="2024476116966025075">Konfiguriranje imena domene, potrebnega za odjemalce za oddaljeni dostop</translation>
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
 <translation id="206623763829450685">Določa, katere načine preverjanja pristnosti HTTP podpira <ph name="PRODUCT_NAME" />.
@@ -927,7 +934,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Navaja razširitve, samodejno nameščene za uporabnika predstavitvenega načina, za naprave v maloprodajnem načinu. Te razširitve so shranjene v napravi in jih je mogoče namestiti brez povezave.
 
       Vsak vnos na seznamu vsebuje slovar, ki mora vključevati ID razširitve v polju »extension-id« in URL za posodobitev v polju »update-url«.</translation>
-<translation id="388237772682176890">Ta pravilnik je zastarel v različicoi M53 in je bil odstranjen v različici M54 zaradi umika podpore za protokol SPDY/3.1.
+<translation id="388237772682176890">Ta pravilnik je zastarel v različici M53 in je odstranjen v različici M54 zaradi umika podpore za protokol SPDY/3.1.
 
       Onemogoči uporabo protokola SPDY v brskalniku <ph name="PRODUCT_NAME" />.
 
@@ -1082,11 +1089,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Medtem ko je ta pravilnik podprt v zgornjih okoljih, je funkcija, ki jo omogoča, morda na voljo v manj okoljih. Vseh zastarelih funkcij spletnega okolja ni mogoče znova omogočiti; za omejen čas (različno od funkcije do funkcije) je mogoče samo tiste, ki so izrecno navedene spodaj. Splošna oblika zapisa oznake niza bo [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Če vas zanima referenčno gradivo in namen spremembe funkcij spletnega okolja, obiščite http://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Omogoči zaklepanje, ko je naprava nedejavna ali preide v stanje pripravljenosti</translation>
-<translation id="4445684791305970001">Onemogoči orodja za razvijalce in konzolo JavaScript.
-
-      Če to nastavitev omogočite, dostop do orodij za razvijalcev ne bo mogoč in spletnih elementov ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali priročnem meniju za odpiranje orodij za razvijalce in konzole za JavaScript bodo onemogočeni.
-
-      Če to možnost onemogočite ali jo ne nastavite, bo lahko uporabnik uporabljal orodja za razvijalce in konzolo JavaScript.</translation>
 <translation id="4449545651113180484">Sukanje zaslona v smeri urnega kazalca za 270 stopinj</translation>
 <translation id="4467952432486360968">Blokiraj piškotke drugih spletnih mest</translation>
 <translation id="4474167089968829729">Omogočanje shranjevanja gesel v upravitelju gesel</translation>
@@ -1259,11 +1261,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik vklopljen, bo sistem <ph name="PRODUCT_OS_NAME" /> preprečil, da bi se naprava zagnala v načinu za razvijalce. Če je stikalo za razvijalce vklopljeno, sistem ne bo dovolil zagona in bo prikazal zaslon z napako.
 
       Če ta pravilnik ni nastavljen ali je izklopljen, bo način za razvijalce v napravi še naprej na voljo.</translation>
-<translation id="5203271367506489164">Ta pravilnik je zastarel v različici M48 v dobro pravilnika »NetworkPredictionOptions« in je bil odstranjen v različici M54.
+<translation id="5203271367506489164">Ta pravilnik je zastarel in nadomeščen s pravilnikom »NetworkPredictionOptions« v različici M48. Odstranjen je v različici M54.
 
       Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
 
-      Ta pravilnik ne nadzira le vnaprejšnjega prenosa podatkov DNS, ampak tudi vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani. Ime pravilnika se nanaša na vnaprejšnji prenos podatkov DNS iz zgodovinskih razlogov.
+      Ta pravilnik ne nadzira le vnaprejšnjega prenosa podatkov DNS, ampak tudi vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani. Ime pravilnika se nanaša na vnaprejšnji prenos podatkov DNS zaradi zgodovinskih razlogov.
 
       Če to nastavitev omogočite ali onemogočite, je uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
 
@@ -1349,6 +1351,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik nastavljen, bo po preteku določenega časa nedejavnosti uporabnika na zaslonu za prijavo določena seja prijavljena samodejno. Javna seja mora biti pred tem konfigurirana (glejte |DeviceLocalAccounts|).
 
       Če ta pravilnik ni nastavljen, ni samodejne prijave.</translation>
+<translation id="5529037166721644841">Določa obdobje v milisekundah, po katerem se storitvi za upravljanje naprave pošlje poizvedba za podatke pravilnika naprave.
+
+      Z nastavitvijo tega pravilnika se preglasi privzeta vrednost 3 ur. Veljavne vrednosti za ta pravilnik so med 1.800.000 (30 minut) in 86.400.000 (1 dan). Vrednosti, ki niso v tem obsegu, bodo spremenjene na ustrezno mejo obsega. 
+
+      Če tega pravilnika ne nastavitev, bo brskalnik <ph name="PRODUCT_OS_NAME" /> uporabljal privzeto vrednost 3 ur.
+
+      Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur (prezrejo se vse privzete nastavitve in vrednost tega pravilnika), ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev, zaradi česar so pogostejše osvežitve nepotrebne.</translation>
 <translation id="5535957389335373033">Kako pogosto se pošiljajo omrežni paketi za spremljanje (v milisekundah).
 
       Če ta pravilnik ni nastavljen, je privzeta pogostost 3 minute. Najmanjša
@@ -1916,6 +1925,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="7302043767260300182">Časovni zamik zaklepa zaslona, če se napaja iz električnega omrežja</translation>
+<translation id="7311458740754205918">Če je ta pravilnik omogočen ali ni nastavljen, bodo na strani »Nov zavihek« morda prikazani predlogi vsebine na podlagi uporabnikove zgodovine brskanja, zanimanj ali lokacije.
+
+      Če je ta pravilni onemogočen, samodejno ustvarjeni predlogi vsebine ne bodo prikazani na strani »Nov zavihek«.</translation>
 <translation id="7323896582714668701">Dodatni parametri ukazne vrstice za <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon izklopi, če se napaja iz akumulatorja.
 
@@ -2058,6 +2070,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7763479091692861127"> Vrste povezav, ki so dovoljene za uporabo za posodobitve operacijskega sistema. Posodobitve operacijskega sistema lahko zaradi svoje velikosti zelo obremenijo povezavo in lahko prinesejo dodatne stroške. Zato trenutno niso omogočene za vrste povezave, ki štejejo za drage; trenutno so to WiMax, Bluetooth in prenos podatkov v mobilnem omrežju.
 
       Prepoznani identifikatorji vrste povezav so »ethernet«, »wifi«, »wimax«, »bluetooth« in »cellular«.</translation>
+<translation id="7763614521440615342">Prikaz predlogov vsebine na strani »Nov zavihek«</translation>
 <translation id="7766336524667238790">Poročanje podatkov o aktivni seji kioska, na primer
       ID-ja in različice aplikacije.
 

@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="1091157412887719337">A atribuição falhou. Nenhum motor disponível.</translation>
+<translation id="117738548141695034">Interruptor do Blimp</translation>
 <translation id="1416550906796893042">Versão da aplicação</translation>
 <translation id="1750179245464827362">Mostrar informações de depuração</translation>
 <translation id="2004526128230838685">A atribuição falhou. Problema desconhecido.</translation>
 <translation id="2023631438558435272">A atribuição falhou. Resposta inválida.</translation>
 <translation id="2078561879028077171">Informações da versão</translation>
 <translation id="2117453604279487107">URL do atribuidor</translation>
+<translation id="2218944627481691815">Interruptor do Blimp alterado. Reinicie a aplicação.</translation>
 <translation id="2353984724370197742">A atribuição falhou. Falha no pedido de rede.</translation>
 <translation id="2789927415041640472">Reinicie a aplicação para utilizar a nova configuração do atribuidor.</translation>
 <translation id="3046825211487065480">A atribuição falhou. O segundo pedido foi enviado antes de o primeiro pedido responder.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Motor desligado, motivo: %1$s</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7608553142876436780">IP do motor</translation>
+<translation id="7795546637165553439">Definições do Blimp</translation>
 <translation id="7961542533680218955">A atribuição foi bem-sucedida.</translation>
 <translation id="8514856595257368555">Símbolo obtido.</translation>
 <translation id="8880704056643418312">Consolidações</translation>

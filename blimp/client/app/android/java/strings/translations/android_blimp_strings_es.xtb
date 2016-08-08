@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1091157412887719337">Ha fallado la asignación. No hay motores disponibles.</translation>
+<translation id="117738548141695034">Interruptor de Blimp</translation>
 <translation id="1416550906796893042">Versión de la aplicación</translation>
 <translation id="1750179245464827362">Mostrar información de depuración</translation>
 <translation id="2004526128230838685">Ha fallado la asignación. Problema desconocido.</translation>
 <translation id="2023631438558435272">Ha fallado la asignación. La respuesta no es válida.</translation>
 <translation id="2078561879028077171">Información sobre la versión</translation>
 <translation id="2117453604279487107">URL del asignador</translation>
+<translation id="2218944627481691815">Se ha modificado el interruptor de Blimp. Reinicia la aplicación.</translation>
 <translation id="2353984724370197742">Ha fallado la asignación. Error en la solicitud de red.</translation>
 <translation id="2789927415041640472">Reinicia la aplicación para utilizar la configuración del nuevo asignador.</translation>
 <translation id="3046825211487065480">Ha fallado la asignación. Se ha enviado la segunda petición antes de que se respondiera la primera.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Motivo por el que el motor está desconectado: %1$s</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7608553142876436780">IP del motor</translation>
+<translation id="7795546637165553439">Configuración de Blimp</translation>
 <translation id="7961542533680218955">Asignación correcta.</translation>
 <translation id="8514856595257368555">Se ha recuperado el token.</translation>
 <translation id="8880704056643418312">Cambios</translation>

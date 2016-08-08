@@ -168,6 +168,7 @@
 <translation id="284702764277384724">Het servercertificaat op <ph name="HOST_NAME" /> lijkt vals te zijn.</translation>
 <translation id="2889159643044928134">Niet opnieuw laden</translation>
 <translation id="2896499918916051536">Deze plug-in wordt niet ondersteund.</translation>
+<translation id="2900469785430194048">Google Chrome beschikt over onvoldoende geheugen om deze webpagina weer te geven.</translation>
 <translation id="2909946352844186028">Er is een netwerkwijziging gedetecteerd.</translation>
 <translation id="2915500479781995473">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_TIME" />. Klopt dat? Zo niet, dan moet je de klok van het systeem corrigeren en deze pagina vernieuwen.</translation>
 <translation id="2922350208395188000">Het servercertificaat kan niet worden gecontroleerd.</translation>
@@ -446,6 +447,7 @@
 <translation id="6355080345576803305">Overschrijving voor openbare sessie</translation>
 <translation id="6358450015545214790">Wat betekent dit?</translation>
 <translation id="6387478394221739770">Ben je geïnteresseerd in nieuwe, coole Chrome-functies? Probeer ons bèta-kanaal op chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium beschikt over onvoldoende geheugen om deze webpagina weer te geven.</translation>
 <translation id="641480858134062906">Kan <ph name="URL" /> niet laden</translation>
 <translation id="6417515091412812850">Kan niet controleren of het certificaat is ingetrokken.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> heeft de verbinding geweigerd.</translation>
@@ -623,7 +625,6 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8647750283161643317">Alle standaardinstellingen herstellen</translation>
 <translation id="8680787084697685621">De inloggegevens voor het account zijn verouderd.</translation>
 <translation id="8703575177326907206">Je verbinding met <ph name="DOMAIN" /> is niet gecodeerd.</translation>
-<translation id="8713130696108419660">Onjuiste eerste handtekening</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8728672262656704056">Je bent incognito</translation>
 <translation id="8730621377337864115">Gereed</translation>

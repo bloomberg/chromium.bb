@@ -168,6 +168,7 @@
 <translation id="284702764277384724">Il certificato del server <ph name="HOST_NAME" /> risulta essere un falso.</translation>
 <translation id="2889159643044928134">Non ricaricare</translation>
 <translation id="2896499918916051536">Questo plug-in non è supportato.</translation>
+<translation id="2900469785430194048">Google Chrome ha esaurito la memoria mentre cercava di visualizzare questa pagina web.</translation>
 <translation id="2909946352844186028">È stato rilevato un cambio di rete.</translation>
 <translation id="2915500479781995473">Questo server non è riuscito a verificare che si tratti di <ph name="DOMAIN" />; il relativo certificato di sicurezza è scaduto. Il problema potrebbe essere dovuto a un'errata configurazione o a un malitenzionato che ha intercettato la connessione. L'orologio del tuo computer è attualmente impostato sul giorno <ph name="CURRENT_TIME" />. È corretto? In caso contrario dovresti regolare l'orologio del sistema e aggiornare la pagina.</translation>
 <translation id="2922350208395188000">Il certificato del server non può essere verificato.</translation>
@@ -447,6 +448,7 @@
 <translation id="6355080345576803305">Sostituzione sessione pubblica</translation>
 <translation id="6358450015545214790">Che cosa significano?</translation>
 <translation id="6387478394221739770">Ti interessano le nuove e straordinarie funzioni di Chrome? Prova il nostro canale beta all'indirizzo chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium ha esaurito la memoria mentre cercava di visualizzare questa pagina web.</translation>
 <translation id="641480858134062906">Caricamento <ph name="URL" /> non riuscito</translation>
 <translation id="6417515091412812850">Impossibile controllare se il certificato è stato revocato.</translation>
 <translation id="6433595998831338502">Connessione negata da <ph name="HOST_NAME" />.</translation>
@@ -624,7 +626,6 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8647750283161643317">Ripristina i valori predefiniti per tutto</translation>
 <translation id="8680787084697685621">I dati di accesso dell'account sono obsoleti.</translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN" /> non è crittografata.</translation>
-<translation id="8713130696108419660">Firma iniziale non valida</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8728672262656704056">Sei passato alla navigazione in incognito</translation>
 <translation id="8730621377337864115">Fine</translation>

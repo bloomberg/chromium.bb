@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="1091157412887719337">Atama başarısız oldu. Kullanılabilir motor yok.</translation>
+<translation id="117738548141695034">Blimp Anahtarı</translation>
 <translation id="1416550906796893042">Uygulama sürümü</translation>
 <translation id="1750179245464827362">Hata Ayıklama Bilgilerini Göster</translation>
 <translation id="2004526128230838685">Atama başarısız oldu. Bilinmeyen sorun.</translation>
 <translation id="2023631438558435272">Atama başarısız oldu. Geçersiz yanıt.</translation>
 <translation id="2078561879028077171">Sürüm Bilgisi</translation>
 <translation id="2117453604279487107">Atayan URL'si</translation>
+<translation id="2218944627481691815">Blimp anahtarı değişti. Lütfen uygulamayı yeniden başlatın.</translation>
 <translation id="2353984724370197742">Atama başarısız oldu. Ağ isteği başarısız oldu.</translation>
 <translation id="2789927415041640472">Yeni atayan yapılandırmasını kullanmak için lütfen uygulamayı yeniden başlatın.</translation>
 <translation id="3046825211487065480">Atama başarısız oldu. Birinci isteğe yanıt verilmeden ikinci istek gönderildi.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Motor bağlantısı kesildi, neden: %1$s</translation>
 <translation id="7596558890252710462">İşletim sistemi</translation>
 <translation id="7608553142876436780">Motor IP'si</translation>
+<translation id="7795546637165553439">Blimp Ayarları</translation>
 <translation id="7961542533680218955">Atama başarılı oldu.</translation>
 <translation id="8514856595257368555">Jeton alındı.</translation>
 <translation id="8880704056643418312">Gerçekleştirme sayısı</translation>

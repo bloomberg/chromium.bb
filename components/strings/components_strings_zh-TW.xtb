@@ -170,6 +170,7 @@
 <translation id="284702764277384724"><ph name="HOST_NAME" /> 疑似使用偽造的伺服器憑證。</translation>
 <translation id="2889159643044928134">不要重新載入</translation>
 <translation id="2896499918916051536">系統不支援這個外掛程式。</translation>
+<translation id="2900469785430194048">Google Chrome 嘗試顯示這個網頁時用盡了記憶體。</translation>
 <translation id="2909946352844186028">系統偵測到網路變更。</translation>
 <translation id="2915500479781995473">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已過期。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。您電腦時鐘目前設定的時間是 <ph name="CURRENT_TIME" />，是否正確？如果設定有誤，請更正您系統的時鐘，再重新整理這個頁面。</translation>
 <translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">公開工作階段覆寫</translation>
 <translation id="6358450015545214790">我需要進一步資訊</translation>
 <translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
+<translation id="6389758589412724634">Chromium 嘗試顯示這個網頁時用盡了記憶體。</translation>
 <translation id="641480858134062906">無法載入 <ph name="URL" /></translation>
 <translation id="6417515091412812850">無法檢查憑證是否已遭撤銷。</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒絕連線。</translation>
@@ -630,7 +632,6 @@
 <translation id="8647750283161643317">全部重設為預設值</translation>
 <translation id="8680787084697685621">帳戶登入詳細資料已過期。</translation>
 <translation id="8703575177326907206">您到 <ph name="DOMAIN" /> 的連線未加密。</translation>
-<translation id="8713130696108419660">初始簽名錯誤</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8728672262656704056">您已啟用無痕模式。</translation>
 <translation id="8730621377337864115">完成</translation>

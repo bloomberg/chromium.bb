@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Chromen sovellusten käynnistysohjelma poistuu käytöstä</translation>
 <translation id="1877026089748256423">Chrome on vanhentunut</translation>
 <translation id="1924381329666691588">Google Chromea ei voi näyttää tällä kielellä.</translation>
+<translation id="2063848847527508675">Chrome-käyttöjärjestelmä täytyy käynnistää uudelleen, jotta päivitys voidaan ottaa käyttöön.</translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2084710999043359739">Lisää Chromeen</translation>
 <translation id="2246246234298806438">Google Chrome ei voi näyttää tulostusesikatselua, koska PDF-katseluohjelma puuttuu.</translation>
@@ -52,6 +53,7 @@
 Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja asetukset, yhdistetään tiliin <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Näytä Chrome-valikko</translation>
 <translation id="2429317896000329049">Google Chrome ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
+<translation id="2446511512801740068">Chrome on vanhentunut, koska sitä ei ole käynnistetty uudelleen viime aikoina. Päivitys on saatavilla, ja se otetaan käyttöön uudelleenkäynnistyksen jälkeen.</translation>
 <translation id="2485422356828889247">Poista</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="2582790009689336987">Google Chromen päivitykset eivät pian ole saatavilla tällä tietokoneella, koska tämän Linux-järjestelmän tuki loppuu.</translation>

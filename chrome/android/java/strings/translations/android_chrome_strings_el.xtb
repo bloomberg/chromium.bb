@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="1040144152982955218">Αναζήτηση συσκευών… <ph name="BEGIN_LINK" />λάβετε βοήθεια<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Προειδοποίηση</translation>
 <translation id="10614374240317010">Δεν έχει αποθηκευθεί ποτέ</translation>
 <translation id="1061441684050139317">Το Chrome χρειάζεται πρόσβαση στο μικρόφωνο προκειμένου να το μοιραστεί με αυτόν τον ιστότοπο.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">Ανακαλύψτε ιστοσελίδες που στέλνουν κοντινά αντικείμενα. Το Chrome συγκεντρώνει ιστοσελίδες που σχετίζονται με αντικείμενα που βρίσκονται γύρω σας, τις στέλνει ανώνυμα σε μια υπηρεσία της Google για να εντοπίσει αυτές που είναι πιο χρήσιμες για εσάς και, στη συνέχεια, τις προβάλλει.
 
 Για να χρησιμοποιήσετε το Φυσικό δίκτυο, θα πρέπει να ενεργοποιήσετε το Bluetooth και την Τοποθεσία.</translation>
-<translation id="1250508505624960884">Σελιδοδείκτες του Chrome Beta</translation>
 <translation id="1254090737195733114">Εισαγωγή δεδομένων;</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Διακοπή</translation>
@@ -88,12 +86,11 @@
 <translation id="1946821392246652573">Αποδεκτές κάρτες</translation>
 <translation id="1966710179511230534">Ενημερώστε τα στοιχεία σύνδεσής σας.</translation>
 <translation id="1974060860693918893">Σύνθετες</translation>
-<translation id="1984321224716884559">Σελιδοδείκτες του Chrome Dev</translation>
 <translation id="1984937141057606926">Να επιτρέπονται, εκτός από τα cookie τρίτου μέρους</translation>
 <translation id="1994173015038366702">URL ιστότοπου</translation>
 <translation id="2001120796168634316">Αποθ. συνδ. σελ. για αργότερα</translation>
 <translation id="200669432486043882">Αντικατάσταση αρχείου</translation>
-<translation id="2020525020270327736">Αντιγραφή ιστότοπου</translation>
+<translation id="2020525020270327736">Αντιγραφή ιστοτόπου</translation>
 <translation id="2038563949887743358">Ενεργοποίηση αιτήματος ιστότοπου για υπολογιστές</translation>
 <translation id="2073235970478114994">Φόρτωση εικόνων</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
@@ -159,9 +156,7 @@
 <translation id="2742271047622814453">Οι αποθηκευμένες προτιμήσεις στους ιστότοπους ενδέχεται να διαγραφούν</translation>
 <translation id="2748463065602559597">Βλέπετε μια ασφαλή σελίδα του Google Chrome.</translation>
 <translation id="2762000892062317888">μόλις τώρα</translation>
-<translation id="2770465223704140727">Κατάργηση από τη λίστα</translation>
 <translation id="2777555524387840389">Απομένουν <ph name="SECONDS" /> δευτερόλεπτα</translation>
-<translation id="278029852808208386">Δεν βρέθηκαν συσκευές Bluetooth. <ph name="BEGIN_LINK" />Νέα αναζήτηση<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Απομένει 1 δευτερόλεπτο</translation>
 <translation id="2811892995384186721">Δεν βλέπετε τη συσκευή σας; <ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Πατήστε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
@@ -232,7 +227,6 @@
 
 Για να τροποποιήσετε τον όρο αναζήτησης, πατήστε παρατεταμένα για να τον επιλέξετε. Για να κάνετε την αναζήτησή σας πιο συγκεκριμένη, σύρετε το παράθυρο εντελώς προς τα επάνω και αγγίξτε το πλαίσιο αναζήτησης.</translation>
 <translation id="3616113530831147358">Ήχος</translation>
-<translation id="3623048332793834136">Σελιδοδείκτες του Chrome Canary</translation>
 <translation id="3632295766818638029">Αποκάλυψη κωδικού πρόσβασης</translation>
 <translation id="363596933471559332">Αυτόματη σύνδεση σε ιστότοπους με χρήση αποθηκευμένων διαπιστευτηρίων. Όταν η λειτουργία είναι απενεργοποιημένη, θα σας ζητείται επαλήθευση κάθε φορά πριν από τη σύνδεση σε έναν ιστότοπο.</translation>
 <translation id="3656115297268584622">Ενεργοποίηση της τοποθεσίας στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
@@ -285,7 +279,6 @@
 <translation id="4271185234001491831">Να μην γίνεται ποτέ μετάφραση από <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Μέσα</translation>
 <translation id="4278390842282768270">Επιτρέπεται</translation>
-<translation id="4297410240212242334">Ξεχωριστές καρτέλες και εφαρμογές</translation>
 <translation id="4307992518367153382">Βασικά στοιχεία</translation>
 <translation id="4334294535648607276">Η λήψη ολοκληρώθηκε.</translation>
 <translation id="4351244548802238354">Κλείσιμο παραθύρου διαλόγου</translation>
@@ -309,10 +302,8 @@
 <translation id="4645575059429386691">Διαχειρίζεται από τους γονείς σου</translation>
 <translation id="4663756553811254707">Διαγράφηκαν <ph name="NUMBER_OF_BOOKMARKS" /> σελιδοδείκτες</translation>
 <translation id="4665282149850138822">Ο ιστότοπος <ph name="NAME" /> προστέθηκε στην αρχική οθόνη σας</translation>
-<translation id="4668044310199835006">Σελιδοδείκτες του Work Chrome</translation>
 <translation id="4684427112815847243">Συγχρονισμός όλων</translation>
 <translation id="4686372254213217147">Αρχικό μέγεθος</translation>
-<translation id="4690286298542128877">Οι καρτέλες θα μετακινηθούν σε ένα στοιχείο ελέγχου για την εναλλαγή καρτελών εντός του Chrome.</translation>
 <translation id="4698413471314543145">Λείπει μια κρίσιμης σημασίας λειτουργία που απαιτείται για την εκτέλεση του Chrome. Είτε η εγκατάσταση του Chrome δεν έχει ολοκληρωθεί είτε δεν είναι συμβατή με αυτήν την έκδοση του Android.</translation>
 <translation id="4699172675775169585">Εικόνες και αρχεία στην κρυφή μνήμη</translation>
 <translation id="4710672574193412565">Προσθέστε έναν Λογαριασμό Google από τη σελίδα "Λογαριασμοί" της εφαρμογής Ρυθμίσεις της συσκευής σας.</translation>
@@ -354,7 +345,6 @@
 <translation id="5127805178023152808">Ο συγχρονισμός είναι απενεργοποιημένος</translation>
 <translation id="5131405117025179004">Επεξεργασία αποθηκευμένου λογαριασμού</translation>
 <translation id="5138299137310274655">Αυτή η σελίδα είναι στα <ph name="SOURCE_LANGUAGE" />. Να μεταφραστεί στα <ph name="TARGET_LANGUAGE" />;</translation>
-<translation id="5150703642582475397">Συγχώνευση καρτελών και εφαρμογών</translation>
 <translation id="515227803646670480">Διαγραφή αποθηκευμένων δεδομένων</translation>
 <translation id="5156656584247937086">Αυτός ο λογαριασμός είναι παιδικός</translation>
 <translation id="5161254044473106830">Απαιτείται τίτλος</translation>
@@ -367,7 +357,6 @@
 <translation id="5222676887888702881">Έξοδος</translation>
 <translation id="5233638681132016545">Νέα καρτέλα</translation>
 <translation id="5271967389191913893">Η συσκευή δεν μπορεί να ανοίξει το περιεχόμενο προς λήψη.</translation>
-<translation id="5275558766013849309">Οι καρτέλες θα συνυπάρχουν με τις πρόσφατες εφαρμογές.</translation>
 <translation id="528192093759286357">Σύρετε από το επάνω τμήμα και αγγίξτε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
 <translation id="5284584623296338184">Οι αλλαγές σε σελιδοδείκτες, ιστορικό, κωδικούς πρόσβασης και άλλες ρυθμίσεις δεν θα συγχρονίζονται πλέον με το Λογαριασμό σας Google. Ωστόσο, τα υπάρχοντα δεδομένα σας θα παραμείνουν αποθηκευμένα στο λογαριασμό σας Google.</translation>
 <translation id="5301954838959518834">Εντάξει, το κατάλαβα</translation>
@@ -450,7 +439,6 @@
 <translation id="6108923351542677676">Ρύθμιση σε εξέλιξη…</translation>
 <translation id="6112702117600201073">Ανανέωση σελίδας</translation>
 <translation id="6127379762771434464">Το στοιχείο καταργήθηκε</translation>
-<translation id="6134870457258083164">Δεν βλέπετε τη συσκευή σας; <ph name="BEGIN_LINK1" />Λάβετε βοήθεια<ph name="END_LINK1" /> ή <ph name="BEGIN_LINK2" />αναζητήστε την ξανά<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Ρύθμιση σελίδας ώστε να είναι φιλική προς κινητά</translation>
 <translation id="6140912465461743537">Χώρα/Περιοχή</translation>
 <translation id="6159335304067198720">Εξοικονόμηση δεδομένων κατά <ph name="PERCENT" /></translation>
@@ -482,7 +470,6 @@
 <translation id="6476911854266661814">Παύση "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6477460825583319731">Μη έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="6482749332252372425">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω έλλειψης αποθηκευτικού χώρου.</translation>
-<translation id="6541922744811587456">Σελιδοδείκτες του Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Επιλέξτε μια καρτέλα για ζεύξη</translation>
 <translation id="6545017243486555795">Διαγραφή όλων των δεδομένων</translation>
@@ -554,7 +541,6 @@
 <translation id="7220786058474068424">Επεξεργασία</translation>
 <translation id="7243308994586599757">Διαθέσιμες επιλογές κοντά κάτω μέρος της οθόνης</translation>
 <translation id="7244362611678346589">Το <ph name="SEARCH_ENGINE_URL" /> χρησιμοποιεί την τοποθεσία σας για την εμφάνιση τοπικών αποτελεσμάτων αναζήτησης</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Βοήθεια<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Διαγραφή σελιδοδείκτη</translation>
 <translation id="7301833672208172928">Ενεργοποίηση συγχρονισμού ιστορικού</translation>
 <translation id="7327835590071894791">Η καρτέλα σας βρίσκεται πλέον στο παρασκήνιο.</translation>
@@ -565,7 +551,6 @@
 <translation id="7378627244592794276">Όχι</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Δεν είναι δυνατή η μετάδοση βίντεο λόγω περιορισμών ιστότοπου</translation>
-<translation id="7408644312175185557">Δείτε τις καρτέλες σας με άλλες πρόσφατες εφαρμογές στην οθόνη "Επισκόπηση" του τηλεφώνου σας.</translation>
 <translation id="7423098979219808738">Να γίνεται ερώτηση πρώτα</translation>
 <translation id="7437998757836447326">Αποσύνδεση από το Chrome</translation>
 <translation id="7445411102860286510">Να επιτρέπεται στους ιστότοπους η αυτόματη αναπαραγωγή βίντεο σε σίγαση (συνιστάται)</translation>

@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Sertifikat server di <ph name="HOST_NAME" /> tampaknya palsu.</translation>
 <translation id="2889159643044928134">Jangan Muat Ulang</translation>
 <translation id="2896499918916051536">Plugin ini tidak didukung.</translation>
+<translation id="2900469785430194048">Google Chrome kehabisan memori saat mencoba menampilkan laman web ini.</translation>
 <translation id="2909946352844186028">Perubahan jaringan terdeteksi.</translation>
 <translation id="2915500479781995473">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah habis. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda. Saat ini jam komputer Anda disetel ke <ph name="CURRENT_TIME" />. Apakah sudah benar? Jika belum, sebaiknya perbaiki jam sistem kemudian segarkan laman ini.</translation>
 <translation id="2922350208395188000">Sertifikat server tidak dapat diperiksa.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Diganti oleh sesi publik</translation>
 <translation id="6358450015545214790">Apakah maksud ini?</translation>
 <translation id="6387478394221739770">Tertarik dengan fitur Chrome baru yang keren? Coba saluran beta kami di chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium kehabisan memori saat mencoba menampilkan laman web ini.</translation>
 <translation id="641480858134062906"><ph name="URL" /> gagal dimuat</translation>
 <translation id="6417515091412812850">Tidak dapat memeriksa apakah sertifikat telah ditarik.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> menolak untuk tersambung.</translation>
@@ -630,7 +632,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8647750283161643317">Setel ulang semua ke default</translation>
 <translation id="8680787084697685621">Detail proses masuk akun sudah usang.</translation>
 <translation id="8703575177326907206">Sambungan ke <ph name="DOMAIN" /> tidak dienkripsi.</translation>
-<translation id="8713130696108419660">Tanda tangan awal yang buruk</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
 <translation id="8728672262656704056">Anda masuk mode penyamaran</translation>
 <translation id="8730621377337864115">Selesai</translation>

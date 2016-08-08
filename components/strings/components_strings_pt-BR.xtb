@@ -170,6 +170,7 @@
 <translation id="284702764277384724">O certificado do servidor em <ph name="HOST_NAME" /> parece ser falsificado.</translation>
 <translation id="2889159643044928134">Não atualizar</translation>
 <translation id="2896499918916051536">Este plug-in não é compatível.</translation>
+<translation id="2900469785430194048">O Google Chrome ficou sem memória ao tentar exibir essa página da Web.</translation>
 <translation id="2909946352844186028">Foi detectada uma alteração na rede.</translation>
 <translation id="2915500479781995473">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança do servidor expirou. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor. O relógio do seu computador está definido para <ph name="CURRENT_TIME" /> no momento. Ele está certo? Caso não esteja, corrija o relógio do seu sistema e depois recarregue esta página.</translation>
 <translation id="2922350208395188000">O certificado do servidor não pode ser verificado.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Modificação de sessão pública</translation>
 <translation id="6358450015545214790">O que são essas informações?</translation>
 <translation id="6387478394221739770">Interessado em novos recursos interessantes do Google Chrome? Veja nosso Canal Beta em chrome.com/beta.</translation>
+<translation id="6389758589412724634">O Chromium ficou sem memória ao tentar exibir essa página da Web.</translation>
 <translation id="641480858134062906">Falha ao carregar <ph name="URL" /></translation>
 <translation id="6417515091412812850">Não foi possível verificar se o certificado foi revogado</translation>
 <translation id="6433595998831338502">A conexão com <ph name="HOST_NAME" /> foi recusada.</translation>
@@ -630,7 +632,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8647750283161643317">Redefinir tudo para o padrão</translation>
 <translation id="8680787084697685621">Os detalhes de login da conta estão desatualizados.</translation>
 <translation id="8703575177326907206">Sua conexão com <ph name="DOMAIN" /> não está criptografada.</translation>
-<translation id="8713130696108419660">Assinatura inicial inválida</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8728672262656704056">Você entrou no modo de navegação anônima</translation>
 <translation id="8730621377337864115">Concluído</translation>

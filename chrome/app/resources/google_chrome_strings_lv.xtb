@@ -38,6 +38,7 @@
 <translation id="1864458292167284385">Chrome lietotņu palaidēja darbība tiek pārtraukta.</translation>
 <translation id="1877026089748256423">Chrome versija ir novecojusi.</translation>
 <translation id="1924381329666691588">Google Chrome nevar rādīt šajā valodā.</translation>
+<translation id="2063848847527508675">Lai lietotu atjauninājumu, Chrome OS ir jārestartē.</translation>
 <translation id="2077129598763517140">Izmantot aparatūras paātrināšanas režīmu, kad tas ir pieejams</translation>
 <translation id="2084710999043359739">Pievienot pārlūkam Chrome</translation>
 <translation id="2246246234298806438">Pārlūks Google Chrome nevar parādīt drukas priekšskatījumu, ja nav pieejams iebūvētais PDF skatītājs.</translation>
@@ -54,6 +55,7 @@
 Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, vēsture un citi iestatījumi, tiks apvienota ar konta <ph name="ACCOUNT_EMAIL_NEW" /> informāciju.</translation>
 <translation id="2397416548179033562">Rādīt Chrome izvēlni</translation>
 <translation id="2429317896000329049">Google Chrome nevarēja sinhronizēt jūsu datus, jo jūsu domēnam nav pieejama sinhronizācija.</translation>
+<translation id="2446511512801740068">Pārlūks Chrome ir novecojis, jo jau kādu laiku tas nav atkārtoti palaists. Atjauninājums ir pieejams un tiks lietots, tiklīdz atkārtoti palaidīsiet pārlūku.</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
 <translation id="2580411288591421699">Nevar instalēt to pašu Google Chrome versiju, kas jau darbojas. Lūdzu, aizveriet Google Chrome un mēģiniet vēlreiz.</translation>
 <translation id="2582790009689336987">Šajā datorā drīzumā vairs netiks saņemti Google Chrome atjauninājumi, jo šī Linux sistēma vairs netiks atbalstīta.</translation>

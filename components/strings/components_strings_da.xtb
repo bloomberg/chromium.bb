@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Serverens certifikat på <ph name="HOST_NAME" /> lader til at være en forfalskning.</translation>
 <translation id="2889159643044928134">Genindlæs ikke siden</translation>
 <translation id="2896499918916051536">Dette plugin understøttes ikke.</translation>
+<translation id="2900469785430194048">Google Chrome løb tør for hukommelse, da websiden skulle vises.</translation>
 <translation id="2909946352844186028">Der blev registreret en netværksændring.</translation>
 <translation id="2915500479781995473">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet er udløbet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. Uret på din computer er indstillet til <ph name="CURRENT_TIME" />. Er det korrekt? Hvis ikke, skal du indstille uret og opdatere siden.</translation>
 <translation id="2922350208395188000">Serverens certifikat kan ikke kontrolleres.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Tilsidesættelse af offentlig session</translation>
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
 <translation id="6387478394221739770">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores betakanal på chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium løb tør for hukommelse, da websiden skulle vises.</translation>
 <translation id="641480858134062906"><ph name="URL" /> indlæsningen mislykkedes</translation>
 <translation id="6417515091412812850">Kan ikke kontrollere, om certifikatet er tilbagekaldt.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> nægtede at oprette forbindelse.</translation>
@@ -465,7 +467,7 @@
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6596325263575161958">Krypteringsmuligheder</translation>
 <translation id="662080504995468778">Bliv her</translation>
-<translation id="6628463337424475685"><ph name="ENGINE" /> Søg</translation>
+<translation id="6628463337424475685"><ph name="ENGINE" /> -søgning</translation>
 <translation id="6634865548447745291">Du kan ikke gå til <ph name="SITE" /> lige nu, da <ph name="BEGIN_LINK" />dette certifikat er blevet tilbagekaldt<ph name="END_LINK" />. Netværksfejl og angreb er normalt midlertidige, så denne side vil sandsynligvis fungere senere.</translation>
 <translation id="6644283850729428850">Denne politik er forældet.</translation>
 <translation id="6656103420185847513">Rediger mappe</translation>
@@ -630,7 +632,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8647750283161643317">Nulstil alle til standard</translation>
 <translation id="8680787084697685621">Oplysningerne om kontologin er forældede.</translation>
 <translation id="8703575177326907206">Din forbindelse til <ph name="DOMAIN" /> er ikke krypteret.</translation>
-<translation id="8713130696108419660">Ugyldig første signatur</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8728672262656704056">Du er nu i inkognitotilstand</translation>
 <translation id="8730621377337864115">Fuldført</translation>

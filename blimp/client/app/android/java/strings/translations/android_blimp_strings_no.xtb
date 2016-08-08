@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1091157412887719337">Oppgaven kunne ikke utføres. Ingen motorer var tilgjengelige.</translation>
+<translation id="117738548141695034">Blimp-bryter</translation>
 <translation id="1416550906796893042">Programversjon</translation>
 <translation id="1750179245464827362">Vis feilsøkingsinformasjon</translation>
 <translation id="2004526128230838685">Oppgaven kunne ikke utføres. Ukjent problem.</translation>
 <translation id="2023631438558435272">Oppgaven kunne ikke utføres. Ugyldig svar.</translation>
 <translation id="2078561879028077171">Versjonsinformasjon</translation>
 <translation id="2117453604279487107">Nettadresse for tildeleren</translation>
+<translation id="2218944627481691815">Blimp-bryteren er endret. Start appen på nytt.</translation>
 <translation id="2353984724370197742">Oppgaven kunne ikke utføres. Nettverksforespørselen mislyktes.</translation>
 <translation id="2789927415041640472">Start appen på nytt for å bruke den nye tildelerkonfigurasjonen.</translation>
 <translation id="3046825211487065480">Oppgaven kunne ikke utføres. Den andre forespørselen ble sendt før den første forespørselen svarte.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Motoren er koblet fra. Årsak: %1$s</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7608553142876436780">Motor-IP</translation>
+<translation id="7795546637165553439">Blimp-innstillinger</translation>
 <translation id="7961542533680218955">Oppgaven ble utført.</translation>
 <translation id="8514856595257368555">Tokenet er hentet.</translation>
 <translation id="8880704056643418312">Gjennomføringer</translation>

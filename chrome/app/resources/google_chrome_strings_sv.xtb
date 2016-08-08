@@ -40,6 +40,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1864458292167284385">Startprogrammet för appar försvinner.</translation>
 <translation id="1877026089748256423">Den här versionen av Chrome är inaktuell</translation>
 <translation id="1924381329666691588">Det går inte att visa Google Chrome på det här språket.</translation>
+<translation id="2063848847527508675">Chrome OS måste startas om för att uppdateringen ska börja gälla.</translation>
 <translation id="2077129598763517140">Använd maskinvaruacceleration när det är tillgängligt</translation>
 <translation id="2084710999043359739">Lägg till i Chrome</translation>
 <translation id="2246246234298806438">Förhandsgranskningen av utskriften kan inte visas i Google Chrome eftersom den inbyggda PDF-läsaren saknas.</translation>
@@ -56,6 +57,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokmärken, historik och andra inställningar, med <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Visa Chrome-menyn</translation>
 <translation id="2429317896000329049">Google Chrome kunde inte synkronisera data eftersom synkronisering inte är tillgängligt för din domän.</translation>
+<translation id="2446511512801740068">Chrome är inaktuellt eftersom det inte har startats om på ett tag. Det finns en uppdatering tillgänglig som tillämpas så snart du startar om.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
 <translation id="2582790009689336987">Den här datorn slutar snart att få uppdateringar för Google Chrome eftersom dess Linux-system inte längre stöds.</translation>

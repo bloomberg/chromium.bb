@@ -170,6 +170,7 @@
 <translation id="284702764277384724">يبدو أن شهادة الخادم على <ph name="HOST_NAME" /> مزيفة.</translation>
 <translation id="2889159643044928134">إلغاء إعادة التحميل</translation>
 <translation id="2896499918916051536">هذا المكون الإضافي غير معتمد.</translation>
+<translation id="2900469785430194048">‏نفدت ذاكرة Google Chrome أثناء محاولة عرض صفحة الويب هذه.</translation>
 <translation id="2909946352844186028">تم اكتشاف حدوث تغيير في الشبكة.</translation>
 <translation id="2915500479781995473">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان منتهية الصلاحية. وربما يكون سبب ذلك خطأ في التهيئة أو مهاجمًا يعترض الاتصال. تم تعيين ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME" />. هل تبدو الساعة صحيحة؟ إذا لم تكن كذلك، يجب عليك تصحيح ساعة النظام، ثم تحديث هذه الصفحة.</translation>
 <translation id="2922350208395188000">لا يمكن التحقق من شهادة الخادم.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">إلغاء الجلسة العامة</translation>
 <translation id="6358450015545214790">ماذا تعني هذه الأقسام؟</translation>
 <translation id="6387478394221739770">‏إذا كنت مهتمًا بميزات Google الجديدة والرائعة، فيُمكنك تجربة القناة التجريبية على chrome.com/beta.</translation>
+<translation id="6389758589412724634">‏نفدت ذاكرة Chromium أثناء محاولة عرض صفحة الويب هذه.</translation>
 <translation id="641480858134062906">فشل تحميل <ph name="URL" /></translation>
 <translation id="6417515091412812850">تعذر التحقق مما إذا كانت الشهادة قد تم إبطالها.</translation>
 <translation id="6433595998831338502">رفض <ph name="HOST_NAME" /> الاتصال.</translation>
@@ -630,7 +632,6 @@
 <translation id="8647750283161643317">إعادة التعيين على الإعدادات الافتراضية</translation>
 <translation id="8680787084697685621">تفاصيل تسجيل الدخول إلى الحساب قديمة.</translation>
 <translation id="8703575177326907206">الاتصال بالموقع <ph name="DOMAIN" /> غير محميّ بنظام تشفير.</translation>
-<translation id="8713130696108419660">توقيع أولي غير صحيح</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8728672262656704056">لقد انتقلت إلى وضع التصفح المتخفي</translation>
 <translation id="8730621377337864115">تم</translation>

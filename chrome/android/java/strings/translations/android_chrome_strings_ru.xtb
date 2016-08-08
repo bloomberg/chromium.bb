@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
-<translation id="1040144152982955218">Поиск устройств… <ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Внимание</translation>
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1061441684050139317">Предоставьте браузеру Chrome доступ к микрофону, чтобы пользоваться им на этом сайте.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">"Интернет вокруг нас" – это новый способ познавать мир. Chrome находит и анонимно отправляет в сервис Google веб-страницы, связанные с находящимися рядом объектами, а затем предлагает вам самые интересные и полезные ресурсы.
 
 Чтобы использовать эту функцию, необходимо включить Bluetooth и доступ к геоданным.</translation>
-<translation id="1250508505624960884">Закладки Chrome (бета)</translation>
 <translation id="1254090737195733114">Импорт данных</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Остановить</translation>
@@ -88,7 +86,6 @@
 <translation id="1946821392246652573">Поддерживаемые типы карт</translation>
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
-<translation id="1984321224716884559">Закладки Chrome для разработчиков</translation>
 <translation id="1984937141057606926">Разрешено, кроме сторонних сайтов</translation>
 <translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="2001120796168634316">Сохранить страницу офлайн</translation>
@@ -159,9 +156,7 @@
 <translation id="2742271047622814453">Пользовательские настройки сайтов будут удалены.</translation>
 <translation id="2748463065602559597">Вы просматриваете безопасную страницу Google Chrome.</translation>
 <translation id="2762000892062317888">только что</translation>
-<translation id="2770465223704140727">Удалить из списка</translation>
 <translation id="2777555524387840389">Осталось <ph name="SECONDS" /> сек.</translation>
-<translation id="278029852808208386">Устройства Bluetooth не обнаружены. <ph name="BEGIN_LINK" />Повторите попытку<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Осталась 1 сек.</translation>
 <translation id="2811892995384186721">Не можете найти устройство? <ph name="BEGIN_LINK" />Узнайте<ph name="END_LINK" />, как это исправить.</translation>
 <translation id="2836148919159985482">Чтобы выйти из полноэкранного режима, нажмите кнопку "Назад".</translation>
@@ -232,7 +227,6 @@
 
 Чтобы задать новый поисковый запрос, нажмите на нужное слово и не отпускайте палец. Чтобы уточнить запрос, прокрутите панель вверх и коснитесь поисковой строки.</translation>
 <translation id="3616113530831147358">Аудио</translation>
-<translation id="3623048332793834136">Закладки Chrome Canary</translation>
 <translation id="3632295766818638029">Показать пароль</translation>
 <translation id="363596933471559332">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
 <translation id="3656115297268584622">Включите определение местоположения в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
@@ -285,7 +279,6 @@
 <translation id="4271185234001491831">Никогда не переводить <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Камера и микрофон </translation>
 <translation id="4278390842282768270">Разрешены</translation>
-<translation id="4297410240212242334">Вкладки внутри Chrome</translation>
 <translation id="4307992518367153382">Основные</translation>
 <translation id="4334294535648607276">Скачивание завершено.</translation>
 <translation id="4351244548802238354">Закрыть</translation>
@@ -309,10 +302,8 @@
 <translation id="4645575059429386691">Управляется вашими родителями</translation>
 <translation id="4663756553811254707">Удалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Сайт <ph name="NAME" /> добавлен на главный экран</translation>
-<translation id="4668044310199835006">Закладки Work Chrome</translation>
 <translation id="4684427112815847243">Синхронизировать все</translation>
 <translation id="4686372254213217147">Исходный размер</translation>
-<translation id="4690286298542128877">Каждая вкладка будет отображаться внутри Chrome, а не в виде отдельных окон в списке приложений.</translation>
 <translation id="4698413471314543145">Отсутствует функция, необходимая для работы Chrome. Возможно, установка не была завершена или вы используете несовместимую версию Android.</translation>
 <translation id="4699172675775169585">Изображения и другие файлы, сохраненные в кеше</translation>
 <translation id="4710672574193412565">Добавьте аккаунт Google в соответствующем разделе настроек устройства.</translation>
@@ -354,7 +345,6 @@
 <translation id="5127805178023152808">Синхронизация выключена</translation>
 <translation id="5131405117025179004">Изменить настройки аккаунта</translation>
 <translation id="5138299137310274655">Язык этой страницы – <ph name="SOURCE_LANGUAGE" />. Перевести ее на <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="5150703642582475397">Вкладки в списке приложений</translation>
 <translation id="515227803646670480">Удаление данных</translation>
 <translation id="5156656584247937086">Это аккаунт ребенка</translation>
 <translation id="5161254044473106830">Введите название</translation>
@@ -367,7 +357,6 @@
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="5233638681132016545">Новая вкладка</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
-<translation id="5275558766013849309">Каждая вкладка будет отображаться в виде отдельного окна в списке открытых приложений.</translation>
 <translation id="528192093759286357">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
 <translation id="5284584623296338184">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это изменение не затронет данные, сохраненные в аккаунте ранее.</translation>
 <translation id="5301954838959518834">ОК</translation>
@@ -450,7 +439,6 @@
 <translation id="6108923351542677676">Настройка…</translation>
 <translation id="6112702117600201073">Обновление страницы</translation>
 <translation id="6127379762771434464">Быстрая ссылка удалена</translation>
-<translation id="6134870457258083164">Не можете найти свое устройство? <ph name="BEGIN_LINK1" />Узнайте<ph name="END_LINK1" />, как это исправить, или запустите поиск <ph name="BEGIN_LINK2" />ещё раз<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Адаптировать страницу для мобильных устройств</translation>
 <translation id="6140912465461743537">Страна/регион</translation>
 <translation id="6159335304067198720">Сжатие данных: <ph name="PERCENT" /></translation>
@@ -482,7 +470,6 @@
 <translation id="6476911854266661814">Воспроизведение видео "<ph name="VIDEO_TITLE" />" приостановлено</translation>
 <translation id="6477460825583319731">Неверный адрес электронной почты</translation>
 <translation id="6482749332252372425">Не удалось скачать файл <ph name="FILE_NAME" />, так как места для хранения данных недостаточно.</translation>
-<translation id="6541922744811587456">Закладки Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Выберите вкладку для передачи</translation>
 <translation id="6545017243486555795">Удалить все данные</translation>
@@ -554,7 +541,6 @@
 <translation id="7220786058474068424">Подождите…</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Удалить закладку</translation>
 <translation id="7301833672208172928">Включить</translation>
 <translation id="7327835590071894791">Вкладка переведена в фоновый режим.</translation>
@@ -565,7 +551,6 @@
 <translation id="7378627244592794276">Нет</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Не удается начать трансляцию видео из-за ограничений на сайте</translation>
-<translation id="7408644312175185557">Просматривайте вкладки в списке недавно использованных приложений, нажав значок "Обзор" на устройстве.</translation>
 <translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="7437998757836447326">Выход из Chrome</translation>
 <translation id="7445411102860286510">Разрешить сайтам автоматически воспроизводить видео без звука (рекомендуется)</translation>

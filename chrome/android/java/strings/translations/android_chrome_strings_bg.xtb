@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
-<translation id="1040144152982955218">Търсят се устройства… <ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Предупреждение</translation>
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="1061441684050139317">Chrome се нуждае от достъп до микрофона, за да го сподели с този сайт.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">Откривайте уеб страници, изпращани от обекти в близост. Chrome събира съответните уеб страници, изпраща ги анонимно до услуга на Google, за да намери най-полезните за вас, и след това ви ги показва.
 
 Функциите за Bluetooth и местоположението трябва да са включени, за да използвате Физическата мрежа.</translation>
-<translation id="1250508505624960884">Отметки от Chrome бета</translation>
 <translation id="1254090737195733114">Ще импорт. ли данните?</translation>
 <translation id="1258753120186372309">Драскулка на Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Стоп</translation>
@@ -88,7 +86,6 @@
 <translation id="1946821392246652573">Приемани карти</translation>
 <translation id="1966710179511230534">Моля, актуализирайте данните си за вход.</translation>
 <translation id="1974060860693918893">Разширени</translation>
-<translation id="1984321224716884559">Отметки от Chrome Dev</translation>
 <translation id="1984937141057606926">Разрешено, но не и за трети страни</translation>
 <translation id="1994173015038366702">URL адрес на сайт</translation>
 <translation id="2001120796168634316">Свързана страница: Запазване</translation>
@@ -159,9 +156,7 @@
 <translation id="2742271047622814453">Запазените предпочитания за сайтове може да се изтрият</translation>
 <translation id="2748463065602559597">Преглеждате защитена страница в Google Chrome.</translation>
 <translation id="2762000892062317888">току-що</translation>
-<translation id="2770465223704140727">Премахване от списъка</translation>
 <translation id="2777555524387840389">Остават <ph name="SECONDS" /> сек</translation>
-<translation id="278029852808208386">Няма намерени устройства с Bluetooth. <ph name="BEGIN_LINK" />Потърсете отново<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Остава 1 сек</translation>
 <translation id="2811892995384186721">Не виждате устройството си? <ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
@@ -232,7 +227,6 @@
 
 За да коригирате думата си за търсене, натиснете продължително за избор. За да прецизирате заявката, плъзнете панела нагоре докрай и докоснете полето за търсене.</translation>
 <translation id="3616113530831147358">Аудио</translation>
-<translation id="3623048332793834136">Отметки от Chrome Canary</translation>
 <translation id="3632295766818638029">Показване на паролата</translation>
 <translation id="363596933471559332">Автоматично влизане в уебсайтове посредством съхранявани идентификационни данни. Когато функцията е изключена, ще трябва да потвърждавате всяко влизане в профил в уебсайт.</translation>
 <translation id="3656115297268584622">Включете местоположението от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
@@ -285,7 +279,6 @@
 <translation id="4271185234001491831">Никога да не се превежда от <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Медия</translation>
 <translation id="4278390842282768270">Разрешено</translation>
-<translation id="4297410240212242334">Разделяне на приложенията и разделите</translation>
 <translation id="4307992518367153382">Основни положения</translation>
 <translation id="4334294535648607276">Изтеглянето завърши.</translation>
 <translation id="4351244548802238354">Затваряне на диалоговия прозорец</translation>
@@ -309,10 +302,8 @@
 <translation id="4645575059429386691">Управлява се от ваш родител</translation>
 <translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS" /> отметки</translation>
 <translation id="4665282149850138822">Добавихте <ph name="NAME" /> към началния екран</translation>
-<translation id="4668044310199835006">Отметки от Chrome for Work</translation>
 <translation id="4684427112815847243">Синхронизиране на всичко</translation>
 <translation id="4686372254213217147">Първоначален размер</translation>
-<translation id="4690286298542128877">Разделите ще се преместят към предназначения за тях превключвател в Chrome.</translation>
 <translation id="4698413471314543145">Липсва необходима критична функционалност, за да се изпълнява Chrome. Инсталацията ви на браузъра не е завършена или не е съвместима с тази версия на Android.</translation>
 <translation id="4699172675775169585">Кеширани изображения и файлове</translation>
 <translation id="4710672574193412565">Добавете профил в Google от страницата „Профили“ в приложението „Настройки“ на устройството ви.</translation>
@@ -354,7 +345,6 @@
 <translation id="5127805178023152808">Синхронизирането е изключено</translation>
 <translation id="5131405117025179004">Редактиране на запазен профил</translation>
 <translation id="5138299137310274655">Тази страница е на <ph name="SOURCE_LANGUAGE" />. Да се преведе ли на <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="5150703642582475397">Обединяване на разделите и приложенията</translation>
 <translation id="515227803646670480">Изчистване на съхраняваните данни</translation>
 <translation id="5156656584247937086">Това е профил на дете</translation>
 <translation id="5161254044473106830">Изисква се заглавие</translation>
@@ -367,7 +357,6 @@
 <translation id="5222676887888702881">Изход</translation>
 <translation id="5233638681132016545">Нов раздел</translation>
 <translation id="5271967389191913893">Устройството не може да отвори съдържанието за изтегляне.</translation>
-<translation id="5275558766013849309">Разделите и скорошните приложения ще са на едно място.</translation>
 <translation id="528192093759286357">Плъзнете пръст от горната част на екрана и докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
 <translation id="5284584623296338184">Промените в отметките, историята, паролите и другите ви настройки вече няма да се синхронизират с профила ви в Google. Съществуващите ви данни обаче ще продължат да се съхраняват в него.</translation>
 <translation id="5301954838959518834">Добре, разбрах</translation>
@@ -450,7 +439,6 @@
 <translation id="6108923351542677676">Извършва се настройване…</translation>
 <translation id="6112702117600201073">Опресняване на страницата</translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
-<translation id="6134870457258083164">Не виждате устройството си? <ph name="BEGIN_LINK1" />Получете помощ<ph name="END_LINK1" /> или <ph name="BEGIN_LINK2" />потърсете отново<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Направете страницата удобна за мобилни устройства</translation>
 <translation id="6140912465461743537">Държава/регион</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> икономия на данни</translation>
@@ -482,7 +470,6 @@
 <translation id="6476911854266661814">„<ph name="VIDEO_TITLE" />“ е на пауза</translation>
 <translation id="6477460825583319731">Имейл адресът е невалиден</translation>
 <translation id="6482749332252372425">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради липса на място в хранилището.</translation>
-<translation id="6541922744811587456">Отметки от Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Изберете раздел за излъчване</translation>
 <translation id="6545017243486555795">Изчистване на всички данни</translation>
@@ -554,7 +541,6 @@
 <translation id="7220786058474068424">Обработва се</translation>
 <translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> използва местоположението ви, за да показва резултати от местното търсене</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Помощ<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Изтриване на отметката</translation>
 <translation id="7301833672208172928">Включване на синхронизирането на историята</translation>
 <translation id="7327835590071894791">Разделът вече е на заден план.</translation>
@@ -565,7 +551,6 @@
 <translation id="7378627244592794276">Не</translation>
 <translation id="7400418766976504921">URL адрес</translation>
 <translation id="7400448254438078120">Видеоклипът не може да се предава поради ограничения от сайта</translation>
-<translation id="7408644312175185557">Разделите ви и останалите скорошни приложения ще се показват на екрана за общ преглед на телефона ви.</translation>
 <translation id="7423098979219808738">Първо ще се извежда запитване</translation>
 <translation id="7437998757836447326">Изход от Chrome</translation>
 <translation id="7445411102860286510">Разрешаване на сайтовете автоматично да възпроизвеждат видеоклипове със заглушен звук (препоръчително)</translation>

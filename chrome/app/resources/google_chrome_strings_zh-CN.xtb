@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Chrome 应用启动器即将停用。</translation>
 <translation id="1877026089748256423">Chrome版本太旧</translation>
 <translation id="1924381329666691588">Google Chrome 无法以这种语言显示。</translation>
+<translation id="2063848847527508675">需要重新启动 Chrome 操作系统以应用更新。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="2084710999043359739">添加到 Chrome 浏览器</translation>
 <translation id="2246246234298806438">在缺少内置 PDF 查看器的情况下，Google Chrome 浏览器无法显示打印预览。</translation>
@@ -52,6 +53,7 @@
 如果您仍然登录，Chrome 信息（例如书签、历史记录和其他设置）将合并到 <ph name="ACCOUNT_EMAIL_NEW" />。</translation>
 <translation id="2397416548179033562">显示 Chrome 菜单</translation>
 <translation id="2429317896000329049">由于您的网域停用了同步功能，Google Chrome无法同步您的数据。</translation>
+<translation id="2446511512801740068">Chrome 已有一段时间未重新启动，因此现在已不是最新版本。目前有可用更新，系统会在您重新启动 Chrome 后应用这些更新。</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
 <translation id="2582790009689336987">Google Chrome 将不再支持此 Linux 系统，因此这台计算机很快将停止接收 Google Chrome 更新。</translation>
@@ -205,7 +207,7 @@
 <translation id="7106741999175697885">任务管理器 - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要手动重新安装Chrome。</translation>
 <translation id="7161904924553537242">欢迎使用 Google Chrome</translation>
-<translation id="7164397146364144019">您可以选择自动向Google报告可能出现的安全事件详情，以帮助我们提高Chrome的安全性和易用性。</translation>
+<translation id="7164397146364144019">您可以选择自动向 Google 报告可能出现的安全事件详情，以帮助我们提高 Chrome 的安全性和易用性。</translation>
 <translation id="7177347454226092725">这会将您的浏览数据从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chrome。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" />已添加到 Chrome 浏览器。</translation>
 <translation id="7191567847629796517">Google Chrome操作系统不支持启动外部应用来处理<ph name="SCHEME" />链接。请求的链接是<ph name="PROTOLINK" />。</translation>

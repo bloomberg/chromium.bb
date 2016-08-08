@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
-<translation id="1040144152982955218">Cihazlar aranıyor… <ph name="BEGIN_LINK" />yardım alın<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Uyarı</translation>
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
 <translation id="1061441684050139317">Chrome'un mikrofonu bu siteyle paylaşması için mikrofon erişimine ihtiyacı var.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">Yakındaki nesneler tarafından gönderilen web sayfalarını keşfedin. Chrome, çevrenizdeki nesnelerle ilişkilendirilen web sayfalarını toplar, sizin için en faydalı olanlarını bulmak üzere bunları anonim bir şekilde Google hizmetine gönderir ve ardından görüntüler.
 
 Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık olması gerekir.</translation>
-<translation id="1250508505624960884">Chrome Beta yer işaretleri</translation>
 <translation id="1254090737195733114">Veriler içe aktarılsın mı?</translation>
 <translation id="1258753120186372309">Google doodle'ı: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Durdur</translation>
@@ -88,7 +86,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1946821392246652573">Kabul edilen kartlar</translation>
 <translation id="1966710179511230534">Lütfen oturum açma ayrıntılarınızı güncelleyin.</translation>
 <translation id="1974060860693918893">Gelişmiş</translation>
-<translation id="1984321224716884559">Chrome Dev yer işaretleri</translation>
 <translation id="1984937141057606926">Üçüncü taraf hariç izin verildi</translation>
 <translation id="1994173015038366702">Site URL'si</translation>
 <translation id="2001120796168634316">Bağlantılı sayfayı sonrası için kaydet</translation>
@@ -159,9 +156,7 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="2742271047622814453">Sitelerde kaydedilen tercihler silinebilir</translation>
 <translation id="2748463065602559597">Güvenli bir Google Chrome sayfasını görüntülüyorsunuz.</translation>
 <translation id="2762000892062317888">az önce</translation>
-<translation id="2770465223704140727">Listeden kaldır</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sn. kaldı</translation>
-<translation id="278029852808208386">Bluetooth cihaz bulunamadı. <ph name="BEGIN_LINK" />Tekrar arayın<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 sn. kaldı</translation>
 <translation id="2811892995384186721">Cihazınızı görmüyor musunuz? <ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tam ekrandan çıkmak için geri düğmesine dokunun.</translation>
@@ -232,7 +227,6 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 
 Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrıntılı hale getirmek için paneli tümüyle yukarı kaydırın ve arama kutusuna dokunun.</translation>
 <translation id="3616113530831147358">Ses</translation>
-<translation id="3623048332793834136">Chrome Canary yer işaretleri</translation>
 <translation id="3632295766818638029">Şifreyi göster</translation>
 <translation id="363596933471559332">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik kapatıldığında, bir web sitesinde oturum açmadan önce her defasında doğrulama yapmanız istenir.</translation>
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda konumu açın.</translation>
@@ -285,7 +279,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
 <translation id="4275663329226226506">Medya</translation>
 <translation id="4278390842282768270">İzin verildi</translation>
-<translation id="4297410240212242334">Sekmeleri ve uygulamaları ayır</translation>
 <translation id="4307992518367153382">Temel Bilgiler</translation>
 <translation id="4334294535648607276">İndirme işlemi tamamlandı.</translation>
 <translation id="4351244548802238354">İletişim kutusunu kapat</translation>
@@ -309,10 +302,8 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4645575059429386691">Ebeveyniniz tarafından yönetiliyor</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> yer işareti silindi</translation>
 <translation id="4665282149850138822"><ph name="NAME" />, Ana ekranınıza eklendi</translation>
-<translation id="4668044310199835006">Work Chrome yer işaretleri</translation>
 <translation id="4684427112815847243">Her şeyi senkronize et</translation>
 <translation id="4686372254213217147">Orijinal boyut</translation>
-<translation id="4690286298542128877">Sekmeler Chrome'un içindeki bir sekme değiştiriciye taşınacak.</translation>
 <translation id="4698413471314543145">Chrome'un çalışması için gereken çok önemli bir işlev eksik; Chrome yüklemeniz eksik olabilir ya da Android'in bu sürümü ile uyumlu olmayabilir.</translation>
 <translation id="4699172675775169585">Önbelleğe alınan resimler ve dosyalar</translation>
 <translation id="4710672574193412565">Cihazınızın Ayarlar uygulamasındaki Hesaplar sayfasından bir Google Hesabı ekleyin.</translation>
@@ -354,7 +345,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5127805178023152808">Senkronizasyon kapalı</translation>
 <translation id="5131405117025179004">Kayıtlı hesabı düzenleyin</translation>
 <translation id="5138299137310274655">Bu sayfa <ph name="SOURCE_LANGUAGE" /> dilinde. <ph name="TARGET_LANGUAGE" /> diline çevrilsin mi?</translation>
-<translation id="5150703642582475397">Sekmeleri ve uygulamaları birleştirin</translation>
 <translation id="515227803646670480">Depolanmış verileri sil</translation>
 <translation id="5156656584247937086">Bu bir çocuk hesabıdır</translation>
 <translation id="5161254044473106830">Başlık gerekiyor</translation>
@@ -367,7 +357,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="5233638681132016545">Yeni sekme</translation>
 <translation id="5271967389191913893">Cihaz, indirilecek içeriği açamıyor.</translation>
-<translation id="5275558766013849309">Sekmeler son kullanılan uygulamalarla birlikte görüntülenecek.</translation>
 <translation id="528192093759286357">Tam ekrandan çıkmak için yukarıdan sürükleyin ve geri düğmesine dokunun.</translation>
 <translation id="5284584623296338184">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızda yaptığınız değişiklikler artık Google Hesabınız ile senkronize edilmeyecek. Ancak, mevcut verileriniz Google hesabınızda saklanmaya devam edecek.</translation>
 <translation id="5301954838959518834">Evet, anladım</translation>
@@ -450,7 +439,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
 <translation id="6112702117600201073">Sayfa yenileniyor</translation>
 <translation id="6127379762771434464">Öğe kaldırıldı</translation>
-<translation id="6134870457258083164">Cihazınızı görmüyor musunuz? <ph name="BEGIN_LINK1" />Yardım alın<ph name="END_LINK1" /> veya <ph name="BEGIN_LINK2" />tekrar arayın<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Sayfayı mobil uyumlu hale getir</translation>
 <translation id="6140912465461743537">Ülke/Bölge</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> veri tasarrufu</translation>
@@ -482,7 +470,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6476911854266661814">“<ph name="VIDEO_TITLE" />” duraklatıldı</translation>
 <translation id="6477460825583319731">Geçersiz e-posta adresi</translation>
 <translation id="6482749332252372425">Depolama alanı yetersiz olduğu için <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
-<translation id="6541922744811587456">Chrome yer işaretleri</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Işınlamak için bir sekme seçin</translation>
 <translation id="6545017243486555795">Tüm Verileri Temizle</translation>
@@ -554,7 +541,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7220786058474068424">İşleme koyuluyor</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, yerel arama sonuçlarını göstermek için konumunuzu kullanır</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Yardım<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Yer işaretini sil</translation>
 <translation id="7301833672208172928">Geçmiş senkronizasyonunu aç</translation>
 <translation id="7327835590071894791">Sekmeniz şimdi arka planda.</translation>
@@ -565,7 +551,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7378627244592794276">Hayır</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Site kısıtlamaları nedeniyle video yayınlanamıyor</translation>
-<translation id="7408644312175185557">Telefonunuzun Genel Bakış ekranında, son kullanılan diğer uygulamalarla birlikte sekmelerinizi görün.</translation>
 <translation id="7423098979219808738">Önce sor</translation>
 <translation id="7437998757836447326">Chrome oturumunu kapatma</translation>
 <translation id="7445411102860286510">Sitelerin, sesi kapatılmış videoları otomatik olarak oynatmasına izin ver (önerilen)</translation>

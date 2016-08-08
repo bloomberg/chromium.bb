@@ -233,6 +233,13 @@
       Jika kebijakan ini disetel ke true, <ph name="PRODUCT_OS_NAME" /> akan berupaya mengunduh payload pembaruan otomatis via HTTP. Jika kebijakan ini disetel ke false atau tidak disetel, HTTPS akan digunakan untuk mengunduh payload pembaruan otomatis.</translation>
 <translation id="2006530844219044261">Pengelolaan daya</translation>
 <translation id="201557587962247231">Frekuensi unggahan laporan status perangkat</translation>
+<translation id="2018836497795982119">Menjelaskan jangka waktu dalam milidetik terkait layanan pengelolaan perangkat yang ditanyakan untuk informasi kebijakan pengguna.
+
+      Menyetel kebijakan ini akan mengganti nilai default 3 jam. Nilai yang valid untuk kebijakan ini adalah rentang mulai 1800000 (30 menit) hingga 86400000 (1 hari). Nilai di luar rentang ini akan dimasukkan ke batas masing-masing. Jika platform mendukung pemberitahuan kebijakan, jeda penyegaran akan disetel menjadi 24 jam karena pemberitahuan kebijakan diperkirakan akan memaksa penyegaran otomatis setiap kali kebijakan berubah.
+
+      Membiarkan kebijakan ini tidak disetel akan membuat <ph name="PRODUCT_NAME" /> menggunakan nilai default 3 jam.
+
+      Perlu diperhatikan jika platform mendukung pemberitahuan kebijakan, jeda penyegaran akan disetel menjadi 24 jam (dengan mengabaikan semua setelan default dan nilai kebijakan ini) karena pemberitahuan kebijakan diperkirakan akan memaksa penyegaran otomatis setiap kali kebijakan berubah, menghasilkan lebih banyak penyegaran yang tidak diperlukan.</translation>
 <translation id="2024476116966025075">Mengonfigurasi nama domain yang diperlukan untuk klien akses jarak jauh</translation>
 <translation id="2030905906517501646">Kata kunci penyedia penelusuran default</translation>
 <translation id="206623763829450685">Menentukan skema autentikasi HTTP yang didukung oleh <ph name="PRODUCT_NAME" />.
@@ -1024,7 +1031,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Meski kebijakan ini sendiri didukung pada platform di atas, fitur yang diaktifkan mungkin tersedia pada lebih sedikit platform. Tidak semua fitur Platform Web yang tak digunakan lagi dapat diaktifkan kembali. Hanya yang dicantumkan secara eksplisit di bawah, yang dapat diaktifkan dalam jangka waktu terbatas, yang berbeda-beda per fitur. Format umum untuk tag string adalah [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Sebagai rujukan, Anda dapat menemukan maksud di balik perubahan fitur Platform Web di https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Aktifkan kunci bila perangkat menganggur atau ditangguhkan</translation>
-<translation id="4445684791305970001">Menonaktifkan Alat Pengembang dan konsol JavaScript. Jika Anda mengaktifkan setelan ini, alat Pengembang tidak dapat diakses dan elemen situs web tidak dapat diperiksa lagi. Setiap pintasan keyboard dan menu atau entri menu konteks untuk membuka Alat Pengembang atau Konsol JavaScript akan dinonaktifkan. Dengan menyetel opsi menjadi nonaktif atau membiarkannya tanpa disetel akan memungkinkan penggunaan konsol JavaScript dan Alat Pengembang.</translation>
 <translation id="4449545651113180484">Putar layar searah jarum jam sebesar 270 derajat</translation>
 <translation id="4467952432486360968">Cekal cookie pihak ketiga</translation>
 <translation id="4474167089968829729">Aktifkan penyimpanan sandi di pengelola sandi</translation>
@@ -1244,6 +1250,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika kebijakan ini disetel, sesi yang ditentukan akan secara otomatis masuk setelah jangka waktu tersebut berlalu pada layar masuk tanpa interaksi pengguna. Sesi publik harus sudah dikonfigurasi (lihat |DeviceLocalAccounts|).
 
       Jika kebijakan ini tidak disetel, tidak akan ada masuk secara otomatis.</translation>
+<translation id="5529037166721644841">Menjelaskan jangka waktu dalam milidetik terkait layanan pengelolaan perangkat yang ditanyakan untuk informasi kebijakan pengguna.
+
+      Menyetel kebijakan ini akan mengganti nilai default 3 jam. Nilai yang valid untuk kebijakan ini adalah rentang mulai 1800000 (30 menit) hingga 86400000 (1 hari). Nilai di luar rentang ini akan dimasukkan ke batas masing-masing.
+
+      Membiarkan kebijakan ini tidak disetel akan membuat <ph name="PRODUCT_OS_NAME" /> menggunakan nilai default 3 jam.
+
+      Perlu diperhatikan jika platform mendukung pemberitahuan kebijakan, jeda penyegaran akan disetel menjadi 24 jam (dengan mengabaikan semua setelan default dan nilai kebijakan ini) karena pemberitahuan kebijakan diperkirakan akan memaksa penyegaran otomatis setiap kali kebijakan berubah, menghasilkan lebih banyak penyegaran yang tidak diperlukan.</translation>
 <translation id="5535957389335373033">Frekuensi paket jaringan pemantauan dikirim, dalam milidetik. 
 
       Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 menit.
@@ -1773,6 +1786,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Kebijakan ini hanya diterapkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="7302043767260300182">Penundaan kunci layar saat menggunakan daya AC</translation>
+<translation id="7311458740754205918">Jika kebijakan ini disetel ke true atau tidak disetel, laman Tab Baru dapat menampilkan saran konten berdasarkan riwayat penjelajahan, minat, dan lokasi pengguna.
+
+      Jika kebijakan disetel ke false, saran konten yang dibuat secara otomatis tidak akan ditampilkan di laman Tab Baru.</translation>
 <translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Menentukan panjang waktu tanpa masukan pengguna sebelum layar dimatikan ketika menggunakan daya baterai.
 
@@ -1905,6 +1921,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7763479091692861127"> Jenis sambungan yang diizinkan penggunaannya untuk pembaruan OS. Pembaruan OS berpotensi memberikan beban berat pada koneksi Internet karena ukurannya dan mungkin mengakibatkan biaya tambahan. Oleh karena itu, koneksi secara default tidak aktif untuk jenis koneksi yang dianggap mahal, yang meliputi WiMax, Bluetooth, dan Seluler untuk saat ini.
 
       Pengenal jenis koneksi yang diketahui saat ini adalah "ethernet", "wifi", "wimax", "bluetooth", dan "cellular".</translation>
+<translation id="7763614521440615342">Tampilkan saran konten di laman Tab Baru</translation>
 <translation id="7766336524667238790">Laporkan informasi tentang sesi kios aktif, misalnya
       ID dan versi aplikasi
 
@@ -1922,7 +1939,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per Profil</translation>
 <translation id="7796141075993499320">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menjalankan plugin. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
-<translation id="7801886189430766248">Jika kebijakan ini disetel ke true, data aplikasi Android akan diunggah ke server Cadangan Android dan dipulihkan saat pemasangan ulang aplikasi untuk aplikasi yang kompatibel.
+<translation id="7801886189430766248">Jika kebijakan ini disetel ke true, data aplikasi Android akan diunggah ke server Pencadangan Android dan dipulihkan saat pemasangan ulang aplikasi untuk aplikasi yang kompatibel.
 
       Jika kebijakan ini disetel ke false, Android Backup Service akan dinonaktifkan.
 

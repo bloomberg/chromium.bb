@@ -229,6 +229,13 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos tämän käytännön arvoksi on asetettu tosi, <ph name="PRODUCT_OS_NAME" /> yrittää ladata automaattisesti päivittyvät tietosisällöt HTTP:n kautta. Jos käytännön arvoksi on asetettu epätosi tai sitä ei ole asetettu, HTTPS:ää käytetään automaattisesti päivittyvien tietosisältöjen lataamiseen.</translation>
 <translation id="2006530844219044261">Virran hallinta</translation>
 <translation id="201557587962247231">Laitteen tilatietojen lähetystiheys</translation>
+<translation id="2018836497795982119">Määrittää millisekunteina ajan, jonka jälkeen laitteen hallintapalvelulta pyydetään tietoja käyttäjäkäytännöistä.
+
+      Jos määrität tämän käytännön, 3 tunnin oletusarvo ohitetaan. Kelvollisia arvoja ovat ajat 1 800 000 millisekunnista (30 minuuttia) 86 400 000 millisekuntiin (1 päivä). Jos annettu aika on tämän välin ulkopuolella, käytetään lähintä kelvollista arvoa. Jos ympäristö tukee käytäntöilmoituksia, päivitysviiveeksi määritetään 24 tuntia, sillä todennäköisesti käytäntöilmoitus pakottaa sovelluksen suorittamaan päivityksen käytännön muuttuessa.
+
+      Jos tätä käytäntöä ei määritetä, <ph name="PRODUCT_NAME" /> käyttää 3 tunnin oletusarvoa.
+
+      Huom. Jos ympäristö tukee käytäntöilmoituksia, päivitysviiveeksi määritetään 24 tuntia (tämän käytännön oletus- ja muut arvot ohitetaan), sillä todennäköisesti käytäntöilmoitus pakottaa sovelluksen suorittamaan päivityksen käytännön muuttuessa. Tästä syystä päivityksiä ei tarvitse suorittaa useammin.</translation>
 <translation id="2024476116966025075">Määritä pakollinen verkkotunnuksen nimi etäkäytön asiakassovelluksia varten.</translation>
 <translation id="2030905906517501646">Oletushakupalvelun avainsana</translation>
 <translation id="206623763829450685">Määrittää, mitä HTTP-todennustapoja <ph name="PRODUCT_NAME" /> tukee.
@@ -873,7 +880,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Luettelee laajennukset, jotka asennetaan automaattisesti esittelykäyttäjälle myyntitilassa olevilla laitteilla. Tällaiset laajennukset on tallennettu laitteelle, ja niitä on mahdollista asentaa offline-tilassa.
 
       Luettelon jokainen merkintä sisältää sanakirjan, jonka tulee sisältää laajennuksen tunnus (extension-id-kenttä) sekä sen päivitysosoite (update-url-kenttä).</translation>
-<translation id="388237772682176890">Tämä käytäntö poistetaan käytöstä M53:ssä ja poistetaan kokonaan M54:ssä, koska SPDY/3.1-tuki poistuu.
+<translation id="388237772682176890">Tämä käytäntö poistetaan käytöstä M53:ssa ja poistetaan kokonaan M54:ssä, koska SPDY/3.1-tuki poistuu.
 
       Poistaa käytöstä SPDY-protokollan tuotteessa <ph name="PRODUCT_NAME" />.
 
@@ -1021,7 +1028,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Vaikka itse käytäntöä tuetaan yllä mainituilla alustoilla, kaikilla alustoilla ei välttämättä ole käytettävissä kaikkia ominaisuuksia, jotka käytännön avulla voidaan palauttaa käyttöön. Kaikkia vanhentuneita Web Platform -ominaisuuksia ei voi palauttaa käyttöön. Vain alla mainitut ominaisuudet voidaan palauttaa käyttöön rajoitetuksi ajaksi, joka vaihtelee ominaisuuskohtaisesti. Merkkijonotagin yleinen muoto on [VanhentuneenOminaisuudenNimi]_EffectiveUntil[vvvvkkpp]. Lisätietoja Web Platform -ominaisuuksien muutoksista saat osoitteesta https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Ota lukitus käyttöön, kun laite on käyttämättömänä tai virransäästötilassa</translation>
-<translation id="4445684791305970001">Poistaa käytöstä kehittäjän työkalut sekä JavaScript-konsolin. Jos otat asetuksen käyttöön, kehittäjän työkaluja ei voi käyttää eikä verkkosivustojen elementtejä enää voi tarkastaa. Kehittäjän työkalut tai JavaScript-konsolin avaavat pikanäppäimet ja valikkokohteet poistetaan käytöstä. Jos poistat asetuksen käytöstä tai et määritä sitä, kehittäjän työkaluja ja JavaScript-konsolia voi käyttää.</translation>
 <translation id="4449545651113180484">Kierrä näyttöä 270 astetta myötäpäivään.</translation>
 <translation id="4467952432486360968">Estä kolmannen osapuolen evästeet</translation>
 <translation id="4474167089968829729">Ota käyttöön salasanojen tallentaminen salasanojen hallintaohjelmaan</translation>
@@ -1241,6 +1247,13 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Jos käytäntö asetetaan, määritettyyn istuntoon kirjaudutaan automaattisesti, kun kirjautumisruudulla ei ole havaittu käyttäjän toimia tietyn ajan kuluessa. Julkinen istunto täytyy määrittää ensin (katso |DeviceLocalAccounts|).
 
       Jos käytäntöä ei aseteta, automaattista kirjautumista ei suoriteta.</translation>
+<translation id="5529037166721644841">Määrittää millisekunteina ajan, jonka jälkeen laitteen hallintapalvelulta pyydetään tietoja käyttäjäkäytännöistä.
+
+      Jos määrität tämän käytännön, 3 tunnin oletusarvo ohitetaan. Kelvollisia arvoja ovat ajat 1 800 000 millisekunnista (30 minuuttia) 86 400 000 millisekuntiin (1 päivä). Jos annettu aika on tämän välin ulkopuolella, käytetään lähintä kelvollista arvoa.
+
+      Jos tätä käytäntöä ei määritetä, <ph name="PRODUCT_OS_NAME" /> käyttää 3 tunnin oletusarvoa.
+
+      Huom. Jos ympäristö tukee käytäntöilmoituksia, päivitysviiveeksi määritetään 24 tuntia (tämän käytännön oletus- ja muut arvot ohitetaan), sillä todennäköisesti käytäntöilmoitus pakottaa sovelluksen suorittamaan päivityksen käytännön muuttuessa. Tästä syystä päivityksiä ei tarvitse suorittaa useammin.</translation>
 <translation id="5535957389335373033">Valvontapakettien lähetystiheys millisekunteina.
 
       Jos tätä käytäntöä ei ole määritetty, käytetään oletustiheyttä 3 minuuttia. Pienin sallittu
@@ -1768,6 +1781,9 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Tätä käytäntöä noudatetaan vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="7302043767260300182">Ruudun lukituksen viive käytettäessä laitetta verkkovirralla</translation>
+<translation id="7311458740754205918">Jos tämän käytännön arvo on tosi tai sitä ei ole määritetty, Uusi välilehti ‑sivulla voidaan näyttää sisältöehdotuksia käyttäjän historian, kiinnostuksen kohteiden tai sijainnin perusteella.
+
+      Jos tämän käytännön arvo on epätosi, Uusi välilehti ‑sivulla ei näytetä automaattisesti luotuja sisältöehdotuksia.</translation>
 <translation id="7323896582714668701">Muut tuotteen <ph name="PRODUCT_NAME" /> komentoriviparametrit</translation>
 <translation id="7329842439428490522">Määrittää käyttämättömyysajan, jonka kuluttua ruutu sammutetaan, kun laitetta käytetään akkuvirralla.
 
@@ -1900,6 +1916,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7763479091692861127"> Yhteystyypit, joilla voidaan suorittaa käyttöjärjestelmäpäivityksiä. Käyttöjärjestelmäpäivitykset saattavat kuormittaa yhteyttä niiden koon vuoksi, ja tiedonsiirrosta voidaan periä lisämaksuja. Järjestelmäpäivityksiä ei voi tällä hetkellä oletuksena suorittaa kalliilla yhteystyypeillä, kuten WiMax, Bluetooth ja Cellular.
 
       Tunnistettuja yhteystyypin tunnuksia ovat ethernet, wifi, wimax, bluetooth ja cellular.</translation>
+<translation id="7763614521440615342">Näytä sisältöehdotuksia Uusi välilehti ‑sivulla</translation>
 <translation id="7766336524667238790">Raportoi aktiivisen kioskikäyttökerran tietoja, kuten
       sovellustunnuksen ja -version.
 

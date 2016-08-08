@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Chrome-appvelgeren forsvinner.</translation>
 <translation id="1877026089748256423">Chrome er utdatert</translation>
 <translation id="1924381329666691588">Google Chrome kan ikke vises på dette språket.</translation>
+<translation id="2063848847527508675">Chrome OS må startes på nytt for at oppdateringen skal tas i bruk.</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2084710999043359739">Legg til i Chrome</translation>
 <translation id="2246246234298806438">Google Chrome kan ikke vise forhåndsvisningen av utskrift når det innebygde PDF-visningsprogrammet mangler.</translation>
@@ -52,6 +53,7 @@
 Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen og andre innstillinger slått sammen med <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Vis Chrome-menyen</translation>
 <translation id="2429317896000329049">Google Chrome kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>
+<translation id="2446511512801740068">Chrome er utdatert fordi den ikke har vært startet på nytt på en stund. En oppdatering er tilgjengelig og tas i bruk når du starter Chrome på nytt.</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
 <translation id="2580411288591421699">Google Chrome-versjonen du prøver å installere, kjører allerede. Lukk Google Chrome og forsøk å installere på nytt.</translation>
 <translation id="2582790009689336987">Denne datamaskinen slutter snart å motta oppdateringer av Google Chrome fordi dette Linux-systemet ikke støttes lenger.</translation>

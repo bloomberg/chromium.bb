@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Avvio applicazioni di Chrome non sarà più disponibile.</translation>
 <translation id="1877026089748256423">Chrome non è aggiornato</translation>
 <translation id="1924381329666691588">Impossibile visualizzare Google Chrome in questa lingua.</translation>
+<translation id="2063848847527508675">Per applicare l'aggiornamento è necessario riavviare Chrome OS.</translation>
 <translation id="2077129598763517140">Usa accelerazione hardware quando disponibile</translation>
 <translation id="2084710999043359739">Aggiungi a Chrome</translation>
 <translation id="2246246234298806438">Impossibile visualizzare l'anteprima di stampa in Google Chrome senza il visualizzatore PDF integrato.</translation>
@@ -52,6 +53,7 @@
 Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronologia e altre impostazioni verranno unite a quelle di <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Mostra il menu Chrome</translation>
 <translation id="2429317896000329049">Impossibile sincronizzare i dati in Google Chrome perché la sincronizzazione non è disponibile per il tuo dominio.</translation>
+<translation id="2446511512801740068">Chrome non è aggiornato perché non viene riavviato da un po'. È disponibile un aggiornamento che verrà applicato non appena riavvierai.</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
 <translation id="2580411288591421699">Impossibile installare la stessa versione di Google Chrome attualmente in esecuzione. Chiudi Google Chrome e riprova.</translation>
 <translation id="2582790009689336987">A breve questo computer non riceverà più gli aggiornamenti di Google Chrome perché questo sistema Linux non sarà più supportato.</translation>
@@ -205,7 +207,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome non è riuscito ad aggiornarsi all'ultima versione, quindi ti stai perdendo le nuove funzioni e correzioni per la sicurezza. Devi reinstallare manualmente Chrome.</translation>
 <translation id="7161904924553537242">Benvenuto in Google Chrome</translation>
-<translation id="7164397146364144019">Puoi contribuire a rendere Chrome più sicuro e più facile da utilizzare segnalando automaticamente a Google dettagli dei possibili incidenti di sicurezza.</translation>
+<translation id="7164397146364144019">Puoi contribuire a rendere Chrome più sicuro e più facile da utilizzare segnalando automaticamente a Google i dettagli dei possibili problemi di sicurezza.</translation>
 <translation id="7177347454226092725">Verranno eliminati definitivamente i tuoi dati di navigazione da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chrome come $2.</translation>
 <translation id="7185038942300673794">L'estensione <ph name="EXTENSION_NAME" /> è stata aggiunta a Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS non supporta l'avvio di un'applicazione esterna per gestire i link <ph name="SCHEME" />. Il link richiesto è <ph name="PROTOLINK" />.</translation>
@@ -247,7 +249,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="8037887340639533879">Impossibile trovare un'installazione di Google Chrome da aggiornare.</translation>
 <translation id="8129812357326543296">Informazioni su &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome memorizzerà in sicurezza i tuoi dati personali affinché tu non debba digitarli di nuovo.</translation>
-<translation id="8205111949707227942">Facoltativo: aiutaci a migliorare Google Chrome OS inviando automaticamente a Google le statistiche sull'utilizzo e segnalazioni sugli arresti anomali.</translation>
+<translation id="8205111949707227942">Facoltativo: aiutaci a migliorare Google Chrome OS inviando automaticamente a Google le statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="8211929904040702368">Verranno eliminati definitivamente almeno <ph name="TOTAL_COUNT" /> elementi da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chrome come $2.</translation>
 <translation id="8227755444512189073">Google Chrome deve avviare un'applicazione esterna per gestire i link <ph name="SCHEME" />. Il link richiesto è <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome sta utilizzando videocamera e microfono.</translation>

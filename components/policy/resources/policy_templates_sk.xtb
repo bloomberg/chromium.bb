@@ -232,6 +232,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nastavíte na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> sa bude pokúšať sťahovať dátové časti automatických aktualizácií prostredníctvom protokolu HTTP. Ak pravidlo nastavíte na hodnotu false alebo ho nenastavíte, na sťahovanie dátových častí automatických aktualizácií sa použije protokol HTTPS.</translation>
 <translation id="2006530844219044261">Správa možností napájania</translation>
 <translation id="201557587962247231">Frekvencia nahrávania hlásení stavu zariadenia</translation>
+<translation id="2018836497795982119">Určuje interval (v ms), v ktorom budú službe správy zariadenia odosielané žiadosti o informácie o pravidlách pre používateľov.
+
+      Nastavením tohto pravidla bude prepísaná predvolená hodnota 3 hodiny. Platné hodnoty pre toto pravidlo sa pohybujú v rozmedzí od 1800000 (30 minút) do 86400000 (1 deň). Hodnoty mimo daný rozsah budú upravené na príslušnú medznú hodnotu. Ak platforma podporuje upozornenia na pravidlá, oneskorenie obnovenia bude nastavené na 24 hodín, pretože sa očakáva, že upozornenia na pravidlá vynútia automatické obnovenie po každej zmene pravidiel.
+
+      Ak toto pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> použije predvolenú hodnotu – 3 hodiny.
+
+      Upozorňujeme, že ak platforma podporuje upozornenia na pravidlá, oneskorenie obnovenia bude nastavené na 24 hodín (všetky predvolené nastavenia a hodnota určená v tomto pravidle budú ignorované), pretože sa očakáva, že upozornenia na pravidlá vynútia automatické obnovenie po každej zmene pravidiel. Častejšie obnovenia sú preto zbytočné.</translation>
 <translation id="2024476116966025075">Konfigurovať požadovaný názov domény pre klientov vzdialeného prístupu</translation>
 <translation id="2030905906517501646">Kľúčové slovo predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="206623763829450685">Určuje, ktoré schémy overenia totožnosti pomocou protokolu HTTP bude prehliadač <ph name="PRODUCT_NAME" /> podporovať.
@@ -1068,11 +1075,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
       Zatiaľ čo samotné pravidlo podporujú platformy uvedené vyššie, funkcie, ktoré povoľuje, môžu byť k dispozícii na menšom množstve platforiem. Niektoré zastarané funkcie webovej platformy nie je možné znova povoliť. Je možné povoliť iba tie funkcie, ktoré sú výslovne uvedené nižšie (na obmedzený čas, ktorý sa líši podľa funkcie). Všeobecný formát značky reťazca je [NázovZastaranejFunkcie]_EffectiveUntil[rrrrmmdd]. Dôvody na zmenu funkcií webovej platformy nájdete na adrese https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Povoliť zámok, ak je zariadenie nečinné alebo pozastavené</translation>
-<translation id="4445684791305970001">Zakáže Nástroje pre vývojárov a konzolu JavaScript.
-
-      Ak toto nastavenie povolíte, nebude možné pristupovať k nástrojom pre vývojárov ani kontrolovať prvky webových stránok. Zakázané budú tiež všetky klávesové skratky a položky klasických či kontextových ponúk, pomocou ktorých je možné nástroje pre vývojárov alebo konzolu kódu JavaScript otvoriť.
-
-      Ak túto možnosť nastavíte ako zakázanú alebo ju ponecháte nenastavenú, umožní to používateľovi použiť Nástroje pre vývojárov a konzolu JavaScript.</translation>
 <translation id="4449545651113180484">Otočiť obrazovku v smere hodinových ručičiek o 270 stupňov</translation>
 <translation id="4467952432486360968">Blokovať súbory cookie tretej strany</translation>
 <translation id="4474167089968829729">Povolenie ukladania hesiel do správcu hesiel</translation>
@@ -1250,7 +1252,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Umožňuje povoliť predvídanie siete v prehliadači <ph name="PRODUCT_NAME" /> a zabráni používateľom toto nastavenie zmeniť.
 
-      Toto pravidlo ovláda spoločne s predbežným načítaním servera DNS aj predbežné pripojenie pomocou protokolu TCP a technológie SSL a predbežné vykreslenie webových stránok. Názov pravidla je založený na predbežnom načítaní servera DNS z historických dôvodov..
+      Toto pravidlo ovláda spoločne s predbežným načítaním servera DNS aj predbežné pripojenie pomocou protokolu TCP a technológie SSL a predbežné vykreslenie webových stránok. Názov pravidla je založený na predbežnom načítaní servera DNS z historických dôvodov.
 
       Ak toto nastavenie povolíte alebo zakážete, používatelia ho v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť prepísať.
 
@@ -1336,6 +1338,13 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak je pravidlo nastavené, zariadenie sa po uplynutí určitého časového obdobia nečinnosti používateľa na prihlasovacej obrazovke automaticky prihlási do určenej relácie. Verejná relácia už musí byť nakonfigurovaná (prečítajte si časť |DeviceLocalAccounts|).
 
       Ak pravidlo nastavené nie je, automatické prihlásenie nenastane.</translation>
+<translation id="5529037166721644841">Určuje interval (v ms), v ktorom budú službe správy zariadenia odosielané žiadosti o informácie o pravidlách pre zariadenie.
+
+      Nastavením tohto pravidla bude prepísaná predvolená hodnota 3 hodiny. Platné hodnoty pre toto pravidlo sa pohybujú v rozmedzí od 1800000 (30 minút) do 86400000 (1 deň). Hodnoty mimo daný rozsah budú upravené na príslušnú medznú hodnotu.
+
+      Ak toto pravidlo nenastavíte, <ph name="PRODUCT_OS_NAME" /> použije predvolenú hodnotu – 3 hodiny.
+
+      Upozorňujeme, že ak platforma podporuje upozornenia na pravidlá, oneskorenie obnovenia bude nastavené na 24 hodín (všetky predvolené nastavenia a hodnota určená v tomto pravidle budú ignorované), pretože sa očakáva, že upozornenia na pravidlá vynútia automatické obnovenie po každej zmene pravidiel. Častejšie obnovenia sú preto zbytočné.</translation>
 <translation id="5535957389335373033">Ako často sa odosielajú sledovacie sieťové pakety (v milisekundách).
 
       Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia tri minúty. Minimálna frekvencia je 30 sekúnd a maximálna 24 hodín – hodnoty mimo tohto rozsahu budú prispôsobené na príslušnú hranicu.</translation>
@@ -1899,6 +1908,9 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
           Toto pravidlo sa použije iba v prípade, že je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Oneskorenie uzamknutia obrazovky pri používaní napájacieho zdroja</translation>
+<translation id="7311458740754205918">Ak toto pravidlo nastavíte na hodnotu True alebo ho nenastavíte, na stránke na novej karte sa môžu zobrazovať návrhy obsahu na základe používateľovej histórie prehliadania, záujmov alebo polohy.
+
+      Ak toto pravidlo nastavíte na možnosť False, automaticky generované návrhy obsahu sa na stránke na novej karte nezobrazujú.</translation>
 <translation id="7323896582714668701">Dodatočné parametre príkazového riadka pre <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Určuje dobu nečinnosti používateľa, po ktorej sa obrazovka pri napájaní z batérie vypne.
 
@@ -2041,6 +2053,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7763479091692861127"> Typy pripojení, ktoré je možné používať na aktualizáciu operačného systému. Aktualizácie operačného systému môžu vzhľadom na objem dát významne zaťažovať pripojenie a môžu tak zvýšiť vaše poplatky. Predvolene preto nie sú povolené pre typy pripojení, ktoré sú považované za finančne nákladné, ako sú momentálne pripojenia WiMax, Bluetooth a mobilné pripojenie.
 
       Medzi uznávané identifikátory typov pripojení patria "ethernet", "wifi", "wimax", "bluetooth" a "cellular".</translation>
+<translation id="7763614521440615342">Zobrazovať návrhy obsahu na stránke na novej karte</translation>
 <translation id="7766336524667238790">Nahlasuje informácie o aktívnej relácii režimu verejného terminálu, ako sú
       identifikátor a verzia aplikácie.
 
@@ -2060,7 +2073,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7796141075993499320">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu spúšťať doplnky.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultPluginsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
-<translation id="7801886189430766248">Keď toto pravidlo nastavíte na hodnotu True, údaje aplikácií pre Android sa nahrajú na severy služby Android Backup a pri opätovnej inštalácii kompatibiliných aplikácií ich z nich obnoví.
+<translation id="7801886189430766248">Keď toto pravidlo nastavíte na hodnotu True, údaje aplikácií pre Android sa nahrajú na servery služby Android Backup a pri opätovnej inštalácii kompatibilných aplikácií ich z nich obnoví.
 
       Keď ho nastavíte na hodnotu False, služba Android Backup Service bude vypnutá.
 

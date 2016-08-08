@@ -170,6 +170,7 @@
 <translation id="284702764277384724">El certificado del servidor en <ph name="HOST_NAME" /> parece falso.</translation>
 <translation id="2889159643044928134">No volver a cargar</translation>
 <translation id="2896499918916051536">El complemento no es compatible.</translation>
+<translation id="2900469785430194048">Google Chrome se quedó sin memoria cuando intentaba mostrar esta página web.</translation>
 <translation id="2909946352844186028">Se detectó un cambio de red.</translation>
 <translation id="2915500479781995473">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad venció. Es posible que esto se deba a una configuración incorrecta o a un atacante que interceptó la conexión. La hora actual del reloj de la computadora es <ph name="CURRENT_TIME" />. ¿Es correcta? De lo contrario, corrige la hora del sistema y actualiza la página.</translation>
 <translation id="2922350208395188000">No se puede comprobar el certificado del servidor.</translation>
@@ -454,6 +455,7 @@
 <translation id="6355080345576803305">Anulación de sesión pública</translation>
 <translation id="6358450015545214790">¿Qué significa esto?</translation>
 <translation id="6387478394221739770">Si estás interesado en probar nuevas e interesantes funciones de Chrome, visita nuestro canal beta en chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium se quedó sin memoria cuando intentaba mostrar esta página web.</translation>
 <translation id="641480858134062906">Se produjo un error al cargar <ph name="URL" />.</translation>
 <translation id="6417515091412812850">No se pudo verificar si el certificado ha sido revocado.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> rechazó la conexión.</translation>
@@ -631,7 +633,6 @@
 <translation id="8647750283161643317">Restablecer todos los valores predeterminados</translation>
 <translation id="8680787084697685621">Los datos de inicio de cuenta están desactualizados</translation>
 <translation id="8703575177326907206">Tu conexión a <ph name="DOMAIN" /> no está cifrada.</translation>
-<translation id="8713130696108419660">Firma inicial no válida</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8728672262656704056">Estás en modo incógnito</translation>
 <translation id="8730621377337864115">Listo</translation>

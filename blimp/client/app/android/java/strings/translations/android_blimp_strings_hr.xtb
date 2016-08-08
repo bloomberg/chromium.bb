@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1091157412887719337">Dodjeljivanje nije uspjelo. Tražilica nije dostupna.</translation>
+<translation id="117738548141695034">Prekidač za Blimp</translation>
 <translation id="1416550906796893042">Verzija aplikacije</translation>
 <translation id="1750179245464827362">Prikaži informacije o otklanjanju pogreški</translation>
 <translation id="2004526128230838685">Dodjeljivanje nije uspjelo zbog nepoznatog problema.</translation>
 <translation id="2023631438558435272">Dodjeljivanje nije uspjelo zbog nevažećeg odgovora.</translation>
 <translation id="2078561879028077171">Informacije o verziji</translation>
 <translation id="2117453604279487107">URL dodjelitelja</translation>
+<translation id="2218944627481691815">Prekidač za Blimp se promijenio. Ponovo pokrenite aplikaciju.</translation>
 <translation id="2353984724370197742">Dodjeljivanje nije uspjelo. Mrežni zahtjev nije uspio.</translation>
 <translation id="2789927415041640472">Ponovo pokrenite aplikaciju da biste upotrebljavali novu konfiguraciju dodjeljivanja.</translation>
 <translation id="3046825211487065480">Dodjeljivanje nije uspjelo. Drugi zahtjev poslan je prije odgovora na prvi zahtjev.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Prekinuta je veza s uređajem, razlog: %1$s</translation>
 <translation id="7596558890252710462">Operativni sustav</translation>
 <translation id="7608553142876436780">IP tražilice</translation>
+<translation id="7795546637165553439">Postavke Blimpa</translation>
 <translation id="7961542533680218955">Dodjeljivanje je uspjelo.</translation>
 <translation id="8514856595257368555">Oznaka je dohvaćena.</translation>
 <translation id="8880704056643418312">Potvrđivanja</translation>

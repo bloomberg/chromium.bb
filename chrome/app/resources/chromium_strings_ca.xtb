@@ -50,6 +50,7 @@
 <translation id="2535480412977113886">Chromium OS no ha pogut sincronitzar les vostres dades perquè la informació d'inici de sessió del vostre compte no està actualitzada.</translation>
 <translation id="2558641060352364164">Aquest lloc fa servir el connector Chromium Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i instal·leu un navegador més modern.</translation>
 <translation id="2572494885440352020">Aplicació auxiliar de Chromium</translation>
+<translation id="2587578672395088481">Cal reiniciar Chromium OS per aplicar l'actualització.</translation>
 <translation id="2595977381794111014">Feu servir la drecera <ph name="APPS_ICON_IMAGE" /> de la barra d'adreces d'interès de Chromium per continuar accedint a les vostres aplicacions.</translation>
 <translation id="2605472041568654097">Informa de la configuració actual per ajudar-nos a millorar Chromium.</translation>
 <translation id="2636877269779209383">Chromium necessita accedir a la càmera per compartir-la amb aquest lloc.</translation>
@@ -62,7 +63,7 @@
 <translation id="2799223571221894425">Reinicia</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="2847479871509788944">Suprimeix de Chromium...</translation>
-<translation id="2886012850691518054">Opcional: ajudeu a millorar Chromium enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
+<translation id="2886012850691518054">Opcional: ajuda'ns a millorar Chromium enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="2905536371227304018">Chromium OS es mostra en aquest idioma.</translation>
 <translation id="2910007522516064972">Quant a &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necessita iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME" />. L'enllaç sol·licitat és <ph name="PROTOLINK" />.</translation>
@@ -113,6 +114,7 @@
 <translation id="4330585738697551178">Se sap que aquest mòdul entra en conflicte amb Chromium.</translation>
 <translation id="4423735387467980091">Personalitza i controla Chromium</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
+<translation id="4469812139324097969">Chromium està obsolet perquè fa temps que no s'inicia. Hi ha una actualització disponible i s'aplicarà tan aviat com el tornis a iniciar.</translation>
 <translation id="4549794359424059447">Les versions futures de Chromium ja no admetran Windows XP ni Windows Vista.</translation>
 <translation id="4567424176335768812">Heu iniciat la sessió com a <ph name="USER_EMAIL_ADDRESS" />. Ja podeu accedir a les vostres adreces d'interès, al vostre historial i a altres paràmetres en tots els dispositius en què hàgiu iniciat la sessió.</translation>
 <translation id="457845228957001925">Informació important sobre les dades de Chromium</translation>

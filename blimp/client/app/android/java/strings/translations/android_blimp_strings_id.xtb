@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1091157412887719337">Penugasan gagal.  Tidak ada mesin yang tersedia.</translation>
+<translation id="117738548141695034">Pengalih Blim</translation>
 <translation id="1416550906796893042">Versi aplikasi</translation>
 <translation id="1750179245464827362">Tampilkan Info Debug</translation>
 <translation id="2004526128230838685">Penugasan gagal.  Masalah tidak dikenal.</translation>
 <translation id="2023631438558435272">Penugasan gagal.  Tanggapan tidak valid.</translation>
 <translation id="2078561879028077171">Info Versi</translation>
 <translation id="2117453604279487107">URL Pemberi Tugas</translation>
+<translation id="2218944627481691815">Pengalih blim diubah. Mulai ulang aplikasi.</translation>
 <translation id="2353984724370197742">Penugasan gagal.  Permintaan jaringan gagal.</translation>
 <translation id="2789927415041640472">Mulai ulang aplikasi untuk menggunakan konfigurasi pemberi tugas yang baru.</translation>
 <translation id="3046825211487065480">Penugasan gagal.  Permintaan kedua dikirim sebelum permintaan pertama ditanggapi.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Sambungan perangkat terputus, alasan: %1$s</translation>
 <translation id="7596558890252710462">Sistem operasi</translation>
 <translation id="7608553142876436780">IP Mesin</translation>
+<translation id="7795546637165553439">Setelan Blim</translation>
 <translation id="7961542533680218955">Penugasan berhasil.</translation>
 <translation id="8514856595257368555">Token telah diambil.</translation>
 <translation id="8880704056643418312">Pelaksanaan</translation>

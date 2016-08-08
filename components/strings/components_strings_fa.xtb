@@ -170,6 +170,7 @@
 <translation id="284702764277384724">به نظر می‌رسد که گواهی سرور در <ph name="HOST_NAME" /> جعلی باشد.</translation>
 <translation id="2889159643044928134">تازه‌سازی نشود</translation>
 <translation id="2896499918916051536">این افزایه پشتیبانی نمی‌شود.</translation>
+<translation id="2900469785430194048">‏Google Chrome هنگام تلاش برای نمایش این صفحه با کمبود حافظه روبرو شد.</translation>
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2915500479781995473">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن منقضی شده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است. در حال حاضر ساعت رایانه‌تان روی <ph name="CURRENT_TIME" /> تنظیم شده است. آیا این زمان درست است؟ اگر درست نیست، باید ساعت سیستم‌تان را تنظیم کنید و سپس این صفحه را بازخوانی نمایید.</translation>
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">لغو جلسه عمومی</translation>
 <translation id="6358450015545214790">معنی این‌ها چیست؟</translation>
 <translation id="6387478394221739770">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال بتای ما را در chrome.com/beta امتحان کنید.</translation>
+<translation id="6389758589412724634">‏Chromium هنگام تلاش برای نمایش این صفحه با کمبود حافظه روبرو شد.</translation>
 <translation id="641480858134062906">بارگیری <ph name="URL" /> ناموفق بود</translation>
 <translation id="6417515091412812850">امکان بررسی اینکه آیا مجوز باطل شده است یا نه وجود ندارد.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> از اتصال خودداری کرد.</translation>
@@ -630,7 +632,6 @@
 <translation id="8647750283161643317">بازنشانی همه به موارد پیش‌فرض</translation>
 <translation id="8680787084697685621">جزئیات ورود به سیستم حساب قدیمی است.</translation>
 <translation id="8703575177326907206">اتصال شما به <ph name="DOMAIN" /> رمزگذاری نشده است.</translation>
-<translation id="8713130696108419660">امضای اولیه خراب</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8728672262656704056">به صورت ناشناس وارد شدید</translation>
 <translation id="8730621377337864115">تمام</translation>

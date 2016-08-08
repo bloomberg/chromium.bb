@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1091157412887719337">Przypisanie się nie udało. Nie jest dostępna żadna wyszukiwarka.</translation>
+<translation id="117738548141695034">Przełącznik Blimp</translation>
 <translation id="1416550906796893042">Wersja aplikacji</translation>
 <translation id="1750179245464827362">Pokaż informacje o debugowaniu</translation>
 <translation id="2004526128230838685">Przypisanie się nie udało. Nieznany problem.</translation>
 <translation id="2023631438558435272">Przypisanie się nie udało. Nieprawidłowa odpowiedź.</translation>
 <translation id="2078561879028077171">Informacje o wersji</translation>
 <translation id="2117453604279487107">URL przypisujący</translation>
+<translation id="2218944627481691815">Nastąpiła zmiana przełącznika Blimp. Uruchom ponownie aplikację.</translation>
 <translation id="2353984724370197742">Przypisanie się nie udało. Błąd żądania sieciowego.</translation>
 <translation id="2789927415041640472">Uruchom ponownie aplikację, by korzystać z nowej konfiguracji przypisującego.</translation>
 <translation id="3046825211487065480">Przypisanie się nie udało. Drugie żądanie zostało wysłane przed otrzymaniem odpowiedzi na pierwsze.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Rozłączono z mechanizmem, powód: %1$s</translation>
 <translation id="7596558890252710462">System operacyjny</translation>
 <translation id="7608553142876436780">Adres IP mechanizmu</translation>
+<translation id="7795546637165553439">Ustawienia Blimp</translation>
 <translation id="7961542533680218955">Przypisano.</translation>
 <translation id="8514856595257368555">Token został pobrany.</translation>
 <translation id="8880704056643418312">Zatwierdzenia</translation>

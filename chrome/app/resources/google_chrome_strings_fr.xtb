@@ -39,6 +39,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1864458292167284385">Le lanceur d'applications Chrome ne sera bientôt plus disponible</translation>
 <translation id="1877026089748256423">Version de Chrome obsolète</translation>
 <translation id="1924381329666691588">Google Chrome ne peut pas être affiché dans cette langue.</translation>
+<translation id="2063848847527508675">Redémarrez Chrome OS pour appliquer la mise à jour.</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2084710999043359739">Ajouter à Chrome</translation>
 <translation id="2246246234298806438">Impossible d'afficher l'aperçu d'impression dans Google Chrome, car la visionneuse de documents PDF intégrée est absente.</translation>
@@ -55,6 +56,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 Si vous vous connectez quand même, toutes les informations Chrome, comme les favoris, l'historique et les autres paramètres, seront fusionnées avec <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Afficher le menu Chrome</translation>
 <translation id="2429317896000329049">Impossible de synchroniser vos données dans Google Chrome, car la synchronisation n'est pas disponible pour votre domaine.</translation>
+<translation id="2446511512801740068">Chrome n'est plus à jour, car il n'a pas été relancé depuis quelque temps. La mise à jour disponible sera installée dès que vous le relancerez.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
 <translation id="2582790009689336987">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur ce système Linux.</translation>

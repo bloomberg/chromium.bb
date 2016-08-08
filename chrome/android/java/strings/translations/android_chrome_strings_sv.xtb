@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="1040144152982955218">Söker efter enheter … <ph name="BEGIN_LINK" />få hjälp<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">Varning</translation>
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="1061441684050139317">Chrome behöver tillgång till mikrofonen för att kunna dela den på den här webbplatsen.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">Upptäck webbsidor som skickats av enheter i närheten. Chrome samlar webbsidor som är kopplade till enheter i din omgivning, skickar de sedan anonymt till en av Googles tjänster och väljer de som är mest användbara för dig och visar dem sedan.
 
 Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjänster.</translation>
-<translation id="1250508505624960884">Bokmärken i Chrome Beta</translation>
 <translation id="1254090737195733114">Vill du importera data?</translation>
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -88,7 +86,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1946821392246652573">Godkända kort</translation>
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="1974060860693918893">Avancerat</translation>
-<translation id="1984321224716884559">Bokmärken i Chrome Dev</translation>
 <translation id="1984937141057606926">Tillåts, men inte från tredje part</translation>
 <translation id="1994173015038366702">Webbadress</translation>
 <translation id="2001120796168634316">Spara den länkade sidan</translation>
@@ -159,9 +156,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="2742271047622814453">Sparade inställningar på webbplatser kanske raderas</translation>
 <translation id="2748463065602559597">Du tittar på en säker Google Chrome-sida.</translation>
 <translation id="2762000892062317888">nyss</translation>
-<translation id="2770465223704140727">Ta bort från listan</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
-<translation id="278029852808208386">Inga Bluetooth-enheter hittades. <ph name="BEGIN_LINK" />Gör om sökningen<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
 <translation id="2811892995384186721">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tryck på bakåtknappen för att lämna helskärmsläget.</translation>
@@ -232,7 +227,6 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 
 Om du vill ändra söktermen trycker du länge för att välja. Om du vill förfina sökningen drar du panelen ända upp och trycker på sökrutan.</translation>
 <translation id="3616113530831147358">Ljud</translation>
-<translation id="3623048332793834136">Bokmärken i Chrome Canary</translation>
 <translation id="3632295766818638029">Visa lösenord</translation>
 <translation id="363596933471559332">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du verifiera dina uppgifter varje gång du besöker webbplatsen innan du kan logga in.</translation>
 <translation id="3656115297268584622">Aktivera plats i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
@@ -285,7 +279,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4271185234001491831">Översätt aldrig från <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
-<translation id="4297410240212242334">Separera flikar och appar</translation>
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4334294535648607276">Nedladdningen har slutförts.</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
@@ -309,10 +302,8 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4645575059429386691">Hanteras av din förälder</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmärken har raderats</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> har lagts till på startskärmen.</translation>
-<translation id="4668044310199835006">Bokmärken i Work Chrome</translation>
 <translation id="4684427112815847243">Synkronisera allt</translation>
 <translation id="4686372254213217147">Originalstorlek</translation>
-<translation id="4690286298542128877">Flikar flyttas till en funktion för flikbyte i Chrome.</translation>
 <translation id="4698413471314543145">Det saknas viktiga funktioner i din version som krävs för att Chrome ska kunna köras. Antingen har installationen av Chrome inte slutförts eller så är Chrome och den här versionen av Android inte kompatibla.</translation>
 <translation id="4699172675775169585">Cachade bilder och filer</translation>
 <translation id="4710672574193412565">Lägg till ett Google-konto från kontosidan i appen Inställningar på enheten.</translation>
@@ -354,7 +345,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5127805178023152808">Synkronisering är av</translation>
 <translation id="5131405117025179004">Redigera sparat konto</translation>
 <translation id="5138299137310274655">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE" />. Vill du översätta den till <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="5150703642582475397">Sammanfoga flikar och appar</translation>
 <translation id="515227803646670480">Ta bort sparad data</translation>
 <translation id="5156656584247937086">Det här är ett barnkonto</translation>
 <translation id="5161254044473106830">Titel krävs</translation>
@@ -367,7 +357,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="5233638681132016545">Ny flik</translation>
 <translation id="5271967389191913893">Innehållet som skulle laddas ned gick inte att öppna på enheten.</translation>
-<translation id="5275558766013849309">Flikarna visas tillsammans med aktuella appar.</translation>
 <translation id="528192093759286357">Dra uppifrån och tryck på bakåtknappen för att lämna helskärmsläget.</translation>
 <translation id="5284584623296338184">Ändringar i bokmärken, historik, lösenord och andra inställningar synkroniseras inte längre med ditt Google-konto. Befintlig data fortsätter dock att lagras i Google-kontot.</translation>
 <translation id="5301954838959518834">OK, jag fattar</translation>
@@ -450,7 +439,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
 <translation id="6112702117600201073">Uppdaterar sidan</translation>
 <translation id="6127379762771434464">Objektet har tagits bort</translation>
-<translation id="6134870457258083164">Visas inte enheten? <ph name="BEGIN_LINK1" />Få hjälp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />sök igen<ph name="END_LINK2" />.</translation>
 <translation id="6138140242378429169">Mobilanpassa sidan</translation>
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
@@ -482,7 +470,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6476911854266661814"><ph name="VIDEO_TITLE" /> har pausats</translation>
 <translation id="6477460825583319731">Ogiltig e-postadress</translation>
 <translation id="6482749332252372425">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom det inte finns tillräckligt med lagringsutrymme.</translation>
-<translation id="6541922744811587456">Bokmärken i Chrome</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Välj en flik som du vill överföra</translation>
 <translation id="6545017243486555795">Rensa all data</translation>
@@ -554,7 +541,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7220786058474068424">Bearbetning pågår</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjälp<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Ta bort bokmärke</translation>
 <translation id="7301833672208172928">Aktivera historiksynkronisering</translation>
 <translation id="7327835590071894791">Fliken är nu i bakgrunden.</translation>
@@ -565,7 +551,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7400418766976504921">Webbadress</translation>
 <translation id="7400448254438078120">Det går inte att casta video på grund av begränsningar på webbplatsen</translation>
-<translation id="7408644312175185557">Visa flikar tillsammans med de senaste apparna på skärmen Översikt på mobilen.</translation>
 <translation id="7423098979219808738">Fråga först</translation>
 <translation id="7437998757836447326">Logga ut från Chrome</translation>
 <translation id="7445411102860286510">Tillåt att webbplatser automatiskt spelar upp videor utan ljud (rekommenderas)</translation>

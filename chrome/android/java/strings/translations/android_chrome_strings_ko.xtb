@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
-<translation id="1040144152982955218">기기 검색 중… <ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">경고</translation>
 <translation id="10614374240317010">비밀번호를 저장하지 않은 사이트</translation>
 <translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
@@ -19,7 +18,6 @@
 <translation id="1240668123557180468">근처 사물에서 전송한 웹페이지를 탐색하세요. Chrome은 근처 사물과 관련된 웹페이지를 수집한 후 익명으로 Google 서비스로 전달하여 사용자에게 가장 유용한 항목을 검색하여 표시합니다.
 
 피지컬 웹을 사용하려면 블루투스와 위치를 사용하도록 설정해야 합니다.</translation>
-<translation id="1250508505624960884">Chrome 베타 북마크</translation>
 <translation id="1254090737195733114">데이터를 가져오시겠습니까?</translation>
 <translation id="1258753120186372309">Google 기념일 로고: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">중지</translation>
@@ -88,7 +86,6 @@
 <translation id="1946821392246652573">카드 사용 가능</translation>
 <translation id="1966710179511230534">로그인 세부정보를 업데이트하세요.</translation>
 <translation id="1974060860693918893">고급</translation>
-<translation id="1984321224716884559">Chrome 개발자 북마크</translation>
 <translation id="1984937141057606926">타사 쿠키만 제외하고 허용</translation>
 <translation id="1994173015038366702">사이트 URL</translation>
 <translation id="2001120796168634316">링크된 페이지 저장</translation>
@@ -159,9 +156,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="2742271047622814453">사이트에 저장된 환경설정이 삭제될 수 있습니다.</translation>
 <translation id="2748463065602559597">지금 안전한 Chrome 페이지를 보고 계십니다.</translation>
 <translation id="2762000892062317888">방금 전</translation>
-<translation id="2770465223704140727">목록에서 삭제</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" />초 남음</translation>
-<translation id="278029852808208386">블루투스 기기를 찾을 수 없습니다. <ph name="BEGIN_LINK" />다시 검색하세요<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1초 남음</translation>
 <translation id="2811892995384186721">기기가 표시되지 않나요? <ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">전체화면을 종료하려면 뒤로 버튼을 터치하세요.</translation>
@@ -232,13 +227,12 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 
 검색어를 조정하려면 길게 눌러 선택하세요. 검색을 세분화하려면 패널을 위로 끝까지 슬라이드하여 검색창을 터치합니다.</translation>
 <translation id="3616113530831147358">오디오</translation>
-<translation id="3623048332793834136">Chrome Canary 북마크</translation>
 <translation id="3632295766818638029">비밀번호 공개</translation>
 <translation id="363596933471559332">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 인증 요청 메시지가 표시됩니다.</translation>
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 위치를 사용 설정하세요.</translation>
 <translation id="3661699943263275414">타사 웹사이트에서 쿠키 데이터를 저장하고 읽을 수 있도록 허용</translation>
 <translation id="3672452749423051839">탐색 오류 시 추천사항 표시</translation>
-<translation id="3706658020782046159">배송 방법 및 요구사항을 확인할 수 있도록 배송지 주소를 선택하세요.</translation>
+<translation id="3706658020782046159">배송 방법과 요건을 확인할 수 있도록 배송지 주소를 선택하세요.</translation>
 <translation id="3716158070938632480">주변에 웹페이지 있음</translation>
 <translation id="3732088672634061408">관심분야를 검색하지 못했습니다.</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
@@ -285,7 +279,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> 번역 안함</translation>
 <translation id="4275663329226226506">미디어</translation>
 <translation id="4278390842282768270">허용됨</translation>
-<translation id="4297410240212242334">탭과 앱 따로 표시</translation>
 <translation id="4307992518367153382">기본설정</translation>
 <translation id="4334294535648607276">다운로드가 완료되었습니다.</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
@@ -309,10 +302,8 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 메인 스크린에 추가됨</translation>
-<translation id="4668044310199835006">Work Chrome 북마크</translation>
 <translation id="4684427112815847243">모두 동기화</translation>
 <translation id="4686372254213217147">원래 크기</translation>
-<translation id="4690286298542128877">탭이 Chrome 내부의 탭 전환으로 이동합니다.</translation>
 <translation id="4698413471314543145">Chrome 실행에 필요한 중요한 기능이 없습니다. Chrome 설치가 제대로 완료되지 않았거나 사용 중인 Android 버전과 호환되지 않습니다.</translation>
 <translation id="4699172675775169585">캐시된 이미지 또는 파일</translation>
 <translation id="4710672574193412565">기기 설정 앱의 계정 페이지에서 Google 계정을 추가하세요.</translation>
@@ -354,7 +345,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5127805178023152808">동기화 사용 안함</translation>
 <translation id="5131405117025179004">저장된 계정 수정</translation>
 <translation id="5138299137310274655">이 페이지는 <ph name="SOURCE_LANGUAGE" />로 되어 있습니다. <ph name="TARGET_LANGUAGE" />로 번역할까요?</translation>
-<translation id="5150703642582475397">탭과 앱 함께 표시</translation>
 <translation id="515227803646670480">저장된 데이터 삭제</translation>
 <translation id="5156656584247937086">자녀 계정입니다.</translation>
 <translation id="5161254044473106830">제목이 필요합니다.</translation>
@@ -367,7 +357,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="5233638681132016545">새 탭</translation>
 <translation id="5271967389191913893">기기에서 다운로드하려는 콘텐츠를 열 수 없습니다.</translation>
-<translation id="5275558766013849309">탭은 최근 앱과 함께 보유할 수 있습니다.</translation>
 <translation id="528192093759286357">전체화면을 종료하려면 상단에서 드래그하여 뒤로 버튼을 터치하세요.</translation>
 <translation id="5284584623296338184">북마크, 방문 기록, 비밀번호, 기타 설정이 더 이상 Google 계정에 동기화되지 않습니다. 하지만 기존 데이터는 Google 계정에 계속 저장됩니다.</translation>
 <translation id="5301954838959518834">확인</translation>
@@ -450,7 +439,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6112702117600201073">페이지 새로고침</translation>
 <translation id="6127379762771434464">항목 삭제됨</translation>
-<translation id="6134870457258083164">기기가 표시되지 않나요? <ph name="BEGIN_LINK1" />도움 받기<ph name="END_LINK1" /> 또는 <ph name="BEGIN_LINK2" />다시 검색<ph name="END_LINK2" /></translation>
 <translation id="6138140242378429169">페이지를 모바일 친화적으로 바꾸세요.</translation>
 <translation id="6140912465461743537">국가/지역</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> 데이터 절약</translation>
@@ -482,7 +470,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="6476911854266661814">'<ph name="VIDEO_TITLE" />' 일시중지됨</translation>
 <translation id="6477460825583319731">잘못된 이메일 주소</translation>
 <translation id="6482749332252372425">저장공간이 부족하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
-<translation id="6541922744811587456">Chrome 북마크</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">공유할 탭을 선택하세요.</translation>
 <translation id="6545017243486555795">모든 데이터 삭제</translation>
@@ -527,7 +514,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="6978479750597523876">번역 설정 재설정</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="6990079615885386641">Google Play 스토어에서 앱 다운로드: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">발생 가능성이 있는 보안 문제의 세부정보를 자동으로 Google에 보고합니다.</translation>
+<translation id="699220179437400583">발생 가능성이 있는 보안 문제의 세부정보를 자동으로 Google에 신고합니다.</translation>
 <translation id="6992289844737586249">사이트에서 마이크를 사용하기 전에 확인(권장)</translation>
 <translation id="6999892069268112724">Google 계정 확인</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" />(이)가 다운로드됨</translation>
@@ -554,7 +541,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7220786058474068424">처리 중</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />이(가) 사용자 위치 정보를 사용하여 지역 검색결과 표시</translation>
-<translation id="7299441085833132046"><ph name="BEGIN_LINK" />도움말<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">북마크 삭제</translation>
 <translation id="7301833672208172928">기록 동기화 사용</translation>
 <translation id="7327835590071894791">이제 탭이 백그라운드에 표시됩니다.</translation>
@@ -565,7 +551,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7378627244592794276">안함</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">사이트 제한으로 동영상을 전송할 수 없음</translation>
-<translation id="7408644312175185557">휴대전화의 최근 사용 화면에서 최근에 사용한 앱과 탭을 확인할 수 있습니다.</translation>
 <translation id="7423098979219808738">우선 확인</translation>
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="7445411102860286510">사이트에서 음소거된 동영상을 자동재생하도록 허용(권장)</translation>

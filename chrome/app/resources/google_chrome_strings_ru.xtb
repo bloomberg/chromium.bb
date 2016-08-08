@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Мы прекращаем поддержку Панели запуска приложений Chromе</translation>
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
 <translation id="1924381329666691588">Интерфейс Google Chrome невозможно отобразить на этом языке.</translation>
+<translation id="2063848847527508675">Перезагрузите Chrome OS, чтобы установить обновление.</translation>
 <translation id="2077129598763517140">Использовать аппаратное ускорение (при наличии)</translation>
 <translation id="2084710999043359739">Установить</translation>
 <translation id="2246246234298806438">Если отсутствует встроенный просмотрщик PDF, предварительный просмотр в Google Chrome невозможен.</translation>
@@ -52,6 +53,7 @@
 Если войти в систему сейчас, закладки, история и прочие данные Chrome будут синхронизированы с аккаунтом <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Отображение меню Chrome</translation>
 <translation id="2429317896000329049">Google Chrome не удалось синхронизировать данные, поскольку служба Sync недоступна для вашего домена.</translation>
+<translation id="2446511512801740068">Для текущей версии Chrome доступно обновление. Оно будет установлено при перезапуске приложения.</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="2582790009689336987">Google Chrome скоро перестанет обновляться на этом компьютере, поскольку поддержка этой системы Linux будет прекращена.</translation>

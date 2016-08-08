@@ -170,6 +170,7 @@
 <translation id="284702764277384724">A(z) <ph name="HOST_NAME" /> szervertanúsítványa hamisítványnak tűnik.</translation>
 <translation id="2889159643044928134">Ne töltse újra</translation>
 <translation id="2896499918916051536">Ez a beépülő modul nem támogatott.</translation>
+<translation id="2900469785430194048">Elfogyott a memória, miközben a Google Chrome megpróbálta megjeleníteni ezt a weboldalt.</translation>
 <translation id="2909946352844186028">Változást érzékeltünk a hálózatban.</translation>
 <translation id="2915500479781995473">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa lejárt. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását. Számítógépének órája jelenleg <ph name="CURRENT_TIME" /> időre van állítva. Ez helyesnek tűnik? Ha nem, állítsa be megfelelően a rendszer óráját, majd frissítse az oldalt.</translation>
 <translation id="2922350208395188000">A szerver tanúsítványát nem sikerült leellenőrizni.</translation>
@@ -451,6 +452,7 @@
 <translation id="6355080345576803305">Nyilvános munkamenet általi felülbírálás</translation>
 <translation id="6358450015545214790">Mit jelent ez?</translation>
 <translation id="6387478394221739770">Érdekli néhány remek új Chrome-funkció? Próbálja ki a Béta csatornánkat a chrome.com/beta webhelyen.</translation>
+<translation id="6389758589412724634">Elfogyott a memória, miközben a Chromium megpróbálta megjeleníteni ezt a weboldalt.</translation>
 <translation id="641480858134062906"><ph name="URL" /> nem töltődött be</translation>
 <translation id="6417515091412812850">Nem lehet ellenőrizni, hogy a tanúsítványt visszavonták-e.</translation>
 <translation id="6433595998831338502">A(z) <ph name="HOST_NAME" /> visszautasította a csatlakozást.</translation>
@@ -628,7 +630,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8647750283161643317">Minden visszaállítása az alapértékre</translation>
 <translation id="8680787084697685621">A fiók bejelentkezési részletei elavultak.</translation>
 <translation id="8703575177326907206">A kapcsolat (<ph name="DOMAIN" />) nem titkosított.</translation>
-<translation id="8713130696108419660">Helytelen első aláírás</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8728672262656704056">Ön inkognitómódra váltott</translation>
 <translation id="8730621377337864115">Kész</translation>

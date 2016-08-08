@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Chrome アプリ ランチャーを非表示にします。</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="1924381329666691588">Google Chrome をこの言語で表示することはできません。</translation>
+<translation id="2063848847527508675">アップデートを適用するには、Chrome OS を再起動する必要があります。</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2084710999043359739">Chrome に追加</translation>
 <translation id="2246246234298806438">Google Chrome では、組み込みの PDF ビューアがない場合、印刷プレビューを表示できません。</translation>
@@ -52,6 +53,7 @@
 このままログインすると、ブックマーク、履歴、その他の設定などの Chrome データが <ph name="ACCOUNT_EMAIL_NEW" /> と統合されます。</translation>
 <translation id="2397416548179033562">Chrome メニューを表示</translation>
 <translation id="2429317896000329049">お使いのドメインでは同期を利用できないため、Google Chrome はデータを同期できませんでした。</translation>
+<translation id="2446511512801740068">Chrome はしばらく再起動していないため最新ではありません。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
 <translation id="2582790009689336987">この Linux システムはサポートが終了するため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>

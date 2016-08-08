@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">El Selector de aplicaciones de Chrome está por desaparecer.</translation>
 <translation id="1877026089748256423">Chrome no está actualizado.</translation>
 <translation id="1924381329666691588">Google Chrome no se puede mostrar en este idioma.</translation>
+<translation id="2063848847527508675">El Sistema operativo Chrome debe reiniciarse para que se aplique la actualización.</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="2084710999043359739">Agregar a Chrome</translation>
 <translation id="2246246234298806438">Google Chrome no puede mostrar la vista previa de impresión si falta el visor de PDF incorporado.</translation>
@@ -52,6 +53,7 @@
 Si accedes de todos modos, se fusionará la información de Google Chrome, como los marcadores, el historial y otros parámetros de configuración en <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Mostrar el menú de Chrome</translation>
 <translation id="2429317896000329049">Google Chrome no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
+<translation id="2446511512801740068">Chrome no está actualizado porque no se reinició por un tiempo. Cuando lo reinicies, se aplicará la actualización disponible.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando actualmente. Cierra Google Chrome e intenta nuevamente.</translation>
 <translation id="2582790009689336987">Esta computadora dejará de recibir actualizaciones de Google Chrome en breve porque este sistema Linux ya no se admitirá más.</translation>

@@ -170,6 +170,7 @@
 <translation id="284702764277384724">Se pare că certificatul de server pentru <ph name="HOST_NAME" /> este un fals.</translation>
 <translation id="2889159643044928134">Nu reîncărca</translation>
 <translation id="2896499918916051536">Acest plugin nu este acceptat.</translation>
+<translation id="2900469785430194048">Google Chrome nu a avut suficientă memorie la afișarea paginii web.</translation>
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
 <translation id="2915500479781995473">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator. În prezent, ceasul computerului este setat la <ph name="CURRENT_TIME" />. Este corect? Dacă nu, trebuie să corectezi ora sistemului, apoi să actualizezi pagina.</translation>
 <translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
@@ -453,6 +454,7 @@
 <translation id="6355080345576803305">Modificarea sesiunii publice</translation>
 <translation id="6358450015545214790">Ce înseamnă acestea?</translation>
 <translation id="6387478394221739770">Doriți să utilizați funcții Chrome noi și interesante? Încercați canalul nostru beta de la chrome.com/beta.</translation>
+<translation id="6389758589412724634">Chromium nu a avut suficientă memorie la afișarea paginii web.</translation>
 <translation id="641480858134062906">Adresa <ph name="URL" /> nu s-a încărcat</translation>
 <translation id="6417515091412812850">Nu se poate verifica dacă certificatul a fost revocat.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> a refuzat conexiunea.</translation>
@@ -630,7 +632,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8647750283161643317">Resetați-le pe toate la valorile prestabilite</translation>
 <translation id="8680787084697685621">Datele de conectare la cont au expirat.</translation>
 <translation id="8703575177326907206">Conexiunea la <ph name="DOMAIN" /> nu este criptată.</translation>
-<translation id="8713130696108419660">Semnătură inițială incorectă</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8728672262656704056">Ați trecut în modul incognito</translation>
 <translation id="8730621377337864115">Terminat</translation>

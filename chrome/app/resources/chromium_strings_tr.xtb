@@ -50,6 +50,7 @@
 <translation id="2535480412977113886">Hesap oturum açma ayrıntılarınız güncel olmadığından Chromium OS, verilerinizi senkronize edemedi.</translation>
 <translation id="2558641060352364164">Bu site, kısa bir süre sonra artık destek verilmeyecek olan Chromium Frame eklentisini kullanıyor. Lütfen bu eklentinin yüklemesini kaldırın ve modern bir tarayıcı sürümüne geçin.</translation>
 <translation id="2572494885440352020">Chromium Yardımcısı</translation>
+<translation id="2587578672395088481">Güncellemenin uygulanması için Chromium OS yeniden başlatılmalıdır.</translation>
 <translation id="2595977381794111014">Uygulamalarınıza erişmeye devam etmek için Chromium yer işaretlerindeki <ph name="APPS_ICON_IMAGE" /> kısayolunu kullanın.</translation>
 <translation id="2605472041568654097">Mevcut ayarlarınızı bildirerek Chromium'u daha iyi hale getirmemize yardımcı olun.</translation>
 <translation id="2636877269779209383">Chromium'un, bu siteyle paylaşmak için kameraya erişmesi gerekiyor.</translation>
@@ -111,6 +112,7 @@
 <translation id="4330585738697551178">Bu modülün Chromium'la çakıştığı biliniyor.</translation>
 <translation id="4423735387467980091">Chromium'u özelleştirin ve kontrol edin</translation>
 <translation id="4458285410772214805">Bu değişikliğin geçerli olabilmesi için lütfen çıkış yapıp tekrar oturum açın.</translation>
+<translation id="4469812139324097969">Bir süredir çalıştırılmadığından Chromium güncel değil. Kullanılabilir bir güncelleme var ve yeniden başlattığınızda hemen uygulanacak.</translation>
 <translation id="4549794359424059447">Chromium'un gelecek sürümleri artık Windows XP veya Windows Vista'yı desteklemeyecek.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> olarak oturum açtınız. Şimdi oturum açtığınız tüm cihazlarda yer işaretlerinize, geçmişinize ve diğer ayarlarınıza erişebilirsiniz.</translation>
 <translation id="457845228957001925">Chromium verilerinizle ilgili önemli bilgiler</translation>

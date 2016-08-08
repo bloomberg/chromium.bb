@@ -233,6 +233,13 @@
       Ako je ovo pravilo postavljeno na istinito, sustav <ph name="PRODUCT_OS_NAME" />pokušat će preuzeti podatke automatskog ažuriranja putem HTTP-a. Ako je pravilo postavljeno na neistinito ili nije postavljeno, za preuzimanje podataka automatskog ažuriranja upotrebljavat će se HTTPS.</translation>
 <translation id="2006530844219044261">Upravljanje napajanjem</translation>
 <translation id="201557587962247231">Učestalost učitavanja izvješća o statusu uređaja</translation>
+<translation id="2018836497795982119">Određuje vrijeme u milisekundama tijekom kojeg se od usluge upravljanja uređajima traže podaci o korisničkim pravilima.
+
+      Postavljanje ovog pravila nadjačava zadanu vrijednost od 3 sata. Valjane vrijednosti za ovo pravilo u rasponu su od 1800000 (30 minuta) do 86400000 (1 dan). Sve vrijednosti koje nisu u ovom rasponu prebacit će se u odgovarajuće granice. Ako platforma podržava obavijesti o pravilima, odgoda osvježavanja postavit će se na 24 sata jer se očekuje da će obavijesti o pravilima automatski nametnuti osvježavanje nakon svake promjene pravila.
+
+      Ako ne postavite to pravilo, <ph name="PRODUCT_NAME" /> upotrebljavat će zadanu vrijednost od 3 sata.
+
+      Ako platforma podržava obavijesti o pravilima, odgoda osvježavanja postavit će se na 24 sata (sve zadane postavke i vrijednost ovog pravila bit će zanemareni) jer se očekuje da će obavijesti o pravilima automatski nametnuti osvježavanje nakon svake promjene pravila, zbog čega su češća osvježavanja nepotrebna.</translation>
 <translation id="2024476116966025075">Konfiguriraj traženi naziv domene za klijente s daljinskim pristupom</translation>
 <translation id="2030905906517501646">Zadani davatelj usluga pretraživanja</translation>
 <translation id="206623763829450685">Određuje koje sheme HTTP autentifikacije <ph name="PRODUCT_NAME" /> podržava.
@@ -1020,7 +1027,6 @@
       Iako je pravilo podržano na prethodno navedenim platformama, značajka koju omogućuje može biti dostupna na manje platformi. Neke zastarjele značajke web-platformi ne mogu se ponovo omogućiti. Samo one koje su izričito navedene u nastavku mogu se ponovo omogućiti na ograničeno vrijeme koje se razlikuje od značajke do značajke. Općeniti oblik oznake niza bit će [Nazivzastarjeleznačajke]_EffectiveUntil[ggggmmdd]. Ako vas zanima, namjeru promjene značajke web-platforme možete pronaći na stranici https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Omogući zaključavanje kada uređaj prijeđe u stanje mirovanja ili se isključi</translation>
-<translation id="4445684791305970001">Onemogućuje Alate za razvojne programere i konzolu JavaScriptu. Ako omogućite ovu postavku, više neće biti moguće pristupiti Alatima za razvojne programere i više se neće moći provjeravati elementi web-lokacija. Bit će onemogućeni svi tipkovnički prečaci i stavke izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScriptu. Ako se ova opcija onemogući ili ne postavi, bit će dopuštena upotreba Alata za razvojne programere i konzole JavaScripta.</translation>
 <translation id="4449545651113180484">Zakreni zaslon u smjeru kazaljke na satu 270 stupnjeva</translation>
 <translation id="4467952432486360968">Blokiraj kolačiće trećih strana</translation>
 <translation id="4474167089968829729">Omogući spremanje zaporki u upravitelj zaporki</translation>
@@ -1244,6 +1250,13 @@
       Ako je ovo pravilo postavljeno, automatski će se prijavljivati u navedenu sesiju nakon isteka vremenskog razdoblja bez interakcije korisnika na zaslonu za prijavu. Javna sesija mora biti već konfigurirana (pogledajte |DeviceLocalAccounts|).
 
       Ako ovo pravilo nije postavljeno, neće biti automatske prijave.</translation>
+<translation id="5529037166721644841">Određuje vrijeme u milisekundama tijekom kojeg se od usluge upravljanja uređajima traže podaci o korisničkim pravilima.
+
+      Postavljanje ovog pravila nadjačava zadanu vrijednost od 3 sata. Valjane vrijednosti za ovo pravilo u rasponu su od 1800000 (30 minuta) do 86400000 (1 dan). Sve vrijednosti koje nisu u ovom rasponu prebacit će se u odgovarajuće granice.
+
+      Ako ne postavite to pravilo, <ph name="PRODUCT_OS_NAME" /> upotrebljavat će zadanu vrijednost od 3 sata.
+
+      Ako platforma podržava obavijesti o pravilima, odgoda osvježavanja postavit će se na 24 sata (sve zadane postavke i vrijednost ovog pravila zanemarit će se) jer se očekuje da će obavijesti o pravilima automatski nametnuti osvježavanje nakon svake promjene pravila, zbog čega su češća osvježavanja nepotrebna.</translation>
 <translation id="5535957389335373033">Učestalost slanja mrežnih paketa za praćenje u milisekundama.
 
       Ako se to pravilo ne postavi, zadana učestalost iznosi 3 minute. Minimalna
@@ -1768,6 +1781,9 @@
 
           Ovo se pravilo primjenjuje samo ako je omogućeno pravilo 'DefaultSearchProviderEnabled'.</translation>
 <translation id="7302043767260300182">Odgoda zaključavanja zaslona za vrijeme napajanja izmjeničnom strujom</translation>
+<translation id="7311458740754205918">Ako se ovo pravilo postavi na istinito ili se ne postavi, web-stranica nove kartice može prikazivati preporuke sadržaja na temelju korisnikove povijesti pretraživanja, interesa ili lokacije.
+
+      Ako se postavi na neistinito, automatski generirani prijedlozi sadržaja neće se prikazivati na web-stranici nove kartice.</translation>
 <translation id="7323896582714668701">Dodatni parametri naredbenog retka za uslugu <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon isključio tijekom baterijskog napajanja.
 
@@ -1900,6 +1916,7 @@
 <translation id="7763479091692861127"> Vrste veza putem kojih su dopuštena ažuriranja OS-a. Ažuriranja OS-a zbog svoje veličine potencijalno jako opterećuju vezu i mogu uzrokovati dodatne troškove. Stoga prema zadanim postavkama nisu omogućena za vrste veza koje se smatraju skupima, a to su trenutačno WiMax, Bluetooth i mobilne veze.
 
       Prepoznati identifikatori vrste veze jesu "ethernet", "wifi", "wimax", "bluetooth" i "mobilna".</translation>
+<translation id="7763614521440615342">Prikaz prijedloga sadržaja na web-stranici nove kartice</translation>
 <translation id="7766336524667238790">Prijavljuje informacije o aktivnoj sesiji kioska, primjerice,
       ID aplikacije i verziju.
 

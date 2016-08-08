@@ -2,12 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1091157412887719337">Zuweisung fehlgeschlagen. Kein Modul verfügbar.</translation>
+<translation id="117738548141695034">Blimp-Option</translation>
 <translation id="1416550906796893042">Anwendungsversion</translation>
 <translation id="1750179245464827362">Fehlersuche-Informationen einblenden</translation>
 <translation id="2004526128230838685">Zuweisung fehlgeschlagen. Unbekanntes Problem.</translation>
 <translation id="2023631438558435272">Zuweisung fehlgeschlagen. Ungültige Antwort.</translation>
 <translation id="2078561879028077171">Versionsinformationen</translation>
 <translation id="2117453604279487107">Übertragenden-URL</translation>
+<translation id="2218944627481691815">Blimp-Option wurde geändert. Bitte starten Sie die Anwendung neu.</translation>
 <translation id="2353984724370197742">Zuweisung fehlgeschlagen. Netzwerkanfrage fehlgeschlagen.</translation>
 <translation id="2789927415041640472">Bitte starten Sie die App neu, um die neue Übertragendenkonfiguration zu verwenden.</translation>
 <translation id="3046825211487065480">Zuweisung fehlgeschlagen. Zweite Anfrage wurde vor Antwort auf erste Anfrage gesendet.</translation>
@@ -31,6 +33,7 @@
 <translation id="7536363920335771251">Modul getrennt, Grund: %1$s</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
 <translation id="7608553142876436780">Modul-IP</translation>
+<translation id="7795546637165553439">Blimp-Einstellungen</translation>
 <translation id="7961542533680218955">Zuweisung ist erfolgt.</translation>
 <translation id="8514856595257368555">Token abgerufen.</translation>
 <translation id="8880704056643418312">Commits</translation>

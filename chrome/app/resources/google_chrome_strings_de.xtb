@@ -36,6 +36,7 @@
 <translation id="1864458292167284385">Der Chrome App Launcher wird eingestellt.</translation>
 <translation id="1877026089748256423">Chrome ist veraltet.</translation>
 <translation id="1924381329666691588">Google Chrome kann in dieser Sprache nicht angezeigt werden.</translation>
+<translation id="2063848847527508675">Chrome OS muss neu gestartet werden, um das Update zu übernehmen.</translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="2084710999043359739">Zu Chrome hinzufügen</translation>
 <translation id="2246246234298806438">Google Chrome kann ohne den integrierten PDF-Viewer keine Druckvorschau anzeigen.</translation>
@@ -52,6 +53,7 @@
 Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Verlauf und andere Einstellungen in <ph name="ACCOUNT_EMAIL_NEW" /> zusammengeführt.</translation>
 <translation id="2397416548179033562">Chrome-Menü anzeigen</translation>
 <translation id="2429317896000329049">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht zur Verfügung steht.</translation>
+<translation id="2446511512801740068">Chrome ist veraltet, da es über einen längeren Zeitraum nicht neu gestartet wurde. Ein Update ist verfügbar und wird übernommen, sobald Sie Chrome neu starten.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
 <translation id="2580411288591421699">Die Google Chrome-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome und versuchen Sie es erneut.</translation>
 <translation id="2582790009689336987">Dieser Computer erhält demnächst keine Google Chrome-Updates mehr, da dieses Linux-System nicht mehr unterstützt wird.</translation>
