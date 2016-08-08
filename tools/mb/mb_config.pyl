@@ -111,6 +111,8 @@
       'Android Tests (trial)(dbg)': 'none',
       'Android Tests (x86 emulator)': 'android_gn_debug_static_bot_x86',
       'Android Builder (dbg)': 'android_gn_debug_static_bot',
+      'Android deterministic':
+        'android_without_codecs_gn_release_bot_minimal_symbols',
       'Browser Side Navigation Linux': 'gn_release_bot',
       'CFI Linux CF': 'gn_cfi_full_cfi_diag_release_static',
       'CFI Linux ToT': 'gn_cfi_full_clang_tot_release_static',
@@ -258,6 +260,7 @@
       'WebKit Win - WPTServe': 'swarming_gn_release_bot_minimal_symbols_x86',
       'Win 10 Fast Ring': 'gn_release_trybot_x64',
       'Windows deterministic': 'gn_release_bot_minimal_symbols_x86',
+      'Windows Clang deterministic': 'gn_clang_release_bot_minimal_symbols_x86',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
     },
@@ -1322,6 +1325,10 @@
 
     'gn_release_trybot_x64': [
       'gn', 'release_trybot', 'x64',
+    ],
+
+    'gn_clang_release_bot_minimal_symbols_x86': [
+      'gn', 'clang', 'release_bot_minimal_symbols', 'x86',
     ],
 
     'gn_windows_analyze': [
