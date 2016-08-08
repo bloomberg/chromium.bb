@@ -60,6 +60,11 @@ void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
     RuntimeEnabledFeatures::setTestFeaturesEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableAccelerated2dCanvas(bool enable)
+{
+    RuntimeEnabledFeatures::setAccelerated2dCanvasEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableAudioOutputDevices(bool enable)
 {
     RuntimeEnabledFeatures::setAudioOutputDevicesEnabled(enable);

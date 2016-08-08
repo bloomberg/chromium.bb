@@ -51,7 +51,6 @@ public:
     bool mainFrameResizesAreOrientationChanges() const override;
     bool shrinksViewportContentToFit() const override;
     bool viewportEnabled() const override;
-    void setAccelerated2dCanvasEnabled(bool) override;
     void setAccelerated2dCanvasMSAASampleCount(int) override;
     void setAcceleratedCompositingEnabled(bool) override;
     void setPreferCompositingToLCDTextEnabled(bool) override;

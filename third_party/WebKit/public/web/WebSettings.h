@@ -118,7 +118,6 @@ public:
     virtual bool mainFrameResizesAreOrientationChanges() const = 0;
     virtual bool shrinksViewportContentToFit() const = 0;
     virtual bool viewportEnabled() const = 0;
-    virtual void setAccelerated2dCanvasEnabled(bool) = 0;
     virtual void setAccelerated2dCanvasMSAASampleCount(int) = 0;
     virtual void setAcceleratedCompositingEnabled(bool) = 0;
     virtual void setPreferCompositingToLCDTextEnabled(bool) = 0;

@@ -542,11 +542,6 @@ void WebSettingsImpl::setMockGestureTapHighlightsEnabled(bool enabled)
     m_settings->setMockGestureTapHighlightsEnabled(enabled);
 }
 
-void WebSettingsImpl::setAccelerated2dCanvasEnabled(bool enabled)
-{
-    m_settings->setAccelerated2dCanvasEnabled(enabled);
-}
-
 void WebSettingsImpl::setAccelerated2dCanvasMSAASampleCount(int count)
 {
     m_settings->setAccelerated2dCanvasMSAASampleCount(count);

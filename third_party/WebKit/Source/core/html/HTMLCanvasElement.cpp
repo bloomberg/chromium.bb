@@ -766,8 +766,13 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
         return false;
 
-    Settings* settings = document().settings();
-    if (!settings || !settings->accelerated2dCanvasEnabled())
+    if (!RuntimeEnabledFeatures::accelerated2dCanvasEnabled())
+        return false;
+
+    // The following is necessary for handling the special case of canvases in the
+    // dev tools overlay, which run in a process that supports accelerated 2d canvas
+    // but in a special compositing context that does not.
+    if (layoutBox() && !layoutBox()->hasAcceleratedCompositing())
         return false;
 
     int canvasPixelCount = size.width() * size.height();
@@ -788,7 +793,8 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     }
 
     // Do not use acceleration for small canvas.
-    if (canvasPixelCount < settings->minimumAccelerated2dCanvasSize())
+    Settings* settings = document().settings();
+    if (!settings || canvasPixelCount < settings->minimumAccelerated2dCanvasSize())
         return false;
 
     if (!Platform::current()->canAccelerate2dCanvas())

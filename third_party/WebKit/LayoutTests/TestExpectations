@@ -53,8 +53,6 @@ crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-paths-in-worker.html [ 
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-transform-shadow-in-worker.html [ Failure ]
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-2d-gradients-in-worker.html [ Failure ]
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage-in-worker.html [ Failure ]
-crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Failure ]
-crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Failure ]
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Failure ]
 
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]

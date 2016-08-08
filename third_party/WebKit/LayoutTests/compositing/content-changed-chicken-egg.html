@@ -21,7 +21,7 @@
 
       if (window.internals) {
           window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-          window.internals.settings.setAccelerated2dCanvasEnabled(true);
+          window.internals.runtimeFlags.accelerated2dCanvasEnabled = true;
       }
 
       function doTest() {

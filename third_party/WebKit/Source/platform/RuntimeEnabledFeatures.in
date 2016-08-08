@@ -27,6 +27,7 @@
 // settable_from_internals specifies whether a feature can be set from internals.runtimeFlags, with the default
 // being false.
 
+Accelerated2dCanvas status=stable, settable_from_internals=True
 AlwaysUseComplexText status=stable
 AudioOutputDevices status=stable
 AudioVideoTracks status=experimental
