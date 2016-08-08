@@ -356,8 +356,8 @@ void BootTimesRecorder::WriteLogoutTimes() {
   // Either we're on the browser thread, or (more likely) Chrome is in the
   // process of shutting down and we're on the main thread but the message loop
   // has already been terminated.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
+  DCHECK(!BrowserThread::IsMessageLoopValid(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   WriteTimes(kLogoutTimes,
              (restart_requested_ ? kUmaRestart : kUmaLogout),
@@ -462,8 +462,8 @@ void BootTimesRecorder::AddMarker(std::vector<TimeMarker>* vector,
   // The marker vectors can only be safely manipulated on the main thread.
   // If we're late in the process of shutting down (eg. as can be the case at
   // logout), then we have to assume we're on the main thread already.
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-      !BrowserThread::IsMessageLoopValid(BrowserThread::UI)) {
+  if (!BrowserThread::IsMessageLoopValid(BrowserThread::UI) ||
+      BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     vector->push_back(marker);
   } else {
     // Add the marker on the UI thread.
