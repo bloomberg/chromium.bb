@@ -61,72 +61,21 @@ class HeartBeat(object):
 
 
 class TestShard(object):
-  def __init__(
-      self, env, test_instance, device, index, tests, retries=3, timeout=None):
-    logging.info('Create shard %s for device %s to run the following tests:',
-                 index, device)
+  def __init__(self, env, test_instance, tests, retries=3, timeout=None):
+    logging.info('Create shard for the following tests:')
     for t in tests:
       logging.info('  %s', t)
-    self._battery = battery_utils.BatteryUtils(device)
     self._current_test = None
-    self._device = device
     self._env = env
-    self._index = index
+    self._heart_beat = HeartBeat(self)
+    self._index = None
     self._output_dir = None
     self._retries = retries
     self._test_instance = test_instance
     self._tests = tests
     self._timeout = timeout
-    self._heart_beat = HeartBeat(self)
-
-  @local_device_environment.handle_shard_failures
-  def RunTestsOnShard(self):
-    results = base_test_result.TestRunResults()
-    for test in self._tests:
-      tries_left = self._retries
-      result_type = None
-      while (result_type != base_test_result.ResultType.PASS
-             and tries_left > 0):
-        try:
-          self._TestSetUp(test)
-          result_type = self._RunSingleTest(test)
-        except device_errors.CommandTimeoutError:
-          result_type = base_test_result.ResultType.TIMEOUT
-        except device_errors.CommandFailedError:
-          logging.exception('Exception when executing %s.', test)
-          result_type = base_test_result.ResultType.FAIL
-        finally:
-          self._TestTearDown()
-          if result_type != base_test_result.ResultType.PASS:
-            try:
-              device_recovery.RecoverDevice(self._device, self._env.blacklist)
-            except device_errors.CommandTimeoutError:
-              logging.exception(
-                  'Device failed to recover after failing %s.', test)
-          tries_left = tries_left - 1
-
-      results.AddResult(base_test_result.BaseTestResult(test, result_type))
-    return results
 
   def _TestSetUp(self, test):
-    if not self._device.IsOnline():
-      msg = 'Device %s is unresponsive.' % str(self._device)
-      raise device_errors.DeviceUnreachableError(msg)
-
-    logging.info('Charge level: %s%%',
-                 str(self._battery.GetBatteryInfo().get('level')))
-    if self._test_instance.min_battery_level:
-      self._battery.ChargeDeviceToLevel(self._test_instance.min_battery_level)
-
-    logging.info('temperature: %s (0.1 C)',
-                 str(self._battery.GetBatteryInfo().get('temperature')))
-    if self._test_instance.max_battery_temp:
-      self._battery.LetBatteryCoolToTemperature(
-          self._test_instance.max_battery_temp)
-
-    if not self._device.IsScreenOn():
-      self._device.SetScreen(True)
-
     if (self._test_instance.collect_chartjson_data
         or self._tests[test].get('archive_output_dir')):
       self._output_dir = tempfile.mkdtemp()
@@ -141,8 +90,7 @@ class TestShard(object):
     cmd = self._CreateCmd(test)
     cwd = os.path.abspath(host_paths.DIR_SOURCE_ROOT)
 
-    logging.debug("Running %s with command '%s' on shard %d with timeout %d",
-                  test, cmd, self._index, timeout)
+    self._LogTest(test, cmd, timeout)
 
     try:
       start_time = time.time()
@@ -165,20 +113,33 @@ class TestShard(object):
                                    output, json_output, result_type)
 
   def _CreateCmd(self, test):
-    cmd = '%s --device %s' % (self._tests[test]['cmd'], str(self._device))
-    if self._output_dir:
-      cmd = cmd + ' --output-dir=%s' % self._output_dir
+    cmd = []
     if self._test_instance.dry_run:
-      cmd = 'echo %s' % cmd
+      cmd.append('echo')
+    cmd.append(self._tests[test]['cmd'])
+    if self._output_dir:
+      cmd.append('--output-dir=%s' % self._output_dir)
+    return ' '.join(self._ExtendCmd(cmd))
+
+  def _ExtendCmd(self, cmd): # pylint: disable=no-self-use
     return cmd
+
+  def _LogTest(self, _test, _cmd, _timeout):
+    raise NotImplementedError
+
+  def _LogTestExit(self, test, exit_code, duration):
+    # pylint: disable=no-self-use
+    logging.info('%s : exit_code=%d in %d secs.', test, exit_code, duration)
+
+  def _ExtendPersistedResult(self, persisted_result):
+    raise NotImplementedError
 
   def _ProcessTestResult(self, test, cmd, start_time, end_time, exit_code,
                          output, json_output, result_type):
     if exit_code is None:
       exit_code = -1
-    logging.info('%s : exit_code=%d in %d secs on device %s',
-                 test, exit_code, end_time - start_time,
-                 str(self._device))
+
+    self._LogTestExit(test, exit_code, end_time - start_time)
 
     actual_exit_code = exit_code
     if (self._test_instance.flaky_steps
@@ -198,9 +159,9 @@ class TestShard(object):
         'start_time': start_time,
         'end_time': end_time,
         'total_time': end_time - start_time,
-        'device': str(self._device),
         'cmd': cmd,
     }
+    self._ExtendPersistedResult(persisted_result)
     self._SaveResult(persisted_result)
     return result_type
 
@@ -237,18 +198,126 @@ class TestShard(object):
     if self._output_dir:
       shutil.rmtree(self._output_dir, ignore_errors=True)
       self._output_dir = None
+    self._heart_beat.Stop()
+    self._current_test = None
+
+  @property
+  def current_test(self):
+    return self._current_test
+
+
+class DeviceTestShard(TestShard):
+  def __init__(
+      self, env, test_instance, device, index, tests, retries=3, timeout=None):
+    super(DeviceTestShard, self).__init__(
+        env, test_instance, tests, retries, timeout)
+    self._battery = battery_utils.BatteryUtils(device) if device else None
+    self._device = device
+    self._index = index
+
+  @local_device_environment.handle_shard_failures
+  def RunTestsOnShard(self):
+    results = base_test_result.TestRunResults()
+    for test in self._tests:
+      tries_left = self._retries
+      result_type = None
+      while (result_type != base_test_result.ResultType.PASS
+             and tries_left > 0):
+        try:
+          self._TestSetUp(test)
+          result_type = self._RunSingleTest(test)
+        except device_errors.CommandTimeoutError:
+          result_type = base_test_result.ResultType.TIMEOUT
+        except device_errors.CommandFailedError:
+          logging.exception('Exception when executing %s.', test)
+          result_type = base_test_result.ResultType.FAIL
+        finally:
+          self._TestTearDown()
+          if result_type != base_test_result.ResultType.PASS:
+            try:
+              device_recovery.RecoverDevice(self._device, self._env.blacklist)
+            except device_errors.CommandTimeoutError:
+              logging.exception(
+                  'Device failed to recover after failing %s.', test)
+          tries_left = tries_left - 1
+
+      results.AddResult(base_test_result.BaseTestResult(test, result_type))
+    return results
+
+  def _LogTestExit(self, test, exit_code, duration):
+    logging.info('%s : exit_code=%d in %d secs on device %s',
+                 test, exit_code, duration, str(self._device))
+
+  def _TestSetUp(self, test):
+    if not self._device.IsOnline():
+      msg = 'Device %s is unresponsive.' % str(self._device)
+      raise device_errors.DeviceUnreachableError(msg)
+
+    logging.info('Charge level: %s%%',
+                 str(self._battery.GetBatteryInfo().get('level')))
+    if self._test_instance.min_battery_level:
+      self._battery.ChargeDeviceToLevel(self._test_instance.min_battery_level)
+
+    logging.info('temperature: %s (0.1 C)',
+                 str(self._battery.GetBatteryInfo().get('temperature')))
+    if self._test_instance.max_battery_temp:
+      self._battery.LetBatteryCoolToTemperature(
+          self._test_instance.max_battery_temp)
+
+    if not self._device.IsScreenOn():
+      self._device.SetScreen(True)
+
+    super(DeviceTestShard, self)._TestSetUp(test)
+
+  def _LogTest(self, test, cmd, timeout):
+    logging.debug("Running %s with command '%s' on shard %s with timeout %d",
+                  test, cmd, str(self._index), timeout)
+
+  def _ExtendCmd(self, cmd):
+    cmd.extend(['--device=%s' % str(self._device)])
+    return cmd
+
+  def _ExtendPersistedResult(self, persisted_result):
+    persisted_result['host_test'] = False
+    persisted_result['device'] = str(self._device)
+
+  def _TestTearDown(self):
     try:
       logging.info('Unmapping device ports for %s.', self._device)
       forwarder.Forwarder.UnmapAllDevicePorts(self._device)
     except Exception: # pylint: disable=broad-except
       logging.exception('Exception when resetting ports.')
     finally:
-      self._heart_beat.Stop()
-      self._current_test = None
+      super(DeviceTestShard, self)._TestTearDown()
 
-  @property
-  def current_test(self):
-    return self._current_test
+class HostTestShard(TestShard):
+  def __init__(self, env, test_instance, tests, retries=3, timeout=None):
+    super(HostTestShard, self).__init__(
+        env, test_instance, tests, retries, timeout)
+
+  @local_device_environment.handle_shard_failures
+  def RunTestsOnShard(self):
+    results = base_test_result.TestRunResults()
+    for test in self._tests:
+      tries_left = self._retries
+      result_type = None
+      while (result_type != base_test_result.ResultType.PASS
+             and tries_left > 0):
+        try:
+          self._TestSetUp(test)
+          result_type = self._RunSingleTest(test)
+        finally:
+          self._TestTearDown()
+      results.AddResult(base_test_result.BaseTestResult(test, result_type))
+    return results
+
+  def _LogTest(self, test, cmd, timeout):
+    logging.debug("Running %s with command '%s' on host shard with timeout %d",
+                  test, cmd, timeout)
+
+  def _ExtendPersistedResult(self, persisted_result):
+    persisted_result['host_test'] = True
+
 
 class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
 
@@ -259,6 +328,7 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
     super(LocalDevicePerfTestRun, self).__init__(env, test_instance)
     self._devices = None
     self._env = env
+    self._no_device_tests = {}
     self._test_buckets = []
     self._test_instance = test_instance
     self._timeout = None if test_instance.no_timeout else self._DEFAULT_TIMEOUT
@@ -304,11 +374,14 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
     test_dict = self._GetStepsFromDict()
     for test, test_config in test_dict['steps'].iteritems():
       try:
-        affinity = test_config['device_affinity']
-        if len(self._test_buckets) < affinity + 1:
-          while len(self._test_buckets) != affinity + 1:
-            self._test_buckets.append({})
-        self._test_buckets[affinity][test] = test_config
+        affinity = test_config.get('device_affinity')
+        if affinity is None:
+          self._no_device_tests[test] = test_config
+        else:
+          if len(self._test_buckets) < affinity + 1:
+            while len(self._test_buckets) != affinity + 1:
+              self._test_buckets.append({})
+          self._test_buckets[affinity][test] = test_config
       except KeyError:
         logging.exception(
             'Test config for %s is bad.\n Config:%s', test, str(test_config))
@@ -336,21 +409,28 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
   def RunTests(self):
     # Affinitize the tests.
     self._SplitTestsByAffinity()
-    if not self._test_buckets:
+    if not self._test_buckets and not self._no_device_tests:
       raise local_device_test_run.NoTestsError()
 
     def run_perf_tests(shard_id):
-      if device_status.IsBlacklisted(
-          str(self._devices[shard_id]), self._env.blacklist):
-        logging.warning('Device %s is not active. Will not create shard %s.',
-                        str(self._devices[shard_id]), shard_id)
-        return None
-      s = TestShard(self._env, self._test_instance, self._devices[shard_id],
-                    shard_id, self._test_buckets[shard_id],
-                    retries=self._env.max_tries, timeout=self._timeout)
+      if shard_id is None:
+        s = HostTestShard(self._env, self._test_instance, self._no_device_tests,
+                          retries=3, timeout=self._timeout)
+      else:
+        if device_status.IsBlacklisted(
+             str(self._devices[shard_id]), self._env.blacklist):
+          logging.warning('Device %s is not active. Will not create shard %s.',
+                          str(self._devices[shard_id]), shard_id)
+          return None
+        s = DeviceTestShard(self._env, self._test_instance,
+                            self._devices[shard_id], shard_id,
+                            self._test_buckets[shard_id],
+                            retries=self._env.max_tries, timeout=self._timeout)
       return s.RunTestsOnShard()
 
     device_indices = range(min(len(self._devices), len(self._test_buckets)))
+    if self._no_device_tests:
+      device_indices.append(None)
     shards = parallelizer.Parallelizer(device_indices).pMap(run_perf_tests)
     return [x for x in shards.pGet(self._timeout) if x is not None]
 
