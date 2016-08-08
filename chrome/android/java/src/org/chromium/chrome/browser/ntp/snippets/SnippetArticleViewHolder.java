@@ -37,6 +37,8 @@ import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.net.URI;
@@ -62,7 +64,8 @@ public class SnippetArticleViewHolder extends CardViewHolder
     private static final int ID_OPEN_IN_NEW_WINDOW = 0;
     private static final int ID_OPEN_IN_NEW_TAB = 1;
     private static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
-    private static final int ID_REMOVE = 3;
+    private static final int ID_SAVE_FOR_OFFLINE = 3;
+    private static final int ID_REMOVE = 4;
 
     private final NewTabPageManager mNewTabPageManager;
     private final SnippetsSource mSnippetsSource;
@@ -166,6 +169,12 @@ public class SnippetArticleViewHolder extends CardViewHolder
                     R.string.contextmenu_open_in_incognito_tab);
         }
 
+        if (OfflinePageBridge.isBackgroundLoadingEnabled()
+                && OfflinePageBridge.canSavePage(mArticle.mUrl)) {
+            addContextMenuItem(menu, ID_SAVE_FOR_OFFLINE,
+                    R.string.contextmenu_save_offline);
+        }
+
         addContextMenuItem(menu, ID_REMOVE, R.string.remove);
     }
 
@@ -194,6 +203,13 @@ public class SnippetArticleViewHolder extends CardViewHolder
                 NewTabPageUma.recordOpenSnippetMethod(
                         NewTabPageUma.OPEN_SNIPPET_METHODS_INCOGNITO);
                 mNewTabPageManager.openUrlInNewTab(mArticle.mUrl, true);
+                return true;
+            case ID_SAVE_FOR_OFFLINE:
+                NewTabPageUma.recordOpenSnippetMethod(
+                        NewTabPageUma.OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE);
+                OfflinePageBridge bridge =
+                        OfflinePageBridge.getForProfile(Profile.getLastUsedProfile());
+                bridge.savePageLaterForDownload(mArticle.mUrl);
                 return true;
             case ID_REMOVE:
                 assert isDismissable() : "Context menu should not be shown for peeking card.";

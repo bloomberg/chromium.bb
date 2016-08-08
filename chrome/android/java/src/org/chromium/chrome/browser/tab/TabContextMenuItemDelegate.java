@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItemDelegate;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -26,7 +25,6 @@ import org.chromium.ui.base.PageTransition;
 
 import java.net.URI;
 import java.util.Locale;
-import java.util.UUID;
 
 /**
  * A default {@link ContextMenuItemDelegate} that supports the context menu functionality in Tab.
@@ -170,10 +168,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onSavePageLater(String linkUrl) {
         OfflinePageBridge bridge = OfflinePageBridge.getForProfile(mTab.getProfile());
-        // Download UI needs "async_loading" namespace and a random (type 4) GUID.
-        String uuid = UUID.randomUUID().toString();
-        ClientId clientId = new ClientId("async_loading", uuid);
-        bridge.savePageLater(linkUrl, clientId);
+        bridge.savePageLaterForDownload(linkUrl);
     }
 
     /**
