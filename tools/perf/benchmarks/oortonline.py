@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
+
 import page_sets
 
 from core import perf_benchmark
@@ -11,9 +13,6 @@ from telemetry.value import scalar
 from telemetry.value import improvement_direction
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
-from telemetry.web_perf.metrics import v8_gc_latency
-from telemetry.web_perf.metrics import smoothness
-from telemetry.web_perf.metrics import memory_timeline
 
 
 class _OortOnlineMeasurement(legacy_page_test.LegacyPageTest):
@@ -53,11 +52,19 @@ class OortOnline(perf_benchmark.PerfBenchmark):
 # Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
 @benchmark.Disabled('reference')
 @benchmark.Disabled('android')
-class OortOnlineTBM(perf_benchmark.PerfBenchmark):
+class OortOnlineTBMv2(perf_benchmark.PerfBenchmark):
   """OortOnline benchmark that measures WebGL and V8 performance.
   URL: http://oortonline.gl/#run
   Info: http://v8project.blogspot.de/2015/10/jank-busters-part-one.html
   """
+
+  # Report only V8-specific and overall renderer memory values. Note that
+  # detailed values reported by the OS (such as native heap) are excluded.
+  _V8_AND_OVERALL_MEMORY_RE = re.compile(
+      r'renderer_processes:'
+      r'(reported_by_chrome:v8|reported_by_os:system_memory:[^:]+$)')
+
+  page_set = page_sets.OortOnlineTBMPageSet
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -66,33 +73,41 @@ class OortOnlineTBM(perf_benchmark.PerfBenchmark):
         '--enable-memory-benchmarking',
     ])
 
-  def CreateStorySet(self, options):
-    return page_sets.OortOnlineTBMPageSet()
-
   def CreateTimelineBasedMeasurementOptions(self):
-    v8_gc_latency_categories = [
-        'blink.console', 'renderer.scheduler', 'v8', 'webkit.console']
-    smoothness_categories = [
-        'webkit.console', 'blink.console', 'benchmark', 'trace_event_overhead']
-    categories = list(set(v8_gc_latency_categories + smoothness_categories))
-    memory_categories = 'blink.console,disabled-by-default-memory-infra'
+    categories = [
+      # Implicitly disable all categories.
+      '-*',
+      # V8.
+      'blink.console',
+      'disabled-by-default-v8.gc',
+      'renderer.scheduler',
+      'v8',
+      'webkit.console',
+      # Smoothness.
+      'benchmark',
+      'blink',
+      'blink.console',
+      'trace_event_overhead',
+      'webkit.console',
+      # Memory.
+      'blink.console',
+      'disabled-by-default-memory-infra'
+    ]
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        memory_categories)
-    for category in categories:
-      category_filter.AddIncludedCategory(category)
+        ','.join(categories))
     options = timeline_based_measurement.Options(category_filter)
-    options.SetLegacyTimelineBasedMetrics([v8_gc_latency.V8GCLatency(),
-                                     smoothness.SmoothnessMetric(),
-                                     memory_timeline.MemoryTimelineMetric()])
+    options.SetTimelineBasedMetrics([
+        'gcMetric', 'memoryMetric', 'responsivenessMetric'])
     return options
 
   @classmethod
   def Name(cls):
-    return 'oortonline_tbm'
+    return 'oortonline_tbmv2'
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value, is_first_result):
-    if value.tir_label in ['Begin', 'End']:
-      return value.name.startswith('memory_') and 'v8_renderer' in value.name
-    else:
-      return value.tir_label == 'Running'
+  def ValueCanBeAddedPredicate(cls, value, _):
+    if 'memory:chrome' in value.name:
+      return bool(cls._V8_AND_OVERALL_MEMORY_RE.search(value.name))
+    if 'animation ' in value.name:
+      return 'throughput' in value.name or 'frameTimeDiscrepancy' in value.name
+    return 'v8' in value.name
