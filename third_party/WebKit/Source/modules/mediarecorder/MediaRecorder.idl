@@ -12,7 +12,6 @@ enum RecordingState { "inactive", "recording", "paused" };
     Constructor(MediaStream stream, optional MediaRecorderOptions options),
     DependentLifetime,
     RaisesException=Constructor,
-    RuntimeEnabled=MediaRecorder,
 ] interface MediaRecorder : EventTarget {
     readonly attribute MediaStream stream;
     readonly attribute DOMString mimeType;

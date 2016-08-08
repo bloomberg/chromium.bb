@@ -6,7 +6,6 @@
 
 [
     Constructor(DOMString type, BlobEventInit eventInitDict),
-    RuntimeEnabled=MediaRecorder
 ]
 interface BlobEvent : Event {
     readonly attribute Blob data;
