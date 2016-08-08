@@ -27,10 +27,11 @@ namespace {
 // Default width/height ratio of screen size.
 const int kDefaultWidth = 400;
 const int kDefaultHeight = 420;
+// Site ID for HaTS survey.
+constexpr char kSiteID[] = "cs5lsagwwbho7l5cbbdniso22e";
+constexpr char kGooglerSiteID[] = "z56p2hjy7pegxh3gmmur4qlwha";
+
 constexpr char kReplacementToken[] = "$SCRIPT_SRC";
-// Site ID for the Google consumer HaTS survey.
-// TODO(malaykeshav): Replace this demo survey with actual site id.
-constexpr char kSiteID[] = "ckvqucibdlzn2";
 // Base URL to fetch the google consumer survey script.
 constexpr char kBaseFormatUrl[] =
     "https://www.google.com/insights/consumersurveys/"
@@ -106,7 +107,7 @@ std::string GetFormattedSiteContext(std::string user_locale,
 }  // namespace
 
 // static
-void HatsDialog::CreateAndShow() {
+void HatsDialog::CreateAndShow(bool is_google_account) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::string user_locale =
       profile->GetPrefs()->GetString(prefs::kApplicationLocale);
@@ -118,14 +119,16 @@ void HatsDialog::CreateAndShow() {
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(), FROM_HERE,
       base::Bind(&GetFormattedSiteContext, user_locale, kDeviceInfoStopKeyword),
-      base::Bind(&HatsDialog::Show, base::Passed(&hats_dialog)));
+      base::Bind(&HatsDialog::Show, base::Passed(&hats_dialog),
+                 is_google_account ? kGooglerSiteID : kSiteID));
 }
 
 // static
 void HatsDialog::Show(std::unique_ptr<HatsDialog> hats_dialog,
+                      std::string site_id,
                       std::string site_context) {
   // Load and set the html data that needs to be displayed in the dialog.
-  hats_dialog->html_data_ = LoadLocalHtmlAsString(kSiteID, site_context);
+  hats_dialog->html_data_ = LoadLocalHtmlAsString(site_id, site_context);
 
   chrome::ShowWebDialog(
       nullptr, ProfileManager::GetActiveUserProfile()->GetOffTheRecordProfile(),

@@ -172,7 +172,7 @@ void HatsNotificationController::ButtonClick(int button_index) {
   UpdateLastInteractionTime();
 
   // The dialog deletes itslef on close.
-  HatsDialog::CreateAndShow();
+  HatsDialog::CreateAndShow(IsGoogleUser(profile_->GetProfileUserName()));
 
   // Remove the notification.
   g_browser_process->notification_ui_manager()->CancelById(

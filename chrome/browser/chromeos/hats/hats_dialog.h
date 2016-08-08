@@ -22,10 +22,11 @@ class HatsDialog : public ui::WebDialogDelegate {
 
   // Creates an instance of HatsDialog and posts a task to load all the relevant
   // device info before displaying the dialog.
-  static void CreateAndShow();
+  static void CreateAndShow(bool is_google_account);
 
  private:
   static void Show(std::unique_ptr<HatsDialog> hats_dialog,
+                   std::string site_id,
                    std::string site_context);
 
   // ui::WebDialogDelegate implementation.
