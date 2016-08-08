@@ -446,7 +446,7 @@ base::DictionaryValue* DevToolsTargetsUIHandler::Serialize(
   target_data->SetString(kTargetTypeField, target.GetType());
   target_data->SetBoolean(kAttachedField, target.IsAttached());
   target_data->SetString(kUrlField, target.GetURL().spec());
-  target_data->SetString(kNameField, net::EscapeForHTML(target.GetTitle()));
+  target_data->SetString(kNameField, target.GetTitle());
   target_data->SetString(kFaviconUrlField, target.GetFaviconURL().spec());
   target_data->SetString(kDescriptionField, target.GetDescription());
   return target_data;
