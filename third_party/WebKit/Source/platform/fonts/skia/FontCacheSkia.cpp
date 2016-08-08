@@ -211,7 +211,7 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(const FontDe
     return wrapUnique(new FontPlatformData(tf,
         name.data(),
         fontSize,
-        (fontDescription.weight() > 200 + tf->fontStyle().weight()) || fontDescription.isSyntheticBold(),
+        (numericFontWeight(fontDescription.weight()) > 200 + tf->fontStyle().weight()) || fontDescription.isSyntheticBold(),
         ((fontDescription.style() == FontStyleItalic || fontDescription.style() == FontStyleOblique) && !tf->isItalic()) || fontDescription.isSyntheticItalic(),
         fontDescription.orientation()));
 }
