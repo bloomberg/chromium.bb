@@ -1221,89 +1221,62 @@ void ContainerNode::recalcDescendantStyles(StyleRecalcChange change)
     }
 }
 
-void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Node* changedNode, Node* nodeBeforeChange, Node* nodeAfterChange)
+void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Element* changedElement, Node* nodeBeforeChange, Node* nodeAfterChange)
 {
     if (!inActiveDocument() || document().hasPendingForcedStyleRecalc() || getStyleChangeType() >= SubtreeStyleChange)
         return;
 
-    // Forward positional selectors include nth-child, nth-of-type, first-of-type and only-of-type.
-    // The indirect adjacent selector is the ~ selector.
-    // Backward positional selectors include nth-last-child, nth-last-of-type, last-of-type and only-of-type.
-    // We have to invalidate everything following the insertion point in the forward and indirect adjacent case,
-    // and everything before the insertion point in the backward case.
-    // |afterChange| is 0 in the parser callback case, so we won't do any work for the forward case if we don't have to.
-    // For performance reasons we just mark the parent node as changed, since we don't want to make childrenChanged O(n^2) by crawling all our kids
-    // here. recalcStyle will then force a walk of the children when it sees that this has happened.
+    if (!hasRestyleFlag(ChildrenAffectedByStructuralRules))
+        return;
+
+    // Forward positional selectors include :nth-child, :nth-of-type,
+    // :first-of-type, and only-of-type. The indirect adjacent selector is the ~
+    // selector. Backward positional selectors include :nth-last-child,
+    // :nth-last-of-type, :last-of-type, and :only-of-type. We have to
+    // invalidate everything following the insertion point in the forward and
+    // indirect adjacent case, and everything before the insertion point in the
+    // backward case. |nodeAfterChange| is nullptr in the parser callback case,
+    // so we won't do any work for the forward case if we don't have to.
+    // For performance reasons we just mark the parent node as changed, since we
+    // don't want to make childrenChanged O(n^2) by crawling all our kids here.
+    // recalcStyle will then force a walk of the children when it sees that this
+    // has happened.
     if ((childrenAffectedByForwardPositionalRules() && nodeAfterChange)
         || (childrenAffectedByBackwardPositionalRules() && nodeBeforeChange)) {
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
         return;
     }
 
-    // :first-child. In the parser callback case, we don't have to check anything, since we were right the first time.
-    // In the DOM case, we only need to do something if |afterChange| is not 0.
-    // |afterChange| is 0 in the parser case, so it works out that we'll skip this block.
-    if (childrenAffectedByFirstChildRules() && nodeAfterChange) {
+    Element* elementAfterChange = !nodeAfterChange || nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
+    Element* elementBeforeChange = !nodeBeforeChange || nodeBeforeChange->isElementNode() ? toElement(nodeBeforeChange) : ElementTraversal::previousSibling(*nodeBeforeChange);
+
+    if (childrenAffectedByFirstChildRules() && !elementBeforeChange && elementAfterChange && elementAfterChange->affectedByFirstChildRules()) {
         DCHECK_NE(changeType, FinishedParsingChildren);
-        // Find our new first child element.
-        Element* firstChildElement = ElementTraversal::firstChild(*this);
-
-        // Find the first element after the change.
-        Element* elementAfterChange = nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
-
-        // This is the element insertion as first child element case.
-        if (changeType == SiblingElementInserted && elementAfterChange && firstChildElement != elementAfterChange
-            && (!nodeBeforeChange || !nodeBeforeChange->isElementNode()) && elementAfterChange->affectedByFirstChildRules()) {
-            elementAfterChange->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
-        }
-
-        // This is the first child element removal case.
-        if (changeType == SiblingElementRemoved && firstChildElement == elementAfterChange && firstChildElement && firstChildElement->affectedByFirstChildRules())
-            firstChildElement->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
+        elementAfterChange->pseudoStateChanged(CSSSelector::PseudoFirstChild);
+        elementAfterChange->pseudoStateChanged(CSSSelector::PseudoOnlyChild);
     }
 
-    // :last-child. In the parser callback case, we don't have to check anything, since we were right the first time.
-    // In the DOM case, we only need to do something if |afterChange| is not 0.
-    if (childrenAffectedByLastChildRules() && nodeBeforeChange) {
-        // Find our new last child element.
-        Element* lastChildElement = ElementTraversal::lastChild(*this);
-
-        // Find the last element before the change.
-        Element* elementBeforeChange = nodeBeforeChange->isElementNode() ? toElement(nodeBeforeChange) : ElementTraversal::previousSibling(*nodeBeforeChange);
-
-        // This is the element insertion as last child element case.
-        if (changeType == SiblingElementInserted && elementBeforeChange && lastChildElement != elementBeforeChange
-            && (!nodeAfterChange || !nodeAfterChange->isElementNode()) && elementBeforeChange->affectedByLastChildRules()) {
-            elementBeforeChange->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
-        }
-
-        // This is the last child element removal case. The parser callback case is similar to node removal as well in that we need to change the last child
-        // to match now.
-        if ((changeType == SiblingElementRemoved || changeType == FinishedParsingChildren) && lastChildElement == elementBeforeChange && lastChildElement && lastChildElement->affectedByLastChildRules())
-            lastChildElement->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
+    if (childrenAffectedByLastChildRules() && !elementAfterChange && elementBeforeChange && elementBeforeChange->affectedByLastChildRules()) {
+        elementBeforeChange->pseudoStateChanged(CSSSelector::PseudoLastChild);
+        elementBeforeChange->pseudoStateChanged(CSSSelector::PseudoOnlyChild);
     }
 
     // For ~ and + combinators, succeeding siblings may need style invalidation
     // after an element is inserted or removed.
 
-    if (!nodeAfterChange)
+    if (!elementAfterChange)
         return;
-    if (changeType != SiblingElementRemoved && changeType != SiblingElementInserted)
-        return;
+
     if (!childrenAffectedByIndirectAdjacentRules() && !childrenAffectedByDirectAdjacentRules())
         return;
 
-    Element* elementAfterChange = nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
-    if (!elementAfterChange)
+    if (changeType == SiblingElementInserted) {
+        document().styleEngine().scheduleInvalidationsForInsertedSibling(elementBeforeChange, *changedElement);
         return;
-    Element* elementBeforeChange = nullptr;
-    if (nodeBeforeChange)
-        elementBeforeChange = nodeBeforeChange->isElementNode() ? toElement(nodeBeforeChange) : ElementTraversal::previousSibling(*nodeBeforeChange);
+    }
 
-    if (changeType == SiblingElementInserted)
-        document().styleEngine().scheduleInvalidationsForInsertedSibling(elementBeforeChange, *toElement(changedNode));
-    else
-        document().styleEngine().scheduleInvalidationsForRemovedSibling(elementBeforeChange, *toElement(changedNode), *elementAfterChange);
+    DCHECK(changeType == SiblingElementRemoved);
+    document().styleEngine().scheduleInvalidationsForRemovedSibling(elementBeforeChange, *changedElement, *elementAfterChange);
 }
 
 void ContainerNode::invalidateNodeListCachesInAncestors(const QualifiedName* attrName, Element* attributeOwnerElement)

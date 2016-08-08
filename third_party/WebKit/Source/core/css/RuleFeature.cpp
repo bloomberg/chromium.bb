@@ -319,6 +319,9 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& s
     if (selector.match() == CSSSelector::PseudoClass) {
         switch (selector.getPseudoType()) {
         case CSSSelector::PseudoEmpty:
+        case CSSSelector::PseudoFirstChild:
+        case CSSSelector::PseudoLastChild:
+        case CSSSelector::PseudoOnlyChild:
         case CSSSelector::PseudoLink:
         case CSSSelector::PseudoVisited:
         case CSSSelector::PseudoAnyLink:

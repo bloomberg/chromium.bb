@@ -54,6 +54,13 @@ enum DynamicRestyleFlags {
     AffectedByLastChildRules = 1 << 11,
 
     NumberOfDynamicRestyleFlags = 12,
+
+    ChildrenAffectedByStructuralRules = ChildrenAffectedByFirstChildRules
+        | ChildrenAffectedByLastChildRules
+        | ChildrenAffectedByDirectAdjacentRules
+        | ChildrenAffectedByIndirectAdjacentRules
+        | ChildrenAffectedByForwardPositionalRules
+        | ChildrenAffectedByBackwardPositionalRules
 };
 
 enum SubtreeModificationAction {
@@ -158,7 +165,7 @@ public:
     // FIXME: These methods should all be renamed to something better than "check",
     // since it's not clear that they alter the style bits of siblings and children.
     enum SiblingCheckType { FinishedParsingChildren, SiblingElementInserted, SiblingElementRemoved };
-    void checkForSiblingStyleChanges(SiblingCheckType, Node* changedNode, Node* nodeBeforeChange, Node* nodeAfterChange);
+    void checkForSiblingStyleChanges(SiblingCheckType, Element* changedElement, Node* nodeBeforeChange, Node* nodeAfterChange);
     void recalcDescendantStyles(StyleRecalcChange);
 
     bool childrenSupportStyleSharing() const { return !hasRestyleFlags(); }
