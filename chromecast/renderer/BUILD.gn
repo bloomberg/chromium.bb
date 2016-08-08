@@ -41,6 +41,7 @@ source_set("renderer") {
     "//crypto",
     "//ipc",
     "//media",
+    "//services/shell/public/cpp",
     "//third_party/widevine/cdm:version_h",
   ]
 }

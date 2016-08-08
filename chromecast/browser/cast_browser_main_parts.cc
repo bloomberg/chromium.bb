@@ -33,6 +33,7 @@
 #include "chromecast/browser/cast_net_log.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/geolocation/cast_access_token_store.h"
+#include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/metrics/cast_metrics_prefs.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/browser/pref_service_helper.h"
@@ -266,7 +267,8 @@ CastBrowserMainParts::CastBrowserMainParts(
       cast_browser_process_(new CastBrowserProcess()),
       parameters_(parameters),
       url_request_context_factory_(url_request_context_factory),
-      net_log_(new CastNetLog()) {
+      net_log_(new CastNetLog()),
+      media_caps_(new media::MediaCapsImpl()) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
 
@@ -326,6 +328,10 @@ CastBrowserMainParts::media_pipeline_backend_manager() {
   return media_pipeline_backend_manager_.get();
 }
 #endif
+
+media::MediaCapsImpl* CastBrowserMainParts::media_caps() {
+  return media_caps_.get();
+}
 
 void CastBrowserMainParts::PreMainMessageLoopStart() {
   // GroupedHistograms needs to be initialized before any threads are created

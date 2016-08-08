@@ -25,6 +25,7 @@ namespace chromecast {
 class CastMemoryPressureMonitor;
 
 namespace media {
+class MediaCapsImpl;
 class MediaPipelineBackendManager;
 class MediaResourceTracker;
 class VideoPlaneController;
@@ -47,6 +48,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   media::MediaResourceTracker* media_resource_tracker();
   media::MediaPipelineBackendManager* media_pipeline_backend_manager();
 #endif
+  media::MediaCapsImpl* media_caps();
 
   // content::BrowserMainParts implementation:
   void PreMainMessageLoopStart() override;
@@ -64,6 +66,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   URLRequestContextFactory* const url_request_context_factory_;
   std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<media::VideoPlaneController> video_plane_controller_;
+  std::unique_ptr<media::MediaCapsImpl> media_caps_;
 
 #if !defined(OS_ANDROID)
   // CMA thread used by AudioManager, MojoRenderer, and MediaPipelineBackend.

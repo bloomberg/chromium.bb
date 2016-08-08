@@ -17,7 +17,7 @@ enum HdmiSinkCodec {
 
 // Records the known supported codecs for the current HDMI sink, as a bit mask
 // of HdmiSinkCodec values.
-void SetHdmiSinkCodecs(int codecs_mask);
+void SetHdmiSinkCodecs(unsigned int codecs_mask);
 
 bool HdmiSinkSupportsAC3();
 bool HdmiSinkSupportsDTS();

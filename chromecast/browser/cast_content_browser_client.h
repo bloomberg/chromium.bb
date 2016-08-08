@@ -28,6 +28,10 @@ namespace metrics {
 class MetricsService;
 }
 
+namespace shell {
+class InterfaceRegistry;
+}
+
 namespace chromecast {
 class CastService;
 
@@ -137,6 +141,9 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       int opener_render_view_id,
       int opener_render_frame_id,
       bool* no_javascript_access) override;
+  void ExposeInterfacesToRenderer(
+      ::shell::InterfaceRegistry* registry,
+      content::RenderProcessHost* render_process_host) override;
   void RegisterInProcessMojoApplications(
       StaticMojoApplicationMap* apps) override;
 #if defined(OS_ANDROID)

@@ -17,9 +17,6 @@ const char kSwitchValueFalse[] = "false";
 // Enable the CMA media pipeline.
 const char kEnableCmaMediaPipeline[] = "enable-cma-media-pipeline";
 
-// The bitmask of codecs (media_caps.h) supported by the current HDMI sink.
-const char kHdmiSinkSupportedCodecs[] = "hdmi-sink-supported-codecs";
-
 // Enable file accesses. It should not be enabled for most Cast devices.
 const char kEnableLocalFileAccesses[] = "enable-local-file-accesses";
 

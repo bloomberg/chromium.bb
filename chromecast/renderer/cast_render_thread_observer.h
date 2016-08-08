@@ -13,7 +13,6 @@
 #include "content/public/renderer/render_thread_observer.h"
 
 namespace chromecast {
-class CapabilitiesMessageFilter;
 namespace media {
 class CmaMessageFilterProxy;
 }
@@ -34,7 +33,6 @@ class CastRenderThreadObserver : public content::RenderThreadObserver {
 #if !defined(OS_ANDROID)
   scoped_refptr<media::CmaMessageFilterProxy> cma_message_filter_proxy_;
 #endif  // !defined(OS_ANDROID)
-  scoped_refptr<CapabilitiesMessageFilter> capabilities_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(CastRenderThreadObserver);
 };

@@ -7,10 +7,10 @@
 namespace media {
 
 namespace {
-int g_hdmi_codecs = 0;
+unsigned int g_hdmi_codecs = 0;
 }  // namespace
 
-void SetHdmiSinkCodecs(int codecs_mask) {
+void SetHdmiSinkCodecs(unsigned int codecs_mask) {
   g_hdmi_codecs = codecs_mask;
 }
 
@@ -35,4 +35,3 @@ bool HdmiSinkSupportsPcmSurroundSound() {
 }
 
 }  // namespace media
-

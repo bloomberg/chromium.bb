@@ -8,15 +8,13 @@ enable_cma = !is_android
 
 source_set("media") {
   sources = [
-    "capabilities_message_filter.cc",
-    "capabilities_message_filter.h",
+    "media_caps_observer_impl.cc",
+    "media_caps_observer_impl.h",
   ]
 
   deps = [
-    "//base",
-    "//chromecast/common/media",
+    "//chromecast/common/media:interfaces",
     "//chromecast/media/base",
-    "//ipc",
   ]
 
   if (enable_cma) {
@@ -38,10 +36,12 @@ source_set("media") {
     ]
 
     deps += [
+      "//chromecast/common/media",
       "//chromecast/media",
       "//content/public/renderer",
       "//gpu/command_buffer/client:gles2_interface",
       "//gpu/command_buffer/common",
+      "//ipc",
       "//media",
       "//ui/gfx/geometry",
     ]

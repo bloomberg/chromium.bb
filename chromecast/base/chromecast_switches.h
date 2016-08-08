@@ -17,7 +17,6 @@ extern const char kSwitchValueFalse[];
 
 // Media switches
 extern const char kEnableCmaMediaPipeline[];
-extern const char kHdmiSinkSupportedCodecs[];
 
 // Content-implementation switches
 extern const char kEnableLocalFileAccesses[];

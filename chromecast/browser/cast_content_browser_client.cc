@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
 #include "chromecast/base/cast_paths.h"
@@ -29,6 +30,7 @@
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/media/cma_message_filter_host.h"
+#include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
@@ -50,6 +52,7 @@
 #include "content/public/common/web_preferences.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_switches.h"
@@ -404,6 +407,15 @@ bool CastContentBrowserClient::CanCreateWindow(
     bool* no_javascript_access) {
   *no_javascript_access = true;
   return false;
+}
+
+void CastContentBrowserClient::ExposeInterfacesToRenderer(
+    ::shell::InterfaceRegistry* registry,
+    content::RenderProcessHost* render_process_host) {
+  registry->AddInterface(
+      base::Bind(&media::MediaCapsImpl::AddBinding,
+                 base::Unretained(cast_browser_main_parts_->media_caps())),
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 void CastContentBrowserClient::RegisterInProcessMojoApplications(

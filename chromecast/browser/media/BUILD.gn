@@ -8,6 +8,8 @@ source_set("media") {
   sources = [
     "cast_browser_cdm_factory.cc",
     "cast_browser_cdm_factory.h",
+    "media_caps_impl.cc",
+    "media_caps_impl.h",
     "media_pipeline_backend_factory.h",
     "media_pipeline_host.cc",
     "media_pipeline_host.h",
@@ -34,6 +36,7 @@ source_set("media") {
     "//base",
     "//chromecast/base",
     "//chromecast/common/media",
+    "//chromecast/common/media:interfaces",
     "//chromecast/media",
     "//content/public/browser",
     "//media",

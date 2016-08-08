@@ -21,6 +21,7 @@ include_rules = [
   "+media/audio",
   "+media/base",
   "+media/mojo",
+  "+mojo/public",
   "+net",
   "+services/shell/public",
   "+ui/aura",

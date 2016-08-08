@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 # CMA is not used on Android; exclude CMA-specific targets.
 enable_cma = !is_android
@@ -24,12 +25,10 @@ source_set("media") {
     "//media",
   ]
 
-  public_deps = [
-    ":cast_messages",
-  ]
-
   if (enable_cma) {
-    public_deps += [ ":cma_messages" ]
+    public_deps = [
+      ":cma_messages",
+    ]
   }
 
   if (is_android) {
@@ -49,15 +48,9 @@ source_set("media") {
   }
 }
 
-# GYP target: chromecast.gyp:cast_shell_common
-source_set("cast_messages") {
+mojom("interfaces") {
   sources = [
-    "cast_message_generator.cc",
-    "cast_message_generator.h",
-    "cast_messages.h",
-  ]
-  deps = [
-    "//ipc",
+    "media_caps.mojom",
   ]
 }
 
