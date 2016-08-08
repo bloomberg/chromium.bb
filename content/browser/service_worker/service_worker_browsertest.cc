@@ -1781,13 +1781,13 @@ class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
     RegisterAndActivateServiceWorker();
 
     NavigateToTestPage();
-    EXPECT_EQ(0, GetSideDataSize());
+    WaitUntilSideDataSizeIs(0);
 
     NavigateToTestPage();
-    EXPECT_EQ(0, GetSideDataSize());
+    WaitUntilSideDataSizeIs(0);
 
     NavigateToTestPage();
-    EXPECT_EQ(0, GetSideDataSize());
+    WaitUntilSideDataSizeIs(0);
   }
 
   void CheckStrategyIsNormal() {
@@ -1796,17 +1796,17 @@ class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
     NavigateToTestPage();
     // fetch_event_response_via_cache.js returns |cloned_response| for the first
     // load. So the V8 code cache should not be stored to the CacheStorage.
-    EXPECT_EQ(0, GetSideDataSize());
+    WaitUntilSideDataSizeIs(0);
 
     NavigateToTestPage();
     // V8ScriptRunner::setCacheTimeStamp() stores 12 byte data (tag +
     // timestamp).
-    EXPECT_EQ(kV8CacheTimeStampDataSize, GetSideDataSize());
+    WaitUntilSideDataSizeIs(kV8CacheTimeStampDataSize);
 
     NavigateToTestPage();
     // The V8 code cache must be stored to the CacheStorage which must be bigger
     // than 12 byte.
-    EXPECT_GT(GetSideDataSize(), kV8CacheTimeStampDataSize);
+    WaitUntilSideDataSizeIsBiggerThan(kV8CacheTimeStampDataSize);
   }
 
   void CheckStrategyIsAggressive() {
@@ -1815,15 +1815,15 @@ class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
     NavigateToTestPage();
     // fetch_event_response_via_cache.js returns |cloned_response| for the first
     // load. So the V8 code cache should not be stored to the CacheStorage.
-    EXPECT_EQ(0, GetSideDataSize());
+    WaitUntilSideDataSizeIs(0);
 
     NavigateToTestPage();
     // The V8 code cache must be stored to the CacheStorage which must be bigger
     // than 12 byte.
-    EXPECT_GT(GetSideDataSize(), kV8CacheTimeStampDataSize);
+    WaitUntilSideDataSizeIsBiggerThan(kV8CacheTimeStampDataSize);
 
     NavigateToTestPage();
-    EXPECT_GT(GetSideDataSize(), kV8CacheTimeStampDataSize);
+    WaitUntilSideDataSizeIsBiggerThan(kV8CacheTimeStampDataSize);
   }
 
  private:
@@ -1859,6 +1859,20 @@ class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
             partition->GetCacheStorageContext()),
         partition->GetFileSystemContext(), embedded_test_server()->base_url(),
         std::string("cache_name"), embedded_test_server()->GetURL(kScriptUrl));
+  }
+
+  void WaitUntilSideDataSizeIs(int expected_size) {
+    while (true) {
+      if (GetSideDataSize() == expected_size)
+        return;
+    }
+  }
+
+  void WaitUntilSideDataSizeIsBiggerThan(int minimum_size) {
+    while (true) {
+      if (GetSideDataSize() > minimum_size)
+        return;
+    }
   }
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerV8CacheStrategiesTest);
