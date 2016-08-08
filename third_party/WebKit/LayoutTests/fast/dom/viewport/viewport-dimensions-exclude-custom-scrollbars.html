@@ -23,8 +23,8 @@
 <script>
   var browserZoomFactor = 1.25;
   var pageScaleFactor = 2;
-  var scrollbarWidth = 20;
-  var scrollbarHeight = 20;
+  var scrollbarWidthCSSPixels = 20 / pageScaleFactor;
+  var scrollbaHeightCSSPixels = 20 / pageScaleFactor;
 
   function viewport() {
     return window.visualViewport;
@@ -37,16 +37,16 @@
       internals.setPageScaleFactor(pageScaleFactor);
 
       // Verify viewport dimensions exclude scrollbar.
-      assert_equals(viewport().clientWidth, 800 / pageScaleFactor - scrollbarWidth);
-      assert_equals(viewport().clientHeight, 600 / pageScaleFactor - scrollbarHeight);
+      assert_equals(viewport().clientWidth, 800 / pageScaleFactor - scrollbarWidthCSSPixels);
+      assert_equals(viewport().clientHeight, 600 / pageScaleFactor - scrollbaHeightCSSPixels);
 
       // Apply browser zoom.
       window.internals.setZoomFactor(browserZoomFactor);
 
       // Verify scrollbar exclusion with browser zoom. Custom scrollbars are
       // scaled with browser zoom but remain unchanged with pinch zoom.
-      assert_equals(viewport().clientWidth, 800 / browserZoomFactor / pageScaleFactor - scrollbarWidth * browserZoomFactor);
-      assert_equals(viewport().clientHeight, 600 / browserZoomFactor / pageScaleFactor - scrollbarHeight * browserZoomFactor);
+      assert_equals(viewport().clientWidth, 800 / browserZoomFactor / pageScaleFactor - scrollbarWidthCSSPixels * browserZoomFactor);
+      assert_equals(viewport().clientHeight, 600 / browserZoomFactor / pageScaleFactor - scrollbaHeightCSSPixels * browserZoomFactor);
       t.done();
     });
   }, 'Verify viewport dimensions exclude custom scrollbars.');

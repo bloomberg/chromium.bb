@@ -241,7 +241,7 @@ double VisualViewport::clientWidth()
     updateStyleAndLayoutIgnorePendingStylesheets();
 
     double width = adjustScrollForAbsoluteZoom(visibleSize().width(), mainFrame()->pageZoomFactor());
-    return width - mainFrame()->view()->verticalScrollbarWidth();
+    return width - mainFrame()->view()->verticalScrollbarWidth() / m_scale;
 }
 
 double VisualViewport::clientHeight()
@@ -252,7 +252,7 @@ double VisualViewport::clientHeight()
     updateStyleAndLayoutIgnorePendingStylesheets();
 
     double height = adjustScrollForAbsoluteZoom(visibleSize().height(), mainFrame()->pageZoomFactor());
-    return height - mainFrame()->view()->horizontalScrollbarHeight();
+    return height - mainFrame()->view()->horizontalScrollbarHeight() / m_scale;
 }
 
 double VisualViewport::pageScale()
