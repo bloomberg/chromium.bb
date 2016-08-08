@@ -157,7 +157,7 @@
            */
           responsiveWidth: {
             type: String,
-            value: '600px'
+            value: '768px'
           },
 
           /**
@@ -494,7 +494,7 @@
         _getAutoFocusedNode: function() {
           var drawerContent = this._getDrawerContent();
 
-          return this.drawerFocusSelector ? 
+          return this.drawerFocusSelector ?
               Polymer.dom(drawerContent).querySelector(this.drawerFocusSelector) || drawerContent : null;
         },
 

@@ -119,11 +119,6 @@
 
       _unlockedElementCache: null,
 
-      _isScrollingKeypress: function(event) {
-        return Polymer.IronA11yKeysBehavior.keyboardEventMatchesKeys(
-          event, 'pageup pagedown home end up left down right');
-      },
-
       _hasCachedLockedElement: function(element) {
         return this._lockedElementCache.indexOf(element) > -1;
       },
@@ -192,8 +187,6 @@
         document.addEventListener('touchstart', this._boundScrollHandler, true);
         // Mobile devices can scroll on touch move:
         document.addEventListener('touchmove', this._boundScrollHandler, true);
-        // Capture keydown to prevent scrolling keys (pageup, pagedown etc.)
-        document.addEventListener('keydown', this._boundScrollHandler, true);
       },
 
       _unlockScrollInteractions: function() {
@@ -202,7 +195,6 @@
         document.removeEventListener('DOMMouseScroll', this._boundScrollHandler, true);
         document.removeEventListener('touchstart', this._boundScrollHandler, true);
         document.removeEventListener('touchmove', this._boundScrollHandler, true);
-        document.removeEventListener('keydown', this._boundScrollHandler, true);
       },
 
       /**
@@ -214,11 +206,6 @@
        * @private
        */
       _shouldPreventScrolling: function(event) {
-        // Avoid expensive checks if the event is not one of the observed keys.
-        if (event.type === 'keydown') {
-          // Prevent event if it is one of the scrolling keys.
-          return this._isScrollingKeypress(event);
-        }
 
         // Update if root target changed. For touch events, ensure we don't
         // update during touchmove.

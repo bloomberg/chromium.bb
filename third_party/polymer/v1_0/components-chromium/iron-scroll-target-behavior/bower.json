@@ -1,6 +1,6 @@
 {
   "name": "iron-scroll-target-behavior",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Allows to define a scroller target",
   "private": true,
   "license": "http://polymer.github.io/LICENSE.txt",

@@ -1073,7 +1073,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         overflow: hidden;
       }
 
+      :host([hidden]) {
+        display: none !important;
+      }
+
       #progressContainer {
+        @apply(--paper-progress-container);
         position: relative;
       }
 
@@ -1141,8 +1146,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host(:not([disabled])) #primaryProgress.indeterminate {
         -webkit-transform-origin: right center;
         transform-origin: right center;
-        -webkit-animation: indeterminate-bar 2s linear infinite;
-        animation: indeterminate-bar 2s linear infinite;
+        -webkit-animation: indeterminate-bar var(--paper-progress-indeterminate-cycle-duration, 2s) linear infinite;
+        animation: indeterminate-bar var(--paper-progress-indeterminate-cycle-duration, 2s) linear infinite;
       }
 
       :host(:not([disabled])) #primaryProgress.indeterminate::after {
@@ -1150,8 +1155,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         -webkit-transform-origin: center center;
         transform-origin: center center;
 
-        -webkit-animation: indeterminate-splitter 2s linear infinite;
-        animation: indeterminate-splitter 2s linear infinite;
+        -webkit-animation: indeterminate-splitter var(--paper-progress-indeterminate-cycle-duration, 2s) linear infinite;
+        animation: indeterminate-splitter var(--paper-progress-indeterminate-cycle-duration, 2s) linear infinite;
       }
 
       @-webkit-keyframes indeterminate-bar {
@@ -2124,6 +2129,7 @@ paper-button {
   <svg>
     <defs>
       
+      <g id="add"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></g>
       <g id="arrow-drop-down"><path d="M7 10l5 5 5-5z"></path></g>
       <g id="cancel"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"></path></g>
 <if expr="chromeos">

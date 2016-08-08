@@ -72,7 +72,7 @@ Polymer({
       // throttle the work on the scroll event
       var THROTTLE_THRESHOLD = 200;
       if (!this.isDebouncerActive('_checkTheshold')) {
-        this.debounce('_checkTheshold', function() { 
+        this.debounce('_checkTheshold', function() {
           this.checkScrollThesholds();
         }, THROTTLE_THRESHOLD);
       }
@@ -98,7 +98,7 @@ Polymer({
         return;
       }
       var upperScrollValue = this.horizontal ? this._scrollLeft : this._scrollTop;
-      var lowerScrollValue = this.horizontal ? 
+      var lowerScrollValue = this.horizontal ?
           this.scrollTarget.scrollWidth - this._scrollTargetWidth - this._scrollLeft :
               this.scrollTarget.scrollHeight - this._scrollTargetHeight - this._scrollTop;
 

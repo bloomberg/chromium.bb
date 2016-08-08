@@ -228,17 +228,17 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.__shouldRemoveTabIndex = false;
       // Used for wrapping the focus on TAB / Shift+TAB.
       this.__firstFocusableNode = this.__lastFocusableNode = null;
-      // Used for requestAnimationFrame when opened changes.
-      this.__openChangedAsync = null;
-      // Used for requestAnimationFrame when iron-resize is fired.
-      this.__onIronResizeAsync = null;
+      // Used by __onNextAnimationFrame to cancel any previous callback.
+      this.__raf = null;
+      // Focused node before overlay gets opened. Can be restored on close.
+      this.__restoreFocusNode = null;
       this._ensureSetup();
     },
 
     attached: function() {
       // Call _openedChanged here so that position can be computed correctly.
       if (this.opened) {
-        this._openedChanged();
+        this._openedChanged(this.opened);
       }
       this._observer = Polymer.dom(this).observeNodes(this._onNodesChange);
     },
@@ -246,7 +246,11 @@ context. You should place this element as a child of `<body>` whenever possible.
     detached: function() {
       Polymer.dom(this).unobserveNodes(this._observer);
       this._observer = null;
-      this.opened = false;
+      if (this.__raf) {
+        window.cancelAnimationFrame(this.__raf);
+        this.__raf = null;
+      }
+      this._manager.removeOverlay(this);
     },
 
     /**
@@ -296,27 +300,16 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.style.display = 'none';
     },
 
-    _openedChanged: function() {
-      if (this.opened) {
+    /**
+     * Called when `opened` changes.
+     * @param {boolean=} opened
+     * @protected
+     */
+    _openedChanged: function(opened) {
+      if (opened) {
         this.removeAttribute('aria-hidden');
       } else {
         this.setAttribute('aria-hidden', 'true');
-      }
-
-      // wait to call after ready only if we're initially open
-      if (!this._overlaySetup) {
-        return;
-      }
-
-      if (this.__openChangedAsync) {
-        window.cancelAnimationFrame(this.__openChangedAsync);
-      }
-
-      // Synchronously remove the overlay.
-      // The adding is done asynchronously to go out of the scope of the event
-      // which might have generated the opening.
-      if (!this.opened) {
-        this._manager.removeOverlay(this);
       }
 
       // Defer any animation-related code on attached
@@ -327,19 +320,8 @@ context. You should place this element as a child of `<body>` whenever possible.
 
       this.__isAnimating = true;
 
-      // requestAnimationFrame for non-blocking rendering
-      this.__openChangedAsync = window.requestAnimationFrame(function() {
-        this.__openChangedAsync = null;
-        if (this.opened) {
-          this._manager.addOverlay(this);
-          this._prepareRenderOpened();
-          this._renderOpened();
-        } else {
-          // Move the focus before actually closing.
-          this._applyFocus();
-          this._renderClosed();
-        }
-      }.bind(this));
+      // Use requestAnimationFrame for non-blocking rendering.
+      this.__onNextAnimationFrame(this.__openedChanged);
     },
 
     _canceledChanged: function() {
@@ -366,6 +348,8 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _prepareRenderOpened: function() {
+      // Store focused node.
+      this.__restoreFocusNode = this._manager.deepActiveElement;
 
       // Needed to calculate the size of the overlay so that transitions on its size
       // will have the correct starting points.
@@ -373,13 +357,11 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.refit();
       this._finishPositioning();
 
-      // Move the focus to the child node with [autofocus].
-      this._applyFocus();
-
-      // Safari will apply the focus to the autofocus element when displayed for the first time,
-      // so we blur it. Later, _applyFocus will set the focus if necessary.
+      // Safari will apply the focus to the autofocus element when displayed
+      // for the first time, so we make sure to return the focus where it was.
       if (this.noAutoFocus && document.activeElement === this._focusNode) {
         this._focusNode.blur();
+        this.__restoreFocusNode.focus();
       }
     },
 
@@ -404,7 +386,6 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _finishRenderOpened: function() {
-
       this.notifyResize();
       this.__isAnimating = false;
 
@@ -421,11 +402,10 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _finishRenderClosed: function() {
-      // Hide the overlay and remove the backdrop.
+      // Hide the overlay.
       this.style.display = 'none';
       // Reset z-index only at the end of the animation.
       this.style.zIndex = '';
-
       this.notifyResize();
       this.__isAnimating = false;
       this.fire('iron-overlay-closed', this.closingReason);
@@ -461,10 +441,22 @@ context. You should place this element as a child of `<body>` whenever possible.
         if (!this.noAutoFocus) {
           this._focusNode.focus();
         }
-      } else {
+      }
+      else {
         this._focusNode.blur();
         this._focusedChild = null;
-        this._manager.focusOverlay();
+        // Restore focus.
+        if (this.restoreFocusOnClose && this.__restoreFocusNode) {
+          this.__restoreFocusNode.focus();
+        }
+        this.__restoreFocusNode = null;
+        // If many overlays get closed at the same time, one of them would still
+        // be the currentOverlay even if already closed, and would call _applyFocus
+        // infinitely, so we check for this not to be the current overlay.
+        var currentOverlay = this._manager.currentOverlay();
+        if (currentOverlay && this !== currentOverlay) {
+          currentOverlay._applyFocus();
+        }
       }
     },
 
@@ -562,15 +554,8 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _onIronResize: function() {
-      if (this.__onIronResizeAsync) {
-        window.cancelAnimationFrame(this.__onIronResizeAsync);
-        this.__onIronResizeAsync = null;
-      }
       if (this.opened && !this.__isAnimating) {
-        this.__onIronResizeAsync = window.requestAnimationFrame(function() {
-          this.__onIronResizeAsync = null;
-          this.refit();
-        }.bind(this));
+        this.__onNextAnimationFrame(this.refit);
       }
     },
 
@@ -583,7 +568,50 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (this.opened && !this.__isAnimating) {
         this.notifyResize();
       }
+    },
+
+    /**
+     * Tasks executed when opened changes: prepare for the opening, move the
+     * focus, update the manager, render opened/closed.
+     * @private
+     */
+    __openedChanged: function() {
+      if (this.opened) {
+        // Make overlay visible, then add it to the manager.
+        this._prepareRenderOpened();
+        this._manager.addOverlay(this);
+        // Move the focus to the child node with [autofocus].
+        this._applyFocus();
+
+        this._renderOpened();
+      } else {
+        // Remove overlay, then restore the focus before actually closing.
+        this._manager.removeOverlay(this);
+        this._applyFocus();
+
+        this._renderClosed();
+      }
+    },
+
+    /**
+     * Executes a callback on the next animation frame, overriding any previous
+     * callback awaiting for the next animation frame. e.g.
+     * `__onNextAnimationFrame(callback1) && __onNextAnimationFrame(callback2)`;
+     * `callback1` will never be invoked.
+     * @param {!Function} callback Its `this` parameter is the overlay itself.
+     * @private
+     */
+    __onNextAnimationFrame: function(callback) {
+      if (this.__raf) {
+        window.cancelAnimationFrame(this.__raf);
+      }
+      var self = this;
+      this.__raf = window.requestAnimationFrame(function nextAnimationFrame() {
+        self.__raf = null;
+        callback.call(self);
+      });
     }
+
   };
 
   /** @polymerBehavior */

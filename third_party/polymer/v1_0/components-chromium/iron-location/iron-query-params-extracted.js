@@ -55,7 +55,12 @@
     },
     _decodeParams: function(paramString) {
       var params = {};
-      var paramList = (paramString || '').split('&');
+
+      // Work around a bug in decodeURIComponent where + is not
+      // converted to spaces:
+      paramString = (paramString || '').replace(/\+/g, '%20');
+
+      var paramList = paramString.split('&');
       for (var i = 0; i < paramList.length; i++) {
         var param = paramList[i].split('=');
         if (param[0]) {

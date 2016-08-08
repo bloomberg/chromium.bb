@@ -183,7 +183,7 @@
               }];
             }
           },
-          
+
           /**
            * By default, the dropdown will constrain scrolling on the page
            * to itself when opened.

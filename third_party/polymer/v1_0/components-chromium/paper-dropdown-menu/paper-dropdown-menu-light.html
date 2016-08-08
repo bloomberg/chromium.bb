@@ -100,6 +100,10 @@ To style it:
         outline: none;
       }
 
+      :host {
+        width: 200px;  /* Default size of an <input> */
+      }
+
       /**
        * All of these styles below are for styling the fake-input display
        */
@@ -122,10 +126,10 @@ To style it:
       #input {
         @apply(--paper-font-subhead);
         @apply(--paper-font-common-nowrap);
+        line-height: 1.5;
         border-bottom: 1px solid var(--paper-dropdown-menu-color, --secondary-text-color);
         color: var(--paper-dropdown-menu-color, --primary-text-color);
-        width: 200px;  /* Default size of an <input> */
-        min-height: 24px;
+        width: 100%;
         box-sizing: border-box;
         padding: 12px 20px 0 0;   /* Right padding so that text doesn't overlap the icon */
         outline: none;
@@ -169,6 +173,7 @@ To style it:
         transition-duration: .2s;
         transition-timing-function: cubic-bezier(.4,0,.2,1);
         color: var(--paper-dropdown-menu-color, --secondary-text-color);
+        cursor: pointer;
         @apply(--paper-dropdown-menu-label);
       }
 
@@ -235,7 +240,6 @@ To style it:
         right: 0px;
         bottom: 8px;    /* The container has an 8px bottom padding */
         @apply(--paper-font-subhead);
-        margin-top: 12px;
         color: var(--disabled-text-color);
         @apply(--paper-dropdown-menu-icon);
       }

@@ -83,7 +83,7 @@
             type: Boolean,
             value: false
           },
-          
+
           /**
            * Set to true to disable the floating label. Bind this to the
            * `<paper-input-container>`'s `noLabelFloat` property.
@@ -228,7 +228,7 @@
           if (!selectedItem) {
             value = '';
           } else {
-            value = selectedItem.label || selectedItem.textContent.trim();
+            value = selectedItem.label || selectedItem.getAttribute('label') || selectedItem.textContent.trim();
           }
 
           this._setValue(value);
