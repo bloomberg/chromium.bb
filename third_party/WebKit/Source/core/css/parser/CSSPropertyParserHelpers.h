@@ -59,7 +59,13 @@ CSSValuePair* consumePosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk
 bool consumePosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk, CSSValue*& resultX, CSSValue*& resultY);
 bool consumeOneOrTwoValuedPosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk, CSSValue*& resultX, CSSValue*& resultY);
 
-// TODO(timloh): Move across consumeImage
+enum class ConsumeGeneratedImage {
+    Allow,
+    Forbid
+};
+
+CSSValue* consumeImage(CSSParserTokenRange&, CSSParserContext, ConsumeGeneratedImage = ConsumeGeneratedImage::Allow);
+CSSValue* consumeImageOrNone(CSSParserTokenRange&, CSSParserContext);
 
 // Template implementations are at the bottom of the file for readability.
 
