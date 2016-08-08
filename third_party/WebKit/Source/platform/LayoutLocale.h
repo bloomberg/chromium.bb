@@ -42,7 +42,7 @@ public:
     UScriptCode scriptForHan() const;
     bool hasScriptForHan() const;
     static const LayoutLocale* localeForHan(const LayoutLocale*);
-    static void setLocaleForHan(const LayoutLocale*);
+    static void invalidateLocaleForHan() { s_defaultForHanComputed = false; }
     const char* localeForHanForSkFontMgr() const;
 
     Hyphenation* getHyphenation() const;
@@ -55,6 +55,7 @@ private:
     explicit LayoutLocale(const AtomicString&);
 
     void computeScriptForHan() const;
+    static void computeLocaleForHan();
 
     AtomicString m_string;
     mutable CString m_stringForSkFontMgr;

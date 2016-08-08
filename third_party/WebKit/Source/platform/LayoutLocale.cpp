@@ -5,6 +5,7 @@
 #include "platform/LayoutLocale.h"
 
 #include "platform/Language.h"
+#include "platform/fonts/AcceptLanguagesResolver.h"
 #include "platform/text/LocaleToScriptMapping.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -99,13 +100,13 @@ const LayoutLocale* LayoutLocale::localeForHan(const LayoutLocale* contentLocale
     if (contentLocale && contentLocale->hasScriptForHan())
         return contentLocale;
     if (!s_defaultForHanComputed)
-        setLocaleForHan(nullptr);
+        computeLocaleForHan();
     return s_defaultForHan;
 }
 
-void LayoutLocale::setLocaleForHan(const LayoutLocale* locale)
+void LayoutLocale::computeLocaleForHan()
 {
-    if (locale)
+    if (const LayoutLocale* locale = AcceptLanguagesResolver::localeForHan())
         s_defaultForHan = locale;
     else if (getDefault().hasScriptForHan())
         s_defaultForHan = &getDefault();

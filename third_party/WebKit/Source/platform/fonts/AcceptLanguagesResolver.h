@@ -18,6 +18,7 @@ class PLATFORM_EXPORT AcceptLanguagesResolver {
 public:
     static void acceptLanguagesChanged(const String&);
 
+    static const LayoutLocale* localeForHan();
     static const LayoutLocale* localeForHanFromAcceptLanguages(const String&);
 };
 

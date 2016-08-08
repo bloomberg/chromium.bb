@@ -8,11 +8,26 @@
 
 namespace blink {
 
+static String& currentAcceptLanguages()
+{
+    DEFINE_STATIC_LOCAL(String, s_current, ());
+    return s_current;
+}
+
 void AcceptLanguagesResolver::acceptLanguagesChanged(
     const String& acceptLanguages)
 {
-    LayoutLocale::setLocaleForHan(
-        localeForHanFromAcceptLanguages(acceptLanguages));
+    String& currentValue = currentAcceptLanguages();
+    if (currentValue == acceptLanguages)
+        return;
+
+    currentValue = acceptLanguages;
+    LayoutLocale::invalidateLocaleForHan();
+}
+
+const LayoutLocale* AcceptLanguagesResolver::localeForHan()
+{
+    return localeForHanFromAcceptLanguages(currentAcceptLanguages());
 }
 
 const LayoutLocale* AcceptLanguagesResolver::localeForHanFromAcceptLanguages(

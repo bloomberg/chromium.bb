@@ -17,6 +17,7 @@ TEST(AcceptLanguagesResolverTest, AcceptLanguagesChanged)
         const char* locale;
     } tests[] = {
         // Non-Han script cases.
+        { nullptr, USCRIPT_COMMON, nullptr },
         { "", USCRIPT_COMMON, nullptr },
         { "en-US", USCRIPT_COMMON, nullptr },
         { ",en-US", USCRIPT_COMMON, nullptr },
