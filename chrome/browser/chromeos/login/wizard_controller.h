@@ -217,7 +217,7 @@ class WizardController : public BaseScreenDelegate,
   void OnDeviceDisabledChecked(bool device_disabled);
 
   // Callback function after setting MetricsReporting.
-  void InitiateMetricsReportingChangeCallback(bool enabled);
+  void OnChangedMetricsReportingState(bool enabled);
 
   // Loads brand code on I/O enabled thread and stores to Local State.
   void LoadBrandCodeFromFile();

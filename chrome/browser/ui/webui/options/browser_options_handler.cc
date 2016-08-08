@@ -2159,17 +2159,17 @@ void BrowserOptionsHandler::HandleMetricsReportingChange(
   }
 
 // For Chrome OS updating device settings will notify an observer to update
-// metrics pref, however we still need to call |InitiateMetricsReportingChange|
-// with a proper callback so that UI gets updated in case of failure to update
-// the metrics pref.
-// TODO(gayane): Don't call |InitiateMetricsReportingChange| twice so that
+// metrics pref, however we still need to call
+// |ChangeMetricsReportingStateWithReply| with a proper callback so that UI gets
+// updated in case of failure to update the metrics pref.
+// TODO(gayane): Don't call |ChangeMetricsReportingStateWithReply| twice so that
 // metrics service pref changes only as a result of device settings change for
 // Chrome OS .crbug.com/552550.
 #if defined(OS_CHROMEOS)
   chromeos::CrosSettings::Get()->SetBoolean(chromeos::kStatsReportingPref,
                                             enable);
 #endif  // defined(OS_CHROMEOS)
-  InitiateMetricsReportingChange(
+  ChangeMetricsReportingStateWithReply(
       enable,
       base::Bind(&BrowserOptionsHandler::NotifyUIOfMetricsReportingChange,
                  weak_ptr_factory_.GetWeakPtr()));

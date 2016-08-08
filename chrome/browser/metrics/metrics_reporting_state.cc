@@ -93,16 +93,20 @@ void OnDeviceSettingChange() {
   bool enable_metrics = false;
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
                                             &enable_metrics);
-  InitiateMetricsReportingChange(enable_metrics,
-                                 OnMetricsReportingCallbackType());
+  ChangeMetricsReportingState(enable_metrics);
 }
 #endif
 
 } // namespace
 
+void ChangeMetricsReportingState(bool enabled) {
+  ChangeMetricsReportingStateWithReply(enabled,
+                                       OnMetricsReportingCallbackType());
+}
+
 // TODO(gayane): Instead of checking policy before setting the metrics pref set
 // the pref and register for notifications for the rest of the changes.
-void InitiateMetricsReportingChange(
+void ChangeMetricsReportingStateWithReply(
     bool enabled,
     const OnMetricsReportingCallbackType& callback_fn) {
 #if !defined(OS_ANDROID)

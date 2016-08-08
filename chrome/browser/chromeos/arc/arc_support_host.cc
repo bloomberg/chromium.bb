@@ -265,7 +265,7 @@ void ArcSupportHost::OnOptInUIShowPage(arc::ArcAuthService::UIPage page,
 }
 
 void ArcSupportHost::EnableMetrics(bool is_enabled) {
-  InitiateMetricsReportingChange(is_enabled, OnMetricsReportingCallbackType());
+  ChangeMetricsReportingState(is_enabled);
 }
 
 void ArcSupportHost::EnableBackupRestore(bool is_enabled) {

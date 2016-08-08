@@ -75,8 +75,7 @@ bool ShowFirstRun(Profile* profile) {
     // If the dialog asked the user to opt-in for stats and crash reporting,
     // record the decision and enable the crash reporter if appropriate.
     bool consent_given = [dialog.get() statsEnabled];
-    InitiateMetricsReportingChange(consent_given,
-                                   OnMetricsReportingCallbackType());
+    ChangeMetricsReportingState(consent_given);
 
     // If selected set as default browser.
     BOOL make_default_browser = [dialog.get() makeDefaultBrowser];

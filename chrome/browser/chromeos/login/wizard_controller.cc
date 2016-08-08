@@ -632,9 +632,9 @@ void WizardController::OnUpdateCompleted() {
 void WizardController::OnEulaAccepted() {
   time_eula_accepted_ = base::Time::Now();
   StartupUtils::MarkEulaAccepted();
-  InitiateMetricsReportingChange(
+  ChangeMetricsReportingStateWithReply(
       usage_statistics_reporting_,
-      base::Bind(&WizardController::InitiateMetricsReportingChangeCallback,
+      base::Bind(&WizardController::OnChangedMetricsReportingState,
                  weak_factory_.GetWeakPtr()));
   PerformPostEulaActions();
 
@@ -645,7 +645,7 @@ void WizardController::OnEulaAccepted() {
   }
 }
 
-void WizardController::InitiateMetricsReportingChangeCallback(bool enabled) {
+void WizardController::OnChangedMetricsReportingState(bool enabled) {
   CrosSettings::Get()->SetBoolean(kStatsReportingPref, enabled);
   if (!enabled)
     return;

@@ -88,8 +88,9 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class extensions::ChromeExtensionWebContentsObserver;
   friend class extensions::FileManagerPrivateIsUMAEnabledFunction;
   friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;
-  friend void InitiateMetricsReportingChange(
-      bool, const OnMetricsReportingCallbackType&);
+  friend void ChangeMetricsReportingStateWithReply(
+      bool,
+      const OnMetricsReportingCallbackType&);
   friend class options::BrowserOptionsHandler;
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class safe_browsing::IncidentReportingService;
