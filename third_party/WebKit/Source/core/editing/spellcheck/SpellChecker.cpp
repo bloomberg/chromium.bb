@@ -337,7 +337,7 @@ void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &moving
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
 {
-    markMisspellingsAndBadGrammar(movingSelection, isContinuousSpellCheckingEnabled(), movingSelection);
+    markMisspellingsAndBadGrammar(movingSelection, movingSelection);
 }
 
 void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)
@@ -349,47 +349,29 @@ void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSe
         return;
     }
 
-    TextCheckingTypeMask textCheckingOptions = TextCheckingTypeGrammar;
-
-    if (isContinuousSpellCheckingEnabled())
-        textCheckingOptions |= TextCheckingTypeSpelling;
+    if (!isContinuousSpellCheckingEnabled())
+        return;
 
     VisibleSelection wholeParagraph(
         startOfParagraph(wordSelection.visibleStart()),
         endOfParagraph(wordSelection.visibleEnd()));
 
-    markAllMisspellingsAndBadGrammarInRanges(
-        textCheckingOptions, wordSelection.toNormalizedEphemeralRange(),
-        wholeParagraph.toNormalizedEphemeralRange());
+    markAllMisspellingsAndBadGrammarInRanges(wordSelection.toNormalizedEphemeralRange(), wholeParagraph.toNormalizedEphemeralRange());
 }
 
 void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping)
 {
+    if (!isContinuousSpellCheckingEnabled())
+        return;
+
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterTypingToWord");
 
     if (unifiedTextCheckerEnabled()) {
-        TextCheckingTypeMask textCheckingOptions = 0;
-
-        if (isContinuousSpellCheckingEnabled())
-            textCheckingOptions |= TextCheckingTypeSpelling;
-
-        if (!(textCheckingOptions & TextCheckingTypeSpelling))
-            return;
-
-        textCheckingOptions |= TextCheckingTypeGrammar;
-
         VisibleSelection adjacentWords = VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary));
-        if (textCheckingOptions & TextCheckingTypeGrammar) {
-            VisibleSelection selectedSentence = VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart));
-            markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedEphemeralRange(), selectedSentence.toNormalizedEphemeralRange());
-        } else {
-            markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedEphemeralRange(), adjacentWords.toNormalizedEphemeralRange());
-        }
+        VisibleSelection selectedSentence = VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart));
+        markAllMisspellingsAndBadGrammarInRanges(adjacentWords.toNormalizedEphemeralRange(), selectedSentence.toNormalizedEphemeralRange());
         return;
     }
-
-    if (!isContinuousSpellCheckingEnabled())
-        return;
 
     // Check spelling of one word
     bool result = markMisspellings(VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary)));
@@ -475,14 +457,12 @@ void SpellChecker::markBadGrammar(const VisibleSelection& selection)
     markMisspellingsOrBadGrammar(selection, false);
 }
 
-void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange)
+void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(const EphemeralRange& spellingRange, const EphemeralRange& grammarRange)
 {
     DCHECK(unifiedTextCheckerEnabled());
 
-    bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
-
     // This function is called with selections already expanded to word boundaries.
-    if (spellingRange.isNull() || (shouldMarkGrammar && grammarRange.isNull()))
+    if (spellingRange.isNull() || grammarRange.isNull())
         return;
 
     // If we're not in an editable node, bail.
@@ -493,8 +473,8 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
     if (!isSpellCheckingEnabledFor(editableNode))
         return;
 
-    TextCheckingParagraph fullParagraphToCheck(shouldMarkGrammar ? grammarRange : spellingRange);
-    chunkAndMarkAllMisspellingsAndBadGrammar(textCheckingOptions, fullParagraphToCheck);
+    TextCheckingParagraph fullParagraphToCheck(grammarRange);
+    chunkAndMarkAllMisspellingsAndBadGrammar(fullParagraphToCheck);
 }
 
 static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
@@ -522,10 +502,10 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node, const Ep
         return;
     EphemeralRange paragraphRange(Position::firstPositionInNode(node), Position::lastPositionInNode(node));
     TextCheckingParagraph textToCheck(insertedRange, paragraphRange);
-    chunkAndMarkAllMisspellingsAndBadGrammar(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), textToCheck);
+    chunkAndMarkAllMisspellingsAndBadGrammar(textToCheck);
 }
 
-void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck)
+void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingParagraph& fullParagraphToCheck)
 {
     if (fullParagraphToCheck.isEmpty())
         return;
@@ -537,7 +517,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
     // Check the full paragraph instead if the paragraph is short, which saves
     // the cost on sentence boundary finding.
     if (fullParagraphToCheck.rangeLength() <= kChunkSize) {
-        SpellCheckRequest* request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
+        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
         return;
@@ -548,7 +528,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
         EphemeralRange chunkRange = checkRangeIterator.calculateCharacterSubrange(0, kChunkSize);
         EphemeralRange checkRange = requestNum ? expandEndToSentenceBoundary(chunkRange) : expandRangeToSentenceBoundary(chunkRange);
 
-        SpellCheckRequest* request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
+        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
 
@@ -666,22 +646,19 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
     }
 }
 
-void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection)
+void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, const VisibleSelection& grammarSelection)
 {
     if (unifiedTextCheckerEnabled()) {
         if (!isContinuousSpellCheckingEnabled())
             return;
 
         // markMisspellingsAndBadGrammar() is triggered by selection change, in which case we check spelling and grammar, but don't autocorrect misspellings.
-        TextCheckingTypeMask textCheckingOptions = TextCheckingTypeSpelling;
-        if (markGrammar)
-            textCheckingOptions |= TextCheckingTypeGrammar;
-        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, spellingSelection.toNormalizedEphemeralRange(), grammarSelection.toNormalizedEphemeralRange());
+        markAllMisspellingsAndBadGrammarInRanges(spellingSelection.toNormalizedEphemeralRange(), grammarSelection.toNormalizedEphemeralRange());
         return;
     }
 
     markMisspellings(spellingSelection);
-    if (markGrammar)
+    if (isContinuousSpellCheckingEnabled())
         markBadGrammar(grammarSelection);
 }
 
@@ -888,10 +865,10 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
         return;
     if (isContinuousSpellCheckingEnabled()) {
         VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
-        markMisspellingsAndBadGrammar(oldAdjacentWords, true, selectedSentence);
+        markMisspellingsAndBadGrammar(oldAdjacentWords, selectedSentence);
         return;
     }
-    markMisspellingsAndBadGrammar(oldAdjacentWords, false, oldAdjacentWords);
+    markMisspellingsAndBadGrammar(oldAdjacentWords, oldAdjacentWords);
 }
 
 static Node* findFirstMarkable(Node* node)
@@ -933,20 +910,6 @@ bool SpellChecker::selectionStartHasMarkerFor(DocumentMarker::MarkerType markerT
 bool SpellChecker::selectionStartHasSpellingMarkerFor(int from, int length) const
 {
     return selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
-}
-
-TextCheckingTypeMask SpellChecker::resolveTextCheckingTypeMask(TextCheckingTypeMask textCheckingOptions)
-{
-    bool shouldMarkSpelling = textCheckingOptions & TextCheckingTypeSpelling;
-    bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
-
-    TextCheckingTypeMask checkingTypes = 0;
-    if (shouldMarkSpelling)
-        checkingTypes |= TextCheckingTypeSpelling;
-    if (shouldMarkGrammar)
-        checkingTypes |= TextCheckingTypeGrammar;
-
-    return checkingTypes;
 }
 
 void SpellChecker::removeMarkers(const VisibleSelection& selection, DocumentMarker::MarkerTypes markerTypes)

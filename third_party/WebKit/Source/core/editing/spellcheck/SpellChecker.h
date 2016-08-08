@@ -63,9 +63,9 @@ public:
     void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping);
     bool markMisspellings(const VisibleSelection&);
     void markBadGrammar(const VisibleSelection&);
-    void markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection);
+    void markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, const VisibleSelection& grammarSelection);
     void markAndReplaceFor(SpellCheckRequest*, const Vector<TextCheckingResult>&);
-    void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange);
+    void markAllMisspellingsAndBadGrammarInRanges(const EphemeralRange& spellingRange, const EphemeralRange& grammarRange);
     void advanceToNextMisspelling(bool startBeforeSelection = false);
     void showSpellingGuessPanel();
     void didBeginEditing(Element*);
@@ -107,12 +107,11 @@ private:
     }
 
     bool markMisspellingsOrBadGrammar(const VisibleSelection&, bool checkSpelling);
-    TextCheckingTypeMask resolveTextCheckingTypeMask(TextCheckingTypeMask);
 
     void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
     bool unifiedTextCheckerEnabled() const;
 
-    void chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck);
+    void chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingParagraph& fullParagraphToCheck);
 
     Member<LocalFrame> m_frame;
     const Member<SpellCheckRequester> m_spellCheckRequester;
