@@ -77,6 +77,7 @@ struct DataViewTraits<{{kind|get_qualified_name_for_kind}}DataView> {
 #include "mojo/public/cpp/bindings/string_data_view.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "mojo/public/cpp/bindings/union_traits.h"
 #include "{{variant_path}}-internal.h"
 {%- for import in imports %}
 {%-   if variant %}
@@ -273,6 +274,7 @@ namespace std {
 
 {%- for union in unions %}
 {%    include "wrapper_union_class_template_definition.tmpl" %}
+{%    include "union_data_view_definition.tmpl" %}
 {%- endfor %}
 
 {%- for struct in structs %}

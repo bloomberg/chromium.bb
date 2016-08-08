@@ -124,6 +124,7 @@ static_library("bindings") {
     "sync_handle_registry.h",
     "sync_handle_watcher.h",
     "type_converter.h",
+    "union_traits.h",
   ]
 
   public_deps = [

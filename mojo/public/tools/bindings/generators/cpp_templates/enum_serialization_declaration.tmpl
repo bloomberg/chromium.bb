@@ -1,7 +1,7 @@
 {%- set mojom_type = enum|get_qualified_name_for_kind %}
 
 template <>
-struct {{export_attribute}} EnumTraits<{{mojom_type}}, {{mojom_type}}> {
+struct EnumTraits<{{mojom_type}}, {{mojom_type}}> {
   static {{mojom_type}} ToMojom({{mojom_type}} input) { return input; }
   static bool FromMojom({{mojom_type}} input, {{mojom_type}}* output) {
     *output = input;

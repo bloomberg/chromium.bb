@@ -1,17 +1,80 @@
-class {{export_attribute}} {{union.name}}DataView {
+class {{union.name}}DataView {
  public:
+  using Tag = internal::{{union.name}}_Data::{{union.name}}_Tag;
+
   {{union.name}}DataView() {}
-  
+
   {{union.name}}DataView(
       internal::{{union.name}}_Data* data,
       mojo::internal::SerializationContext* context)
+{%- if union|requires_context_for_data_view %}
+      : data_(data), context_(context) {}
+{%- else %}
       : data_(data) {}
+{%- endif %}
 
-  bool is_null() const { return !data_; }
- 
-  // TODO(yzshen): Union data view is not yet supported.
+  bool is_null() const {
+    // For inlined unions, |data_| is always non-null. In that case we need to
+    // check |data_->is_null()|.
+    return !data_ || data_->is_null();
+  }
+
+  Tag tag() const { return data_->tag; }
+
+{%- for field in union.fields %}
+{%-   set kind = field.kind %}
+{%-   set name = field.name %}
+  bool is_{{name}}() const { return data_->tag == Tag::{{name|upper}}; }
+
+{%-   if kind|is_object_kind %}
+  inline void Get{{name|under_to_camel}}DataView(
+      {{kind|cpp_data_view_type}}* output);
+
+  template <typename UserType>
+  bool Read{{name|under_to_camel}}(UserType* output) {
+    DCHECK(is_{{name}}());
+    return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
+        data_->data.f_{{name}}.Get(), output, context_);
+  }
+
+{%-   elif kind|is_enum_kind %}
+  template <typename UserType>
+  bool Read{{name|under_to_camel}}(UserType* output) const {
+    DCHECK(is_{{name}}());
+    return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
+        data_->data.f_{{name}}, output);
+  }
+
+  {{kind|get_qualified_name_for_kind}} {{name}}() const {
+    DCHECK(is_{{name}}());
+    return static_cast<{{kind|get_qualified_name_for_kind}}>(
+        data_->data.f_{{name}});
+  }
+
+{%-   elif kind|is_any_handle_or_interface_kind %}
+  {{kind|cpp_wrapper_type}} Take{{name|under_to_camel}}() {
+    DCHECK(is_{{name}}());
+    {{kind|cpp_wrapper_type}} result;
+    bool ret =
+        mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
+            &data_->data.f_{{name}}, &result, context_);
+    DCHECK(ret);
+    return result;
+  }
+
+{%-   else %}
+  {{kind|cpp_wrapper_type}} {{name}}() const {
+    DCHECK(is_{{name}}());
+    return data_->data.f_{{name}};
+  }
+
+{%-   endif %}
+{%- endfor %}
 
  private:
   internal::{{union.name}}_Data* data_ = nullptr;
+{%- if union|requires_context_for_data_view %}
+  mojo::internal::SerializationContext* context_ = nullptr;
+{%- endif %}
 };
 

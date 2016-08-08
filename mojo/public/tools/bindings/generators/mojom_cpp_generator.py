@@ -368,8 +368,8 @@ def TranslateConstants(token, kind):
 def ExpressionToText(value, kind=None):
   return TranslateConstants(value, kind)
 
-def RequiresContextForDataView(struct):
-  for field in struct.fields:
+def RequiresContextForDataView(kind):
+  for field in kind.fields:
     if mojom.IsReferenceKind(field.kind):
       return True
   return False

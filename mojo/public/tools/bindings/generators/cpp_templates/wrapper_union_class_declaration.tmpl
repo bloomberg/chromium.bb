@@ -38,8 +38,18 @@ class {{export_attribute}} {{union.name}} {
   }
 
 {%  for field in union.fields %}
-  bool is_{{field.name}}() const;
-  {{field.kind|cpp_union_getter_return_type}} get_{{field.name}}() const;
+  bool is_{{field.name}}() const { return tag_ == Tag::{{field.name|upper}}; }
+
+  {{field.kind|cpp_union_getter_return_type}} get_{{field.name}}() const {
+    DCHECK(tag_ == Tag::{{field.name|upper}});
+{%-   if field.kind|is_object_kind or
+         field.kind|is_any_handle_or_interface_kind %}
+    return *(data_.{{field.name}});
+{%-   else %}
+    return data_.{{field.name}};
+{%-   endif %}
+  }
+
   void set_{{field.name}}({{field.kind|cpp_wrapper_param_type}} {{field.name}});
 {%- endfor %}
 
