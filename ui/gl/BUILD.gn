@@ -231,6 +231,10 @@ component("gl") {
       "//third_party/angle:libGLESv2",
       "//third_party/mesa:osmesa",
     ]
+
+    if (is_official_build) {
+      include_dirs = [ "//third_party/swiftshader/include" ]
+    }
   }
   if (is_mac) {
     sources += [
