@@ -26,7 +26,7 @@ import "storage_manager.mojom";
 import "tts.mojom";
 import "video.mojom";
 
-// Next MinVersion: 17
+// Next MinVersion: 18
 // Deprecated method IDs: 101, 105
 // Next method ID: 124
 interface ArcBridgeHost {
@@ -96,7 +96,7 @@ interface ArcBridgeHost {
   [MinVersion=12] OnStorageManagerInstanceReady@118(StorageManagerInstance instance_ptr);
 
   // Notifies Chrome that the TtsInstance interface is ready.
-  [MinVersion=16] OnTtsInstanceReady@123(TtsInstance instance_ptr);
+  [MinVersion=17] OnTtsInstanceReady@123(TtsInstance instance_ptr);
 
   // Notifies Chrome that the VideoInstance interface is ready.
   [MinVersion=6] OnVideoInstanceReady@107(VideoInstance instance_ptr);
