@@ -15,9 +15,8 @@ Here's what works:
 *   Editing code works well (especially if you're used to it and get used to the
     shortcuts).
 *   Navigating around the code works well. There are multiple ways to do this (a
-    full list of keyboard shortcuts is available for [Windows/Linux](http://
-    docs.sublimetext.info/en/latest/reference/keyboard_shortcuts_win.html) and
-    [Mac](http://docs.sublimetext.info/en/latest/reference/keyboard_shortcuts_osx.html)).
+    full list of keyboard shortcuts is available for [Windows/Linux](http://docs.sublimetext.info/en/latest/reference/keyboard_shortcuts_win.html)
+    and [Mac](http://docs.sublimetext.info/en/latest/reference/keyboard_shortcuts_osx.html)).
 *   Building works fairly well and it does a decent job of parsing errors so
     that you can click and jump to the problem spot.
 
