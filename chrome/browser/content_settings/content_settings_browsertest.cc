@@ -24,6 +24,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -32,13 +33,14 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mhtml_generation_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "media/cdm/cdm_paths.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
-
+#include "testing/gmock/include/gmock/gmock.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_MACOSX)
@@ -62,6 +64,20 @@ const LocalSharedObjectsContainer* GetSiteSettingsCookieContainer(
           browser->tab_strip_model()->GetWebContentsAt(0));
   return static_cast<const LocalSharedObjectsContainer*>(
       &settings->allowed_local_shared_objects());
+}
+
+class MockWebContentsLoadFailObserver : public content::WebContentsObserver {
+ public:
+  explicit MockWebContentsLoadFailObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  virtual ~MockWebContentsLoadFailObserver() {}
+
+  MOCK_METHOD1(DidFinishNavigation,
+               void(content::NavigationHandle* navigation_handle));
+};
+
+MATCHER(IsErrorTooManyRedirects, "") {
+  return arg->GetNetErrorCode() == net::ERR_TOO_MANY_REDIRECTS;
 }
 
 }  // namespace
@@ -236,12 +252,15 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
-  ui_test_utils::NavigateToURL(browser(), test_url);
-
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(base::UTF8ToUTF16(test_url.spec() + " failed to load"),
-            web_contents->GetTitle());
+
+  MockWebContentsLoadFailObserver observer(web_contents);
+  EXPECT_CALL(observer, DidFinishNavigation(IsErrorTooManyRedirects()));
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(&observer));
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
       IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
