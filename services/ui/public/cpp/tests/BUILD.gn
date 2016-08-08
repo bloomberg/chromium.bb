@@ -21,6 +21,7 @@ static_library("unittest_support") {
   deps = [
     "//base",
     "//services/ui/public/cpp",
+    "//services/ui/public/cpp:internal_or_test",
     "//testing/gtest",
     "//ui/display",
     "//ui/gfx/geometry/mojo",
@@ -69,6 +70,7 @@ test("mus_public_unittests") {
     "//services/shell/public/cpp",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
+    "//services/ui/public/cpp:internal_or_test",
     "//testing/gtest",
     "//ui/events",
     "//ui/gfx:test_support",

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/cpp/lib/in_flight_change.h"
+#include "services/ui/public/cpp/in_flight_change.h"
 
-#include "services/ui/public/cpp/lib/window_private.h"
+#include "services/ui/public/cpp/window_private.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 
 namespace ui {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_LIB_WINDOW_PRIVATE_H_
-#define SERVICES_UI_PUBLIC_CPP_LIB_WINDOW_PRIVATE_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_WINDOW_PRIVATE_H_
+#define SERVICES_UI_PUBLIC_CPP_WINDOW_PRIVATE_H_
 
 #include <stdint.h>
 
@@ -97,4 +97,4 @@ class WindowPrivate {
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_PUBLIC_CPP_LIB_WINDOW_PRIVATE_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_PRIVATE_H_

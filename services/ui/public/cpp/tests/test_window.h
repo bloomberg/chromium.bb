@@ -6,8 +6,8 @@
 #define SERVICES_UI_PUBLIC_CPP_TESTS_TEST_WINDOW_H_
 
 #include "base/macros.h"
-#include "services/ui/public/cpp/lib/window_private.h"
 #include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_private.h"
 
 namespace ui {
 

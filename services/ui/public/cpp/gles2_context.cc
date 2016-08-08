@@ -15,7 +15,7 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/ui/common/gpu_service.h"
-#include "services/ui/public/cpp/lib/command_buffer_client_impl.h"
+#include "services/ui/public/cpp/command_buffer_client_impl.h"
 #include "services/ui/public/interfaces/command_buffer.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 #include "url/gurl.h"
