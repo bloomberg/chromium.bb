@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Budget API: Verifies that the right Budget API interfaces get exposed.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+  </head>
+  <body>
+    <script>
+      promise_test(function() {
+        assert_own_property(Navigator.prototype, 'budget');
+        assert_own_property(Budget.prototype, 'getCost');
+        assert_own_property(Budget.prototype, 'getBudget');
+        assert_equals(navigator.budget, navigator.budget);
+
+        navigator.budget.getCost()
+          .then(function(cost) {
+            assert_unreached('getCost should have failed.');
+          }, function(error) {
+            assert_equals(error.name, 'NotSupportedError');
+            assert_equals(error.message, 'Not yet implemented');
+          });
+        navigator.budget.getBudget()
+          .then(function(cost) {
+            assert_unreached('getBudget should have failed.');
+          }, function(error) {
+            assert_equals(error.name, 'NotSupportedError');
+            assert_equals(error.message, 'Not yet implemented');
+          });
+      }, 'NavigatorBudget should be exposed and have the expected interface in a Document.');
+    </script>
+  </body>
+</html>

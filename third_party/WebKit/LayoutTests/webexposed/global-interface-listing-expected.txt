@@ -394,6 +394,11 @@ interface BroadcastChannel : EventTarget
     method constructor
     method postMessage
     setter onmessage
+interface Budget
+    attribute @@toStringTag
+    method constructor
+    method getBudget
+    method getCost
 interface ByteLengthQueuingStrategy
     method constructor
     method size
@@ -3980,6 +3985,7 @@ interface Navigator
     getter appName
     getter appVersion
     getter bluetooth
+    getter budget
     getter connection
     getter cookieEnabled
     getter credentials

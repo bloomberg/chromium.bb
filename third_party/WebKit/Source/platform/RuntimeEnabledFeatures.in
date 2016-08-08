@@ -33,6 +33,7 @@ AudioVideoTracks status=experimental
 BackgroundSync status=stable
 BackspaceDefaultHandler status=test
 BroadcastChannel status=stable
+Budget status=test
 CacheIgnoreSearchOption status=experimental
 Canvas2dFixedRenderingMode status=test
 EnableCanvas2dDynamicRenderingModeSwitching status=experimental
