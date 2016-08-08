@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.preferences.password;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -34,6 +37,9 @@ public class PasswordEntryEditor extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (ChromeFeatureList.isEnabled(VIEW_PASSWORDS)) {
+            setHasOptionsMenu(true);
+        }
     }
 
     @Override
@@ -70,6 +76,21 @@ public class PasswordEntryEditor extends Fragment {
             hookupCancelDeleteButtons(v);
         }
         return v;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.password_entry_editor_action_bar_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_delete_saved_password) {
+            removeItem();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     // Delete was clicked.
