@@ -135,6 +135,12 @@ std::string GetMountPointNameForMediaStorage(
   return name;
 }
 
+chromeos::MountAccessMode GetExternalStorageAccessMode(const Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(prefs::kExternalStorageReadOnly)
+             ? chromeos::MOUNT_ACCESS_MODE_READ_ONLY
+             : chromeos::MOUNT_ACCESS_MODE_READ_WRITE;
+}
+
 }  // namespace
 
 Volume::Volume()
@@ -494,9 +500,10 @@ void VolumeManager::OnDiskEvent(
         // Initiate disk mount operation. MountPath auto-detects the filesystem
         // format if the second argument is empty. The third argument (mount
         // label) is not used in a disk mount operation.
-        disk_mount_manager_->MountPath(
-            disk->device_path(), std::string(), std::string(),
-            chromeos::MOUNT_TYPE_DEVICE);
+        disk_mount_manager_->MountPath(disk->device_path(), std::string(),
+                                       std::string(),
+                                       chromeos::MOUNT_TYPE_DEVICE,
+                                       GetExternalStorageAccessMode(profile_));
         mounting = true;
       }
 
@@ -609,9 +616,10 @@ void VolumeManager::OnFormatEvent(
         // MountPath auto-detects filesystem format if second argument is
         // empty. The third argument (mount label) is not used in a disk mount
         // operation.
-        disk_mount_manager_->MountPath(
-            device_path, std::string(), std::string(),
-            chromeos::MOUNT_TYPE_DEVICE);
+        disk_mount_manager_->MountPath(device_path, std::string(),
+                                       std::string(),
+                                       chromeos::MOUNT_TYPE_DEVICE,
+                                       GetExternalStorageAccessMode(profile_));
       }
 
       FOR_EACH_OBSERVER(

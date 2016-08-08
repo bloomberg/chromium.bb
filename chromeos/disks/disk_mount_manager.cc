@@ -68,7 +68,8 @@ class DiskMountManagerImpl : public DiskMountManager {
   void MountPath(const std::string& source_path,
                  const std::string& source_format,
                  const std::string& mount_label,
-                 MountType type) override {
+                 MountType type,
+                 MountAccessMode access_mode) override {
     // Hidden and non-existent devices should not be mounted.
     if (type == MOUNT_TYPE_DEVICE) {
       DiskMap::const_iterator it = disks_.find(source_path);
@@ -79,7 +80,7 @@ class DiskMountManagerImpl : public DiskMountManager {
       }
     }
     cros_disks_client_->Mount(
-        source_path, source_format, mount_label, MOUNT_ACCESS_MODE_READ_WRITE,
+        source_path, source_format, mount_label, access_mode,
         // When succeeds, OnMountCompleted will be called by
         // "MountCompleted" signal instead.
         base::Bind(&base::DoNothing),

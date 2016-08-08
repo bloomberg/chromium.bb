@@ -254,14 +254,19 @@ class CHROMEOS_EXPORT DiskMountManager {
       const EnsureMountInfoRefreshedCallback& callback,
       bool force) = 0;
 
-  // Mounts a device.
+  // Mounts a device or an archive file.
+  // |source_path| specifies either a device or an archive file path.
+  // When |type|=MOUNT_TYPE_ARCHIVE, caller may set two optional arguments:
+  // |source_format| and |mount_label|. See CrosDisksClient::Mount for detail.
+  // |access_mode| specifies read-only or read-write mount mode for a device.
   // Note that the mount operation may fail. To find out the result, one should
   // observe DiskMountManager for |Observer::OnMountEvent| event, which will be
   // raised upon the mount operation completion.
   virtual void MountPath(const std::string& source_path,
                          const std::string& source_format,
                          const std::string& mount_label,
-                         MountType type) = 0;
+                         MountType type,
+                         MountAccessMode access_mode) = 0;
 
   // Unmounts a mounted disk.
   // |UnmountOptions| enum defined in chromeos/dbus/cros_disks_client.h.

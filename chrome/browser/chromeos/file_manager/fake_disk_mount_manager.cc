@@ -13,12 +13,13 @@ FakeDiskMountManager::MountRequest::MountRequest(
     const std::string& source_path,
     const std::string& source_format,
     const std::string& mount_label,
-    chromeos::MountType type)
+    chromeos::MountType type,
+    chromeos::MountAccessMode access_mode)
     : source_path(source_path),
       source_format(source_format),
       mount_label(mount_label),
-      type(type) {
-}
+      type(type),
+      access_mode(access_mode) {}
 
 FakeDiskMountManager::MountRequest::MountRequest(const MountRequest& other) =
     default;
@@ -75,9 +76,10 @@ void FakeDiskMountManager::EnsureMountInfoRefreshed(
 void FakeDiskMountManager::MountPath(const std::string& source_path,
                                      const std::string& source_format,
                                      const std::string& mount_label,
-                                     chromeos::MountType type) {
+                                     chromeos::MountType type,
+                                     chromeos::MountAccessMode access_mode) {
   mount_requests_.push_back(
-      MountRequest(source_path, source_format, mount_label, type));
+      MountRequest(source_path, source_format, mount_label, type, access_mode));
 
   const MountPointInfo mount_point(
       source_path,

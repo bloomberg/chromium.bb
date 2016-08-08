@@ -300,6 +300,8 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kExternalStorageDisabled, false);
 
+  registry->RegisterBooleanPref(prefs::kExternalStorageReadOnly, false);
+
   registry->RegisterStringPref(prefs::kTermsOfServiceURL, "");
 
   registry->RegisterBooleanPref(prefs::kTouchHudProjectionEnabled, false);

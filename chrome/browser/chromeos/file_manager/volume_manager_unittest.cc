@@ -437,6 +437,33 @@ TEST_F(VolumeManagerTest, OnDiskEvent_Changed) {
   EXPECT_EQ(1U, observer.events().size());
   EXPECT_EQ(1U, disk_mount_manager_->mount_requests().size());
   EXPECT_EQ(0U, disk_mount_manager_->unmount_requests().size());
+  // Read-write mode by default.
+  EXPECT_EQ(chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
+            disk_mount_manager_->mount_requests()[0].access_mode);
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnDiskEvent_ChangedInReadonly) {
+  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageReadOnly, true);
+
+  // Changed event should cause mounting (if possible).
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  const chromeos::disks::DiskMountManager::Disk kDisk(
+      "device1", "", "", "", "", "", "", "", "", "", "", "",
+      chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, true, false, false,
+      false);
+  volume_manager()->OnDiskEvent(chromeos::disks::DiskMountManager::DISK_CHANGED,
+                                &kDisk);
+
+  EXPECT_EQ(1U, observer.events().size());
+  EXPECT_EQ(1U, disk_mount_manager_->mount_requests().size());
+  EXPECT_EQ(0U, disk_mount_manager_->unmount_requests().size());
+  // Shoule mount a disk in read-only mode.
+  EXPECT_EQ(chromeos::MOUNT_ACCESS_MODE_READ_ONLY,
+            disk_mount_manager_->mount_requests()[0].access_mode);
 
   volume_manager()->RemoveObserver(&observer);
 }
@@ -524,8 +551,8 @@ TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
           chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
           false));
   disk_mount_manager_->AddDiskForTest(disk.release());
-  disk_mount_manager_->MountPath(
-      "device1", "", "", chromeos::MOUNT_TYPE_DEVICE);
+  disk_mount_manager_->MountPath("device1", "", "", chromeos::MOUNT_TYPE_DEVICE,
+                                 chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 
   const chromeos::disks::DiskMountManager::MountPointInfo kMountPoint(
       "device1",
@@ -674,10 +701,10 @@ TEST_F(VolumeManagerTest, OnFormatEvent_CompletedFailed) {
 
 TEST_F(VolumeManagerTest, OnExternalStorageDisabledChanged) {
   // Here create two mount points.
-  disk_mount_manager_->MountPath(
-      "mount1", "", "", chromeos::MOUNT_TYPE_DEVICE);
-  disk_mount_manager_->MountPath(
-      "mount2", "", "", chromeos::MOUNT_TYPE_DEVICE);
+  disk_mount_manager_->MountPath("mount1", "", "", chromeos::MOUNT_TYPE_DEVICE,
+                                 chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+  disk_mount_manager_->MountPath("mount2", "", "", chromeos::MOUNT_TYPE_DEVICE,
+                                 chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
 
   // Initially, there are two mount points.
   ASSERT_EQ(2U, disk_mount_manager_->mount_points().size());
