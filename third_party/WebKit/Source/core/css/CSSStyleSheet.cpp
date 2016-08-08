@@ -68,7 +68,7 @@ private:
     Member<CSSStyleSheet> m_styleSheet;
 };
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
 {
     // Only these nodes can be parents of StyleSheets, and they need to call
@@ -95,7 +95,7 @@ CSSStyleSheet* CSSStyleSheet::create(StyleSheetContents* sheet, Node* ownerNode)
 
 CSSStyleSheet* CSSStyleSheet::createInline(StyleSheetContents* sheet, Node* ownerNode, const TextPosition& startPosition)
 {
-    ASSERT(sheet);
+    DCHECK(sheet);
     return new CSSStyleSheet(sheet, ownerNode, true, startPosition);
 }
 
@@ -127,22 +127,15 @@ CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents, Node* ownerNode, bool
     , m_startPosition(startPosition)
     , m_loadCompleted(false)
 {
-    ASSERT(isAcceptableCSSStyleSheetParent(ownerNode));
+#if DCHECK_IS_ON()
+    DCHECK(isAcceptableCSSStyleSheetParent(ownerNode));
+#endif
     m_contents->registerClient(this);
 }
 
 CSSStyleSheet::~CSSStyleSheet()
 {
 }
-
-#if ENABLE(ASSERT)
-
-static bool isStyleElement(const Node* node)
-{
-    return node && (isHTMLStyleElement(node) || isSVGStyleElement(node));
-}
-
-#endif // ENABLE(ASSERT)
 
 void CSSStyleSheet::willMutateRules()
 {
@@ -153,8 +146,7 @@ void CSSStyleSheet::willMutateRules()
         return;
     }
     // Only cacheable stylesheets should have multiple clients.
-    ASSERT((isStyleElement(ownerNode()) && m_contents->isCacheableForStyleElement())
-        || m_contents->isCacheableForResource());
+    DCHECK(m_contents->isCacheableForStyleElement() || m_contents->isCacheableForResource());
 
     // Copy-on-write.
     m_contents->unregisterClient(this);
@@ -169,8 +161,8 @@ void CSSStyleSheet::willMutateRules()
 
 void CSSStyleSheet::didMutateRules()
 {
-    ASSERT(m_contents->isMutable());
-    ASSERT(m_contents->clientSize() <= 1);
+    DCHECK(m_contents->isMutable());
+    DCHECK_LE(m_contents->clientSize(), 1u);
 
     didMutate(PartialRuleUpdate);
 }
@@ -226,7 +218,7 @@ CSSRule* CSSStyleSheet::item(unsigned index)
 
     if (m_childRuleCSSOMWrappers.isEmpty())
         m_childRuleCSSOMWrappers.grow(ruleCount);
-    ASSERT(m_childRuleCSSOMWrappers.size() == ruleCount);
+    DCHECK_EQ(m_childRuleCSSOMWrappers.size(), ruleCount);
 
     Member<CSSRule>& cssRule = m_childRuleCSSOMWrappers[index];
     if (!cssRule)
@@ -266,7 +258,7 @@ CSSRuleList* CSSStyleSheet::rules()
 
 unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, ExceptionState& exceptionState)
 {
-    ASSERT(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
+    DCHECK(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
 
     if (index > length()) {
         exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is larger than the maximum index (" + String::number(length()) + ").");
@@ -303,7 +295,7 @@ unsigned CSSStyleSheet::insertRule(const String& rule, ExceptionState& exception
 
 void CSSStyleSheet::deleteRule(unsigned index, ExceptionState& exceptionState)
 {
-    ASSERT(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
+    DCHECK(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
 
     if (index >= length()) {
         exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is larger than the maximum index (" + String::number(length() - 1) + ").");
@@ -399,7 +391,7 @@ void CSSStyleSheet::setAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allo
 
 bool CSSStyleSheet::sheetLoaded()
 {
-    ASSERT(m_ownerNode);
+    DCHECK(m_ownerNode);
     setLoadCompleted(m_ownerNode->sheetLoaded());
     return m_loadCompleted;
 }
