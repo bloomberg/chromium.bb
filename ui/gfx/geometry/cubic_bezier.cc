@@ -180,4 +180,20 @@ double CubicBezier::Slope(double x) const {
   return SlopeWithEpsilon(x, kBezierEpsilon);
 }
 
+double CubicBezier::GetX1() const {
+  return cx_ / 3.0;
+}
+
+double CubicBezier::GetY1() const {
+  return cy_ / 3.0;
+}
+
+double CubicBezier::GetX2() const {
+  return (bx_ + cx_) / 3.0 + GetX1();
+}
+
+double CubicBezier::GetY2() const {
+  return (by_ + cy_) / 3.0 + GetY1();
+}
+
 }  // namespace gfx

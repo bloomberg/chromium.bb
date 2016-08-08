@@ -55,6 +55,13 @@ class GFX_EXPORT CubicBezier {
   // Clamps x to range [0, 1].
   double SlopeWithEpsilon(double x, double epsilon) const;
 
+  // These getters are used rarely. We reverse compute them from coefficients.
+  // See CubicBezier::InitCoefficients. The speed has been traded for memory.
+  double GetX1() const;
+  double GetY1() const;
+  double GetX2() const;
+  double GetY2() const;
+
   // Gets the bezier's minimum y value in the interval [0, 1].
   double range_min() const { return range_min_; }
   // Gets the bezier's maximum y value in the interval [0, 1].

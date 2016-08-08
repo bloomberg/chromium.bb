@@ -196,7 +196,34 @@ TEST(CubicBezierTest, InputOutOfRange) {
   CubicBezier three_coincident_points(0.0, 0.0, 0.0, 0.0);
   EXPECT_EQ(0, three_coincident_points.Solve(-1.0));
   EXPECT_EQ(2.0, three_coincident_points.Solve(2.0));
+}
 
+TEST(CubicBezierTest, GetPoints) {
+  double epsilon = 0.00015;
+
+  CubicBezier cubic1(0.1, 0.2, 0.8, 0.9);
+  EXPECT_NEAR(0.1, cubic1.GetX1(), epsilon);
+  EXPECT_NEAR(0.2, cubic1.GetY1(), epsilon);
+  EXPECT_NEAR(0.8, cubic1.GetX2(), epsilon);
+  EXPECT_NEAR(0.9, cubic1.GetY2(), epsilon);
+
+  CubicBezier cubic_zero(0, 0, 0, 0);
+  EXPECT_NEAR(0, cubic_zero.GetX1(), epsilon);
+  EXPECT_NEAR(0, cubic_zero.GetY1(), epsilon);
+  EXPECT_NEAR(0, cubic_zero.GetX2(), epsilon);
+  EXPECT_NEAR(0, cubic_zero.GetY2(), epsilon);
+
+  CubicBezier cubic_one(1, 1, 1, 1);
+  EXPECT_NEAR(1, cubic_one.GetX1(), epsilon);
+  EXPECT_NEAR(1, cubic_one.GetY1(), epsilon);
+  EXPECT_NEAR(1, cubic_one.GetX2(), epsilon);
+  EXPECT_NEAR(1, cubic_one.GetY2(), epsilon);
+
+  CubicBezier cubic_oor(-0.5, -1.5, 1.5, -1.6);
+  EXPECT_NEAR(-0.5, cubic_oor.GetX1(), epsilon);
+  EXPECT_NEAR(-1.5, cubic_oor.GetY1(), epsilon);
+  EXPECT_NEAR(1.5, cubic_oor.GetX2(), epsilon);
+  EXPECT_NEAR(-1.6, cubic_oor.GetY2(), epsilon);
 }
 
 }  // namespace
