@@ -30,6 +30,7 @@ using safe_browsing::DownloadFileType;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::ReturnRefOfCopy;
 using ::testing::SetArgPointee;
 using ::testing::_;
@@ -380,6 +381,33 @@ TEST_F(DownloadItemModelTest, DangerLevel) {
 
   model().SetDangerLevel(DownloadFileType::ALLOW_ON_USER_GESTURE);
   EXPECT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE, model().GetDangerLevel());
+}
+
+TEST_F(DownloadItemModelTest, HasSupportedImageMimeType) {
+  SetupDownloadItemDefaults();
+
+  // When the item has a supported image MIME type, true should be returned.
+  ON_CALL(item(), GetMimeType()).WillByDefault(Return("image/png"));
+  EXPECT_TRUE(model().HasSupportedImageMimeType());
+
+  // An unsupported MIME type should result in false being returned...
+  ON_CALL(item(), GetMimeType()).WillByDefault(Return("image/unsupported"));
+  EXPECT_FALSE(model().HasSupportedImageMimeType());
+
+  // ... unless the target path has a well-known image extension.
+  const base::FilePath kImagePath(FILE_PATH_LITERAL("/foo/image.png"));
+  ON_CALL(item(), GetTargetFilePath()).WillByDefault(ReturnRef(kImagePath));
+  EXPECT_TRUE(model().HasSupportedImageMimeType());
+
+  // .txt and missing extensions should also result in false being returned.
+  const base::FilePath kTextPath(FILE_PATH_LITERAL("/foo/image.txt"));
+  ON_CALL(item(), GetTargetFilePath()).WillByDefault(ReturnRef(kTextPath));
+  EXPECT_FALSE(model().HasSupportedImageMimeType());
+
+  const base::FilePath kNoExtensionPath(FILE_PATH_LITERAL("/foo/image."));
+  ON_CALL(item(), GetTargetFilePath())
+      .WillByDefault(ReturnRef(kNoExtensionPath));
+  EXPECT_FALSE(model().HasSupportedImageMimeType());
 }
 
 TEST_F(DownloadItemModelTest, ShouldRemoveFromShelfWhenComplete) {
