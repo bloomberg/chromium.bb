@@ -373,6 +373,24 @@ def CopyDiaDllTo(target_dir):
   CopyFile(dia_dll, target_dir)
 
 
+def VeryifyVersionOfBuiltClangMatchesVERSION():
+  """Checks that `clang --version` outputs VERSION.  If this fails, VERSION
+  in this file is out-of-date and needs to be updated (possibly in an
+  `if use_head_revision:` block in main() first)."""
+  clang = os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')
+  if sys.platform == 'win32':
+    # TODO: Parse `clang-cl /?` output for built clang's version and check that
+    # to check the binary we're actually shipping? But clang-cl.exe is just
+    # a copy of clang.exe, so this does check the same thing.
+    clang += '.exe'
+  version_out = subprocess.check_output([clang, '--version'])
+  version_out = re.match(r'clang version ([0-9.]+)', version_out).group(1)
+  if version_out != VERSION:
+    print ('unexpected clang version %s (not %s), update VERSION in update.py'
+           % (version_out, VERSION))
+    sys.exit(1)
+
+
 def UpdateClang(args):
   print 'Updating Clang to %s...' % PACKAGE_VERSION
 
@@ -648,7 +666,7 @@ def UpdateClang(args):
   elif sys.platform.startswith('linux'):
     RunCommand(['strip', os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')])
 
-  # TODO(thakis): Check that `clang --version` matches VERSION.
+  VeryifyVersionOfBuiltClangMatchesVERSION()
 
   # Do an out-of-tree build of compiler-rt.
   # On Windows, this is used to get the 32-bit ASan run-time.
