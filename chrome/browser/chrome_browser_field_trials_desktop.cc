@@ -7,8 +7,12 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/debug/activity_tracker.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "base/path_service.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/variations/variations_util.h"
 #include "components/variations/variations_associated_data.h"
@@ -17,6 +21,10 @@
 namespace chrome {
 
 namespace {
+
+const base::Feature kStabilityDebuggingFeature{
+    "StabilityDebugging", base::FEATURE_DISABLED_BY_DEFAULT
+};
 
 void SetupLightSpeedTrials() {
   if (!variations::GetVariationParamValue("LightSpeed", "NoGpu").empty()) {
@@ -46,12 +54,35 @@ void SetupStunProbeTrial() {
 #endif
 }
 
+void SetupStabilityDebugging() {
+  if (!base::FeatureList::IsEnabled(kStabilityDebuggingFeature))
+    return;
+
+  // TODO(bcwhite): Adjust these numbers once there is real data to show
+  // just how much of an arena is necessary.
+  const size_t kMemorySize = 1 << 20;  // 1 MiB
+  const int kStackDepth = 4;
+  const uint64_t kAllocatorId = 0;
+
+  // Track code activities (such as posting task, blocking on locks, and
+  // joining threads) that can cause hanging threads and general instability.
+  base::FilePath user_data_dir;
+  bool success = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  DCHECK(success);
+  base::debug::GlobalActivityTracker::CreateWithFile(
+      user_data_dir
+          .AppendASCII("StabilityDebugInfo")
+          .AddExtension(base::PersistentMemoryAllocator::kFileExtension),
+      kMemorySize, kAllocatorId, kStabilityDebuggingFeature.name, kStackDepth);
+}
+
 }  // namespace
 
 void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
   prerender::ConfigurePrerender(parsed_command_line);
   SetupLightSpeedTrials();
   SetupStunProbeTrial();
+  SetupStabilityDebugging();
 }
 
 }  // namespace chrome
