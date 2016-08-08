@@ -336,7 +336,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     // If this is a form suggestion view and no suggestions have been triggered
     // yet, don't show the custom view.
     FormSuggestionView* formSuggestionView =
-        base::mac::ObjCCastStrict<FormSuggestionView>(view);
+        base::mac::ObjCCast<FormSuggestionView>(view);
     if (formSuggestionView) {
       int numSuggestions = [[formSuggestionView suggestions] count];
       if (!_suggestionsHaveBeenShown && numSuggestions == 0) {
