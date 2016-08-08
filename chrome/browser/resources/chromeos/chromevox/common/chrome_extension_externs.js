@@ -629,6 +629,9 @@ chrome.automation.AutomationNode.prototype.tableColumnCount;
 /** @type {number} */
 chrome.automation.AutomationNode.prototype.tableRowCount;
 
+/** @type {number} */
+chrome.automation.AutomationNode.prototype.hierarchicalLevel;
+
 /**
  * @extends {chrome.automation.AutomationNode}
  * @constructor

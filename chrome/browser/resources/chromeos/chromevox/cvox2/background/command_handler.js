@@ -278,10 +278,70 @@ CommandHandler.onCommand = function(command) {
       pred = AutomationPredicate.heading;
       predErrorMsg = 'no_next_heading';
       break;
+    case 'nextHeading1':
+      dir = Dir.FORWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(1);
+      predErrorMsg = 'no_next_heading_1';
+      break;
+    case 'nextHeading2':
+      dir = Dir.FORWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(2);
+      predErrorMsg = 'no_next_heading_2';
+      break;
+    case 'nextHeading3':
+      dir = Dir.FORWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(3);
+      predErrorMsg = 'no_next_heading_3';
+      break;
+    case 'nextHeading4':
+      dir = Dir.FORWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(4);
+      predErrorMsg = 'no_next_heading_4';
+      break;
+    case 'nextHeading5':
+      dir = Dir.FORWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(5);
+      predErrorMsg = 'no_next_heading_5';
+      break;
+    case 'nextHeading6':
+      dir = Dir.FORWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(6);
+      predErrorMsg = 'no_next_heading_6';
+      break;
     case 'previousHeading':
       dir = Dir.BACKWARD;
       pred = AutomationPredicate.heading;
       predErrorMsg = 'no_previous_heading';
+      break;
+    case 'previousHeading1':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(1);
+      predErrorMsg = 'no_previous_heading_1';
+      break;
+    case 'previousHeading2':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(2);
+      predErrorMsg = 'no_previous_heading_2';
+      break;
+    case 'previousHeading3':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(3);
+      predErrorMsg = 'no_previous_heading_3';
+      break;
+    case 'previousHeading4':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(4);
+      predErrorMsg = 'no_previous_heading_4';
+      break;
+    case 'previousHeading5':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(5);
+      predErrorMsg = 'no_previous_heading_5';
+      break;
+    case 'previousHeading6':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.makeHeadingPredicate(6);
+      predErrorMsg = 'no_previous_heading_6';
       break;
     case 'nextLink':
       dir = Dir.FORWARD;

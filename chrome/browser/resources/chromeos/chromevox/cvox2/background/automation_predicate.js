@@ -394,4 +394,16 @@ AutomationPredicate.makeTableCellPredicate = function(start, opts) {
   };
 };
 
+/**
+ * Returns a predicate that will match against a heading with a specific
+ * hierarchical level.
+ * @param {number} level 1-6
+ * @return {AutomationPredicate.Unary}
+ */
+AutomationPredicate.makeHeadingPredicate = function(level) {
+  return function(node) {
+    return node.role == RoleType.heading && node.hierarchicalLevel == level;
+  };
+};
+
 });  // goog.scope

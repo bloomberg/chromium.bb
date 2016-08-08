@@ -1113,3 +1113,22 @@ TEST_F('BackgroundTest', 'DisabledState', function() {
     mockFeedback.expectSpeech('ok', 'Disabled', 'Button').replay();
   });
 });
+
+TEST_F('BackgroundTest', 'HeadingLevels', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <h1>1</h1><h2>2</h2><h3>3</h3><h4>4</h4><h5>5</h5><h6>6</h6>
+  */}, function(root) {
+    var makeLevelAssertions = function(level) {
+      mockFeedback.call(doCmd('nextHeading' + level))
+          .expectSpeech('Heading ' + level)
+          .call(doCmd('nextHeading' + level))
+          .expectSpeech('No next level ' + level + ' heading.')
+          .call(doCmd('previousHeading' + level))
+          .expectSpeech('No previous level ' + level + ' heading.');
+    };
+    for (var i = 1; i <= 6; i++)
+      makeLevelAssertions(i);
+    mockFeedback.replay();
+  });
+});

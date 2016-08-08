@@ -183,11 +183,125 @@
       }
     },
     {
+      "command": "nextHeading1",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [49]
+        }
+      }
+    },
+    {
+      "command": "nextHeading2",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [50]
+        }
+      }
+    },
+    {
+      "command": "nextHeading3",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [51]
+        }
+      }
+    },
+    {
+      "command": "nextHeading4",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [52]
+        }
+      }
+    },
+    {
+      "command": "nextHeading5",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [53]
+        }
+      }
+    },
+    {
+      "command": "nextHeading6",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [54]
+        }
+      }
+    },
+    {
       "command": "previousHeading",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
           "keyCode": [72],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousHeading1",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [49],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousHeading2",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [50],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousHeading3",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [51],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousHeading4",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [52],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousHeading5",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [53],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousHeading6",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [54],
           "shiftKey": [true]
         }
       }

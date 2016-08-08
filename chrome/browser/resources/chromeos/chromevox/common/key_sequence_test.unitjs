@@ -486,3 +486,32 @@ TEST_F('CvoxKeySequenceUnitTest', 'DeserializeSearchCvoxMod', function() {
   assertFalse(stickySeq.keys.metaKey[0]);
   assertFalse(stickySeq.keys.searchKeyHeld[0]);
 });
+
+TEST_F('CvoxKeySequenceUnitTest', 'RequireStickyMode', function() {
+  var oneFromMap = cvox.KeySequence.deserialize({requireStickyMode: true,
+                                          keys: {keyCode: [49]}});
+
+  assertFalse(oneFromMap.cvoxModifier);
+  assertTrue(oneFromMap.requireStickyMode);
+  assertFalse(oneFromMap.stickyMode);
+
+  // Pressing one doesn't trigger the key because it requires sticky mode.
+  var oneFromEvt = cvox.KeySequence.deserialize({keys: {keyCode: [49]}});
+  assertFalse(oneFromMap.equals(oneFromEvt));
+
+  // Even modified, it should not match.
+  var modOneFromEvt = cvox.KeySequence.deserialize({cvoxModifier: true,
+                                                    keys: {keyCode: [49]}});
+  assertFalse(oneFromMap.equals(modOneFromEvt));
+
+  // But, with sticky mode on in the event, it should match.
+  var stickyOneFromEvt = cvox.KeySequence.deserialize({stickyMode: true,
+                                                       keys: {keyCode: [49]}});
+  assertTrue(stickyOneFromEvt.equals(oneFromMap));
+
+  // Finally, with both modifier and sticky on, it doesn't match.
+  var stickyModOneFromEvt = cvox.KeySequence.deserialize({stickyMode: true,
+                                                          cvoxModifier: true,
+                                                          keys: {keyCode: [49]}});
+  assertFalse(stickyModOneFromEvt.equals(oneFromMap));
+});
