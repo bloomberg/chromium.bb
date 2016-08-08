@@ -176,6 +176,11 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # https://bugs.chromium.org/p/swiftshader/issues/detail?id=1
+    'third_party/swiftshader': [
+        'UNKNOWN',
+    ],
+
     # http://code.google.com/p/angleproject/issues/detail?id=217
     'third_party/angle': [
         'UNKNOWN',
