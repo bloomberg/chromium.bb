@@ -9,6 +9,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
+#include "modules/webshare/ShareData.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
@@ -78,7 +79,7 @@ const char* NavigatorShare::supplementName()
     return "NavigatorShare";
 }
 
-ScriptPromise NavigatorShare::share(ScriptState* scriptState, const String& title, const String& text)
+ScriptPromise NavigatorShare::share(ScriptState* scriptState, const ShareData& shareData)
 {
     if (!m_service) {
         Document* doc = toDocument(scriptState->getExecutionContext());
@@ -94,14 +95,15 @@ ScriptPromise NavigatorShare::share(ScriptState* scriptState, const String& titl
     m_clients.add(client);
     ScriptPromise promise = resolver->promise();
 
-    m_service->Share(title, text, convertToBaseCallback(WTF::bind(&ShareClientImpl::callback, wrapPersistent(client))));
+    // TODO(sammc): Use shareData.url().
+    m_service->Share(shareData.hasTitle() ? shareData.title() : emptyString(), shareData.hasText() ? shareData.text() : emptyString(), convertToBaseCallback(WTF::bind(&ShareClientImpl::callback, wrapPersistent(client))));
 
     return promise;
 }
 
-ScriptPromise NavigatorShare::share(ScriptState* scriptState, Navigator& navigator, const String& title, const String& text)
+ScriptPromise NavigatorShare::share(ScriptState* scriptState, Navigator& navigator, const ShareData& shareData)
 {
-    return from(navigator).share(scriptState, title, text);
+    return from(navigator).share(scriptState, shareData);
 }
 
 } // namespace blink

@@ -10,12 +10,13 @@ share_test((t, mock) => {
 }, '0 arguments (promise rejection)');
 
 share_test((t, mock) => {
-  return promise_rejects(t, new TypeError(), navigator.share('the title'));
-}, '1 argument (promise rejection)');
+  mock.pushShareResult('the title', 'the message', null);
+  return navigator.share({title: 'the title', text: 'the message', unused: 'unexpected field'});
+}, 'extra ShareData field (extra field ignored)');
 
 share_test((t, mock) => {
   mock.pushShareResult('the title', 'the message', null);
-  return navigator.share('the title', 'the message', 'more than required');
-}, '3 arguments (extra argument ignored)');
+  return navigator.share({title: 'the title', text: 'the message'}, 'more than required');
+}, '2 arguments (extra argument ignored)');
 
 </script>

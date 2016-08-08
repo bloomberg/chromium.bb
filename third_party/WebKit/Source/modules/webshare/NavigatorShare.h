@@ -18,6 +18,7 @@
 namespace blink {
 
 class Navigator;
+class ShareData;
 
 class NavigatorShare final : public GarbageCollectedFinalized<NavigatorShare>, public Supplement<Navigator> {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorShare);
@@ -29,8 +30,8 @@ public:
     static NavigatorShare& from(Navigator&);
 
     // Navigator partial interface
-    ScriptPromise share(ScriptState*, const String& title, const String& text);
-    static ScriptPromise share(ScriptState*, Navigator&, const String& title, const String& text);
+    ScriptPromise share(ScriptState*, const ShareData&);
+    static ScriptPromise share(ScriptState*, Navigator&, const ShareData&);
 
     DECLARE_TRACE();
 
