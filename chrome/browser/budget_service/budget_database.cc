@@ -5,6 +5,8 @@
 #include "chrome/browser/budget_service/budget_database.h"
 
 #include "base/containers/adapters.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/budget_service/budget.pb.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,6 +21,10 @@ namespace {
 // synchronized with histograms.xml.
 const char kDatabaseUMAName[] = "BackgroundBudgetService";
 
+// The default amount of time during which a budget will be valid.
+// This is 3 days = 72 hours.
+constexpr double kBudgetDurationInHours = 72;
+
 }  // namespace
 
 BudgetDatabase::BudgetDatabase(
@@ -26,6 +32,7 @@ BudgetDatabase::BudgetDatabase(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : db_(new leveldb_proto::ProtoDatabaseImpl<budget_service::Budget>(
           task_runner)),
+      clock_(base::WrapUnique(new base::DefaultClock)),
       weak_ptr_factory_(this) {
   db_->Init(kDatabaseUMAName, database_dir,
             base::Bind(&BudgetDatabase::OnDatabaseInit,
@@ -33,33 +40,6 @@ BudgetDatabase::BudgetDatabase(
 }
 
 BudgetDatabase::~BudgetDatabase() {}
-
-// TODO(harkness): Remove this method once the replacement is available.
-void BudgetDatabase::GetValue(const GURL& origin,
-                              const GetValueCallback& callback) {
-  DCHECK_EQ(origin.GetOrigin(), origin);
-  db_->GetEntry(origin.spec(), callback);
-}
-
-void BudgetDatabase::SetValue(const GURL& origin,
-                              const budget_service::Budget& budget,
-                              const SetValueCallback& callback) {
-  DCHECK_EQ(origin.GetOrigin(), origin);
-
-  // TODO(harkness) Remove this method once the replacement is available.
-
-  // Build structures to hold the updated values.
-  std::unique_ptr<
-      leveldb_proto::ProtoDatabase<budget_service::Budget>::KeyEntryVector>
-      entries(new leveldb_proto::ProtoDatabase<
-              budget_service::Budget>::KeyEntryVector());
-  entries->push_back(std::make_pair(origin.spec(), budget));
-  std::unique_ptr<std::vector<std::string>> keys_to_remove(
-      new std::vector<std::string>());
-
-  // Send the updates to the database.
-  db_->UpdateEntries(std::move(entries), std::move(keys_to_remove), callback);
-}
 
 void BudgetDatabase::GetBudgetDetails(
     const GURL& origin,
@@ -84,6 +64,57 @@ void BudgetDatabase::GetBudgetDetails(
                                           origin, cache_callback));
 }
 
+void BudgetDatabase::AddBudget(const GURL& origin,
+                               double amount,
+                               const StoreBudgetCallback& callback) {
+  DCHECK_EQ(origin.GetOrigin(), origin);
+
+  // Look up the origin in our cache. Adding budget without first querying the
+  // existing budget is not suported.
+  DCHECK_GT(budget_map_.count(origin.spec()), 0U);
+
+  base::Time expiration =
+      clock_->Now() + base::TimeDelta::FromHours(kBudgetDurationInHours);
+  budget_map_[origin.spec()].second.push_back(
+      std::make_pair(amount, expiration.ToInternalValue()));
+
+  // Now that the cache is updated, write the data to the database.
+  WriteCachedValuesToDatabase(origin, callback);
+}
+
+void BudgetDatabase::WriteCachedValuesToDatabase(
+    const GURL& origin,
+    const StoreBudgetCallback& callback) {
+  // Create the data structures that are passed to the ProtoDatabase.
+  std::unique_ptr<
+      leveldb_proto::ProtoDatabase<budget_service::Budget>::KeyEntryVector>
+      entries(new leveldb_proto::ProtoDatabase<
+              budget_service::Budget>::KeyEntryVector());
+  std::unique_ptr<std::vector<std::string>> keys_to_remove(
+      new std::vector<std::string>());
+
+  // Each operation can either update the existing budget or remove the origin's
+  // budget information.
+  if (budget_map_.find(origin.spec()) == budget_map_.end()) {
+    // If the origin doesn't exist in the cache, this is a remove operation.
+    keys_to_remove->push_back(origin.spec());
+  } else {
+    // Build the Budget proto object.
+    budget_service::Budget budget;
+    const BudgetInfo& info = budget_map_[origin.spec()];
+    budget.set_debt(info.first);
+    for (const auto& chunk : info.second) {
+      budget_service::BudgetChunk* budget_chunk = budget.add_budget();
+      budget_chunk->set_amount(chunk.first);
+      budget_chunk->set_expiration(chunk.second);
+    }
+    entries->push_back(std::make_pair(origin.spec(), budget));
+  }
+
+  // Send the updates to the database.
+  db_->UpdateEntries(std::move(entries), std::move(keys_to_remove), callback);
+}
+
 void BudgetDatabase::OnDatabaseInit(bool success) {
   // TODO(harkness): Consider caching the budget database now?
 }
@@ -94,7 +125,7 @@ void BudgetDatabase::AddToCache(
     bool success,
     std::unique_ptr<budget_service::Budget> budget_proto) {
   // If the database read failed, there's nothing to add to the cache.
-  if (!success) {
+  if (!success || !budget_proto) {
     callback.Run(success);
     return;
   }
@@ -105,6 +136,7 @@ void BudgetDatabase::AddToCache(
   for (const auto& chunk : budget_proto->budget())
     chunks.push_back(std::make_pair(chunk.amount(), chunk.expiration()));
 
+  DCHECK(budget_proto->has_debt());
   budget_map_[origin.spec()] =
       std::make_pair(budget_proto->debt(), std::move(chunks));
 
@@ -141,4 +173,8 @@ void BudgetDatabase::DidGetBudget(const GURL& origin,
   expectation.push_front(std::make_pair(total, 0));
 
   callback.Run(true /* success */, info.first, expectation);
+}
+
+void BudgetDatabase::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+  clock_ = std::move(clock);
 }

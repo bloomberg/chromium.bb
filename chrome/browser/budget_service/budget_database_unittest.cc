@@ -5,6 +5,7 @@
 #include "chrome/browser/budget_service/budget_database.h"
 
 #include "base/run_loop.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/budget_service/budget.pb.h"
 #include "chrome/test/base/testing_profile.h"
@@ -16,12 +17,13 @@
 
 namespace {
 
-const double kDefaultDebt = -0.72;
 const double kDefaultBudget1 = 1.234;
 const double kDefaultBudget2 = 2.345;
-const double kDefaultExpiration = 3600000000;
+const double kDefaultExpirationInHours = 72;
 
 const char kTestOrigin[] = "https://example.com";
+
+}  // namespace
 
 class BudgetDatabaseTest : public ::testing::Test {
  public:
@@ -30,49 +32,23 @@ class BudgetDatabaseTest : public ::testing::Test {
         db_(profile_.GetPath().Append(FILE_PATH_LITERAL("BudgetDabase")),
             base::ThreadTaskRunnerHandle::Get()) {}
 
-  void SetBudgetComplete(base::Closure run_loop_closure, bool success) {
+  // The BudgetDatabase assumes that a budget will always be queried before it
+  // is written to. Use GetBudgetDetails() to pre-populate the cache.
+  void SetUp() override { GetBudgetDetails(); }
+
+  void AddBudgetComplete(base::Closure run_loop_closure, bool success) {
     success_ = success;
     run_loop_closure.Run();
   }
 
-  // Set up basic default values.
-  bool SetBudgetWithDefaultValues() {
-    budget_service::Budget budget;
-    budget.set_debt(kDefaultDebt);
-
-    // Create two chunks and give them default values.
-    budget_service::BudgetChunk* budget_chunk = budget.add_budget();
-    budget_chunk->set_amount(kDefaultBudget1);
-    budget_chunk->set_expiration(kDefaultExpiration);
-    budget_chunk = budget.add_budget();
-    budget_chunk->set_amount(kDefaultBudget2);
-    budget_chunk->set_expiration(kDefaultExpiration + 1);
-
+  // Add budget to the origin.
+  bool AddBudget(const GURL& origin, double amount) {
     base::RunLoop run_loop;
-    db_.SetValue(GURL(kTestOrigin), budget,
-                 base::Bind(&BudgetDatabaseTest::SetBudgetComplete,
-                            base::Unretained(this), run_loop.QuitClosure()));
+    db_.AddBudget(origin, amount,
+                  base::Bind(&BudgetDatabaseTest::AddBudgetComplete,
+                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
-
     return success_;
-  }
-
-  void GetBudgetComplete(base::Closure run_loop_closure,
-                         bool success,
-                         std::unique_ptr<budget_service::Budget> budget) {
-    budget_ = std::move(budget);
-    success_ = success;
-    run_loop_closure.Run();
-  }
-
-  // Excercise the very basic get method.
-  std::unique_ptr<budget_service::Budget> GetBudget() {
-    base::RunLoop run_loop;
-    db_.GetValue(GURL(kTestOrigin),
-                 base::Bind(&BudgetDatabaseTest::GetBudgetComplete,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    return std::move(budget_);
   }
 
   void GetBudgetDetailsComplete(
@@ -86,6 +62,7 @@ class BudgetDatabaseTest : public ::testing::Test {
     run_loop_closure.Run();
   }
 
+  // Get the full set of budget expectations for the origin.
   void GetBudgetDetails() {
     base::RunLoop run_loop;
     db_.GetBudgetDetails(
@@ -98,6 +75,13 @@ class BudgetDatabaseTest : public ::testing::Test {
   Profile* profile() { return &profile_; }
   const BudgetDatabase::BudgetExpectation& expectation() {
     return expectation_;
+  }
+
+  // Setup a test clock so that the tests can control time.
+  base::SimpleTestClock* SetClockForTesting() {
+    base::SimpleTestClock* clock = new base::SimpleTestClock();
+    db_.SetClockForTesting(base::WrapUnique(clock));
+    return clock;
   }
 
  protected:
@@ -113,18 +97,19 @@ class BudgetDatabaseTest : public ::testing::Test {
 };
 
 TEST_F(BudgetDatabaseTest, ReadAndWriteTest) {
-  ASSERT_TRUE(SetBudgetWithDefaultValues());
-  std::unique_ptr<budget_service::Budget> b = GetBudget();
+  const GURL origin(kTestOrigin);
+  base::SimpleTestClock* clock = SetClockForTesting();
+  base::TimeDelta expiration(
+      base::TimeDelta::FromHours(kDefaultExpirationInHours));
+  base::Time expiration_time = clock->Now() + expiration;
 
-  ASSERT_TRUE(success_);
-  EXPECT_EQ(kDefaultDebt, b->debt());
-  EXPECT_EQ(kDefaultBudget1, b->budget(0).amount());
-  EXPECT_EQ(kDefaultBudget2, b->budget(1).amount());
-  EXPECT_EQ(kDefaultExpiration, b->budget(0).expiration());
-}
+  // Add two budget chunks with different expirations (default expiration and
+  // default expiration + 1 day).
+  ASSERT_TRUE(AddBudget(origin, kDefaultBudget1));
+  clock->Advance(base::TimeDelta::FromDays(1));
+  ASSERT_TRUE(AddBudget(origin, kDefaultBudget2));
 
-TEST_F(BudgetDatabaseTest, BudgetDetailsTest) {
-  ASSERT_TRUE(SetBudgetWithDefaultValues());
+  // Get the budget.
   GetBudgetDetails();
 
   // Get the expectation and validate it.
@@ -138,18 +123,17 @@ TEST_F(BudgetDatabaseTest, BudgetDetailsTest) {
   // First value should be [total_budget, now]
   EXPECT_EQ(kDefaultBudget1 + kDefaultBudget2, iter->first);
   // TODO(harkness): This will be "now" in the final version. For now, it's
-  // just 0.0.
+  // just 0.
   EXPECT_EQ(0, iter->second);
 
   // The next value should be the budget after the first chunk expires.
   iter++;
   EXPECT_EQ(kDefaultBudget2, iter->first);
-  EXPECT_EQ(kDefaultExpiration, iter->second);
+  EXPECT_EQ(expiration_time.ToInternalValue(), iter->second);
 
   // The final value gives the budget of 0.0 after the second chunk expires.
+  expiration_time += base::TimeDelta::FromDays(1);
   iter++;
   EXPECT_EQ(0, iter->first);
-  EXPECT_EQ(kDefaultExpiration + 1, iter->second);
+  EXPECT_EQ(expiration_time.ToInternalValue(), iter->second);
 }
-
-}  // namespace

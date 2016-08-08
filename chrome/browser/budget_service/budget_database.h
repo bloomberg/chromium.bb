@@ -16,6 +16,7 @@
 #include "components/leveldb_proto/proto_database.h"
 
 namespace base {
+class Clock;
 class SequencedTaskRunner;
 }
 
@@ -32,13 +33,8 @@ class BudgetDatabase {
   // Data structure for returing the budget decay expectations to the caller.
   using BudgetExpectation = std::list<std::pair<double, double>>;
 
-  // Callback for the basic GetBudget call.
-  using GetValueCallback =
-      base::Callback<void(bool success,
-                          std::unique_ptr<budget_service::Budget>)>;
-
   // Callback for setting a budget value.
-  using SetValueCallback = base::Callback<void(bool success)>;
+  using StoreBudgetCallback = base::Callback<void(bool success)>;
 
   // Callback for getting a list of all budget chunks.
   using GetBudgetDetailsCallback = base::Callback<
@@ -51,18 +47,25 @@ class BudgetDatabase {
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~BudgetDatabase();
 
-  void GetValue(const GURL& origin, const GetValueCallback& callback);
-  void SetValue(const GURL& origin,
-                const budget_service::Budget& budget,
-                const SetValueCallback& callback);
-
   // Get the full budget expectation for the origin. This will return any
   // debt as well as a sequence of time points and the expected budget at
   // those times.
   void GetBudgetDetails(const GURL& origin,
                         const GetBudgetDetailsCallback& callback);
 
+  // Add budget for an origin. The caller specifies the amount, and the method
+  // adds the amount to the cache with the correct expiration. Callback is
+  // invoked only after the newly cached value is written to storage.
+  void AddBudget(const GURL& origin,
+                 double amount,
+                 const StoreBudgetCallback& callback);
+
  private:
+  friend class BudgetDatabaseTest;
+
+  // Used to allow tests to change time for testing.
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+
   // Data structure for caching budget information.
   using BudgetChunks = std::vector<std::pair<double, double>>;
   using BudgetInfo = std::pair<double, BudgetChunks>;
@@ -80,11 +83,17 @@ class BudgetDatabase {
                     const GetBudgetDetailsCallback& callback,
                     bool success);
 
+  void WriteCachedValuesToDatabase(const GURL& origin,
+                                   const StoreBudgetCallback& callback);
+
   // The database for storing budget information.
   std::unique_ptr<leveldb_proto::ProtoDatabase<budget_service::Budget>> db_;
 
   // Cached data for the origins which have been loaded.
   std::unordered_map<std::string, BudgetInfo> budget_map_;
+
+  // The clock used to vend times.
+  std::unique_ptr<base::Clock> clock_;
 
   base::WeakPtrFactory<BudgetDatabase> weak_ptr_factory_;
 
