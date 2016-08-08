@@ -583,7 +583,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
-        ['linux', 'nvidia', 'opengl'], bug=635528)
+        ['linux', 'intel', 'opengl'], bug=635528)
     self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
         ['linux', 'intel', 'opengl'], bug=598902)
 
