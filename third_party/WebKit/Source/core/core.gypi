@@ -541,6 +541,8 @@
             'layout/api/LineLayoutText.h',
             'layout/api/LineLayoutTextCombine.h',
             'layout/api/SelectionState.h',
+            'layout/ng/LayoutNGBlockFlow.cpp',
+            'layout/ng/LayoutNGBlockFlow.h',
             'layout/ng/NGConstraintSpace.cpp',
             'layout/ng/NGConstraintSpace.h',
             'layout/ng/NGFragment.cpp',

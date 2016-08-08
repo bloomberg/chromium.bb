@@ -484,6 +484,7 @@ public:
     bool isFileUploadControl() const { return isOfType(LayoutObjectFileUploadControl); }
     bool isFrame() const { return isOfType(LayoutObjectFrame); }
     bool isFrameSet() const { return isOfType(LayoutObjectFrameSet); }
+    bool isLayoutNGBlockFlow() const { return isOfType(LayoutObjectNGBlockFlow); }
     bool isLayoutTableCol() const { return isOfType(LayoutObjectLayoutTableCol); }
     bool isListBox() const { return isOfType(LayoutObjectListBox); }
     bool isListItem() const { return isOfType(LayoutObjectListItem); }
@@ -1427,6 +1428,7 @@ protected:
         LayoutObjectListMarker,
         LayoutObjectMedia,
         LayoutObjectMenuList,
+        LayoutObjectNGBlockFlow,
         LayoutObjectProgress,
         LayoutObjectQuote,
         LayoutObjectLayoutButton,
