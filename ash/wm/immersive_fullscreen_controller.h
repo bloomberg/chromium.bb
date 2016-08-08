@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller.h"
 #include "ash/common/wm/immersive_revealed_lock.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -41,7 +42,8 @@ class Widget;
 namespace ash {
 
 class ASH_EXPORT ImmersiveFullscreenController
-    : public gfx::AnimationDelegate,
+    : public WmImmersiveFullscreenController,
+      public gfx::AnimationDelegate,
       public ui::EventHandler,
       public ::wm::TransientWindowObserver,
       public views::FocusChangeListener,
@@ -50,66 +52,16 @@ class ASH_EXPORT ImmersiveFullscreenController
  public:
   static const int kMouseRevealBoundsHeight;
 
-  // The enum is used for an enumerated histogram. New items should be only
-  // added to the end.
-  enum WindowType {
-    WINDOW_TYPE_OTHER,
-    WINDOW_TYPE_BROWSER,
-    WINDOW_TYPE_HOSTED_APP,
-    WINDOW_TYPE_PACKAGED_APP,
-    WINDOW_TYPE_COUNT
-  };
-
-  class Delegate {
-   public:
-    // Called when a reveal of the top-of-window views starts.
-    virtual void OnImmersiveRevealStarted() = 0;
-
-    // Called when the top-of-window views have finished closing. This call
-    // implies a visible fraction of 0. SetVisibleFraction(0) may not be called
-    // prior to OnImmersiveRevealEnded().
-    virtual void OnImmersiveRevealEnded() = 0;
-
-    // Called as a result of disabling immersive fullscreen via SetEnabled().
-    virtual void OnImmersiveFullscreenExited() = 0;
-
-    // Called to update the fraction of the top-of-window views height which is
-    // visible.
-    virtual void SetVisibleFraction(double visible_fraction) = 0;
-
-    // Returns a list of rects whose union makes up the top-of-window views.
-    // The returned list is used for hittesting when the top-of-window views
-    // are revealed. GetVisibleBoundsInScreen() must return a valid value when
-    // not in immersive fullscreen for the sake of SetupForTest().
-    virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
   ImmersiveFullscreenController();
   ~ImmersiveFullscreenController() override;
 
-  // Initializes the controller. Must be called prior to enabling immersive
-  // fullscreen via SetEnabled(). |top_container| is used to keep the
-  // top-of-window views revealed when a child of |top_container| has focus.
-  // |top_container| does not affect which mouse and touch events keep the
-  // top-of-window views revealed.
-  void Init(Delegate* delegate,
+  // WmImmersiveFullscreenController overrides:
+  void Init(WmImmersiveFullscreenControllerDelegate* delegate,
             views::Widget* widget,
-            views::View* top_container);
-
-  // Enables or disables immersive fullscreen.
-  // |window_type| is the type of window which is put in immersive fullscreen.
-  // It is only used for histogramming.
-  void SetEnabled(WindowType window_type, bool enable);
-
-  // Returns true if |native_window_| is in immersive fullscreen.
-  bool IsEnabled() const;
-
-  // Returns true if |native_window_| is in immersive fullscreen and the
-  // top-of-window views are fully or partially visible.
-  bool IsRevealed() const;
+            views::View* top_container) override;
+  void SetEnabled(WindowType window_type, bool enable) override;
+  bool IsEnabled() const override;
+  bool IsRevealed() const override;
 
   // Returns a lock which will keep the top-of-window views revealed for its
   // lifetime. Several locks can be obtained. When all of the locks are
@@ -240,7 +192,7 @@ class ASH_EXPORT ImmersiveFullscreenController
   void RecreateBubbleObserver();
 
   // Not owned.
-  Delegate* delegate_;
+  WmImmersiveFullscreenControllerDelegate* delegate_;
   views::View* top_container_;
   views::Widget* widget_;
   aura::Window* native_window_;

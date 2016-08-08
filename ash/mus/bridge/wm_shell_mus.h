@@ -86,6 +86,8 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
       override;
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
   CreateScopedDisableInternalMouseAndKeyboard() override;
+  std::unique_ptr<WmImmersiveFullscreenController>
+  CreateImmersiveFullscreenController() override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
   SessionStateDelegate* GetSessionStateDelegate() override;

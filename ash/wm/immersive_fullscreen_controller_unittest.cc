@@ -5,6 +5,7 @@
 #include "ash/wm/immersive_fullscreen_controller.h"
 
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
@@ -45,7 +46,7 @@ class TestBubbleDialogDelegate : public views::BubbleDialogDelegateView {
 };
 
 class MockImmersiveFullscreenControllerDelegate
-    : public ImmersiveFullscreenController::Delegate {
+    : public WmImmersiveFullscreenControllerDelegate {
  public:
   MockImmersiveFullscreenControllerDelegate(views::View* top_container_view)
       : top_container_view_(top_container_view),
@@ -53,7 +54,7 @@ class MockImmersiveFullscreenControllerDelegate
         visible_fraction_(1) {}
   ~MockImmersiveFullscreenControllerDelegate() override {}
 
-  // ImmersiveFullscreenController::Delegate overrides:
+  // WmImmersiveFullscreenControllerDelegate overrides:
   void OnImmersiveRevealStarted() override {
     enabled_ = true;
     visible_fraction_ = 0;

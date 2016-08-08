@@ -17,7 +17,6 @@ class TabIconView;
 class WebAppLeftHeaderView;
 
 namespace ash {
-class FrameBorderHitTestController;
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 class HeaderPainter;
@@ -138,10 +137,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   // Helper class for painting the header.
   std::unique_ptr<ash::HeaderPainter> header_painter_;
-
-  // Updates the hittest bounds overrides based on the window show type.
-  std::unique_ptr<ash::FrameBorderHitTestController>
-      frame_border_hit_test_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAsh);
 };

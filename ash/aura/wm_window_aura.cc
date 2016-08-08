@@ -17,6 +17,7 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
+#include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_mirror_view.h"
@@ -292,6 +293,10 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
 void WmWindowAura::SetIntProperty(WmWindowProperty key, int value) {
   if (key == WmWindowProperty::SHELF_ID) {
     SetShelfIDForWindow(value, window_);
+    return;
+  }
+  if (key == WmWindowProperty::TOP_VIEW_INSET) {
+    window_->SetProperty(aura::client::kTopViewInset, value);
     return;
   }
 
@@ -647,6 +652,12 @@ void WmWindowAura::HideResizeShadow() {
       Shell::GetInstance()->resize_shadow_controller();
   if (resize_shadow_controller)
     resize_shadow_controller->HideShadow(window_);
+}
+
+void WmWindowAura::InstallResizeHandleWindowTargeter(
+    WmImmersiveFullscreenController* immersive_fullscreen_controller) {
+  window_->SetEventTargeter(base::MakeUnique<ResizeHandleWindowTargeter>(
+      window_, immersive_fullscreen_controller));
 }
 
 void WmWindowAura::SetBoundsInScreenBehaviorForChildren(

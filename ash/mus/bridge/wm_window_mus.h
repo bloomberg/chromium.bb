@@ -209,6 +209,9 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   std::vector<WmWindow*> GetChildren() override;
   void ShowResizeShadow(int component) override;
   void HideResizeShadow() override;
+  void InstallResizeHandleWindowTargeter(
+      WmImmersiveFullscreenController* immersive_fullscreen_controller)
+      override;
   void SetBoundsInScreenBehaviorForChildren(
       BoundsInScreenBehavior behavior) override;
   void SetSnapsChildrenToPhysicalPixelBoundary() override;

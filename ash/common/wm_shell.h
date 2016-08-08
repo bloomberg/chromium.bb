@@ -59,6 +59,7 @@ class WindowResizer;
 class WindowSelectorController;
 class WmActivationObserver;
 class WmDisplayObserver;
+class WmImmersiveFullscreenController;
 class WmWindow;
 
 enum class TaskSwitchSource;
@@ -259,6 +260,9 @@ class ASH_EXPORT WmShell {
 
   virtual std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
   CreateScopedDisableInternalMouseAndKeyboard() = 0;
+
+  virtual std::unique_ptr<WmImmersiveFullscreenController>
+  CreateImmersiveFullscreenController() = 0;
 
   // Called after maximize mode has started, windows might still animate though.
   void OnMaximizeModeStarted();

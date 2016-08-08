@@ -14,6 +14,7 @@
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -313,6 +314,12 @@ std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
 WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
   // TODO: needs implementation for mus, http://crbug.com/624967.
   NOTIMPLEMENTED();
+  return nullptr;
+}
+
+std::unique_ptr<WmImmersiveFullscreenController>
+WmShellMus::CreateImmersiveFullscreenController() {
+  // TODO(sky): port ImmersiveFullscreenController, http://crbug.com/548435.
   return nullptr;
 }
 

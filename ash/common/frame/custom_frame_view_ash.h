@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
-#define ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
+#ifndef ASH_COMMON_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
+#define ASH_COMMON_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
 
 #include <memory>
 
@@ -13,9 +13,8 @@
 #include "ui/views/window/non_client_view.h"
 
 namespace ash {
-class FrameBorderHitTestController;
 class FrameCaptionButtonContainerView;
-class ImmersiveFullscreenController;
+class WmImmersiveFullscreenController;
 }
 namespace views {
 class Widget;
@@ -42,7 +41,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   // CustomFrameViewAsh does not take ownership of
   // |immersive_fullscreen_controller|.
   void InitImmersiveFullscreenControllerForView(
-      ImmersiveFullscreenController* immersive_fullscreen_controller);
+      WmImmersiveFullscreenController* immersive_fullscreen_controller);
 
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.
@@ -95,13 +94,9 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   class HeaderView;
   HeaderView* header_view_;
 
-  // Updates the hittest bounds overrides based on the window state type.
-  std::unique_ptr<FrameBorderHitTestController>
-      frame_border_hit_test_controller_;
-
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAsh);
 };
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
+#endif  // ASH_COMMON_FRAME_CUSTOM_FRAME_VIEW_ASH_H_

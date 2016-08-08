@@ -58,6 +58,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
       override;
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
   CreateScopedDisableInternalMouseAndKeyboard() override;
+  std::unique_ptr<WmImmersiveFullscreenController>
+  CreateImmersiveFullscreenController() override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
   SessionStateDelegate* GetSessionStateDelegate() override;

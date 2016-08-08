@@ -15,7 +15,7 @@ namespace ash {
 
 ResizeHandleWindowTargeter::ResizeHandleWindowTargeter(
     aura::Window* window,
-    ImmersiveFullscreenController* controller)
+    WmImmersiveFullscreenController* controller)
     : window_(window), immersive_controller_(controller) {
   wm::WindowState* window_state = wm::GetWindowState(window_);
   OnPostWindowStateTypeChange(window_state, wm::WINDOW_STATE_TYPE_DEFAULT);

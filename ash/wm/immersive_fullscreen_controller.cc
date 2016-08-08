@@ -7,6 +7,7 @@
 #include <set>
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
@@ -255,9 +256,10 @@ ImmersiveFullscreenController::~ImmersiveFullscreenController() {
   EnableWindowObservers(false);
 }
 
-void ImmersiveFullscreenController::Init(Delegate* delegate,
-                                         views::Widget* widget,
-                                         views::View* top_container) {
+void ImmersiveFullscreenController::Init(
+    WmImmersiveFullscreenControllerDelegate* delegate,
+    views::Widget* widget,
+    views::View* top_container) {
   delegate_ = delegate;
   top_container_ = top_container;
   widget_ = widget;

@@ -19,7 +19,6 @@ class ImageView;
 namespace ash {
 class DefaultHeaderPainter;
 class FrameCaptionButtonContainerView;
-class FrameBorderHitTestController;
 
 class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
                                   public ShellObserver {
@@ -74,10 +73,6 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
 
   // Helper class for painting the header.
   std::unique_ptr<DefaultHeaderPainter> header_painter_;
-
-  // Updates the hittest bounds overrides based on the window state type.
-  std::unique_ptr<FrameBorderHitTestController>
-      frame_border_hit_test_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelFrameView);
 };

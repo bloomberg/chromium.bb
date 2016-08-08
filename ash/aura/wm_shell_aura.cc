@@ -21,6 +21,7 @@
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle_event_filter_aura.h"
@@ -183,6 +184,11 @@ WmShellAura::CreateScopedDisableInternalMouseAndKeyboard() {
   return base::WrapUnique(new ScopedDisableInternalMouseAndKeyboardOzone);
 #endif
   return nullptr;
+}
+
+std::unique_ptr<WmImmersiveFullscreenController>
+WmShellAura::CreateImmersiveFullscreenController() {
+  return base::MakeUnique<ImmersiveFullscreenController>();
 }
 
 void WmShellAura::OnOverviewModeStarting() {

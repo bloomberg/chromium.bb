@@ -12,8 +12,9 @@
 #include "ash/common/frame/frame_border_hit_test.h"
 #include "ash/common/frame/header_painter_util.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
-#include "ash/frame/frame_border_hit_test_controller.h"
+#include "ash/common/wm_window.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -95,9 +96,10 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     : BrowserNonClientFrameView(frame, browser_view),
       caption_button_container_(nullptr),
       web_app_left_header_view_(nullptr),
-      window_icon_(nullptr),
-      frame_border_hit_test_controller_(
-          new ash::FrameBorderHitTestController(frame)) {
+      window_icon_(nullptr) {
+  ash::WmLookup::Get()
+      ->GetWindowForWidget(frame)
+      ->InstallResizeHandleWindowTargeter(nullptr);
   ash::WmShell::Get()->AddShellObserver(this);
 }
 

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/custom_frame_view_ash.h"
+#include "ash/common/frame/custom_frame_view_ash.h"
 
 #include <algorithm>
 #include <vector>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/default_header_painter.h"
@@ -16,18 +15,16 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller.h"
+#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
-#include "ash/frame/frame_border_hit_test_controller.h"
-#include "ash/wm/immersive_fullscreen_controller.h"
-#include "ash/wm/window_state_aura.h"
-#include "base/command_line.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
+#include "ash/common/wm_window.h"
+#include "ash/common/wm_window_observer.h"
+#include "ash/common/wm_window_property.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -39,6 +36,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace ash {
+
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,19 +46,19 @@ namespace {
 // Handles a user's fullscreen request (Shift+F4/F4). Puts the window into
 // immersive fullscreen if immersive fullscreen is enabled for non-browser
 // windows.
-class CustomFrameViewAshWindowStateDelegate
-    : public ash::wm::WindowStateDelegate,
-      public ash::wm::WindowStateObserver,
-      public aura::WindowObserver {
+class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
+                                              public wm::WindowStateObserver,
+                                              public WmWindowObserver {
  public:
-  CustomFrameViewAshWindowStateDelegate(
-      ash::wm::WindowState* window_state,
-      ash::CustomFrameViewAsh* custom_frame_view)
-      : window_state_(NULL) {
-    immersive_fullscreen_controller_.reset(
-        new ash::ImmersiveFullscreenController);
-    custom_frame_view->InitImmersiveFullscreenControllerForView(
-        immersive_fullscreen_controller_.get());
+  CustomFrameViewAshWindowStateDelegate(wm::WindowState* window_state,
+                                        CustomFrameViewAsh* custom_frame_view)
+      : window_state_(nullptr) {
+    immersive_fullscreen_controller_ =
+        WmShell::Get()->CreateImmersiveFullscreenController();
+    if (immersive_fullscreen_controller_) {
+      custom_frame_view->InitImmersiveFullscreenControllerForView(
+          immersive_fullscreen_controller_.get());
+    }
 
     // Add a window state observer to exit fullscreen properly in case
     // fullscreen is exited without going through
@@ -68,63 +67,54 @@ class CustomFrameViewAshWindowStateDelegate
     // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
     window_state_ = window_state;
     window_state_->AddObserver(this);
-    GetAuraWindow()->AddObserver(this);
+    window_state_->window()->AddObserver(this);
   }
   ~CustomFrameViewAshWindowStateDelegate() override {
     if (window_state_) {
       window_state_->RemoveObserver(this);
-      GetAuraWindow()->RemoveObserver(this);
+      window_state_->window()->RemoveObserver(this);
     }
   }
 
  private:
-  aura::Window* GetAuraWindow() {
-    return ash::WmWindowAura::GetAuraWindow(window_state_->window());
-  }
-
-  // Overridden from ash::wm::WindowStateDelegate:
-  bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
+  // Overridden from wm::WindowStateDelegate:
+  bool ToggleFullscreen(wm::WindowState* window_state) override {
     bool enter_fullscreen = !window_state->IsFullscreen();
-    if (enter_fullscreen) {
-      GetAuraWindow()->SetProperty(aura::client::kShowStateKey,
-                                   ui::SHOW_STATE_FULLSCREEN);
-    } else {
+    if (enter_fullscreen)
+      window_state_->window()->SetShowState(ui::SHOW_STATE_FULLSCREEN);
+    else
       window_state->Restore();
-    }
     if (immersive_fullscreen_controller_) {
       immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
-          enter_fullscreen);
+          WmImmersiveFullscreenController::WINDOW_TYPE_OTHER, enter_fullscreen);
     }
     return true;
   }
-  // Overridden from aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override {
+  // Overridden from WmWindowObserver:
+  void OnWindowDestroying(WmWindow* window) override {
     window_state_->RemoveObserver(this);
-    GetAuraWindow()->RemoveObserver(this);
-    window_state_ = NULL;
+    window->RemoveObserver(this);
+    window_state_ = nullptr;
   }
-  // Overridden from ash::wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
-                                   ash::wm::WindowStateType old_type) override {
+  // Overridden from wm::WindowStateObserver:
+  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+                                   wm::WindowStateType old_type) override {
     if (!window_state->IsFullscreen() && !window_state->IsMinimized() &&
-        immersive_fullscreen_controller_.get() &&
+        immersive_fullscreen_controller_ &&
         immersive_fullscreen_controller_->IsEnabled()) {
       immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+          WmImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
     }
   }
 
-  ash::wm::WindowState* window_state_;
-  std::unique_ptr<ash::ImmersiveFullscreenController>
+  wm::WindowState* window_state_;
+  std::unique_ptr<WmImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshWindowStateDelegate);
 };
 
 }  // namespace
-
-namespace ash {
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh::HeaderView
@@ -133,7 +123,7 @@ namespace ash {
 // fullscreen.
 class CustomFrameViewAsh::HeaderView
     : public views::View,
-      public ImmersiveFullscreenController::Delegate,
+      public WmImmersiveFullscreenControllerDelegate,
       public ShellObserver {
  public:
   // |frame| is the widget that the caption buttons act on.
@@ -179,7 +169,7 @@ class CustomFrameViewAsh::HeaderView
   views::View* avatar_icon() const { return avatar_icon_; }
 
  private:
-  // ImmersiveFullscreenController::Delegate:
+  // WmImmersiveFullscreenControllerDelegate:
   void OnImmersiveRevealStarted() override;
   void OnImmersiveRevealEnded() override;
   void OnImmersiveFullscreenExited() override;
@@ -206,7 +196,7 @@ class CustomFrameViewAsh::HeaderView
 
 CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
     : frame_(frame),
-      header_painter_(new ash::DefaultHeaderPainter),
+      header_painter_(new DefaultHeaderPainter),
       avatar_icon_(NULL),
       caption_button_container_(NULL),
       fullscreen_visible_fraction_(0) {
@@ -315,12 +305,12 @@ void CustomFrameViewAsh::HeaderView::ChildPreferredSizeChanged(
 // CustomFrameViewAsh::HeaderView, ShellObserver overrides:
 
 void CustomFrameViewAsh::HeaderView::OnOverviewModeStarting() {
-  if (ash::MaterialDesignController::IsOverviewMaterial())
+  if (MaterialDesignController::IsOverviewMaterial())
     caption_button_container_->SetVisible(false);
 }
 
 void CustomFrameViewAsh::HeaderView::OnOverviewModeEnded() {
-  if (ash::MaterialDesignController::IsOverviewMaterial())
+  if (MaterialDesignController::IsOverviewMaterial())
     caption_button_container_->SetVisible(true);
 }
 
@@ -336,7 +326,7 @@ void CustomFrameViewAsh::HeaderView::OnMaximizeModeEnded() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh::HeaderView,
-//   ImmersiveFullscreenController::Delegate overrides:
+//   WmImmersiveFullscreenControllerDelegate overrides:
 
 void CustomFrameViewAsh::HeaderView::OnImmersiveRevealStarted() {
   fullscreen_visible_fraction_ = 0;
@@ -448,17 +438,16 @@ bool CustomFrameViewAsh::OverlayView::DoesIntersectRect(
 const char CustomFrameViewAsh::kViewClassName[] = "CustomFrameViewAsh";
 
 CustomFrameViewAsh::CustomFrameViewAsh(views::Widget* frame)
-    : frame_(frame),
-      header_view_(new HeaderView(frame)),
-      frame_border_hit_test_controller_(
-          new FrameBorderHitTestController(frame_)) {
+    : frame_(frame), header_view_(new HeaderView(frame)) {
+  WmWindow* frame_window = WmLookup::Get()->GetWindowForWidget(frame);
+  frame_window->InstallResizeHandleWindowTargeter(nullptr);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(new OverlayView(header_view_));
 
   // A delegate for a more complex way of fullscreening the window may already
   // be set. This is the case for packaged apps.
-  wm::WindowState* window_state = wm::GetWindowState(frame->GetNativeWindow());
+  wm::WindowState* window_state = frame_window->GetWindowState();
   if (!window_state->HasDelegate()) {
     window_state->SetDelegate(std::unique_ptr<wm::WindowStateDelegate>(
         new CustomFrameViewAshWindowStateDelegate(window_state, this)));
@@ -468,7 +457,7 @@ CustomFrameViewAsh::CustomFrameViewAsh(views::Widget* frame)
 CustomFrameViewAsh::~CustomFrameViewAsh() {}
 
 void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
-    ImmersiveFullscreenController* immersive_fullscreen_controller) {
+    WmImmersiveFullscreenController* immersive_fullscreen_controller) {
   immersive_fullscreen_controller->Init(header_view_, frame_, header_view_);
 }
 
@@ -530,8 +519,9 @@ gfx::Size CustomFrameViewAsh::GetPreferredSize() const {
 
 void CustomFrameViewAsh::Layout() {
   views::NonClientFrameView::Layout();
-  frame_->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
-                                         NonClientTopBorderHeight());
+  WmWindow* frame_window = WmLookup::Get()->GetWindowForWidget(frame_);
+  frame_window->SetIntProperty(WmWindowProperty::TOP_VIEW_INSET,
+                               NonClientTopBorderHeight());
 }
 
 const char* CustomFrameViewAsh::GetClassName() const {

@@ -43,6 +43,7 @@ struct ShelfItemDetails;
 class WmLayoutManager;
 class WmRootWindowController;
 class WmShell;
+class WmImmersiveFullscreenController;
 class WmTransientWindowObserver;
 class WmWindowObserver;
 enum class WmWindowProperty;
@@ -268,6 +269,11 @@ class ASH_EXPORT WmWindow {
   // shadow for (one of the constants in ui/base/hit_test.h).
   virtual void ShowResizeShadow(int component) = 0;
   virtual void HideResizeShadow() = 0;
+
+  // Installs a resize handler on the window that makes it easier to resize
+  // the window. See ResizeHandleWindowTargeter for the specifics.
+  virtual void InstallResizeHandleWindowTargeter(
+      WmImmersiveFullscreenController* immersive_fullscreen_controller) = 0;
 
   // See description in SetBoundsInScreen().
   virtual void SetBoundsInScreenBehaviorForChildren(BoundsInScreenBehavior) = 0;
