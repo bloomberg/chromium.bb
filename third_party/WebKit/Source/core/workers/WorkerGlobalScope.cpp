@@ -259,7 +259,7 @@ void WorkerGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
 {
     DCHECK(isContextThread());
     thread()->workerReportingProxy().reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location());
-    addMessageToWorkerConsole(consoleMessage);
+    m_consoleMessageStorage->addConsoleMessage(this, consoleMessage);
 }
 
 WorkerEventQueue* WorkerGlobalScope::getEventQueue() const
@@ -322,12 +322,6 @@ void WorkerGlobalScope::applyContentSecurityPolicyFromVector(const Vector<CSPHea
 void WorkerGlobalScope::setWorkerSettings(std::unique_ptr<WorkerSettings> workerSettings)
 {
     m_workerSettings = std::move(workerSettings);
-}
-
-void WorkerGlobalScope::addMessageToWorkerConsole(ConsoleMessage* consoleMessage)
-{
-    DCHECK(isContextThread());
-    m_consoleMessageStorage->addConsoleMessage(this, consoleMessage);
 }
 
 void WorkerGlobalScope::exceptionThrown(ErrorEvent* event)

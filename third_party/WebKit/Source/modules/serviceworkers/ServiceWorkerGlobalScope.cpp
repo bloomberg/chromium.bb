@@ -155,10 +155,10 @@ bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& even
     if (m_didEvaluateScript) {
         if (eventType == EventTypeNames::install) {
             ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'install' event must be added on the initial evaluation of worker script.");
-            addMessageToWorkerConsole(consoleMessage);
+            addConsoleMessage(consoleMessage);
         } else if (eventType == EventTypeNames::activate) {
             ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'activate' event must be added on the initial evaluation of worker script.");
-            addMessageToWorkerConsole(consoleMessage);
+            addConsoleMessage(consoleMessage);
         }
     }
     return WorkerGlobalScope::addEventListenerInternal(eventType, listener, options);

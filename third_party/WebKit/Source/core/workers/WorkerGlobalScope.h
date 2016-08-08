@@ -137,7 +137,6 @@ protected:
     void setWorkerSettings(std::unique_ptr<WorkerSettings>);
     void applyContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>& headers);
 
-    void addMessageToWorkerConsole(ConsoleMessage*);
     void setV8CacheOptions(V8CacheOptions v8CacheOptions) { m_v8CacheOptions = v8CacheOptions; }
 
     // ExecutionContext
