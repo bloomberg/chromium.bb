@@ -9,7 +9,6 @@
         '../compiled_resources2.gyp:route',
         'settings_section',
         'transition_behavior',
-        '<(EXTERNS_GYP):settings_private',
         '<(EXTERNS_GYP):web_animations',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
       ],

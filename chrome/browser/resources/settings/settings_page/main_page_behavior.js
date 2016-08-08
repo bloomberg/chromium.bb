@@ -20,10 +20,10 @@ function doWhenReady(readyTest, readyCallback) {
 }
 
 /**
- * Provides animations to expand and collapse individual sections in a page.
- * Expanded sections take up the full height of the container. At most one
- * section should be expanded at any given time.
- * @polymerBehavior Polymer.MainPageBehavior
+ * Responds to route changes by expanding, collapsing, or scrolling to sections
+ * on the page. Expanded sections take up the full height of the container. At
+ * most one section should be expanded at any given time.
+ * @polymerBehavior MainPageBehavior
  */
 var MainPageBehaviorImpl = {
   /** @type {?HTMLElement} The scrolling container. */
@@ -38,23 +38,49 @@ var MainPageBehaviorImpl = {
   },
 
   /**
-   * Hides or unhides the sections not being expanded.
-   * @param {string} sectionName The section to keep visible.
-   * @param {boolean} hidden Whether the sections should be hidden.
-   * @private
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
    */
-  toggleOtherSectionsHidden_: function(sectionName, hidden) {
-    var sections = Polymer.dom(this.root).querySelectorAll(
-        'settings-section');
-    for (var section of sections)
-      section.hidden = hidden && (section.section != sectionName);
+  currentRouteChanged: function(newRoute, oldRoute) {
+    var newRouteIsSubpage = newRoute && newRoute.subpage.length;
+    var oldRouteIsSubpage = oldRoute && oldRoute.subpage.length;
+
+    if (!oldRoute && newRouteIsSubpage) {
+      // Allow the page to load before expanding the section. TODO(michaelpg):
+      // Time this better when refactoring settings-animated-pages.
+      setTimeout(function() {
+        var section = this.getSection_(newRoute.section);
+        if (section)
+          this.expandSection_(section);
+      }.bind(this));
+      return;
+    }
+
+    if (newRouteIsSubpage) {
+      if (!oldRouteIsSubpage || newRoute.section != oldRoute.section) {
+        var section = this.getSection_(newRoute.section);
+        if (section)
+          this.expandSection_(section);
+      }
+    } else {
+      if (oldRouteIsSubpage) {
+        var section = this.getSection_(oldRoute.section);
+        if (section)
+          this.collapseSection_(section);
+      }
+
+      // Scrolls to the section if this main page contains the route's section.
+      if (newRoute && newRoute.section && this.getSection_(newRoute.section))
+        this.scrollToSection_();
+    }
   },
 
   /**
    * Animates the card in |section|, expanding it to fill the page.
    * @param {!SettingsSectionElement} section
+   * @private
    */
-  expandSection: function(section) {
+  expandSection_: function(section) {
     // If another section's card is expanding, cancel that animation first.
     var expanding = this.$$('.expanding');
     if (expanding) {
@@ -71,7 +97,7 @@ var MainPageBehaviorImpl = {
         // When it resolves, collapse that section's card before expanding
         // this one.
         setTimeout(function() {
-          this.collapseSection(
+          this.collapseSection_(
               /** @type {!SettingsSectionElement} */(expanding));
           this.finishAnimation('section', function() {
             this.startExpandSection_(section);
@@ -129,44 +155,6 @@ var MainPageBehaviorImpl = {
   },
 
   /**
-   * Animates the card in |section|, collapsing it back into its section.
-   * @param {!SettingsSectionElement} section
-   */
-  collapseSection: function(section) {
-    // If the section's card is still expanding, cancel the expand animation.
-    if (section.classList.contains('expanding')) {
-      if (this.animations['section']) {
-        this.cancelAnimation('section');
-      } else {
-        // The animation must have finished but its promise hasn't finished
-        // resolving; try again asynchronously.
-        this.async(function() {
-          this.collapseSection(section);
-        });
-      }
-      return;
-    }
-
-    if (!section.canAnimateCollapse())
-      return;
-
-    this.toggleOtherSectionsHidden_(section.section, false);
-
-    var scrollerWidth = this.scroller.clientWidth;
-    this.scroller.style.overflow = 'hidden';
-    // Adjust width to compensate for scroller.
-    var scrollbarWidth = this.scroller.clientWidth - scrollerWidth;
-    this.scroller.style.width = 'calc(100% - ' + scrollbarWidth + 'px)';
-
-    this.playCollapseSection_(section).then(function() {
-      section.setFrozen(false);
-      this.scroller.style.overflow = '';
-      this.scroller.style.width = '';
-      section.classList.remove('collapsing');
-    }.bind(this));
-  },
-
-  /**
    * Expands the card in |section| to fill the page.
    * @param {!SettingsSectionElement} section
    * @return {!Promise}
@@ -200,6 +188,45 @@ var MainPageBehaviorImpl = {
   },
 
   /**
+   * Animates the card in |section|, collapsing it back into its section.
+   * @param {!SettingsSectionElement} section
+   * @private
+   */
+  collapseSection_: function(section) {
+    // If the section's card is still expanding, cancel the expand animation.
+    if (section.classList.contains('expanding')) {
+      if (this.animations['section']) {
+        this.cancelAnimation('section');
+      } else {
+        // The animation must have finished but its promise hasn't finished
+        // resolving; try again asynchronously.
+        this.async(function() {
+          this.collapseSection_(section);
+        });
+      }
+      return;
+    }
+
+    if (!section.canAnimateCollapse())
+      return;
+
+    this.toggleOtherSectionsHidden_(section.section, false);
+
+    var scrollerWidth = this.scroller.clientWidth;
+    this.scroller.style.overflow = 'hidden';
+    // Adjust width to compensate for scroller.
+    var scrollbarWidth = this.scroller.clientWidth - scrollerWidth;
+    this.scroller.style.width = 'calc(100% - ' + scrollbarWidth + 'px)';
+
+    this.playCollapseSection_(section).then(function() {
+      section.setFrozen(false);
+      this.scroller.style.overflow = '';
+      this.scroller.style.width = '';
+      section.classList.remove('collapsing');
+    }.bind(this));
+  },
+
+  /**
    * Collapses the card in |section| back to its normal position.
    * @param {!SettingsSectionElement} section
    * @return {!Promise}
@@ -228,21 +255,7 @@ var MainPageBehaviorImpl = {
     });
     return promise;
   },
-};
 
-
-/** @polymerBehavior */
-var MainPageBehavior = [
-  TransitionBehavior,
-  MainPageBehaviorImpl
-];
-
-
-/**
- * TODO(michaelpg): integrate slide animations.
- * @polymerBehavior RoutableBehavior
- */
-var RoutableBehaviorImpl = {
   /** @private */
   scrollToSection_: function() {
     doWhenReady(
@@ -256,39 +269,17 @@ var RoutableBehaviorImpl = {
         }.bind(this));
   },
 
-  /** @private */
-  currentRouteChanged: function(newRoute, oldRoute) {
-    var newRouteIsSubpage = newRoute && newRoute.subpage.length;
-    var oldRouteIsSubpage = oldRoute && oldRoute.subpage.length;
-
-    if (!oldRoute && newRouteIsSubpage) {
-      // Allow the page to load before expanding the section. TODO(michaelpg):
-      // Time this better when refactoring settings-animated-pages.
-      setTimeout(function() {
-        var section = this.getSection_(newRoute.section);
-        if (section)
-          this.expandSection(section);
-      }.bind(this));
-      return;
-    }
-
-    if (newRouteIsSubpage) {
-      if (!oldRouteIsSubpage || newRoute.section != oldRoute.section) {
-        var section = this.getSection_(newRoute.section);
-        if (section)
-          this.expandSection(section);
-      }
-    } else {
-      if (oldRouteIsSubpage) {
-        var section = this.getSection_(oldRoute.section);
-        if (section)
-          this.collapseSection(section);
-      }
-
-      // Scrolls to the section if this main page contains the route's section.
-      if (newRoute && newRoute.section && this.getSection_(newRoute.section))
-        this.scrollToSection_();
-    }
+  /**
+   * Hides or unhides the sections not being expanded.
+   * @param {string} sectionName The section to keep visible.
+   * @param {boolean} hidden Whether the sections should be hidden.
+   * @private
+   */
+  toggleOtherSectionsHidden_: function(sectionName, hidden) {
+    var sections = Polymer.dom(this.root).querySelectorAll(
+        'settings-section');
+    for (var section of sections)
+      section.hidden = hidden && (section.section != sectionName);
   },
 
   /**
@@ -303,10 +294,9 @@ var RoutableBehaviorImpl = {
   },
 };
 
-
 /** @polymerBehavior */
-var RoutableBehavior = [
-  MainPageBehavior,
+var MainPageBehavior = [
   settings.RouteObserverBehavior,
-  RoutableBehaviorImpl
+  TransitionBehavior,
+  MainPageBehaviorImpl,
 ];

@@ -9,7 +9,7 @@
 Polymer({
   is: 'settings-about-page',
 
-  behaviors: [WebUIListenerBehavior, RoutableBehavior, I18nBehavior],
+  behaviors: [WebUIListenerBehavior, MainPageBehavior, I18nBehavior],
 
   properties: {
     /** @private {?UpdateStatusChangedEvent} */

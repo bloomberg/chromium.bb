@@ -10,12 +10,10 @@
 Polymer({
   is: 'settings-advanced-page',
 
-  behaviors: [SettingsPageVisibility, RoutableBehavior],
+  behaviors: [SettingsPageVisibility, MainPageBehavior],
 
   properties: {
-    /**
-     * Preferences state.
-     */
+    /** Preferences state. */
     prefs: {
       type: Object,
       notify: true,
