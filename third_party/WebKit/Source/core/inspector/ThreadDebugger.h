@@ -28,7 +28,10 @@ class CORE_EXPORT ThreadDebugger : public V8InspectorClient {
 public:
     explicit ThreadDebugger(v8::Isolate*);
     ~ThreadDebugger() override;
+
     static ThreadDebugger* from(v8::Isolate*);
+    virtual bool isWorker() = 0;
+    V8Inspector* v8Inspector() const { return m_v8Inspector.get(); }
 
     static void willExecuteScript(v8::Isolate*, int scriptId);
     static void didExecuteScript(v8::Isolate*);
@@ -43,6 +46,16 @@ public:
     unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation>);
     void promiseRejectionRevoked(v8::Local<v8::Context>, unsigned promiseRejectionId);
 
+protected:
+    virtual int contextGroupId(ExecutionContext*) = 0;
+    virtual void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) = 0;
+    void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
+    void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);
+    static MessageLevel consoleAPITypeToMessageLevel(V8ConsoleAPIType);
+
+    v8::Isolate* m_isolate;
+
+private:
     // V8InspectorClient implementation.
     void beginUserGesture() override;
     void endUserGesture() override;
@@ -50,26 +63,14 @@ public:
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
     double currentTimeMS() override;
     bool isInspectableHeapObject(v8::Local<v8::Object>) override;
-    void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;
     void consoleTimeStamp(const String16& title) override;
     void startRepeatingTimer(double, V8InspectorClient::TimerCallback, void* data) override;
     void cancelTimer(void* data) override;
 
-    V8Inspector* v8Inspector() const { return m_v8Inspector.get(); }
-    virtual bool isWorker() { return true; }
-    virtual void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) = 0;
-    virtual int contextGroupId(ExecutionContext*) = 0;
-
-protected:
-    void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);
     void onTimer(TimerBase*);
-    static MessageLevel consoleAPITypeToMessageLevel(V8ConsoleAPIType);
 
-    v8::Isolate* m_isolate;
-
-private:
     static void setMonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&, bool enabled);
     static void monitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void unmonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);

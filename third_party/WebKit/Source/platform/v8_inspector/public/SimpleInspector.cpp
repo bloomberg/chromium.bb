@@ -6,9 +6,8 @@
 #include "platform/v8_inspector/public/SimpleInspector.h"
 
 #include "platform/inspector_protocol/DispatcherBase.h"
-#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8Inspector.h"
-#include "platform/v8_inspector/public/V8InspectorClient.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 
 namespace blink {
 
@@ -24,19 +23,9 @@ SimpleInspector::~SimpleInspector()
     disconnectFrontend();
 }
 
-String16 SimpleInspector::valueSubtype(v8::Local<v8::Value> value)
-{
-    return String16();
-}
-
-bool SimpleInspector::formatAccessorsAsProperties(v8::Local<v8::Value> value)
-{
-    return false;
-}
-
 void SimpleInspector::connectFrontend(protocol::FrontendChannel* channel)
 {
-    m_session = m_inspector->connect(1, channel, &m_state);
+    m_session = m_inspector->connect(1, channel, nullptr);
 }
 
 void SimpleInspector::disconnectFrontend()
@@ -50,7 +39,7 @@ void SimpleInspector::dispatchMessageFromFrontend(const String16& message)
         m_session->dispatchProtocolMessage(message);
 }
 
-v8::Local<v8::Context> SimpleInspector::ensureDefaultContextInGroup(int)
+v8::Local<v8::Context> SimpleInspector::ensureDefaultContextInGroup(int contextGroupId)
 {
     return m_context;
 }

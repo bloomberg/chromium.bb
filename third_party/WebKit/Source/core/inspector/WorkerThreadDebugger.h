@@ -48,14 +48,16 @@ public:
     ~WorkerThreadDebugger() override;
 
     static WorkerThreadDebugger* from(v8::Isolate*);
-    void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) override;
-    int contextGroupId(ExecutionContext*) override;
+    bool isWorker() override { return true; }
 
     int contextGroupId();
     void contextCreated(v8::Local<v8::Context>);
     void contextWillBeDestroyed(v8::Local<v8::Context>);
     void exceptionThrown(ErrorEvent*);
-    unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation>);
+
+private:
+    int contextGroupId(ExecutionContext*) override;
+    void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) override;
 
     // V8InspectorClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;
@@ -67,11 +69,9 @@ public:
     void endEnsureAllContextsInGroup(int contextGroupId) override;
     bool canExecuteScripts(int contextGroupId) override;
     void resumeStartup(int contextGroupId) override;
-
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override;
     void consoleAPIMessage(int contextGroupId, V8ConsoleAPIType, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override;
 
-private:
     WorkerThread* m_workerThread;
 };
 
