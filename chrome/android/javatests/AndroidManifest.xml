@@ -52,13 +52,6 @@
 
         <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
             android:exported="true"/>
-        <!--suppress ExportedReceiver -->
-        <receiver android:name="org.chromium.chrome.browser.customtabs.CustomTabsActivityTest$DummyBroadcastReceiver">
-            <intent-filter>
-                <action android:name="org.chromium.chrome.browser.customtabs.TEST_PENDING_INTENT_SENT" >
-                </action>
-            </intent-filter>
-        </receiver>
 
         <service android:name="org.chromium.chrome.test.webapk.TestWebApkServiceImplWrapper"
             android:exported="true">
