@@ -340,7 +340,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
   suggestions_service->FetchSuggestionsData();
 
   // Let the network request run.
-  io_message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Ensure that CheckCallback() ran once.
   EXPECT_EQ(1, suggestions_data_callback_count_);
@@ -363,7 +363,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
   suggestions_service->FetchSuggestionsData();
 
   // Let any network request run.
-  io_message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Ensure that CheckCallback() didn't run.
   EXPECT_EQ(0, suggestions_data_callback_count_);
@@ -398,7 +398,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
   suggestions_service->FetchSuggestionsData();
 
   // Let any network request run.
-  io_message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Ensure that CheckCallback didn't run again.
   EXPECT_EQ(1, suggestions_data_callback_count_);
@@ -420,7 +420,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
   suggestions_service->FetchSuggestionsData();
 
   // No network request should be sent.
-  io_message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(HasPendingSuggestionsRequest(suggestions_service.get()));
   EXPECT_EQ(0, suggestions_data_callback_count_);
 }
@@ -443,7 +443,7 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {
       SuggestionsService::BuildSuggestionsURL());
 
   // (Testing only) wait until suggestion fetch is complete.
-  io_message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
@@ -465,7 +465,7 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
       SuggestionsService::BuildSuggestionsURL());
 
   // (Testing only) wait until suggestion fetch is complete.
-  io_message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Expect no suggestions in the cache.
   SuggestionsProfile empty_suggestions;
@@ -506,12 +506,10 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
   Blacklist(suggestions_service.get(), blacklisted_url);
   EXPECT_EQ(1, suggestions_data_callback_count_);
 
-  // Wait on the upload task. This only works when the scheduling task is not
-  // for future execution (note how both the SuggestionsService's scheduling
-  // delay and the BlacklistStore's candidacy delay are zero). Then wait on
-  // the blacklist request, then again on the next blacklist scheduling task.
-  base::RunLoop().RunUntilIdle();
-  io_message_loop_.RunUntilIdle();
+  // Wait on the upload task, the blacklist request and the next blacklist
+  // scheduling task. This only works when the scheduling task is not for future
+  // execution (note how both the SuggestionsService's scheduling delay and the
+  // BlacklistStore's candidacy delay are zero).
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2, suggestions_data_callback_count_);
@@ -590,10 +588,6 @@ TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
   // second request and the third scheduling. Again, note that calling
   // RunUntilIdle on the MessageLoop only works when the task is not posted for
   // the future.
-  base::RunLoop().RunUntilIdle();
-  io_message_loop_.RunUntilIdle();
-  base::RunLoop().RunUntilIdle();
-  io_message_loop_.RunUntilIdle();
   base::RunLoop().RunUntilIdle();
   CheckSuggestionsData();
 }
