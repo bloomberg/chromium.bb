@@ -69,7 +69,7 @@ The machines restart between test runs, so just looking for "Status: Not
 connected" is not enough to indicate a problem. For each disconnected machine,
 you can also check the "Last heard from" column to ensure that it's been gone
 for at least an hour. To get it running again,
-[file a bug](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Troopers,OS-?&comment=Hostname:&summary=Buildslave+offline+on+chromium.perf)
+[file a bug](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-Sheriff-BotHealth,Infra-Troopers,OS-?&comment=Hostname:&summary=Buildslave+offline+on+chromium.perf)
 against the current trooper and read [go/bug-a-trooper](http://go/bug-a-trooper) for contacting troopers.
 
 ### Purple bots
