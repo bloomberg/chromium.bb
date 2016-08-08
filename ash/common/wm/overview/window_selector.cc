@@ -553,8 +553,12 @@ void WindowSelector::OnDisplayRemoved(const display::Display& display) {
 
 void WindowSelector::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t metrics) {
-  PositionWindows(/* animate */ false);
-  RepositionTextFilterOnDisplayMetricsChange();
+  // If only the work area changes, there is no need to reposition windows in
+  // overview.
+  if (metrics != DISPLAY_METRIC_WORK_AREA) {
+    PositionWindows(/* animate */ false);
+    RepositionTextFilterOnDisplayMetricsChange();
+  }
 }
 
 void WindowSelector::OnWindowTreeChanged(WmWindow* window,
