@@ -80,6 +80,8 @@ class MemoryBenchmarkTop10MobileStress(MemoryBenchmarkTop10Mobile):
   This benchmark is intended to stress-test the browser, catching memory leaks
   or possible crashes after interacting with the browser for a period of time.
   """
+  page_set = page_sets.MemoryTop10MobileRealistic
+
   @classmethod
   def Name(cls):
     return 'memory.top_10_mobile_stress'
