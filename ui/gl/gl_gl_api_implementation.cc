@@ -274,6 +274,17 @@ static void GL_BINDING_CALL CustomRenderbufferStorageMultisampleEXT(
       target, samples, gl_internal_format, width, height);
 }
 
+static void GL_BINDING_CALL
+CustomRenderbufferStorageMultisample(GLenum target,
+                                     GLsizei samples,
+                                     GLenum internalformat,
+                                     GLsizei width,
+                                     GLsizei height) {
+  GLenum gl_internal_format = GetInternalFormat(internalformat);
+  g_driver_gl.orig_fn.glRenderbufferStorageMultisampleFn(
+      target, samples, gl_internal_format, width, height);
+}
+
 }  // anonymous namespace
 
 void DriverGL::InitializeCustomDynamicBindings(GLContext* context) {
@@ -306,6 +317,13 @@ void DriverGL::InitializeCustomDynamicBindings(GLContext* context) {
   fn.glRenderbufferStorageMultisampleEXTFn =
       reinterpret_cast<glRenderbufferStorageMultisampleEXTProc>(
       CustomRenderbufferStorageMultisampleEXT);
+
+  DCHECK(orig_fn.glRenderbufferStorageMultisampleFn == NULL);
+  orig_fn.glRenderbufferStorageMultisampleFn =
+      fn.glRenderbufferStorageMultisampleFn;
+  fn.glRenderbufferStorageMultisampleFn =
+      reinterpret_cast<glRenderbufferStorageMultisampleProc>(
+          CustomRenderbufferStorageMultisample);
 }
 
 static void GL_BINDING_CALL NullDrawClearFn(GLbitfield mask) {
