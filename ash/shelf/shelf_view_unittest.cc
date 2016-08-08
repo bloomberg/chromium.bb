@@ -1822,6 +1822,10 @@ TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
 
 // Tests that the AppListButton renders as active in response to touches.
 TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
+  // Touch feedback is not available in material mode.
+  if (ash::MaterialDesignController::IsShelfMaterial())
+    return;
+
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
@@ -1839,6 +1843,10 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
 // Tests that a touch that slides out of the bounds of the AppListButton leads
 // to the end of rendering an active state.
 TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
+  // Touch feedback is not available in material mode.
+  if (ash::MaterialDesignController::IsShelfMaterial())
+    return;
+
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
