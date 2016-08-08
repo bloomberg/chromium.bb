@@ -28,12 +28,12 @@ TEST_F(TargetsParserTest, DefaultParse) {
   const Targets targets = parser_.value();
 
   EXPECT_FALSE(targets.type_value.is_present());
-  EXPECT_EQ(50, targets.type_value.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(50), targets.type_value.value());
 
   EXPECT_FALSE(targets.type.is_present());
   EXPECT_EQ("", targets.type.value());
 
-  EXPECT_EQ(0, targets.track_uids.size());
+  EXPECT_EQ(static_cast<std::size_t>(0), targets.track_uids.size());
 }
 
 TEST_F(TargetsParserTest, DefaultValues) {
@@ -53,14 +53,14 @@ TEST_F(TargetsParserTest, DefaultValues) {
   const Targets targets = parser_.value();
 
   EXPECT_TRUE(targets.type_value.is_present());
-  EXPECT_EQ(50, targets.type_value.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(50), targets.type_value.value());
 
   EXPECT_TRUE(targets.type.is_present());
   EXPECT_EQ("", targets.type.value());
 
-  ASSERT_EQ(1, targets.track_uids.size());
+  ASSERT_EQ(static_cast<std::size_t>(1), targets.track_uids.size());
   EXPECT_TRUE(targets.track_uids[0].is_present());
-  EXPECT_EQ(0, targets.track_uids[0].value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), targets.track_uids[0].value());
 }
 
 TEST_F(TargetsParserTest, CustomValues) {
@@ -87,16 +87,16 @@ TEST_F(TargetsParserTest, CustomValues) {
   const Targets targets = parser_.value();
 
   EXPECT_TRUE(targets.type_value.is_present());
-  EXPECT_EQ(0, targets.type_value.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), targets.type_value.value());
 
   EXPECT_TRUE(targets.type.is_present());
   EXPECT_EQ("Hi", targets.type.value());
 
-  ASSERT_EQ(2, targets.track_uids.size());
+  ASSERT_EQ(static_cast<std::size_t>(2), targets.track_uids.size());
   EXPECT_TRUE(targets.track_uids[0].is_present());
-  EXPECT_EQ(1, targets.track_uids[0].value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), targets.track_uids[0].value());
   EXPECT_TRUE(targets.track_uids[1].is_present());
-  EXPECT_EQ(2, targets.track_uids[1].value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), targets.track_uids[1].value());
 }
 
 }  // namespace

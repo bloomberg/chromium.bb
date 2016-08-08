@@ -27,7 +27,7 @@ TEST_F(SlicesParserTest, DefaultParse) {
 
   const Slices slices = parser_.value();
 
-  EXPECT_EQ(0, slices.slices.size());
+  EXPECT_EQ(static_cast<std::size_t>(0), slices.slices.size());
 }
 
 TEST_F(SlicesParserTest, DefaultValues) {
@@ -40,7 +40,7 @@ TEST_F(SlicesParserTest, DefaultValues) {
 
   const Slices slices = parser_.value();
 
-  ASSERT_EQ(1, slices.slices.size());
+  ASSERT_EQ(static_cast<std::size_t>(1), slices.slices.size());
   EXPECT_TRUE(slices.slices[0].is_present());
   EXPECT_EQ(TimeSlice{}, slices.slices[0].value());
 }
@@ -68,7 +68,7 @@ TEST_F(SlicesParserTest, CustomValues) {
 
   TimeSlice expected;
 
-  ASSERT_EQ(2, slices.slices.size());
+  ASSERT_EQ(static_cast<std::size_t>(2), slices.slices.size());
   expected.lace_number.Set(1, true);
   EXPECT_TRUE(slices.slices[0].is_present());
   EXPECT_EQ(expected, slices.slices[0].value());

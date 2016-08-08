@@ -29,7 +29,7 @@ TEST_F(ContentEncodingsParserTest, DefaultParse) {
 
   const ContentEncodings content_encodings = parser_.value();
 
-  EXPECT_EQ(0, content_encodings.encodings.size());
+  EXPECT_EQ(static_cast<std::size_t>(0), content_encodings.encodings.size());
 }
 
 TEST_F(ContentEncodingsParserTest, DefaultValues) {
@@ -42,7 +42,7 @@ TEST_F(ContentEncodingsParserTest, DefaultValues) {
 
   const ContentEncodings content_encodings = parser_.value();
 
-  ASSERT_EQ(1, content_encodings.encodings.size());
+  ASSERT_EQ(static_cast<std::size_t>(1), content_encodings.encodings.size());
   EXPECT_TRUE(content_encodings.encodings[0].is_present());
   EXPECT_EQ(ContentEncoding{}, content_encodings.encodings[0].value());
 }
@@ -70,7 +70,7 @@ TEST_F(ContentEncodingsParserTest, CustomValues) {
 
   ContentEncoding expected;
 
-  ASSERT_EQ(2, content_encodings.encodings.size());
+  ASSERT_EQ(static_cast<std::size_t>(2), content_encodings.encodings.size());
   expected.order.Set(1, true);
   EXPECT_TRUE(content_encodings.encodings[0].is_present());
   EXPECT_EQ(expected, content_encodings.encodings[0].value());

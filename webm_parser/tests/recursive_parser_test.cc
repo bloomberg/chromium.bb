@@ -32,12 +32,12 @@ class FailParser : public ElementParser {
  public:
   FailParser() { EXPECT_FALSE(true); }
 
-  Status Init(const ElementMetadata& metadata,
-              std::uint64_t max_size) override {
+  Status Init(const ElementMetadata& /* metadata */,
+              std::uint64_t /* max_size */) override {
     return Status(Status::kInvalidElementSize);
   }
 
-  Status Feed(Callback* callback, Reader* reader,
+  Status Feed(Callback* /* callback */, Reader* /* reader */,
               std::uint64_t* num_bytes_read) override {
     *num_bytes_read = 0;
     return Status(Status::kInvalidElementSize);

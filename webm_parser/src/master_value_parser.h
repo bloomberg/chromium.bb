@@ -325,7 +325,7 @@ class MasterValueParser : public ElementParser {
   // parsed for which NotifyOnParseComplete() was requested. The provided
   // metadata is for the child element that has just completed parsing. By
   // default this method does nothing.
-  virtual void OnChildParsed(const ElementMetadata& metadata) {}
+  virtual void OnChildParsed(const ElementMetadata& /* metadata */) {}
 
  private:
   T value_;

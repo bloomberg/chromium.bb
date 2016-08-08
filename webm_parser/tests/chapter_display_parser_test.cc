@@ -30,11 +30,11 @@ TEST_F(ChapterDisplayParserTest, DefaultParse) {
   EXPECT_FALSE(chapter_display.string.is_present());
   EXPECT_EQ("", chapter_display.string.value());
 
-  ASSERT_EQ(1, chapter_display.languages.size());
+  ASSERT_EQ(static_cast<std::uint64_t>(1), chapter_display.languages.size());
   EXPECT_FALSE(chapter_display.languages[0].is_present());
   EXPECT_EQ("eng", chapter_display.languages[0].value());
 
-  EXPECT_EQ(0, chapter_display.countries.size());
+  EXPECT_EQ(static_cast<std::size_t>(0), chapter_display.countries.size());
 }
 
 TEST_F(ChapterDisplayParserTest, DefaultValues) {
@@ -56,11 +56,11 @@ TEST_F(ChapterDisplayParserTest, DefaultValues) {
   EXPECT_TRUE(chapter_display.string.is_present());
   EXPECT_EQ("", chapter_display.string.value());
 
-  ASSERT_EQ(1, chapter_display.languages.size());
+  ASSERT_EQ(static_cast<std::size_t>(1), chapter_display.languages.size());
   EXPECT_TRUE(chapter_display.languages[0].is_present());
   EXPECT_EQ("eng", chapter_display.languages[0].value());
 
-  ASSERT_EQ(1, chapter_display.countries.size());
+  ASSERT_EQ(static_cast<std::size_t>(1), chapter_display.countries.size());
   EXPECT_TRUE(chapter_display.countries[0].is_present());
   EXPECT_EQ("", chapter_display.countries[0].value());
 }
@@ -99,7 +99,7 @@ TEST_F(ChapterDisplayParserTest, CustomValues) {
   EXPECT_TRUE(chapter_display.string.is_present());
   EXPECT_EQ("hello", chapter_display.string.value());
 
-  ASSERT_EQ(3, chapter_display.languages.size());
+  ASSERT_EQ(static_cast<std::size_t>(3), chapter_display.languages.size());
   EXPECT_TRUE(chapter_display.languages[0].is_present());
   EXPECT_EQ("lang0", chapter_display.languages[0].value());
   EXPECT_TRUE(chapter_display.languages[1].is_present());
@@ -107,7 +107,7 @@ TEST_F(ChapterDisplayParserTest, CustomValues) {
   EXPECT_TRUE(chapter_display.languages[2].is_present());
   EXPECT_EQ("lang2", chapter_display.languages[2].value());
 
-  ASSERT_EQ(2, chapter_display.countries.size());
+  ASSERT_EQ(static_cast<std::size_t>(2), chapter_display.countries.size());
   EXPECT_TRUE(chapter_display.countries[0].is_present());
   EXPECT_EQ("area0", chapter_display.countries[0].value());
   EXPECT_TRUE(chapter_display.countries[1].is_present());

@@ -31,7 +31,7 @@ TEST_F(BlockHeaderParserTest, ValidBlock) {
 
   const BlockHeader& block_header = parser_.value();
 
-  EXPECT_EQ(1, block_header.track_number);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), block_header.track_number);
   EXPECT_EQ(0x1234, block_header.timecode);
   EXPECT_EQ(0x00, block_header.flags);
 }
@@ -47,7 +47,7 @@ TEST_F(BlockHeaderParserTest, IncrementalParse) {
 
   const BlockHeader& block_header = parser_.value();
 
-  EXPECT_EQ(2, block_header.track_number);
+  EXPECT_EQ(static_cast<std::uint64_t>(2), block_header.track_number);
   EXPECT_EQ(-2, block_header.timecode);
   EXPECT_EQ(0xFF, block_header.flags);
 }

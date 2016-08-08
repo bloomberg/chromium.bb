@@ -52,7 +52,7 @@ TEST_F(VirtualBlockParserTest, ValidBlock) {
 
   const VirtualBlock virtual_block = parser_.value();
 
-  EXPECT_EQ(1, virtual_block.track_number);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), virtual_block.track_number);
   EXPECT_EQ(0x1234, virtual_block.timecode);
 }
 
@@ -67,7 +67,7 @@ TEST_F(VirtualBlockParserTest, IncrementalParse) {
 
   const VirtualBlock virtual_block = parser_.value();
 
-  EXPECT_EQ(2, virtual_block.track_number);
+  EXPECT_EQ(static_cast<std::uint64_t>(2), virtual_block.track_number);
   EXPECT_EQ(-2, virtual_block.timecode);
 }
 

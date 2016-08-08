@@ -547,10 +547,11 @@ class BasicBlockParserTest : public ElementParserTest<T, id> {
 
       // Incremental parsing will call OnFrame once for every byte, plus
       // maybe one more time if the first call reads zero bytes (if the reader
-      // is
-      // blocked).
+      // is blocked).
+      const int this_frame_size = static_cast<int>(frame_size);
       EXPECT_CALL(callback_, OnFrame(metadata, NotNull(), NotNull()))
-          .Times(incremental ? Between(frame_size, frame_size + 1) : Exactly(1))
+          .Times(incremental ? Between(this_frame_size, this_frame_size + 1) :
+                               Exactly(1))
           .WillRepeatedly(Invoke(frame_handler));
 
       metadata.position += metadata.size;

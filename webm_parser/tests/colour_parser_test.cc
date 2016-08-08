@@ -36,25 +36,25 @@ TEST_F(ColourParserTest, DefaultParse) {
             colour.matrix_coefficients.value());
 
   EXPECT_FALSE(colour.bits_per_channel.is_present());
-  EXPECT_EQ(0, colour.bits_per_channel.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.bits_per_channel.value());
 
   EXPECT_FALSE(colour.chroma_subsampling_x.is_present());
-  EXPECT_EQ(0, colour.chroma_subsampling_x.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.chroma_subsampling_x.value());
 
   EXPECT_FALSE(colour.chroma_subsampling_y.is_present());
-  EXPECT_EQ(0, colour.chroma_subsampling_y.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.chroma_subsampling_y.value());
 
   EXPECT_FALSE(colour.cb_subsampling_x.is_present());
-  EXPECT_EQ(0, colour.cb_subsampling_x.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.cb_subsampling_x.value());
 
   EXPECT_FALSE(colour.cb_subsampling_y.is_present());
-  EXPECT_EQ(0, colour.cb_subsampling_y.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.cb_subsampling_y.value());
 
   EXPECT_FALSE(colour.chroma_siting_x.is_present());
-  EXPECT_EQ(0, colour.chroma_siting_x.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.chroma_siting_x.value());
 
   EXPECT_FALSE(colour.chroma_siting_y.is_present());
-  EXPECT_EQ(0, colour.chroma_siting_y.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.chroma_siting_y.value());
 
   EXPECT_FALSE(colour.range.is_present());
   EXPECT_EQ(Range::kUnspecified, colour.range.value());
@@ -67,10 +67,10 @@ TEST_F(ColourParserTest, DefaultParse) {
   EXPECT_EQ(Primaries::kUnspecified, colour.primaries.value());
 
   EXPECT_FALSE(colour.max_cll.is_present());
-  EXPECT_EQ(0, colour.max_cll.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.max_cll.value());
 
   EXPECT_FALSE(colour.max_fall.is_present());
-  EXPECT_EQ(0, colour.max_fall.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.max_fall.value());
 
   EXPECT_FALSE(colour.mastering_metadata.is_present());
   EXPECT_EQ(MasteringMetadata{}, colour.mastering_metadata.value());
@@ -130,25 +130,25 @@ TEST_F(ColourParserTest, DefaultValues) {
             colour.matrix_coefficients.value());
 
   EXPECT_TRUE(colour.bits_per_channel.is_present());
-  EXPECT_EQ(0, colour.bits_per_channel.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.bits_per_channel.value());
 
   EXPECT_TRUE(colour.chroma_subsampling_x.is_present());
-  EXPECT_EQ(0, colour.chroma_subsampling_x.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.chroma_subsampling_x.value());
 
   EXPECT_TRUE(colour.chroma_subsampling_y.is_present());
-  EXPECT_EQ(0, colour.chroma_subsampling_y.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.chroma_subsampling_y.value());
 
   EXPECT_TRUE(colour.cb_subsampling_x.is_present());
-  EXPECT_EQ(0, colour.cb_subsampling_x.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.cb_subsampling_x.value());
 
   EXPECT_TRUE(colour.cb_subsampling_y.is_present());
-  EXPECT_EQ(0, colour.cb_subsampling_y.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.cb_subsampling_y.value());
 
   EXPECT_TRUE(colour.chroma_siting_x.is_present());
-  EXPECT_EQ(0, colour.chroma_siting_x.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.chroma_siting_x.value());
 
   EXPECT_TRUE(colour.chroma_siting_y.is_present());
-  EXPECT_EQ(0, colour.chroma_siting_y.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.chroma_siting_y.value());
 
   EXPECT_TRUE(colour.range.is_present());
   EXPECT_EQ(Range::kUnspecified, colour.range.value());
@@ -161,10 +161,10 @@ TEST_F(ColourParserTest, DefaultValues) {
   EXPECT_EQ(Primaries::kUnspecified, colour.primaries.value());
 
   EXPECT_TRUE(colour.max_cll.is_present());
-  EXPECT_EQ(0, colour.max_cll.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.max_cll.value());
 
   EXPECT_TRUE(colour.max_fall.is_present());
-  EXPECT_EQ(0, colour.max_fall.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), colour.max_fall.value());
 
   EXPECT_TRUE(colour.mastering_metadata.is_present());
   EXPECT_EQ(MasteringMetadata{}, colour.mastering_metadata.value());
@@ -240,25 +240,25 @@ TEST_F(ColourParserTest, CustomValues) {
   EXPECT_EQ(MatrixCoefficients::kBt709, colour.matrix_coefficients.value());
 
   EXPECT_TRUE(colour.bits_per_channel.is_present());
-  EXPECT_EQ(2, colour.bits_per_channel.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), colour.bits_per_channel.value());
 
   EXPECT_TRUE(colour.chroma_subsampling_x.is_present());
-  EXPECT_EQ(3, colour.chroma_subsampling_x.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(3), colour.chroma_subsampling_x.value());
 
   EXPECT_TRUE(colour.chroma_subsampling_y.is_present());
-  EXPECT_EQ(4, colour.chroma_subsampling_y.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(4), colour.chroma_subsampling_y.value());
 
   EXPECT_TRUE(colour.cb_subsampling_x.is_present());
-  EXPECT_EQ(5, colour.cb_subsampling_x.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(5), colour.cb_subsampling_x.value());
 
   EXPECT_TRUE(colour.cb_subsampling_y.is_present());
-  EXPECT_EQ(6, colour.cb_subsampling_y.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(6), colour.cb_subsampling_y.value());
 
   EXPECT_TRUE(colour.chroma_siting_x.is_present());
-  EXPECT_EQ(1, colour.chroma_siting_x.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), colour.chroma_siting_x.value());
 
   EXPECT_TRUE(colour.chroma_siting_y.is_present());
-  EXPECT_EQ(2, colour.chroma_siting_y.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), colour.chroma_siting_y.value());
 
   EXPECT_TRUE(colour.range.is_present());
   EXPECT_EQ(Range::kDerived, colour.range.value());
@@ -271,10 +271,10 @@ TEST_F(ColourParserTest, CustomValues) {
   EXPECT_EQ(Primaries::kBt470Bg, colour.primaries.value());
 
   EXPECT_TRUE(colour.max_cll.is_present());
-  EXPECT_EQ(6, colour.max_cll.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(6), colour.max_cll.value());
 
   EXPECT_TRUE(colour.max_fall.is_present());
-  EXPECT_EQ(7, colour.max_fall.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(7), colour.max_fall.value());
 
   MasteringMetadata mastering_metadata{};
   mastering_metadata.primary_r_chromaticity_x.Set(1.0, true);

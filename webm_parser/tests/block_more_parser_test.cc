@@ -28,7 +28,7 @@ TEST_F(BlockMoreParserTest, DefaultParse) {
   const BlockMore block_more = parser_.value();
 
   EXPECT_FALSE(block_more.id.is_present());
-  EXPECT_EQ(1, block_more.id.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), block_more.id.value());
 
   EXPECT_FALSE(block_more.data.is_present());
   EXPECT_EQ(std::vector<std::uint8_t>{}, block_more.data.value());
@@ -48,7 +48,7 @@ TEST_F(BlockMoreParserTest, DefaultValues) {
   const BlockMore block_more = parser_.value();
 
   EXPECT_TRUE(block_more.id.is_present());
-  EXPECT_EQ(1, block_more.id.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), block_more.id.value());
 
   EXPECT_TRUE(block_more.data.is_present());
   EXPECT_EQ(std::vector<std::uint8_t>{}, block_more.data.value());
@@ -70,7 +70,7 @@ TEST_F(BlockMoreParserTest, CustomValues) {
   const BlockMore block_more = parser_.value();
 
   EXPECT_TRUE(block_more.id.is_present());
-  EXPECT_EQ(2, block_more.id.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), block_more.id.value());
 
   EXPECT_TRUE(block_more.data.is_present());
   EXPECT_EQ(std::vector<std::uint8_t>{0x00}, block_more.data.value());

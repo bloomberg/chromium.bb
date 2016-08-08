@@ -216,7 +216,7 @@ TEST_F(MasterParserTest, UnknownSize) {
 
   ParseAndVerify(kUnknownElementSize);
 
-  EXPECT_EQ(5, reader_.Position());
+  EXPECT_EQ(static_cast<std::uint64_t>(5), reader_.Position());
 }
 
 // Consecutive elements with unknown size should parse without issues, despite

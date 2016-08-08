@@ -71,7 +71,7 @@ class ElementParserTest : public ParserTest<T> {
       std::uint64_t local_num_bytes_read = 0;
       status = parser_.Feed(&callback_, &limited_reader, &local_num_bytes_read);
       num_bytes_read += local_num_bytes_read;
-      ASSERT_GE(1, local_num_bytes_read);
+      ASSERT_GE(static_cast<std::uint64_t>(1), local_num_bytes_read);
     } while (status.code == Status::kWouldBlock ||
              status.code == Status::kOkPartial);
 

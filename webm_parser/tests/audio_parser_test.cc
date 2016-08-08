@@ -33,10 +33,10 @@ TEST_F(AudioParserTest, DefaultParse) {
   EXPECT_EQ(8000, audio.output_frequency.value());
 
   EXPECT_FALSE(audio.channels.is_present());
-  EXPECT_EQ(1, audio.channels.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.channels.value());
 
   EXPECT_FALSE(audio.bit_depth.is_present());
-  EXPECT_EQ(0, audio.bit_depth.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), audio.bit_depth.value());
 }
 
 TEST_F(AudioParserTest, DefaultValues) {
@@ -65,10 +65,10 @@ TEST_F(AudioParserTest, DefaultValues) {
   EXPECT_EQ(8000, audio.output_frequency.value());
 
   EXPECT_TRUE(audio.channels.is_present());
-  EXPECT_EQ(1, audio.channels.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.channels.value());
 
   EXPECT_TRUE(audio.bit_depth.is_present());
-  EXPECT_EQ(0, audio.bit_depth.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), audio.bit_depth.value());
 }
 
 TEST_F(AudioParserTest, CustomValues) {
@@ -95,16 +95,16 @@ TEST_F(AudioParserTest, CustomValues) {
   const Audio audio = parser_.value();
 
   EXPECT_TRUE(audio.sampling_frequency.is_present());
-  EXPECT_EQ(1, audio.sampling_frequency.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.sampling_frequency.value());
 
   EXPECT_TRUE(audio.output_frequency.is_present());
   EXPECT_EQ(1.73205077648162841796875, audio.output_frequency.value());
 
   EXPECT_TRUE(audio.channels.is_present());
-  EXPECT_EQ(2, audio.channels.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), audio.channels.value());
 
   EXPECT_TRUE(audio.bit_depth.is_present());
-  EXPECT_EQ(1, audio.bit_depth.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.bit_depth.value());
 }
 
 TEST_F(AudioParserTest, AbsentOutputSamplingFrequency) {
@@ -119,16 +119,16 @@ TEST_F(AudioParserTest, AbsentOutputSamplingFrequency) {
   const Audio audio = parser_.value();
 
   EXPECT_TRUE(audio.sampling_frequency.is_present());
-  EXPECT_EQ(1, audio.sampling_frequency.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.sampling_frequency.value());
 
   EXPECT_FALSE(audio.output_frequency.is_present());
-  EXPECT_EQ(1, audio.output_frequency.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.output_frequency.value());
 
   EXPECT_FALSE(audio.channels.is_present());
-  EXPECT_EQ(1, audio.channels.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.channels.value());
 
   EXPECT_FALSE(audio.bit_depth.is_present());
-  EXPECT_EQ(0, audio.bit_depth.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), audio.bit_depth.value());
 }
 
 TEST_F(AudioParserTest, DefaultOutputSamplingFrequency) {
@@ -146,16 +146,16 @@ TEST_F(AudioParserTest, DefaultOutputSamplingFrequency) {
   const Audio audio = parser_.value();
 
   EXPECT_TRUE(audio.sampling_frequency.is_present());
-  EXPECT_EQ(1, audio.sampling_frequency.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.sampling_frequency.value());
 
   EXPECT_TRUE(audio.output_frequency.is_present());
-  EXPECT_EQ(1, audio.output_frequency.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.output_frequency.value());
 
   EXPECT_FALSE(audio.channels.is_present());
-  EXPECT_EQ(1, audio.channels.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), audio.channels.value());
 
   EXPECT_FALSE(audio.bit_depth.is_present());
-  EXPECT_EQ(0, audio.bit_depth.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), audio.bit_depth.value());
 }
 
 }  // namespace

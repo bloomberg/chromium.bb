@@ -31,10 +31,10 @@ TEST_F(ContentEncodingParserTest, DefaultParse) {
   const ContentEncoding content_encoding = parser_.value();
 
   EXPECT_FALSE(content_encoding.order.is_present());
-  EXPECT_EQ(0, content_encoding.order.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), content_encoding.order.value());
 
   EXPECT_FALSE(content_encoding.scope.is_present());
-  EXPECT_EQ(1, content_encoding.scope.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), content_encoding.scope.value());
 
   EXPECT_FALSE(content_encoding.type.is_present());
   EXPECT_EQ(ContentEncodingType::kCompression, content_encoding.type.value());
@@ -63,10 +63,10 @@ TEST_F(ContentEncodingParserTest, DefaultValues) {
   const ContentEncoding content_encoding = parser_.value();
 
   EXPECT_TRUE(content_encoding.order.is_present());
-  EXPECT_EQ(0, content_encoding.order.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), content_encoding.order.value());
 
   EXPECT_TRUE(content_encoding.scope.is_present());
-  EXPECT_EQ(1, content_encoding.scope.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), content_encoding.scope.value());
 
   EXPECT_TRUE(content_encoding.type.is_present());
   EXPECT_EQ(ContentEncodingType::kCompression, content_encoding.type.value());
@@ -102,10 +102,10 @@ TEST_F(ContentEncodingParserTest, CustomValues) {
   const ContentEncoding content_encoding = parser_.value();
 
   EXPECT_TRUE(content_encoding.order.is_present());
-  EXPECT_EQ(1, content_encoding.order.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), content_encoding.order.value());
 
   EXPECT_TRUE(content_encoding.scope.is_present());
-  EXPECT_EQ(2, content_encoding.scope.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), content_encoding.scope.value());
 
   EXPECT_TRUE(content_encoding.type.is_present());
   EXPECT_EQ(ContentEncodingType::kEncryption, content_encoding.type.value());

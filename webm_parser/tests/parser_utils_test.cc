@@ -73,28 +73,28 @@ TEST_F(ParserUtilsTest, AccumulateIntegerBytes) {
   status =
       AccumulateIntegerBytes(4, &reader, &integer, &num_bytes_actually_read);
   EXPECT_EQ(Status::kWouldBlock, status.code);
-  EXPECT_EQ(1, num_bytes_actually_read);
-  EXPECT_EQ(0x12, integer);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), num_bytes_actually_read);
+  EXPECT_EQ(static_cast<std::uint32_t>(0x12), integer);
 
   reader.set_total_read_limit(std::numeric_limits<std::size_t>::max());
   status =
       AccumulateIntegerBytes(3, &reader, &integer, &num_bytes_actually_read);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(3, num_bytes_actually_read);
-  EXPECT_EQ(0x12345678, integer);
+  EXPECT_EQ(static_cast<std::uint64_t>(3), num_bytes_actually_read);
+  EXPECT_EQ(static_cast<std::uint32_t>(0x12345678), integer);
 
   // Make sure calling with num_bytes_remaining == 0 is a no-op.
   status =
       AccumulateIntegerBytes(0, &reader, &integer, &num_bytes_actually_read);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(0, num_bytes_actually_read);
-  EXPECT_EQ(0x12345678, integer);
+  EXPECT_EQ(static_cast<std::uint64_t>(0), num_bytes_actually_read);
+  EXPECT_EQ(static_cast<std::uint32_t>(0x12345678), integer);
 
   status =
       AccumulateIntegerBytes(4, &reader, &integer, &num_bytes_actually_read);
   EXPECT_EQ(Status::kEndOfFile, status.code);
-  EXPECT_EQ(0, num_bytes_actually_read);
-  EXPECT_EQ(0x12345678, integer);
+  EXPECT_EQ(static_cast<std::uint64_t>(0), num_bytes_actually_read);
+  EXPECT_EQ(static_cast<std::uint32_t>(0x12345678), integer);
 }
 
 }  // namespace

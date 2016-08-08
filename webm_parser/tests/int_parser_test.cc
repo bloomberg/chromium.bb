@@ -32,24 +32,24 @@ TEST_F(UnsignedIntParserTest, UnsignedCustomDefault) {
 
   ParseAndVerify();
 
-  EXPECT_EQ(1, parser_.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), parser_.value());
 }
 
 TEST_F(UnsignedIntParserTest, UnsignedValidInt) {
   ParseAndVerify();
-  EXPECT_EQ(0, parser_.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), parser_.value());
 
   SetReaderData({0x01, 0x02, 0x03});
   ParseAndVerify();
-  EXPECT_EQ(0x010203, parser_.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0x010203), parser_.value());
 
   SetReaderData({0xFF, 0xFF, 0xFF, 0xFF, 0xFF});
   ParseAndVerify();
-  EXPECT_EQ(0xFFFFFFFFFF, parser_.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0xFFFFFFFFFF), parser_.value());
 
   SetReaderData({0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0});
   ParseAndVerify();
-  EXPECT_EQ(0x123456789ABCDEF0, parser_.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0x123456789ABCDEF0), parser_.value());
 }
 
 TEST_F(UnsignedIntParserTest, UnsignedIncrementalParse) {
@@ -57,7 +57,7 @@ TEST_F(UnsignedIntParserTest, UnsignedIncrementalParse) {
 
   IncrementalParseAndVerify();
 
-  EXPECT_EQ(0xFEDCBA9876543210, parser_.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0xFEDCBA9876543210), parser_.value());
 }
 
 class SignedIntParserTest : public ElementParserTest<SignedIntParser> {};

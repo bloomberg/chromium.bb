@@ -20,39 +20,39 @@ namespace webm {
 // if the callback ever needs to process data from the byte stream.
 class SkipCallback : public Callback {
  public:
-  Status OnElementBegin(const ElementMetadata& metadata,
+  Status OnElementBegin(const ElementMetadata& /* metadata */,
                         Action* action) override {
     *action = Action::kSkip;
     return Status(Status::kOkCompleted);
   }
 
-  Status OnSegmentBegin(const ElementMetadata& metadata,
+  Status OnSegmentBegin(const ElementMetadata& /* metadata */,
                         Action* action) override {
     *action = Action::kSkip;
     return Status(Status::kOkCompleted);
   }
 
-  Status OnClusterBegin(const ElementMetadata& metadata, const Cluster& cluster,
-                        Action* action) override {
+  Status OnClusterBegin(const ElementMetadata& /* metadata */,
+                        const Cluster& /* cluster */, Action* action) override {
     *action = Action::kSkip;
     return Status(Status::kOkCompleted);
   }
 
-  Status OnSimpleBlockBegin(const ElementMetadata& metadata,
-                            const SimpleBlock& simple_block,
+  Status OnSimpleBlockBegin(const ElementMetadata& /* metadata */,
+                            const SimpleBlock& /* simple_block */,
                             Action* action) override {
     *action = Action::kSkip;
     return Status(Status::kOkCompleted);
   }
 
-  Status OnBlockGroupBegin(const ElementMetadata& metadata,
+  Status OnBlockGroupBegin(const ElementMetadata& /* metadata */,
                            Action* action) override {
     *action = Action::kSkip;
     return Status(Status::kOkCompleted);
   }
 
-  Status OnBlockBegin(const ElementMetadata& metadata, const Block& block,
-                      Action* action) override {
+  Status OnBlockBegin(const ElementMetadata& /* metadata */,
+                      const Block& /* block */, Action* action) override {
     *action = Action::kSkip;
     return Status(Status::kOkCompleted);
   }

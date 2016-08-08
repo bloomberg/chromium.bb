@@ -28,7 +28,8 @@ TEST_F(BlockAdditionsParserTest, DefaultParse) {
 
   const BlockAdditions block_additions = parser_.value();
 
-  EXPECT_EQ(0, block_additions.block_mores.size());
+  const std::size_t kExpectedBlockMoresSize = 0;
+  EXPECT_EQ(kExpectedBlockMoresSize, block_additions.block_mores.size());
 }
 
 TEST_F(BlockAdditionsParserTest, DefaultValues) {
@@ -41,7 +42,7 @@ TEST_F(BlockAdditionsParserTest, DefaultValues) {
 
   const BlockAdditions block_additions = parser_.value();
 
-  ASSERT_EQ(1, block_additions.block_mores.size());
+  ASSERT_EQ(static_cast<std::size_t>(1), block_additions.block_mores.size());
   EXPECT_TRUE(block_additions.block_mores[0].is_present());
   EXPECT_EQ(BlockMore{}, block_additions.block_mores[0].value());
 }
@@ -69,7 +70,7 @@ TEST_F(BlockAdditionsParserTest, CustomValues) {
 
   BlockMore expected;
 
-  ASSERT_EQ(2, block_additions.block_mores.size());
+  ASSERT_EQ(static_cast<std::size_t>(2), block_additions.block_mores.size());
   expected.id.Set(2, true);
   EXPECT_TRUE(block_additions.block_mores[0].is_present());
   EXPECT_EQ(expected, block_additions.block_mores[0].value());

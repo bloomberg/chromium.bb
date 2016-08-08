@@ -29,19 +29,23 @@ TEST_F(CueTrackPositionsParserTest, DefaultParse) {
   const CueTrackPositions cue_track_positions = parser_.value();
 
   EXPECT_FALSE(cue_track_positions.track.is_present());
-  EXPECT_EQ(0, cue_track_positions.track.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), cue_track_positions.track.value());
 
   EXPECT_FALSE(cue_track_positions.cluster_position.is_present());
-  EXPECT_EQ(0, cue_track_positions.cluster_position.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0),
+            cue_track_positions.cluster_position.value());
 
   EXPECT_FALSE(cue_track_positions.relative_position.is_present());
-  EXPECT_EQ(0, cue_track_positions.relative_position.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0),
+            cue_track_positions.relative_position.value());
 
   EXPECT_FALSE(cue_track_positions.duration.is_present());
-  EXPECT_EQ(0, cue_track_positions.duration.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0),
+            cue_track_positions.duration.value());
 
   EXPECT_FALSE(cue_track_positions.block_number.is_present());
-  EXPECT_EQ(1, cue_track_positions.block_number.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1),
+            cue_track_positions.block_number.value());
 }
 
 TEST_F(CueTrackPositionsParserTest, DefaultValues) {
@@ -67,19 +71,23 @@ TEST_F(CueTrackPositionsParserTest, DefaultValues) {
   const CueTrackPositions cue_track_positions = parser_.value();
 
   EXPECT_TRUE(cue_track_positions.track.is_present());
-  EXPECT_EQ(0, cue_track_positions.track.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), cue_track_positions.track.value());
 
   EXPECT_TRUE(cue_track_positions.cluster_position.is_present());
-  EXPECT_EQ(0, cue_track_positions.cluster_position.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0),
+            cue_track_positions.cluster_position.value());
 
   EXPECT_TRUE(cue_track_positions.relative_position.is_present());
-  EXPECT_EQ(0, cue_track_positions.relative_position.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0),
+            cue_track_positions.relative_position.value());
 
   EXPECT_TRUE(cue_track_positions.duration.is_present());
-  EXPECT_EQ(0, cue_track_positions.duration.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0),
+            cue_track_positions.duration.value());
 
   EXPECT_TRUE(cue_track_positions.block_number.is_present());
-  EXPECT_EQ(1, cue_track_positions.block_number.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1),
+            cue_track_positions.block_number.value());
 }
 
 TEST_F(CueTrackPositionsParserTest, CustomValues) {
@@ -110,19 +118,23 @@ TEST_F(CueTrackPositionsParserTest, CustomValues) {
   const CueTrackPositions cue_track_positions = parser_.value();
 
   EXPECT_TRUE(cue_track_positions.track.is_present());
-  EXPECT_EQ(1, cue_track_positions.track.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), cue_track_positions.track.value());
 
   EXPECT_TRUE(cue_track_positions.cluster_position.is_present());
-  EXPECT_EQ(2, cue_track_positions.cluster_position.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2),
+            cue_track_positions.cluster_position.value());
 
   EXPECT_TRUE(cue_track_positions.relative_position.is_present());
-  EXPECT_EQ(3, cue_track_positions.relative_position.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(3),
+            cue_track_positions.relative_position.value());
 
   EXPECT_TRUE(cue_track_positions.duration.is_present());
-  EXPECT_EQ(4, cue_track_positions.duration.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(4),
+            cue_track_positions.duration.value());
 
   EXPECT_TRUE(cue_track_positions.block_number.is_present());
-  EXPECT_EQ(5, cue_track_positions.block_number.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(5),
+            cue_track_positions.block_number.value());
 }
 
 }  // namespace

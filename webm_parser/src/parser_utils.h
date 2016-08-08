@@ -38,11 +38,11 @@ Status AccumulateIntegerBytes(int num_to_read, Reader* reader, T* integer,
   assert(integer != nullptr);
   assert(num_actually_read != nullptr);
   assert(num_to_read >= 0);
-  assert(num_to_read <= sizeof(T));
+  assert(static_cast<std::size_t>(num_to_read) <= sizeof(T));
 
   *num_actually_read = 0;
 
-  if (num_to_read < 0 || num_to_read > sizeof(T)) {
+  if (num_to_read < 0 || static_cast<std::size_t>(num_to_read) > sizeof(T)) {
     return Status(Status::kInvalidElementSize);
   }
 

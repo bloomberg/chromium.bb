@@ -49,7 +49,7 @@ TEST_F(DateParserTest, IncrementalParse) {
 
   IncrementalParseAndVerify();
 
-  EXPECT_EQ(0xFEDCBA9876543210, parser_.value());
+  EXPECT_EQ(static_cast<std::int64_t>(0xFEDCBA9876543210), parser_.value());
 }
 
 }  // namespace

@@ -78,7 +78,7 @@ void TestRead(Status (Callback::*function)(const T&, Reader*, std::uint64_t*)) {
 
   status = (callback.*function)(metadata, &reader, &bytes_remaining);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(0, bytes_remaining);
+  EXPECT_EQ(static_cast<std::uint64_t>(0), bytes_remaining);
 }
 
 class CallbackTest : public testing::Test {};

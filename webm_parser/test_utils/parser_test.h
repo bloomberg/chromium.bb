@@ -71,7 +71,8 @@ class ParserTest : public testing::Test {
       std::uint64_t local_num_bytes_read = 0;
       status = parser_.Feed(&callback_, &limited_reader, &local_num_bytes_read);
       num_bytes_read += local_num_bytes_read;
-      ASSERT_GE(1, local_num_bytes_read);
+      const std::uint64_t kMinBytesRead = 1;
+      ASSERT_GE(kMinBytesRead, local_num_bytes_read);
     } while (status.code == Status::kWouldBlock ||
              status.code == Status::kOkPartial);
 

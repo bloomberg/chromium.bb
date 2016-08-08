@@ -28,7 +28,7 @@ TEST_F(TimeSliceParserTest, DefaultParse) {
   const TimeSlice time_slice = parser_.value();
 
   EXPECT_FALSE(time_slice.lace_number.is_present());
-  EXPECT_EQ(0, time_slice.lace_number.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), time_slice.lace_number.value());
 }
 
 TEST_F(TimeSliceParserTest, DefaultValues) {
@@ -42,7 +42,7 @@ TEST_F(TimeSliceParserTest, DefaultValues) {
   const TimeSlice time_slice = parser_.value();
 
   EXPECT_TRUE(time_slice.lace_number.is_present());
-  EXPECT_EQ(0, time_slice.lace_number.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), time_slice.lace_number.value());
 }
 
 TEST_F(TimeSliceParserTest, CustomValues) {
@@ -57,7 +57,7 @@ TEST_F(TimeSliceParserTest, CustomValues) {
   const TimeSlice time_slice = parser_.value();
 
   EXPECT_TRUE(time_slice.lace_number.is_present());
-  EXPECT_EQ(1, time_slice.lace_number.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), time_slice.lace_number.value());
 }
 
 }  // namespace

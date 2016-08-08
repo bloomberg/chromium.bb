@@ -237,7 +237,7 @@ TEST_F(WebmParserTest, SwapAfterFailedParse) {
   WebmParser parser1;
   Status status = parser1.Feed(&expect_nothing, &reader);
   EXPECT_EQ(Status::kInvalidElementId, status.code);
-  EXPECT_EQ(1, reader.Position());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), reader.Position());
 
   // After swapping, the parser should retain its failed state and not consume
   // more data.
@@ -245,7 +245,7 @@ TEST_F(WebmParserTest, SwapAfterFailedParse) {
   parser2.Swap(&parser1);
   status = parser2.Feed(&expect_nothing, &reader);
   EXPECT_EQ(Status::kInvalidElementId, status.code);
-  EXPECT_EQ(1, reader.Position());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), reader.Position());
 
   // parser1 should be a fresh/new parser after the swap, so parsing should
   // succeed.

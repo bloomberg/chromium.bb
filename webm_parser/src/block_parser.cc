@@ -22,7 +22,7 @@ namespace {
 
 // The ParseBasicBlockFlags functions parse extra flag bits into the block,
 // depending on the type of block that is being parsed.
-void ParseBasicBlockFlags(std::uint8_t flags, Block* block) {
+void ParseBasicBlockFlags(std::uint8_t /* flags */, Block* /* block */) {
   // Block has no extra flags that aren't already handled.
 }
 
@@ -150,7 +150,7 @@ Status BasicBlockParser<T>::Feed(Callback* callback, Reader* reader,
 
       case State::kReadingXiphLaceSizes:
         assert(value_.num_frames > 0);
-        while (lace_sizes_.size() < value_.num_frames - 1) {
+        while (static_cast<int>(lace_sizes_.size()) < value_.num_frames - 1) {
           std::uint8_t byte;
           do {
             status = ReadByte(reader, &byte);
@@ -185,7 +185,7 @@ Status BasicBlockParser<T>::Feed(Callback* callback, Reader* reader,
       case State::kReadingEbmlLaceSizes:
         assert(value_.num_frames > 0);
         assert(!lace_sizes_.empty());
-        while (lace_sizes_.size() < value_.num_frames - 1) {
+        while (static_cast<int>(lace_sizes_.size()) < value_.num_frames - 1) {
           status = uint_parser_.Feed(callback, reader, &local_num_bytes_read);
           *num_bytes_read += local_num_bytes_read;
           header_bytes_read_ += local_num_bytes_read;
@@ -250,7 +250,7 @@ Status BasicBlockParser<T>::Feed(Callback* callback, Reader* reader,
 
       case State::kReadingFrames:
         assert(value_.num_frames > 0);
-        assert(lace_sizes_.size() == value_.num_frames);
+        assert(static_cast<int>(lace_sizes_.size()) == value_.num_frames);
         for (; current_lace_ < lace_sizes_.size(); ++current_lace_) {
           const std::uint64_t original = lace_sizes_[current_lace_];
           status = callback->OnFrame(frame_metadata_, reader,

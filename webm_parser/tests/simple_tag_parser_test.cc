@@ -44,7 +44,7 @@ TEST_F(SimpleTagParserTest, DefaultParse) {
   EXPECT_FALSE(simple_tag.binary.is_present());
   EXPECT_EQ(std::vector<std::uint8_t>{}, simple_tag.binary.value());
 
-  EXPECT_EQ(0, simple_tag.tags.size());
+  EXPECT_EQ(static_cast<std::size_t>(0), simple_tag.tags.size());
 }
 
 TEST_F(SimpleTagParserTest, DefaultValues) {
@@ -87,7 +87,7 @@ TEST_F(SimpleTagParserTest, DefaultValues) {
   EXPECT_TRUE(simple_tag.binary.is_present());
   EXPECT_EQ(std::vector<std::uint8_t>{}, simple_tag.binary.value());
 
-  ASSERT_EQ(1, simple_tag.tags.size());
+  ASSERT_EQ(static_cast<std::size_t>(1), simple_tag.tags.size());
   EXPECT_TRUE(simple_tag.tags[0].is_present());
   EXPECT_EQ(SimpleTag{}, simple_tag.tags[0].value());
 }
@@ -176,7 +176,7 @@ TEST_F(SimpleTagParserTest, CustomValues) {
   temp.string.Set("g", true);
   expected.tags.emplace_back(temp, true);
 
-  ASSERT_EQ(1, simple_tag.tags.size());
+  ASSERT_EQ(static_cast<std::size_t>(1), simple_tag.tags.size());
   EXPECT_TRUE(simple_tag.tags[0].is_present());
   EXPECT_EQ(expected, simple_tag.tags[0].value());
 }

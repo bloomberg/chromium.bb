@@ -965,13 +965,13 @@ class DemoCallback : public Callback {
     return Status(Status::kOkCompleted);
   }
 
-  Status OnSimpleBlockEnd(const ElementMetadata& metadata,
-                          const SimpleBlock& simple_block) override {
+  Status OnSimpleBlockEnd(const ElementMetadata& /* metadata */,
+                          const SimpleBlock& /* simple_block */) override {
     return Status(Status::kOkCompleted);
   }
 
   Status OnBlockGroupBegin(const ElementMetadata& metadata,
-                           Action* action) override {
+                           Action* /* action */) override {
     indent = 2;
     PrintElementMetadata("BlockGroup", metadata);
     return Status(Status::kOkCompleted);
@@ -991,12 +991,12 @@ class DemoCallback : public Callback {
     return Status(Status::kOkCompleted);
   }
 
-  Status OnBlockEnd(const ElementMetadata& metadata,
-                    const Block& block) override {
+  Status OnBlockEnd(const ElementMetadata& /* metadata */,
+                    const Block& /* block */) override {
     return Status(Status::kOkCompleted);
   }
 
-  Status OnBlockGroupEnd(const ElementMetadata& metadata,
+  Status OnBlockGroupEnd(const ElementMetadata& /* metadata */,
                          const BlockGroup& block_group) override {
     if (block_group.virtual_block.is_present()) {
       std::cout << std::string(indent * spaces_per_indent, ' ')
@@ -1027,8 +1027,8 @@ class DemoCallback : public Callback {
     return Callback::OnFrame(metadata, reader, bytes_remaining);
   }
 
-  Status OnClusterEnd(const ElementMetadata& metadata,
-                      const Cluster& cluster) override {
+  Status OnClusterEnd(const ElementMetadata& /* metadata */,
+                      const Cluster& /* cluster */) override {
     // The Cluster and all its children have been fully parsed at this point. If
     // the file wasn't properly muxed and Timecode or PrevSize were missing in
     // OnClusterBegin(), they'll be set here (if the Cluster contained them). In
@@ -1090,7 +1090,7 @@ class DemoCallback : public Callback {
     return Status(Status::kOkCompleted);
   }
 
-  Status OnSegmentEnd(const ElementMetadata& metadata) override {
+  Status OnSegmentEnd(const ElementMetadata& /* metadata */) override {
     return Status(Status::kOkCompleted);
   }
 };

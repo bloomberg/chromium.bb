@@ -33,29 +33,29 @@ TEST_F(SizeParserTest, EarlyEndOfFile) {
 TEST_F(SizeParserTest, ValidSize) {
   SetReaderData({0x80});
   ParseAndVerify();
-  EXPECT_EQ(0, parser_.size());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), parser_.size());
 
   ResetParser();
   SetReaderData({0x01, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE});
   ParseAndVerify();
-  EXPECT_EQ(0x123456789ABCDE, parser_.size());
+  EXPECT_EQ(static_cast<std::uint64_t>(0x123456789ABCDE), parser_.size());
 }
 
 TEST_F(SizeParserTest, UnknownSize) {
   SetReaderData({0xFF});
   ParseAndVerify();
-  EXPECT_EQ(0xFFFFFFFFFFFFFFFF, parser_.size());
+  EXPECT_EQ(static_cast<std::uint64_t>(0xFFFFFFFFFFFFFFFF), parser_.size());
 
   ResetParser();
   SetReaderData({0x1F, 0xFF, 0xFF, 0xFF});
   ParseAndVerify();
-  EXPECT_EQ(0xFFFFFFFFFFFFFFFF, parser_.size());
+  EXPECT_EQ(static_cast<std::uint64_t>(0xFFFFFFFFFFFFFFFF), parser_.size());
 }
 
 TEST_F(SizeParserTest, IncrementalParse) {
   SetReaderData({0x11, 0x23, 0x45, 0x67});
   IncrementalParseAndVerify();
-  EXPECT_EQ(0x01234567, parser_.size());
+  EXPECT_EQ(static_cast<std::uint64_t>(0x01234567), parser_.size());
 }
 
 }  // namespace

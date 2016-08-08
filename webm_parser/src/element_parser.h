@@ -71,8 +71,8 @@ class ElementParser : public Parser {
   // this parser is the first element in child_ancestory, or if that is empty,
   // then child_metadata itself. If the child is not a valid child of this
   // parser, then a debug assertion is made (because that indicates a bug).
-  virtual void InitAfterSeek(const Ancestory& child_ancestory,
-                             const ElementMetadata& child_metadata) {
+  virtual void InitAfterSeek(const Ancestory& /* child_ancestory */,
+                             const ElementMetadata& /* child_metadata */) {
     assert(false);
   }
 

@@ -34,7 +34,7 @@ TEST_F(LimitedReaderTest, UnlimitedRead) {
 
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(4, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(4), count);
 
   std::array<std::uint8_t, 4> expected_buffer = {{1, 2, 3, 4}};
   EXPECT_EQ(expected_buffer, buffer);
@@ -47,7 +47,7 @@ TEST_F(LimitedReaderTest, UnlimitedSkip) {
 
   status = reader.Skip(4, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(4, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(4), count);
 }
 
 TEST_F(LimitedReaderTest, Position) {
@@ -56,16 +56,16 @@ TEST_F(LimitedReaderTest, Position) {
   std::uint64_t count;
   Status status;
 
-  EXPECT_EQ(0, reader.Position());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), reader.Position());
 
   status = reader.Read(2, buffer.data(), &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(2, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(2), count);
 
   status = reader.Skip(2, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(2, count);
-  EXPECT_EQ(4, reader.Position());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), count);
+  EXPECT_EQ(static_cast<std::uint64_t>(4), reader.Position());
 
   std::array<std::uint8_t, 4> expected_buffer = {{1, 2, 0, 0}};
   EXPECT_EQ(expected_buffer, buffer);
@@ -80,16 +80,16 @@ TEST_F(LimitedReaderTest, LimitIndividualRead) {
   reader.set_single_read_limit(1);
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 
   status = reader.Read(buffer.size() + 1, buffer.data() + 1, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 
   reader.set_single_read_limit(2);
   status = reader.Read(buffer.size() - 2, buffer.data() + 2, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(2, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(2), count);
 
   std::array<std::uint8_t, 4> expected_buffer = {{1, 2, 3, 4}};
   EXPECT_EQ(expected_buffer, buffer);
@@ -103,16 +103,16 @@ TEST_F(LimitedReaderTest, LimitIndividualSkip) {
   reader.set_single_skip_limit(1);
   status = reader.Skip(4, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 
   status = reader.Skip(3, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 
   reader.set_single_skip_limit(2);
   status = reader.Skip(2, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(2, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(2), count);
 }
 
 TEST_F(LimitedReaderTest, LimitRepeatedRead) {
@@ -124,21 +124,21 @@ TEST_F(LimitedReaderTest, LimitRepeatedRead) {
   reader.set_total_read_limit(1);
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(Status::kWouldBlock, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(0), count);
 
   reader.set_total_read_limit(2);
   status = reader.Read(buffer.size() - 1, buffer.data() + 1, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(2, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(2), count);
 
   reader.set_total_read_limit(1);
   status = reader.Read(buffer.size() - 3, buffer.data() + 3, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 
   std::array<std::uint8_t, 4> expected_buffer = {{1, 2, 3, 4}};
   EXPECT_EQ(expected_buffer, buffer);
@@ -152,21 +152,21 @@ TEST_F(LimitedReaderTest, LimitRepeatedSkip) {
   reader.set_total_skip_limit(1);
   status = reader.Skip(4, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 
   status = reader.Skip(4, &count);
   EXPECT_EQ(Status::kWouldBlock, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(0), count);
 
   reader.set_total_skip_limit(2);
   status = reader.Skip(3, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(2, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(2), count);
 
   reader.set_total_skip_limit(1);
   status = reader.Skip(1, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 }
 
 TEST_F(LimitedReaderTest, LimitReadsAndSkips) {
@@ -178,21 +178,21 @@ TEST_F(LimitedReaderTest, LimitReadsAndSkips) {
   reader.set_total_read_skip_limit(1);
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 
   status = reader.Skip(buffer.size(), &count);
   EXPECT_EQ(Status::kWouldBlock, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(0), count);
 
   reader.set_total_read_skip_limit(2);
   status = reader.Skip(buffer.size() - 1, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(2, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(2), count);
 
   reader.set_total_read_skip_limit(1);
   status = reader.Read(buffer.size() - 3, buffer.data() + 3, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(1), count);
 
   std::array<std::uint8_t, 4> expected = {{1, 0, 0, 4}};
   EXPECT_EQ(expected, buffer);
@@ -204,43 +204,44 @@ TEST_F(LimitedReaderTest, CustomStatusWhenBlocked) {
   std::uint64_t count;
   Status status;
   Status expected_status = Status(-123);
+  const std::uint64_t kZeroCount = 0;
 
   reader.set_single_read_limit(0);
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(Status::kWouldBlock, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(kZeroCount, count);
 
   reader.set_return_status_when_blocked(expected_status);
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(expected_status.code, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(kZeroCount, count);
 
   reader.set_single_read_limit(std::numeric_limits<std::size_t>::max());
   reader.set_total_read_limit(0);
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(expected_status.code, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(kZeroCount, count);
 
   reader.set_total_read_limit(std::numeric_limits<std::size_t>::max());
   reader.set_single_skip_limit(0);
   status = reader.Skip(buffer.size(), &count);
   EXPECT_EQ(expected_status.code, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(kZeroCount, count);
 
   reader.set_single_skip_limit(std::numeric_limits<std::uint64_t>::max());
   reader.set_total_skip_limit(0);
   status = reader.Skip(buffer.size(), &count);
   EXPECT_EQ(expected_status.code, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(kZeroCount, count);
 
   reader.set_total_skip_limit(std::numeric_limits<std::uint64_t>::max());
   reader.set_total_read_skip_limit(0);
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(expected_status.code, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(kZeroCount, count);
   status = reader.Skip(buffer.size(), &count);
   EXPECT_EQ(expected_status.code, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(kZeroCount, count);
 
   std::array<std::uint8_t, 4> expected_buffer = {{0, 0, 0, 0}};
   EXPECT_EQ(expected_buffer, buffer);

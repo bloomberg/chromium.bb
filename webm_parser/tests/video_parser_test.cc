@@ -38,25 +38,25 @@ TEST_F(VideoParserTest, DefaultParse) {
   EXPECT_EQ(StereoMode::kMono, video.stereo_mode.value());
 
   EXPECT_FALSE(video.alpha_mode.is_present());
-  EXPECT_EQ(0, video.alpha_mode.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.alpha_mode.value());
 
   EXPECT_FALSE(video.pixel_width.is_present());
-  EXPECT_EQ(0, video.pixel_width.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_width.value());
 
   EXPECT_FALSE(video.pixel_height.is_present());
-  EXPECT_EQ(0, video.pixel_height.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_height.value());
 
   EXPECT_FALSE(video.pixel_crop_bottom.is_present());
-  EXPECT_EQ(0, video.pixel_crop_bottom.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_bottom.value());
 
   EXPECT_FALSE(video.pixel_crop_top.is_present());
-  EXPECT_EQ(0, video.pixel_crop_top.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_top.value());
 
   EXPECT_FALSE(video.pixel_crop_left.is_present());
-  EXPECT_EQ(0, video.pixel_crop_left.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_left.value());
 
   EXPECT_FALSE(video.pixel_crop_right.is_present());
-  EXPECT_EQ(0, video.pixel_crop_right.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_right.value());
 
   EXPECT_FALSE(video.display_width.is_present());
   EXPECT_EQ(video.pixel_width.value(), video.display_width.value());
@@ -71,7 +71,7 @@ TEST_F(VideoParserTest, DefaultParse) {
   EXPECT_EQ(AspectRatioType::kFreeResizing, video.aspect_ratio_type.value());
 
   EXPECT_FALSE(video.frame_rate.is_present());
-  EXPECT_EQ(0, video.frame_rate.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.frame_rate.value());
 
   EXPECT_FALSE(video.colour.is_present());
   EXPECT_EQ(Colour{}, video.colour.value());
@@ -136,25 +136,25 @@ TEST_F(VideoParserTest, DefaultValues) {
   EXPECT_EQ(StereoMode::kMono, video.stereo_mode.value());
 
   EXPECT_TRUE(video.alpha_mode.is_present());
-  EXPECT_EQ(0, video.alpha_mode.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.alpha_mode.value());
 
   EXPECT_TRUE(video.pixel_width.is_present());
-  EXPECT_EQ(0, video.pixel_width.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_width.value());
 
   EXPECT_TRUE(video.pixel_height.is_present());
-  EXPECT_EQ(0, video.pixel_height.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_height.value());
 
   EXPECT_TRUE(video.pixel_crop_bottom.is_present());
-  EXPECT_EQ(0, video.pixel_crop_bottom.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_bottom.value());
 
   EXPECT_TRUE(video.pixel_crop_top.is_present());
-  EXPECT_EQ(0, video.pixel_crop_top.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_top.value());
 
   EXPECT_TRUE(video.pixel_crop_left.is_present());
-  EXPECT_EQ(0, video.pixel_crop_left.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_left.value());
 
   EXPECT_TRUE(video.pixel_crop_right.is_present());
-  EXPECT_EQ(0, video.pixel_crop_right.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_right.value());
 
   EXPECT_TRUE(video.display_width.is_present());
   EXPECT_EQ(video.pixel_width.value(), video.display_width.value());
@@ -252,31 +252,31 @@ TEST_F(VideoParserTest, CustomValues) {
   EXPECT_EQ(StereoMode::kTopBottomRightFirst, video.stereo_mode.value());
 
   EXPECT_TRUE(video.alpha_mode.is_present());
-  EXPECT_EQ(3, video.alpha_mode.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(3), video.alpha_mode.value());
 
   EXPECT_TRUE(video.pixel_width.is_present());
-  EXPECT_EQ(4, video.pixel_width.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(4), video.pixel_width.value());
 
   EXPECT_TRUE(video.pixel_height.is_present());
-  EXPECT_EQ(5, video.pixel_height.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(5), video.pixel_height.value());
 
   EXPECT_TRUE(video.pixel_crop_bottom.is_present());
-  EXPECT_EQ(6, video.pixel_crop_bottom.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(6), video.pixel_crop_bottom.value());
 
   EXPECT_TRUE(video.pixel_crop_top.is_present());
-  EXPECT_EQ(7, video.pixel_crop_top.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(7), video.pixel_crop_top.value());
 
   EXPECT_TRUE(video.pixel_crop_left.is_present());
-  EXPECT_EQ(8, video.pixel_crop_left.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(8), video.pixel_crop_left.value());
 
   EXPECT_TRUE(video.pixel_crop_right.is_present());
-  EXPECT_EQ(9, video.pixel_crop_right.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(9), video.pixel_crop_right.value());
 
   EXPECT_TRUE(video.display_width.is_present());
-  EXPECT_EQ(10, video.display_width.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(10), video.display_width.value());
 
   EXPECT_TRUE(video.display_height.is_present());
-  EXPECT_EQ(11, video.display_height.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(11), video.display_height.value());
 
   EXPECT_TRUE(video.display_unit.is_present());
   EXPECT_EQ(DisplayUnit::kInches, video.display_unit.value());
@@ -289,7 +289,8 @@ TEST_F(VideoParserTest, CustomValues) {
 
   EXPECT_TRUE(video.colour.is_present());
   EXPECT_TRUE(video.colour.value().bits_per_channel.is_present());
-  EXPECT_EQ(1, video.colour.value().bits_per_channel.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1),
+            video.colour.value().bits_per_channel.value());
 }
 
 TEST_F(VideoParserTest, AbsentDisplaySize) {
@@ -314,31 +315,31 @@ TEST_F(VideoParserTest, AbsentDisplaySize) {
   EXPECT_EQ(StereoMode::kMono, video.stereo_mode.value());
 
   EXPECT_FALSE(video.alpha_mode.is_present());
-  EXPECT_EQ(0, video.alpha_mode.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.alpha_mode.value());
 
   EXPECT_TRUE(video.pixel_width.is_present());
-  EXPECT_EQ(1, video.pixel_width.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), video.pixel_width.value());
 
   EXPECT_TRUE(video.pixel_height.is_present());
-  EXPECT_EQ(2, video.pixel_height.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), video.pixel_height.value());
 
   EXPECT_FALSE(video.pixel_crop_bottom.is_present());
-  EXPECT_EQ(0, video.pixel_crop_bottom.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_bottom.value());
 
   EXPECT_FALSE(video.pixel_crop_top.is_present());
-  EXPECT_EQ(0, video.pixel_crop_top.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_top.value());
 
   EXPECT_FALSE(video.pixel_crop_left.is_present());
-  EXPECT_EQ(0, video.pixel_crop_left.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_left.value());
 
   EXPECT_FALSE(video.pixel_crop_right.is_present());
-  EXPECT_EQ(0, video.pixel_crop_right.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_right.value());
 
   EXPECT_FALSE(video.display_width.is_present());
-  EXPECT_EQ(1, video.display_width.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), video.display_width.value());
 
   EXPECT_FALSE(video.display_height.is_present());
-  EXPECT_EQ(2, video.display_height.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), video.display_height.value());
 
   EXPECT_FALSE(video.display_unit.is_present());
   EXPECT_EQ(DisplayUnit::kPixels, video.display_unit.value());
@@ -347,7 +348,7 @@ TEST_F(VideoParserTest, AbsentDisplaySize) {
   EXPECT_EQ(AspectRatioType::kFreeResizing, video.aspect_ratio_type.value());
 
   EXPECT_FALSE(video.frame_rate.is_present());
-  EXPECT_EQ(0, video.frame_rate.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.frame_rate.value());
 
   EXPECT_FALSE(video.colour.is_present());
   EXPECT_EQ(Colour{}, video.colour.value());
@@ -381,31 +382,31 @@ TEST_F(VideoParserTest, DefaultDisplaySize) {
   EXPECT_EQ(StereoMode::kMono, video.stereo_mode.value());
 
   EXPECT_FALSE(video.alpha_mode.is_present());
-  EXPECT_EQ(0, video.alpha_mode.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.alpha_mode.value());
 
   EXPECT_TRUE(video.pixel_width.is_present());
-  EXPECT_EQ(1, video.pixel_width.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), video.pixel_width.value());
 
   EXPECT_TRUE(video.pixel_height.is_present());
-  EXPECT_EQ(2, video.pixel_height.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), video.pixel_height.value());
 
   EXPECT_FALSE(video.pixel_crop_bottom.is_present());
-  EXPECT_EQ(0, video.pixel_crop_bottom.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_bottom.value());
 
   EXPECT_FALSE(video.pixel_crop_top.is_present());
-  EXPECT_EQ(0, video.pixel_crop_top.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_top.value());
 
   EXPECT_FALSE(video.pixel_crop_left.is_present());
-  EXPECT_EQ(0, video.pixel_crop_left.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_left.value());
 
   EXPECT_FALSE(video.pixel_crop_right.is_present());
-  EXPECT_EQ(0, video.pixel_crop_right.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.pixel_crop_right.value());
 
   EXPECT_TRUE(video.display_width.is_present());
-  EXPECT_EQ(1, video.display_width.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), video.display_width.value());
 
   EXPECT_TRUE(video.display_height.is_present());
-  EXPECT_EQ(2, video.display_height.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), video.display_height.value());
 
   EXPECT_FALSE(video.display_unit.is_present());
   EXPECT_EQ(DisplayUnit::kPixels, video.display_unit.value());
@@ -414,7 +415,7 @@ TEST_F(VideoParserTest, DefaultDisplaySize) {
   EXPECT_EQ(AspectRatioType::kFreeResizing, video.aspect_ratio_type.value());
 
   EXPECT_FALSE(video.frame_rate.is_present());
-  EXPECT_EQ(0, video.frame_rate.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), video.frame_rate.value());
 
   EXPECT_FALSE(video.colour.is_present());
   EXPECT_EQ(Colour{}, video.colour.value());

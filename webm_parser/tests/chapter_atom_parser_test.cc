@@ -29,20 +29,20 @@ TEST_F(ChapterAtomParserTest, DefaultParse) {
   const ChapterAtom chapter_atom = parser_.value();
 
   EXPECT_FALSE(chapter_atom.uid.is_present());
-  EXPECT_EQ(0, chapter_atom.uid.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), chapter_atom.uid.value());
 
   EXPECT_FALSE(chapter_atom.string_uid.is_present());
   EXPECT_EQ("", chapter_atom.string_uid.value());
 
   EXPECT_FALSE(chapter_atom.time_start.is_present());
-  EXPECT_EQ(0, chapter_atom.time_start.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), chapter_atom.time_start.value());
 
   EXPECT_FALSE(chapter_atom.time_end.is_present());
-  EXPECT_EQ(0, chapter_atom.time_end.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), chapter_atom.time_end.value());
 
-  EXPECT_EQ(0, chapter_atom.displays.size());
+  EXPECT_EQ(static_cast<std::size_t>(0), chapter_atom.displays.size());
 
-  EXPECT_EQ(0, chapter_atom.atoms.size());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), chapter_atom.atoms.size());
 }
 
 TEST_F(ChapterAtomParserTest, DefaultValues) {
@@ -71,22 +71,22 @@ TEST_F(ChapterAtomParserTest, DefaultValues) {
   const ChapterAtom chapter_atom = parser_.value();
 
   EXPECT_TRUE(chapter_atom.uid.is_present());
-  EXPECT_EQ(0, chapter_atom.uid.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), chapter_atom.uid.value());
 
   EXPECT_TRUE(chapter_atom.string_uid.is_present());
   EXPECT_EQ("", chapter_atom.string_uid.value());
 
   EXPECT_TRUE(chapter_atom.time_start.is_present());
-  EXPECT_EQ(0, chapter_atom.time_start.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), chapter_atom.time_start.value());
 
   EXPECT_TRUE(chapter_atom.time_end.is_present());
-  EXPECT_EQ(0, chapter_atom.time_end.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), chapter_atom.time_end.value());
 
-  ASSERT_EQ(1, chapter_atom.displays.size());
+  ASSERT_EQ(static_cast<std::uint64_t>(1), chapter_atom.displays.size());
   EXPECT_TRUE(chapter_atom.displays[0].is_present());
   EXPECT_EQ(ChapterDisplay{}, chapter_atom.displays[0].value());
 
-  ASSERT_EQ(1, chapter_atom.atoms.size());
+  ASSERT_EQ(static_cast<std::uint64_t>(1), chapter_atom.atoms.size());
   EXPECT_TRUE(chapter_atom.atoms[0].is_present());
   EXPECT_EQ(ChapterAtom{}, chapter_atom.atoms[0].value());
 }
@@ -150,20 +150,20 @@ TEST_F(ChapterAtomParserTest, CustomValues) {
   const ChapterAtom chapter_atom = parser_.value();
 
   EXPECT_TRUE(chapter_atom.uid.is_present());
-  EXPECT_EQ(1, chapter_atom.uid.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(1), chapter_atom.uid.value());
 
   EXPECT_TRUE(chapter_atom.string_uid.is_present());
   EXPECT_EQ("A", chapter_atom.string_uid.value());
 
   EXPECT_TRUE(chapter_atom.time_start.is_present());
-  EXPECT_EQ(2, chapter_atom.time_start.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), chapter_atom.time_start.value());
 
   EXPECT_TRUE(chapter_atom.time_end.is_present());
-  EXPECT_EQ(3, chapter_atom.time_end.value());
+  EXPECT_EQ(static_cast<std::uint64_t>(3), chapter_atom.time_end.value());
 
   ChapterDisplay expected_chapter_display;
 
-  ASSERT_EQ(2, chapter_atom.displays.size());
+  ASSERT_EQ(static_cast<std::size_t>(2), chapter_atom.displays.size());
   expected_chapter_display.string.Set("B", true);
   EXPECT_TRUE(chapter_atom.displays[0].is_present());
   EXPECT_EQ(expected_chapter_display, chapter_atom.displays[0].value());
@@ -180,7 +180,7 @@ TEST_F(ChapterAtomParserTest, CustomValues) {
   tmp_atom.uid.Set(6, true);
   expected_chapter_atom.atoms.emplace_back(tmp_atom, true);
 
-  ASSERT_EQ(1, chapter_atom.atoms.size());
+  ASSERT_EQ(static_cast<std::size_t>(1), chapter_atom.atoms.size());
   EXPECT_TRUE(chapter_atom.atoms[0].is_present());
   EXPECT_EQ(expected_chapter_atom, chapter_atom.atoms[0].value());
 }

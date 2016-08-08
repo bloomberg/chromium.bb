@@ -41,11 +41,11 @@ TEST_F(IstreamReaderTest, Read) {
 
   status = reader.Read(5, buffer.data(), &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(5, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(5), count);
 
   status = reader.Read(10, buffer.data() + 5, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(5, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(5), count);
 
   std::array<std::uint8_t, 15> expected =
       ArrayFromString("abcdefghij\0\0\0\0\0");
@@ -53,7 +53,7 @@ TEST_F(IstreamReaderTest, Read) {
 
   status = reader.Read(buffer.size(), buffer.data(), &count);
   EXPECT_EQ(Status::kEndOfFile, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(0), count);
 }
 
 TEST_F(IstreamReaderTest, Skip) {
@@ -65,15 +65,15 @@ TEST_F(IstreamReaderTest, Skip) {
 
   status = reader.Skip(3, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(3, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(3), count);
 
   status = reader.Skip(10, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(7, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(7), count);
 
   status = reader.Skip(1, &count);
   EXPECT_EQ(Status::kEndOfFile, status.code);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(0), count);
 }
 
 TEST_F(IstreamReaderTest, ReadAndSkip) {
@@ -86,15 +86,15 @@ TEST_F(IstreamReaderTest, ReadAndSkip) {
 
   status = reader.Read(5, buffer.data(), &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(5, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(5), count);
 
   status = reader.Skip(3, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(3, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(3), count);
 
   status = reader.Read(5, buffer.data() + 5, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(2, count);
+  EXPECT_EQ(static_cast<std::uint64_t>(2), count);
 
   std::array<std::uint8_t, 10> expected = ArrayFromString("AaBbCEe\0\0\0");
   EXPECT_EQ(expected, buffer);
@@ -107,22 +107,22 @@ TEST_F(IstreamReaderTest, Position) {
 
   IstreamReader reader =
       IstreamReader::Emplace<std::istringstream>("AaBbCcDdEe");
-  EXPECT_EQ(0, reader.Position());
+  EXPECT_EQ(static_cast<std::uint64_t>(0), reader.Position());
 
   status = reader.Read(5, buffer.data(), &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(5, count);
-  EXPECT_EQ(5, reader.Position());
+  EXPECT_EQ(static_cast<std::uint64_t>(5), count);
+  EXPECT_EQ(static_cast<std::uint64_t>(5), reader.Position());
 
   status = reader.Skip(3, &count);
   EXPECT_EQ(Status::kOkCompleted, status.code);
-  EXPECT_EQ(3, count);
-  EXPECT_EQ(8, reader.Position());
+  EXPECT_EQ(static_cast<std::uint64_t>(3), count);
+  EXPECT_EQ(static_cast<std::uint64_t>(8), reader.Position());
 
   status = reader.Read(5, buffer.data() + 5, &count);
   EXPECT_EQ(Status::kOkPartial, status.code);
-  EXPECT_EQ(2, count);
-  EXPECT_EQ(10, reader.Position());
+  EXPECT_EQ(static_cast<std::uint64_t>(2), count);
+  EXPECT_EQ(static_cast<std::uint64_t>(10), reader.Position());
 
   std::array<std::uint8_t, 10> expected = ArrayFromString("AaBbCEe\0\0\0");
   EXPECT_EQ(expected, buffer);
