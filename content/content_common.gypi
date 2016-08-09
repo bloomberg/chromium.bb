@@ -146,6 +146,8 @@
       'public/common/main_function_params.h',
       'public/common/manifest.cc',
       'public/common/manifest.h',
+      'public/common/manifest_util.cc',
+      'public/common/manifest_util.h',
       'public/common/media_metadata.cc',
       'public/common/media_metadata.h',
       'public/common/media_stream_request.cc',

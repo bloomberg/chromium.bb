@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/common/manifest.h"
+#include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/platform/WebIconSizesParser.h"
@@ -221,18 +222,11 @@ blink::WebDisplayMode ManifestParser::ParseDisplay(
   if (display.is_null())
     return blink::WebDisplayModeUndefined;
 
-  if (base::LowerCaseEqualsASCII(display.string(), "fullscreen"))
-    return blink::WebDisplayModeFullscreen;
-  else if (base::LowerCaseEqualsASCII(display.string(), "standalone"))
-    return blink::WebDisplayModeStandalone;
-  else if (base::LowerCaseEqualsASCII(display.string(), "minimal-ui"))
-    return blink::WebDisplayModeMinimalUi;
-  else if (base::LowerCaseEqualsASCII(display.string(), "browser"))
-    return blink::WebDisplayModeBrowser;
-  else {
+  blink::WebDisplayMode display_enum =
+      WebDisplayModeFromString(base::UTF16ToUTF8(display.string()));
+  if (display_enum == blink::WebDisplayModeUndefined)
     AddErrorInfo("unknown 'display' value ignored.");
-    return blink::WebDisplayModeUndefined;
-  }
+  return display_enum;
 }
 
 blink::WebScreenOrientationLockType ManifestParser::ParseOrientation(
@@ -243,30 +237,12 @@ blink::WebScreenOrientationLockType ManifestParser::ParseOrientation(
   if (orientation.is_null())
     return blink::WebScreenOrientationLockDefault;
 
-  if (base::LowerCaseEqualsASCII(orientation.string(), "any"))
-    return blink::WebScreenOrientationLockAny;
-  else if (base::LowerCaseEqualsASCII(orientation.string(), "natural"))
-    return blink::WebScreenOrientationLockNatural;
-  else if (base::LowerCaseEqualsASCII(orientation.string(), "landscape"))
-    return blink::WebScreenOrientationLockLandscape;
-  else if (base::LowerCaseEqualsASCII(orientation.string(),
-                                      "landscape-primary"))
-    return blink::WebScreenOrientationLockLandscapePrimary;
-  else if (base::LowerCaseEqualsASCII(orientation.string(),
-                                      "landscape-secondary"))
-    return blink::WebScreenOrientationLockLandscapeSecondary;
-  else if (base::LowerCaseEqualsASCII(orientation.string(), "portrait"))
-    return blink::WebScreenOrientationLockPortrait;
-  else if (base::LowerCaseEqualsASCII(orientation.string(),
-                                      "portrait-primary"))
-    return blink::WebScreenOrientationLockPortraitPrimary;
-  else if (base::LowerCaseEqualsASCII(orientation.string(),
-                                      "portrait-secondary"))
-    return blink::WebScreenOrientationLockPortraitSecondary;
-  else {
+  blink::WebScreenOrientationLockType orientation_enum =
+      WebScreenOrientationLockTypeFromString(
+          base::UTF16ToUTF8(orientation.string()));
+  if (orientation_enum == blink::WebScreenOrientationLockDefault)
     AddErrorInfo("unknown 'orientation' value ignored.");
-    return blink::WebScreenOrientationLockDefault;
-  }
+  return orientation_enum;
 }
 
 GURL ManifestParser::ParseIconSrc(const base::DictionaryValue& icon) {

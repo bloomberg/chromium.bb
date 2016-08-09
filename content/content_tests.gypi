@@ -690,6 +690,7 @@
       'common/inter_process_time_ticks_converter_unittest.cc',
       'common/mac/attributed_string_coder_unittest.mm',
       'common/mac/font_descriptor_unittest.mm',
+      'common/manifest_util_unittest.cc',
       'common/navigation_params_unittest.cc',
       'common/one_writer_seqlock_unittest.cc',
       'common/origin_trials/trial_token_unittest.cc',

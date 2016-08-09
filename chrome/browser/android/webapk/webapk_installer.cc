@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/manifest_util.h"
 #include "jni/WebApkInstaller_jni.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -253,7 +254,11 @@ std::unique_ptr<webapk::WebApk> WebApkInstaller::BuildWebApkProto() {
   web_app_manifest->set_short_name(
       base::UTF16ToUTF8(shortcut_info_.short_name));
   web_app_manifest->set_start_url(shortcut_info_.url.spec());
-  // TODO(pkotwicz): Add "display mode" and "orientation" to proto.
+  web_app_manifest->set_orientation(
+      content::WebScreenOrientationLockTypeToString(
+          shortcut_info_.orientation));
+  web_app_manifest->set_display_mode(
+      content::WebDisplayModeToString(shortcut_info_.display));
   web_app_manifest->set_background_color(
       ColorToString(shortcut_info_.background_color));
   web_app_manifest->set_theme_color(ColorToString(shortcut_info_.theme_color));
