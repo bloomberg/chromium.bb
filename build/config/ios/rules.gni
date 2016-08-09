@@ -11,9 +11,8 @@ if (_is_fat_build) {
   _is_fat_build_main_target = current_toolchain == default_toolchain
 }
 
-if (use_ios_simulator || ios_enable_code_signing) {
-  _default_entitlements_path = "//build/config/ios/entitlements.plist"
-}
+_code_signing_script_path = "//build/config/ios/codesign.py"
+_default_entitlements_path = "//build/config/ios/entitlements.plist"
 
 # Generates Info.plist files for Mac apps and frameworks.
 #
@@ -237,11 +236,9 @@ template("ios_app_bundle") {
     _generate_info_plist = target_name + "_generate_info_plist"
     _bundle_data_info_plist = target_name + "_bundle_data_info_plist"
 
-    if (use_ios_simulator || ios_enable_code_signing) {
-      _entitlements_path = _default_entitlements_path
-      if (defined(invoker.entitlements_path)) {
-        _entitlements_path = invoker.entitlements_path
-      }
+    _entitlements_path = _default_entitlements_path
+    if (defined(invoker.entitlements_path)) {
+      _entitlements_path = invoker.entitlements_path
     }
 
     ios_info_plist(_generate_info_plist) {
@@ -276,7 +273,7 @@ template("ios_app_bundle") {
         _gen_info_plist_outputs = get_target_outputs(_gen_info_plist_target)
         _info_plist_path = _gen_info_plist_outputs[0]
 
-        script = "//build/config/ios/codesign.py"
+        script = _code_signing_script_path
         deps = [
           _gen_info_plist_target,
         ]
@@ -296,13 +293,7 @@ template("ios_app_bundle") {
     }
 
     _link_executable = _target_name + "_executable"
-
-    if (ios_enable_code_signing) {
-      _link_executable_visibility = [ ":$_target_name" ]
-    } else {
-      _bundle_data_executable = target_name + "_bundle_data_executable"
-      _link_executable_visibility = [ ":$_bundle_data_executable" ]
-    }
+    _link_executable_visibility = [ ":$_target_name" ]
 
     # For a fat-build, the different "executable" outputs will be used to
     # create the final binary using "lipo". As the corresponding target has
@@ -439,42 +430,6 @@ template("ios_app_bundle") {
       }
     }
 
-    if (!ios_enable_code_signing) {
-      # If codesigning is enabled, the binary will be copied into the bundle
-      # by the codesigning script (as the binary is updated by the signature).
-      # Otherwise, this "bundle_data" declares the location of the binary in
-      # the .app bundle.
-      bundle_data(_bundle_data_executable) {
-        forward_variables_from(invoker, [ "testonly" ])
-        visibility = [ ":$_target_name" ]
-        outputs = [
-          "{{bundle_executable_dir}}/$_output_name",
-        ]
-        if (_is_fat_build) {
-          public_deps = [
-            ":$_lipo_executable",
-          ]
-        } else {
-          public_deps = [
-            ":$_link_executable",
-          ]
-        }
-        sources = [
-          "$target_out_dir/$_output_name",
-        ]
-      }
-    }
-
-    if (!ios_enable_code_signing && defined(invoker.extra_system_frameworks)) {
-      bundle_data(_target_name + "_extra_system_frameworks") {
-        visibility = [ ":$_target_name" ]
-        sources = invoker.extra_system_frameworks
-        outputs = [
-          "{{bundle_resources_dir}}/Frameworks/{{source_file_part}}",
-        ]
-      }
-    }
-
     create_bundle(target_name) {
       forward_variables_from(invoker,
                              [
@@ -493,17 +448,10 @@ template("ios_app_bundle") {
       if (!defined(public_deps)) {
         public_deps = []
       }
-      if (ios_enable_code_signing) {
-        if (_is_fat_build) {
-          public_deps += [ ":$_lipo_executable" ]
-        } else {
-          public_deps += [ ":$_link_executable" ]
-        }
+      if (_is_fat_build) {
+        public_deps += [ ":$_lipo_executable" ]
       } else {
-        public_deps += [ ":$_bundle_data_executable" ]
-        if (defined(invoker.extra_system_frameworks)) {
-          deps += [ ":${_target_name}_extra_system_frameworks" ]
-        }
+        public_deps += [ ":$_link_executable" ]
       }
       if (defined(invoker.bundle_deps)) {
         deps += invoker.bundle_deps
@@ -533,41 +481,42 @@ template("ios_app_bundle") {
       bundle_executable_dir = bundle_root_dir
       bundle_plugins_dir = "$bundle_root_dir/PlugIns"
 
+      code_signing_script = _code_signing_script_path
+      code_signing_sources = [
+        _entitlements_path,
+        "$target_out_dir/$_output_name",
+      ]
+      code_signing_outputs = [ "$bundle_root_dir/$_output_name" ]
       if (ios_enable_code_signing) {
-        code_signing_script = "//build/config/ios/codesign.py"
-        code_signing_sources = [
-          _entitlements_path,
-          "$target_out_dir/$_output_name",
-        ]
-        code_signing_outputs = [
-          "$bundle_root_dir/$_output_name",
-          "$bundle_root_dir/_CodeSignature/CodeResources",
-        ]
-        if (ios_code_signing_identity != "") {
-          code_signing_outputs +=
-              [ "$bundle_root_dir/embedded.mobileprovision" ]
+        code_signing_outputs +=
+            [ "$bundle_root_dir/_CodeSignature/CodeResources" ]
+      }
+      if (ios_code_signing_identity != "") {
+        code_signing_outputs += [ "$bundle_root_dir/embedded.mobileprovision" ]
+      }
+      if (defined(invoker.extra_system_frameworks)) {
+        foreach(_framework, invoker.extra_system_frameworks) {
+          code_signing_outputs += [ "$bundle_root_dir/Frameworks/" +
+                                    get_path_info(_framework, "file") ]
         }
-        if (defined(invoker.extra_system_frameworks)) {
-          foreach(_framework, invoker.extra_system_frameworks) {
-            code_signing_outputs += [ "$bundle_root_dir/Frameworks/" +
-                                      get_path_info(_framework, "file") ]
-          }
+      }
+      code_signing_args = [
+        "code-sign-bundle",
+        "-i=" + ios_code_signing_identity,
+        "-e=" + rebase_path(_entitlements_path, root_build_dir),
+        "-b=" + rebase_path("$target_out_dir/$_output_name", root_build_dir),
+        rebase_path(bundle_root_dir, root_build_dir),
+      ]
+      if (defined(invoker.extra_system_frameworks)) {
+        # All framework in extra_system_frameworks are expected to be
+        # system framework and the path to be already system absolute
+        # so do not use rebase_path here.
+        foreach(_framework, invoker.extra_system_frameworks) {
+          code_signing_args += [ "-F=" + _framework ]
         }
-        code_signing_args = [
-          "code-sign-bundle",
-          "-i=" + ios_code_signing_identity,
-          "-e=" + rebase_path(_entitlements_path, root_build_dir),
-          "-b=" + rebase_path("$target_out_dir/$_output_name", root_build_dir),
-          rebase_path(bundle_root_dir, root_build_dir),
-        ]
-        if (defined(invoker.extra_system_frameworks)) {
-          # All framework in extra_system_frameworks are expected to be
-          # system framework and the path to be already system absolute
-          # so do not use rebase_path here.
-          foreach(_framework, invoker.extra_system_frameworks) {
-            code_signing_args += [ "-F=" + _framework ]
-          }
-        }
+      }
+      if (!ios_enable_code_signing) {
+        code_signing_args += [ "--disable-code-signature" ]
       }
     }
   }
@@ -907,7 +856,6 @@ template("ios_framework_bundle") {
                              [
                                "assert_no_deps",
                                "bundle_deps",
-                               "code_signing_enabled",
                                "data_deps",
                                "info_plist",
                                "info_plist_target",
@@ -1029,12 +977,6 @@ template("ios_framework_bundle") {
       }
     }
 
-    _code_signing_enabled = ios_enable_code_signing
-    if (defined(invoker.code_signing_enabled)) {
-      _code_signing_enabled =
-          invoker.code_signing_enabled && _code_signing_enabled
-    }
-
     # If the framework is unversioned, the final _target_name will be the
     # create_bundle(_framework_target), otherwise an action with the name
     # _target_name will depends on the the create_bundle() in order to prepare
@@ -1050,13 +992,7 @@ template("ios_framework_bundle") {
 
     _link_shared_library_target = target_name + "_shared_library"
     _shared_library_dir = "$target_out_dir/$_link_shared_library_target"
-
-    if (_code_signing_enabled) {
-      _link_shared_library_visibility = [ ":$_framework_target" ]
-    } else {
-      _shared_library_bundle_data = target_name + "_shared_library_bundle_data"
-      _link_shared_library_visibility = [ ":$_shared_library_bundle_data" ]
-    }
+    _link_shared_library_visibility = [ ":$_framework_target" ]
 
     if (_is_fat_build) {
       _lipo_shared_library_target = _link_shared_library_target
@@ -1076,7 +1012,6 @@ template("ios_framework_bundle") {
                              [
                                "assert_no_deps",
                                "bundle_deps",
-                               "code_signing_enabled",
                                "data_deps",
                                "info_plist",
                                "info_plist_target",
@@ -1170,28 +1105,6 @@ template("ios_framework_bundle") {
       }
     }
 
-    if (!_code_signing_enabled) {
-      bundle_data(_shared_library_bundle_data) {
-        visibility = [ ":$_framework_target" ]
-        forward_variables_from(invoker, [ "testonly" ])
-        sources = [
-          "$_shared_library_dir/$_output_name",
-        ]
-        outputs = [
-          "{{bundle_executable_dir}}/$_output_name",
-        ]
-        if (_is_fat_build) {
-          public_deps = [
-            ":$_lipo_shared_library_target",
-          ]
-        } else {
-          public_deps = [
-            ":$_link_shared_library_target",
-          ]
-        }
-      }
-    }
-
     _framework_public_config = _target_name + "_public_config"
     config(_framework_public_config) {
       # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
@@ -1261,54 +1174,48 @@ template("ios_framework_bundle") {
         deps += invoker.bundle_deps
       }
 
-      if (!_code_signing_enabled) {
-        if (!defined(public_deps)) {
-          public_deps = []
-        }
-        public_deps += [ ":$_shared_library_bundle_data" ]
-      }
-
       bundle_root_dir = _framework_root_dir
       bundle_resources_dir = "$bundle_root_dir/Resources"
       bundle_executable_dir = "$bundle_root_dir"
 
-      if (_code_signing_enabled) {
-        if (!defined(deps)) {
-          deps = []
-        }
+      if (!defined(deps)) {
+        deps = []
+      }
 
-        if (_is_fat_build) {
-          deps += [ ":$_lipo_shared_library_target" ]
-        } else {
-          deps += [ ":$_link_shared_library_target" ]
-        }
+      if (_is_fat_build) {
+        deps += [ ":$_lipo_shared_library_target" ]
+      } else {
+        deps += [ ":$_link_shared_library_target" ]
+      }
 
-        _entitlements_path = _default_entitlements_path
-        if (defined(invoker.entitlements_path)) {
-          _entitlements_path = invoker.entitlements_path
-        }
+      _entitlements_path = _default_entitlements_path
+      if (defined(invoker.entitlements_path)) {
+        _entitlements_path = invoker.entitlements_path
+      }
 
-        code_signing_script = "//build/config/ios/codesign.py"
-        code_signing_sources = [
-          _entitlements_path,
-          "$_shared_library_dir/$_output_name",
-        ]
-        code_signing_outputs = [
-          "$bundle_root_dir/$_output_name",
-          "$bundle_root_dir/_CodeSignature/CodeResources",
-        ]
-        if (ios_code_signing_identity != "") {
-          code_signing_outputs +=
-              [ "$bundle_root_dir/embedded.mobileprovision" ]
-        }
-        code_signing_args = [
-          "code-sign-bundle",
-          "-i=" + ios_code_signing_identity,
-          "-e=" + rebase_path(_entitlements_path, root_build_dir),
-          "-b=" +
-              rebase_path("$_shared_library_dir/$_output_name", root_build_dir),
-          rebase_path(bundle_root_dir, root_build_dir),
-        ]
+      code_signing_script = _code_signing_script_path
+      code_signing_sources = [
+        _entitlements_path,
+        "$_shared_library_dir/$_output_name",
+      ]
+      code_signing_outputs = [ "$bundle_root_dir/$_output_name" ]
+      if (ios_enable_code_signing) {
+        code_signing_outputs +=
+            [ "$bundle_root_dir/_CodeSignature/CodeResources" ]
+      }
+      if (ios_code_signing_identity != "") {
+        code_signing_outputs += [ "$bundle_root_dir/embedded.mobileprovision" ]
+      }
+      code_signing_args = [
+        "code-sign-bundle",
+        "-i=" + ios_code_signing_identity,
+        "-e=" + rebase_path(_entitlements_path, root_build_dir),
+        "-b=" +
+            rebase_path("$_shared_library_dir/$_output_name", root_build_dir),
+        rebase_path(bundle_root_dir, root_build_dir),
+      ]
+      if (!ios_enable_code_signing) {
+        code_signing_args += [ "--disable-code-signature" ]
       }
     }
 
@@ -1429,15 +1336,7 @@ template("ios_xctest_test") {
     }
 
     _xctest_loadable_module_target = _xctest_target + "_loadable_module"
-
-    if (!ios_enable_code_signing) {
-      _xctest_loadable_module_bundle =
-          _xctest_target + "_loadable_module_bundle"
-      _xctest_loadable_module_visibility =
-          [ ":$_xctest_loadable_module_bundle" ]
-    } else {
-      _xctest_loadable_module_visibility = [ ":$_xctest_target" ]
-    }
+    _xctest_loadable_module_visibility = [ ":$_xctest_target" ]
 
     if (_is_fat_build) {
       _xctest_lipo_loadable_module_target = _xctest_loadable_module_target
@@ -1533,27 +1432,6 @@ template("ios_xctest_test") {
       }
     }
 
-    if (!ios_enable_code_signing) {
-      bundle_data(_xctest_loadable_module_bundle) {
-        visibility = [ ":$_xctest_target" ]
-        if (_is_fat_build) {
-          public_deps = [
-            ":$_xctest_lipo_loadable_module_target",
-          ]
-        } else {
-          public_deps = [
-            ":$_xctest_loadable_module_target",
-          ]
-        }
-        sources = [
-          "$target_out_dir/$_xctest_output",
-        ]
-        outputs = [
-          "{{bundle_root_dir}}/$_xctest_output",
-        ]
-      }
-    }
-
     _xctest_bundle = _xctest_target + "_bundle"
 
     create_bundle(_xctest_target) {
@@ -1564,41 +1442,39 @@ template("ios_xctest_test") {
       ]
       bundle_root_dir = "$root_out_dir/$_xctest_output.xctest"
 
-      if (!ios_enable_code_signing) {
-        deps += [ ":$_xctest_loadable_module_bundle" ]
+      if (_is_fat_build) {
+        deps += [ ":$_xctest_lipo_loadable_module_target" ]
       } else {
-        if (_is_fat_build) {
-          deps += [ ":$_xctest_lipo_loadable_module_target" ]
-        } else {
-          deps += [ ":$_xctest_loadable_module_target" ]
-        }
+        deps += [ ":$_xctest_loadable_module_target" ]
+      }
 
-        _entitlements_path = _default_entitlements_path
-        if (defined(invoker.entitlements_path)) {
-          _entitlements_path = invoker.entitlements_path
-        }
+      _entitlements_path = _default_entitlements_path
+      if (defined(invoker.entitlements_path)) {
+        _entitlements_path = invoker.entitlements_path
+      }
 
-        code_signing_script = "//build/config/ios/codesign.py"
-        code_signing_sources = [
-          _entitlements_path,
-          "$target_out_dir/$_xctest_output",
-        ]
-        code_signing_outputs = [
-          "$bundle_root_dir/$_xctest_output",
-          "$bundle_root_dir/_CodeSignature/CodeResources",
-        ]
-        if (ios_code_signing_identity != "") {
-          code_signing_outputs +=
-              [ "$bundle_root_dir/embedded.mobileprovision" ]
-        }
-        code_signing_args = [
-          "code-sign-bundle",
-          "-i=" + ios_code_signing_identity,
-          "-e=" + rebase_path(_entitlements_path, root_build_dir),
-          "-b=" +
-              rebase_path("$target_out_dir/$_xctest_output", root_build_dir),
-          rebase_path(bundle_root_dir, root_build_dir),
-        ]
+      code_signing_script = _code_signing_script_path
+      code_signing_sources = [
+        _entitlements_path,
+        "$target_out_dir/$_xctest_output",
+      ]
+      code_signing_outputs = [ "$bundle_root_dir/$_xctest_output" ]
+      if (ios_enable_code_signing) {
+        code_signing_outputs +=
+            [ "$bundle_root_dir/_CodeSignature/CodeResources" ]
+      }
+      if (ios_code_signing_identity != "") {
+        code_signing_outputs += [ "$bundle_root_dir/embedded.mobileprovision" ]
+      }
+      code_signing_args = [
+        "code-sign-bundle",
+        "-i=" + ios_code_signing_identity,
+        "-e=" + rebase_path(_entitlements_path, root_build_dir),
+        "-b=" + rebase_path("$target_out_dir/$_xctest_output", root_build_dir),
+        rebase_path(bundle_root_dir, root_build_dir),
+      ]
+      if (!ios_enable_code_signing) {
+        code_signing_args += [ "--disable-code-signature" ]
       }
     }
 

@@ -263,8 +263,12 @@ class CodeSignBundleAction(Action):
         '--binary', '-b', required=True,
         help='path to the iOS bundle binary')
     parser.add_argument(
-        '--framework', '-F', action='append', default=[], dest="frameworks",
+        '--framework', '-F', action='append', default=[], dest='frameworks',
         help='install and resign system framework')
+    parser.add_argument(
+        '--disable-code-signature', action='store_false', dest='sign',
+        help='disable code signature')
+    parser.set_defaults(sign=True)
 
   @staticmethod
   def _Execute(args):
@@ -295,6 +299,9 @@ class CodeSignBundleAction(Action):
     if os.path.isfile(bundle.binary_path):
       os.unlink(bundle.binary_path)
     shutil.copy(args.binary, bundle.binary_path)
+
+    if not args.sign:
+      return
 
     # Embeds entitlements into the code signature (if code signing identify has
     # been provided).
