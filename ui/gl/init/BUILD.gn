@@ -18,8 +18,6 @@ component("init") {
   ]
   defines = [ "GL_INIT_IMPLEMENTATION" ]
 
-  include_dirs = [ "//third_party/swiftshader/include" ]
-
   deps = [
     "//base",
     "//ui/gfx",
@@ -42,6 +40,10 @@ component("init") {
 
     libs = [ "dwmapi.lib" ]
     ldflags = [ "/DELAYLOAD:dwmapi.dll" ]
+
+    if (is_official_build) {
+      include_dirs = [ "//third_party/swiftshader/include" ]
+    }
   } else if (is_mac) {
     sources += [
       "gl_factory_mac.cc",
