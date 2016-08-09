@@ -160,11 +160,11 @@ struct DrawRenderPassDrawQuadParams {
   const Resource* contents_texture = nullptr;
   const gfx::QuadF* clip_region = nullptr;
   bool flip_texture = false;
-
   gfx::Transform window_matrix;
   gfx::Transform projection_matrix;
+  gfx::Transform quad_to_target_transform;
 
-  // |frame| is needed for background effects.
+  // |frame| is only used for background effects.
   DirectRenderer::DrawingFrame* frame = nullptr;
 
   // Whether the texture to be sampled from needs to be flipped.
@@ -215,6 +215,7 @@ struct DrawRenderPassDrawQuadParams {
   bool use_color_matrix = false;
 
   gfx::QuadF surface_quad;
+
   gfx::Transform contents_device_transform;
 };
 
@@ -1068,6 +1069,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
 void GLRenderer::DrawRenderPassQuadInternal(
     DrawRenderPassDrawQuadParams* params) {
+  params->quad_to_target_transform =
+      params->quad->shared_quad_state->quad_to_target_transform;
   if (!InitializeRPDQParameters(params))
     return;
   UpdateRPDQShadersForBlending(params);
@@ -1093,8 +1096,7 @@ bool GLRenderer::InitializeRPDQParameters(
                            static_cast<float>(dst_rect.width()),
                            static_cast<float>(dst_rect.height()));
   gfx::Transform quad_rect_matrix;
-  QuadRectTransform(&quad_rect_matrix,
-                    quad->shared_quad_state->quad_to_target_transform,
+  QuadRectTransform(&quad_rect_matrix, params->quad_to_target_transform,
                     params->dst_rect);
   params->contents_device_transform =
       params->window_matrix * params->projection_matrix * quad_rect_matrix;
@@ -1217,8 +1219,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
         if (clip_rect.IsEmpty()) {
           clip_rect = current_draw_rect_;
         }
-        gfx::Transform transform =
-            quad->shared_quad_state->quad_to_target_transform;
+        gfx::Transform transform = params->quad_to_target_transform;
         gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
         gfx::QuadF local_clip = MapQuadToLocalSpace(transform, clip_quad);
         params->dst_rect.Intersect(local_clip.BoundingBox());
@@ -1499,8 +1500,7 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
 }
 
 void GLRenderer::DrawRPDQ(const DrawRenderPassDrawQuadParams& params) {
-  DrawQuadGeometry(params.projection_matrix,
-                   params.quad->shared_quad_state->quad_to_target_transform,
+  DrawQuadGeometry(params.projection_matrix, params.quad_to_target_transform,
                    params.dst_rect, params.locations.matrix);
 
   // Flush the compositor context before the filter bitmap goes out of
@@ -2728,6 +2728,8 @@ void GLRenderer::FinishDrawingQuadList() {
 }
 
 bool GLRenderer::FlippedFramebuffer(const DrawingFrame* frame) const {
+  if (force_drawing_frame_framebuffer_unflipped_)
+    return false;
   if (frame->current_render_pass != frame->root_render_pass)
     return true;
   return FlippedRootFramebuffer();
@@ -3777,10 +3779,11 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
   scoped_refptr<CALayerOverlaySharedState> shared_state;
   size_t copied_render_pass_count = 0;
   for (const CALayerOverlay& ca_layer_overlay : frame->ca_layer_overlay_list) {
-    if (!overlay_resource_pool_) {
-      overlay_resource_pool_ = ResourcePool::CreateForGpuMemoryBufferResources(
-          resource_provider_, base::ThreadTaskRunnerHandle::Get().get(),
-          gfx::BufferUsage::SCANOUT);
+    if (ca_layer_overlay.rpdq) {
+      ScheduleRenderPassDrawQuad(&ca_layer_overlay, frame);
+      shared_state = nullptr;
+      ++copied_render_pass_count;
+      continue;
     }
 
     ResourceId contents_resource_id = ca_layer_overlay.contents_resource_id;
@@ -3852,6 +3855,186 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
         overlay.plane_z_order, overlay.transform, texture_id,
         ToNearestRect(overlay.display_rect), overlay.uv_rect);
   }
+}
+
+// This function draws the RenderPassDrawQuad into a temporary
+// texture/framebuffer, and then copies the result into an IOSurface. The
+// inefficient (but simple) way to do this would be to:
+//   1. Allocate a framebuffer the size of the screen.
+//   2. Draw using all the normal RPDQ draw logic.
+//
+// Instead, this method does the following:
+//   1. Configure parameters as if drawing to a framebuffer the size of the
+//   screen. This reuses most of the RPDQ draw logic.
+//   2. Update parameters to draw into a framebuffer only as large as needed.
+//   3. Fix shader uniforms that were broken by (2).
+//
+// Then:
+//   4. Allocate an IOSurface as the drawing destination.
+//   5. Draw the RPDQ.
+void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
+    const CALayerOverlay* ca_layer_overlay,
+    Resource** resource,
+    DrawingFrame* external_frame,
+    gfx::RectF* new_bounds) {
+  ScopedResource* contents_texture =
+      render_pass_textures_[ca_layer_overlay->rpdq->render_pass_id].get();
+  DCHECK(contents_texture);
+
+  // Configure parameters as if drawing to a framebuffer the size of the
+  // screen.
+  DrawRenderPassDrawQuadParams params;
+  params.quad = ca_layer_overlay->rpdq;
+  params.flip_texture = true;
+  params.contents_texture = contents_texture;
+  params.quad_to_target_transform =
+      params.quad->shared_quad_state->quad_to_target_transform;
+
+  // Calculate projection and window matrices using InitializeViewport(). This
+  // requires creating a dummy DrawingFrame.
+  {
+    DrawingFrame frame;
+    gfx::Rect frame_rect = external_frame->device_viewport_rect;
+    force_drawing_frame_framebuffer_unflipped_ = true;
+    InitializeViewport(&frame, frame_rect, frame_rect, frame_rect.size());
+    force_drawing_frame_framebuffer_unflipped_ = false;
+    params.projection_matrix = frame.projection_matrix;
+    params.window_matrix = frame.window_matrix;
+  }
+
+  // Perform basic initialization with the screen-sized viewport.
+  if (!InitializeRPDQParameters(&params))
+    return;
+
+  if (!UpdateRPDQWithSkiaFilters(&params))
+    return;
+
+  // |params.dst_rect| now contain values that reflect a potentially increased
+  // size quad.
+  gfx::RectF updated_dst_rect = params.dst_rect;
+  *new_bounds = updated_dst_rect;
+
+  // Calculate new projection and window matrices for a minimally sized viewport
+  // using InitializeViewport(). This requires creating a dummy DrawingFrame.
+  {
+    DrawingFrame frame;
+    force_drawing_frame_framebuffer_unflipped_ = true;
+    gfx::Rect frame_rect =
+        gfx::Rect(0, 0, updated_dst_rect.width(), updated_dst_rect.height());
+    InitializeViewport(&frame, frame_rect, frame_rect, frame_rect.size());
+    force_drawing_frame_framebuffer_unflipped_ = false;
+    params.projection_matrix = frame.projection_matrix;
+    params.window_matrix = frame.window_matrix;
+  }
+
+  // Calculate a new quad_to_target_transform.
+  params.quad_to_target_transform = gfx::Transform();
+  params.quad_to_target_transform.Translate(-updated_dst_rect.x(),
+                                            -updated_dst_rect.y());
+
+  // Antialiasing works by fading out content that is close to the edge of the
+  // viewport. All of these values need to be recalculated.
+  if (params.use_aa) {
+    current_window_space_viewport_ =
+        gfx::Rect(0, 0, updated_dst_rect.width(), updated_dst_rect.height());
+    gfx::Transform quad_rect_matrix;
+    QuadRectTransform(&quad_rect_matrix, params.quad_to_target_transform,
+                      updated_dst_rect);
+    params.contents_device_transform =
+        params.window_matrix * params.projection_matrix * quad_rect_matrix;
+    bool clipped = false;
+    params.contents_device_transform.FlattenTo2d();
+    gfx::QuadF device_layer_quad = MathUtil::MapQuad(
+        params.contents_device_transform, SharedGeometryQuad(), &clipped);
+    LayerQuad device_layer_edges(device_layer_quad);
+    InflateAntiAliasingDistances(device_layer_quad, &device_layer_edges,
+                                 params.edge);
+  }
+
+  // Establish destination texture.
+  *resource = overlay_resource_pool_->AcquireResource(
+      gfx::Size(updated_dst_rect.width(), updated_dst_rect.height()),
+      ResourceFormat::RGBA_8888);
+  ResourceProvider::ScopedWriteLockGL destination(resource_provider_,
+                                                  (*resource)->id(), false);
+  GLuint temp_fbo;
+
+  gl_->GenFramebuffers(1, &temp_fbo);
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, temp_fbo);
+  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            destination.target(), destination.texture_id(), 0);
+  DCHECK(gl_->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
+         GL_FRAMEBUFFER_COMPLETE);
+
+  // Clear to 0 to ensure the background is transparent.
+  gl_->ClearColor(0, 0, 0, 0);
+  gl_->Clear(GL_COLOR_BUFFER_BIT);
+
+  UpdateRPDQTexturesForSampling(&params);
+  UpdateRPDQBlendMode(&params);
+  ChooseRPDQProgram(&params);
+  UpdateRPDQUniforms(&params);
+
+  // Prior to drawing, set up the destination framebuffer and viewport.
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, temp_fbo);
+  gl_->Viewport(0, 0, updated_dst_rect.width(), updated_dst_rect.height());
+
+  DrawRPDQ(params);
+  gl_->DeleteFramebuffers(1, &temp_fbo);
+}
+
+void GLRenderer::ScheduleRenderPassDrawQuad(
+    const CALayerOverlay* ca_layer_overlay,
+    DrawingFrame* external_frame) {
+  DCHECK(ca_layer_overlay->rpdq);
+
+  if (!overlay_resource_pool_) {
+    overlay_resource_pool_ = ResourcePool::CreateForGpuMemoryBufferResources(
+        resource_provider_, base::ThreadTaskRunnerHandle::Get().get(),
+        gfx::BufferUsage::SCANOUT);
+  }
+
+  Resource* resource = nullptr;
+  gfx::RectF new_bounds;
+  CopyRenderPassDrawQuadToOverlayResource(ca_layer_overlay, &resource,
+                                          external_frame, &new_bounds);
+  if (!resource || !resource->id())
+    return;
+
+  pending_overlay_resources_.push_back(
+      base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
+          resource_provider_, resource->id())));
+  unsigned texture_id = pending_overlay_resources_.back()->texture_id();
+
+  // Once a resource is released, it is marked as "busy". It will be
+  // available for reuse after the ScopedReadLockGL is destroyed.
+  overlay_resource_pool_->ReleaseResource(resource);
+
+  GLfloat contents_rect[4] = {
+      ca_layer_overlay->contents_rect.x(), ca_layer_overlay->contents_rect.y(),
+      ca_layer_overlay->contents_rect.width(),
+      ca_layer_overlay->contents_rect.height(),
+  };
+  GLfloat bounds_rect[4] = {
+      new_bounds.x(), new_bounds.y(), new_bounds.width(), new_bounds.height(),
+  };
+  GLboolean is_clipped = ca_layer_overlay->shared_state->is_clipped;
+  GLfloat clip_rect[4] = {ca_layer_overlay->shared_state->clip_rect.x(),
+                          ca_layer_overlay->shared_state->clip_rect.y(),
+                          ca_layer_overlay->shared_state->clip_rect.width(),
+                          ca_layer_overlay->shared_state->clip_rect.height()};
+  GLint sorting_context_id = ca_layer_overlay->shared_state->sorting_context_id;
+  SkMatrix44 transform = ca_layer_overlay->shared_state->transform;
+  GLfloat gl_transform[16];
+  transform.asColMajorf(gl_transform);
+  unsigned filter = ca_layer_overlay->filter;
+
+  gl_->ScheduleCALayerSharedStateCHROMIUM(
+      ca_layer_overlay->shared_state->opacity, is_clipped, clip_rect,
+      sorting_context_id, gl_transform);
+  gl_->ScheduleCALayerCHROMIUM(
+      texture_id, contents_rect, ca_layer_overlay->background_color,
+      ca_layer_overlay->edge_aa_mask, bounds_rect, filter);
 }
 
 }  // namespace cc

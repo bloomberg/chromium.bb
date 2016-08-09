@@ -15,6 +15,7 @@
 namespace cc {
 
 class DrawQuad;
+class RenderPassDrawQuad;
 class ResourceProvider;
 
 // Holds information that is frequently shared between consecutive
@@ -23,7 +24,6 @@ class CC_EXPORT CALayerOverlaySharedState
     : public base::RefCounted<CALayerOverlaySharedState> {
  public:
   CALayerOverlaySharedState() {}
-
   // Layers in a non-zero sorting context exist in the same 3D space and should
   // intersect.
   unsigned sorting_context_id = 0;
@@ -63,6 +63,9 @@ class CC_EXPORT CALayerOverlay {
   unsigned edge_aa_mask = 0;
   // The minification and magnification filters for the CALayer.
   unsigned filter;
+  // If |rpdq| is present, then the renderer must draw the filter effects and
+  // copy the result into an IOSurface.
+  const RenderPassDrawQuad* rpdq = nullptr;
 };
 
 typedef std::vector<CALayerOverlay> CALayerOverlayList;

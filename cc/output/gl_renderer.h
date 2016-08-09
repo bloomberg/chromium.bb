@@ -270,6 +270,22 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void ScheduleCALayers(DrawingFrame* frame);
   void ScheduleOverlays(DrawingFrame* frame);
 
+  // Copies the contents of the render pass draw quad, including filter effects,
+  // to an overlay resource, returned in |resource|. The resource is allocated
+  // from |overlay_resource_pool_|.
+  // The resulting Resource may be larger than the original quad. The new size
+  // and position is placed in |new_bounds|.
+  void CopyRenderPassDrawQuadToOverlayResource(
+      const CALayerOverlay* ca_layer_overlay,
+      Resource** resource,
+      DrawingFrame* frame,
+      gfx::RectF* new_bounds);
+
+  // Schedules the |ca_layer_overlay|, which is guaranteed to have a non-null
+  // |rpdq| parameter.
+  void ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay,
+                                  DrawingFrame* external_frame);
+
   using OverlayResourceLock =
       std::unique_ptr<ResourceProvider::ScopedReadLockGL>;
   using OverlayResourceLockList = std::vector<OverlayResourceLock>;
@@ -534,6 +550,14 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   // If true, draw a green border after compositing a texture quad using GL.
   bool gl_composited_texture_quad_border_;
+
+  // The method FlippedFramebuffer determines whether the framebuffer associated
+  // with a DrawingFrame is flipped. It makes the assumption that the
+  // DrawingFrame is being used as part of a render pass. If a DrawingFrame is
+  // not being used as part of a render pass, setting it here forces
+  // FlippedFramebuffer to return |true|.
+  bool force_drawing_frame_framebuffer_unflipped_ = false;
+
   BoundGeometry bound_geometry_;
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };

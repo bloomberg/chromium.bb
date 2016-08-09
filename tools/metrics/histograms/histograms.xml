@@ -69161,6 +69161,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="19" label="RenderPassDrawQuad has background filters."/>
   <int value="20" label="RenderPassDrawQuad has a mask."/>
   <int value="21" label="RenderPassDrawQuad has unconvertable filters."/>
+  <int value="22" label="RenderPassDrawQuad has a sorting context id."/>
 </enum>
 
 <enum name="CanvasContextType" type="int">

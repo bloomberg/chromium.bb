@@ -52,7 +52,6 @@ bool OverlayProcessor::ProcessForCALayers(
   // layers then clear the list and remove the backbuffer from the overcandidate
   // list.
   overlay_candidates->clear();
-  render_pass->quad_list.clear();
   overlay_damage_rect_ = render_pass->output_rect;
   *damage_rect = gfx::Rect();
   return true;

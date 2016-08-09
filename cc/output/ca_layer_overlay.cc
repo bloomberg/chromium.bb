@@ -44,6 +44,7 @@ enum CALayerResult {
   CA_LAYER_FAILED_RENDER_PASS_BACKGROUND_FILTERS,
   CA_LAYER_FAILED_RENDER_PASS_MASK,
   CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION,
+  CA_LAYER_FAILED_RENDER_PASS_SORTING_CONTEXT_ID,
   CA_LAYER_FAILED_COUNT,
 };
 
@@ -70,8 +71,9 @@ CALayerResult FromRenderPassQuad(ResourceProvider* resource_provider,
                                  CALayerOverlay* ca_layer_overlay) {
   if (quad->background_filters.size() != 0)
     return CA_LAYER_FAILED_RENDER_PASS_BACKGROUND_FILTERS;
-  if (quad->mask_resource_id() != 0)
-    return CA_LAYER_FAILED_RENDER_PASS_MASK;
+
+  if (quad->shared_quad_state->sorting_context_id != 0)
+    return CA_LAYER_FAILED_RENDER_PASS_SORTING_CONTEXT_ID;
 
   for (const FilterOperation& operation : quad->filters.operations()) {
     bool success = FilterOperationSupported(operation);
@@ -79,15 +81,7 @@ CALayerResult FromRenderPassQuad(ResourceProvider* resource_provider,
       return CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION;
   }
 
-  if (quad->filters_scale != gfx::Vector2dF(1, 1)) {
-    for (const FilterOperation& operation : quad->filters.operations()) {
-      if (operation.type() == FilterOperation::BLUR ||
-          operation.type() == FilterOperation::DROP_SHADOW) {
-        return CA_LAYER_FAILED_RENDER_PASS_FILTER_SCALE;
-      }
-    }
-  }
-
+  ca_layer_overlay->rpdq = quad;
   ca_layer_overlay->contents_rect = gfx::RectF(0, 0, 1, 1);
 
   // TODO(erikchen): Enable this when RenderPassDrawQuad promotion to CALayer

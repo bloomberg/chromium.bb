@@ -13,7 +13,6 @@
 #include "cc/output/filter_operations.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_id.h"
-#include "cc/resources/resource_provider.h"
 
 namespace cc {
 

@@ -1141,7 +1141,7 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
   overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
-  EXPECT_EQ(0U, pass->quad_list.size());
+  EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
@@ -1184,7 +1184,7 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
   overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
-  EXPECT_EQ(0U, pass->quad_list.size());
+  EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
@@ -1204,7 +1204,7 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
   overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
-  EXPECT_EQ(0U, pass->quad_list.size());
+  EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
   EXPECT_TRUE(ca_layer_list.back().shared_state->is_clipped);
@@ -1226,7 +1226,7 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
   overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
-  EXPECT_EQ(0U, pass->quad_list.size());
+  EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(0U, ca_layer_list.size());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
@@ -1823,7 +1823,7 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadBlurFilterScale) {
                 kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
                 filters_, gfx::Vector2dF(1, 2), background_filters_);
   ProcessForOverlays();
-  EXPECT_EQ(0U, ca_layer_list_.size());
+  EXPECT_EQ(1U, ca_layer_list_.size());
 }
 
 TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadDropShadowFilterScale) {
@@ -1833,7 +1833,7 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadDropShadowFilterScale) {
                 kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
                 filters_, gfx::Vector2dF(1, 2), background_filters_);
   ProcessForOverlays();
-  EXPECT_EQ(0U, ca_layer_list_.size());
+  EXPECT_EQ(1U, ca_layer_list_.size());
 }
 
 TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadBackgroundFilter) {
@@ -1850,7 +1850,7 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadMask) {
                 kOverlayRect, render_pass_id_, 2, gfx::Vector2dF(), gfx::Size(),
                 filters_, gfx::Vector2dF(1, 1), background_filters_);
   ProcessForOverlays();
-  EXPECT_EQ(0U, ca_layer_list_.size());
+  EXPECT_EQ(1U, ca_layer_list_.size());
 }
 
 TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadUnsupportedFilter) {
