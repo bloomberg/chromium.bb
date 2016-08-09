@@ -938,16 +938,6 @@ v8::Isolate* toIsolate(LocalFrame* frame)
     return frame->script().isolate();
 }
 
-void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> data = info.Data();
-    ASSERT(data->IsExternal());
-    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
-    if (!perContextData)
-        return;
-    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
-}
-
 v8::Local<v8::Value> freezeV8Object(v8::Local<v8::Value> value, v8::Isolate* isolate)
 {
     value.As<v8::Object>()->SetIntegrityLevel(isolate->GetCurrentContext(), v8::IntegrityLevel::kFrozen).ToChecked();

@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrDictionary.h"
 #include "bindings/core/v8/BooleanOrStringOrUnrestrictedDouble.h"
 #include "bindings/core/v8/DoubleOrString.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/StringOrDouble.h"

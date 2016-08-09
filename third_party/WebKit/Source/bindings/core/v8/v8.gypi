@@ -42,6 +42,8 @@
             'ExceptionState.h',
             'ExceptionStatePlaceholder.cpp',
             'ExceptionStatePlaceholder.h',
+            'GeneratedCodeHelper.cpp',
+            'GeneratedCodeHelper.h',
             'IDLDictionaryBase.cpp',
             'IDLDictionaryBase.h',
             'Iterable.h',

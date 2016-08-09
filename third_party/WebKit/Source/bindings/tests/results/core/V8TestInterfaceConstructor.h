@@ -7,6 +7,7 @@
 #ifndef V8TestInterfaceConstructor_h
 #define V8TestInterfaceConstructor_h
 
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/LongOrTestDictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"

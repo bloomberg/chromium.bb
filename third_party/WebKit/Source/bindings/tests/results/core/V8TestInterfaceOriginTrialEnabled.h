@@ -7,6 +7,7 @@
 #ifndef V8TestInterfaceOriginTrialEnabled_h
 #define V8TestInterfaceOriginTrialEnabled_h
 
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"

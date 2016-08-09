@@ -961,8 +961,6 @@ private:
     v8::Isolate* m_isolate;
 };
 
-// Callback functions used by generated code.
-CORE_EXPORT void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);
 
 typedef void (*InstallTemplateFunction)(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 

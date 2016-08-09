@@ -7,6 +7,7 @@
 #ifndef V8TestTypedefs_h
 #define V8TestTypedefs_h
 
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/TestInterfaceOrTestInterfaceEmpty.h"
