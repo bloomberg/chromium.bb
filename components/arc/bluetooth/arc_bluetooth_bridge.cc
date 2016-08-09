@@ -180,13 +180,12 @@ namespace arc {
 ArcBluetoothBridge::ArcBluetoothBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this), weak_factory_(this) {
   if (BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
-    VLOG(1) << "registering bluetooth adapter";
+    VLOG(1) << "Registering bluetooth adapter.";
     BluetoothAdapterFactory::GetAdapter(base::Bind(
         &ArcBluetoothBridge::OnAdapterInitialized, weak_factory_.GetWeakPtr()));
   } else {
-    VLOG(1) << "no bluetooth adapter available";
+    VLOG(1) << "No bluetooth adapter available.";
   }
-
   arc_bridge_service()->bluetooth()->AddObserver(this);
 }
 
@@ -207,7 +206,14 @@ void ArcBluetoothBridge::OnAdapterInitialized(
   // so our adapter uses BlueZ.
   bluetooth_adapter_ =
       static_cast<bluez::BluetoothAdapterBlueZ*>(adapter.get());
-  bluetooth_adapter_->AddObserver(this);
+
+  // The ARC instance was ready before the Bluetooth adapter, hence we didn't
+  // register ourselves as an observer with it then. Since our adapter is
+  // ready, we should register it now.
+  if (!bluetooth_adapter_->HasObserver(this) &&
+      arc_bridge_service()->bluetooth()->instance()) {
+    bluetooth_adapter_->AddObserver(this);
+  }
 }
 
 void ArcBluetoothBridge::OnInstanceReady() {
@@ -218,7 +224,19 @@ void ArcBluetoothBridge::OnInstanceReady() {
                << "but no bluetooth instance found";
     return;
   }
+
   bluetooth_instance->Init(binding_.CreateInterfacePtrAndBind());
+
+  // The Bluetooth adapter was ready before the ARC instance, hence we didn't
+  // register ourselves as an observer with it then. Since our instance is
+  // ready, we should register it now.
+  if (bluetooth_adapter_ && !bluetooth_adapter_->HasObserver(this))
+    bluetooth_adapter_->AddObserver(this);
+}
+
+void ArcBluetoothBridge::OnInstanceClosed() {
+  if (bluetooth_adapter_)
+    bluetooth_adapter_->RemoveObserver(this);
 }
 
 void ArcBluetoothBridge::AdapterPoweredChanged(BluetoothAdapter* adapter,

@@ -55,6 +55,11 @@ void BluetoothAdapter::RemoveObserver(BluetoothAdapter::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool BluetoothAdapter::HasObserver(BluetoothAdapter::Observer* observer) {
+  DCHECK(observer);
+  return observers_.HasObserver(observer);
+}
+
 void BluetoothAdapter::StartDiscoverySession(
     const DiscoverySessionCallback& callback,
     const ErrorCallback& error_callback) {

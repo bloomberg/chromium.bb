@@ -272,6 +272,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // methods to determine which adapter is issuing the event.
   virtual void AddObserver(BluetoothAdapter::Observer* observer);
   virtual void RemoveObserver(BluetoothAdapter::Observer* observer);
+  virtual bool HasObserver(BluetoothAdapter::Observer* observer);
 
   // The address of this adapter. The address format is "XX:XX:XX:XX:XX:XX",
   // where each XX is a hexadecimal number.

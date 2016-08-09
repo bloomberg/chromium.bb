@@ -45,6 +45,7 @@ class ArcBluetoothBridge
 
   // Overridden from InstanceHolder<mojom::BluetoothInstance>::Observer:
   void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
