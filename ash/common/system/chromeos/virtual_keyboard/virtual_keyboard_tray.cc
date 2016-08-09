@@ -98,6 +98,10 @@ void VirtualKeyboardTray::OnKeyboardBoundsChanging(
 }
 
 void VirtualKeyboardTray::SetIconBorderForShelfAlignment() {
+  // Every time shelf alignment is updated, StatusAreaWidgetDelegate resets the
+  // border to a non-null border. So, we need to remove it.
+  tray_container()->SetBorder(views::Border::NullBorder());
+
   const gfx::ImageSkia& image = icon_->GetImage();
   const int size = GetTrayConstant(VIRTUAL_KEYBOARD_BUTTON_SIZE);
   const int vertical_padding = (size - image.height()) / 2;
