@@ -18,6 +18,7 @@
 namespace base {
 class Clock;
 class SequencedTaskRunner;
+class Time;
 }
 
 namespace budget_service {
@@ -31,7 +32,7 @@ class GURL;
 class BudgetDatabase {
  public:
   // Data structure for returing the budget decay expectations to the caller.
-  using BudgetExpectation = std::list<std::pair<double, double>>;
+  using BudgetExpectation = std::list<std::pair<double, base::Time>>;
 
   // Callback for setting a budget value.
   using StoreBudgetCallback = base::Callback<void(bool success)>;
@@ -55,7 +56,8 @@ class BudgetDatabase {
 
   // Add budget for an origin. The caller specifies the amount, and the method
   // adds the amount to the cache with the correct expiration. Callback is
-  // invoked only after the newly cached value is written to storage.
+  // invoked only after the newly cached value is written to storage. This
+  // should only be called after the budget has been read from the database.
   void AddBudget(const GURL& origin,
                  double amount,
                  const StoreBudgetCallback& callback);
@@ -67,12 +69,14 @@ class BudgetDatabase {
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
   // Data structure for caching budget information.
-  using BudgetChunks = std::vector<std::pair<double, double>>;
+  using BudgetChunks = std::vector<std::pair<double, base::Time>>;
   using BudgetInfo = std::pair<double, BudgetChunks>;
 
   using AddToCacheCallback = base::Callback<void(bool success)>;
 
   void OnDatabaseInit(bool success);
+
+  bool IsCached(const GURL& origin) const;
 
   void AddToCache(const GURL& origin,
                   const AddToCacheCallback& callback,
@@ -85,6 +89,8 @@ class BudgetDatabase {
 
   void WriteCachedValuesToDatabase(const GURL& origin,
                                    const StoreBudgetCallback& callback);
+
+  void CleanupExpiredBudget(const GURL& origin);
 
   // The database for storing budget information.
   std::unique_ptr<leveldb_proto::ProtoDatabase<budget_service::Budget>> db_;

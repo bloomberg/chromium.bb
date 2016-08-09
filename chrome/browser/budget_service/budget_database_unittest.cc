@@ -84,6 +84,9 @@ class BudgetDatabaseTest : public ::testing::Test {
     return clock;
   }
 
+  // Query the database to check if the origin is in the cache.
+  bool IsCached(const GURL& origin) { return db_.IsCached(origin); }
+
  protected:
   bool success_;
 
@@ -101,6 +104,7 @@ TEST_F(BudgetDatabaseTest, ReadAndWriteTest) {
   base::SimpleTestClock* clock = SetClockForTesting();
   base::TimeDelta expiration(
       base::TimeDelta::FromHours(kDefaultExpirationInHours));
+  base::Time starting_time = clock->Now();
   base::Time expiration_time = clock->Now() + expiration;
 
   // Add two budget chunks with different expirations (default expiration and
@@ -122,18 +126,42 @@ TEST_F(BudgetDatabaseTest, ReadAndWriteTest) {
 
   // First value should be [total_budget, now]
   EXPECT_EQ(kDefaultBudget1 + kDefaultBudget2, iter->first);
-  // TODO(harkness): This will be "now" in the final version. For now, it's
-  // just 0.
-  EXPECT_EQ(0, iter->second);
+  EXPECT_EQ(clock->Now(), iter->second);
 
   // The next value should be the budget after the first chunk expires.
   iter++;
   EXPECT_EQ(kDefaultBudget2, iter->first);
-  EXPECT_EQ(expiration_time.ToInternalValue(), iter->second);
+  EXPECT_EQ(expiration_time, iter->second);
 
   // The final value gives the budget of 0.0 after the second chunk expires.
   expiration_time += base::TimeDelta::FromDays(1);
   iter++;
   EXPECT_EQ(0, iter->first);
-  EXPECT_EQ(expiration_time.ToInternalValue(), iter->second);
+  EXPECT_EQ(expiration_time, iter->second);
+
+  // Advance the time until the first chunk of budget should be expired.
+  clock->SetNow(starting_time +
+                base::TimeDelta::FromHours(kDefaultExpirationInHours));
+
+  // Get the new budget and check that kDefaultBudget1 has been removed.
+  GetBudgetDetails();
+  iter = expectation().begin();
+  ASSERT_EQ(2U, expectation().size());
+  EXPECT_EQ(kDefaultBudget2, iter->first);
+  iter++;
+  EXPECT_EQ(0, iter->first);
+
+  // Advace the time until both chunks of budget should be expired.
+  clock->SetNow(starting_time +
+                base::TimeDelta::FromHours(kDefaultExpirationInHours) +
+                base::TimeDelta::FromDays(1));
+
+  GetBudgetDetails();
+  iter = expectation().begin();
+  ASSERT_EQ(1U, expectation().size());
+  EXPECT_EQ(0, iter->first);
+
+  // Now that the entire budget has expired, check that the entry in the map
+  // has been removed.
+  EXPECT_FALSE(IsCached(origin));
 }
