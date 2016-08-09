@@ -35,9 +35,19 @@
 namespace blink {
 
 #if DCHECK_IS_ON()
-static bool canBeAnchorNode(Node* node)
+template <typename Strategy>
+static bool canBeAnchorNode(Node*);
+
+template <>
+bool canBeAnchorNode<EditingStrategy>(Node* node)
 {
     return !node || !node->isPseudoElement();
+}
+
+template <>
+bool canBeAnchorNode<EditingInFlatTreeStrategy>(Node* node)
+{
+    return canBeAnchorNode<EditingStrategy>(node) && node->canParticipateInFlatTree();
 }
 #endif
 
@@ -89,7 +99,7 @@ PositionTemplate<Strategy>::PositionTemplate(Node* anchorNode, PositionAnchorTyp
         return;
     }
 #if DCHECK_IS_ON()
-    DCHECK(canBeAnchorNode(m_anchorNode.get()));
+    DCHECK(canBeAnchorNode<Strategy>(m_anchorNode.get())) << m_anchorNode;
 #endif
     DCHECK_NE(m_anchorType, PositionAnchorType::OffsetInAnchor);
 }
@@ -105,7 +115,7 @@ PositionTemplate<Strategy>::PositionTemplate(Node* anchorNode, int offset)
     else
         DCHECK_EQ(offset, 0);
 #if DCHECK_IS_ON()
-    DCHECK(canBeAnchorNode(m_anchorNode.get()));
+    DCHECK(canBeAnchorNode<Strategy>(m_anchorNode.get())) << m_anchorNode;
 #endif
 }
 
