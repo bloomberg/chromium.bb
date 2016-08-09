@@ -407,8 +407,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()
         && previousPaintInvalidationRect != this->previousPaintInvalidationRect()
         && !usesCompositedScrolling()
-        // Note that isLayoutView() below becomes unnecessary after the launch of root layer scrolling.
-        && (hasOverflowClip() || isLayoutView()))
+        && hasOverflowClip())
         newPaintInvalidationState.setForceSubtreeInvalidationRectUpdateWithinContainer();
 
     newPaintInvalidationState.updateForChildren(reason);
