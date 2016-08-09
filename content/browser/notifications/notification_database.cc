@@ -236,9 +236,11 @@ NotificationDatabase::Status NotificationDatabase::DeleteNotificationData(
 NotificationDatabase::Status
 NotificationDatabase::DeleteAllNotificationDataForOrigin(
     const GURL& origin,
+    const std::string& tag,
     std::set<int64_t>* deleted_notification_set) {
-  return DeleteAllNotificationDataInternal(
-      origin, kInvalidServiceWorkerRegistrationId, deleted_notification_set);
+  return DeleteAllNotificationDataInternal(origin, tag,
+                                           kInvalidServiceWorkerRegistrationId,
+                                           deleted_notification_set);
 }
 
 NotificationDatabase::Status
@@ -246,8 +248,9 @@ NotificationDatabase::DeleteAllNotificationDataForServiceWorkerRegistration(
     const GURL& origin,
     int64_t service_worker_registration_id,
     std::set<int64_t>* deleted_notification_set) {
-  return DeleteAllNotificationDataInternal(
-      origin, service_worker_registration_id, deleted_notification_set);
+  return DeleteAllNotificationDataInternal(origin, "" /* tag */,
+                                           service_worker_registration_id,
+                                           deleted_notification_set);
 }
 
 NotificationDatabase::Status NotificationDatabase::Destroy() {
@@ -328,6 +331,7 @@ NotificationDatabase::ReadAllNotificationDataInternal(
 NotificationDatabase::Status
 NotificationDatabase::DeleteAllNotificationDataInternal(
     const GURL& origin,
+    const std::string& tag,
     int64_t service_worker_registration_id,
     std::set<int64_t>* deleted_notification_set) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -335,6 +339,9 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
   DCHECK(origin.is_valid());
 
   const std::string prefix = CreateDataPrefix(origin);
+  const bool should_deserialize =
+      service_worker_registration_id != kInvalidServiceWorkerRegistrationId ||
+      !tag.empty();
 
   leveldb::Slice prefix_slice(prefix);
   leveldb::WriteBatch batch;
@@ -346,14 +353,21 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
     if (!iter->key().starts_with(prefix_slice))
       break;
 
-    if (service_worker_registration_id != kInvalidServiceWorkerRegistrationId) {
+    if (should_deserialize) {
       Status status = DeserializedNotificationData(iter->value().ToString(),
                                                    &notification_database_data);
       if (status != STATUS_OK)
         return status;
 
-      if (notification_database_data.service_worker_registration_id !=
-          service_worker_registration_id) {
+      if (!tag.empty() &&
+          notification_database_data.notification_data.tag != tag) {
+        continue;
+      }
+
+      if (service_worker_registration_id !=
+              kInvalidServiceWorkerRegistrationId &&
+          notification_database_data.service_worker_registration_id !=
+              service_worker_registration_id) {
         continue;
       }
     }

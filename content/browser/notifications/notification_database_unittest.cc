@@ -24,15 +24,18 @@ const int kExampleServiceWorkerRegistrationId = 42;
 
 const struct {
   const char* origin;
+  const char* tag;
   int64_t service_worker_registration_id;
 } kExampleNotificationData[] = {
-    {"https://example.com", 0},
-    {"https://example.com", kExampleServiceWorkerRegistrationId},
-    {"https://example.com", kExampleServiceWorkerRegistrationId},
-    {"https://example.com", kExampleServiceWorkerRegistrationId + 1},
-    {"https://chrome.com", 0},
-    {"https://chrome.com", 0},
-    {"https://chrome.com", kExampleServiceWorkerRegistrationId}};
+    {"https://example.com", "" /* tag */, 0},
+    {"https://example.com", "" /* tag */, kExampleServiceWorkerRegistrationId},
+    {"https://example.com", "" /* tag */, kExampleServiceWorkerRegistrationId},
+    {"https://example.com", "" /* tag */,
+     kExampleServiceWorkerRegistrationId + 1},
+    {"https://chrome.com", "" /* tag */, 0},
+    {"https://chrome.com", "" /* tag */, 0},
+    {"https://chrome.com", "" /* tag */, kExampleServiceWorkerRegistrationId},
+    {"https://chrome.com", "foo" /* tag */, 0}};
 
 class NotificationDatabaseTest : public ::testing::Test {
  protected:
@@ -51,12 +54,14 @@ class NotificationDatabaseTest : public ::testing::Test {
   // will be stored in |notification_id|.
   void CreateAndWriteNotification(NotificationDatabase* database,
                                   const GURL& origin,
+                                  const std::string& tag,
                                   int64_t service_worker_registration_id,
                                   int64_t* notification_id) {
     NotificationDatabaseData database_data;
     database_data.origin = origin;
     database_data.service_worker_registration_id =
         service_worker_registration_id;
+    database_data.notification_data.tag = tag;
 
     ASSERT_EQ(NotificationDatabase::STATUS_OK,
               database->WriteNotificationData(origin, database_data,
@@ -70,6 +75,7 @@ class NotificationDatabaseTest : public ::testing::Test {
     for (size_t i = 0; i < arraysize(kExampleNotificationData); ++i) {
       ASSERT_NO_FATAL_FAILURE(CreateAndWriteNotification(
           database, GURL(kExampleNotificationData[i].origin),
+          kExampleNotificationData[i].tag,
           kExampleNotificationData[i].service_worker_registration_id,
           &notification_id));
     }
@@ -180,12 +186,14 @@ TEST_F(NotificationDatabaseTest, NotificationIdIncrements) {
 
   // Verify that getting two ids on the same database instance results in
   // incrementing values. Notification ids will start at 1.
-  ASSERT_NO_FATAL_FAILURE(CreateAndWriteNotification(
-      database.get(), origin, 0 /* sw_registration_id */, &notification_id));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateAndWriteNotification(database.get(), origin, "" /* tag */,
+                                 0 /* sw_registration_id */, &notification_id));
   EXPECT_EQ(notification_id, 1);
 
-  ASSERT_NO_FATAL_FAILURE(CreateAndWriteNotification(
-      database.get(), origin, 0 /* sw_registration_id */, &notification_id));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateAndWriteNotification(database.get(), origin, "" /* tag */,
+                                 0 /* sw_registration_id */, &notification_id));
   EXPECT_EQ(notification_id, 2);
 
   database.reset(CreateDatabaseOnFileSystem(database_dir.path()));
@@ -194,8 +202,9 @@ TEST_F(NotificationDatabaseTest, NotificationIdIncrements) {
 
   // Verify that the next notification id was stored in the database, and
   // continues where we expect it to be, even after closing and opening it.
-  ASSERT_NO_FATAL_FAILURE(CreateAndWriteNotification(
-      database.get(), origin, 0 /* sw_registration_id */, &notification_id));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateAndWriteNotification(database.get(), origin, "" /* tag */,
+                                 0 /* sw_registration_id */, &notification_id));
   EXPECT_EQ(notification_id, 3);
 }
 
@@ -367,7 +376,8 @@ TEST_F(NotificationDatabaseTest, ReadWriteMultipleNotificationData) {
   // notification id (it is the responsibility of the user to increment this).
   for (int i = 1; i <= 10; ++i) {
     ASSERT_NO_FATAL_FAILURE(CreateAndWriteNotification(
-        database.get(), origin, i /* sw_registration_id */, &notification_id));
+        database.get(), origin, "" /* tag */, i /* sw_registration_id */,
+        &notification_id));
     EXPECT_EQ(notification_id, i);
   }
 
@@ -521,7 +531,7 @@ TEST_F(NotificationDatabaseTest, DeleteAllNotificationDataForOrigin) {
   std::set<int64_t> deleted_notification_set;
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->DeleteAllNotificationDataForOrigin(
-                origin, &deleted_notification_set));
+                origin, "" /* tag */, &deleted_notification_set));
 
   EXPECT_EQ(4u, deleted_notification_set.size());
 
@@ -530,6 +540,62 @@ TEST_F(NotificationDatabaseTest, DeleteAllNotificationDataForOrigin) {
             database->ReadAllNotificationDataForOrigin(origin, &notifications));
 
   EXPECT_EQ(0u, notifications.size());
+}
+
+TEST_F(NotificationDatabaseTest, DeleteAllNotificationDataForOriginWithTag) {
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  ASSERT_NO_FATAL_FAILURE(PopulateDatabaseWithExampleData(database.get()));
+
+  GURL origin("https://chrome.com");
+
+  std::vector<NotificationDatabaseData> notifications;
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadAllNotificationDataForOrigin(origin, &notifications));
+
+  const std::string& tag = "foo";
+
+  size_t notifications_with_tag = 0;
+  size_t notifications_without_tag = 0;
+
+  for (const auto& database_data : notifications) {
+    if (database_data.notification_data.tag == tag)
+      ++notifications_with_tag;
+    else
+      ++notifications_without_tag;
+  }
+
+  ASSERT_GT(notifications_with_tag, 0u);
+  ASSERT_GT(notifications_without_tag, 0u);
+
+  std::set<int64_t> deleted_notification_set;
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->DeleteAllNotificationDataForOrigin(
+                origin, "foo" /* tag */, &deleted_notification_set));
+
+  EXPECT_EQ(notifications_with_tag, deleted_notification_set.size());
+
+  std::vector<NotificationDatabaseData> updated_notifications;
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadAllNotificationDataForOrigin(origin,
+                                                       &updated_notifications));
+
+  EXPECT_EQ(notifications_without_tag, updated_notifications.size());
+
+  size_t updated_notifications_with_tag = 0;
+  size_t updated_notifications_without_tag = 0;
+
+  for (const auto& database_data : updated_notifications) {
+    if (database_data.notification_data.tag == tag)
+      ++updated_notifications_with_tag;
+    else
+      ++updated_notifications_without_tag;
+  }
+
+  EXPECT_EQ(0u, updated_notifications_with_tag);
+  EXPECT_EQ(notifications_without_tag, updated_notifications_without_tag);
 }
 
 TEST_F(NotificationDatabaseTest, DeleteAllNotificationDataForOriginEmpty) {
@@ -542,7 +608,7 @@ TEST_F(NotificationDatabaseTest, DeleteAllNotificationDataForOriginEmpty) {
   std::set<int64_t> deleted_notification_set;
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->DeleteAllNotificationDataForOrigin(
-                origin, &deleted_notification_set));
+                origin, "" /* tag */, &deleted_notification_set));
 
   EXPECT_EQ(0u, deleted_notification_set.size());
 }

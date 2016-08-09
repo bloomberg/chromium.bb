@@ -119,11 +119,13 @@ class CONTENT_EXPORT NotificationDatabase {
   // failure if the to-be-deleted notification does not exist.
   Status DeleteNotificationData(int64_t notification_id, const GURL& origin);
 
-  // Deletes all data associated with |origin| from the database, and appends
-  // the deleted notification ids to |deleted_notification_set|. Returns the
-  // status code of the deletion operation.
+  // Deletes all data associated with |origin| from the database, optionally
+  // filtered by the |tag|, and appends the deleted notification ids to
+  // |deleted_notification_set|. Returns the status code of the deletion
+  // operation.
   Status DeleteAllNotificationDataForOrigin(
       const GURL& origin,
+      const std::string& tag,
       std::set<int64_t>* deleted_notification_set);
 
   // Deletes all data associated with the |service_worker_registration_id|
@@ -167,10 +169,11 @@ class CONTENT_EXPORT NotificationDatabase {
   // Deletes all notification data with the given constraints. |origin| must
   // always be set - use Destroy() when the goal is to empty the database. If
   // |service_worker_registration_id| is invalid, all notification data for the
-  // |origin| will be deleted.
+  // |origin| will be deleted, optionally filtered by the |tag| when non-empty.
   // All deleted notification ids will be written to |deleted_notification_set|.
   Status DeleteAllNotificationDataInternal(
       const GURL& origin,
+      const std::string& tag,
       int64_t service_worker_registration_id,
       std::set<int64_t>* deleted_notification_set);
 

@@ -35827,6 +35827,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Notifications.Database.DeleteBeforeWriteResult"
+    enum="NotificationDatabaseStatus">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records the result status codes of deleting notification data from the Web
+    Notification database that share their tag (replacement identifier) with a
+    notification that's about to be shown.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.Database.DeleteResult"
     enum="NotificationDatabaseStatus">
   <owner>peter@chromium.org</owner>

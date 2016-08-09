@@ -239,6 +239,31 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
     const WriteResultCallback& callback) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
+  // Eagerly delete data for replaced notifications from the database.
+  if (!database_data.notification_data.tag.empty()) {
+    std::set<int64_t> deleted_notification_set;
+    NotificationDatabase::Status delete_status =
+        database_->DeleteAllNotificationDataForOrigin(
+            origin, database_data.notification_data.tag,
+            &deleted_notification_set);
+
+    UMA_HISTOGRAM_ENUMERATION("Notifications.Database.DeleteBeforeWriteResult",
+                              delete_status,
+                              NotificationDatabase::STATUS_COUNT);
+
+    // Unless the database was corrupted following this change, there is no
+    // reason to bail out here in event of failure because the notification
+    // display logic will handle notification replacement for the user.
+    if (delete_status == NotificationDatabase::STATUS_ERROR_CORRUPTED) {
+      DestroyDatabase();
+
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(callback, false /* success */, 0 /* notification_id */));
+      return;
+    }
+  }
+
   int64_t notification_id = 0;
   NotificationDatabase::Status status =
       database_->WriteNotificationData(origin, database_data, &notification_id);
