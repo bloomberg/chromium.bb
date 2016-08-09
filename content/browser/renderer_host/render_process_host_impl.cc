@@ -712,6 +712,20 @@ void RenderProcessHostImpl::RegisterRendererMainThreadFactory(
   g_renderer_main_thread_factory = create;
 }
 
+// static
+// TODO(alokp): Remove after collecting crash data.
+// Temporary checks to verify that all shared workers are terminated.
+// It is suspected that shared workers prevent render process hosts
+// from shutting down: crbug.com/608049
+void RenderProcessHostImpl::CheckAllWorkersTerminated() {
+  iterator iter(AllHostsIterator());
+  while (!iter.IsAtEnd()) {
+    RenderProcessHostImpl* host =
+        static_cast<RenderProcessHostImpl*>(iter.GetCurrentValue());
+    CHECK_EQ(0, host->worker_ref_count_);
+  }
+}
+
 RenderProcessHostImpl::~RenderProcessHostImpl() {
 #ifndef NDEBUG
   DCHECK(is_self_deleted_)
