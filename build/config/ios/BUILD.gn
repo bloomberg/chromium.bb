@@ -60,3 +60,7 @@ config("xctest_config") {
     "XCTest.framework",
   ]
 }
+
+group("xctest") {
+  public_configs = [ ":xctest_config" ]
+}
