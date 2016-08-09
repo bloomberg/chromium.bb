@@ -4,7 +4,53 @@
 
 import argparse
 import os
+import subprocess
 import sys
+
+
+def CompileXCAssets(output, platform, min_deployment_target, inputs):
+  command = [
+      'xcrun', 'actool', '--output-format=human-readable-text',
+      '--compress-pngs', '--notices', '--warnings', '--errors',
+      '--platform', platform, '--minimum-deployment-target',
+      min_deployment_target,
+  ]
+
+  if platform == 'macosx':
+    command.extend(['--target-device', 'mac'])
+  else:
+    command.extend(['--target-device', 'iphone', '--target-device', 'ipad'])
+
+  # actool crashes if paths are relative, so convert input and output paths
+  # to absolute paths.
+  command.extend(['--compile', os.path.dirname(os.path.abspath(output))])
+  command.extend(map(os.path.abspath, inputs))
+
+  # Run actool and redirect stdout and stderr to the same pipe (as actool
+  # is confused about what should go to stderr/stdout).
+  process = subprocess.Popen(
+      command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  stdout, _ = process.communicate()
+
+  if process.returncode:
+    sys.stderr.write(stdout)
+    sys.exit(process.returncode)
+
+  # In case of success, the output looks like the following:
+  #   /* com.apple.actool.compilation-results */
+  #   /Full/Path/To/Bundle.app/Assets.car
+  #
+  # Ignore any lines in the output matching those (last line is an empty line)
+  # and consider that the build failed if the output contains any other lines.
+  for line in stdout.splitlines():
+    if not line:
+      continue
+    if line == '/* com.apple.actool.compilation-results */':
+      continue
+    if line == os.path.abspath(output):
+      continue
+    sys.stderr.write(stdout)
+    sys.exit(1)
 
 
 def Main():
@@ -29,26 +75,14 @@ def Main():
     sys.stderr.write(
         'output should be path to compiled asset catalog, not '
         'to the containing bundle: %s\n' % (args.output,))
+    sys.exit(1)
 
-  command = [
-      'xcrun', 'actool', '--output-format', 'human-readable-text',
-      '--compress-pngs', '--notices', '--warnings', '--errors',
-      '--platform', args.platform, '--minimum-deployment-target',
+  CompileXCAssets(
+      args.output,
+      args.platform,
       args.minimum_deployment_target,
-  ]
+      args.inputs)
 
-  if args.platform == 'macosx':
-    command.extend(['--target-device', 'mac'])
-  else:
-    command.extend(['--target-device', 'iphone', '--target-device', 'ipad'])
-
-  # actool crashes if paths are relative, so use os.path.abspath to get absolute
-  # path for input and outputs.
-  command.extend(['--compile', os.path.abspath(os.path.dirname(args.output))])
-  command.extend(map(os.path.abspath, args.inputs))
-
-  os.execvp('xcrun', command)
-  sys.exit(1)
 
 if __name__ == '__main__':
   sys.exit(Main())
