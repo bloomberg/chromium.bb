@@ -6,11 +6,10 @@
     {
       'target_name': 'main_page_behavior',
       'dependencies': [
+        '../animation/compiled_resources2.gyp:animation',
         '../compiled_resources2.gyp:route',
         'settings_section',
-        'transition_behavior',
-        '<(EXTERNS_GYP):web_animations',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -30,6 +29,7 @@
     {
       'target_name': 'settings_section',
       'dependencies': [
+        '../animation/compiled_resources2.gyp:animation',
         '<(EXTERNS_GYP):web_animations',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -51,14 +51,6 @@
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-input/compiled_resources2.gyp:paper-input-container-extracted',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_search_field/compiled_resources2.gyp:cr_search_field_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-      ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'transition_behavior',
-      'dependencies': [
-        '<(EXTERNS_GYP):settings_private',
-        '<(EXTERNS_GYP):web_animations',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

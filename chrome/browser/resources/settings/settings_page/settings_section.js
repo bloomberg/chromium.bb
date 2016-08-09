@@ -95,7 +95,7 @@ var SettingsSectionElement = Polymer({
    * class while the animation plays.
    *
    * @param {!HTMLElement} container The scrolling container to fill.
-   * @return {?SettingsSectionElement.AnimationConfig}
+   * @return {?settings.animation.Animation} Animation played, if any.
    */
   animateExpand: function(container) {
     var card = this.$.card;
@@ -126,7 +126,7 @@ var SettingsSectionElement = Polymer({
       duration: EXPAND_DURATION
     });
     // TODO(michaelpg): Change elevation of sections.
-    return {card: card, keyframes: keyframes, options: options};
+    return new settings.animation.Animation(card, keyframes, options);
   },
 
   /**
@@ -157,7 +157,7 @@ var SettingsSectionElement = Polymer({
    * @param {!HTMLElement} container The scrolling container the card fills.
    * @param {number} prevScrollTop scrollTop of the container before this
    *     section expanded.
-   * @return {?SettingsSectionElement.AnimationConfig}
+   * @return {?settings.animation.Animation} Animation played, if any.
    */
   animateCollapse: function(container, prevScrollTop) {
     this.$.header.hidden = false;
@@ -209,7 +209,7 @@ var SettingsSectionElement = Polymer({
 
     card.style.width = cardWidthStart + 'px';
 
-    return {card: card, keyframes: keyframes, options: options};
+    return new settings.animation.Animation(card, keyframes, options);
   },
 
   /**
@@ -221,13 +221,3 @@ var SettingsSectionElement = Polymer({
       this.$.card.style.width = '';
   },
 });
-
-/**
- * Information needed by TransitionBehavior to schedule animations.
- * @typedef {{
- *   card: !HTMLElement,
- *   keyframes: !Array<!Object>,
- *   options: !KeyframeEffectOptions
- * }}
- */
-SettingsSectionElement.AnimationConfig;

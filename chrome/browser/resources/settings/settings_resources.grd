@@ -232,12 +232,6 @@
       <structure name="IDR_SETTINGS_SETTINGS_SHARED_CSS_HTML"
                  file="settings_shared_css.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_TRANSITION_BEHAVIOR_HTML"
-                 file="settings_page/transition_behavior.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_TRANSITION_BEHAVIOR_JS"
-                 file="settings_page/transition_behavior.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_HTML"
                  file="settings_ui/settings_ui.html"
                  type="chrome_html" />
