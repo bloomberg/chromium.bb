@@ -9,6 +9,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/background.h"
@@ -172,6 +173,14 @@ SkColor MdTextButton::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(label()->enabled_color());
 }
 
+std::unique_ptr<views::InkDropRipple> MdTextButton::CreateInkDropRipple()
+    const {
+  return std::unique_ptr<views::InkDropRipple>(
+      new views::FloodFillInkDropRipple(
+          GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
+          GetInkDropBaseColor(), ink_drop_visible_opacity()));
+}
+
 std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     const {
   if (!ShouldShowInkDropHighlight())
@@ -206,6 +215,11 @@ void MdTextButton::SetEnabledTextColors(SkColor color) {
   UpdateColors();
 }
 
+void MdTextButton::SetText(const base::string16& text) {
+  LabelButton::SetText(text);
+  UpdatePaddingForFont();
+}
+
 void MdTextButton::AdjustFontSize(int size_delta) {
   LabelButton::AdjustFontSize(size_delta);
   UpdatePaddingForFont();
@@ -235,12 +249,17 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   focus_ring_->SetVisible(false);
   set_request_focus_on_press(false);
   LabelButton::SetFontList(GetMdFontList());
-  UpdatePaddingForFont();
 }
 
 MdTextButton::~MdTextButton() {}
 
 void MdTextButton::UpdatePaddingForFont() {
+  // Don't use font-based padding when there's no text visible.
+  if (GetText().empty()) {
+    SetBorder(Border::NullBorder());
+    return;
+  }
+
   // Top and bottom padding depend on the font. Example: if font cap height is
   // 9dp, use 8dp bottom padding and 7dp top padding to total 24dp.
   const gfx::FontList& font = label()->font_list();

@@ -23,6 +23,8 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -112,7 +114,6 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
     // TODO(estade): should this 2 be shared with other tray views? See
     // crbug.com/623987
     button->AdjustFontSize(2);
-    button->SetMinSize(gfx::Size(0, kTrayItemSize));
     button_ = button;
   } else {
     button_ = new LogoutButton(this);
@@ -127,6 +128,9 @@ LogoutButtonTray::~LogoutButtonTray() {
 }
 
 void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
+  // We must first update the button so that
+  // TrayBackgroundView::SetShelfAlignment() can lay it out correctly.
+  UpdateButtonTextAndImage(login_status_, alignment);
   TrayBackgroundView::SetShelfAlignment(alignment);
   tray_container()->SetBorder(views::Border::NullBorder());
 }
@@ -162,18 +166,33 @@ void LogoutButtonTray::ButtonPressed(views::Button* sender,
 }
 
 void LogoutButtonTray::UpdateAfterLoginStatusChange(LoginStatus login_status) {
-  login_status_ = login_status;
-  const base::string16 title =
-      user::GetLocalizedSignOutStringForStatus(login_status, false);
-  button_->SetText(title);
-  button_->SetAccessibleName(title);
-  UpdateVisibility();
+  UpdateButtonTextAndImage(login_status, shelf_alignment());
 }
 
 void LogoutButtonTray::UpdateVisibility() {
   SetVisible(show_logout_button_in_tray_ &&
              login_status_ != LoginStatus::NOT_LOGGED_IN &&
              login_status_ != LoginStatus::LOCKED);
+}
+
+void LogoutButtonTray::UpdateButtonTextAndImage(LoginStatus login_status,
+                                                ShelfAlignment alignment) {
+  login_status_ = login_status;
+  const base::string16 title =
+      user::GetLocalizedSignOutStringForStatus(login_status, false);
+  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+    button_->SetText(title);
+    button_->SetImage(views::LabelButton::STATE_NORMAL, gfx::ImageSkia());
+    button_->SetMinSize(gfx::Size(0, kTrayItemSize));
+  } else {
+    button_->SetText(base::string16());
+    button_->SetAccessibleName(title);
+    button_->SetImage(
+        views::LabelButton::STATE_NORMAL,
+        gfx::CreateVectorIcon(gfx::VectorIconId::SHELF_LOGOUT, kTrayIconColor));
+    button_->SetMinSize(gfx::Size(kTrayItemSize, kTrayItemSize));
+  }
+  UpdateVisibility();
 }
 
 }  // namespace ash

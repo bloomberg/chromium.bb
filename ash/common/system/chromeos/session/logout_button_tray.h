@@ -45,6 +45,8 @@ class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
 
  private:
   void UpdateVisibility();
+  void UpdateButtonTextAndImage(LoginStatus login_status,
+                                ShelfAlignment alignment);
 
   views::LabelButton* button_;
   LoginStatus login_status_;

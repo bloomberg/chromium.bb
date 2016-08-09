@@ -119,6 +119,8 @@
       'vector_icons/shelf_applist.icon',
       'vector_icons/shelf_keyboard.1x.icon',
       'vector_icons/shelf_keyboard.icon',
+      'vector_icons/shelf_logout.1x.icon',
+      'vector_icons/shelf_logout.icon',
       'vector_icons/shelf_notifications.1x.icon',
       'vector_icons/shelf_notifications.icon',
       'vector_icons/shelf_overflow.1x.icon',

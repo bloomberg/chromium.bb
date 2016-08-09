@@ -46,7 +46,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Gets or sets the text shown on the button.
   const base::string16& GetText() const;
-  void SetText(const base::string16& text);
+  virtual void SetText(const base::string16& text);
 
   // Sets the text color shown for the specified button |for_state| to |color|.
   void SetTextColor(ButtonState for_state, SkColor color);
