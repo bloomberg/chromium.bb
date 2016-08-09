@@ -106,21 +106,12 @@
         {
           "object": "LayoutView #document",
           "rect": [485, 0, 15, 600],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [485, 0, 15, 600],
           "reason": "scroll"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
     {
       "object": "LayoutBlockFlow HTML",
       "reason": "forced by layout"

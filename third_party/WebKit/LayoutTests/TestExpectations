@@ -1345,27 +1345,6 @@ crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/data-s
 
 crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
 
-crbug.com/627798 editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsRebaseline ]
-crbug.com/627798 fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
-crbug.com/627798 fast/repaint/nested-fixed-iframe-scrolled.html [ NeedsRebaseline ]
-crbug.com/627798 fast/repaint/repaint-during-scroll-with-zoom.html [ NeedsRebaseline ]
-crbug.com/627798 fast/repaint/resize-scrollable-iframe.html [ NeedsRebaseline ]
-crbug.com/627798 fast/repaint/text-match-document-change.html [ NeedsRebaseline ]
-crbug.com/627798 fast/forms/fieldset/fieldset-align.html [ NeedsRebaseline ]
-crbug.com/627798 fast/forms/select/listbox-clip.html [ NeedsRebaseline ]
-crbug.com/627798 fast/block/positioning/auto/007.html [ NeedsRebaseline ]
-crbug.com/627798 compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ NeedsRebaseline ]
-
-crbug.com/633707 compositing/geometry/video-fixed-scrolling.html [ NeedsRebaseline ]
-crbug.com/633707 compositing/layers-inside-overflow-scroll.html [ NeedsRebaseline ]
-crbug.com/633707 compositing/overflow/scroll-ancestor-update.html [ NeedsRebaseline ]
-crbug.com/633707 compositing/self-painting-layers.html [ NeedsRebaseline ]
-crbug.com/633707 [ Win ] fast/forms/select-popup/popup-menu-appearance-zoom090.html [ NeedsRebaseline ]
-crbug.com/633707 [ Win ] fast/forms/select-popup/popup-menu-appearance-rtl.html [ NeedsRebaseline ]
-crbug.com/633707 [ Win ] fast/forms/select-popup/popup-menu-appearance-rtl-default.html [ NeedsRebaseline ]
-crbug.com/633707 [ Win ] fast/forms/select-popup/popup-menu-appearance-many.html [ NeedsRebaseline ]
-crbug.com/633707 [ Win ] fast/forms/select-popup/popup-menu-appearance-long.html [ NeedsRebaseline ]
-
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
 
