@@ -19,8 +19,8 @@ WindowTreeClientPrivate::WindowTreeClientPrivate(Window* window)
 
 WindowTreeClientPrivate::~WindowTreeClientPrivate() {}
 
-uint32_t WindowTreeClientPrivate::event_observer_id() {
-  return tree_client_impl_->event_observer_id_;
+uint32_t WindowTreeClientPrivate::pointer_watcher_id() {
+  return tree_client_impl_->pointer_watcher_id_;
 }
 
 void WindowTreeClientPrivate::OnEmbed(mojom::WindowTree* window_tree) {

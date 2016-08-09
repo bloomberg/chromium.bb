@@ -34,17 +34,27 @@ void PointerWatcherDelegateAura::RemovePointerWatcher(
 }
 
 void PointerWatcherDelegateAura::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    FOR_EACH_OBSERVER(views::PointerWatcher, pointer_watchers_,
-                      OnMousePressed(*event, GetLocationInScreen(*event),
-                                     GetTargetWidget(*event)));
+  // For compatibility with the mus version, don't send moves.
+  if (event->type() != ui::ET_MOUSE_PRESSED &&
+      event->type() != ui::ET_MOUSE_RELEASED)
+    return;
+  ui::PointerEvent mouse_pointer_event(*event);
+  FOR_EACH_OBSERVER(
+      views::PointerWatcher, pointer_watchers_,
+      OnPointerEventObserved(mouse_pointer_event, GetLocationInScreen(*event),
+                             GetTargetWidget(*event)));
 }
 
 void PointerWatcherDelegateAura::OnTouchEvent(ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED)
-    FOR_EACH_OBSERVER(views::PointerWatcher, pointer_watchers_,
-                      OnTouchPressed(*event, GetLocationInScreen(*event),
-                                     GetTargetWidget(*event)));
+  // For compatibility with the mus version, don't send moves.
+  if (event->type() != ui::ET_TOUCH_PRESSED &&
+      event->type() != ui::ET_TOUCH_RELEASED)
+    return;
+  ui::PointerEvent touch_pointer_event(*event);
+  FOR_EACH_OBSERVER(
+      views::PointerWatcher, pointer_watchers_,
+      OnPointerEventObserved(touch_pointer_event, GetLocationInScreen(*event),
+                             GetTargetWidget(*event)));
 }
 
 gfx::Point PointerWatcherDelegateAura::GetLocationInScreen(

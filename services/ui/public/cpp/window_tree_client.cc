@@ -626,15 +626,20 @@ gfx::Point WindowTreeClient::GetCursorScreenPoint() {
                     static_cast<int16_t>(location & 0xFFFF));
 }
 
-void WindowTreeClient::SetEventObserver(mojom::EventMatcherPtr matcher) {
-  if (matcher.is_null()) {
-    has_event_observer_ = false;
-    tree_->SetEventObserver(nullptr, 0u);
-  } else {
-    has_event_observer_ = true;
-    event_observer_id_++;
-    tree_->SetEventObserver(std::move(matcher), event_observer_id_);
-  }
+void WindowTreeClient::StartPointerWatcher(bool want_moves) {
+  if (has_pointer_watcher_)
+    StopPointerWatcher();
+  has_pointer_watcher_ = true;
+  pointer_watcher_id_++;
+  if (pointer_watcher_id_ == 0)
+    pointer_watcher_id_++;
+  tree_->StartPointerWatcher(want_moves, pointer_watcher_id_);
+}
+
+void WindowTreeClient::StopPointerWatcher() {
+  DCHECK(has_pointer_watcher_);
+  tree_->StopPointerWatcher();
+  has_pointer_watcher_ = false;
 }
 
 void WindowTreeClient::PerformWindowMove(
@@ -972,15 +977,17 @@ void WindowTreeClient::OnWindowSharedPropertyChanged(
 void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
                                           Id window_id,
                                           std::unique_ptr<ui::Event> event,
-                                          uint32_t event_observer_id) {
+                                          uint32_t pointer_watcher_id) {
   DCHECK(event);
   Window* window = GetWindowByServerId(window_id);  // May be null.
 
-  // Non-zero event_observer_id means it matched an event observer on the
+  // Non-zero pointer_watcher_id means it matched a pointer watcher on the
   // server.
-  if (event_observer_id != 0 && has_event_observer_ &&
-      event_observer_id == event_observer_id_)
-    delegate_->OnEventObserved(*event.get(), window);
+  if (pointer_watcher_id_ != 0 && has_pointer_watcher_ &&
+      pointer_watcher_id == pointer_watcher_id_) {
+    DCHECK(event->IsPointerEvent());
+    delegate_->OnPointerEventObserved(*event->AsPointerEvent(), window);
+  }
 
   if (!window || !window->input_event_handler_) {
     tree_->OnWindowInputEventAck(event_id, mojom::EventResult::UNHANDLED);
@@ -1011,11 +1018,13 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
     ack_callback->Run(mojom::EventResult::UNHANDLED);
 }
 
-void WindowTreeClient::OnEventObserved(std::unique_ptr<ui::Event> event,
-                                       uint32_t event_observer_id) {
+void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,
+                                              uint32_t pointer_watcher_id) {
   DCHECK(event);
-  if (has_event_observer_ && event_observer_id == event_observer_id_)
-    delegate_->OnEventObserved(*event.get(), nullptr /* target */);
+  DCHECK(event->IsPointerEvent());
+  if (has_pointer_watcher_ && pointer_watcher_id == pointer_watcher_id_)
+    delegate_->OnPointerEventObserved(*event->AsPointerEvent(),
+                                      nullptr /* target */);
 }
 
 void WindowTreeClient::OnWindowFocused(Id focused_window_id) {

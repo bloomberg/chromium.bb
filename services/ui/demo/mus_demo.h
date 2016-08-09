@@ -44,7 +44,8 @@ class MusDemo : public shell::Service,
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;
   void OnDidDestroyClient(WindowTreeClient* client) override;
-  void OnEventObserved(const Event& event, Window* target) override;
+  void OnPointerEventObserved(const PointerEvent& event,
+                              Window* target) override;
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(WindowManagerClient* client) override;

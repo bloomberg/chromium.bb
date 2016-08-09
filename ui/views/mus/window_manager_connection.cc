@@ -23,7 +23,6 @@
 #include "ui/views/mus/os_exchange_data_provider_mus.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/pointer_watcher.h"
-#include "ui/views/touch_event_watcher.h"
 #include "ui/views/views_delegate.h"
 
 namespace views {
@@ -98,48 +97,31 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
                              ui::mojom::SurfaceType::DEFAULT);
 }
 
-void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher) {
-  // TODO(riajiang): Support multiple event matchers (crbug.com/627146).
-  DCHECK(!HasTouchEventWatcher());
+void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher,
+                                                bool want_moves) {
+  // Pointer watchers cannot be added multiple times.
+  DCHECK(!pointer_watchers_.HasObserver(watcher));
+  // TODO(jamescook): Support adding pointer watchers with different
+  // |want_moves| values by tracking whether the set as a whole wants moves.
+  // This will involve sending observed move events to a subset of the
+  // watchers. (crbug.com/627146)
+  DCHECK(!HasPointerWatcher() || want_moves == pointer_watcher_want_moves_);
+  pointer_watcher_want_moves_ = want_moves;
+
   bool had_watcher = HasPointerWatcher();
   pointer_watchers_.AddObserver(watcher);
   if (!had_watcher) {
-    // Start a watcher for pointer down.
-    // TODO(jamescook): Extend event observers to handle multiple event types.
-    ui::mojom::EventMatcherPtr matcher = ui::mojom::EventMatcher::New();
-    matcher->type_matcher = ui::mojom::EventTypeMatcher::New();
-    matcher->type_matcher->type = ui::mojom::EventType::POINTER_DOWN;
-    client_->SetEventObserver(std::move(matcher));
+    // First PointerWatcher added, start the watcher on the window server.
+    client_->StartPointerWatcher(want_moves);
   }
 }
 
 void WindowManagerConnection::RemovePointerWatcher(PointerWatcher* watcher) {
   pointer_watchers_.RemoveObserver(watcher);
   if (!HasPointerWatcher()) {
-    // Last PointerWatcher removed, stop the event observer.
-    client_->SetEventObserver(nullptr);
-  }
-}
-
-void WindowManagerConnection::AddTouchEventWatcher(TouchEventWatcher* watcher) {
-  // TODO(riajiang): Support multiple event matchers (crbug.com/627146).
-  DCHECK(!HasPointerWatcher());
-  bool had_watcher = HasTouchEventWatcher();
-  touch_event_watchers_.AddObserver(watcher);
-  if (!had_watcher) {
-    ui::mojom::EventMatcherPtr matcher = ui::mojom::EventMatcher::New();
-    matcher->pointer_kind_matcher = ui::mojom::PointerKindMatcher::New();
-    matcher->pointer_kind_matcher->pointer_kind = ui::mojom::PointerKind::TOUCH;
-    client_->SetEventObserver(std::move(matcher));
-  }
-}
-
-void WindowManagerConnection::RemoveTouchEventWatcher(
-    TouchEventWatcher* watcher) {
-  touch_event_watchers_.RemoveObserver(watcher);
-  if (!HasTouchEventWatcher()) {
-    // Last TouchEventWatcher removed, stop the event observer.
-    client_->SetEventObserver(nullptr);
+    // Last PointerWatcher removed, stop the watcher on the window server.
+    client_->StopPointerWatcher();
+    pointer_watcher_want_moves_ = false;
   }
 }
 
@@ -150,7 +132,9 @@ const std::set<ui::Window*>& WindowManagerConnection::GetRoots() const {
 WindowManagerConnection::WindowManagerConnection(
     shell::Connector* connector,
     const shell::Identity& identity)
-    : connector_(connector), identity_(identity) {
+    : connector_(connector),
+      identity_(identity),
+      pointer_watcher_want_moves_(false) {
   lazy_tls_ptr.Pointer()->Set(this);
 
   gpu_service_ = ui::GpuService::Initialize(connector);
@@ -180,15 +164,6 @@ bool WindowManagerConnection::HasPointerWatcher() {
   return !!iterator.GetNext();
 }
 
-bool WindowManagerConnection::HasTouchEventWatcher() {
-  // Check to see if we really have any observers left. This doesn't use
-  // base::ObserverList<>::might_have_observers() because that returns true
-  // during iteration over the list even when the last observer is removed.
-  base::ObserverList<TouchEventWatcher>::Iterator iterator(
-      &touch_event_watchers_);
-  return !!iterator.GetNext();
-}
-
 void WindowManagerConnection::OnEmbed(ui::Window* root) {}
 
 void WindowManagerConnection::OnDidDestroyClient(ui::WindowTreeClient* client) {
@@ -199,10 +174,9 @@ void WindowManagerConnection::OnDidDestroyClient(ui::WindowTreeClient* client) {
   }
 }
 
-void WindowManagerConnection::OnEventObserved(const ui::Event& event,
-                                              ui::Window* target) {
-  if (!event.IsLocatedEvent())
-    return;
+void WindowManagerConnection::OnPointerEventObserved(
+    const ui::PointerEvent& event,
+    ui::Window* target) {
   Widget* target_widget = nullptr;
   if (target) {
     ui::Window* root = target->GetRoot();
@@ -213,23 +187,9 @@ void WindowManagerConnection::OnEventObserved(const ui::Event& event,
   // to store screen coordinates. Screen coordinates really should be returned
   // separately. See http://crbug.com/608547
   gfx::Point location_in_screen = event.AsLocatedEvent()->root_location();
-  if (HasPointerWatcher()) {
-    if (event.type() == ui::ET_MOUSE_PRESSED) {
-      FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_,
-                        OnMousePressed(*event.AsMouseEvent(),
-                                       location_in_screen, target_widget));
-    } else if (event.type() == ui::ET_TOUCH_PRESSED) {
-      FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_,
-                        OnTouchPressed(*event.AsTouchEvent(),
-                                       location_in_screen, target_widget));
-    }
-  } else if (HasTouchEventWatcher()) {
-    if (event.IsTouchEvent() || event.IsTouchPointerEvent()) {
-      FOR_EACH_OBSERVER(
-          TouchEventWatcher, touch_event_watchers_,
-          OnTouchEventObserved(*event.AsLocatedEvent(), target_widget));
-    }
-  }
+  FOR_EACH_OBSERVER(
+      PointerWatcher, pointer_watchers_,
+      OnPointerEventObserved(event, location_in_screen, target_widget));
 }
 
 void WindowManagerConnection::OnWindowManagerFrameValuesChanged() {

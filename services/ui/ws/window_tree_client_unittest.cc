@@ -357,8 +357,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
   }
-  void OnEventObserved(std::unique_ptr<ui::Event>,
-                       uint32_t event_observer_id) override {}
+  void OnPointerEventObserved(std::unique_ptr<ui::Event>,
+                              uint32_t event_observer_id) override {}
   void OnWindowSharedPropertyChanged(uint32_t window,
                                      const String& name,
                                      Array<uint8_t> new_data) override {

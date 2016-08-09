@@ -280,7 +280,8 @@ void ViewImpl::OnEmbed(ui::Window* root) {
 }
 
 void ViewImpl::OnDidDestroyClient(ui::WindowTreeClient* client) {}
-void ViewImpl::OnEventObserved(const ui::Event& event, ui::Window* target) {}
+void ViewImpl::OnPointerEventObserved(const ui::PointerEvent& event,
+                                      ui::Window* target) {}
 
 views::View* ViewImpl::GetContentsView() {
   return web_view_;

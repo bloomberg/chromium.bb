@@ -705,6 +705,12 @@ void WindowTree::ProcessTransientWindowRemoved(
                                      transient_client_window_id.id);
 }
 
+void WindowTree::SendToPointerWatcher(const ui::Event& event) {
+  if (EventMatchesPointerWatcher(event))
+    client()->OnPointerEventObserved(ui::Event::Clone(event),
+                                     pointer_watcher_id_);
+}
+
 bool WindowTree::ShouldRouteToWindowManager(const ServerWindow* window) const {
   if (window_manager_state_)
     return false;  // We are the window manager, don't route to ourself.
@@ -992,16 +998,22 @@ void WindowTree::DispatchInputEventImpl(ServerWindow* target,
   event_source_wms_ = display_root->window_manager_state();
   // Should only get events from windows attached to a host.
   DCHECK(event_source_wms_);
-  bool matched_observer =
-      event_observer_matcher_ && event_observer_matcher_->MatchesEvent(event);
+  bool matched_pointer_watcher = EventMatchesPointerWatcher(event);
   client()->OnWindowInputEvent(
       event_ack_id_, ClientWindowIdForWindow(target).id,
-      ui::Event::Clone(event), matched_observer ? event_observer_id_ : 0);
+      ui::Event::Clone(event),
+      matched_pointer_watcher ? pointer_watcher_id_ : 0);
 }
 
-void WindowTree::SendToEventObserver(const ui::Event& event) {
-  if (event_observer_matcher_ && event_observer_matcher_->MatchesEvent(event))
-    client()->OnEventObserved(ui::Event::Clone(event), event_observer_id_);
+bool WindowTree::EventMatchesPointerWatcher(const ui::Event& event) const {
+  if (pointer_watcher_id_ == 0)
+    return false;
+  if (!event.IsPointerEvent())
+    return false;
+  if (pointer_watcher_want_moves_ && event.type() == ui::ET_POINTER_MOVED)
+    return true;
+  return event.type() == ui::ET_POINTER_DOWN ||
+         event.type() == ui::ET_POINTER_UP;
 }
 
 void WindowTree::NewWindow(
@@ -1167,50 +1179,20 @@ void WindowTree::ReleaseCapture(uint32_t change_id, Id window_id) {
   client()->OnChangeCompleted(change_id, success);
 }
 
-void WindowTree::SetEventObserver(mojom::EventMatcherPtr matcher,
-                                  uint32_t observer_id) {
-  if (matcher.is_null() || observer_id == 0) {
-    // Clear any existing event observer.
-    event_observer_matcher_.reset();
-    event_observer_id_ = 0;
+void WindowTree::StartPointerWatcher(bool want_moves,
+                                     uint32_t pointer_watcher_id) {
+  if (pointer_watcher_id == 0) {
+    DVLOG(1) << "StartPointerWatcher called with 0.";
+    StopPointerWatcher();
     return;
   }
+  pointer_watcher_want_moves_ = want_moves;
+  pointer_watcher_id_ = pointer_watcher_id;
+}
 
-  // Do not allow key events to be observed, as a compromised app could register
-  // itself as an event observer and spy on keystrokes to another app.
-  if (!matcher->type_matcher && !matcher->pointer_kind_matcher) {
-    DVLOG(1) << "SetEventObserver must specify an event type.";
-    return;
-  }
-
-  const ui::mojom::EventType event_type_whitelist[] = {
-      ui::mojom::EventType::POINTER_CANCEL, ui::mojom::EventType::POINTER_DOWN,
-      ui::mojom::EventType::POINTER_MOVE,   ui::mojom::EventType::POINTER_UP,
-      ui::mojom::EventType::MOUSE_EXIT,     ui::mojom::EventType::WHEEL,
-  };
-
-  if (matcher->type_matcher) {
-    auto* iter =
-        std::find(std::begin(event_type_whitelist),
-                  std::end(event_type_whitelist), matcher->type_matcher->type);
-    if (iter == std::end(event_type_whitelist)) {
-      DVLOG(1) << "SetEventObserver event type not allowed";
-      return;
-    }
-  }
-  if (matcher->pointer_kind_matcher) {
-    ui::mojom::PointerKind pointer_kind =
-        matcher->pointer_kind_matcher->pointer_kind;
-    if (pointer_kind != ui::mojom::PointerKind::MOUSE &&
-        pointer_kind != ui::mojom::PointerKind::TOUCH &&
-        pointer_kind != ui::mojom::PointerKind::PEN) {
-      DVLOG(1) << "SetEventObserver pointer kind not allowed";
-      return;
-    }
-  }
-
-  event_observer_matcher_.reset(new EventMatcher(*matcher));
-  event_observer_id_ = observer_id;
+void WindowTree::StopPointerWatcher() {
+  pointer_watcher_want_moves_ = false;
+  pointer_watcher_id_ = 0;
 }
 
 void WindowTree::SetWindowBounds(uint32_t change_id,

@@ -93,7 +93,8 @@ class WindowManager : public ui::WindowManagerDelegate,
   // WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;
   void OnDidDestroyClient(ui::WindowTreeClient* client) override;
-  void OnEventObserved(const ui::Event& event, ui::Window* target) override;
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              ui::Window* target) override;
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(ui::WindowManagerClient* client) override;

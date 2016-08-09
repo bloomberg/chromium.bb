@@ -10,7 +10,7 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace ui {
-class LocatedEvent;
+class PointerEvent;
 }
 
 namespace views {
@@ -49,12 +49,9 @@ class OverflowBubble : public views::PointerWatcher,
   void ProcessPressedEvent(const gfx::Point& event_location_in_screen);
 
   // views::PointerWatcher:
-  void OnMousePressed(const ui::MouseEvent& event,
-                      const gfx::Point& location_in_screen,
-                      views::Widget* target) override;
-  void OnTouchPressed(const ui::TouchEvent& event,
-                      const gfx::Point& location_in_screen,
-                      views::Widget* target) override;
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              const gfx::Point& location_in_screen,
+                              views::Widget* target) override;
 
   // Overridden from views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;

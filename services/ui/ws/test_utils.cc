@@ -139,9 +139,13 @@ const ViewportMetrics& TestFrameGeneratorDelegate::GetViewportMetrics() {
 WindowTreeTestApi::WindowTreeTestApi(WindowTree* tree) : tree_(tree) {}
 WindowTreeTestApi::~WindowTreeTestApi() {}
 
-void WindowTreeTestApi::SetEventObserver(mojom::EventMatcherPtr matcher,
-                                         uint32_t event_observer_id) {
-  tree_->SetEventObserver(std::move(matcher), event_observer_id);
+void WindowTreeTestApi::StartPointerWatcher(bool want_moves,
+                                            uint32_t pointer_watcher_id) {
+  tree_->StartPointerWatcher(want_moves, pointer_watcher_id);
+}
+
+void WindowTreeTestApi::StopPointerWatcher() {
+  tree_->StopPointerWatcher();
 }
 
 // DisplayTestApi  ------------------------------------------------------------
@@ -316,9 +320,10 @@ void TestWindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   tracker_.OnWindowInputEvent(window, *event.get(), event_observer_id);
 }
 
-void TestWindowTreeClient::OnEventObserved(std::unique_ptr<ui::Event> event,
-                                           uint32_t event_observer_id) {
-  tracker_.OnEventObserved(*event.get(), event_observer_id);
+void TestWindowTreeClient::OnPointerEventObserved(
+    std::unique_ptr<ui::Event> event,
+    uint32_t event_observer_id) {
+  tracker_.OnPointerEventObserved(*event.get(), event_observer_id);
 }
 
 void TestWindowTreeClient::OnWindowFocused(uint32_t focused_window_id) {

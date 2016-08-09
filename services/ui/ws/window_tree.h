@@ -241,8 +241,8 @@ class WindowTree : public mojom::WindowTree,
                                      const ServerWindow* transient_window,
                                      bool originated_change);
 
-  // Sends this event to the client if it matches an active event observer.
-  void SendToEventObserver(const ui::Event& event);
+  // Sends this event to the client if it matches an active pointer watcher.
+  void SendToPointerWatcher(const ui::Event& event);
 
  private:
   friend class test::WindowTreeTestApi;
@@ -337,6 +337,9 @@ class WindowTree : public mojom::WindowTree,
 
   void DispatchInputEventImpl(ServerWindow* target, const ui::Event& event);
 
+  // Returns true if the client has a pointer watcher and this event matches.
+  bool EventMatchesPointerWatcher(const ui::Event& event) const;
+
   // Calls OnChangeCompleted() on the client.
   void NotifyChangeCompleted(uint32_t change_id,
                              mojom::WindowManagerErrorCode error_code);
@@ -369,8 +372,9 @@ class WindowTree : public mojom::WindowTree,
       override;
   void SetCapture(uint32_t change_id, Id window_id) override;
   void ReleaseCapture(uint32_t change_id, Id window_id) override;
-  void SetEventObserver(mojom::EventMatcherPtr matcher,
-                        uint32_t observer_id) override;
+  void StartPointerWatcher(bool want_moves,
+                           uint32_t pointer_watcher_id) override;
+  void StopPointerWatcher() override;
   void SetWindowBounds(uint32_t change_id,
                        Id window_id,
                        const gfx::Rect& bounds) override;
@@ -485,12 +489,12 @@ class WindowTree : public mojom::WindowTree,
   // reasonable timeframe.
   bool janky_ = false;
 
-  // Set when the client is using SetEventObserver() to observe events,
-  // otherwise null.
-  std::unique_ptr<EventMatcher> event_observer_matcher_;
+  // For performance reasons, only send move events if the client explicitly
+  // requests them.
+  bool pointer_watcher_want_moves_ = false;
 
-  // The ID supplied by the client for the current event observer.
-  uint32_t event_observer_id_ = 0;
+  // The ID supplied by the client for the current pointer watcher.
+  uint32_t pointer_watcher_id_ = 0;
 
   // WindowManager the current event came from.
   WindowManagerState* event_source_wms_ = nullptr;

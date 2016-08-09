@@ -14,7 +14,7 @@
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/window_manager_connection.h"
-#include "ui/views/touch_event_watcher.h"
+#include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -25,16 +25,16 @@ namespace touch_hud {
 // receiving touch events from ui::WindowManagerConnection, it calls
 // ash::TouchHudRenderer to draw out touch points.
 class TouchHudUI : public views::WidgetDelegateView,
-                   public views::TouchEventWatcher {
+                   public views::PointerWatcher {
  public:
   TouchHudUI(views::WindowManagerConnection* window_manager_connection,
              views::Widget* widget)
       : window_manager_connection_(window_manager_connection),
         touch_hud_renderer_(new TouchHudRenderer(widget)) {
-    window_manager_connection_->AddTouchEventWatcher(this);
+    window_manager_connection_->AddPointerWatcher(this, true /* want_moves */);
   }
   ~TouchHudUI() override {
-    window_manager_connection_->RemoveTouchEventWatcher(this);
+    window_manager_connection_->RemovePointerWatcher(this);
   }
 
  private:
@@ -45,10 +45,12 @@ class TouchHudUI : public views::WidgetDelegateView,
     return base::ASCIIToUTF16("TouchHud");
   }
 
-  // Overridden from views::TouchEventWatcher:
-  void OnTouchEventObserved(const ui::LocatedEvent& event,
-                            views::Widget* target) override {
-    touch_hud_renderer_->HandleTouchEvent(event);
+  // Overridden from views::PointerWatcher:
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              const gfx::Point& location_in_screen,
+                              views::Widget* target) override {
+    if (event.IsTouchPointerEvent())
+      touch_hud_renderer_->HandleTouchEvent(event);
   }
 
   views::WindowManagerConnection* window_manager_connection_;

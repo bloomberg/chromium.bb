@@ -34,16 +34,12 @@ void TrayEventFilter::RemoveWrapper(TrayBubbleWrapper* wrapper) {
     WmShell::Get()->RemovePointerWatcher(this);
 }
 
-void TrayEventFilter::OnMousePressed(const ui::MouseEvent& event,
-                                     const gfx::Point& location_in_screen,
-                                     views::Widget* target) {
-  ProcessPressedEvent(location_in_screen, target);
-}
-
-void TrayEventFilter::OnTouchPressed(const ui::TouchEvent& event,
-                                     const gfx::Point& location_in_screen,
-                                     views::Widget* target) {
-  ProcessPressedEvent(location_in_screen, target);
+void TrayEventFilter::OnPointerEventObserved(
+    const ui::PointerEvent& event,
+    const gfx::Point& location_in_screen,
+    views::Widget* target) {
+  if (event.type() == ui::ET_POINTER_DOWN)
+    ProcessPressedEvent(location_in_screen, target);
 }
 
 void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,

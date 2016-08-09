@@ -15,7 +15,7 @@ class Point;
 }
 
 namespace ui {
-class LocatedEvent;
+class PointerEvent;
 }
 
 namespace ash {
@@ -32,12 +32,9 @@ class TrayEventFilter : public views::PointerWatcher {
   void RemoveWrapper(TrayBubbleWrapper* wrapper);
 
   // views::PointerWatcher:
-  void OnMousePressed(const ui::MouseEvent& event,
-                      const gfx::Point& location_in_screen,
-                      views::Widget* target) override;
-  void OnTouchPressed(const ui::TouchEvent& event,
-                      const gfx::Point& location_in_screen,
-                      views::Widget* target) override;
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              const gfx::Point& location_in_screen,
+                              views::Widget* target) override;
 
  private:
   void ProcessPressedEvent(const gfx::Point& location_in_screen,

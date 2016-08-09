@@ -35,7 +35,7 @@ enum ChangeType {
   CHANGE_TYPE_NODE_DRAWN_STATE_CHANGED,
   CHANGE_TYPE_NODE_DELETED,
   CHANGE_TYPE_INPUT_EVENT,
-  CHANGE_TYPE_EVENT_OBSERVED,
+  CHANGE_TYPE_POINTER_WATCHER_EVENT,
   CHANGE_TYPE_PROPERTY_CHANGED,
   CHANGE_TYPE_FOCUSED,
   CHANGE_TYPE_CURSOR_CHANGED,
@@ -78,7 +78,7 @@ struct Change {
   gfx::Rect bounds;
   gfx::Rect bounds2;
   int32_t event_action;
-  uint32_t event_observer_id;
+  uint32_t pointer_watcher_id;
   mojo::String embed_url;
   mojom::OrderDirection direction;
   bool bool_value;
@@ -157,8 +157,9 @@ class TestChangeTracker {
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn);
   void OnWindowInputEvent(Id window_id,
                           const ui::Event& event,
-                          uint32_t event_observer_id);
-  void OnEventObserved(const ui::Event& event, uint32_t event_observer_id);
+                          uint32_t pointer_watcher_id);
+  void OnPointerEventObserved(const ui::Event& event,
+                              uint32_t pointer_watcher_id);
   void OnWindowSharedPropertyChanged(Id window_id,
                                      mojo::String name,
                                      mojo::Array<uint8_t> data);

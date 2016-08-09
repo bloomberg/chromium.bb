@@ -14,7 +14,8 @@ PointerWatcherDelegateMus::~PointerWatcherDelegateMus() {}
 
 void PointerWatcherDelegateMus::AddPointerWatcher(
     views::PointerWatcher* watcher) {
-  views::WindowManagerConnection::Get()->AddPointerWatcher(watcher);
+  views::WindowManagerConnection::Get()->AddPointerWatcher(
+      watcher, false /* want_moves */);
 }
 
 void PointerWatcherDelegateMus::RemovePointerWatcher(

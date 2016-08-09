@@ -11,7 +11,6 @@
 #include "ui/events/event.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/test/scoped_views_test_helper.h"
-#include "ui/views/touch_event_watcher.h"
 
 namespace views {
 namespace {
@@ -21,56 +20,21 @@ class TestPointerWatcher : public PointerWatcher {
   TestPointerWatcher() {}
   ~TestPointerWatcher() override {}
 
-  bool mouse_pressed() const { return mouse_pressed_; }
-  bool touch_pressed() const { return touch_pressed_; }
+  ui::PointerEvent* last_event_observed() { return last_event_observed_.get(); }
 
-  void Reset() {
-    mouse_pressed_ = false;
-    touch_pressed_ = false;
-  }
+  void Reset() { last_event_observed_.reset(); }
 
   // PointerWatcher:
-  void OnMousePressed(const ui::MouseEvent& event,
-                      const gfx::Point& location_in_screen,
-                      Widget* target) override {
-    mouse_pressed_ = true;
-  }
-  void OnTouchPressed(const ui::TouchEvent& event,
-                      const gfx::Point& location_in_screen,
-                      Widget* target) override {
-    touch_pressed_ = true;
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              const gfx::Point& location_in_screen,
+                              Widget* target) override {
+    last_event_observed_.reset(new ui::PointerEvent(event));
   }
 
  private:
-  bool mouse_pressed_ = false;
-  bool touch_pressed_ = false;
+  std::unique_ptr<ui::PointerEvent> last_event_observed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPointerWatcher);
-};
-
-}  // namespace
-
-namespace {
-
-class TestTouchEventWatcher : public TouchEventWatcher {
- public:
-  TestTouchEventWatcher() {}
-  ~TestTouchEventWatcher() override {}
-
-  bool touch_observed() const { return touch_observed_; }
-
-  void Reset() { touch_observed_ = false; }
-
-  // TouchEventWatcher:
-  void OnTouchEventObserved(const ui::LocatedEvent& event,
-                            Widget* target) override {
-    touch_observed_ = true;
-  }
-
- private:
-  bool touch_observed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTouchEventWatcher);
 };
 
 }  // namespace
@@ -80,135 +44,114 @@ class WindowManagerConnectionTest : public testing::Test {
   WindowManagerConnectionTest() {}
   ~WindowManagerConnectionTest() override {}
 
-  void OnEventObserved(const ui::Event& event) {
-    WindowManagerConnection::Get()->OnEventObserved(event, nullptr);
+  void OnPointerEventObserved(const ui::PointerEvent& event) {
+    WindowManagerConnection::Get()->OnPointerEventObserved(event, nullptr);
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnectionTest);
 };
 
-TEST_F(WindowManagerConnectionTest, PointerWatcher) {
+TEST_F(WindowManagerConnectionTest, PointerWatcherNoMove) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   ScopedViewsTestHelper helper;
   WindowManagerConnection* connection = WindowManagerConnection::Get();
   ASSERT_TRUE(connection);
-  ui::MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                               base::TimeTicks(), ui::EF_NONE, 0);
-  ui::TouchEvent touch_pressed(ui::ET_TOUCH_PRESSED, gfx::Point(), 1,
-                               base::TimeTicks());
-  ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
 
-  // PointerWatchers receive mouse events.
+  ui::PointerEvent pointer_event_down(
+      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 1,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      base::TimeTicks());
+  ui::PointerEvent pointer_event_up(
+      ui::ET_POINTER_UP, gfx::Point(), gfx::Point(), ui::EF_NONE, 1,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+      base::TimeTicks());
+
+  // PointerWatchers receive pointer down events.
   TestPointerWatcher watcher1;
-  connection->AddPointerWatcher(&watcher1);
-  OnEventObserved(mouse_pressed);
-  EXPECT_TRUE(watcher1.mouse_pressed());
+  connection->AddPointerWatcher(&watcher1, false);
+  OnPointerEventObserved(pointer_event_down);
+  EXPECT_EQ(ui::ET_POINTER_DOWN, watcher1.last_event_observed()->type());
   watcher1.Reset();
 
-  // PointerWatchers receive touch events.
-  OnEventObserved(touch_pressed);
-  EXPECT_TRUE(watcher1.touch_pressed());
-  watcher1.Reset();
-
-  // PointerWatchers do not trigger for key events.
-  OnEventObserved(key_pressed);
-  EXPECT_FALSE(watcher1.mouse_pressed());
-  EXPECT_FALSE(watcher1.touch_pressed());
+  // PointerWatchers receive pointer up events.
+  OnPointerEventObserved(pointer_event_up);
+  EXPECT_EQ(ui::ET_POINTER_UP, watcher1.last_event_observed()->type());
   watcher1.Reset();
 
   // Two PointerWatchers can both receive a single observed event.
   TestPointerWatcher watcher2;
-  connection->AddPointerWatcher(&watcher2);
-  OnEventObserved(mouse_pressed);
-  EXPECT_TRUE(watcher1.mouse_pressed());
-  EXPECT_TRUE(watcher2.mouse_pressed());
+  connection->AddPointerWatcher(&watcher2, false);
+  OnPointerEventObserved(pointer_event_down);
+  EXPECT_EQ(ui::ET_POINTER_DOWN, watcher1.last_event_observed()->type());
+  EXPECT_EQ(ui::ET_POINTER_DOWN, watcher2.last_event_observed()->type());
   watcher1.Reset();
   watcher2.Reset();
 
   // Removing the first PointerWatcher stops sending events to it.
   connection->RemovePointerWatcher(&watcher1);
-  OnEventObserved(mouse_pressed);
-  EXPECT_FALSE(watcher1.mouse_pressed());
-  EXPECT_TRUE(watcher2.mouse_pressed());
+  OnPointerEventObserved(pointer_event_down);
+  EXPECT_FALSE(watcher1.last_event_observed());
+  EXPECT_EQ(ui::ET_POINTER_DOWN, watcher2.last_event_observed()->type());
   watcher1.Reset();
   watcher2.Reset();
 
   // Removing the last PointerWatcher stops sending events to it.
   connection->RemovePointerWatcher(&watcher2);
-  OnEventObserved(mouse_pressed);
-  EXPECT_FALSE(watcher1.mouse_pressed());
-  EXPECT_FALSE(watcher1.touch_pressed());
+  OnPointerEventObserved(pointer_event_down);
+  EXPECT_FALSE(watcher1.last_event_observed());
+  EXPECT_FALSE(watcher2.last_event_observed());
 }
 
-TEST_F(WindowManagerConnectionTest, TouchEventWatcher) {
+TEST_F(WindowManagerConnectionTest, PointerWatcherMove) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   ScopedViewsTestHelper helper;
   WindowManagerConnection* connection = WindowManagerConnection::Get();
   ASSERT_TRUE(connection);
 
-  const ui::EventType kMouseType[] = {
-      ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_DRAGGED, ui::ET_MOUSE_MOVED,
-      ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_EXITED,  ui::ET_MOUSE_RELEASED};
-  const ui::EventType kTouchType[] = {ui::ET_TOUCH_PRESSED, ui::ET_TOUCH_MOVED,
-                                      ui::ET_TOUCH_RELEASED,
-                                      ui::ET_TOUCH_CANCELLED};
+  ui::PointerEvent pointer_event_down(
+      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 1,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      base::TimeTicks());
+  ui::PointerEvent pointer_event_move(
+      ui::ET_POINTER_MOVED, gfx::Point(), gfx::Point(), ui::EF_NONE, 1,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      base::TimeTicks());
 
-  TestTouchEventWatcher watcher1;
-  connection->AddTouchEventWatcher(&watcher1);
+  // PointerWatchers receive pointer down events.
+  TestPointerWatcher watcher1;
+  connection->AddPointerWatcher(&watcher1, true);
+  OnPointerEventObserved(pointer_event_down);
+  EXPECT_EQ(ui::ET_POINTER_DOWN, watcher1.last_event_observed()->type());
+  watcher1.Reset();
 
-  // TouchEventWatchers do not trigger for mouse events.
-  for (size_t i = 0; i < arraysize(kMouseType); i++) {
-    ui::MouseEvent mouse_event(kMouseType[i], gfx::Point(), gfx::Point(),
-                               base::TimeTicks(), 0, 0);
-    ui::PointerEvent mouse_pointer_event(mouse_event);
-    EXPECT_TRUE(mouse_pointer_event.IsMousePointerEvent());
-    OnEventObserved(mouse_pointer_event);
-    EXPECT_FALSE(watcher1.touch_observed());
-    watcher1.Reset();
-  }
+  // PointerWatchers receive pointer move events.
+  OnPointerEventObserved(pointer_event_move);
+  EXPECT_EQ(ui::ET_POINTER_MOVED, watcher1.last_event_observed()->type());
+  watcher1.Reset();
 
-  // TouchEventWatchers receive both TouchEvent and TouchPointerEvent.
-  for (size_t i = 0; i < arraysize(kTouchType); i++) {
-    ui::TouchEvent touch_event(kTouchType[i], gfx::Point(), 0,
-                               base::TimeTicks());
-    EXPECT_TRUE(touch_event.IsTouchEvent());
-    OnEventObserved(touch_event);
-    EXPECT_TRUE(watcher1.touch_observed());
-    watcher1.Reset();
-
-    ui::PointerEvent touch_pointer_event(touch_event);
-    EXPECT_TRUE(touch_pointer_event.IsTouchPointerEvent());
-    OnEventObserved(touch_pointer_event);
-    EXPECT_TRUE(watcher1.touch_observed());
-    watcher1.Reset();
-  }
-
-  // Two TouchEventWatchers can both receive a single observed event.
-  TestTouchEventWatcher watcher2;
-  connection->AddTouchEventWatcher(&watcher2);
-  ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(), 0,
-                             base::TimeTicks());
-  ui::PointerEvent touch_pointer_event(touch_event);
-  OnEventObserved(touch_pointer_event);
-  EXPECT_TRUE(watcher1.touch_observed());
-  EXPECT_TRUE(watcher2.touch_observed());
+  // Two PointerWatchers can both receive a single observed event.
+  TestPointerWatcher watcher2;
+  connection->AddPointerWatcher(&watcher2, true);
+  OnPointerEventObserved(pointer_event_move);
+  EXPECT_EQ(ui::ET_POINTER_MOVED, watcher1.last_event_observed()->type());
+  EXPECT_EQ(ui::ET_POINTER_MOVED, watcher2.last_event_observed()->type());
   watcher1.Reset();
   watcher2.Reset();
 
-  // Removing the first TouchEventWatcher stops sending events to it.
-  connection->RemoveTouchEventWatcher(&watcher1);
-  OnEventObserved(touch_pointer_event);
-  EXPECT_FALSE(watcher1.touch_observed());
-  EXPECT_TRUE(watcher2.touch_observed());
+  // Removing the first PointerWatcher stops sending events to it.
+  connection->RemovePointerWatcher(&watcher1);
+  OnPointerEventObserved(pointer_event_move);
+  EXPECT_FALSE(watcher1.last_event_observed());
+  EXPECT_EQ(ui::ET_POINTER_MOVED, watcher2.last_event_observed()->type());
   watcher1.Reset();
   watcher2.Reset();
 
-  // Removing the last TouchEventWatcher stops sending events to it.
-  connection->RemoveTouchEventWatcher(&watcher2);
-  OnEventObserved(touch_pointer_event);
-  EXPECT_FALSE(watcher1.touch_observed());
-  EXPECT_FALSE(watcher2.touch_observed());
+  // Removing the last PointerWatcher stops sending events to it.
+  connection->RemovePointerWatcher(&watcher2);
+  OnPointerEventObserved(pointer_event_move);
+  EXPECT_FALSE(watcher1.last_event_observed());
+  EXPECT_FALSE(watcher2.last_event_observed());
 }
 
 }  // namespace views

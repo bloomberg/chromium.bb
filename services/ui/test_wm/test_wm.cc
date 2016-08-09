@@ -41,7 +41,8 @@ class TestWM : public shell::Service,
   void OnDidDestroyClient(ui::WindowTreeClient* client) override {
     window_tree_client_ = nullptr;
   }
-  void OnEventObserved(const ui::Event& event, ui::Window* target) override {
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              ui::Window* target) override {
     // Don't care.
   }
 

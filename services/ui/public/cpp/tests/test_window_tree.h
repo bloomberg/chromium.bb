@@ -78,8 +78,9 @@ class TestWindowTree : public mojom::WindowTree {
                      const GetWindowTreeCallback& callback) override;
   void SetCapture(uint32_t change_id, uint32_t window_id) override;
   void ReleaseCapture(uint32_t change_id, uint32_t window_id) override;
-  void SetEventObserver(mojom::EventMatcherPtr matcher,
-                        uint32_t observer_id) override;
+  void StartPointerWatcher(bool want_moves,
+                           uint32_t pointer_watcher_id) override;
+  void StopPointerWatcher() override;
   void Embed(uint32_t window_id,
              mojom::WindowTreeClientPtr client,
              uint32_t flags,

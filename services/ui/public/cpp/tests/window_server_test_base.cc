@@ -90,8 +90,8 @@ void WindowServerTestBase::OnDidDestroyClient(WindowTreeClient* client) {
   window_tree_client_destroyed_ = true;
 }
 
-void WindowServerTestBase::OnEventObserved(const ui::Event& event,
-                                           Window* target) {}
+void WindowServerTestBase::OnPointerEventObserved(const ui::PointerEvent& event,
+                                                  Window* target) {}
 
 void WindowServerTestBase::SetWindowManagerClient(WindowManagerClient* client) {
   window_manager_client_ = client;

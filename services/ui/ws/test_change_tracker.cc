@@ -103,16 +103,16 @@ std::string ChangeToDescription(const Change& change,
       std::string result = base::StringPrintf(
           "InputEvent window=%s event_action=%d",
           WindowIdToString(change.window_id).c_str(), change.event_action);
-      if (change.event_observer_id != 0)
-        base::StringAppendF(&result, " event_observer_id=%u",
-                            change.event_observer_id);
+      if (change.pointer_watcher_id != 0)
+        base::StringAppendF(&result, " pointer_watcher_id=%u",
+                            change.pointer_watcher_id);
       return result;
     }
 
-    case CHANGE_TYPE_EVENT_OBSERVED:
+    case CHANGE_TYPE_POINTER_WATCHER_EVENT:
       return base::StringPrintf(
-          "EventObserved event_action=%d event_observer_id=%u",
-          change.event_action, change.event_observer_id);
+          "PointerWatcherEvent event_action=%d pointer_watcher_id=%u",
+          change.event_action, change.pointer_watcher_id);
 
     case CHANGE_TYPE_PROPERTY_CHANGED:
       return base::StringPrintf("PropertyChanged window=%s key=%s value=%s",
@@ -216,7 +216,7 @@ Change::Change()
       window_id2(0),
       window_id3(0),
       event_action(0),
-      event_observer_id(0u),
+      pointer_watcher_id(0u),
       direction(mojom::OrderDirection::ABOVE),
       bool_value(false),
       float_value(0.f),
@@ -351,21 +351,21 @@ void TestChangeTracker::OnWindowParentDrawnStateChanged(Id window_id,
 
 void TestChangeTracker::OnWindowInputEvent(Id window_id,
                                            const ui::Event& event,
-                                           uint32_t event_observer_id) {
+                                           uint32_t pointer_watcher_id) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
   change.window_id = window_id;
   change.event_action = static_cast<int32_t>(event.type());
-  change.event_observer_id = event_observer_id;
+  change.pointer_watcher_id = pointer_watcher_id;
   AddChange(change);
 }
 
-void TestChangeTracker::OnEventObserved(const ui::Event& event,
-                                        uint32_t event_observer_id) {
+void TestChangeTracker::OnPointerEventObserved(const ui::Event& event,
+                                               uint32_t pointer_watcher_id) {
   Change change;
-  change.type = CHANGE_TYPE_EVENT_OBSERVED;
+  change.type = CHANGE_TYPE_POINTER_WATCHER_EVENT;
   change.event_action = static_cast<int32_t>(event.type());
-  change.event_observer_id = event_observer_id;
+  change.pointer_watcher_id = pointer_watcher_id;
   AddChange(change);
 }
 

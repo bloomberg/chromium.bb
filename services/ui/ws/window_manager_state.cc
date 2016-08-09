@@ -241,7 +241,7 @@ void WindowManagerState::OnAcceleratorAck(mojom::EventResult result) {
   } else {
     // We're not going to process the event any further, notify event observers.
     // We don't do this first to ensure we don't send an event twice to clients.
-    window_server()->SendToEventObservers(*event, user_id(), nullptr);
+    window_server()->SendToPointerWatchers(*event, user_id(), nullptr);
     ProcessNextEventFromQueue();
   }
 }
@@ -359,7 +359,7 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   }
 
   // Ignore |tree| because it will receive the event via normal dispatch.
-  window_server()->SendToEventObservers(event, user_id(), tree);
+  window_server()->SendToPointerWatchers(event, user_id(), tree);
 
   tree->DispatchInputEvent(target, event);
 }
@@ -535,8 +535,8 @@ ServerWindow* WindowManagerState::GetRootWindowContaining(
 }
 
 void WindowManagerState::OnEventTargetNotFound(const ui::Event& event) {
-  window_server()->SendToEventObservers(event, user_id(),
-                                        nullptr /* ignore_tree */);
+  window_server()->SendToPointerWatchers(event, user_id(),
+                                         nullptr /* ignore_tree */);
 }
 
 }  // namespace ws

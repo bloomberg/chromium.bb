@@ -198,18 +198,13 @@ void ShelfTooltipManager::ShowTooltipWithDelay(views::View* view) {
   }
 }
 
-void ShelfTooltipManager::OnMousePressed(const ui::MouseEvent& event,
-                                         const gfx::Point& location_in_screen,
-                                         views::Widget* target) {
-  // Close on any mouse press events inside or outside the tooltip.
-  Close();
-}
-
-void ShelfTooltipManager::OnTouchPressed(const ui::TouchEvent& event,
-                                         const gfx::Point& location_in_screen,
-                                         views::Widget* target) {
-  // Close on any touch press events inside or outside the tooltip.
-  Close();
+void ShelfTooltipManager::OnPointerEventObserved(
+    const ui::PointerEvent& event,
+    const gfx::Point& location_in_screen,
+    views::Widget* target) {
+  // Close on any press events inside or outside the tooltip.
+  if (event.type() == ui::ET_POINTER_DOWN)
+    Close();
 }
 
 void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {

@@ -178,10 +178,11 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   // race the asynchronous initialization; but in that case we return (0, 0).
   gfx::Point GetCursorScreenPoint();
 
-  // See description in window_tree.mojom. When an existing event observer is
-  // updated or cleared then any future events from the server for that observer
+  // See description in window_tree.mojom. When an existing pointer watcher is
+  // updated or cleared then any future events from the server for that watcher
   // will be ignored.
-  void SetEventObserver(mojom::EventMatcherPtr matcher);
+  void StartPointerWatcher(bool want_moves);
+  void StopPointerWatcher();
 
   // Performs a window move. |callback| will be asynchronously called with the
   // whether the move loop completed successfully.
@@ -309,9 +310,9 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,
                           std::unique_ptr<ui::Event> event,
-                          uint32_t event_observer_id) override;
-  void OnEventObserved(std::unique_ptr<ui::Event> event,
-                       uint32_t event_observer_id) override;
+                          uint32_t pointer_watcher_id) override;
+  void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
+                              uint32_t pointer_watcher_id) override;
   void OnWindowFocused(Id focused_window_id) override;
   void OnWindowPredefinedCursorChanged(Id window_id,
                                        mojom::Cursor cursor) override;
@@ -414,10 +415,10 @@ class WindowTreeClient : public mojom::WindowTreeClient,
       window_manager_internal_;
   mojom::WindowManagerClientAssociatedPtr window_manager_internal_client_;
 
-  bool has_event_observer_ = false;
+  bool has_pointer_watcher_ = false;
 
-  // Monotonically increasing ID for event observers.
-  uint32_t event_observer_id_ = 0u;
+  // Monotonically increasing ID for pointer watchers.
+  uint32_t pointer_watcher_id_ = 0u;
 
   // The current change id for the client.
   uint32_t current_move_loop_change_ = 0u;

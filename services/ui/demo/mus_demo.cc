@@ -85,7 +85,8 @@ void MusDemo::OnDidDestroyClient(WindowTreeClient* client) {
   timer_.Stop();
 }
 
-void MusDemo::OnEventObserved(const Event& event, Window* target) {}
+void MusDemo::OnPointerEventObserved(const PointerEvent& event,
+                                     Window* target) {}
 
 void MusDemo::SetWindowManagerClient(WindowManagerClient* client) {}
 

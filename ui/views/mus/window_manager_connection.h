@@ -33,7 +33,6 @@ namespace views {
 class ClipboardMus;
 class NativeWidget;
 class PointerWatcher;
-class TouchEventWatcher;
 class ScreenMus;
 namespace internal {
 class NativeWidgetDelegate;
@@ -72,11 +71,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
       const Widget::InitParams& init_params,
       internal::NativeWidgetDelegate* delegate);
 
-  void AddPointerWatcher(PointerWatcher* watcher);
+  void AddPointerWatcher(PointerWatcher* watcher, bool want_moves);
   void RemovePointerWatcher(PointerWatcher* watcher);
-
-  void AddTouchEventWatcher(TouchEventWatcher* watcher);
-  void RemoveTouchEventWatcher(TouchEventWatcher* watcher);
 
   const std::set<ui::Window*>& GetRoots() const;
 
@@ -88,12 +84,12 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
 
   // Returns true if there is one or more watchers for this client.
   bool HasPointerWatcher();
-  bool HasTouchEventWatcher();
 
   // ui::WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;
   void OnDidDestroyClient(ui::WindowTreeClient* client) override;
-  void OnEventObserved(const ui::Event& event, ui::Window* target) override;
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              ui::Window* target) override;
 
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
@@ -109,7 +105,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   std::unique_ptr<ui::GpuService> gpu_service_;
   // Must be empty on destruction.
   base::ObserverList<PointerWatcher, true> pointer_watchers_;
-  base::ObserverList<TouchEventWatcher, true> touch_event_watchers_;
+  bool pointer_watcher_want_moves_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnection);
 };

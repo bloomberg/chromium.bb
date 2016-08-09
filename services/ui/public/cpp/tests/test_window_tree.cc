@@ -124,8 +124,10 @@ void TestWindowTree::ReleaseCapture(uint32_t change_id, uint32_t window_id) {
   change_id_ = change_id;
 }
 
-void TestWindowTree::SetEventObserver(mojom::EventMatcherPtr matcher,
-                                      uint32_t observer_id) {}
+void TestWindowTree::StartPointerWatcher(bool want_moves,
+                                         uint32_t pointer_watcher_id) {}
+
+void TestWindowTree::StopPointerWatcher() {}
 
 void TestWindowTree::Embed(uint32_t window_id,
                            mojom::WindowTreeClientPtr client,

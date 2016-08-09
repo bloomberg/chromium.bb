@@ -194,9 +194,9 @@ class WindowServer : public ServerWindowDelegate,
 
   // Sends an |event| to all WindowTrees belonging to |user_id| that might be
   // observing events. Skips |ignore_tree| if it is non-null.
-  void SendToEventObservers(const ui::Event& event,
-                            const UserId& user_id,
-                            WindowTree* ignore_tree);
+  void SendToPointerWatchers(const ui::Event& event,
+                             const UserId& user_id,
+                             WindowTree* ignore_tree);
 
   // Sets a callback to be called whenever a ServerWindow is scheduled for
   // a [re]paint. This should only be called in a test configuration.

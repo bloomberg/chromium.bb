@@ -298,7 +298,6 @@
       'style/platform_style.cc',
       'style/platform_style.h',
       'style/platform_style_mac.mm',
-      'touch_event_watcher.h',
       'view.cc',
       'view.h',
       'view_constants.cc',

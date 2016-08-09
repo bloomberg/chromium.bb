@@ -220,9 +220,9 @@ void WindowManager::OnDidDestroyClient(ui::WindowTreeClient* client) {
   window_manager_client_ = nullptr;
 }
 
-void WindowManager::OnEventObserved(const ui::Event& event,
-                                    ui::Window* target) {
-  // Does not use EventObservers.
+void WindowManager::OnPointerEventObserved(const ui::PointerEvent& event,
+                                           ui::Window* target) {
+  // Does not use PointerWatchers.
 }
 
 void WindowManager::SetWindowManagerClient(ui::WindowManagerClient* client) {

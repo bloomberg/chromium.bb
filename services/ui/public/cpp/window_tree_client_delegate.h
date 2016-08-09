@@ -40,9 +40,10 @@ class WindowTreeClientDelegate {
   virtual void OnDidDestroyClient(WindowTreeClient* client) = 0;
 
   // Called when the WindowTreeClient receives an input event observed via
-  // SetEventObserver(). |target| may be null for events that were sent to
+  // StartPointerWatcher(). |target| may be null for events that were sent to
   // windows owned by other processes.
-  virtual void OnEventObserved(const ui::Event& event, Window* target) = 0;
+  virtual void OnPointerEventObserved(const ui::PointerEvent& event,
+                                      Window* target) = 0;
 
  protected:
   virtual ~WindowTreeClientDelegate() {}

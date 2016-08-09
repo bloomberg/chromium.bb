@@ -69,7 +69,8 @@ class WindowServerTestBase
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;
   void OnDidDestroyClient(WindowTreeClient* client) override;
-  void OnEventObserved(const ui::Event& event, Window* target) override;
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              Window* target) override;
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(WindowManagerClient* client) override;

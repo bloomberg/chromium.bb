@@ -29,7 +29,8 @@ class WindowTreeClientDelegate : public ui::WindowTreeClientDelegate {
   // ui::WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override {}
   void OnDidDestroyClient(ui::WindowTreeClient* client) override {}
-  void OnEventObserved(const ui::Event& event, ui::Window* target) override {}
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              ui::Window* target) override {}
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientDelegate);
 };
