@@ -76,6 +76,7 @@ void ArcCustomNotificationItem::UpdateWithArcNotificationData(
   message_center::RichNotificationData rich_data;
   rich_data.pinned = (data.no_clear || data.ongoing_event);
   rich_data.priority = ConvertAndroidPriority(data.priority);
+  rich_data.small_image = ConvertAndroidSmallIcon(data.small_icon);
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);

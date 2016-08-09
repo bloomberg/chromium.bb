@@ -41,6 +41,8 @@ class ArcNotificationItem {
 
  protected:
   static int ConvertAndroidPriority(int android_priority);
+  static gfx::Image ConvertAndroidSmallIcon(
+      const mojom::ArcBitmapPtr& arc_bitmap);
 
   // Checks whether there is on-going |notification_|. If so, cache the |data|
   // in |newer_data_| and returns true. Otherwise, returns false.

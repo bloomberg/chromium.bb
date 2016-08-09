@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 6
+// Next MinVersion: 7
 
 module arc.mojom;
 
@@ -75,6 +75,8 @@ struct ArcNotificationData {
   // on notification update is ignored.
   [MinVersion=5]
   bool use_custom_notification;
+  [MinVersion=6]
+  ArcBitmap? small_icon;
 };
 
 [MinVersion=2]

@@ -210,6 +210,7 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
   rich_data.pinned = (data.no_clear || data.ongoing_event);
 
   rich_data.priority = ConvertAndroidPriority(data.priority);
+  rich_data.small_image = ConvertAndroidSmallIcon(data.small_icon);
 
   // The identifier of the notifier, which is used to distinguish the notifiers
   // in the message center.
@@ -291,6 +292,15 @@ int ArcNotificationItem::ConvertAndroidPriority(int android_priority) {
       NOTREACHED() << "Invalid Priority: " << android_priority;
       return 0;
   }
+}
+
+// static
+gfx::Image ArcNotificationItem::ConvertAndroidSmallIcon(
+    const mojom::ArcBitmapPtr& arc_bitmap) {
+  if (arc_bitmap.is_null())
+    return gfx::Image();
+
+  return gfx::Image::CreateFrom1xBitmap(arc_bitmap.To<SkBitmap>());
 }
 
 bool ArcNotificationItem::CacheArcNotificationData(
