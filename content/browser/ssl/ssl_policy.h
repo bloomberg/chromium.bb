@@ -33,7 +33,7 @@ class SSLPolicy {
   explicit SSLPolicy(SSLPolicyBackend* backend);
 
   // An error occurred with the certificate in an SSL connection.
-  void OnCertError(SSLErrorHandler* handler);
+  void OnCertError(std::unique_ptr<SSLErrorHandler> handler);
 
   void DidRunInsecureContent(NavigationEntryImpl* entry,
                              const GURL& security_origin);
@@ -64,10 +64,6 @@ class SSLPolicy {
     EXPIRED_PREVIOUS_DECISION = 1 << 2
   };
 
-  // Callback that the user chose to accept or deny the certificate.
-  void OnAllowCertificate(scoped_refptr<SSLErrorHandler> handler,
-                          CertificateRequestResultType decision);
-
   // Helper method for derived classes handling certificate errors.
   //
   // Options should be a bitmask combination of OnCertErrorInternalOptionsMask.
@@ -78,7 +74,8 @@ class SSLPolicy {
   // certificate validation (e.g. with HTTP Strict-Transport-Security).
   // EXPIRED_PREVIOUS_DECISION indicates whether a user decision had been
   // previously made but the decision has expired.
-  void OnCertErrorInternal(SSLErrorHandler* handler, int options_mask);
+  void OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
+                           int options_mask);
 
   // If the security style of |entry| has not been initialized, then initialize
   // it with the default style for its URL.

@@ -44,6 +44,35 @@ class SSLManagerSet : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(SSLManagerSet);
 };
 
+void HandleSSLErrorOnUI(
+    const base::Callback<WebContents*(void)>& web_contents_getter,
+    const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
+    const ResourceType resource_type,
+    const GURL& url,
+    const net::SSLInfo& ssl_info,
+    bool fatal) {
+  content::WebContents* web_contents = web_contents_getter.Run();
+  std::unique_ptr<SSLErrorHandler> handler(new SSLErrorHandler(
+      web_contents, delegate, resource_type, url, ssl_info, fatal));
+
+  if (!web_contents) {
+    // Requests can fail to dispatch because they don't have a WebContents. See
+    // https://crbug.com/86537. In this case we have to make a decision in this
+    // function, so we ignore revocation check failures.
+    if (net::IsCertStatusMinorError(ssl_info.cert_status)) {
+      handler->ContinueRequest();
+    } else {
+      handler->CancelRequest();
+    }
+    return;
+  }
+
+  SSLManager* manager =
+      static_cast<NavigationControllerImpl*>(&web_contents->GetController())
+          ->ssl_manager();
+  manager->policy()->OnCertError(std::move(handler));
+}
+
 }  // namespace
 
 // static
@@ -61,14 +90,12 @@ void SSLManager::OnSSLCertificateError(
            << " url: " << url.spec()
            << " cert_status: " << std::hex << ssl_info.cert_status;
 
-  // A certificate error occurred.  Construct a SSLErrorHandler object and
-  // hand it over to the UI thread for processing.
+  // A certificate error occurred. Construct a SSLErrorHandler object
+  // on the UI thread for processing.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &SSLErrorHandler::Dispatch,
-          new SSLErrorHandler(delegate, resource_type, url, ssl_info, fatal),
-          web_contents_getter));
+      base::Bind(&HandleSSLErrorOnUI, web_contents_getter, delegate,
+                 resource_type, url, ssl_info, fatal));
 }
 
 // static

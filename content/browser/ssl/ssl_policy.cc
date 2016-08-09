@@ -35,14 +35,45 @@ enum SSLGoodCertSeenEvent {
   HAD_PREVIOUS_EXCEPTION = 1,
   SSL_GOOD_CERT_SEEN_EVENT_MAX = 2
 };
+
+void OnAllowCertificate(SSLErrorHandler* handler,
+                        const SSLPolicy* const policy,
+                        CertificateRequestResultType decision) {
+  DCHECK(handler->ssl_info().is_valid());
+  switch (decision) {
+    case CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE:
+      // Note that we should not call SetMaxSecurityStyle here, because
+      // the active NavigationEntry has just been deleted (in
+      // HideInterstitialPage) and the new NavigationEntry will not be
+      // set until DidNavigate.  This is ok, because the new
+      // NavigationEntry will have its max security style set within
+      // DidNavigate.
+      //
+      // While AllowCertForHost() executes synchronously on this thread,
+      // ContinueRequest() gets posted to a different thread. Calling
+      // AllowCertForHost() first ensures deterministic ordering.
+      policy->backend()->AllowCertForHost(*handler->ssl_info().cert.get(),
+                                          handler->request_url().host(),
+                                          handler->cert_error());
+      handler->ContinueRequest();
+      return;
+    case CERTIFICATE_REQUEST_RESULT_TYPE_DENY:
+      handler->DenyRequest();
+      return;
+    case CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL:
+      handler->CancelRequest();
+      return;
+  }
 }
+
+}  // namespace
 
 SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
     : backend_(backend) {
   DCHECK(backend_);
 }
 
-void SSLPolicy::OnCertError(SSLErrorHandler* handler) {
+void SSLPolicy::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
   bool expired_previous_decision = false;
   // First we check if we know the policy for this error.
   DCHECK(handler->ssl_info().is_valid());
@@ -75,7 +106,7 @@ void SSLPolicy::OnCertError(SSLErrorHandler* handler) {
         options_mask |= STRICT_ENFORCEMENT;
       if (expired_previous_decision)
         options_mask |= EXPIRED_PREVIOUS_DECISION;
-      OnCertErrorInternal(handler, options_mask);
+      OnCertErrorInternal(std::move(handler), options_mask);
       break;
     case net::ERR_CERT_NO_REVOCATION_MECHANISM:
       // Ignore this error.
@@ -95,7 +126,7 @@ void SSLPolicy::OnCertError(SSLErrorHandler* handler) {
         options_mask |= STRICT_ENFORCEMENT;
       if (expired_previous_decision)
         options_mask |= EXPIRED_PREVIOUS_DECISION;
-      OnCertErrorInternal(handler, options_mask);
+      OnCertErrorInternal(std::move(handler), options_mask);
       break;
     default:
       NOTREACHED();
@@ -190,51 +221,25 @@ SecurityStyle SSLPolicy::GetSecurityStyleForResource(
   return SECURITY_STYLE_AUTHENTICATED;
 }
 
-void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLErrorHandler> handler,
-                                   CertificateRequestResultType decision) {
-  DCHECK(handler->ssl_info().is_valid());
-  switch (decision) {
-    case CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE:
-      // Note that we should not call SetMaxSecurityStyle here, because the
-      // active
-      // NavigationEntry has just been deleted (in HideInterstitialPage) and the
-      // new NavigationEntry will not be set until DidNavigate.  This is ok,
-      // because the new NavigationEntry will have its max security style set
-      // within DidNavigate.
-      //
-      // While AllowCertForHost() executes synchronously on this thread,
-      // ContinueRequest() gets posted to a different thread. Calling
-      // AllowCertForHost() first ensures deterministic ordering.
-      backend_->AllowCertForHost(*handler->ssl_info().cert.get(),
-                                 handler->request_url().host(),
-                                 handler->cert_error());
-      handler->ContinueRequest();
-      return;
-    case CERTIFICATE_REQUEST_RESULT_TYPE_DENY:
-      handler->DenyRequest();
-      return;
-    case CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL:
-      handler->CancelRequest();
-      return;
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Certificate Error Routines
 
-void SSLPolicy::OnCertErrorInternal(SSLErrorHandler* handler,
+void SSLPolicy::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
                                     int options_mask) {
   bool overridable = (options_mask & OVERRIDABLE) != 0;
   bool strict_enforcement = (options_mask & STRICT_ENFORCEMENT) != 0;
   bool expired_previous_decision =
       (options_mask & EXPIRED_PREVIOUS_DECISION) != 0;
+
+  WebContents* web_contents = handler->web_contents();
+  int cert_error = handler->cert_error();
+  const net::SSLInfo& ssl_info = handler->ssl_info();
+  const GURL& request_url = handler->request_url();
+  ResourceType resource_type = handler->resource_type();
   GetContentClient()->browser()->AllowCertificateError(
-      handler->GetManager()->controller()->GetWebContents(),
-      handler->cert_error(), handler->ssl_info(), handler->request_url(),
-      handler->resource_type(), overridable, strict_enforcement,
-      expired_previous_decision,
-      base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this),
-                 make_scoped_refptr(handler)));
+      web_contents, cert_error, ssl_info, request_url, resource_type,
+      overridable, strict_enforcement, expired_previous_decision,
+      base::Bind(&OnAllowCertificate, base::Owned(handler.release()), this));
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {
