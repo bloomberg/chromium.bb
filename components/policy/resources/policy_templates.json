@@ -397,7 +397,7 @@
       'id': 7,
       'caption': '''Enable network prediction''',
       'tags': [],
-      'desc': '''This policy is deprecated in M48 in favor of NetworkPredictionOptions, and removed in M54.
+      'desc': '''This policy is deprecated in M48 in favor of <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME">NetworkPredictionOptions</ph>, and removed in M54.
 
       Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
