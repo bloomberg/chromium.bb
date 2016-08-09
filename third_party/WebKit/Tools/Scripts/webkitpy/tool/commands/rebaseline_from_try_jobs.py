@@ -62,14 +62,14 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
         """Gets the Rietveld CL number from either |options| or from the current local branch."""
         if options.issue:
             return options.issue
-        issue_number = self._git().get_issue_number()
+        issue_number = self.git().get_issue_number()
         _log.debug('Issue number for current branch: %s', issue_number)
         if not issue_number.isdigit():
             _log.error('No issue number given and no issue for current branch.')
             return None
         return int(issue_number)
 
-    def _git(self):
+    def git(self):
         """Returns a Git instance; can be overridden for tests."""
         # Pass in a current working directory inside of the repo so
         # that this command can be called from outside of the repo.

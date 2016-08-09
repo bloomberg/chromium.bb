@@ -50,7 +50,7 @@ class RebaselineFromTryJobsTest(BaseTestCase):
         })
         self.git = MockSCM()
         self.git.get_issue_number = lambda: 'None'
-        self.command._git = lambda: self.git
+        self.command.git = lambda: self.git
 
     @staticmethod
     def command_options(**kwargs):
