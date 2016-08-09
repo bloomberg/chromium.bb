@@ -7,11 +7,19 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
 
 namespace arc {
+
+namespace {
+
+const base::Feature kArcEnabledFeature{"EnableARC",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace
 
 // Weak pointer.  This class is owned by ArcServiceManager.
 ArcBridgeService* g_arc_bridge_service = nullptr;
@@ -40,7 +48,8 @@ ArcBridgeService* ArcBridgeService::Get() {
 
 // static
 bool ArcBridgeService::GetEnabled(const base::CommandLine* command_line) {
-  return command_line->HasSwitch(chromeos::switches::kEnableArc);
+  return command_line->HasSwitch(chromeos::switches::kEnableArc) ||
+         base::FeatureList::IsEnabled(kArcEnabledFeature);
 }
 
 void ArcBridgeService::AddObserver(Observer* observer) {
