@@ -1638,6 +1638,7 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
                                    session->net_log()));
   std::unique_ptr<QuicChromiumPacketWriter> new_writer(
       new QuicChromiumPacketWriter(socket.get()));
+  new_writer->Initialize(session, session->connection());
 
   if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
                                 std::move(new_writer), packet)) {
