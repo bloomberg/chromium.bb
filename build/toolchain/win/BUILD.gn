@@ -44,60 +44,86 @@ if (current_toolchain == default_toolchain) {
 }
 
 # Parameters:
-#  toolchain_cpu: current_cpu to pass as a build arg
-#  toolchain_os: current_os to pass as a build arg
-#  environment: File name of environment file.
+#   environment: File name of environment file.
+#
+# You would also define a toolchain_args variable with at least these set:
+#   current_cpu: current_cpu to pass as a build arg
+#   current_os: current_os to pass as a build arg
 template("msvc_toolchain") {
-  env = invoker.environment
-
-  if (invoker.is_clang && host_os != "win") {
-    # This toolchain definition uses response files for compilations.  GN uses
-    # the quoting rules of the host OS, while clang-cl always defaults to
-    # cmd.exe quoting rules for parsing response files.  Tell clang-cl to use
-    # POSIX quoting rules, so it can understand what GN generates.
-    cl = "${invoker.cl} --rsp-quoting=posix"
-  } else {
-    cl = invoker.cl
-  }
-
-  if (use_lld) {
-    if (host_os == "win") {
-      lld_link = "lld-link.exe"
-    } else {
-      lld_link = "lld-link"
-    }
-    prefix = rebase_path("$clang_base_path/bin", root_build_dir)
-
-    # lld-link includes a replacement for lib.exe that can produce thin
-    # archives and understands bitcode (for lto builds).
-    lib = "$prefix/$lld_link /lib /llvmlibthin"
-    link = "$prefix/$lld_link"
-  } else {
-    lib = "lib.exe"
-    link = "link.exe"
-  }
-
-  # If possible, pass system includes as flags to the compiler.  When that's
-  # not possible, load a full environment file (containing %INCLUDE% and
-  # %PATH%) -- e.g. 32-bit MSVS builds require %PATH% to be set and just passing
-  # in a list of include directories isn't enough.
-  if (defined(invoker.sys_include_flags)) {
-    env_wrapper = ""
-    sys_include_flags = "${invoker.sys_include_flags} "  # Note trailing space.
-  } else {
-    # clang-cl doesn't need this env hoop, so omit it there.
-    assert(!invoker.is_clang)
-    env_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
-    sys_include_flags = ""
-  }
-
   toolchain(target_name) {
+    # When invoking this toolchain not as the default one, these args will be
+    # passed to the build. They are ignored when this is the default toolchain.
+    assert(defined(invoker.toolchain_args))
+    toolchain_args = {
+      if (defined(invoker.toolchain_args)) {
+        forward_variables_from(invoker.toolchain_args, "*")
+      }
+
+      # This value needs to be passed through unchanged.
+      host_toolchain = host_toolchain
+
+      current_os = "win"
+    }
+
     # Make these apply to all tools below.
     lib_switch = ""
     lib_dir_switch = "/LIBPATH:"
 
     # Object files go in this directory.
     object_subdir = "{{target_out_dir}}/{{label_name}}"
+
+    env = invoker.environment
+
+    # When the invoker has explicitly overridden use_goma or cc_wrapper in the
+    # toolchain args, use those values, otherwise default to the global one.
+    # This works because the only reasonable override that toolchains might
+    # supply for these values are to force-disable them.
+    if (defined(toolchain_args.is_clang)) {
+      toolchain_uses_clang = toolchain_args.is_clang
+    } else {
+      toolchain_uses_clang = is_clang
+    }
+
+    if (toolchain_uses_clang && host_os != "win") {
+      # This toolchain definition uses response files for compilations.  GN uses
+      # the quoting rules of the host OS, while clang-cl always defaults to
+      # cmd.exe quoting rules for parsing response files.  Tell clang-cl to use
+      # POSIX quoting rules, so it can understand what GN generates.
+      cl = "${invoker.cl} --rsp-quoting=posix"
+    } else {
+      cl = invoker.cl
+    }
+
+    if (use_lld) {
+      if (host_os == "win") {
+        lld_link = "lld-link.exe"
+      } else {
+        lld_link = "lld-link"
+      }
+      prefix = rebase_path("$clang_base_path/bin", root_build_dir)
+
+      # lld-link includes a replacement for lib.exe that can produce thin
+      # archives and understands bitcode (for lto builds).
+      lib = "$prefix/$lld_link /lib /llvmlibthin"
+      link = "$prefix/$lld_link"
+    } else {
+      lib = "lib.exe"
+      link = "link.exe"
+    }
+
+    # If possible, pass system includes as flags to the compiler.  When that's
+    # not possible, load a full environment file (containing %INCLUDE% and
+    # %PATH%) -- e.g. 32-bit MSVS builds require %PATH% to be set and just
+    # passing in a list of include directories isn't enough.
+    if (defined(invoker.sys_include_flags)) {
+      env_wrapper = ""
+      sys_include_flags = "${invoker.sys_include_flags} "  # Note trailing space.
+    } else {
+      # clang-cl doesn't need this env hoop, so omit it there.
+      assert(!toolchain_uses_clang)
+      env_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
+      sys_include_flags = ""
+    }
 
     tool("cc") {
       rspfile = "{{output}}.rsp"
@@ -142,7 +168,7 @@ template("msvc_toolchain") {
     }
 
     tool("asm") {
-      if (invoker.toolchain_cpu == "x64") {
+      if (toolchain_args.current_cpu == "x64") {
         ml = "ml64.exe"
       } else {
         ml = "ml.exe"
@@ -264,28 +290,6 @@ template("msvc_toolchain") {
       command = copy_command
       description = copy_description
     }
-
-    # When invoking this toolchain not as the default one, these args will be
-    # passed to the build. They are ignored when this is the default toolchain.
-    toolchain_args() {
-      current_cpu = invoker.toolchain_cpu
-      if (defined(invoker.toolchain_os)) {
-        current_os = invoker.toolchain_os
-      }
-
-      # These share a name with global variables that are already defined, and
-      # forward_variables_from won't clobber the existing value, so we need to
-      # set it explicitly.
-      if (defined(invoker.is_clang)) {
-        is_clang = invoker.is_clang
-      }
-      if (defined(invoker.is_component_build)) {
-        is_component_build = invoker.is_component_build
-      }
-
-      # This value needs to be passed through unchanged.
-      host_toolchain = host_toolchain
-    }
   }
 }
 
@@ -319,19 +323,23 @@ if (target_cpu == "x86") {
 
   msvc_toolchain("x86") {
     environment = "environment.x86"
-    toolchain_cpu = "x86"
     cl = "${goma_prefix}\"${x86_toolchain_data.vc_bin_dir}/cl.exe\""
-    is_clang = false
+    toolchain_args = {
+      current_cpu = "x86"
+      is_clang = false
+    }
   }
 
   msvc_toolchain("clang_x86") {
     environment = "environment.x86"
-    toolchain_cpu = "x86"
     prefix = rebase_path("$clang_base_path/bin", root_build_dir)
     cl = "${goma_prefix}$prefix/${clang_cl}"
-    toolchain_os = "win"
-    is_clang = true
     sys_include_flags = "${x86_toolchain_data.include_flags}"
+
+    toolchain_args = {
+      current_cpu = "x86"
+      is_clang = true
+    }
   }
 }
 
@@ -356,30 +364,29 @@ template("win_x64_toolchains") {
 
   msvc_toolchain(target_name) {
     environment = "environment.x64"
-    toolchain_cpu = "x64"
     cl = "${goma_prefix}\"${x64_toolchain_data.vc_bin_dir}/cl.exe\""
-    is_clang = false
 
-    # This shares a name with a global and forward_variables_from won't clobber
-    # the existing value, so we need to set it explicitly.
-    if (defined(invoker.is_component_build)) {
-      is_component_build = invoker.is_component_build
+    toolchain_args = {
+      if (defined(invoker.toolchain_args)) {
+        forward_variables_from(invoker.toolchain_args, "*")
+      }
+      is_clang = false
+      current_cpu = "x64"
     }
   }
 
   msvc_toolchain("clang_" + target_name) {
     environment = "environment.x64"
-    toolchain_cpu = "x64"
     prefix = rebase_path("$clang_base_path/bin", root_build_dir)
     cl = "${goma_prefix}$prefix/${clang_cl}"
-    toolchain_os = "win"
-    is_clang = true
     sys_include_flags = "${x64_toolchain_data.include_flags}"
 
-    # This shares a name with a global and forward_variables_from won't clobber
-    # the existing value, so we need to set it explicitly.
-    if (defined(invoker.is_component_build)) {
-      is_component_build = invoker.is_component_build
+    toolchain_args = {
+      if (defined(invoker.toolchain_args)) {
+        forward_variables_from(invoker.toolchain_args, "*")
+      }
+      is_clang = true
+      current_cpu = "x64"
     }
   }
 }
@@ -397,13 +404,15 @@ win_x64_toolchains("x64") {
 # is_component_build to false in the toolchain_args() block, because
 # building nacl64.exe in component style does not work.
 win_x64_toolchains("nacl_win64") {
-  is_component_build = false
-
   # TODO(mcgrathr): These assignments are only required because of
   # crbug.com/395883.  Drop them if that ever gets fixed in GN.
   goma_prefix = goma_prefix
   x64_toolchain_data = x64_toolchain_data
   clang_cl = clang_cl
+
+  toolchain_args = {
+    is_component_build = false
+  }
 }
 
 # WinRT toolchains. Only define these when targeting them.
@@ -416,18 +425,20 @@ if (target_os == "winrt_81" || target_os == "winrt_81_phone" ||
   msvc_toolchain("winrt_x86") {
     environment = "environment.winrt_x86"
     cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
-    is_clang = false
 
-    toolchain_cpu = "x86"
-    toolchain_os = current_os
+    toolchain_args = {
+      is_clang = false
+      current_cpu = "x86"
+    }
   }
 
   msvc_toolchain("winrt_x64") {
     environment = "environment.winrt_x64"
     cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
-    is_clang = false
 
-    toolchain_cpu = "x64"
-    toolchain_os = current_os
+    toolchain_args = {
+      is_clang = false
+      current_cpu = "x64"
+    }
   }
 }

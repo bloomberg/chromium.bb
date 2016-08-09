@@ -63,12 +63,10 @@ template("pnacl_toolchain") {
   nacl_toolchain(target_name) {
     toolchain_package = "pnacl_newlib"
     toolchain_revision = pnacl_newlib_rev
-    toolchain_cpu = "pnacl"
     toolprefix =
         rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/pnacl-",
                     root_build_dir)
 
-    is_clang = true
     cc = compiler_scriptprefix + toolprefix + "clang" + scriptsuffix
     cxx = compiler_scriptprefix + toolprefix + "clang++" + scriptsuffix
     ar = scriptprefix + toolprefix + "ar" + scriptsuffix
@@ -83,6 +81,11 @@ template("pnacl_toolchain") {
     ld = scriptprefix + toolprefix + "clang++" + scriptsuffix
 
     executable_extension = invoker.executable_extension
+
+    toolchain_args = {
+      is_clang = true
+      current_cpu = "pnacl"
+    }
   }
 }
 
@@ -128,9 +131,6 @@ template("nacl_glibc_toolchain") {
   }
 
   nacl_toolchain("glibc_" + toolchain_cpu) {
-    is_clang = false
-    is_nacl_glibc = true
-
     cc = toolprefix + "gcc" + toolsuffix
     cxx = toolprefix + "g++" + toolsuffix
     ar = toolprefix + "ar" + toolsuffix
@@ -138,6 +138,12 @@ template("nacl_glibc_toolchain") {
     readelf = toolprefix + "readelf" + toolsuffix
     nm = toolprefix + "nm" + toolsuffix
     strip = toolprefix + "strip" + toolsuffix
+
+    toolchain_args = {
+      current_cpu = toolchain_cpu
+      is_clang = false
+      is_nacl_glibc = true
+    }
   }
 }
 
@@ -187,7 +193,6 @@ template("nacl_clang_toolchain") {
   }
 
   nacl_toolchain("clang_newlib_" + toolchain_cpu) {
-    is_clang = true
     cc = toolprefix + "clang" + toolsuffix
     cxx = toolprefix + "clang++" + toolsuffix
     ar = toolprefix + "ar" + toolsuffix
@@ -195,6 +200,11 @@ template("nacl_clang_toolchain") {
     readelf = toolprefix + "readelf" + toolsuffix
     nm = toolprefix + "nm" + toolsuffix
     strip = toolprefix + "strip" + toolsuffix
+
+    toolchain_args = {
+      current_cpu = toolchain_cpu
+      is_clang = true
+    }
   }
 }
 
@@ -229,7 +239,6 @@ template("nacl_irt_toolchain") {
   tls_edit = "${host_toolchain_out_dir}/tls_edit"
 
   nacl_toolchain("irt_" + toolchain_cpu) {
-    is_clang = true
     cc = toolprefix + "clang" + toolsuffix
     cxx = toolprefix + "clang++" + toolsuffix
     ar = toolprefix + "ar" + toolsuffix
@@ -237,13 +246,18 @@ template("nacl_irt_toolchain") {
     nm = toolprefix + "nm" + toolsuffix
     strip = toolprefix + "strip" + toolsuffix
 
-    # Always build the IRT with full debugging symbols, regardless of
-    # how Chromium itself is being built (or other NaCl executables).
-    symbol_level = 2
-
     # Some IRT implementations (notably, Chromium's) contain C++ code,
     # so we need to link w/ the C++ linker.
     ld = "${python_path} ${link_irt} --tls-edit=${tls_edit} --link-cmd=${cxx} --readelf-cmd=${readelf}"
+
+    toolchain_args = {
+      current_cpu = toolchain_cpu
+      is_clang = true
+
+      # Always build the IRT with full debugging symbols, regardless of
+      # how Chromium itself is being built (or other NaCl executables).
+      symbol_level = 2
+    }
 
     # TODO(ncbray): depend on link script
     deps = [

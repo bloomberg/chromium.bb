@@ -10,8 +10,6 @@ import("//build/toolchain/gcc_toolchain.gni")
 # wrapper around gcc_toolchain to avoid duplication of logic.
 #
 # Parameters:
-#  - toolchain_cpu
-#      Same as gcc_toolchain.
 #  - toolchain_root
 #      Path to cpu-specific toolchain within the ndk.
 #  - sysroot
@@ -22,9 +20,10 @@ import("//build/toolchain/gcc_toolchain.gni")
 #      Prefix of compiler executables.
 template("android_gcc_toolchain") {
   gcc_toolchain(target_name) {
-    is_clang = invoker.is_clang
-    toolchain_cpu = invoker.toolchain_cpu
-    toolchain_os = "android"
+    assert(defined(invoker.toolchain_args),
+           "toolchain_args must be defined for android_gcc_toolchain()")
+    toolchain_args = invoker.toolchain_args
+    toolchain_args.current_os = "android"
 
     # Make our manually injected libs relative to the build dir.
     _ndk_lib =
@@ -42,7 +41,15 @@ template("android_gcc_toolchain") {
     # The tools should be run relative to the build dir.
     _tool_prefix = rebase_path("$_android_tool_prefix", root_build_dir)
 
-    if (is_clang) {
+    # Use the clang specified by the toolchain if there is one. Otherwise fall
+    # back to the global flag.
+    if (defined(toolchain_args.is_clang)) {
+      toolchain_uses_clang = toolchain_args.is_clang
+    } else {
+      toolchain_uses_clang = is_clang
+    }
+
+    if (toolchain_uses_clang) {
       _prefix = rebase_path("$clang_base_path/bin", root_build_dir)
       cc = "$_prefix/clang"
       cxx = "$_prefix/clang++"
@@ -65,58 +72,71 @@ template("android_gcc_toolchain") {
 template("android_gcc_toolchains_helper") {
   android_gcc_toolchain(target_name) {
     forward_variables_from(invoker, "*")
+    toolchain_args.is_clang = false
   }
 
   android_gcc_toolchain("clang_$target_name") {
     forward_variables_from(invoker, "*")
-    is_clang = true
+    toolchain_args.is_clang = true
   }
 }
 
 android_gcc_toolchains_helper("x86") {
-  toolchain_cpu = "x86"
   toolchain_root = x86_android_toolchain_root
   sysroot = "$android_ndk_root/$x86_android_sysroot_subdir"
   lib_dir = "usr/lib"
   binary_prefix = "i686-linux-android"
+  toolchain_args = {
+    current_cpu = "x86"
+  }
 }
 
 android_gcc_toolchains_helper("arm") {
-  toolchain_cpu = "arm"
   toolchain_root = arm_android_toolchain_root
   sysroot = "$android_ndk_root/$arm_android_sysroot_subdir"
   lib_dir = "usr/lib"
   binary_prefix = "arm-linux-androideabi"
+  toolchain_args = {
+    current_cpu = "arm"
+  }
 }
 
 android_gcc_toolchains_helper("mipsel") {
-  toolchain_cpu = "mipsel"
   toolchain_root = mips_android_toolchain_root
   sysroot = "$android_ndk_root/$mips_android_sysroot_subdir"
   lib_dir = "usr/lib"
   binary_prefix = "mipsel-linux-android"
+  toolchain_args = {
+    current_cpu = "mipsel"
+  }
 }
 
 android_gcc_toolchains_helper("x64") {
-  toolchain_cpu = "x64"
   toolchain_root = x86_64_android_toolchain_root
   sysroot = "$android_ndk_root/$x86_64_android_sysroot_subdir"
   lib_dir = "usr/lib64"
   binary_prefix = "x86_64-linux-android"
+  toolchain_args = {
+    current_cpu = "x64"
+  }
 }
 
 android_gcc_toolchains_helper("arm64") {
-  toolchain_cpu = "arm64"
   toolchain_root = arm64_android_toolchain_root
   sysroot = "$android_ndk_root/$arm64_android_sysroot_subdir"
   lib_dir = "usr/lib"
   binary_prefix = "aarch64-linux-android"
+  toolchain_args = {
+    current_cpu = "arm64"
+  }
 }
 
 android_gcc_toolchains_helper("mips64el") {
-  toolchain_cpu = "mips64el"
   toolchain_root = mips64_android_toolchain_root
   sysroot = "$android_ndk_root/$mips64_android_sysroot_subdir"
   lib_dir = "usr/lib64"
   binary_prefix = "mips64el-linux-android"
+  toolchain_args = {
+    current_cpu = "mips64el"
+  }
 }

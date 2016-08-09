@@ -61,30 +61,60 @@ tool_versions =
 # Work around for unused variable warning in template https://crbug.com/395883.
 assert(tool_versions != "")
 
-# Shared toolchain definition. Invocations should set toolchain_os to set the
+# Shared toolchain definition. Invocations should set current_os to set the
 # build args in this definition.
 template("mac_toolchain") {
   toolchain(target_name) {
-    assert(defined(invoker.toolchain_cpu),
-           "mac_toolchain() must specify a \"toolchain_cpu\"")
-    assert(defined(invoker.toolchain_os),
-           "mac_toolchain() must specify a \"toolchain_os\"")
+    # When invoking this toolchain not as the default one, these args will be
+    # passed to the build. They are ignored when this is the default toolchain.
+    assert(defined(invoker.toolchain_args),
+           "Toolchains must declare toolchain_args")
+    toolchain_args = {
+      # Populate toolchain args from the invoker.
+      forward_variables_from(invoker.toolchain_args, "*")
 
-    if (use_goma) {
-      assert(cc_wrapper == "", "Goma and cc_wrapper can't be used together.")
-      _compiler_prefix = "$goma_dir/gomacc "
-    } else if (cc_wrapper != "") {
-      _compiler_prefix = cc_wrapper + " "
+      # These values need to be passed through unchanged to all secondary
+      # toolchains. BUILDCONFIG.gn sets some defaults based on the values of
+      # the operating system and compiler, and we want to force the values to
+      # be consistent if re-running the computation in another context leads
+      # to different defaults.
+      host_toolchain = host_toolchain
+      target_os = target_os
+      target_cpu = target_cpu
+    }
+
+    # When the invoker has explicitly overridden use_goma or cc_wrapper in the
+    # toolchain args, use those values, otherwise default to the global one.
+    # This works because the only reasonable override that toolchains might
+    # supply for these values are to force-disable them.
+    if (defined(toolchain_args.use_goma)) {
+      toolchain_uses_goma = toolchain_args.use_goma
     } else {
-      _compiler_prefix = ""
+      toolchain_uses_goma = use_goma
+    }
+    if (defined(toolchain_args.cc_wrapper)) {
+      toolchain_cc_wrapper = toolchain_args.cc_wrapper
+    } else {
+      toolchain_cc_wrapper = cc_wrapper
     }
 
-    if (invoker.toolchain_os != "ios" || !use_xcode_clang) {
-      _compiler_prefix += rebase_path("$clang_base_path/bin/", root_build_dir)
+    # Compute the compiler prefix.
+    if (toolchain_uses_goma) {
+      assert(toolchain_cc_wrapper == "",
+             "Goma and cc_wrapper can't be used together.")
+      compiler_prefix = "$goma_dir/gomacc "
+    } else if (toolchain_cc_wrapper != "") {
+      compiler_prefix = toolchain_cc_wrapper + " "
+    } else {
+      compiler_prefix = ""
     }
 
-    cc = "${_compiler_prefix}clang"
-    cxx = "${_compiler_prefix}clang++"
+    if (toolchain_args.current_os != "ios" || !use_xcode_clang) {
+      compiler_prefix += rebase_path("$clang_base_path/bin/", root_build_dir)
+    }
+
+    cc = "${compiler_prefix}clang"
+    cxx = "${compiler_prefix}clang++"
     ld = cxx
 
     linker_driver =
@@ -94,7 +124,7 @@ template("mac_toolchain") {
     # On iOS, the final applications are assembled using lipo (to support fat
     # builds). The correct flags are passed to the linker_driver.py script
     # directly during the lipo call.
-    if (invoker.toolchain_os != "ios") {
+    if (toolchain_args.current_os != "ios") {
       _enable_dsyms = enable_dsyms
       _save_unstripped_output = save_unstripped_output
     } else {
@@ -384,48 +414,49 @@ template("mac_toolchain") {
       description = "COMPILE_XCASSETS {{output}}"
       pool = ":bundle_pool($default_toolchain)"
     }
-
-    toolchain_args() {
-      current_cpu = invoker.toolchain_cpu
-      current_os = invoker.toolchain_os
-
-      # These values need to be passed through unchanged.
-      host_toolchain = host_toolchain
-      target_os = target_os
-      target_cpu = target_cpu
-      is_clang = true
-    }
   }
 }
 
 mac_toolchain("clang_arm") {
-  toolchain_cpu = "arm"
-  toolchain_os = "mac"
+  toolchain_args = {
+    current_cpu = "arm"
+    current_os = "mac"
+  }
 }
 
 mac_toolchain("clang_x64") {
-  toolchain_cpu = "x64"
-  toolchain_os = "mac"
+  toolchain_args = {
+    current_cpu = "x64"
+    current_os = "mac"
+  }
 }
 
 if (is_ios) {
   mac_toolchain("ios_clang_arm") {
-    toolchain_cpu = "arm"
-    toolchain_os = "ios"
+    toolchain_args = {
+      current_cpu = "arm"
+      current_os = "ios"
+    }
   }
 
   mac_toolchain("ios_clang_arm64") {
-    toolchain_cpu = "arm64"
-    toolchain_os = "ios"
+    toolchain_args = {
+      current_cpu = "arm64"
+      current_os = "ios"
+    }
   }
 
   mac_toolchain("ios_clang_x86") {
-    toolchain_cpu = "x86"
-    toolchain_os = "ios"
+    toolchain_args = {
+      current_cpu = "x86"
+      current_os = "ios"
+    }
   }
 
   mac_toolchain("ios_clang_x64") {
-    toolchain_cpu = "x64"
-    toolchain_os = "ios"
+    toolchain_args = {
+      current_cpu = "x64"
+      current_os = "ios"
+    }
   }
 }
