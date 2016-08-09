@@ -2047,6 +2047,136 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(0, profile.Compare(*results2[0]));
 }
 
+// Tests that no profile is inferred if the country is not recognized.
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_UnrecognizedCountry) {
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Country:", "country", "Notacountry", "text",
+                            &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  EXPECT_FALSE(ImportAddressProfiles(form_structure));
+
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(0U, profiles.size());
+  const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
+  ASSERT_EQ(0U, cards.size());
+}
+
+// Tests that a profile is created for countries with composed names.
+TEST_F(PersonalDataManagerTest,
+       ImportAddressProfiles_CompleteComposedCountryName) {
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Country:", "country", "Myanmar [Burma]", "text",
+                            &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
+                       "San Francisco", "California", "94102", "MM", nullptr);
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+}
+
+// TODO(crbug.com/634131): Create profiles if part of a standalone part of a
+// composed country name is present.
+// Tests that a profile is created if a standalone part of a composed country
+// name is present.
+TEST_F(PersonalDataManagerTest,
+       ImportAddressProfiles_IncompleteComposedCountryName) {
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Country:", "country",
+                            "Myanmar",  // Missing the [Burma] part
+                            "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  EXPECT_FALSE(ImportAddressProfiles(form_structure));
+
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(0U, profiles.size());
+  const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
+  ASSERT_EQ(0U, cards.size());
+}
+
 // ImportCreditCard tests.
 
 // Tests that a valid credit card is extracted.
