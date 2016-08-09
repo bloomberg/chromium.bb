@@ -36,6 +36,7 @@ namespace chromecast {
 class CastService;
 
 namespace media {
+class MediaCapsImpl;
 class MediaPipelineBackend;
 class MediaPipelineBackendManager;
 struct MediaPipelineDeviceParams;
@@ -69,7 +70,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context_getter,
-      media::VideoPlaneController* video_plane_controller);
+      media::VideoPlaneController* video_plane_controller,
+      media::MediaCapsImpl* media_caps);
 
 #if !defined(OS_ANDROID)
   // Returns the task runner that must be used for media IO.

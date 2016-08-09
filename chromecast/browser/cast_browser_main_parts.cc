@@ -470,7 +470,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           cast_browser_process_->browser_context(),
           cast_browser_process_->pref_service(),
           url_request_context_factory_->GetSystemGetter(),
-          video_plane_controller_.get()));
+          video_plane_controller_.get(), media_caps_.get()));
   cast_browser_process_->cast_service()->Initialize();
 
 #if !defined(OS_ANDROID)

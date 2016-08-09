@@ -127,7 +127,8 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context_getter,
-    media::VideoPlaneController* video_plane_controller) {
+    media::VideoPlaneController* video_plane_controller,
+    media::MediaCapsImpl* media_caps) {
   return base::WrapUnique(new CastServiceSimple(browser_context, pref_service));
 }
 
