@@ -1229,6 +1229,9 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Ele
     if (!hasRestyleFlag(ChildrenAffectedByStructuralRules))
         return;
 
+    Element* elementAfterChange = !nodeAfterChange || nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
+    Element* elementBeforeChange = !nodeBeforeChange || nodeBeforeChange->isElementNode() ? toElement(nodeBeforeChange) : ElementTraversal::previousSibling(*nodeBeforeChange);
+
     // Forward positional selectors include :nth-child, :nth-of-type,
     // :first-of-type, and only-of-type. The indirect adjacent selector is the ~
     // selector. Backward positional selectors include :nth-last-child,
@@ -1241,14 +1244,11 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Ele
     // don't want to make childrenChanged O(n^2) by crawling all our kids here.
     // recalcStyle will then force a walk of the children when it sees that this
     // has happened.
-    if ((childrenAffectedByForwardPositionalRules() && nodeAfterChange)
-        || (childrenAffectedByBackwardPositionalRules() && nodeBeforeChange)) {
+    if ((childrenAffectedByForwardPositionalRules() && elementAfterChange)
+        || (childrenAffectedByBackwardPositionalRules() && elementBeforeChange)) {
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
         return;
     }
-
-    Element* elementAfterChange = !nodeAfterChange || nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
-    Element* elementBeforeChange = !nodeBeforeChange || nodeBeforeChange->isElementNode() ? toElement(nodeBeforeChange) : ElementTraversal::previousSibling(*nodeBeforeChange);
 
     if (childrenAffectedByFirstChildRules() && !elementBeforeChange && elementAfterChange && elementAfterChange->affectedByFirstChildRules()) {
         DCHECK_NE(changeType, FinishedParsingChildren);
