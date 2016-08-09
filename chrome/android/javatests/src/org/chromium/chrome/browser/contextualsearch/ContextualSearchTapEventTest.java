@@ -44,12 +44,12 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
      */
     private static class MockContextualSearchRequest extends ContextualSearchRequest {
         public MockContextualSearchRequest(String term, String altTerm, boolean prefetch) {
-            super(term, altTerm, prefetch);
+            super(term, altTerm, "", prefetch);
         }
 
         @Override
-        protected Uri getUriTemplate(String query, @Nullable String alternateTerm,
-                boolean shouldPrefetch) {
+        protected Uri getUriTemplate(
+                String query, @Nullable String alternateTerm, String mid, boolean shouldPrefetch) {
             return Uri.parse("");
         }
     }
@@ -94,12 +94,13 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
         @Override
         public void startSearchTermResolutionRequest(String selection) {
             // Skip native calls and immediately "resolve" the search term.
-            onSearchTermResolutionResponse(true, 200, selection, selection, "", false, 0, 10, "");
+            onSearchTermResolutionResponse(
+                    true, 200, selection, selection, "", "", false, 0, 10, "");
         }
 
         @Override
-        protected ContextualSearchRequest createContextualSearchRequest(String query,
-                String altTerm, boolean shouldPrefetch) {
+        protected ContextualSearchRequest createContextualSearchRequest(
+                String query, String altTerm, String mid, boolean shouldPrefetch) {
             return new MockContextualSearchRequest(query, altTerm, shouldPrefetch);
         }
 

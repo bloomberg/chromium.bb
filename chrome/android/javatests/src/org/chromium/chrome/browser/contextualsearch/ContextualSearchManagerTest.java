@@ -320,20 +320,21 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         private final String mSearchTerm;
         private final String mDisplayText;
         private final String mAlternateTerm;
+        private final String mMid;
         private final boolean mDoPreventPreload;
         private final int mStartAdjust;
         private final int mEndAdjust;
         private final String mContextLanguage;
 
         public FakeResponseOnMainThread(boolean isNetworkUnavailable, int responseCode,
-                                        String searchTerm, String displayText, String alternateTerm,
-                                        boolean doPreventPreload, int startAdjust, int endAdjudst,
-                                        String contextLanguage) {
+                String searchTerm, String displayText, String alternateTerm, String mid,
+                boolean doPreventPreload, int startAdjust, int endAdjudst, String contextLanguage) {
             mIsNetworkUnavailable = isNetworkUnavailable;
             mResponseCode = responseCode;
             mSearchTerm = searchTerm;
             mDisplayText = displayText;
             mAlternateTerm = alternateTerm;
+            mMid = mid;
             mDoPreventPreload = doPreventPreload;
             mStartAdjust = startAdjust;
             mEndAdjust = endAdjudst;
@@ -343,8 +344,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         @Override
         public void run() {
             mFakeServer.handleSearchTermResolutionResponse(mIsNetworkUnavailable, mResponseCode,
-                    mSearchTerm, mDisplayText, mAlternateTerm, mDoPreventPreload, mStartAdjust,
-                    mEndAdjust, mContextLanguage);
+                    mSearchTerm, mDisplayText, mAlternateTerm, mMid, mDoPreventPreload,
+                    mStartAdjust, mEndAdjust, mContextLanguage);
         }
     }
 
@@ -355,7 +356,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
         fakeResponse(isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm,
-                doPreventPreload, 0, 0, "");
+                null, doPreventPreload, 0, 0, "");
     }
 
     /**
@@ -363,11 +364,11 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * {@See ContextualSearchManager#handleSearchTermResolutionResponse}.
      */
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode, String searchTerm,
-            String displayText, String alternateTerm, boolean doPreventPreload, int startAdjust,
-            int endAdjust, String contextLanguage) {
+            String displayText, String alternateTerm, String mid, boolean doPreventPreload,
+            int startAdjust, int endAdjust, String contextLanguage) {
         if (mFakeServer.getSearchTermRequested() != null) {
             getInstrumentation().runOnMainSync(new FakeResponseOnMainThread(isNetworkUnavailable,
-                    responseCode, searchTerm, displayText, alternateTerm, doPreventPreload,
+                    responseCode, searchTerm, displayText, alternateTerm, mid, doPreventPreload,
                     startAdjust, endAdjust, contextLanguage));
         }
     }
@@ -2081,7 +2082,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         waitForPanelToPeek();
 
         fakeResponse(false, 200, "Intelligence", "United States Intelligence", "alternate-term",
-                false, -14, 0, "");
+                null, false, -14, 0, "");
         waitForSelectionToBe("United States Intelligence");
     }
 

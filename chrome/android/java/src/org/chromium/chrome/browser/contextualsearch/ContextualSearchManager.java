@@ -433,8 +433,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             mTranslateController.cacheNativeTranslateData();
         } else {
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult();
-            mSearchRequest = createContextualSearchRequest(mSelectionController.getSelectedText(),
-                    null, shouldPrefetch);
+            mSearchRequest = createContextualSearchRequest(
+                    mSelectionController.getSelectedText(), null, null, shouldPrefetch);
             mTranslateController.forceAutoDetectTranslateUnlessDisabled(mSearchRequest);
             mDidStartLoadingResolvedSearchRequest = false;
             mSearchPanel.setSearchTerm(mSelectionController.getSelectedText());
@@ -531,9 +531,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      * @param altTerm An alternate search term.
      * @param isLowPriorityEnabled Whether the request can be made at low priority.
      */
-    protected ContextualSearchRequest createContextualSearchRequest(String term, String altTerm,
-            boolean isLowPriorityEnabled) {
-        return new ContextualSearchRequest(term, altTerm, isLowPriorityEnabled);
+    protected ContextualSearchRequest createContextualSearchRequest(
+            String term, String altTerm, String mid, boolean isLowPriorityEnabled) {
+        return new ContextualSearchRequest(term, altTerm, mid, isLowPriorityEnabled);
     }
 
     /**
@@ -646,6 +646,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      * @param searchTerm The term to use in our subsequent search.
      * @param displayText The text to display in our UX.
      * @param alternateTerm The alternate term to display on the results page.
+     * @param mid the MID for an entity to use to trigger a Knowledge Panel, or an empty string.
+     *            A MID is a unique identifier for an entity in the Search Knowledge Graph.
      * @param selectionStartAdjust A positive number of characters that the start of the existing
      *        selection should be expanded by.
      * @param selectionEndAdjust A positive number of characters that the end of the existing
@@ -655,18 +657,18 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             final String searchTerm, final String displayText, final String alternateTerm,
-            boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
-            final String contextLanguage) {
+            final String mid, boolean doPreventPreload, int selectionStartAdjust,
+            int selectionEndAdjust, final String contextLanguage) {
         mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
-                searchTerm, displayText, alternateTerm, doPreventPreload, selectionStartAdjust,
+                searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                 selectionEndAdjust, contextLanguage);
     }
 
     @Override
     public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
-            String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
-            int selectionStartAdjust, int selectionEndAdjust, String contextLanguage) {
-
+            String searchTerm, String displayText, String alternateTerm, String mid,
+            boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
+            String contextLanguage) {
         // Show an appropriate message for what to search for.
         String message;
         boolean doLiteralSearch = false;
@@ -697,8 +699,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             // TODO(donnd): Instead of preloading, we should prefetch (ie the URL should not
             // appear in the user's history until the user views it).  See crbug.com/406446.
             boolean shouldPreload = !doPreventPreload && mPolicy.shouldPrefetchSearchResult();
-            mSearchRequest = createContextualSearchRequest(searchTerm, alternateTerm,
-                    shouldPreload);
+            mSearchRequest =
+                    createContextualSearchRequest(searchTerm, alternateTerm, mid, shouldPreload);
             // Trigger translation, if enabled.
             mTranslateController.forceTranslateIfNeeded(mSearchRequest, contextLanguage);
             mDidStartLoadingResolvedSearchRequest = false;
@@ -915,7 +917,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 // is in progress or we should do a verbatim search now.
                 if (mSearchRequest == null && mPolicy.shouldCreateVerbatimRequest()) {
                     mSearchRequest = createContextualSearchRequest(
-                            mSelectionController.getSelectedText(), null, false);
+                            mSelectionController.getSelectedText(), null, null, false);
                     mDidStartLoadingResolvedSearchRequest = false;
                 }
                 if (mSearchRequest != null && (!mDidStartLoadingResolvedSearchRequest

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.net.Uri;
+import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -42,6 +43,7 @@ class ContextualSearchRequest {
     @VisibleForTesting static final String TLITE_SOURCE_LANGUAGE_PARAM = "tlitesl";
     private static final String TLITE_TARGET_LANGUAGE_PARAM = "tlitetl";
     private static final String TLITE_QUERY_PARAM = "tlitetxt";
+    private static final String KP_TRIGGERING_MID_PARAM = "kgmid";
 
     /**
      * Creates a search request for the given search term without any alternate term and
@@ -49,7 +51,7 @@ class ContextualSearchRequest {
      * @param searchTerm The resolved search term.
      */
     ContextualSearchRequest(String searchTerm) {
-        this(searchTerm, null, false);
+        this(searchTerm, null, null, false);
     }
 
     /**
@@ -57,15 +59,17 @@ class ContextualSearchRequest {
      * low-priority loading capability.
      * @param searchTerm The resolved search term.
      * @param alternateTerm The alternate search term.
+     * @param mid The MID for an entity to use to trigger a Knowledge Panel, or an empty string.
+     *            A MID is a unique identifier for an entity in the Search Knowledge Graph.
      * @param isLowPriorityEnabled Whether the request can be made at a low priority.
      */
-    ContextualSearchRequest(String searchTerm, @Nullable String alternateTerm,
+    ContextualSearchRequest(String searchTerm, @Nullable String alternateTerm, @Nullable String mid,
             boolean isLowPriorityEnabled) {
         mWasPrefetch = isLowPriorityEnabled;
-        mNormalPriorityUri = getUriTemplate(searchTerm, alternateTerm, false);
+        mNormalPriorityUri = getUriTemplate(searchTerm, alternateTerm, mid, false);
         if (isLowPriorityEnabled) {
             // TODO(donnd): Call TemplateURL once we have an API for 3rd-party providers.
-            Uri baseLowPriorityUri = getUriTemplate(searchTerm, alternateTerm, true);
+            Uri baseLowPriorityUri = getUriTemplate(searchTerm, alternateTerm, mid, true);
             mLowPriorityUri = makeLowPriorityUri(baseLowPriorityUri);
             mIsLowPriority = true;
         } else {
@@ -186,15 +190,21 @@ class ContextualSearchRequest {
      * {@link String} for {@code query} with the contextual search version param set.
      * @param query The search term to use as the main query in the returned search url.
      * @param alternateTerm The alternate search term to use as an alternate suggestion.
+     * @param mid The MID for an entity to use to trigger a Knowledge Panel, or an empty string.
+     *            A MID is a unique identifier for an entity in the Search Knowledge Graph.
      * @param shouldPrefetch Whether the returned url should include a prefetch parameter.
      * @return A {@link Uri} that contains the url of the default search engine with
      *         {@code query} and {@code alternateTerm} inserted as parameters and contextual
      *         search and prefetch parameters conditionally set.
      */
-    protected Uri getUriTemplate(String query, @Nullable String alternateTerm,
+    protected Uri getUriTemplate(String query, @Nullable String alternateTerm, @Nullable String mid,
             boolean shouldPrefetch) {
-        return Uri.parse(TemplateUrlService.getInstance().getUrlForContextualSearchQuery(
+        Uri uri = Uri.parse(TemplateUrlService.getInstance().getUrlForContextualSearchQuery(
                 query, alternateTerm, shouldPrefetch, CTXS_TWO_REQUEST_PROTOCOL));
+        if (!TextUtils.isEmpty(mid)) {
+            uri = makeKPTriggeringUri(uri, mid);
+        }
+        return uri;
     }
 
     /**
@@ -228,5 +238,18 @@ class ContextualSearchRequest {
         }
         builder.appendQueryParameter(TLITE_QUERY_PARAM, baseUri.getQueryParameter(GWS_QUERY_PARAM));
         return builder.build();
+    }
+
+    /**
+     * Converts a URI to a URI that will trigger a Knowledge Panel for the given entity.
+     * @param baseUri The base URI to convert.
+     * @param mid The un-encoded MID (unique identifier) for an entity to use to trigger a Knowledge
+     *            Panel.
+     * @return The converted URI.
+     */
+    private Uri makeKPTriggeringUri(Uri baseUri, String mid) {
+        // Need to add a param like &kgmid=/m/0cqt90
+        // Note that the mid must not be escaped - appendQueryParameter will take care of that.
+        return baseUri.buildUpon().appendQueryParameter(KP_TRIGGERING_MID_PARAM, mid).build();
     }
 }

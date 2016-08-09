@@ -57,6 +57,7 @@ class ContextualSearchDelegateTest : public testing::Test {
     is_invalid_ = true;
     response_code_ = -1;
     search_term_ = "invalid";
+    mid_ = "";
     display_text_ = "unknown";
     context_language_ = "";
   }
@@ -170,6 +171,7 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string search_term() { return search_term_; }
   std::string display_text() { return display_text_; }
   std::string alternate_term() { return alternate_term_; }
+  std::string mid() { return mid_; }
   bool do_prevent_preload() { return prevent_preload_; }
   std::string after_text() { return after_text_; }
   int start_adjust() { return start_adjust_; }
@@ -187,6 +189,7 @@ class ContextualSearchDelegateTest : public testing::Test {
     search_term_ = resolved_search_term.search_term;
     display_text_ = resolved_search_term.display_text;
     alternate_term_ = resolved_search_term.alternate_term;
+    mid_ = resolved_search_term.mid;
     prevent_preload_ = resolved_search_term.prevent_preload;
     start_adjust_ = resolved_search_term.selection_start_adjust;
     end_adjust_ = resolved_search_term.selection_end_adjust;
@@ -209,6 +212,7 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string search_term_;
   std::string display_text_;
   std::string alternate_term_;
+  std::string mid_;
   bool prevent_preload_;
   int start_adjust_;
   int end_adjust_;
@@ -242,6 +246,7 @@ TEST_F(ContextualSearchDelegateTest, NormalFetchWithXssiEscape) {
   EXPECT_EQ(200, response_code());
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("Barack Obama", display_text());
+  EXPECT_EQ("/m/02mjmr", mid());
   EXPECT_FALSE(do_prevent_preload());
 }
 
@@ -259,6 +264,7 @@ TEST_F(ContextualSearchDelegateTest, NormalFetchWithoutXssiEscape) {
   EXPECT_EQ(200, response_code());
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("Barack Obama", display_text());
+  EXPECT_EQ("/m/02mjmr", mid());
   EXPECT_FALSE(do_prevent_preload());
 }
 
@@ -274,6 +280,7 @@ TEST_F(ContextualSearchDelegateTest, ResponseWithNoDisplayText) {
   EXPECT_EQ(200, response_code());
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("obama", display_text());
+  EXPECT_EQ("/m/02mjmr", mid());
   EXPECT_FALSE(do_prevent_preload());
 }
 
@@ -289,6 +296,7 @@ TEST_F(ContextualSearchDelegateTest, ResponseWithPreventPreload) {
   EXPECT_EQ(200, response_code());
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("obama", display_text());
+  EXPECT_EQ("/m/02mjmr", mid());
   EXPECT_TRUE(do_prevent_preload());
 }
 
@@ -302,6 +310,7 @@ TEST_F(ContextualSearchDelegateTest, NonJsonResponse) {
   EXPECT_EQ(200, response_code());
   EXPECT_EQ("", search_term());
   EXPECT_EQ("", display_text());
+  EXPECT_EQ("", mid());
   EXPECT_FALSE(do_prevent_preload());
 }
 
@@ -491,16 +500,18 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
   std::string search_term;
   std::string display_text;
   std::string alternate_term;
+  std::string mid;
   std::string prevent_preload;
   int mention_start;
   int mention_end;
   std::string context_language;
   delegate_->DecodeSearchTermFromJsonResponse(
       json_with_escape, &search_term, &display_text, &alternate_term,
-      &prevent_preload, &mention_start, &mention_end, &context_language);
+      &mid, &prevent_preload, &mention_start, &mention_end, &context_language);
   EXPECT_EQ("obama", search_term);
   EXPECT_EQ("Barack Obama", display_text);
   EXPECT_EQ("barack obama", alternate_term);
+  EXPECT_EQ("/m/02mjmr", mid);
   EXPECT_EQ("", prevent_preload);
   EXPECT_EQ("", context_language);
 }
@@ -518,6 +529,7 @@ TEST_F(ContextualSearchDelegateTest, ResponseWithLanguage) {
   EXPECT_EQ(200, response_code());
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("obama", display_text());
+  EXPECT_EQ("/m/02mjmr", mid());
   EXPECT_TRUE(do_prevent_preload());
   EXPECT_EQ("de", context_language());
 }

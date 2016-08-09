@@ -28,9 +28,9 @@ public class ContextualSearchRequestTest extends ChromeTabbedActivityTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mRequest = new ContextualSearchRequest("barack obama", "barack", true);
+                mRequest = new ContextualSearchRequest("barack obama", "barack", "", true);
                 mNormalPriorityOnlyRequest =
-                        new ContextualSearchRequest("woody allen", "allen", false);
+                        new ContextualSearchRequest("woody allen", "allen", "", false);
             }
         });
     }

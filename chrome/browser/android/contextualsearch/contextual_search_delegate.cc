@@ -41,6 +41,7 @@ const char kContextualSearchResponseDisplayTextParam[] = "display_text";
 const char kContextualSearchResponseSelectedTextParam[] = "selected_text";
 const char kContextualSearchResponseSearchTermParam[] = "search_term";
 const char kContextualSearchResponseLanguageParam[] = "lang";
+const char kContextualSearchResponseMidParam[] = "mid";
 const char kContextualSearchResponseResolvedTermParam[] = "resolved_term";
 const char kContextualSearchPreventPreload[] = "prevent_preload";
 const char kContextualSearchMentions[] = "mentions";
@@ -156,6 +157,7 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   std::string search_term;
   std::string display_text;
   std::string alternate_term;
+  std::string mid;
   std::string prevent_preload;
   int mention_start = 0;
   int mention_end = 0;
@@ -164,7 +166,7 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   std::string context_language;
 
   DecodeSearchTermFromJsonResponse(
-      json_string, &search_term, &display_text, &alternate_term,
+      json_string, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language);
   if (mention_start != 0 || mention_end != 0) {
     // Sanity check that our selection is non-zero and it is less than
@@ -184,7 +186,7 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   }
   bool is_invalid = response_code == net::URLFetcher::RESPONSE_CODE_INVALID;
   return std::unique_ptr<ResolvedSearchTerm>(new ResolvedSearchTerm(
-      is_invalid, response_code, search_term, display_text, alternate_term,
+      is_invalid, response_code, search_term, display_text, alternate_term, mid,
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
       context_language));
 }
@@ -430,6 +432,7 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     std::string* search_term,
     std::string* display_text,
     std::string* alternate_term,
+    std::string* mid,
     std::string* prevent_preload,
     int* mention_start,
     int* mention_end,
@@ -456,6 +459,7 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
                        display_text)) {
     *display_text = *search_term;
   }
+  dict->GetString(kContextualSearchResponseMidParam, mid);
 
   // Extract mentions for selection expansion.
   if (!field_trial_->IsDecodeMentionsDisabled()) {

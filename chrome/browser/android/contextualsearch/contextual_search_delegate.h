@@ -188,6 +188,7 @@ class ContextualSearchDelegate
                                         std::string* search_term,
                                         std::string* display_text,
                                         std::string* alternate_term,
+                                        std::string* mid,
                                         std::string* prevent_preload,
                                         int* mention_start,
                                         int* mention_end,
