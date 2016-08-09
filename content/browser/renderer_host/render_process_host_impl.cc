@@ -471,11 +471,10 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
       const shell::Identity& child_identity,
       std::unique_ptr<shell::InterfaceRegistry> registry)
       : child_identity_(child_identity),
-        registry_(std::move(registry)) {}
+        registry_(std::move(registry)),
+        weak_factory_(this) {}
   ~ConnectionFilterImpl() override {
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-    io_task_runner->DeleteSoon(FROM_HERE, weak_factory_.release());
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
   }
 
  private:
@@ -483,9 +482,6 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override {
-    if (!weak_factory_)
-      weak_factory_.reset(new base::WeakPtrFactory<ConnectionFilterImpl>(this));
-
     // We only fulfill connections from the renderer we host.
     if (child_identity_.name() != remote_identity.name() ||
         child_identity_.instance() != remote_identity.instance()) {
@@ -499,7 +495,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
       // destroyed in RPH::Cleanup().
       registry->AddInterface(interface_name,
                              base::Bind(&ConnectionFilterImpl::GetInterface,
-                                        weak_factory_->GetWeakPtr(),
+                                        weak_factory_.GetWeakPtr(),
                                         interface_name));
     }
     return true;
@@ -513,7 +509,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
 
   shell::Identity child_identity_;
   std::unique_ptr<shell::InterfaceRegistry> registry_;
-  std::unique_ptr<base::WeakPtrFactory<ConnectionFilterImpl>> weak_factory_;
+  base::WeakPtrFactory<ConnectionFilterImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
@@ -731,6 +727,8 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   DCHECK(is_self_deleted_)
       << "RenderProcessHostImpl is destroyed by something other than itself";
 #endif
+
+  DestroyConnectionFilter();
 
   // Make sure to clean up the in-process renderer before the channel, otherwise
   // it may still run and have its IPCs fail, causing asserts.
@@ -1990,18 +1988,13 @@ void RenderProcessHostImpl::Cleanup() {
         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
 
-    if (connection_filter_) {
-      MojoShellConnection* mojo_shell_connection =
-          BrowserContext::GetMojoShellConnectionFor(browser_context_);
-      // Throw the result away, so the connection filter is deleted.
-      mojo_shell_connection->RemoveConnectionFilter(connection_filter_);
-    }
-
 #ifndef NDEBUG
     is_self_deleted_ = true;
 #endif
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     deleting_soon_ = true;
+
+    DestroyConnectionFilter();
 
 #if USE_ATTACHMENT_BROKER
     IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
@@ -2821,6 +2814,17 @@ void RenderProcessHostImpl::RecomputeAndUpdateWebKitPreferences() {
       continue;
 
     rvh->OnWebkitPreferencesChanged();
+  }
+}
+
+void RenderProcessHostImpl::DestroyConnectionFilter() {
+  if (connection_filter_) {
+    MojoShellConnection* mojo_shell_connection =
+        BrowserContext::GetMojoShellConnectionFor(browser_context_);
+    std::unique_ptr<ConnectionFilter> filter =
+        mojo_shell_connection->RemoveConnectionFilter(connection_filter_);
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, filter.release());
+    connection_filter_ = nullptr;
   }
 }
 
