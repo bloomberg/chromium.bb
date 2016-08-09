@@ -38,7 +38,8 @@ class MusDemo : public shell::Service,
  private:
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
 
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;

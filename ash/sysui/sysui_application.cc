@@ -322,9 +322,10 @@ void SysUIApplication::OnStart(const ::shell::Identity& identity) {
   input_device_client_.Connect(std::move(server));
 }
 
-bool SysUIApplication::OnConnect(::shell::Connection* connection) {
-  connection->AddInterface<mash::shelf::mojom::ShelfController>(this);
-  connection->AddInterface<mojom::WallpaperController>(this);
+bool SysUIApplication::OnConnect(const ::shell::Identity& remote_identity,
+                                 ::shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mash::shelf::mojom::ShelfController>(this);
+  registry->AddInterface<mojom::WallpaperController>(this);
   return true;
 }
 

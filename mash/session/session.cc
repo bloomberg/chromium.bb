@@ -34,8 +34,9 @@ void Session::OnStart(const shell::Identity& identity) {
   StartQuickLaunch();
 }
 
-bool Session::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::Session>(this);
+bool Session::OnConnect(const shell::Identity& remote_identity,
+                        shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::Session>(this);
   return true;
 }
 

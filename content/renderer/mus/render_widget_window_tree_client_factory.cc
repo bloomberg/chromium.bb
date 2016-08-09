@@ -50,9 +50,10 @@ class RenderWidgetWindowTreeClientFactoryImpl
 
  private:
   // ConnectionFilter implementation:
-  bool OnConnect(shell::Connection* connection,
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override {
-    connection->AddInterface<mojom::RenderWidgetWindowTreeClientFactory>(this);
+    registry->AddInterface<mojom::RenderWidgetWindowTreeClientFactory>(this);
     return true;
   }
 

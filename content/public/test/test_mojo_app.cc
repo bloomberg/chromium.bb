@@ -21,9 +21,10 @@ TestMojoApp::TestMojoApp() : service_binding_(this) {
 TestMojoApp::~TestMojoApp() {
 }
 
-bool TestMojoApp::OnConnect(shell::Connection* connection) {
-  requestor_name_ = connection->GetRemoteIdentity().name();
-  connection->AddInterface<mojom::TestMojoService>(this);
+bool TestMojoApp::OnConnect(const shell::Identity& remote_identity,
+                            shell::InterfaceRegistry* registry) {
+  requestor_name_ = remote_identity.name();
+  registry->AddInterface<mojom::TestMojoService>(this);
   return true;
 }
 

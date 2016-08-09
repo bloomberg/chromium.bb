@@ -436,7 +436,7 @@ void EmbeddedWorkerInstance::Start(
   status_ = EmbeddedWorkerStatus::STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
   network_accessed_for_script_ = false;
-  interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+  interface_registry_.reset(new shell::InterfaceRegistry);
   remote_interfaces_.reset(new shell::InterfaceProvider);
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStarting());
 

@@ -34,7 +34,8 @@ class UserShellClient
  private:
   // |Service| override:
   void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
 
   // |InterfaceFactory<mojom::UserService>| implementation:
   void Create(const shell::Identity& remote_identity,
@@ -44,8 +45,6 @@ class UserShellClient
   void Create(const shell::Identity& remote_identity,
               leveldb::mojom::LevelDBServiceRequest request) override;
 
-  void OnLevelDBServiceRequest(shell::Connection* connection,
-                               leveldb::mojom::LevelDBServiceRequest request);
   void OnLevelDBServiceError();
 
   scoped_refptr<base::SingleThreadTaskRunner> user_service_runner_;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/array.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
@@ -33,9 +34,9 @@ bool InputDeviceServer::IsRegisteredAsObserver() const {
   return manager_ != nullptr;
 }
 
-void InputDeviceServer::AddInterface(shell::Connection* connection) {
+void InputDeviceServer::AddInterface(shell::InterfaceRegistry* registry) {
   DCHECK(IsRegisteredAsObserver());
-  connection->AddInterface<mojom::InputDeviceServer>(this);
+  registry->AddInterface<mojom::InputDeviceServer>(this);
 }
 
 void InputDeviceServer::AddObserver(

@@ -52,8 +52,9 @@ void FontServiceApp::OnStart(const shell::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 }
 
-bool FontServiceApp::OnConnect(shell::Connection* connection) {
-  connection->AddInterface(this);
+bool FontServiceApp::OnConnect(const shell::Identity& remote_identity,
+                               shell::InterfaceRegistry* registry) {
+  registry->AddInterface(this);
   return true;
 }
 

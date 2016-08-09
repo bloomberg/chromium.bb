@@ -5,7 +5,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/background/tests/test.mojom.h"
 #include "services/shell/public/c/main.h"
-#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
 
@@ -20,8 +20,9 @@ class TestClient : public Service,
 
  private:
   // Service:
-  bool OnConnect(Connection* connection) override {
-    connection->AddInterface(this);
+  bool OnConnect(const Identity& remote_identity,
+                 InterfaceRegistry* registry) override {
+    registry->AddInterface(this);
     return true;
   }
   bool OnStop() override {

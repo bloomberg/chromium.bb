@@ -16,7 +16,8 @@ class ConnectTestSingletonApp : public Service {
 
  private:
   // shell::Service:
-  bool OnConnect(Connection* connection) override {
+  bool OnConnect(const Identity& remote_identity,
+                 InterfaceRegistry* registry) override {
     return true;
   }
 

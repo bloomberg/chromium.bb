@@ -8,8 +8,9 @@
 #include "content/common/content_export.h"
 
 namespace shell {
-class Connection;
 class Connector;
+class Identity;
+class InterfaceRegistry;
 }
 
 namespace content {
@@ -23,7 +24,7 @@ class CONTENT_EXPORT ConnectionFilter {
   virtual ~ConnectionFilter() {}
 
   // Called for every new connection accepted. Implementations may add
-  // interfaces to |connection|, in which case they should return |true|.
+  // interfaces to |registry|, in which case they should return |true|.
   // |connector| is a corresponding outgoing Connector that may be used by any
   // interfaces added to the connection. Note that references to |connector|
   // must not be retained, but an owned copy may be obtained by calling
@@ -31,7 +32,8 @@ class CONTENT_EXPORT ConnectionFilter {
   //
   // If a ConnectionFilter is not interested in an incoming connection, it
   // should return |false|.
-  virtual bool OnConnect(shell::Connection* connection,
+  virtual bool OnConnect(const shell::Identity& remote_identity,
+                         shell::InterfaceRegistry* registry,
                          shell::Connector* connector) = 0;
 };
 

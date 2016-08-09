@@ -30,7 +30,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Destruction.
   {
-    InterfaceRegistry registry(nullptr);
+    InterfaceRegistry registry;
     InterfaceRegistry::TestApi test_api(&registry);
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
   }
@@ -38,7 +38,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Removal.
   {
-    std::unique_ptr<InterfaceRegistry> registry(new InterfaceRegistry(nullptr));
+    std::unique_ptr<InterfaceRegistry> registry(new InterfaceRegistry);
     InterfaceBinder* b = new TestBinder(&delete_count);
     InterfaceRegistry::TestApi test_api(registry.get());
     test_api.SetInterfaceBinderForName(b, "TC1");
@@ -49,7 +49,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Multiple.
   {
-    InterfaceRegistry registry(nullptr);
+    InterfaceRegistry registry;
     InterfaceRegistry::TestApi test_api(&registry);
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC2");
@@ -58,7 +58,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Re-addition.
   {
-    InterfaceRegistry registry(nullptr);
+    InterfaceRegistry registry;
     InterfaceRegistry::TestApi test_api(&registry);
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");

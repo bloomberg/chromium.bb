@@ -77,7 +77,8 @@ class ServiceManager : public Service {
   class Instance;
 
   // Service:
-  bool OnConnect(Connection* connection) override;
+  bool OnConnect(const Identity& remote_identity,
+                 InterfaceRegistry* registry) override;
 
   void InitCatalog(mojom::ServicePtr catalog);
 

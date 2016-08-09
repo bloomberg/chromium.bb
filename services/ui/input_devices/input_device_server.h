@@ -14,6 +14,10 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
+namespace shell {
+class InterfaceRegistry;
+}
+
 namespace ui {
 
 // Listens to DeviceDataManager for updates on input-devices and forwards those
@@ -31,11 +35,11 @@ class InputDeviceServer
   void RegisterAsObserver();
   bool IsRegisteredAsObserver() const;
 
-  // Adds interface with the shell connection so remote observers can connect.
-  // You should have already called RegisterAsObserver() to get local
+  // Adds interface with the connection registry so remote observers can
+  // connect. You should have already called RegisterAsObserver() to get local
   // input-device event updates and checked it was successful by calling
   // IsRegisteredAsObserver().
-  void AddInterface(shell::Connection* connection);
+  void AddInterface(shell::InterfaceRegistry* registry);
 
   // mojom::InputDeviceServer:
   void AddObserver(mojom::InputDeviceObserverMojoPtr observer) override;

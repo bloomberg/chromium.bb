@@ -20,28 +20,15 @@ namespace internal {
 // ConnectionImpl, public:
 
 ConnectionImpl::ConnectionImpl()
-    : allow_all_interfaces_(true),
-      weak_factory_(this) {}
+    : weak_factory_(this) {}
 
-ConnectionImpl::ConnectionImpl(
-    const Identity& remote,
-    const CapabilityRequest& capability_request,
-    State initial_state)
+ConnectionImpl::ConnectionImpl(const Identity& remote, State initial_state)
     : remote_(remote),
       state_(initial_state),
-      capability_request_(capability_request),
-      allow_all_interfaces_(capability_request.interfaces.size() == 1 &&
-                            capability_request.interfaces.count("*") == 1),
       weak_factory_(this) {
 }
 
 ConnectionImpl::~ConnectionImpl() {}
-
-void ConnectionImpl::SetExposedInterfaces(
-    std::unique_ptr<InterfaceRegistry> exposed_interfaces) {
-  exposed_interfaces_owner_ = std::move(exposed_interfaces);
-  set_exposed_interfaces(exposed_interfaces_owner_.get());
-}
 
 void ConnectionImpl::SetRemoteInterfaces(
     std::unique_ptr<InterfaceProvider> remote_interfaces) {
@@ -57,19 +44,12 @@ shell::mojom::Connector::ConnectCallback ConnectionImpl::GetConnectCallback() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConnectionImpl, Connection implementation:
 
-bool ConnectionImpl::HasCapabilityClass(const std::string& class_name) const {
-  return capability_request_.classes.count(class_name) > 0;
-}
-
 const Identity& ConnectionImpl::GetRemoteIdentity() const {
   return remote_;
 }
 
 void ConnectionImpl::SetConnectionLostClosure(const base::Closure& handler) {
-  if (remote_interfaces_)
-    remote_interfaces_->SetConnectionLostClosure(handler);
-  else
-    exposed_interfaces_->SetConnectionLostClosure(handler);
+  remote_interfaces_->SetConnectionLostClosure(handler);
 }
 
 shell::mojom::ConnectResult ConnectionImpl::GetResult() const {
@@ -86,15 +66,6 @@ void ConnectionImpl::AddConnectionCompletedClosure(
     connection_completed_callbacks_.push_back(callback);
   else
     callback.Run();
-}
-
-bool ConnectionImpl::AllowsInterface(const std::string& interface_name) const {
-  return allow_all_interfaces_ ||
-         capability_request_.interfaces.count(interface_name);
-}
-
-InterfaceRegistry* ConnectionImpl::GetInterfaceRegistry() {
-  return exposed_interfaces_;
 }
 
 InterfaceProvider* ConnectionImpl::GetRemoteInterfaces() {

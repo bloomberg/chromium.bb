@@ -23,8 +23,9 @@ void Init::OnStart(const shell::Identity& identity) {
   StartLogin();
 }
 
-bool Init::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::Init>(this);
+bool Init::OnConnect(const shell::Identity& remote_identity,
+                     shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::Init>(this);
   return true;
 }
 

@@ -56,7 +56,7 @@ static ScopedJavaLocalRef<jobject> CreateInterfaceRegistryAndProvider(
       reinterpret_cast<TestEnvironment*>(native_test_environment);
 
   std::unique_ptr<shell::InterfaceRegistry> registry(
-      new shell::InterfaceRegistry(nullptr));
+      new shell::InterfaceRegistry);
   std::unique_ptr<shell::InterfaceProvider> provider(
       new shell::InterfaceProvider);
 

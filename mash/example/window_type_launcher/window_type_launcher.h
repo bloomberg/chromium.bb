@@ -31,7 +31,8 @@ class WindowTypeLauncher
  private:
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
 
   // mash::mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override;

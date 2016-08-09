@@ -874,8 +874,9 @@ void Browser::OnStart(const shell::Identity& identity) {
       views::WindowManagerConnection::Create(connector(), identity);
 }
 
-bool Browser::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::Launchable>(this);
+bool Browser::OnConnect(const shell::Identity& remote_identity,
+                        shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::Launchable>(this);
   return true;
 }
 

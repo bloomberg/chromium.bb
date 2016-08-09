@@ -97,7 +97,8 @@ class Service
 
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
 
   // WindowServerDelegate:
   void OnFirstDisplayReady() override;

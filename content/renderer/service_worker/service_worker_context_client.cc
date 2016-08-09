@@ -180,9 +180,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
             IDMapOwnPointer>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
-      : interface_registry(nullptr),
-        weak_factory(owner),
-        proxy_weak_factory(owner->proxy_) {}
+      : weak_factory(owner), proxy_weak_factory(owner->proxy_) {}
 
   ~WorkerContextData() {
     DCHECK(thread_checker.CalledOnValidThread());

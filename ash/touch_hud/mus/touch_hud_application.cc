@@ -66,8 +66,9 @@ void TouchHudApplication::OnStart(const shell::Identity& identity) {
       views::WindowManagerConnection::Create(connector(), identity);
 }
 
-bool TouchHudApplication::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mash::mojom::Launchable>(this);
+bool TouchHudApplication::OnConnect(const shell::Identity& remote_identity,
+                                    shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mash::mojom::Launchable>(this);
   return true;
 }
 

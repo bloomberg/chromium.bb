@@ -585,8 +585,9 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
   }
 
   // WindowServerServiceTestBase:
-  bool OnConnect(shell::Connection* connection) override {
-    connection->AddInterface(client_factory_.get());
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    registry->AddInterface(client_factory_.get());
     return true;
   }
 

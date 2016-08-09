@@ -12,16 +12,18 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace tracing {
 
 Service::Service() : collector_binding_(this), tracing_active_(false) {}
 Service::~Service() {}
 
-bool Service::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::Factory>(this);
-  connection->AddInterface<mojom::Collector>(this);
-  connection->AddInterface<mojom::StartupPerformanceDataCollector>(this);
+bool Service::OnConnect(const shell::Identity& remote_identity,
+                        shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::Factory>(this);
+  registry->AddInterface<mojom::Collector>(this);
+  registry->AddInterface<mojom::StartupPerformanceDataCollector>(this);
   return true;
 }
 

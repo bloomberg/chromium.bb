@@ -496,8 +496,9 @@ void WindowTypeLauncher::OnStart(const shell::Identity& identity) {
       views::WindowManagerConnection::Create(connector(), identity);
 }
 
-bool WindowTypeLauncher::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mash::mojom::Launchable>(this);
+bool WindowTypeLauncher::OnConnect(const shell::Identity& remote_identity,
+                                   shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mash::mojom::Launchable>(this);
   return true;
 }
 

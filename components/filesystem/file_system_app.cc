@@ -43,8 +43,9 @@ void FileSystemApp::OnStart(const shell::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 }
 
-bool FileSystemApp::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::FileSystem>(this);
+bool FileSystemApp::OnConnect(const shell::Identity& remote_identity,
+                              shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::FileSystem>(this);
   return true;
 }
 

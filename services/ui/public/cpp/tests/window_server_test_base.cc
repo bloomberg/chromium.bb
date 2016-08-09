@@ -73,8 +73,9 @@ void WindowServerTestBase::SetUp() {
   std::swap(window_manager_, most_recent_client_);
 }
 
-bool WindowServerTestBase::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::WindowTreeClient>(this);
+bool WindowServerTestBase::OnConnect(const shell::Identity& remote_identity,
+                                     shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::WindowTreeClient>(this);
   return true;
 }
 

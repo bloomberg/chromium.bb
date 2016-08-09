@@ -245,8 +245,9 @@ class ServiceManager::Instance
   uint32_t id() const { return id_; }
 
   // Service:
-  bool OnConnect(Connection* connection) override {
-    connection->AddInterface<mojom::ServiceManager>(this);
+  bool OnConnect(const Identity& remote_identity,
+                 InterfaceRegistry* registry) override {
+    registry->AddInterface<mojom::ServiceManager>(this);
     return true;
   }
 
@@ -531,20 +532,21 @@ mojom::ServiceRequest ServiceManager::StartEmbedderService(
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceManager, Service implementation:
 
-bool ServiceManager::OnConnect(Connection* connection) {
+bool ServiceManager::OnConnect(const Identity& remote_identity,
+                               InterfaceRegistry* registry) {
   // The only interface we expose is mojom::ServiceManager, and access to this
   // interface is brokered by a policy specific to each caller, managed by the
   // caller's instance. Here we look to see who's calling, and forward to the
   // caller's instance to continue.
   Instance* instance = nullptr;
   for (const auto& entry : identity_to_instance_) {
-    if (entry.first == connection->GetRemoteIdentity()) {
+    if (entry.first == remote_identity) {
       instance = entry.second;
       break;
     }
   }
   DCHECK(instance);
-  return instance->OnConnect(connection);
+  return instance->OnConnect(remote_identity, registry);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

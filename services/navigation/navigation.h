@@ -29,7 +29,8 @@ class Navigation : public content::ConnectionFilter,
 
  private:
   // content::ConnectionFilter:
-  bool OnConnect(shell::Connection* connection,
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override;
 
   // shell::InterfaceFactory<mojom::ViewFactory>:

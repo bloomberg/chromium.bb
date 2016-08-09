@@ -4,6 +4,7 @@
 
 #include "services/shell/tests/lifecycle/app_client.h"
 
+#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/cpp/service_context.h"
 
 namespace shell {
@@ -14,8 +15,9 @@ AppClient::AppClient(shell::mojom::ServiceRequest request)
     : context_(new ServiceContext(this, std::move(request))) {}
 AppClient::~AppClient() {}
 
-bool AppClient::OnConnect(Connection* connection) {
-  connection->AddInterface<LifecycleControl>(this);
+bool AppClient::OnConnect(const Identity& remote_identity,
+                          InterfaceRegistry* registry) {
+  registry->AddInterface<LifecycleControl>(this);
   return true;
 }
 

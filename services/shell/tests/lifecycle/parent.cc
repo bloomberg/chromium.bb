@@ -10,6 +10,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/interface_factory.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
@@ -32,8 +34,9 @@ class Parent : public shell::Service,
 
  private:
   // Service:
-  bool OnConnect(shell::Connection* connection) override {
-    connection->AddInterface<shell::test::mojom::Parent>(this);
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    registry->AddInterface<shell::test::mojom::Parent>(this);
     return true;
   }
 

@@ -9,12 +9,13 @@
 #include <string>
 
 #include "base/macros.h"
-#include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/identity.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace shell {
 
 class Connector;
+class Identity;
+class InterfaceRegistry;
 class ServiceContext;
 
 // The primary contract between a Service and the Service Manager, receiving
@@ -35,7 +36,8 @@ class Service {
   // if the connection should succeed. Return false if the connection should
   // be rejected and the underlying pipe closed. The default implementation
   // returns false.
-  virtual bool OnConnect(Connection* connection);
+  virtual bool OnConnect(const Identity& remote_identity,
+                         InterfaceRegistry* registry);
 
   // Called when the Service Manager has stopped tracking this instance. The
   // service should use this as a signal to exit, and in fact its process may
@@ -47,10 +49,6 @@ class Service {
   // the message loop created by ApplicationRunner, which results in the service
   // quitting.
   virtual bool OnStop();
-
-  // TODO(rockot): remove
-  virtual InterfaceProvider* GetInterfaceProviderForConnection();
-  virtual InterfaceRegistry* GetInterfaceRegistryForConnection();
 
   Connector* connector();
   ServiceContext* context();

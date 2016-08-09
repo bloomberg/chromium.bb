@@ -67,18 +67,19 @@ class ProvidedService
         base::Bind(&ProvidedService::OnConnectionError,
                    base::Unretained(this)));
   }
-  bool OnConnect(Connection* connection) override {
-    connection->AddInterface<test::mojom::ConnectTestService>(this);
-    connection->AddInterface<test::mojom::BlockedInterface>(this);
-    connection->AddInterface<test::mojom::UserIdTest>(this);
+  bool OnConnect(const Identity& remote_identity,
+                 InterfaceRegistry* registry) override {
+    registry->AddInterface<test::mojom::ConnectTestService>(this);
+    registry->AddInterface<test::mojom::BlockedInterface>(this);
+    registry->AddInterface<test::mojom::UserIdTest>(this);
 
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
-    state->connection_remote_name = connection->GetRemoteIdentity().name();
-    state->connection_remote_userid = connection->GetRemoteIdentity().user_id();
+    state->connection_remote_name = remote_identity.name();
+    state->connection_remote_userid = remote_identity.user_id();
     state->initialize_local_name = identity_.name();
     state->initialize_userid = identity_.user_id();
 
-    connector()->ConnectToInterface(connection->GetRemoteIdentity(), &caller_);
+    connector()->ConnectToInterface(remote_identity, &caller_);
     caller_->ConnectionAccepted(std::move(state));
 
     return true;
@@ -174,9 +175,10 @@ class ConnectTestService
         base::Bind(&ConnectTestService::OnConnectionError,
                    base::Unretained(this)));
   }
-  bool OnConnect(Connection* connection) override {
-    connection->AddInterface<ServiceFactory>(this);
-    connection->AddInterface<test::mojom::ConnectTestService>(this);
+  bool OnConnect(const Identity& remote_identity,
+                 InterfaceRegistry* registry) override {
+    registry->AddInterface<ServiceFactory>(this);
+    registry->AddInterface<test::mojom::ConnectTestService>(this);
     return true;
   }
 

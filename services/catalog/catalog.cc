@@ -104,10 +104,11 @@ void Catalog::ScanSystemPackageDir() {
                                   weak_factory_.GetWeakPtr()));
 }
 
-bool Catalog::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::Catalog>(this);
-  connection->AddInterface<filesystem::mojom::Directory>(this);
-  connection->AddInterface<shell::mojom::Resolver>(this);
+bool Catalog::OnConnect(const shell::Identity& remote_identity,
+                        shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::Catalog>(this);
+  registry->AddInterface<filesystem::mojom::Directory>(this);
+  registry->AddInterface<shell::mojom::Resolver>(this);
   return true;
 }
 

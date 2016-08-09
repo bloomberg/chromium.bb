@@ -66,7 +66,8 @@ class WindowManagerApplication
 
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
 
   // shell::InterfaceFactory<mojom::ShelfLayout>:
   void Create(const shell::Identity& remote_identity,

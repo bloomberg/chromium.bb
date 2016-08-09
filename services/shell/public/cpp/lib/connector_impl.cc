@@ -48,14 +48,10 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(params);
 
-  // We allow all interfaces on outgoing connections since we are presumably in
-  // a position to know who we're talking to.
-  CapabilityRequest request;
-  request.interfaces.insert("*");
   mojom::InterfaceProviderPtr remote_interfaces;
   mojom::InterfaceProviderRequest remote_request = GetProxy(&remote_interfaces);
   std::unique_ptr<internal::ConnectionImpl> connection(
-      new internal::ConnectionImpl(params->target(), request,
+      new internal::ConnectionImpl(params->target(),
                                    Connection::State::PENDING));
   if (params->remote_interfaces()) {
     params->remote_interfaces()->Bind(std::move(remote_interfaces));

@@ -8,6 +8,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/interface_factory.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/runner/child/test_native_main.h"
 #include "services/shell/runner/init.h"
@@ -30,8 +32,9 @@ class Target : public shell::Service,
   void OnStart(const shell::Identity& identity) override {
     identity_ = identity;
   }
-  bool OnConnect(shell::Connection* connection) override {
-    connection->AddInterface<ConnectTestService>(this);
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    registry->AddInterface<ConnectTestService>(this);
     return true;
   }
 

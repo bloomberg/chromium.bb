@@ -158,8 +158,9 @@ class Login : public shell::Service,
     connector()->ConnectToInterface("mojo:ui", &user_access_manager_);
     user_access_manager_->SetActiveUser(identity.user_id());
   }
-  bool OnConnect(shell::Connection* connection) override {
-    connection->AddInterface<mojom::Login>(this);
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    registry->AddInterface<mojom::Login>(this);
     return true;
   }
 

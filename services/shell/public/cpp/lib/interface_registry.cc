@@ -8,8 +8,19 @@
 
 namespace shell {
 
-InterfaceRegistry::InterfaceRegistry(Connection* connection)
-    : binding_(this), connection_(connection), weak_factory_(this) {}
+InterfaceRegistry::InterfaceRegistry()
+    : binding_(this), allow_all_interfaces_(true), weak_factory_(this) {}
+
+InterfaceRegistry::InterfaceRegistry(
+    const Identity& remote_identity,
+    const CapabilityRequest& capability_request)
+    : binding_(this),
+      remote_identity_(remote_identity),
+      capability_request_(capability_request),
+      allow_all_interfaces_(capability_request.interfaces.size() == 1 &&
+                            capability_request.interfaces.count("*") == 1),
+      weak_factory_(this) {}
+
 InterfaceRegistry::~InterfaceRegistry() {}
 
 void InterfaceRegistry::Bind(
@@ -76,14 +87,12 @@ void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
 
   auto iter = name_to_binder_.find(interface_name);
   if (iter != name_to_binder_.end()) {
-    Identity remote_identity =
-        connection_ ? connection_->GetRemoteIdentity() : Identity();
-    iter->second->BindInterface(remote_identity,
+    iter->second->BindInterface(remote_identity_,
                                 interface_name,
                                 std::move(handle));
-  } else if (connection_ && !connection_->AllowsInterface(interface_name)) {
+  } else if (!CanBindRequestForInterface(interface_name)) {
     LOG(ERROR) << "Capability spec prevented service: "
-               << connection_->GetRemoteIdentity().name()
+               << remote_identity_.name()
                << " from binding interface: " << interface_name;
   } else if (!default_binder_.is_null()) {
     default_binder_.Run(interface_name, std::move(handle));
@@ -95,13 +104,18 @@ void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
 bool InterfaceRegistry::SetInterfaceBinderForName(
     std::unique_ptr<InterfaceBinder> binder,
     const std::string& interface_name) {
-  if (!connection_ ||
-      (connection_ && connection_->AllowsInterface(interface_name))) {
+  if (CanBindRequestForInterface(interface_name)) {
     RemoveInterface(interface_name);
     name_to_binder_[interface_name] = std::move(binder);
     return true;
   }
   return false;
+}
+
+bool InterfaceRegistry::CanBindRequestForInterface(
+    const std::string& interface_name) const {
+  return allow_all_interfaces_ ||
+      capability_request_.interfaces.count(interface_name);
 }
 
 }  // namespace shell

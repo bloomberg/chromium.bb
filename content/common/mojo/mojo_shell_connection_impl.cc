@@ -114,16 +114,6 @@ class MojoShellConnectionImpl::IOThreadContext
         base::ThreadTaskRunnerHandle::Get(), binder);
   }
 
-  // Safe to call any time after Start() is called.
-  void GetRemoteInterface(const mojo::String& interface_name,
-                          mojo::ScopedMessagePipeHandle request_handle) {
-    DCHECK(started_);
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&IOThreadContext::GetRemoteInterfaceOnIOThread, this,
-                   interface_name, base::Passed(&request_handle)));
-  }
-
  private:
   friend class base::RefCountedThreadSafe<IOThreadContext>;
 
@@ -144,22 +134,9 @@ class MojoShellConnectionImpl::IOThreadContext
     factory_bindings_.CloseAllBindings();
   }
 
-  void GetRemoteInterfaceOnIOThread(
-      const mojo::String& interface_name,
-      mojo::ScopedMessagePipeHandle request_handle) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    if (browser_connection_) {
-      browser_connection_->GetRemoteInterfaces()->GetInterface(
-          interface_name, std::move(request_handle));
-    } else {
-      pending_remote_interface_requests_.emplace(interface_name,
-                                                 std::move(request_handle));
-    }
-  }
-
   void OnBrowserConnectionLost() {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    browser_connection_ = nullptr;
+    has_browser_connection_ = false;
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -173,38 +150,29 @@ class MojoShellConnectionImpl::IOThreadContext
     callback_task_runner_->PostTask(FROM_HERE, base::Bind(handler, identity));
   }
 
-  bool OnConnect(shell::Connection* connection) override {
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    std::string remote_app = connection->GetRemoteIdentity().name();
+    std::string remote_app = remote_identity.name();
     if (remote_app == "mojo:shell") {
       // Only expose the SCF interface to the shell.
-      connection->AddInterface<shell::mojom::ServiceFactory>(this);
+      registry->AddInterface<shell::mojom::ServiceFactory>(this);
       return true;
     }
 
     bool accept = false;
     for (auto& filter : connection_filters_) {
       accept = accept ||
-        filter->OnConnect(connection, service_context_->connector());
+        filter->OnConnect(remote_identity, registry,
+                          service_context_->connector());
     }
 
-    // Capture the browser connection if possible.
-    if (remote_app == "exe:content_browser" && !browser_connection_) {
-      browser_connection_ = connection;
-      connection->GetInterfaceRegistry()->set_default_binder(
-          default_browser_binder_);
-      connection->SetConnectionLostClosure(
+    if (remote_identity.name() == "exe:content_browser" &&
+        !has_browser_connection_) {
+      has_browser_connection_ = true;
+      registry->set_default_binder(default_browser_binder_);
+      registry->SetConnectionLostClosure(
           base::Bind(&IOThreadContext::OnBrowserConnectionLost, this));
-      shell::InterfaceProvider* remote_interfaces =
-          connection->GetRemoteInterfaces();
-
-      // Flush any pending outgoing interface requests.
-      while (!pending_remote_interface_requests_.empty()) {
-        auto& request = pending_remote_interface_requests_.front();
-        remote_interfaces->GetInterface(
-            request.first, std::move(request.second));
-        pending_remote_interface_requests_.pop();
-      }
       return true;
     }
 
@@ -269,25 +237,9 @@ class MojoShellConnectionImpl::IOThreadContext
   // Callback to run if the service is stopped by the service manager.
   base::Closure stop_callback_;
 
-  // The incoming Connection from the browser process. This is captured the
-  // first time the browser connects to this Service and persists until shutdown
-  // or a connection error is detected. This connection is used to fulfill
-  // remote interface requests from legacy code which does not use
-  // shell::Connector.
-  //
-  // TODO(rockot): Remove this once all child-to-browser interface connections
-  // are made via a Connector rather than directly through an InterfaceProvider
-  // and all interfaces exposed to the browser are exposed via a
-  // ConnectionFilter.
-  shell::Connection* browser_connection_ = nullptr;
-
-  // A queue of remote interface requests destined for the browser, which will
-  // remain pending until an incoming connection is accepted from the browser.
-  //
-  // TODO(rockot): Remove this once all child-to-browser interface connections
-  // are made via a Connector rather than directly through an InterfaceProvider.
-  std::queue<std::pair<mojo::String, mojo::ScopedMessagePipeHandle>>
-      pending_remote_interface_requests_;
+  // Called once a connection has been received from the browser process & the
+  // default binder (below) has been set up.
+  bool has_browser_connection_ = false;
 
   // Default binder callback used for the browser connection's
   // InterfaceRegistry.
@@ -405,14 +357,7 @@ void MojoShellConnectionImpl::SetupInterfaceRequestProxies(
       base::Bind(&MojoShellConnectionImpl::GetInterface,
                  weak_factory_.GetWeakPtr(), registry));
 
-  if (!provider)
-    return;
-
-  // Forward all remote interface requests on |provider| to our IO-thread
-  // context. This will ensure they're forwarded to the provider on the
-  // incoming browser connection.
-  provider->Forward(base::Bind(&IOThreadContext::GetRemoteInterface,
-                                context_));
+  // TODO(beng): remove provider parameter.
 }
 
 void MojoShellConnectionImpl::AddConnectionFilter(

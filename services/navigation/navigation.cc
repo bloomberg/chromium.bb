@@ -35,9 +35,10 @@ Navigation::Navigation()
 }
 Navigation::~Navigation() {}
 
-bool Navigation::OnConnect(shell::Connection* connection,
+bool Navigation::OnConnect(const shell::Identity& remote_identity,
+                           shell::InterfaceRegistry* registry,
                            shell::Connector* connector) {
-  std::string remote_user_id = connection->GetRemoteIdentity().user_id();
+  std::string remote_user_id = remote_identity.user_id();
   if (!client_user_id_.empty() && client_user_id_ != remote_user_id) {
     LOG(ERROR) << "Must have a separate Navigation service instance for "
                << "different BrowserContexts.";
@@ -45,7 +46,7 @@ bool Navigation::OnConnect(shell::Connection* connection,
   }
   client_user_id_ = remote_user_id;
 
-  connection->AddInterface<mojom::ViewFactory>(this);
+  registry->AddInterface<mojom::ViewFactory>(this);
   return true;
 }
 

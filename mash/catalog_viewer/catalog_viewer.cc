@@ -175,8 +175,9 @@ void CatalogViewer::OnStart(const shell::Identity& identity) {
       views::WindowManagerConnection::Create(connector(), identity);
 }
 
-bool CatalogViewer::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::Launchable>(this);
+bool CatalogViewer::OnConnect(const shell::Identity& remote_identity,
+                              shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::Launchable>(this);
   return true;
 }
 

@@ -190,7 +190,7 @@ MojoShellConnection* MockRenderThread::GetMojoShellConnection() {
 
 shell::InterfaceRegistry* MockRenderThread::GetInterfaceRegistry() {
   if (!interface_registry_)
-    interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+    interface_registry_.reset(new shell::InterfaceRegistry);
   return interface_registry_.get();
 }
 

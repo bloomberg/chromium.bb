@@ -34,7 +34,7 @@ class MojoWebUIIOSController : public web::WebUIIOSController,
 
  private:
   // shell::InterfaceFactory overrides:
-  void Create(shell::Connection*,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<Interface> request) override {
     BindUIHandler(std::move(request));
   }

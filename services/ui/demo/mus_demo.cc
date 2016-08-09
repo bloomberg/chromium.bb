@@ -70,7 +70,8 @@ void MusDemo::OnStart(const shell::Identity& identity) {
   window_tree_client_->ConnectAsWindowManager(connector());
 }
 
-bool MusDemo::OnConnect(shell::Connection* connection) {
+bool MusDemo::OnConnect(const shell::Identity& remote_identity,
+                        shell::InterfaceRegistry* registry) {
   return true;
 }
 

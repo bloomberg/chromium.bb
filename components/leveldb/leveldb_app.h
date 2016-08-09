@@ -24,7 +24,8 @@ class LevelDBApp : public shell::Service,
  private:
   // |Service| override:
   void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
 
   // |InterfaceFactory<mojom::LevelDBService>| implementation:
   void Create(const shell::Identity& remote_identity,

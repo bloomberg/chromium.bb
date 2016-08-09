@@ -36,7 +36,8 @@ class Service
 
  private:
   // shell::Service implementation.
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
   bool OnStop() override;
 
   // shell::InterfaceFactory<mojom::Factory>:

@@ -642,7 +642,7 @@ MojoShellConnection* ChildThreadImpl::GetMojoShellConnection() {
 
 shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
   if (!interface_registry_.get())
-    interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+    interface_registry_.reset(new shell::InterfaceRegistry);
   return interface_registry_.get();
 }
 

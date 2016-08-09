@@ -1076,7 +1076,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
   // We don't have a shell::Connection at this point, so use nullptr.
   // TODO(beng): We should fix this, so we can apply policy about which
   //             interfaces get exposed.
-  interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+  interface_registry_.reset(new shell::InterfaceRegistry);
   shell::mojom::InterfaceProviderPtr remote_interfaces;
   pending_remote_interface_provider_request_ = GetProxy(&remote_interfaces);
   remote_interfaces_.reset(new shell::InterfaceProvider);

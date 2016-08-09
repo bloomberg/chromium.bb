@@ -22,6 +22,7 @@
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/app_list/presenter/app_list_presenter.mojom.h"
 #include "ui/keyboard/keyboard.mojom.h"
 
@@ -80,9 +81,9 @@ class FactoryImpl {
 
   template <typename Interface>
   static void AddFactory(
-      shell::Connection* connection,
+      shell::InterfaceRegistry* registry,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    connection->AddInterface<Interface>(
+    registry->AddInterface<Interface>(
         base::Bind(&FactoryImpl::CallMainThreadFactory<Interface>),
         task_runner);
   }
@@ -148,16 +149,17 @@ ChromeInterfaceFactory::ChromeInterfaceFactory()
 
 ChromeInterfaceFactory::~ChromeInterfaceFactory() {}
 
-bool ChromeInterfaceFactory::OnConnect(shell::Connection* connection,
+bool ChromeInterfaceFactory::OnConnect(const shell::Identity& remote_identity,
+                                       shell::InterfaceRegistry* registry,
                                        shell::Connector* connector) {
-  FactoryImpl::AddFactory<keyboard::mojom::Keyboard>(
-      connection, main_thread_task_runner_);
-  FactoryImpl::AddFactory<mash::mojom::Launchable>(
-      connection, main_thread_task_runner_);
+  FactoryImpl::AddFactory<keyboard::mojom::Keyboard>(registry,
+                                                     main_thread_task_runner_);
+  FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,
+                                                   main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::sysui::mojom::WallpaperManager>(
-      connection, main_thread_task_runner_);
+      registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<app_list::mojom::AppListPresenter>(
-      connection, main_thread_task_runner_);
+      registry, main_thread_task_runner_);
   return true;
 }
 

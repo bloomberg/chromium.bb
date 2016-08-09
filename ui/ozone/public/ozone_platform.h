@@ -16,7 +16,7 @@ class Rect;
 
 namespace shell {
 class Connector;
-class Connection;
+class InterfaceRegistry;
 }
 
 namespace ui {
@@ -104,12 +104,13 @@ class OZONE_EXPORT OzonePlatform {
 
   // Ozone platform implementations may also choose to expose mojo interfaces to
   // internal functionality. Embedders wishing to take advantage of ozone mojo
-  // implementations must invoke AddInterfaces with a valid shell::Connection*
-  // pointer to export all Mojo interfaces defined within Ozone.
+  // implementations must invoke AddInterfaces with a valid
+  // shell::InterfaceRegistry* pointer to export all Mojo interfaces defined
+  // within Ozone.
   //
   // A default do-nothing implementation is provided to permit platform
   // implementations to opt out of implementing any Mojo interfaces.
-  virtual void AddInterfaces(shell::Connection* connection);
+  virtual void AddInterfaces(shell::InterfaceRegistry* registry);
 
  private:
   virtual void InitializeUI() = 0;

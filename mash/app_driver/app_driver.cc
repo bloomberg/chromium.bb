@@ -91,7 +91,8 @@ void AppDriver::OnStart(const shell::Identity& identity) {
   AddAccelerators();
 }
 
-bool AppDriver::OnConnect(shell::Connection* connection) {
+bool AppDriver::OnConnect(const shell::Identity& remote_identity,
+                          shell::InterfaceRegistry* registry) {
   return true;
 }
 

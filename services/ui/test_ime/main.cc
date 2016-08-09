@@ -20,8 +20,9 @@ class TestIME : public shell::Service,
  private:
   // shell::Service:
   void OnStart(const shell::Identity& identity) override {}
-  bool OnConnect(shell::Connection* connection) override {
-    connection->AddInterface<mojom::IMEDriver>(this);
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    registry->AddInterface<mojom::IMEDriver>(this);
     return true;
   }
 

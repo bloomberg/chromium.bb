@@ -102,8 +102,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
                                     NewMessagePortMessageFilter());
 
   // Setup process level interface registry.
-  render_process_interface_registry_.reset(
-      new shell::InterfaceRegistry(nullptr));
+  render_process_interface_registry_.reset(new shell::InterfaceRegistry);
   render_process_interface_registry_->AddInterface(
       base::Bind(&MockEmbeddedWorkerSetup::Create, weak_factory_.GetWeakPtr()));
   shell::mojom::InterfaceProviderPtr interfaces;
@@ -420,7 +419,7 @@ void EmbeddedWorkerTestHelper::OnSetupMojoStub(
     shell::mojom::InterfaceProviderRequest request,
     shell::mojom::InterfaceProviderPtr remote_interfaces) {
   std::unique_ptr<shell::InterfaceRegistry> local(
-      new shell::InterfaceRegistry(nullptr));
+      new shell::InterfaceRegistry);
   local->Bind(std::move(request));
 
   std::unique_ptr<shell::InterfaceProvider> remote(

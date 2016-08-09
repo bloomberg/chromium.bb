@@ -28,8 +28,9 @@ class WindowServerServiceTestClient : public shell::test::ServiceTestClient {
 
  private:
   // shell::test::ServiceTestClient:
-  bool OnConnect(shell::Connection* connection) override {
-    return test_->OnConnect(connection);
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    return test_->OnConnect(remote_identity, registry);
   }
 
   WindowServerServiceTestBase* test_;

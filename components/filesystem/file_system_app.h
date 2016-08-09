@@ -32,7 +32,8 @@ class FileSystemApp : public shell::Service,
 
   // |shell::Service| override:
   void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
 
   // |InterfaceFactory<Files>| implementation:
   void Create(const shell::Identity& remote_identity,

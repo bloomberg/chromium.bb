@@ -33,7 +33,8 @@ class Session : public shell::Service,
  private:
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
 
   // mojom::Session:
   void Logout() override;

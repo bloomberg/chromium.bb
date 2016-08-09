@@ -38,8 +38,9 @@ class PackagedApp : public shell::Service,
 
  private:
   // shell::Service:
-  bool OnConnect(shell::Connection* connection) override {
-    connection->AddInterface<LifecycleControl>(this);
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    registry->AddInterface<LifecycleControl>(this);
     return true;
   }
 
@@ -99,9 +100,10 @@ class Package
 
  private:
   // shell::test::AppClient:
-  bool OnConnect(shell::Connection* connection) override {
-    connection->AddInterface<shell::mojom::ServiceFactory>(this);
-    return app_client_.OnConnect(connection);
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    registry->AddInterface<shell::mojom::ServiceFactory>(this);
+    return app_client_.OnConnect(remote_identity, registry);
   }
 
   // shell::InterfaceFactory<shell::mojom::ServiceFactory>:

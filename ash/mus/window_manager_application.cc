@@ -111,12 +111,13 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
   InitWindowManager(window_tree_client);
 }
 
-bool WindowManagerApplication::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::ShelfLayout>(this);
-  connection->AddInterface<mojom::UserWindowController>(this);
-  connection->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
-  if (connection->GetRemoteIdentity().name() == "mojo:mash_session") {
-    connector()->ConnectToInterface(connection->GetRemoteIdentity(), &session_);
+bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,
+                                         shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::ShelfLayout>(this);
+  registry->AddInterface<mojom::UserWindowController>(this);
+  registry->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
+  if (remote_identity.name() == "mojo:mash_session") {
+    connector()->ConnectToInterface(remote_identity, &session_);
     session_->AddScreenlockStateListener(
         screenlock_state_listener_binding_.CreateInterfacePtrAndBind());
   }

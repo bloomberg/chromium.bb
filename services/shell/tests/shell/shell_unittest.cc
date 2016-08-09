@@ -39,8 +39,9 @@ class ShellTestClient
 
  private:
   // test::ServiceTestClient:
-  bool OnConnect(Connection* connection) override {
-    connection->AddInterface<test::mojom::CreateInstanceTest>(this);
+  bool OnConnect(const Identity& remote_identity,
+                 InterfaceRegistry* registry) override {
+    registry->AddInterface<test::mojom::CreateInstanceTest>(this);
     return true;
   }
 

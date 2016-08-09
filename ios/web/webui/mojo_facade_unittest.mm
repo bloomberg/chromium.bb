@@ -61,7 +61,7 @@ class TestUIHandlerFactory : public shell::InterfaceFactory<TestUIHandlerMojo> {
 class MojoFacadeTest : public WebTest {
  protected:
   MojoFacadeTest() {
-    interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+    interface_registry_.reset(new shell::InterfaceRegistry);
     interface_registry_->AddInterface(&ui_handler_factory_);
     evaluator_.reset([[OCMockObject
         mockForProtocol:@protocol(CRWJSInjectionEvaluator)] retain]);

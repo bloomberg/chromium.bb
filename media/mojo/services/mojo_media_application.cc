@@ -30,8 +30,9 @@ void MojoMediaApplication::OnStart(const shell::Identity& identity) {
   mojo_media_client_->Initialize();
 }
 
-bool MojoMediaApplication::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::MediaService>(this);
+bool MojoMediaApplication::OnConnect(const shell::Identity& remote_identity,
+                                     shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::MediaService>(this);
   return true;
 }
 

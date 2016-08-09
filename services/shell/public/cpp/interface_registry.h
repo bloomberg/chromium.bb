@@ -13,6 +13,8 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/shell/public/cpp/capabilities.h"
+#include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/lib/callback_binder.h"
 #include "services/shell/public/cpp/lib/interface_factory_binder.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
@@ -64,12 +66,13 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  // Construct with a Connection (which may be null), and create an
-  // InterfaceProvider pipe, the client end of which may be obtained by calling
-  // TakeClientHandle(). If |connection| is non-null, the Mojo Shell's
-  // rules filtering which interfaces are allowed to be exposed to clients are
-  // imposed on this registry. If null, they are not.
-  explicit InterfaceRegistry(Connection* connection);
+  // Construct an InterfaceRegistry with no filtering rules applied.
+  InterfaceRegistry();
+
+  // Construct an InterfaceRegistry with filtering rules as specified in
+  // |capability_request| applied.
+  InterfaceRegistry(const Identity& remote_identity,
+                    const CapabilityRequest& capability_request);
   ~InterfaceRegistry() override;
 
   // Sets a default handler for incoming interface requests which are allowed by
@@ -143,13 +146,18 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   bool SetInterfaceBinderForName(std::unique_ptr<InterfaceBinder> binder,
                                  const std::string& name);
 
+  // Returns true if |remote_identity_| is allowed to bind |interface_name|,
+  // according to capability policy.
+  bool CanBindRequestForInterface(const std::string& interface_name) const;
+
   mojom::InterfaceProviderRequest pending_request_;
 
   mojo::Binding<mojom::InterfaceProvider> binding_;
-  Connection* connection_;
+  const Identity remote_identity_;
+  const CapabilityRequest capability_request_;
+  const bool allow_all_interfaces_;
 
   NameToInterfaceBinderMap name_to_binder_;
-
   Binder default_binder_;
 
   bool is_paused_ = false;

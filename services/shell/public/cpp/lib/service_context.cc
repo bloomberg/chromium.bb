@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/shell/public/cpp/capabilities.h"
-#include "services/shell/public/cpp/lib/connection_impl.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/cpp/lib/connector_impl.h"
 #include "services/shell/public/cpp/service.h"
 
@@ -66,22 +66,18 @@ void ServiceContext::OnConnect(
     mojom::IdentityPtr source,
     mojom::InterfaceProviderRequest interfaces,
     mojom::CapabilityRequestPtr allowed_capabilities) {
-  std::unique_ptr<internal::ConnectionImpl> connection(
-      new internal::ConnectionImpl(source.To<Identity>(),
-                                   allowed_capabilities.To<CapabilityRequest>(),
-                                   Connection::State::CONNECTED));
+  shell::Identity remote_identity = source.To<Identity>();
+  std::unique_ptr<InterfaceRegistry> registry(
+      new InterfaceRegistry(remote_identity,
+                            allowed_capabilities.To<CapabilityRequest>()));
+  registry->Bind(std::move(interfaces));
 
-  std::unique_ptr<InterfaceRegistry> exposed_interfaces(
-      new InterfaceRegistry(connection.get()));
-  exposed_interfaces->Bind(std::move(interfaces));
-  connection->SetExposedInterfaces(std::move(exposed_interfaces));
-
-  if (!service_->OnConnect(connection.get()))
+  if (!service_->OnConnect(remote_identity, registry.get()))
     return;
 
   // TODO(beng): it appears we never prune this list. We should, when the
-  //             connection's remote service provider pipe breaks.
-  incoming_connections_.push_back(std::move(connection));
+  //             registry's remote interface provider pipe breaks.
+  incoming_connections_.push_back(std::move(registry));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

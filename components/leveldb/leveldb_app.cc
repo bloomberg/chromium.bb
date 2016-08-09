@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "components/leveldb/leveldb_service_impl.h"
-#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace leveldb {
 
@@ -18,8 +18,9 @@ void LevelDBApp::OnStart(const shell::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 }
 
-bool LevelDBApp::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::LevelDBService>(this);
+bool LevelDBApp::OnConnect(const shell::Identity& remote_identity,
+                           shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::LevelDBService>(this);
   return true;
 }
 

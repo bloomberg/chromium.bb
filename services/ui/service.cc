@@ -194,26 +194,27 @@ void Service::OnStart(const shell::Identity& identity) {
         new ws::TouchController(window_server_->display_manager()));
 }
 
-bool Service::OnConnect(Connection* connection) {
-  connection->AddInterface<mojom::AccessibilityManager>(this);
-  connection->AddInterface<mojom::Clipboard>(this);
-  connection->AddInterface<mojom::DisplayManager>(this);
-  connection->AddInterface<mojom::GpuService>(this);
-  connection->AddInterface<mojom::UserAccessManager>(this);
-  connection->AddInterface<mojom::UserActivityMonitor>(this);
-  connection->AddInterface<WindowTreeHostFactory>(this);
-  connection->AddInterface<mojom::WindowManagerWindowTreeFactory>(this);
-  connection->AddInterface<mojom::WindowTreeFactory>(this);
+bool Service::OnConnect(const shell::Identity& remote_identity,
+                        shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::AccessibilityManager>(this);
+  registry->AddInterface<mojom::Clipboard>(this);
+  registry->AddInterface<mojom::DisplayManager>(this);
+  registry->AddInterface<mojom::GpuService>(this);
+  registry->AddInterface<mojom::UserAccessManager>(this);
+  registry->AddInterface<mojom::UserActivityMonitor>(this);
+  registry->AddInterface<WindowTreeHostFactory>(this);
+  registry->AddInterface<mojom::WindowManagerWindowTreeFactory>(this);
+  registry->AddInterface<mojom::WindowTreeFactory>(this);
   if (test_config_)
-    connection->AddInterface<WindowServerTest>(this);
+    registry->AddInterface<WindowServerTest>(this);
 
   // On non-Linux platforms there will be no DeviceDataManager instance and no
   // purpose in adding the Mojo interface to connect to.
   if (input_device_server_.IsRegisteredAsObserver())
-    input_device_server_.AddInterface(connection);
+    input_device_server_.AddInterface(registry);
 
 #if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()->AddInterfaces(connection);
+  ui::OzonePlatform::GetInstance()->AddInterfaces(registry);
 #endif
 
   return true;

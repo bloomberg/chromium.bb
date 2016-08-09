@@ -8,6 +8,7 @@
 #include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/tests/shutdown/shutdown_unittest.mojom.h"
@@ -25,8 +26,9 @@ class ShutdownClientApp
 
  private:
   // shell::Service:
-  bool OnConnect(Connection* connection) override {
-    connection->AddInterface<mojom::ShutdownTestClientController>(this);
+  bool OnConnect(const Identity& remote_identity,
+                 InterfaceRegistry* registry) override {
+    registry->AddInterface<mojom::ShutdownTestClientController>(this);
     return true;
   }
 

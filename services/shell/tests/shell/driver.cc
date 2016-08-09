@@ -101,8 +101,9 @@ class Driver : public shell::Service,
                                     child_token);
   }
 
-  bool OnConnect(shell::Connection* connection) override {
-    connection->AddInterface<shell::test::mojom::Driver>(this);
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    registry->AddInterface<shell::test::mojom::Driver>(this);
     return true;
   }
 

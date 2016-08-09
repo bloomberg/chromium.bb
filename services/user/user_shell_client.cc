@@ -95,9 +95,10 @@ void UserShellClient::OnStart(const shell::Identity& identity) {
       new UserShellClient::LevelDBServiceObjects(leveldb_service_runner_));
 }
 
-bool UserShellClient::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<leveldb::mojom::LevelDBService>(this);
-  connection->AddInterface<mojom::UserService>(this);
+bool UserShellClient::OnConnect(const shell::Identity& remote_identity,
+                                shell::InterfaceRegistry* registry) {
+  registry->AddInterface<leveldb::mojom::LevelDBService>(this);
+  registry->AddInterface<mojom::UserService>(this);
   return true;
 }
 

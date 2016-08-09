@@ -27,25 +27,14 @@ namespace internal {
 class ConnectionImpl : public Connection {
  public:
   ConnectionImpl();
-  // |allowed_interfaces| are the set of interfaces that the shell has allowed
-  // an application to expose to another application. If this set contains only
-  // the string value "*" all interfaces may be exposed.
-  ConnectionImpl(const Identity& remote,
-                 const CapabilityRequest& capability_request,
-                 State initial_state);
+  ConnectionImpl(const Identity& remote, State initial_state);
   ~ConnectionImpl() override;
 
-  // Sets the local registry & remote provider, transferring ownership to the
-  // ConnectionImpl.
-  void SetExposedInterfaces(
-      std::unique_ptr<InterfaceRegistry> exposed_interfaces);
+  // Sets the remote provider, transferring ownership to the ConnectionImpl.
   void SetRemoteInterfaces(
       std::unique_ptr<InterfaceProvider> remote_interfaces);
 
-  // Sets the local registry & remote provider, without transferring ownership.
-  void set_exposed_interfaces(InterfaceRegistry* exposed_interfaces) {
-    exposed_interfaces_ = exposed_interfaces;
-  }
+  // Sets the remote provider, without transferring ownership.
   void set_remote_interfaces(InterfaceProvider* remote_interfaces) {
     remote_interfaces_ = remote_interfaces;
   }
@@ -54,14 +43,11 @@ class ConnectionImpl : public Connection {
 
  private:
   // Connection:
-  bool HasCapabilityClass(const std::string& class_name) const override;
   const Identity& GetRemoteIdentity() const override;
   void SetConnectionLostClosure(const base::Closure& handler) override;
   shell::mojom::ConnectResult GetResult() const override;
   bool IsPending() const override;
   void AddConnectionCompletedClosure(const base::Closure& callback) override;
-  bool AllowsInterface(const std::string& interface_name) const override;
-  InterfaceRegistry* GetInterfaceRegistry() override;
   InterfaceProvider* GetRemoteInterfaces() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
@@ -74,14 +60,9 @@ class ConnectionImpl : public Connection {
   shell::mojom::ConnectResult result_ = shell::mojom::ConnectResult::SUCCEEDED;
   std::vector<base::Closure> connection_completed_callbacks_;
 
-  InterfaceRegistry* exposed_interfaces_ = nullptr;
   InterfaceProvider* remote_interfaces_ = nullptr;
 
-  std::unique_ptr<InterfaceRegistry> exposed_interfaces_owner_;
   std::unique_ptr<InterfaceProvider> remote_interfaces_owner_;
-
-  const CapabilityRequest capability_request_;
-  const bool allow_all_interfaces_;
 
   base::WeakPtrFactory<ConnectionImpl> weak_factory_;
 

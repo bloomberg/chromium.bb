@@ -31,8 +31,9 @@ class Driver : public shell::Service,
 
  private:
   // shell::Service:
-  bool OnConnect(shell::Connection* connection) override {
-    connection->AddInterface<ClientProcessTest>(this);
+  bool OnConnect(const shell::Identity& remote_identity,
+    shell::InterfaceRegistry* registry) override {
+    registry->AddInterface<ClientProcessTest>(this);
     return true;
   }
   bool OnStop() override {

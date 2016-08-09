@@ -64,7 +64,8 @@ class Catalog : public shell::Service,
   void ScanSystemPackageDir();
 
   // shell::Service:
-  bool OnConnect(shell::Connection* connection) override;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override;
 
   // shell::InterfaceFactory<shell::mojom::Resolver>:
   void Create(const shell::Identity& remote_identity,

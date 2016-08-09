@@ -78,7 +78,7 @@ class ServiceContext : public mojom::Service {
 
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.
-  std::vector<std::unique_ptr<Connection>> incoming_connections_;
+  std::vector<std::unique_ptr<InterfaceRegistry>> incoming_connections_;
 
   // A pending Connector request which will eventually be passed to the Service
   // Manager.

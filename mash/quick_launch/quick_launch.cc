@@ -174,8 +174,9 @@ void QuickLaunch::OnStart(const shell::Identity& identity) {
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }
 
-bool QuickLaunch::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<mojom::Launchable>(this);
+bool QuickLaunch::OnConnect(const shell::Identity& remote_identity,
+                            shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::Launchable>(this);
   return true;
 }
 

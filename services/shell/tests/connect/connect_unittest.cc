@@ -107,8 +107,9 @@ class ConnectTest : public test::ServiceTest,
     ~TestService() override {}
 
    private:
-    bool OnConnect(Connection* connection) override {
-      connection->AddInterface<test::mojom::ExposedInterface>(connect_test_);
+    bool OnConnect(const Identity& remote_identity,
+                   InterfaceRegistry* registry) override {
+      registry->AddInterface<test::mojom::ExposedInterface>(connect_test_);
       return true;
     }
 

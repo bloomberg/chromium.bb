@@ -20,7 +20,8 @@ class ChromeInterfaceFactory : public content::ConnectionFilter {
 
  private:
   // content::ConnectionFilter:
-  bool OnConnect(shell::Connection* connection,
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

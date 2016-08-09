@@ -542,7 +542,7 @@ int WebStateImpl::DownloadImage(
 
 shell::InterfaceRegistry* WebStateImpl::GetMojoInterfaceRegistry() {
   if (!mojo_interface_registry_) {
-    mojo_interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+    mojo_interface_registry_.reset(new shell::InterfaceRegistry);
   }
   return mojo_interface_registry_.get();
 }

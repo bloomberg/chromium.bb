@@ -479,13 +479,13 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
 
  private:
   // ConnectionFilter:
-  bool OnConnect(shell::Connection* connection,
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override {
     if (!weak_factory_)
       weak_factory_.reset(new base::WeakPtrFactory<ConnectionFilterImpl>(this));
 
     // We only fulfill connections from the renderer we host.
-    const shell::Identity& remote_identity = connection->GetRemoteIdentity();
     if (child_identity_.name() != remote_identity.name() ||
         child_identity_.instance() != remote_identity.instance()) {
       return false;
@@ -496,11 +496,10 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
     for (auto& interface_name : interface_names) {
       // Note that the added callbacks may outlive this object, which is
       // destroyed in RPH::Cleanup().
-      connection->GetInterfaceRegistry()->AddInterface(
-          interface_name,
-          base::Bind(&ConnectionFilterImpl::GetInterface,
-                     weak_factory_->GetWeakPtr(),
-                     interface_name));
+      registry->AddInterface(interface_name,
+                             base::Bind(&ConnectionFilterImpl::GetInterface,
+                                        weak_factory_->GetWeakPtr(),
+                                        interface_name));
     }
     return true;
   }
@@ -1106,7 +1105,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
   std::unique_ptr<shell::InterfaceRegistry> registry(
-      new shell::InterfaceRegistry(nullptr));
+      new shell::InterfaceRegistry);
 #if defined(OS_ANDROID)
   interface_registry_android_ =
       InterfaceRegistryAndroid::Create(registry.get());

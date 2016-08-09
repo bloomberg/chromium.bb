@@ -38,7 +38,8 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
  private:
   // shell::Service implementation.
   void OnStart(const shell::Identity& identity) final;
-  bool OnConnect(shell::Connection* connection) final;
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) final;
   bool OnStop() final;
 
   // shell::InterfaceFactory<mojom::MediaService> implementation.

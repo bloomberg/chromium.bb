@@ -787,7 +787,7 @@ void RenderFrameHostImpl::Create(
     const shell::Identity& remote_identity,
     media::mojom::ServiceFactoryRequest request) {
   std::unique_ptr<shell::InterfaceRegistry> registry(
-      new shell::InterfaceRegistry(nullptr));
+      new shell::InterfaceRegistry);
 #if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
   registry->AddInterface(
       base::Bind(&ProvisionFetcherImpl::Create, this));
@@ -2467,7 +2467,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   if (interface_registry_.get())
     return;
 
-  interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+  interface_registry_.reset(new shell::InterfaceRegistry);
   if (!GetProcess()->GetRemoteInterfaces())
     return;
 

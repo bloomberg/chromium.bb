@@ -17,7 +17,8 @@ class WindowServerServiceTestBase : public shell::test::ServiceTest {
   WindowServerServiceTestBase();
   ~WindowServerServiceTestBase() override;
 
-  virtual bool OnConnect(shell::Connection* connection) = 0;
+  virtual bool OnConnect(const shell::Identity& remote_identity,
+                         shell::InterfaceRegistry* registry) = 0;
 
  private:
   // shell::test::ServiceTest:

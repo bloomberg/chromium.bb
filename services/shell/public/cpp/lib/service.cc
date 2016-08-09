@@ -13,19 +13,12 @@ Service::~Service() {}
 
 void Service::OnStart(const Identity& identity) {}
 
-bool Service::OnConnect(Connection* connection) {
+bool Service::OnConnect(const Identity& remote_identity,
+                        InterfaceRegistry* registry) {
   return false;
 }
 
 bool Service::OnStop() { return true; }
-
-InterfaceProvider* Service::GetInterfaceProviderForConnection() {
-  return nullptr;
-}
-
-InterfaceRegistry* Service::GetInterfaceRegistryForConnection() {
-  return nullptr;
-}
 
 Connector* Service::connector() {
   return context_->connector();
