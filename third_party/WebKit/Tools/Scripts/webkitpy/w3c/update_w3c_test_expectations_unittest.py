@@ -140,11 +140,13 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
 
     def test_get_test_to_rebaseline(self):
         self.host = MockHost()
+        self.host.filesystem.files['/mock-checkout/imported/fake/test/path.html'] = '''
+                <script src="/resources/testharness.js"></script>'''
         finder = WebKitFinder(self.host.filesystem)
         line_adder = W3CExpectationsLineAdder(self.host)
-        test_name = 'imported/fake/test/path.html'
+        tests = ['imported/fake/test/path.html']
         test_dict = {'../../../imported/fake/test/path.html': self.mock_dict_two['imported/fake/test/path.html']}
         tests_to_rebaseline, tests_results = line_adder.get_tests_to_rebaseline(
-            finder, test_name, test_dict)
+            finder, tests, test_dict)
         self.assertEqual(tests_to_rebaseline, ['../../../imported/fake/test/path.html'])
         self.assertEqual(tests_results, test_dict)

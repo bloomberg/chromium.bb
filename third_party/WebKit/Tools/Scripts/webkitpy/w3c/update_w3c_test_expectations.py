@@ -288,10 +288,8 @@ class W3CExpectationsLineAdder(object):
             webkit-patch rebaseline-from-try-jobs.
         """
         finder = WebKitFinder(self._host.filesystem)
-        tests = self._host.executive.run_command(['git', 'diff', 'master', '--name-only'])
-        for test in tests.splitlines():
-            if self.is_js_test(finder, test):
-                tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(finder, test, tests_results)
+        tests = self._host.executive.run_command(['git', 'diff', 'master', '--name-only']).splitlines()
+        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(finder, tests, tests_results)
         if tests_to_rebaseline:
             webkit_patch = self._host.filesystem.join(finder.chromium_base(), finder.webkit_base(),
                                                       finder.path_to_script('webkit-patch'))
@@ -299,14 +297,32 @@ class W3CExpectationsLineAdder(object):
                                               'rebaseline-from-try-jobs', '-v'] + tests_to_rebaseline)
         return tests_results
 
-    def get_tests_to_rebaseline(self, webkit_finder, test_name, tests_results):
+    def get_tests_to_rebaseline(self, webkit_finder, tests, tests_results):
+        """Gets test to rebaseline.
+
+        Creates a list of tests to rebaseline depending on the tests' platform specific
+        results. This function also removes the platform key form the tests_results
+        dictionary if 'actual' results not in ['CRASH', 'TIMEOUT'].
+
+        Args:
+            webkit_finder: A WebKitFinder object.
+            tests: A list of new imported tests.
+            tests_results: A dictionary of failing tests results.
+
+        Returns:
+            A set of tests to be rebaselined. These tests are both
+            js tests and test that failed during the try jobs. Also
+            returns an updated tests_results dictionary.
+        """
         tests_to_rebaseline = set()
-        layout_tests_relative_path = self._host.filesystem.relpath(webkit_finder.layout_tests_dir(), webkit_finder.chromium_base())
-        test_path = self._host.filesystem.relpath(test_name, layout_tests_relative_path)
-        for platform in tests_results[test_path].keys():
-            if tests_results[test_path][platform]['actual'] not in ['CRASH', 'TIMEOUT']:
-                del tests_results[test_path][platform]
-                tests_to_rebaseline.add(test_path)
+        layout_tests_rel_path = self._host.filesystem.relpath(webkit_finder.layout_tests_dir(), webkit_finder.chromium_base())
+        for test in tests:
+            test_path = self._host.filesystem.relpath(test, layout_tests_rel_path)
+            if self.is_js_test(webkit_finder, test) and tests_results.get(test_path):
+                for platform in tests_results[test_path].keys():
+                    if tests_results[test_path][platform]['actual'] not in ['CRASH', 'TIMEOUT']:
+                        del tests_results[test_path][platform]
+                        tests_to_rebaseline.add(test_path)
         return list(tests_to_rebaseline), tests_results
 
     def is_js_test(self, webkit_finder, test_path):
