@@ -69,7 +69,7 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
 RequestCoordinator::~RequestCoordinator() {}
 
 bool RequestCoordinator::SavePageLater(
-    const GURL& url, const ClientId& client_id, bool was_user_requested) {
+    const GURL& url, const ClientId& client_id, bool user_requested) {
   DVLOG(2) << "URL is " << url << " " << __func__;
 
   if (!OfflinePageModel::CanSaveURL(url)) {
@@ -82,7 +82,7 @@ bool RequestCoordinator::SavePageLater(
 
   // Build a SavePageRequest.
   offline_pages::SavePageRequest request(
-      id++, url, client_id, base::Time::Now(), was_user_requested);
+      id++, url, client_id, base::Time::Now(), user_requested);
 
   // Put the request on the request queue.
   queue_->AddRequest(request,

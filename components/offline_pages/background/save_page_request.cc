@@ -10,7 +10,7 @@ SavePageRequest::SavePageRequest(int64_t request_id,
                                  const GURL& url,
                                  const ClientId& client_id,
                                  const base::Time& creation_time,
-                                 const bool was_user_requested)
+                                 const bool user_requested)
     : request_id_(request_id),
       url_(url),
       client_id_(client_id),
@@ -18,7 +18,7 @@ SavePageRequest::SavePageRequest(int64_t request_id,
       activation_time_(creation_time),
       started_attempt_count_(0),
       completed_attempt_count_(0),
-      user_requested_(was_user_requested),
+      user_requested_(user_requested),
       state_(RequestState::AVAILABLE) {}
 
 SavePageRequest::SavePageRequest(int64_t request_id,
