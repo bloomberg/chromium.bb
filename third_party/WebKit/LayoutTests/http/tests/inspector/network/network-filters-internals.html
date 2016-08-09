@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.recordNetwork();
+
+    var totalResourceCount = 3;
+    InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
+    InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+    InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+    InspectorTest.makeFetch("resources/cyrillic.html", {}, ensureAllResources);
+    var filterArray = [
+        {
+            filterType: WebInspector.NetworkLogView.FilterType.Domain,
+            filterValue: "127.0.0.1"
+        } ,{
+            filterType: WebInspector.NetworkLogView.FilterType.Scheme,
+            filterValue: "http"
+        }
+    ];
+
+    var resourceCount = 0;
+    function ensureAllResources()
+    {
+        if (++resourceCount >= totalResourceCount)
+            checkFilters();
+    }
+
+    function checkFilters()
+    {
+        for (var filter of filterArray) {
+            InspectorTest.addResult("");
+            InspectorTest.addResult("filterType: " + filter.filterType);
+            InspectorTest.addResult("filterValue: " + filter.filterValue);
+        }
+        InspectorTest.addResult("");
+
+        WebInspector.NetworkPanel.revealAndFilter(filterArray);
+
+        var nodes = WebInspector.panels.network._networkLogView._nodesByRequestId.valuesArray();
+        var foundNodesCount = 0;
+        for (var i = 0; i < nodes.length; i++) {
+            if (!nodes[i][WebInspector.NetworkLogView._isFilteredOutSymbol])
+                foundNodesCount++;
+        }
+
+        InspectorTest.addResult("Found results: " + foundNodesCount);
+        InspectorTest.addResult("");
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests to ensure data being passed from outside network to filter results filters properly.</p>
+</body>
+</html>
