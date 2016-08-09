@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/bluetooth/tray_bluetooth.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
@@ -22,6 +23,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -67,21 +70,32 @@ class BluetoothDefaultView : public TrayItemMore {
  public:
   BluetoothDefaultView(SystemTrayItem* owner, bool show_more)
       : TrayItemMore(owner, show_more) {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToImageSkia());
-    UpdateLabel();
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+      SetImage(
+          bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToImageSkia());
+    }
+    Update();
   }
 
   ~BluetoothDefaultView() override {}
 
-  void UpdateLabel() {
+  void Update() {
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+    const bool enabled = delegate->GetBluetoothEnabled();
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      gfx::VectorIconId icon_id =
+          enabled ? gfx::VectorIconId::SYSTEM_MENU_BLUETOOTH
+                  : gfx::VectorIconId::SYSTEM_MENU_BLUETOOTH_DISABLED;
+      gfx::ImageSkia image = gfx::CreateVectorIcon(icon_id, kMenuIconColor);
+      SetImage(&image);
+    }
+
     if (delegate->GetBluetoothAvailable()) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      const base::string16 label =
-          rb.GetLocalizedString(delegate->GetBluetoothEnabled()
-                                    ? IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED
-                                    : IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED);
+      const base::string16 label = rb.GetLocalizedString(
+          enabled ? IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED
+                  : IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED);
       SetLabel(label);
       SetAccessibleName(label);
       SetVisible(true);
@@ -440,7 +454,7 @@ void TrayBluetooth::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayBluetooth::OnBluetoothRefresh() {
   if (default_)
-    default_->UpdateLabel();
+    default_->Update();
   else if (detailed_)
     detailed_->Update();
 }

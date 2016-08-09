@@ -5,6 +5,7 @@
 #include "ash/common/system/audio/volume_view.h"
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/system/audio/tray_audio.h"
 #include "ash/common/system/audio/tray_audio_delegate.h"
@@ -17,6 +18,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -152,9 +155,16 @@ VolumeView::VolumeView(SystemTrayItem* owner,
 
   more_ = new views::ImageView;
   more_->EnableCanvasFlippingForRTLUI(true);
-  more_->SetImage(ui::ResourceBundle::GetSharedInstance()
-                      .GetImageNamed(IDR_AURA_UBER_TRAY_MORE)
-                      .ToImageSkia());
+
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    more_->SetImage(gfx::CreateVectorIcon(
+        gfx::VectorIconId::SYSTEM_MENU_ARROW_RIGHT, kMenuIconColor));
+  } else {
+    more_->SetImage(ui::ResourceBundle::GetSharedInstance()
+                        .GetImageNamed(IDR_AURA_UBER_TRAY_MORE)
+                        .ToImageSkia());
+  }
+
   more_region_->AddChildView(more_);
 
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
