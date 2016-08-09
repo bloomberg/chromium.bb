@@ -1993,7 +1993,7 @@ Polymer({
    * name.
    */
   rebuildSinksToShow_: function() {
-    var sinksToShow = this.allSinks.filter(function(sink) {
+    var updatedSinkList = this.allSinks.filter(function(sink) {
       return !sink.isPseudoSink;
     }, this);
     if (this.pseudoSinkSearchState_) {
@@ -2004,13 +2004,13 @@ Polymer({
       // list but |currentLaunchingSinkId_| is non-empty (thereby preventing any
       // other sink from launching).
       if (pendingPseudoSink.id == this.currentLaunchingSinkId_) {
-        sinksToShow.unshift(pendingPseudoSink);
+        updatedSinkList.unshift(pendingPseudoSink);
       }
     }
     if (this.userHasSelectedCastMode_) {
       // If user explicitly selected a cast mode, then we show only sinks that
       // are compatible with current cast mode or sinks that are active.
-      sinksToShow = sinksToShow.filter(function(element) {
+      updatedSinkList = updatedSinkList.filter(function(element) {
         return (element.castModes & this.shownCastModeValue_) ||
                this.sinkToRouteMap_[element.id];
       }, this);
@@ -2023,7 +2023,27 @@ Polymer({
       this.setShownCastMode_(this.computeCastMode_());
     }
 
-    this.sinksToShow_ = sinksToShow;
+    // When there's an updated list of sinks, append any new sinks to the end
+    // of the existing list. This prevents sinks randomly jumping around the
+    // dialog, which can surprise users / lead to inadvertently casting to the
+    // wrong sink.
+    if (this.sinksToShow_) {
+      for (var i = this.sinksToShow_.length - 1; i >= 0; i--) {
+        var index = updatedSinkList.findIndex(function(updatedSink) {
+            return this.sinksToShow_[i].id == updatedSink.id; }.bind(this));
+        if (index < 0) {
+          // Remove any sinks that are no longer discovered.
+          this.sinksToShow_.splice(i, 1);
+        } else {
+          // If the sink exists, remove it from |updatedSinkList| as it is
+          // already in |sinksToShow_|.
+          updatedSinkList.splice(index, 1);
+        }
+      }
+
+      updatedSinkList = this.sinksToShow_.concat(updatedSinkList);
+    }
+    this.sinksToShow_ = updatedSinkList;
   },
 
   /**

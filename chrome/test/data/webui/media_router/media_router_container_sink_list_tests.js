@@ -103,6 +103,72 @@ cr.define('media_router_container_sink_list', function() {
         });
       });
 
+      // Tests that text shown for each sink matches their names.
+      test('updated sink list', function(done) {
+        var sinkOne = new media_router.Sink('sink id 1', 'Sink 1',
+                null, null,
+                media_router.SinkIconType.GENERIC,
+                media_router.SinkStatus.IDLE, [1, 2, 3]);
+        var sinkTwo = new media_router.Sink('sink id 2', 'Sink 2',
+                null, 'example.com',
+                media_router.SinkIconType.GENERIC,
+                media_router.SinkStatus.IDLE, [1, 2, 3]);
+        var sinkThree = new media_router.Sink('sink id 3', 'Sink 3',
+                null, 'example.com',
+                media_router.SinkIconType.GENERIC,
+                media_router.SinkStatus.IDLE, [1, 2, 3]);
+        var sinkFour = new media_router.Sink('sink id 4', 'Sink 4',
+                null, 'example.com',
+                media_router.SinkIconType.GENERIC,
+                media_router.SinkStatus.IDLE, [1, 2, 3]);
+
+        // Set the initial sink list and check that the order corresponds.
+        var listOne = [sinkOne, sinkTwo];
+        var listOneExpected = [sinkOne, sinkTwo];
+        container.allSinks = listOne;
+        setTimeout(function() {
+          var sinkList =
+              container.shadowRoot.getElementById('sink-list')
+                  .querySelectorAll('paper-item');
+          assertEquals(listOne.length, sinkList.length);
+          for (var i = 0; i < listOneExpected.length; i++) {
+            checkElementText(listOneExpected[i].name, sinkList[i]);
+          }
+
+          // Update the sink list with a new sink, but not at the end of the
+          // array. The existing sinks should appear first, then the new
+          // sink.
+          var listTwo = [sinkOne, sinkThree, sinkTwo];
+          var listTwoExpected = [sinkOne, sinkTwo, sinkThree];
+          container.allSinks = listTwo;
+          setTimeout(function() {
+            sinkList =
+                container.shadowRoot.getElementById('sink-list')
+                    .querySelectorAll('paper-item');
+            assertEquals(listTwo.length, sinkList.length);
+            for (var i = 0; i < listTwoExpected.length; i++) {
+              checkElementText(listTwoExpected[i].name, sinkList[i]);
+            }
+
+            // If any sinks are not included in a sink list update, remove
+            // them from the sink list.
+            var listThree = [sinkFour, sinkOne];
+            var listThreeExpected = [sinkOne, sinkFour];
+            container.allSinks = listThree;
+            setTimeout(function() {
+              sinkList =
+                  container.shadowRoot.getElementById('sink-list')
+                      .querySelectorAll('paper-item');
+              assertEquals(listThree.length, sinkList.length);
+              for (var i = 0; i < listThreeExpected.length; i++) {
+                checkElementText(listThreeExpected[i].name, sinkList[i]);
+              }
+              done();
+            });
+          });
+        });
+      });
+
       // Tests that text shown for sink with domain matches the name and domain.
       test('sink with domain text', function(done) {
         // Sink 1 - sink, no domain -> text = name
