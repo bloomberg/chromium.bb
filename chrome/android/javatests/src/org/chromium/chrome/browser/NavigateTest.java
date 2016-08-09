@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.pm.ActivityInfo;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
@@ -176,8 +177,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"Navigation"})
     public void testNavigateLandscape() throws Exception {
-        // '0' is Landscape Mode. '1' is Portrait.
-        getActivity().setRequestedOrientation(0);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         String url = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
         String result = typeInOmniboxAndNavigate(url, "Simple");
         assertEquals(expectedLocation(url), result);

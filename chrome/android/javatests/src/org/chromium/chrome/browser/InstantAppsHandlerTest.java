@@ -44,10 +44,7 @@ public class InstantAppsHandlerTest extends InstrumentationTestCase {
 
     @Override
     public void tearDown() throws Exception {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.clear();
-        editor.commit();
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
         super.tearDown();
     }
 
