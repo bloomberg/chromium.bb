@@ -715,10 +715,12 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
 
     LayoutUnit width = m_inlineTextBox.logicalWidth();
     if (m_inlineTextBox.truncation() != cNoTruncation) {
-        width = LayoutUnit(m_inlineTextBox.getLineLayoutItem().width(
-            m_inlineTextBox.start(), m_inlineTextBox.truncation(), m_inlineTextBox.textPos(),
-            m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle()));
-        if (!m_inlineTextBox.isLeftToRightDirection())
+        bool ltr = m_inlineTextBox.isLeftToRightDirection();
+        bool flowIsLTR = m_inlineTextBox.getLineLayoutItem().style()->isLeftToRightDirection();
+        width = LayoutUnit(m_inlineTextBox.getLineLayoutItem().width(ltr == flowIsLTR ? m_inlineTextBox.start() : m_inlineTextBox.truncation(),
+            ltr == flowIsLTR ? m_inlineTextBox.truncation() : m_inlineTextBox.len() - m_inlineTextBox.truncation(), m_inlineTextBox.textPos(),
+            flowIsLTR ? LTR : RTL, m_inlineTextBox.isFirstLineStyle()));
+        if (!flowIsLTR)
             localOrigin.move(m_inlineTextBox.logicalWidth() - width, LayoutUnit());
     }
 
@@ -775,6 +777,7 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
     unsigned paintStart = underlinePaintStart(underline);
     unsigned paintEnd = underlinePaintEnd(underline);
 
+    // TODO(crbug.com/636060): Handle mixed-flow contexts correctly.
     // start of line to draw
     float start = paintStart == static_cast<unsigned>(m_inlineTextBox.start()) ? 0 :
         m_inlineTextBox.getLineLayoutItem().width(m_inlineTextBox.start(), paintStart - m_inlineTextBox.start(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
