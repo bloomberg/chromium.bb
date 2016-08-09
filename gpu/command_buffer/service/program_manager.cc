@@ -482,7 +482,7 @@ void Program::UpdateLogInfo() {
   GLint max_len = 0;
   glGetProgramiv(service_id_, GL_INFO_LOG_LENGTH, &max_len);
   if (max_len == 0) {
-    set_log_info(NULL);
+    set_log_info(nullptr);
     return;
   }
   std::unique_ptr<char[]> temp(new char[max_len]);
@@ -491,7 +491,8 @@ void Program::UpdateLogInfo() {
   DCHECK(max_len == 0 || len < max_len);
   DCHECK(len == 0 || temp[len] == '\0');
   std::string log(temp.get(), len);
-  set_log_info(ProcessLogInfo(log).c_str());
+  log = ProcessLogInfo(log);
+  set_log_info(log.empty() ? nullptr : log.c_str());
 }
 
 void Program::ClearUniforms(std::vector<uint8_t>* zero_buffer) {
