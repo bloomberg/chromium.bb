@@ -2618,4 +2618,12 @@ String Internals::getProgrammaticScrollAnimationState(Node* node) const
     return String();
 }
 
+ClientRect* Internals::visualRect(Node* node)
+{
+    if (!node || !node->layoutObject())
+        return ClientRect::create();
+
+    return ClientRect::create(FloatRect(node->layoutObject()->visualRect()));
+}
+
 } // namespace blink

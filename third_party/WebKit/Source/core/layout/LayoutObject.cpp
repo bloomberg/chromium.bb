@@ -1488,6 +1488,8 @@ void LayoutObject::adjustPreviousPaintInvalidationForScrollIfNeeded(const Double
 void LayoutObject::clearPreviousPaintInvalidationRects()
 {
     setPreviousPaintInvalidationRect(LayoutRect());
+    // After clearing ("invalidating" the paint invalidation rects, mark this object as needing to re-compute them.
+    setShouldDoFullPaintInvalidation();
 }
 
 void LayoutObject::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)

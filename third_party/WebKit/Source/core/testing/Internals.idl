@@ -350,4 +350,6 @@
     DOMString getScrollAnimationState(Node node);
 
     DOMString getProgrammaticScrollAnimationState(Node node);
+
+    ClientRect visualRect(Node node);    
 };

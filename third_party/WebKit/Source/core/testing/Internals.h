@@ -400,6 +400,9 @@ public:
     // or -1 if the node does not have a scrollable area.
     String getProgrammaticScrollAnimationState(Node*) const;
 
+    // Returns the visual rect of a node's LayoutObject.
+    ClientRect* visualRect(Node*);
+
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;
