@@ -629,14 +629,12 @@ const gfx::Font& ResourceBundle::GetFontWithDelta(int size_delta,
 
 const gfx::FontList& ResourceBundle::GetFontList(FontStyle legacy_style) {
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
-  if (legacy_style == BoldFont || legacy_style == SmallBoldFont ||
-      legacy_style == MediumBoldFont || legacy_style == LargeBoldFont)
+  if (legacy_style == BoldFont || legacy_style == MediumBoldFont)
     font_weight = gfx::Font::Weight::BOLD;
 
   int size_delta = 0;
   switch (legacy_style) {
     case SmallFont:
-    case SmallBoldFont:
       size_delta = kSmallFontDelta;
       break;
     case MediumFont:
@@ -644,7 +642,6 @@ const gfx::FontList& ResourceBundle::GetFontList(FontStyle legacy_style) {
       size_delta = kMediumFontDelta;
       break;
     case LargeFont:
-    case LargeBoldFont:
       size_delta = kLargeFontDelta;
       break;
     case BaseFont:

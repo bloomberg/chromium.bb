@@ -56,13 +56,11 @@ class UI_BASE_EXPORT ResourceBundle {
   // client code providing their own constant with the desired font size delta.
   enum FontStyle {
     SmallFont,
-    SmallBoldFont,
     BaseFont,
     BoldFont,
     MediumFont,
     MediumBoldFont,
     LargeFont,
-    LargeBoldFont,
   };
 
   enum LoadResources {

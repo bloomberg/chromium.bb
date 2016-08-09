@@ -12,8 +12,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace app_list {
@@ -79,11 +79,10 @@ void SearchResultActionsView::CreateImageButton(
 
 void SearchResultActionsView::CreateBlueButton(
     const SearchResult::Action& action) {
-  views::BlueButton* button = new views::BlueButton(this, action.label_text);
-  button->SetAccessibleName(action.label_text);
+  views::MdTextButton* button =
+      views::MdTextButton::CreateMdButton(this, action.label_text);
+  button->SetCallToAction(true);
   button->SetTooltipText(action.tooltip_text);
-  button->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::SmallBoldFont));
   button->SetFocusBehavior(FocusBehavior::NEVER);
   AddChildView(button);
 }
