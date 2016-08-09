@@ -26,8 +26,8 @@
 }
 
 - (void)onDownloadSuccess {
-  NSLog(@"end of program, exiting.\nin the ideal world, we would be unpacking "
-        @"now");
+  NSLog(@"end of program, exiting.");
+  NSLog(@"in the ideal world, we would be unpacking now");
   exit(0);
 }
 

@@ -10,6 +10,14 @@
 static NSString* const omahaURLPath =
     @"https://tools.google.com/service/update2";
 
+@interface NSURLSession ()
+- (NSURLSessionDataTask*)dataTaskWithRequest:(NSURLRequest*)request
+                           completionHandler:
+                               (void (^)(NSData* data,
+                                         NSURLResponse* response,
+                                         NSError* error))completionHandler;
+@end
+
 @implementation OmahaCommunication
 
 @synthesize requestXMLBody = requestXMLBody_;
