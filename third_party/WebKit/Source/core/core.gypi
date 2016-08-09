@@ -543,6 +543,8 @@
             'layout/api/SelectionState.h',
             'layout/ng/LayoutNGBlockFlow.cpp',
             'layout/ng/LayoutNGBlockFlow.h',
+            'layout/ng/NGBlockLayoutAlgorithm.cpp',
+            'layout/ng/NGBlockLayoutAlgorithm.h',
             'layout/ng/NGConstraintSpace.cpp',
             'layout/ng/NGConstraintSpace.h',
             'layout/ng/NGFragment.cpp',
