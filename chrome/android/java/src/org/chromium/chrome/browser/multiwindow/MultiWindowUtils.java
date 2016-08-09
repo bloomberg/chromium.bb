@@ -242,6 +242,7 @@ public class MultiWindowUtils implements ActivityStateListener {
      * @return True if the Activity still has a task in Android recents, regardless of whether
      *         the Activity has been destroyed.
      */
+    @TargetApi(Build.VERSION_CODES.M)
     private boolean isActivityTaskInRecents(String className, Context context) {
         ActivityManager activityManager = (ActivityManager)
                 context.getSystemService(Context.ACTIVITY_SERVICE);

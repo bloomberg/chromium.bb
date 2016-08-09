@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -1509,6 +1510,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      * Merges tabs from a second ChromeTabbedActivity instance if necesssary and calls
      * finishAndRemoveTask() on the other activity.
      */
+    @TargetApi(Build.VERSION_CODES.M)
     @VisibleForTesting
     public void maybeMergeTabs() {
         if (!FeatureUtilities.isTabModelMergingEnabled()) return;

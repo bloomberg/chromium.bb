@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.init;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -71,6 +72,8 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     @Override
+    // TODO(estevenson): Replace with Build.VERSION_CODES.N when available.
+    @TargetApi(24)
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(newBase);
 
