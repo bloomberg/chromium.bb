@@ -381,6 +381,10 @@ void WindowSelector::Init(const WindowList& windows) {
 // may cause other, unrelated classes, (ie PanelLayoutManager) to make indirect
 // calls to restoring_minimized_windows() on a partially destructed object.
 void WindowSelector::Shutdown() {
+  // Stop observing screen metrics changes first to avoid auto-positioning
+  // windows in response to work area changes from window activation.
+  display::Screen::GetScreen()->RemoveObserver(this);
+
   size_t remaining_items = 0;
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
     for (WindowSelectorItem* window_selector_item : window_grid->window_list())
@@ -553,12 +557,8 @@ void WindowSelector::OnDisplayRemoved(const display::Display& display) {
 
 void WindowSelector::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t metrics) {
-  // If only the work area changes, there is no need to reposition windows in
-  // overview.
-  if (metrics != DISPLAY_METRIC_WORK_AREA) {
-    PositionWindows(/* animate */ false);
-    RepositionTextFilterOnDisplayMetricsChange();
-  }
+  PositionWindows(/* animate */ false);
+  RepositionTextFilterOnDisplayMetricsChange();
 }
 
 void WindowSelector::OnWindowTreeChanged(WmWindow* window,
