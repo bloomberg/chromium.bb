@@ -26,8 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# FIXME: remove this whitespace diff.
-#
 [MASTER]
 
 # Specify a configuration file.
@@ -79,7 +77,7 @@ disable=
 [REPORTS]
 
 # Set the output format. Available formats are text, parseable, colorized, msvs
-# (visual studio) and html
+# (visual studio) and html.
 output-format=text
 
 # Put messages in a separate file for each module / package specified on the
@@ -87,8 +85,7 @@ output-format=text
 # written in a file name "pylint_global.[txt|html]".
 files-output=no
 
-# Tells whether to display a full report or only the messages
-# CHANGED:
+# Tells whether to display a full report or only the messages.
 reports=no
 
 # Python expression which should return a note less than 10 (10 is the highest
@@ -160,30 +157,28 @@ ignore-docstrings=yes
 # Maximum number of characters on a single line.
 max-line-length=132
 
-# Maximum number of lines in a module
+# Maximum number of lines in a module.
 max-module-lines=4000
 
-# String used as indentation unit. This is usually " " (4 spaces) or "\t" (1
-# tab).
-# CHANGED:
+# String used as indentation unit.
 indent-string='    '
 
 
 [BASIC]
 
-# Required attributes for module, separated by a comma
+# Required attributes for module, separated by a comma.
 required-attributes=
 
-# List of builtins function names that should not be used, separated by a comma
+# List of builtins function names that should not be used, separated by a comma.
 bad-functions=apply
 
-# Regular expression which should only match correct module names
+# Regular expression which should only match correct module names.
 module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+)|([a-z-][a-z0-9-]*))$
 
-# Regular expression which should only match correct module level names
+# Regular expression which should only match correct module level names.
 const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
 
-# Regular expression which should only match correct class names
+# Regular expression which should only match correct class names.
 class-rgx=[A-Z_][a-zA-Z0-9]+$
 
 # Regular expression which should only match correct function names
@@ -192,49 +187,49 @@ function-rgx=[a-z_][a-z0-9_]{2,60}$
 # Regular expression which should only match correct method names
 method-rgx=[a-z_][a-z0-9_]{2,60}$
 
-# Regular expression which should only match correct instance attribute names
+# Regular expression which should only match correct instance attribute names.
 attr-rgx=[a-z_][a-z0-9_]{1,30}$
 
-# Regular expression which should only match correct argument names
+# Regular expression which should only match correct argument names.
 argument-rgx=[a-z_][a-z0-9_]{1,30}$
 
-# Regular expression which should only match correct variable names
+# Regular expression which should only match correct variable names.
 variable-rgx=[a-z_][a-z0-9_]{1,30}$
 
-# Regular expression which should only match correct list comprehension /
-# generator expression variable names
+# Regular expression which should only match correct list comprehension or
+# generator expression variable names.
 inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 
-# Good variable names which should always be accepted, separated by a comma
+# Good variable names which should always be accepted, separated by a comma.
 good-names=i,j,k,ex,Run,_,_log
 
-# Bad variable names which should always be refused, separated by a comma
+# Bad variable names which should always be refused, separated by a comma.
 bad-names=foo,bar,baz,toto,tutu,tata
 
 # Regular expression which should only match functions or classes name which do
-# not require a docstring
+# not require a docstring.
 no-docstring-rgx=__.*__
 
 
 [DESIGN]
 
-# Maximum number of arguments for function / method
+# Maximum number of arguments for function / method.
 max-args=5
 
 # Argument names that match this expression will be ignored. Default to name
-# with leading underscore
+# with leading underscore.
 ignored-argument-names=_.*
 
-# Maximum number of locals for function / method body
+# Maximum number of locals for function / method body.
 max-locals=15
 
-# Maximum number of return / yield for function / method body
+# Maximum number of return / yield for function / method body.
 max-returns=6
 
-# Maximum number of branch for function / method body
+# Maximum number of branch for function / method body.
 max-branchs=12
 
-# Maximum number of statements in function / method body
+# Maximum number of statements in function / method body.
 max-statements=50
 
 # Maximum number of parents for a class (see R0901).
@@ -265,24 +260,24 @@ valid-classmethod-first-arg=cls
 
 [IMPORTS]
 
-# Deprecated modules which should not be used, separated by a comma
+# Deprecated modules which should not be used, separated by a comma.
 deprecated-modules=regsub,string,TERMIOS,Bastion,rexec
 
 # Create a graph of every (i.e. internal and external) dependencies in the
-# given file (report RP0402 must not be disabled)
+# given file (report RP0402 must not be disabled).
 import-graph=
 
 # Create a graph of external dependencies in the given file (report RP0402 must
-# not be disabled)
+# not be disabled).
 ext-import-graph=
 
 # Create a graph of internal dependencies in the given file (report RP0402 must
-# not be disabled)
+# not be disabled).
 int-import-graph=
 
 
 [EXCEPTIONS]
 
 # Exceptions that will emit a warning when being caught. Defaults to
-# "Exception"
+# "Exception".
 overgeneral-exceptions=Exception
