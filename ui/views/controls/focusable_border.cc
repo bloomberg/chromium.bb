@@ -10,6 +10,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -45,18 +46,27 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setColor(GetCurrentColor(view));
 
-  SkPath path;
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    path.moveTo(Textfield::kTextPadding, view.height() - 1);
-    path.rLineTo(view.width() - Textfield::kTextPadding * 2, 0);
-    path.offset(0.5f, 0.5f);
-    paint.setStrokeWidth(SkIntToScalar(1));
+    gfx::ScopedCanvas scoped(canvas);
+    float dsf = canvas->UndoDeviceScaleFactor();
+    gfx::RectF rect((gfx::Rect(view.GetLocalBounds())));
+    rect = ScaleRect(rect, dsf, dsf);
+    rect.Inset(gfx::InsetsF(0.5f));
+    SkPath path;
+    float corner_radius_px = kCornerRadiusDp * dsf;
+    path.addRoundRect(gfx::RectFToSkRect(rect), corner_radius_px,
+                      corner_radius_px);
+    const int kStrokeWidthPx = 1;
+    paint.setStrokeWidth(SkIntToScalar(kStrokeWidthPx));
+    paint.setAntiAlias(true);
+    canvas->DrawPath(path, paint);
   } else {
+    SkPath path;
     path.addRect(gfx::RectToSkRect(view.GetLocalBounds()),
                  SkPath::kCW_Direction);
     paint.setStrokeWidth(SkIntToScalar(2));
+    canvas->DrawPath(path, paint);
   }
-  canvas->DrawPath(path, paint);
 }
 
 gfx::Insets FocusableBorder::GetInsets() const {

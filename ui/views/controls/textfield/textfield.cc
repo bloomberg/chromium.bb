@@ -17,6 +17,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/canvas_painter.h"
@@ -1732,12 +1733,18 @@ void Textfield::AccessibilitySetValue(const base::string16& new_value) {
 
 void Textfield::UpdateBackgroundColor() {
   const SkColor color = GetBackgroundColor();
-  set_background(Background::CreateSolidBackground(color));
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    set_background(Background::CreateBackgroundPainter(
+        true, Painter::CreateSolidRoundRectPainter(
+                  color, FocusableBorder::kCornerRadiusDp)));
+  } else {
+    set_background(Background::CreateSolidBackground(color));
+  }
   // Disable subpixel rendering when the background color is transparent
   // because it draws incorrect colors around the glyphs in that case.
   // See crbug.com/115198
   GetRenderText()->set_subpixel_rendering_suppressed(
-      SkColorGetA(color) != 0xFF);
+      SkColorGetA(color) != SK_AlphaOPAQUE);
   SchedulePaint();
 }
 

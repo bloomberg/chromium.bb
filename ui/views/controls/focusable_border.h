@@ -20,6 +20,8 @@ namespace views {
 // A Border class to draw a focused border around a field (e.g textfield).
 class VIEWS_EXPORT FocusableBorder : public Border {
  public:
+  static constexpr float kCornerRadiusDp = 1.5f;
+
   FocusableBorder();
   ~FocusableBorder() override;
 

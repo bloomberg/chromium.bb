@@ -19,6 +19,8 @@
 #import "testing/gtest_mac.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
@@ -239,6 +241,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   // Overridden from testing::Test:
   void SetUp() override {
     ui::CocoaTest::SetUp();
+    ui::MaterialDesignController::Initialize();
 
     init_params_.native_widget = native_widget_mac_;
 
@@ -256,6 +259,11 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
     init_params_.bounds = gfx::Rect(100, 100, 100, 100);
 
     native_widget_mac_->GetWidget()->Init(init_params_);
+  }
+
+  void TearDown() override {
+    ui::test::MaterialDesignControllerTestAPI::Uninitialize();
+    ui::CocoaTest::TearDown();
   }
 
  protected:
