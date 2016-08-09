@@ -240,7 +240,7 @@ void MachPortRelay::RemoveObserver(Observer* observer) {
 
 void MachPortRelay::OnReceivedTaskPort(base::ProcessHandle process) {
   base::AutoLock locker(observers_lock_);
-  for (const auto observer : observers_)
+  for (auto* observer : observers_)
     observer->OnProcessReady(process);
 }
 
