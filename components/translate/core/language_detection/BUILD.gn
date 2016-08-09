@@ -13,7 +13,7 @@ static_library("language_detection") {
   deps = [
     "//base",
     "//components/translate/core/common",
-    "//third_party/cld_2",
+    "//third_party:cld",
     "//url",
   ]
 }

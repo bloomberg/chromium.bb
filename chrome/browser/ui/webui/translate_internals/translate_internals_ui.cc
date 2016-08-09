@@ -19,6 +19,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/translate_internals_resources.h"
+#include "third_party/cld_version.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -62,7 +63,13 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
   std::string cld_version = "";
   // The version string is hardcoded here to avoid linking with the CLD
   // library, see http://crbug.com/297777.
+#if BUILDFLAG(CLD_VERSION) == 2
   cld_version = "2";
+#elif BUILDFLAG(CLD_VERSION) == 3
+  cld_version = "3";
+#else
+# error "CLD_VERSION must be 2 or 3"
+#endif
   source->AddString("cld-version", cld_version);
 
   return source;

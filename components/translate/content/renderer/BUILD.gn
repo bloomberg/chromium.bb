@@ -18,8 +18,8 @@ static_library("renderer") {
     "//content/public/common",
     "//content/public/renderer",
     "//ipc",
+    "//third_party:cld",
     "//third_party/WebKit/public:blink",
-    "//third_party/cld_2",
     "//url",
     "//v8",
   ]

@@ -29,6 +29,7 @@ source_set("renderer") {
     "//mojo/edk/js",
     "//mojo/public/js",
     "//skia",
+    "//third_party:cld",
     "//third_party/WebKit/public:blink",
   ]
 

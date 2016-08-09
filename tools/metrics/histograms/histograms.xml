@@ -60407,6 +60407,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Language of page detected by CLD2.</summary>
 </histogram>
 
+<histogram name="Translate.CLD3.LanguageDetected" enum="CLD3LanguageCode">
+  <owner>abakalov@chromium.org</owner>
+  <summary>
+    Language of the input page detected by CLD3. This information is logged on
+    every page load.
+  </summary>
+</histogram>
+
+<histogram name="Translate.CLD3.LanguagePercentage" units="%">
+  <owner>abakalov@chromium.org</owner>
+  <summary>
+    Percentage of the bytes that are associated with the most popular language
+    on the input page. Only recorded if the detection returned a
+    &quot;known&quot; result.
+  </summary>
+</histogram>
+
 <histogram name="Translate.ContentLanguage" enum="TranslateLanguage">
   <owner>kenjibaheux@google.com</owner>
   <summary>
@@ -70122,6 +70139,105 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="611" label="X_Sharada"/>
   <int value="612" label="X_Sora_Sompeng"/>
   <int value="613" label="X_Takri"/>
+</enum>
+
+<enum name="CLD3LanguageCode" type="int">
+  <summary>
+    Hash values for the languages supported by CLD3. Each of these values is
+    computed by casting the output of base::HashMetricName(language_string_id)
+    to base::HistogramBase::Sample.
+  </summary>
+  <int value="-2132740958" label="gl"/>
+  <int value="-2092490813" label="fa"/>
+  <int value="-2084324285" label="iw"/>
+  <int value="-2070680532" label="hi"/>
+  <int value="-2070250592" label="zu"/>
+  <int value="-2042178987" label="si"/>
+  <int value="-2041104386" label="mi"/>
+  <int value="-2014954614" label="so"/>
+  <int value="-1999171202" label="lv"/>
+  <int value="-1994870905" label="lt"/>
+  <int value="-1855113037" label="vi"/>
+  <int value="-1828586117" label="de"/>
+  <int value="-1823968882" label="zh"/>
+  <int value="-1791051166" label="ha"/>
+  <int value="-1760672594" label="mr"/>
+  <int value="-1696927720" label="la"/>
+  <int value="-1690250140" label="ja"/>
+  <int value="-1532548885" label="pa"/>
+  <int value="-1284862637" label="ru"/>
+  <int value="-1273588087" label="kn"/>
+  <int value="-1048980531" label="ur"/>
+  <int value="-1042449480" label="cy"/>
+  <int value="-1033645590" label="fil"/>
+  <int value="-1025520269" label="az"/>
+  <int value="-1000295094" label="no"/>
+  <int value="-887258309" label="hu"/>
+  <int value="-862298602" label="st"/>
+  <int value="-750267977" label="bg"/>
+  <int value="-742603342" label="ca"/>
+  <int value="-734032818" label="km"/>
+  <int value="-659007214" label="el"/>
+  <int value="-647197922" label="ceb"/>
+  <int value="-645438410" label="my"/>
+  <int value="-644560085" label="su"/>
+  <int value="-598481752" label="et"/>
+  <int value="-426630965" label="ga"/>
+  <int value="-415677801" label="it"/>
+  <int value="-403118581" label="sw"/>
+  <int value="-342591258" label="sq"/>
+  <int value="-219674420" label="ta"/>
+  <int value="-181870943" label="bn"/>
+  <int value="-110306666" label="sr"/>
+  <int value="-78164291" label="kk"/>
+  <int value="-74147910" label="en"/>
+  <int value="-35182995" label="fi"/>
+  <int value="-5034744" label="ny"/>
+  <int value="42532257" label="id"/>
+  <int value="64053359" label="eu"/>
+  <int value="114573335" label="es"/>
+  <int value="121688617" label="eo"/>
+  <int value="124739394" label="lo"/>
+  <int value="132594104" label="be"/>
+  <int value="134866094" label="ka"/>
+  <int value="142313505" label="ro"/>
+  <int value="145030010" label="gu"/>
+  <int value="162326141" label="sl"/>
+  <int value="183952636" label="mg"/>
+  <int value="191168946" label="mk"/>
+  <int value="357286655" label="af"/>
+  <int value="461111861" label="mt"/>
+  <int value="462869158" label="hy"/>
+  <int value="470982931" label="sv"/>
+  <int value="522435458" label="hr"/>
+  <int value="526531379" label="ml"/>
+  <int value="538270200" label="uk"/>
+  <int value="596295208" label="bs"/>
+  <int value="673577439" label="cs"/>
+  <int value="796588925" label="yo"/>
+  <int value="804120371" label="jv"/>
+  <int value="873647701" label="th"/>
+  <int value="910795716" label="ne"/>
+  <int value="925733725" label="ms"/>
+  <int value="1092864716" label="ht"/>
+  <int value="1110169461" label="hmn"/>
+  <int value="1119752109" label="te"/>
+  <int value="1140816756" label="ar"/>
+  <int value="1166708194" label="is"/>
+  <int value="1214473765" label="unknown"/>
+  <int value="1311313702" label="pt"/>
+  <int value="1312638242" label="pl"/>
+  <int value="1437205305" label="uz"/>
+  <int value="1482920614" label="yi"/>
+  <int value="1483760478" label="tg"/>
+  <int value="1552733612" label="da"/>
+  <int value="1638257274" label="sk"/>
+  <int value="1670494558" label="ko"/>
+  <int value="1704315002" label="fr"/>
+  <int value="1853848431" label="tr"/>
+  <int value="2039992295" label="ig"/>
+  <int value="2087142539" label="mn"/>
+  <int value="2119087611" label="nl"/>
 </enum>
 
 <enum name="ClearDataSiteBlacklistReason" type="int">

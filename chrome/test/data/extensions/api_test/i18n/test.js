@@ -60,22 +60,23 @@ chrome.test.getConfig(function(config) {
       chrome.test.succeed();
     },
     function detectLanguage() {
-      var text = "undef";
+      var text = "";
       chrome.i18n.detectLanguage(text, function (result) {
         chrome.test.assertEq([], result.languages);
       });
 
-      text = "This text is obviously in English";
+      text = "Αυτό το κείμενο είναι γραμμένο στα ελληνικά";
       chrome.i18n.detectLanguage(text, function (result) {
-        chrome.test.assertEq([{ "language": "en", "percentage": 97 }],
+        chrome.test.assertEq([{ "language": "el", "percentage": 100 }],
             result.languages);
       });
 
-      text = "Данный текст явно не на английском языке. \
-      But this one definitely is. Welcome to Google!";
+      text = "Αυτό το κομμάτι του κειμένου είναι γραμμένο στα ελληνικά \
+             ข้อความสั้น Short piece of text in English";
       chrome.i18n.detectLanguage(text, function (result) {
-        chrome.test.assertEq([{ "language": "ru", "percentage": 61 },
-            { "language": "en", "percentage": 37 }], result.languages);
+        chrome.test.assertEq([{ "language": "el", "percentage": 61 },
+            { "language": "th", "percentage": 20 },
+            { "language": "en", "percentage": 18}], result.languages);
       });
 
       chrome.test.succeed();
