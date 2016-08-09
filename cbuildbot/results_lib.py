@@ -217,14 +217,11 @@ class _Results(object):
         tracebacks.append(traceback)
     return tracebacks
 
-  def Report(self, out, archive_urls=None, current_version=None):
+  def Report(self, out, current_version=None):
     """Generate a user friendly text display of the results data.
 
     Args:
       out: Output stream to write to (e.g. sys.stdout).
-      archive_urls: Dict where values are archive URLs and keys are names
-        to associate with those URLs (typically board name).  If None then
-        omit the name when logging the URL.
       current_version: Chrome OS version associated with this report.
     """
     results = self._results_log
@@ -276,21 +273,6 @@ class _Results(object):
       out.write('%s %s %s (%s)%s\n' % (edge, status, name, timestr, details))
 
     out.write(line)
-
-    if archive_urls:
-      out.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
-      for name, url in sorted(archive_urls.iteritems()):
-        named_url = url
-        link_name = 'Artifacts'
-        if name:
-          named_url = '%s: %s' % (name, url)
-          link_name = 'Artifacts[%s]' % name
-
-        # Output the bot-id/version used in the archive url.
-        link_name = '%s: %s' % (link_name, '/'.join(url.split('/')[-3:-1]))
-        out.write('%s  %s' % (edge, named_url))
-        logging.PrintBuildbotLink(link_name, url, handle=out)
-      out.write(line)
 
     for x in self.GetTracebacks():
       if x.failed_stage and x.traceback:

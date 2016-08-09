@@ -835,8 +835,21 @@ class ReportStage(generic_stages.BuilderStage,
       metadata_url = ''
 
     results_lib.Results.Report(
-        sys.stdout, archive_urls=archive_urls,
-        current_version=(self._run.attrs.release_tag or ''))
+        sys.stdout, current_version=(self._run.attrs.release_tag or ''))
+
+    if archive_urls:
+      logging.info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
+      for name, url in sorted(archive_urls.iteritems()):
+        named_url = url
+        link_name = 'Artifacts'
+        if name:
+          named_url = '%s: %s' % (name, url)
+          link_name = 'Artifacts[%s]' % name
+
+        # Output the bot-id/version used in the archive url.
+        link_name = '%s: %s' % (link_name, '/'.join(url.split('/')[-3:-1]))
+        logging.info(named_url)
+        logging.PrintBuildbotLink(link_name, url)
 
     if db:
       # TODO(akeshet): Eliminate this status string translate once
