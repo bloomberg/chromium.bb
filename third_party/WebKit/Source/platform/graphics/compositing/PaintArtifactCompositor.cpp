@@ -591,6 +591,8 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
         // queried by RenderSurfaceImpl.
         layer->Set3dSortingContextId(host->property_trees()->transform_tree.Node(transformId)->sorting_context_id);
 
+        layer->SetShouldCheckBackfaceVisibility(paintChunk.properties.backfaceHidden);
+
         if (m_extraDataForTestingEnabled)
             m_extraDataForTesting->contentLayers.append(layer);
     }
