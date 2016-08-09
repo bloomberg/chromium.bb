@@ -71,6 +71,11 @@ void Scope::DetachFromContaining() {
   mutable_containing_ = nullptr;
 }
 
+bool Scope::HasValues(SearchNested search_nested) const {
+  DCHECK(search_nested == SEARCH_CURRENT);
+  return !values_.empty();
+}
+
 const Value* Scope::GetValue(const base::StringPiece& ident,
                              bool counts_as_used) {
   // First check for programmatically-provided values.

@@ -26,15 +26,6 @@ bool IsValueStringEqualing(const Value& v, const char* s) {
   return v.string_value() == s;
 }
 
-// Returns a list populated with a single literal Value corresponding to the
-// given token. The token must outlive the list (since the list will just
-// copy the reference).
-std::unique_ptr<ListNode> ListWithLiteral(const Token& token) {
-  std::unique_ptr<ListNode> list(new ListNode);
-  list->append_item(std::unique_ptr<ParseNode>(new LiteralNode(token)));
-  return list;
-}
-
 // This parse node is for passing to tests. It returns a canned value for
 // Execute().
 class TestParseNode : public ParseNode {
@@ -59,6 +50,54 @@ class TestParseNode : public ParseNode {
   Value value_;
 };
 
+// Sets up a BinaryOpNode for testing.
+class TestBinaryOpNode : public BinaryOpNode {
+ public:
+  // Input token value string must outlive class.
+  TestBinaryOpNode(Token::Type op_token_type,
+                   const char* op_token_value)
+      : BinaryOpNode(),
+        op_token_ownership_(Location(), op_token_type, op_token_value) {
+    set_op(op_token_ownership_);
+  }
+
+  void SetLeftToValue(const Value& value) {
+    set_left(std::unique_ptr<ParseNode>(new TestParseNode(value)));
+  }
+
+  // Sets the left-hand side of the operator to an identifier node, this is
+  // used for testing assignments. Input string must outlive class.
+  void SetLeftToIdentifier(const char* identifier) {
+    left_identifier_token_ownership_ =
+        Token(Location(), Token::IDENTIFIER, identifier);
+    set_left(std::unique_ptr<ParseNode>(
+        new IdentifierNode(left_identifier_token_ownership_)));
+  }
+
+  void SetRightToValue(const Value& value) {
+    set_right(std::unique_ptr<ParseNode>(new TestParseNode(value)));
+  }
+  void SetRightToListOfValue(const Value& value) {
+    Value list(nullptr, Value::LIST);
+    list.list_value().push_back(value);
+    set_right(std::unique_ptr<ParseNode>(new TestParseNode(list)));
+  }
+  void SetRightToListOfValue(const Value& value1, const Value& value2) {
+    Value list(nullptr, Value::LIST);
+    list.list_value().push_back(value1);
+    list.list_value().push_back(value2);
+    set_right(std::unique_ptr<ParseNode>(new TestParseNode(list)));
+  }
+
+ private:
+  // The base class takes the Token by reference, this manages the lifetime.
+  Token op_token_ownership_;
+
+  // When setting the left to an identifier, this manages the lifetime of
+  // the identifier token.
+  Token left_identifier_token_ownership_;
+};
+
 }  // namespace
 
 TEST(Operators, SourcesAppend) {
@@ -70,15 +109,8 @@ TEST(Operators, SourcesAppend) {
   setup.scope()->SetValue(sources, Value(nullptr, Value::LIST), nullptr);
 
   // Set up the operator.
-  BinaryOpNode node;
-  const char token_value[] = "+=";
-  Token op(Location(), Token::PLUS_EQUALS, token_value);
-  node.set_op(op);
-
-  // Append to the sources variable.
-  Token identifier_token(Location(), Token::IDENTIFIER, sources);
-  node.set_left(
-      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+  TestBinaryOpNode node(Token::PLUS_EQUALS, "+=");
+  node.SetLeftToIdentifier(sources);
 
   // Set up the filter on the scope to remove everything ending with "rm"
   std::unique_ptr<PatternList> pattern_list(new PatternList);
@@ -86,31 +118,25 @@ TEST(Operators, SourcesAppend) {
   setup.scope()->set_sources_assignment_filter(std::move(pattern_list));
 
   // Append an integer.
-  const char integer_value[] = "5";
-  Token integer(Location(), Token::INTEGER, integer_value);
-  node.set_right(ListWithLiteral(integer));
+  node.SetRightToListOfValue(Value(nullptr, static_cast<int64_t>(5)));
   node.Execute(setup.scope(), &err);
   EXPECT_FALSE(err.has_error());
 
   // Append a string that doesn't match the pattern, it should get appended.
-  const char string_1_value[] = "\"good\"";
-  Token string_1(Location(), Token::STRING, string_1_value);
-  node.set_right(ListWithLiteral(string_1));
+  const char string1[] = "good";
+  node.SetRightToListOfValue(Value(nullptr, string1));
   node.Execute(setup.scope(), &err);
   EXPECT_FALSE(err.has_error());
 
   // Append a string that does match the pattern, it should be a no-op.
-  const char string_2_value[] = "\"foo-rm\"";
-  Token string_2(Location(), Token::STRING, string_2_value);
-  node.set_right(ListWithLiteral(string_2));
+  const char string2[] = "foo-rm";
+  node.SetRightToListOfValue(Value(nullptr, string2));
   node.Execute(setup.scope(), &err);
   EXPECT_FALSE(err.has_error());
 
   // Append a list with the two strings from above.
-  ListNode list;
-  list.append_item(std::unique_ptr<ParseNode>(new LiteralNode(string_1)));
-  list.append_item(std::unique_ptr<ParseNode>(new LiteralNode(string_2)));
-  ExecuteBinaryOperator(setup.scope(), &node, node.left(), &list, &err);
+  node.SetRightToListOfValue(Value(nullptr, string1), Value(nullptr, string2));
+  node.Execute(setup.scope(), &err);
   EXPECT_FALSE(err.has_error());
 
   // The sources variable in the scope should now have: [ 5, "good", "good" ]
@@ -133,23 +159,14 @@ TEST(Operators, ListAppend) {
   const char foo[] = "foo";
   setup.scope()->SetValue(foo, Value(nullptr, Value::LIST), nullptr);
 
-  // Set up the operator.
-  BinaryOpNode node;
-  const char token_value[] = "+=";
-  Token op(Location(), Token::PLUS_EQUALS, token_value);
-  node.set_op(op);
-
-  // Append to the foo variable.
-  Token identifier_token(Location(), Token::IDENTIFIER, foo);
-  node.set_left(
-      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+  // Set up the operator to append to "foo".
+  TestBinaryOpNode node(Token::PLUS_EQUALS, "+=");
+  node.SetLeftToIdentifier(foo);
 
   // Append a list with a list, the result should be a nested list.
-  std::unique_ptr<ListNode> outer_list(new ListNode);
-  const char twelve_str[] = "12";
-  Token twelve(Location(), Token::INTEGER, twelve_str);
-  outer_list->append_item(ListWithLiteral(twelve));
-  node.set_right(std::move(outer_list));
+  Value inner_list(nullptr, Value::LIST);
+  inner_list.list_value().push_back(Value(nullptr, static_cast<int64_t>(12)));
+  node.SetRightToListOfValue(inner_list);
 
   Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
                                     node.right(), &err);
@@ -177,7 +194,7 @@ TEST(Operators, ListAppend) {
   EXPECT_TRUE(err.has_error());
   err = Err();
 
-  node.set_right(std::unique_ptr<ParseNode>(new LiteralNode(twelve)));
+  node.SetRightToValue(Value(nullptr, static_cast<int64_t>(12)));
   ExecuteBinaryOperator(setup.scope(), &node, node.left(), node.right(), &err);
   EXPECT_TRUE(err.has_error());
 }
@@ -194,26 +211,14 @@ TEST(Operators, ListRemove) {
   test_list.list_value().push_back(Value(nullptr, foo_str));
 
   // Set up "var" with an the test list.
-  const char var_str[] = "var";
-  setup.scope()->SetValue(var_str, test_list, nullptr);
+  const char var[] = "var";
+  setup.scope()->SetValue(var, test_list, nullptr);
 
-  // Set up the operator.
-  BinaryOpNode node;
-  const char token_value[] = "-=";
-  Token op(Location(), Token::MINUS_EQUALS, token_value);
-  node.set_op(op);
-
-  // Do -= on the var.
-  Token identifier_token(Location(), Token::IDENTIFIER, var_str);
-  node.set_left(
-      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+  TestBinaryOpNode node(Token::MINUS_EQUALS, "-=");
+  node.SetLeftToIdentifier(var);
 
   // Subtract a list consisting of "foo".
-  Value foo_list(nullptr, Value::LIST);
-  foo_list.list_value().push_back(Value(nullptr, foo_str));
-  std::unique_ptr<ParseNode> outer_list(new TestParseNode(foo_list));
-  node.set_right(std::move(outer_list));
-
+  node.SetRightToListOfValue(Value(nullptr, foo_str));
   Value result = ExecuteBinaryOperator(
       setup.scope(), &node, node.left(), node.right(), &err);
   EXPECT_FALSE(err.has_error());
@@ -224,7 +229,7 @@ TEST(Operators, ListRemove) {
 
   // The "var" variable should have been updated. Both instances of "foo" are
   // deleted.
-  const Value* new_value = setup.scope()->GetValue(var_str);
+  const Value* new_value = setup.scope()->GetValue(var);
   ASSERT_TRUE(new_value);
   ASSERT_EQ(Value::LIST, new_value->type());
   ASSERT_EQ(1u, new_value->list_value().size());
@@ -236,16 +241,9 @@ TEST(Operators, ShortCircuitAnd) {
   Err err;
   TestWithScope setup;
 
-  // Set up the operator.
-  BinaryOpNode node;
-  const char token_value[] = "&&";
-  Token op(Location(), Token::BOOLEAN_AND, token_value);
-  node.set_op(op);
-
-  // Set the left to false.
-  const char false_str[] = "false";
-  Token false_tok(Location(), Token::FALSE_TOKEN, false_str);
-  node.set_left(std::unique_ptr<ParseNode>(new LiteralNode(false_tok)));
+  // Set a && operator with the left to false.
+  TestBinaryOpNode node(Token::BOOLEAN_AND, "&&");
+  node.SetLeftToValue(Value(nullptr, false));
 
   // Set right as foo, but don't define a value for it.
   const char foo[] = "foo";
@@ -262,16 +260,9 @@ TEST(Operators, ShortCircuitOr) {
   Err err;
   TestWithScope setup;
 
-  // Set up the operator.
-  BinaryOpNode node;
-  const char token_value[] = "||";
-  Token op(Location(), Token::BOOLEAN_OR, token_value);
-  node.set_op(op);
-
-  // Set the left to false.
-  const char false_str[] = "true";
-  Token false_tok(Location(), Token::TRUE_TOKEN, false_str);
-  node.set_left(std::unique_ptr<ParseNode>(new LiteralNode(false_tok)));
+  // Set a || operator with the left to true.
+  TestBinaryOpNode node(Token::BOOLEAN_OR, "||");
+  node.SetLeftToValue(Value(nullptr, true));
 
   // Set right as foo, but don't define a value for it.
   const char foo[] = "foo";
@@ -282,4 +273,60 @@ TEST(Operators, ShortCircuitOr) {
   Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
                                     node.right(), &err);
   EXPECT_FALSE(err.has_error());
+}
+
+// Overwriting nonempty lists and scopes with other nonempty lists and scopes
+// should be disallowed.
+TEST(Operators, NonemptyOverwriting) {
+  Err err;
+  TestWithScope setup;
+
+  // Set up "foo" with a nonempty list.
+  const char foo[] = "foo";
+  Value old_value(nullptr, Value::LIST);
+  old_value.list_value().push_back(Value(nullptr, "string"));
+  setup.scope()->SetValue(foo, old_value, nullptr);
+
+  TestBinaryOpNode node(Token::EQUAL, "=");
+  node.SetLeftToIdentifier(foo);
+
+  // Assigning a nonempty list should fail.
+  node.SetRightToListOfValue(Value(nullptr, "string"));
+  node.Execute(setup.scope(), &err);
+  ASSERT_TRUE(err.has_error());
+  EXPECT_EQ("Replacing nonempty list.", err.message());
+  err = Err();
+
+  // Assigning an empty list should succeed.
+  node.SetRightToValue(Value(nullptr, Value::LIST));
+  node.Execute(setup.scope(), &err);
+  ASSERT_FALSE(err.has_error());
+  const Value* new_value = setup.scope()->GetValue(foo);
+  ASSERT_TRUE(new_value);
+  ASSERT_EQ(Value::LIST, new_value->type());
+  ASSERT_TRUE(new_value->list_value().empty());
+
+  // Set up "foo" with a nonempty scope.
+  const char bar[] = "bar";
+  old_value = Value(
+      nullptr, std::unique_ptr<Scope>(new Scope(setup.settings())));
+  old_value.scope_value()->SetValue(bar, Value(nullptr, "bar"), nullptr);
+  setup.scope()->SetValue(foo, old_value, nullptr);
+
+  // Assigning a nonempty scope should fail (re-use old_value copy).
+  node.SetRightToValue(old_value);
+  node.Execute(setup.scope(), &err);
+  ASSERT_TRUE(err.has_error());
+  EXPECT_EQ("Replacing nonempty scope.", err.message());
+  err = Err();
+
+  // Assigning an empty list should succeed.
+  node.SetRightToValue(
+      Value(nullptr, std::unique_ptr<Scope>(new Scope(setup.settings()))));
+  node.Execute(setup.scope(), &err);
+  ASSERT_FALSE(err.has_error());
+  new_value = setup.scope()->GetValue(foo);
+  ASSERT_TRUE(new_value);
+  ASSERT_EQ(Value::SCOPE, new_value->type());
+  ASSERT_FALSE(new_value->scope_value()->HasValues(Scope::SEARCH_CURRENT));
 }

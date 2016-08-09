@@ -125,6 +125,14 @@ class Scope {
   // self-sufficient.
   void DetachFromContaining();
 
+  // Returns true if the scope has any values set. This does not check other
+  // things that may be set like templates or defaults.
+  //
+  // Currently this does not search nested scopes and this will assert if you
+  // want to search nested scopes. The enum is passed so the callers are
+  // unambiguous about nested scope handling. This can be added if needed.
+  bool HasValues(SearchNested search_nested) const;
+
   // Returns NULL if there's no such value.
   //
   // counts_as_used should be set if the variable is being read in a way that
@@ -132,16 +140,6 @@ class Scope {
   const Value* GetValue(const base::StringPiece& ident,
                         bool counts_as_used);
   const Value* GetValue(const base::StringPiece& ident) const;
-
-  // If the value exists in the current scope, destrictively moves it into the
-  // return value. If it exists in a containing scope, copies it.
-  //
-  // This is for implementing modify-write operations where we want to read
-  // the existing value and plan to immediately overwrite it. If the value is
-  // in a containing scope, we never want to touch it (all writes go to the
-  // current scope), but if it's in the current scope, avoid the copy since it
-  // will be overwritten anyway.
-  //Value DestructiveMoveOut(const base::StringPiece& ident);
 
   // Returns the requested value as a mutable one if possible. If the value
   // is not found in a mutable scope, then returns null. Note that the value

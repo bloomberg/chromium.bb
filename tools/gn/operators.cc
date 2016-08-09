@@ -209,6 +209,33 @@ void ValueDestination::MakeUndefinedIdentifierForModifyError(Err* err) {
   *err = Err(*name_token_, "Undefined identifier.");
 }
 
+// Computes an error message for overwriting a nonempty list/scope with another.
+Err MakeOverwriteError(const BinaryOpNode* op_node,
+                       const Value& old_value) {
+  std::string type_name;
+  std::string empty_def;
+
+  if (old_value.type() == Value::LIST) {
+    type_name = "list";
+    empty_def = "[]";
+  } else if (old_value.type() == Value::SCOPE) {
+    type_name = "scope";
+    empty_def = "{}";
+  } else {
+    NOTREACHED();
+  }
+
+  Err result(op_node->left()->GetRange(),
+      "Replacing nonempty " + type_name + ".",
+      "This overwrites a previously-defined nonempty " + type_name +
+      "with another nonempty " + type_name + ".");
+  result.AppendSubErr(Err(old_value, "for previous definition",
+      "Did you mean to append/modify instead? If you really want to overwrite, "
+      "do:\n"
+      "  foo = " + empty_def + "\nbefore reassigning."));
+  return result;
+}
+
 // -----------------------------------------------------------------------------
 
 Err MakeIncompatibleTypeError(const BinaryOpNode* op_node,
@@ -297,31 +324,23 @@ Value ExecuteEquals(Scope* exec_scope,
                     Err* err) {
   const Value* old_value = dest->GetExistingValue();
   if (old_value) {
-    // Throw an error when overwriting a nonempty list with another nonempty
-    // list item. This is to detect the case where you write
-    //   defines = ["FOO"]
-    // and you overwrote inherited ones, when instead you mean to append:
-    //   defines += ["FOO"]
-    if (old_value->type() == Value::LIST &&
-        !old_value->list_value().empty() &&
-        right.type() == Value::LIST &&
-        !right.list_value().empty()) {
-      *err = Err(op_node->left()->GetRange(), "Replacing nonempty list.",
-          std::string("This overwrites a previously-defined nonempty list ") +
-          "(length " +
-          base::IntToString(static_cast<int>(old_value->list_value().size()))
-          + ").");
-      err->AppendSubErr(Err(*old_value, "for previous definition",
-          "with another one (length " +
-          base::IntToString(static_cast<int>(right.list_value().size())) +
-          "). Did you mean " +
-          "\"+=\" to append instead? If you\nreally want to do this, do\n"
-          "  foo = []\nbefore reassigning."));
+    // Check for overwriting nonempty scopes or lists with other nonempty
+    // scopes or lists. This prevents mistakes that clobber a value rather than
+    // appending to it. For cases where a user meant to clear a value, allow
+    // overwriting a nonempty list/scope with an empty one, which can then be
+    // modified.
+    if (old_value->type() == Value::LIST && right.type() == Value::LIST &&
+        !old_value->list_value().empty() && !right.list_value().empty()) {
+      *err = MakeOverwriteError(op_node, *old_value);
+      return Value();
+    } else if (old_value->type() == Value::SCOPE &&
+               right.type() == Value::SCOPE &&
+               old_value->scope_value()->HasValues(Scope::SEARCH_CURRENT) &&
+               right.scope_value()->HasValues(Scope::SEARCH_CURRENT)) {
+      *err = MakeOverwriteError(op_node, *old_value);
       return Value();
     }
   }
-  if (err->has_error())
-    return Value();
 
   Value* written_value = dest->SetValue(std::move(right), op_node->right());
 
