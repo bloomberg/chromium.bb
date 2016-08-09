@@ -36,6 +36,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_utils.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -1190,8 +1191,10 @@ void ContentSettingSubresourceFilterBubbleModel::SetManageLink() {
 }
 
 void ContentSettingSubresourceFilterBubbleModel::OnManageLinkClicked() {
-  // TODO(melandory): Notify ContentSubresourceFilterDriverFactory page reload
-  // was requested.
+  subresource_filter::ContentSubresourceFilterDriverFactory* driver_factory =
+      subresource_filter::ContentSubresourceFilterDriverFactory::
+          FromWebContents(web_contents());
+  driver_factory->OnReloadRequested();
 }
 
 ContentSettingSubresourceFilterBubbleModel*

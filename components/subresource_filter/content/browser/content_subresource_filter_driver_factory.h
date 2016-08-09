@@ -27,7 +27,7 @@ enum class ThreatPatternType;
 
 namespace subresource_filter {
 
-using OriginSet = std::set<std::string>;
+using HostSet = std::set<std::string>;
 
 class ContentSubresourceFilterDriver;
 
@@ -52,9 +52,18 @@ class ContentSubresourceFilterDriverFactory
       const GURL& url,
       const std::vector<GURL>& redirect_urls,
       safe_browsing::ThreatPatternType threat_type);
-  const OriginSet& activation_set() const { return activate_on_origins_; }
+  const HostSet& activation_set() const { return activate_on_hosts_; }
   bool ShouldActivateForURL(const GURL& url) const;
-  void AddOriginOfURLToActivationSet(const GURL& url);
+  const HostSet& whitelisted_set() const { return whitelisted_hosts_; }
+  void AddHostOfURLToActivationSet(const GURL& url);
+
+  // Whitelists the host of |url|, so that page loads with the main-frame
+  // document being loaded from this host will be exempted from subresource
+  // filtering for the lifetime of this WebContents.
+  void AddHostOfURLToWhitelistSet(const GURL& url);
+
+  // Reloads the page and inserts the url to the whitelist.
+  void OnReloadRequested();
 
   ContentSubresourceFilterDriver* DriverFromFrameHost(
       content::RenderFrameHost* render_frame_host);
@@ -93,7 +102,8 @@ class ContentSubresourceFilterDriverFactory
 
   FrameHostToOwnedDriverMap frame_drivers_;
 
-  OriginSet activate_on_origins_;
+  HostSet activate_on_hosts_;
+  HostSet whitelisted_hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactory);
 };

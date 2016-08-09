@@ -39,8 +39,7 @@ SubresourceFilterNavigationThrottle::WillRedirectRequest() {
   // the information about the activation set. But if the Safe Browsing check in
   // asynchronous, then we night miss some redirects.
   if (driver_factory->ShouldActivateForURL(initial_url_)) {
-    driver_factory->AddOriginOfURLToActivationSet(
-        navigation_handle()->GetURL());
+    driver_factory->AddHostOfURLToActivationSet(navigation_handle()->GetURL());
   }
 
   return NavigationThrottle::PROCEED;

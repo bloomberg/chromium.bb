@@ -63,20 +63,27 @@ void ContentSubresourceFilterDriverFactory::
         safe_browsing::ThreatPatternType threat_type) {
   if (threat_type != safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS)
     return;
-  AddOriginOfURLToActivationSet(url);
+  AddHostOfURLToActivationSet(url);
   for (const auto& url : redirect_urls)
-    AddOriginOfURLToActivationSet(url);
+    AddHostOfURLToActivationSet(url);
 }
 
 bool ContentSubresourceFilterDriverFactory::ShouldActivateForURL(
     const GURL& url) const {
-  return activation_set().find(url.host()) != activation_set().end();
+  return whitelisted_set().find(url.host()) == whitelisted_set().end() &&
+         activation_set().find(url.host()) != activation_set().end();
 }
 
-void ContentSubresourceFilterDriverFactory::AddOriginOfURLToActivationSet(
+void ContentSubresourceFilterDriverFactory::AddHostOfURLToWhitelistSet(
     const GURL& url) {
   if (!url.host().empty() && url.SchemeIsHTTPOrHTTPS())
-    activate_on_origins_.insert(url.host());
+    whitelisted_hosts_.insert(url.host());
+}
+
+void ContentSubresourceFilterDriverFactory::AddHostOfURLToActivationSet(
+    const GURL& url) {
+  if (!url.host().empty() && url.SchemeIsHTTPOrHTTPS())
+    activate_on_hosts_.insert(url.host());
 }
 
 void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
@@ -88,6 +95,13 @@ void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
   ContentSubresourceFilterDriver* driver =
       DriverFromFrameHost(render_frame_host);
   driver->ActivateForProvisionalLoad(GetMaximumActivationState());
+}
+
+void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
+  // TODO(melandory): Collect metrics.
+  const GURL whitelist_url(web_contents()->GetLastCommittedURL());
+  AddHostOfURLToWhitelistSet(whitelist_url);
+  web_contents()->GetController().Reload(true);
 }
 
 void ContentSubresourceFilterDriverFactory::SetDriverForFrameHostForTesting(

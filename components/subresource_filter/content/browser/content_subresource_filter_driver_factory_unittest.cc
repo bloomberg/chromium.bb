@@ -78,6 +78,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitEmptyRedirects) {
       GURL("https://example.com/soceng?q=engsoc"), std::vector<GURL>(),
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
   EXPECT_EQ(1U, factory()->activation_set().size());
+
   EXPECT_TRUE(factory()->ShouldActivateForURL(GURL("https://example.com")));
   EXPECT_TRUE(factory()->ShouldActivateForURL(GURL("http://example.com")));
   EXPECT_TRUE(
@@ -86,6 +87,10 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitEmptyRedirects) {
       factory()->ShouldActivateForURL(GURL("https://example.com/42?q=42!")));
   EXPECT_TRUE(
       factory()->ShouldActivateForURL(GURL("http://example.com/awesomepath")));
+  const GURL whitelisted("http://example.com/page?q=whitelisted");
+  EXPECT_TRUE(factory()->ShouldActivateForURL(whitelisted));
+  factory()->AddHostOfURLToWhitelistSet(whitelisted);
+  EXPECT_FALSE(factory()->ShouldActivateForURL(whitelisted));
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitWithRedirects) {
@@ -98,6 +103,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitWithRedirects) {
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
   EXPECT_EQ(4U, factory()->activation_set().size());
   EXPECT_TRUE(factory()->ShouldActivateForURL(GURL("https://example.com")));
+
   for (const auto& redirect : redirects) {
     EXPECT_TRUE(factory()->ShouldActivateForURL(redirect));
     EXPECT_TRUE(factory()->ShouldActivateForURL(redirect.GetWithEmptyPath()));
@@ -106,6 +112,10 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitWithRedirects) {
     EXPECT_TRUE(factory()->ShouldActivateForURL(
         GURL("http://" + redirect.host() + "/path?q=q")));
   }
+  const GURL whitelisted("http://example.com/page?q=42");
+  EXPECT_TRUE(factory()->ShouldActivateForURL(whitelisted));
+  factory()->AddHostOfURLToWhitelistSet(whitelisted);
+  EXPECT_FALSE(factory()->ShouldActivateForURL(whitelisted));
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
