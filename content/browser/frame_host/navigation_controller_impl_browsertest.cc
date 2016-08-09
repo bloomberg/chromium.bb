@@ -3020,6 +3020,92 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(data_url, entry2->root_node()->children[1]->frame_entry->url());
 }
 
+// Verify that we don't clobber any content injected into the initial blank page
+// if we go back to an about:blank subframe.  See https://crbug.com/626416.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_RecreatedBlankSubframe) {
+  // 1. Start on a page that injects content into an about:blank iframe.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/inject_into_blank_iframe.html"));
+  GURL blank_url(url::kAboutBlankURL);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(0U, root->child_at(0)->child_count());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+
+  // Verify that the parent was able to script the iframe.
+  std::string expected_text("Injected text");
+  {
+    std::string value;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        root->child_at(0),
+        "domAutomationController.send(document.body.innerHTML)", &value));
+    EXPECT_EQ(expected_text, value);
+  }
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+
+  // The entry should have a FrameNavigationEntry for the blank subframe.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+  }
+
+  // 3. Navigate the main frame, destroying the frames.
+  GURL main_url_2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
+  ASSERT_EQ(0U, root->child_count());
+  EXPECT_EQ(main_url_2, root->current_url());
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  // 4. Go back, recreating the iframe.
+  {
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    controller.GoBack();
+    back_load_observer.Wait();
+  }
+  ASSERT_EQ(1U, root->child_count());
+  EXPECT_EQ(main_url, root->current_url());
+
+  // TODO(creis): The child's current_url should be about:blank, but we're not
+  // currently getting a commit in this case.  For now, we'll lack a commit for
+  // this frame, similar to the slow URL case.  See https://crbug.com/626416.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    EXPECT_TRUE(root->child_at(0)->current_url().is_empty());
+  else
+    EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+
+  // Verify that the parent was able to script the iframe.
+  {
+    std::string value;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        root->child_at(0),
+        "domAutomationController.send(document.body.innerHTML)", &value));
+    EXPECT_EQ(expected_text, value);
+  }
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(entry, controller.GetLastCommittedEntry());
+
+  // The entry should have a FrameNavigationEntry for the blank subframe.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+  }
+}
+
 // Verifies that we clear the children FrameNavigationEntries if a history
 // navigation redirects, so that we don't try to load previous history items in
 // frames of the new page.  This should only clear the children of the frame
@@ -5012,7 +5098,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(url_b, root->current_url());
-  EXPECT_EQ(frame_url_b1, root->child_at(0)->current_url());
+
+  // TODO(creis): The child's current_url should be about:blank, but we're not
+  // currently getting a commit in this case.  For now, we'll lack a commit for
+  // this frame, similar to the slow URL case.  See https://crbug.com/626416.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    EXPECT_TRUE(root->child_at(0)->current_url().is_empty());
+  else
+    EXPECT_EQ(frame_url_b1, root->child_at(0)->current_url());
 
   // Check the PageState of the previous entry to ensure it isn't corrupted.
   NavigationEntry* entry = controller.GetEntryAtIndex(1);

@@ -5491,14 +5491,27 @@ void RenderFrameImpl::NavigateInternal(
                         : blink::WebFrameLoadType::BackForward;
         should_load_request = true;
 
-        // If this navigation is to a history item for a new child frame, we
-        // should cancel it if we were interrupted by a Javascript navigation
-        // that has already committed, has started a provisional loader, or has
-        // scheduled a navigation.
+        // If this navigation is to a history item for a new child frame, we may
+        // want to ignore it in some cases.  If a Javascript navigation (i.e.,
+        // client redirect) interrupted it and has either been scheduled,
+        // started loading, or has committed, we should ignore the history item.
+        // Similarly, if the history item just says to stay on about:blank,
+        // don't load it again, which might clobber injected content.
+        bool interrupted_by_client_redirect =
+            frame_->isNavigationScheduledWithin(0) ||
+            frame_->provisionalDataSource() ||
+            !current_history_item_.isNull();
+        bool staying_at_about_blank =
+            current_history_item_.isNull() &&
+            item_for_history_navigation.urlString() == url::kAboutBlankURL;
+        if (staying_at_about_blank) {
+          // TODO(creis): We need to generate a commit for the initial empty
+          // document, rather than just faking a DidStopLoading.  See
+          // https://crbug.com/626416.
+          frame_->stopLoading();
+        }
         if (request_params.is_history_navigation_in_new_child &&
-            (!current_history_item_.isNull() ||
-             frame_->provisionalDataSource() ||
-             frame_->isNavigationScheduledWithin(0))) {
+            (interrupted_by_client_redirect || staying_at_about_blank)) {
           should_load_request = false;
           has_history_navigation_in_frame = false;
         }
