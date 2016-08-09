@@ -11,6 +11,8 @@ component("android") {
   output_name = "ui_android"
   sources = [
     "animation_utils.h",
+    "context_provider_factory.cc",
+    "context_provider_factory.h",
     "edge_effect.cc",
     "edge_effect.h",
     "edge_effect_base.cc",

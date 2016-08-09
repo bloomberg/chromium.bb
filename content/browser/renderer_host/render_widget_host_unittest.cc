@@ -37,6 +37,7 @@
 #include "ui/gfx/canvas.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #endif
 
@@ -466,6 +467,10 @@ class RenderWidgetHostTest : public testing::Test {
         std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
 #endif
+#if defined(OS_ANDROID)
+    ui::ContextProviderFactory::SetInstance(
+        ContextProviderFactoryImpl::GetInstance());
+#endif
 #if defined(USE_AURA)
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
     display::Screen::SetScreenInstance(screen_.get());
@@ -493,6 +498,9 @@ class RenderWidgetHostTest : public testing::Test {
 #endif
 #if defined(USE_AURA) || defined(OS_MACOSX)
     ImageTransportFactory::Terminate();
+#endif
+#if defined(OS_ANDROID)
+    ui::ContextProviderFactory::SetInstance(nullptr);
 #endif
 
     // Process all pending tasks to avoid leaks.

@@ -19,7 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/renderer_host/compositor_impl_android.h"
+#include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #else
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/compositor/compositor.h"  // nogncheck
@@ -160,7 +160,7 @@ namespace content {
 
 uint32_t AllocateSurfaceClientId() {
 #if defined(OS_ANDROID)
-  return CompositorImpl::AllocateSurfaceClientId();
+  return ContextProviderFactoryImpl::GetInstance()->AllocateSurfaceClientId();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   return factory->GetContextFactory()->AllocateSurfaceClientId();
@@ -169,7 +169,7 @@ uint32_t AllocateSurfaceClientId() {
 
 cc::SurfaceManager* GetSurfaceManager() {
 #if defined(OS_ANDROID)
-  return CompositorImpl::GetSurfaceManager();
+  return ContextProviderFactoryImpl::GetInstance()->GetSurfaceManager();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   if (factory == NULL)

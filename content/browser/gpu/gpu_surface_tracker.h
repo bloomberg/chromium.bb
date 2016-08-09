@@ -48,6 +48,9 @@ class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
   // Adds a surface for a native widget. Returns the surface ID.
   int AddSurfaceForNativeWidget(gfx::AcceleratedWidget widget);
 
+  // Return true if the surface handle is registered with the tracker.
+  bool IsValidSurfaceHandle(gpu::SurfaceHandle surface_handle) const;
+
   // Removes a given existing surface.
   void RemoveSurface(gpu::SurfaceHandle surface_handle);
 

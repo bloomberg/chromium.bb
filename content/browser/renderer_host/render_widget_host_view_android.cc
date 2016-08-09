@@ -75,6 +75,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/android/context_provider_factory.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/base/layout.h"
@@ -289,7 +290,8 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     const cc::SurfaceId& surface_id,
     const gfx::Size& size) {
   DCHECK(!surface_id.is_null());
-  cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
+  cc::SurfaceManager* manager =
+      ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
   DCHECK(manager);
   // manager must outlive compositors using it.
   scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create(
@@ -344,10 +346,14 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       locks_on_frame_count_(0),
       observing_root_window_(false),
       weak_ptr_factory_(this) {
-  id_allocator_.reset(
-      new cc::SurfaceIdAllocator(CompositorImpl::AllocateSurfaceClientId()));
-  CompositorImpl::GetSurfaceManager()->RegisterSurfaceClientId(
-      id_allocator_->client_id());
+  if (using_browser_compositor_) {
+    id_allocator_.reset(new cc::SurfaceIdAllocator(
+        ui::ContextProviderFactory::GetInstance()->AllocateSurfaceClientId()));
+    ui::ContextProviderFactory::GetInstance()
+        ->GetSurfaceManager()
+        ->RegisterSurfaceClientId(id_allocator_->client_id());
+  }
+
   host_->SetView(this);
   SetContentViewCore(content_view_core);
 }
@@ -797,8 +803,11 @@ void RenderWidgetHostViewAndroid::Destroy() {
     surface_id_ = cc::SurfaceId();
   }
   surface_factory_.reset();
-  CompositorImpl::GetSurfaceManager()->InvalidateSurfaceClientId(
-      id_allocator_->client_id());
+  if (id_allocator_) {
+    ui::ContextProviderFactory::GetInstance()
+        ->GetSurfaceManager()
+        ->InvalidateSurfaceClientId(id_allocator_->client_id());
+  }
 
   // The RenderWidgetHost's destruction led here, so don't call it.
   host_ = NULL;
@@ -975,7 +984,8 @@ void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
 
 void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
-  cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
+  cc::SurfaceManager* manager =
+      ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
   if (!surface_factory_) {
     surface_factory_ = base::WrapUnique(new cc::SurfaceFactory(manager, this));
   }
@@ -1012,7 +1022,6 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     cc::CompositorFrame frame) {
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
   DCHECK(frame.delegated_frame_data);
-  DCHECK(CompositorImpl::GetSurfaceManager());
 
   if (locks_on_frame_count_ > 0) {
     DCHECK(HasValidFrame());

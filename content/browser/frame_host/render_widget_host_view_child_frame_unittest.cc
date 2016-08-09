@@ -30,6 +30,10 @@
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/renderer_host/context_provider_factory_impl_android.h"
+#endif
+
 namespace content {
 namespace {
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
@@ -80,6 +84,9 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 #if !defined(OS_ANDROID)
     ImageTransportFactory::InitializeForUnitTests(
         base::WrapUnique(new NoTransportImageTransportFactory));
+#else
+    ui::ContextProviderFactory::SetInstance(
+        ContextProviderFactoryImpl::GetInstance());
 #endif
 
     MockRenderProcessHost* process_host =
@@ -106,6 +113,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 #if !defined(OS_ANDROID)
     ImageTransportFactory::Terminate();
+#else
+    ui::ContextProviderFactory::SetInstance(nullptr);
 #endif
   }
 

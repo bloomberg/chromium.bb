@@ -110,6 +110,7 @@
 #include "content/browser/android/browser_surface_texture_manager.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
+#include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/public/browser/screen_orientation_provider.h"
 #include "gpu/ipc/client/android/in_process_surface_texture_manager.h"
@@ -972,6 +973,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
 #if defined(OS_ANDROID)
   g_browser_main_loop_shutting_down = true;
+  ui::ContextProviderFactory::SetInstance(nullptr);
 #endif
 
   if (RenderProcessHost::run_renderer_in_process())
@@ -1204,6 +1206,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   established_gpu_channel = false;
   always_uses_gpu = ShouldStartGpuProcessOnBrowserStartup();
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
+  ui::ContextProviderFactory::SetInstance(
+      ContextProviderFactoryImpl::GetInstance());
 #elif defined(USE_AURA) || defined(OS_MACOSX)
   established_gpu_channel = true;
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor() ||

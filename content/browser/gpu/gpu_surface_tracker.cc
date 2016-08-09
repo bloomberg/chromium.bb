@@ -36,6 +36,11 @@ int GpuSurfaceTracker::AddSurfaceForNativeWidget(
   return surface_handle;
 }
 
+bool GpuSurfaceTracker::IsValidSurfaceHandle(
+    gpu::SurfaceHandle surface_handle) const {
+  return surface_map_.find(surface_handle) != surface_map_.end();
+}
+
 void GpuSurfaceTracker::RemoveSurface(gpu::SurfaceHandle surface_handle) {
   base::AutoLock lock(lock_);
   DCHECK(surface_map_.find(surface_handle) != surface_map_.end());

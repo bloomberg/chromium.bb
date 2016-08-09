@@ -1641,6 +1641,8 @@
       'browser/media/capture/screen_capture_device_android.h',
       'browser/renderer_host/compositor_impl_android.cc',
       'browser/renderer_host/compositor_impl_android.h',
+      'browser/renderer_host/context_provider_factory_impl_android.cc',
+      'browser/renderer_host/context_provider_factory_impl_android.h',
       'browser/renderer_host/ime_adapter_android.cc',
       'browser/renderer_host/ime_adapter_android.h',
       'browser/renderer_host/input/synthetic_gesture_target_android.cc',
