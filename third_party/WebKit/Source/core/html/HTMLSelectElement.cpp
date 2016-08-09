@@ -1822,18 +1822,6 @@ const ComputedStyle* HTMLSelectElement::itemComputedStyle(Element& element) cons
     return element.computedStyle() ? element.computedStyle() : element.ensureComputedStyle();
 }
 
-IntRect HTMLSelectElement::elementRectRelativeToViewport() const
-{
-    if (!layoutObject())
-        return IntRect();
-    // Initialize with this frame rectangle relative to the viewport.
-    IntRect rect = document().view()->convertToRootFrame(document().view()->boundsRect());
-    // We don't use absoluteBoundingBoxRect() because it can return an IntRect
-    // larger the actual size by 1px.
-    rect.intersect(document().view()->contentsToViewport(roundedIntRect(layoutObject()->absoluteBoundingBoxFloatRect())));
-    return rect;
-}
-
 LayoutUnit HTMLSelectElement::clientPaddingLeft() const
 {
     if (layoutObject() && layoutObject()->isMenuList())
@@ -1920,12 +1908,8 @@ void HTMLSelectElement::showPopup()
         return;
     if (!layoutObject() || !layoutObject()->isMenuList())
         return;
-    // Disable visibility check on Android.  elementRectRelativeToViewport()
-    // doesn't work well on Android WebView.  crbug.com/632561
-#if !OS(ANDROID)
-    if (elementRectRelativeToViewport().isEmpty())
+    if (visibleBoundsInVisualViewport().isEmpty())
         return;
-#endif
 
     if (!m_popup)
         m_popup = document().frameHost()->chromeClient().openPopupMenu(*document().frame(), *this);

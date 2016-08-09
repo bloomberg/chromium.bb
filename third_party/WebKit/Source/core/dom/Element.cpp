@@ -95,6 +95,7 @@
 #include "core/frame/ScrollToOptions.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/frame/VisualViewport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/ClassList.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -1013,6 +1014,20 @@ IntRect Element::boundsInViewport() const
         result.unite(quads[i].enclosingBoundingBox());
 
     return view->contentsToViewport(result);
+}
+
+IntRect Element::visibleBoundsInVisualViewport() const
+{
+    if (!layoutObject() || !document().page())
+        return IntRect();
+    // TODO(tkent): Can we check invisibility by scrollable non-frame elements?
+
+    IntSize viewportSize = document().page()->frameHost().visualViewport().size();
+    IntRect rect(0, 0, viewportSize.width(), viewportSize.height());
+    // We don't use absoluteBoundingBoxRect() because it can return an IntRect
+    // larger the actual size by 1px. crbug.com/470503
+    rect.intersect(document().view()->contentsToViewport(roundedIntRect(layoutObject()->absoluteBoundingBoxFloatRect())));
+    return rect;
 }
 
 ClientRectList* Element::getClientRects()

@@ -246,7 +246,7 @@ DEFINE_TRACE(PopupMenuImpl)
 void PopupMenuImpl::writeDocument(SharedBuffer* data)
 {
     HTMLSelectElement& ownerElement = *m_ownerElement;
-    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(ownerElement.elementRectRelativeToViewport(), ownerElement.document().view());
+    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(ownerElement.visibleBoundsInVisualViewport(), ownerElement.document().view());
 
     PagePopupClient::addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
     data->append(Platform::current()->loadResource("pickerCommon.css"));
@@ -511,7 +511,7 @@ void PopupMenuImpl::update()
     }
     context.finishGroupIfNecessary();
     PagePopupClient::addString("],\n", data.get());
-    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(m_ownerElement->elementRectRelativeToViewport(), ownerElement().document().view());
+    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(m_ownerElement->visibleBoundsInVisualViewport(), ownerElement().document().view());
     addProperty("anchorRectInScreen", anchorRectInScreen, data.get());
     PagePopupClient::addString("}\n", data.get());
     m_popup->postMessage(String::fromUTF8(data->data(), data->size()));

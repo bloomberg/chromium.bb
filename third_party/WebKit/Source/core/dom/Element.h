@@ -220,6 +220,10 @@ public:
     virtual void scrollTo(const ScrollToOptions&);
 
     IntRect boundsInViewport() const;
+    // Returns an intersection rectangle of the bounds rectangle and the
+    // viewport rectangle, in the visual viewport coordinate. This function is
+    // used to show popups beside this element.
+    IntRect visibleBoundsInVisualViewport() const;
 
     ClientRectList* getClientRects();
     ClientRect* getBoundingClientRect();

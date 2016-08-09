@@ -1544,6 +1544,22 @@ TEST_P(ParameterizedVisualViewportTest, ElementBoundsInViewportSpaceAccountsForV
     EXPECT_SIZE_EQ(expectedBounds.size(), boundsInViewport.size());
 }
 
+TEST_P(ParameterizedVisualViewportTest, ElementVisibleBoundsInVisualViewport)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(640, 1080));
+    registerMockedHttpURLLoad("viewport-select.html");
+    navigateTo(m_baseURL + "viewport-select.html");
+
+    ASSERT_EQ(2.0f, webViewImpl()->pageScaleFactor());
+    webViewImpl()->setInitialFocus(false);
+    Element* element = webViewImpl()->focusedElement();
+    EXPECT_FALSE(element->visibleBoundsInVisualViewport().isEmpty());
+
+    webViewImpl()->setPageScaleFactor(4.0);
+    EXPECT_TRUE(element->visibleBoundsInVisualViewport().isEmpty());
+}
+
 // Test that the various window.scroll and document.body.scroll properties and
 // methods work unchanged from the pre-virtual viewport mode.
 TEST_P(ParameterizedVisualViewportTest, bodyAndWindowScrollPropertiesAccountForViewport)

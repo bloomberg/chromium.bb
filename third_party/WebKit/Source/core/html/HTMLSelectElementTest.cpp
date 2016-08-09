@@ -133,13 +133,13 @@ TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState)
     EXPECT_EQ(nullptr, toHTMLSelectElement(element)->optionToBeShown());
 }
 
-TEST_F(HTMLSelectElementTest, ElementRectRelativeToViewport)
+TEST_F(HTMLSelectElementTest, VisibleBoundsInVisualViewport)
 {
     document().documentElement()->setInnerHTML("<select style='position:fixed; top:12.3px; height:24px; -webkit-appearance:none;'><option>o1</select>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
     ASSERT(select);
-    IntRect bounds = select->elementRectRelativeToViewport();
+    IntRect bounds = select->visibleBoundsInVisualViewport();
     EXPECT_EQ(24, bounds.height());
 }
 
