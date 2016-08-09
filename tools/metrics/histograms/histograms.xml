@@ -72417,6 +72417,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="OnGetFontFiles: GetFontFamily failed"/>
   <int value="3" label="InitializeDirectWrite: GetSystemFontCollection failed"/>
   <int value="4" label="MapCharacters: could not find family"/>
+  <int value="5" label="AddFilesforFont: create font face failed"/>
+  <int value="6" label="AddFilesforFont: get font file count failed"/>
+  <int value="7" label="AddFilesforFont: get font files failed"/>
+  <int value="8" label="AddFilesforFont: get loader failed"/>
+  <int value="9" label="AddFilesforFont: QueryInterface failed"/>
+  <int value="10" label="AddLocalFile: get reference key failed"/>
+  <int value="11" label="AddLocalFile: get path length failed"/>
+  <int value="12" label="AddLocalFile: get path failed"/>
 </enum>
 
 <enum name="DistillableType" type="int">

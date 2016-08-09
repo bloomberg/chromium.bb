@@ -54,6 +54,14 @@ enum MessageFilterError {
   LAST_RESORT_FONT_GET_FAMILY_FAILED = 2,
   ERROR_NO_COLLECTION = 3,
   MAP_CHARACTERS_NO_FAMILY = 4,
+  ADD_FILES_FOR_FONT_CREATE_FACE_FAILED = 5,
+  ADD_FILES_FOR_FONT_GET_FILE_COUNT_FAILED = 6,
+  ADD_FILES_FOR_FONT_GET_FILES_FAILED = 7,
+  ADD_FILES_FOR_FONT_GET_LOADER_FAILED = 8,
+  ADD_FILES_FOR_FONT_QI_FAILED = 9,
+  ADD_LOCAL_FILE_GET_REFERENCE_KEY_FAILED = 10,
+  ADD_LOCAL_FILE_GET_PATH_LENGTH_FAILED = 11,
+  ADD_LOCAL_FILE_GET_PATH_FAILED = 12,
 
   MESSAGE_FILTER_ERROR_MAX_VALUE
 };
@@ -454,12 +462,14 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
   HRESULT hr;
   hr = font->CreateFontFace(&font_face);
   if (FAILED(hr)) {
+    LogMessageFilterError(ADD_FILES_FOR_FONT_CREATE_FACE_FAILED);
     return false;
   }
 
   UINT32 file_count;
   hr = font_face->GetFiles(&file_count, nullptr);
   if (FAILED(hr)) {
+    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_FILE_COUNT_FAILED);
     return false;
   }
 
@@ -468,6 +478,7 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
   hr = font_face->GetFiles(
       &file_count, reinterpret_cast<IDWriteFontFile**>(font_files.data()));
   if (FAILED(hr)) {
+    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_FILES_FAILED);
     return false;
   }
 
@@ -475,6 +486,7 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
     mswr::ComPtr<IDWriteFontFileLoader> loader;
     hr = font_files[file_index]->GetLoader(&loader);
     if (FAILED(hr)) {
+      LogMessageFilterError(ADD_FILES_FOR_FONT_GET_LOADER_FAILED);
       return false;
     }
 
@@ -496,6 +508,7 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
 
       return false;
     } else if (FAILED(hr)) {
+      LogMessageFilterError(ADD_FILES_FOR_FONT_QI_FAILED);
       return false;
     }
 
@@ -517,12 +530,14 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
   UINT32 key_size;
   hr = font_file->GetReferenceKey(&key, &key_size);
   if (FAILED(hr)) {
+    LogMessageFilterError(ADD_LOCAL_FILE_GET_REFERENCE_KEY_FAILED);
     return false;
   }
 
   UINT32 path_length = 0;
   hr = local_loader->GetFilePathLengthFromKey(key, key_size, &path_length);
   if (FAILED(hr)) {
+    LogMessageFilterError(ADD_LOCAL_FILE_GET_PATH_LENGTH_FAILED);
     return false;
   }
   ++path_length;  // Reserve space for the null terminator.
@@ -531,6 +546,7 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
   hr = local_loader->GetFilePathFromKey(key, key_size, file_path_chars.data(),
                                         path_length);
   if (FAILED(hr)) {
+    LogMessageFilterError(ADD_LOCAL_FILE_GET_PATH_FAILED);
     return false;
   }
 
