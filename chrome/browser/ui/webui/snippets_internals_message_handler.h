@@ -39,15 +39,11 @@ class SnippetsInternalsMessageHandler
   void ContentSuggestionsServiceShutdown() override;
 
   void HandleRefreshContent(const base::ListValue* args);
-  void HandleClear(const base::ListValue* args);
-  void HandleClearDismissed(const base::ListValue* args);
   void HandleDownload(const base::ListValue* args);
   void HandleClearCachedSuggestions(const base::ListValue* args);
   void HandleClearDismissedSuggestions(const base::ListValue* args);
 
   void SendAllContent();
-  void SendSnippets();
-  void SendDismissedSnippets();
   void SendHosts();
   void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);

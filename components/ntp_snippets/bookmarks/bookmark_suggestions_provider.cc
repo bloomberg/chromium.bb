@@ -83,6 +83,7 @@ std::vector<Category> BookmarkSuggestionsProvider::GetProvidedCategories() {
 
 CategoryStatus BookmarkSuggestionsProvider::GetCategoryStatus(
     Category category) {
+  DCHECK_EQ(category, provided_category_);
   return category_status_;
 }
 
@@ -99,12 +100,24 @@ void BookmarkSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
 }
 
-void BookmarkSuggestionsProvider::ClearCachedSuggestionsForDebugging() {
+void BookmarkSuggestionsProvider::ClearCachedSuggestionsForDebugging(
+    Category category) {
+  DCHECK_EQ(category, provided_category_);
   // Ignored.
 }
 
-void BookmarkSuggestionsProvider::ClearDismissedSuggestionsForDebugging() {
-  // TODO(jkrcal): Implement when discarded suggestions are supported.
+std::vector<ContentSuggestion>
+BookmarkSuggestionsProvider::GetDismissedSuggestionsForDebugging(
+    Category category) {
+  DCHECK_EQ(category, provided_category_);
+  // TODO(pke): Implement when discarded suggestions are supported.
+  return std::vector<ContentSuggestion>();
+}
+
+void BookmarkSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
+    Category category) {
+  DCHECK_EQ(category, provided_category_);
+  // TODO(pke): Implement when discarded suggestions are supported.
 }
 
 void BookmarkSuggestionsProvider::BookmarkModelLoaded(
