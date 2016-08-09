@@ -9,12 +9,15 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/content_suggestion.h"
+#include "components/ntp_snippets/features.h"
+#include "components/variations/variations_associated_data.h"
 #include "ui/gfx/image/image.h"
 
 using bookmarks::BookmarkModel;
@@ -25,8 +28,27 @@ namespace {
 const int kMaxBookmarks = 10;
 const int kMaxBookmarkAgeInDays = 42;
 
+const char* kMaxBookmarksParamName = "max_count";
+const char* kMaxBookmarkAgeInDaysParamName = "max_age_in_days";
+
 base::Time GetThresholdTime() {
-  return base::Time::Now() - base::TimeDelta::FromDays(kMaxBookmarkAgeInDays);
+  std::string age_in_days_string = variations::GetVariationParamValueByFeature(
+    ntp_snippets::kBookmarkSuggestionsFeature, kMaxBookmarkAgeInDaysParamName);
+  int age_in_days = 0;
+  if (!base::StringToInt(age_in_days_string, &age_in_days))
+    age_in_days = kMaxBookmarkAgeInDays;
+
+  return base::Time::Now() - base::TimeDelta::FromDays(age_in_days);
+}
+
+int GetMaxCount() {
+  std::string max_count_string = variations::GetVariationParamValueByFeature(
+    ntp_snippets::kBookmarkSuggestionsFeature, kMaxBookmarksParamName);
+  int max_count = 0;
+  if (base::StringToInt(max_count_string, &max_count))
+    return max_count;
+
+  return kMaxBookmarks;
 }
 
 }  // namespace
@@ -120,8 +142,9 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
 
   NotifyStatusChanged(CategoryStatus::AVAILABLE);
 
+  base::Time threshold_time = GetThresholdTime();
   std::vector<const BookmarkNode*> bookmarks = GetRecentlyVisitedBookmarks(
-      bookmark_model_, kMaxBookmarks, GetThresholdTime());
+      bookmark_model_, GetMaxCount(), threshold_time);
 
   std::vector<ContentSuggestion> suggestions;
   for (const BookmarkNode* bookmark : bookmarks) {
@@ -137,7 +160,7 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
   }
 
   if (suggestions.empty())
-    end_of_list_last_visit_date_ = GetThresholdTime();
+    end_of_list_last_visit_date_ = threshold_time;
   else
     end_of_list_last_visit_date_ = suggestions.back().publish_date();
 
