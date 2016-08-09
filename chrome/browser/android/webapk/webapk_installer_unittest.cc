@@ -78,7 +78,7 @@ class WebApkInstallerRunner {
     // WebApkInstaller owns itself.
     WebApkInstaller* installer = new TestWebApkInstaller(info, SkBitmap());
 
-    installer->SetTimeoutMs(20);
+    installer->SetTimeoutMs(100);
     installer->InstallAsyncWithURLRequestContextGetter(
         url_request_context_getter_.get(),
         base::Bind(&WebApkInstallerRunner::OnCompleted,
