@@ -3424,7 +3424,8 @@ cr.define('login', function() {
           if (this.focusedPod_) {
             var targetTag = e.target.tagName;
             if (e.target == this.focusedPod_.passwordElement ||
-                e.target == this.focusedPod_.pinKeyboard.inputElement ||
+                (this.focusedPod_.pinKeyboard &&
+                 e.target == this.focusedPod_.pinKeyboard.inputElement) ||
                 (targetTag != 'INPUT' &&
                  targetTag != 'BUTTON' &&
                  targetTag != 'A')) {
