@@ -515,25 +515,18 @@ class ReportStage(generic_stages.BuilderStage,
       tree_status.SendHealthAlert(self._run, title, '\n\n'.join(body),
                                   extra_fields=extra_fields)
 
-  def _UploadArchiveIndex(self, builder_run):
+  def _LinkArtifacts(self, builder_run):
     """Upload an HTML index for the artifacts at remote archive location.
 
     If there are no artifacts in the archive then do nothing.
 
     Args:
       builder_run: BuilderRun object for this run.
-
-    Returns:
-      If an index file is uploaded then a dict is returned where each value
-        is the same (the URL for the uploaded HTML index) and the keys are
-        the boards it applies to, including None if applicable.  If no index
-        file is uploaded then this returns None.
     """
     archive = builder_run.GetArchive()
     archive_path = archive.archive_path
 
-    config = builder_run.config
-    boards = config.boards
+    boards = builder_run.config.boards
     if boards:
       board_names = ' '.join(boards)
     else:
@@ -547,10 +540,22 @@ class ReportStage(generic_stages.BuilderStage,
       # is possibly normal.  Regardless, no archive index is needed.
       logging.info('No archived artifacts found for %s run (%s)',
                    builder_run.config.name, board_names)
+      return
+
+    if builder_run.config.internal:
+      # Internal builds simply link to pantheon directories, which require
+      # authenticated access that most Googlers should have.
+      artifacts_url = archive.download_url
+
     else:
+      # External builds must allow unauthenticated access to build artifacts.
+      # GS doesn't let unauthenticated users browse selected locations without
+      # being able to browse everything (which would expose secret stuff).
+      # So, we upload an index.html file and link to it instead of the
+      # directory.
       title = 'Artifacts Index: %(board)s / %(version)s (%(config)s config)' % {
           'board': board_names,
-          'config': config.name,
+          'config': builder_run.config.name,
           'version': builder_run.GetVersion(),
       }
 
@@ -558,7 +563,9 @@ class ReportStage(generic_stages.BuilderStage,
           '.|Google Storage Index',
           '..|',
       ]
+
       index = os.path.join(archive_path, 'index.html')
+
       # TODO (sbasi) crbug.com/362776: Rework the way we do uploading to
       # multiple buckets. Currently this can only be done in the Archive Stage
       # therefore index.html will only end up in the normal Chrome OS bucket.
@@ -566,7 +573,13 @@ class ReportStage(generic_stages.BuilderStage,
       commands.UploadArchivedFile(
           archive_path, [archive.upload_url], os.path.basename(index),
           debug=self._run.debug, acl=self.acl)
-      return dict((b, archive.download_url) for b in boards)
+
+      artifacts_url = os.path.join(archive.download_url_file, 'index.html')
+
+    links_build_description = '%s/%s' % (builder_run.config.name,
+                                         archive.version)
+    logging.PrintBuildbotLink('Artifacts[%s]' % links_build_description,
+                              artifacts_url)
 
   def _UploadBuildStagesTimeline(self, builder_run, build_id, db):
     """Upload an HTML timeline for the build stages at remote archive location.
@@ -711,9 +724,6 @@ class ReportStage(generic_stages.BuilderStage,
                     constants.FINAL_STATUS_FAILED
       build_id: CIDB id for the current build.
       db: CIDBConnection instance.
-
-    Returns:
-      A dictionary with the aggregated _UploadArchiveIndex results.
     """
     # Make sure local archive directory is prepared, if it was not already.
     if not os.path.exists(self.archive_path):
@@ -730,7 +740,6 @@ class ReportStage(generic_stages.BuilderStage,
 
     # Iterate through each builder run, whether there is just the main one
     # or multiple child builder runs.
-    archive_urls = {}
     for builder_run in self._run.GetUngroupedBuilderRuns():
       if db is not None:
         timeline = self._UploadBuildStagesTimeline(builder_run, build_id, db)
@@ -746,27 +755,25 @@ class ReportStage(generic_stages.BuilderStage,
       # share that archive, but in practice it is usually one board.  A
       # run/config without a board will also usually not have artifacts to
       # archive, but that restriction is not assumed here.
-      run_archive_urls = self._UploadArchiveIndex(builder_run)
-      if run_archive_urls:
-        archive_urls.update(run_archive_urls)
-        # Check if the builder_run is tied to any boards and if so get all
-        # upload urls.
-        if final_status == constants.FINAL_STATUS_PASSED:
-          # Update the LATEST files if the build passed.
-          try:
-            upload_urls = self._GetUploadUrls(
-                'LATEST-*', builder_run=builder_run)
-          except portage_util.MissingOverlayException as e:
-            # If the build failed prematurely, some overlays might be
-            # missing. Ignore them in this stage.
-            logging.warning(e)
-          else:
+      self._LinkArtifacts(builder_run)
+
+      # Check if the builder_run is tied to any boards and if so get all
+      # upload urls.
+      if final_status == constants.FINAL_STATUS_PASSED:
+        # Update the LATEST files if the build passed.
+        try:
+          upload_urls = self._GetUploadUrls(
+              'LATEST-*', builder_run=builder_run)
+        except portage_util.MissingOverlayException as e:
+          # If the build failed prematurely, some overlays might be
+          # missing. Ignore them in this stage.
+          logging.warning(e)
+        else:
+          if upload_urls:
             archive = builder_run.GetArchive()
             archive.UpdateLatestMarkers(builder_run.manifest_branch,
                                         builder_run.debug,
                                         upload_urls=upload_urls)
-
-    return archive_urls
 
   def CollectComparativeBuildTimings(self, output, build_id, db):
     """Create a report comparing this build to recent history.
@@ -827,30 +834,16 @@ class ReportStage(generic_stages.BuilderStage,
     # Some operations can only be performed if a valid version is available.
     try:
       self._run.GetVersionInfo()
-      archive_urls = self.ArchiveResults(final_status, build_id, db)
+      self.ArchiveResults(final_status, build_id, db)
       metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
     except cbuildbot_run.VersionNotSetError:
       logging.error('A valid version was never set for this run. '
                     'Can not archive results.')
-      archive_urls = ''
       metadata_url = ''
 
     results_lib.Results.Report(
         sys.stdout, current_version=(self._run.attrs.release_tag or ''))
 
-    if archive_urls:
-      logging.info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
-      for name, url in sorted(archive_urls.iteritems()):
-        named_url = url
-        link_name = 'Artifacts'
-        if name:
-          named_url = '%s: %s' % (name, url)
-          link_name = 'Artifacts[%s]' % name
-
-        # Output the bot-id/version used in the archive url.
-        link_name = '%s: %s' % (link_name, '/'.join(url.split('/')[-3:-1]))
-        logging.info(named_url)
-        logging.PrintBuildbotLink(link_name, url)
 
     if db:
       # TODO(akeshet): Eliminate this status string translate once

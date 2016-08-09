@@ -280,8 +280,7 @@ class ReportStageTest(AbstractReportStageTestCase):
     self.mock_cidb.GetSlaveStatuses = mock.Mock(
         return_value=statuses)
     self._SetupUpdateStreakCounter()
-    self.PatchObject(report_stages.ReportStage, '_UploadArchiveIndex',
-                     return_value={'any': 'dict'})
+    self.PatchObject(report_stages.ReportStage, '_LinkArtifacts')
     self.RunStage()
     filenames = (
         'LATEST-%s' % self.TARGET_MANIFEST_BRANCH,
@@ -312,8 +311,7 @@ class ReportStageTest(AbstractReportStageTestCase):
   def testDoNotUpdateLATESTMarkersWhenBuildFailed(self):
     """Check that we do not update the latest markers on failed build."""
     self._SetupUpdateStreakCounter()
-    self.PatchObject(report_stages.ReportStage, '_UploadArchiveIndex',
-                     return_value={'any': 'dict'})
+    self.PatchObject(report_stages.ReportStage, '_LinkArtifacts')
     self.PatchObject(results_lib.Results, 'BuildSucceededSoFar',
                      return_value=False)
     stage = self.ConstructStage()
