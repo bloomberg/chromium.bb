@@ -60,7 +60,7 @@ cr.define('md_history', function() {
      * @param {string} sessionTag
      * @param {number} windowId
      * @param {number} tabId
-     * @param {Event} e
+     * @param {MouseEvent} e
      */
     openForeignSessionTab: function(sessionTag, windowId, tabId, e) {
       chrome.send('openForeignSession', [

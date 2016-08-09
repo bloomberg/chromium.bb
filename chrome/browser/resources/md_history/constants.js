@@ -47,7 +47,7 @@ var QueryState;
 var QueryResult;
 
 /** @constructor
- *  @extends {CustomEvent} */
-var TapEvent = function() {
+ *  @extends {MouseEvent} */
+var DomRepeatClickEvent = function() {
   this.model = null;
 };

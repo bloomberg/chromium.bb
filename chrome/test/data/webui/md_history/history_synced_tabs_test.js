@@ -197,13 +197,17 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals('Chromebook', args[0], 'sessionTag is correct');
           assertEquals('123', args[1], 'windowId is correct');
           assertEquals('456', args[2], 'tabId is correct');
+          assertFalse(args[4], 'altKey is defined');
+          assertFalse(args[5], 'ctrlKey is defined');
+          assertFalse(args[6], 'metaKey is defined');
+          assertFalse(args[7], 'shiftKey is defined');
           done();
         });
 
         flush().then(function() {
           var cards = getCards();
           var anchor = cards[0].root.querySelector('a');
-          MockInteractions.tap(anchor);
+          MockInteractions.tap(anchor, {emulateTouch: true});
         });
       });
 

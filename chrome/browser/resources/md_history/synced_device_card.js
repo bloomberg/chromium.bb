@@ -40,14 +40,15 @@ Polymer({
   },
 
   /**
-   * @param {TapEvent} e
+   * Open a single synced tab. Listens to 'click' rather than 'tap'
+   * to determine what modifier keys were pressed.
+   * @param {DomRepeatClickEvent} e
    * @private
    */
   openTab_: function(e) {
     var tab = /** @type {ForeignSessionTab} */(e.model.tab);
-    var srcEvent = /** @type {Event} */(e.detail.sourceEvent);
     md_history.BrowserService.getInstance().openForeignSessionTab(
-        this.sessionTag, tab.windowId, tab.sessionId, srcEvent);
+        this.sessionTag, tab.windowId, tab.sessionId, e);
     e.preventDefault();
   },
 
