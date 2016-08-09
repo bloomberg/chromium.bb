@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/test_support_ios.h"
+
 #import <UIKit/UIKit.h>
 
 #include "base/debug/debugger.h"
@@ -155,6 +157,12 @@ static char** g_argv;
 - (void)runTests {
   int exitStatus = g_test_suite->Run();
 
+  if (base::IsRunningWithXCTest()) {
+    // Do not kill the app when running in XCTest mode.  XCTest will shut down
+    // the app itself.
+    return;
+  }
+
   if ([self shouldRedirectOutputToFile])
     [self writeOutputToNSLog];
 
@@ -215,6 +223,12 @@ void RunTestsFromIOSApp() {
                                         @"ChromeUnitTestDelegate");
     exit(exit_status);
   }
+}
+
+bool IsRunningWithXCTest() {
+  // Under Xcode 7.3 and 8.0, the "XCTestConfigurationFilePath" environment
+  // variable is set when running XCTests.
+  return getenv("XCTestConfigurationFilePath") != nullptr;
 }
 
 }  // namespace base
