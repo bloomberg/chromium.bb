@@ -740,13 +740,17 @@ void VolumeManager::OnRemovableStorageAttached(
   }
   DCHECK(mtp_storage_info);
 
-  // Mtp write is enabled only when the device is writable and supports generic
-  // hierarchical file system.
+  // Mtp write is enabled only when the device is writable, supports generic
+  // hierarchical file system, and writing to external storage devices is not
+  // prohibited by the preference.
   const bool read_only =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableMtpWriteSupport) ||
       mtp_storage_info->access_capability() != kAccessCapabilityReadWrite ||
-      mtp_storage_info->filesystem_type() != kFilesystemTypeGenericHierarchical;
+      mtp_storage_info->filesystem_type() !=
+          kFilesystemTypeGenericHierarchical ||
+      GetExternalStorageAccessMode(profile_) ==
+          chromeos::MOUNT_ACCESS_MODE_READ_ONLY;
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
