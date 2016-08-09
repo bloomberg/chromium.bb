@@ -549,6 +549,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
+    self.Fail('conformance/glsl/bugs/' +
+              'invariant-does-not-leak-across-shaders.html',
+              bug=634813)
+
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',

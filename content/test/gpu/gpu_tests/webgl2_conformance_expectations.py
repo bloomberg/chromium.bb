@@ -38,6 +38,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
 
     # All platforms.
+    self.Fail('conformance/glsl/bugs/' +
+              'invariant-does-not-leak-across-shaders.html',
+              bug=634813)
+
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
     # All platforms with AMD GPU.
