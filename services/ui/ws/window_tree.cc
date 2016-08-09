@@ -455,7 +455,9 @@ void WindowTree::OnAccelerator(uint32_t accelerator_id,
 
 void WindowTree::ClientJankinessChanged(WindowTree* tree) {
   tree->janky_ = !tree->janky_;
-  if (window_manager_internal_) {
+  // Don't inform the client if it is the source of jank (which generally only
+  // happens while debugging).
+  if (window_manager_internal_ && tree != this) {
     window_manager_internal_->WmClientJankinessChanged(
         tree->id(), tree->janky());
   }
