@@ -13,6 +13,8 @@
 namespace tracing {
 namespace v2 {
 
+ScatteredStreamWriter::Delegate::~Delegate() {}
+
 ScatteredStreamWriter::ScatteredStreamWriter(Delegate* delegate)
     : delegate_(delegate),
       cur_range_({nullptr, nullptr}),
@@ -62,7 +64,7 @@ void ScatteredStreamWriter::WriteBytes(const uint8_t* src, size_t size) {
 // TODO(primiano): perf optimization: I suspect that at the end this will always
 // be called with |size| == 4, in which case we might just hardcode it.
 ContiguousMemoryRange ScatteredStreamWriter::ReserveBytes(size_t size) {
-  // Assume the reservations are always < TraceRingBuffer::Chunk::kSize.
+  // Assume the reservations are always < kChunkSize.
   if (write_ptr_ + size > cur_range_.end) {
     Extend();
     DCHECK_LE(write_ptr_ + size, cur_range_.end);

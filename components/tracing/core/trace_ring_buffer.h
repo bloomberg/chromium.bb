@@ -16,13 +16,13 @@ namespace tracing {
 namespace v2 {
 
 static const uint32_t kNoChunkOwner = 0;
+static const size_t kChunkSize = 32 * 1024;
 
 class TRACING_EXPORT TraceRingBuffer {
  public:
   class Chunk {
    public:
     using Header = base::subtle::Atomic32;
-    static constexpr size_t kSize = 32 * 1024;
 
     Chunk();
     ~Chunk();
@@ -33,7 +33,7 @@ class TRACING_EXPORT TraceRingBuffer {
     uint8_t* begin() const { return begin_; }
     Header* header() const { return reinterpret_cast<Header*>(begin_); }
     uint8_t* payload() const { return begin_ + sizeof(Header); }
-    uint8_t* end() const { return begin_ + kSize; }
+    uint8_t* end() const { return begin_ + kChunkSize; }
 
     void set_used_size(uint32_t size) {
       base::subtle::NoBarrier_Store(header(), size);

@@ -49,6 +49,8 @@
         'tracing/core/proto_zero_message_handle.h',
         'tracing/core/scattered_stream_writer.cc',
         'tracing/core/scattered_stream_writer.h',
+        'tracing/core/trace_buffer_writer.cc',
+        'tracing/core/trace_buffer_writer.h',
         'tracing/core/trace_ring_buffer.cc',
         'tracing/core/trace_ring_buffer.h',
         'tracing/tracing_export.h',
@@ -94,6 +96,21 @@
       ],
       'dependencies': [
         'proto_zero_plugin#host',
+      ],
+      'includes': ['../build/protoc.gypi'],
+    },
+    {
+      # Official protobuf used by tests to verify that the Tracing V2 output is
+      # effectively proto-compatible.
+      # GN version: //components/tracing:golden_protos_for_tests
+      'target_name': 'golden_protos_for_tests',
+      'type': 'static_library',
+      'variables': {
+        'proto_in_dir': 'tracing/proto',
+        'proto_out_dir': 'components/tracing/test/golden_protos',
+      },
+      'sources': [
+        'tracing/proto/events_chunk.proto',
       ],
       'includes': ['../build/protoc.gypi'],
     },
