@@ -9,6 +9,7 @@
 group("all") {
   testonly = true
   deps = [
+    "//components/sync:sync_unit_tests",
     "//ios/chrome:ios_chrome_unittests",
     "//ios/chrome/app",
     "//ios/chrome/browser",
