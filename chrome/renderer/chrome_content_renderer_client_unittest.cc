@@ -8,7 +8,9 @@
 
 #include <vector>
 
+#include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "content/public/common/webplugininfo.h"
@@ -501,4 +503,143 @@ TEST_F(ChromeContentRendererClientTest, RewriteYouTubeFlashEmbed) {
   for (const auto& data : test_data)
     EXPECT_EQ(GURL(data.expected),
               client.OverrideFlashEmbedWithHTML(GURL(data.original)));
+}
+
+class ChromeContentRendererClientMetricsTest : public testing::Test {
+ public:
+  ChromeContentRendererClientMetricsTest() = default;
+
+  std::unique_ptr<base::HistogramSamples> GetHistogramSamples() {
+    return histogram_tester_.GetHistogramSamplesSinceCreation(
+        internal::kFlashYouTubeRewriteUMA);
+  }
+
+  void OverrideFlashEmbed(const GURL& gurl) {
+    client_.OverrideFlashEmbedWithHTML(gurl);
+  }
+
+ private:
+  ChromeContentRendererClient client_;
+  base::HistogramTester histogram_tester_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClientMetricsTest);
+};
+
+TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedIneligibleURL) {
+  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
+  EXPECT_EQ(0, samples->TotalCount());
+
+  const std::string test_data[] = {
+      // HTTP, www, no flash
+      "http://www.youtube.com",
+      // No flash, subdomain
+      "http://www.foo.youtube.com",
+      // No flash
+      "youtube.com",
+      // Not youtube
+      "http://www.plus.google.com",
+      // Already using HTML5
+      "http://youtube.com/embed/deadbeef",
+      // Already using HTML5, enablejsapi=1
+      "http://www.youtube.com/embed/deadbeef?enablejsapi=1"};
+
+  for (const auto& data : test_data) {
+    GURL gurl = GURL(data);
+    OverrideFlashEmbed(gurl);
+    samples = GetHistogramSamples();
+    EXPECT_EQ(0, samples->GetCount(internal::SUCCESS));
+    EXPECT_EQ(0, samples->TotalCount());
+  }
+}
+
+TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedSuccess) {
+  ChromeContentRendererClient client;
+
+  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
+  auto total_count = 0;
+  EXPECT_EQ(total_count, samples->TotalCount());
+
+  const std::string test_data[] = {
+      // HTTP, www, flash
+      "http://www.youtube.com/v/deadbeef",
+      // HTTP, no www, flash
+      "http://youtube.com/v/deadbeef",
+      // HTTPS, www, flash
+      "https://www.youtube.com/v/deadbeef",
+      // HTTPS, no www, flash
+      "https://youtube.com/v/deadbeef",
+      // Invalid parameter construct
+      "http://www.youtube.com/v/abcd/",
+      // Invalid parameter construct
+      "http://www.youtube.com/v/1234/",
+  };
+
+  for (const auto& data : test_data) {
+    ++total_count;
+    GURL gurl = GURL(data);
+    OverrideFlashEmbed(gurl);
+    samples = GetHistogramSamples();
+    EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS));
+    EXPECT_EQ(total_count, samples->TotalCount());
+  }
+
+  // Invalid parameter construct
+  GURL gurl = GURL("http://www.youtube.com/abcd/v/deadbeef");
+  samples = GetHistogramSamples();
+  EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS));
+  EXPECT_EQ(total_count, samples->TotalCount());
+}
+
+TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedSuccessRewrite) {
+  ChromeContentRendererClient client;
+
+  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
+  auto total_count = 0;
+  EXPECT_EQ(total_count, samples->TotalCount());
+
+  const std::string test_data[] = {
+      // Invalid parameter construct, one parameter
+      "http://www.youtube.com/v/deadbeef&start=4",
+      // Invalid parameter construct, has multiple parameters
+      "http://www.youtube.com/v/deadbeef&start=4&fs=1?foo=bar",
+  };
+
+  for (const auto& data : test_data) {
+    ++total_count;
+    GURL gurl = GURL(data);
+    client.OverrideFlashEmbedWithHTML(gurl);
+    samples = GetHistogramSamples();
+    EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS_PARAMS_REWRITE));
+    EXPECT_EQ(total_count, samples->TotalCount());
+  }
+
+  // Invalid parameter construct, not flash
+  GURL gurl = GURL("http://www.youtube.com/embed/deadbeef&start=4");
+  OverrideFlashEmbed(gurl);
+  samples = GetHistogramSamples();
+  EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS_PARAMS_REWRITE));
+  EXPECT_EQ(total_count, samples->TotalCount());
+}
+
+TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedFailureJSAPI) {
+  ChromeContentRendererClient client;
+
+  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
+  auto total_count = 0;
+  EXPECT_EQ(total_count, samples->TotalCount());
+
+  const std::string test_data[] = {
+      // Invalid parameter construct, one parameter
+      "http://www.youtube.com/v/deadbeef&enablejsapi=1",
+      // Invalid parameter construct, has multiple parameters
+      "http://www.youtube.com/v/deadbeef&start=4&enablejsapi=1?foo=2"};
+
+  for (const auto& data : test_data) {
+    ++total_count;
+    GURL gurl = GURL(data);
+    OverrideFlashEmbed(gurl);
+    samples = GetHistogramSamples();
+    EXPECT_EQ(total_count, samples->GetCount(internal::FAILURE_ENABLEJSAPI));
+    EXPECT_EQ(total_count, samples->TotalCount());
+  }
 }

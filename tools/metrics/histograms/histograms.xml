@@ -42679,6 +42679,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Plugin.Flash.YouTubeRewrite" enum="YouTubeRewriteStatus">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>kdsilva@google.org</owner>
+  <summary>
+    Records the YouTube Flash embed rewrite status when attempted.
+  </summary>
+</histogram>
+
 <histogram name="Plugin.FlashNavigateUsage" enum="FlashNavigateUsageType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Record usage of PPB_Flash.Navigate() Pepper API.</summary>
@@ -96050,6 +96058,19 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="XMLHttpRequestSendArrayBufferOrView" type="int">
   <int value="0" label="XMLHttpRequestSendArrayBuffer"/>
   <int value="1" label="XMLHttpRequestSendArrayBufferView"/>
+</enum>
+
+<enum name="YouTubeRewriteStatus" type="int">
+  <int value="0" label="Success">Embed was properly rewritten.</int>
+  <int value="1" label="Success, params were rewritten">
+    Embed was rewritten but the params had to be fixed.
+  </int>
+  <int value="2" label="Success, had JS API enabled">
+    Embed was rewritten even though JS API was enabled (Android only).
+  </int>
+  <int value="3" label="Embed not rewritten, JS API enabled">
+    Embed was not rewritten because JS API was enabled.
+  </int>
 </enum>
 
 </enums>

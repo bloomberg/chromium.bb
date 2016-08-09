@@ -183,7 +183,16 @@ using content::RenderThread;
 using content::WebPluginInfo;
 using extensions::Extension;
 
+namespace internal {
+const char kFlashYouTubeRewriteUMA[] = "Plugin.Flash.YouTubeRewrite";
+}  // namespace internal
+
 namespace {
+
+void RecordYouTubeRewriteUMA(internal::YouTubeRewriteStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(internal::kFlashYouTubeRewriteUMA, status,
+                            internal::NUM_PLUGIN_ERROR);
+}
 
 // Whitelist PPAPI for Android Runtime for Chromium. (See crbug.com/383937)
 #if defined(ENABLE_PLUGINS)
@@ -1438,8 +1447,10 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   // We don't modify any URLs that contain the enablejsapi=1 parameter
   // since the page may be interacting with the YouTube Flash player in
   // Javascript and we don't want to break working content.
-  if (corrected_url.query().find("enablejsapi=1") != std::string::npos)
+  if (corrected_url.query().find("enablejsapi=1") != std::string::npos) {
+    RecordYouTubeRewriteUMA(internal::FAILURE_ENABLEJSAPI);
     return GURL();
+  }
 
   // Change the path to use the YouTube HTML5 API
   std::string path = corrected_url.path();
@@ -1448,5 +1459,7 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   url::Replacements<char> r;
   r.SetPath(path.c_str(), url::Component(0, path.length()));
 
+  RecordYouTubeRewriteUMA(invalid_url ? internal::SUCCESS_PARAMS_REWRITE
+                                      : internal::SUCCESS);
   return corrected_url.ReplaceComponents(r);
 }

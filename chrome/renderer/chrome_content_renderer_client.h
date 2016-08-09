@@ -78,6 +78,26 @@ class WebSecurityOrigin;
 class WebRtcLoggingMessageFilter;
 #endif
 
+namespace internal {
+
+extern const char kFlashYouTubeRewriteUMA[];
+
+// Used for UMA. Values should not be reorderer or reused.
+// SUCCESS refers to an embed properly rewritten. SUCCESS_PARAMS_REWRITE refers
+// to an embed rewritten with the params fixed. SUCCESS_ENABLEJSAPI refers to
+// a rewritten embed even though the JS API was enabled (Chrome Android only).
+// FAILURE_ENABLEJSAPI indicates the embed was not rewritten because the
+// JS API was enabled.
+enum YouTubeRewriteStatus {
+  SUCCESS = 0,
+  SUCCESS_PARAMS_REWRITE = 1,
+  SUCCESS_ENABLEJSAPI = 2,
+  FAILURE_ENABLEJSAPI = 3,
+  NUM_PLUGIN_ERROR  // should be kept last
+};
+
+}  // namespace internal
+
 class ChromeContentRendererClient : public content::ContentRendererClient {
  public:
   ChromeContentRendererClient();
@@ -166,7 +186,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       int embedded_worker_id,
       const GURL& url) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
-
   GURL OverrideFlashEmbedWithHTML(const GURL& url) override;
 
 #if defined(ENABLE_SPELLCHECK)
