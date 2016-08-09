@@ -237,8 +237,6 @@
         'public/V8Inspector.h',
         'public/V8InspectorClient.h',
         'public/V8HeapProfilerAgent.h',
-        'public/SimpleInspector.cpp',
-        'public/SimpleInspector.h',
         'public/V8InspectorSession.h',
         'public/V8StackTrace.h',
 
