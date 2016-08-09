@@ -706,7 +706,6 @@ class CONTENT_EXPORT RenderFrameImpl
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderAccessibilityImplTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
-  FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest, ZoomLimit);
 
   // A wrapper class used as the callback for JavaScript executed
   // in an isolated world.
@@ -1039,8 +1038,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
 
-  void OnGotZoomLevel(const GURL& url, double zoom_level);
-
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToWebFrame is called, and it is null after
   // frameDetached is called until destruction (which is asynchronous in the
@@ -1229,8 +1226,6 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<blink::WebAppBannerClient> app_banner_client_;
 
   std::unique_ptr<blink::WebBluetooth> bluetooth_;
-
-  HostZoomLevels host_zoom_levels_;
 
   // Manages play, pause notifications for WebMediaPlayer implementations; its
   // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.

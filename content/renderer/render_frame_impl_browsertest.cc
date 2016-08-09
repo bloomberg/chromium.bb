@@ -18,14 +18,12 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/test/fake_compositor_dependencies.h"
-#include "content/test/test_render_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebString;
 
@@ -343,34 +341,6 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
   const IPC::Message* msg4 = render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_SaveImageFromDataURL::ID);
   EXPECT_FALSE(msg4);
-}
-
-TEST_F(RenderFrameImplTest, ZoomLimit) {
-  const double kMinZoomLevel = ZoomFactorToZoomLevel(kMinimumZoomFactor);
-  const double kMaxZoomLevel = ZoomFactorToZoomLevel(kMaximumZoomFactor);
-
-  // Verifies navigation to a URL with preset zoom level indeed sets the level.
-  // Regression test for http://crbug.com/139559, where the level was not
-  // properly set when it is out of the default zoom limits of WebView.
-  CommonNavigationParams common_params;
-  common_params.url = GURL("data:text/html,min_zoomlimit_test");
-  GetMainRenderFrame()->OnGotZoomLevel(common_params.url, kMinZoomLevel);
-  TestRenderFrame* frame = static_cast<TestRenderFrame*>(GetMainRenderFrame());
-  frame->Navigate(common_params, StartNavigationParams(),
-                  RequestNavigationParams());
-
-  ProcessPendingMessages();
-  EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->zoomLevel());
-
-  // It should work even when the zoom limit is temporarily changed in the page.
-  view_->GetWebView()->zoomLimitsChanged(ZoomFactorToZoomLevel(1.0),
-                                         ZoomFactorToZoomLevel(1.0));
-  common_params.url = GURL("data:text/html,max_zoomlimit_test");
-  GetMainRenderFrame()->OnGotZoomLevel(common_params.url, kMaxZoomLevel);
-  frame->Navigate(common_params, StartNavigationParams(),
-                  RequestNavigationParams());
-  ProcessPendingMessages();
-  EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->zoomLevel());
 }
 
 }  // namespace

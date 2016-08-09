@@ -15,7 +15,6 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/common/content_constants_internal.h"
@@ -26,7 +25,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -223,13 +221,7 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
-      render_process_id_(render_process_id),
-      host_zoom_map_impl_(render_process_id
-                              ? static_cast<const HostZoomMapImpl*>(
-                                    RenderProcessHost::FromID(render_process_id)
-                                        ->GetStoragePartition()
-                                        ->GetHostZoomMap())
-                              : nullptr) {
+      render_process_id_(render_process_id) {
 }
 
 RenderFrameMessageFilter::~RenderFrameMessageFilter() {
@@ -454,19 +446,6 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
       url, options,
       base::Bind(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
                  render_frame_id, url, first_party_for_cookies, callback));
-}
-
-void RenderFrameMessageFilter::GetHostZoomLevel(
-    int32_t render_frame_id,
-    const GURL& url,
-    const GetHostZoomLevelCallback& callback) {
-  // We need to make sure this is serviced directly on the IO thread so that it
-  // does not get out of order with the resource request in AsyncResourceHandler
-  // which lives on the IO thread.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  double zoom_level = host_zoom_map_impl_->GetZoomLevelForView(
-      url, render_process_id_, render_frame_id);
-  callback.Run(zoom_level);
 }
 
 #if defined(ENABLE_PLUGINS)

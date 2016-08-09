@@ -17,8 +17,4 @@ interface RenderFrameMessageFilter {
   [Sync]
   GetCookies(int32 render_frame_id, url.mojom.Url url,
       url.mojom.Url first_party_for_cookies) => (string cookies);
-
-  // Retrieves the zoom level for the given URL.
-  GetHostZoomLevel(int32 render_frame_id, url.mojom.Url url)
-      => (double zoom_level);
 };

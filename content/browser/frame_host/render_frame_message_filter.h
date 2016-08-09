@@ -31,7 +31,6 @@ class URLRequestContextGetter;
 
 namespace content {
 class BrowserContext;
-class HostZoomMapImpl;
 class PluginServiceImpl;
 struct Referrer;
 class RenderWidgetHelper;
@@ -118,9 +117,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                   const GURL& url,
                   const GURL& first_party_for_cookies,
                   const GetCookiesCallback& callback) override;
-  void GetHostZoomLevel(int32_t render_frame_id,
-                        const GURL& url,
-                        const GetHostZoomLevelCallback& callback) override;
+
 
 #if defined(ENABLE_PLUGINS)
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
@@ -176,8 +173,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   bool incognito_;
 
   const int render_process_id_;
-
-  const HostZoomMapImpl* host_zoom_map_impl_;
 };
 
 }  // namespace content
