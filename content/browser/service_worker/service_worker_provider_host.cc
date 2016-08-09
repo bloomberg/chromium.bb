@@ -282,8 +282,10 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
 
 void ServiceWorkerProviderHost::AddMatchingRegistration(
     ServiceWorkerRegistration* registration) {
-  DCHECK(ServiceWorkerUtils::ScopeMatches(
-        registration->pattern(), document_url_));
+  // TODO(shimazu): Change CHECK to DCHECK after https://crbug.com/634222 is
+  // fixed.
+  CHECK(
+      ServiceWorkerUtils::ScopeMatches(registration->pattern(), document_url_));
   if (!IsContextSecureForServiceWorker())
     return;
   size_t key = registration->pattern().spec().size();
