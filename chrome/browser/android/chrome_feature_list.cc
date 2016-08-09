@@ -41,7 +41,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPFakeOmniboxTextFeature,
     &kNTPMaterialDesign,
     &kNTPOfflinePagesFeature,
-    &kNTPOfflinePageSuggestionsFeature,
     &kNTPToolbarFeature,
     &kPhysicalWebFeature,
     &kPhysicalWebIgnoreOtherClientsFeature,
@@ -67,9 +66,6 @@ const base::Feature kNTPMaterialDesign{"NTPMaterialDesign",
 
 const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNTPOfflinePageSuggestionsFeature{
-    "NTPOfflinePageSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPToolbarFeature{"NTPToolbar",
                                        base::FEATURE_ENABLED_BY_DEFAULT};

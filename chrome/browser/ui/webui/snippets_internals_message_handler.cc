@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/ntp_snippets/features.h"
@@ -206,7 +205,7 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
 
   SendBoolean("flag-offline-page-suggestions",
               base::FeatureList::IsEnabled(
-                  chrome::android::kNTPOfflinePageSuggestionsFeature));
+                  ntp_snippets::kOfflinePageSuggestionsFeature));
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.setHostRestricted",

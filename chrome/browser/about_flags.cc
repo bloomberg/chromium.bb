@@ -1906,7 +1906,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ntp-offline-page-suggestions",
      IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNTPOfflinePageSuggestionsFeature)},
+     FEATURE_VALUE_TYPE(ntp_snippets::kOfflinePageSuggestionsFeature)},
     {"enable-ntp-bookmark-suggestions",
      IDS_FLAGS_ENABLE_NTP_BOOKMARK_SUGGESTIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_BOOKMARK_SUGGESTIONS_DESCRIPTION, kOsAndroid,

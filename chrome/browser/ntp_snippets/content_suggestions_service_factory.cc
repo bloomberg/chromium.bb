@@ -112,7 +112,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   // Create the OfflinePageSuggestionsProvider.
   if (base::FeatureList::IsEnabled(
-          chrome::android::kNTPOfflinePageSuggestionsFeature)) {
+      ntp_snippets::kOfflinePageSuggestionsFeature)) {
     OfflinePageModel* offline_page_model =
         OfflinePageModelFactory::GetForBrowserContext(profile);
 
