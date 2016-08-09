@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "components/tracing/core/proto_utils.h"
 #include "components/tracing/core/proto_zero_message_handle.h"
 
 #if !defined(ARCH_CPU_LITTLE_ENDIAN)
@@ -49,47 +48,6 @@ void ProtoZeroMessage::Reset(ScatteredStreamWriter* stream_writer) {
 #endif
 }
 
-void ProtoZeroMessage::AppendVarIntU64(uint32_t field_id, uint64_t value) {
-  if (nested_message_)
-    EndNestedMessage();
-
-  uint8_t data[proto::GetMaxVarIntEncodedSize<uint32_t>() +
-               proto::GetMaxVarIntEncodedSize<uint64_t>()];
-  uint8_t* data_end;
-  data_end = proto::WriteVarIntU32(proto::MakeTagVarInt(field_id), data);
-  data_end = proto::WriteVarIntU64(value, data_end);
-  WriteToStream(data, data_end);
-}
-
-void ProtoZeroMessage::AppendVarIntU32(uint32_t field_id, uint32_t value) {
-  // TODO(kraynov): this could be perf-optimized. See http://crbug.com/624311 .
-  AppendVarIntU64(field_id, value);
-}
-
-void ProtoZeroMessage::AppendFloat(uint32_t field_id, float value) {
-  if (nested_message_)
-    EndNestedMessage();
-
-  uint8_t data[proto::GetMaxVarIntEncodedSize<uint32_t>() + sizeof(value)];
-  uint8_t* data_end;
-  data_end = proto::WriteVarIntU32(proto::MakeTagFixed32(field_id), data);
-  memcpy(data_end, &value, sizeof(value));
-  data_end += sizeof(value);
-  WriteToStream(data, data_end);
-}
-
-void ProtoZeroMessage::AppendDouble(uint32_t field_id, double value) {
-  if (nested_message_)
-    EndNestedMessage();
-
-  uint8_t data[proto::GetMaxVarIntEncodedSize<uint32_t>() + sizeof(value)];
-  uint8_t* data_end;
-  data_end = proto::WriteVarIntU32(proto::MakeTagFixed64(field_id), data);
-  memcpy(data_end, &value, sizeof(value));
-  data_end += sizeof(value);
-  WriteToStream(data, data_end);
-}
-
 void ProtoZeroMessage::AppendString(uint32_t field_id, const char* str) {
   AppendBytes(field_id, str, strlen(str));
 }
@@ -100,12 +58,14 @@ void ProtoZeroMessage::AppendBytes(uint32_t field_id,
   if (nested_message_)
     EndNestedMessage();
 
-  // Write the proto preamble (field id, type and length of the buffer).
-  uint8_t data[2 * proto::GetMaxVarIntEncodedSize<uint32_t>()];
-  uint8_t* data_end =
-      proto::WriteVarIntU32(proto::MakeTagLengthDelimited(field_id), data);
-  data_end = proto::WriteVarIntU32(static_cast<uint32_t>(size), data_end);
-  WriteToStream(data, data_end);
+  DCHECK_LT(size, proto::kMaxMessageLength);
+  // Write the proto preamble (field id, type and length of the field).
+  uint8_t buffer[proto::kMaxSimpleFieldEncodedSize];
+  uint8_t* pos = buffer;
+  pos = proto::WriteVarInt(proto::MakeTagLengthDelimited(field_id), pos);
+  pos = proto::WriteVarInt(static_cast<uint32_t>(size), pos);
+  WriteToStream(buffer, pos);
+
   const uint8_t* src_u8 = reinterpret_cast<const uint8_t*>(src);
   WriteToStream(src_u8, src_u8 + size);
 }
@@ -122,7 +82,7 @@ size_t ProtoZeroMessage::Finalize() {
 #endif
     DCHECK_LT(size_, proto::kMaxMessageLength);
     DCHECK_EQ(proto::kMessageLengthFieldSize, size_field_.size());
-    proto::WriteRedundantVarIntU32<proto::kMessageLengthFieldSize>(
+    proto::WriteRedundantLength(
         static_cast<uint32_t>(size_ - size_already_written_),
         size_field_.begin);
     size_field_.reset();
@@ -143,9 +103,9 @@ void ProtoZeroMessage::BeginNestedMessageInternal(uint32_t field_id,
     EndNestedMessage();
 
   // Write the proto preamble for the nested message.
-  uint8_t data[proto::GetMaxVarIntEncodedSize<uint32_t>()];
+  uint8_t data[proto::kMaxTagEncodedSize];
   uint8_t* data_end =
-      proto::WriteVarIntU32(proto::MakeTagLengthDelimited(field_id), data);
+      proto::WriteVarInt(proto::MakeTagLengthDelimited(field_id), data);
   WriteToStream(data, data_end);
 
   message->Reset(stream_writer_);

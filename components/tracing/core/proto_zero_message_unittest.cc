@@ -87,7 +87,7 @@ class ProtoZeroMessageTest : public ::testing::Test {
     }
 
     for (uint32_t i = 129; i <= 256; ++i)
-      msg->AppendVarIntU32(i, 42);
+      msg->AppendVarInt(i, 42);
 
     if ((depth & 2) == 0)
       msg->Finalize();
@@ -102,19 +102,20 @@ class ProtoZeroMessageTest : public ::testing::Test {
 
 TEST_F(ProtoZeroMessageTest, BasicTypesNoNesting) {
   ProtoZeroMessage* msg = NewMessage();
-  msg->AppendVarIntU32(1 /* field_id */, 0);
-  msg->AppendVarIntU32(2 /* field_id */, std::numeric_limits<uint32_t>::max());
-  msg->AppendVarIntU64(3 /* field_id */, 42);
-  msg->AppendVarIntU64(4 /* field_id */, std::numeric_limits<uint64_t>::max());
-  msg->AppendFloat(5 /* field_id */, 3.1415f);
-  msg->AppendDouble(6 /* field_id */, 3.14159265358979323846);
+  msg->AppendVarInt(1 /* field_id */, 0);
+  msg->AppendVarInt(2 /* field_id */, std::numeric_limits<uint32_t>::max());
+  msg->AppendVarInt(3 /* field_id */, 42);
+  msg->AppendVarInt(4 /* field_id */, std::numeric_limits<uint64_t>::max());
+  msg->AppendFixed(5 /* field_id */, 3.1415f /* float */);
+  msg->AppendFixed(6 /* field_id */, 3.14159265358979323846 /* double */);
   msg->AppendBytes(7 /* field_id */, kTestBytes, sizeof(kTestBytes));
 
   // Field ids > 16 are expected to be varint encoded (preamble > 1 byte)
   msg->AppendString(257 /* field_id */, "0123456789abcdefABCDEF");
+  msg->AppendSignedVarInt(3 /* field_id */, -21);
 
-  EXPECT_EQ(72u, msg->Finalize());
-  EXPECT_EQ(72u, GetNumSerializedBytes());
+  EXPECT_EQ(74u, msg->Finalize());
+  EXPECT_EQ(74u, GetNumSerializedBytes());
 
   // These lines match the serialization of the Append* calls above.
   ASSERT_EQ("0800", GetNextSerializedBytes(2));
@@ -126,22 +127,23 @@ TEST_F(ProtoZeroMessageTest, BasicTypesNoNesting) {
   ASSERT_EQ("3A0A00000000420142FF4200", GetNextSerializedBytes(12));
   ASSERT_EQ("8A101630313233343536373839616263646566414243444546",
             GetNextSerializedBytes(25));
+  ASSERT_EQ("1829", GetNextSerializedBytes(2));
 }
 
 TEST_F(ProtoZeroMessageTest, NestedMessagesSimple) {
   ProtoZeroMessage* root_msg = NewMessage();
-  root_msg->AppendVarIntU32(1 /* field_id */, 1);
+  root_msg->AppendVarInt(1 /* field_id */, 1);
 
   FakeChildMessage* nested_msg =
       root_msg->BeginNestedMessage<FakeChildMessage>(128 /* field_id */);
   ASSERT_EQ(0u, reinterpret_cast<uintptr_t>(nested_msg) % sizeof(void*));
-  nested_msg->AppendVarIntU32(2 /* field_id */, 2);
+  nested_msg->AppendVarInt(2 /* field_id */, 2);
 
   nested_msg =
       root_msg->BeginNestedMessage<FakeChildMessage>(129 /* field_id */);
-  nested_msg->AppendVarIntU32(4 /* field_id */, 2);
+  nested_msg->AppendVarInt(4 /* field_id */, 2);
 
-  root_msg->AppendVarIntU32(5 /* field_id */, 3);
+  root_msg->AppendVarInt(5 /* field_id */, 3);
 
   // The expected size of the root message is supposed to be 20 bytes:
   //   2 bytes for the varint field (id: 1) (1 for preamble and one for payload)
@@ -175,11 +177,11 @@ TEST_F(ProtoZeroMessageTest, BackfillSizeOnFinalization) {
   uint8_t root_msg_size[proto::kMessageLengthFieldSize] = {};
   root_msg->set_size_field(
       {&root_msg_size[0], &root_msg_size[proto::kMessageLengthFieldSize]});
-  root_msg->AppendVarIntU32(1, 0x42);
+  root_msg->AppendVarInt(1, 0x42);
 
   FakeChildMessage* nested_msg_1 =
       root_msg->BeginNestedMessage<FakeChildMessage>(2);
-  nested_msg_1->AppendVarIntU32(3, 0x43);
+  nested_msg_1->AppendVarInt(3, 0x43);
 
   FakeChildMessage* nested_msg_2 =
       nested_msg_1->BeginNestedMessage<FakeChildMessage>(4);
@@ -301,13 +303,13 @@ TEST_F(ProtoZeroMessageTest, MessageHandle) {
     ProtoZeroMessageHandle<FakeChildMessage> child_handle_1(nested_msg_1);
     ContiguousMemoryRange size_msg_1 = nested_msg_1->size_field();
     memset(size_msg_1.begin, 0, size_msg_1.size());
-    child_handle_1->AppendVarIntU32(1, 0x11);
+    child_handle_1->AppendVarInt(1, 0x11);
 
     auto* nested_msg_2 = NewMessage()->BeginNestedMessage<FakeChildMessage>(2);
     size_msg_2 = nested_msg_2->size_field();
     memset(size_msg_2.begin, 0, size_msg_2.size());
     ProtoZeroMessageHandle<FakeChildMessage> child_handle_2(nested_msg_2);
-    child_handle_2->AppendVarIntU32(2, 0xFF);
+    child_handle_2->AppendVarInt(2, 0xFF);
 
     // |nested_msg_1| should not be finalized yet.
     ASSERT_EQ(0u, size_msg_1.begin[0]);

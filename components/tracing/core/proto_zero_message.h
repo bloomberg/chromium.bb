@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
+#include "components/tracing/core/proto_utils.h"
 #include "components/tracing/core/scattered_stream_writer.h"
 #include "components/tracing/tracing_export.h"
 
@@ -61,13 +62,46 @@ class TRACING_EXPORT ProtoZeroMessage {
  protected:
   ProtoZeroMessage();
 
-  void AppendVarIntU64(uint32_t field_id, uint64_t value);
-  void AppendVarIntU32(uint32_t field_id, uint32_t value);
-  void AppendFloat(uint32_t field_id, float value);
-  void AppendDouble(uint32_t field_id, double value);
+  // Proto types: uint64, uint32, int64, int32, bool, enum.
+  template <typename T>
+  void AppendVarInt(uint32_t field_id, T value) {
+    if (nested_message_)
+      EndNestedMessage();
+
+    uint8_t buffer[proto::kMaxSimpleFieldEncodedSize];
+    uint8_t* pos = buffer;
+
+    pos = proto::WriteVarInt(proto::MakeTagVarInt(field_id), pos);
+    // WriteVarInt encodes signed values in two's complement form.
+    pos = proto::WriteVarInt(value, pos);
+    WriteToStream(buffer, pos);
+  }
+
+  // Proto types: sint64, sint32.
+  template <typename T>
+  void AppendSignedVarInt(uint32_t field_id, T value) {
+    AppendVarInt(field_id, proto::ZigZagEncode(value));
+  }
+
+  // Proto types: fixed64, sfixed64, fixed32, sfixed32, double, float.
+  template <typename T>
+  void AppendFixed(uint32_t field_id, T value) {
+    if (nested_message_)
+      EndNestedMessage();
+
+    uint8_t buffer[proto::kMaxSimpleFieldEncodedSize];
+    uint8_t* pos = buffer;
+
+    pos = proto::WriteVarInt(proto::MakeTagFixed<T>(field_id), pos);
+    memcpy(pos, &value, sizeof(T));
+    pos += sizeof(T);
+    // TODO(kraynov): Optimize memcpy performance, see http://crbug.com/624311 .
+    WriteToStream(buffer, pos);
+  }
+
+  // TODO(kraynov): Add AppendTinyInt.
   void AppendString(uint32_t field_id, const char* str);
   void AppendBytes(uint32_t field_id, const void* value, size_t size);
-  // TODO(kraynov): implement AppendVarIntS32/64(...) w/ zig-zag encoding.
 
   // Begins a nested message, using the static storage provided by the parent
   // class (see comment in |nested_messages_arena_|). The nested message ends

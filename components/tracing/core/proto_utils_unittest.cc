@@ -4,6 +4,8 @@
 
 #include "components/tracing/core/proto_utils.h"
 
+#include <limits>
+
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,57 +14,62 @@ namespace v2 {
 namespace proto {
 namespace {
 
-bool CheckWriteVarIntU32(const char* expected, size_t length, uint32_t value) {
+template <typename T>
+bool CheckWriteVarInt(const char* expected, size_t length, T value) {
   uint8_t buf[32];
-  uint8_t* res = WriteVarIntU32(value, buf);
+  uint8_t* res = WriteVarInt<T>(value, buf);
   if (static_cast<size_t>(res - buf) != length)
     return false;
-  if (memcmp(expected, buf, length))
-    return false;
-  return true;
-}
-
-bool CheckWriteVarIntU64(const char* expected, size_t length, uint64_t value) {
-  uint8_t buf[32];
-  uint8_t* res = WriteVarIntU64(value, buf);
-  if (static_cast<size_t>(res - buf) != length)
-    return false;
-  if (memcmp(expected, buf, length))
-    return false;
-  return true;
+  return memcmp(expected, buf, length) == 0;
 }
 
 #define EXPECT_VARINT32_EQ(expected, expected_length, value) \
-  EXPECT_PRED3(CheckWriteVarIntU32, expected, expected_length, value)
+  EXPECT_PRED3(CheckWriteVarInt<uint32_t>, expected, expected_length, value)
 
 #define EXPECT_VARINT64_EQ(expected, expected_length, value) \
-  EXPECT_PRED3(CheckWriteVarIntU64, expected, expected_length, value)
+  EXPECT_PRED3(CheckWriteVarInt<uint64_t>, expected, expected_length, value)
 
 TEST(ProtoUtilsTest, Serialization) {
+  // According to C++ standard, right shift of negative value has
+  // implementation-defined resulting value.
+  if ((static_cast<int32_t>(0x80000000u) >> 31) != -1)
+    FAIL() << "Platform has unsupported negative number format or arithmetic";
+
   EXPECT_EQ(0x08u, MakeTagVarInt(1));
-  EXPECT_EQ(0x09u, MakeTagFixed64(1));
+  EXPECT_EQ(0x09u, MakeTagFixed<uint64_t>(1));
   EXPECT_EQ(0x0Au, MakeTagLengthDelimited(1));
-  EXPECT_EQ(0x0Du, MakeTagFixed32(1));
+  EXPECT_EQ(0x0Du, MakeTagFixed<uint32_t>(1));
 
   EXPECT_EQ(0x03F8u, MakeTagVarInt(0x7F));
-  EXPECT_EQ(0x03F9u, MakeTagFixed64(0x7F));
+  EXPECT_EQ(0x03F9u, MakeTagFixed<int64_t>(0x7F));
   EXPECT_EQ(0x03FAu, MakeTagLengthDelimited(0x7F));
-  EXPECT_EQ(0x03FDu, MakeTagFixed32(0x7F));
+  EXPECT_EQ(0x03FDu, MakeTagFixed<int32_t>(0x7F));
 
   EXPECT_EQ(0x0400u, MakeTagVarInt(0x80));
-  EXPECT_EQ(0x0401u, MakeTagFixed64(0x80));
+  EXPECT_EQ(0x0401u, MakeTagFixed<double>(0x80));
   EXPECT_EQ(0x0402u, MakeTagLengthDelimited(0x80));
-  EXPECT_EQ(0x0405u, MakeTagFixed32(0x80));
+  EXPECT_EQ(0x0405u, MakeTagFixed<float>(0x80));
 
   EXPECT_EQ(0x01FFF8u, MakeTagVarInt(0x3fff));
-  EXPECT_EQ(0x01FFF9u, MakeTagFixed64(0x3fff));
+  EXPECT_EQ(0x01FFF9u, MakeTagFixed<int64_t>(0x3fff));
   EXPECT_EQ(0x01FFFAu, MakeTagLengthDelimited(0x3fff));
-  EXPECT_EQ(0x01FFFDu, MakeTagFixed32(0x3fff));
+  EXPECT_EQ(0x01FFFDu, MakeTagFixed<int32_t>(0x3fff));
 
   EXPECT_EQ(0x020000u, MakeTagVarInt(0x4000));
-  EXPECT_EQ(0x020001u, MakeTagFixed64(0x4000));
+  EXPECT_EQ(0x020001u, MakeTagFixed<int64_t>(0x4000));
   EXPECT_EQ(0x020002u, MakeTagLengthDelimited(0x4000));
-  EXPECT_EQ(0x020005u, MakeTagFixed32(0x4000));
+  EXPECT_EQ(0x020005u, MakeTagFixed<int32_t>(0x4000));
+
+  EXPECT_EQ(0u, ZigZagEncode(0));
+  EXPECT_EQ(1u, ZigZagEncode(-1));
+  EXPECT_EQ(2u, ZigZagEncode(1));
+  EXPECT_EQ(3u, ZigZagEncode(-2));
+  EXPECT_EQ(4294967293u, ZigZagEncode(-2147483647));
+  EXPECT_EQ(4294967294u, ZigZagEncode(2147483647));
+  EXPECT_EQ(std::numeric_limits<uint32_t>::max(),
+            ZigZagEncode(std::numeric_limits<int32_t>::min()));
+  EXPECT_EQ(std::numeric_limits<uint64_t>::max(),
+            ZigZagEncode(std::numeric_limits<int64_t>::min()));
 
   EXPECT_VARINT32_EQ("\x00", 1, 0);
   EXPECT_VARINT32_EQ("\x00", 1, 0);
@@ -105,21 +112,22 @@ TEST(ProtoUtilsTest, Serialization) {
   EXPECT_VARINT64_EQ("\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x01", 10,
                      0xFFFFFFFFFFFFFFFF);
 
-  uint8_t buf[4];
+  uint8_t buf[kMessageLengthFieldSize];
 
-  WriteRedundantVarIntU32<sizeof(buf)>(0, buf);
+  WriteRedundantLength(0, buf);
   EXPECT_EQ(0, memcmp("\x80\x80\x80\x00", buf, sizeof(buf)));
 
-  WriteRedundantVarIntU32<sizeof(buf)>(1, buf);
+  WriteRedundantLength(1, buf);
   EXPECT_EQ(0, memcmp("\x81\x80\x80\x00", buf, sizeof(buf)));
 
-  WriteRedundantVarIntU32<sizeof(buf)>(0x80, buf);
+  WriteRedundantLength(0x80, buf);
   EXPECT_EQ(0, memcmp("\x80\x81\x80\x00", buf, sizeof(buf)));
 
-  WriteRedundantVarIntU32<sizeof(buf)>(0x332211, buf);
+  WriteRedundantLength(0x332211, buf);
   EXPECT_EQ(0, memcmp("\x91\xC4\xCC\x01", buf, sizeof(buf)));
 
-  WriteRedundantVarIntU32<sizeof(buf)>(0x0FFFFFFF, buf);
+  // Largest allowed length.
+  WriteRedundantLength(0x0FFFFFFF, buf);
   EXPECT_EQ(0, memcmp("\xFF\xFF\xFF\x7F", buf, sizeof(buf)));
 }
 
