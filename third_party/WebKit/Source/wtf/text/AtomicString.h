@@ -79,13 +79,18 @@ public:
     bool contains(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_string.contains(s, caseSensitivity); }
 
-    size_t find(UChar c, size_t start = 0) const { return m_string.find(c, start); }
+    // Find characters.
+    size_t find(UChar c, unsigned start = 0) const
+        { return m_string.find(c, start); }
+    size_t find(LChar c, unsigned start = 0) const
+        { return m_string.find(c, start); }
+    size_t find(char c, unsigned start = 0) const { return find(static_cast<LChar>(c), start); }
     size_t find(CharacterMatchFunctionPtr matchFunction, unsigned start = 0) const
         { return m_string.find(matchFunction, start); }
-    size_t find(const LChar* s, size_t start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_string.find(s, start, caseSensitivity); }
-    size_t find(const String& s, size_t start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_string.find(s, start, caseSensitivity); }
+
+    // Find substrings.
+    size_t find(const StringView& value, unsigned start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.find(value, start, caseSensitivity); }
 
     bool startsWith(const StringView& prefix, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_string.startsWith(prefix, caseSensitivity); }

@@ -1162,91 +1162,6 @@ size_t StringImpl::find(CharacterMatchFunctionPtr matchFunction, unsigned start)
     return WTF::find(characters16(), m_length, matchFunction, start);
 }
 
-size_t StringImpl::find(const LChar* matchString, unsigned index)
-{
-    // Check for null or empty string to match against
-    if (!matchString)
-        return kNotFound;
-    size_t matchStringLength = strlen(reinterpret_cast<const char*>(matchString));
-    RELEASE_ASSERT(matchStringLength <= numeric_limits<unsigned>::max());
-    unsigned matchLength = matchStringLength;
-    if (!matchLength)
-        return min(index, length());
-
-    // Optimization 1: fast case for strings of length 1.
-    if (matchLength == 1)
-        return WTF::find(characters16(), length(), *matchString, index);
-
-    // Check index & matchLength are in range.
-    if (index > length())
-        return kNotFound;
-    unsigned searchLength = length() - index;
-    if (matchLength > searchLength)
-        return kNotFound;
-    // delta is the number of additional times to test; delta == 0 means test only once.
-    unsigned delta = searchLength - matchLength;
-
-    const UChar* searchCharacters = characters16() + index;
-
-    // Optimization 2: keep a running hash of the strings,
-    // only call equal if the hashes match.
-    unsigned searchHash = 0;
-    unsigned matchHash = 0;
-    for (unsigned i = 0; i < matchLength; ++i) {
-        searchHash += searchCharacters[i];
-        matchHash += matchString[i];
-    }
-
-    unsigned i = 0;
-    // keep looping until we match
-    while (searchHash != matchHash || !equal(searchCharacters + i, matchString, matchLength)) {
-        if (i == delta)
-            return kNotFound;
-        searchHash += searchCharacters[i + matchLength];
-        searchHash -= searchCharacters[i];
-        ++i;
-    }
-    return index + i;
-}
-
-template<typename CharType>
-ALWAYS_INLINE size_t findIgnoringCaseInternal(const CharType* searchCharacters, const LChar* matchString, unsigned index, unsigned searchLength, unsigned matchLength)
-{
-    // delta is the number of additional times to test; delta == 0 means test only once.
-    unsigned delta = searchLength - matchLength;
-
-    unsigned i = 0;
-    while (!equalIgnoringCase(searchCharacters + i, matchString, matchLength)) {
-        if (i == delta)
-            return kNotFound;
-        ++i;
-    }
-    return index + i;
-}
-
-size_t StringImpl::findIgnoringCase(const LChar* matchString, unsigned index)
-{
-    // Check for null or empty string to match against
-    if (!matchString)
-        return kNotFound;
-    size_t matchStringLength = strlen(reinterpret_cast<const char*>(matchString));
-    RELEASE_ASSERT(matchStringLength <= numeric_limits<unsigned>::max());
-    unsigned matchLength = matchStringLength;
-    if (!matchLength)
-        return min(index, length());
-
-    // Check index & matchLength are in range.
-    if (index > length())
-        return kNotFound;
-    unsigned searchLength = length() - index;
-    if (matchLength > searchLength)
-        return kNotFound;
-
-    if (is8Bit())
-        return findIgnoringCaseInternal(characters8() + index, matchString, index, searchLength, matchLength);
-    return findIgnoringCaseInternal(characters16() + index, matchString, index, searchLength, matchLength);
-}
-
 template <typename SearchCharacterType, typename MatchCharacterType>
 ALWAYS_INLINE static size_t findInternal(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned searchLength, unsigned matchLength)
 {
@@ -1276,58 +1191,18 @@ ALWAYS_INLINE static size_t findInternal(const SearchCharacterType* searchCharac
     return index + i;
 }
 
-size_t StringImpl::find(StringImpl* matchString)
+size_t StringImpl::find(const StringView& matchString, unsigned index)
 {
-    // Check for null string to match against
-    if (UNLIKELY(!matchString))
-        return kNotFound;
-    unsigned matchLength = matchString->length();
-
-    // Optimization 1: fast case for strings of length 1.
-    if (matchLength == 1) {
-        if (is8Bit()) {
-            if (matchString->is8Bit())
-                return WTF::find(characters8(), length(), matchString->characters8()[0]);
-            return WTF::find(characters8(), length(), matchString->characters16()[0]);
-        }
-        if (matchString->is8Bit())
-            return WTF::find(characters16(), length(), matchString->characters8()[0]);
-        return WTF::find(characters16(), length(), matchString->characters16()[0]);
-    }
-
-    // Check matchLength is in range.
-    if (matchLength > length())
+    if (UNLIKELY(matchString.isNull()))
         return kNotFound;
 
-    // Check for empty string to match against
-    if (UNLIKELY(!matchLength))
-        return 0;
-
-    if (is8Bit()) {
-        if (matchString->is8Bit())
-            return findInternal(characters8(), matchString->characters8(), 0, length(), matchLength);
-        return findInternal(characters8(), matchString->characters16(), 0, length(), matchLength);
-    }
-
-    if (matchString->is8Bit())
-        return findInternal(characters16(), matchString->characters8(), 0, length(), matchLength);
-
-    return findInternal(characters16(), matchString->characters16(), 0, length(), matchLength);
-}
-
-size_t StringImpl::find(StringImpl* matchString, unsigned index)
-{
-    // Check for null or empty string to match against
-    if (UNLIKELY(!matchString))
-        return kNotFound;
-
-    unsigned matchLength = matchString->length();
+    unsigned matchLength = matchString.length();
 
     // Optimization 1: fast case for strings of length 1.
     if (matchLength == 1) {
         if (is8Bit())
-            return WTF::find(characters8(), length(), (*matchString)[0], index);
-        return WTF::find(characters16(), length(), (*matchString)[0], index);
+            return WTF::find(characters8(), length(), matchString[0], index);
+        return WTF::find(characters16(), length(), matchString[0], index);
     }
 
     if (UNLIKELY(!matchLength))
@@ -1341,19 +1216,17 @@ size_t StringImpl::find(StringImpl* matchString, unsigned index)
         return kNotFound;
 
     if (is8Bit()) {
-        if (matchString->is8Bit())
-            return findInternal(characters8() + index, matchString->characters8(), index, searchLength, matchLength);
-        return findInternal(characters8() + index, matchString->characters16(), index, searchLength, matchLength);
+        if (matchString.is8Bit())
+            return findInternal(characters8() + index, matchString.characters8(), index, searchLength, matchLength);
+        return findInternal(characters8() + index, matchString.characters16(), index, searchLength, matchLength);
     }
-
-    if (matchString->is8Bit())
-        return findInternal(characters16() + index, matchString->characters8(), index, searchLength, matchLength);
-
-    return findInternal(characters16() + index, matchString->characters16(), index, searchLength, matchLength);
+    if (matchString.is8Bit())
+        return findInternal(characters16() + index, matchString.characters8(), index, searchLength, matchLength);
+    return findInternal(characters16() + index, matchString.characters16(), index, searchLength, matchLength);
 }
 
 template <typename SearchCharacterType, typename MatchCharacterType>
-ALWAYS_INLINE static size_t findIgnoringCaseInner(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned searchLength, unsigned matchLength)
+ALWAYS_INLINE static size_t findIgnoringCaseInternal(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned searchLength, unsigned matchLength)
 {
     // delta is the number of additional times to test; delta == 0 means test only once.
     unsigned delta = searchLength - matchLength;
@@ -1368,12 +1241,12 @@ ALWAYS_INLINE static size_t findIgnoringCaseInner(const SearchCharacterType* sea
     return index + i;
 }
 
-size_t StringImpl::findIgnoringCase(StringImpl* matchString, unsigned index)
+size_t StringImpl::findIgnoringCase(const StringView& matchString, unsigned index)
 {
-    // Check for null or empty string to match against
-    if (!matchString)
+    if (UNLIKELY(matchString.isNull()))
         return kNotFound;
-    unsigned matchLength = matchString->length();
+
+    unsigned matchLength = matchString.length();
     if (!matchLength)
         return min(index, length());
 
@@ -1385,19 +1258,17 @@ size_t StringImpl::findIgnoringCase(StringImpl* matchString, unsigned index)
         return kNotFound;
 
     if (is8Bit()) {
-        if (matchString->is8Bit())
-            return findIgnoringCaseInner(characters8() + index, matchString->characters8(), index, searchLength, matchLength);
-        return findIgnoringCaseInner(characters8() + index, matchString->characters16(), index, searchLength, matchLength);
+        if (matchString.is8Bit())
+            return findIgnoringCaseInternal(characters8() + index, matchString.characters8(), index, searchLength, matchLength);
+        return findIgnoringCaseInternal(characters8() + index, matchString.characters16(), index, searchLength, matchLength);
     }
-
-    if (matchString->is8Bit())
-        return findIgnoringCaseInner(characters16() + index, matchString->characters8(), index, searchLength, matchLength);
-
-    return findIgnoringCaseInner(characters16() + index, matchString->characters16(), index, searchLength, matchLength);
+    if (matchString.is8Bit())
+        return findIgnoringCaseInternal(characters16() + index, matchString.characters8(), index, searchLength, matchLength);
+    return findIgnoringCaseInternal(characters16() + index, matchString.characters16(), index, searchLength, matchLength);
 }
 
 template <typename SearchCharacterType, typename MatchCharacterType>
-ALWAYS_INLINE static size_t findIgnoringASCIICaseInner(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned searchLength, unsigned matchLength)
+ALWAYS_INLINE static size_t findIgnoringASCIICaseInternal(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned searchLength, unsigned matchLength)
 {
     // delta is the number of additional times to test; delta == 0 means test only once.
     unsigned delta = searchLength - matchLength;
@@ -1412,12 +1283,12 @@ ALWAYS_INLINE static size_t findIgnoringASCIICaseInner(const SearchCharacterType
     return index + i;
 }
 
-size_t StringImpl::findIgnoringASCIICase(StringImpl* matchString, unsigned index)
+size_t StringImpl::findIgnoringASCIICase(const StringView& matchString, unsigned index)
 {
-    // Check for null or empty string to match against
-    if (!matchString)
+    if (UNLIKELY(matchString.isNull()))
         return kNotFound;
-    unsigned matchLength = matchString->length();
+
+    unsigned matchLength = matchString.length();
     if (!matchLength)
         return min(index, length());
 
@@ -1429,16 +1300,13 @@ size_t StringImpl::findIgnoringASCIICase(StringImpl* matchString, unsigned index
         return kNotFound;
 
     if (is8Bit()) {
-        const LChar* searchStart = characters8() + index;
-        if (matchString->is8Bit())
-            return findIgnoringASCIICaseInner(searchStart, matchString->characters8(), index, searchLength, matchLength);
-        return findIgnoringASCIICaseInner(searchStart, matchString->characters16(), index, searchLength, matchLength);
+        if (matchString.is8Bit())
+            return findIgnoringASCIICaseInternal(characters8() + index, matchString.characters8(), index, searchLength, matchLength);
+        return findIgnoringASCIICaseInternal(characters8() + index, matchString.characters16(), index, searchLength, matchLength);
     }
-
-    const UChar* searchStart = characters16() + index;
-    if (matchString->is8Bit())
-        return findIgnoringASCIICaseInner(searchStart, matchString->characters8(), index, searchLength, matchLength);
-    return findIgnoringASCIICaseInner(searchStart, matchString->characters16(), index, searchLength, matchLength);
+    if (matchString.is8Bit())
+        return findIgnoringASCIICaseInternal(characters16() + index, matchString.characters8(), index, searchLength, matchLength);
+    return findIgnoringASCIICaseInternal(characters16() + index, matchString.characters16(), index, searchLength, matchLength);
 }
 
 size_t StringImpl::reverseFind(UChar c, unsigned index)

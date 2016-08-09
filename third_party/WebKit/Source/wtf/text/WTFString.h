@@ -169,23 +169,18 @@ public:
     static String numberToStringECMAScript(double);
     static String numberToStringFixedWidth(double, unsigned decimalPlaces);
 
-    // Find a single character or string, also with match function & latin1
-    // forms.
+    // Find characters.
     size_t find(UChar c, unsigned start = 0) const
         { return m_impl ? m_impl->find(c, start) : kNotFound; }
     size_t find(LChar c, unsigned start = 0) const
         { return m_impl ? m_impl->find(c, start) : kNotFound; }
     size_t find(char c, unsigned start = 0) const { return find(static_cast<LChar>(c), start); }
-
-    size_t find(const String& str) const
-        { return m_impl ? m_impl->find(str.impl()) : kNotFound; }
-    size_t find(const String& str, unsigned start) const
-        { return m_impl ? m_impl->find(str.impl(), start) : kNotFound; }
-
     size_t find(CharacterMatchFunctionPtr matchFunction, unsigned start = 0) const
         { return m_impl ? m_impl->find(matchFunction, start) : kNotFound; }
-    size_t find(const LChar* str, unsigned start = 0) const
-        { return m_impl ? m_impl->find(str, start) : kNotFound; }
+
+    // Find substrings.
+    size_t find(const StringView& value, unsigned start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->find, (value, start)) : kNotFound; }
 
     // Find the last instance of a single character or string.
     size_t reverseFind(UChar c, unsigned start = UINT_MAX) const
@@ -202,12 +197,6 @@ public:
     // ASCII case insensitive string matching.
     size_t findIgnoringASCIICase(const String& str, unsigned start = 0) const
         { return m_impl ? m_impl->findIgnoringASCIICase(str.impl(), start) : kNotFound; }
-
-    // Wrappers for find adding dynamic sensitivity check.
-    size_t find(const LChar* str, unsigned start, TextCaseSensitivity caseSensitivity) const
-        { return DISPATCH_CASE_OP(caseSensitivity, find, (str, start)); }
-    size_t find(const String& str, unsigned start, TextCaseSensitivity caseSensitivity) const
-        { return DISPATCH_CASE_OP(caseSensitivity, find, (str, start)); }
 
     unsigned copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const;
 

@@ -366,18 +366,16 @@ public:
     template <typename CharType>
     ALWAYS_INLINE PassRefPtr<StringImpl> removeCharacters(const CharType* characters, CharacterMatchFunctionPtr);
 
+    // Find characters.
     size_t find(LChar character, unsigned start = 0);
     size_t find(char character, unsigned start = 0);
     size_t find(UChar character, unsigned start = 0);
     size_t find(CharacterMatchFunctionPtr, unsigned index = 0);
-    size_t find(const LChar*, unsigned index = 0);
-    ALWAYS_INLINE size_t find(const char* s, unsigned index = 0) { return find(reinterpret_cast<const LChar*>(s), index); }
-    size_t find(StringImpl*);
-    size_t find(StringImpl*, unsigned index);
-    size_t findIgnoringCase(const LChar*, unsigned index = 0);
-    ALWAYS_INLINE size_t findIgnoringCase(const char* s, unsigned index = 0) { return findIgnoringCase(reinterpret_cast<const LChar*>(s), index); }
-    size_t findIgnoringCase(StringImpl*, unsigned index = 0);
-    size_t findIgnoringASCIICase(StringImpl*, unsigned index = 0);
+
+    // Find substrings.
+    size_t find(const StringView&, unsigned index = 0);
+    size_t findIgnoringCase(const StringView&, unsigned index = 0);
+    size_t findIgnoringASCIICase(const StringView&, unsigned index = 0);
 
     size_t reverseFind(UChar, unsigned index = UINT_MAX);
     size_t reverseFind(StringImpl*, unsigned index = UINT_MAX);
