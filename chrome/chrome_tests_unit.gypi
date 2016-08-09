@@ -1115,6 +1115,7 @@
       'browser/chromeos/power/renderer_freezer_unittest.cc',
       'browser/chromeos/preferences_unittest.cc',
       'browser/chromeos/printer_detector/printer_detector_unittest.cc',
+      'browser/chromeos/printing/printer_pref_manager_unittest.cc',
       'browser/chromeos/profiles/profile_list_chromeos_unittest.cc',
       'browser/chromeos/proxy_config_service_impl_unittest.cc',
       'browser/chromeos/resource_reporter/resource_reporter_unittest.cc',

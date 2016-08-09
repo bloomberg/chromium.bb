@@ -104,4 +104,14 @@ void PrinterPrefManager::RegisterPrinter(std::unique_ptr<Printer> printer) {
   UpdatePrinterPref(profile_, printer->id(), std::move(updated_printer));
 }
 
+bool PrinterPrefManager::RemovePrinter(const std::string& printer_id) {
+  DCHECK(!printer_id.empty());
+  ListPrefUpdate update(profile_->GetPrefs(), prefs::kPrintingDevices);
+  base::ListValue* printer_list = update.Get();
+  DCHECK(printer_list) << "Printer preference not registered";
+  base::DictionaryValue* printer = FindPrinterPref(printer_list, printer_id);
+
+  return printer && printer_list->Remove(*printer, nullptr);
+}
+
 }  // namespace chromeos

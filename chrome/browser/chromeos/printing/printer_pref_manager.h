@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_PREF_MANAGER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "chromeos/printing/printer_configuration.h"
@@ -33,6 +34,10 @@ class PrinterPrefManager : public KeyedService {
   // Adds or updates a printer. Printers are identified by the id field.  Use an
   // empty id to add a new printer.
   void RegisterPrinter(std::unique_ptr<Printer> printer);
+
+  // Remove printer from preferences with the id |printer_id|.  Returns true if
+  // the printer was successfully removed.
+  bool RemovePrinter(const std::string& printer_id);
 
  private:
   Profile* profile_;
