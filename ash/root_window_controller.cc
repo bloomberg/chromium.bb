@@ -42,6 +42,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/shelf/shelf_window_targeter.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
@@ -851,14 +852,22 @@ void RootWindowController::InitLayoutManagers() {
   always_on_top_controller_.reset(
       new AlwaysOnTopController(always_on_top_container));
 
+  // Create the shelf and status area widgets.
   DCHECK(!shelf_widget_.get());
-  WmWindow* shelf_container =
-      WmWindowAura::Get(GetContainer(kShellWindowId_ShelfContainer));
-  WmWindow* status_container =
-      WmWindowAura::Get(GetContainer(kShellWindowId_StatusContainer));
-  shelf_widget_.reset(new ShelfWidget(shelf_container, status_container,
+  aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
+  aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
+  WmWindow* wm_shelf_container = WmWindowAura::Get(shelf_container);
+  WmWindow* wm_status_container = WmWindowAura::Get(status_container);
+  shelf_widget_.reset(new ShelfWidget(wm_shelf_container, wm_status_container,
                                       wm_shelf_aura_.get(),
                                       workspace_controller()));
+  // Make it easier to resize windows that partially overlap the shelf. Must
+  // occur after the ShelfLayoutManager is constructed by ShelfWidget.
+  shelf_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(
+      wm_shelf_container, wm_shelf_aura_.get()));
+  status_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(
+      wm_status_container, wm_shelf_aura_.get()));
+
   workspace_layout_manager_delegate->set_shelf(
       shelf_widget_->shelf_layout_manager());
 

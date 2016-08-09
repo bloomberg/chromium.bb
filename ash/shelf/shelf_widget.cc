@@ -5,7 +5,6 @@
 #include "ash/shelf/shelf_widget.h"
 
 #include "ash/aura/wm_shelf_aura.h"
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -18,16 +17,15 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/shelf/dimmer_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_window_targeter.h"
 #include "ash/shell.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/memory/ptr_util.h"
 #include "grit/ash_resources.h"
-#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -324,11 +322,6 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container,
   background_animator_.AddObserver(status_area_widget_);
   status_container->SetLayoutManager(
       base::MakeUnique<StatusAreaLayoutManager>(this));
-
-  WmWindowAura::GetAuraWindow(shelf_container)->SetEventTargeter(
-      base::MakeUnique<ShelfWindowTargeter>(shelf_container, wm_shelf_aura_));
-  WmWindowAura::GetAuraWindow(status_container)->SetEventTargeter(
-      base::MakeUnique<ShelfWindowTargeter>(status_container, wm_shelf_aura_));
 
   views::Widget::AddObserver(this);
 }
