@@ -10,14 +10,23 @@
   <link rel="import" type="css" href="chrome://resources/cr_elements/shared.css">
   <template>
     <style include="settings-shared">
-      :host {
+      #outerRow {
         align-items: center;
         display: flex;
+        min-height: var(--settings-row-two-line-min-height);
+        width: 100%;
+      }
+
+      #outerRow[noSubLabel] {
         min-height: var(--settings-row-min-height);
       }
 
       .secondary:not(:empty) {
         @apply(--settings-secondary);
+      }
+
+      paper-checkbox:not([disabled]) {
+        width: 100%;
       }
 
       paper-checkbox:not([checked]) .secondary {
@@ -30,7 +39,7 @@
     </style>
     <cr-events id="events"></cr-events>
 
-    <div class="layout horizontal center">
+    <div id="outerRow" noSubLabel$="[[!subLabel]]">
       <paper-checkbox id="checkbox" checked="{{checked}}"
           disabled="[[checkboxDisabled_(disabled, pref)]]">
         <div>[[label]]</div>
