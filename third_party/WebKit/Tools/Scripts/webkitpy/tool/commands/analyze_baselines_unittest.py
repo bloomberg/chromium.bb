@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optparse
+
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
-from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
-from webkitpy.tool.mock_tool import MockOptions
 
 
 class _FakeOptimizer(BaselineOptimizer):
@@ -29,13 +29,13 @@ class TestAnalyzeBaselines(BaseTestCase):
         self.command._write = (lambda msg: self.lines.append(msg))
 
     def test_default(self):
-        self.command.execute(MockOptions(suffixes='txt', missing=False, platform=None), ['passes/text.html'], self.tool)
+        self.command.execute(optparse.Values(dict(suffixes='txt', missing=False, platform=None)), ['passes/text.html'], self.tool)
         self.assertEqual(self.lines,
                          ['passes/text-expected.txt:',
                           '  (generic): 123456'])
 
     def test_missing_baselines(self):
-        self.command.execute(MockOptions(suffixes='png,txt', missing=True, platform=None), ['passes/text.html'], self.tool)
+        self.command.execute(optparse.Values(dict(suffixes='png,txt', missing=True, platform=None)), ['passes/text.html'], self.tool)
         self.assertEqual(self.lines,
                          ['passes/text-expected.png: (no baselines found)',
                           'passes/text-expected.txt:',

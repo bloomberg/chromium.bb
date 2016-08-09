@@ -26,18 +26,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import optparse
 import unittest
 
-from webkitpy.tool.mock_tool import MockOptions
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.webkit_finder import WebKitFinder
-
 from webkitpy.layout_tests.port import android
+from webkitpy.layout_tests.port import factory
 from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import mac
 from webkitpy.layout_tests.port import win
-from webkitpy.layout_tests.port import factory
-from webkitpy.layout_tests.port import test
 
 
 class FactoryTest(unittest.TestCase):
@@ -46,7 +44,7 @@ class FactoryTest(unittest.TestCase):
     # instead of passing generic "options".
 
     def setUp(self):
-        self.webkit_options = MockOptions(pixel_tests=False)
+        self.webkit_options = optparse.Values({'pixel_tests': False})
 
     def assert_port(self, port_name=None, os_name=None, os_version=None, options=None, cls=None):
         host = MockHost(os_name=os_name, os_version=os_version)
@@ -86,7 +84,7 @@ class FactoryTest(unittest.TestCase):
         files = files or {}
         for path, contents in files.items():
             host.filesystem.write_text_file(wkf.path_from_chromium_base(path), contents)
-        options = MockOptions(target=target, configuration=configuration)
+        options = optparse.Values({'target': target, 'configuration': configuration})
         return factory.PortFactory(host).get(options=options)
 
     def test_default_target_and_configuration(self):

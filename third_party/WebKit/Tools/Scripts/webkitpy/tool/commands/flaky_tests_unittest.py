@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optparse
+
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.layout_package import bot_test_expectations
 from webkitpy.tool.commands import flaky_tests
 from webkitpy.tool.commands.command_test import CommandsTest
-from webkitpy.tool.mock_tool import MockWebKitPatch, MockOptions
+from webkitpy.tool.mock_tool import MockWebKitPatch
 
 
 class FakeBotTestExpectations(object):
@@ -73,7 +75,7 @@ class FlakyTestsTest(CommandsTest):
         tool = MockWebKitPatch()
         tool.builders = self.fake_builders_list()
         command.expectations_factory = FakeBotTestExpectationsFactory
-        options = MockOptions(upload=True)
+        options = optparse.Values({'upload': True})
         expected_stdout = flaky_tests.FlakyTests.OUTPUT % (
             flaky_tests.FlakyTests.HEADER,
             '',

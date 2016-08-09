@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optparse
+
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.tool.commands.optimize_baselines import OptimizeBaselines
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
-from webkitpy.tool.mock_tool import MockOptions
 
 
 class TestOptimizeBaselines(BaseTestCase):
@@ -25,7 +26,7 @@ class TestOptimizeBaselines(BaseTestCase):
         self._write_test_file(test_port, 'another/test-expected.txt', "result A")
 
         OutputCapture().assert_outputs(self, self.command.execute, args=[
-            MockOptions(suffixes='txt', no_modify_scm=False, platform='test-mac-mac10.10'),
+            optparse.Values({'suffixes': 'txt', 'no_modify_scm': False, 'platform': 'test-mac-mac10.10'}),
             ['another/test.html'],
             self.tool,
         ], expected_stdout='{"add": [], "remove-lines": [], "delete": []}\n')
@@ -42,7 +43,7 @@ class TestOptimizeBaselines(BaseTestCase):
         self._write_test_file(test_port, 'another/test-expected.txt', "result A")
 
         OutputCapture().assert_outputs(self, self.command.execute, args=[
-            MockOptions(suffixes='txt', no_modify_scm=True, platform='test-mac-mac10.10'),
+            optparse.Values({'suffixes': 'txt', 'no_modify_scm': True, 'platform': 'test-mac-mac10.10'}),
             ['another/test.html'],
             self.tool,
         ], expected_stdout='{"add": [], "remove-lines": [], "delete": ["/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.txt"]}\n')
@@ -63,9 +64,10 @@ class TestOptimizeBaselines(BaseTestCase):
         try:
             oc = OutputCapture()
             oc.capture_output()
-            self.command.execute(MockOptions(suffixes='txt,wav,png', no_modify_scm=True, platform='test-mac-mac10.10'),
-                                 ['another/test.html'],
-                                 self.tool)
+            self.command.execute(
+                optparse.Values({'suffixes': 'txt,wav,png', 'no_modify_scm': True, 'platform': 'test-mac-mac10.10'}),
+                ['another/test.html'],
+                self.tool)
         finally:
             out, _, _ = oc.restore_output()
 

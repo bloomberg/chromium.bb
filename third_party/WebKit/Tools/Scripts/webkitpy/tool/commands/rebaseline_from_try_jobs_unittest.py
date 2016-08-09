@@ -2,16 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optparse
 import json
 
+from webkitpy.common.checkout.scm.scm_mock import MockSCM
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.rebaseline_from_try_jobs import RebaselineFromTryJobs
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
-from webkitpy.tool.mock_tool import MockOptions
-from webkitpy.common.checkout.scm.scm_mock import MockSCM
 
 
 class RebaselineFromTryJobsTest(BaseTestCase):
@@ -62,7 +62,7 @@ class RebaselineFromTryJobsTest(BaseTestCase):
             'results_directory': None,
         }
         options.update(kwargs)
-        return MockOptions(**options)
+        return optparse.Values(dict(**options))
 
     def test_execute_with_issue_number_given(self):
         oc = OutputCapture()

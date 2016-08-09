@@ -26,11 +26,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import optparse
+
 from webkitpy.common.system import executive_mock
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import port_testcase
-from webkitpy.tool.mock_tool import MockOptions
 
 
 class LinuxPortTest(port_testcase.PortTestCase):
@@ -86,16 +87,16 @@ class LinuxPortTest(port_testcase.PortTestCase):
 
     def test_build_path(self):
         # Test that optional paths are used regardless of whether they exist.
-        options = MockOptions(configuration='Release', build_directory='/foo')
+        options = optparse.Values({'configuration': 'Release', 'build_directory': '/foo'})
         self.assert_build_path(options, ['/mock-checkout/out/Release'], '/foo/Release')
 
         # Test that optional relative paths are returned unmodified.
-        options = MockOptions(configuration='Release', build_directory='foo')
+        options = optparse.Values({'configuration': 'Release', 'build_directory': 'foo'})
         self.assert_build_path(options, ['/mock-checkout/out/Release'], 'foo/Release')
 
     def test_driver_name_option(self):
         self.assertTrue(self.make_port()._path_to_driver().endswith('content_shell'))
-        self.assertTrue(self.make_port(options=MockOptions(driver_name='OtherDriver'))._path_to_driver().endswith('OtherDriver'))
+        self.assertTrue(self.make_port(options=optparse.Values({'driver_name': 'OtherDriver'}))._path_to_driver().endswith('OtherDriver'))
 
     def test_path_to_image_diff(self):
         self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff')

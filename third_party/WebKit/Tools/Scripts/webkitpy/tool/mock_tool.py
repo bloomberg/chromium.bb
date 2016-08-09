@@ -26,17 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import optparse
-
 from webkitpy.common.host_mock import MockHost
-
-
-# TODO(qyearsley): Replace uses of this with using optparse.Values directly (crbug.com/626679).
-class MockOptions(optparse.Values):
-
-    def __init__(self, **kwargs):
-        # Not using super because optparse.Values is an old-style class.
-        optparse.Values.__init__(self, defaults=kwargs)
 
 
 class MockWebKitPatch(MockHost):

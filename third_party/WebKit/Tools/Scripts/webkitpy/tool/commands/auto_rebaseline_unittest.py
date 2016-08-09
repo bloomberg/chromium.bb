@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optparse
+
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.layouttestresults import LayoutTestResults
 from webkitpy.common.system.executive_mock import MockExecutive
@@ -9,7 +11,6 @@ from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.auto_rebaseline import AutoRebaseline
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
 from webkitpy.tool.commands.rebaseline_unittest import MockLineRemovingExecutive
-from webkitpy.tool.mock_tool import MockOptions
 
 
 class TestAutoRebaseline(BaseTestCase):
@@ -21,10 +22,16 @@ class TestAutoRebaseline(BaseTestCase):
 
     def _execute_with_mock_options(self, auth_refresh_token_json=None, commit_author=None, dry_run=False):
         self.command.execute(
-            MockOptions(optimize=True, verbose=False, results_directory=False,
-                        auth_refresh_token_json=auth_refresh_token_json,
-                        commit_author=commit_author, dry_run=dry_run),
-            [], self.tool)
+            optparse.Values({
+                'optimize': True,
+                'verbose': False,
+                'results_directory': False,
+                'auth_refresh_token_json': auth_refresh_token_json,
+                'commit_author': commit_author,
+                'dry_run': dry_run
+            }),
+            [],
+            self.tool)
 
     def setUp(self):
         super(TestAutoRebaseline, self).setUp()

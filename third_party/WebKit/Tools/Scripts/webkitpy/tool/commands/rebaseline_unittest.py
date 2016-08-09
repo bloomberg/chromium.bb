@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optparse
 import unittest
 
 from webkitpy.common.net.buildbot import Build
@@ -11,13 +12,12 @@ from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
+from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 from webkitpy.tool.commands.rebaseline import CopyExistingBaselinesInternal
-from webkitpy.tool.commands.rebaseline import RebaselineExpectations
 from webkitpy.tool.commands.rebaseline import Rebaseline
+from webkitpy.tool.commands.rebaseline import RebaselineExpectations
 from webkitpy.tool.commands.rebaseline import RebaselineJson
 from webkitpy.tool.commands.rebaseline import RebaselineTest
-from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
-from webkitpy.tool.mock_tool import MockOptions
 from webkitpy.tool.mock_tool import MockWebKitPatch
 
 
@@ -124,9 +124,13 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
 
         oc = OutputCapture()
         try:
-            options = MockOptions(builder="MOCK Mac10.11", suffixes="txt", verbose=True,
-                                  test="failures/expected/image.html", results_directory=None)
-
+            options = optparse.Values({
+                'builder': "MOCK Mac10.11",
+                'suffixes': 'txt',
+                'verbose': True,
+                'test': "failures/expected/image.html",
+                'results_directory': None
+            })
             oc.capture_output()
             self.command.execute(options, [], self.tool)
         finally:
@@ -149,9 +153,13 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
 
         oc = OutputCapture()
         try:
-            options = MockOptions(builder="MOCK Win7", suffixes="txt", verbose=True,
-                                  test="failures/expected/image.html", results_directory=None)
-
+            options = optparse.Values({
+                'builder': "MOCK Win7",
+                'suffixes': "txt",
+                'verbose': True,
+                'test': "failures/expected/image.html",
+                'results_directory': None
+            })
             oc.capture_output()
             self.command.execute(options, [], self.tool)
         finally:
@@ -177,9 +185,13 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
 
         oc = OutputCapture()
         try:
-            options = MockOptions(builder="MOCK Win7", suffixes="txt", verbose=True,
-                                  test="failures/expected/image.html", results_directory=None)
-
+            options = optparse.Values({
+                'builder': "MOCK Win7",
+                'suffixes': "txt",
+                'verbose': True,
+                'test': "failures/expected/image.html",
+                'results_directory': None
+            })
             oc.capture_output()
             self.command.execute(options, [], self.tool)
         finally:
@@ -215,9 +227,12 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
              "[ Linux ] failures/expected/image.html [ Skip ]\n"))
         oc = OutputCapture()
         try:
-            options = MockOptions(builder="MOCK Win7", suffixes="txt", verbose=True,
-                                  test="failures/expected/image.html", results_directory=None)
-
+            options = optparse.Values({
+                'builder': "MOCK Win7",
+                'suffixes': "txt", 'verbose': True,
+                'test': "failures/expected/image.html",
+                'results_directory': None
+            })
             oc.capture_output()
             self.command.execute(options, [], self.tool)
         finally:
@@ -245,9 +260,16 @@ class TestRebaselineTest(BaseTestCase):
 
     def setUp(self):
         super(TestRebaselineTest, self).setUp()
-        self.options = MockOptions(
-            builder="MOCK Mac10.11", test="userscripts/another-test.html", suffixes="txt", results_directory=None,
-            build_number=None)
+
+    @staticmethod
+    def options(**kwargs):
+        return optparse.Values(dict({
+            'builder': "MOCK Mac10.11",
+            'test': "userscripts/another-test.html",
+            'suffixes': "txt",
+            'results_directory': None,
+            'build_number': None
+        }, **kwargs))
 
     def test_baseline_directory(self):
         command = self.command
@@ -270,8 +292,7 @@ class TestRebaselineTest(BaseTestCase):
         self._write("fast/css/large-list-of-rules-crash.html", "Dummy test contents")
         self._write("userscripts/another-test.html", "Dummy test contents")
 
-        self.options.suffixes = "png,wav,txt"
-        self.command._rebaseline_test_and_update_expectations(self.options)
+        self.command._rebaseline_test_and_update_expectations(self.options(suffixes="png,wav,txt"))
 
         self.assertItemsEqual(self.tool.web.urls_fetched,
                               [self.WEB_PREFIX + '/userscripts/another-test-actual.png',
@@ -293,15 +314,13 @@ class TestRebaselineTest(BaseTestCase):
             self.mac_expectations_path,
             ("Bug(x) [ Mac ] userscripts/another-test.html [ Failure ]\n"
              "bug(z) [ Linux ] userscripts/another-test.html [ Failure ]\n"))
-        self.options.results_directory = '/tmp'
-        self.command._rebaseline_test_and_update_expectations(self.options)
+        self.command._rebaseline_test_and_update_expectations(self.options(results_directory='/tmp'))
         self.assertItemsEqual(self.tool.web.urls_fetched, ['file:///tmp/userscripts/another-test-actual.txt'])
 
     def test_rebaseline_reftest(self):
         self._write("userscripts/another-test.html", "test data")
         self._write("userscripts/another-test-expected.html", "generic result")
-        self.options.suffixes = 'png'
-        OutputCapture().assert_outputs(self, self.command._rebaseline_test_and_update_expectations, args=[self.options],
+        OutputCapture().assert_outputs(self, self.command._rebaseline_test_and_update_expectations, args=[self.options(suffixes='png')],
                                        expected_logs="Cannot rebaseline image result for reftest: userscripts/another-test.html\n")
         self.assertDictEqual(self.command._scm_changes, {'add': [], 'remove-lines': [], "delete": []})
 
@@ -326,10 +345,15 @@ class TestRebaselineTest(BaseTestCase):
 
         oc = OutputCapture()
         try:
-            options = MockOptions(
-                optimize=True, builder="MOCK Win10", suffixes="txt", verbose=True, test="failures/expected/image.html",
-                results_directory=None, build_number=None)
-
+            options = optparse.Values({
+                'optimize': True,
+                'builder': "MOCK Win10",
+                'suffixes': "txt",
+                'verbose': True,
+                'test': "failures/expected/image.html",
+                'results_directory': None,
+                'build_number': None
+            })
             oc.capture_output()
             self.command.execute(options, [], self.tool)
         finally:
@@ -362,6 +386,14 @@ class TestRebaselineJson(BaseTestCase):
     def tearDown(self):
         super(TestRebaselineJson, self).tearDown()
 
+    @staticmethod
+    def options(**kwargs):
+        return optparse.Values(dict({
+            'optimize': True,
+            'verbose': True,
+            'results_directory': None
+        }, **kwargs))
+
     def test_rebaseline_test_passes_on_all_builders(self):
         self._setup_mock_build_data()
 
@@ -376,21 +408,18 @@ class TestRebaselineJson(BaseTestCase):
             }
         }))
 
-        options = MockOptions(optimize=True, verbose=True, results_directory=None)
-
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
+        self.command._rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         self.assertEqual(self.tool.executive.calls, [])
 
     def test_rebaseline_all(self):
         self._setup_mock_build_data()
 
-        options = MockOptions(optimize=True, verbose=True, results_directory=None)
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
+        self.command._rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
         self.assertEqual(
@@ -407,9 +436,8 @@ class TestRebaselineJson(BaseTestCase):
     def test_rebaseline_debug(self):
         self._setup_mock_build_data()
 
-        options = MockOptions(optimize=True, verbose=True, results_directory=None)
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7 (dbg)"): ["txt", "png"]}})
+        self.command._rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7 (dbg)"): ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
         self.assertEqual(
@@ -427,9 +455,10 @@ class TestRebaselineJson(BaseTestCase):
         self._setup_mock_build_data()
         print self.tool.buildbot._canned_results
 
-        options = MockOptions(optimize=False, verbose=True, results_directory=None)
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
+        self.command._rebaseline(
+            self.options(optimize=False),
+            {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         # Note that we have only one run_in_parallel() call
         self.assertEqual(
@@ -444,9 +473,10 @@ class TestRebaselineJson(BaseTestCase):
     def test_results_directory(self):
         self._setup_mock_build_data()
 
-        options = MockOptions(optimize=False, verbose=True, results_directory='/tmp')
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
+        self.command._rebaseline(
+            self.options(optimize=False, results_directory='/tmp'),
+            {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         # Note that we have only one run_in_parallel() call
         self.assertEqual(
@@ -470,9 +500,15 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
             return '{"add": [], "remove-lines": [{"test": "userscripts/first-test.html", "builder": "MOCK Mac10.11"}]}\n'
         self.tool.executive.run_command = mock_run_command
 
-    def test_rebaseline_updates_expectations_file(self):
-        options = MockOptions(optimize=False, verbose=True, results_directory=None)
+    @staticmethod
+    def options():
+        return optparse.Values({
+            'optimize': False,
+            'verbose': True,
+            'results_directory': None
+        })
 
+    def test_rebaseline_updates_expectations_file(self):
         self._write(
             self.mac_expectations_path,
             ("Bug(x) [ Mac ] userscripts/first-test.html [ Failure ]\n"
@@ -480,7 +516,9 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
+        self.command._rebaseline(
+            self.options(),
+            {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -489,13 +527,13 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
              "bug(z) [ Linux ] userscripts/first-test.html [ Failure ]\n"))
 
     def test_rebaseline_updates_expectations_file_all_platforms(self):
-        options = MockOptions(optimize=False, verbose=True, results_directory=None)
-
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
+        self.command._rebaseline(
+            self.options(),
+            {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -505,14 +543,14 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         # This test is just like test_rebaseline_updates_expectations_file_all_platforms(),
         # except that if a particular port happens to SKIP a test in an overrides file,
         # we count that as passing, and do not think that we still need to rebaseline it.
-        options = MockOptions(optimize=False, verbose=True, results_directory=None)
-
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("NeverFixTests", "Bug(y) [ Android ] userscripts [ WontFix ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
+        self.command._rebaseline(
+            self.options(),
+            {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -524,15 +562,15 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         # the Skip line should be left unmodified. Note that the first line is now
         # qualified as "[Linux Mac Win]"; if it was unqualified, it would conflict with
         # the second line.
-        options = MockOptions(optimize=False, verbose=True, results_directory=None)
-
         self._write(self.mac_expectations_path,
                     ("Bug(x) [ Linux Mac Win ] userscripts/first-test.html [ Failure ]\n"
                      "Bug(y) [ Android ] userscripts/first-test.html [ Skip ]\n"))
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
+        self.command._rebaseline(
+            self.options(),
+            {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -545,14 +583,14 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         # a test not being in the SmokeTests file, instead of using overrides files.
         # If a test is not part of the smoke tests, we count that as passing on ports that only
         # run smoke tests, and do not think that we still need to rebaseline it.
-        options = MockOptions(optimize=False, verbose=True, results_directory=None)
-
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("SmokeTests", "fast/html/article-element.html")
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
+        self.command._rebaseline(
+            self.options(),
+            {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -571,9 +609,14 @@ class TestRebaseline(BaseTestCase):
 
         self._zero_out_test_expectations()
         self._setup_mock_build_data()
-
-        self.command.execute(MockOptions(results_directory=False, optimize=False, builders=None,
-                                         suffixes="txt,png", verbose=True), ['userscripts/first-test.html'], self.tool)
+        options = optparse.Values({
+            'results_directory': False,
+            'optimize': False,
+            'builders': None,
+            'suffixes': "txt,png",
+            'verbose': True
+        })
+        self.command.execute(options, ['userscripts/first-test.html'], self.tool)
 
         self.assertEqual(
             self.tool.executive.calls,
@@ -591,9 +634,14 @@ class TestRebaseline(BaseTestCase):
         self._write("userscripts/second-test.html", "test data")
 
         self._setup_mock_build_data()
-
-        self.command.execute(MockOptions(results_directory=False, optimize=False, builders=None,
-                                         suffixes="txt,png", verbose=True), ['userscripts'], self.tool)
+        options = optparse.Values({
+            'results_directory': False,
+            'optimize': False,
+            'builders': None,
+            'suffixes': "txt,png",
+            'verbose': True
+        })
+        self.command.execute(options, ['userscripts'], self.tool)
 
         self.assertEqual(
             self.tool.executive.calls,
@@ -619,8 +667,17 @@ class TestRebaselineExpectations(BaseTestCase):
 
     def setUp(self):
         super(TestRebaselineExpectations, self).setUp()
-        self.options = MockOptions(optimize=False, builders=None, suffixes=['txt'],
-                                   verbose=False, platform=None, results_directory=None)
+
+    @staticmethod
+    def options():
+        return optparse.Values({
+            'optimize': False,
+            'builders': None,
+            'suffixes': ['txt'],
+            'verbose': False,
+            'platform': None,
+            'results_directory': None
+        })
 
     def _write_test_file(self, port, path, contents):
         abs_path = self.tool.filesystem.join(port.layout_tests_dir(), path)
@@ -655,7 +712,7 @@ class TestRebaselineExpectations(BaseTestCase):
             'userscripts/not-actually-failing.html': set(['txt', 'png', 'wav']),
         }
 
-        self.command.execute(self.options, [], self.tool)
+        self.command.execute(self.options(), [], self.tool)
 
         self.assertEqual(self.tool.executive.calls, [
             [
@@ -714,7 +771,7 @@ class TestRebaselineExpectations(BaseTestCase):
             'userscripts/reftest-image-text.html': set(['png', 'txt']),
         }
 
-        self.command.execute(self.options, [], self.tool)
+        self.command.execute(self.options(), [], self.tool)
 
         self.assertEqual(self.tool.executive.calls, [
             [
@@ -737,7 +794,7 @@ class TestRebaselineExpectations(BaseTestCase):
         oc = OutputCapture()
         try:
             oc.capture_output()
-            self.command.execute(self.options, [], self.tool)
+            self.command.execute(self.options(), [], self.tool)
         finally:
             _, _, logs = oc.restore_output()
             self.assertEqual(self.tool.filesystem.written_files, {})
@@ -797,7 +854,7 @@ Bug(foo) fast/dom/prototype-taco.html [ Rebaseline ]
             "MOCK Mac10.11": {"port_name": "test-mac-mac10.11", "specifiers": ["Mac10.11", "Release"]},
         })
 
-        self.command.execute(self.options, [], self.tool)
+        self.command.execute(self.options(), [], self.tool)
         self.assertEqual(self.tool.executive.calls, [])
 
         # The mac ports should both be removed since they're the only ones in the builder list.
@@ -844,7 +901,7 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
             'fast/dom/missing-image.html': set(['txt', 'png']),
         }
 
-        self.command.execute(self.options, [], self.tool)
+        self.command.execute(self.options(), [], self.tool)
 
         self.assertEqual(self.tool.executive.calls, [
             [

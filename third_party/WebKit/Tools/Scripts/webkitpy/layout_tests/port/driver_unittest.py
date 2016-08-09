@@ -26,25 +26,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import optparse
 import unittest
 
 from webkitpy.common.system.systemhost_mock import MockSystemHost
-
 from webkitpy.layout_tests.port.base import Port
 from webkitpy.layout_tests.port.driver import Driver
-from webkitpy.layout_tests.port.driver import DriverOutput
-from webkitpy.layout_tests.port.server_process_mock import MockServerProcess
-
 # FIXME: remove the dependency on TestWebKitPort
 from webkitpy.layout_tests.port.port_testcase import TestWebKitPort
-
-from webkitpy.tool.mock_tool import MockOptions
+from webkitpy.layout_tests.port.server_process_mock import MockServerProcess
 
 
 class DriverTest(unittest.TestCase):
 
     def make_port(self):
-        port = Port(MockSystemHost(), 'test', MockOptions(configuration='Release'))
+        port = Port(MockSystemHost(), 'test', optparse.Values({'configuration': 'Release'}))
         return port
 
     def _assert_wrapper(self, wrapper_string, expected_wrapper):

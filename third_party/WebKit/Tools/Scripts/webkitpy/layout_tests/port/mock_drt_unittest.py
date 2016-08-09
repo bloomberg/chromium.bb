@@ -29,6 +29,7 @@
 """Unit tests for MockDRT."""
 
 import io
+import optparse
 import unittest
 
 from webkitpy.common.system.systemhost_mock import MockSystemHost
@@ -36,15 +37,11 @@ from webkitpy.layout_tests.port import mock_drt
 from webkitpy.layout_tests.port import port_testcase
 from webkitpy.layout_tests.port import test
 from webkitpy.layout_tests.port.factory import PortFactory
-from webkitpy.tool.mock_tool import MockOptions
-
-
-mock_options = MockOptions(configuration='Release')
 
 
 class MockDRTPortTest(port_testcase.PortTestCase):
 
-    def make_port(self, host=None, options=mock_options):
+    def make_port(self, host=None, options=optparse.Values({'configuration': 'Release'})):
         host = host or MockSystemHost()
         test.add_unit_tests_to_mock_filesystem(host.filesystem)
         return mock_drt.MockDRTPort(host, port_name='mock-mac', options=options)

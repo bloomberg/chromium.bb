@@ -26,15 +26,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import optparse
 
 from webkitpy.common.system.executive_mock import MockExecutive2
-from webkitpy.common.system.systemhost_mock import MockSystemHost
-from webkitpy.tool.mock_tool import MockOptions
-
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import browser_test
-from webkitpy.layout_tests.port import port_testcase
 from webkitpy.layout_tests.port import browser_test_driver
+from webkitpy.layout_tests.port import port_testcase
 
 
 class _BrowserTestTestCaseMixin(object):
@@ -48,13 +46,13 @@ class _BrowserTestTestCaseMixin(object):
         self.assertTrue(self.make_port()._path_to_driver().endswith(self.driver_name_endswith))
 
     def test_default_timeout_ms(self):
-        self.assertEqual(self.make_port(options=MockOptions(configuration='Release')).default_timeout_ms(),
+        self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Release'})).default_timeout_ms(),
                          self.timeout_ms)
-        self.assertEqual(self.make_port(options=MockOptions(configuration='Debug')).default_timeout_ms(),
+        self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Debug'})).default_timeout_ms(),
                          3 * self.timeout_ms)
 
     def test_driver_type(self):
-        self.assertTrue(isinstance(self.make_port(options=MockOptions(driver_name='browser_tests')
+        self.assertTrue(isinstance(self.make_port(options=optparse.Values({'driver_name': 'browser_tests'})
                                                   ).create_driver(1), browser_test_driver.BrowserTestDriver))
 
     def test_layout_tests_dir(self):
@@ -93,5 +91,5 @@ class BrowserTestMacTest(_BrowserTestTestCaseMixin, port_testcase.PortTestCase):
     timeout_ms = 20 * 1000
 
     def test_driver_path(self):
-        test_port = self.make_port(options=MockOptions(driver_name='browser_tests'))
+        test_port = self.make_port(options=optparse.Values({'driver_name': 'browser_tests'}))
         self.assertNotIn('.app/Contents/MacOS', test_port._path_to_driver())

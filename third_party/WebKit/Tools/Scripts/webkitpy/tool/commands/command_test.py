@@ -26,16 +26,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import optparse
 import unittest
 
 from webkitpy.common.system.outputcapture import OutputCapture
-from webkitpy.tool.mock_tool import MockOptions, MockWebKitPatch
+from webkitpy.tool.mock_tool import MockWebKitPatch
 
 
 class CommandsTest(unittest.TestCase):
 
     def assert_execute_outputs(self, command, args=None, expected_stdout="", expected_stderr="",
-                               expected_exception=None, expected_logs=None, options=MockOptions(), tool=MockWebKitPatch()):
+                               expected_exception=None, expected_logs=None, options=optparse.Values(), tool=MockWebKitPatch()):
         args = args or []
         options.blocks = None
         options.cc = 'MOCK cc'
