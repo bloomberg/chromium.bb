@@ -136,11 +136,6 @@ WorkerOrWorkletGlobalScope* CompositorWorkerThread::createWorkerGlobalScope(std:
     return CompositorWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
 }
 
-ConsoleMessageStorage* CompositorWorkerThread::consoleMessageStorage()
-{
-    return toWorkerGlobalScope(globalScope())->consoleMessageStorage();
-}
-
 void CompositorWorkerThread::ensureSharedBackingThread()
 {
     DCHECK(isMainThread());

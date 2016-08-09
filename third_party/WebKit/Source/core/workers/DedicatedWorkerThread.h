@@ -44,7 +44,6 @@ public:
     ~DedicatedWorkerThread() override;
 
     WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
-    ConsoleMessageStorage* consoleMessageStorage() final;
     InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
 
 protected:

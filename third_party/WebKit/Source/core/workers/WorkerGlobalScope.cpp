@@ -259,7 +259,7 @@ void WorkerGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
 {
     DCHECK(isContextThread());
     thread()->workerReportingProxy().reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location());
-    m_consoleMessageStorage->addConsoleMessage(this, consoleMessage);
+    thread()->consoleMessageStorage()->addConsoleMessage(this, consoleMessage);
 }
 
 WorkerEventQueue* WorkerGlobalScope::getEventQueue() const
@@ -297,7 +297,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_workerClients(workerClients)
     , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone())
     , m_timeOrigin(timeOrigin)
-    , m_consoleMessageStorage(new ConsoleMessageStorage())
     , m_lastPendingErrorEventId(0)
 {
     setSecurityOrigin(SecurityOrigin::create(url));
@@ -349,7 +348,6 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);
     visitor->trace(m_timers);
-    visitor->trace(m_consoleMessageStorage);
     visitor->trace(m_eventListeners);
     visitor->trace(m_pendingErrorEvents);
     ExecutionContext::trace(visitor);

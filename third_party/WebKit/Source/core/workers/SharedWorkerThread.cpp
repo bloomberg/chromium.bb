@@ -59,9 +59,4 @@ WorkerOrWorkletGlobalScope* SharedWorkerThread::createWorkerGlobalScope(std::uni
     return SharedWorkerGlobalScope::create(m_name, this, std::move(startupData));
 }
 
-ConsoleMessageStorage* SharedWorkerThread::consoleMessageStorage()
-{
-    return toWorkerGlobalScope(globalScope())->consoleMessageStorage();
-}
-
 } // namespace blink

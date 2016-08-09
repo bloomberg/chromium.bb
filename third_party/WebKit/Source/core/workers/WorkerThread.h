@@ -109,7 +109,7 @@ public:
     static void terminateAndWaitForAllWorkers();
 
     virtual WorkerBackingThread& workerBackingThread() = 0;
-    virtual ConsoleMessageStorage* consoleMessageStorage() = 0;
+    ConsoleMessageStorage* consoleMessageStorage() const { return m_consoleMessageStorage.get(); }
     virtual bool shouldAttachThreadDebugger() const { return true; }
     v8::Isolate* isolate();
 
@@ -238,6 +238,7 @@ private:
     // |m_runningDebuggerTask|, |m_exitCode| and |m_microtaskRunner|.
     Mutex m_threadStateMutex;
 
+    Persistent<ConsoleMessageStorage> m_consoleMessageStorage;
     Persistent<WorkerOrWorkletGlobalScope> m_globalScope;
     Persistent<WorkerInspectorController> m_workerInspectorController;
 

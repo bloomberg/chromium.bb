@@ -31,6 +31,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -492,6 +493,7 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
 
         // Optimize for memory usage instead of latency for the worker isolate.
         isolate()->IsolateInBackgroundNotification();
+        m_consoleMessageStorage = new ConsoleMessageStorage();
         m_globalScope = createWorkerGlobalScope(std::move(startupData));
         m_workerInspectorController = WorkerInspectorController::create(this);
         if (m_globalScope->isWorkerGlobalScope())
@@ -563,6 +565,7 @@ void WorkerThread::prepareForShutdownOnWorkerThread()
         m_workerInspectorController->dispose();
         m_workerInspectorController.clear();
     }
+    m_consoleMessageStorage.clear();
     workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
 }
 

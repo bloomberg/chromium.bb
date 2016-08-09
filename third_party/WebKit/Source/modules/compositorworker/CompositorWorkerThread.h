@@ -20,7 +20,6 @@ public:
 
     InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
     WorkerBackingThread& workerBackingThread() override;
-    ConsoleMessageStorage* consoleMessageStorage() final;
     bool shouldAttachThreadDebugger() const override { return false; }
 
     static void ensureSharedBackingThread();

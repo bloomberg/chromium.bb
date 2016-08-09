@@ -128,7 +128,6 @@ public:
 
     WorkerOrWorkletScriptController* scriptController() final { return m_scriptController.get(); }
     WorkerClients* clients() { return m_workerClients.get(); }
-    ConsoleMessageStorage* consoleMessageStorage() { return m_consoleMessageStorage.get(); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -174,8 +173,6 @@ private:
     DOMTimerCoordinator m_timers;
 
     const double m_timeOrigin;
-
-    Member<ConsoleMessageStorage> m_consoleMessageStorage;
 
     HeapListHashSet<Member<V8AbstractEventListener>> m_eventListeners;
 
