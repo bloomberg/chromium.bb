@@ -71,8 +71,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context_getter,
-      media::VideoPlaneController* video_plane_controller,
-      media::MediaCapsImpl* media_caps);
+      media::VideoPlaneController* video_plane_controller);
 
 #if !defined(OS_ANDROID)
   // Returns the task runner that must be used for media IO.
@@ -88,6 +87,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   media::MediaPipelineBackendManager* media_pipeline_backend_manager();
 #endif
+  media::MediaCapsImpl* media_caps();
 
   // Invoked when the metrics client ID changes.
   virtual void SetMetricsClientId(const std::string& client_id);
