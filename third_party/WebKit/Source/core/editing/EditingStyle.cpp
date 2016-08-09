@@ -1180,7 +1180,7 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
         }
 
         if (mode == OverrideValues || (mode == DoNotOverrideValues && !value))
-            m_mutableStyle->setProperty(property.id(), property.value().cssText(), property.isImportant());
+            m_mutableStyle->setProperty(property.toCSSProperty());
     }
 }
 

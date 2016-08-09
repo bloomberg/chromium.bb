@@ -4080,6 +4080,7 @@
             'dom/shadow/FlatTreeTraversalTest.cpp',
             'editing/EditingCommandTest.cpp',
             'editing/EditingStrategyTest.cpp',
+            'editing/EditingStyleTest.cpp',
             'editing/EditingTestBase.cpp',
             'editing/EditingTestBase.h',
             'editing/EditingUtilitiesTest.cpp',

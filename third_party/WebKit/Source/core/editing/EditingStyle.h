@@ -34,6 +34,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
+#include "core/CoreExport.h"
 #include "core/editing/Position.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
@@ -57,7 +58,7 @@ class QualifiedName;
 class ComputedStyle;
 class StylePropertySet;
 
-class EditingStyle final : public GarbageCollected<EditingStyle> {
+class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
 public:
 
     enum PropertiesToInclude { AllProperties, OnlyEditingInheritableProperties, EditingPropertiesInEffect };
