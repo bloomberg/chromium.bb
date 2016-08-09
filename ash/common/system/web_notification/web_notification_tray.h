@@ -17,7 +17,6 @@
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
-#include "ui/views/controls/button/button.h"
 
 // Status area tray for showing browser and app notifications. This hosts
 // a MessageCenter class which manages the notification list. This class
@@ -28,7 +27,6 @@
 // is controlled by StatusAreaWidget.
 
 namespace views {
-class ImageButton;
 class MenuRunner;
 }
 
@@ -43,14 +41,13 @@ namespace ash {
 class AshPopupAlignmentDelegate;
 class SystemTray;
 class WebNotificationBubbleWrapper;
-class WebNotificationButton;
+class WebNotificationIcon;
 class WmWindow;
 
 class ASH_EXPORT WebNotificationTray
     : public TrayBackgroundView,
       public views::TrayBubbleView::Delegate,
       public message_center::MessageCenterTrayDelegate,
-      public views::ButtonListener,
       public base::SupportsWeakPtr<WebNotificationTray>,
       public ui::SimpleMenuModel::Delegate {
  public:
@@ -105,9 +102,6 @@ class ASH_EXPORT WebNotificationTray
       views::Widget* bubble_widget,
       views::Widget::InitParams* params) const override;
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
-
-  // Overridden from ButtonListener.
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from MessageCenterTrayDelegate.
   void OnMessageCenterTrayChanged() override;
@@ -175,7 +169,7 @@ class ASH_EXPORT WebNotificationTray
   std::unique_ptr<message_center::MessageCenterTray> message_center_tray_;
   std::unique_ptr<WebNotificationBubbleWrapper> message_center_bubble_;
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
-  WebNotificationButton* button_;
+  WebNotificationIcon* icon_;
 
   bool show_message_center_on_unlock_;
 

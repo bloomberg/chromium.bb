@@ -39,7 +39,6 @@
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/tray_bubble_view.h"
-#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -115,12 +114,9 @@ class WebNotificationBubbleWrapper {
   DISALLOW_COPY_AND_ASSIGN(WebNotificationBubbleWrapper);
 };
 
-class WebNotificationButton : public views::CustomButton {
+class WebNotificationIcon : public views::View {
  public:
-  WebNotificationButton(views::ButtonListener* listener)
-      : views::CustomButton(listener),
-        is_bubble_visible_(false),
-        unread_count_(0) {
+  WebNotificationIcon() : is_bubble_visible_(false), unread_count_(0) {
     SetLayoutManager(new views::FillLayout);
 
     gfx::ImageSkia image;
@@ -158,7 +154,7 @@ class WebNotificationButton : public views::CustomButton {
   }
 
  protected:
-  // Overridden from views::ImageButton:
+  // Overridden from views::View:
   gfx::Size GetPreferredSize() const override {
     const int size = GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY);
     return gfx::Size(size, size);
@@ -200,7 +196,7 @@ class WebNotificationButton : public views::CustomButton {
   views::ImageView no_unread_icon_;
   views::Label unread_label_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationButton);
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationIcon);
 };
 
 WebNotificationTray::WebNotificationTray(WmShelf* shelf,
@@ -209,18 +205,15 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
     : TrayBackgroundView(shelf),
       status_area_window_(status_area_window),
       system_tray_(system_tray),
-      button_(nullptr),
+      icon_(new WebNotificationIcon),
       show_message_center_on_unlock_(false),
       should_update_tray_content_(false),
       should_block_shelf_auto_hide_(false) {
   DCHECK(shelf);
   DCHECK(status_area_window_);
   DCHECK(system_tray_);
-  button_ = new WebNotificationButton(this);
-  button_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                       ui::EF_RIGHT_MOUSE_BUTTON);
-  tray_container()->AddChildView(button_);
-  button_->SetFocusBehavior(FocusBehavior::NEVER);
+
+  tray_container()->AddChildView(icon_);
   SetContentsBackground();
   tray_container()->SetBorder(views::Border::NullBorder());
   message_center_tray_.reset(new message_center::MessageCenterTray(
@@ -273,7 +266,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
 
   system_tray_->SetHideNotifications(true);
   shelf()->UpdateAutoHideState();
-  button_->SetBubbleVisible(true);
+  icon_->SetBubbleVisible(true);
   SetDrawBackgroundAsActive(true);
   return true;
 }
@@ -291,7 +284,7 @@ void WebNotificationTray::HideMessageCenter() {
   show_message_center_on_unlock_ = false;
   system_tray_->SetHideNotifications(false);
   shelf()->UpdateAutoHideState();
-  button_->SetBubbleVisible(false);
+  icon_->SetBubbleVisible(false);
 }
 
 void WebNotificationTray::SetTrayBubbleHeight(int height) {
@@ -349,6 +342,8 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
   TrayBackgroundView::SetShelfAlignment(alignment);
+  // Every time shelf alignment is updated, StatusAreaWidgetDelegate resets the
+  // border to a non-null border. So, we need to remove it.
   tray_container()->SetBorder(views::Border::NullBorder());
   // Destroy any existing bubble so that it will be rebuilt correctly.
   message_center_tray_->HideMessageCenterBubble();
@@ -460,12 +455,6 @@ void WebNotificationTray::ExecuteCommand(int command_id, int event_flags) {
   message_center()->EnterQuietModeWithExpire(expires_in);
 }
 
-void WebNotificationTray::ButtonPressed(views::Button* sender,
-                                        const ui::Event& event) {
-  DCHECK_EQ(button_, sender);
-  PerformAction(event);
-}
-
 void WebNotificationTray::OnMessageCenterTrayChanged() {
   // Do not update the tray contents directly. Multiple change events can happen
   // consecutively, and calling Update in the middle of those events will show
@@ -483,11 +472,7 @@ void WebNotificationTray::UpdateTrayContent() {
 
   message_center::MessageCenter* message_center =
       message_center_tray_->message_center();
-  button_->SetUnreadCount(message_center->UnreadNotificationCount());
-  if (IsMessageCenterBubbleVisible())
-    button_->SetState(views::CustomButton::STATE_PRESSED);
-  else
-    button_->SetState(views::CustomButton::STATE_NORMAL);
+  icon_->SetUnreadCount(message_center->UnreadNotificationCount());
 
   SetVisible(IsLoggedIn());
   Layout();
