@@ -42,9 +42,7 @@
 }
 
 - (BOOL)hasBeenInjected {
-  DCHECK(self.presenceBeacon);
-  return [_receiver scriptHasBeenInjectedForClass:[self class]
-                                   presenceBeacon:self.presenceBeacon];
+  return [_receiver scriptHasBeenInjectedForClass:[self class]];
 }
 
 - (void)inject {
@@ -98,10 +96,6 @@
 
 - (NSString*)scriptPath {
   NOTREACHED();
-  return nil;
-}
-
-- (NSString*)presenceBeacon {
   return nil;
 }
 

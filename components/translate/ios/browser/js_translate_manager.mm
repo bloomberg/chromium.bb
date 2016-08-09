@@ -78,8 +78,4 @@
   return _translationScript.autorelease();
 }
 
-- (NSString*)presenceBeacon {
-  return @"cr.googleTranslate";
-}
-
 @end

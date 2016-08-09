@@ -96,8 +96,4 @@ const char kCredentialsSecurityErrorMessageUntrustedOrigin[] =
   return @"credential_manager";
 }
 
-- (NSString*)presenceBeacon {
-  return @"__gCrWeb.credentialManager";
-}
-
 @end

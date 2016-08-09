@@ -30,10 +30,6 @@
   return @"autofill_controller";
 }
 
-- (NSString*)presenceBeacon {
-  return @"__gCrWeb.autofill";
-}
-
 - (void)fillActiveFormField:(NSString*)dataString
           completionHandler:(ProceduralBlock)completionHandler {
   web::JavaScriptCompletion resultHandler = ^void(NSString*, NSError*) {

@@ -17,10 +17,6 @@
 
 namespace {
 
-// Global variable defined in find_in_page.js that can be used for testing
-// whether JavaScript bas heen loaded.
-NSString* const kFindInPageBeacon = @"window.__gCrWeb.findInPage";
-
 // Initializes Find In Page JavaScript with the width and height of the window.
 NSString* const kFindInPageInit = @"window.__gCrWeb.findInPage && "
                                    "window.__gCrWeb.findInPage.init(%.f, %.f);";
@@ -262,10 +258,6 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
 - (NSString*)scriptPath {
   return @"find_in_page";
-}
-
-- (NSString*)presenceBeacon {
-  return kFindInPageBeacon;
 }
 
 @end

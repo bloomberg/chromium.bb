@@ -59,12 +59,6 @@
 // that needs to be injected.
 - (NSString*)scriptPath;
 
-// The JavaScript function that returns the JavaScript constant of undefined
-// if the JavaScript has not been injected. Default to be nil. Subclasses
-// should override this if their script should only be injected into a page
-// once.
-- (NSString*)presenceBeacon;
-
 // Returns the content that should be injected. This is called every time
 // injection content is needed; by default is uses a cached copy of
 // staticInjectionContent.

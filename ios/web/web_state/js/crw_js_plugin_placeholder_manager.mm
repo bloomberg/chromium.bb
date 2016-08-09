@@ -33,10 +33,6 @@ NSString* EscapedQuotedString(NSString* string) {
   return @"plugin_placeholder";
 }
 
-- (NSString*)presenceBeacon {
-  return @"__gCrWeb.plugin";
-}
-
 - (NSString*)staticInjectionContent {
   NSString* baseContent = [super staticInjectionContent];
   DCHECK(web::GetWebClient());

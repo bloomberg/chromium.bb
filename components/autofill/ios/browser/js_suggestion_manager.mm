@@ -27,10 +27,6 @@ NSString* JSONEscape(NSString* str) {
   return @"suggestion_controller";
 }
 
-- (NSString*)presenceBeacon {
-  return @"__gCrWeb.suggestion";
-}
-
 - (void)selectNextElement {
   [self selectElementAfterForm:@"" field:@""];
 }

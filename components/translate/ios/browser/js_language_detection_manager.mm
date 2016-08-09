@@ -22,10 +22,6 @@ const size_t kMaxIndexChars = 65535;
   return @"language_detection";
 }
 
-- (NSString*)presenceBeacon {
-  return @"__gCrWeb.languageDetection";
-}
-
 #pragma mark - Public methods
 
 - (void)startLanguageDetection {

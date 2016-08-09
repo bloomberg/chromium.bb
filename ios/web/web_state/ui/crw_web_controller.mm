@@ -2496,9 +2496,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   web::ExecuteJavaScript(_webView, safeScript, completionHandler);
 }
 
-- (BOOL)scriptHasBeenInjectedForClass:(Class)JSInjectionManagerClass
-                       presenceBeacon:(NSString*)beacon {
-  return [_injectedScriptManagers containsObject:JSInjectionManagerClass];
+- (BOOL)scriptHasBeenInjectedForClass:(Class)injectionManagerClass {
+  return [_injectedScriptManagers containsObject:injectionManagerClass];
 }
 
 - (void)injectScript:(NSString*)script forClass:(Class)JSInjectionManagerClass {

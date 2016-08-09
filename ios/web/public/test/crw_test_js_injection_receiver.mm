@@ -40,9 +40,8 @@
   web::ExecuteJavaScript(_webView, script, completionHandler);
 }
 
-- (BOOL)scriptHasBeenInjectedForClass:(Class)JSInjectionManagerClass
-                       presenceBeacon:(NSString*)beacon {
-  return [_injectedScriptManagers containsObject:JSInjectionManagerClass];
+- (BOOL)scriptHasBeenInjectedForClass:(Class)injectionManagerClass {
+  return [_injectedScriptManagers containsObject:injectionManagerClass];
 }
 
 - (void)injectScript:(NSString*)script forClass:(Class)JSInjectionManagerClass {

@@ -18,10 +18,6 @@
 
 @implementation TestingCRWJSBaseManager
 
-- (NSString*)presenceBeacon {
-  return @"base";
-}
-
 - (NSString*)staticInjectionContent {
   return @"base = {};";
 }
@@ -34,10 +30,6 @@
 
 @implementation TestingAnotherCRWJSBaseManager
 
-- (NSString*)presenceBeacon {
-  return @"anotherbase";
-}
-
 - (NSString*)staticInjectionContent {
   return @"anotherbase = {};";
 }
@@ -49,10 +41,6 @@
 @end
 
 @implementation TestingJsManager
-
-- (NSString*)presenceBeacon {
-  return @"base['testingjs']";
-}
 
 - (NSString*)staticInjectionContent {
   return @"base['testingjs'] = {};";
@@ -69,10 +57,6 @@
 @end
 
 @implementation TestingDynamicJsManager
-
-- (NSString*)presenceBeacon {
-  return @"dynamic";
-}
 
 - (NSString*)injectionContent {
   static int i = 0;
@@ -94,10 +78,6 @@
 
 @implementation TestingAnotherJsManager
 
-- (NSString*)presenceBeacon {
-  return @"base['anothertestingjs']";
-}
-
 - (NSString*)staticInjectionContent {
   return @"base['anothertestingjs'] = {};";
 }
@@ -115,10 +95,6 @@
 
 @implementation TestingJsManagerWithNestedDependencies
 
-- (NSString*)presenceBeacon {
-  return @"base['testingjswithnesteddependencies']";
-}
-
 - (NSString*)staticInjectionContent {
   return @"base['testingjswithnesteddependencies'] = {};";
 }
@@ -134,10 +110,6 @@
 @end
 
 @implementation TestingJsManagerComplex
-
-- (NSString*)presenceBeacon {
-  return @"base['testingjswithnesteddependencies']['complex']";
-}
 
 - (NSString*)staticInjectionContent {
   return @"base['testingjswithnesteddependencies']['complex'] = {};";
@@ -290,8 +262,7 @@ TEST_F(JsInjectionManagerTest, HasNestedDependencies) {
 // Tests that checking for an uninjected presence beacon returns false.
 TEST_F(JsInjectionManagerTest, WebControllerCheckForUninjectedScript) {
   EXPECT_FALSE([web_state()->GetJSInjectionReceiver()
-      scriptHasBeenInjectedForClass:Nil
-                     presenceBeacon:@"__gCrWeb.dummyBeacon"]);
+      scriptHasBeenInjectedForClass:Nil]);
 }
 
 TEST_F(JsInjectionManagerTest, AllDependencies) {
