@@ -198,6 +198,7 @@
             'ScriptPromiseResolverTest.cpp',
             'ScriptPromiseTest.cpp',
             'ScriptStreamerTest.cpp',
+            'ScriptValueSerializerTest.cpp',
             'SerializedScriptValueTest.cpp',
             'ToV8Test.cpp',
             'V8BindingForTesting.cpp',

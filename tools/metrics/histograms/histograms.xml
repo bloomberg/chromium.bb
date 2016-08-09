@@ -3889,6 +3889,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.ScriptValueSerializer.DOMWrapperCount" units="objects">
+  <owner>platform-architecture-dev@chromium.org</owner>
+  <summary>
+    Number of DOM wrappers serialized as part of an object passed to
+    postMessage, IndexedDB, or another API that serializes script values.
+  </summary>
+</histogram>
+
+<histogram name="Blink.ScriptValueSerializer.JSObjectCount" units="objects">
+  <owner>platform-architecture-dev@chromium.org</owner>
+  <summary>
+    Number of JavaScript objects (other than DOM wrappers) serialized as part of
+    an object passed to postMessage, IndexedDB, or another API that serializes
+    script values.
+  </summary>
+</histogram>
+
+<histogram name="Blink.ScriptValueSerializer.PrimitiveCount" units="values">
+  <owner>platform-architecture-dev@chromium.org</owner>
+  <summary>
+    Number of primitive values (numbers, strings, etc.) serialized as part of an
+    object passed to postMessage, IndexedDB, or another API that serializes
+    script values.
+  </summary>
+</histogram>
+
 <histogram name="Blink.SharedBuffer.FailedLock" enum="ResourceType">
   <owner>hiroshige@chromium.org</owner>
   <summary>
