@@ -44,6 +44,9 @@ class WebContents;
   // This is nil when the current WebContents is in an incognito window.
   NSButton* alwaysTranslateCheckbox_;
 
+  // The 'Try again' button on the error panel.
+  NSButton* tryAgainButton_;
+
   // The combobox model which is used to deny translation at the view before
   // translate.
   std::unique_ptr<TranslateDenialComboboxModel> translateDenialComboboxModel_;

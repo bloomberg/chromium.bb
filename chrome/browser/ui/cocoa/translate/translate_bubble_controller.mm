@@ -105,6 +105,7 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 - (void)handleDoneButtonPressed;
 - (void)handleCancelButtonPressed;
 - (void)handleShowOriginalButtonPressed;
+- (void)handleTryAgainButtonPressed;
 - (void)handleAdvancedLinkButtonPressed;
 - (void)handleLanguageSettingsLinkButtonPressed;
 - (void)handleDenialPopUpButtonNopeSelected;
@@ -198,7 +199,8 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 }
 
 - (void)switchToErrorView:(translate::TranslateErrors::Type)errorType {
-  // FIXME: Implement this.
+  [self switchView:TranslateBubbleModel::VIEW_STATE_ERROR];
+  model_->ShowError(errorType);
 }
 
 - (void)performLayout {
@@ -387,7 +389,35 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
       0);
   NSView* view = [[NSView alloc] initWithFrame:contentFrame];
 
-  // TODO(hajimehoshi): Implement this.
+  NSString* message =
+      l10n_util::GetNSString(IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE);
+  NSTextField* textLabel = [self addText:message toView:view];
+  message = l10n_util::GetNSStringWithFixup(IDS_TRANSLATE_BUBBLE_ADVANCED);
+  NSButton* advancedLinkButton =
+      [self addLinkButtonWithText:message
+                           action:@selector(handleAdvancedLinkButtonPressed)
+                           toView:view];
+  NSString* title =
+      l10n_util::GetNSString(IDS_TRANSLATE_BUBBLE_TRY_AGAIN);
+  tryAgainButton_ = [self addButton:title
+                             action:@selector(handleTryAgainButtonPressed)
+                             toView:view];
+
+  // Layout
+  CGFloat yPos = 0;
+
+  [tryAgainButton_
+      setFrameOrigin:NSMakePoint(
+                         kContentWidth - NSWidth([tryAgainButton_ frame]),
+                         yPos)];
+
+  yPos += NSHeight([tryAgainButton_ frame]) + kUnrelatedControlVerticalSpacing;
+
+  [textLabel setFrameOrigin:NSMakePoint(0, yPos)];
+  [advancedLinkButton
+      setFrameOrigin:NSMakePoint(NSMaxX([textLabel frame]), yPos)];
+
+  [view setFrameSize:NSMakeSize(kContentWidth, NSMaxY([textLabel frame]))];
 
   return view;
 }
@@ -662,6 +692,11 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
   translate::ReportUiAction(translate::SHOW_ORIGINAL_BUTTON_CLICKED);
   model_->RevertTranslation();
   [self close];
+}
+
+- (void)handleTryAgainButtonPressed {
+  model_->Translate();
+  translate::ReportUiAction(translate::TRY_AGAIN_BUTTON_CLICKED);
 }
 
 - (void)handleAdvancedLinkButtonPressed {

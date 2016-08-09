@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/site_instance.h"
 
@@ -19,6 +20,18 @@
 
 - (TranslateBubbleController*)translateBubbleController{
   return translateBubbleController_;
+}
+
+@end
+
+@implementation TranslateBubbleController (ForTesting)
+
+- (NSView*)errorView {
+  NSNumber* key = @(TranslateBubbleModel::VIEW_STATE_ERROR);
+  return [views_ objectForKey:key];
+}
+- (NSButton*)tryAgainButton {
+  return tryAgainButton_;
 }
 
 @end
@@ -44,6 +57,7 @@ class TranslateBubbleControllerTest : public CocoaProfileTest {
   }
 
   BrowserWindowController* bwc() { return bwc_; }
+
   TranslateBubbleController* bubble() {
     return [bwc() translateBubbleController];
   }
@@ -59,6 +73,14 @@ class TranslateBubbleControllerTest : public CocoaProfileTest {
     // Ensure that there are no closing animations.
     InfoBubbleWindow* window = (InfoBubbleWindow*)[bubble() window];
     [window setAllowedAnimations:info_bubble::kAnimateNone];
+  }
+
+  void SwitchToErrorView() {
+    translate::TranslateStep step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
+    [bwc_
+        showTranslateBubbleForWebContents:web_contents_
+                                     step:step
+                                errorType:translate::TranslateErrors::NETWORK];
   }
 
   void CloseBubble() {
@@ -80,6 +102,30 @@ TEST_F(TranslateBubbleControllerTest, ShowAndClose) {
 
   CloseBubble();
   EXPECT_FALSE(bubble());
+}
+
+TEST_F(TranslateBubbleControllerTest, SwitchToErrorView) {
+  EXPECT_FALSE(bubble());
+  ShowBubble();
+  const TranslateBubbleModel* model = [bubble() model];
+
+  EXPECT_TRUE(bubble());
+  EXPECT_EQ(TranslateBubbleModel::ViewState::VIEW_STATE_BEFORE_TRANSLATE,
+            model->GetViewState());
+
+  SwitchToErrorView();
+
+  NSView* errorView = [bubble() errorView];
+  // We should have 3 subview inside the error view:
+  // A NSTextField and two NSButton.
+  EXPECT_EQ(3UL, [[errorView subviews] count]);
+
+  // one of the subview should be "Try again" button.
+  EXPECT_TRUE([[errorView subviews] containsObject:[bubble() tryAgainButton]]);
+  EXPECT_EQ(TranslateBubbleModel::ViewState::VIEW_STATE_ERROR,
+            model->GetViewState());
+  EXPECT_TRUE(bubble());
+  CloseBubble();
 }
 
 TEST_F(TranslateBubbleControllerTest, CloseRegistersDecline) {
