@@ -120,12 +120,23 @@ void ClientSession::NotifyClientResolution(
   if (!screen_controls_)
     return;
 
-  ScreenResolution client_resolution(
-      webrtc::DesktopSize(resolution.dips_width(), resolution.dips_height()),
-      webrtc::DesktopVector(kDefaultDpi, kDefaultDpi));
+  webrtc::DesktopSize client_size(resolution.dips_width(),
+                                  resolution.dips_height());
+  if (connection_->session()->config().protocol() ==
+      protocol::SessionConfig::Protocol::WEBRTC) {
+    // When using WebRTC round down the dimensions to multiple of 2. Otherwise
+    // the dimensions will be rounded on the receiver, which will cause blurring
+    // due to scaling. The resulting size is still close to the client size and
+    // will fit on the client's screen without scaling.
+    // TODO(sergeyu): Make WebRTC handle odd dimensions properly.
+    // crbug.com/636071
+    client_size.set(client_size.width() & (~1), client_size.height() & (~1));
+  }
 
   // Try to match the client's resolution.
-  screen_controls_->SetScreenResolution(client_resolution);
+  // TODO(sergeyu): Pass clients DPI to the resizer.
+  screen_controls_->SetScreenResolution(ScreenResolution(
+      client_size, webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)));
 }
 
 void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
