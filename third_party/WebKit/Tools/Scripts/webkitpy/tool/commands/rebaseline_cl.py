@@ -22,13 +22,13 @@ from webkitpy.tool.commands.rebaseline import Build
 _log = logging.getLogger(__name__)
 
 
-class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
-    name = "rebaseline-from-try-jobs"
-    help_text = "Fetches new baselines from layout test runs on try bots."
+class RebaselineCL(AbstractParallelRebaselineCommand):
+    name = "rebaseline-cl"
+    help_text = "Fetches new baselines for one CL, from layout test runs on try bots."
     show_in_main_help = True
 
     def __init__(self):
-        super(RebaselineFromTryJobs, self).__init__(options=[
+        super(RebaselineCL, self).__init__(options=[
             optparse.make_option(
                 '--issue', type='int', default=None,
                 help='Rietveld issue number; if none given, this will be obtained via `git cl issue`.'),
@@ -48,8 +48,8 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
             test_prefix_list = {}
             try_jobs = latest_try_jobs(issue_number, self._try_bots(), self.web)
             builds = [Build(j.builder_name, j.build_number) for j in try_jobs]
-            for t in args:
-                test_prefix_list[t] = {b: BASELINE_SUFFIX_LIST for b in builds}
+            for test in args:
+                test_prefix_list[test] = {b: BASELINE_SUFFIX_LIST for b in builds}
         else:
             test_prefix_list = self._test_prefix_list(issue_number)
         self._log_test_prefix_list(test_prefix_list)

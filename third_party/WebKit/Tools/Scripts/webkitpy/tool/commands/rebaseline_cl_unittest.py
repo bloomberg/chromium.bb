@@ -10,15 +10,15 @@ from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
-from webkitpy.tool.commands.rebaseline_from_try_jobs import RebaselineFromTryJobs
+from webkitpy.tool.commands.rebaseline_cl import RebaselineCL
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
 
 
-class RebaselineFromTryJobsTest(BaseTestCase):
-    command_constructor = RebaselineFromTryJobs
+class RebaselineCLTest(BaseTestCase):
+    command_constructor = RebaselineCL
 
     def setUp(self):
-        super(RebaselineFromTryJobsTest, self).setUp()
+        super(RebaselineCLTest, self).setUp()
         self.command.web = MockWeb(urls={
             'https://codereview.chromium.org/api/11112222': json.dumps({
                 'patchsets': [1, 2],
