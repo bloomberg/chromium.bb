@@ -41,37 +41,6 @@ cr.define('user_manager.import_supervised_user_tests', function() {
         assertFalse(importElement.$.dialog.opened);
       });
 
-      test('Dialog shows when there are no supervised users', function() {
-        // The dialog is initially not visible.
-        assertFalse(importElement.$.dialog.opened);
-
-        importElement.show({username: 'username',
-                            profilePath: 'path/to/profile'},
-                           []);
-        Polymer.dom.flush();
-
-        // The dialog becomes visible.
-        assertTrue(importElement.$.dialog.opened);
-
-        // The correct message is displayed.
-        assertEquals(loadTimeData.getString('noSupervisedUserImportText'),
-                     importElement.$$('#message').textContent.trim());
-
-        var selectorElement = importElement.$$('paper-listbox');
-        assertTrue(!!selectorElement);
-
-        // There are no supervised users to choose from.
-        var items = selectorElement.querySelectorAll('paper-item');
-        assertEquals(0, items.length);
-
-        // Simulate clicking 'Cancel'
-        MockInteractions.tap(importElement.$$('#cancel'));
-
-        Polymer.dom.flush();
-        // The dialog is no longer visible.
-        assertFalse(importElement.$.dialog.opened);
-      });
-
       test('Can import supervised user', function() {
         return new Promise(function(resolve, reject) {
           /** @type {!SignedInUser} */

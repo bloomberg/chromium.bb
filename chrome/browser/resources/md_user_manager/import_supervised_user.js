@@ -75,18 +75,6 @@ Polymer({
   },
 
   /**
-   * Computed binding that returns the appropriate import message depending on
-   * whether or not there are any supervised users to import.
-   * @param {!Array<!SupervisedUser>} supervisedUsers
-   * @private
-   * @return {string}
-   */
-  getMessage_: function(supervisedUsers) {
-    return supervisedUsers.length > 0 ? this.i18n('supervisedUserImportText') :
-                                        this.i18n('noSupervisedUserImportText');
-  },
-
-  /**
    * param {number} supervisedUserIndex Index of the selected supervised user.
    * @private
    * @return {boolean} Whether the 'Import' button should be disabled.

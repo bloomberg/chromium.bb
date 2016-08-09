@@ -118,7 +118,9 @@ cr.define('user_manager.create_profile_tests', function() {
         // Create is not in progress.
         assertFalse(createProfileElement.createInProgress_);
         // Message container is visible.
-        assertFalse(createProfileElement.$$('#message-container').hidden);
+        var messageContainer =
+            createProfileElement.$$('#message-container');
+        assertTrue(messageContainer.clientHeight > 0);
         // Error message is set.
         assertEquals(
             loadTimeData.getString('custodianAccountNotSelectedError'),
@@ -146,7 +148,9 @@ cr.define('user_manager.create_profile_tests', function() {
               // Create is not in progress.
               assertFalse(createProfileElement.createInProgress_);
               // Message container is visible.
-              assertFalse(createProfileElement.$$('#message-container').hidden);
+              var messageContainer =
+                  createProfileElement.$$('#message-container');
+              assertTrue(messageContainer.clientHeight > 0);
               // Error message is set.
               var message = loadTimeData.getString(
                   'managedProfilesExistingLocalSupervisedUser');
@@ -175,11 +179,43 @@ cr.define('user_manager.create_profile_tests', function() {
               // Create is not in progress.
               assertFalse(createProfileElement.createInProgress_);
               // Message container is visible.
-              assertFalse(createProfileElement.$$('#message-container').hidden);
+              var messageContainer =
+                  createProfileElement.$$('#message-container');
+              assertTrue(messageContainer.clientHeight > 0);
               // Error message contains a link to import the supervised user.
               var message = createProfileElement.$.message;
               assertTrue(
                   !!message.querySelector('#supervised-user-import-existing'));
+            });
+      });
+
+      test('Displays error if custodian has no supervised users', function() {
+        browserProxy.setExistingSupervisedUsers([]);
+
+        // Simulate checking the checkbox.
+        MockInteractions.tap(createProfileElement.$$('paper-checkbox'));
+        Polymer.dom.flush();
+
+        // Select the first signed in user.
+        var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
+        var selector = dropdownMenu.querySelector('paper-listbox');
+        selector.selected = 0;
+
+        // Simulate clicking 'Import supervised user'.
+        MockInteractions.tap(createProfileElement.$$('#import-user'));
+
+        return browserProxy.whenCalled('getExistingSupervisedUsers').then(
+            function(args) {
+              // Create is not in progress.
+              assertFalse(createProfileElement.createInProgress_);
+              // Message container is visible.
+              var messageContainer =
+                  createProfileElement.$$('#message-container');
+              assertTrue(messageContainer.clientHeight > 0);
+              // Error message is set.
+              var message = loadTimeData.getString(
+                  'noSupervisedUserImportText');
+              assertEquals(message, createProfileElement.$.message.innerHTML);
             });
       });
 

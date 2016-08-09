@@ -266,15 +266,20 @@ Polymer({
   },
 
   /**
-   * Displays the import supervised user popup.
+   * Displays the import supervised user popup or an error message if there are
+   * no existing supervised users.
    * @param {!Array<!SupervisedUser>} supervisedUsers The list of existing
    *     supervised users.
    * @private
    */
   showImportSupervisedUserPopup_: function(supervisedUsers) {
     this.loadingSupervisedUsers_ = false;
-    this.$.importUserPopup.show(this.signedInUser_(this.signedInUserIndex_),
-                                supervisedUsers);
+    if (supervisedUsers.length > 0) {
+      this.$.importUserPopup.show(this.signedInUser_(this.signedInUserIndex_),
+                                  supervisedUsers);
+    } else {
+      this.handleMessage_(this.i18n('noSupervisedUserImportText'));
+    }
   },
 
   /**
