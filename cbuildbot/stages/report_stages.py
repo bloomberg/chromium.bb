@@ -420,21 +420,6 @@ class ReportStage(generic_stages.BuilderStage,
                   generic_stages.ArchivingStageMixin):
   """Summarize all the builds."""
 
-  _HTML_HEAD = """<html>
-<head>
- <title>Archive Index: %(board)s / %(version)s</title>
-</head>
-<body>
-<h2>Artifacts Index: %(board)s / %(version)s (%(config)s config)</h2>"""
-
-  _TIMELINE_HTML_HEAD = """<html>
-<head>
- <title>Build Stages Timeline: %(board)s / %(version)s</title>
- %%(javascript)s
-</head>
-<body>
-<h2>Build Stages Timeline: %(board)s / %(version)s (%(config)s config)</h2>"""
-
   _STATS_HISTORY_DAYS = 7
 
   def __init__(self, builder_run, completion_instance, **kwargs):
@@ -562,13 +547,11 @@ class ReportStage(generic_stages.BuilderStage,
       logging.info('No archived artifacts found for %s run (%s)',
                    builder_run.config.name, board_names)
     else:
-      # Prepare html head.
-      head_data = {
+      title = 'Artifacts Index: %(board)s / %(version)s (%(config)s config)' % {
           'board': board_names,
           'config': config.name,
           'version': builder_run.GetVersion(),
       }
-      head = self._HTML_HEAD % head_data
 
       files = osutils.ReadFile(uploaded).splitlines() + [
           '.|Google Storage Index',
@@ -578,8 +561,7 @@ class ReportStage(generic_stages.BuilderStage,
       # TODO (sbasi) crbug.com/362776: Rework the way we do uploading to
       # multiple buckets. Currently this can only be done in the Archive Stage
       # therefore index.html will only end up in the normal Chrome OS bucket.
-      commands.GenerateHtmlIndex(index, files, url_base=archive.download_url,
-                                 head=head)
+      commands.GenerateHtmlIndex(index, files, title=title)
       commands.UploadArchivedFile(
           archive_path, [archive.upload_url], os.path.basename(index),
           debug=self._run.debug, acl=self.acl)

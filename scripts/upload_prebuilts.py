@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+ # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -330,22 +330,13 @@ def GenerateHtmlIndex(files, index, board, version):
     board: Name of the board this index is for.
     version: Build version this index is for.
   """
-  head = """<html>
-<head>
- <title>Package Prebuilt Index: %(board)s / %(version)s</title>
-</head>
-<body>
-<h2>Package Prebuilt Index: %(board)s / %(version)s</h2>"""
-  head %= {
-      'board': board,
-      'version': version,
-  }
+  title = 'Package Prebuilt Index: %s / %s' % (board, version)
 
   files = files + [
       '.|Google Storage Index',
       '..|',
   ]
-  commands.GenerateHtmlIndex(index, files, head=head)
+  commands.GenerateHtmlIndex(index, files, title=title)
 
 
 def _GrabAllRemotePackageIndexes(binhost_urls):

@@ -1596,7 +1596,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   return os.path.basename(debug_tgz)
 
 
-def GenerateHtmlIndex(index, files, url_base=None, head=None, tail=None):
+def GenerateHtmlIndex(index, files, title='Index', url_base=None):
   """Generate a simple index.html file given a set of filenames
 
   Args:
@@ -1604,9 +1604,8 @@ def GenerateHtmlIndex(index, files, url_base=None, head=None, tail=None):
     files: The list of files to create the index of.  If a string, then it
            may be a path to a file (with one file per line), or a directory
            (which will be listed).
+    title: Title string for the HTML file.
     url_base: The URL to prefix to all elements (otherwise they'll be relative).
-    head: All the content before the listing.  '<html><body>' if not specified.
-    tail: All the content after the listing.  '</body></html>' if not specified.
   """
   def GenLink(target, name=None):
     if name == '':
@@ -1621,10 +1620,12 @@ def GenerateHtmlIndex(index, files, url_base=None, head=None, tail=None):
       files = osutils.ReadFile(files).splitlines()
   url_base = url_base + '/' if url_base else ''
 
-  if not head:
-    head = '<html><body>'
-  html = head + '<ul>'
+  # Head + open list.
+  html = '<html>'
+  html += '<head><title>%s</title></head>' % title
+  html += '<body><h2>%s</h2><ul>' % title
 
+  # List members.
   dot = ('.',)
   dot_dot = ('..',)
   links = []
@@ -1640,9 +1641,8 @@ def GenerateHtmlIndex(index, files, url_base=None, head=None, tail=None):
   links.insert(0, GenLink(*dot))
   html += '\n'.join(links)
 
-  if not tail:
-    tail = '</body></html>'
-  html += '</ul>' + tail
+  # Close list and file.
+  html += '</ul></body></html>'
 
   osutils.WriteFile(index, html)
 
