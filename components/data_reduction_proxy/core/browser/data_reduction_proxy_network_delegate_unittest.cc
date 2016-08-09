@@ -810,6 +810,45 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
                                      1);
 }
 
+TEST_F(DataReductionProxyNetworkDelegateTest, TestAcceptEncodingBrotli) {
+  const struct {
+    net::ProxyServer proxy;
+    bool brotli_enabled;
+    std::string expected_accept_encoding;
+  } tests[] = {
+      {net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                        net::HostPortPair("origin.net", 80)),
+       true, "gzip, br"},
+      {net::ProxyServer(net::ProxyServer::SCHEME_QUIC,
+                        net::HostPortPair("origin.net", 80)),
+       true, "gzip, br"},
+      {net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                        net::HostPortPair("origin.net", 80)),
+       false, "gzip"},
+      {net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
+                        net::HostPortPair("origin.net", 80)),
+       true, "gzip"},
+  };
+  for (auto test : tests) {
+    net::ProxyInfo data_reduction_proxy_info;
+    data_reduction_proxy_info.UseProxyServer(test.proxy);
+    net::HttpRequestHeaders headers;
+    headers.SetHeader(net::HttpRequestHeaders::kAcceptEncoding, "gzip");
+    context()->set_enable_brotli(test.brotli_enabled);
+    std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
+        GURL("http://www.google.com/"), net::RequestPriority::IDLE, nullptr);
+
+    network_delegate()->NotifyBeforeSendHeaders(
+        request.get(), data_reduction_proxy_info, net::ProxyRetryInfoMap(),
+        &headers);
+
+    std::string got_accept_encoding;
+    EXPECT_TRUE(headers.GetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                                  &got_accept_encoding));
+    EXPECT_EQ(test.expected_accept_encoding, got_accept_encoding);
+  }
+}
+
 }  // namespace
 
 }  // namespace data_reduction_proxy

@@ -63,6 +63,10 @@ class DataReductionProxyRequestOptions {
   // proxy authentication credentials.
   void AddRequestHeader(net::HttpRequestHeaders* request_headers);
 
+  // Adds 'br' to the Accept-Encoding header if Brotli is enabled.
+  void AddBrotliAcceptEncoding(const net::URLRequest& request,
+                               net::HttpRequestHeaders* request_headers);
+
   // Stores the supplied key and sets up credentials suitable for authenticating
   // with the data reduction proxy.
   // This can be called more than once. For example on a platform that does not

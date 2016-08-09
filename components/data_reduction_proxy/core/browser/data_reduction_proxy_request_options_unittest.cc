@@ -357,4 +357,43 @@ TEST_F(DataReductionProxyRequestOptionsTest, GetSessionKeyFromRequestHeaders) {
   }
 }
 
+TEST_F(DataReductionProxyRequestOptionsTest, AddBrotliAcceptEncoding) {
+  const struct {
+    const char* initial_accept_encoding;
+    bool brotli_enabled;
+    const char* expected_accept_encoding;
+  } tests[] = {
+      {nullptr, true, nullptr},
+      {"", true, "br"},
+      {"gzip", true, "gzip, br"},
+      {"gzip,br,foo", true, "gzip,br,foo"},
+      {"gzip,  br  , foo", true, "gzip,  br  , foo"},
+      {"gzip", false, "gzip"},
+      {"gzip, br", false, "gzip, br"},
+  };
+
+  for (const auto& test : tests) {
+    net::URLRequestContext context;
+    context.set_enable_brotli(test.brotli_enabled);
+    auto request = context.CreateRequest(GURL("http://foo"),
+                                         net::DEFAULT_PRIORITY, nullptr);
+    net::HttpRequestHeaders request_headers;
+    if (test.initial_accept_encoding) {
+      request_headers.SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                                test.initial_accept_encoding);
+    }
+
+    request_options()->AddBrotliAcceptEncoding(*request, &request_headers);
+
+    std::string actual_accept_encoding;
+    EXPECT_EQ(
+        request_headers.GetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                                  &actual_accept_encoding),
+        test.expected_accept_encoding != nullptr);
+    if (test.expected_accept_encoding) {
+      EXPECT_EQ(test.expected_accept_encoding, actual_accept_encoding);
+    }
+  }
+}
+
 }  // namespace data_reduction_proxy

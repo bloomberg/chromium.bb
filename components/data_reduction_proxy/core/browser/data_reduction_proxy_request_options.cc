@@ -23,8 +23,10 @@
 #include "crypto/random.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 
 #if defined(USE_GOOGLE_API_KEYS_FOR_AUTH_KEY)
 #include "google_apis/google_api_keys.h"
@@ -35,6 +37,17 @@ namespace {
 
 std::string FormatOption(const std::string& name, const std::string& value) {
   return name + "=" + value;
+}
+
+bool HasBrotliAcceptEncoding(base::StringPiece accept_encoding_header) {
+  for (base::StringPiece encoding : base::SplitStringPiece(
+           accept_encoding_header, ",", base::TRIM_WHITESPACE,
+           base::SPLIT_WANT_NONEMPTY)) {
+    if (encoding == "br") {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -152,6 +165,24 @@ void DataReductionProxyRequestOptions::AddRequestHeader(
   }
   header_value += header_value_;
   request_headers->SetHeader(kChromeProxyHeader, header_value);
+}
+
+void DataReductionProxyRequestOptions::AddBrotliAcceptEncoding(
+    const net::URLRequest& request,
+    net::HttpRequestHeaders* request_headers) {
+  std::string accept_encoding_header;
+  if (!request.context()->enable_brotli() ||
+      !request_headers->GetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                                  &accept_encoding_header) ||
+      HasBrotliAcceptEncoding(accept_encoding_header))
+    return;
+  if (accept_encoding_header.empty()) {
+    accept_encoding_header = "br";
+  } else {
+    accept_encoding_header += ", br";
+  }
+  request_headers->SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                             accept_encoding_header);
 }
 
 void DataReductionProxyRequestOptions::ComputeCredentials(

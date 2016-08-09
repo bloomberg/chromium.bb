@@ -237,6 +237,12 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
 
   if (data_reduction_proxy_request_options_) {
     data_reduction_proxy_request_options_->AddRequestHeader(headers);
+    // Data Reduction Proxy handles Accept-Encoding: Brotli correctly, but don't
+    // trust intermediate proxies.
+    if (proxy_info.is_https() || proxy_info.is_quic()) {
+      data_reduction_proxy_request_options_->AddBrotliAcceptEncoding(*request,
+                                                                     headers);
+    }
   }
 }
 
