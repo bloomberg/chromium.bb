@@ -6,33 +6,26 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
-#include "services/ui/test_ime/test_ime_driver.h"
+#include "services/ui/ime/test_ime_driver/test_ime_driver.h"
 
 namespace ui {
 namespace test {
 
-class TestIME : public shell::Service,
-                public shell::InterfaceFactory<mojom::IMEDriver> {
+class TestIME : public shell::Service {
  public:
   TestIME() {}
   ~TestIME() override {}
 
  private:
   // shell::Service:
-  void OnStart(const shell::Identity& identity) override {}
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override {
-    registry->AddInterface<mojom::IMEDriver>(this);
-    return true;
-  }
+  void OnStart(const shell::Identity& identity) override {
+    mojom::IMEDriverPtr ime_driver_ptr;
+    new TestIMEDriver(GetProxy(&ime_driver_ptr));
 
-  // shell::InterfaceFactory<mojom::IMEDriver>:
-  void Create(const shell::Identity& remote_identity,
-              mojom::IMEDriverRequest request) override {
-    ime_driver_.reset(new TestIMEDriver(std::move(request)));
+    ui::mojom::IMERegistrarPtr ime_registrar;
+    connector()->ConnectToInterface("mojo:ui", &ime_registrar);
+    ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
   }
-
-  std::unique_ptr<TestIMEDriver> ime_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(TestIME);
 };

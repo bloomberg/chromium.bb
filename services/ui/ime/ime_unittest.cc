@@ -4,12 +4,9 @@
 
 #include <stdint.h>
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/shell/public/cpp/service_context.h"
 #include "services/shell/public/cpp/service_test.h"
@@ -44,50 +41,31 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
 
 class IMEAppTest : public shell::test::ServiceTest {
  public:
-  IMEAppTest() : ServiceTest("exe:test_ime_unittests") {}
+  IMEAppTest() : ServiceTest("exe:mus_ime_unittests") {}
   ~IMEAppTest() override {}
 
   // shell::test::ServiceTest:
   void SetUp() override {
     ServiceTest::SetUp();
-    connector()->ConnectToInterface("mojo:test_ime", &ime_driver_);
-    ASSERT_TRUE(ime_driver_);
+    // test_ime_driver will register itself as the current IMEDriver.
+    connector()->Connect("mojo:test_ime_driver");
+    connector()->ConnectToInterface("mojo:ui", &ime_server_);
   }
 
  protected:
-  ui::mojom::IMEDriverPtr ime_driver_;
+  ui::mojom::IMEServerPtr ime_server_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEAppTest);
 };
 
-// Test that calling InputMethod::ProcessKeyEvent() after cancelling the session
-// encounters an error.
-TEST_F(IMEAppTest, TestCancelSession) {
+// Tests sending a KeyEvent to the IMEDriver through the Mus IMEServer.
+TEST_F(IMEAppTest, ProcessKeyEvent) {
   ui::mojom::TextInputClientPtr client_ptr;
   TestTextInputClient client(GetProxy(&client_ptr));
 
   ui::mojom::InputMethodPtr input_method;
-  ime_driver_->StartSession(1, std::move(client_ptr), GetProxy(&input_method));
-  ASSERT_TRUE(input_method.is_bound());
-
-  ime_driver_->CancelSession(1);
-
-  base::RunLoop run_loop;
-  input_method.set_connection_error_handler(run_loop.QuitClosure());
-  input_method->ProcessKeyEvent(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0)));
-  run_loop.Run();
-
-  ASSERT_TRUE(input_method.encountered_error());
-}
-
-TEST_F(IMEAppTest, TestProcessKeyEvent) {
-  ui::mojom::TextInputClientPtr client_ptr;
-  TestTextInputClient client(GetProxy(&client_ptr));
-
-  ui::mojom::InputMethodPtr input_method;
-  ime_driver_->StartSession(1, std::move(client_ptr), GetProxy(&input_method));
-  ASSERT_TRUE(input_method.is_bound());
+  ime_server_->StartSession(std::move(client_ptr), GetProxy(&input_method));
 
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
 

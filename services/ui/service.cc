@@ -22,6 +22,8 @@
 #include "services/ui/display/platform_screen.h"
 #include "services/ui/gpu/gpu_service_impl.h"
 #include "services/ui/gpu/gpu_service_mus.h"
+#include "services/ui/ime/ime_registrar_impl.h"
+#include "services/ui/ime/ime_server_impl.h"
 #include "services/ui/ws/accessibility_manager.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
@@ -80,8 +82,8 @@ struct Service::UserState {
 Service::Service()
     : test_config_(false),
       platform_screen_(display::PlatformScreen::Create()),
-      weak_ptr_factory_(this) {
-}
+      ime_registrar_(&ime_server_),
+      weak_ptr_factory_(this) {}
 
 Service::~Service() {
   // Destroy |window_server_| first, since it depends on |event_source_|.
@@ -200,6 +202,8 @@ bool Service::OnConnect(const shell::Identity& remote_identity,
   registry->AddInterface<mojom::Clipboard>(this);
   registry->AddInterface<mojom::DisplayManager>(this);
   registry->AddInterface<mojom::GpuService>(this);
+  registry->AddInterface<mojom::IMERegistrar>(this);
+  registry->AddInterface<mojom::IMEServer>(this);
   registry->AddInterface<mojom::UserAccessManager>(this);
   registry->AddInterface<mojom::UserActivityMonitor>(this);
   registry->AddInterface<WindowTreeHostFactory>(this);
@@ -284,6 +288,16 @@ void Service::Create(const shell::Identity& remote_identity,
 void Service::Create(const shell::Identity& remote_identity,
                      mojom::GpuServiceRequest request) {
   new GpuServiceImpl(std::move(request));
+}
+
+void Service::Create(const shell::Identity& remote_identity,
+                     mojom::IMERegistrarRequest request) {
+  ime_registrar_.AddBinding(std::move(request));
+}
+
+void Service::Create(const shell::Identity& remote_identity,
+                     mojom::IMEServerRequest request) {
+  ime_server_.AddBinding(std::move(request));
 }
 
 void Service::Create(const shell::Identity& remote_identity,

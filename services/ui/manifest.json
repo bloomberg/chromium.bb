@@ -11,6 +11,7 @@
         "ui::mojom::DisplayManager",
         "ui::mojom::Gpu",
         "ui::mojom::GpuService",
+        "ui::mojom::IMEServer",
         "ui::mojom::InputDeviceServer",
         "ui::mojom::WindowTreeFactory"
       ],

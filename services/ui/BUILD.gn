@@ -13,7 +13,7 @@ group("all") {
   testonly = true
   deps = [
     ":ui",
-    "//services/ui/test_ime",
+    "//services/ui/ime/test_ime_driver",
     "//services/ui/test_wm",
   ]
 }
@@ -90,6 +90,7 @@ source_set("lib") {
     "//services/ui/clipboard:lib",
     "//services/ui/gpu",
     "//services/ui/gpu/display_compositor",
+    "//services/ui/ime:lib",
     "//services/ui/input_devices",
     "//services/ui/public/interfaces",
     "//services/ui/surfaces",

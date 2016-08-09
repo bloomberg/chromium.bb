@@ -594,8 +594,8 @@
       "../../",
     ],
   },
-  "test_ime_unittests": {
-    "label": "//services/ui/test_ime:test_ime_unittests",
+  "mus_ime_unittests": {
+    "label": "//services/ui/ime:mus_ime_unittests",
     "type": "windowed_test_launcher",
   },
   "ui_android_unittests": {

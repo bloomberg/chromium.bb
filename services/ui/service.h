@@ -18,12 +18,15 @@
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
 #include "services/tracing/public/cpp/provider.h"
+#include "services/ui/ime/ime_registrar_impl.h"
+#include "services/ui/ime/ime_server_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/display.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
+#include "services/ui/public/interfaces/ime.mojom.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
@@ -67,6 +70,8 @@ class Service
       public shell::InterfaceFactory<mojom::Clipboard>,
       public shell::InterfaceFactory<mojom::DisplayManager>,
       public shell::InterfaceFactory<mojom::GpuService>,
+      public shell::InterfaceFactory<mojom::IMERegistrar>,
+      public shell::InterfaceFactory<mojom::IMEServer>,
       public shell::InterfaceFactory<mojom::UserAccessManager>,
       public shell::InterfaceFactory<mojom::UserActivityMonitor>,
       public shell::InterfaceFactory<mojom::WindowManagerWindowTreeFactory>,
@@ -122,6 +127,14 @@ class Service
   void Create(const shell::Identity& remote_identity,
               mojom::GpuServiceRequest request) override;
 
+  // shell::InterfaceFactory<mojom::IMERegistrar> implementation.
+  void Create(const shell::Identity& remote_identity,
+              mojom::IMERegistrarRequest request) override;
+
+  // shell::InterfaceFactory<mojom::IMEServer> implementation.
+  void Create(const shell::Identity& remote_identity,
+              mojom::IMEServerRequest request) override;
+
   // shell::InterfaceFactory<mojom::UserAccessManager> implementation.
   void Create(const shell::Identity& remote_identity,
               mojom::UserAccessManagerRequest request) override;
@@ -172,6 +185,8 @@ class Service
 
   std::unique_ptr<display::PlatformScreen> platform_screen_;
   std::unique_ptr<ws::TouchController> touch_controller_;
+  IMERegistrarImpl ime_registrar_;
+  IMEServerImpl ime_server_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 

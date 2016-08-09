@@ -1330,6 +1330,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "mus_ime_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "mus_public_unittests"
       },
       {
@@ -1397,12 +1403,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sync_integration_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "test_ime_unittests"
       },
       {
         "swarming": {
@@ -1787,6 +1787,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "mus_ime_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "mus_ws_unittests"
       },
       {
@@ -1845,12 +1851,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sync_integration_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "test_ime_unittests"
       },
       {
         "swarming": {

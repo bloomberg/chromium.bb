@@ -6,37 +6,34 @@ import("//services/shell/public/cpp/service.gni")
 import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
-service("test_ime") {
+source_set("lib") {
   sources = [
-    "main.cc",
-    "test_ime_driver.cc",
-    "test_ime_driver.h",
+    "ime_registrar_impl.cc",
+    "ime_registrar_impl.h",
+    "ime_server_impl.cc",
+    "ime_server_impl.h",
   ]
 
   deps = [
     "//base",
+    "//mojo/common",
+    "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",
-    "//services/ui/public/cpp",
+    "//services/tracing/public/cpp",
     "//services/ui/public/interfaces",
-    "//ui/gfx/geometry/mojo",
-  ]
-
-  data_deps = [
-    ":manifest",
-    "//services/ui",
   ]
 }
 
 group("tests") {
   testonly = true
   deps = [
-    ":test_ime_unittests",
+    ":mus_ime_unittests",
   ]
 }
 
-test("test_ime_unittests") {
+test("mus_ime_unittests") {
   sources = [
-    "test_ime_unittest.cc",
+    "ime_unittest.cc",
   ]
 
   deps = [
@@ -49,19 +46,15 @@ test("test_ime_unittests") {
   ]
 
   data_deps = [
-    ":test_ime",
     ":test_manifest",
+    ":lib",
     "//services/ui",
+    "//services/ui/ime/test_ime_driver",
   ]
-}
-
-service_manifest("manifest") {
-  name = "test_ime"
-  source = "manifest.json"
 }
 
 service_manifest("test_manifest") {
   type = "exe"
-  name = "test_ime_unittests"
+  name = "mus_ime_unittests"
   source = "test_manifest.json"
 }
