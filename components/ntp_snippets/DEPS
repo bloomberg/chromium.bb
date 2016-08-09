@@ -9,9 +9,11 @@ include_rules = [
   "+components/suggestions",
   "+components/sync_driver",
   "+components/variations",
+  "+grit/components_strings.h",
   "+net/base",
   "+net/http",
   "+net/url_request",
   "+google_apis",
+  "+ui/base/l10n",
   "+ui/gfx",
 ]

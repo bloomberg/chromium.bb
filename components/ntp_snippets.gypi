@@ -13,6 +13,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../components/components_strings.gyp:components_strings',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
@@ -37,6 +38,8 @@
         'ntp_snippets/bookmarks/bookmark_suggestions_provider.h',
         'ntp_snippets/category_factory.cc',
         'ntp_snippets/category_factory.h',
+        'ntp_snippets/category_info.cc',
+        'ntp_snippets/category_info.h',
         'ntp_snippets/category_status.cc',
         'ntp_snippets/category_status.h',
         'ntp_snippets/category.cc',

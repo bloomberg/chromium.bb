@@ -31,6 +31,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/variations/variations_associated_data.h"
+#include "grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
 using image_fetcher::ImageDecoder;
@@ -277,6 +279,12 @@ std::vector<Category> NTPSnippetsService::GetProvidedCategories() {
 CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
   DCHECK(category.IsKnownCategory(KnownCategories::ARTICLES));
   return category_status_;
+}
+
+CategoryInfo NTPSnippetsService::GetCategoryInfo(Category category) {
+  return CategoryInfo(
+      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER),
+      ContentSuggestionsCardLayout::FULL_CARD);
 }
 
 void NTPSnippetsService::DismissSuggestion(const std::string& suggestion_id) {

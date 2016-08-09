@@ -2,12 +2,20 @@
 <grit-part>
 
   <if expr="is_android">
-    <message name="IDS_SNIPPETS_DISABLED_SIGNED_OUT_INSTRUCTIONS" desc="Body of the card explaining the status of the NTP suggested content, when the user is signed out." formatter_data="android_java">
+    <message name="IDS_SNIPPETS_DISABLED_SIGNED_OUT_INSTRUCTIONS" desc="Body of the card explaining the status of the content suggestions on the New Tab Page, when the user is signed out." formatter_data="android_java">
       To get personalized content suggested by Google, sign in to Chrome.
     </message>
-    <message name="IDS_SNIPPETS_DISABLED_GENERIC_PROMPT" desc="Title of the card explaining what action the user can take to get suggested content on the NTP." formatter_data="android_java">
+    <message name="IDS_SNIPPETS_DISABLED_GENERIC_PROMPT" desc="Title of the card explaining what action the user can take to get content suggestions on the New Tab Page." formatter_data="android_java">
       Get suggested content
     </message>
   </if>
+
+  <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER" desc="Header of the articles section, which is a list of news articles displayed as cards on the New Tab Page.">
+    Articles for you
+  </message>
+
+  <message name="IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER" desc="Header of the bookmarks section, which is a list of the user's most recently used bookmarks displayed as cards on the New Tab Page.">
+    Recent bookmarks
+  </message>
 
 </grit-part>

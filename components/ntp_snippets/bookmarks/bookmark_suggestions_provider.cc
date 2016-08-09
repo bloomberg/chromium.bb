@@ -18,6 +18,8 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/features.h"
 #include "components/variations/variations_associated_data.h"
+#include "grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
 using bookmarks::BookmarkModel;
@@ -85,6 +87,12 @@ CategoryStatus BookmarkSuggestionsProvider::GetCategoryStatus(
     Category category) {
   DCHECK_EQ(category, provided_category_);
   return category_status_;
+}
+
+CategoryInfo BookmarkSuggestionsProvider::GetCategoryInfo(Category category) {
+  return CategoryInfo(
+      l10n_util::GetStringUTF16(IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER),
+      ContentSuggestionsCardLayout::MINIMAL_CARD);
 }
 
 void BookmarkSuggestionsProvider::DismissSuggestion(

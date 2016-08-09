@@ -50,6 +50,14 @@ CategoryStatus ContentSuggestionsService::GetCategoryStatus(
   return iterator->second->GetCategoryStatus(category);
 }
 
+base::Optional<CategoryInfo> ContentSuggestionsService::GetCategoryInfo(
+    Category category) const {
+  auto iterator = providers_by_category_.find(category);
+  if (iterator == providers_by_category_.end())
+    return base::Optional<CategoryInfo>();
+  return iterator->second->GetCategoryInfo(category);
+}
+
 const std::vector<ContentSuggestion>&
 ContentSuggestionsService::GetSuggestionsForCategory(Category category) const {
   auto iterator = suggestions_by_category_.find(category);

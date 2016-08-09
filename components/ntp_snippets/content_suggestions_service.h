@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
@@ -77,6 +78,9 @@ class ContentSuggestionsService : public KeyedService,
 
   // Gets the status of a category.
   CategoryStatus GetCategoryStatus(Category category) const;
+
+  // Gets the meta information of a category.
+  base::Optional<CategoryInfo> GetCategoryInfo(Category category) const;
 
   // Gets the available suggestions for a category. The result is empty if the
   // category is available and empty, but also if the category is unavailable

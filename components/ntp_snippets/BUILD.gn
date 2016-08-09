@@ -20,6 +20,8 @@ static_library("ntp_snippets") {
     "category.h",
     "category_factory.cc",
     "category_factory.h",
+    "category_info.cc",
+    "category_info.h",
     "category_status.cc",
     "category_status.h",
     "content_suggestion.cc",
@@ -73,9 +75,11 @@ static_library("ntp_snippets") {
     "//components/metrics",
     "//components/ntp_snippets/proto",
     "//components/offline_pages",
+    "//components/strings",
     "//components/variations",
     "//components/variations/net",
     "//third_party/icu/",
+    "//ui/base",
     "//ui/gfx",
   ]
 }
@@ -84,6 +88,7 @@ if (is_android) {
   java_cpp_enum("ntp_snippets_java_enums_srcjar") {
     sources = [
       "category.h",
+      "category_info.h",
       "category_status.h",
     ]
   }
@@ -111,6 +116,7 @@ source_set("unit_tests") {
     "//components/leveldb_proto:test_support",
     "//components/signin/core/browser:test_support",
     "//components/signin/core/common",
+    "//components/strings",
     "//components/sync_driver:test_support",
     "//components/variations",
     "//net:test_support",

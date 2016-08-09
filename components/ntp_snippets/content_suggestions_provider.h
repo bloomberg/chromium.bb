@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 
@@ -76,6 +77,9 @@ class ContentSuggestionsProvider {
 
   // Determines the status of the given |category|, see CategoryStatus.
   virtual CategoryStatus GetCategoryStatus(Category category) = 0;
+
+  // Returns the meta information for the given |category|.
+  virtual CategoryInfo GetCategoryInfo(Category category) = 0;
 
   // Dismisses the suggestion with the given ID. A provider needs to ensure that
   // a once-dismissed suggestion is never delivered again (through the

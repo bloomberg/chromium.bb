@@ -53,6 +53,13 @@ CategoryStatus OfflinePageSuggestionsProvider::GetCategoryStatus(
   return category_status_;
 }
 
+CategoryInfo OfflinePageSuggestionsProvider::GetCategoryInfo(
+    Category category) {
+  // TODO(pke): Use the proper string once it's agreed on.
+  return CategoryInfo(base::ASCIIToUTF16("Offline pages"),
+                      ContentSuggestionsCardLayout::MINIMAL_CARD);
+}
+
 void OfflinePageSuggestionsProvider::DismissSuggestion(
     const std::string& suggestion_id) {
   // TODO(pke): Implement some "dont show on NTP anymore" behaviour,

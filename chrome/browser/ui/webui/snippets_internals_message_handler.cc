@@ -15,11 +15,13 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/switches.h"
@@ -27,6 +29,7 @@
 
 using ntp_snippets::ContentSuggestion;
 using ntp_snippets::Category;
+using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::KnownCategories;
 
@@ -46,20 +49,6 @@ std::unique_ptr<base::DictionaryValue> PrepareSuggestion(
   entry->SetString("publisherName", suggestion.publisher_name());
   entry->SetString("id", "content-suggestion-" + base::IntToString(index));
   return entry;
-}
-
-// TODO(pke): Replace this as soon as the service delivers the title directly.
-std::string GetCategoryTitle(Category category) {
-  if (category.IsKnownCategory(KnownCategories::ARTICLES)) {
-    return "Articles";
-  }
-  if (category.IsKnownCategory(KnownCategories::OFFLINE_PAGES)) {
-    return "Offline pages (continue browsing)";
-  }
-  if (category.IsKnownCategory(KnownCategories::BOOKMARKS)) {
-    return "Recently visited bookmarks";
-  }
-  return std::string();
 }
 
 std::string GetCategoryStatusName(CategoryStatus status) {
@@ -260,6 +249,9 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
   for (Category category : content_suggestions_service_->GetCategories()) {
     CategoryStatus status =
         content_suggestions_service_->GetCategoryStatus(category);
+    base::Optional<CategoryInfo> info =
+        content_suggestions_service_->GetCategoryInfo(category);
+    DCHECK(info);
     const std::vector<ContentSuggestion>& suggestions =
         content_suggestions_service_->GetSuggestionsForCategory(category);
     std::vector<ContentSuggestion> dismissed_suggestions =
@@ -282,7 +274,7 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
     category_entry->SetString(
         "dismissedContainerId",
         "dismissed-suggestions-" + base::IntToString(category.id()));
-    category_entry->SetString("title", GetCategoryTitle(category));
+    category_entry->SetString("title", info->title());
     category_entry->SetString("status", GetCategoryStatusName(status));
     category_entry->Set("suggestions", std::move(suggestions_list));
     category_entry->Set("dismissedSuggestions", std::move(dismissed_list));

@@ -13,6 +13,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
@@ -69,6 +71,11 @@ class MockProvider : public ContentSuggestionsProvider {
 
   CategoryStatus GetCategoryStatus(Category category) {
     return statuses_[category.id()];
+  }
+
+  CategoryInfo GetCategoryInfo(Category category) {
+    return CategoryInfo(base::ASCIIToUTF16("Section title"),
+                        ContentSuggestionsCardLayout::FULL_CARD);
   }
 
   void FireSuggestionsChanged(Category category, std::vector<int> numbers) {
