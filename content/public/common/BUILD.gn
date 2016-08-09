@@ -68,6 +68,24 @@ source_set("static_switches") {
   public_configs = [ ":static_switches_defines" ]
 }
 
+# This target allows you to use the content_features constants and statically
+# link to it, without depending on the rest of content. This is only for use
+# without content, or you will get multiply defined symbols.
+source_set("static_features") {
+  public = [
+    "content_features.h",
+  ]
+  sources = [
+    "//content/common/content_export.h",
+    "content_features.cc",
+  ]
+  public_deps = [
+    "//base",
+  ]
+
+  public_configs = [ ":static_switches_defines" ]
+}
+
 source_set("common_sources") {
   # External code should depend on via ":common" above.
   visibility = [ "//content/*" ]
