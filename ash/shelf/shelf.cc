@@ -12,14 +12,13 @@
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_navigator.h"
-#include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
@@ -47,7 +46,7 @@ Shelf::Shelf(ShelfModel* shelf_model,
       shelf_view_(new ShelfView(shelf_model,
                                 WmShell::Get()->shelf_delegate(),
                                 wm_shelf,
-                                this)),
+                                shelf_widget)),
       shelf_locking_manager_(wm_shelf) {
   DCHECK(wm_shelf_);
   shelf_view_->Init();
@@ -88,10 +87,6 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   Shell::GetInstance()->OnShelfAlignmentChanged(
       WmWindowAura::Get(shelf_widget_->GetNativeWindow()->GetRootWindow()));
   // ShelfLayoutManager will resize the shelf.
-}
-
-bool Shelf::IsHorizontalAlignment() const {
-  return ::ash::IsHorizontalAlignment(alignment_);
 }
 
 void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {

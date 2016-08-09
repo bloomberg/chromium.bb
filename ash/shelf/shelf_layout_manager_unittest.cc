@@ -12,6 +12,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -22,7 +23,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -190,7 +190,7 @@ class ShelfDragCallback {
     float scroll_delta =
         GetShelfLayoutManager()->PrimaryAxisValue(scroll_.y(), scroll_.x());
     bool increasing_drag =
-        GetShelfWidget()->shelf()->SelectValueForShelfAlignment(
+        GetShelfLayoutManager()->SelectValueForShelfAlignment(
             scroll_delta<0, scroll_delta> 0, scroll_delta < 0);
     int shelf_size = GetShelfLayoutManager()->PrimaryAxisValue(
         shelf_bounds.height(), shelf_bounds.width());

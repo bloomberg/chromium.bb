@@ -11,6 +11,7 @@
 namespace ash {
 
 // Returns true if the shelf |alignment| is horizontal.
+// TODO(jamescook): Remove this in favor of WmShelf::IsHorizontalAlignment().
 ASH_EXPORT bool IsHorizontalAlignment(ShelfAlignment alignment);
 
 }  // namespace ash

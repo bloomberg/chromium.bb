@@ -8,7 +8,7 @@
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/shelf/shelf_view.h"
+#include "ash/common/shelf/shelf_view.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/menu/menu_runner.h"

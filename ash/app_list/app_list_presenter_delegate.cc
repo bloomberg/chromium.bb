@@ -41,9 +41,17 @@ const int kMinimalAnchorPositionOffset = 57;
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
   DCHECK(Shell::HasInstance());
-  return Shelf::ForWindow(window)->SelectValueForShelfAlignment(
-      views::BubbleBorder::BOTTOM_CENTER, views::BubbleBorder::LEFT_CENTER,
-      views::BubbleBorder::RIGHT_CENTER);
+  switch (Shelf::ForWindow(window)->alignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      return views::BubbleBorder::BOTTOM_CENTER;
+    case SHELF_ALIGNMENT_LEFT:
+      return views::BubbleBorder::LEFT_CENTER;
+    case SHELF_ALIGNMENT_RIGHT:
+      return views::BubbleBorder::RIGHT_CENTER;
+  }
+  NOTREACHED();
+  return views::BubbleBorder::BOTTOM_CENTER;
 }
 
 // Using |button_bounds|, determine the anchor offset so that the bubble gets
@@ -254,10 +262,17 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
 
-  return Shelf::ForWindow(root_window)
-      ->SelectValueForShelfAlignment(gfx::Vector2d(0, kAnimationOffset),
-                                     gfx::Vector2d(-kAnimationOffset, 0),
-                                     gfx::Vector2d(kAnimationOffset, 0));
+  switch (Shelf::ForWindow(root_window)->alignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      return gfx::Vector2d(0, kAnimationOffset);
+    case SHELF_ALIGNMENT_LEFT:
+      return gfx::Vector2d(-kAnimationOffset, 0);
+    case SHELF_ALIGNMENT_RIGHT:
+      return gfx::Vector2d(kAnimationOffset, 0);
+  }
+  NOTREACHED();
+  return gfx::Vector2d();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

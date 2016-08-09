@@ -482,10 +482,17 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   int ltr_adjusted_x = base::i18n::IsRTL() ? work_area.right() : work_area.x();
-  return shelf->SelectValueForShelfAlignment(
-      gfx::Rect(ltr_adjusted_x, work_area.bottom(), 0, 0),
-      gfx::Rect(work_area.x(), work_area.y(), 0, 0),
-      gfx::Rect(work_area.right(), work_area.y(), 0, 0));
+  switch (shelf->alignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      return gfx::Rect(ltr_adjusted_x, work_area.bottom(), 0, 0);
+    case SHELF_ALIGNMENT_LEFT:
+      return gfx::Rect(work_area.x(), work_area.y(), 0, 0);
+    case SHELF_ALIGNMENT_RIGHT:
+      return gfx::Rect(work_area.right(), work_area.y(), 0, 0);
+  }
+  NOTREACHED();
+  return gfx::Rect();
 }
 
 }  // namespace ash

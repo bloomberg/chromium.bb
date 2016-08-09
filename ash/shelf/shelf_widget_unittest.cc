@@ -6,11 +6,11 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_delegate.h"
+#include "ash/common/shelf/shelf_view.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/ash_test_helper.h"

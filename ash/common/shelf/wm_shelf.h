@@ -33,6 +33,15 @@ class ASH_EXPORT WmShelf {
   virtual ShelfAlignment GetAlignment() const = 0;
   virtual void SetAlignment(ShelfAlignment alignment) = 0;
 
+  // Returns true if the shelf alignment is horizontal (i.e. at the bottom).
+  bool IsHorizontalAlignment() const;
+
+  // Returns a value based on shelf alignment.
+  int SelectValueForShelfAlignment(int bottom, int left, int right) const;
+
+  // Returns |horizontal| is shelf is horizontal, otherwise |vertical|.
+  int PrimaryAxisValue(int horizontal, int vertical) const;
+
   virtual ShelfAutoHideBehavior GetAutoHideBehavior() const = 0;
   virtual void SetAutoHideBehavior(ShelfAutoHideBehavior behavior) = 0;
 

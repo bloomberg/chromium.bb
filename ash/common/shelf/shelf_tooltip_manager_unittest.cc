@@ -6,8 +6,8 @@
 
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/shelf/shelf_view.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shelf_item_delegate.h"

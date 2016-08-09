@@ -8,7 +8,7 @@
 
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/shelf/shelf_view.h"
+#include "ash/common/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_test_api.h"

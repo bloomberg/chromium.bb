@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_view.h"
+#include "ash/common/shelf/shelf_view.h"
 
 #include <algorithm>
 #include <memory>
@@ -14,15 +14,14 @@
 #include "ash/common/shelf/overflow_bubble_view.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_icon_observer.h"
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_tooltip_manager.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/test/material_design_controller_test_api.h"
 #include "ash/common/wm_shell.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -34,8 +33,8 @@
 #include "ash/test/test_shelf_item_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -193,16 +192,12 @@ TEST_F(ShelfViewIconObserverTest, AddRemove) {
   observer()->Reset();
 }
 
-// Sometimes fails on trybots on win7_aura. http://crbug.com/177135
-#if defined(OS_WIN)
-#define MAYBE_AddRemoveWithMultipleDisplays \
-  DISABLED_AddRemoveWithMultipleDisplays
-#else
-#define MAYBE_AddRemoveWithMultipleDisplays AddRemoveWithMultipleDisplays
-#endif
 // Make sure creating/deleting an window on one displays notifies a
 // shelf on external display as well as one on primary.
-TEST_F(ShelfViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
+TEST_F(ShelfViewIconObserverTest, AddRemoveWithMultipleDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("400x400,400x400");
   TestShelfIconObserver second_observer(ShelfForSecondaryDisplay());
 
@@ -233,7 +228,8 @@ TEST_F(ShelfViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
 }
 
 TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
-  ShelfWidget* widget = Shell::GetPrimaryRootWindowController()->shelf_widget();
+  views::Widget* widget =
+      GetPrimaryShelf()->GetShelfViewForTesting()->GetWidget();
   gfx::Rect shelf_bounds = widget->GetWindowBoundsInScreen();
   shelf_bounds.set_width(shelf_bounds.width() / 2);
   ASSERT_GT(shelf_bounds.width(), 0);
@@ -617,8 +613,8 @@ class ShelfViewTest : public AshTestBase {
     gfx::Point center_point_of_drag_item =
         drag_button->GetBoundsInScreen().CenterPoint();
 
-    ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
-                                       center_point_of_drag_item);
+    ui::test::EventGenerator& generator = GetEventGenerator();
+    generator.set_current_location(center_point_of_drag_item);
     // Rip an item off to OverflowBubble.
     generator.PressLeftButton();
     gfx::Point rip_off_point(center_point_of_drag_item.x(), 0);
@@ -977,7 +973,7 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   };
 
   for (ShelfAlignment alignment : kAlignments) {
-    shelf_view_->shelf()->SetAlignment(alignment);
+    shelf_view_->wm_shelf()->SetAlignment(alignment);
     // For every 2 successive visible icons, expect that their bounds don't
     // intersect.
     for (int i = 1; i < test_api_->GetButtonCount() - 1; ++i) {
@@ -1007,7 +1003,7 @@ TEST_P(ShelfViewTextDirectionTest, OverflowArrowForShelfPosition) {
   };
 
   for (size_t i = 0; i < arraysize(kAlignments); i++) {
-    shelf_view_->shelf()->SetAlignment(kAlignments[i]);
+    shelf_view_->wm_shelf()->SetAlignment(kAlignments[i]);
 
     // Make sure there are enough icons to trigger the overflow in new
     // orientation.
@@ -1336,10 +1332,10 @@ TEST_F(ShelfViewTest, ShelfItemStatusPlatformApp) {
 // Confirm that shelf item bounds are correctly updated on shelf changes.
 TEST_F(ShelfViewTest, ShelfItemBoundsCheck) {
   VerifyShelfItemBoundsAreValid();
-  shelf_view_->shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_view_->wm_shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   test_api_->RunMessageLoopUntilAnimationsDone();
   VerifyShelfItemBoundsAreValid();
-  shelf_view_->shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shelf_view_->wm_shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   test_api_->RunMessageLoopUntilAnimationsDone();
   VerifyShelfItemBoundsAreValid();
 }
@@ -1356,7 +1352,7 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
 
   ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
   EXPECT_TRUE(test_api_->shelf_view()->GetWidget()->GetNativeWindow());
-  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
 
   generator.MoveMouseTo(app_button->GetBoundsInScreen().CenterPoint());
   // There's a delay to show the tooltip, so it's not visible yet.
@@ -1506,7 +1502,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
 TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
   tooltip_manager->set_timer_delay_for_test(0);
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Move the mouse off any item and check that no tooltip is shown.
   generator.MoveMouseTo(gfx::Point(0, 0));
@@ -1598,8 +1594,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   int item_width = test_for_overflow_view.GetButtonSize() +
                    test_for_overflow_view.GetButtonSpacing();
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     gfx::Point());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   ShelfButton* button = test_for_overflow_view.GetButton(ripped_index);
   // Rip off the last visible item.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
@@ -1829,7 +1824,7 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(
       app_list_button->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
@@ -1850,7 +1845,7 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(
       app_list_button->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_VIEW_H_
-#define ASH_SHELF_SHELF_VIEW_H_
+#ifndef ASH_COMMON_SHELF_SHELF_VIEW_H_
+#define ASH_COMMON_SHELF_SHELF_VIEW_H_
 
 #include <memory>
 #include <string>
@@ -42,12 +42,12 @@ class DragImageView;
 class OverflowBubble;
 class OverflowButton;
 class ScopedRootWindowForNewWindows;
-class Shelf;
 class ShelfButton;
 class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfModel;
 struct ShelfItem;
+class ShelfWidget;
 class WmShelf;
 
 namespace test {
@@ -70,10 +70,9 @@ class ASH_EXPORT ShelfView : public views::View,
   ShelfView(ShelfModel* model,
             ShelfDelegate* delegate,
             WmShelf* wm_shelf,
-            Shelf* shelf);
+            ShelfWidget* shelf_widget);
   ~ShelfView() override;
 
-  Shelf* shelf() const { return shelf_; }
   WmShelf* wm_shelf() const { return wm_shelf_; }
   ShelfModel* model() const { return model_; }
 
@@ -352,8 +351,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // The shelf controller; owned by RootWindowController.
   WmShelf* wm_shelf_;
 
-  // The shelf; owned by ShelfWidget.
-  Shelf* shelf_;
+  // The shelf widget for this view. For overflow bubbles, this is the widget
+  // for the shelf, not for the bubble.
+  ShelfWidget* shelf_widget_;
 
   // Used to manage the set of active launcher buttons. There is a view per
   // item in |model_|.
@@ -474,4 +474,4 @@ class ASH_EXPORT ShelfView : public views::View,
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_VIEW_H_
+#endif  // ASH_COMMON_SHELF_SHELF_VIEW_H_

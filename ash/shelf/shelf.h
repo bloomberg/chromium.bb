@@ -70,7 +70,6 @@ class ASH_EXPORT Shelf {
 
   void SetAlignment(ShelfAlignment alignment);
   ShelfAlignment alignment() const { return alignment_; }
-  bool IsHorizontalAlignment() const;
 
   // Sets the ShelfAutoHideBehavior. See enum description for details.
   void SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior);
@@ -81,28 +80,6 @@ class ASH_EXPORT Shelf {
   ShelfAutoHideState GetAutoHideState() const;
 
   ShelfVisibilityState GetVisibilityState() const;
-
-  // A helper functions that chooses values specific to a shelf alignment.
-  template <typename T>
-  T SelectValueForShelfAlignment(T bottom, T left, T right) const {
-    switch (alignment_) {
-      case SHELF_ALIGNMENT_BOTTOM:
-      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        return bottom;
-      case SHELF_ALIGNMENT_LEFT:
-        return left;
-      case SHELF_ALIGNMENT_RIGHT:
-        return right;
-    }
-    NOTREACHED();
-    return right;
-  }
-
-  // A helper functions that chooses values specific to a shelf alignment type.
-  template <typename T>
-  T PrimaryAxisValue(T horizontal, T vertical) const {
-    return IsHorizontalAlignment() ? horizontal : vertical;
-  }
 
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.

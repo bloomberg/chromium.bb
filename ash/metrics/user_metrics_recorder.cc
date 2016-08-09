@@ -8,13 +8,15 @@
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_view.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/metrics/histogram.h"
@@ -594,7 +596,10 @@ void UserMetricsRecorder::OnShellShuttingDown() {
 }
 
 void UserMetricsRecorder::RecordPeriodicMetrics() {
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = WmShell::Get()
+                       ->GetPrimaryRootWindow()
+                       ->GetRootWindowController()
+                       ->GetShelf();
   // TODO(bruthig): Investigating whether the check for |manager| is necessary
   // and add tests if it is.
   if (shelf) {

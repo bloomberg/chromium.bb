@@ -5,10 +5,10 @@
 #include "ash/common/shelf/overflow_bubble.h"
 
 #include "ash/common/shelf/overflow_bubble_view.h"
+#include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/tray_background_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf_view.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
