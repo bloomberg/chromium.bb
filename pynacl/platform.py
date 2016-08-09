@@ -29,7 +29,7 @@ OS_LIST = [
 OS_MAP = {
     OS_WIN: ('win', 'win32', 'cygwin'),
     OS_MAC: ('mac', 'darwin'),
-    OS_LINUX: ('linux', 'linux2', 'linux3'),
+    OS_LINUX: ('linux', 'linux2', 'linux3', 'netbsd7'),
 }
 
 OS_DICT = dict([(platform, os_name)
