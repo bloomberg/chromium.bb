@@ -669,6 +669,8 @@ body.performance-test * {
 #album .buttons,
 #browser .buttons {
   position: fixed;
+  /* Fix crbug.com/638500: button background flickers when hovered. */
+  transform: translate3d(0, 0, 0);
 }
 
 #album .buttons button[disabled],
