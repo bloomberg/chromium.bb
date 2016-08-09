@@ -139,6 +139,14 @@ TEST_F(PositionTest, ToPositionInFlatTreeWithShadowRoot)
 
     EXPECT_EQ(PositionInFlatTree(host, 0), toPositionInFlatTree(Position(shadowRoot, 0)));
     EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot, 1)));
+    EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren),
+        toPositionInFlatTree(Position(shadowRoot, PositionAnchorType::AfterChildren)));
+    EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::BeforeChildren),
+        toPositionInFlatTree(Position(shadowRoot, PositionAnchorType::BeforeChildren)));
+    EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterAnchor),
+        toPositionInFlatTree(Position(shadowRoot, PositionAnchorType::AfterAnchor)));
+    EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::BeforeAnchor),
+        toPositionInFlatTree(Position(shadowRoot, PositionAnchorType::BeforeAnchor)));
 }
 
 TEST_F(PositionTest, ToPositionInFlatTreeWithShadowRootContainingSingleContent)

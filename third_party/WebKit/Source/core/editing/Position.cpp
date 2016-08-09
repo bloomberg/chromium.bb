@@ -523,8 +523,8 @@ PositionInFlatTree toPositionInFlatTree(const Position& pos)
     if (pos.isNull())
         return PositionInFlatTree();
 
+    Node* const anchor = pos.anchorNode();
     if (pos.isOffsetInAnchor()) {
-        Node* anchor = pos.anchorNode();
         if (anchor->isCharacterDataNode())
             return PositionInFlatTree(anchor, pos.computeOffsetInContainerNode());
         DCHECK(!anchor->isSlotOrActiveInsertionPoint());
@@ -551,7 +551,11 @@ PositionInFlatTree toPositionInFlatTree(const Position& pos)
         return PositionInFlatTree(anchor, PositionAnchorType::AfterChildren);
     }
 
-    return PositionInFlatTree(pos.anchorNode(), pos.anchorType());
+    if (anchor->isShadowRoot())
+        return PositionInFlatTree(anchor->shadowHost(), pos.anchorType());
+    // TODO(yosin): Once we have a test case for SLOT or active insertion point,
+    // this function should handle it.
+    return PositionInFlatTree(anchor, pos.anchorType());
 }
 
 Position toPositionInDOMTree(const Position& position)
