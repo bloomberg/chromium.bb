@@ -14,6 +14,7 @@
         '<(DEPTH)/ios/third_party/earl_grey/earl_grey.gyp:EarlGrey',
       ],
       'sources': [
+        'disabled_test_macros.h',
         'wait_util.h',
         'wait_util.mm',
       ],

@@ -16,6 +16,7 @@ source_set("earl_grey_support") {
   ]
 
   sources = [
+    "disabled_test_macros.h",
     "wait_util.h",
     "wait_util.mm",
   ]
