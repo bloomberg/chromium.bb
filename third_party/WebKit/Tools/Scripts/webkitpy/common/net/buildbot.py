@@ -91,10 +91,9 @@ class BuildBot(object):
     def fetch_results(self, build):
         return self.fetch_layout_test_results(self.results_url(build.builder_name, build.build_number))
 
+    @memoized
     def fetch_layout_test_results(self, results_url):
         """Returns a LayoutTestResults object for results fetched from a given URL."""
-        # FIXME: This should cache that the result was a 404 and stop hitting the network.
-        # This may be able to be done by just adding a @memoized decorator.
         results_file = NetworkTransaction(convert_404_to_None=True).run(
             lambda: self._fetch_file_from_results(results_url, "failing_results.json"))
         revision = NetworkTransaction(convert_404_to_None=True).run(
