@@ -358,9 +358,12 @@ class CC_EXPORT LayerTreeImpl {
   // on the active tree if a new tree is activated.
   void QueuePinnedSwapPromise(std::unique_ptr<SwapPromise> swap_promise);
 
-  // Take the |new_swap_promise| and append it to |swap_promise_list_|.
+  // Takes ownership of |new_swap_promises|. Existing swap promises in
+  // |swap_promise_list_| are cancelled (SWAP_FAILS).
   void PassSwapPromises(
-      std::vector<std::unique_ptr<SwapPromise>>* new_swap_promise);
+      std::vector<std::unique_ptr<SwapPromise>> new_swap_promises);
+  void AppendSwapPromises(
+      std::vector<std::unique_ptr<SwapPromise>> new_swap_promises);
   void FinishSwapPromises(CompositorFrameMetadata* metadata);
   void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
 

@@ -146,8 +146,10 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidFinishImplFrameOnThread(this);
   }
 
-  void BeginMainFrameAborted(CommitEarlyOutReason reason) override {
-    LayerTreeHostImpl::BeginMainFrameAborted(reason);
+  void BeginMainFrameAborted(
+      CommitEarlyOutReason reason,
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises) override {
+    LayerTreeHostImpl::BeginMainFrameAborted(reason, std::move(swap_promises));
     test_hooks_->BeginMainFrameAbortedOnThread(this, reason);
   }
 
@@ -206,7 +208,10 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
         << "Not supported for single-threaded mode.";
     block_notify_ready_to_activate_for_testing_ = block;
     if (!block && notify_ready_to_activate_was_blocked_) {
-      NotifyReadyToActivate();
+      task_runner_provider_->ImplThreadTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&LayerTreeHostImplForTesting::NotifyReadyToActivate,
+                     base::Unretained(this)));
       notify_ready_to_activate_was_blocked_ = false;
     }
   }
@@ -278,9 +283,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->BeginMainFrame(args);
   }
 
-  void UpdateLayerTreeHost() override {
-    test_hooks_->UpdateLayerTreeHost();
-  }
+  void UpdateLayerTreeHost() override { test_hooks_->UpdateLayerTreeHost(); }
 
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,
@@ -510,8 +513,7 @@ void LayerTreeTest::EndTest() {
 
 void LayerTreeTest::EndTestAfterDelayMs(int delay_milliseconds) {
   main_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::EndTest, main_thread_weak_ptr_),
+      FROM_HERE, base::Bind(&LayerTreeTest::EndTest, main_thread_weak_ptr_),
       base::TimeDelta::FromMilliseconds(delay_milliseconds));
 }
 
@@ -544,9 +546,8 @@ void LayerTreeTest::PostAddLongAnimationToMainThreadPlayer(
 
 void LayerTreeTest::PostSetDeferCommitsToMainThread(bool defer_commits) {
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchSetDeferCommits,
-                 main_thread_weak_ptr_, defer_commits));
+      FROM_HERE, base::Bind(&LayerTreeTest::DispatchSetDeferCommits,
+                            main_thread_weak_ptr_, defer_commits));
 }
 
 void LayerTreeTest::PostSetNeedsCommitToMainThread() {
@@ -557,9 +558,8 @@ void LayerTreeTest::PostSetNeedsCommitToMainThread() {
 
 void LayerTreeTest::PostSetNeedsUpdateLayersToMainThread() {
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchSetNeedsUpdateLayers,
-                 main_thread_weak_ptr_));
+      FROM_HERE, base::Bind(&LayerTreeTest::DispatchSetNeedsUpdateLayers,
+                            main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostSetNeedsRedrawToMainThread() {
@@ -571,31 +571,26 @@ void LayerTreeTest::PostSetNeedsRedrawToMainThread() {
 void LayerTreeTest::PostSetNeedsRedrawRectToMainThread(
     const gfx::Rect& damage_rect) {
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchSetNeedsRedrawRect,
-                 main_thread_weak_ptr_,
-                 damage_rect));
+      FROM_HERE, base::Bind(&LayerTreeTest::DispatchSetNeedsRedrawRect,
+                            main_thread_weak_ptr_, damage_rect));
 }
 
 void LayerTreeTest::PostSetVisibleToMainThread(bool visible) {
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &LayerTreeTest::DispatchSetVisible, main_thread_weak_ptr_, visible));
+  main_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&LayerTreeTest::DispatchSetVisible,
+                                         main_thread_weak_ptr_, visible));
 }
 
 void LayerTreeTest::PostSetNextCommitForcesRedrawToMainThread() {
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchSetNextCommitForcesRedraw,
-                 main_thread_weak_ptr_));
+      FROM_HERE, base::Bind(&LayerTreeTest::DispatchSetNextCommitForcesRedraw,
+                            main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostCompositeImmediatelyToMainThread() {
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchCompositeImmediately,
-                 main_thread_weak_ptr_));
+      FROM_HERE, base::Bind(&LayerTreeTest::DispatchCompositeImmediately,
+                            main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostNextCommitWaitsForActivationToMainThread() {

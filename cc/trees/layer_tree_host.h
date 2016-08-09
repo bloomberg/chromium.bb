@@ -335,8 +335,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Call this function when you expect there to be a swap buffer.
   // See swap_promise.h for how to use SwapPromise.
   void QueueSwapPromise(std::unique_ptr<SwapPromise> swap_promise);
-
   void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
+  std::vector<std::unique_ptr<SwapPromise>> TakeSwapPromises();
 
   size_t num_queued_swap_promises() const { return swap_promise_list_.size(); }
 

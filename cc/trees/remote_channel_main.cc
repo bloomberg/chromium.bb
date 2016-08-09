@@ -155,7 +155,8 @@ void RemoteChannelMain::SetNeedsCommitOnImpl() {
 
 void RemoteChannelMain::BeginMainFrameAbortedOnImpl(
     CommitEarlyOutReason reason,
-    base::TimeTicks main_thread_start_time) {
+    base::TimeTicks main_thread_start_time,
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises) {
   TRACE_EVENT1("cc.remote", "RemoteChannelMain::BeginMainFrameAbortedOnImpl",
                "reason", CommitEarlyOutReasonToString(reason));
   proto::CompositorMessage proto;
@@ -170,6 +171,12 @@ void RemoteChannelMain::BeginMainFrameAbortedOnImpl(
   VLOG(1) << "Sending BeginMainFrameAborted message to client with reason: "
           << CommitEarlyOutReasonToString(reason);
   SendMessageProto(proto);
+
+  // Notify swap promises that commit had no updates. In the local compositor
+  // case this goes to the impl thread to be queued up in case we have an
+  // activation pending but that never happens for remote compositor.
+  for (const auto& swap_promise : swap_promises)
+    swap_promise->DidNotSwap(SwapPromise::COMMIT_NO_UPDATE);
 }
 
 void RemoteChannelMain::NotifyReadyToCommitOnImpl(

@@ -378,8 +378,8 @@ void SingleThreadProxy::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
 }
 
 void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
-  TRACE_EVENT1(
-      "cc", "SingleThreadProxy::OnCanDrawStateChanged", "can_draw", can_draw);
+  TRACE_EVENT1("cc", "SingleThreadProxy::OnCanDrawStateChanged", "can_draw",
+               can_draw);
   DCHECK(task_runner_provider_->IsImplThread());
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetCanDraw(can_draw);
@@ -448,7 +448,9 @@ void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
   layer_tree_host_->SetAnimationEvents(std::move(events));
 }
 
-bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
+bool SingleThreadProxy::IsInsideDraw() {
+  return inside_draw_;
+}
 
 void SingleThreadProxy::DidActivateSyncTree() {
   // Synchronously call to CommitComplete. Resetting
@@ -594,8 +596,7 @@ bool SingleThreadProxy::SupportsImplScrolling() const {
 
 bool SingleThreadProxy::ShouldComposite() const {
   DCHECK(task_runner_provider_->IsImplThread());
-  return layer_tree_host_impl_->visible() &&
-         layer_tree_host_impl_->CanDraw();
+  return layer_tree_host_impl_->visible() && layer_tree_host_impl_->CanDraw();
 }
 
 void SingleThreadProxy::ScheduleRequestNewOutputSurface() {
@@ -735,6 +736,7 @@ void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
 void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
     const BeginFrameArgs& begin_frame_args) {
   TRACE_EVENT0("cc", "SingleThreadProxy::ScheduledActionSendBeginMainFrame");
+#if DCHECK_IS_ON()
   // Although this proxy is single-threaded, it's problematic to synchronously
   // have BeginMainFrame happen after ScheduledActionSendBeginMainFrame.  This
   // could cause a commit to occur in between a series of SetNeedsCommit calls
@@ -742,7 +744,6 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
   // fall on the next.  Doing it asynchronously instead matches the semantics of
   // ThreadProxy::SetNeedsCommit where SetNeedsCommit will not cause a
   // synchronous commit.
-#if DCHECK_IS_ON()
   DCHECK(inside_impl_frame_)
       << "BeginMainFrame should only be sent inside a BeginImplFrame";
 #endif
@@ -785,8 +786,8 @@ void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
   }
 
   if (layer_tree_host_->output_surface_lost()) {
-    TRACE_EVENT_INSTANT0(
-        "cc", "EarlyOut_OutputSurfaceLost", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("cc", "EarlyOut_OutputSurfaceLost",
+                         TRACE_EVENT_SCOPE_THREAD);
     BeginMainFrameAbortedOnImplThread(
         CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST);
     return;
@@ -825,7 +826,9 @@ void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(
   DCHECK(scheduler_on_impl_thread_->CommitPending());
   DCHECK(!layer_tree_host_impl_->pending_tree());
 
-  layer_tree_host_impl_->BeginMainFrameAborted(reason);
+  std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
+  layer_tree_host_impl_->BeginMainFrameAborted(reason,
+                                               std::move(empty_swap_promises));
   scheduler_on_impl_thread_->BeginMainFrameAborted(reason);
 }
 

@@ -130,12 +130,14 @@ void RemoteChannelImpl::HandleProto(
           proto.begin_main_frame_aborted_message();
       CommitEarlyOutReason reason = CommitEarlyOutReasonFromProtobuf(
           begin_main_frame_aborted_message.reason());
+      std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
       VLOG(1) << "Received BeginMainFrameAborted from the engine with reason: "
               << CommitEarlyOutReasonToString(reason);
       ImplThreadTaskRunner()->PostTask(
           FROM_HERE,
           base::Bind(&ProxyImpl::BeginMainFrameAbortedOnImpl,
-                     proxy_impl_weak_ptr_, reason, main_thread_start_time));
+                     proxy_impl_weak_ptr_, reason, main_thread_start_time,
+                     base::Passed(&empty_swap_promises)));
     } break;
     case proto::CompositorMessageToImpl::SET_NEEDS_REDRAW: {
       VLOG(1) << "Received redraw request from the engine.";

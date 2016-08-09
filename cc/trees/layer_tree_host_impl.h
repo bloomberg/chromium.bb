@@ -236,7 +236,9 @@ class CC_EXPORT LayerTreeHostImpl
     DISALLOW_COPY_AND_ASSIGN(FrameData);
   };
 
-  virtual void BeginMainFrameAborted(CommitEarlyOutReason reason);
+  virtual void BeginMainFrameAborted(
+      CommitEarlyOutReason reason,
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises);
   virtual void ReadyToCommit() {}  // For tests.
   virtual void BeginCommit();
   virtual void CommitComplete();
@@ -489,18 +491,10 @@ class CC_EXPORT LayerTreeHostImpl
     max_memory_needed_bytes_ = bytes;
   }
 
-  FrameRateCounter* fps_counter() {
-    return fps_counter_.get();
-  }
-  MemoryHistory* memory_history() {
-    return memory_history_.get();
-  }
-  DebugRectHistory* debug_rect_history() {
-    return debug_rect_history_.get();
-  }
-  ResourceProvider* resource_provider() {
-    return resource_provider_.get();
-  }
+  FrameRateCounter* fps_counter() { return fps_counter_.get(); }
+  MemoryHistory* memory_history() { return memory_history_.get(); }
+  DebugRectHistory* debug_rect_history() { return debug_rect_history_.get(); }
+  ResourceProvider* resource_provider() { return resource_provider_.get(); }
   TopControlsManager* top_controls_manager() {
     return top_controls_manager_.get();
   }

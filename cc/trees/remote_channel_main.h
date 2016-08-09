@@ -49,7 +49,8 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
   void SetNeedsCommitOnImpl() override;
   void BeginMainFrameAbortedOnImpl(
       CommitEarlyOutReason reason,
-      base::TimeTicks main_thread_start_time) override;
+      base::TimeTicks main_thread_start_time,
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises) override;
   void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
                                  LayerTreeHost* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,

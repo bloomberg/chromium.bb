@@ -5,6 +5,7 @@
 #include "cc/trees/threaded_channel.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -26,8 +27,7 @@ ThreadedChannel::ThreadedChannel(ProxyMain* proxy_main,
     : task_runner_provider_(task_runner_provider),
       main_thread_only_vars_unsafe_(proxy_main),
       compositor_thread_vars_unsafe_(
-          main()
-              .proxy_main_weak_factory.GetWeakPtr()) {
+          main().proxy_main_weak_factory.GetWeakPtr()) {
   DCHECK(IsMainThread());
 }
 
@@ -93,12 +93,13 @@ void ThreadedChannel::SetNeedsCommitOnImpl() {
 
 void ThreadedChannel::BeginMainFrameAbortedOnImpl(
     CommitEarlyOutReason reason,
-    base::TimeTicks main_thread_start_time) {
+    base::TimeTicks main_thread_start_time,
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises) {
   DCHECK(IsMainThread());
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ProxyImpl::BeginMainFrameAbortedOnImpl, proxy_impl_weak_ptr_,
-                 reason, main_thread_start_time));
+                 reason, main_thread_start_time, base::Passed(&swap_promises)));
 }
 
 void ThreadedChannel::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {

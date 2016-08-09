@@ -101,8 +101,7 @@ namespace {
 class ViewportAnchor {
  public:
   ViewportAnchor(LayerImpl* inner_scroll, LayerImpl* outer_scroll)
-  : inner_(inner_scroll),
-    outer_(outer_scroll) {
+      : inner_(inner_scroll), outer_(outer_scroll) {
     viewport_in_content_coordinates_ = inner_->CurrentScrollOffset();
 
     if (outer_)
@@ -262,20 +261,19 @@ LayerTreeHostImpl::LayerTreeHostImpl(
 
   viewport_ = Viewport::Create(this);
 
-  TRACE_EVENT_OBJECT_CREATED_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
+  TRACE_EVENT_OBJECT_CREATED_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                                     "cc::LayerTreeHostImpl", id_);
 
   top_controls_manager_ =
-      TopControlsManager::Create(this,
-                                 settings.top_controls_show_threshold,
+      TopControlsManager::Create(this, settings.top_controls_show_threshold,
                                  settings.top_controls_hide_threshold);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
   DCHECK(task_runner_provider_->IsImplThread());
   TRACE_EVENT0("cc", "LayerTreeHostImpl::~LayerTreeHostImpl()");
-  TRACE_EVENT_OBJECT_DELETED_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
+  TRACE_EVENT_OBJECT_DELETED_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                                     "cc::LayerTreeHostImpl", id_);
 
   // It is released before shutdown.
   DCHECK(!output_surface_);
@@ -310,12 +308,21 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   animation_host_->SetMutatorHostClient(nullptr);
 }
 
-void LayerTreeHostImpl::BeginMainFrameAborted(CommitEarlyOutReason reason) {
+void LayerTreeHostImpl::BeginMainFrameAborted(
+    CommitEarlyOutReason reason,
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises) {
   // If the begin frame data was handled, then scroll and scale set was applied
   // by the main thread, so the active tree needs to be updated as if these sent
   // values were applied and committed.
-  if (CommitEarlyOutHandledCommit(reason))
+  if (CommitEarlyOutHandledCommit(reason)) {
     active_tree_->ApplySentScrollAndScaleDeltasFromAbortedCommit();
+    if (pending_tree_) {
+      pending_tree_->AppendSwapPromises(std::move(swap_promises));
+    } else {
+      for (const auto& swap_promise : swap_promises)
+        swap_promise->DidNotSwap(SwapPromise::COMMIT_NO_UPDATE);
+    }
+  }
 }
 
 void LayerTreeHostImpl::BeginCommit() {
@@ -526,13 +533,11 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 
   if (anchor_point) {
     gfx::Vector2dF anchor(target_offset);
-    page_scale_animation_->ZoomWithAnchor(anchor,
-                                          page_scale,
+    page_scale_animation_->ZoomWithAnchor(anchor, page_scale,
                                           duration.InSecondsF());
   } else {
     gfx::Vector2dF scaled_target_offset = target_offset;
-    page_scale_animation_->ZoomTo(scaled_target_offset,
-                                  page_scale,
+    page_scale_animation_->ZoomTo(scaled_target_offset, page_scale,
                                   duration.InSecondsF());
   }
 
@@ -746,14 +751,9 @@ static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
   int sorting_context_id = 0;
   SharedQuadState* shared_quad_state =
       target_render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(gfx::Transform(),
-                            root_target_rect.size(),
-                            root_target_rect,
-                            root_target_rect,
-                            false,
-                            opacity,
-                            SkXfermode::kSrcOver_Mode,
-                            sorting_context_id);
+  shared_quad_state->SetAll(gfx::Transform(), root_target_rect.size(),
+                            root_target_rect, root_target_rect, false, opacity,
+                            SkXfermode::kSrcOver_Mode, sorting_context_id);
 
   for (Region::Iterator fill_rects(fill_region); fill_rects.has_rect();
        fill_rects.next()) {
@@ -763,11 +763,8 @@ static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
     // occlusion checks.
     SolidColorDrawQuad* quad =
         target_render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 screen_space_rect,
-                 visible_screen_space_rect,
-                 screen_background_color,
-                 false);
+    quad->SetNew(shared_quad_state, screen_space_rect,
+                 visible_screen_space_rect, screen_background_color, false);
   }
 }
 
@@ -779,8 +776,7 @@ static RenderPass* FindRenderPassById(const RenderPassList& list,
   return it == list.end() ? nullptr : it->get();
 }
 
-DrawResult LayerTreeHostImpl::CalculateRenderPasses(
-    FrameData* frame) {
+DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   DCHECK(frame->render_passes.empty());
   DCHECK(CanDraw());
   DCHECK(!active_tree_->LayerListIsEmpty());
@@ -903,8 +899,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
           it->render_surface()->GetRenderPassId();
       RenderPass* contributing_render_pass =
           FindRenderPassById(frame->render_passes, contributing_render_pass_id);
-      AppendQuadsForRenderSurfaceLayer(target_render_pass,
-                                       *it,
+      AppendQuadsForRenderSurfaceLayer(target_render_pass, *it,
                                        contributing_render_pass,
                                        &append_quads_data);
     } else if (it.represents_itself() && !it->visible_layer_rect().IsEmpty()) {
@@ -1066,9 +1061,7 @@ void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
 }
 
 DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
-  TRACE_EVENT1("cc",
-               "LayerTreeHostImpl::PrepareToDraw",
-               "SourceFrameNumber",
+  TRACE_EVENT1("cc", "LayerTreeHostImpl::PrepareToDraw", "SourceFrameNumber",
                active_tree_->source_frame_number());
   if (input_handler_client_)
     input_handler_client_->ReconcileElasticOverscrollAndRootScroll();
@@ -1247,9 +1240,8 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
   }
   global_tile_state_.memory_limit_policy =
       ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
-          visible_ ?
-          policy.priority_cutoff_when_visible :
-          gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
+          visible_ ? policy.priority_cutoff_when_visible
+                   : gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
   global_tile_state_.num_resources_limit = policy.num_resources_limit;
 
   if (global_tile_state_.hard_memory_limit_in_bytes > 0) {
@@ -1611,8 +1603,8 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
       !InnerViewportScrollLayer()->user_scrollable_vertical();
 
   // TODO(miletus) : Change the metadata to hold ScrollOffset.
-  metadata.root_scroll_offset = gfx::ScrollOffsetToVector2dF(
-      active_tree_->TotalScrollOffset());
+  metadata.root_scroll_offset =
+      gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
 
   return metadata;
 }
@@ -1683,8 +1675,10 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   // TODO(boliu): If we did a temporary software renderer frame, propogate the
   // damage forward to the next frame.
   for (size_t i = 0; i < frame->render_surface_layer_list->size(); i++) {
-    (*frame->render_surface_layer_list)[i]->render_surface()->damage_tracker()->
-        DidDrawDamagedArea();
+    (*frame->render_surface_layer_list)[i]
+        ->render_surface()
+        ->damage_tracker()
+        ->DidDrawDamagedArea();
   }
   active_tree_->ResetAllChangeTracking();
 
@@ -1808,8 +1802,8 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   tree_resources_for_gpu_rasterization_dirty_ = false;
 }
 
-const RendererCapabilitiesImpl&
-LayerTreeHostImpl::GetRendererCapabilities() const {
+const RendererCapabilitiesImpl& LayerTreeHostImpl::GetRendererCapabilities()
+    const {
   CHECK(renderer_);
   return renderer_->Capabilities();
 }
@@ -1824,15 +1818,14 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   metadata.may_contain_video = frame.may_contain_video;
   active_tree()->FinishSwapPromises(&metadata);
   for (auto& latency : metadata.latency_info) {
-    TRACE_EVENT_WITH_FLOW1("input,benchmark",
-                           "LatencyInfo.Flow",
+    TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                            TRACE_ID_DONT_MANGLE(latency.trace_id()),
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "step", "SwapBuffers");
     // Only add the latency component once for renderer swap, not the browser
     // swap.
-    if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
-                             0, nullptr)) {
+    if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0,
+                             nullptr)) {
       latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
                                0, 0);
     }
@@ -1868,8 +1861,7 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   if (!inner_container)
     return;
 
-  ViewportAnchor anchor(InnerViewportScrollLayer(),
-                        OuterViewportScrollLayer());
+  ViewportAnchor anchor(InnerViewportScrollLayer(), OuterViewportScrollLayer());
 
   float top_controls_layout_height =
       active_tree_->top_controls_shrink_blink_size()
@@ -1881,9 +1873,7 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   // Adjust the viewport layers by shrinking/expanding the container to account
   // for changes in the size (e.g. top controls) since the last resize from
   // Blink.
-  gfx::Vector2dF amount_to_expand(
-      0.f,
-      delta_from_top_controls);
+  gfx::Vector2dF amount_to_expand(0.f, delta_from_top_controls);
   inner_container->SetBoundsDelta(amount_to_expand);
 
   if (outer_container && !outer_container->BoundsForScrolling().IsEmpty()) {
@@ -2028,11 +2018,10 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation =
       active_tree_->TakePendingPageScaleAnimation();
   if (pending_page_scale_animation) {
-    StartPageScaleAnimation(
-        pending_page_scale_animation->target_offset,
-        pending_page_scale_animation->use_anchor,
-        pending_page_scale_animation->scale,
-        pending_page_scale_animation->duration);
+    StartPageScaleAnimation(pending_page_scale_animation->target_offset,
+                            pending_page_scale_animation->use_anchor,
+                            pending_page_scale_animation->scale,
+                            pending_page_scale_animation->duration);
   }
   // Activation can change the root scroll offset, so inform the synchronous
   // input handler.
@@ -2893,14 +2882,10 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
   // the scroll delta in layer coordinates.
   bool start_clipped, end_clipped;
   gfx::PointF screen_space_end_point = screen_space_point + screen_space_delta;
-  gfx::PointF local_start_point =
-      MathUtil::ProjectPoint(inverse_screen_space_transform,
-                             screen_space_point,
-                             &start_clipped);
-  gfx::PointF local_end_point =
-      MathUtil::ProjectPoint(inverse_screen_space_transform,
-                             screen_space_end_point,
-                             &end_clipped);
+  gfx::PointF local_start_point = MathUtil::ProjectPoint(
+      inverse_screen_space_transform, screen_space_point, &start_clipped);
+  gfx::PointF local_end_point = MathUtil::ProjectPoint(
+      inverse_screen_space_transform, screen_space_end_point, &end_clipped);
 
   // In general scroll point coordinates should not get clipped.
   DCHECK(!start_clipped);
@@ -2928,9 +2913,8 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
   DCHECK(!end_clipped);
   if (end_clipped)
     return gfx::Vector2dF();
-  gfx::PointF actual_viewport_end_point =
-      gfx::ScalePoint(actual_screen_space_end_point,
-                      1.f / scale_from_viewport_to_screen_space);
+  gfx::PointF actual_viewport_end_point = gfx::ScalePoint(
+      actual_screen_space_end_point, 1.f / scale_from_viewport_to_screen_space);
   return actual_viewport_end_point - viewport_point;
 }
 
@@ -3722,8 +3706,7 @@ void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
 
 void LayerTreeHostImpl::ClearUIResources() {
   for (UIResourceMap::const_iterator iter = ui_resource_map_.begin();
-      iter != ui_resource_map_.end();
-      ++iter) {
+       iter != ui_resource_map_.end(); ++iter) {
     evicted_ui_resources_.insert(iter->first);
     resource_provider_->DeleteResource(iter->second.resource_id);
   }

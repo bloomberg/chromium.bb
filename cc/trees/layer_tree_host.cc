@@ -511,7 +511,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   if (sync_tree->IsActiveTree())
     sync_tree->elastic_overscroll()->PushPendingToActive();
 
-  sync_tree->PassSwapPromises(&swap_promise_list_);
+  sync_tree->PassSwapPromises(std::move(swap_promise_list_));
 
   sync_tree->set_top_controls_shrink_blink_size(
       top_controls_shrink_blink_size_);
@@ -1288,6 +1288,12 @@ void LayerTreeHost::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
   for (const auto& swap_promise : swap_promise_list_)
     swap_promise->DidNotSwap(reason);
   swap_promise_list_.clear();
+}
+
+std::vector<std::unique_ptr<SwapPromise>> LayerTreeHost::TakeSwapPromises() {
+  std::vector<std::unique_ptr<SwapPromise>> to_return;
+  to_return.swap(swap_promise_list_);
+  return to_return;
 }
 
 void LayerTreeHost::OnCommitForSwapPromises() {

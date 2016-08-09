@@ -40,8 +40,10 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void SetDeferCommitsOnImpl(bool defer_commits) const;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect);
   void SetNeedsCommitOnImpl();
-  void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason,
-                                   base::TimeTicks main_thread_start_time);
+  void BeginMainFrameAbortedOnImpl(
+      CommitEarlyOutReason reason,
+      base::TimeTicks main_thread_start_time,
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises);
   void FinishAllRenderingOnImpl(CompletionEvent* completion);
   void SetVisibleOnImpl(bool visible);
   void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion);

@@ -1581,8 +1581,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     }
   }
 
-  void AfterTest() override {
-  }
+  void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -2132,8 +2131,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
                            float scale,
                            float) override {
     gfx::ScrollOffset offset = scroll_layer_->scroll_offset();
-    scroll_layer_->SetScrollOffset(ScrollOffsetWithDelta(offset,
-                                                         scroll_delta));
+    scroll_layer_->SetScrollOffset(ScrollOffsetWithDelta(offset, scroll_delta));
     layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
   }
 
@@ -2162,8 +2160,8 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
-        layer_tree_host()->StartPageScaleAnimation(
-            gfx::Vector2d(), false, 1.25f, base::TimeDelta());
+        layer_tree_host()->StartPageScaleAnimation(gfx::Vector2d(), false,
+                                                   1.25f, base::TimeDelta());
         break;
     }
   }
@@ -2359,8 +2357,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousInvalidate);
 class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
  public:
   LayerTreeHostTestDeferCommits()
-      : num_will_begin_impl_frame_(0),
-        num_send_begin_main_frame_(0) {}
+      : num_will_begin_impl_frame_(0), num_send_begin_main_frame_(0) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -2855,9 +2852,7 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
     return std::move(output_surface);
   }
 
-  void BeginTest() override {
-    PostSetNeedsCommitToMainThread();
-  }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void CallOnDraw() {
     if (!TestEnded()) {
@@ -3026,8 +3021,8 @@ class PushPropertiesCountingLayerImpl : public LayerImpl {
     LayerImpl::PushPropertiesTo(layer);
     push_properties_count_++;
     // Push state to the active tree because we can only access it from there.
-    static_cast<PushPropertiesCountingLayerImpl*>(
-        layer)->push_properties_count_ = push_properties_count_;
+    static_cast<PushPropertiesCountingLayerImpl*>(layer)
+        ->push_properties_count_ = push_properties_count_;
   }
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(
@@ -3042,8 +3037,7 @@ class PushPropertiesCountingLayerImpl : public LayerImpl {
   size_t push_properties_count_;
 
   PushPropertiesCountingLayerImpl(LayerTreeImpl* tree_impl, int id)
-      : LayerImpl(tree_impl, id),
-        push_properties_count_(0) {
+      : LayerImpl(tree_impl, id), push_properties_count_(0) {
     SetBounds(gfx::Size(1, 1));
   }
 };
@@ -4061,9 +4055,7 @@ class LayerTreeHostTestTreeActivationCallback : public LayerTreeHostTest {
   LayerTreeHostTestTreeActivationCallback()
       : num_commits_(0), callback_count_(0) {}
 
-  void BeginTest() override {
-    PostSetNeedsCommitToMainThread();
-  }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
@@ -4092,8 +4084,8 @@ class LayerTreeHostTestTreeActivationCallback : public LayerTreeHostTest {
         EndTest();
         break;
     }
-    return LayerTreeHostTest::PrepareToDrawOnThread(
-        host_impl, frame_data, draw_result);
+    return LayerTreeHostTest::PrepareToDrawOnThread(host_impl, frame_data,
+                                                    draw_result);
   }
 
   void AfterTest() override { EXPECT_EQ(3, num_commits_); }
@@ -4741,6 +4733,120 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestKeepSwapPromise);
 
+class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestKeepSwapPromiseMFBA() {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->main_frame_before_activation_enabled = true;
+  }
+
+  void BeginTest() override {
+    layer_ = SolidColorLayer::Create();
+    layer_->SetIsDrawable(true);
+    layer_->SetBounds(gfx::Size(10, 10));
+    layer_tree_host()->SetRootLayer(layer_);
+    gfx::Size bounds(100, 100);
+    layer_tree_host()->SetViewportSize(bounds);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
+    // Safe to check frame number here because main thread is blocked.
+    if (layer_tree_host()->source_frame_number() == 0) {
+      host_impl->BlockNotifyReadyToActivateForTesting(true);
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  void DidCommit() override {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostTestKeepSwapPromiseMFBA::ChangeFrame,
+                   base::Unretained(this)));
+  }
+
+  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
+                                     CommitEarlyOutReason reason) override {
+    base::AutoLock lock(swap_promise_result_.lock);
+    EXPECT_FALSE(swap_promise_result_.did_not_swap_called);
+    EXPECT_FALSE(swap_promise_result_.did_activate_called);
+    EXPECT_FALSE(swap_promise_result_.did_swap_called);
+    host_impl->BlockNotifyReadyToActivateForTesting(false);
+  }
+
+  void ChangeFrame() {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // Make no changes so that we abort the next commit caused by queuing
+        // the swap promise.
+        layer_tree_host()->QueueSwapPromise(
+            base::WrapUnique(new TestSwapPromise(&swap_promise_result_)));
+        layer_tree_host()->SetNeedsUpdateLayers();
+        break;
+      case 2:
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->pending_tree()) {
+      if (host_impl->pending_tree()->source_frame_number() == 1) {
+        base::AutoLock lock(swap_promise_result_.lock);
+        EXPECT_FALSE(swap_promise_result_.did_activate_called);
+        EXPECT_FALSE(swap_promise_result_.did_swap_called);
+        SetCallback(host_impl, true);
+      } else {
+        SetCallback(host_impl, false);
+      }
+    }
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() == 1) {
+      base::AutoLock lock(swap_promise_result_.lock);
+      EXPECT_TRUE(swap_promise_result_.did_activate_called);
+      EXPECT_FALSE(swap_promise_result_.did_swap_called);
+    }
+  }
+
+  void ActivationCallback() {
+    // DidActivate needs to happen before the tree activation callback.
+    base::AutoLock lock(swap_promise_result_.lock);
+    EXPECT_TRUE(swap_promise_result_.did_activate_called);
+  }
+
+  void SetCallback(LayerTreeHostImpl* host_impl, bool enable) {
+    host_impl->SetTreeActivationCallback(
+        enable ? base::Bind(
+                     &LayerTreeHostTestKeepSwapPromiseMFBA::ActivationCallback,
+                     base::Unretained(this))
+               : base::Closure());
+  }
+
+  void DisplayDidDrawAndSwapOnThread() override {
+    num_swaps_++;
+    base::AutoLock lock(swap_promise_result_.lock);
+    EXPECT_TRUE(swap_promise_result_.did_swap_called);
+    EXPECT_FALSE(swap_promise_result_.did_not_swap_called);
+    EXPECT_TRUE(swap_promise_result_.dtor_called);
+    EndTest();
+  }
+
+  void AfterTest() override { EXPECT_EQ(1, num_swaps_); }
+
+ private:
+  int num_swaps_ = 0;
+  scoped_refptr<Layer> layer_;
+  TestSwapPromiseResult swap_promise_result_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestKeepSwapPromiseMFBA);
+
 class LayerTreeHostTestBreakSwapPromiseForVisibility
     : public LayerTreeHostTest {
  protected:
@@ -4756,10 +4862,9 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
                                   const BeginFrameArgs& args) override {
     MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LayerTreeHostTestBreakSwapPromiseForVisibility
-                       ::SetVisibleFalseAndQueueSwapPromise,
-            base::Unretained(this)));
+        FROM_HERE, base::Bind(&LayerTreeHostTestBreakSwapPromiseForVisibility::
+                                  SetVisibleFalseAndQueueSwapPromise,
+                              base::Unretained(this)));
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
@@ -4786,8 +4891,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForVisibility);
 class LayerTreeHostTestBreakSwapPromiseForContext : public LayerTreeHostTest {
  protected:
   LayerTreeHostTestBreakSwapPromiseForContext()
-      : output_surface_lost_triggered_(false) {
-  }
+      : output_surface_lost_triggered_(false) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -4805,10 +4909,9 @@ class LayerTreeHostTestBreakSwapPromiseForContext : public LayerTreeHostTest {
     output_surface_lost_triggered_ = true;
 
     MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LayerTreeHostTestBreakSwapPromiseForContext
-                       ::LoseOutputSurfaceAndQueueSwapPromise,
-                   base::Unretained(this)));
+        FROM_HERE, base::Bind(&LayerTreeHostTestBreakSwapPromiseForContext::
+                                  LoseOutputSurfaceAndQueueSwapPromise,
+                              base::Unretained(this)));
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
@@ -4833,8 +4936,7 @@ class LayerTreeHostTestBreakSwapPromiseForContext : public LayerTreeHostTest {
   TestSwapPromiseResult swap_promise_result_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestBreakSwapPromiseForContext);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForContext);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
@@ -5297,9 +5399,7 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
   LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame()
       : will_begin_impl_frame_count_(0), did_finish_impl_frame_count_(0) {}
 
-  void BeginTest() override {
-    PostSetNeedsCommitToMainThread();
-  }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const BeginFrameArgs& args) override {
@@ -5603,9 +5703,7 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
     deltas_sent_to_client_ = true;
   }
 
-  void AfterTest() override {
-    EXPECT_TRUE(deltas_sent_to_client_);
-  }
+  void AfterTest() override { EXPECT_TRUE(deltas_sent_to_client_); }
 
   ScrollAndScaleSet info_;
   bool deltas_sent_to_client_;

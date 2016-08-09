@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <iterator>
 #include <limits>
 #include <set>
 
@@ -424,7 +425,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     next_activation_forces_redraw_ = false;
   }
 
-  target_tree->PassSwapPromises(&swap_promise_list_);
+  target_tree->PassSwapPromises(std::move(swap_promise_list_));
 
   target_tree->set_top_controls_shrink_blink_size(
       top_controls_shrink_blink_size_);
@@ -1483,11 +1484,18 @@ void LayerTreeImpl::QueuePinnedSwapPromise(
 }
 
 void LayerTreeImpl::PassSwapPromises(
-    std::vector<std::unique_ptr<SwapPromise>>* new_swap_promise) {
+    std::vector<std::unique_ptr<SwapPromise>> new_swap_promises) {
   for (const auto& swap_promise : swap_promise_list_)
     swap_promise->DidNotSwap(SwapPromise::SWAP_FAILS);
   swap_promise_list_.clear();
-  swap_promise_list_.swap(*new_swap_promise);
+  swap_promise_list_.swap(new_swap_promises);
+}
+
+void LayerTreeImpl::AppendSwapPromises(
+    std::vector<std::unique_ptr<SwapPromise>> new_swap_promises) {
+  std::move(new_swap_promises.begin(), new_swap_promises.end(),
+            std::back_inserter(swap_promise_list_));
+  new_swap_promises.clear();
 }
 
 void LayerTreeImpl::FinishSwapPromises(CompositorFrameMetadata* metadata) {

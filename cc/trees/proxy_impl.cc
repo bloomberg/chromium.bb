@@ -188,7 +188,8 @@ void ProxyImpl::SetNeedsCommitOnImpl() {
 
 void ProxyImpl::BeginMainFrameAbortedOnImpl(
     CommitEarlyOutReason reason,
-    base::TimeTicks main_thread_start_time) {
+    base::TimeTicks main_thread_start_time,
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises) {
   TRACE_EVENT1("cc", "ProxyImpl::BeginMainFrameAbortedOnImplThread", "reason",
                CommitEarlyOutReasonToString(reason));
   DCHECK(IsImplThread());
@@ -197,7 +198,8 @@ void ProxyImpl::BeginMainFrameAbortedOnImpl(
   if (CommitEarlyOutHandledCommit(reason)) {
     SetInputThrottledUntilCommitOnImpl(false);
   }
-  layer_tree_host_impl_->BeginMainFrameAborted(reason);
+  layer_tree_host_impl_->BeginMainFrameAborted(reason,
+                                               std::move(swap_promises));
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
   scheduler_->BeginMainFrameAborted(reason);
 }

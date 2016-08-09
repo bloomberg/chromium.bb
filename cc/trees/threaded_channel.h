@@ -96,7 +96,8 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void SetNeedsCommitOnImpl() override;
   void BeginMainFrameAbortedOnImpl(
       CommitEarlyOutReason reason,
-      base::TimeTicks main_thread_start_time) override;
+      base::TimeTicks main_thread_start_time,
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises) override;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override;
   void SetVisibleOnImpl(bool visible) override;
 

@@ -51,7 +51,8 @@ class CC_EXPORT ChannelMain {
   virtual void SetNeedsCommitOnImpl() = 0;
   virtual void BeginMainFrameAbortedOnImpl(
       CommitEarlyOutReason reason,
-      base::TimeTicks main_thread_start_time) = 0;
+      base::TimeTicks main_thread_start_time,
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises) = 0;
   virtual void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
                                          LayerTreeHost* layer_tree_host,
                                          base::TimeTicks main_thread_start_time,
