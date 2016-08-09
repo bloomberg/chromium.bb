@@ -1005,8 +1005,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                         // URL directly.
                         if (url == null) url = currentTab.getUrl();
 
-                        ShareHelper.share(
-                                shareDirectly, mainActivity, currentTab.getTitle(), url, bitmap);
+                        ShareHelper.share(shareDirectly, true, mainActivity, currentTab.getTitle(),
+                                          null, url, bitmap, null);
                         if (shareDirectly) {
                             RecordUserAction.record("MobileMenuDirectShare");
                         } else {
