@@ -100,13 +100,15 @@ class GPU_EXPORT GpuChannelHost
   // Set an ordering barrier.  AsyncFlushes any pending barriers on other
   // routes. Combines multiple OrderingBarriers into a single AsyncFlush.
   // Returns the flush ID for the stream or 0 if put offset was not changed.
+  // Outputs *highest_verified_flush_id.
   uint32_t OrderingBarrier(int32_t route_id,
                            int32_t stream_id,
                            int32_t put_offset,
                            uint32_t flush_count,
                            const std::vector<ui::LatencyInfo>& latency_info,
                            bool put_offset_changed,
-                           bool do_flush);
+                           bool do_flush,
+                           uint32_t* highest_verified_flush_id);
 
   void FlushPendingStream(int32_t stream_id);
 

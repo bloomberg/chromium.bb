@@ -135,11 +135,14 @@ uint32_t GpuChannelHost::OrderingBarrier(
     uint32_t flush_count,
     const std::vector<ui::LatencyInfo>& latency_info,
     bool put_offset_changed,
-    bool do_flush) {
+    bool do_flush,
+    uint32_t* highest_verified_flush_id) {
   AutoLock lock(context_lock_);
   StreamFlushInfo& flush_info = stream_flush_info_[stream_id];
   if (flush_info.flush_pending && flush_info.route_id != route_id)
     InternalFlush(&flush_info);
+
+  *highest_verified_flush_id = flush_info.verified_stream_flush_id;
 
   if (put_offset_changed) {
     const uint32_t flush_id = flush_info.next_stream_flush_id++;

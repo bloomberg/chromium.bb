@@ -262,9 +262,11 @@ void CommandBufferProxyImpl::Flush(int32_t put_offset) {
   last_barrier_put_offset_ = put_offset;
 
   if (channel_) {
+    uint32_t highest_verified_flush_id;
     const uint32_t flush_id = channel_->OrderingBarrier(
         route_id_, stream_id_, put_offset, ++flush_count_, latency_info_,
-        put_offset_changed, true);
+        put_offset_changed, true, &highest_verified_flush_id);
+    UpdateVerifiedReleases(highest_verified_flush_id);
     if (put_offset_changed) {
       DCHECK(flush_id);
       const uint64_t fence_sync_release = next_fence_sync_release_ - 1;
@@ -292,9 +294,12 @@ void CommandBufferProxyImpl::OrderingBarrier(int32_t put_offset) {
   last_barrier_put_offset_ = put_offset;
 
   if (channel_) {
+    uint32_t highest_verified_flush_id;
     const uint32_t flush_id = channel_->OrderingBarrier(
         route_id_, stream_id_, put_offset, ++flush_count_, latency_info_,
-        put_offset_changed, false);
+        put_offset_changed, false, &highest_verified_flush_id);
+    UpdateVerifiedReleases(highest_verified_flush_id);
+
     if (put_offset_changed) {
       DCHECK(flush_id);
       const uint64_t fence_sync_release = next_fence_sync_release_ - 1;
