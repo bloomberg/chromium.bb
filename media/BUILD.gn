@@ -134,8 +134,6 @@ component("media") {
     "filters/decrypting_demuxer_stream.h",
     "filters/decrypting_video_decoder.cc",
     "filters/decrypting_video_decoder.h",
-    "filters/default_media_permission.cc",
-    "filters/default_media_permission.h",
     "filters/file_data_source.cc",
     "filters/frame_processor.cc",
     "filters/frame_processor.h",
