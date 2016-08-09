@@ -136,9 +136,7 @@ void CategorizedWorkerPool::Start(int num_threads) {
 
   for (int i = 0; i < num_threads; i++) {
     std::unique_ptr<base::SimpleThread> thread(new CategorizedWorkerPoolThread(
-        base::StringPrintf("CompositorTileWorker%u",
-                           static_cast<unsigned>(threads_.size() + 1))
-            .c_str(),
+        base::StringPrintf("CompositorTileWorker%d", i + 1).c_str(),
         base::SimpleThread::Options(), this, foreground_categories,
         &has_ready_to_run_foreground_tasks_cv_));
     thread->Start();
