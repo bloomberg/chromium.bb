@@ -25,7 +25,7 @@
             {
               "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
               "rect": [0, 0, 100, 100],
-              "reason": "style change"
+              "reason": "became visible"
             },
             {
               "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
@@ -52,7 +52,7 @@
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
-      "reason": "style change"
+      "reason": "became visible"
     }
   ]
 }

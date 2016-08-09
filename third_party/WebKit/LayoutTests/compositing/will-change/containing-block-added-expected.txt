@@ -26,7 +26,7 @@
             {
               "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
               "rect": [50, 50, 75, 75],
-              "reason": "bounds change"
+              "reason": "style change"
             }
           ]
         }
@@ -40,7 +40,7 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-      "reason": "bounds change"
+      "reason": "style change"
     }
   ]
 }

@@ -12,7 +12,7 @@ CONSOLE MESSAGE: line 30: debug
         {
           "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "rect": [50, 50, 75, 75],
-          "reason": "bounds change"
+          "reason": "style change"
         }
       ],
       "children": [
@@ -27,7 +27,7 @@ CONSOLE MESSAGE: line 30: debug
             {
               "object": "LayoutBlockFlow (positioned) DIV id='container'",
               "rect": [0, 0, 100, 100],
-              "reason": "became visible"
+              "reason": "style change"
             },
             {
               "object": "LayoutBlockFlow (positioned) DIV id='container'",
@@ -59,11 +59,11 @@ CONSOLE MESSAGE: line 30: debug
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='container'",
-      "reason": "became visible"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-      "reason": "bounds change"
+      "reason": "style change"
     }
   ]
 }
