@@ -230,7 +230,7 @@ private:
     // This is owned by the LayerTreeHostImpl, and should only be used on the
     // compositor thread. The LayerTreeHostImpl is indirectly owned by this
     // class so this pointer should be valid until this class is destructed.
-    Member<CompositorMutatorImpl> m_mutator;
+    CrossThreadPersistent<CompositorMutatorImpl> m_mutator;
 
     WebLayerTreeView* m_layerTreeView;
     WebLayer* m_rootLayer;
