@@ -158,6 +158,19 @@ TEST_F(FontTest, MAYBE_GetActualFontNameForTesting) {
             base::ToLowerASCII(fallback_font.GetActualFontNameForTesting()));
 }
 
+TEST_F(FontTest, DeriveFont) {
+  Font cf("Arial", 8);
+  const int kSizeDelta = 2;
+  Font cf_underlined =
+      cf.Derive(0, cf.GetStyle() | gfx::Font::UNDERLINE, cf.GetWeight());
+  Font cf_underlined_resized = cf_underlined.Derive(
+      kSizeDelta, cf_underlined.GetStyle(), cf_underlined.GetWeight());
+  EXPECT_EQ(cf.GetStyle() | gfx::Font::UNDERLINE,
+            cf_underlined_resized.GetStyle());
+  EXPECT_EQ(cf.GetFontSize() + kSizeDelta, cf_underlined_resized.GetFontSize());
+  EXPECT_EQ(cf.GetWeight(), cf_underlined_resized.GetWeight());
+}
+
 #if defined(OS_WIN)
 TEST_F(FontTest, DeriveResizesIfSizeTooSmall) {
   Font cf("Arial", 8);

@@ -19,6 +19,22 @@ namespace gfx {
 
 namespace {
 
+// Returns the font style for |font|. Disregards Font::UNDERLINE, since NSFont
+// does not support it as a trait.
+int GetFontStyleFromNSFont(NSFont* font) {
+  int font_style = Font::NORMAL;
+  NSFontSymbolicTraits traits = [[font fontDescriptor] symbolicTraits];
+  if (traits & NSFontItalicTrait)
+    font_style |= Font::ITALIC;
+  return font_style;
+}
+
+// Returns the Font weight for |font|.
+Font::Weight GetFontWeightFromNSFont(NSFont* font) {
+  NSFontSymbolicTraits traits = [[font fontDescriptor] symbolicTraits];
+  return (traits & NSFontBoldTrait) ? Font::Weight::BOLD : Font::Weight::NORMAL;
+}
+
 // Returns an autoreleased NSFont created with the passed-in specifications.
 NSFont* NSFontWithSpec(const std::string& font_name,
                        int font_size,
@@ -64,31 +80,17 @@ PlatformFontMac::PlatformFontMac()
 }
 
 PlatformFontMac::PlatformFontMac(NativeFont native_font)
-    : native_font_([native_font retain]),
-      font_name_(base::SysNSStringToUTF8([native_font_ familyName])),
-      font_size_([native_font_ pointSize]),
-      font_style_(Font::NORMAL),
-      font_weight_(Font::Weight::NORMAL) {
-  NSFontSymbolicTraits traits = [[native_font fontDescriptor] symbolicTraits];
-  if (traits & NSFontItalicTrait)
-    font_style_ |= Font::ITALIC;
-  if (traits & NSFontBoldTrait)
-    font_weight_ = Font::Weight::BOLD;
-
-  CalculateMetricsAndInitRenderParams();
-}
+    : PlatformFontMac(native_font,
+                      base::SysNSStringToUTF8([native_font familyName]),
+                      [native_font pointSize],
+                      GetFontStyleFromNSFont(native_font),
+                      GetFontWeightFromNSFont(native_font)) {}
 
 PlatformFontMac::PlatformFontMac(const std::string& font_name, int font_size)
-    : native_font_([NSFontWithSpec(font_name,
-                                   font_size,
-                                   Font::NORMAL,
-                                   Font::Weight::NORMAL) retain]),
-      font_name_(font_name),
-      font_size_(font_size),
-      font_style_(Font::NORMAL),
-      font_weight_(Font::Weight::NORMAL) {
-  CalculateMetricsAndInitRenderParams();
-}
+    : PlatformFontMac(font_name,
+                      font_size,
+                      Font::NORMAL,
+                      Font::Weight::NORMAL) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontMac, PlatformFont implementation:
@@ -96,16 +98,26 @@ PlatformFontMac::PlatformFontMac(const std::string& font_name, int font_size)
 Font PlatformFontMac::DeriveFont(int size_delta,
                                  int style,
                                  Font::Weight weight) const {
-  if (native_font_ && style == font_style_ && weight == font_weight_) {
-    // System fonts have special attributes starting with 10.11. They should be
-    // requested using the same descriptor to preserve these attributes.
-    return Font(new PlatformFontMac([NSFont
-        fontWithDescriptor:[native_font_ fontDescriptor]
-                      size:font_size_ + size_delta]));
-  }
+  // For some reason, creating fonts using the NSFontDescriptor API's seem to be
+  // unreliable. Hence use the NSFontManager.
+  NSFont* derived_font = native_font_;
+  NSFontManager* font_manager = [NSFontManager sharedFontManager];
 
-  return Font(
-      new PlatformFontMac(font_name_, font_size_ + size_delta, style, weight));
+  NSFontTraitMask bold_trait_mask =
+      weight >= Font::Weight::BOLD ? NSBoldFontMask : NSUnboldFontMask;
+  derived_font =
+      [font_manager convertFont:derived_font toHaveTrait:bold_trait_mask];
+
+  NSFontTraitMask italic_trait_mask =
+      (style & Font::ITALIC) ? NSItalicFontMask : NSUnitalicFontMask;
+  derived_font =
+      [font_manager convertFont:derived_font toHaveTrait:italic_trait_mask];
+
+  derived_font =
+      [font_manager convertFont:derived_font toSize:font_size_ + size_delta];
+
+  return Font(new PlatformFontMac(derived_font, font_name_,
+                                  font_size_ + size_delta, style, weight));
 }
 
 int PlatformFontMac::GetHeight() {
@@ -159,9 +171,19 @@ PlatformFontMac::PlatformFontMac(const std::string& font_name,
                                  int font_size,
                                  int font_style,
                                  Font::Weight font_weight)
-    : native_font_(
-          [NSFontWithSpec(font_name, font_size, font_style, font_weight)
-              retain]),
+    : PlatformFontMac(
+          NSFontWithSpec(font_name, font_size, font_style, font_weight),
+          font_name,
+          font_size,
+          font_style,
+          font_weight) {}
+
+PlatformFontMac::PlatformFontMac(NativeFont font,
+                                 const std::string& font_name,
+                                 int font_size,
+                                 int font_style,
+                                 Font::Weight font_weight)
+    : native_font_([font retain]),
       font_name_(font_name),
       font_size_(font_size),
       font_style_(font_style),

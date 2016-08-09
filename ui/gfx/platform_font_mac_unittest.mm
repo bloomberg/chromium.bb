@@ -36,6 +36,30 @@ TEST(PlatformFontMacTest, DeriveFont) {
             traits);
 }
 
+TEST(PlatformFontMacTest, DeriveFontUnderline) {
+  // Create a default font.
+  gfx::Font base_font;
+
+  // Make the font underlined.
+  gfx::Font derived_font(base_font.Derive(
+      0, base_font.GetStyle() | gfx::Font::UNDERLINE, base_font.GetWeight()));
+
+  // Validate the derived font properties against its native font instance.
+  NSFontTraitMask traits = [[NSFontManager sharedFontManager]
+      traitsOfFont:derived_font.GetNativeFont()];
+  gfx::Font::Weight actual_weight = (traits & NSFontBoldTrait)
+                                        ? gfx::Font::Weight::BOLD
+                                        : gfx::Font::Weight::NORMAL;
+
+  int actual_style = gfx::Font::UNDERLINE;
+  if (traits & NSFontItalicTrait)
+    actual_style |= gfx::Font::ITALIC;
+
+  EXPECT_TRUE(derived_font.GetStyle() & gfx::Font::UNDERLINE);
+  EXPECT_EQ(derived_font.GetStyle(), actual_style);
+  EXPECT_EQ(derived_font.GetWeight(), actual_weight);
+}
+
 TEST(PlatformFontMacTest, ConstructFromNativeFont) {
   gfx::Font normal_font([NSFont fontWithName:@"Helvetica" size:12]);
   EXPECT_EQ(12, normal_font.GetFontSize());
