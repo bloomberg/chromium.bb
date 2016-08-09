@@ -48,6 +48,11 @@ class NodeDelegate;
 
 class Node {
  public:
+  enum class ShutdownPolicy {
+    DONT_ALLOW_LOCAL_PORTS,
+    ALLOW_LOCAL_PORTS,
+  };
+
   // Does not take ownership of the delegate.
   Node(const NodeName& name, NodeDelegate* delegate);
   ~Node();
@@ -59,9 +64,11 @@ class Node {
   // method may be called again after AcceptMessage to check if the Node is now
   // ready to be destroyed.
   //
-  // If |allow_local_ports| is |true|, this will only return |false| when there
-  // are transient ports referring to other nodes.
-  bool CanShutdownCleanly(bool allow_local_ports);
+  // If |policy| is set to |ShutdownPolicy::ALLOW_LOCAL_PORTS|, this will return
+  // |true| even if some ports remain alive, as long as none of them are proxies
+  // to another node.
+  bool CanShutdownCleanly(
+      ShutdownPolicy policy = ShutdownPolicy::DONT_ALLOW_LOCAL_PORTS);
 
   // Lookup the named port.
   int GetPort(const PortName& port_name, PortRef* port_ref);

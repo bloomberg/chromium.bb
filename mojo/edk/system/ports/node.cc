@@ -64,10 +64,10 @@ Node::~Node() {
     DLOG(WARNING) << "Unclean shutdown for node " << name_;
 }
 
-bool Node::CanShutdownCleanly(bool allow_local_ports) {
+bool Node::CanShutdownCleanly(ShutdownPolicy policy) {
   base::AutoLock ports_lock(ports_lock_);
 
-  if (!allow_local_ports) {
+  if (policy == ShutdownPolicy::DONT_ALLOW_LOCAL_PORTS) {
 #if DCHECK_IS_ON()
     for (auto entry : ports_) {
       DVLOG(2) << "Port " << entry.first << " referencing node "
@@ -77,6 +77,8 @@ bool Node::CanShutdownCleanly(bool allow_local_ports) {
 #endif
     return ports_.empty();
   }
+
+  DCHECK_EQ(policy, ShutdownPolicy::ALLOW_LOCAL_PORTS);
 
   // NOTE: This is not efficient, though it probably doesn't need to be since
   // relatively few ports should be open during shutdown and shutdown doesn't
@@ -531,17 +533,6 @@ int Node::OnObserveProxy(const PortName& port_name,
   scoped_refptr<Port> port = GetPort(port_name);
   if (!port) {
     DVLOG(1) << "ObserveProxy: " << port_name << "@" << name_ << " not found";
-
-    if (port_name != event.proxy_port_name &&
-        port_name != event.proxy_to_port_name) {
-      // The receiving port may have been removed while this message was in
-      // transit.  In this case, we restart the ObserveProxy circulation from
-      // the referenced proxy port to avoid leaking the proxy.
-      delegate_->ForwardMessage(
-          event.proxy_node_name,
-          NewInternalMessage(
-              event.proxy_port_name, EventType::kObserveProxy, event));
-    }
     return OK;
   }
 
