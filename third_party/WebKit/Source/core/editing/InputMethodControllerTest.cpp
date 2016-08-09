@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
+#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameView.h"
@@ -377,6 +378,25 @@ TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText)
     EXPECT_STREQ("hello", div->innerText().utf8().data());
     EXPECT_EQ(3u, controller().getSelectionOffsets().start());
     EXPECT_EQ(3u, controller().getSelectionOffsets().end());
+}
+
+TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText)
+{
+    Element* div = insertHTMLElement(
+        "<div id='sample' contenteditable='true'></div>",
+        "sample");
+
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+    controller().setComposition("hello", underlines, 5, 5);
+    EXPECT_STREQ("hello", div->innerText().utf8().data());
+    EXPECT_EQ(5u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(5u, controller().getSelectionOffsets().end());
+
+    frame().editor().insertLineBreak();
+    EXPECT_STREQ("\n\n", div->innerText().utf8().data());
+    EXPECT_EQ(1u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(1u, controller().getSelectionOffsets().end());
 }
 
 TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing)

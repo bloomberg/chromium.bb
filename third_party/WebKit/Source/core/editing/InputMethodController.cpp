@@ -500,7 +500,7 @@ bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionO
     if (range.isNull())
         return false;
 
-    return frame().selection().setSelectedRange(range, VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, FrameSelection::CloseTyping);
+    return frame().selection().setSelectedRange(range, VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
 }
 
 bool InputMethodController::setEditableSelectionOffsets(const PlainTextRange& selectionOffsets)
