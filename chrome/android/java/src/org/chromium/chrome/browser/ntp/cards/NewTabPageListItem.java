@@ -18,7 +18,7 @@ public interface NewTabPageListItem {
      * @see NewTabPageListItem#getType()
      */
     @IntDef({VIEW_TYPE_ABOVE_THE_FOLD, VIEW_TYPE_HEADER, VIEW_TYPE_SNIPPET, VIEW_TYPE_SPACING,
-            VIEW_TYPE_STATUS, VIEW_TYPE_PROGRESS})
+            VIEW_TYPE_STATUS, VIEW_TYPE_PROGRESS, VIEW_TYPE_ACTION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {}
 
@@ -57,6 +57,12 @@ public interface NewTabPageListItem {
      * @see Adapter#getItemViewType(int)
      */
     public static final int VIEW_TYPE_PROGRESS = 6;
+
+    /**
+     * View type for a {@link ActionListItem}, an action button.
+     * @see Adapter#getItemViewType(int)
+     */
+    public static final int VIEW_TYPE_ACTION = 7;
 
     /**
       * Returns the type ({@link ViewType}) of this list item. This is so we can

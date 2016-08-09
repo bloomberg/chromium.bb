@@ -215,6 +215,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             return new ProgressViewHolder(mRecyclerView);
         }
 
+        if (viewType == NewTabPageListItem.VIEW_TYPE_ACTION) {
+            return new ActionListItem.ViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
+        }
+
         return null;
     }
 
@@ -263,8 +267,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mGroups.add(mAboveTheFold);
 
         if (!mSections.containsKey(category)) {
-            mSections.put(category,
-                    new SuggestionsSection(suggestions, status, this));
+            mSections.put(category, new SuggestionsSection(suggestions, status, this, false));
         } else {
             mSections.get(category).setSuggestions(suggestions, status, this);
         }

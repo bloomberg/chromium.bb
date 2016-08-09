@@ -38,6 +38,23 @@ import java.util.Map;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class NewTabPageAdapterTest {
+    /**
+     * Number of elements, not including content suggestions that are loaded
+     * in a populated recycler view.
+     * The 3 elements are: above-the-fold, header, bottom spacer
+     * TODO(pke): Make this depend on the category info of the loaded sections
+     * instead of being a constant, as it needs to know if the MORE button is
+     * present for example.
+     */
+    private static final int PERMANENT_ELEMENTS_COUNT = 3;
+
+    /**
+     * Number of elements that are loaded in an empty recycler view
+     * The 5 elements are: above-the-fold, header, status card, progress
+     * indicator, bottom spacer.
+     */
+    private static final int EMPTY_STATE_ELEMENTS_COUNT = 5;
+
     private static class FakeSnippetsSource implements SnippetsSource {
         private SnippetsSource.SnippetsObserver mObserver;
         private final Map<Integer, Integer> mCategoryStatus = new HashMap<>();
@@ -99,7 +116,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSnippetLoading() {
-        assertEquals(5, mNtpAdapter.getItemCount());
+        assertEquals(EMPTY_STATE_ELEMENTS_COUNT, mNtpAdapter.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
         assertEquals(NewTabPageListItem.VIEW_TYPE_STATUS, mNtpAdapter.getItemViewType(2));
@@ -133,7 +150,7 @@ public class NewTabPageAdapterTest {
         // If we don't get anything, we should be in the same situation as the initial one.
         mSnippetsSource.setSnippetsForCategory(KnownCategories.ARTICLES,
                 new ArrayList<SnippetArticleListItem>());
-        assertEquals(5, mNtpAdapter.getItemCount());
+        assertEquals(EMPTY_STATE_ELEMENTS_COUNT, mNtpAdapter.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
         assertEquals(NewTabPageListItem.VIEW_TYPE_STATUS, mNtpAdapter.getItemViewType(2));
@@ -166,25 +183,25 @@ public class NewTabPageAdapterTest {
     public void testSnippetClearing() {
         List<SnippetArticleListItem> snippets = createDummySnippets();
         mSnippetsSource.setSnippetsForCategory(KnownCategories.ARTICLES, snippets);
-        assertEquals(3 + snippets.size(), mNtpAdapter.getItemCount());
+        assertEquals(PERMANENT_ELEMENTS_COUNT + snippets.size(), mNtpAdapter.getItemCount());
 
         // If we get told that snippets are enabled, we just leave the current
         // ones there and not clear.
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.AVAILABLE);
-        assertEquals(3 + snippets.size(), mNtpAdapter.getItemCount());
+        assertEquals(PERMANENT_ELEMENTS_COUNT + snippets.size(), mNtpAdapter.getItemCount());
 
         // When snippets are disabled, we clear them and we should go back to
         // the situation with the status card.
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.SIGNED_OUT);
-        assertEquals(5, mNtpAdapter.getItemCount());
+        assertEquals(EMPTY_STATE_ELEMENTS_COUNT, mNtpAdapter.getItemCount());
 
         // The adapter should now be waiting for new snippets.
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.AVAILABLE);
         mSnippetsSource.setSnippetsForCategory(KnownCategories.ARTICLES, snippets);
-        assertEquals(3 + snippets.size(), mNtpAdapter.getItemCount());
+        assertEquals(PERMANENT_ELEMENTS_COUNT + snippets.size(), mNtpAdapter.getItemCount());
     }
 
     /**
@@ -197,31 +214,31 @@ public class NewTabPageAdapterTest {
 
         // By default, status is INITIALIZING, so we can load snippets
         mSnippetsSource.setSnippetsForCategory(KnownCategories.ARTICLES, snippets);
-        assertEquals(3 + snippets.size(), mNtpAdapter.getItemCount());
+        assertEquals(PERMANENT_ELEMENTS_COUNT + snippets.size(), mNtpAdapter.getItemCount());
 
         // If we have snippets, we should not load the new list.
         snippets.add(new SnippetArticleListItem("https://site.com/url1", "title1", "pub1", "txt1",
                 "https://site.com/url1", "https://amp.site.com/url1", 0, 0, 0));
         mSnippetsSource.setSnippetsForCategory(KnownCategories.ARTICLES, snippets);
-        assertEquals(3 + snippets.size() - 1, mNtpAdapter.getItemCount());
+        assertEquals(PERMANENT_ELEMENTS_COUNT + snippets.size() - 1, mNtpAdapter.getItemCount());
 
         // When snippets are disabled, we should not be able to load them
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.SIGNED_OUT);
         mSnippetsSource.setSnippetsForCategory(KnownCategories.ARTICLES, snippets);
-        assertEquals(5, mNtpAdapter.getItemCount());
+        assertEquals(EMPTY_STATE_ELEMENTS_COUNT, mNtpAdapter.getItemCount());
 
         // INITIALIZING lets us load snippets still.
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.INITIALIZING);
         mSnippetsSource.setSnippetsForCategory(KnownCategories.ARTICLES, snippets);
-        assertEquals(3 + snippets.size(), mNtpAdapter.getItemCount());
+        assertEquals(PERMANENT_ELEMENTS_COUNT + snippets.size(), mNtpAdapter.getItemCount());
 
         // The adapter should now be waiting for new snippets.
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.AVAILABLE);
         mSnippetsSource.setSnippetsForCategory(KnownCategories.ARTICLES, snippets);
-        assertEquals(3 + snippets.size(), mNtpAdapter.getItemCount());
+        assertEquals(PERMANENT_ELEMENTS_COUNT + snippets.size(), mNtpAdapter.getItemCount());
     }
 
     /**

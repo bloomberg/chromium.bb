@@ -542,6 +542,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsConfig.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsLauncher.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsSource.java",
+  "java/src/org/chromium/chrome/browser/ntp/cards/ActionListItem.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/AboveTheFoldListItem.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/CardViewHolder.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/DisplayStyleObserverAdapter.java",

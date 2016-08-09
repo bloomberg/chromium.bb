@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!-- The Layout takes the regular NTP Card attributes (padding, background
+     drawable) and adds the selectable ripple effects as foreground. The
+     foreground property requires to use a FrameLayout. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    android:clickable="true"
+    android:padding="@dimen/snippets_padding_and_peeking_card_height"
+    android:background="@drawable/ntp_card">
+
+    <!-- We don't use a button here since the effect and the click handler will
+         be done at the parent level, directly on the layout. We transferred
+         select styling properties from ButtonCompatBorderless and made it
+         unfocusable.-->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:gravity="center_vertical|center_horizontal"
+        android:minHeight="36dp"
+        android:paddingStart="8dp"
+        android:text="@string/more"
+        android:textAllCaps="true"
+        android:textColor="@color/light_active_color"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+</FrameLayout>

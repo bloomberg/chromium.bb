@@ -21,9 +21,12 @@ public class SuggestionsSection implements ItemGroup {
     private final SnippetHeaderListItem mHeader = new SnippetHeaderListItem();
     private StatusListItem mStatus;
     private final ProgressListItem mProgressIndicator = new ProgressListItem();
+    private final ActionListItem mMoreButton;
 
     public SuggestionsSection(List<SnippetArticleListItem> suggestions,
-            @CategoryStatusEnum int status, NewTabPageAdapter adapter) {
+            @CategoryStatusEnum int status, NewTabPageAdapter adapter, boolean showMoreButton) {
+        mMoreButton = showMoreButton ? new ActionListItem() : null;
+
         // TODO(mvanouwerkerk): Pass in the header text.
         setSuggestions(suggestions, status, adapter);
     }
@@ -36,6 +39,8 @@ public class SuggestionsSection implements ItemGroup {
         if (mSuggestions.isEmpty()) {
             items.add(mStatus);
             items.add(mProgressIndicator);
+        } else if (mMoreButton != null) {
+            items.add(mMoreButton);
         }
         return Collections.unmodifiableList(items);
     }
