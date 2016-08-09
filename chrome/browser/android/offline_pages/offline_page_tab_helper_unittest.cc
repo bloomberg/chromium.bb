@@ -400,7 +400,7 @@ TEST_F(OfflinePageTabHelperTest, PageFor2GSlow) {
   EXPECT_EQ(offline_url(), item->GetOfflineURL());
   EXPECT_EQ(online_url(), item->url);
 
-  clock()->Advance(base::TimeDelta::FromDays(2));
+  clock()->Advance(base::TimeDelta::FromDays(8));
   StartLoad(kTestPageUrl);
   // Gives a chance to run delayed task to do redirection.
   RunUntilIdle();

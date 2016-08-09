@@ -274,10 +274,10 @@ void OfflinePageTabHelper::SelectBestPageForRedirectToOffline(
   }
 
   // If the page is being loaded on a slow network, only use the offline page
-  // if it was created within the past day.
+  // if it was created within the past 7 days.
   if (result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK &&
       delegate_->Now() - selected_page->creation_time >
-          base::TimeDelta::FromDays(1)) {
+          base::TimeDelta::FromDays(7)) {
     ReportRedirectResultUMA(
         RedirectResult::PAGE_NOT_FRESH_ON_PROHIBITIVELY_SLOW_NETWORK);
     return;
