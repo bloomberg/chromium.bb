@@ -99,12 +99,6 @@ class CONTENT_EXPORT MediaInternals
   friend class MediaInternalsTest;
   friend struct base::DefaultLazyInstanceTraits<MediaInternals>;
 
-  // Pending events for a particular process.
-  using PendingEvents = std::list<media::MediaLogEvent>;
-
-  // The maps between process ID and PendingEvents.
-  using PendingEventsMap = std::map<int, PendingEvents>;
-
   MediaInternals();
 
   // Sends |update| to each registered UpdateCallback.  Safe to call from any
@@ -130,7 +124,9 @@ class CONTENT_EXPORT MediaInternals
 
   // Must only be accessed on the UI thread.
   std::vector<UpdateCallback> update_callbacks_;
-  PendingEventsMap pending_events_map_;
+
+  // Saved events by process ID for showing recent players in the UI.
+  std::map<int, std::list<media::MediaLogEvent>> saved_events_by_process_;
 
   // Must only be accessed on the IO thread.
   base::ListValue video_capture_capabilities_cached_data_;

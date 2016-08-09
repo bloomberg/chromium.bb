@@ -485,7 +485,7 @@ void MediaInternals::Observe(int type,
   RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
 
   uma_handler_->OnProcessTerminated(process->GetID());
-  pending_events_map_.erase(process->GetID());
+  saved_events_by_process_.erase(process->GetID());
 }
 
 // Converts the |event| to a |update|. Returns whether the conversion succeeded.
@@ -568,10 +568,10 @@ bool MediaInternals::CanUpdate() {
 
 void MediaInternals::SendHistoricalMediaEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (const auto& pending_events : pending_events_map_) {
-    for (const auto& event : pending_events.second) {
+  for (const auto& saved_events : saved_events_by_process_) {
+    for (const auto& event : saved_events.second) {
       base::string16 update;
-      if (ConvertEventToUpdate(pending_events.first, event, &update))
+      if (ConvertEventToUpdate(saved_events.first, event, &update))
         SendUpdate(update);
     }
   }
@@ -666,9 +666,6 @@ void MediaInternals::SaveEvent(int process_id,
                                const media::MediaLogEvent& event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Max number of saved updates allowed for one process.
-  const size_t kMaxNumEvents = 128;
-
   // Do not save instantaneous events that happen frequently and have little
   // value in the future.
   if (event.type == media::MediaLogEvent::NETWORK_ACTIVITY_SET ||
@@ -676,12 +673,22 @@ void MediaInternals::SaveEvent(int process_id,
     return;
   }
 
-  auto& pending_events = pending_events_map_[process_id];
-  // TODO(xhwang): Notify user that some old logs could have been truncated.
-  // See http://crbug.com/498520
-  if (pending_events.size() >= kMaxNumEvents)
-    pending_events.pop_front();
-  pending_events.push_back(event);
+  // Save the event and limit the total number per renderer. At the time of
+  // writing, 512 events of the kind: { "property": value } together consume
+  // ~88kb of memory on linux.
+  std::list<media::MediaLogEvent>& saved_events =
+      saved_events_by_process_[process_id];
+  saved_events.push_back(event);
+  if (saved_events.size() > 512) {
+    // Remove all events for a given player as soon as we have to remove a
+    // single event for that player to avoid showing incomplete players.
+    int id_to_remove = saved_events.front().id;
+    auto new_end = std::remove_if(saved_events.begin(), saved_events.end(),
+                                  [&](const media::MediaLogEvent& event) {
+                                    return event.id == id_to_remove;
+                                  });
+    saved_events.erase(new_end, saved_events.end());
+  }
 }
 
 void MediaInternals::UpdateAudioLog(AudioLogUpdateType type,
