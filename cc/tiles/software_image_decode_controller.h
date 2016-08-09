@@ -230,7 +230,6 @@ class CC_EXPORT SoftwareImageDecodeController
   // does not scale the image. Like DecodeImageInternal, it should be called
   // with no lock acquired and it returns nullptr if the decoding failed.
   std::unique_ptr<DecodedImage> GetOriginalImageDecode(
-      const ImageKey& key,
       sk_sp<const SkImage> image);
 
   // GetScaledImageDecode is called by DecodeImageInternal when the quality

@@ -369,7 +369,7 @@ SoftwareImageDecodeController::DecodeImageInternal(
   switch (key.filter_quality()) {
     case kNone_SkFilterQuality:
     case kLow_SkFilterQuality:
-      return GetOriginalImageDecode(key, std::move(image));
+      return GetOriginalImageDecode(std::move(image));
     case kMedium_SkFilterQuality:
     case kHigh_SkFilterQuality:
       return GetScaledImageDecode(key, std::move(image));
@@ -490,7 +490,6 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
 
 std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
 SoftwareImageDecodeController::GetOriginalImageDecode(
-    const ImageKey& key,
     sk_sp<const SkImage> image) {
   SkImageInfo decoded_info =
       CreateImageInfo(image->width(), image->height(), format_);
