@@ -7,12 +7,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-declare_args() {
-  # Enables the blimp client. This is required to get the actual implementation
-  # of blimp.
-  # By default, only a dummy-implementation is provided.
-  enable_blimp_client = false
-}
+import("//blimp/client/core/config.gni")
 
 # This target is here to let //chrome depend on //blimp/client/public
 # and automatically get the correct implementation of //blimp/client/core
