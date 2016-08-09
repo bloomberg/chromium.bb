@@ -131,16 +131,19 @@ void LoadUserScripts(UserScriptList* user_scripts,
   for (UserScript& script : *user_scripts) {
     if (added_script_ids.count(script.id()) == 0)
       continue;
-    std::unique_ptr<SubstitutionMap> localization_messages(
-        GetLocalizationMessages(hosts_info, script.host_id()));
     for (UserScript::File& script_file : script.js_scripts()) {
       if (script_file.GetContent().empty())
         LoadScriptContent(script.host_id(), &script_file, nullptr, verifier);
     }
-    for (UserScript::File& script_file : script.css_scripts()) {
-      if (script_file.GetContent().empty())
-        LoadScriptContent(script.host_id(), &script_file,
-                          localization_messages.get(), verifier);
+    if (script.css_scripts().size() > 0) {
+      std::unique_ptr<SubstitutionMap> localization_messages(
+          GetLocalizationMessages(hosts_info, script.host_id()));
+      for (UserScript::File& script_file : script.css_scripts()) {
+        if (script_file.GetContent().empty()) {
+          LoadScriptContent(script.host_id(), &script_file,
+                            localization_messages.get(), verifier);
+        }
+      }
     }
   }
 }
