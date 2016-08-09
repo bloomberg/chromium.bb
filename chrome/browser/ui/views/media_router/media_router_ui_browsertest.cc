@@ -80,8 +80,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
                    base::Unretained(this), app_menu_button));
     app_menu_button->ShowMenu(false);
 
-    EXPECT_FALSE(app_menu_button->IsMenuShowing());
     nav_observer.Wait();
+    EXPECT_FALSE(app_menu_button->IsMenuShowing());
     ASSERT_EQ(chrome::kChromeUIMediaRouterURL,
         nav_observer.last_navigation_url().spec());
     nav_observer.StopWatchingNewWebContents();

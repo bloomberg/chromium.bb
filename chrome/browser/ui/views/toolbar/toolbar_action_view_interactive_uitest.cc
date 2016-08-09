@@ -41,8 +41,7 @@ AppMenuButton* GetAppButtonFromBrowser(Browser* browser) {
 // menu is open, and handles actually clicking on the action.
 // |button| specifies the mouse button to click with.
 void TestOverflowedToolbarAction(Browser* browser,
-                                 ui_controls::MouseButton button,
-                                 const base::Closure& quit_closure) {
+                                 ui_controls::MouseButton button) {
   // A bunch of plumbing to safely get at the overflowed toolbar action.
   AppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser);
   EXPECT_TRUE(app_menu_button->IsMenuShowing());
@@ -62,27 +61,7 @@ void TestOverflowedToolbarAction(Browser* browser,
   gfx::Point action_view_loc =
       ui_test_utils::GetCenterInScreenCoordinates(action_view);
   ui_controls::SendMouseMove(action_view_loc.x(), action_view_loc.y());
-  ui_controls::SendMouseEventsNotifyWhenDone(
-      button, ui_controls::DOWN | ui_controls::UP, quit_closure);
-}
-
-void ActivateOverflowedActionWithKeyboard(Browser* browser,
-                                          const base::Closure& closure) {
-  AppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser);
-  EXPECT_TRUE(app_menu_button->IsMenuShowing());
-  // We need to dispatch key events to the menu's native window, rather than the
-  // browser's.
-  gfx::NativeWindow native_window =
-      views::MenuController::GetActiveInstance()->owner()->GetNativeWindow();
-
-  // Send a key down event followed by the return key.
-  // The key down event targets the toolbar action in the app menu.
-  ui_controls::SendKeyPress(native_window,
-                            ui::VKEY_DOWN,
-                            false, false, false, false);
-  ui_controls::SendKeyPressNotifyWhenDone(native_window,
-                            ui::VKEY_RETURN,
-                            false, false, false, false, closure);
+  ui_controls::SendMouseEvents(button, ui_controls::DOWN | ui_controls::UP);
 }
 
 // Tests the context menu of an overflowed action.
@@ -215,18 +194,18 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // Click on the app button.
   gfx::Point app_button_loc =
       ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
-  base::RunLoop loop;
   ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
-  ui_controls::SendMouseEventsNotifyWhenDone(
-      ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
-      base::Bind(&TestOverflowedToolbarAction, browser(), ui_controls::LEFT,
-                 loop.QuitClosure()));
-  loop.Run();
-  // The app menu should no longer be showing.
-  EXPECT_FALSE(app_menu_button->IsMenuShowing());
+  ui_controls::SendMouseEvents(ui_controls::LEFT,
+                               ui_controls::DOWN | ui_controls::UP);
+  base::RunLoop().RunUntilIdle();
 
-  // And the extension should have been activated.
+  TestOverflowedToolbarAction(browser(), ui_controls::LEFT);
+
+  // The extension should have been activated.
   listener.WaitUntilSatisfied();
+
+  // And the app menu should no longer be showing.
+  EXPECT_FALSE(app_menu_button->IsMenuShowing());
 }
 
 #if defined(USE_OZONE)
@@ -278,13 +257,13 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // Click on the app button, and then right-click on the first toolbar action.
   gfx::Point app_button_loc =
       ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
-  base::RunLoop loop;
   ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
-  ui_controls::SendMouseEventsNotifyWhenDone(
-      ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
-      base::Bind(&TestOverflowedToolbarAction, browser(), ui_controls::RIGHT,
-                 loop.QuitClosure()));
-  loop.Run();
+  ui_controls::SendMouseEvents(ui_controls::LEFT,
+                               ui_controls::DOWN | ui_controls::UP);
+
+  base::RunLoop().RunUntilIdle();
+  TestOverflowedToolbarAction(browser(), ui_controls::RIGHT);
+  base::RunLoop().RunUntilIdle();
 
   // Test is continued first in TestOverflowedToolbarAction() to right click on
   // the action, followed by OnContextMenuWillShow() and
@@ -387,16 +366,24 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   AppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser());
   gfx::Point app_button_loc =
       ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
-  base::RunLoop loop;
   ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
-  ui_controls::SendMouseEventsNotifyWhenDone(
-      ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
-      base::Bind(&ActivateOverflowedActionWithKeyboard,
-                 browser(), loop.QuitClosure()));
-  loop.Run();
+  ui_controls::SendMouseEvents(ui_controls::LEFT,
+                               ui_controls::DOWN | ui_controls::UP);
 
-  // The app menu should no longer be showing.
-  EXPECT_FALSE(app_menu_button->IsMenuShowing());
-  // And the extension should have been activated.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(app_menu_button->IsMenuShowing());
+  gfx::NativeWindow native_window =
+      views::MenuController::GetActiveInstance()->owner()->GetNativeWindow();
+  // Send a key down event followed by the return key.
+  // The key down event targets the toolbar action in the app menu.
+  ui_controls::SendKeyPress(native_window, ui::VKEY_DOWN, false, false, false,
+                            false);
+  ui_controls::SendKeyPress(native_window, ui::VKEY_RETURN, false, false, false,
+                            false);
+
+  // The extension should have been activated.
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+  // And the menu should be closed
+  EXPECT_FALSE(app_menu_button->IsMenuShowing());
 }

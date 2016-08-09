@@ -1398,8 +1398,11 @@ bool MenuController::SendAcceleratorToHotTrackedView() {
 
   ui::Accelerator accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   hot_view->AcceleratorPressed(accelerator);
-  CustomButton* button = static_cast<CustomButton*>(hot_view);
-  SetHotTrackedButton(button);
+  // An accelerator may have canceled the menu after activation.
+  if (GetActiveInstance()) {
+    CustomButton* button = static_cast<CustomButton*>(hot_view);
+    SetHotTrackedButton(button);
+  }
   return true;
 }
 
