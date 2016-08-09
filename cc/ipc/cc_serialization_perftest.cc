@@ -56,19 +56,22 @@ class CCSerializationPerfTest : public testing::Test {
     base::TimeTicks start = base::TimeTicks::Now();
     base::TimeTicks end =
         start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
+    base::TimeTicks now = start;
     base::TimeDelta min_time;
     size_t count = 0;
     while (start < end) {
       for (int i = 0; i < kTimeCheckInterval; ++i) {
-        ++count;
         CompositorFrame compositor_frame;
         ReadMessage(&msg, &compositor_frame);
+        now = base::TimeTicks::Now();
+        // We don't count iterations after the end time.
+        if (now < end)
+          ++count;
       }
 
-      base::TimeTicks now = base::TimeTicks::Now();
       if (now - start < min_time || min_time.is_zero())
         min_time = now - start;
-      start = base::TimeTicks::Now();
+      start = now;
     }
 
     perf_test::PrintResult(
@@ -89,19 +92,22 @@ class CCSerializationPerfTest : public testing::Test {
     base::TimeTicks start = base::TimeTicks::Now();
     base::TimeTicks end =
         start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
+    base::TimeTicks now = start;
     base::TimeDelta min_time;
     size_t count = 0;
     while (start < end) {
       for (int i = 0; i < kTimeCheckInterval; ++i) {
         IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
         IPC::ParamTraits<CompositorFrame>::Write(&msg, frame);
-        ++count;
+        now = base::TimeTicks::Now();
+        // We don't count iterations after the end time.
+        if (now < end)
+          ++count;
       }
 
-      base::TimeTicks now = base::TimeTicks::Now();
       if (now - start < min_time || min_time.is_zero())
         min_time = now - start;
-      start = base::TimeTicks::Now();
+      start = now;
     }
 
     perf_test::PrintResult(
@@ -124,19 +130,22 @@ class CCSerializationPerfTest : public testing::Test {
     base::TimeTicks start = base::TimeTicks::Now();
     base::TimeTicks end =
         start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
+    base::TimeTicks now = start;
     base::TimeDelta min_time;
     size_t count = 0;
     while (start < end) {
       for (int i = 0; i < kTimeCheckInterval; ++i) {
         CompositorFrame compositor_frame;
         mojom::CompositorFrame::Deserialize(data, &compositor_frame);
-        ++count;
+        now = base::TimeTicks::Now();
+        // We don't count iterations after the end time.
+        if (now < end)
+          ++count;
       }
 
-      base::TimeTicks now = base::TimeTicks::Now();
       if (now - start < min_time || min_time.is_zero())
         min_time = now - start;
-      start = base::TimeTicks::Now();
+      start = now;
     }
 
     perf_test::PrintResult(
@@ -158,19 +167,22 @@ class CCSerializationPerfTest : public testing::Test {
     base::TimeTicks start = base::TimeTicks::Now();
     base::TimeTicks end =
         start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
+    base::TimeTicks now = start;
     base::TimeDelta min_time;
     size_t count = 0;
     while (start < end) {
       for (int i = 0; i < kTimeCheckInterval; ++i) {
         mojo::Array<uint8_t> data = mojom::CompositorFrame::Serialize(&frame);
         DCHECK_GT(data.size(), 0u);
-        ++count;
+        now = base::TimeTicks::Now();
+        // We don't count iterations after the end time.
+        if (now < end)
+          ++count;
       }
 
-      base::TimeTicks now = base::TimeTicks::Now();
       if (now - start < min_time || min_time.is_zero())
         min_time = now - start;
-      start = base::TimeTicks::Now();
+      start = now;
     }
 
     perf_test::PrintResult(
