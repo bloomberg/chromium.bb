@@ -75,7 +75,7 @@ def main():
     print >> sys.stderr, ''
     print >> sys.stderr, '                                           ^^^^^^^'
     print >> sys.stderr, ''
-    return min_sdk_version
+    sys.exit(1)
 
   if options.print_sdk_path:
     print subprocess.check_output(
