@@ -259,6 +259,8 @@ PageLoadTracker::PageLoadTracker(
       abort_type_(ABORT_NONE),
       started_in_foreground_(in_foreground),
       page_transition_(navigation_handle->GetPageTransition()),
+      num_cache_requests_(0),
+      num_network_requests_(0),
       aborted_chain_size_(aborted_chain_size),
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface) {
@@ -478,6 +480,14 @@ bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
   return false;
 }
 
+void PageLoadTracker::OnLoadedSubresource(bool was_cached) {
+  if (was_cached) {
+    ++num_cache_requests_;
+  } else {
+    ++num_network_requests_;
+  }
+}
+
 void PageLoadTracker::StopTracking() {
   did_stop_tracking_ = true;
 }
@@ -545,7 +555,7 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
   return PageLoadExtraInfo(
       first_background_time, first_foreground_time, started_in_foreground_,
       commit_time_.is_null() ? GURL() : url_, time_to_commit, abort_type_,
-      time_to_abort, metadata_);
+      time_to_abort, num_cache_requests_, num_network_requests_, metadata_);
 }
 
 void PageLoadTracker::NotifyAbort(UserAbortType abort_type,
@@ -730,6 +740,22 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
       base::WrapUnique(new PageLoadTracker(
           in_foreground_, embedder_interface_.get(), currently_committed_url,
           navigation_handle, chain_size, chain_size_same_url))));
+}
+
+void MetricsWebContentsObserver::OnRequestComplete(
+    content::ResourceType resource_type,
+    bool was_cached,
+    int net_error) {
+  // For simplicity, only count subresources. Navigations are hard to attribute
+  // here because we won't have a committed load by the time data streams in
+  // from the IO thread.
+  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME &&
+      net_error != net::OK) {
+    return;
+  }
+  if (!committed_load_)
+    return;
+  committed_load_->OnLoadedSubresource(was_cached);
 }
 
 const PageLoadExtraInfo

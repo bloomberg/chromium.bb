@@ -14,6 +14,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     const base::Optional<base::TimeDelta>& time_to_commit,
     UserAbortType abort_type,
     const base::Optional<base::TimeDelta>& time_to_abort,
+    int num_cache_requests,
+    int num_network_requests,
     const PageLoadMetadata& metadata)
     : first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
@@ -22,6 +24,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
       time_to_commit(time_to_commit),
       abort_type(abort_type),
       time_to_abort(time_to_abort),
+      num_cache_requests(num_cache_requests),
+      num_network_requests(num_network_requests),
       metadata(metadata) {}
 
 PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;

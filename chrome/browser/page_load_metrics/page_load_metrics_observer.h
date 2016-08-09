@@ -69,6 +69,8 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& time_to_commit,
       UserAbortType abort_type,
       const base::Optional<base::TimeDelta>& time_to_abort,
+      int num_cache_requests,
+      int num_network_requests,
       const PageLoadMetadata& metadata);
 
   PageLoadExtraInfo(const PageLoadExtraInfo& other);
@@ -96,6 +98,12 @@ struct PageLoadExtraInfo {
   const UserAbortType abort_type;
 
   const base::Optional<base::TimeDelta> time_to_abort;
+
+  // Note: these are only approximations, based on WebContents attribution from
+  // ResourceRequestInfo objects while this is the currently committed load in
+  // the WebContents.
+  int num_cache_requests;
+  int num_network_requests;
 
   // Extra information supplied to the page load metrics system from the
   // renderer.

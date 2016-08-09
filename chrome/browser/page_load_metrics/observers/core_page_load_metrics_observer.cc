@@ -168,6 +168,13 @@ const char kHistogramFailedProvisionalLoad[] =
 const char kHistogramForegroundToFirstPaint[] =
     "PageLoad.PaintTiming.ForegroundToFirstPaint";
 
+const char kHistogramCacheRequestPercentParseStop[] =
+    "PageLoad.Experimental.Cache.RequestPercent.ParseStop";
+const char kHistogramCacheTotalRequestsParseStop[] =
+    "PageLoad.Experimental.Cache.TotalRequests.ParseStop";
+const char kHistogramTotalRequestsParseStop[] =
+    "PageLoad.Experimental.TotalRequests.ParseStop";
+
 const char kRapporMetricsNameCoarseTiming[] =
     "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint";
 
@@ -389,6 +396,18 @@ void CorePageLoadMetricsObserver::OnParseStop(
         internal::kHistogramParseBlockedOnScriptLoadDocumentWrite,
         timing.parse_blocked_on_script_load_from_document_write_duration
             .value());
+
+    int total_requests = info.num_cache_requests + info.num_network_requests;
+    if (total_requests) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          internal::kHistogramCacheRequestPercentParseStop,
+          (100 * info.num_cache_requests) / total_requests);
+      UMA_HISTOGRAM_COUNTS(internal::kHistogramCacheTotalRequestsParseStop,
+                           info.num_cache_requests);
+      UMA_HISTOGRAM_COUNTS(internal::kHistogramTotalRequestsParseStop,
+                           info.num_cache_requests + info.num_network_requests);
+    }
+
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramParseDuration,
                         parse_duration);

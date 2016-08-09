@@ -38071,6 +38071,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Experimental.Cache.RequestPercent.ParseStop"
+    units="%">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The percent of subresources loaded from cache for the given page load.
+    Recorded at the end of HTML parsing.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Experimental.Cache.TotalRequests.ParseStop"
+    units="requests">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The number of subresources a given page finished loading from cache at parse
+    stop.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Experimental.TotalRequests.ParseStop"
+    units="requests">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The number of subresources a given page finished loading at parse stop.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Internal.ClientRedirect.FirstPaintToNavigation"
     units="ms">
   <owner>bmcquade@chromium.org</owner>

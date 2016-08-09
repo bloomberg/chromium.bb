@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/mod_pagespeed/mod_pagespeed_metrics.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -160,11 +161,9 @@ prerender::PrerenderManager* GetPrerenderManager(
   return prerender::PrerenderManagerFactory::GetForProfile(profile);
 }
 
-void UpdatePrerenderNetworkBytesCallback(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    int64_t bytes) {
+void UpdatePrerenderNetworkBytesCallback(content::WebContents* web_contents,
+                                         int64_t bytes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::WebContents* web_contents = web_contents_getter.Run();
   // PrerenderContents::FromWebContents handles the NULL case.
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
@@ -281,17 +280,13 @@ void AppendComponentUpdaterThrottles(
 }
 #endif  // !defined(DISABLE_NACL)
 
-// This function is called in RequestComplete to log metrics about main frame
-// resources.
-void LogMainFrameMetricsOnUIThread(
-    const GURL& url,
-    int net_error,
-    base::TimeDelta request_loading_time,
-    const content::ResourceRequestInfo::WebContentsGetter&
-        web_contents_getter) {
-  content::WebContents* web_contents = web_contents_getter.Run();
-  if (!web_contents)
-    return;
+// This function is called in NotifyUIThreadOfRequestComplete to log metrics
+// about main frame resources.
+void LogMainFrameMetricsOnUIThread(const GURL& url,
+                                   int net_error,
+                                   base::TimeDelta request_loading_time,
+                                   content::WebContents* web_contents) {
+  DCHECK(web_contents);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
@@ -340,6 +335,32 @@ void LogMainFrameMetricsOnUIThread(
       UMA_HISTOGRAM_LONG_TIMES("Net.NTP.Local.RequestTime2.ErrAborted",
                                request_loading_time);
     }
+  }
+}
+
+void NotifyUIThreadOfRequestComplete(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const GURL& url,
+    content::ResourceType resource_type,
+    bool was_cached,
+    int net_error,
+    int64_t total_received_bytes,
+    base::TimeDelta request_loading_time) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::WebContents* web_contents = web_contents_getter.Run();
+  if (!web_contents)
+    return;
+  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+    LogMainFrameMetricsOnUIThread(url, net_error, request_loading_time,
+                                  web_contents);
+  }
+  if (!was_cached)
+    UpdatePrerenderNetworkBytesCallback(web_contents, total_received_bytes);
+  page_load_metrics::MetricsWebContentsObserver* metrics_observer =
+      page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+          web_contents);
+  if (metrics_observer) {
+    metrics_observer->OnRequestComplete(resource_type, was_cached, net_error);
   }
 }
 
@@ -790,25 +811,18 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
 // Notification that a request has completed.
 void ChromeResourceDispatcherHostDelegate::RequestComplete(
     net::URLRequest* url_request) {
-  // Jump on the UI thread and inform the prerender about the bytes.
+  if (!url_request)
+    return;
   const ResourceRequestInfo* info =
       ResourceRequestInfo::ForRequest(url_request);
-  if (url_request && !url_request->was_cached()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&UpdatePrerenderNetworkBytesCallback,
-                                       info->GetWebContentsGetterForRequest(),
-                                       url_request->GetTotalReceivedBytes()));
-  }
-
-  if (url_request &&
-      info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&LogMainFrameMetricsOnUIThread, url_request->url(),
-                   url_request->status().error(),
-                   base::TimeTicks::Now() - url_request->creation_time(),
-                   info->GetWebContentsGetterForRequest()));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&NotifyUIThreadOfRequestComplete,
+                 info->GetWebContentsGetterForRequest(), url_request->url(),
+                 info->GetResourceType(), url_request->was_cached(),
+                 url_request->status().error(),
+                 url_request->GetTotalReceivedBytes(),
+                 base::TimeTicks::Now() - url_request->creation_time()));
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldEnableLoFiMode(

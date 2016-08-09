@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -156,6 +157,8 @@ class PageLoadTracker {
   bool UpdateTiming(const PageLoadTiming& timing,
                     const PageLoadMetadata& metadata);
 
+  void OnLoadedSubresource(bool was_cached);
+
   // Signals that we should stop tracking metrics for the associated page load.
   // We may stop tracking a page load if it doesn't meet the criteria for
   // tracking metrics in DidFinishNavigation.
@@ -263,6 +266,12 @@ class PageLoadTracker {
 
   ui::PageTransition page_transition_;
 
+  // Note: these are only approximations, based on WebContents attribution from
+  // ResourceRequestInfo objects while this is the currently committed load in
+  // the WebContents.
+  int num_cache_requests_;
+  int num_network_requests_;
+
   // This is a subtle member. If a provisional load A gets aborted by
   // provisional load B, which gets aborted by C that eventually commits, then
   // there exists an abort chain of length 2, starting at A's navigation_start.
@@ -317,6 +326,11 @@ class MetricsWebContentsObserver
 
   // This method is forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);
+
+  // A resource request completed on the IO thread.
+  void OnRequestComplete(content::ResourceType resource_type,
+                         bool was_cached,
+                         int net_error);
 
   // Flush any buffered metrics, as part of the metrics subsystem persisting
   // metrics as the application goes into the background. The application may be
