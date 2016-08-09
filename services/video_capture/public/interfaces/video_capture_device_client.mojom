@@ -1,0 +1,12 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module video_capture.mojom;
+
+import "media/mojo/interfaces/media_types.mojom";
+
+interface VideoCaptureDeviceClient {
+  OnFrameAvailable(media.mojom.VideoFrame frame);
+  OnError(string error);
+};

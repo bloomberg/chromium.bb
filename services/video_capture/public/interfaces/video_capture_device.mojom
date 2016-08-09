@@ -1,0 +1,29 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module video_capture.mojom;
+
+import "services/video_capture/public/interfaces/video_capture_device_client.mojom";
+import "services/video_capture/public/interfaces/video_capture_format.mojom";
+
+enum ResolutionChangePolicy {
+  FIXED_RESOLUTION,
+  FIXED_ASPECT_RATIO,
+  ANY_WITHIN_LIMIT,
+};
+
+enum PowerLineFrequency {
+  DEFAULT,
+  HZ_50,
+  HZ_60
+};
+
+// Note: The VideoCaptureDevice is stopped when the corresponding message pipe
+// is closed.
+interface VideoCaptureDevice {
+  Start(VideoCaptureFormat requested_format,
+        ResolutionChangePolicy resolution_change_policy,
+        PowerLineFrequency power_line_frequency,
+        VideoCaptureDeviceClient client);
+};
