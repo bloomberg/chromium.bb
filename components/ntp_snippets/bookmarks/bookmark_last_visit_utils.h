@@ -31,14 +31,29 @@ void UpdateBookmarkOnURLVisitedInMainFrame(
 // this info, it returns it creation date.
 base::Time GetLastVisitDateForBookmark(const bookmarks::BookmarkNode* node);
 
-// Returns the list of most recently visited bookmarks. For each bookmarked URL,
-// it returns the most recently created bookmark. The result is ordered by visit
-// time (the most recent first). Only bookmarks visited after
-// |min_visit_time| are considered, at most |max_count| bookmarks are returned.
+// Marks all bookmarks with the given URL as dismissed.
+void MarkBookmarksDismissed(bookmarks::BookmarkModel* bookmark_model,
+                            const GURL& url);
+
+// Gets the dismissed flag for a given bookmark |node|. Defaults to false.
+bool IsDismissedFromNTPForBookmark(const bookmarks::BookmarkNode* node);
+
+// Removes the dismissed flag from all bookmarks (only for debugging).
+void MarkAllBookmarksUndismissed(bookmarks::BookmarkModel* bookmark_model);
+
+// Returns the list of most recently visited, non-dismissed bookmarks.
+// For each bookmarked URL, it returns the most recently created bookmark.
+// The result is ordered by visit time (the most recent first). Only bookmarks
+// visited after |min_visit_time| are considered, at most |max_count| bookmarks
+// are returned.
 std::vector<const bookmarks::BookmarkNode*> GetRecentlyVisitedBookmarks(
     bookmarks::BookmarkModel* bookmark_model,
     int max_count,
     const base::Time& min_visit_time);
+
+// Returns the list of all dismissed bookmarks. Only used for debugging.
+std::vector<const bookmarks::BookmarkNode*> GetDismissedBookmarksForDebugging(
+    bookmarks::BookmarkModel* bookmark_model);
 
 }  // namespace ntp_snippets
 

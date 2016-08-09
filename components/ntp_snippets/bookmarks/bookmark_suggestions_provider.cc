@@ -89,8 +89,9 @@ CategoryStatus BookmarkSuggestionsProvider::GetCategoryStatus(
 
 void BookmarkSuggestionsProvider::DismissSuggestion(
     const std::string& suggestion_id) {
-  // TODO(jkrcal): Implement blacklisting bookmarks until they are next visited.
-  // Then also implement ClearDismissedSuggestionsForDebugging.
+  DCHECK(bookmark_model_->loaded());
+  GURL url(GetWithinCategoryIDFromUniqueID(suggestion_id));
+  MarkBookmarksDismissed(bookmark_model_, url);
 }
 
 void BookmarkSuggestionsProvider::FetchSuggestionImage(
@@ -110,14 +111,21 @@ std::vector<ContentSuggestion>
 BookmarkSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category) {
   DCHECK_EQ(category, provided_category_);
-  // TODO(pke): Implement when discarded suggestions are supported.
-  return std::vector<ContentSuggestion>();
+  std::vector<const BookmarkNode*> bookmarks =
+      GetDismissedBookmarksForDebugging(bookmark_model_);
+
+  std::vector<ContentSuggestion> suggestions;
+  for (const BookmarkNode* bookmark : bookmarks)
+    suggestions.emplace_back(ConvertBookmark(bookmark));
+  return suggestions;
 }
 
 void BookmarkSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
     Category category) {
   DCHECK_EQ(category, provided_category_);
-  // TODO(pke): Implement when discarded suggestions are supported.
+  if (!bookmark_model_->loaded())
+    return;
+  MarkAllBookmarksUndismissed(bookmark_model_);
 }
 
 void BookmarkSuggestionsProvider::BookmarkModelLoaded(
@@ -150,6 +158,19 @@ void BookmarkSuggestionsProvider::BookmarkMetaInfoChanged(
   FetchBookmarks();
 }
 
+ContentSuggestion BookmarkSuggestionsProvider::ConvertBookmark(
+    const BookmarkNode* bookmark) {
+  ContentSuggestion suggestion(
+      MakeUniqueID(provided_category_, bookmark->url().spec()),
+      bookmark->url());
+
+  suggestion.set_title(bookmark->GetTitle());
+  suggestion.set_snippet_text(base::string16());
+  suggestion.set_publish_date(GetLastVisitDateForBookmark(bookmark));
+  suggestion.set_publisher_name(base::UTF8ToUTF16(bookmark->url().host()));
+  return suggestion;
+}
+
 void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
   DCHECK(bookmark_model_->loaded());
 
@@ -160,17 +181,8 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
       bookmark_model_, GetMaxCount(), threshold_time);
 
   std::vector<ContentSuggestion> suggestions;
-  for (const BookmarkNode* bookmark : bookmarks) {
-    ContentSuggestion suggestion(
-        MakeUniqueID(provided_category_, bookmark->url().spec()),
-        bookmark->url());
-
-    suggestion.set_title(bookmark->GetTitle());
-    suggestion.set_snippet_text(base::string16());
-    suggestion.set_publish_date(GetLastVisitDateForBookmark(bookmark));
-    suggestion.set_publisher_name(base::UTF8ToUTF16(bookmark->url().host()));
-    suggestions.emplace_back(std::move(suggestion));
-  }
+  for (const BookmarkNode* bookmark : bookmarks)
+    suggestions.emplace_back(ConvertBookmark(bookmark));
 
   if (suggestions.empty())
     end_of_list_last_visit_date_ = threshold_time;
