@@ -4,17 +4,20 @@
 
 #include "content/browser/mojo/mojo_shell_context.h"
 
-#include <memory>
-#include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/mojo/constants.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/process_control.mojom.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,19 +25,23 @@
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/content_switches.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/string.h"
 #include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"
 #include "services/shell/native_runner.h"
 #include "services/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/service.mojom.h"
+#include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/host/in_process_native_runner.h"
-#include "services/shell/service_manager.h"
 #include "services/user/public/cpp/constants.h"
 
 namespace content {
@@ -46,9 +53,10 @@ base::LazyInstance<std::unique_ptr<shell::Connector>>::Leaky
 
 void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
-void StartUtilityProcessOnIOThread(mojom::ProcessControlRequest request,
-                                   const base::string16& process_name,
-                                   bool use_sandbox) {
+void StartUtilityProcessOnIOThread(
+    mojo::InterfaceRequest<mojom::ProcessControl> request,
+    const base::string16& process_name,
+    bool use_sandbox) {
   UtilityProcessHost* process_host =
       UtilityProcessHost::Create(nullptr, nullptr);
   process_host->SetName(process_name);
@@ -114,33 +122,40 @@ void LaunchAppInGpuProcess(const std::string& app_name,
 
 #endif  // ENABLE_MOJO_MEDIA_IN_GPU_PROCESS
 
+}  // namespace
+
 // A ManifestProvider which resolves application names to builtin manifest
 // resources for the catalog service to consume.
-class BuiltinManifestProvider : public catalog::ManifestProvider {
+class MojoShellContext::BuiltinManifestProvider
+    : public catalog::ManifestProvider {
  public:
   BuiltinManifestProvider() {}
   ~BuiltinManifestProvider() override {}
 
-  void AddManifests(std::unique_ptr<
-      ContentBrowserClient::MojoApplicationManifestMap> manifests) {
-    DCHECK(!manifests_);
-    manifests_ = std::move(manifests);
+  void AddManifestResource(const std::string& name, int resource_id) {
+    auto result = manifest_resources_.insert(
+        std::make_pair(name, resource_id));
+    DCHECK(result.second);
   }
 
-  void AddManifestResource(const std::string& name, int resource_id) {
-    std::string contents = GetContentClient()->GetDataResource(
-        resource_id, ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
-    DCHECK(!contents.empty());
-
-    DCHECK(manifests_);
-    auto result = manifests_->insert(std::make_pair(name, contents));
-    DCHECK(result.second) << "Duplicate manifest entry: " << name;
+  void AddManifests(std::unique_ptr<
+      ContentBrowserClient::MojoApplicationManifestMap> manifests) {
+    manifests_ = std::move(manifests);
   }
 
  private:
   // catalog::ManifestProvider:
   bool GetApplicationManifest(const base::StringPiece& name,
                               std::string* manifest_contents) override {
+    auto it = manifest_resources_.find(name.as_string());
+    if (it != manifest_resources_.end()) {
+      *manifest_contents =
+          GetContentClient()
+              ->GetDataResource(it->second, ui::ScaleFactor::SCALE_FACTOR_NONE)
+              .as_string();
+      DCHECK(!manifest_contents->empty());
+      return true;
+    }
     auto manifest_it = manifests_->find(name.as_string());
     if (manifest_it != manifests_->end()) {
       *manifest_contents = manifest_it->second;
@@ -150,110 +165,53 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
     return false;
   }
 
+  std::unordered_map<std::string, int> manifest_resources_;
   std::unique_ptr<ContentBrowserClient::MojoApplicationManifestMap> manifests_;
 
   DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
 };
 
-}  // namespace
-
-// State which lives on the IO thread and drives the ServiceManager.
-class MojoShellContext::InProcessServiceManagerContext
-    : public base::RefCountedThreadSafe<InProcessServiceManagerContext> {
- public:
-  InProcessServiceManagerContext() {}
-
-  shell::mojom::ServiceRequest Start(
-      std::unique_ptr<BuiltinManifestProvider> manifest_provider) {
-    shell::mojom::ServicePtr embedder_service_proxy;
-    shell::mojom::ServiceRequest embedder_service_request =
-        mojo::GetProxy(&embedder_service_proxy);
-    shell::mojom::ServicePtrInfo embedder_service_proxy_info =
-        embedder_service_proxy.PassInterface();
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(
-        FROM_HERE,
-        base::Bind(&InProcessServiceManagerContext::StartOnIOThread, this,
-                   base::Passed(&manifest_provider),
-                   base::Passed(&embedder_service_proxy_info)));
-    return embedder_service_request;
-  }
-
-  void ShutDown() {
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(
-        FROM_HERE,
-        base::Bind(&InProcessServiceManagerContext::ShutDownOnIOThread, this));
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<InProcessServiceManagerContext>;
-
-  ~InProcessServiceManagerContext() {}
-
-  void StartOnIOThread(
-      std::unique_ptr<BuiltinManifestProvider> manifest_provider,
-      shell::mojom::ServicePtrInfo embedder_service_proxy_info) {
-    manifest_provider_ = std::move(manifest_provider);
-
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
-    std::unique_ptr<shell::NativeRunnerFactory> native_runner_factory(
-        new shell::InProcessNativeRunnerFactory(
-            BrowserThread::GetBlockingPool()));
-    catalog_.reset(new catalog::Catalog(
-        file_task_runner.get(), nullptr, manifest_provider_.get()));
-    service_manager_.reset(new shell::ServiceManager(
-        std::move(native_runner_factory), catalog_->TakeService()));
-
-    shell::mojom::ServiceRequest request =
-        service_manager_->StartEmbedderService(kBrowserMojoApplicationName);
-    mojo::FuseInterface(
-        std::move(request), std::move(embedder_service_proxy_info));
-  }
-
-  void ShutDownOnIOThread() {
-    service_manager_.reset();
-    catalog_.reset();
-    manifest_provider_.reset();
-  }
-
-  std::unique_ptr<BuiltinManifestProvider> manifest_provider_;
-  std::unique_ptr<catalog::Catalog> catalog_;
-  std::unique_ptr<shell::ServiceManager> service_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(InProcessServiceManagerContext);
-};
-
-
 MojoShellContext::MojoShellContext() {
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
+  std::unique_ptr<shell::NativeRunnerFactory> native_runner_factory(
+      new shell::InProcessNativeRunnerFactory(
+          BrowserThread::GetBlockingPool()));
+
+  // Allow the embedder to register additional Mojo application manifests
+  // beyond the default ones below.
+  std::unique_ptr<ContentBrowserClient::MojoApplicationManifestMap> manifests(
+      new ContentBrowserClient::MojoApplicationManifestMap);
+  GetContentClient()->browser()->RegisterMojoApplicationManifests(
+      manifests.get());
+
+  manifest_provider_.reset(new BuiltinManifestProvider);
+  manifest_provider_->AddManifests(std::move(manifests));
+  manifest_provider_->AddManifestResource(kBrowserMojoApplicationName,
+                                          IDR_MOJO_CONTENT_BROWSER_MANIFEST);
+  manifest_provider_->AddManifestResource(kGpuMojoApplicationName,
+                                          IDR_MOJO_CONTENT_GPU_MANIFEST);
+  manifest_provider_->AddManifestResource(kRendererMojoApplicationName,
+                                          IDR_MOJO_CONTENT_RENDERER_MANIFEST);
+  manifest_provider_->AddManifestResource(kUtilityMojoApplicationName,
+                                          IDR_MOJO_CONTENT_UTILITY_MANIFEST);
+  manifest_provider_->AddManifestResource("mojo:catalog",
+                                          IDR_MOJO_CATALOG_MANIFEST);
+  manifest_provider_->AddManifestResource(user_service::kUserServiceName,
+                                          IDR_MOJO_PROFILE_MANIFEST);
+
+  catalog_.reset(new catalog::Catalog(file_task_runner.get(), nullptr,
+                                      manifest_provider_.get()));
+
   shell::mojom::ServiceRequest request;
   if (shell::ShellIsRemote()) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
     request = shell::GetServiceRequestFromCommandLine();
   } else {
-    // Allow the embedder to register additional Mojo application manifests
-    // beyond the default ones below.
-    std::unique_ptr<ContentBrowserClient::MojoApplicationManifestMap> manifests(
-        new ContentBrowserClient::MojoApplicationManifestMap);
-    GetContentClient()->browser()->RegisterMojoApplicationManifests(
-        manifests.get());
-    std::unique_ptr<BuiltinManifestProvider> manifest_provider =
-        base::MakeUnique<BuiltinManifestProvider>();
-    manifest_provider->AddManifests(std::move(manifests));
-    manifest_provider->AddManifestResource(kBrowserMojoApplicationName,
-                                           IDR_MOJO_CONTENT_BROWSER_MANIFEST);
-    manifest_provider->AddManifestResource(kGpuMojoApplicationName,
-                                           IDR_MOJO_CONTENT_GPU_MANIFEST);
-    manifest_provider->AddManifestResource(kRendererMojoApplicationName,
-                                           IDR_MOJO_CONTENT_RENDERER_MANIFEST);
-    manifest_provider->AddManifestResource(kUtilityMojoApplicationName,
-                                           IDR_MOJO_CONTENT_UTILITY_MANIFEST);
-    manifest_provider->AddManifestResource("mojo:catalog",
-                                           IDR_MOJO_CATALOG_MANIFEST);
-    manifest_provider->AddManifestResource(user_service::kUserServiceName,
-                                           IDR_MOJO_PROFILE_MANIFEST);
-
-    in_process_context_ = new InProcessServiceManagerContext;
-    request = in_process_context_->Start(std::move(manifest_provider));
+    service_manager_.reset(new shell::ServiceManager(
+        std::move(native_runner_factory), catalog_->TakeService()));
+    request =
+        service_manager_->StartEmbedderService(kBrowserMojoApplicationName);
   }
   MojoShellConnection::SetForProcess(MojoShellConnection::Create(
       std::move(request),
@@ -306,8 +264,7 @@ MojoShellContext::~MojoShellContext() {
     MojoShellConnection::DestroyForProcess();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&DestroyConnectorOnIOThread));
-  if (in_process_context_)
-    in_process_context_->ShutDown();
+  catalog_.reset();
 }
 
 // static

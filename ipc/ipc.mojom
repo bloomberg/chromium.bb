@@ -32,6 +32,3 @@ interface Channel {
   // Requests a Channel-associated interface.
   GetAssociatedInterface(string name, associated GenericInterface& request);
 };
-
-// A strictly nominal interface used to identify Channel bootstrap requests.
-interface ChannelBootstrap {};

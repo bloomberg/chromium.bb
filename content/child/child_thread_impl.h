@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
-#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_router.h"

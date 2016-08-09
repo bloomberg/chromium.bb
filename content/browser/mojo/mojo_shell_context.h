@@ -5,19 +5,23 @@
 #ifndef CONTENT_BROWSER_MOJO_MOJO_SHELL_CONTEXT_H_
 #define CONTENT_BROWSER_MOJO_MOJO_SHELL_CONTEXT_H_
 
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "content/common/content_export.h"
+#include <map>
+#include <memory>
 
-namespace shell {
-class Connector;
+#include "base/callback_forward.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "content/common/content_export.h"
+#include "services/shell/service_manager.h"
+
+namespace catalog {
+class Catalog;
 }
 
 namespace content {
 
-// MojoShellContext manages the browser's connection to the ServiceManager,
-// hosting a new in-process ServiceManager if the browser was not launched from
-// an external one.
+// MojoShellContext hosts the browser's ApplicationManager, coordinating
+// app registration and interconnection.
 class CONTENT_EXPORT MojoShellContext {
  public:
   MojoShellContext();
@@ -27,9 +31,11 @@ class CONTENT_EXPORT MojoShellContext {
   static shell::Connector* GetConnectorForIOThread();
 
  private:
-  class InProcessServiceManagerContext;
+  class BuiltinManifestProvider;
 
-  scoped_refptr<InProcessServiceManagerContext> in_process_context_;
+  std::unique_ptr<BuiltinManifestProvider> manifest_provider_;
+  std::unique_ptr<catalog::Catalog> catalog_;
+  std::unique_ptr<shell::ServiceManager> service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellContext);
 };

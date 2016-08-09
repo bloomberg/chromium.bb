@@ -54,7 +54,6 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/constants.h"
-#include "content/public/common/connection_filter.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/mojo_shell_connection.h"
@@ -71,7 +70,6 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/runner/common/client_util.h"
@@ -259,36 +257,6 @@ void InitializeMojoIPCChannel() {
   mojo::edk::SetParentPipeHandle(std::move(platform_channel));
 }
 
-class ChannelBootstrapFilter
-    : public ConnectionFilter,
-      public shell::InterfaceFactory<IPC::mojom::ChannelBootstrap> {
- public:
-  explicit ChannelBootstrapFilter(IPC::mojom::ChannelBootstrapPtrInfo bootstrap)
-      : bootstrap_(std::move(bootstrap)) {}
-
- private:
-  // ConnectionFilter:
-  bool OnConnect(shell::Connection* connection,
-                 shell::Connector* connector) override {
-    if (connection->GetRemoteIdentity().name() != kBrowserMojoApplicationName)
-      return false;
-
-    connection->AddInterface<IPC::mojom::ChannelBootstrap>(this);
-    return true;
-  }
-
-  // shell::InterfaceFactory<IPC::mojom::ChannelBootstrap>:
-  void Create(const shell::Identity& remote_identity,
-              IPC::mojom::ChannelBootstrapRequest request) override {
-    DCHECK(bootstrap_.is_valid());
-    mojo::FuseInterface(std::move(request), std::move(bootstrap_));
-  }
-
-  IPC::mojom::ChannelBootstrapPtrInfo bootstrap_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChannelBootstrapFilter);
-};
-
 }  // namespace
 
 ChildThread* ChildThread::Get() {
@@ -409,29 +377,15 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel,
   bool create_pipe_now = true;
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
-    std::string channel_token;
     mojo::ScopedMessagePipeHandle handle;
     if (!IsInBrowserProcess()) {
-      channel_token =
+      DCHECK(!handle.is_valid());
+      handle = mojo::edk::CreateChildMessagePipe(
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kMojoChannelToken);
+              switches::kMojoChannelToken));
     } else {
-      channel_token = ipc_token;
+      handle = mojo::edk::CreateChildMessagePipe(ipc_token);
     }
-
-    if (!channel_token.empty()) {
-      // TODO(rockot): Remove all paths which lead to this branch. The Channel
-      // connection should always be established by a shell connection from the
-      // browser. http://crbug.com/623396.
-      handle = mojo::edk::CreateChildMessagePipe(channel_token);
-    } else {
-      DCHECK(mojo_shell_connection_);
-      IPC::mojom::ChannelBootstrapPtr bootstrap;
-      handle = mojo::GetProxy(&bootstrap).PassMessagePipe();
-      mojo_shell_connection_->AddConnectionFilter(
-          base::MakeUnique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
-    }
-
     DCHECK(handle.is_valid());
     channel_->Init(
         IPC::ChannelMojo::CreateClientFactory(
@@ -505,6 +459,9 @@ void ChildThreadImpl::Init(const Options& options) {
     // ConnectionFilter.
     mojo_shell_connection_->SetupInterfaceRequestProxies(
         GetInterfaceRegistry(), remote_interfaces);
+
+    if (options.auto_start_mojo_shell_connection)
+      StartMojoShellConnection();
   }
 
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
@@ -575,13 +532,7 @@ void ChildThreadImpl::Init(const Options& options) {
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(channel_.get());
-
   ConnectChannel(options.use_mojo_channel, options.in_process_ipc_token);
-
-  // This must always be done after ConnectChannel, because ConnectChannel() may
-  // add a ConnectionFilter to the connection.
-  if (options.auto_start_mojo_shell_connection && mojo_shell_connection_)
-    StartMojoShellConnection();
 
   int connection_timeout = kConnectionTimeoutS;
   std::string connection_override =
