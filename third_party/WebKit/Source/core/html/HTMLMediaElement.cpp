@@ -333,8 +333,8 @@ public:
     // Frame
     bool isCrossOrigin() const override
     {
-        const Frame* frame = m_element->document().frame();
-        return frame && frame->isCrossOrigin();
+        const LocalFrame* frame = m_element->document().frame();
+        return frame && frame->isCrossOriginSubframe();
     }
 
     bool isAutoplayAllowedPerSettings() const override;

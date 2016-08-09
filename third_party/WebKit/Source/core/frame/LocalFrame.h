@@ -134,6 +134,14 @@ public:
     // should be updated to avoid storing things on the main frame.
     LocalFrame* localFrameRoot();
 
+    // Note that the result of this function should not be cached: a frame is
+    // not necessarily detached when it is navigated, so the return value can
+    // change.
+    // In addition, this function will always return true for a detached frame.
+    // TODO(dcheng): Move this to LocalDOMWindow and figure out the right
+    // behavior for detached windows.
+    bool isCrossOriginSubframe() const;
+
     InstrumentingAgents* instrumentingAgents() { return m_instrumentingAgents.get(); }
 
     // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========

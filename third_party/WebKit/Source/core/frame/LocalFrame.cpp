@@ -529,6 +529,14 @@ LocalFrame* LocalFrame::localFrameRoot()
     return curFrame;
 }
 
+
+bool LocalFrame::isCrossOriginSubframe() const
+{
+    const SecurityOrigin* securityOrigin = securityContext()->getSecurityOrigin();
+    Frame* top = tree().top();
+    return top && !securityOrigin->canAccess(top->securityContext()->getSecurityOrigin());
+}
+
 void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio)
 {
     // In setting printing, we should not validate resources already cached for the document.

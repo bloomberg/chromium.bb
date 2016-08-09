@@ -738,8 +738,8 @@ void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate, const ExecutionCo
 
 void UseCounter::countCrossOriginIframe(const Document& document, Feature feature)
 {
-    Frame* frame = document.frame();
-    if (frame && frame->isCrossOrigin())
+    LocalFrame* frame = document.frame();
+    if (frame && frame->isCrossOriginSubframe())
         count(frame, feature);
 }
 

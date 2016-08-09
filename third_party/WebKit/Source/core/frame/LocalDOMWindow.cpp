@@ -706,7 +706,7 @@ DOMSelection* LocalDOMWindow::getSelection()
     if (!isCurrentlyDisplayedInFrame())
         return nullptr;
 
-    return frame()->document()->getSelection();
+    return document()->getSelection();
 }
 
 Element* LocalDOMWindow::frameElement() const
@@ -730,8 +730,8 @@ void LocalDOMWindow::print(ScriptState* scriptState)
     if (!host)
         return;
 
-    if (frame()->document()->isSandboxed(SandboxModals)) {
-        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+    if (document()->isSandboxed(SandboxModals)) {
+        UseCounter::count(document(), UseCounter::DialogInSandboxedContext);
         if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
             frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'print()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
             return;
@@ -739,7 +739,7 @@ void LocalDOMWindow::print(ScriptState* scriptState)
     }
 
     if (scriptState && v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
-        UseCounter::count(frame()->document(), UseCounter::During_Microtask_Print);
+        UseCounter::count(document(), UseCounter::During_Microtask_Print);
     }
 
     if (frame()->isLoading()) {
@@ -747,8 +747,7 @@ void LocalDOMWindow::print(ScriptState* scriptState)
         return;
     }
 
-    if (frame()->isCrossOrigin())
-        UseCounter::count(frame()->document(), UseCounter::CrossOriginWindowPrint);
+    UseCounter::countCrossOriginIframe(*document(), UseCounter::CrossOriginWindowPrint);
 
     m_shouldPrintWhenFinishedLoading = false;
     host->chromeClient().print(frame());
@@ -766,8 +765,8 @@ void LocalDOMWindow::alert(ScriptState* scriptState, const String& message)
     if (!frame())
         return;
 
-    if (frame()->document()->isSandboxed(SandboxModals)) {
-        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+    if (document()->isSandboxed(SandboxModals)) {
+        UseCounter::count(document(), UseCounter::DialogInSandboxedContext);
         if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
             frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'alert()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
             return;
@@ -775,17 +774,16 @@ void LocalDOMWindow::alert(ScriptState* scriptState, const String& message)
     }
 
     if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
-        UseCounter::count(frame()->document(), UseCounter::During_Microtask_Alert);
+        UseCounter::count(document(), UseCounter::During_Microtask_Alert);
     }
 
-    frame()->document()->updateStyleAndLayoutTree();
+    document()->updateStyleAndLayoutTree();
 
     FrameHost* host = frame()->host();
     if (!host)
         return;
 
-    if (frame()->isCrossOrigin())
-        UseCounter::count(frame()->document(), UseCounter::CrossOriginWindowAlert);
+    UseCounter::countCrossOriginIframe(*document(), UseCounter::CrossOriginWindowAlert);
 
     host->chromeClient().openJavaScriptAlert(frame(), message);
 }
@@ -795,8 +793,8 @@ bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message)
     if (!frame())
         return false;
 
-    if (frame()->document()->isSandboxed(SandboxModals)) {
-        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+    if (document()->isSandboxed(SandboxModals)) {
+        UseCounter::count(document(), UseCounter::DialogInSandboxedContext);
         if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
             frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'confirm()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
             return false;
@@ -804,17 +802,16 @@ bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message)
     }
 
     if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
-        UseCounter::count(frame()->document(), UseCounter::During_Microtask_Confirm);
+        UseCounter::count(document(), UseCounter::During_Microtask_Confirm);
     }
 
-    frame()->document()->updateStyleAndLayoutTree();
+    document()->updateStyleAndLayoutTree();
 
     FrameHost* host = frame()->host();
     if (!host)
         return false;
 
-    if (frame()->isCrossOrigin())
-        UseCounter::count(frame()->document(), UseCounter::CrossOriginWindowConfirm);
+    UseCounter::countCrossOriginIframe(*document(), UseCounter::CrossOriginWindowConfirm);
 
     return host->chromeClient().openJavaScriptConfirm(frame(), message);
 }
@@ -824,8 +821,8 @@ String LocalDOMWindow::prompt(ScriptState* scriptState, const String& message, c
     if (!frame())
         return String();
 
-    if (frame()->document()->isSandboxed(SandboxModals)) {
-        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+    if (document()->isSandboxed(SandboxModals)) {
+        UseCounter::count(document(), UseCounter::DialogInSandboxedContext);
         if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
             frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'prompt()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
             return String();
@@ -833,10 +830,10 @@ String LocalDOMWindow::prompt(ScriptState* scriptState, const String& message, c
     }
 
     if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
-        UseCounter::count(frame()->document(), UseCounter::During_Microtask_Prompt);
+        UseCounter::count(document(), UseCounter::During_Microtask_Prompt);
     }
 
-    frame()->document()->updateStyleAndLayoutTree();
+    document()->updateStyleAndLayoutTree();
 
     FrameHost* host = frame()->host();
     if (!host)
@@ -846,8 +843,7 @@ String LocalDOMWindow::prompt(ScriptState* scriptState, const String& message, c
     if (host->chromeClient().openJavaScriptPrompt(frame(), message, defaultValue, returnValue))
         return returnValue;
 
-    if (frame()->isCrossOrigin())
-        UseCounter::count(frame()->document(), UseCounter::CrossOriginWindowPrompt);
+    UseCounter::countCrossOriginIframe(*document(), UseCounter::CrossOriginWindowPrompt);
 
     return String();
 }
@@ -859,7 +855,7 @@ bool LocalDOMWindow::find(const String& string, bool caseSensitive, bool backwar
 
     // Up-to-date, clean tree is required for finding text in page, since it relies
     // on TextIterator to look over the text.
-    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     // FIXME (13016): Support searchInFrames and showDialog
     FindOptions options = (backwards ? Backwards : 0) | (caseSensitive ? 0 : CaseInsensitive) | (wrap ? WrapAround : 0) | (wholeWord ? WholeWord | AtWordStarts : 0);
@@ -920,7 +916,7 @@ FloatSize LocalDOMWindow::getViewportSize(IncludeScrollbarsInRect scrollbarInclu
     // layout, perform one now so queries during page load will use the up to
     // date viewport.
     if (host->settings().viewportEnabled() && frame()->isMainFrame())
-        frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+        document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's layoutObject.
     if (Frame* parent = frame()->tree().parent()) {
@@ -993,7 +989,7 @@ double LocalDOMWindow::scrollX() const
     if (!view)
         return 0;
 
-    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     double viewportX = view->layoutViewportScrollableArea()->scrollPositionDouble().x();
     return adjustScrollForAbsoluteZoom(viewportX, frame()->pageZoomFactor());
@@ -1011,7 +1007,7 @@ double LocalDOMWindow::scrollY() const
     if (!view)
         return 0;
 
-    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     double viewportY = view->layoutViewportScrollableArea()->scrollPositionDouble().y();
     return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
@@ -1057,7 +1053,6 @@ void LocalDOMWindow::setStatus(const String& string)
     if (!host)
         return;
 
-    ASSERT(frame()->document()); // Client calls shouldn't be made when the frame is in inconsistent state.
     host->chromeClient().setStatusbarText(m_status);
 }
 
@@ -1072,7 +1067,6 @@ void LocalDOMWindow::setDefaultStatus(const String& string)
     if (!host)
         return;
 
-    ASSERT(frame()->document()); // Client calls shouldn't be made when the frame is in inconsistent state.
     host->chromeClient().setStatusbarText(m_defaultStatus);
 }
 
@@ -1110,7 +1104,7 @@ CSSRuleList* LocalDOMWindow::getMatchedCSSRules(Element* element, const String& 
     unsigned rulesToInclude = StyleResolver::AuthorCSSRules;
     PseudoId pseudoId = CSSSelector::pseudoId(pseudoType);
     element->document().updateStyleAndLayoutTree();
-    return frame()->document()->ensureStyleResolver().pseudoCSSRulesForElement(element, pseudoId, rulesToInclude);
+    return document()->ensureStyleResolver().pseudoCSSRulesForElement(element, pseudoId, rulesToInclude);
 }
 
 double LocalDOMWindow::devicePixelRatio() const

@@ -92,7 +92,7 @@ void NavigatorVibration::collectHistogramMetrics(const LocalFrame& frame)
     UseCounter::count(&frame, UseCounter::NavigatorVibrate);
     if (!frame.isMainFrame()) {
         UseCounter::count(&frame, UseCounter::NavigatorVibrateSubFrame);
-        if (frame.isCrossOrigin()) {
+        if (frame.isCrossOriginSubframe()) {
             if (userGesture)
                 type = NavigatorVibrationType::CrossOriginSubFrameWithUserGesture;
             else
