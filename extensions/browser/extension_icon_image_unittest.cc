@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/extensions_test.h"
@@ -76,8 +75,7 @@ class ExtensionIconImageTest : public ExtensionsTest,
         quit_in_image_loaded_(false),
         ui_thread_(BrowserThread::UI, &ui_loop_),
         file_thread_(BrowserThread::FILE),
-        io_thread_(BrowserThread::IO),
-        notification_service_(content::NotificationService::Create()) {}
+        io_thread_(BrowserThread::IO) {}
 
   ~ExtensionIconImageTest() override {}
 
@@ -145,7 +143,6 @@ class ExtensionIconImageTest : public ExtensionsTest,
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  std::unique_ptr<content::NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIconImageTest);
 };

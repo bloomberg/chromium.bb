@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/values.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_listener_map.h"
 #include "extensions/browser/extensions_test.h"
@@ -111,8 +110,7 @@ scoped_refptr<Extension> CreateExtension(bool component, bool persistent) {
 
 class EventRouterTest : public ExtensionsTest {
  public:
-  EventRouterTest()
-      : notification_service_(content::NotificationService::Create()) {}
+  EventRouterTest() {}
 
  protected:
   // Tests adding and removing observers from EventRouter.
@@ -159,7 +157,6 @@ class EventRouterTest : public ExtensionsTest {
   }
 
  private:
-  std::unique_ptr<content::NotificationService> notification_service_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::HistogramTester histogram_tester_;
 

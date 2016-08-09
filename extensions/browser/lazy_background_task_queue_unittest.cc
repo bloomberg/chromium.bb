@@ -13,7 +13,6 @@
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_prefs/user_prefs.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
@@ -68,10 +67,7 @@ std::unique_ptr<KeyedService> CreateTestProcessManager(
 // initialization.
 class LazyBackgroundTaskQueueTest : public ExtensionsTest {
  public:
-  LazyBackgroundTaskQueueTest()
-      : notification_service_(content::NotificationService::Create()),
-        task_run_count_(0) {
-  }
+  LazyBackgroundTaskQueueTest() : task_run_count_(0) {}
   ~LazyBackgroundTaskQueueTest() override {}
 
   int task_run_count() { return task_run_count_; }
@@ -122,8 +118,6 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
   }
 
  private:
-  std::unique_ptr<content::NotificationService> notification_service_;
-
   user_prefs::TestingPrefServiceSyncable testing_pref_service_;
 
   // The total number of pending tasks that have been executed.

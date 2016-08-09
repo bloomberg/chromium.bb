@@ -9,7 +9,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -30,12 +29,9 @@ namespace utils = extensions::api_test_utils;
 
 namespace extensions {
 
-ApiUnitTest::ApiUnitTest()
-    : notification_service_(content::NotificationService::Create()) {
-}
+ApiUnitTest::ApiUnitTest() {}
 
-ApiUnitTest::~ApiUnitTest() {
-}
+ApiUnitTest::~ApiUnitTest() {}
 
 void ApiUnitTest::SetUp() {
   ExtensionsTest::SetUp();

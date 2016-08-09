@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/mock_extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,10 +53,8 @@ class ExtensionsTest : public testing::Test {
   void TearDown() override;
 
  private:
-  // TODO(yoz): Add a NotificationService here; it's used widely enough.
-  std::unique_ptr<content::ContentClient> content_client_;
+  content::TestContentClientInitializer content_client_initializer_;
   std::unique_ptr<content::ContentUtilityClient> content_utility_client_;
-  std::unique_ptr<content::ContentBrowserClient> content_browser_client_;
   std::unique_ptr<content::BrowserContext> browser_context_;
   std::unique_ptr<TestExtensionsBrowserClient> extensions_browser_client_;
 

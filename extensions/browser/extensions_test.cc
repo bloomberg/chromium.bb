@@ -22,25 +22,20 @@ namespace extensions {
 //   }
 // };
 ExtensionsTest::ExtensionsTest()
-    : content_client_(new content::ContentClient),
-      content_utility_client_(new TestContentUtilityClient),
-      content_browser_client_(new content::ContentBrowserClient),
+    : content_utility_client_(new TestContentUtilityClient),
       browser_context_(new content::TestBrowserContext),
       extensions_browser_client_(
           new TestExtensionsBrowserClient(browser_context_.get())) {
-  content::SetContentClient(content_client_.get());
   content::SetUtilityClientForTesting(content_utility_client_.get());
-  content::SetBrowserClientForTesting(content_browser_client_.get());
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
   extensions_browser_client_->set_extension_system_factory(
       &extension_system_factory_);
 }
 
 ExtensionsTest::~ExtensionsTest() {
-  ExtensionsBrowserClient::Set(NULL);
-  content::SetBrowserClientForTesting(NULL);
-  content::SetUtilityClientForTesting(NULL);
-  content::SetContentClient(NULL);
+  ExtensionsBrowserClient::Set(nullptr);
+  content::SetBrowserClientForTesting(nullptr);
+  content::SetUtilityClientForTesting(nullptr);
 }
 
 void ExtensionsTest::SetUp() {

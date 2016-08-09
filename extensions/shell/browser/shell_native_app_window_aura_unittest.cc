@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -26,8 +25,7 @@ namespace extensions {
 
 class ShellNativeAppWindowAuraTest : public ExtensionsTest {
  public:
-  ShellNativeAppWindowAuraTest()
-      : notification_service_(content::NotificationService::Create()) {
+  ShellNativeAppWindowAuraTest() {
     AppWindowClient::Set(&app_window_client_);
   }
 
@@ -35,7 +33,6 @@ class ShellNativeAppWindowAuraTest : public ExtensionsTest {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<content::NotificationService> notification_service_;
   ShellAppWindowClient app_window_client_;
 };
 

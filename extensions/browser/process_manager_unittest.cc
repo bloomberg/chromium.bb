@@ -62,9 +62,7 @@ class TestProcessManagerDelegate : public ProcessManagerDelegate {
 
 class ProcessManagerTest : public ExtensionsTest {
  public:
-  ProcessManagerTest()
-      : notification_service_(content::NotificationService::Create()),
-        extension_registry_(browser_context()) {
+  ProcessManagerTest() : extension_registry_(browser_context()) {
     extensions_browser_client()->SetIncognitoContext(&incognito_context_);
     extensions_browser_client()->set_process_manager_delegate(
         &process_manager_delegate_);
@@ -90,7 +88,6 @@ class ProcessManagerTest : public ExtensionsTest {
   }
 
  private:
-  std::unique_ptr<content::NotificationService> notification_service_;
   TestBrowserContextIncognito incognito_context_;
   ExtensionRegistry extension_registry_;  // Shared between BrowserContexts.
   TestProcessManagerDelegate process_manager_delegate_;

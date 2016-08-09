@@ -19,7 +19,6 @@ class ListValue;
 }
 
 namespace content {
-class NotificationService;
 class TestBrowserThreadBundle;
 class WebContents;
 }
@@ -87,8 +86,6 @@ class ApiUnitTest : public ExtensionsTest {
                    const std::string& args);
 
  private:
-  std::unique_ptr<content::NotificationService> notification_service_;
-
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   user_prefs::TestingPrefServiceSyncable testing_pref_service_;
 

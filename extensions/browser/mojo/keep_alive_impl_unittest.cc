@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/process_manager.h"
@@ -19,8 +18,7 @@ namespace extensions {
 
 class KeepAliveTest : public ExtensionsTest {
  public:
-  KeepAliveTest()
-      : notification_service_(content::NotificationService::Create()) {}
+  KeepAliveTest() {}
   ~KeepAliveTest() override {}
 
   void SetUp() override {
@@ -73,7 +71,6 @@ class KeepAliveTest : public ExtensionsTest {
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<content::NotificationService> notification_service_;
   scoped_refptr<const Extension> extension_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveTest);

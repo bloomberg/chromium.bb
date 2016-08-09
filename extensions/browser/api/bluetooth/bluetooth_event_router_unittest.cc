@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -44,7 +43,6 @@ class BluetoothEventRouterTest : public ExtensionsTest {
   BluetoothEventRouterTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()),
-        notification_service_(content::NotificationService::Create()),
         router_(new BluetoothEventRouter(browser_context())) {
     router_->SetAdapterForTest(mock_adapter_);
   }
@@ -61,7 +59,6 @@ class BluetoothEventRouterTest : public ExtensionsTest {
   // Note: |ui_thread_| must be declared before |router_|.
   content::TestBrowserThread ui_thread_;
   testing::StrictMock<device::MockBluetoothAdapter>* mock_adapter_;
-  std::unique_ptr<content::NotificationService> notification_service_;
   std::unique_ptr<BluetoothEventRouter> router_;
 };
 
