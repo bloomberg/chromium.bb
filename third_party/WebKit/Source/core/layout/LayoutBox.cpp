@@ -2025,13 +2025,20 @@ EBreak LayoutBox::joinFragmentainerBreakValues(EBreak firstValue, EBreak secondV
 
 EBreak LayoutBox::classABreakPointValue(EBreak previousBreakAfterValue) const
 {
+    // First assert that we're at a class A break point.
     ASSERT(isBreakBetweenControllable(previousBreakAfterValue));
+
     return joinFragmentainerBreakValues(previousBreakAfterValue, breakBefore());
 }
 
 bool LayoutBox::needsForcedBreakBefore(EBreak previousBreakAfterValue) const
 {
-    return isForcedFragmentainerBreakValue(classABreakPointValue(previousBreakAfterValue));
+    // Forced break values are only honored when specified on in-flow objects, but floats and
+    // out-of-flow positioned objects may be affected by a break-after value of the previous
+    // in-flow object, even though we're not at a class A break point.
+    EBreak breakValue = isFloatingOrOutOfFlowPositioned()
+        ? previousBreakAfterValue : classABreakPointValue(previousBreakAfterValue);
+    return isForcedFragmentainerBreakValue(breakValue);
 }
 
 bool LayoutBox::paintedOutputOfObjectHasNoEffect() const
