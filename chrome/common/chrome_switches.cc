@@ -1259,6 +1259,10 @@ const char kViewerLaunchViaAppId[]          = "viewer-launch-via-appid";
 // Causes the process to run as a watcher process.
 const char kWatcherProcess[]                = "watcher";
 
+// Enables custom-drawing the titlebar and tabstrip background so that it's not
+// a garish #FFFFFF like it is by default on Windows 10.
+const char kWindows10CustomTitlebar[]       = "windows10-custom-titlebar";
+
 // Indicates that chrome was launched to service a search request in Windows 8.
 const char kWindows8Search[]                = "windows8-search";
 #endif  // defined(OS_WIN)

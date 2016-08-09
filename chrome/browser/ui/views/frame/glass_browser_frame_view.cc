@@ -212,11 +212,15 @@ gfx::Rect GlassBrowserFrameView::GetWindowBoundsForClientBounds(
 }
 
 int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
-  // If the browser isn't in normal mode, we haven't customized the frame, so
-  // Windows can figure this out.  If the point isn't within our bounds, then
-  // it's in the native portion of the frame, so again Windows can figure it
-  // out.
-  if (!browser_view()->IsBrowserTypeNormal() || !bounds().Contains(point))
+  // For app windows and popups without a custom titlebar we haven't customized
+  // the frame at all so Windows can figure it out.
+  if (!frame()->CustomDrawSystemTitlebar() &&
+      !browser_view()->IsBrowserTypeNormal())
+    return HTNOWHERE;
+
+  // If the point isn't within our bounds, then it's in the native portion of
+  // the frame so again Windows can figure it out.
+  if (!bounds().Contains(point))
     return HTNOWHERE;
 
   // See if the point is within the incognito icon or the profile switcher menu.
@@ -287,6 +291,8 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 // GlassBrowserFrameView, views::View overrides:
 
 void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
+  if (frame()->CustomDrawSystemTitlebar())
+    PaintTitlebar(canvas);
   if (!browser_view()->IsTabStripVisible())
     return;
   if (IsToolbarVisible())
@@ -383,6 +389,13 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
       (top + kNonClientRestoredExtraThickness - exclusion);
 }
 
+int GlassBrowserFrameView::TitlebarHeight(bool restored) const {
+  if (frame()->IsFullscreen() && !restored)
+    return 0;
+  return display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYCAPTION) +
+         display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSIZEFRAME);
+}
+
 int GlassBrowserFrameView::WindowTopY() const {
   return frame()->IsMaximized() ? FrameTopBorderThickness(false) : 1;
 }
@@ -397,6 +410,17 @@ bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
   // own RTL layout logic), Windows always draws the caption buttons on the
   // right, even when we want to be RTL. See crbug.com/560619.
   return base::i18n::IsRTL();
+}
+
+void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
+  SkColor frame_color = 0xFFCCCCCC;
+  gfx::Rect tabstrip_bounds = GetBoundsForTabStrip(browser_view()->tabstrip());
+  const int y = WindowTopY();
+  canvas->FillRect(gfx::Rect(0, y, width(), tabstrip_bounds.bottom() - y),
+                   frame_color);
+  // The 1 pixel line at the top is drawn by Windows when we leave that section
+  // of the window blank because we have called DwmExtendFrameIntoClientArea()
+  // inside BrowserDesktopWindowTreeHostWin::UpdateDWMFrame().
 }
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
@@ -610,8 +634,11 @@ void GlassBrowserFrameView::LayoutClientView() {
 }
 
 gfx::Insets GlassBrowserFrameView::GetClientAreaInsets(bool restored) const {
-  if (!browser_view()->IsTabStripVisible())
-    return gfx::Insets();
+  if (!browser_view()->IsTabStripVisible()) {
+    const int top =
+        frame()->CustomDrawSystemTitlebar() ? TitlebarHeight(restored) : 0;
+    return gfx::Insets(top, 0, 0, 0);
+  }
 
   const int top_height = TopAreaHeight(restored);
   const int border_thickness = ClientBorderThickness(restored);

@@ -365,6 +365,7 @@ extern const char kShowIcons[];
 extern const char kUninstall[];
 extern const char kViewerLaunchViaAppId[];
 extern const char kWatcherProcess[];
+extern const char kWindows10CustomTitlebar[];
 extern const char kWindows8Search[];
 #endif  // defined(OS_WIN)
 

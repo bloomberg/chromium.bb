@@ -76,6 +76,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   // window was restored, regardless of its current state.
   int TopAreaHeight(bool restored) const;
 
+  // Returns the height of the titlebar for popups or other browser types that
+  // don't have tabs.
+  int TitlebarHeight(bool restored) const;
+
   // Returns the y coordinate for the top of the frame, which in maximized mode
   // is the top of the screen and in restored mode is 1 pixel below the top of
   // the window to leave room for the visual border that Windows draws.
@@ -89,6 +93,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   bool CaptionButtonsOnLeadingEdge() const;
 
   // Paint various sub-components of this view.
+  void PaintTitlebar(gfx::Canvas* canvas) const;
   void PaintToolbarBackground(gfx::Canvas* canvas) const;
   void PaintClientEdge(gfx::Canvas* canvas) const;
   void FillClientEdgeRects(int x,

@@ -83,12 +83,15 @@ int BrowserDesktopWindowTreeHostWin::GetInitialShowState() const {
 
 bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
     gfx::Insets* insets) const {
-  // Use the default client insets for an opaque frame or a glass popup/app
-  // frame.
-  if (!GetWidget()->ShouldUseNativeFrame() ||
-      !browser_view_->IsBrowserTypeNormal()) {
+  // Always use default insets for opaque frame.
+  if (!ShouldUseNativeFrame())
     return false;
-  }
+
+  // Use default insets for popups and apps, unless we are custom drawing the
+  // titlebar.
+  if (!browser_frame_->CustomDrawSystemTitlebar() &&
+      !browser_view_->IsBrowserTypeNormal())
+    return false;
 
   if (GetWidget()->IsFullscreen()) {
     // In fullscreen mode there is no frame.
@@ -242,6 +245,16 @@ void BrowserDesktopWindowTreeHostWin::FrameTypeChanged() {
 // BrowserDesktopWindowTreeHostWin, private:
 
 void BrowserDesktopWindowTreeHostWin::UpdateDWMFrame() {
+  // With a custom titlebar we want the margins to always be 2 pixels, because
+  // that gives us the 1 pixel accent color border around the window (a 1 pixel
+  // margin is not sufficient, it will draw a messed-up-looking border instead).
+  if (browser_frame_->CustomDrawSystemTitlebar() && ShouldUseNativeFrame() &&
+      !GetWidget()->IsFullscreen()) {
+    MARGINS margins = {2, 2, 2, 2};
+    DwmExtendFrameIntoClientArea(GetHWND(), &margins);
+    return;
+  }
+
   // For "normal" windows on Aero, we always need to reset the glass area
   // correctly, even if we're not currently showing the native frame (e.g.
   // because a theme is showing), so we explicitly check for that case rather
@@ -279,7 +292,7 @@ BrowserDesktopWindowTreeHostWin::GetClientEdgeThicknesses() const {
 MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
   // If we're using the opaque frame or we're fullscreen we don't extend the
   // glass in at all because it won't be visible.
-  if (!GetWidget()->ShouldUseNativeFrame() || GetWidget()->IsFullscreen())
+  if (!ShouldUseNativeFrame() || GetWidget()->IsFullscreen())
     return MARGINS{0};
 
   // The glass should extend to the bottom of the tabstrip.
