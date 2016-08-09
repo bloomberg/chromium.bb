@@ -50,8 +50,15 @@ public:
     template<bool characterPredicate(UChar)>
     unsigned skipWhilePredicate(unsigned offset)
     {
-        while ((m_offset + offset) < m_stringLength && characterPredicate((*m_string)[m_offset + offset]))
-            ++offset;
+        if (m_string->is8Bit()) {
+            const LChar* characters8 = m_string->characters8();
+            while ((m_offset + offset) < m_stringLength && characterPredicate(characters8[m_offset + offset]))
+                ++offset;
+        } else {
+            const UChar* characters16 = m_string->characters16();
+            while ((m_offset + offset) < m_stringLength && characterPredicate(characters16[m_offset + offset]))
+                ++offset;
+        }
         return offset;
     }
 

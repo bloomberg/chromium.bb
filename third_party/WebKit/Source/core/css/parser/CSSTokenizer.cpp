@@ -364,86 +364,47 @@ CSSParserToken CSSTokenizer::nextToken()
     return CSSParserToken(DelimiterToken, cc);
 }
 
-static NumericSign getSign(CSSTokenizerInputStream& input, unsigned& offset)
-{
-    UChar next = input.peekWithoutReplacement(0);
-    if (next == '+') {
-        ++offset;
-        return PlusSign;
-    }
-    if (next == '-') {
-        ++offset;
-        return MinusSign;
-    }
-    return NoSign;
-}
-
-static double getInteger(CSSTokenizerInputStream& input, unsigned& offset)
-{
-    unsigned intStartPos = offset;
-    offset = input.skipWhilePredicate<isASCIIDigit>(offset);
-    unsigned intEndPos = offset;
-    return input.getDouble(intStartPos, intEndPos);
-}
-
-static double getFraction(CSSTokenizerInputStream& input, unsigned& offset)
-{
-    if (input.peekWithoutReplacement(offset) != '.'
-        || !isASCIIDigit(input.peekWithoutReplacement(offset + 1)))
-        return 0;
-    unsigned startOffset = offset;
-    offset = input.skipWhilePredicate<isASCIIDigit>(offset + 1);
-    return input.getDouble(startOffset, offset);
-}
-
-static double getExponent(CSSTokenizerInputStream& input, unsigned& offset, int& sign)
-{
-    unsigned exponentStartPos = 0;
-    unsigned exponentEndPos = 0;
-    UChar next = input.peekWithoutReplacement(offset);
-    if (next != 'E' && next != 'e')
-        return 0;
-    int offsetBeforeExponent = offset;
-    ++offset;
-    next = input.peekWithoutReplacement(offset);
-    if (next == '+') {
-        ++offset;
-    } else if (next =='-') {
-        sign = -1;
-        ++offset;
-    }
-    exponentStartPos = offset;
-    offset = input.skipWhilePredicate<isASCIIDigit>(offset);
-    exponentEndPos = offset;
-    if (exponentEndPos == exponentStartPos)
-        offset = offsetBeforeExponent;
-    return input.getDouble(exponentStartPos, exponentEndPos);
-}
-
 // This method merges the following spec sections for efficiency
 // http://www.w3.org/TR/css3-syntax/#consume-a-number
 // http://www.w3.org/TR/css3-syntax/#convert-a-string-to-a-number
 CSSParserToken CSSTokenizer::consumeNumber()
 {
     ASSERT(nextCharsAreNumber());
+
     NumericValueType type = IntegerValueType;
-    double value = 0;
-    unsigned offset = 0;
-    int exponentSign = 1;
-    NumericSign sign = getSign(m_input, offset);
-    double integerPart = getInteger(m_input, offset);
-    unsigned integerPartEndOffset = offset;
+    NumericSign sign = NoSign;
+    unsigned numberLength = 0;
 
-    double fractionPart = getFraction(m_input, offset);
-    double exponentPart = getExponent(m_input, offset, exponentSign);
-    double exponent = pow(10, (float)exponentSign * (double)exponentPart);
-    value = ((double)integerPart + fractionPart) * exponent;
-    if (sign == MinusSign)
-        value = -value;
+    UChar next = m_input.peekWithoutReplacement(0);
+    if (next == '+') {
+        ++numberLength;
+        sign = PlusSign;
+    } else if (next == '-') {
+        ++numberLength;
+        sign = MinusSign;
+    }
 
-    m_input.advance(offset);
-    if (offset != integerPartEndOffset)
+    numberLength = m_input.skipWhilePredicate<isASCIIDigit>(numberLength);
+    next = m_input.peekWithoutReplacement(numberLength);
+    if (next == '.' && isASCIIDigit(m_input.peekWithoutReplacement(numberLength + 1))) {
         type = NumberValueType;
+        numberLength = m_input.skipWhilePredicate<isASCIIDigit>(numberLength + 2);
+        next = m_input.peekWithoutReplacement(numberLength);
+    }
+
+    if (next == 'E' || next == 'e') {
+        next = m_input.peekWithoutReplacement(numberLength + 1);
+        if (isASCIIDigit(next)) {
+            type = NumberValueType;
+            numberLength = m_input.skipWhilePredicate<isASCIIDigit>(numberLength + 1);
+        } else if ((next == '+' || next == '-') && isASCIIDigit(m_input.peekWithoutReplacement(numberLength + 2))) {
+            type = NumberValueType;
+            numberLength = m_input.skipWhilePredicate<isASCIIDigit>(numberLength + 3);
+        }
+    }
+
+    double value = m_input.getDouble(0, numberLength);
+    m_input.advance(numberLength);
 
     return CSSParserToken(NumberToken, value, type, sign);
 }
