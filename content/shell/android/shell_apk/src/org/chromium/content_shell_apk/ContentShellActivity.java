@@ -42,7 +42,6 @@ public class ContentShellActivity extends Activity {
     private ShellManager mShellManager;
     private ActivityWindowAndroid mWindowAndroid;
     private Intent mLastSentIntent;
-    private String mStartupUrl;
 
     @Override
     @SuppressFBWarnings("DM_EXIT")
@@ -82,9 +81,9 @@ public class ContentShellActivity extends Activity {
         mWindowAndroid.setAnimationPlaceholderView(
                 mShellManager.getContentViewRenderView().getSurfaceView());
 
-        mStartupUrl = getUrlFromIntent(getIntent());
-        if (!TextUtils.isEmpty(mStartupUrl)) {
-            mShellManager.setStartupUrl(Shell.sanitizeUrl(mStartupUrl));
+        String startupUrl = getUrlFromIntent(getIntent());
+        if (!TextUtils.isEmpty(startupUrl)) {
+            mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
         }
 
         if (CommandLine.getInstance().hasSwitch(ContentSwitches.RUN_LAYOUT_TEST)) {
@@ -119,13 +118,7 @@ public class ContentShellActivity extends Activity {
     }
 
     private void finishInitialization(Bundle savedInstanceState) {
-        String shellUrl;
-        if (!TextUtils.isEmpty(mStartupUrl)) {
-            shellUrl = mStartupUrl;
-        } else {
-            shellUrl = ShellManager.DEFAULT_SHELL_URL;
-        }
-
+        String shellUrl = ShellManager.DEFAULT_SHELL_URL;
         if (savedInstanceState != null
                 && savedInstanceState.containsKey(ACTIVE_SHELL_URL_KEY)) {
             shellUrl = savedInstanceState.getString(ACTIVE_SHELL_URL_KEY);

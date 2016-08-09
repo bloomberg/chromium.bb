@@ -155,6 +155,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
 
         launchContentShellWithUrl(LARGE_PAGE);
         waitForActiveShellToBeDoneLoading();
+        assertWaitForPageScaleFactorMatch(2.0f);
 
         assertEquals(0, getContentViewCore().getNativeScrollXForTest());
         assertEquals(0, getContentViewCore().getNativeScrollYForTest());

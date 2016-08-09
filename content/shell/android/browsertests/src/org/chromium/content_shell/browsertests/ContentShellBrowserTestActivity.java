@@ -76,7 +76,7 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
         setContentView(getTestActivityViewId());
         mShellManager = (ShellManager) findViewById(getShellManagerViewId());
         mWindowAndroid = new ActivityWindowAndroid(this);
-        mShellManager.setWindow(mWindowAndroid);
+        mShellManager.setWindow(mWindowAndroid, false);
 
         Window wind = this.getWindow();
         wind.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
