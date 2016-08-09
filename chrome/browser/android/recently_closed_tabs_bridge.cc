@@ -25,14 +25,12 @@ using base::android::ScopedJavaLocalRef;
 namespace {
 
 void AddTabToList(JNIEnv* env,
-                  sessions::TabRestoreService::Entry* entry,
+                  const sessions::TabRestoreService::Tab& tab,
                   jobject jtabs_list) {
-  const sessions::TabRestoreService::Tab* tab =
-      static_cast<sessions::TabRestoreService::Tab*>(entry);
   const sessions::SerializedNavigationEntry& current_navigation =
-      tab->navigations.at(tab->current_navigation_index);
+      tab.navigations.at(tab.current_navigation_index);
   Java_RecentlyClosedBridge_pushTab(
-      env, jtabs_list, entry->id,
+      env, jtabs_list, tab.id,
       ConvertUTF16ToJavaString(env, current_navigation.title()).obj(),
       ConvertUTF8ToJavaString(env, current_navigation.virtual_url().spec())
           .obj());
@@ -43,14 +41,13 @@ void AddTabsToList(JNIEnv* env,
                    jobject jtabs_list,
                    int max_tab_count) {
   int added_count = 0;
-  for (sessions::TabRestoreService::Entries::const_iterator it =
-           entries.begin();
-       it != entries.end() && added_count < max_tab_count; ++it) {
-    sessions::TabRestoreService::Entry* entry = *it;
+  for (const auto& entry : entries) {
     DCHECK_EQ(entry->type, sessions::TabRestoreService::TAB);
     if (entry->type == sessions::TabRestoreService::TAB) {
-      AddTabToList(env, entry, jtabs_list);
-      ++added_count;
+      auto& tab = static_cast<const sessions::TabRestoreService::Tab&>(*entry);
+      AddTabToList(env, tab, jtabs_list);
+      if (++added_count == max_tab_count)
+        break;
     }
   }
 }

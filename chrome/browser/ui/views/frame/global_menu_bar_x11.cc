@@ -751,12 +751,12 @@ void GlobalMenuBarX11::TabRestoreServiceChanged(
   for (sessions::TabRestoreService::Entries::const_iterator it =
            entries.begin();
        it != entries.end() && added_count < kRecentlyClosedCount; ++it) {
-    sessions::TabRestoreService::Entry* entry = *it;
+    sessions::TabRestoreService::Entry* entry = it->get();
 
     if (entry->type == sessions::TabRestoreService::WINDOW) {
       sessions::TabRestoreService::Window* entry_win =
           static_cast<sessions::TabRestoreService::Window*>(entry);
-      std::vector<sessions::TabRestoreService::Tab>& tabs = entry_win->tabs;
+      auto& tabs = entry_win->tabs;
       if (tabs.empty())
         continue;
 
@@ -792,10 +792,8 @@ void GlobalMenuBarX11::TabRestoreServiceChanged(
 
       // Loop over the window's tabs and add them to the submenu.
       int subindex = 2;
-      std::vector<sessions::TabRestoreService::Tab>::const_iterator iter;
-      for (iter = tabs.begin(); iter != tabs.end(); ++iter) {
-        sessions::TabRestoreService::Tab tab = *iter;
-        HistoryItem* tab_item = HistoryItemForTab(tab);
+      for (const auto& tab : tabs) {
+        HistoryItem* tab_item = HistoryItemForTab(*tab);
         item->tabs.push_back(tab_item);
         AddHistoryItemToMenu(tab_item,
                              parent_item,

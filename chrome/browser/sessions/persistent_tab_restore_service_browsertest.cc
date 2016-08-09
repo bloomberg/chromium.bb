@@ -38,12 +38,11 @@ IN_PROC_BROWSER_TEST_F(PersistentTabRestoreServiceBrowserTest, RestoreApp) {
   // One entry should be created.
   ASSERT_EQ(1U, trs->entries().size());
   const sessions::TabRestoreService::Entry* restored_entry =
-      trs->entries().front();
+      trs->entries().front().get();
 
   // It should be a window with an app.
   ASSERT_EQ(sessions::TabRestoreService::WINDOW, restored_entry->type);
-  const Window* restored_window =
-      static_cast<const Window*>(restored_entry);
+  const Window* restored_window = static_cast<const Window*>(restored_entry);
   EXPECT_EQ(app_name, restored_window->app_name);
 }
 

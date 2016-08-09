@@ -42,7 +42,7 @@ class SESSIONS_EXPORT InMemoryTabRestoreService : public TabRestoreService {
   const Entries& entries() const override;
   std::vector<LiveTab*> RestoreMostRecentEntry(
       LiveTabContext* context) override;
-  Tab* RemoveTabEntryById(SessionID::id_type id) override;
+  std::unique_ptr<Tab> RemoveTabEntryById(SessionID::id_type id) override;
   std::vector<LiveTab*> RestoreEntryById(
       LiveTabContext* context,
       SessionID::id_type id,

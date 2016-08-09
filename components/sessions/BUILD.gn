@@ -162,7 +162,6 @@ source_set("unit_tests") {
     "core/serialized_navigation_entry_unittest.cc",
     "core/session_backend_unittest.cc",
     "core/session_types_unittest.cc",
-    "core/tab_restore_service_unittest.cc",
     "ios/ios_serialized_navigation_builder_unittest.mm",
     "ios/ios_serialized_navigation_driver_unittest.cc",
   ]

@@ -58,8 +58,8 @@ int ContentLiveTab::GetEntryCount() {
 
 std::unique_ptr<sessions::PlatformSpecificTabData>
 ContentLiveTab::GetPlatformSpecificTabData() {
-  return base::WrapUnique(
-      new sessions::ContentPlatformSpecificTabData(web_contents()));
+  return base::MakeUnique<sessions::ContentPlatformSpecificTabData>(
+      web_contents());
 }
 
 void ContentLiveTab::LoadIfNecessary() {

@@ -441,19 +441,20 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabFromClosedWindowByID) {
       TabRestoreServiceFactory::GetForProfile(browser->profile());
   const sessions::TabRestoreService::Entries& entries = service->entries();
   EXPECT_EQ(1u, entries.size());
-  sessions::TabRestoreService::Entry* entry = entries.front();
+  sessions::TabRestoreService::Entry* entry = entries.front().get();
   ASSERT_EQ(sessions::TabRestoreService::WINDOW, entry->type);
   sessions::TabRestoreService::Window* entry_win =
       static_cast<sessions::TabRestoreService::Window*>(entry);
-  std::vector<sessions::TabRestoreService::Tab>& tabs = entry_win->tabs;
+  auto& tabs = entry_win->tabs;
   EXPECT_EQ(3u, tabs.size());
 
   // Find the Tab to restore.
-  sessions::TabRestoreService::Tab tab_to_restore;
+  SessionID::id_type tab_id_to_restore = 0;
   bool found_tab_to_restore = false;
-  for (const auto& tab : tabs) {
+  for (const auto& tab_ptr : tabs) {
+    auto& tab = *tab_ptr;
     if (tab.navigations[tab.current_navigation_index].virtual_url() == url1_) {
-      tab_to_restore = tab;
+      tab_id_to_restore = tab.id;
       found_tab_to_restore = true;
       break;
     }
@@ -468,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabFromClosedWindowByID) {
   content::WindowedNotificationObserver tab_loaded_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  service->RestoreEntryById(browser->live_tab_context(), tab_to_restore.id,
+  service->RestoreEntryById(browser->live_tab_context(), tab_id_to_restore,
                             NEW_FOREGROUND_TAB);
   tab_added_observer.Wait();
   tab_loaded_observer.Wait();

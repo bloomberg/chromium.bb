@@ -543,16 +543,16 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   ASSERT_EQ(1U, service->entries().size());
   ASSERT_EQ(sessions::TabRestoreService::WINDOW,
             service->entries().front()->type);
-  const sessions::TabRestoreService::Window* window =
-      static_cast<sessions::TabRestoreService::Window*>(
-          service->entries().front());
+  auto* window = static_cast<sessions::TabRestoreService::Window*>(
+      service->entries().front().get());
   EXPECT_EQ(3U, window->tabs.size());
 
   // Find the SessionID for entry2. Since the session service was destroyed,
   // there is no guarantee that the SessionID for the tab has remained the same.
   base::Time timestamp;
   int http_status_code = 0;
-  for (const sessions::TabRestoreService::Tab& tab : window->tabs) {
+  for (const auto& tab_ptr : window->tabs) {
+    const sessions::TabRestoreService::Tab& tab = *tab_ptr;
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
       timestamp = tab.navigations[0].timestamp();
@@ -575,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   ASSERT_EQ(sessions::TabRestoreService::WINDOW,
             service->entries().front()->type);
   window = static_cast<sessions::TabRestoreService::Window*>(
-      service->entries().front());
+      service->entries().front().get());
   EXPECT_EQ(2U, window->tabs.size());
 
   // Make sure that the restored tab was restored with the correct
@@ -615,9 +615,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_WindowWithOneTab) {
   // Expect the window to be converted to a tab by the TRS.
   EXPECT_EQ(1U, service->entries().size());
   ASSERT_EQ(sessions::TabRestoreService::TAB, service->entries().front()->type);
-  const sessions::TabRestoreService::Tab* tab =
-      static_cast<sessions::TabRestoreService::Tab*>(
-          service->entries().front());
+  auto* tab = static_cast<const sessions::TabRestoreService::Tab*>(
+      service->entries().front().get());
 
   // Restore the tab.
   std::vector<sessions::LiveTab*> content =

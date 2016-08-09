@@ -116,10 +116,10 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // given list.
   // These functions are copied from the RecentlyClosedTabsHandler class for
   // compatibility with the new-tab page.
-  bool AddTab(const sessions::TabRestoreService::Tab* tab,
+  bool AddTab(const sessions::TabRestoreService::Tab& tab,
               ShellLinkItemList* list,
               size_t max_items);
-  void AddWindow(const sessions::TabRestoreService::Window* window,
+  void AddWindow(const sessions::TabRestoreService::Window& window,
                  ShellLinkItemList* list,
                  size_t max_items);
 

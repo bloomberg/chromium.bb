@@ -15,8 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
@@ -34,8 +34,6 @@ namespace {
 typedef bool PinnedStatePayload;
 
 typedef int32_t RestoredEntryPayload;
-
-typedef std::map<SessionID::id_type, TabRestoreService::Entry*> IDToEntry;
 
 // Payload used for the start of a tab close. This is the old struct that is
 // used for backwards compat when it comes to reading the session files.
@@ -111,6 +109,32 @@ const int kEntriesPerReset = 40;
 
 const size_t kMaxEntries = TabRestoreServiceHelper::kMaxEntries;
 
+void RemoveEntryByID(
+    SessionID::id_type id,
+    std::vector<std::unique_ptr<TabRestoreService::Entry>>* entries) {
+  // Look for the entry in the top-level collection.
+  for (auto it = entries->begin(); it != entries->end(); ++it) {
+    TabRestoreService::Entry& entry = **it;
+    // Erase it if it's our target.
+    if (entry.id == id) {
+      entries->erase(it);
+      return;
+    }
+    // If this entry is a window, look through its tabs.
+    if (entry.type == TabRestoreService::WINDOW) {
+      auto& window = static_cast<TabRestoreService::Window&>(entry);
+      for (auto it = window.tabs.begin(); it != window.tabs.end(); ++it) {
+        const TabRestoreService::Tab& tab = **it;
+        // Erase it if it's our target.
+        if (tab.id == id) {
+          window.tabs.erase(it);
+          return;
+        }
+      }
+    }
+  }
+}
+
 }  // namespace
 
 // PersistentTabRestoreService::Delegate ---------------------------------------
@@ -148,8 +172,9 @@ class PersistentTabRestoreService::Delegate
   bool IsLoaded() const;
 
   // Creates and add entries to |entries| for each of the windows in |windows|.
-  static void CreateEntriesFromWindows(std::vector<SessionWindow*>* windows,
-                                       std::vector<Entry*>* entries);
+  static void CreateEntriesFromWindows(
+      std::vector<SessionWindow*>* windows,
+      std::vector<std::unique_ptr<Entry>>* entries);
 
   void Shutdown();
 
@@ -189,12 +214,14 @@ class PersistentTabRestoreService::Delegate
   void OnGotLastSessionCommands(ScopedVector<SessionCommand> commands);
 
   // Populates |loaded_entries| with Entries from |commands|.
-  void CreateEntriesFromCommands(const std::vector<SessionCommand*>& commands,
-                                 std::vector<Entry*>* loaded_entries);
+  void CreateEntriesFromCommands(
+      const std::vector<SessionCommand*>& commands,
+      std::vector<std::unique_ptr<Entry>>* loaded_entries);
 
   // Validates all entries in |entries|, deleting any with no navigations. This
   // also deletes any entries beyond the max number of entries we can hold.
-  static void ValidateAndDeleteEmptyEntries(std::vector<Entry*>* entries);
+  static void ValidateAndDeleteEmptyEntries(
+      std::vector<std::unique_ptr<Entry>>* entries);
 
   // Callback from BaseSessionService when we've received the windows from the
   // previous session. This creates and add entries to |staging_entries_| and
@@ -212,13 +239,6 @@ class PersistentTabRestoreService::Delegate
   // loading the entries in |staging_entries_| are added to entries and
   // observers are notified.
   void LoadStateChanged();
-
-  // If |id_to_entry| contains an entry for |id| the corresponding entry is
-  // deleted and removed from both |id_to_entry| and |entries|. This is used
-  // when creating entries from the backend file.
-  void RemoveEntryByID(SessionID::id_type id,
-                       IDToEntry* id_to_entry,
-                       std::vector<TabRestoreService::Entry*>* entries);
 
  private:
   // The associated client.
@@ -240,7 +260,7 @@ class PersistentTabRestoreService::Delegate
   // Results from previously closed tabs/sessions is first added here. When the
   // results from both us and the session restore service have finished loading
   // LoadStateChanged is invoked, which adds these entries to entries_.
-  ScopedVector<Entry> staging_entries_;
+  std::vector<std::unique_ptr<Entry>> staging_entries_;
 
   // Used when loading previous tabs/session and open tabs/session.
   base::CancelableTaskTracker cancelable_task_tracker_;
@@ -287,14 +307,18 @@ void PersistentTabRestoreService::Delegate::OnWillSaveCommands() {
     DCHECK(static_cast<size_t>(to_write_count) <= entries.size());
     std::advance(i, entries.size() - static_cast<int>(to_write_count));
     for (; i != entries.rend(); ++i) {
-      Entry* entry = *i;
-      if (entry->type == TAB) {
-        Tab* tab = static_cast<Tab*>(entry);
-        int selected_index = GetSelectedNavigationIndexToPersist(*tab);
-        if (selected_index != -1)
-          ScheduleCommandsForTab(*tab, selected_index);
-      } else {
-        ScheduleCommandsForWindow(*static_cast<Window*>(entry));
+      Entry& entry = **i;
+      switch (entry.type) {
+        case TAB: {
+          Tab& tab = static_cast<Tab&>(entry);
+          int selected_index = GetSelectedNavigationIndexToPersist(tab);
+          if (selected_index != -1)
+            ScheduleCommandsForTab(tab, selected_index);
+          break;
+        }
+        case WINDOW:
+          ScheduleCommandsForWindow(static_cast<Window&>(entry));
+          break;
       }
       entries_written_++;
     }
@@ -380,11 +404,11 @@ bool PersistentTabRestoreService::Delegate::IsLoaded() const {
 // static
 void PersistentTabRestoreService::Delegate::CreateEntriesFromWindows(
     std::vector<SessionWindow*>* windows,
-    std::vector<Entry*>* entries) {
+    std::vector<std::unique_ptr<Entry>>* entries) {
   for (size_t i = 0; i < windows->size(); ++i) {
     std::unique_ptr<Window> window(new Window());
     if (ConvertSessionWindowToWindow((*windows)[i], window.get()))
-      entries->push_back(window.release());
+      entries->push_back(std::move(window));
   }
 }
 
@@ -399,7 +423,7 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForWindow(
   int valid_tab_count = 0;
   int real_selected_tab = selected_tab;
   for (size_t i = 0; i < window.tabs.size(); ++i) {
-    if (GetSelectedNavigationIndexToPersist(window.tabs[i]) != -1) {
+    if (GetSelectedNavigationIndexToPersist(*window.tabs[i]) != -1) {
       valid_tab_count++;
     } else if (static_cast<int>(i) < selected_tab) {
       real_selected_tab--;
@@ -418,9 +442,9 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForWindow(
   }
 
   for (size_t i = 0; i < window.tabs.size(); ++i) {
-    int selected_index = GetSelectedNavigationIndexToPersist(window.tabs[i]);
+    int selected_index = GetSelectedNavigationIndexToPersist(*window.tabs[i]);
     if (selected_index != -1)
-      ScheduleCommandsForTab(window.tabs[i], selected_index);
+      ScheduleCommandsForTab(*window.tabs[i], selected_index);
   }
 }
 
@@ -555,28 +579,28 @@ int PersistentTabRestoreService::Delegate::GetSelectedNavigationIndexToPersist(
 
 void PersistentTabRestoreService::Delegate::OnGotLastSessionCommands(
     ScopedVector<SessionCommand> commands) {
-  std::vector<Entry*> entries;
+  std::vector<std::unique_ptr<TabRestoreService::Entry>> entries;
   CreateEntriesFromCommands(commands.get(), &entries);
   // Closed tabs always go to the end.
-  staging_entries_.insert(staging_entries_.end(), entries.begin(),
-                          entries.end());
+  staging_entries_.insert(staging_entries_.end(),
+                          make_move_iterator(entries.begin()),
+                          make_move_iterator(entries.end()));
   load_state_ |= LOADED_LAST_TABS;
   LoadStateChanged();
 }
 
 void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
     const std::vector<SessionCommand*>& commands,
-    std::vector<Entry*>* loaded_entries) {
+    std::vector<std::unique_ptr<Entry>>* loaded_entries) {
   if (tab_restore_service_helper_->entries().size() == kMaxEntries)
     return;
 
-  // Iterate through the commands populating entries and id_to_entry.
-  ScopedVector<Entry> entries;
-  IDToEntry id_to_entry;
+  // Iterate through the commands, populating |entries|.
+  std::vector<std::unique_ptr<Entry>> entries;
   // If non-null we're processing the navigations of this tab.
-  Tab* current_tab = NULL;
+  Tab* current_tab = nullptr;
   // If non-null we're processing the tabs of this window.
-  Window* current_window = NULL;
+  Window* current_window = nullptr;
   // If > 0, we've gotten a window command but not all the tabs yet.
   int pending_window_tabs = 0;
   for (std::vector<SessionCommand*>::const_iterator i = commands.begin();
@@ -590,13 +614,13 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
           return;
         }
 
-        current_tab = NULL;
-        current_window = NULL;
+        current_tab = nullptr;
+        current_window = nullptr;
 
         RestoredEntryPayload payload;
         if (!command.GetPayload(&payload, sizeof(payload)))
           return;
-        RemoveEntryByID(payload, &id_to_entry, &(entries.get()));
+        RemoveEntryByID(payload, &entries);
         break;
       }
 
@@ -630,14 +654,13 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
           return;
         }
 
-        RemoveEntryByID(payload.window_id, &id_to_entry, &(entries.get()));
+        RemoveEntryByID(payload.window_id, &entries);
 
-        current_window = new Window();
+        entries.push_back(base::MakeUnique<Window>());
+        current_window = static_cast<Window*>(entries.back().get());
         current_window->selected_tab_index = payload.selected_tab_index;
         current_window->timestamp =
             base::Time::FromInternalValue(payload.timestamp);
-        entries.push_back(current_window);
-        id_to_entry[payload.window_id] = current_window;
         break;
       }
 
@@ -660,17 +683,16 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
             NOTREACHED();
             return;
           }
-          current_window->tabs.resize(current_window->tabs.size() + 1);
-          current_tab = &(current_window->tabs.back());
+          current_window->tabs.push_back(base::MakeUnique<Tab>());
+          current_tab = current_window->tabs.back().get();
           if (--pending_window_tabs == 0)
-            current_window = NULL;
+            current_window = nullptr;
         } else {
-          RemoveEntryByID(payload.id, &id_to_entry, &(entries.get()));
-          current_tab = new Tab();
-          id_to_entry[payload.id] = current_tab;
+          RemoveEntryByID(payload.id, &entries);
+          entries.push_back(base::MakeUnique<Tab>());
+          current_tab = static_cast<Tab*>(entries.back().get());
           current_tab->timestamp =
               base::Time::FromInternalValue(payload.timestamp);
-          entries.push_back(current_tab);
         }
         current_tab->current_navigation_index = payload.index;
         break;
@@ -757,40 +779,34 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
   }
 
   // If there was corruption some of the entries won't be valid.
-  ValidateAndDeleteEmptyEntries(&(entries.get()));
+  ValidateAndDeleteEmptyEntries(&entries);
 
-  loaded_entries->swap(entries.get());
+  loaded_entries->swap(entries);
 }
 
 // static
 void PersistentTabRestoreService::Delegate::ValidateAndDeleteEmptyEntries(
-    std::vector<Entry*>* entries) {
-  std::vector<Entry*> valid_entries;
-  std::vector<Entry*> invalid_entries;
+    std::vector<std::unique_ptr<Entry>>* entries) {
+  std::vector<std::unique_ptr<Entry>> valid_entries;
 
   // Iterate from the back so that we keep the most recently closed entries.
-  for (std::vector<Entry*>::reverse_iterator i = entries->rbegin();
-       i != entries->rend(); ++i) {
-    if (TabRestoreServiceHelper::ValidateEntry(*i))
-      valid_entries.push_back(*i);
-    else
-      invalid_entries.push_back(*i);
+  for (auto i = entries->rbegin(); i != entries->rend(); ++i) {
+    if (TabRestoreServiceHelper::ValidateEntry(**i))
+      valid_entries.push_back(std::move(*i));
   }
   // NOTE: at this point the entries are ordered with newest at the front.
   entries->swap(valid_entries);
-
-  // Delete the remaining entries.
-  STLDeleteElements(&invalid_entries);
 }
 
 void PersistentTabRestoreService::Delegate::OnGotPreviousSession(
     ScopedVector<SessionWindow> windows,
     SessionID::id_type ignored_active_window) {
-  std::vector<Entry*> entries;
+  std::vector<std::unique_ptr<Entry>> entries;
   CreateEntriesFromWindows(&windows.get(), &entries);
   // Previous session tabs go first.
-  staging_entries_.insert(staging_entries_.begin(), entries.begin(),
-                          entries.end());
+  staging_entries_.insert(staging_entries_.begin(),
+                          make_move_iterator(entries.begin()),
+                          make_move_iterator(entries.end()));
   load_state_ |= LOADED_LAST_SESSION;
   LoadStateChanged();
 }
@@ -800,8 +816,8 @@ bool PersistentTabRestoreService::Delegate::ConvertSessionWindowToWindow(
     Window* window) {
   for (size_t i = 0; i < session_window->tabs.size(); ++i) {
     if (!session_window->tabs[i]->navigations.empty()) {
-      window->tabs.resize(window->tabs.size() + 1);
-      Tab& tab = window->tabs.back();
+      window->tabs.push_back(base::MakeUnique<Tab>());
+      Tab& tab = *window->tabs.back();
       tab.pinned = session_window->tabs[i]->pinned;
       tab.navigations.swap(session_window->tabs[i]->navigations);
       tab.current_navigation_index =
@@ -850,58 +866,19 @@ void PersistentTabRestoreService::Delegate::LoadStateChanged() {
   }
 
   // And add them.
-  for (size_t i = 0; i < staging_entries_.size(); ++i) {
-    staging_entries_[i]->from_last_session = true;
-    tab_restore_service_helper_->AddEntry(staging_entries_[i], false, false);
+  for (auto& staging_entry : staging_entries_) {
+    staging_entry->from_last_session = true;
+    tab_restore_service_helper_->AddEntry(std::move(staging_entry), false,
+                                          false);
   }
 
-  // AddEntry takes ownership of the entry, need to clear out entries so that
-  // it doesn't delete them.
-  staging_entries_.weak_clear();
-
-  // Make it so we rewrite all the tabs. We need to do this otherwise we won't
-  // correctly write out the entries when Save is invoked (Save starts from
-  // the front, not the end and we just added the entries to the end).
-  entries_to_write_ = staging_entries_.size();
+  staging_entries_.clear();
+  entries_to_write_ = 0;
 
   tab_restore_service_helper_->PruneEntries();
   tab_restore_service_helper_->NotifyTabsChanged();
 
   tab_restore_service_helper_->NotifyLoaded();
-}
-
-void PersistentTabRestoreService::Delegate::RemoveEntryByID(
-    SessionID::id_type id,
-    IDToEntry* id_to_entry,
-    std::vector<TabRestoreService::Entry*>* entries) {
-  // Look for the entry in the map. If it is present, erase it from both
-  // collections and return.
-  IDToEntry::iterator i = id_to_entry->find(id);
-  if (i != id_to_entry->end()) {
-    entries->erase(std::find(entries->begin(), entries->end(), i->second));
-    delete i->second;
-    id_to_entry->erase(i);
-    return;
-  }
-
-  // Otherwise, loop over all items in the map and see if any of the Windows
-  // have Tabs with the |id|.
-  for (IDToEntry::iterator i = id_to_entry->begin(); i != id_to_entry->end();
-       ++i) {
-    if (i->second->type == TabRestoreService::WINDOW) {
-      TabRestoreService::Window* window =
-          static_cast<TabRestoreService::Window*>(i->second);
-      std::vector<TabRestoreService::Tab>::iterator j = window->tabs.begin();
-      for ( ; j != window->tabs.end(); ++j) {
-        // If the ID matches one of this window's tabs, remove it from the
-        // list.
-        if ((*j).id == id) {
-          window->tabs.erase(j);
-          return;
-        }
-      }
-    }
-  }
 }
 
 // PersistentTabRestoreService -------------------------------------------------
@@ -953,8 +930,8 @@ std::vector<LiveTab*> PersistentTabRestoreService::RestoreMostRecentEntry(
   return helper_.RestoreMostRecentEntry(context);
 }
 
-TabRestoreService::Tab* PersistentTabRestoreService::RemoveTabEntryById(
-    SessionID::id_type id) {
+std::unique_ptr<TabRestoreService::Tab>
+PersistentTabRestoreService::RemoveTabEntryById(SessionID::id_type id) {
   return helper_.RemoveTabEntryById(id);
 }
 

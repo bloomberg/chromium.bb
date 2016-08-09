@@ -399,18 +399,17 @@ void JumpList::TabRestoreServiceChanged(sessions::TabRestoreService* service) {
   const int kRecentlyClosedCount = 4;
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile_);
-  const sessions::TabRestoreService::Entries& entries =
-      tab_restore_service->entries();
-  for (sessions::TabRestoreService::Entries::const_iterator it =
-           entries.begin();
-       it != entries.end(); ++it) {
-    const sessions::TabRestoreService::Entry* entry = *it;
-    if (entry->type == sessions::TabRestoreService::TAB) {
-      AddTab(static_cast<const sessions::TabRestoreService::Tab*>(entry),
-             &temp_list, kRecentlyClosedCount);
-    } else if (entry->type == sessions::TabRestoreService::WINDOW) {
-      AddWindow(static_cast<const sessions::TabRestoreService::Window*>(entry),
-                &temp_list, kRecentlyClosedCount);
+  for (const auto& entry : tab_restore_service->entries()) {
+    switch (entry->type) {
+      case sessions::TabRestoreService::TAB:
+        AddTab(static_cast<const sessions::TabRestoreService::Tab&>(*entry),
+               &temp_list, kRecentlyClosedCount);
+        break;
+      case sessions::TabRestoreService::WINDOW:
+        AddWindow(
+            static_cast<const sessions::TabRestoreService::Window&>(*entry),
+            &temp_list, kRecentlyClosedCount);
+        break;
     }
   }
   // Lock recently_closed_pages and copy temp_list into it.
@@ -427,7 +426,7 @@ void JumpList::TabRestoreServiceChanged(sessions::TabRestoreService* service) {
 void JumpList::TabRestoreServiceDestroyed(
     sessions::TabRestoreService* service) {}
 
-bool JumpList::AddTab(const sessions::TabRestoreService::Tab* tab,
+bool JumpList::AddTab(const sessions::TabRestoreService::Tab& tab,
                       ShellLinkItemList* list,
                       size_t max_items) {
   DCHECK(CalledOnValidThread());
@@ -439,7 +438,7 @@ bool JumpList::AddTab(const sessions::TabRestoreService::Tab* tab,
 
   scoped_refptr<ShellLinkItem> link = CreateShellLink();
   const sessions::SerializedNavigationEntry& current_navigation =
-      tab->navigations.at(tab->current_navigation_index);
+      tab.navigations.at(tab.current_navigation_index);
   std::string url = current_navigation.virtual_url().spec();
   link->GetCommandLine()->AppendArgNative(base::UTF8ToWide(url));
   link->GetCommandLine()->AppendSwitchASCII(
@@ -454,17 +453,17 @@ bool JumpList::AddTab(const sessions::TabRestoreService::Tab* tab,
   return true;
 }
 
-void JumpList::AddWindow(const sessions::TabRestoreService::Window* window,
+void JumpList::AddWindow(const sessions::TabRestoreService::Window& window,
                          ShellLinkItemList* list,
                          size_t max_items) {
   DCHECK(CalledOnValidThread());
 
   // This code enumerates al the tabs in the given window object and add their
   // URLs and titles to the list.
-  DCHECK(!window->tabs.empty());
+  DCHECK(!window.tabs.empty());
 
-  for (size_t i = 0; i < window->tabs.size(); ++i) {
-    if (!AddTab(&window->tabs[i], list, max_items))
+  for (const auto& tab : window.tabs) {
+    if (!AddTab(*tab, list, max_items))
       return;
   }
 }

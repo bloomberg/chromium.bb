@@ -21,11 +21,4 @@ ContentPlatformSpecificTabData::ContentPlatformSpecificTabData() {}
 
 ContentPlatformSpecificTabData::~ContentPlatformSpecificTabData() {}
 
-std::unique_ptr<PlatformSpecificTabData>
-ContentPlatformSpecificTabData::Clone() {
-  ContentPlatformSpecificTabData* clone = new ContentPlatformSpecificTabData();
-  clone->session_storage_namespace_ = session_storage_namespace_;
-  return base::WrapUnique(clone);
-}
-
 }  // namespace sessions

@@ -98,14 +98,10 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
   }
 
   MockTRS::Entries CreateSessionEntries(
-      std::vector<std::unique_ptr<MockTRS::Entry>>* out,
       std::initializer_list<MockTRS::Entry*> entries) {
     MockTRS::Entries ret;
-    out->reserve(out->size() + entries.size());
-    for (auto* entry : entries) {
+    for (auto* entry : entries)
       ret.emplace_back(entry);
-      out->emplace_back(entry);
-    }
     return ret;
   }
 
@@ -127,10 +123,8 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     auto window = new MockTRS::Window;
     window->id = id;
     window->tabs.reserve(tabs.size());
-    for (auto* tab : tabs) {
-      window->tabs.emplace_back(std::move(*tab));
-      delete tab;
-    }
+    for (auto* tab : tabs)
+      window->tabs.emplace_back(std::move(tab));
     return window;
   }
 
@@ -241,8 +235,7 @@ TEST_F(HistoryMenuBridgeTest, AddItemToMenu) {
 // Test that the menu is created for a set of simple tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
   std::unique_ptr<MockTRS> trs(new MockTRS(profile()));
-  std::vector<std::unique_ptr<MockTRS::Entry>> hold_entries;
-  auto entries{CreateSessionEntries(&hold_entries, {
+  auto entries{CreateSessionEntries({
     CreateSessionTab(24, "http://google.com", "Google"),
     CreateSessionTab(42, "http://apple.com", "Apple"),
   })};
@@ -271,8 +264,7 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
 // Test that the menu is created for a mix of windows and tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   std::unique_ptr<MockTRS> trs(new MockTRS(profile()));
-  std::vector<std::unique_ptr<MockTRS::Entry>> hold_entries;
-  auto entries{CreateSessionEntries(&hold_entries, {
+  auto entries{CreateSessionEntries({
     CreateSessionTab(24, "http://google.com", "Google"),
     CreateSessionWindow(30, {
       CreateSessionTab(31, "http://foo.com", "foo"),
