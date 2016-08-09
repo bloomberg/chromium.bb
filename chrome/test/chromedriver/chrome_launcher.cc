@@ -133,9 +133,9 @@ Status PrepareCommandLine(uint16_t port,
   base::CommandLine command(program);
   Switches switches;
 
-  for (const auto& common_switch : kCommonSwitches)
+  for (auto* common_switch : kCommonSwitches)
     switches.SetUnparsedSwitch(common_switch);
-  for (const auto& desktop_switch : kDesktopSwitches)
+  for (auto* desktop_switch : kDesktopSwitches)
     switches.SetUnparsedSwitch(desktop_switch);
   switches.SetSwitch("remote-debugging-port", base::UintToString(port));
   for (const auto& excluded_switch : capabilities.exclude_switches) {
@@ -483,9 +483,9 @@ Status LaunchAndroidChrome(
     return status;
 
   Switches switches(capabilities.switches);
-  for (auto common_switch : kCommonSwitches)
+  for (auto* common_switch : kCommonSwitches)
     switches.SetUnparsedSwitch(common_switch);
-  for (auto android_switch : kAndroidSwitches)
+  for (auto* android_switch : kAndroidSwitches)
     switches.SetUnparsedSwitch(android_switch);
   for (auto excluded_switch : capabilities.exclude_switches)
     switches.RemoveSwitch(excluded_switch);

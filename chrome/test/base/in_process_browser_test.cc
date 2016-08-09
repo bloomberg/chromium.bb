@@ -275,17 +275,17 @@ bool InProcessBrowserTest::RunAccessibilityChecks(std::string* error_message) {
     *error_message = "browser is NULL";
     return false;
   }
-  auto tab_strip = browser()->tab_strip_model();
+  auto* tab_strip = browser()->tab_strip_model();
   if (!tab_strip) {
     *error_message = "tab_strip is NULL";
     return false;
   }
-  auto web_contents = tab_strip->GetActiveWebContents();
+  auto* web_contents = tab_strip->GetActiveWebContents();
   if (!web_contents) {
     *error_message = "web_contents is NULL";
     return false;
   }
-  auto focused_frame = web_contents->GetFocusedFrame();
+  auto* focused_frame = web_contents->GetFocusedFrame();
   if (!focused_frame) {
     *error_message = "focused_frame is NULL";
     return false;

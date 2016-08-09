@@ -42,7 +42,7 @@ bool IsEnabled(const PerfLoggingPrefs::InspectorDomainStatus& domain_status) {
 
 // Returns whether |command| is in kRequestTraceCommands[] (case-insensitive).
 bool ShouldRequestTraceEvents(const std::string& command) {
-  for (const auto& request_command : kRequestTraceCommands) {
+  for (auto* request_command : kRequestTraceCommands) {
     if (base::EqualsCaseInsensitiveASCII(command, request_command))
       return true;
   }
@@ -51,7 +51,7 @@ bool ShouldRequestTraceEvents(const std::string& command) {
 
 // Returns whether the event belongs to one of kDomains.
 bool ShouldLogEvent(const std::string& method) {
-  for (const auto& domain : kDomains) {
+  for (auto* domain : kDomains) {
     if (base::StartsWith(method, domain, base::CompareCase::SENSITIVE))
       return true;
   }
