@@ -154,6 +154,12 @@ static_library("sandbox") {
     ]
   }
 
+  # Disable sanitizer coverage in the sandbox code. The sandbox code runs before
+  # sanitizer coverage can initialize. http://crbug.com/484711
+  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+  configs +=
+      [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
+
   configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
