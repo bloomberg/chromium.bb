@@ -61,7 +61,7 @@ Polymer({
       return;  // Can happen when Enter is pressed.
     var pattern = this.addPatternWildcard_(this.site_);
     this.setCategoryPermissionForOrigin(
-        pattern, '', this.category, this.allowException ?
+        pattern, pattern, this.category, this.allowException ?
             settings.PermissionValues.ALLOW : settings.PermissionValues.BLOCK);
     this.$.dialog.close();
   },
