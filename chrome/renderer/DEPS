@@ -54,3 +54,10 @@ include_rules = [
   "+skia",
   "+storage/common",
 ]
+
+specific_include_rules = {
+  "chrome_content_renderer_client_browsertest\.cc" : [
+    "+chrome/browser/ui",
+    "+chrome/browser/ui/tabs",
+  ],
+}

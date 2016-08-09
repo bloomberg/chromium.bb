@@ -1030,4 +1030,9 @@ WebDevToolsAgentImpl* FrameLoaderClientImpl::devToolsAgent()
     return WebLocalFrameImpl::fromFrame(m_webFrame->frame()->localFrameRoot())->devToolsAgentImpl();
 }
 
+KURL FrameLoaderClientImpl::overrideFlashEmbedWithHTML(const KURL& url)
+{
+    return m_webFrame->client()->overrideFlashEmbedWithHTML(WebURL(url));
+}
+
 } // namespace blink

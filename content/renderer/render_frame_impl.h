@@ -233,6 +233,9 @@ class CONTENT_EXPORT RenderFrameImpl
   static blink::WebFrame* ResolveOpener(int opener_frame_routing_id,
                                         int* opener_view_routing_id);
 
+  // Overwrites the given URL to use an HTML5 embed if possible.
+  blink::WebURL overrideFlashEmbedWithHTML(const blink::WebURL& url) override;
+
   ~RenderFrameImpl() override;
 
   // Called by RenderWidget when meaningful layout has happened.

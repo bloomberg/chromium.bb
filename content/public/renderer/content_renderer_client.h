@@ -359,6 +359,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // browser process via |registry|.
   virtual void ExposeInterfacesToBrowser(
       shell::InterfaceRegistry* interface_registry) {}
+
+  // Overwrites the given URL to use an HTML5 embed if possible.
+  // An empty URL is returned if the URL is not overriden.
+  virtual GURL OverrideFlashEmbedWithHTML(const GURL& url);
 };
 
 }  // namespace content

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body>
+  </body>
+  <script>
+    function appendToDOM(url, type) {
+      var object = document.createElement("object");
+      var embed = document.createElement("embed");
+      embed.src = url;
+      embed.setAttribute("type", type);
+      object.appendChild(embed);
+      document.body.appendChild(object);
+    }
+  </script>
+</html>

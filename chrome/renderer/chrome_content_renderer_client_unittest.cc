@@ -408,3 +408,97 @@ TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
   SearchBouncer::GetInstance()->OnSetSearchURLs(
       std::vector<GURL>(), GURL::EmptyGURL());
 }
+
+TEST_F(ChromeContentRendererClientTest, RewriteYouTubeFlashEmbed) {
+  struct TestData {
+    std::string original;
+    std::string expected;
+  } test_data[] = {
+      // { original, expected }
+      {"youtube.com", ""},
+      {"www.youtube.com", ""},
+      {"http://www.youtube.com", ""},
+      {"https://www.youtube.com", ""},
+      {"http://www.foo.youtube.com", ""},
+      {"https://www.foo.youtube.com", ""},
+      // Non-YouTube domains shouldn't be modified
+      {"http://www.plus.google.com", ""},
+      // URL isn't using Flash
+      {"http://www.youtube.com/embed/deadbeef", ""},
+      // URL isn't using Flash, no www
+      {"http://youtube.com/embed/deadbeef", ""},
+      // URL isn't using Flash, has JS API enabled
+      {"http://www.youtube.com/embed/deadbeef?enablejsapi=1", ""},
+      // URL isn't using Flash, invalid parameter construct
+      {"http://www.youtube.com/embed/deadbeef&start=4", ""},
+      // URL is using Flash, no www
+      {"http://youtube.com/v/deadbeef", "http://youtube.com/embed/deadbeef"},
+      // URL is using Flash, has JS API enabled
+      {"http://www.youtube.com/v/deadbeef?enablejsapi=1", ""},
+      // URL is using Flash, is valid, https
+      {"https://www.youtube.com/v/deadbeef",
+       "https://www.youtube.com/embed/deadbeef"},
+      // URL is using Flash, is valid, http
+      {"http://www.youtube.com/v/deadbeef",
+       "http://www.youtube.com/embed/deadbeef"},
+      // URL is using Flash, is valid, not a complete URL, no www or protocol
+      {"youtube.com/v/deadbeef", ""},
+      // URL is using Flash, is valid, not a complete URL,or protocol
+      {"www.youtube.com/v/deadbeef", ""},
+      // URL is using Flash, valid
+      {"https://www.foo.youtube.com/v/deadbeef",
+       "https://www.foo.youtube.com/embed/deadbeef"},
+      // URL is using Flash, is valid, has one parameter
+      {"http://www.youtube.com/v/deadbeef?start=4",
+       "http://www.youtube.com/embed/deadbeef?start=4"},
+      // URL is using Flash, is valid, has multiple parameters
+      {"http://www.youtube.com/v/deadbeef?start=4&fs=1",
+       "http://www.youtube.com/embed/deadbeef?start=4&fs=1"},
+      // URL is using Flash, invalid parameter construct, has one parameter
+      {"http://www.youtube.com/v/deadbeef&start=4",
+       "http://www.youtube.com/embed/deadbeef?start=4"},
+      // URL is using Flash, invalid parameter construct, has multiple
+      // parameters
+      {"http://www.youtube.com/v/deadbeef&start=4&fs=1?foo=bar",
+       "http://www.youtube.com/embed/deadbeef?start=4&fs=1&foo=bar"},
+      // URL is using Flash, invalid parameter construct, has multiple
+      // parameters
+      {"http://www.youtube.com/v/deadbeef&start=4&fs=1",
+       "http://www.youtube.com/embed/deadbeef?start=4&fs=1"},
+      // Invalid parameter construct
+      {"http://www.youtube.com/abcd/v/deadbeef", ""},
+      // Invalid parameter construct
+      {"http://www.youtube.com/v/abcd/", "http://www.youtube.com/embed/abcd/"},
+      // Invalid parameter construct
+      {"http://www.youtube.com/v/123/", "http://www.youtube.com/embed/123/"},
+      // youtube-nocookie.com
+      {"http://www.youtube-nocookie.com/v/123/",
+       "http://www.youtube-nocookie.com/embed/123/"},
+      // youtube-nocookie.com, isn't using flash
+      {"http://www.youtube-nocookie.com/embed/123/", ""},
+      // youtube-nocookie.com, has JS API enabled
+      {"http://www.youtube-nocookie.com/v/123?enablejsapi=1", ""},
+      // youtube-nocookie.com, has one parameter
+      {"http://www.youtube-nocookie.com/v/123?start=foo",
+       "http://www.youtube-nocookie.com/embed/123?start=foo"},
+      // youtube-nocookie.com, has multiple parameters
+      {"http://www.youtube-nocookie.com/v/123?start=foo&bar=baz",
+       "http://www.youtube-nocookie.com/embed/123?start=foo&bar=baz"},
+      // youtube-nocookie.com, invalid parameter construct, has one parameter
+      {"http://www.youtube-nocookie.com/v/123&start=foo",
+       "http://www.youtube-nocookie.com/embed/123?start=foo"},
+      // youtube-nocookie.com, invalid parameter construct, has multiple
+      // parameters
+      {"http://www.youtube-nocookie.com/v/123&start=foo&bar=baz",
+       "http://www.youtube-nocookie.com/embed/123?start=foo&bar=baz"},
+      // youtube-nocookie.com, https
+      {"https://www.youtube-nocookie.com/v/123/",
+       "https://www.youtube-nocookie.com/embed/123/"},
+  };
+
+  ChromeContentRendererClient client;
+
+  for (const auto& data : test_data)
+    EXPECT_EQ(GURL(data.expected),
+              client.OverrideFlashEmbedWithHTML(GURL(data.original)));
+}

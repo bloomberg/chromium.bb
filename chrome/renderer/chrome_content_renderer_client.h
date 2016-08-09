@@ -167,6 +167,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const GURL& url) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
 
+  GURL OverrideFlashEmbedWithHTML(const GURL& url) override;
+
 #if defined(ENABLE_SPELLCHECK)
   // Sets a new |spellcheck|. Used for testing only.
   // Takes ownership of |spellcheck|.

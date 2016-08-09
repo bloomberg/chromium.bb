@@ -72,6 +72,9 @@ const base::Feature kLinuxObsoleteSystemIsEndOfTheLine{
 const base::Feature kMaterialDesignExtensions{
     "MaterialDesignExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+// Enables YouTube Flash videos to be overriden.
+const base::Feature kOverrideYouTubeFlashEmbed{
+    "override-youtube-flash-emed", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the Material Design version of chrome://history.
 const base::Feature kMaterialDesignHistory{

@@ -702,6 +702,13 @@ public:
         return WebPageVisibilityStateVisible;
     }
 
+    // Overwrites the given URL to use an HTML5 embed if possible.
+    // An empty URL is returned if the URL is not overriden.
+    virtual WebURL overrideFlashEmbedWithHTML(const WebURL& url)
+    {
+        return WebURL();
+    }
+
 protected:
     virtual ~WebFrameClient() { }
 };

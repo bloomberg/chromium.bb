@@ -1023,6 +1023,11 @@ blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id,
   return nullptr;
 }
 
+blink::WebURL RenderFrameImpl::overrideFlashEmbedWithHTML(
+    const blink::WebURL& url) {
+  return GetContentClient()->renderer()->OverrideFlashEmbedWithHTML(url);
+}
+
 // RenderFrameImpl ----------------------------------------------------------
 RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
     : frame_(NULL),

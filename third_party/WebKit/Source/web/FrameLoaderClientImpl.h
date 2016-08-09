@@ -184,6 +184,8 @@ public:
 
     WebEffectiveConnectionType getEffectiveConnectionType() override;
 
+    KURL overrideFlashEmbedWithHTML(const KURL&) override;
+
 private:
     explicit FrameLoaderClientImpl(WebLocalFrameImpl*);
 
