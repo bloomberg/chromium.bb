@@ -24,16 +24,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-from optparse import make_option
+import optparse
 import time
 import traceback
 
-from webkitpy.common.config.irc import update_wait_seconds
 from webkitpy.tool.bot.commit_announcer import CommitAnnouncerThread
+from webkitpy.tool.bot.commit_announcer import UPDATE_WAIT_SECONDS
 from webkitpy.tool.commands.command import Command
 
 _log = logging.getLogger(__name__)
-announce_path = "third_party/WebKit"
+ANNOUNCE_PATH = "third_party/WebKit"
+
 
 
 class CommitAnnouncerCommand(Command):
@@ -43,18 +44,18 @@ class CommitAnnouncerCommand(Command):
 
     def __init__(self):
         options = [
-            make_option("--irc-password", default=None, help="Specify IRC password to use."),
+            optparse.make_option("--irc-password", default=None, help="Specify IRC password to use."),
         ]
         super(CommitAnnouncerCommand, self).__init__(options)
 
     def execute(self, options, args, tool):
-        bot_thread = CommitAnnouncerThread(tool, announce_path, options.irc_password)
+        bot_thread = CommitAnnouncerThread(tool, ANNOUNCE_PATH, options.irc_password)
         bot_thread.start()
         _log.info("Bot started")
         try:
             while bot_thread.is_alive():
                 bot_thread.bot.post_new_commits()
-                time.sleep(update_wait_seconds)
+                time.sleep(UPDATE_WAIT_SECONDS)
         except KeyboardInterrupt:
             _log.error("Terminated by keyboard interrupt")
         except Exception:
