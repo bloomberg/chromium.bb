@@ -20,7 +20,7 @@ public class NearbyMessageIntentService extends IntentService {
         public void onFound(Message message) {
             String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
             if (url != null) {
-                UrlManager.getInstance().addUrl(url);
+                UrlManager.getInstance().addUrl(new UrlInfo(url));
             }
         }
 
@@ -28,7 +28,7 @@ public class NearbyMessageIntentService extends IntentService {
         public void onLost(Message message) {
             String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
             if (url != null) {
-                UrlManager.getInstance().removeUrl(url);
+                UrlManager.getInstance().removeUrl(new UrlInfo(url));
             }
         }
     };

@@ -33,7 +33,7 @@ class UrlInfo {
      * Constructs a simple UrlInfo with only a URL.
      */
     public UrlInfo(String url) {
-        this(url, -1.0, 0);
+        this(url, -1.0, System.currentTimeMillis());
     }
 
     /**

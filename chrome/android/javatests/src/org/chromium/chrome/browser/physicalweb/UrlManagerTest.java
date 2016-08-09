@@ -66,6 +66,22 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mMockPwsClient.addPwsResults(results);
     }
 
+    private void addUrlInfo1() {
+        mUrlManager.addUrl(new UrlInfo(URL1));
+    }
+
+    private void addUrlInfo2() {
+        mUrlManager.addUrl(new UrlInfo(URL2));
+    }
+
+    private void removeUrlInfo1() {
+        mUrlManager.removeUrl(new UrlInfo(URL1));
+    }
+
+    private void removeUrlInfo2() {
+        mUrlManager.removeUrl(new UrlInfo(URL2));
+    }
+
     private void addEmptyPwsResult() {
         mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
     }
@@ -80,14 +96,14 @@ public class UrlManagerTest extends InstrumentationTestCase {
         addPwsResult2();
         addPwsResult1();
         addPwsResult2();
-        mUrlManager.addUrl(URL1);
-        mUrlManager.addUrl(URL2);
+        addUrlInfo1();
+        addUrlInfo2();
         getInstrumentation().waitForIdleSync();
         mUrlManager.clearAllUrls();
 
         // Add some more URLs...this should not crash if we cleared correctly.
-        mUrlManager.addUrl(URL1);
-        mUrlManager.addUrl(URL2);
+        addUrlInfo1();
+        addUrlInfo2();
         getInstrumentation().waitForIdleSync();
         List<UrlInfo> urlInfos = mUrlManager.getUrls();
         assertEquals(2, urlInfos.size());
@@ -97,8 +113,8 @@ public class UrlManagerTest extends InstrumentationTestCase {
     public void testClearNearbyUrlsWorks() {
         addPwsResult1();
         addPwsResult2();
-        mUrlManager.addUrl(URL1);
-        mUrlManager.addUrl(URL2);
+        addUrlInfo1();
+        addUrlInfo2();
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a notification was shown.
@@ -128,7 +144,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     public void testAddUrlWhileOnboardingMakesNotification() throws Exception {
         setOnboarding();
         addPwsResult1();
-        mUrlManager.addUrl(URL1);
+        addUrlInfo1();
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a resolution was *not* attempted.
@@ -147,7 +163,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     @SmallTest
     public void testAddUrlNoResolutionDoesNothing() throws Exception {
         addEmptyPwsResult();
-        mUrlManager.addUrl(URL1);
+        addUrlInfo1();
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a resolution was attempted.
@@ -169,7 +185,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     @SmallTest
     public void testAddUrlWithResolutionMakesNotification() throws Exception {
         addPwsResult1();
-        mUrlManager.addUrl(URL1);
+        addUrlInfo1();
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a resolution was attempted.
@@ -191,13 +207,13 @@ public class UrlManagerTest extends InstrumentationTestCase {
         addPwsResult2();
 
         // Adding one URL should fire a notification.
-        mUrlManager.addUrl(URL1);
+        addUrlInfo1();
         getInstrumentation().waitForIdleSync();
         assertEquals(1, mMockNotificationManagerProxy.getNotifications().size());
 
         // Adding a second should not.
         mMockNotificationManagerProxy.cancelAll();
-        mUrlManager.addUrl(URL2);
+        addUrlInfo2();
         assertEquals(0, mMockNotificationManagerProxy.getNotifications().size());
     }
 
@@ -267,16 +283,16 @@ public class UrlManagerTest extends InstrumentationTestCase {
         addPwsResult1();
         addPwsResult2();
         addPwsResult1();
-        mUrlManager.addUrl(URL1);
-        mUrlManager.addUrl(URL2);
-        mUrlManager.removeUrl(URL1);
+        addUrlInfo1();
+        addUrlInfo2();
+        removeUrlInfo1();
         getInstrumentation().waitForIdleSync();
 
         // Make sure the cache is in the appropriate state
         assertTrue(mUrlManager.containsInAnyCache(URL1));
 
         mMockNotificationManagerProxy.cancelAll();
-        mUrlManager.addUrl(URL1);
+        addUrlInfo1();
         getInstrumentation().waitForIdleSync();
 
         // Make sure that no notification is shown.
@@ -288,11 +304,11 @@ public class UrlManagerTest extends InstrumentationTestCase {
     public void testAddUrlInCacheWithNoOthersMakesNotification() throws Exception {
         addPwsResult1();
         addPwsResult1();
-        mUrlManager.addUrl(URL1);
-        mUrlManager.removeUrl(URL1);
+        addUrlInfo1();
+        removeUrlInfo1();
         getInstrumentation().waitForIdleSync();
         mMockNotificationManagerProxy.cancelAll();
-        mUrlManager.addUrl(URL1);
+        addUrlInfo1();
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a notification was shown.
@@ -304,10 +320,10 @@ public class UrlManagerTest extends InstrumentationTestCase {
     public void testAddUrlNotInCacheWithOthersMakesNotification() throws Exception {
         addPwsResult1();
         addPwsResult2();
-        mUrlManager.addUrl(URL1);
+        addUrlInfo1();
         getInstrumentation().waitForIdleSync();
         mMockNotificationManagerProxy.cancelAll();
-        mUrlManager.addUrl(URL2);
+        addUrlInfo2();
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a notification was shown.
@@ -318,14 +334,14 @@ public class UrlManagerTest extends InstrumentationTestCase {
     @SmallTest
     public void testRemoveOnlyUrlClearsNotification() throws Exception {
         addPwsResult1();
-        mUrlManager.addUrl(URL1);
+        addUrlInfo1();
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a notification was shown.
         List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
         assertEquals(1, notifications.size());
 
-        mUrlManager.removeUrl(URL1);
+        removeUrlInfo1();
 
         // Make sure the URL was removed.
         List<UrlInfo> urls = mUrlManager.getUrls(true);
@@ -339,7 +355,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     @SmallTest
     public void testClearAllUrlsClearsNotification() throws Exception {
         addPwsResult1();
-        mUrlManager.addUrl(URL1);
+        addUrlInfo1();
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a notification was shown.

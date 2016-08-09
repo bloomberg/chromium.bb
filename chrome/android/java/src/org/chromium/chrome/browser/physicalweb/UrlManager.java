@@ -182,15 +182,6 @@ class UrlManager {
     }
 
     /**
-     * Add a URL to the store of URLs.
-     */
-    // TODO(conleyo) we should remove this method after calling code only passes us a UrlInfo.
-    @VisibleForTesting
-    public void addUrl(String url) {
-        addUrl(new UrlInfo(url, -1.0, System.currentTimeMillis()));
-    }
-
-    /**
      * Remove a URL to the store of URLs.
      * This method additionally updates the Physical Web notification.
      * @param urlInfo The URL to remove.
@@ -206,15 +197,6 @@ class UrlManager {
         if (getUrls(PhysicalWeb.isOnboarding()).isEmpty()) {
             clearNotification();
         }
-    }
-
-    /**
-     * Remove a URL to the store of URLs.
-     */
-    // TODO(conleyo) we should remove this method after calling code only passes us a UrlInfo.
-    @VisibleForTesting
-    public void removeUrl(String url) {
-        removeUrl(new UrlInfo(url));
     }
 
     /**

@@ -156,7 +156,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
         results.add(new PwsResult(url, url, null, title, desc, null));
         mMockPwsClient.addPwsResults(results);
         mMockPwsClient.addPwsResults(results);
-        UrlManager.getInstance().addUrl(url);
+        UrlManager.getInstance().addUrl(new UrlInfo(url));
         getInstrumentation().waitForIdleSync();
     }
 
