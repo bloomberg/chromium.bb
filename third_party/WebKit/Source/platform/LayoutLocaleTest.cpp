@@ -41,6 +41,10 @@ TEST(LayoutLocaleTest, ScriptTest)
     } tests[] = {
         { "en-US", USCRIPT_LATIN },
 
+        // Common lang-script.
+        { "en-Latn", USCRIPT_LATIN },
+        { "ar-Arab", USCRIPT_ARABIC },
+
         // Common lang-region in East Asia.
         { "ja-JP", USCRIPT_KATAKANA_OR_HIRAGANA, true },
         { "ko-KR", USCRIPT_HANGUL, true },

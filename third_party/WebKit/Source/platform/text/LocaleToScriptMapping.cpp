@@ -512,7 +512,7 @@ UScriptCode scriptCodeForHanFromSubtags(const String& locale, char delimiter)
             break;
         case 4: // script = 4ALPHA
             script = scriptNameToCode(locale.substring(begin, len));
-            if (script != USCRIPT_INVALID_CODE)
+            if (isUnambiguousHanScript(script))
                 return script;
         }
     }

@@ -55,16 +55,6 @@ const char* LayoutLocale::localeForSkFontMgr() const
     return m_stringForSkFontMgr.data();
 }
 
-static bool isUnambiguousHanScript(UScriptCode script)
-{
-    // localeToScriptCodeForFontSelection() does not return these values.
-    DCHECK(script != USCRIPT_HIRAGANA && script != USCRIPT_KATAKANA);
-    return script == USCRIPT_KATAKANA_OR_HIRAGANA
-        || script == USCRIPT_SIMPLIFIED_HAN
-        || script == USCRIPT_TRADITIONAL_HAN
-        || script == USCRIPT_HANGUL;
-}
-
 void LayoutLocale::computeScriptForHan() const
 {
     if (isUnambiguousHanScript(m_script)) {

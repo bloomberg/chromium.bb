@@ -38,7 +38,6 @@
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/TypesettingFeatures.h"
-#include "platform/text/LocaleToScriptMapping.h"
 #include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 
