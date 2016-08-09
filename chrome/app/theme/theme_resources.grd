@@ -371,6 +371,7 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="common/infobar_media_stream_camera.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="common/infobar_media_stream_mic.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_SCREEN" file="common/infobar_media_stream_screen_share.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MIDI" file="common/infobar_midi.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="common/infobar_multiple_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_PLUGIN_CRASHED" file="common/infobar_plugin_crashed.png" />
