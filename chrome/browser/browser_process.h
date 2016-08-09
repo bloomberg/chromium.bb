@@ -201,7 +201,10 @@ class BrowserProcess {
 
   virtual IntranetRedirectDetector* intranet_redirect_detector() = 0;
 
-  // Returns the locale used by the application.
+  // Returns the locale used by the application. It is the IETF language tag,
+  // defined in BCP 47. The region subtag is not included when it adds no
+  // distinguishing information to the language tag (e.g. both "en-US" and "fr"
+  // are correct here).
   virtual const std::string& GetApplicationLocale() = 0;
   virtual void SetApplicationLocale(const std::string& locale) = 0;
 
