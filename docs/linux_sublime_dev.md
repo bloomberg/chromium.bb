@@ -73,6 +73,9 @@ Here are some settings that help match the Chromium style guide:
   "draw_white_space": "all",
   "enable_tab_scrolling": false,
   "highlight_line": true,
+
+  // Mainly for Windows, but harmless on Mac/Linux
+  "default_line_ending": "unix",
 }
 ```
 
