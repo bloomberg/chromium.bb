@@ -996,6 +996,7 @@ ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
 }
 
 void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
+  DCHECK(rappor_service());
   if (!web_contents())
     return;
 
@@ -1008,8 +1009,7 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
       content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW);
 
   rappor::SampleDomainAndRegistryFromGURL(
-      g_browser_process->rappor_service(),
-      "ContentSettings.MixedScript.UserClickedAllow",
+      rappor_service(), "ContentSettings.MixedScript.UserClickedAllow",
       web_contents()->GetLastCommittedURL());
 }
 
@@ -1336,14 +1336,14 @@ ContentSettingBubbleModel*
   return nullptr;
 }
 
-ContentSettingBubbleModel::ContentSettingBubbleModel(
-    Delegate* delegate,
-    WebContents* web_contents,
-    Profile* profile)
+ContentSettingBubbleModel::ContentSettingBubbleModel(Delegate* delegate,
+                                                     WebContents* web_contents,
+                                                     Profile* profile)
     : web_contents_(web_contents),
       profile_(profile),
       delegate_(delegate),
-      setting_is_managed_(false) {
+      setting_is_managed_(false),
+      rappor_service_(g_browser_process->rappor_service()) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(web_contents));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
