@@ -166,6 +166,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private WebViewDelegate mWebViewDelegate;
 
     /**
+     * Entry point for newer versions of Android.
+     */
+    public static WebViewChromiumFactoryProvider create(android.webkit.WebViewDelegate delegate) {
+        return new WebViewChromiumFactoryProvider(delegate);
+    }
+
+    /**
      * Constructor called by the API 21 version of {@link WebViewFactory} and earlier.
      */
     public WebViewChromiumFactoryProvider() {
