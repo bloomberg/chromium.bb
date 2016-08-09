@@ -10,10 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "ash/common/ash_constants.h"
+#include "ash/common/ash_layout_constants.h"
+#include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/mus/bridge/wm_window_mus.h"
-#include "ash/mus/frame/frame_border_hit_test_controller.h"
-#include "ash/mus/frame/move_event_handler.h"
-#include "ash/mus/frame/non_client_frame_view_mash.h"
+#include "ash/mus/move_event_handler.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/shadow.h"
 #include "base/macros.h"
@@ -124,7 +125,7 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
         window(), window_manager_client_, GetNativeView()));
     if (ShouldRemoveStandardFrame(window()))
       return new EmptyDraggableNonClientFrameView();
-    return new NonClientFrameViewMash(GetWidget(), window());
+    return new CustomFrameViewAsh(GetWidget());
   }
   void InitNativeWidget(const views::Widget::InitParams& params) override {
     views::NativeWidgetMus::InitNativeWidget(params);
@@ -141,21 +142,6 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
         gfx::Insets(inset, inset, inset, inset));
     window_tree_host->window()->layer()->Add(shadow_->layer());
     shadow_->layer()->parent()->StackAtBottom(shadow_->layer());
-  }
-  void CenterWindow(const gfx::Size& size) override {
-    // Do nothing. The client controls the size, not us.
-  }
-  bool SetWindowTitle(const base::string16& title) override {
-    // Do nothing. The client controls the window title, not us.
-    return false;
-  }
-  void SetWindowIcons(const gfx::ImageSkia& window_icon,
-                      const gfx::ImageSkia& app_icon) override {
-    // Do nothing. The client controls window icons, not us.
-  }
-  void UpdateClientArea() override {
-    // This pushes the client area to the WS. We don't want to do that as
-    // the client area should come from the client, not us.
   }
 
  private:
@@ -193,6 +179,13 @@ class ClientViewMus : public views::ClientView {
   DISALLOW_COPY_AND_ASSIGN(ClientViewMus);
 };
 
+// Returns the frame insets to use when ShouldUseExtendedHitRegion() returns
+// true.
+gfx::Insets GetExtendedHitRegion() {
+  return gfx::Insets(kResizeOutsideBoundsSize, kResizeOutsideBoundsSize,
+                     kResizeOutsideBoundsSize, kResizeOutsideBoundsSize);
+}
+
 }  // namespace
 
 // static
@@ -207,12 +200,20 @@ void NonClientFrameController::Create(
 
 // static
 gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
-  return NonClientFrameViewMash::GetPreferredClientAreaInsets();
+  // TODO(sky): figure out a better way to get this rather than hard coding.
+  // This value comes from the header (see DefaultHeaderPainter::LayoutHeader,
+  // which uses the preferred height of the CaptionButtonContainer, which uses
+  // the height of the close button).
+  return gfx::Insets(
+      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(), 0,
+      0, 0);
 }
 
 // static
 int NonClientFrameController::GetMaxTitleBarButtonWidth() {
-  return NonClientFrameViewMash::GetMaxTitleBarButtonWidth();
+  // TODO(sky): same comment as for GetPreferredClientAreaInsets().
+  return GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).width() *
+         3;
 }
 
 NonClientFrameController::NonClientFrameController(
@@ -244,9 +245,8 @@ NonClientFrameController::NonClientFrameController(
   const int shadow_inset =
       Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
   const gfx::Insets extended_hit_region =
-      wm_window->ShouldUseExtendedHitRegion()
-          ? FrameBorderHitTestController::GetResizeOutsideBoundsSize()
-          : gfx::Insets();
+      wm_window->ShouldUseExtendedHitRegion() ? GetExtendedHitRegion()
+                                              : gfx::Insets();
   window_manager_client->SetUnderlaySurfaceOffsetAndExtendedHitArea(
       window, gfx::Vector2d(shadow_inset, shadow_inset), extended_hit_region);
 }

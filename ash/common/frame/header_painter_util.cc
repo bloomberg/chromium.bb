@@ -84,7 +84,8 @@ bool HeaderPainterUtil::CanAnimateActivation(views::Widget* widget) {
   // TODO(sky): Expose a better way to determine this rather than assuming the
   // parent is a toplevel container.
   WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget);
-  if (!window || !window->GetParent())
+  // TODO(sky): GetParent()->GetLayer() is for mash until animations ported.
+  if (!window || !window->GetParent() || !window->GetParent()->GetLayer())
     return true;
 
   ui::LayerAnimator* parent_layer_animator =

@@ -702,7 +702,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   aura::client::SetScreenPositionClient(hosted_window,
                                         screen_position_client_.get());
 
-  // TODO(erg): Remove this check when ash/mus/frame/move_event_handler.cc's
+  // TODO(erg): Remove this check when ash/mus/move_event_handler.cc's
   // direct usage of ui::Window::SetPredefinedCursor() is switched to a
   // private method on WindowManagerClient.
   if (!is_parallel_widget_in_window_manager()) {
@@ -1042,7 +1042,7 @@ bool NativeWidgetMus::IsActive() const {
 }
 
 void NativeWidgetMus::SetAlwaysOnTop(bool always_on_top) {
-  if (window_) {
+  if (window_ && !is_parallel_widget_in_window_manager()) {
     window_->SetSharedProperty<bool>(
         ui::mojom::WindowManager::kAlwaysOnTop_Property, always_on_top);
   }

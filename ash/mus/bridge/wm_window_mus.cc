@@ -272,7 +272,9 @@ gfx::Rect WmWindowMus::ConvertRectFromScreen(const gfx::Rect& rect) const {
 }
 
 gfx::Size WmWindowMus::GetMinimumSize() const {
-  return widget_ ? widget_->GetMinimumSize() : gfx::Size();
+  return widget_ && !use_empty_minimum_size_for_testing_
+             ? widget_->GetMinimumSize()
+             : gfx::Size();
 }
 
 gfx::Size WmWindowMus::GetMaximumSize() const {
@@ -352,6 +354,12 @@ int WmWindowMus::GetIntProperty(WmWindowProperty key) {
 
 void WmWindowMus::SetIntProperty(WmWindowProperty key, int value) {
   if (key == WmWindowProperty::SHELF_ID) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
+  if (key == WmWindowProperty::TOP_VIEW_INSET) {
+    // TODO: need support for TOP_VIEW_INSET: http://crbug.com/615100.
     NOTIMPLEMENTED();
     return;
   }

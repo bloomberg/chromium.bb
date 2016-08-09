@@ -22,6 +22,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -55,7 +56,9 @@ class WindowDelegateView : public views::WidgetDelegateView {
     PANEL = 1 << 2,
   };
 
-  explicit WindowDelegateView(uint32_t traits) : traits_(traits) {}
+  explicit WindowDelegateView(uint32_t traits) : traits_(traits) {
+    set_background(views::Background::CreateSolidBackground(SK_ColorRED));
+  }
   ~WindowDelegateView() override {}
 
   // Creates and shows a window with the specified traits.
@@ -84,6 +87,8 @@ class WindowDelegateView : public views::WidgetDelegateView {
   base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Window");
   }
+  gfx::Size GetPreferredSize() const override { return gfx::Size(300, 300); }
+  View* GetContentsView() override { return this; }
 
  private:
   const uint32_t traits_;

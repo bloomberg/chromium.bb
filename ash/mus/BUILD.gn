@@ -38,24 +38,10 @@ source_set("lib") {
     "disconnected_app_handler.h",
     "drag_window_resizer.cc",
     "drag_window_resizer.h",
-    "frame/caption_buttons/caption_button_types.h",
-    "frame/caption_buttons/frame_caption_button.cc",
-    "frame/caption_buttons/frame_caption_button.h",
-    "frame/caption_buttons/frame_caption_button_container_view.cc",
-    "frame/caption_buttons/frame_caption_button_container_view.h",
-    "frame/default_header_painter.cc",
-    "frame/default_header_painter.h",
-    "frame/frame_border_hit_test_controller.cc",
-    "frame/frame_border_hit_test_controller.h",
-    "frame/header_painter.h",
-    "frame/header_painter_util.cc",
-    "frame/header_painter_util.h",
-    "frame/move_event_handler.cc",
-    "frame/move_event_handler.h",
-    "frame/non_client_frame_view_mash.cc",
-    "frame/non_client_frame_view_mash.h",
     "layout_manager.cc",
     "layout_manager.h",
+    "move_event_handler.cc",
+    "move_event_handler.h",
     "new_window_delegate_mus.cc",
     "new_window_delegate_mus.h",
     "non_client_frame_controller.cc",
@@ -96,7 +82,6 @@ source_set("lib") {
 
   public_deps = [
     "//ash",
-    "//ash/mus/resources",
     "//ash/public/interfaces",
     "//base",
     "//mash/session/public/interfaces",
@@ -161,7 +146,6 @@ repack("resources") {
   output = "$root_out_dir/ash_mus_resources.pak"
   sources = [
     "$root_gen_dir/ash/common/strings/ash_strings_en-US.pak",
-    "$root_gen_dir/ash/mus/resources/ash_mus_resources_100_percent.pak",
     "$root_gen_dir/ash/resources/ash_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
@@ -170,7 +154,6 @@ repack("resources") {
   ]
   deps = [
     "//ash/common/strings",
-    "//ash/mus/resources",
     "//ash/resources",
     "//ui/resources",
     "//ui/strings",
@@ -189,6 +172,7 @@ source_set("unittests") {
     "accelerators/accelerator_registrar_unittest.cc",
     "app_launch_unittest.cc",
     "bridge/wm_shell_mus_test_api.h",
+    "bridge/wm_window_mus_test_api.h",
     "layout_manager_unittest.cc",
     "root_window_controller_unittest.cc",
     "test/wm_test_base.cc",

@@ -14,6 +14,7 @@
 #include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
+#include "ash/mus/bridge/wm_window_mus_test_api.h"
 #include "ash/mus/test/wm_test_base.h"
 #include "base/run_loop.h"
 #include "services/ui/public/cpp/tests/test_window.h"
@@ -87,6 +88,7 @@ using WorkspaceLayoutManagerTest = WmTestBase;
 TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
   ui::Window* mus_window = CreateTestWindow(gfx::Rect(1, 2, 3, 4));
   WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindowMusTestApi(window).set_use_empty_minimum_size(true);
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
 
@@ -697,11 +699,12 @@ TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeResetsRestoreBounds) {
 }
 
 // Verifies that the restore bounds do not get reset when restoring to a
-// maximzied state from a minimized state.
+// maximized state from a minimized state.
 TEST_F(WorkspaceLayoutManagerSoloTest,
        BoundsAfterRestoringToMaximizeFromMinimize) {
   ui::Window* mus_window = CreateTestWindow(gfx::Rect(1, 2, 3, 4));
   WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindowMusTestApi(window).set_use_empty_minimum_size(true);
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
 

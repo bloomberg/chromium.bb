@@ -14,7 +14,7 @@
 #include "ash/mus/bridge/wm_lookup_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
-#include "ash/mus/frame/move_event_handler.h"
+#include "ash/mus/move_event_handler.h"
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/root_window_controller.h"

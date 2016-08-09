@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_FRAME_MOVE_EVENT_HANDLER_H_
-#define ASH_MUS_FRAME_MOVE_EVENT_HANDLER_H_
+#ifndef ASH_MUS_MOVE_EVENT_HANDLER_H_
+#define ASH_MUS_MOVE_EVENT_HANDLER_H_
 
 #include <memory>
 
@@ -80,4 +80,4 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
 }  // namespace mus
 }  // namespace ash
 
-#endif  // ASH_MUS_FRAME_MOVE_EVENT_HANDLER_H_
+#endif  // ASH_MUS_MOVE_EVENT_HANDLER_H_

@@ -27,6 +27,7 @@ namespace mus {
 
 class MusLayoutManagerAdapter;
 class WmRootWindowControllerMus;
+class WmWindowMusTestApi;
 
 // WmWindow implementation for mus.
 //
@@ -229,6 +230,8 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void RemoveLimitedPreTargetHandler(ui::EventHandler* handler) override;
 
  private:
+  friend class WmWindowMusTestApi;
+
   // ui::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;
   void OnTreeChanged(const TreeChangeParams& params) override;
@@ -277,6 +280,9 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   bool children_use_extended_hit_region_ = false;
 
   base::ObserverList<WmTransientWindowObserver, true> transient_observers_;
+
+  // If true the minimum size is 0x0, default is minimum size comes from widget.
+  bool use_empty_minimum_size_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WmWindowMus);
 };

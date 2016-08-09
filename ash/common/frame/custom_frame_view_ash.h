@@ -57,6 +57,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
+  void ActivationChanged(bool active) override;
 
   // views::View:
   gfx::Size GetPreferredSize() const override;
