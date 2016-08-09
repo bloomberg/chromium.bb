@@ -44,12 +44,12 @@ public class ContextualSearchSelectionController {
 
     private static final String CONTAINS_WORD_PATTERN = "(\\w|\\p{L}|\\p{N})+";
     // A URL is:
-    //   0-1:  schema://
+    //   1:    scheme://
     //   1+:   any word char, _ or -
     //   1+:   . followed by 1+ of any word char, _ or -
     //   0-1:  0+ of any word char or .,@?^=%&:/~#- followed by any word char or @?^-%&/~+#-
-    // TODO(twellington): expand accepted schemas? Require a schema?
-    private static final Pattern URL_PATTERN = Pattern.compile("((http|https|file)://)?"
+    // TODO(twellington): expand accepted schemes?
+    private static final Pattern URL_PATTERN = Pattern.compile("((http|https|file|ftp|ssh)://)"
             + "([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?");
 
     // Max selection length must be limited or the entire request URL can go past the 2K limit.

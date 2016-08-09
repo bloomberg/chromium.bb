@@ -51,16 +51,26 @@ public class ContextualSearchSelectionControllerTest {
 
     @Test
     @Feature({"ContextualSearchSelectionController"})
-    public void testUrlWithAnchorAndNoSchema() {
+    public void testUrlWithNoScheme() {
         String testSentence = "This is a sentence about example.com/foo#bar.";
 
         // Select "foo".
         assertEquals("foo", testSentence.subSequence(37, 40));
-        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 37, 40));
+        assertFalse(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 37, 40));
+    }
+
+    @Test
+    @Feature({"ContextualSearchSelectionController"})
+    public void testUrlWithAnchor() {
+        String testSentence = "This is a sentence about http://example.com/foo#bar.";
+
+        // Select "foo".
+        assertEquals("foo", testSentence.subSequence(44, 47));
+        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 44, 47));
 
         // Select "bar".
-        assertEquals("bar", testSentence.subSequence(41, 44));
-        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 41, 44));
+        assertEquals("bar", testSentence.subSequence(48, 51));
+        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 48, 51));
 
         // Select "This".
         assertEquals("This", testSentence.subSequence(0, 4));
@@ -70,11 +80,11 @@ public class ContextualSearchSelectionControllerTest {
     @Test
     @Feature({"ContextualSearchSelectionController"})
     public void testUrlSurroundedByParens() {
-        String testSentence = "This is another sentence (example.com).";
+        String testSentence = "This is another sentence (http://example.com).";
 
         // Select "com".
-        assertEquals("com", testSentence.subSequence(34, 37));
-        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 34, 37));
+        assertEquals("com", testSentence.subSequence(41, 44));
+        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 41, 44));
 
         // Select "(".
         assertEquals("(", testSentence.subSequence(25, 26));
@@ -103,16 +113,36 @@ public class ContextualSearchSelectionControllerTest {
 
     @Test
     @Feature({"ContextualSearchSelectionController"})
+    public void testUrlWithFtpSchema() {
+        String testSentence = "ftp://some_text_file.txt";
+
+        // Select "text".
+        assertEquals("text", testSentence.subSequence(11, 15));
+        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 11, 15));
+    }
+
+    @Test
+    @Feature({"ContextualSearchSelectionController"})
+    public void testUrlWithSshSchema() {
+        String testSentence = "ssh://some_text_file.txt";
+
+        // Select "text".
+        assertEquals("text", testSentence.subSequence(11, 15));
+        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 11, 15));
+    }
+
+    @Test
+    @Feature({"ContextualSearchSelectionController"})
     public void testUrlWithPortAndQuery() {
-        String testSentence = "website.com:8080/html?query";
+        String testSentence = "http://website.com:8080/html?query";
 
         // Select "8080".
-        assertEquals("8080", testSentence.subSequence(12, 16));
-        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 12, 16));
+        assertEquals("8080", testSentence.subSequence(19, 23));
+        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 19, 23));
 
         // Select "query".
-        assertEquals("query", testSentence.subSequence(22, 27));
-        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 22, 27));
+        assertEquals("query", testSentence.subSequence(29, 34));
+        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 29, 34));
     }
 
     @Test
@@ -122,7 +152,7 @@ public class ContextualSearchSelectionControllerTest {
 
         // Select "0".
         assertEquals("0", testSentence.subSequence(4, 5));
-        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 4, 5));
+        assertFalse(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 4, 5));
     }
 
     @Test
@@ -142,7 +172,6 @@ public class ContextualSearchSelectionControllerTest {
 
         // Select "syntax".
         assertEquals("weird", testSentence.subSequence(35, 40));
-        // The selection looks like a URL, even though it's not.
-        assertTrue(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 35, 40));
+        assertFalse(ContextualSearchSelectionController.isSelectionPartOfUrl(testSentence, 35, 40));
     }
 }
