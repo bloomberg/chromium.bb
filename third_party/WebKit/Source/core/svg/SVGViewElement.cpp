@@ -20,6 +20,8 @@
 
 #include "core/svg/SVGViewElement.h"
 
+#include "core/frame/UseCounter.h"
+
 namespace blink {
 
 inline SVGViewElement::SVGViewElement(Document& document)
@@ -28,6 +30,7 @@ inline SVGViewElement::SVGViewElement(Document& document)
     , m_viewTarget(SVGStaticStringList::create(this, SVGNames::viewTargetAttr))
 {
     addToPropertyMap(m_viewTarget);
+    UseCounter::count(document, UseCounter::SVGViewElement);
 }
 
 DEFINE_NODE_FACTORY(SVGViewElement)
