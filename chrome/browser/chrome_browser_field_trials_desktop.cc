@@ -18,13 +18,6 @@ namespace chrome {
 
 namespace {
 
-void SetupLightSpeedTrials() {
-  if (!variations::GetVariationParamValue("LightSpeed", "NoGpu").empty()) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableGpu);
-  }
-}
-
 void SetupStunProbeTrial() {
 #if defined(ENABLE_WEBRTC)
   std::map<std::string, std::string> params;
@@ -50,7 +43,6 @@ void SetupStunProbeTrial() {
 
 void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
   prerender::ConfigurePrerender(parsed_command_line);
-  SetupLightSpeedTrials();
   SetupStunProbeTrial();
 }
 
