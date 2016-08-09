@@ -706,9 +706,11 @@ void MediaControls::computeWhichControlsFit()
     // should be available the first time we're called after layout.  This will
     // also be the first time we have m_panelWidth!=0, so it won't matter if
     // we get this wrong before that.
-    int minimumWidth = (m_playButton->layoutObject() && m_playButton->layoutObject()->style())
-        ? m_playButton->layoutObject()->style()->width().pixels()
-        : 48;
+    int minimumWidth = 48;
+    if (m_playButton->layoutObject() && m_playButton->layoutObject()->style()) {
+        const ComputedStyle* style = m_playButton->layoutObject()->style();
+        minimumWidth = ceil(style->width().pixels() / style->effectiveZoom());
+    }
 
     // Special-case the play button; it always fits.
     if (m_playButton->isWanted()) {
