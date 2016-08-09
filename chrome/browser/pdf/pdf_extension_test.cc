@@ -464,6 +464,18 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureSameOriginRepliesAllowed) {
                            true);
 }
 
+// This test ensures that PDF can be loaded from local file
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsurePDFFromLocalFileLoads) {
+  base::FilePath test_data_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));
+  base::FilePath test_data_file = test_data_dir.AppendASCII("test.pdf");
+  ASSERT_TRUE(PathExists(test_data_file));
+  GURL test_pdf_url("file://" + test_data_file.MaybeAsASCII());
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+}
+
 // This test ensures that link permissions are enforced properly in PDFs.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));

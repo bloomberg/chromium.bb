@@ -47,15 +47,16 @@ CSPSourceList::CSPSourceList(ContentSecurityPolicy* policy, const String& direct
 
 bool CSPSourceList::matches(const KURL& url, ResourceRequest::RedirectStatus redirectStatus) const
 {
-    // The CSP spec specifically states that data:, blob:, and filesystem URLs
-    // should not be captured by a '*" source
-    // (http://www.w3.org/TR/CSP2/#source-list-guid-matching). Thus, in the
-    // case of a full wildcard, data:, blob:, and filesystem: URLs are
+    // The CSP spec specifically states that only http:, https:, ws: and wss: should
+    // be captured by a '*" source.
+    // (https://w3c.github.io/webappsec-csp/#match-url-to-source-expression). Thus,
+    // in the case of a full wildcard, URLs with any other schemes are
     // explicitly checked for in the source list before allowing them through.
     if (m_allowStar) {
-        if (url.protocolIs("blob") || url.protocolIs("data") || url.protocolIs("filesystem"))
-            return hasSourceMatchInList(url, redirectStatus);
-        return true;
+        if (url.protocolIsInHTTPFamily() || url.protocolIs("ws") || url.protocolIs("wss"))
+            return true;
+
+        return hasSourceMatchInList(url, redirectStatus);
     }
 
     KURL effectiveURL = m_policy->selfMatchesInnerURL() && SecurityOrigin::shouldUseInnerURL(url) ? SecurityOrigin::extractInnerURL(url) : url;
