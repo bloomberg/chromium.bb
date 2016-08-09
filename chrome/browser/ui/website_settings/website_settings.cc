@@ -485,6 +485,11 @@ void WebsiteSettings::Init(
         case SecurityStateModel::NO_DEPRECATED_SHA1:
           // Nothing to do.
           break;
+        case SecurityStateModel::UNKNOWN_SHA1:
+          // UNKNOWN_SHA1 should only appear when certificate info has not been
+          // initialized, in which case this if-statement should not be running
+          // because there is no other cert info.
+          NOTREACHED();
       }
     }
   } else {

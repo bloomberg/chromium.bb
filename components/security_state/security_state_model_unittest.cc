@@ -28,7 +28,8 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
                            << net::SSL_CONNECTION_VERSION_SHIFT),
         cert_status_(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT),
         displayed_mixed_content_(false),
-        ran_mixed_content_(false) {
+        ran_mixed_content_(false),
+        fails_malware_check_(false) {
     cert_ =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "sha1_2016.pem");
   }
@@ -49,6 +50,9 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   void SetRanMixedContent(bool ran_mixed_content) {
     ran_mixed_content_ = ran_mixed_content;
   }
+  void set_fails_malware_check(bool fails_malware_check) {
+    fails_malware_check_ = fails_malware_check;
+  }
   void set_initial_security_level(
       SecurityStateModel::SecurityLevel security_level) {
     initial_security_level_ = security_level;
@@ -57,7 +61,7 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   // SecurityStateModelClient:
   void GetVisibleSecurityState(
       SecurityStateModel::VisibleSecurityState* state) override {
-    state->initialized = true;
+    state->connection_info_initialized = true;
     state->url = GURL(kUrl);
     state->initial_security_level = initial_security_level_;
     state->cert_id = 1;
@@ -66,6 +70,7 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
     state->security_bits = 256;
     state->displayed_mixed_content = displayed_mixed_content_;
     state->ran_mixed_content = ran_mixed_content_;
+    state->fails_malware_check = fails_malware_check_;
   }
 
   bool RetrieveCert(scoped_refptr<net::X509Certificate>* cert) override {
@@ -86,6 +91,7 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   net::CertStatus cert_status_;
   bool displayed_mixed_content_;
   bool ran_mixed_content_;
+  bool fails_malware_check_;
 };
 
 // Tests that SHA1-signed certificates expiring in 2016 downgrade the
@@ -188,6 +194,37 @@ TEST(SecurityStateModelTest, NonsecureCiphersuite) {
   const SecurityStateModel::SecurityInfo& security_info =
       model.GetSecurityInfo();
   EXPECT_FALSE(security_info.is_secure_protocol_and_ciphersuite);
+}
+
+// Tests that the malware/phishing status is set, and it overrides valid HTTPS.
+TEST(SecurityStateModelTest, MalwareOverride) {
+  TestSecurityStateModelClient client;
+  SecurityStateModel model;
+  model.SetClient(&client);
+  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
+  // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
+  const uint16_t ciphersuite = 0xc02f;
+  client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_2
+                               << net::SSL_CONNECTION_VERSION_SHIFT);
+  client.SetCipherSuite(ciphersuite);
+  client.set_fails_malware_check(true);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
+  EXPECT_TRUE(security_info.fails_malware_check);
+  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+}
+
+// Tests that the malware/phishing status is set, even if other connection info
+// is not available.
+TEST(SecurityStateModelTest, MalwareWithoutCOnnectionState) {
+  TestSecurityStateModelClient client;
+  SecurityStateModel model;
+  model.SetClient(&client);
+  client.set_fails_malware_check(true);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
+  EXPECT_TRUE(security_info.fails_malware_check);
+  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
 }
 
 }  // namespace

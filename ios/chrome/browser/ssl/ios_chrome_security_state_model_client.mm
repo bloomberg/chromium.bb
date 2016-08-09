@@ -89,7 +89,7 @@ void IOSChromeSecurityStateModelClient::GetVisibleSecurityState(
     return;
   }
 
-  state->initialized = true;
+  state->connection_info_initialized = true;
   state->url = item->GetURL();
   const web::SSLStatus& ssl = item->GetSSL();
   state->initial_security_level =

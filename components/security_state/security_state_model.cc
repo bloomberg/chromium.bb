@@ -93,7 +93,14 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
     const scoped_refptr<net::X509Certificate>& cert,
     SecurityStateModel::SHA1DeprecationStatus sha1_status,
     SecurityStateModel::MixedContentStatus mixed_content_status) {
-  DCHECK(visible_security_state.initialized);
+  DCHECK(visible_security_state.connection_info_initialized ||
+         visible_security_state.fails_malware_check);
+
+  // Override the connection security information if the website failed the
+  // browser's malware checks.
+  if (visible_security_state.fails_malware_check)
+    return SecurityStateModel::SECURITY_ERROR;
+
   GURL url = visible_security_state.url;
   switch (visible_security_state.initial_security_level) {
     case SecurityStateModel::NONE: {
@@ -170,8 +177,16 @@ void SecurityInfoForRequest(
     const SecurityStateModel::VisibleSecurityState& visible_security_state,
     const scoped_refptr<net::X509Certificate>& cert,
     SecurityStateModel::SecurityInfo* security_info) {
-  if (!visible_security_state.initialized) {
+  if (!visible_security_state.connection_info_initialized) {
     *security_info = SecurityStateModel::SecurityInfo();
+    security_info->fails_malware_check =
+        visible_security_state.fails_malware_check;
+    if (security_info->fails_malware_check) {
+      security_info->security_level =
+          GetSecurityLevelForRequest(visible_security_state, client, cert,
+                                     SecurityStateModel::UNKNOWN_SHA1,
+                                     SecurityStateModel::UNKNOWN_MIXED_CONTENT);
+    }
     return;
   }
   security_info->cert_id = visible_security_state.cert_id;
@@ -194,6 +209,9 @@ void SecurityInfoForRequest(
   security_info->sct_verify_statuses =
       visible_security_state.sct_verify_statuses;
 
+  security_info->fails_malware_check =
+      visible_security_state.fails_malware_check;
+
   security_info->security_level =
       GetSecurityLevelForRequest(visible_security_state, client, cert,
                                  security_info->sha1_deprecation_status,
@@ -211,6 +229,7 @@ const SecurityStateModel::SecurityLevel
 
 SecurityStateModel::SecurityInfo::SecurityInfo()
     : security_level(SecurityStateModel::NONE),
+      fails_malware_check(false),
       sha1_deprecation_status(SecurityStateModel::NO_DEPRECATED_SHA1),
       mixed_content_status(SecurityStateModel::NO_MIXED_CONTENT),
       scheme_is_cryptographic(false),
@@ -258,8 +277,9 @@ void SecurityStateModel::SetClient(SecurityStateModelClient* client) {
 }
 
 SecurityStateModel::VisibleSecurityState::VisibleSecurityState()
-    : initialized(false),
-      initial_security_level(SecurityStateModel::NONE),
+    : initial_security_level(SecurityStateModel::NONE),
+      fails_malware_check(false),
+      connection_info_initialized(false),
       cert_id(0),
       cert_status(0),
       connection_status(0),
@@ -274,6 +294,7 @@ bool SecurityStateModel::VisibleSecurityState::operator==(
     const SecurityStateModel::VisibleSecurityState& other) const {
   return (url == other.url &&
           initial_security_level == other.initial_security_level &&
+          fails_malware_check == other.fails_malware_check &&
           cert_id == other.cert_id && cert_status == other.cert_status &&
           connection_status == other.connection_status &&
           security_bits == other.security_bits &&
