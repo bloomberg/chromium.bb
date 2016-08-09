@@ -53,7 +53,6 @@ class OfflinePageUtilsTest
 
   void SetUp() override;
   void RunUntilIdle();
-  GURL GetOfflineURLForOnlineURL(GURL online_url);
 
   // Necessary callbacks for the offline page model.
   void OnSavePageDone(SavePageResult result, int64_t offlineId);
@@ -142,14 +141,6 @@ void OfflinePageUtilsTest::OnGetURLDone(const GURL& url) {
   url_ = url;
 }
 
-GURL OfflinePageUtilsTest::GetOfflineURLForOnlineURL(GURL online_url) {
-  OfflinePageUtils::GetOfflineURLForOnlineURL(
-      profile(), online_url,
-      base::Bind(&OfflinePageUtilsTest::OnGetURLDone, AsWeakPtr()));
-  RunUntilIdle();
-  return url_;
-}
-
 void OfflinePageUtilsTest::SetLastPathCreatedByArchiver(
     const base::FilePath& file_path) {}
 
@@ -224,17 +215,6 @@ TEST_F(OfflinePageUtilsTest, MightBeOfflineURL) {
   EXPECT_FALSE(OfflinePageUtils::MightBeOfflineURL(GURL("file:///test.txt")));
   // Might still be an offline page.
   EXPECT_TRUE(OfflinePageUtils::MightBeOfflineURL(GURL("file:///test.mhtml")));
-}
-
-TEST_F(OfflinePageUtilsTest, GetOfflineURLForOnlineURL) {
-  EXPECT_EQ(offline_url_page_1(),
-            OfflinePageUtilsTest::GetOfflineURLForOnlineURL(kTestPage1Url));
-  EXPECT_EQ(offline_url_page_2(),
-            OfflinePageUtilsTest::GetOfflineURLForOnlineURL(kTestPage2Url));
-  EXPECT_EQ(GURL::EmptyGURL(),
-            OfflinePageUtilsTest::GetOfflineURLForOnlineURL(kTestPage3Url));
-  EXPECT_EQ(GURL::EmptyGURL(),
-            OfflinePageUtilsTest::GetOfflineURLForOnlineURL(kTestPage4Url));
 }
 
 TEST_F(OfflinePageUtilsTest, MaybeGetOnlineURLForOfflineURL) {

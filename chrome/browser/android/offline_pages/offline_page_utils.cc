@@ -73,15 +73,6 @@ void OnGetPageByOfflineURLDone(
   callback.Run(result_url);
 }
 
-void OnGetBestPageForOnlineURLDone(
-    const base::Callback<void(const GURL&)>& callback,
-    const OfflinePageItem* item) {
-  GURL result_url;
-  if (item)
-    result_url = item->GetOfflineURL();
-  callback.Run(result_url);
-}
-
 }  // namespace
 
 // static
@@ -91,23 +82,6 @@ bool OfflinePageUtils::MightBeOfflineURL(const GURL& url) {
          base::EndsWith(url.spec(),
                         OfflinePageMHTMLArchiver::GetFileNameExtension(),
                         base::CompareCase::INSENSITIVE_ASCII);
-}
-
-// static
-void OfflinePageUtils::GetOfflineURLForOnlineURL(
-    content::BrowserContext* browser_context,
-    const GURL& online_url,
-    const base::Callback<void(const GURL&)>& callback) {
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(browser_context);
-  if (!offline_page_model) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&OnGetPageByOfflineURLDone, callback, nullptr));
-    return;
-  }
-
-  offline_page_model->GetBestPageForOnlineURL(
-      online_url, base::Bind(&OnGetBestPageForOnlineURLDone, callback));
 }
 
 // static
