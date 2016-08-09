@@ -6,10 +6,8 @@ import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/config/mac/symbols.gni")
 
-_is_fat_build = additional_toolchains != []
-if (_is_fat_build) {
-  _is_fat_build_main_target = current_toolchain == default_toolchain
-}
+_is_secondary_build =
+    additional_toolchains != [] && current_toolchain != default_toolchain
 
 _code_signing_script_path = "//build/config/ios/codesign.py"
 _default_entitlements_path = "//build/config/ios/entitlements.plist"
@@ -185,7 +183,7 @@ template("ios_app_bundle") {
     ]
   }
 
-  if (_is_fat_build && !_is_fat_build_main_target) {
+  if (_is_secondary_build) {
     # For the non-default toolchain of a fat-build, the template expands to a
     # single "executable" target that creates "$root_out_dir/$_output_name".
     executable(_target_name) {
@@ -292,21 +290,11 @@ template("ios_app_bundle") {
       }
     }
 
-    _link_executable = _target_name + "_executable"
-    _link_executable_visibility = [ ":$_target_name" ]
+    _link_executable = _target_name + "_arch_executable"
+    _lipo_executable = _target_name + "_executable"
 
-    # For a fat-build, the different "executable" outputs will be used to
-    # create the final binary using "lipo". As the corresponding target has
-    # the same role as the "executable" target in a thin build, copy the
-    # visibility and redefine some variables.
-    if (_is_fat_build) {
-      _lipo_executable = _link_executable
-      _lipo_executable_visibility = _link_executable_visibility
-
-      _link_executable_visibility = []
-      _link_executable_visibility = [ ":$_lipo_executable" ]
-      _link_executable = _target_name + "_arch_executable"
-    }
+    _link_executable_visibility = [ ":$_lipo_executable" ]
+    _lipo_executable_visibility = [ ":$_target_name" ]
 
     executable(_link_executable) {
       forward_variables_from(invoker,
@@ -330,11 +318,7 @@ template("ios_app_bundle") {
 
       output_name = _output_name
       output_prefix_override = true
-      if (_is_fat_build) {
-        output_dir = "$target_out_dir/$current_cpu"
-      } else {
-        output_dir = target_out_dir
-      }
+      output_dir = "$target_out_dir/$current_cpu"
 
       if (!defined(deps)) {
         deps = []
@@ -357,74 +341,72 @@ template("ios_app_bundle") {
       libs += [ "UIKit.framework" ]
     }
 
-    if (_is_fat_build) {
-      # Create the multi-architecture binary from all the single architecture
-      # binaries using "lipo". This target exists for the default toolchain
-      # of a fat-build only and depends on the expansion of "ios_app_bundle"
-      # for the other toolchains (i.e. a single "executable" target).
-      #
-      # This action only happens once per "ios_app_bundle" template (for the
-      # main toolchain).
-      action(_lipo_executable) {
-        forward_variables_from(invoker, [ "testonly" ])
-        visibility = _lipo_executable_visibility
-        script = "//build/toolchain/mac/linker_driver.py"
-        outputs = [
-          "$target_out_dir/$_output_name",
-        ]
-        inputs = [
-          "$target_out_dir/$current_cpu/$_output_name",
-        ]
-        deps = [
-          ":$_link_executable",
-        ]
-        foreach(_additional_toolchain, additional_toolchains) {
-          _additional_toolchain_target = "$_target_name($_additional_toolchain)"
-          deps += [ ":$_additional_toolchain_target" ]
-          inputs += [ get_label_info(_additional_toolchain_target,
-                                     "root_out_dir") + "/$_output_name" ]
-        }
-        args = [
-                 "xcrun",
-                 "lipo",
-                 "-create",
-                 "-output",
-                 rebase_path(outputs[0], root_build_dir),
-               ] + rebase_path(inputs, root_build_dir)
+    # Create the multi-architecture binary from all the single architecture
+    # binaries using "lipo". This target exists for the default toolchain
+    # of a fat-build only and depends on the expansion of "ios_app_bundle"
+    # for the other toolchains (i.e. a single "executable" target).
+    #
+    # This action only happens once per "ios_app_bundle" template (for the
+    # main toolchain).
+    action(_lipo_executable) {
+      forward_variables_from(invoker, [ "testonly" ])
+      visibility = _lipo_executable_visibility
+      script = "//build/toolchain/mac/linker_driver.py"
+      outputs = [
+        "$target_out_dir/$_output_name",
+      ]
+      inputs = [
+        "$target_out_dir/$current_cpu/$_output_name",
+      ]
+      deps = [
+        ":$_link_executable",
+      ]
+      foreach(_additional_toolchain, additional_toolchains) {
+        _additional_toolchain_target = "$_target_name($_additional_toolchain)"
+        deps += [ ":$_additional_toolchain_target" ]
+        inputs += [ get_label_info(_additional_toolchain_target,
+                                   "root_out_dir") + "/$_output_name" ]
+      }
+      args = [
+               "xcrun",
+               "lipo",
+               "-create",
+               "-output",
+               rebase_path(outputs[0], root_build_dir),
+             ] + rebase_path(inputs, root_build_dir)
 
-        if (enable_dsyms) {
-          _dsyms_dir = "$root_out_dir/$_output_name.dSYM/"
-          outputs += [
-            "$_dsyms_dir/",
-            "$_dsyms_dir/Contents/Info.plist",
-            "$_dsyms_dir/Contents/Resources/DWARF/$_output_name",
-          ]
-          args +=
-              [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
-        }
+      if (enable_dsyms) {
+        _dsyms_dir = "$root_out_dir/$_output_name.dSYM/"
+        outputs += [
+          "$_dsyms_dir/",
+          "$_dsyms_dir/Contents/Info.plist",
+          "$_dsyms_dir/Contents/Resources/DWARF/$_output_name",
+        ]
+        args +=
+            [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
+      }
 
-        if (enable_stripping) {
-          # Check whether //build/config/mac:strip_all has been removed from
-          # the configs variable (as this is how stripping is disabled for a
-          # single target).
-          _strip_all_in_config = false
-          if (defined(invoker.configs)) {
-            foreach(_config, invoker.configs) {
-              if (_config == "//build/config/mac:strip_all") {
-                _strip_all_in_config = true
-              }
+      if (enable_stripping) {
+        # Check whether //build/config/mac:strip_all has been removed from
+        # the configs variable (as this is how stripping is disabled for a
+        # single target).
+        _strip_all_in_config = false
+        if (defined(invoker.configs)) {
+          foreach(_config, invoker.configs) {
+            if (_config == "//build/config/mac:strip_all") {
+              _strip_all_in_config = true
             }
           }
+        }
 
-          if (_strip_all_in_config) {
-            args += [ "-Wcrl,strip,-x,-S" ]
+        if (_strip_all_in_config) {
+          args += [ "-Wcrl,strip,-x,-S" ]
 
-            if (save_unstripped_output) {
-              outputs += [ outputs[0] + ".unstripped" ]
-              args += [ "-Wcrl,unstripped," +
-                        rebase_path(get_path_info(outputs[0], "dir"),
-                                    root_build_dir) ]
-            }
+          if (save_unstripped_output) {
+            outputs += [ outputs[0] + ".unstripped" ]
+            args += [ "-Wcrl,unstripped," +
+                      rebase_path(get_path_info(outputs[0], "dir"),
+                                  root_build_dir) ]
           }
         }
       }
@@ -448,11 +430,7 @@ template("ios_app_bundle") {
       if (!defined(public_deps)) {
         public_deps = []
       }
-      if (_is_fat_build) {
-        public_deps += [ ":$_lipo_executable" ]
-      } else {
-        public_deps += [ ":$_link_executable" ]
-      }
+      public_deps += [ ":$_lipo_executable" ]
       if (defined(invoker.bundle_deps)) {
         deps += invoker.bundle_deps
       }
@@ -849,7 +827,7 @@ template("ios_framework_bundle") {
   # that defines the real framework bundle (it will support the current cpu
   # as it is a fat framework).
 
-  if (_is_fat_build && !_is_fat_build_main_target) {
+  if (_is_secondary_build) {
     shared_library(_target_name) {
       forward_variables_from(invoker,
                              "*",
@@ -990,21 +968,14 @@ template("ios_framework_bundle") {
       _framework_target = _target_name + "_create_bundle"
     }
 
-    _link_shared_library_target = target_name + "_shared_library"
-    _shared_library_dir = "$target_out_dir/$_link_shared_library_target"
-    _link_shared_library_visibility = [ ":$_framework_target" ]
+    _link_shared_library_target = target_name + "_arch_shared_library"
+    _lipo_shared_library_target = target_name + "_shared_library"
 
-    if (_is_fat_build) {
-      _lipo_shared_library_target = _link_shared_library_target
-      _lipo_shared_library_visibility = _link_shared_library_visibility
+    _lipo_shared_library_visibility = [ ":$_framework_target" ]
+    _link_shared_library_visibility = [ ":$_lipo_shared_library_target" ]
 
-      _link_shared_library_visibility = []
-      _link_shared_library_visibility = [ ":$_lipo_shared_library_target" ]
-      _link_shared_library_target = target_name + "_arch_shared_library"
-
-      _arch_shared_library_dir = "$target_out_dir/$_link_shared_library_target"
-      _shared_library_dir = "$target_out_dir/$_lipo_shared_library_target"
-    }
+    _arch_shared_library_dir = "$target_out_dir/$_link_shared_library_target"
+    _shared_library_dir = "$target_out_dir/$_lipo_shared_library_target"
 
     shared_library(_link_shared_library_target) {
       forward_variables_from(invoker,
@@ -1022,12 +993,7 @@ template("ios_framework_bundle") {
       output_name = _output_name
       output_prefix_override = true
       output_extension = ""
-
-      if (!_is_fat_build) {
-        output_dir = _shared_library_dir
-      } else {
-        output_dir = _arch_shared_library_dir
-      }
+      output_dir = _arch_shared_library_dir
 
       if (_has_public_headers) {
         configs += [ ":$_headers_map_config($default_toolchain)" ]
@@ -1039,67 +1005,65 @@ template("ios_framework_bundle") {
       }
     }
 
-    if (_is_fat_build) {
-      action(_lipo_shared_library_target) {
-        forward_variables_from(invoker, [ "testonly" ])
-        visibility = _lipo_shared_library_visibility
-        script = "//build/toolchain/mac/linker_driver.py"
-        outputs = [
-          "$_shared_library_dir/$_output_name",
-        ]
-        inputs = [
-          "$_arch_shared_library_dir/$_output_name",
-        ]
-        deps = [
-          ":$_link_shared_library_target",
-        ]
-        foreach(_additional_toolchain, additional_toolchains) {
-          _additional_toolchain_target = "$_target_name($_additional_toolchain)"
-          deps += [ ":$_additional_toolchain_target" ]
-          inputs += [ get_label_info(_additional_toolchain_target,
-                                     "target_out_dir") + "/$_output_name" ]
-        }
-        args = [
-                 "xcrun",
-                 "lipo",
-                 "-create",
-                 "-output",
-                 rebase_path(outputs[0], root_build_dir),
-               ] + rebase_path(inputs, root_build_dir)
+    action(_lipo_shared_library_target) {
+      forward_variables_from(invoker, [ "testonly" ])
+      visibility = _lipo_shared_library_visibility
+      script = "//build/toolchain/mac/linker_driver.py"
+      outputs = [
+        "$_shared_library_dir/$_output_name",
+      ]
+      inputs = [
+        "$_arch_shared_library_dir/$_output_name",
+      ]
+      deps = [
+        ":$_link_shared_library_target",
+      ]
+      foreach(_additional_toolchain, additional_toolchains) {
+        _additional_toolchain_target = "$_target_name($_additional_toolchain)"
+        deps += [ ":$_additional_toolchain_target" ]
+        inputs += [ get_label_info(_additional_toolchain_target,
+                                   "target_out_dir") + "/$_output_name" ]
+      }
+      args = [
+               "xcrun",
+               "lipo",
+               "-create",
+               "-output",
+               rebase_path(outputs[0], root_build_dir),
+             ] + rebase_path(inputs, root_build_dir)
 
-        if (enable_dsyms) {
-          _dsyms_dir = "$root_out_dir/$_output_name.dSYM/"
-          outputs += [
-            "$_dsyms_dir/",
-            "$_dsyms_dir/Contents/Info.plist",
-            "$_dsyms_dir/Contents/Resources/DWARF/$_output_name",
-          ]
-          args +=
-              [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
-        }
+      if (enable_dsyms) {
+        _dsyms_dir = "$root_out_dir/$_output_name.dSYM/"
+        outputs += [
+          "$_dsyms_dir/",
+          "$_dsyms_dir/Contents/Info.plist",
+          "$_dsyms_dir/Contents/Resources/DWARF/$_output_name",
+        ]
+        args +=
+            [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
+      }
 
-        if (enable_stripping) {
-          # Check whether //build/config/mac:strip_all has been removed from
-          # the configs variable (as this is how stripping is disabled for a
-          # single target).
-          _strip_all_in_config = false
-          if (defined(invoker.configs)) {
-            foreach(_config, invoker.configs) {
-              if (_config == "//build/config/mac:strip_all") {
-                _strip_all_in_config = true
-              }
+      if (enable_stripping) {
+        # Check whether //build/config/mac:strip_all has been removed from
+        # the configs variable (as this is how stripping is disabled for a
+        # single target).
+        _strip_all_in_config = false
+        if (defined(invoker.configs)) {
+          foreach(_config, invoker.configs) {
+            if (_config == "//build/config/mac:strip_all") {
+              _strip_all_in_config = true
             }
           }
+        }
 
-          if (_strip_all_in_config) {
-            args += [ "-Wcrl,strip,-x,-S" ]
+        if (_strip_all_in_config) {
+          args += [ "-Wcrl,strip,-x,-S" ]
 
-            if (save_unstripped_output) {
-              outputs += [ outputs[0] + ".unstripped" ]
-              args += [ "-Wcrl,unstripped," +
-                        rebase_path(get_path_info(outputs[0], "dir"),
-                                    root_build_dir) ]
-            }
+          if (save_unstripped_output) {
+            outputs += [ outputs[0] + ".unstripped" ]
+            args += [ "-Wcrl,unstripped," +
+                      rebase_path(get_path_info(outputs[0], "dir"),
+                                  root_build_dir) ]
           }
         }
       }
@@ -1181,12 +1145,7 @@ template("ios_framework_bundle") {
       if (!defined(deps)) {
         deps = []
       }
-
-      if (_is_fat_build) {
-        deps += [ ":$_lipo_shared_library_target" ]
-      } else {
-        deps += [ ":$_link_shared_library_target" ]
-      }
+      deps += [ ":$_lipo_shared_library_target" ]
 
       _entitlements_path = _default_entitlements_path
       if (defined(invoker.entitlements_path)) {
@@ -1304,7 +1263,7 @@ template("ios_xctest_test") {
   _host_target = _target_name + "_host"
   _host_output = _output_name + "_host"
 
-  if (_is_fat_build && !_is_fat_build_main_target) {
+  if (_is_secondary_build) {
     loadable_module(_xctest_target) {
       visibility = [ ":${_xctest_target}_loadable_module($default_toolchain)" ]
       sources = [
@@ -1335,19 +1294,12 @@ template("ios_xctest_test") {
       ]
     }
 
-    _xctest_loadable_module_target = _xctest_target + "_loadable_module"
-    _xctest_loadable_module_visibility = [ ":$_xctest_target" ]
+    _xctest_loadable_module_target = _xctest_target + "_arch_loadable_module"
+    _xctest_lipo_loadable_module_target = _xctest_target + "_loadable_module"
 
-    if (_is_fat_build) {
-      _xctest_lipo_loadable_module_target = _xctest_loadable_module_target
-      _xctest_lipo_loadable_module_visibility =
-          _xctest_loadable_module_visibility
-
-      _xctest_loadable_module_visibility = []
-      _xctest_loadable_module_visibility =
-          [ ":$_xctest_lipo_loadable_module_target" ]
-      _xctest_loadable_module_target = _xctest_target + "_arch_loadable_module"
-    }
+    _xctest_loadable_module_visibility =
+        [ ":$_xctest_lipo_loadable_module_target" ]
+    _xctest_lipo_loadable_module_visibility = [ ":$_xctest_target" ]
 
     loadable_module(_xctest_loadable_module_target) {
       visibility = _xctest_loadable_module_visibility
@@ -1356,77 +1308,70 @@ template("ios_xctest_test") {
       ]
       configs += [ "//build/config/ios:xctest_config" ]
 
-      if (_is_fat_build) {
-        output_dir = "$target_out_dir/$current_cpu"
-      } else {
-        output_dir = target_out_dir
-      }
-
+      output_dir = "$target_out_dir/$current_cpu"
       output_name = _xctest_output
       output_prefix_override = true
       output_extension = ""
     }
 
-    if (_is_fat_build) {
-      action(_xctest_lipo_loadable_module_target) {
-        visibility = _xctest_lipo_loadable_module_visibility
-        script = "//build/toolchain/mac/linker_driver.py"
-        outputs = [
-          "$target_out_dir/$_xctest_output",
-        ]
-        inputs = [
-          "$target_out_dir/$current_cpu/$_xctest_output",
-        ]
-        deps = [
-          ":$_xctest_loadable_module_target",
-        ]
-        foreach(_additional_toolchain, additional_toolchains) {
-          _additional_toolchain_target = "$_target_name($_additional_toolchain)"
-          deps += [ ":$_additional_toolchain_target" ]
-          inputs += [ get_label_info(_additional_toolchain_target,
-                                     "root_out_dir") + "/$_xctest_output" ]
-        }
-        args = [
-                 "xcrun",
-                 "lipo",
-                 "-create",
-                 "-output",
-                 rebase_path(outputs[0], root_build_dir),
-               ] + rebase_path(inputs, root_build_dir)
+    action(_xctest_lipo_loadable_module_target) {
+      visibility = _xctest_lipo_loadable_module_visibility
+      script = "//build/toolchain/mac/linker_driver.py"
+      outputs = [
+        "$target_out_dir/$_xctest_output",
+      ]
+      inputs = [
+        "$target_out_dir/$current_cpu/$_xctest_output",
+      ]
+      deps = [
+        ":$_xctest_loadable_module_target",
+      ]
+      foreach(_additional_toolchain, additional_toolchains) {
+        _additional_toolchain_target = "$_target_name($_additional_toolchain)"
+        deps += [ ":$_additional_toolchain_target" ]
+        inputs += [ get_label_info(_additional_toolchain_target,
+                                   "root_out_dir") + "/$_xctest_output" ]
+      }
+      args = [
+               "xcrun",
+               "lipo",
+               "-create",
+               "-output",
+               rebase_path(outputs[0], root_build_dir),
+             ] + rebase_path(inputs, root_build_dir)
 
-        if (enable_dsyms) {
-          _dsyms_dir = "$root_out_dir/$_output_name.dSYM/"
-          outputs += [
-            "$_dsyms_dir/",
-            "$_dsyms_dir/Contents/Info.plist",
-            "$_dsyms_dir/Contents/Resources/DWARF/$_output_name",
-          ]
-          args +=
-              [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
-        }
+      if (enable_dsyms) {
+        _dsyms_dir = "$root_out_dir/$_output_name.dSYM/"
+        outputs += [
+          "$_dsyms_dir/",
+          "$_dsyms_dir/Contents/Info.plist",
+          "$_dsyms_dir/Contents/Resources/DWARF/$_output_name",
+        ]
+        args +=
+            [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
+      }
 
-        if (enable_stripping) {
-          # Check whether //build/config/mac:strip_all has been removed from
-          # the configs variable (as this is how stripping is disabled for a
-          # single target).
-          _strip_all_in_config = false
-          if (defined(invoker.configs)) {
-            foreach(_config, invoker.configs) {
-              if (_config == "//build/config/mac:strip_all") {
-                _strip_all_in_config = true
-              }
+      if (enable_stripping) {
+        # Check whether //build/config/mac:strip_all has been removed from
+        # the configs variable (as this is how stripping is disabled for a
+        # single target).
+        _strip_all_in_config = false
+        if (defined(invoker.configs)) {
+          foreach(_config, invoker.configs) {
+            if (_config == "//build/config/mac:strip_all") {
+              _strip_all_in_config = true
             }
           }
+        }
 
-          if (_strip_all_in_config) {
-            args += [ "-Wcrl,strip,-x,-S" ]
+        if (_strip_all_in_config) {
+          args += [ "-Wcrl,strip,-x,-S" ]
 
-            if (save_unstripped_output) {
-              outputs += [ outputs[0] + ".unstripped" ]
-              args += [ "-Wcrl,unstripped," +
-                        rebase_path(get_path_info(outputs[0], "dir"),
-                                    root_build_dir) ]
-            }
+          if (save_unstripped_output) {
+            outputs += [ outputs[0] + ".unstripped" ]
+            args += [ "-Wcrl,unstripped," +
+                      rebase_path(get_path_info(outputs[0], "dir"),
+                                  root_build_dir) ]
           }
         }
       }
@@ -1439,14 +1384,9 @@ template("ios_xctest_test") {
       product_type = "com.apple.product-type.bundle.unit-test"
       deps = [
         ":$_xctest_info_plist_bundle",
+        ":$_xctest_lipo_loadable_module_target",
       ]
       bundle_root_dir = "$root_out_dir/$_xctest_output.xctest"
-
-      if (_is_fat_build) {
-        deps += [ ":$_xctest_lipo_loadable_module_target" ]
-      } else {
-        deps += [ ":$_xctest_loadable_module_target" ]
-      }
 
       _entitlements_path = _default_entitlements_path
       if (defined(invoker.entitlements_path)) {
@@ -1511,7 +1451,7 @@ template("ios_xctest_test") {
       "$_ios_platform_library/PrivateFrameworks/IDEBundleInjection.framework",
     ]
 
-    if (!_is_fat_build || _is_fat_build_main_target) {
+    if (!_is_secondary_build) {
       if (!defined(bundle_deps)) {
         bundle_deps = []
       }

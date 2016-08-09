@@ -119,16 +119,10 @@ config("mac_executable_flags") {
 # from a binary, but some targets may wish to specify a saves file to preserve
 # specific symbols.
 config("strip_all") {
-  if (is_ios && additional_toolchains != []) {
-    # For fat build, the generation of the dSYM happens after the fat binary has
-    # been created with "lipo" thus the stripping cannot happen at link time but
-    # after running "lipo" too.
-    _enable_stripping = false
-  } else {
-    _enable_stripping = enable_stripping
-  }
-
-  if (_enable_stripping) {
+  # On iOS, the final applications are assembled using lipo (to support fat
+  # builds). This configuration is thus always empty and the correct flags
+  # are passed to the linker_driver.py script directly during the lipo call.
+  if (enable_stripping && !is_ios) {
     ldflags = [ "-Wcrl,strip,-x,-S" ]
   }
 }
