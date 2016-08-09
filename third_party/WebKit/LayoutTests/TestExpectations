@@ -1243,7 +1243,7 @@ crbug.com/632007 [ Linux ] svg/zoom/page/zoom-mask-with-percentages.svg [ Failur
 crbug.com/599115 http/tests/preload/document-write [ Failure ]
 crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
 
-crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash ]
+crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash Pass ]
 
 crbug.com/600261 imported/wpt/mediacapture-streams/GUM-deny.https.html [ Failure ]
 crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Failure ]
