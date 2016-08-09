@@ -150,7 +150,8 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
       id = IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED;
       break;
     case DownloadCommands::COPY_TO_CLIPBOARD:
-      // This command is implemented only for Donwload Notification.
+    case DownloadCommands::ANNOTATE:
+      // These commands are implemented only for the Download notification.
       NOTREACHED();
       break;
   }

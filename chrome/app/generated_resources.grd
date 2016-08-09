@@ -1912,6 +1912,10 @@ Even if you have downloaded files from this website before, the website might ha
                desc="In the download notification, the text of 'Copy to clipboard' button, which is to copy the file content (eg. an image for image files) to the clipboard">
         Copy to clipboard
       </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_ANNOTATE"
+               desc="In the download notification, the text of the button that opens the file (if it is an image) in the Google Keep app so the user can annotate it">
+        Annotate in Google Keep
+      </message>
 
       <!-- Download Context Menu Items -->
       <if expr="not is_android">

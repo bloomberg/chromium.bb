@@ -38,6 +38,10 @@
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/note_taking_app_utils.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // Maximum size (compressed) of image to be copied to the clipboard. If the
@@ -142,6 +146,8 @@ int DownloadCommands::GetCommandIconId(Command command) const {
       return IDR_NOTIFICATION_WELCOME_LEARN_MORE;
     case COPY_TO_CLIPBOARD:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_COPY_TO_CLIPBOARD;
+    case ANNOTATE:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_ANNOTATE;
     case OPEN_WHEN_COMPLETE:
     case ALWAYS_OPEN_TYPE:
     case PLATFORM_OPEN:
@@ -195,6 +201,8 @@ bool DownloadCommands::IsCommandEnabled(Command command) const {
     case COPY_TO_CLIPBOARD:
       return (download_item_->GetState() == content::DownloadItem::COMPLETE &&
               download_item_->GetReceivedBytes() <= kMaxImageClipboardSize);
+    case ANNOTATE:
+      return download_item_->GetState() == content::DownloadItem::COMPLETE;
     case DISCARD:
     case KEEP:
     case LEARN_MORE_SCANNING:
@@ -230,6 +238,7 @@ bool DownloadCommands::IsCommandChecked(Command command) const {
     case LEARN_MORE_SCANNING:
     case LEARN_MORE_INTERRUPTED:
     case COPY_TO_CLIPBOARD:
+    case ANNOTATE:
       return false;
   }
   return false;
@@ -345,6 +354,15 @@ void DownloadCommands::ExecuteCommand(Command command) {
       break;
     case COPY_TO_CLIPBOARD:
       CopyFileAsImageToClipboard();
+      break;
+    case ANNOTATE:
+#if defined(OS_CHROMEOS)
+      if (DownloadItemModel(download_item_).HasSupportedImageMimeType()) {
+        chromeos::LaunchNoteTakingAppForNewNote(
+            Profile::FromBrowserContext(download_item_->GetBrowserContext()),
+            download_item_->GetTargetFilePath());
+      }
+#endif  // defined(OS_CHROMEOS)
       break;
   }
 }

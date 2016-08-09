@@ -45,6 +45,10 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/note_taking_app_utils.h"
+#endif  // defined(OS_CHROMEOS)
+
 using base::UserMetricsAction;
 
 namespace {
@@ -163,6 +167,10 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
     case DownloadCommands::COPY_TO_CLIPBOARD:
       content::RecordAction(
           UserMetricsAction("DownloadNotification.Button_CopyToClipboard"));
+      break;
+    case DownloadCommands::ANNOTATE:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_Annotate"));
       break;
   }
 }
@@ -643,8 +651,13 @@ DownloadItemNotification::GetExtraActions() const {
       break;
     case content::DownloadItem::COMPLETE:
       actions->push_back(DownloadCommands::SHOW_IN_FOLDER);
-      if (!notification_->image().IsEmpty())
+      if (!notification_->image().IsEmpty()) {
         actions->push_back(DownloadCommands::COPY_TO_CLIPBOARD);
+#if defined(OS_CHROMEOS)
+        if (chromeos::IsNoteTakingAppAvailable(profile()))
+          actions->push_back(DownloadCommands::ANNOTATE);
+#endif  // defined(OS_CHROMEOS)
+      }
       break;
     case content::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
@@ -731,6 +744,9 @@ base::string16 DownloadItemNotification::GetCommandLabel(
       break;
     case DownloadCommands::COPY_TO_CLIPBOARD:
       id = IDS_DOWNLOAD_NOTIFICATION_COPY_TO_CLIPBOARD;
+      break;
+    case DownloadCommands::ANNOTATE:
+      id = IDS_DOWNLOAD_NOTIFICATION_ANNOTATE;
       break;
     case DownloadCommands::ALWAYS_OPEN_TYPE:
     case DownloadCommands::PLATFORM_OPEN:

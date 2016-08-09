@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
+#include "chrome/browser/chromeos/note_taking_app_utils.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
@@ -56,7 +57,7 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
   std::string encoded;
   base::Base64Encode(png_data->data(), &encoded);
 
-  // Only cares about HTML because ChromeOS doesn't need other formats.
+  // Only care about HTML because Chrome OS doesn't need other formats.
   // TODO(dcheng): Why don't we take advantage of the ability to write bitmaps
   // to the clipboard here?
   {
@@ -116,27 +117,43 @@ class ScreenshotGrabberNotificationDelegate : public NotificationDelegate {
     platform_util::ShowItemInFolder(profile_, screenshot_path_);
   }
   void ButtonClick(int button_index) override {
-    DCHECK(success_ && button_index == 0);
+    DCHECK(success_);
 
-    // To avoid keeping the screenshot image on memory, it will re-read the
-    // screenshot file and copy it to the clipboard.
-    if (drive::util::IsUnderDriveMountPoint(screenshot_path_)) {
-      drive::FileSystemInterface* file_system =
-          drive::util::GetFileSystemByProfile(profile_);
-      file_system->GetFile(drive::util::ExtractDrivePath(screenshot_path_),
-                           base::Bind(&ReadFileAndCopyToClipboardDrive));
-      return;
+    switch (button_index) {
+      case BUTTON_COPY_TO_CLIPBOARD: {
+        // To avoid keeping the screenshot image in memory, re-read the
+        // screenshot file and copy it to the clipboard.
+        if (drive::util::IsUnderDriveMountPoint(screenshot_path_)) {
+          drive::FileSystemInterface* file_system =
+              drive::util::GetFileSystemByProfile(profile_);
+          file_system->GetFile(drive::util::ExtractDrivePath(screenshot_path_),
+                               base::Bind(&ReadFileAndCopyToClipboardDrive));
+          return;
+        }
+        content::BrowserThread::GetBlockingPool()->PostTask(
+            FROM_HERE,
+            base::Bind(&ReadFileAndCopyToClipboardLocal, screenshot_path_));
+        break;
+      }
+      case BUTTON_ANNOTATE: {
+        if (chromeos::IsNoteTakingAppAvailable(profile_))
+          chromeos::LaunchNoteTakingAppForNewNote(profile_, screenshot_path_);
+        break;
+      }
+      default:
+        NOTREACHED() << "Unhandled button index " << button_index;
     }
-
-    content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE,
-        base::Bind(&ReadFileAndCopyToClipboardLocal, screenshot_path_));
   }
   bool HasClickedListener() override { return success_; }
   std::string id() const override { return std::string(kNotificationId); }
 
  private:
   ~ScreenshotGrabberNotificationDelegate() override {}
+
+  enum ButtonIndex {
+    BUTTON_COPY_TO_CLIPBOARD = 0,
+    BUTTON_ANNOTATE,
+  };
 
   const bool success_;
   Profile* profile_;
@@ -404,16 +421,30 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
   // a fresh notification pop-up.
   g_browser_process->notification_ui_manager()->CancelById(
       notification_id, NotificationUIManager::GetProfileID(GetProfile()));
-  bool success =
+
+  const bool success =
       (screenshot_result == ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS);
+
   message_center::RichNotificationData optional_field;
   if (success) {
-    message_center::ButtonInfo button_info(l10n_util::GetStringUTF16(
+    // The order in which these buttons are added must be reflected by
+    // ScreenshotGrabberNotificationDelegate::ButtonIndex.
+    message_center::ButtonInfo copy_button(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD));
-    button_info.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+    copy_button.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_NOTIFICATION_SCREENSHOT_COPY_TO_CLIPBOARD);
-    optional_field.buttons.push_back(button_info);
+    optional_field.buttons.push_back(copy_button);
+
+    if (chromeos::IsNoteTakingAppAvailable(GetProfile())) {
+      message_center::ButtonInfo annotate_button(l10n_util::GetStringUTF16(
+          IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_ANNOTATE_SCREENSHOT));
+      annotate_button.icon =
+          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+              IDR_NOTIFICATION_SCREENSHOT_ANNOTATE);
+      optional_field.buttons.push_back(annotate_button);
+    }
   }
+
   return new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       l10n_util::GetStringUTF16(

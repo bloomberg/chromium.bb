@@ -28,6 +28,7 @@ class DownloadCommands {
     LEARN_MORE_SCANNING,  // Show information about download scanning.
     LEARN_MORE_INTERRUPTED,  // Show information about interrupted downloads.
     COPY_TO_CLIPBOARD,    // Copy the contents to the clipboard.
+    ANNOTATE,             // Open an app to annotate the image.
   };
 
   // |download_item| must outlive DownloadCommands.
