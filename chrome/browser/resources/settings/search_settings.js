@@ -102,6 +102,7 @@ cr.define('settings', function() {
       } else {
         var span = document.createElement('span');
         span.classList.add(HIT_CSS_CLASS);
+        span.style.backgroundColor = '#ffeb3b'; // --var(--paper-yellow-500)
         span.textContent = tokens[i];
         wrapper.appendChild(span);
       }
