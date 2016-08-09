@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.remote;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -89,6 +90,7 @@ public class MediaRouteChooserDialogFactory extends MediaRouteDialogFactory {
             mPlayer = null;
         }
 
+        @SuppressLint("ValidFragment")
         Fragment(MediaRouteController controller, MediaStateListener player) {
             mController = controller;
             mPlayer = player;
