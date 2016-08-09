@@ -66,14 +66,14 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
   // protected functions in a test (the code would need to explicitly contain
   // the name of the actual test class).
   void CheckCnameLookup(bool expected) {
-    auto http_auth_preferences =
+    auto* http_auth_preferences =
         IOThreadPeer::GetAuthPreferences(io_thread_.get());
     ASSERT_NE(nullptr, http_auth_preferences);
     EXPECT_EQ(expected, http_auth_preferences->NegotiateDisableCnameLookup());
   }
 
   void CheckNegotiateEnablePort(bool expected) {
-    auto http_auth_preferences =
+    auto* http_auth_preferences =
         IOThreadPeer::GetAuthPreferences(io_thread_.get());
     ASSERT_NE(nullptr, http_auth_preferences);
     EXPECT_EQ(expected, http_auth_preferences->NegotiateEnablePort());
@@ -81,7 +81,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
 
 #if defined(OS_ANDROID)
   void CheckAuthAndroidNegoitateAccountType(std::string expected) {
-    auto http_auth_preferences =
+    auto* http_auth_preferences =
         IOThreadPeer::GetAuthPreferences(io_thread_.get());
     ASSERT_NE(nullptr, http_auth_preferences);
     EXPECT_EQ(expected,
@@ -90,13 +90,13 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
 #endif
 
   void CheckCanUseDefaultCredentials(bool expected, const GURL& url) {
-    auto http_auth_preferences =
+    auto* http_auth_preferences =
         IOThreadPeer::GetAuthPreferences(io_thread_.get());
     EXPECT_EQ(expected, http_auth_preferences->CanUseDefaultCredentials(url));
   }
 
   void CheckCanDelegate(bool expected, const GURL& url) {
-    auto http_auth_preferences =
+    auto* http_auth_preferences =
         IOThreadPeer::GetAuthPreferences(io_thread_.get());
     EXPECT_EQ(expected, http_auth_preferences->CanDelegate(url));
   }
