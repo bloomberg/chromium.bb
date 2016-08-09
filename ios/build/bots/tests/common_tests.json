@@ -37,9 +37,6 @@
       "app": "sql_unittests"
     },
     {
-      "app": "sync_unit_tests"
-    },
-    {
       "app": "ui_base_unittests"
     },
     {
