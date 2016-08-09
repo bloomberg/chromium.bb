@@ -295,13 +295,9 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(kTestAsNormalUser,
                       kTestAsGuestUser));
 
-// TODO(crbug.com/630031): Flaky on ASan LSan bot.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_EnableSpokenFeedback DISABLED_EnableSpokenFeedback
-#else
-#define MAYBE_EnableSpokenFeedback EnableSpokenFeedback
-#endif  // defined(ADDRESS_SANITIZER)
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_EnableSpokenFeedback) {
+// TODO(tommi): Flakily hitting HasOneRef DCHECK in
+// AudioOutputResampler::Shutdown, see crbug.com/630031.
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_EnableSpokenFeedback) {
   EnableChromeVox();
 }
 
