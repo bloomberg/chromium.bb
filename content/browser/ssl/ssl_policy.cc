@@ -15,7 +15,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/ssl/ssl_cert_error_handler.h"
+#include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
@@ -42,7 +42,7 @@ SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
   DCHECK(backend_);
 }
 
-void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
+void SSLPolicy::OnCertError(SSLErrorHandler* handler) {
   bool expired_previous_decision = false;
   // First we check if we know the policy for this error.
   DCHECK(handler->ssl_info().is_valid());
@@ -190,7 +190,7 @@ SecurityStyle SSLPolicy::GetSecurityStyleForResource(
   return SECURITY_STYLE_AUTHENTICATED;
 }
 
-void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
+void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLErrorHandler> handler,
                                    CertificateRequestResultType decision) {
   DCHECK(handler->ssl_info().is_valid());
   switch (decision) {
@@ -222,7 +222,7 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
 ////////////////////////////////////////////////////////////////////////////////
 // Certificate Error Routines
 
-void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
+void SSLPolicy::OnCertErrorInternal(SSLErrorHandler* handler,
                                     int options_mask) {
   bool overridable = (options_mask & OVERRIDABLE) != 0;
   bool strict_enforcement = (options_mask & STRICT_ENFORCEMENT) != 0;

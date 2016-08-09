@@ -13,7 +13,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/ssl/ssl_cert_error_handler.h"
+#include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/ssl_status_serialization.h"
@@ -61,14 +61,14 @@ void SSLManager::OnSSLCertificateError(
            << " url: " << url.spec()
            << " cert_status: " << std::hex << ssl_info.cert_status;
 
-  // A certificate error occurred.  Construct a SSLCertErrorHandler object and
+  // A certificate error occurred.  Construct a SSLErrorHandler object and
   // hand it over to the UI thread for processing.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&SSLCertErrorHandler::Dispatch,
-                 new SSLCertErrorHandler(delegate, resource_type, url, ssl_info,
-                                         fatal),
-                 web_contents_getter));
+      base::Bind(
+          &SSLErrorHandler::Dispatch,
+          new SSLErrorHandler(delegate, resource_type, url, ssl_info, fatal),
+          web_contents_getter));
 }
 
 // static

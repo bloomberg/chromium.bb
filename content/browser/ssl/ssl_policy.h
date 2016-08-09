@@ -18,7 +18,7 @@ class GURL;
 
 namespace content {
 class NavigationEntryImpl;
-class SSLCertErrorHandler;
+class SSLErrorHandler;
 class SSLPolicyBackend;
 class WebContents;
 
@@ -33,7 +33,7 @@ class SSLPolicy {
   explicit SSLPolicy(SSLPolicyBackend* backend);
 
   // An error occurred with the certificate in an SSL connection.
-  void OnCertError(SSLCertErrorHandler* handler);
+  void OnCertError(SSLErrorHandler* handler);
 
   void DidRunInsecureContent(NavigationEntryImpl* entry,
                              const GURL& security_origin);
@@ -65,7 +65,7 @@ class SSLPolicy {
   };
 
   // Callback that the user chose to accept or deny the certificate.
-  void OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
+  void OnAllowCertificate(scoped_refptr<SSLErrorHandler> handler,
                           CertificateRequestResultType decision);
 
   // Helper method for derived classes handling certificate errors.
@@ -78,7 +78,7 @@ class SSLPolicy {
   // certificate validation (e.g. with HTTP Strict-Transport-Security).
   // EXPIRED_PREVIOUS_DECISION indicates whether a user decision had been
   // previously made but the decision has expired.
-  void OnCertErrorInternal(SSLCertErrorHandler* handler, int options_mask);
+  void OnCertErrorInternal(SSLErrorHandler* handler, int options_mask);
 
   // If the security style of |entry| has not been initialized, then initialize
   // it with the default style for its URL.

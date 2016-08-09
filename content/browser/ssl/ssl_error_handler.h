@@ -13,17 +13,16 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_type.h"
+#include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
 namespace net {
-class SSLInfo;
 class URLRequest;
 }  // namespace net
 
 namespace content {
 
 class ResourceDispatcherHostImpl;
-class SSLCertErrorHandler;
 class SSLManager;
 class WebContents;
 
@@ -60,7 +59,12 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
     virtual ~Delegate() {}
   };
 
-  virtual SSLCertErrorHandler* AsSSLCertErrorHandler();
+  // Construct on the IO thread.
+  SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
+                  ResourceType resource_type,
+                  const GURL& url,
+                  const net::SSLInfo& ssl_info,
+                  bool fatal);
 
   // Find the appropriate SSLManager for the net::URLRequest and begin handling
   // this error.
@@ -68,50 +72,40 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Call on UI thread.
   void Dispatch(const base::Callback<WebContents*(void)>& web_contents_getter);
 
-  // Available on either thread.
+  // These accessors are available on either thread
+  const net::SSLInfo& ssl_info() const { return ssl_info_; }
+  int cert_error() const { return cert_error_; }
+  bool fatal() const { return fatal_; }
   const GURL& request_url() const { return request_url_; }
-
-  // Available on either thread.
   ResourceType resource_type() const { return resource_type_; }
 
   // Cancels the associated net::URLRequest.
-  // This method can be called from OnDispatchFailed and OnDispatched.
   CONTENT_EXPORT void CancelRequest();
 
   // Continue the net::URLRequest ignoring any previous errors.  Note that some
   // errors cannot be ignored, in which case this will result in the request
   // being canceled.
-  // This method can be called from OnDispatchFailed and OnDispatched.
   void ContinueRequest();
 
   // Cancels the associated net::URLRequest and mark it as denied.  The renderer
   // processes such request in a special manner, optionally replacing them
   // with alternate content (typically frames content is replaced with a
   // warning message).
-  // This method can be called from OnDispatchFailed and OnDispatched.
   void DenyRequest();
 
   // Does nothing on the net::URLRequest but ensures the current instance ref
-  // count is decremented appropriately.  Subclasses that do not want to
-  // take any specific actions in their OnDispatched/OnDispatchFailed should
-  // call this.
+  // count is decremented appropriately.
   void TakeNoAction();
 
   // Returns the manager associated with this SSLErrorHandler.
   // Should only be accessed on the UI thread.
   SSLManager* GetManager() const;
 
- protected:
+ private:
   friend class base::RefCountedThreadSafe<SSLErrorHandler>;
-
-  // Construct on the IO thread.
-  SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
-                  ResourceType resource_type,
-                  const GURL& url);
 
   virtual ~SSLErrorHandler();
 
-  // The following 2 methods are the methods subclasses should implement.
   virtual void OnDispatchFailed();
 
   // Can use the manager_ member.
@@ -123,7 +117,6 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // The delegate we are associated with.
   base::WeakPtr<Delegate> delegate_;
 
- private:
   // Completes the CancelRequest operation on the IO thread.
   // Call on the IO thread.
   void CompleteCancelRequest(int error);
@@ -137,18 +130,27 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Call on the IO thread.
   void CompleteTakeNoAction();
 
-  // The URL that we requested.
-  // This read-only member can be accessed on any thread.
-  const GURL request_url_;
-
-  // What kind of resource is associated with the requested that generated
-  // that error.
-  // This read-only member can be accessed on any thread.
-  const ResourceType resource_type_;
-
   // A flag to make sure we notify the net::URLRequest exactly once.
   // Should only be accessed on the IO thread
   bool request_has_been_notified_;
+
+  // The below read-only members may be accessed on any thread.
+
+  // The URL that we requested.
+  const GURL request_url_;
+
+  // What kind of resource is associated with the request that generated
+  // the error.
+  const ResourceType resource_type_;
+
+  // The SSLInfo associated with the request that generated the error.
+  const net::SSLInfo ssl_info_;
+
+  // The net error code that occurred on the request.
+  const int cert_error_;
+
+  // True if the error is from a host requiring certificate errors to be fatal.
+  const bool fatal_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandler);
 };

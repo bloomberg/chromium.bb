@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/ssl/ssl_cert_error_handler.h"
+#include "content/browser/ssl/ssl_manager.h"
+#include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/url_request/url_request.h"
 
 using net::SSLInfo;
@@ -20,12 +22,17 @@ namespace content {
 
 SSLErrorHandler::SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
                                  ResourceType resource_type,
-                                 const GURL& url)
+                                 const GURL& url,
+                                 const net::SSLInfo& ssl_info,
+                                 bool fatal)
     : manager_(NULL),
       delegate_(delegate),
+      request_has_been_notified_(false),
       request_url_(url),
       resource_type_(resource_type),
-      request_has_been_notified_(false) {
+      ssl_info_(ssl_info),
+      cert_error_(net::MapCertStatusToNetError(ssl_info.cert_status)),
+      fatal_(fatal) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(delegate.get());
 
@@ -40,15 +47,18 @@ SSLErrorHandler::SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
 SSLErrorHandler::~SSLErrorHandler() {}
 
 void SSLErrorHandler::OnDispatchFailed() {
-  TakeNoAction();
+  // Requests can fail to dispatch because they don't have a WebContents. See
+  // <http://crbug.com/86537>. In this case we have to make a decision in this
+  // function, so we ignore revocation check failures.
+  if (net::IsCertStatusMinorError(ssl_info().cert_status)) {
+    ContinueRequest();
+  } else {
+    CancelRequest();
+  }
 }
 
 void SSLErrorHandler::OnDispatched() {
-  TakeNoAction();
-}
-
-SSLCertErrorHandler* SSLErrorHandler::AsSSLCertErrorHandler() {
-  return NULL;
+  manager_->policy()->OnCertError(this);
 }
 
 void SSLErrorHandler::Dispatch(
@@ -125,12 +135,8 @@ void SSLErrorHandler::CompleteCancelRequest(int error) {
   if (request_has_been_notified_)
     return;
 
-  SSLCertErrorHandler* cert_error = AsSSLCertErrorHandler();
-  const SSLInfo* ssl_info = NULL;
-  if (cert_error)
-    ssl_info = &cert_error->ssl_info();
   if (delegate_.get())
-    delegate_->CancelSSLRequest(error, ssl_info);
+    delegate_->CancelSSLRequest(error, &ssl_info_);
   request_has_been_notified_ = true;
 
   // We're done with this object on the IO thread.
