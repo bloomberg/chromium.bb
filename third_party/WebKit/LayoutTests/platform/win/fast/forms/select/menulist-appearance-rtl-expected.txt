@@ -1,0 +1,168 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x540
+  LayoutBlockFlow {HTML} at (0,0) size 800x540
+    LayoutBlockFlow {BODY} at (8,16) size 784x516
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 758x35
+          text run at (0,0) width 758: "This tests that bidirectional text is correctly rendered in popup controls. The order of the text below each popup button"
+          text run at (0,18) width 600: "should match the order of the select's option text, and the order of the text in the popup menu."
+      LayoutBlockFlow {DL} at (0,52) size 784x168
+        LayoutBlockFlow {DT} at (0,0) size 784x18
+          LayoutText {#text} at (0,0) size 286x17
+            text run at (0,0) width 286: "1) direction: rtl; -webkit-rtl-ordering: logical"
+        LayoutBlockFlow {DD} at (40,18) size 744x38
+          LayoutBlockFlow (anonymous) at (0,0) size 744x20
+            LayoutMenuList {SELECT} at (0,0) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+              LayoutBlockFlow (anonymous) at (1,1) size 98x18
+                LayoutText (anonymous) at (31,1) size 63x16
+                  text run at (31,1) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+                  text run at (73,1) width 21: "abc"
+            LayoutText {#text} at (0,0) size 0x0
+          LayoutBlockFlow {DIV} at (0,20) size 100x18
+            LayoutText {#text} at (31,0) size 69x17
+              text run at (31,0) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+              text run at (77,0) width 23: "abc"
+        LayoutBlockFlow {DT} at (0,56) size 784x18
+          LayoutText {#text} at (0,0) size 118x17
+            text run at (0,0) width 118: "2) text-align: right"
+        LayoutBlockFlow {DD} at (40,74) size 744x38
+          LayoutBlockFlow (anonymous) at (0,0) size 744x20
+            LayoutMenuList {SELECT} at (0,0) size 200x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+              LayoutBlockFlow (anonymous) at (1,1) size 198x18
+                LayoutText (anonymous) at (4,1) size 63x16
+                  text run at (4,1) width 21: "abc"
+                  text run at (25,1) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+            LayoutText {#text} at (0,0) size 0x0
+          LayoutBlockFlow {DIV} at (0,20) size 200x18
+            LayoutText {#text} at (0,0) size 69x17
+              text run at (0,0) width 23: "abc"
+              text run at (22,0) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+        LayoutBlockFlow {DT} at (0,112) size 784x18
+          LayoutText {#text} at (0,0) size 72x17
+            text run at (0,0) width 72: "3) No style"
+        LayoutBlockFlow {DD} at (40,130) size 744x38
+          LayoutBlockFlow (anonymous) at (0,0) size 744x20
+            LayoutMenuList {SELECT} at (0,0) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+              LayoutBlockFlow (anonymous) at (1,1) size 98x18
+                LayoutText (anonymous) at (4,1) size 63x16
+                  text run at (4,1) width 21: "abc"
+                  text run at (25,1) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+            LayoutText {#text} at (0,0) size 0x0
+          LayoutBlockFlow {DIV} at (0,20) size 100x18
+            LayoutText {#text} at (0,0) size 69x17
+              text run at (0,0) width 23: "abc"
+              text run at (22,0) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+      LayoutBlockFlow {HR} at (0,236) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {DIV} at (0,246) size 784x54
+        LayoutBlockFlow (anonymous) at (0,0) size 784x18
+          LayoutText {#text} at (0,0) size 632x17
+            text run at (0,0) width 632: "The following line and the SELECT element should have same text, and no characters are lacking."
+        LayoutBlockFlow {DIV} at (0,18) size 784x16
+          LayoutText {#text} at (0,0) size 101x16
+            text run at (0,0) width 101 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
+        LayoutBlockFlow (anonymous) at (0,34) size 784x20
+          LayoutMenuList {SELECT} at (0,0) size 115x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+            LayoutBlockFlow (anonymous) at (1,1) size 113x18
+              LayoutText (anonymous) at (4,1) size 82x16
+                text run at (4,1) width 82 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {HR} at (0,308) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,326) size 784x18
+        LayoutText {#text} at (0,0) size 709x17
+          text run at (0,0) width 709: "Verify that the alignment and writing direction of each selected item matches the one below the pop-up button."
+layer at (8,376) size 784x156
+  LayoutBlockFlow {DIV} at (0,360) size 784x156
+    LayoutMultiColumnSet (anonymous) at (0,0) size 784x156
+layer at (8,376) size 384x312 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutMultiColumnFlowThread (anonymous) at (0,0) size 384x312
+    LayoutBlockFlow {DIV} at (0,0) size 384x156
+      LayoutMenuList {SELECT} at (0,0) size 350x21 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 348x20
+          LayoutText (anonymous) at (4,1) size 177x17
+            text run at (4,1) width 36: "First "
+            text run at (39,1) width 54 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
+            text run at (92,1) width 19: "03"
+            text run at (110,1) width 41 RTL: "\x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+            text run at (150,1) width 31: " fifth"
+      LayoutBlockFlow {DIV} at (0,21) size 352x18
+        LayoutText {#text} at (1,1) size 130x15
+          text run at (1,1) width 27: "First "
+          text run at (28,1) width 38 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
+          text run at (66,1) width 12: "03"
+          text run at (78,1) width 28 RTL: "\x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+          text run at (106,1) width 25: " fifth"
+      LayoutMenuList {SELECT} at (0,39) size 350x21 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 348x20
+          LayoutText (anonymous) at (4,1) size 177x17
+            text run at (4,1) width 26: "fifth"
+            text run at (29,1) width 59 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
+            text run at (87,1) width 19: "03"
+            text run at (105,1) width 45 RTL: " \x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+            text run at (149,1) width 32: "First"
+      LayoutBlockFlow {DIV} at (0,60) size 352x18
+        LayoutText {#text} at (1,1) size 130x15
+          text run at (1,1) width 22: "fifth"
+          text run at (23,1) width 41 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
+          text run at (64,1) width 12: "03"
+          text run at (76,1) width 31 RTL: " \x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+          text run at (107,1) width 24: "First"
+      LayoutMenuList {SELECT} at (0,78) size 350x21 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 348x20
+          LayoutText (anonymous) at (4,1) size 177x17
+            text run at (4,1) width 177 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+      LayoutBlockFlow {DIV} at (0,99) size 352x18
+        LayoutText {#text} at (1,1) size 130x15
+          text run at (1,1) width 130 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+      LayoutMenuList {SELECT} at (0,117) size 350x21 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 348x20
+          LayoutText (anonymous) at (4,1) size 177x17
+            text run at (4,1) width 177 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+      LayoutBlockFlow {DIV} at (0,138) size 352x18
+        LayoutText {#text} at (1,1) size 130x15
+          text run at (1,1) width 130 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+    LayoutBlockFlow {DIV} at (0,156) size 384x156
+      LayoutMenuList {SELECT} at (0,0) size 350x21 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 348x20
+          LayoutText (anonymous) at (167,1) size 177x17
+            text run at (167,1) width 36: "First "
+            text run at (202,1) width 54 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
+            text run at (255,1) width 19: "03"
+            text run at (273,1) width 41 RTL: "\x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+            text run at (313,1) width 31: " fifth"
+      LayoutBlockFlow {DIV} at (0,21) size 352x18
+        LayoutText {#text} at (221,1) size 130x15
+          text run at (221,1) width 27: "First "
+          text run at (248,1) width 38 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
+          text run at (286,1) width 12: "03"
+          text run at (298,1) width 28 RTL: "\x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+          text run at (326,1) width 25: " fifth"
+      LayoutMenuList {SELECT} at (0,39) size 350x21 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 348x20
+          LayoutText (anonymous) at (167,1) size 177x17
+            text run at (167,1) width 26: "fifth"
+            text run at (192,1) width 59 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
+            text run at (250,1) width 19: "03"
+            text run at (268,1) width 45 RTL: " \x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+            text run at (312,1) width 32: "First"
+      LayoutBlockFlow {DIV} at (0,60) size 352x18
+        LayoutText {#text} at (221,1) size 130x15
+          text run at (221,1) width 22: "fifth"
+          text run at (243,1) width 41 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
+          text run at (284,1) width 12: "03"
+          text run at (296,1) width 31 RTL: " \x{5E9}\x{5E0}\x{5D9}\x{5D4} ("
+          text run at (327,1) width 24: "First"
+      LayoutMenuList {SELECT} at (0,78) size 350x21 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 348x20
+          LayoutText (anonymous) at (167,1) size 177x17
+            text run at (167,1) width 177 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+      LayoutBlockFlow {DIV} at (0,99) size 352x18
+        LayoutText {#text} at (221,1) size 130x15
+          text run at (221,1) width 130 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+      LayoutMenuList {SELECT} at (0,117) size 350x21 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 348x20
+          LayoutText (anonymous) at (167,1) size 177x17
+            text run at (167,1) width 177 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
+      LayoutBlockFlow {DIV} at (0,138) size 352x18
+        LayoutText {#text} at (221,1) size 130x15
+          text run at (221,1) width 130 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
