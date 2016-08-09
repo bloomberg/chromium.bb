@@ -82,7 +82,7 @@ BUILDERS = {
     },
     "linux_trusty_blink_rel": {
         "port_name": "linux-precise",
-        "specifiers": ['Precise', 'Release'],
+        "specifiers": ['Trusty', 'Release'],
         "is_try_builder": True,
     },
     "mac10.9_blink_rel": {
@@ -92,7 +92,7 @@ BUILDERS = {
     },
     "mac10.10_blink_rel": {
         "port_name": "mac-mac10.10",
-        "specifiers": ['Mac10.', 'Release'],
+        "specifiers": ['Mac10.10', 'Release'],
         "is_try_builder": True,
     },
     "mac10.11_blink_rel": {
