@@ -364,6 +364,25 @@
       }
     },
     {
+      "command": "nextLandmark",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [186]
+        }
+      }
+    },
+    {
+      "command": "previousLandmark",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [186],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
       "command": "jumpToBottom",
       "sequence": {
         "cvoxModifier": true,
@@ -488,7 +507,8 @@
       "sequence": {
         "cvoxModifier": true,
         "keys": {
-          "keyCode": [219]
+          "keyCode": [219],
+          "shiftKey": [true]
         }
       }
     },
@@ -497,7 +517,7 @@
       "sequence": {
         "cvoxModifier": true,
         "keys": {
-          "keyCode": [221]
+          "keyCode": [219]
         }
       }
     },
@@ -506,7 +526,8 @@
       "sequence": {
         "cvoxModifier": true,
         "keys": {
-          "keyCode": [186]
+          "keyCode": [221],
+          "shiftKey": [true]
         }
       }
     },
@@ -515,7 +536,7 @@
       "sequence": {
         "cvoxModifier": true,
         "keys": {
-          "keyCode": [222]
+          "keyCode": [221]
         }
       }
     },

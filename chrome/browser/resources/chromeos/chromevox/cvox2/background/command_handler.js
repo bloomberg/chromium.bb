@@ -373,6 +373,16 @@ CommandHandler.onCommand = function(command) {
       pred = AutomationPredicate.visitedLink;
       predErrorMsg = 'no_previous_visited_link';
       break;
+    case 'nextLandmark':
+      dir = Dir.FORWARD;
+      pred = AutomationPredicate.landmark;
+      predErrorMsg = 'no_next_landmark';
+      break;
+    case 'previousLandmark':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.landmark;
+      predErrorMsg = 'no_previous_landmark';
+      break;
     case 'right':
     case 'nextObject':
       current = current.move(cursors.Unit.NODE, Dir.FORWARD);
