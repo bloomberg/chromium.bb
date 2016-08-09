@@ -125,7 +125,7 @@ void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
 void MainThreadEventQueue::SendEventNotificationToMainThread() {
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MainThreadEventQueue::PopEventOnMainThread,
-                            base::Unretained(this)));
+                            this));
 }
 
 void MainThreadEventQueue::QueueEvent(
