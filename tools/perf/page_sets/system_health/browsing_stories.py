@@ -16,7 +16,6 @@ class _BrowsingStory(system_health_story.SystemHealthStory):
 
   IS_SINGLE_PAGE_APP = False
   ITEM_SELECTOR = NotImplemented
-  ITEMS_TO_VISIT = 4
   ABSTRACT_STORY = True
 
   def _WaitForNavigation(self, action_runner):
@@ -38,6 +37,11 @@ class _BrowsingStory(system_health_story.SystemHealthStory):
     self._WaitForNavigation(action_runner)
 
 
+##############################################################################
+# News browsing stories.
+##############################################################################
+
+
 class _NewsBrowsingStory(_BrowsingStory):
   """Abstract base class for news user stories.
 
@@ -52,6 +56,7 @@ class _NewsBrowsingStory(_BrowsingStory):
 
   ITEM_READ_TIME_IN_SECONDS = 3
   ITEM_SCROLL_REPEAT = 2
+  ITEMS_TO_VISIT = 4
   MAIN_PAGE_SCROLL_REPEAT = 0
   ABSTRACT_STORY = True
 
@@ -72,11 +77,6 @@ class _NewsBrowsingStory(_BrowsingStory):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
     action_runner.RepeatableBrowserDrivenScroll(
         repeat_count=self.MAIN_PAGE_SCROLL_REPEAT)
-
-
-##############################################################################
-# News browsing stories.
-##############################################################################
 
 
 class CnnStory(_NewsBrowsingStory):
@@ -212,3 +212,98 @@ class WashingtonPostMobileStory(_NewsBrowsingStory):
     if has_button:
       action_runner.ClickElement(selector=self._CLOSE_BUTTON_SELECTOR)
     super(WashingtonPostMobileStory, self)._DidLoadDocument(action_runner)
+
+
+##############################################################################
+# Media browsing stories.
+##############################################################################
+
+
+class _MediaBrowsingStory(_BrowsingStory):
+  """Abstract base class for media user stories
+
+  A media story imitates browsing a website with photo or video content:
+  1. Load a page showing a media item
+  2. Click on the next link to go to the next media item
+  3. etc.
+  """
+
+  ABSTRACT_STORY = True
+  ITEM_VIEW_TIME_IN_SECONDS = 3
+  ITEMS_TO_VISIT = 15
+  ITEM_SELECTOR_INDEX = 0
+
+  def _DidLoadDocument(self, action_runner):
+    for _ in xrange(self.ITEMS_TO_VISIT):
+      self._NavigateToItem(action_runner, self.ITEM_SELECTOR_INDEX)
+      self._ViewMediaItem(action_runner)
+
+  def _ViewMediaItem(self, action_runner):
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    action_runner.Wait(self.ITEM_VIEW_TIME_IN_SECONDS)
+
+
+class ImgurMobileStory(_MediaBrowsingStory):
+  NAME = 'browse:media:imgur'
+  URL = 'http://imgur.com/gallery/5UlBN'
+  ITEM_SELECTOR = '.Navbar-customAction'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  IS_SINGLE_PAGE_APP = True
+
+
+class ImgurDesktopStory(_MediaBrowsingStory):
+  NAME = 'browse:media:imgur'
+  URL = 'http://imgur.com/gallery/5UlBN'
+  ITEM_SELECTOR = '.navNext'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  IS_SINGLE_PAGE_APP = True
+
+
+class YouTubeMobileStory(_MediaBrowsingStory):
+  NAME = 'browse:media:youtube'
+  URL = 'https://m.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
+  ITEM_SELECTOR = '._mhgb > a'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR_INDEX = 3
+
+
+class YouTubeDesktopStory(_MediaBrowsingStory):
+  NAME = 'browse:media:youtube'
+  URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
+  ITEM_SELECTOR = '.yt-uix-simple-thumb-related'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  IS_SINGLE_PAGE_APP = True
+  # A longer view time allows videos to load and play.
+  ITEM_VIEW_TIME_IN_SECONDS = 5
+  ITEMS_TO_VISIT = 8
+  ITEM_SELECTOR_INDEX = 3
+
+
+class FacebookMobileStory(_MediaBrowsingStory):
+  NAME = 'browse:media:facebook'
+  URL = (
+      'https://m.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&source=54&ref=page_internal')
+  ITEM_SELECTOR = '._57-r.touchable'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR_INDEX = 0
+
+  def _Login(self, action_runner):
+    action_runner.Navigate('https://m.facebook.com/rihanna')
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+
+
+class FacebookDesktopStory(_MediaBrowsingStory):
+  NAME = 'browse:media:facebook'
+  URL = (
+      'https://www.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&theater')
+  ITEM_SELECTOR = '.snowliftPager.next'
+  # Recording currently does not work. The page gets stuck in the
+  # theater viewer.
+  SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
+  IS_SINGLE_PAGE_APP = True
+
+  def _Login(self, action_runner):
+    action_runner.Navigate('https://www.facebook.com/rihanna')
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()

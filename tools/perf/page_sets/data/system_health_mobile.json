@@ -97,6 +97,16 @@
         "system_health_mobile_029.wpr": [
             "load:search:google",
             "search:portal:google"
+        ],
+        "system_health_mobile_035.wpr": [
+            "browse:media:imgur",
+            "load:media:imgur"
+        ],
+        "system_health_mobile_037.wpr": [
+            "browse:media:youtube"
+        ],
+        "system_health_mobile_040.wpr": [
+            "browse:media:facebook"
         ]
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating."

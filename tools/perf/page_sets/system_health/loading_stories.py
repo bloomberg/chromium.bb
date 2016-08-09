@@ -197,7 +197,7 @@ class LoadWikipediaStory(_LoadingStory):
 
 
 ################################################################################
-# Audio and video.
+# Audio, images, and video.
 ################################################################################
 
 
@@ -242,6 +242,11 @@ class LoadFlickr(_LoadingStory):
         document.querySelector(
             '.search-photos-everyone-trending-view .photo-list-view')
                 !== null''')
+
+
+class LoadImgur(_LoadingStory):
+  NAME = 'load:media:imgur'
+  URL = 'http://imgur.com/gallery/5UlBN'
 
 
 ################################################################################

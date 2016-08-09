@@ -88,6 +88,13 @@
         "system_health_desktop_022.wpr": [
             "load:search:google",
             "search:portal:google"
+        ],
+        "system_health_desktop_025.wpr": [
+            "browse:media:imgur",
+            "load:media:imgur"
+        ],
+        "system_health_desktop_026.wpr": [
+            "browse:media:youtube"
         ]
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating."

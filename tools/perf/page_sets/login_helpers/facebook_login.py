@@ -33,3 +33,11 @@ def LoginWithMobileSite(
   action_runner.WaitForElement(text='OK')
   action_runner.ClickElement(text='OK')
   action_runner.WaitForNavigate()
+
+
+def LoginWithDesktopSite(
+    action_runner, credential,
+    credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
+  # Currently we use the mobile login page also on Desktop because the
+  # Desktop version requires enabled cookies and rejects the login.
+  return LoginWithMobileSite(action_runner, credential, credentials_path)
