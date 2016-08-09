@@ -29,16 +29,18 @@ class WindowMirrorView : public views::View, public ::wm::LayerDelegateFactory {
   explicit WindowMirrorView(WmWindowAura* window);
   ~WindowMirrorView() override;
 
-  void Init();
-
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
 
   // ::wm::LayerDelegateFactory:
   ui::LayerDelegate* CreateDelegate(ui::LayerDelegate* delegate) override;
 
  private:
+  void InitLayerOwner();
+
   // Gets the root of the layer tree that was lifted from |target_| (and is now
   // a child of |this->layer()|).
   ui::Layer* GetMirrorLayer();
@@ -46,7 +48,8 @@ class WindowMirrorView : public views::View, public ::wm::LayerDelegateFactory {
   // The original window that is being represented by |this|.
   WmWindowAura* target_;
 
-  // Retains ownership of the mirror layer tree.
+  // Retains ownership of the mirror layer tree. This is lazily initialized
+  // the first time the view becomes visible.
   std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
 
   std::vector<std::unique_ptr<ForwardingLayerDelegate>> delegates_;

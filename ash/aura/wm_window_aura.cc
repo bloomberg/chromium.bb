@@ -690,9 +690,7 @@ void WmWindowAura::SetDescendantsStayInSameRootWindow(bool value) {
 }
 
 std::unique_ptr<views::View> WmWindowAura::CreateViewWithRecreatedLayers() {
-  std::unique_ptr<wm::WindowMirrorView> view(new wm::WindowMirrorView(this));
-  view->Init();
-  return std::move(view);
+  return base::WrapUnique(new wm::WindowMirrorView(this));
 }
 
 void WmWindowAura::AddObserver(WmWindowObserver* observer) {
