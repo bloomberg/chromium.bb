@@ -7,13 +7,13 @@
 
 share_test((t, mock) => {
   mock.pushShareResult('the title', 'the message', null);
-  return navigator.share({title: 'the title', text: 'the message',
-                          url: 'the URL'});
+  return callWithKeyDown(() => navigator.share(
+        {title: 'the title', text: 'the message', url: 'the URL'}));
 }, 'successful share');
 
 share_test((t, mock) => {
   mock.pushShareResult('', '', null);
-  return navigator.share({});
+  return callWithKeyDown(() => navigator.share({}));
 }, 'successful share with empty ShareData');
 
 </script>

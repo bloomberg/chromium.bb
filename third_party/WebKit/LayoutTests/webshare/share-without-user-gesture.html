@@ -6,8 +6,9 @@
 <script>
 
 share_test((t, mock) => {
-  mock.pushShareResult('384957', '[object Object]', null);
-  return callWithKeyDown(() => navigator.share({title: 384957, text: {}}));
-}, 'share of types other than string (expect implicitly converted to string)');
+  return promise_rejects(
+      t, new DOMException('Must be handling a user gesture to perform a share request.', 'SecurityError'),
+      navigator.share({title: 'the title', text: 'the message'}));
+}, 'share without a user gesture');
 
 </script>

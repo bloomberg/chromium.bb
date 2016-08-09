@@ -7,9 +7,9 @@
 
 share_test((t, mock) => {
   mock.pushShareResult('the title', 'the message', 'error from browser');
-  return promise_rejects(
+  return callWithKeyDown(() => promise_rejects(
       t, new DOMException('error from browser', 'AbortError'),
-      navigator.share({title: 'the title', text: 'the message'}));
+      navigator.share({title: 'the title', text: 'the message'})));
 }, 'share with browser-side error');
 
 </script>

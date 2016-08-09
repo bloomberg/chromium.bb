@@ -10,6 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/webshare/ShareData.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
@@ -81,6 +82,11 @@ const char* NavigatorShare::supplementName()
 
 ScriptPromise NavigatorShare::share(ScriptState* scriptState, const ShareData& shareData)
 {
+    if (!UserGestureIndicator::utilizeUserGesture()) {
+        DOMException* error = DOMException::create(SecurityError, "Must be handling a user gesture to perform a share request.");
+        return ScriptPromise::rejectWithDOMException(scriptState, error);
+    }
+
     if (!m_service) {
         Document* doc = toDocument(scriptState->getExecutionContext());
         DCHECK(doc);

@@ -64,3 +64,16 @@ function share_test(func, name, properties) {
     return Promise.race([func(t, mock), mockPromise]);
   }), name, properties);
 }
+
+// Copied from resources/bluetooth/bluetooth-helpers.js.
+function callWithKeyDown(functionCalledOnKeyPress) {
+  return new Promise(resolve => {
+    function onKeyPress() {
+      document.removeEventListener('keypress', onKeyPress, false);
+      resolve(functionCalledOnKeyPress());
+    }
+    document.addEventListener('keypress', onKeyPress, false);
+
+    eventSender.keyDown(' ', []);
+  });
+}
