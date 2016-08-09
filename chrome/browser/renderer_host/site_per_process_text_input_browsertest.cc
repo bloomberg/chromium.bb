@@ -236,16 +236,15 @@ class ViewCompositionRangeChangedObserver
   DISALLOW_COPY_AND_ASSIGN(ViewCompositionRangeChangedObserver);
 };
 
-// This class observes the |expected_view| for a change in the text selection
-// that has a selection length of |expected_length|.
+// This class observes the |expected_view| for a change in the text selection.
 class ViewTextSelectionObserver : public TextInputManagerObserverBase {
  public:
   ViewTextSelectionObserver(content::WebContents* web_contents,
                             content::RenderWidgetHostView* expected_view,
-                            size_t expected_selection_length)
+                            size_t expected_length)
       : TextInputManagerObserverBase(web_contents),
         expected_view_(expected_view),
-        expected_selection_length_(expected_selection_length) {
+        expected_length_(expected_length) {
     tester()->SetOnTextSelectionChangedCallback(base::Bind(
         &ViewTextSelectionObserver::VerifyChange, base::Unretained(this)));
   }
@@ -253,15 +252,15 @@ class ViewTextSelectionObserver : public TextInputManagerObserverBase {
  private:
   void VerifyChange() {
     if (expected_view_ == tester()->GetUpdatedView()) {
-      size_t selection_length;
-      if (tester()->GetCurrentTextSelectionLength(&selection_length) &&
-          expected_selection_length_ == selection_length)
+      size_t length;
+      EXPECT_TRUE(tester()->GetCurrentTextSelectionLength(&length));
+      if (length == expected_length_)
         OnSuccess();
     }
   }
 
   const content::RenderWidgetHostView* const expected_view_;
-  const size_t expected_selection_length_;
+  const size_t expected_length_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTextSelectionObserver);
 };
@@ -647,37 +646,56 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
 // This test creates a page with multiple child frames and adds an <input> to
 // each frame. Then, sequentially, each <input> is focused by sending a tab key.
-// After focusing each input, the whole text is automatically selected and a
-// ViewHostMsg_SelectionChanged IPC sent back to the browser. This test verifies
-// that the browser tracks the text selection from all frames.
+// After focusing each input, a sequence of key presses (character 'E') are sent
+// to the focused widget and then the whole text is selected using Ctrl+A. The
+// test then verifies that the selection length equals the length of the
+// sequence of 'E's.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                        TrackTextSelectionForAllFrames) {
-  // TODO(ekaramad): Since IME related methods in WebFrameWidgetImpl are not
-  // implemented yet, this test does not work on child frames. Add child frames
-  // to this test when IME methods in WebFramgeWidgetImpl are implemented
-  // (https://crbug.com/626746).
-  CreateIframePage("a()");
-  std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{})};
+  CreateIframePage("a(b,c(a,b),d)");
+  std::vector<content::RenderFrameHost*> frames{
+      GetFrame(IndexVector{}),     GetFrame(IndexVector{0}),
+      GetFrame(IndexVector{1}),    GetFrame(IndexVector{1, 0}),
+      GetFrame(IndexVector{1, 1}), GetFrame(IndexVector{2})};
+  std::vector<std::string> values{"main", "b", "c", "ca", "cb", "d"};
   std::vector<content::RenderWidgetHostView*> views;
-  for (auto frame : frames)
+  for (auto* frame : frames)
     views.push_back(frame->GetView());
-  std::vector<std::string> input_text{"abc"};
   for (size_t i = 0; i < frames.size(); ++i)
-    AddInputFieldToFrame(frames[i], "text", input_text[i], false);
+    AddInputFieldToFrame(frames[i], "text", values[i], true);
 
   content::WebContents* web_contents = active_contents();
 
-  auto send_tab_and_wait_for_selection_change = [&web_contents](
-      content::RenderFrameHost* frame, size_t expected_length) {
-    ViewTextSelectionObserver text_selection_observer(
-        web_contents, frame->GetView(), expected_length);
+  auto send_tab_and_wait_for_value = [&web_contents](const std::string& value) {
+    TextInputManagerValueObserver observer(web_contents, value);
     SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
                      ui::VKEY_TAB, false, false, false, false);
-    text_selection_observer.Wait();
+    observer.Wait();
   };
 
-  for (size_t i = 0; i < frames.size(); ++i)
-    send_tab_and_wait_for_selection_change(frames[i], input_text[i].size());
+  auto send_keys_select_all_wait_for_selection_change = [&web_contents](
+      content::RenderWidgetHostView* view, size_t count) {
+    ViewTextSelectionObserver observer(web_contents, view, count);
+    for (size_t i = 0; i < count; ++i) {
+      SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('E'),
+                       ui::DomCode::US_E, ui::VKEY_E, false, false, false,
+                       false);
+    }
+    // Send Ctrl+A to select the whole text.
+    SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('a'),
+                     ui::DomCode::US_A, ui::VKEY_A, true, false, false, false);
+    observer.Wait();
+  };
+
+  size_t count = 2;
+  for (size_t i = 0; i < views.size(); ++i) {
+    // First focus the <input>.
+    send_tab_and_wait_for_value(values[i]);
+
+    // Send a sequence of |count| 'E' keys and wait until the view receives a
+    // selection change update for a text of the corresponding size, |count|.
+    send_keys_select_all_wait_for_selection_change(views[i], count++);
+  }
 }
 
 // The following test verifies that when the active widget changes value, it is
