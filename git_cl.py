@@ -3073,7 +3073,7 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
       pool = ThreadPool(
           min(max_processes, len(changes_to_fetch))
               if max_processes is not None
-              else len(changes_to_fetch))
+              else max(len(changes_to_fetch), 1))
 
       fetched_cls = set()
       it = pool.imap_unordered(fetch, changes_to_fetch).__iter__()
