@@ -446,13 +446,13 @@ TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldReportEmptyHostsError) {
   EXPECT_THAT(
       histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
       ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
+  // This particular error gets triggered prior to fetching, so no fetch time
+  // or response should get recorded.
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               IsEmpty());
-  // This particular error gets triggered prior to JSON parsing and hence tests
-  // observe no fetch latency.
   EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
-              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+              IsEmpty());
 }
 
 TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldRestrictToHosts) {

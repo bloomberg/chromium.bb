@@ -35582,7 +35582,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NewTabPage.Snippets.FetchTime" units="ms">
   <owner>mastiz@chromium.org</owner>
-  <summary>Time spent fetching snippets.</summary>
+  <summary>
+    Time spent fetching snippets. Only recorded for fetch attempts that resulted
+    in an actual network request.
+  </summary>
 </histogram>
 
 <histogram name="NewTabPage.Snippets.IncompleteSnippetsAfterFetch"

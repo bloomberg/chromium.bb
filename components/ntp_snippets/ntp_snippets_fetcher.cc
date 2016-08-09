@@ -560,8 +560,13 @@ void NTPSnippetsFetcher::FetchFinished(OptionalSnippets snippets,
   DCHECK(result == FetchResult::SUCCESS || !snippets);
   last_status_ = FetchResultToString(result) + extra_message;
 
-  UMA_HISTOGRAM_TIMES("NewTabPage.Snippets.FetchTime",
-                      tick_clock_->NowTicks() - fetch_start_time_);
+  // If the result is EMPTY_HOSTS or OAUTH_TOKEN_ERROR, we didn't actually send
+  // a network request, so don't record FetchTime in those cases.
+  if (result != FetchResult::EMPTY_HOSTS &&
+      result != FetchResult::OAUTH_TOKEN_ERROR) {
+    UMA_HISTOGRAM_TIMES("NewTabPage.Snippets.FetchTime",
+                        tick_clock_->NowTicks() - fetch_start_time_);
+  }
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Snippets.FetchResult",
                             static_cast<int>(result),
                             static_cast<int>(FetchResult::RESULT_MAX));
