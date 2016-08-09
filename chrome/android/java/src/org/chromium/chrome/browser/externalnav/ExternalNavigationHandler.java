@@ -445,6 +445,18 @@ public class ExternalNavigationHandler {
                     // to launch the WebAPK without showing the intent picker.
                     String targetWebApkPackageName =
                             mDelegate.findWebApkPackageName(resolvingInfos);
+
+                    // We can't rely on this falling through to startActivityIfNeeded and behaving
+                    // correctly for WebAPKs. This is because the target of the intent is the
+                    // WebApk's main activity but that's just a bouncer which will redirect to
+                    // WebApkActivity in chrome. To avoid bouncing indefinitely, don't override the
+                    // navigation if we are currently showing the WebApk
+                    // |params.webApkPackageName()| that we will redirect to.
+                    if (targetWebApkPackageName != null
+                            && targetWebApkPackageName.equals(params.webApkPackageName())) {
+                        return OverrideUrlLoadingResult.NO_OVERRIDE;
+                    }
+
                     if (targetWebApkPackageName != null
                             && mDelegate.countSpecializedHandlers(resolvingInfos) == 1) {
                         intent.setPackage(targetWebApkPackageName);

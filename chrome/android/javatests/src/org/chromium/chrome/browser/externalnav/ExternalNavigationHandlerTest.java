@@ -930,7 +930,6 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     public void testLaunchWebApk_StayInSameWebApk() {
         CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
         checkUrl(WEBAPK_SCOPE + "/new.html")
-                .withReferrer(WEBAPK_SCOPE)
                 .withWebApkPackageName(WEBAPK_PACKAGE_NAME)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
@@ -953,7 +952,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
         @Override
         public List<ResolveInfo> queryIntentActivities(Intent intent) {
-            List<ResolveInfo> list = new ArrayList<ResolveInfo>();
+            List<ResolveInfo> list = new ArrayList<>();
             // TODO(yfriedman): We shouldn't have a separate global override just for tests - we
             // should mimic the appropriate intent resolution intead.
             if (mQueryIntentOverride != null) {
@@ -1284,7 +1283,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     private static class TestPackageManager extends MockPackageManager {
         @Override
         public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-            List<ResolveInfo> resolves = new ArrayList<ResolveInfo>();
+            List<ResolveInfo> resolves = new ArrayList<>();
             if (intent.getDataString().startsWith("market:")) {
                 resolves.add(newResolveInfo("market", "market"));
             } else if (intent.getDataString().startsWith("http://m.youtube.com")
