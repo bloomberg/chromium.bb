@@ -62,4 +62,64 @@ TEST(SequenceTokenTest, GetForCurrentThread) {
   EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
 }
 
+// Expect a default-constructed TaskToken to be invalid and not equal to
+// another invalid TaskToken.
+TEST(TaskTokenTest, InvalidDefaultConstructed) {
+  EXPECT_FALSE(TaskToken().IsValid());
+  EXPECT_NE(TaskToken(), TaskToken());
+}
+
+// Expect a TaskToken returned by TaskToken::GetForCurrentThread() outside the
+// scope of a ScopedSetSequenceTokenForCurrentThread to be invalid.
+TEST(TaskTokenTest, InvalidOutsideScope) {
+  EXPECT_FALSE(TaskToken::GetForCurrentThread().IsValid());
+}
+
+// Expect an invalid TaskToken not to be equal with a valid TaskToken.
+TEST(TaskTokenTest, ValidNotEqualsInvalid) {
+  ScopedSetSequenceTokenForCurrentThread
+      scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+  TaskToken valid = TaskToken::GetForCurrentThread();
+  TaskToken invalid;
+  EXPECT_NE(valid, invalid);
+}
+
+// Expect TaskTokens returned by TaskToken::GetForCurrentThread() in the scope
+// of the same ScopedSetSequenceTokenForCurrentThread instance to be
+// valid and equal with each other.
+TEST(TaskTokenTest, EqualInSameScope) {
+  ScopedSetSequenceTokenForCurrentThread
+      scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+
+  const TaskToken token_a = TaskToken::GetForCurrentThread();
+  const TaskToken token_b = TaskToken::GetForCurrentThread();
+
+  EXPECT_TRUE(token_a.IsValid());
+  EXPECT_TRUE(token_b.IsValid());
+  EXPECT_EQ(token_a, token_b);
+}
+
+// Expect TaskTokens returned by TaskToken::GetForCurrentThread() in the scope
+// of different ScopedSetSequenceTokenForCurrentThread instances to be
+// valid but not equal to each other.
+TEST(TaskTokenTest, NotEqualInDifferentScopes) {
+  TaskToken token_a;
+  TaskToken token_b;
+
+  {
+    ScopedSetSequenceTokenForCurrentThread
+        scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+    token_a = TaskToken::GetForCurrentThread();
+  }
+  {
+    ScopedSetSequenceTokenForCurrentThread
+        scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+    token_b = TaskToken::GetForCurrentThread();
+  }
+
+  EXPECT_TRUE(token_a.IsValid());
+  EXPECT_TRUE(token_b.IsValid());
+  EXPECT_NE(token_a, token_b);
+}
+
 }  // namespace base

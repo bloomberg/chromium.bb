@@ -69,15 +69,34 @@ void ExpectNotCalledOnValidThreadWithSequenceTokenAndThreadTaskRunnerHandle(
 
 }  // namespace
 
-TEST(ThreadCheckerTest, CallsAllowedSameThreadNoSequenceToken) {
+TEST(ThreadCheckerTest, AllowedSameThreadNoSequenceToken) {
   ThreadCheckerImpl thread_checker;
   EXPECT_TRUE(thread_checker.CalledOnValidThread());
 }
 
 TEST(ThreadCheckerTest,
-     CallsAllowedSameThreadSameSequenceTokenWithThreadTaskRunnerHandle) {
+     AllowedSameThreadAndSequenceDifferentTasksWithThreadTaskRunnerHandle) {
   ThreadTaskRunnerHandle thread_task_runner_handle(
       make_scoped_refptr(new TestSimpleTaskRunner));
+
+  std::unique_ptr<ThreadCheckerImpl> thread_checker;
+  const SequenceToken sequence_token = SequenceToken::Create();
+
+  {
+    ScopedSetSequenceTokenForCurrentThread
+        scoped_set_sequence_token_for_current_thread(sequence_token);
+    thread_checker.reset(new ThreadCheckerImpl);
+  }
+
+  {
+    ScopedSetSequenceTokenForCurrentThread
+        scoped_set_sequence_token_for_current_thread(sequence_token);
+    EXPECT_TRUE(thread_checker->CalledOnValidThread());
+  }
+}
+
+TEST(ThreadCheckerTest,
+     AllowedSameThreadSequenceAndTaskNoThreadTaskRunnerHandle) {
   ScopedSetSequenceTokenForCurrentThread
       scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
   ThreadCheckerImpl thread_checker;
@@ -85,20 +104,29 @@ TEST(ThreadCheckerTest,
 }
 
 TEST(ThreadCheckerTest,
-     CallsDisallowedSameThreadSameSequenceTokenNoThreadTaskRunnerHandle) {
-  ScopedSetSequenceTokenForCurrentThread
-      scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
-  ThreadCheckerImpl thread_checker;
-  EXPECT_FALSE(thread_checker.CalledOnValidThread());
+     DisallowedSameThreadAndSequenceDifferentTasksNoThreadTaskRunnerHandle) {
+  std::unique_ptr<ThreadCheckerImpl> thread_checker;
+
+  {
+    ScopedSetSequenceTokenForCurrentThread
+        scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+    thread_checker.reset(new ThreadCheckerImpl);
+  }
+
+  {
+    ScopedSetSequenceTokenForCurrentThread
+        scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+    EXPECT_FALSE(thread_checker->CalledOnValidThread());
+  }
 }
 
-TEST(ThreadCheckerTest, CallsDisallowedOnDifferentThreadsNoSequenceToken) {
+TEST(ThreadCheckerTest, DisallowedDifferentThreadsNoSequenceToken) {
   ThreadCheckerImpl thread_checker;
   RunCallbackOnNewThreadSynchronously(
       Bind(&ExpectNotCalledOnValidThread, Unretained(&thread_checker)));
 }
 
-TEST(ThreadCheckerTest, CallsDisallowedOnDifferentThreadsSameSequenceToken) {
+TEST(ThreadCheckerTest, DisallowedDifferentThreadsSameSequence) {
   ThreadTaskRunnerHandle thread_task_runner_handle(
       make_scoped_refptr(new TestSimpleTaskRunner));
   const SequenceToken sequence_token(SequenceToken::Create());
@@ -113,7 +141,7 @@ TEST(ThreadCheckerTest, CallsDisallowedOnDifferentThreadsSameSequenceToken) {
       Unretained(&thread_checker), sequence_token));
 }
 
-TEST(ThreadCheckerTest, CallsDisallowedSameThreadDifferentSequenceToken) {
+TEST(ThreadCheckerTest, DisallowedSameThreadDifferentSequence) {
   std::unique_ptr<ThreadCheckerImpl> thread_checker;
 
   ThreadTaskRunnerHandle thread_task_runner_handle(
