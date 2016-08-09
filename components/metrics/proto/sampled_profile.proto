@@ -11,13 +11,14 @@ option java_package = "org.chromium.components.metrics";
 package metrics;
 
 import "call_stack_profile.proto";
+import "execution_context.proto";
 import "perf_data.proto";
 import "perf_stat.proto";
 
 // Protocol buffer for collected sample-based profiling data.
 // Contains the parameters and data from a single profile collection event.
 
-// Next tag: 11
+// Next tag: 13
 message SampledProfile {
   // Indicates the event that triggered this collection.
   enum TriggerEvent {
@@ -35,7 +36,7 @@ message SampledProfile {
 
     // The profile was collected upon restoring a previous session.
     RESTORE_SESSION = 3;
-    
+
     // The profile was collected at process startup.
     PROCESS_STARTUP = 4;
 
@@ -46,6 +47,12 @@ message SampledProfile {
     THREAD_HUNG = 6;
   }
   optional TriggerEvent trigger_event = 1;
+
+  // The process in which the profile was collected.
+  optional Process process = 11;
+
+  // The thread in which the profile was collected.
+  optional Thread thread = 12;
 
   // Fields 2-3: Time durations are given in ticks, and represent system uptime
   // rather than wall time.
