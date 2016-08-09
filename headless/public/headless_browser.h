@@ -55,12 +55,16 @@ class HEADLESS_EXPORT HeadlessBrowser {
   virtual HeadlessBrowserContext* GetBrowserContextForId(
       const std::string& id) = 0;
 
-  // Returns a task runner for submitting work to the browser main thread.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
-      const = 0;
-
   // Returns a task runner for submitting work to the browser file thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserFileThread()
+      const = 0;
+
+  // Returns a task runner for submitting work to the browser io thread.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserIOThread()
+      const = 0;
+
+  // Returns a task runner for submitting work to the browser main thread.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
       const = 0;
 
   // Requests browser to stop as soon as possible. |Run| will return as soon as
