@@ -381,7 +381,6 @@ source_set("browser") {
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",
-      "//ui/views/mus",
       "//ui/wm",
     ]
     sources += [

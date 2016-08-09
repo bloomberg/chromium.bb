@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -67,6 +68,10 @@ class LatencyInfo;
 class Layer;
 class Reflector;
 class Texture;
+
+#if defined(USE_AURA)
+class Window;
+#endif
 
 const int kCompositorLockTimeoutMs = 67;
 
@@ -282,6 +287,12 @@ class COMPOSITOR_EXPORT Compositor
   gfx::AcceleratedWidget ReleaseAcceleratedWidget();
   gfx::AcceleratedWidget widget() const;
 
+#if defined(USE_AURA)
+  // Sets the window for the compositor to render into on mus+ash.
+  void SetWindow(ui::Window* window);
+  ui::Window* window() const;
+#endif
+
   // Returns the vsync manager for this compositor.
   scoped_refptr<CompositorVSyncManager> vsync_manager() const;
 
@@ -385,6 +396,9 @@ class COMPOSITOR_EXPORT Compositor
   base::ObserverList<CompositorAnimationObserver> animation_observer_list_;
 
   gfx::AcceleratedWidget widget_;
+#if defined(USE_AURA)
+  ui::Window* window_;
+#endif
   std::unordered_map<uint32_t, uint32_t> surface_clients_;
   bool widget_valid_;
   bool output_surface_requested_;

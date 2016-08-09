@@ -513,7 +513,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #if defined(USE_AURA)
           display_output_surface =
               base::WrapUnique(new MusBrowserCompositorOutputSurface(
-                  data->surface_handle, context_provider,
+                  compositor->window(), context_provider,
                   compositor->vsync_manager(), begin_frame_source.get(),
                   std::move(validator)));
 #else

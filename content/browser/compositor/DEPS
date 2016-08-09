@@ -3,5 +3,4 @@ include_rules = [
  "+services/ui/common",
  "+services/ui/public/cpp",
  "+ui/platform_window",
- "+ui/views",
 ]

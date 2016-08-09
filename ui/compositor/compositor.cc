@@ -80,6 +80,9 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
     : context_factory_(context_factory),
       root_layer_(NULL),
       widget_(gfx::kNullAcceleratedWidget),
+#if defined(USE_AURA)
+      window_(nullptr),
+#endif
       widget_valid_(false),
       output_surface_requested_(false),
       surface_id_allocator_(new cc::SurfaceIdAllocator(
@@ -426,6 +429,17 @@ gfx::AcceleratedWidget Compositor::widget() const {
   DCHECK(widget_valid_);
   return widget_;
 }
+
+#if defined(USE_AURA)
+void Compositor::SetWindow(ui::Window* window) {
+  window_ = window;
+}
+
+ui::Window* Compositor::window() const {
+  DCHECK(window_);
+  return window_;
+}
+#endif
 
 scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
   return vsync_manager_;

@@ -15,13 +15,11 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_surface.h"
-#include "ui/views/mus/native_widget_mus.h"
-#include "ui/views/mus/window_tree_host_mus.h"
 
 namespace content {
 
 MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
-    gpu::SurfaceHandle surface_handle,
+    ui::Window* window,
     scoped_refptr<ContextProviderCommandBuffer> context,
     scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
     cc::SyntheticBeginFrameSource* begin_frame_source,
@@ -31,11 +29,7 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
                                         std::move(vsync_manager),
                                         begin_frame_source,
                                         std::move(overlay_candidate_validator)),
-      ui_window_(nullptr) {
-  views::WindowTreeHostMus* window_tree_host =
-      static_cast<views::WindowTreeHostMus*>(
-          aura::WindowTreeHost::GetForAcceleratedWidget(surface_handle));
-  ui_window_ = window_tree_host->native_widget()->window();
+      ui_window_(window) {
   ui_window_surface_ =
       ui_window_->RequestSurface(ui::mojom::SurfaceType::DEFAULT);
 }

@@ -42,6 +42,8 @@ WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
       this,
       false)));  // Do not advertise accelerated widget; already set manually.
 
+  compositor()->SetWindow(window);
+
   // Initialize the stub platform window bounds to those of the ui::Window.
   platform_window()->SetBounds(window->bounds());
 

@@ -29,7 +29,7 @@ class MusBrowserCompositorOutputSurface
       public ui::WindowSurfaceClient {
  public:
   MusBrowserCompositorOutputSurface(
-      gpu::SurfaceHandle surface_handle,
+      ui::Window* window,
       scoped_refptr<ContextProviderCommandBuffer> context,
       scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
       cc::SyntheticBeginFrameSource* begin_frame_source,
