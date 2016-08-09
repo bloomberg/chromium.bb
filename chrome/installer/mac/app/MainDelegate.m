@@ -7,30 +7,33 @@
 @implementation MainDelegate
 
 - (void)runApplication {
-  OmahaCommunication* messenger = [[OmahaCommunication alloc] init];
-  messenger.delegate = self;
+  OmahaCommunication* omahaMessenger = [[OmahaCommunication alloc] init];
+  omahaMessenger.delegate = self;
 
-  [messenger sendRequest];
+  [omahaMessenger fetchDownloadURLs];
 }
 
-- (void)onOmahaSuccessWithResponseBody:(NSData*)responseBody
-                              AndError:(NSError*)error {
-  if (error) {
-    NSLog(@"error: %@", [error localizedDescription]);
-    exit(1);
-  }
+- (void)onOmahaSuccessWithURLs:(NSArray*)URLs {
   Downloader* download = [[Downloader alloc] init];
   download.delegate = self;
 
-  [download downloadChromeImageToDownloadsDirectory:responseBody];
+  [download downloadChromeImageToDownloadsDirectory:[URLs firstObject]];
+}
+
+- (void)onOmahaFailureWithError:(NSError*)error {
+  NSLog(@"error: %@", [error localizedDescription]);
+  exit(1);
 }
 
 - (void)onDownloadSuccess {
-  // TODO: replace the line of code below with real code someday to unpack dmg
+  NSLog(@"end of program, exiting.\nin the ideal world, we would be unpacking "
+        @"now");
   exit(0);
 }
 
-- (void)onUnpackSuccess {
+- (void)onDownloadFailureWithError:(NSError*)error {
+  NSLog(@"error: %@", [error localizedDescription]);
+  exit(1);
 }
 
 @end

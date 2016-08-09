@@ -8,7 +8,6 @@ static_library("mac_installer_base") {
   sources = [
     "Downloader.m",
     "MainDelegate.m",
-    "NetworkCommunication.m",
     "OmahaCommunication.m",
     "OmahaXMLParser.m",
     "OmahaXMLRequest.m",

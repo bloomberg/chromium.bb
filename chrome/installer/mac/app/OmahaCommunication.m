@@ -5,11 +5,14 @@
 #import "OmahaCommunication.h"
 
 #import "OmahaXMLRequest.h"
+#import "OmahaXMLParser.h"
+
+static NSString* const omahaURLPath =
+    @"https://tools.google.com/service/update2";
 
 @implementation OmahaCommunication
 
 @synthesize requestXMLBody = requestXMLBody_;
-@synthesize sessionHelper = sessionHelper_;
 @synthesize delegate = delegate_;
 
 - (id)init {
@@ -18,29 +21,38 @@
 
 - (id)initWithBody:(NSXMLDocument*)xmlBody {
   if ((self = [super init])) {
-    sessionHelper_ = [[NetworkCommunication alloc] initWithDelegate:self];
     requestXMLBody_ = xmlBody;
-    [self createOmahaRequest];
   }
   return self;
 }
 
-- (NSURLRequest*)createOmahaRequest {
-  // TODO: turn this string to a comand-line flag
-  NSMutableURLRequest* request = [sessionHelper_
-      createRequestWithUrlAsString:@"https://tools.google.com/service/update2"
-                        andXMLBody:requestXMLBody_];
+- (void)fetchDownloadURLs {
+  // TODO: turn this string to a command-line flag
+  NSURL* requestURL = [NSURL URLWithString:omahaURLPath];
+  NSMutableURLRequest* request =
+      [NSMutableURLRequest requestWithURL:requestURL];
+  [request addValue:@"text/xml" forHTTPHeaderField:@"Content-Type"];
+  NSData* requestBody =
+      [[requestXMLBody_ XMLString] dataUsingEncoding:NSUTF8StringEncoding];
+  request.HTTPBody = requestBody;
   request.HTTPMethod = @"POST";
-  return request;
-}
-
-- (void)sendRequest {
-  [sessionHelper_ setDataResponseHandler:^(NSData* _Nullable data,
-                                           NSURLResponse* _Nullable response,
-                                           NSError* _Nullable error) {
-    [delegate_ onOmahaSuccessWithResponseBody:data AndError:error];
-  }];
-  [sessionHelper_ sendDataRequest];
+  [[[NSURLSession sharedSession]
+      dataTaskWithRequest:request
+        completionHandler:^(NSData* data, NSURLResponse* response,
+                            NSError* error) {
+          NSArray* completeURLs = nil;
+          if (!error) {
+            completeURLs = [OmahaXMLParser parseXML:data error:&error];
+          }
+          // Here, we deal with errors both from the network error and the
+          // parsing error, as the user only needs to know there was a problem
+          // talking with the Google Update server.
+          if (error) {
+            [delegate_ onOmahaFailureWithError:error];
+          } else {
+            [delegate_ onOmahaSuccessWithURLs:completeURLs];
+          }
+        }] resume];
 }
 
 @end

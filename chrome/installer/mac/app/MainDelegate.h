@@ -10,13 +10,8 @@
 #import "Downloader.h"
 #import "OmahaCommunication.h"
 
-// TODO: move this into the unpacking file when created
-@protocol UnpackDelegate
-- (void)onUnpackSuccess;
-@end
-
 @interface MainDelegate
-    : NSObject<OmahaCommunicationDelegate, DownloaderDelegate, UnpackDelegate>
+    : NSObject<OmahaCommunicationDelegate, DownloaderDelegate>
 - (void)runApplication;
 @end
 

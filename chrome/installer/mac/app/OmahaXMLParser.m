@@ -4,27 +4,38 @@
 
 #import "OmahaXMLParser.h"
 
-@implementation OmahaXMLParser
+@interface OmahaXMLParser ()<NSXMLParserDelegate>
+@end
 
-- (NSMutableArray*)chromeIncompleteDownloadURLs {
-  return chromeIncompleteDownloadURLs_;
-}
-
-- (NSString*)chromeImageFilename {
-  return chromeImageFilename_;
+@implementation OmahaXMLParser {
+  NSMutableArray* chromeIncompleteDownloadURLs_;
+  NSString* chromeImageFilename_;
 }
 
 // Sets up instance of NSXMLParser and calls on delegate methods to do actual
 // parsing work.
-- (NSArray*)parseXML:(NSData*)omahaResponseXML error:(NSError**)error {
++ (NSArray*)parseXML:(NSData*)omahaResponseXML error:(NSError**)error {
   NSXMLParser* parser = [[NSXMLParser alloc] initWithData:omahaResponseXML];
-  [parser setDelegate:self];
-  BOOL success = [parser parse];
-  if (!success) {
+  OmahaXMLParser* omahaParser = [[OmahaXMLParser alloc] init];
+  [parser setDelegate:omahaParser];
+  if (![parser parse]) {
     *error = [parser parserError];
+    return nil;
   }
 
-  return chromeIncompleteDownloadURLs_;
+  NSMutableArray* completeDownloadURLs = [[NSMutableArray alloc] init];
+  for (NSString* URL in omahaParser->chromeIncompleteDownloadURLs_) {
+    [completeDownloadURLs
+        addObject:[NSURL URLWithString:omahaParser->chromeImageFilename_
+                         relativeToURL:[NSURL URLWithString:URL]]];
+  }
+
+  if ([completeDownloadURLs count] < 1) {
+    *error = [NSError errorWithDomain:@"ChromeErrorDomain" code:1 userInfo:nil];
+    return nil;
+  }
+
+  return completeDownloadURLs;
 }
 
 // Method implementation for XMLParserDelegate.

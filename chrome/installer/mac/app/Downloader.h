@@ -9,6 +9,7 @@
 
 @protocol DownloaderDelegate
 - (void)onDownloadSuccess;
+- (void)onDownloadFailureWithError:(NSError*)error;
 @end
 
 @interface Downloader
@@ -16,15 +17,12 @@
 
 @property(nonatomic, assign) id<DownloaderDelegate> delegate;
 
-// Returns a path to a user's home download folder.
-+ (NSString*)getDownloadsFilePath;
-
-- (NSMutableArray*)appendFilename:(NSString*)filename
-                           toURLs:(NSArray*)incompleteURLs;
-
 // Takes an NSData with a response XML from Omaha and writes the latest
 // version of chrome to the user's download directory.
-- (BOOL)downloadChromeImageToDownloadsDirectory:(NSData*)omahaResponseXML;
+- (void)downloadChromeImageToDownloadsDirectory:(NSURL*)chromeImageURL;
+
+// Returns a path to a user's home download folder.
++ (NSString*)getChromeDownloadFilePath;
 
 @end
 
