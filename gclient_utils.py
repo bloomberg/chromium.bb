@@ -671,7 +671,9 @@ def GetPrimarySolutionPath():
     # checkout.
     top_dir = [os.getcwd()]
     def filter_fn(line):
-      top_dir[0] = os.path.normpath(line.rstrip('\n'))
+      repo_root_path = os.path.normpath(line.rstrip('\n'))
+      if os.path.exists(repo_root_path):
+        top_dir[0] = repo_root_path
     try:
       CheckCallAndFilter(["git", "rev-parse", "--show-toplevel"],
                          print_stdout=False, filter_fn=filter_fn)
