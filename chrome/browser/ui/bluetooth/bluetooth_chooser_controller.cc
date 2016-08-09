@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -65,6 +66,8 @@ base::string16 BluetoothChooserController::GetOption(size_t index) const {
 }
 
 void BluetoothChooserController::RefreshOptions() {
+  if (event_handler_.is_null())
+    return;
   ClearAllDevices();
   event_handler_.Run(content::BluetoothChooser::Event::RESCAN, std::string());
 }
@@ -74,17 +77,27 @@ base::string16 BluetoothChooserController::GetStatus() const {
 }
 
 void BluetoothChooserController::Select(size_t index) {
+  if (event_handler_.is_null()) {
+    content::RecordRequestDeviceOutcome(
+        content::UMARequestDeviceOutcome::
+            BLUETOOTH_CHOOSER_EVENT_HANDLER_INVALID);
+    return;
+  }
   DCHECK_LT(index, device_names_and_ids_.size());
   event_handler_.Run(content::BluetoothChooser::Event::SELECTED,
                      device_names_and_ids_[index].second);
 }
 
 void BluetoothChooserController::Cancel() {
+  if (event_handler_.is_null())
+    return;
   event_handler_.Run(content::BluetoothChooser::Event::CANCELLED,
                      std::string());
 }
 
 void BluetoothChooserController::Close() {
+  if (event_handler_.is_null())
+    return;
   event_handler_.Run(content::BluetoothChooser::Event::CANCELLED,
                      std::string());
 }
@@ -170,6 +183,10 @@ void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
       return;
     }
   }
+}
+
+void BluetoothChooserController::ResetEventHandler() {
+  event_handler_.Reset();
 }
 
 void BluetoothChooserController::ClearAllDevices() {

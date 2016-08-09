@@ -54,6 +54,10 @@ class BluetoothChooserController : public ChooserController {
   // Tells the chooser that a device is no longer available.
   void RemoveDevice(const std::string& device_id);
 
+  // Called when |event_handler_| is no longer valid and should not be used
+  // any more.
+  void ResetEventHandler();
+
  private:
   // Clears |device_names_and_ids_| and |device_name_map_|. Called when
   // Bluetooth adapter is turned on or off, or when re-scan happens.

@@ -73,6 +73,7 @@ enum class UMARequestDeviceOutcome {
   NEED_LOCATION_HELP_LINK_PRESSED = 14,
   BLUETOOTH_CHOOSER_POLICY_DISABLED = 15,
   BLUETOOTH_GLOBALLY_DISABLED = 16,
+  BLUETOOTH_CHOOSER_EVENT_HANDLER_INVALID = 17,
   // NOTE: Add new requestDevice() outcomes immediately above this line. Make
   // sure to update the enum list in
   // tools/metrics/histograms/histograms.xml accordingly.
@@ -82,7 +83,7 @@ enum class UMARequestDeviceOutcome {
 // There should be a call to this function before every
 // Send(BluetoothMsg_RequestDeviceSuccess...) or
 // Send(BluetoothMsg_RequestDeviceError...).
-void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome);
+CONTENT_EXPORT void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome);
 
 // Records stats about the arguments used when calling requestDevice.
 //  - The number of filters used.

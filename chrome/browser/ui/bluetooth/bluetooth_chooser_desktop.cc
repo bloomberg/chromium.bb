@@ -13,7 +13,12 @@ BluetoothChooserDesktop::BluetoothChooserDesktop(
   DCHECK(bluetooth_chooser_controller_);
 }
 
-BluetoothChooserDesktop::~BluetoothChooserDesktop() {}
+BluetoothChooserDesktop::~BluetoothChooserDesktop() {
+  // This satisfies the WebContentsDelegate::RunBluetoothChooser() requirement
+  // that the EventHandler can be destroyed any time after the BluetoothChooser
+  // instance.
+  bluetooth_chooser_controller_->ResetEventHandler();
+}
 
 void BluetoothChooserDesktop::SetAdapterPresence(AdapterPresence presence) {
   bluetooth_chooser_controller_->OnAdapterPresenceChanged(presence);
