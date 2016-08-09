@@ -235,3 +235,59 @@ function assert_response_in_array(actual, expected_array, description) {
         }
     }), description);
 }
+
+// Helper for testing with Request objects. Compares simple
+// attributes defined on the interfaces, as well as the headers.
+function assert_request_equals(actual, expected, description) {
+    assert_class_string(actual, "Request", description);
+    ["url"].forEach(function(attribute) {
+        assert_equals(actual[attribute], expected[attribute],
+                      description + " Attributes differ: " + attribute + ".");
+    });
+    assert_header_equals(actual.headers, expected.headers, description);
+}
+
+// TODO(zino): Should remove this function once keys() returns request
+// keys in key insertion order. Please see http://crbug.com/627821.
+//
+// Assert that the two arrays |actual| and |expected| contain the same
+// set of Requests as determined by assert_request_equals. The order
+// is not significant.
+//
+// |expected| is assumed to not contain any duplicates.
+function assert_request_array_equivalent(actual, expected, description) {
+    assert_true(Array.isArray(actual), description);
+    assert_equals(actual.length, expected.length, description);
+    expected.forEach(function(expected_element) {
+        // assert_request_in_array treats the first argument as being
+        // 'actual', and the second as being 'expected array'. We are
+        // switching them around because we want to be resilient
+        // against the |actual| array containing duplicates.
+        assert_request_in_array(expected_element, actual, description);
+    });
+}
+
+// Asserts that two arrays |actual| and |expected| contain the same
+// set of Requests as determined by assert_request_equals(). The
+// corresponding elements must occupy corresponding indices in their
+// respective arrays.
+function assert_request_array_equals(actual, expected, description) {
+    assert_true(Array.isArray(actual), description);
+    assert_equals(actual.length, expected.length, description);
+    actual.forEach(function(value, index) {
+        assert_request_equals(value, expected[index],
+                              description + " : object[" + index + "]");
+    });
+}
+
+// Equivalent to assert_in_array, but uses assert_request_equals.
+function assert_request_in_array(actual, expected_array, description) {
+    assert_true(expected_array.some(function(element) {
+        try {
+            assert_request_equals(actual, element);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }), description);
+}

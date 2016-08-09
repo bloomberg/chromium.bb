@@ -133,9 +133,10 @@ class CONTENT_EXPORT CacheStorageCache {
                             CacheStorageError error);
   void BatchDidAllOperations(std::unique_ptr<ErrorCallback> callback);
 
-  // TODO(jkarlin): Have keys take an optional ServiceWorkerFetchRequest.
   // Returns CACHE_STORAGE_OK and a vector of requests if there are no errors.
-  void Keys(const RequestsCallback& callback);
+  void Keys(std::unique_ptr<ServiceWorkerFetchRequest> request,
+            const CacheStorageCacheQueryParams& options,
+            const RequestsCallback& callback);
 
   // Closes the backend. Future operations that require the backend
   // will exit early. Close should only be called once per CacheStorageCache.
@@ -319,7 +320,9 @@ class CONTENT_EXPORT CacheStorageCache {
                           int rv);
 
   // Keys callbacks.
-  void KeysImpl(const RequestsCallback& callback);
+  void KeysImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
+                const CacheStorageCacheQueryParams& options,
+                const RequestsCallback& callback);
   void KeysDidQueryCache(
       const RequestsCallback& callback,
       CacheStorageError error,

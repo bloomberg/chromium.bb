@@ -293,9 +293,14 @@ void CacheStorageDispatcherHost::OnCacheKeys(
   }
 
   CacheStorageCache* cache = it->second->value();
-  cache->Keys(base::Bind(&CacheStorageDispatcherHost::OnCacheKeysCallback, this,
-                         thread_id, request_id,
-                         base::Passed(it->second->Clone())));
+  std::unique_ptr<ServiceWorkerFetchRequest> request_ptr(
+      new ServiceWorkerFetchRequest(request.url, request.method,
+                                    request.headers, request.referrer,
+                                    request.is_reload));
+  cache->Keys(
+      std::move(request_ptr), match_params,
+      base::Bind(&CacheStorageDispatcherHost::OnCacheKeysCallback, this,
+                 thread_id, request_id, base::Passed(it->second->Clone())));
 }
 
 void CacheStorageDispatcherHost::OnCacheBatch(

@@ -607,7 +607,7 @@ ScriptPromise Cache::keysImpl(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), 0, WebServiceWorkerCache::QueryParams());
+    m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), WebServiceWorkerRequest(), WebServiceWorkerCache::QueryParams());
     return promise;
 }
 
@@ -619,7 +619,7 @@ ScriptPromise Cache::keysImpl(ScriptState* scriptState, const Request* request, 
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), 0, toWebQueryParams(options));
+    m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), webRequest, toWebQueryParams(options));
     return promise;
 }
 

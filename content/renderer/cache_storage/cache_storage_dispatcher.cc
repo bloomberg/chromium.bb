@@ -177,7 +177,7 @@ class CacheStorageDispatcher::WebCache : public blink::WebServiceWorkerCache {
                                           query_params);
   }
   void dispatchKeys(CacheWithRequestsCallbacks* callbacks,
-                    const blink::WebServiceWorkerRequest* request,
+                    const blink::WebServiceWorkerRequest& request,
                     const QueryParams& query_params) override {
     if (!dispatcher_)
       return;
@@ -610,15 +610,14 @@ void CacheStorageDispatcher::dispatchMatchAllForCache(
 void CacheStorageDispatcher::dispatchKeysForCache(
     int cache_id,
     blink::WebServiceWorkerCache::CacheWithRequestsCallbacks* callbacks,
-    const blink::WebServiceWorkerRequest* request,
+    const blink::WebServiceWorkerRequest& request,
     const blink::WebServiceWorkerCache::QueryParams& query_params) {
   int request_id = cache_keys_callbacks_.Add(callbacks);
   cache_keys_times_[request_id] = base::TimeTicks::Now();
 
   Send(new CacheStorageHostMsg_CacheKeys(
       CurrentWorkerId(), request_id, cache_id,
-      request ? FetchRequestFromWebRequest(*request)
-              : ServiceWorkerFetchRequest(),
+      FetchRequestFromWebRequest(request),
       QueryParamsFromWebQueryParams(query_params)));
 }
 

@@ -145,7 +145,7 @@ class CacheStorageDispatcher : public WorkerThread::Observer {
   void dispatchKeysForCache(
       int cache_id,
       blink::WebServiceWorkerCache::CacheWithRequestsCallbacks* callbacks,
-      const blink::WebServiceWorkerRequest* request,
+      const blink::WebServiceWorkerRequest& request,
       const blink::WebServiceWorkerCache::QueryParams& query_params);
   void dispatchBatchForCache(
       int cache_id,

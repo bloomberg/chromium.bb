@@ -451,7 +451,9 @@ void CacheStorageCache::BatchDidAllOperations(
   callback->Run(CACHE_STORAGE_OK);
 }
 
-void CacheStorageCache::Keys(const RequestsCallback& callback) {
+void CacheStorageCache::Keys(std::unique_ptr<ServiceWorkerFetchRequest> request,
+                             const CacheStorageCacheQueryParams& options,
+                             const RequestsCallback& callback) {
   if (backend_state_ == BACKEND_CLOSED) {
     callback.Run(CACHE_STORAGE_ERROR_STORAGE, std::unique_ptr<Requests>());
     return;
@@ -459,6 +461,7 @@ void CacheStorageCache::Keys(const RequestsCallback& callback) {
 
   scheduler_->ScheduleOperation(
       base::Bind(&CacheStorageCache::KeysImpl, weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(request)), options,
                  scheduler_->WrapCallbackToRunNext(callback)));
 }
 
@@ -625,11 +628,18 @@ void CacheStorageCache::QueryCacheProcessNextEntry(
     return;
   }
 
-  if (query_cache_results->options.ignore_search) {
-    DCHECK(query_cache_results->request);
+  if (query_cache_results->request &&
+      !query_cache_results->request->url.is_empty()) {
     disk_cache::Entry* entry(*iter);
-    if (RemoveQueryParam(query_cache_results->request->url) !=
-        RemoveQueryParam(GURL(entry->GetKey()))) {
+    GURL requestURL = query_cache_results->request->url;
+    GURL cachedURL = GURL(entry->GetKey());
+
+    if (query_cache_results->options.ignore_search) {
+      requestURL = RemoveQueryParam(requestURL);
+      cachedURL = RemoveQueryParam(cachedURL);
+    }
+
+    if (cachedURL != requestURL) {
       QueryCacheProcessNextEntry(std::move(query_cache_results), iter + 1);
       return;
     }
@@ -1266,16 +1276,17 @@ void CacheStorageCache::DeleteDidOpenEntry(
   callback.Run(CACHE_STORAGE_OK);
 }
 
-void CacheStorageCache::KeysImpl(const RequestsCallback& callback) {
+void CacheStorageCache::KeysImpl(
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
+    const CacheStorageCacheQueryParams& options,
+    const RequestsCallback& callback) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   if (backend_state_ != BACKEND_OPEN) {
     callback.Run(CACHE_STORAGE_ERROR_STORAGE, std::unique_ptr<Requests>());
     return;
   }
 
-  std::unique_ptr<ServiceWorkerFetchRequest> request(
-      new ServiceWorkerFetchRequest);
-  QueryCache(std::move(request), CacheStorageCacheQueryParams(),
+  QueryCache(std::move(request), options,
              base::Bind(&CacheStorageCache::KeysDidQueryCache,
                         weak_ptr_factory_.GetWeakPtr(), callback));
 }

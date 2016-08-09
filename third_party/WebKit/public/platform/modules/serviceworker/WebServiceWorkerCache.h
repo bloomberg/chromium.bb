@@ -59,7 +59,7 @@ public:
     // calling onSuccess or onFailure.
     virtual void dispatchMatch(CacheMatchCallbacks*, const WebServiceWorkerRequest&, const QueryParams&) = 0;
     virtual void dispatchMatchAll(CacheWithResponsesCallbacks*, const WebServiceWorkerRequest&, const QueryParams&) = 0;
-    virtual void dispatchKeys(CacheWithRequestsCallbacks*, const WebServiceWorkerRequest*, const QueryParams&) = 0;
+    virtual void dispatchKeys(CacheWithRequestsCallbacks*, const WebServiceWorkerRequest&, const QueryParams&) = 0;
     virtual void dispatchBatch(CacheBatchCallbacks*, const WebVector<BatchOperation>&) = 0;
 };
 

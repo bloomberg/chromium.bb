@@ -299,7 +299,7 @@ public:
     void onSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override
     {
         auto* cacheRequest = new GetCacheKeysForRequestData(m_params, wrapUnique(cache.release()), std::move(m_callback));
-        cacheRequest->cache()->dispatchKeys(cacheRequest, nullptr, WebServiceWorkerCache::QueryParams());
+        cacheRequest->cache()->dispatchKeys(cacheRequest, WebServiceWorkerRequest(), WebServiceWorkerCache::QueryParams());
     }
 
     void onError(WebServiceWorkerCacheError error) override

@@ -131,11 +131,11 @@ public:
         return callbacks->onError(m_error);
     }
 
-    void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
+    void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
         m_lastErrorWebCacheMethodCalled = "dispatchKeys";
-        if (webRequest) {
-            checkUrlIfProvided(webRequest->url());
+        if (!webRequest.url().isEmpty()) {
+            checkUrlIfProvided(webRequest.url());
             checkQueryParamsIfProvided(queryParams);
         }
 
@@ -513,7 +513,7 @@ public:
     KeysTestCache(WebVector<WebServiceWorkerRequest>& requests)
         : m_requests(requests) { }
 
-    void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
+    void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
         std::unique_ptr<CacheWithRequestsCallbacks> ownedCallbacks(wrapUnique(callbacks));
         return callbacks->onSuccess(m_requests);
