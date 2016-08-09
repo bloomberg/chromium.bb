@@ -64,8 +64,8 @@ class DepsUpdater(object):
         else:
             raise AssertionError("Unsupported target %s" % self.target)
 
-        self.commit_changes_if_needed(chromium_commitish, import_commitish)
-        if self.auto_update:
+        has_changes = self.commit_changes_if_needed(chromium_commitish, import_commitish)
+        if self.auto_update and has_changes:
             try_bots = self.host.builders.all_try_builder_names()
             data_file_path = self.finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'w3c', 'directory_owners.json')
             with open(data_file_path) as data_file:
@@ -199,8 +199,10 @@ class DepsUpdater(object):
             self.run(['git', 'commit', '-a', '-F', path_to_commit_msg])
             self.remove(path_to_commit_msg)
             self.print_('## Done: changes imported and committed.')
+            return True
         else:
             self.print_('## Done: no changes to import.')
+            return False
 
     def is_manual_test(self, fs, dirname, basename):
         """Returns True if the file should be removed because it's a manual test.
