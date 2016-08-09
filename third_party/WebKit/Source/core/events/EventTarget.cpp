@@ -566,8 +566,7 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
 
     if (checkTypeThenUseCount(event, EventTypeNames::beforeunload, UseCounter::DocumentBeforeUnloadFired)) {
         if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-            // TODO(mustaq): Is the |if| condition correct? crbug.com/635029
-            if (executingWindow->top())
+            if (executingWindow != executingWindow->top())
                 UseCounter::count(executingWindow->document(), UseCounter::SubFrameBeforeUnloadFired);
         }
     } else if (checkTypeThenUseCount(event, EventTypeNames::unload, UseCounter::DocumentUnloadFired)) {

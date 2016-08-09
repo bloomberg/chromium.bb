@@ -3231,6 +3231,39 @@ TEST_F(WebViewTest, CreatedDuringLoadDeferral)
     }
 }
 
+// Make sure the SubframeBeforeUnloadUseCounter is only incremented on subframe
+// unloads. crbug.com/635029.
+TEST_F(WebViewTest, SubframeBeforeUnloadUseCounter)
+{
+    registerMockedHttpURLLoad("visible_iframe.html");
+    registerMockedHttpURLLoad("single_iframe.html");
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "single_iframe.html", true);
+
+    WebFrame* frame = m_webViewHelper.webView()->mainFrame();
+    Document* document =
+        toLocalFrame(m_webViewHelper.webView()->page()->mainFrame())->document();
+
+    // Add a beforeunload handler in the main frame. Make sure firing
+    // beforeunload doesn't increment the subframe use counter.
+    {
+        frame->executeScript(WebScriptSource(
+            "addEventListener('beforeunload', function() {});"));
+        webView->mainFrame()->toWebLocalFrame()->dispatchBeforeUnloadEvent(false);
+        EXPECT_FALSE(UseCounter::isCounted(*document, UseCounter::SubFrameBeforeUnloadFired));
+    }
+
+    // Add a beforeunload handler in the iframe and dispatch. Make sure we do
+    // increment the use counter for subframe beforeunloads.
+    {
+        frame->executeScript(WebScriptSource(
+            "document.getElementsByTagName('iframe')[0].contentWindow.addEventListener('beforeunload', function() {});"));
+        webView->mainFrame()->firstChild()->toWebLocalFrame()->dispatchBeforeUnloadEvent(false);
+
+        Document* childDocument = toLocalFrame(m_webViewHelper.webView()->page()->mainFrame()->tree().firstChild())->document();
+        EXPECT_TRUE(UseCounter::isCounted(*childDocument, UseCounter::SubFrameBeforeUnloadFired));
+    }
+}
+
 // Verify that page loads are deferred until all ScopedPageLoadDeferrers are
 // destroyed.
 TEST_F(WebViewTest, NestedLoadDeferrals)
