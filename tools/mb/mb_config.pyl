@@ -698,8 +698,11 @@
       'Windows Dev': 'swarming_gn_debug_bot_minimal_symbols_x64',
     },
 
+    'official.android': {
+      'blimp-engine': '//build/args/bots/official.android/blimp-engine.gn',
+    },
+
     'official.desktop': {
-      'blimp-engine': '//build/args/bots/official.desktop/blimp-engine.gn',
       'mac64': 'gn_official',
       'precise64': 'gn_official',
 
