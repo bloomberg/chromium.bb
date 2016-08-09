@@ -20,7 +20,8 @@ class {{struct.name}}DataView {
   inline void Get{{name|under_to_camel}}DataView(
       {{kind|cpp_data_view_type}}* output);
 
-  bool Read{{name|under_to_camel}}({{kind|cpp_wrapper_type}}* output) {
+  template <typename UserType>
+  bool Read{{name|under_to_camel}}(UserType* output) {
 {%-     if pf.min_version != 0 %}
     auto pointer = data_->header_.version >= {{pf.min_version}}
                    ? &data_->{{name}} : nullptr;
@@ -29,7 +30,7 @@ class {{struct.name}}DataView {
 {%-     endif %}
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
         pointer, output, context_);
-}
+  }
 
 {%-   elif kind|is_object_kind %}
   inline void Get{{name|under_to_camel}}DataView(
