@@ -28,6 +28,7 @@
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/physical_web/data_source/physical_web_data_source.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -43,6 +44,7 @@
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
 #include "ios/chrome/browser/net/crl_set_fetcher.h"
+#include "ios/chrome/browser/physical_web/create_physical_web_data_source.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
@@ -294,6 +296,15 @@ CRLSetFetcher* ApplicationContextImpl::GetCRLSetFetcher() {
     crl_set_fetcher_ = new CRLSetFetcher;
   }
   return crl_set_fetcher_.get();
+}
+
+PhysicalWebDataSource* ApplicationContextImpl::GetPhysicalWebDataSource() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!physical_web_data_source_) {
+    physical_web_data_source_ = CreateIOSChromePhysicalWebDataSource();
+    DCHECK(physical_web_data_source_);
+  }
+  return physical_web_data_source_.get();
 }
 
 void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {

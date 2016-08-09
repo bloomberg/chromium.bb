@@ -89,6 +89,7 @@
         '../../components/components.gyp:open_from_clipboard',
         '../../components/components.gyp:password_manager_core_browser',
         '../../components/components.gyp:password_manager_sync_browser',
+        '../../components/components.gyp:physical_web_data_source',
         '../../components/components.gyp:pref_registry',
         '../../components/components.gyp:profile_metrics',
         '../../components/components.gyp:proxy_config',
@@ -453,6 +454,8 @@
         'browser/passwords/passwords_ui_delegate.h',
         'browser/passwords/update_password_infobar_controller.h',
         'browser/passwords/update_password_infobar_controller.mm',
+        'browser/physical_web/create_physical_web_data_source.h',
+        'browser/physical_web/create_physical_web_data_source.mm',
         'browser/physical_web/physical_web_constants.h',
         'browser/pref_names.cc',
         'browser/pref_names.h',
@@ -791,6 +794,7 @@
         '../../base/base.gyp:base',
         '../../components/components.gyp:version_info',
         'app_group_mainapp',
+        'common/physical_web/physical_web.gyp:physical_web',
       ],
       'link_settings': {
         'libraries': [

@@ -154,3 +154,8 @@ CRLSetFetcher* TestingApplicationContext::GetCRLSetFetcher() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
+
+PhysicalWebDataSource* TestingApplicationContext::GetPhysicalWebDataSource() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}

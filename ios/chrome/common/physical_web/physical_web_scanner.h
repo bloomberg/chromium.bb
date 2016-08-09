@@ -7,7 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
-@class PhysicalWebDevice;
+#include <memory>
+
+namespace base {
+class ListValue;
+}
 
 @protocol PhysicalWebScannerDelegate;
 
@@ -42,6 +46,11 @@
 
 // Returns a list of physical web devices (PhysicalWebDevice).
 - (NSArray*)devices;
+
+// Returns the metadata for all resolved physical web URLs. The returned value
+// will never be nil; if no metadata has been received then an empty list is
+// returned.
+- (std::unique_ptr<base::ListValue>)metadata;
 
 @end
 

@@ -56,6 +56,7 @@ class VariationsService;
 class ApplicationContext;
 class CRLSetFetcher;
 class IOSChromeIOThread;
+class PhysicalWebDataSource;
 class PrefService;
 
 // Gets the global application context. Cannot return null.
@@ -123,6 +124,9 @@ class ApplicationContext {
 
   // Gets the CRLSetFetcher.
   virtual CRLSetFetcher* GetCRLSetFetcher() = 0;
+
+  // Gets the PhysicalWebDataSource.
+  virtual PhysicalWebDataSource* GetPhysicalWebDataSource() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

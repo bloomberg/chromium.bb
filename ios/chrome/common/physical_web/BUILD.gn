@@ -4,6 +4,8 @@
 
 source_set("physical_web") {
   sources = [
+    "ios_chrome_physical_web_data_source.h",
+    "ios_chrome_physical_web_data_source.mm",
     "physical_web_device.h",
     "physical_web_device.mm",
     "physical_web_request.h",
@@ -16,6 +18,7 @@ source_set("physical_web") {
 
   deps = [
     "//base",
+    "//components/physical_web/data_source",
     "//components/version_info",
     "//device/bluetooth/uribeacon",
     "//google_apis",

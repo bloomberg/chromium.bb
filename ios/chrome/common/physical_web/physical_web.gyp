@@ -9,6 +9,8 @@
       'target_name': 'physical_web',
       'type': 'static_library',
       'sources': [
+        'ios_chrome_physical_web_data_source.h',
+        'ios_chrome_physical_web_data_source.mm',
         'physical_web_device.h',
         'physical_web_device.mm',
         'physical_web_request.h',
@@ -20,6 +22,7 @@
       ],
       'dependencies': [
         '../../../../base/base.gyp:base',
+        '../../../../components/components.gyp:physical_web_data_source',
         '../../../../components/components.gyp:version_info',
         '../../../../device/bluetooth/bluetooth.gyp:uribeacon',
         '../../../../google_apis/google_apis.gyp:google_apis',

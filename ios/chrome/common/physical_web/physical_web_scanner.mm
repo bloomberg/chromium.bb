@@ -4,20 +4,21 @@
 
 #import "ios/chrome/common/physical_web/physical_web_scanner.h"
 
+#import <CoreBluetooth/CoreBluetooth.h>
+
 #include <string>
 #include <vector>
 
-#import <CoreBluetooth/CoreBluetooth.h>
-
-#include "base/ios/weak_nsobject.h"
+#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
+#import "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/values.h"
 #include "device/bluetooth/uribeacon/uri_encoder.h"
-#include "ios/chrome/common/physical_web/physical_web_device.h"
+#import "ios/chrome/common/physical_web/physical_web_device.h"
 #import "ios/chrome/common/physical_web/physical_web_request.h"
-#include "ios/chrome/common/physical_web/physical_web_types.h"
+#import "ios/chrome/common/physical_web/physical_web_types.h"
 
 namespace {
 
@@ -147,6 +148,30 @@ enum BeaconType {
     }
     return NSOrderedSame;
   }];
+}
+
+- (std::unique_ptr<base::ListValue>)metadata {
+  auto metadataList = base::MakeUnique<base::ListValue>();
+
+  for (PhysicalWebDevice* device in [self devices]) {
+    std::string scannedUrl =
+        base::SysNSStringToUTF8([[device requestURL] absoluteString]);
+    std::string resolvedUrl =
+        base::SysNSStringToUTF8([[device url] absoluteString]);
+    std::string icon = base::SysNSStringToUTF8([[device icon] absoluteString]);
+    std::string title = base::SysNSStringToUTF8([device title]);
+    std::string description = base::SysNSStringToUTF8([device description]);
+
+    auto metadataItem = base::MakeUnique<base::DictionaryValue>();
+    metadataItem->SetString("scannedUrl", scannedUrl);
+    metadataItem->SetString("resolvedUrl", resolvedUrl);
+    metadataItem->SetString("icon", icon);
+    metadataItem->SetString("title", title);
+    metadataItem->SetString("description", description);
+    metadataList->Append(std::move(metadataItem));
+  }
+
+  return metadataList;
 }
 
 - (void)setNetworkRequestEnabled:(BOOL)enabled {
@@ -294,7 +319,13 @@ enum BeaconType {
   std::string utf8URI;
   device::DecodeUriBeaconUri(encodedURI, utf8URI);
   NSString* uriString = base::SysUTF8ToNSString(utf8URI);
-  return [[PhysicalWebDevice alloc] initWithURL:[NSURL URLWithString:uriString]
+  NSURL* url = [NSURL URLWithString:uriString];
+
+  // Ensure URL is valid.
+  if (!url)
+    return nil;
+
+  return [[PhysicalWebDevice alloc] initWithURL:url
                                      requestURL:nil
                                            icon:nil
                                           title:nil
