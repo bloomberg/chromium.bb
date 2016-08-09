@@ -96,6 +96,7 @@ struct wl_display {
 	struct wl_list client_list;
 
 	struct wl_signal destroy_signal;
+	struct wl_signal create_client_signal;
 
 	struct wl_array additional_shm_formats;
 };
@@ -406,6 +407,9 @@ bind_display(struct wl_client *client, struct wl_display *display);
  * wl_display_connect_to_fd() on the client side or used with the
  * WAYLAND_SOCKET environment variable on the client side.
  *
+ * Listeners added with wl_display_add_client_created_listener() will
+ * be notified by this function after the client is fully constructed.
+ *
  * On failure this function sets errno accordingly and returns NULL.
  *
  * \memberof wl_display
@@ -447,6 +451,8 @@ wl_client_create(struct wl_display *display, int fd)
 		goto err_map;
 
 	wl_list_insert(display->client_list.prev, &client->link);
+
+	wl_signal_emit(&display->create_client_signal, client);
 
 	return client;
 
@@ -864,6 +870,7 @@ wl_display_create(void)
 	wl_list_init(&display->registry_resource_list);
 
 	wl_signal_init(&display->destroy_signal);
+	wl_signal_init(&display->create_client_signal);
 
 	display->id = 1;
 	display->serial = 0;
@@ -1351,6 +1358,24 @@ wl_display_add_destroy_listener(struct wl_display *display,
 				struct wl_listener *listener)
 {
 	wl_signal_add(&display->destroy_signal, listener);
+}
+
+/** Registers a listener for the client connection signal.
+ *  When a new client object is created, \a listener will be notified, carrying
+ *  a pointer to the new wl_client object.
+ *
+ *  \ref wl_client_create
+ *  \ref wl_display
+ *  \ref wl_listener
+ *
+ * \param display The display object
+ * \param listener Signal handler object
+ */
+WL_EXPORT void
+wl_display_add_client_created_listener(struct wl_display *display,
+					struct wl_listener *listener)
+{
+	wl_signal_add(&display->create_client_signal, listener);
 }
 
 WL_EXPORT struct wl_listener *

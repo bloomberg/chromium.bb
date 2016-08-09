@@ -151,6 +151,10 @@ void
 wl_display_add_destroy_listener(struct wl_display *display,
 				struct wl_listener *listener);
 
+void
+wl_display_add_client_created_listener(struct wl_display *display,
+					struct wl_listener *listener);
+
 struct wl_listener *
 wl_display_get_destroy_listener(struct wl_display *display,
 				wl_notify_func_t notify);

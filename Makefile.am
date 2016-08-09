@@ -160,7 +160,8 @@ TESTS =						\
 	signal-test				\
 	resources-test				\
 	message-test				\
-	headers-test
+	headers-test				\
+	compositor-introspection-test
 
 if ENABLE_CPP_TEST
 TESTS += cpp-compile-test
@@ -217,6 +218,8 @@ resources_test_SOURCES = tests/resources-test.c
 resources_test_LDADD = libtest-runner.la
 message_test_SOURCES = tests/message-test.c
 message_test_LDADD = libtest-runner.la
+compositor_introspection_test_SOURCES = tests/compositor-introspection-test.c
+compositor_introspection_test_LDADD = libtest-runner.la
 headers_test_SOURCES = tests/headers-test.c \
 		       tests/headers-protocol-test.c \
 		       tests/headers-protocol-core-test.c
