@@ -115,17 +115,10 @@ gfx::Rect GetDisplayBoundsInScreen(aura::Window* window) {
 
 // The height in pixels of the region below the top edge of the display in which
 // the mouse can trigger revealing the top-of-window views.
-#if defined(OS_WIN)
-// Windows 8 reserves some pixels at the top of the screen for the hand icon
-// that allows you to drag a metro app off the screen, so a few additional
-// pixels of space must be reserved for the mouse reveal.
-const int ImmersiveFullscreenController::kMouseRevealBoundsHeight = 9;
-#else
 // The height must be greater than 1px because the top pixel is used to trigger
 // moving the cursor between displays if the user has a vertical display layout
 // (primary display above/below secondary display).
 const int ImmersiveFullscreenController::kMouseRevealBoundsHeight = 3;
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -380,7 +373,7 @@ void ImmersiveFullscreenController::OnMouseEvent(ui::MouseEvent* event) {
   } else if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
     // Trigger a reveal if the cursor pauses at the top of the screen for a
     // while.
-    UpdateTopEdgeHoverTimer(event);
+    UpdateTopEdgeHoverTimer(*event);
   }
 }
 
@@ -416,7 +409,7 @@ void ImmersiveFullscreenController::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (gesture_begun_) {
-        if (UpdateRevealedLocksForSwipe(GetSwipeType(event)))
+        if (UpdateRevealedLocksForSwipe(GetSwipeType(*event)))
           event->SetHandled();
         gesture_begun_ = false;
       }
@@ -553,7 +546,7 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
 }
 
 void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
-    ui::MouseEvent* event) {
+    const ui::MouseEvent& event) {
   DCHECK(enabled_);
   DCHECK(reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED);
 
@@ -562,7 +555,7 @@ void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
   // |widget_| is inactive but prevents starting the timer if the mouse is over
   // a portion of the top edge obscured by an unrelated widget.
   if (!top_edge_hover_timer_.IsRunning() &&
-      !native_window_->Contains(static_cast<aura::Window*>(event->target()))) {
+      !native_window_->Contains(static_cast<aura::Window*>(event.target()))) {
     return;
   }
 
@@ -571,7 +564,7 @@ void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
   if (aura::client::GetCaptureWindow(native_window_))
     return;
 
-  gfx::Point location_in_screen = GetEventLocationInScreen(*event);
+  gfx::Point location_in_screen = GetEventLocationInScreen(event);
   if (ShouldIgnoreMouseEventAtLocation(location_in_screen))
     return;
 
@@ -605,7 +598,7 @@ void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
 }
 
 void ImmersiveFullscreenController::UpdateLocatedEventRevealedLock(
-    ui::LocatedEvent* event) {
+    const ui::LocatedEvent* event) {
   if (!enabled_)
     return;
   DCHECK(!event || event->IsMouseEvent() || event->IsTouchEvent());
@@ -851,16 +844,17 @@ void ImmersiveFullscreenController::OnSlideClosedAnimationCompleted() {
 }
 
 ImmersiveFullscreenController::SwipeType
-ImmersiveFullscreenController::GetSwipeType(ui::GestureEvent* event) const {
-  if (event->type() != ui::ET_GESTURE_SCROLL_UPDATE)
+ImmersiveFullscreenController::GetSwipeType(
+    const ui::GestureEvent& event) const {
+  if (event.type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return SWIPE_NONE;
   // Make sure that it is a clear vertical gesture.
-  if (std::abs(event->details().scroll_y()) <=
-      kSwipeVerticalThresholdMultiplier * std::abs(event->details().scroll_x()))
+  if (std::abs(event.details().scroll_y()) <=
+      kSwipeVerticalThresholdMultiplier * std::abs(event.details().scroll_x()))
     return SWIPE_NONE;
-  if (event->details().scroll_y() < 0)
+  if (event.details().scroll_y() < 0)
     return SWIPE_CLOSE;
-  else if (event->details().scroll_y() > 0)
+  if (event.details().scroll_y() > 0)
     return SWIPE_OPEN;
   return SWIPE_NONE;
 }

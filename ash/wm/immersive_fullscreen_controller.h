@@ -131,12 +131,12 @@ class ASH_EXPORT ImmersiveFullscreenController
   // hovered at the top of the screen the timer is started. If the mouse moves
   // away from the top edge, or moves too much in the x direction, the timer is
   // stopped.
-  void UpdateTopEdgeHoverTimer(ui::MouseEvent* event);
+  void UpdateTopEdgeHoverTimer(const ui::MouseEvent& event);
 
   // Updates |located_event_revealed_lock_| based on the current mouse state and
   // the current touch state.
   // |event| is NULL if the source event is not known.
-  void UpdateLocatedEventRevealedLock(ui::LocatedEvent* event);
+  void UpdateLocatedEventRevealedLock(const ui::LocatedEvent* event);
 
   // Acquires |located_event_revealed_lock_| if it is not already held.
   void AcquireLocatedEventRevealedLock();
@@ -171,7 +171,7 @@ class ASH_EXPORT ImmersiveFullscreenController
   void OnSlideClosedAnimationCompleted();
 
   // Returns the type of swipe given |event|.
-  SwipeType GetSwipeType(ui::GestureEvent* event) const;
+  SwipeType GetSwipeType(const ui::GestureEvent& event) const;
 
   // Returns true if a mouse event at |location_in_screen| should be ignored.
   // Ignored mouse events should not contribute to revealing or unrevealing the
