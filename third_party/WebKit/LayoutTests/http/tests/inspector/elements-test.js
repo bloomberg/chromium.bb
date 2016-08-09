@@ -4,12 +4,12 @@ InspectorTest.preloadPanel("elements");
 
 InspectorTest.inlineStyleSection = function()
 {
-    return WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks[0].sections[0];
+    return WebInspector.panels.elements._stylesWidget._sectionBlocks[0].sections[0];
 }
 
 InspectorTest.computedStyleWidget = function()
 {
-    return WebInspector.panels.elements.sidebarPanes.computedStyle;
+    return WebInspector.panels.elements._computedStyleWidget;
 }
 
 InspectorTest.dumpComputedStyle = function(doNotAutoExpand)
@@ -59,7 +59,7 @@ InspectorTest.findComputedPropertyWithName = function(name)
 
 InspectorTest.firstMatchedStyleSection = function()
 {
-    return WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks[0].sections[1];
+    return WebInspector.panels.elements._stylesWidget._sectionBlocks[0].sections[1];
 }
 
 InspectorTest.firstMediaTextElementInSection = function(section)
@@ -299,12 +299,12 @@ InspectorTest.filterMatchedStyles = function(text)
 {
     var regex = text ? new RegExp(text, "i") : null;
     InspectorTest.addResult("Filtering styles by: " + text);
-    WebInspector.panels.elements.sidebarPanes.styles.onFilterChanged(regex);
+    WebInspector.panels.elements._stylesWidget.onFilterChanged(regex);
 }
 
 InspectorTest.dumpRenderedMatchedStyles = function()
 {
-    var sectionBlocks = WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks;
+    var sectionBlocks = WebInspector.panels.elements._stylesWidget._sectionBlocks;
     for (var block of sectionBlocks) {
         for (var section of block.sections) {
             // Skip sections which were filtered out.
@@ -352,7 +352,7 @@ InspectorTest.dumpRenderedMatchedStyles = function()
 
 InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatched, omitLonghands, includeSelectorGroupMarks)
 {
-    var sectionBlocks = WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks;
+    var sectionBlocks = WebInspector.panels.elements._stylesWidget._sectionBlocks;
     if (!excludeComputed)
         InspectorTest.dumpComputedStyle();
     for (var block of sectionBlocks) {
@@ -436,9 +436,13 @@ InspectorTest.toggleMatchedStyleProperty = function(propertyName, checked)
 
 InspectorTest.eventListenersWidget = function()
 {
-    var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
-    sidebarPane.revealView();
-    return sidebarPane;
+    WebInspector.viewManager.showView("elements.eventListeners");
+    return self.runtime.sharedInstance(WebInspector.EventListenersWidget);
+}
+
+InspectorTest.showEventListenersWidget = function()
+{
+    return WebInspector.viewManager.showView("elements.eventListeners");
 }
 
 InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
@@ -478,7 +482,7 @@ InspectorTest.getElementStylePropertyTreeItem = function(propertyName)
 // FIXME: this returns the first tree item found (may fail for same-named properties in a style).
 InspectorTest.getMatchedStylePropertyTreeItem = function(propertyName)
 {
-    var sectionBlocks = WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks;
+    var sectionBlocks = WebInspector.panels.elements._stylesWidget._sectionBlocks;
     for (var block of sectionBlocks) {
         for (var section of block.sections) {
             var treeItem = InspectorTest.getFirstPropertyTreeItemForSection(section, propertyName);
@@ -930,7 +934,7 @@ InspectorTest.matchingSelectors = function(matchedStyles, rule)
 InspectorTest.addNewRuleInStyleSheet = function(styleSheetHeader, selector, callback)
 {
     InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_addBlankSection", onBlankSection.bind(null, selector, callback));
-    WebInspector.panels.elements.sidebarPanes.styles._createNewRuleInStyleSheet(styleSheetHeader);
+    WebInspector.panels.elements._stylesWidget._createNewRuleInStyleSheet(styleSheetHeader);
 }
 
 InspectorTest.addNewRule = function(selector, callback)

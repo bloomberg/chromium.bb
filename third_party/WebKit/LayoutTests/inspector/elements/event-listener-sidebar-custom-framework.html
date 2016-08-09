@@ -92,8 +92,6 @@ function setupReturnIncorrectResult()
 
 function test()
 {
-    var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
-
     WebInspector.settingForTest("showEventListenersForAncestors").set(false);
     InspectorTest.selectNodeWithId("inspectedNode", step1);
 

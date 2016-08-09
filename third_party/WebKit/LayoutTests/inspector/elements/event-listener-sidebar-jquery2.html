@@ -15,13 +15,12 @@ function setupEventListeners()
 
 function test()
 {
-    var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
-
     WebInspector.settingForTest("showEventListenersForAncestors").set(true);
     InspectorTest.selectNodeWithId("node", step1);
 
     function step1()
     {
+        InspectorTest.showEventListenersWidget();
         InspectorTest.expandAndDumpSelectedElementEventListeners(step2);
     }
 
@@ -40,6 +39,7 @@ function test()
         Promise.all(promises).then(() => eventListenersWidget.doUpdate());
     }
 }
+
 
 function onloadHandler()
 {

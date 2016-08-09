@@ -11,7 +11,7 @@ function removeInspectedNode()
 
 function test()
 {
-    var stylesSidebarPane = WebInspector.panels.elements.sidebarPanes.styles;
+    var stylesSidebarPane = WebInspector.panels.elements._stylesWidget;
     InspectorTest.runTestSuite([
         function selectInspectedNode(next)
         {

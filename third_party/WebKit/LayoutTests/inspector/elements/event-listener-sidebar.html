@@ -37,8 +37,6 @@ function setupEventListeners()
 
 function test()
 {
-    var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
-
     WebInspector.settingForTest("showEventListenersForAncestors").set(true);
     InspectorTest.selectNodeWithId("node", step1);
 
@@ -72,6 +70,8 @@ function onloadHandler()
 }
 </script>
 </head>
+
+
 
 <body onload="onloadHandler()">
 <p>

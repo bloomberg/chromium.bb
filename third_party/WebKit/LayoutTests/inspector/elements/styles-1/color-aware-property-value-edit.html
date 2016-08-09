@@ -81,7 +81,7 @@ function test()
     function setFormat(newFormat, callback)
     {
         WebInspector.settingForTest("colorFormat").set(newFormat);
-        WebInspector.panels.elements.sidebarPanes.styles.doUpdate().then(callback);
+        WebInspector.panels.elements._stylesWidget.doUpdate().then(callback);
     }
 
     function startEditingAndDumpValue(format, propertyName, next)

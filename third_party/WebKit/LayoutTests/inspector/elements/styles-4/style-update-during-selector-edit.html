@@ -25,7 +25,7 @@ function test()
 
     function rebuildUpdate()
     {
-        if (WebInspector.panels.elements.sidebarPanes.styles.node === treeOutline.selectedDOMNode())
+        if (WebInspector.panels.elements._stylesWidget.node === treeOutline.selectedDOMNode())
             seenRebuildUpdate = true;
     }
 

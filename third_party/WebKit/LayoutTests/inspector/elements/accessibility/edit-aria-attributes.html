@@ -7,11 +7,9 @@
 
 function test()
 {
-    InspectorTest.showAccessibilityView().then((view) => {
-        InspectorTest.selectNodeAndWaitForAccessibility("inspected")
-                     .then(() => {
-                         editAriaChecked(); });
-                     });
+    WebInspector.viewManager.showView("accessibility.view")
+        .then(() => InspectorTest.selectNodeAndWaitForAccessibility("inspected"))
+        .then(editAriaChecked);
 
     function editAriaChecked()
     {
@@ -20,8 +18,8 @@ function test()
         var treeElement = InspectorTest.findARIAAttributeTreeElement("aria-checked");
         treeElement._startEditing();
         treeElement._prompt._element.textContent = "false";
-        InspectorTest.waitForAccessibilityNodeUpdate().then(() => { editRole(); });
         treeElement._prompt._element.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        self.runtime.sharedInstance(WebInspector.AccessibilitySidebarView).doUpdate().then(() => { editRole(); });
     }
 
     function editRole()
@@ -31,8 +29,8 @@ function test()
         var treeElement = InspectorTest.findARIAAttributeTreeElement("role");
         treeElement._startEditing();
         treeElement._prompt._element.textContent = "radio";
-        InspectorTest.waitForAccessibilityNodeUpdate().then(() => { postRoleChange(); });
         treeElement._prompt._element.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        self.runtime.sharedInstance(WebInspector.AccessibilitySidebarView).doUpdate().then(() => { postRoleChange(); });
     }
 
     function postRoleChange()
