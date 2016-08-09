@@ -72,6 +72,7 @@ disable=
   wildcard-import,
   fixme,
   global-statement,
+  no-self-use,
 
 
 [REPORTS]
