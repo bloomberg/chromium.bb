@@ -434,7 +434,6 @@ vs-chromium-project.txt
 /third_party/sqlite4java/lib/**/*.jar
 /third_party/sqlite4java/lib/**/*.jnilib
 /third_party/sqlite4java/lib/**/*.so
-/third_party/swiftshader/
 /third_party/syzygy
 /third_party/syzygy/binaries
 /third_party/tsan/
