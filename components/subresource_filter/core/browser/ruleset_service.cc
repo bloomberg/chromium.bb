@@ -230,13 +230,19 @@ RulesetService::WriteRulesetResult RulesetService::WriteRuleset(
   // final segment) gets created. ReplaceFile would not create the path.
   DCHECK(base::PathExists(indexed_ruleset_version_dir.DirName()));
 
-  // This will attempt to overwrite the previously stored ruleset with the same
-  // version, if any. Doing so is needed in case the earlier write was
-  // interrupted, but will fail on Windows in case the earlier write was
-  // successful and the ruleset is in use. We should not normally get to here in
-  // that case, however, due to the same-version check above. Even if we do, the
-  // worst-case scenario is that a slightly-older ruleset version will be used
-  // until next restart/ruleset update.
+  // Need to manually delete the previously stored ruleset with the same
+  // version, if any, as ReplaceFile would not overwrite a non-empty directory.
+  // Due to the same-version check in IndexAndStoreAndPublishRulesetIfNeeded, we
+  // would not normally find a pre-existing copy at this point unless the
+  // previous write was interrupted.
+  //
+  // If there is a _file_ at the target path, do not delete and let ReplaceFile
+  // fail, to allow for error injection in unit tests.
+  if (base::DirectoryExists(indexed_ruleset_version_dir) &&
+      !base::DeleteFile(indexed_ruleset_version_dir, true)) {
+    return WriteRulesetResult::FAILED_DELETE_PREEXISTING;
+  }
+
   base::File::Error error;
   if (!base::ReplaceFile(scratch_dir.path(), indexed_ruleset_version_dir,
                          &error)) {

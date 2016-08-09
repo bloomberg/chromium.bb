@@ -377,6 +377,34 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_Persisted) {
       test_ruleset_1().indexed.contents));
 }
 
+// Test the scenario where a faulty copy of the ruleset resides on disk, that
+// is, when there is something in the directory corresponding to a ruleset
+// version, but preferences do not indicate that a valid copy of that version is
+// stored. The expectation is that the directory is overwritten with a correct
+// contents when the same version of the ruleset is fed to the service again.
+TEST_F(SubresourceFilteringRulesetServiceTest,
+       NewRuleset_OverwritesBadCopyOfSameVersionOnDisk) {
+  // Emulate a bad ruleset by writing |test_ruleset_2| into the directory
+  // corresponding to |test_ruleset_1| and not updating prefs.
+  IndexedRulesetVersion same_version_but_incomplete(
+      kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
+  WriteRuleset(test_ruleset_2(), same_version_but_incomplete);
+
+  IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1);
+  RunUntilIdle();
+
+  IndexedRulesetVersion stored_version;
+  stored_version.ReadFromPrefs(prefs());
+  EXPECT_EQ(kTestContentVersion1, stored_version.content_version);
+  EXPECT_EQ(IndexedRulesetVersion::CurrentFormatVersion(),
+            stored_version.format_version);
+
+  ASSERT_EQ(1u, mock_distributor()->published_rulesets().size());
+  ASSERT_NO_FATAL_FAILURE(AssertValidRulesetFileWithContents(
+      &mock_distributor()->published_rulesets()[0],
+      test_ruleset_1().indexed.contents));
+}
+
 TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_HistogramsOnSuccess) {
   base::HistogramTester histogram_tester;
   IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1);
@@ -390,8 +418,8 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_HistogramsOnSuccess) {
 
 TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_HistogramsOnFailure) {
   // Create a file in place of where the version directory is supposed to go.
-  // This makes base::ReplaceFile fail on all platforms, and without interfering
-  // with clean-up even if the test was interrupted.
+  // This makes WriteRuleset fail on all platforms, without interfering with
+  // after-test clean-up.
   IndexedRulesetVersion indexed_version(
       kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
   base::FilePath version_dir =

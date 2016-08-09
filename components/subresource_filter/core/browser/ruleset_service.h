@@ -139,6 +139,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
     FAILED_WRITING_RULESET_DATA,
     FAILED_WRITING_LICENSE,
     FAILED_REPLACE_FILE,
+    FAILED_DELETE_PREEXISTING,
 
     // Insert new values before this line.
     MAX,
@@ -160,12 +161,13 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
       const base::FilePath& indexed_ruleset_base_dir,
       const UnindexedRulesetInfo& unindexed_ruleset_info);
 
-  // Writes, atomically, all files comprising the given |indexed_version| of the
-  // ruleset into the corresponding subdirectory in |indexed_ruleset_base_dir|.
+  // Writes all files comprising the given |indexed_version| of the ruleset
+  // into the corresponding subdirectory in |indexed_ruleset_base_dir|.
   // More specifically, it writes:
   //  -- the |indexed_ruleset_data| of the given |indexed_ruleset_size|,
   //  -- a copy of the LICENSE file at |license_path|, if exists.
   // Returns true on success. To be called on the |blocking_task_runner_|.
+  // Attempts not to leave an incomplete copy in the target directory.
   //
   // Writing is factored out into this separate function so it can be
   // independently exercised in tests.
