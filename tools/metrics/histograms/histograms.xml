@@ -324,29 +324,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ActivityTracker.ThreadTrackers.Count" units="count">
-  <owner>bcwhite@chromium.org</owner>
-  <summary>
-    The number of threads being tracked for activities such as waiting for a
-    lock/event, a thread to join, or a task to run. Analysis of this data can
-    reveal why a thread will not exit. This value is updated every time a new
-    thread gets an activity tracked for the first time so will show one count
-    for every permanent thread but multiple counts for a thread than exits and
-    is replaced.
-  </summary>
-</histogram>
-
-<histogram name="ActivityTracker.ThreadTrackers.MemLimitTrackerCount"
-    units="count">
-  <owner>bcwhite@chromium.org</owner>
-  <summary>
-    The limit on the number of thread trackers that could be allocated from the
-    persistent memory segment. Trackers beyond this number were allocated from
-    the heap and thus were not available for analysis. This value is updated on
-    every &quot;memory full&quot; failure.
-  </summary>
-</histogram>
-
 <histogram name="Android.Activity.ChromeTabbedActivity.StopReason"
     enum="AndroidActivityStopReason">
   <owner>dfalcantara@chromium.org</owner>

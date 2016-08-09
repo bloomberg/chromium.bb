@@ -398,8 +398,6 @@
         'containers/small_map_unittest.cc',
         'containers/stack_container_unittest.cc',
         'cpu_unittest.cc',
-        'debug/activity_analyzer_unittest.cc',
-        'debug/activity_tracker_unittest.cc',
         'debug/crash_logging_unittest.cc',
         'debug/debugger_unittest.cc',
         'debug/leak_tracker_unittest.cc',

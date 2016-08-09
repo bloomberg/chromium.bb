@@ -9,7 +9,6 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 
-#include "base/debug/activity_tracker.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -355,9 +354,6 @@ bool Process::WaitForExit(int* exit_code) {
 }
 
 bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) {
-  // Record the event that this thread is blocking upon (for hang diagnosis).
-  base::debug::ScopedProcessWaitActivity process_activity(this);
-
   return WaitForExitWithTimeoutImpl(Handle(), exit_code, timeout);
 }
 
