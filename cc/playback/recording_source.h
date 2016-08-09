@@ -48,7 +48,8 @@ class CC_EXPORT RecordingSource {
 
   void ToProtobuf(proto::RecordingSource* proto) const;
   void FromProtobuf(const proto::RecordingSource& proto,
-                    const scoped_refptr<DisplayItemList>& display_list);
+                    const scoped_refptr<DisplayItemList>& display_list,
+                    const gfx::Rect& recorded_viewport);
 
   bool UpdateAndExpandInvalidation(Region* invalidation,
                                    const gfx::Size& layer_size,

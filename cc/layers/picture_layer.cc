@@ -266,7 +266,8 @@ void PictureLayer::FromLayerSpecificPropertiesProto(
   }
 
   recording_source_->FromProtobuf(picture.recording_source(),
-                                  picture_layer_inputs_.display_list);
+                                  picture_layer_inputs_.display_list,
+                                  picture_layer_inputs_.recorded_viewport);
 
   // Inform picture cache about which SkPictures are now in use.
   for (uint32_t engine_picture_id : used_engine_picture_ids)

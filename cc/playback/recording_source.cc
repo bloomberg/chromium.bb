@@ -55,7 +55,8 @@ void RecordingSource::ToProtobuf(proto::RecordingSource* proto) const {
 
 void RecordingSource::FromProtobuf(
     const proto::RecordingSource& proto,
-    const scoped_refptr<DisplayItemList>& display_list) {
+    const scoped_refptr<DisplayItemList>& display_list,
+    const gfx::Rect& recorded_viewport) {
   size_ = ProtoToSize(proto.size());
   slow_down_raster_scale_factor_for_debug_ =
       proto.slow_down_raster_scale_factor_for_debug();
@@ -68,6 +69,7 @@ void RecordingSource::FromProtobuf(
   background_color_ = static_cast<SkColor>(proto.background_color());
 
   display_list_ = display_list;
+  recorded_viewport_ = recorded_viewport;
   if (display_list_)
     FinishDisplayItemListUpdate();
 }

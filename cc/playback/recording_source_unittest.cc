@@ -41,7 +41,7 @@ void ValidateRecordingSourceSerialization(FakeRecordingSource* source) {
   source->ToProtobuf(&proto);
 
   FakeRecordingSource new_source;
-  new_source.FromProtobuf(proto, nullptr);
+  new_source.FromProtobuf(proto, nullptr, gfx::Rect());
 
   EXPECT_TRUE(source->EqualsTo(new_source));
 }
