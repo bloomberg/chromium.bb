@@ -168,9 +168,13 @@ void WebMessagePortChannelImpl::postMessage(
     WebMessagePortChannelArray* channels_ptr) {
   std::unique_ptr<WebMessagePortChannelArray> channels(channels_ptr);
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
+    // Note: we must construct the base::string16 here and pass that. Otherwise,
+    // the WebString will be passed, leading to references to the StringImpl
+    // from two threads, which is a data race.
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&WebMessagePortChannelImpl::SendPostMessage, this,
-                              message, base::Passed(std::move(channels))));
+                              base::Passed(base::string16(message)),
+                              base::Passed(std::move(channels))));
   } else {
     SendPostMessage(message, std::move(channels));
   }
