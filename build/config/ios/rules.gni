@@ -6,11 +6,13 @@ import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/config/mac/symbols.gni")
 
-_toolchain_suffix = ""
 _is_fat_build = additional_toolchains != []
 if (_is_fat_build) {
-  _toolchain_suffix = "($default_toolchain)"
   _is_fat_build_main_target = current_toolchain == default_toolchain
+}
+
+if (use_ios_simulator || ios_enable_code_signing) {
+  _default_entitlements_path = "//build/config/ios/entitlements.plist"
 }
 
 # Generates Info.plist files for Mac apps and frameworks.
@@ -160,12 +162,10 @@ template("ios_app_bundle") {
   # Embeds the entitlements file if building for simulator. This is optional
   # with Xcode 7 or older but required with Xcode 8. This is not necessary for
   # device build as the entitlement is embedded via the codesigning step.
-  #
-  # As the generation of the entitlement depends on the
   if (use_ios_simulator) {
     _generate_entitlements_target = _target_name + "_gen_entitlements"
     _generate_entitlements_target_with_toolchain_suffix =
-        "$_generate_entitlements_target$_toolchain_suffix"
+        "$_generate_entitlements_target($default_toolchain)"
 
     _generate_entitlements_output =
         get_label_info(_generate_entitlements_target_with_toolchain_suffix,
@@ -238,7 +238,7 @@ template("ios_app_bundle") {
     _bundle_data_info_plist = target_name + "_bundle_data_info_plist"
 
     if (use_ios_simulator || ios_enable_code_signing) {
-      _entitlements_path = "//build/config/ios/entitlements.plist"
+      _entitlements_path = _default_entitlements_path
       if (defined(invoker.entitlements_path)) {
         _entitlements_path = invoker.entitlements_path
       }
@@ -288,8 +288,8 @@ template("ios_app_bundle") {
           _generate_entitlements_output,
         ]
         args = [
-                 "-e=" + rebase_path(_entitlements_path, root_build_dir),
                  "generate-entitlements",
+                 "-e=" + rebase_path(_entitlements_path, root_build_dir),
                  "-p=" + rebase_path(_info_plist_path, root_build_dir),
                ] + rebase_path(outputs, root_build_dir)
       }
@@ -542,8 +542,11 @@ template("ios_app_bundle") {
         code_signing_outputs = [
           "$bundle_root_dir/$_output_name",
           "$bundle_root_dir/_CodeSignature/CodeResources",
-          "$bundle_root_dir/embedded.mobileprovision",
         ]
+        if (ios_code_signing_identity != "") {
+          code_signing_outputs +=
+              [ "$bundle_root_dir/embedded.mobileprovision" ]
+        }
         if (defined(invoker.extra_system_frameworks)) {
           foreach(_framework, invoker.extra_system_frameworks) {
             code_signing_outputs += [ "$bundle_root_dir/Frameworks/" +
@@ -551,9 +554,9 @@ template("ios_app_bundle") {
           }
         }
         code_signing_args = [
-          "-e=" + rebase_path(_entitlements_path, root_build_dir),
           "code-sign-bundle",
           "-i=" + ios_code_signing_identity,
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
           "-b=" + rebase_path("$target_out_dir/$_output_name", root_build_dir),
           rebase_path(bundle_root_dir, root_build_dir),
         ]
@@ -920,14 +923,14 @@ template("ios_framework_bundle") {
 
       if (_has_public_headers) {
         configs += [
-          ":$_framework_headers_config$_toolchain_suffix",
-          ":$_headers_map_config$_toolchain_suffix",
+          ":$_framework_headers_config($default_toolchain)",
+          ":$_headers_map_config($default_toolchain)",
         ]
 
         if (!defined(deps)) {
           deps = []
         }
-        deps += [ ":$_framework_headers_target$_toolchain_suffix" ]
+        deps += [ ":$_framework_headers_target($default_toolchain)" ]
       }
     }
 
@@ -1092,12 +1095,12 @@ template("ios_framework_bundle") {
       }
 
       if (_has_public_headers) {
-        configs += [ ":$_headers_map_config$_toolchain_suffix" ]
+        configs += [ ":$_headers_map_config($default_toolchain)" ]
 
         if (!defined(deps)) {
           deps = []
         }
-        deps += [ ":$_framework_headers_target$_toolchain_suffix" ]
+        deps += [ ":$_framework_headers_target($default_toolchain)" ]
       }
     }
 
@@ -1280,7 +1283,7 @@ template("ios_framework_bundle") {
           deps += [ ":$_link_shared_library_target" ]
         }
 
-        _entitlements_path = "//build/config/ios/entitlements.plist"
+        _entitlements_path = _default_entitlements_path
         if (defined(invoker.entitlements_path)) {
           _entitlements_path = invoker.entitlements_path
         }
@@ -1293,12 +1296,15 @@ template("ios_framework_bundle") {
         code_signing_outputs = [
           "$bundle_root_dir/$_output_name",
           "$bundle_root_dir/_CodeSignature/CodeResources",
-          "$bundle_root_dir/embedded.mobileprovision",
         ]
+        if (ios_code_signing_identity != "") {
+          code_signing_outputs +=
+              [ "$bundle_root_dir/embedded.mobileprovision" ]
+        }
         code_signing_args = [
-          "-e=" + rebase_path(_entitlements_path, root_build_dir),
           "code-sign-bundle",
           "-i=" + ios_code_signing_identity,
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
           "-b=" +
               rebase_path("$_shared_library_dir/$_output_name", root_build_dir),
           rebase_path(bundle_root_dir, root_build_dir),
@@ -1567,7 +1573,7 @@ template("ios_xctest_test") {
           deps += [ ":$_xctest_loadable_module_target" ]
         }
 
-        _entitlements_path = "//build/config/ios/entitlements.plist"
+        _entitlements_path = _default_entitlements_path
         if (defined(invoker.entitlements_path)) {
           _entitlements_path = invoker.entitlements_path
         }
@@ -1580,12 +1586,15 @@ template("ios_xctest_test") {
         code_signing_outputs = [
           "$bundle_root_dir/$_xctest_output",
           "$bundle_root_dir/_CodeSignature/CodeResources",
-          "$bundle_root_dir/embedded.mobileprovision",
         ]
+        if (ios_code_signing_identity != "") {
+          code_signing_outputs +=
+              [ "$bundle_root_dir/embedded.mobileprovision" ]
+        }
         code_signing_args = [
-          "-e=" + rebase_path(_entitlements_path, root_build_dir),
           "code-sign-bundle",
           "-i=" + ios_code_signing_identity,
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
           "-b=" +
               rebase_path("$target_out_dir/$_xctest_output", root_build_dir),
           rebase_path(bundle_root_dir, root_build_dir),

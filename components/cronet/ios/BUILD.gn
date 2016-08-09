@@ -64,7 +64,6 @@ tweak_info_plist("tweak_cronet_plist") {
 ios_framework_bundle("cronet_framework") {
   output_name = "Cronet"
   info_plist_target = ":tweak_cronet_plist"
-  code_signing_enabled = false
 
   deps = [
     ":cronet_sources",
