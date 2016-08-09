@@ -842,7 +842,7 @@ crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-fram
 crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/552556 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
-
+crbug.com/232333 fast/forms/select/menulist-appearance-rtl.html [ NeedsRebaseline ]
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Failure ]
 crbug.com/480769 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass Timeout ]
 
