@@ -39,6 +39,12 @@ ClientPolicyController::ClientPolicyController() {
                                      base::TimeDelta::FromDays(0),
                                      kUnlimitedPages,
                                      kUnlimitedPages)));
+  policies_.insert(std::make_pair(
+      kNTPSuggestionsNamespace, MakePolicy(kNTPSuggestionsNamespace,
+                                           LifetimeType::PERSISTENT,
+                                           base::TimeDelta::FromDays(0),
+                                           kUnlimitedPages,
+                                           kUnlimitedPages)));
 
   // Fallback policy.
   policies_.insert(std::make_pair(

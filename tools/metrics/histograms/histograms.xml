@@ -100227,6 +100227,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="async_loading" label="Offline async loaded pages"/>
   <suffix name="custom_tabs" label="Offline custom tabs"/>
   <suffix name="download" label="Offline downloaded pages"/>
+  <suffix name="ntp_suggestions" label="Offline ntp suggestions"/>
   <affected-histogram name="OfflinePages.Background.OfflinerRequestStatus"/>
   <affected-histogram name="OfflinePages.DeletePage.AccessCount"/>
   <affected-histogram name="OfflinePages.DeletePage.LastOpenToCreated"/>

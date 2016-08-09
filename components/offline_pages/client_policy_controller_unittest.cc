@@ -77,4 +77,11 @@ TEST_F(ClientPolicyControllerTest, CheckDownloadDefined) {
   EXPECT_FALSE(isTemporary(policy));
 }
 
+TEST_F(ClientPolicyControllerTest, CheckNTPSuggestionsDefined) {
+  OfflinePageClientPolicy policy =
+      controller()->GetPolicy(kNTPSuggestionsNamespace);
+  EXPECT_EQ(policy.name_space, kNTPSuggestionsNamespace);
+  EXPECT_FALSE(isTemporary(policy));
+}
+
 }  // namespace offline_pages
