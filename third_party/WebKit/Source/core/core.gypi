@@ -549,6 +549,7 @@
             'layout/ng/NGConstraintSpace.h',
             'layout/ng/NGFragment.cpp',
             'layout/ng/NGFragment.h',
+            'layout/ng/NGMarginStrut.h',
             'layout/ng/NGText.cpp',
             'layout/ng/NGText.h',
             'layout/BidiRun.h',
