@@ -33,7 +33,7 @@ const NSInteger kMiddleButtonNumber = 2;
                          answerImage:(NSImage*)answerImage {
   base::scoped_nsobject<NSMutableArray> array([[NSMutableArray alloc] init]);
   BOOL isDarkTheme = [tableView hasDarkTheme];
-  CGFloat max_match_contents_width = 0.0f;
+  CGFloat maxMatchContentsWidth = 0.0f;
   CGFloat contentsOffset = -1.0f;
   for (const AutocompleteMatch& match : result) {
     if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL &&
@@ -50,12 +50,12 @@ const NSInteger kMiddleButtonNumber = 2;
       [cellData setIncognitoImage:popupView.ImageForMatch(match)];
     [array addObject:cellData];
     if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
-      max_match_contents_width =
-          std::max(max_match_contents_width, [cellData getMatchContentsWidth]);
+      maxMatchContentsWidth =
+          std::max(maxMatchContentsWidth, [cellData getMatchContentsWidth]);
     }
   }
 
-  [tableView setMaxMatchContentsWidth:max_match_contents_width];
+  [tableView setMaxMatchContentsWidth:maxMatchContentsWidth];
   return [self initWithArray:array];
 }
 
@@ -120,7 +120,7 @@ const NSInteger kMiddleButtonNumber = 2;
     NSAttributedString* text = [cellData description];
     // Provide no more than 3 lines of space.
     rowRect.size.height =
-        std::min(3, [cellData max_lines]) * [text size].height;
+        std::min(3, [cellData maxLines]) * [text size].height;
     NSRect textRect =
         [text boundingRectWithSize:rowRect.size
                            options:NSStringDrawingUsesLineFragmentOrigin |

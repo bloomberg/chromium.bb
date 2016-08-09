@@ -40,7 +40,7 @@ class OmniboxPopupViewMac;
 
   AutocompleteMatch::Type matchType_;
 
-  int max_lines_;
+  int maxLines_;
 }
 
 @property(readonly, retain, nonatomic) NSAttributedString* contents;
@@ -53,7 +53,7 @@ class OmniboxPopupViewMac;
 @property(readonly, nonatomic) BOOL isContentsRTL;
 @property(readonly, nonatomic) bool isAnswer;
 @property(readonly, nonatomic) AutocompleteMatch::Type matchType;
-@property(readonly, nonatomic) int max_lines;
+@property(readonly, nonatomic) int maxLines;
 
 - (instancetype)initWithMatch:(const AutocompleteMatch&)match
                contentsOffset:(CGFloat)contentsOffset

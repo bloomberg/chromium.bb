@@ -420,7 +420,7 @@ NSAttributedString* CreateClassifiedAttributedString(
 @synthesize isContentsRTL = isContentsRTL_;
 @synthesize isAnswer = isAnswer_;
 @synthesize matchType = matchType_;
-@synthesize max_lines = max_lines_;
+@synthesize maxLines = maxLines_;
 
 - (instancetype)initWithMatch:(const AutocompleteMatch&)match
                contentsOffset:(CGFloat)contentsOffset
@@ -453,7 +453,7 @@ NSAttributedString* CreateClassifiedAttributedString(
           [CreateAnswerLine(match.answer->first_line(), isDarkTheme) retain];
       description_ =
           [CreateAnswerLine(match.answer->second_line(), isDarkTheme) retain];
-      max_lines_ = match.answer->second_line().num_text_lines();
+      maxLines_ = match.answer->second_line().num_text_lines();
     } else {
       contents_ = [CreateClassifiedAttributedString(
           match.contents, ContentTextColor(isDarkTheme), match.contents_class,
@@ -463,7 +463,7 @@ NSAttributedString* CreateClassifiedAttributedString(
             match.description, DimTextColor(isDarkTheme),
             match.description_class, isDarkTheme) retain];
       }
-      max_lines_ = 1;
+      maxLines_ = 1;
     }
   }
   return self;
