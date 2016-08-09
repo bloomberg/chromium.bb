@@ -51,9 +51,7 @@
         <span id="title">$i18n{supervisedUserLearnMoreTitle}</span>
         <iron-icon icon="user-manager:supervisor-account"></iron-icon>
       </div>
-      <div class="content-area"
-          i18n-values=".innerHTML:supervisedUserLearnMoreText">
-      </div>
+      <div class="content-area">$i18nRaw{supervisedUserLearnMoreText}</div>
       <div id="actions">
         <paper-button id="done" class="action primary" on-tap="onDoneTap_">
           $i18n{supervisedUserLearnMoreDone}
