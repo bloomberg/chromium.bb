@@ -60,7 +60,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patch_oauth2=False, use_site_config_creds=True,
                       output_manifest=True, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
-                      patchset=None, gerrit_no_reset=False, **kwargs):
+                      patchset=None, gerrit_no_reset=False,
+                      gerrit_rebase_patch_ref=False, **kwargs):
     """
     Args:
       use_site_config_creds: If the oauth2 credentials are in the buildbot
@@ -216,6 +217,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--with_branch_heads')
     if gerrit_no_reset:
       cmd.append('--gerrit_no_reset')
+    if gerrit_rebase_patch_ref:
+      cmd.append('--gerrit_rebase_patch_ref')
 
     # Inject Json output for testing.
     git_mode = self._mastername not in SVN_MASTERS

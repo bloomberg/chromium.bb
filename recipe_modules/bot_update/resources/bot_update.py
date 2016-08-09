@@ -1138,7 +1138,8 @@ def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
   except SubprocessFailed as e:
     raise PatchFailed(e.message, e.code, e.output)
 
-def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset):
+def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
+                     gerrit_rebase_patch_ref):
   gerrit_repo = gerrit_repo or 'origin'
   assert gerrit_ref
   print '===Applying gerrit ref==='
@@ -1147,6 +1148,27 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset):
     base_rev = git('rev-parse', 'HEAD', cwd=root).strip()
     git('retry', 'fetch', gerrit_repo, gerrit_ref, cwd=root, tries=1)
     git('checkout', 'FETCH_HEAD', cwd=root)
+
+    if gerrit_rebase_patch_ref:
+      print '===Rebasing==='
+      # git rebase requires a branch to operate on.
+      temp_branch_name = 'tmp/' + uuid.uuid4().hex
+      try:
+        ok = False
+        git('checkout', '-b', temp_branch_name, cwd=root)
+        git('rebase', base_rev, cwd=root)
+
+        # Get off of the temporary branch since it can't be deleted otherwise.
+        cur_rev = git('rev-parse', 'HEAD', cwd=root).strip()
+        git('checkout', cur_rev, cwd=root)
+        git('branch', '-D', temp_branch_name, cwd=root)
+        ok = True
+      finally:
+        if not ok:
+          # Get off of the temporary branch since it can't be deleted otherwise.
+          git('checkout', base_rev, cwd=root)
+          git('branch', '-D', temp_branch_name, cwd=root)
+
     if gerrit_reset:
       git('reset', '--soft', base_rev, cwd=root)
   except SubprocessFailed as e:
@@ -1304,10 +1326,10 @@ def ensure_deps_revisions(deps_url_mapping, solutions, revisions):
 
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     patch_root, issue, patchset, patch_url, rietveld_server,
-                    gerrit_repo, gerrit_ref, revision_mapping,
-                    apply_issue_email_file, apply_issue_key_file, buildspec,
-                    gyp_env, shallow, runhooks, refs, git_cache_dir,
-                    gerrit_reset):
+                    gerrit_repo, gerrit_ref, gerrit_rebase_patch_ref,
+                    revision_mapping, apply_issue_email_file,
+                    apply_issue_key_file, buildspec, gyp_env, shallow, runhooks,
+                    refs, git_cache_dir, gerrit_reset):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
@@ -1338,6 +1360,9 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                              revision_mapping, git_ref, apply_issue_email_file,
                              apply_issue_key_file, whitelist=[target])
         already_patched.append(target)
+      elif gerrit_ref and gerrit_rebase_patch_ref:
+        apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root, gerrit_reset,
+                         True)
 
   if not buildspec:
     # Run deps2git if there is a DEPS change after the last .DEPS.git commit.
@@ -1376,8 +1401,8 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
     apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
                          revision_mapping, git_ref, apply_issue_email_file,
                          apply_issue_key_file, blacklist=already_patched)
-  elif gerrit_ref:
-    apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root, gerrit_reset)
+  elif gerrit_ref and not gerrit_rebase_patch_ref:
+    apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root, gerrit_reset, False)
 
   # Reset the deps_file point in the solutions so that hooks get run properly.
   for sln in solutions:
@@ -1456,6 +1481,8 @@ def parse_args():
   parse.add_option('--gerrit_repo',
                    help='Gerrit repository to pull the ref from.')
   parse.add_option('--gerrit_ref', help='Gerrit ref to apply.')
+  parse.add_option('--gerrit_rebase_patch_ref', action='store_true',
+                   help='Rebase Gerrit patch ref after of checking it out.')
   parse.add_option('--gerrit_no_reset', action='store_true',
                    help='Bypass calling reset after applying a gerrit ref.')
   parse.add_option('--specs', help='Gcilent spec.')
@@ -1617,6 +1644,7 @@ def checkout(options, git_slns, specs, buildspec, master,
           rietveld_server=options.rietveld_server,
           gerrit_repo=options.gerrit_repo,
           gerrit_ref=options.gerrit_ref,
+          gerrit_rebase_patch_ref=options.gerrit_rebase_patch_ref,
           revision_mapping=options.revision_mapping,
           apply_issue_email_file=options.apply_issue_email_file,
           apply_issue_key_file=options.apply_issue_key_file,
