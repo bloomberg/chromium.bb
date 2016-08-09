@@ -468,6 +468,11 @@
             }
         }
     ],
+    "WebFontsInterventionV2": [
+        {
+            "group_name": "Enabled-slow2g"
+        }
+    ],
     "WebRTC-EnableWebRtcEcdsa": [
         {
             "enable_features": [
