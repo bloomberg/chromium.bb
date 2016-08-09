@@ -21,7 +21,7 @@ TEST_F(LayoutBoxTest, BackgroundObscuredInRect)
         "<div class='column'> <div> <div id='target' class='white-background'> <div class='black-background'></div> </div> </div> </div>");
     LayoutObject* layoutObject = getLayoutObjectByElementId("target");
     ASSERT_TRUE(layoutObject);
-    ASSERT_TRUE(layoutObject->boxDecorationBackgroundIsKnownToBeObscured());
+    ASSERT_TRUE(layoutObject->backgroundIsKnownToBeObscured());
 }
 
 } // namespace blink

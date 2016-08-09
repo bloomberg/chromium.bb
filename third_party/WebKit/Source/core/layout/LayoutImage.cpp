@@ -209,7 +209,7 @@ bool LayoutImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance 
     if (!LayoutBoxModelObject::boxShadowShouldBeAppliedToBackground(bleedAvoidance))
         return false;
 
-    return !const_cast<LayoutImage*>(this)->boxDecorationBackgroundIsKnownToBeObscured();
+    return !const_cast<LayoutImage*>(this)->backgroundIsKnownToBeObscured();
 }
 
 bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned) const
@@ -243,7 +243,7 @@ bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
 
 bool LayoutImage::computeBackgroundIsKnownToBeObscured() const
 {
-    if (!hasBackground())
+    if (!styleRef().hasBackground())
         return false;
 
     LayoutRect paintedExtent;

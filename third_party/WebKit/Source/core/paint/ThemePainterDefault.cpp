@@ -177,7 +177,7 @@ bool ThemePainterDefault::paintButton(const LayoutObject& o, const PaintInfo& i,
     WebCanvas* canvas = i.context.canvas();
     extraParams.button.hasBorder = true;
     extraParams.button.backgroundColor = useMockTheme() ? 0xffc0c0c0 : defaultButtonBackgroundColor;
-    if (o.hasBackground())
+    if (o.styleRef().hasBackground())
         extraParams.button.backgroundColor = o.resolveColor(CSSPropertyBackgroundColor).rgb();
 
     Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartButton, getWebThemeState(o), WebRect(rect), &extraParams);
@@ -218,7 +218,7 @@ bool ThemePainterDefault::paintMenuList(const LayoutObject& o, const PaintInfo& 
     extraParams.menuList.hasBorderRadius = o.styleRef().hasBorderRadius();
     // Fallback to transparent if the specified color object is invalid.
     Color backgroundColor(Color::transparent);
-    if (o.hasBackground())
+    if (o.styleRef().hasBackground())
         backgroundColor = o.resolveColor(CSSPropertyBackgroundColor);
     extraParams.menuList.backgroundColor = backgroundColor.rgb();
 

@@ -1342,11 +1342,11 @@ void LayoutBox::paintBoxDecorationBackground(const PaintInfo& paintInfo, const L
 
 bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const
 {
-    ASSERT(hasBackground());
+    DCHECK(styleRef().hasBackground());
 
     // LayoutView is special in the sense that it expands to the whole canvas,
     // thus can't be handled by this function.
-    ASSERT(!isLayoutView());
+    DCHECK(!isLayoutView());
 
     LayoutRect backgroundRect(borderBoxRect());
 
@@ -1459,8 +1459,7 @@ bool LayoutBox::computeBackgroundIsKnownToBeObscured() const
     if (scrollsOverflow())
         return false;
     // Test to see if the children trivially obscure the background.
-    // FIXME: This test can be much more comprehensive.
-    if (!hasBackground())
+    if (!styleRef().hasBackground())
         return false;
     // Root background painting is special.
     if (isLayoutView())

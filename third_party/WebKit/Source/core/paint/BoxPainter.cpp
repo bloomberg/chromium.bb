@@ -128,7 +128,7 @@ void BoxPainter::paintBackground(const PaintInfo& paintInfo, const LayoutRect& p
         return;
     if (m_layoutBox.backgroundStolenForBeingBody())
         return;
-    if (m_layoutBox.boxDecorationBackgroundIsKnownToBeObscured())
+    if (m_layoutBox.backgroundIsKnownToBeObscured())
         return;
     paintFillLayers(paintInfo, backgroundColor, m_layoutBox.style()->backgroundLayers(), paintRect, bleedAvoidance);
 }

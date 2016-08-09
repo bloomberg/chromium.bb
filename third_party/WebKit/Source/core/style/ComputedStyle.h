@@ -2317,6 +2317,7 @@ public:
     // Border utility functions.
     bool borderObscuresBackground() const;
     void getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
+
     bool hasBoxDecorations() const
     {
         return hasBorderDecoration()
@@ -2327,6 +2328,14 @@ public:
             || hasFilterInducingProperty()
             || hasBackdropFilter()
             || resize() != RESIZE_NONE;
+    }
+
+    // "Box decoration background" includes all box decorations and backgrounds
+    // that are painted as the background of the object. It includes borders,
+    // box-shadows, background-color and background-image, etc.
+    bool hasBoxDecorationBackground() const
+    {
+        return hasBackground() || hasBorderDecoration() || hasAppearance() || boxShadow();
     }
 
     // Background utility functions.

@@ -674,18 +674,11 @@ public:
 
     bool hasLayer() const { return m_bitfields.hasLayer(); }
 
-    // "Box decoration background" includes all box decorations and backgrounds
-    // that are painted as the background of the object. It includes borders,
-    // box-shadows, background-color and background-image, etc.
-    enum BoxDecorationBackgroundState {
-        NoBoxDecorationBackground,
-        HasBoxDecorationBackgroundObscurationStatusInvalid,
-        HasBoxDecorationBackgroundKnownToBeObscured,
-        HasBoxDecorationBackgroundMayBeVisible,
-    };
-    bool hasBoxDecorationBackground() const { return m_bitfields.getBoxDecorationBackgroundState() != NoBoxDecorationBackground; }
-    bool boxDecorationBackgroundIsKnownToBeObscured() const;
-    bool hasBackground() const { return style()->hasBackground(); }
+    // This may be different from styleRef().hasBoxDecorationBackground() because some objects may
+    // have box decoration background other than from their own style.
+    bool hasBoxDecorationBackground() const { return m_bitfields.hasBoxDecorationBackground(); }
+
+    bool backgroundIsKnownToBeObscured() const;
 
     bool needsLayout() const
     {
@@ -842,6 +835,12 @@ public:
     void setInline(bool isInline) { m_bitfields.setIsInline(isInline); }
 
     void setHasBoxDecorationBackground(bool);
+
+    enum BackgroundObscurationState {
+        BackgroundObscurationStatusInvalid,
+        BackgroundKnownToBeObscured,
+        BackgroundMayBeVisible,
+    };
     void invalidateBackgroundObscurationStatus();
     virtual bool computeBackgroundIsKnownToBeObscured() const { return false; }
 
@@ -1759,17 +1758,18 @@ private:
             , m_childrenInline(false)
             , m_containsInlineWithOutlineAndContinuation(false)
             , m_alwaysCreateLineBoxesForLayoutInline(false)
-            , m_lastBoxDecorationBackgroundObscured(false)
+            , m_previousBackgroundObscured(false)
             , m_isBackgroundAttachmentFixedObject(false)
             , m_isScrollAnchorObject(false)
+            , m_hasBoxDecorationBackground(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
-            , m_boxDecorationBackgroundState(NoBoxDecorationBackground)
+            , m_backgroundObscurationState(BackgroundObscurationStatusInvalid)
             , m_fullPaintInvalidationReason(PaintInvalidationNone)
         {
         }
 
-        // 32 bits have been used in the first word, and 16 in the second.
+        // 32 bits have been used in the first word, and 17 in the second.
 
         // Self needs layout means that this layout object is marked for a full layout.
         // This is the default layout but it is expensive as it recomputes everything.
@@ -1893,11 +1893,13 @@ private:
         // from LayoutInline
         ADD_BOOLEAN_BITFIELD(alwaysCreateLineBoxesForLayoutInline, AlwaysCreateLineBoxesForLayoutInline);
 
-        // For slimming-paint.
-        ADD_BOOLEAN_BITFIELD(lastBoxDecorationBackgroundObscured, LastBoxDecorationBackgroundObscured);
+        // Background obscuration status of the previous frame.
+        ADD_BOOLEAN_BITFIELD(previousBackgroundObscured, PreviousBackgroundObscured);
 
         ADD_BOOLEAN_BITFIELD(isBackgroundAttachmentFixedObject, IsBackgroundAttachmentFixedObject);
         ADD_BOOLEAN_BITFIELD(isScrollAnchorObject, IsScrollAnchorObject);
+
+        ADD_BOOLEAN_BITFIELD(hasBoxDecorationBackground, HasBoxDecorationBackground);
 
     private:
         // This is the cached 'position' value of this object
@@ -1905,7 +1907,7 @@ private:
         unsigned m_positionedState : 2; // PositionedState
         unsigned m_selectionState : 3; // SelectionState
         // Mutable for getter which lazily update this field.
-        mutable unsigned m_boxDecorationBackgroundState : 2; // BoxDecorationBackgroundState
+        mutable unsigned m_backgroundObscurationState : 2; // BackgroundObscurationState
         unsigned m_fullPaintInvalidationReason : 5; // PaintInvalidationReason
 
     public:
@@ -1925,8 +1927,8 @@ private:
         ALWAYS_INLINE SelectionState getSelectionState() const { return static_cast<SelectionState>(m_selectionState); }
         ALWAYS_INLINE void setSelectionState(SelectionState selectionState) { m_selectionState = selectionState; }
 
-        ALWAYS_INLINE BoxDecorationBackgroundState getBoxDecorationBackgroundState() const { return static_cast<BoxDecorationBackgroundState>(m_boxDecorationBackgroundState); }
-        ALWAYS_INLINE void setBoxDecorationBackgroundState(BoxDecorationBackgroundState s) const { m_boxDecorationBackgroundState = s; }
+        ALWAYS_INLINE BackgroundObscurationState getBackgroundObscurationState() const { return static_cast<BackgroundObscurationState>(m_backgroundObscurationState); }
+        ALWAYS_INLINE void setBackgroundObscurationState(BackgroundObscurationState s) const { m_backgroundObscurationState = s; }
 
         PaintInvalidationReason fullPaintInvalidationReason() const { return static_cast<PaintInvalidationReason>(m_fullPaintInvalidationReason); }
         void setFullPaintInvalidationReason(PaintInvalidationReason reason) { m_fullPaintInvalidationReason = reason; }
@@ -2111,29 +2113,25 @@ inline void LayoutObject::setSelectionStateIfNeeded(SelectionState state)
 
 inline void LayoutObject::setHasBoxDecorationBackground(bool b)
 {
-    if (!b) {
-        m_bitfields.setBoxDecorationBackgroundState(NoBoxDecorationBackground);
+    if (b == m_bitfields.hasBoxDecorationBackground())
         return;
-    }
-    if (hasBoxDecorationBackground())
-        return;
-    m_bitfields.setBoxDecorationBackgroundState(HasBoxDecorationBackgroundObscurationStatusInvalid);
+
+    m_bitfields.setHasBoxDecorationBackground(b);
+    invalidateBackgroundObscurationStatus();
 }
 
 inline void LayoutObject::invalidateBackgroundObscurationStatus()
 {
-    if (!hasBoxDecorationBackground())
-        return;
-    m_bitfields.setBoxDecorationBackgroundState(HasBoxDecorationBackgroundObscurationStatusInvalid);
+    m_bitfields.setBackgroundObscurationState(BackgroundObscurationStatusInvalid);
 }
 
-inline bool LayoutObject::boxDecorationBackgroundIsKnownToBeObscured() const
+inline bool LayoutObject::backgroundIsKnownToBeObscured() const
 {
-    if (m_bitfields.getBoxDecorationBackgroundState() == HasBoxDecorationBackgroundObscurationStatusInvalid) {
-        BoxDecorationBackgroundState state = computeBackgroundIsKnownToBeObscured() ? HasBoxDecorationBackgroundKnownToBeObscured : HasBoxDecorationBackgroundMayBeVisible;
-        m_bitfields.setBoxDecorationBackgroundState(state);
+    if (m_bitfields.getBackgroundObscurationState() == BackgroundObscurationStatusInvalid) {
+        BackgroundObscurationState state = computeBackgroundIsKnownToBeObscured() ? BackgroundKnownToBeObscured : BackgroundMayBeVisible;
+        m_bitfields.setBackgroundObscurationState(state);
     }
-    return m_bitfields.getBoxDecorationBackgroundState() == HasBoxDecorationBackgroundKnownToBeObscured;
+    return m_bitfields.getBackgroundObscurationState() == BackgroundKnownToBeObscured;
 }
 
 inline void makeMatrixRenderable(TransformationMatrix& matrix, bool has3DRendering)

@@ -174,7 +174,7 @@ void LayoutSVGRoot::layout()
     }
 
     updateLayerTransformAfterLayout();
-    m_hasBoxDecorationBackground = isDocumentElement() ? calculateHasBoxDecorations() : hasBoxDecorationBackground();
+    m_hasBoxDecorationBackground = isDocumentElement() ? styleRef().hasBoxDecorationBackground() : hasBoxDecorationBackground();
     invalidateBackgroundObscurationStatus();
 
     clearNeedsLayout();
@@ -216,7 +216,7 @@ void LayoutSVGRoot::styleDidChange(StyleDifference diff, const ComputedStyle* ol
         setNeedsBoundariesUpdate();
     if (diff.needsPaintInvalidation()) {
         // Box decorations may have appeared/disappeared - recompute status.
-        m_hasBoxDecorationBackground = calculateHasBoxDecorations();
+        m_hasBoxDecorationBackground = styleRef().hasBoxDecorationBackground();
     }
 
     LayoutReplaced::styleDidChange(diff, oldStyle);

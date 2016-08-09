@@ -1391,10 +1391,10 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
         "object", this->debugName().ascii(),
         "info", jsonObjectForOldAndNewRects(oldBounds, oldLocation, newBounds, newLocation));
 
-    bool boxDecorationBackgroundObscured = boxDecorationBackgroundIsKnownToBeObscured();
-    if (!isFullPaintInvalidationReason(invalidationReason) && boxDecorationBackgroundObscured != m_bitfields.lastBoxDecorationBackgroundObscured())
+    bool backgroundObscured = backgroundIsKnownToBeObscured();
+    if (!isFullPaintInvalidationReason(invalidationReason) && backgroundObscured != m_bitfields.previousBackgroundObscured())
         invalidationReason = PaintInvalidationBackgroundObscurationChange;
-    m_bitfields.setLastBoxDecorationBackgroundObscured(boxDecorationBackgroundObscured);
+    m_bitfields.setPreviousBackgroundObscured(backgroundObscured);
 
     if (invalidationReason == PaintInvalidationNone) {
         // TODO(trchen): Currently we don't keep track of paint offset of layout objects.

@@ -191,7 +191,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
 
             TableRowPainter rowPainter(*row);
             rowPainter.paintBoxShadow(paintInfoForDescendants, paintOffset, Normal);
-            if (row->hasBackground()) {
+            if (row->styleRef().hasBackground()) {
                 for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
                     if (const LayoutTableCell* cell = primaryCellToPaint(r, c, dirtiedRows, dirtiedColumns))
                         rowPainter.paintBackgroundBehindCell(*cell, paintInfoForDescendants, paintOffset);
@@ -269,13 +269,13 @@ void TableSectionPainter::paintBackgroundsBehindCell(const LayoutTableCell& cell
     // the stack, since we have already opened a transparency layer (potentially) for the table row group.
     // Note that we deliberately ignore whether or not the cell has a layer, since these backgrounds paint "behind" the
     // cell.
-    if (columnGroup && columnGroup->hasBackground())
+    if (columnGroup && columnGroup->styleRef().hasBackground())
         tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells, cellPoint, *columnGroup, DisplayItem::TableCellBackgroundFromColumnGroup);
-    if (column && column->hasBackground())
+    if (column && column->styleRef().hasBackground())
         tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells, cellPoint, *column, DisplayItem::TableCellBackgroundFromColumn);
 
     // Paint the row group next.
-    if (m_layoutTableSection.hasBackground())
+    if (m_layoutTableSection.styleRef().hasBackground())
         tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells, cellPoint, m_layoutTableSection, DisplayItem::TableCellBackgroundFromSection);
 }
 

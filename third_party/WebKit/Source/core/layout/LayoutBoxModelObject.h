@@ -304,8 +304,6 @@ protected:
 
     LayoutPoint adjustedPositionRelativeTo(const LayoutPoint&, const Element*) const;
 
-    bool calculateHasBoxDecorations() const;
-
     // Returns the continuation associated with |this|.
     // Returns nullptr if no continuation is associated with |this|.
     //

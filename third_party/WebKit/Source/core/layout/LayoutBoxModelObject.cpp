@@ -487,12 +487,6 @@ void LayoutBoxModelObject::addOutlineRectsForDescendant(const LayoutObject& desc
     descendant.addOutlineRects(rects, additionalOffset, includeBlockOverflows);
 }
 
-bool LayoutBoxModelObject::calculateHasBoxDecorations() const
-{
-    const ComputedStyle& styleToUse = styleRef();
-    return hasBackground() || styleToUse.hasBorderDecoration() || styleToUse.hasAppearance() || styleToUse.boxShadow();
-}
-
 bool LayoutBoxModelObject::hasNonEmptyLayoutSize() const
 {
     for (const LayoutBoxModelObject* root = this; root; root = root->continuation()) {
@@ -516,7 +510,7 @@ bool LayoutBoxModelObject::hasNonEmptyLayoutSize() const
 void LayoutBoxModelObject::updateFromStyle()
 {
     const ComputedStyle& styleToUse = styleRef();
-    setHasBoxDecorationBackground(calculateHasBoxDecorations());
+    setHasBoxDecorationBackground(styleToUse.hasBoxDecorationBackground());
     setInline(styleToUse.isDisplayInlineType());
     setPositionState(styleToUse.position());
     setHorizontalWritingMode(styleToUse.isHorizontalWritingMode());
