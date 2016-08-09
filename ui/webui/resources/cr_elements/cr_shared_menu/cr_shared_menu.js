@@ -70,19 +70,6 @@ Polymer({
           timing: {
             duration: 150
           }
-        }, {
-          name: 'paper-menu-shrink-width-animation',
-          timing: {
-            delay: 100,
-            duration: 50,
-            easing: SLIDE_CUBIC_BEZIER
-          }
-        }, {
-          name: 'paper-menu-shrink-height-animation',
-          timing: {
-            delay: 200,
-            easing: 'ease-in'
-          }
         }];
       }
     }
