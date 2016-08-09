@@ -411,13 +411,13 @@ class ConsoleListener : public EmbeddedWorkerInstance::Listener {
   void OnReportConsoleMessageOnUI(const base::string16& message) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     messages_.push_back(message);
-    if (messages_.size() == expected_message_count_)
+    if (!quit_.is_null() && messages_.size() == expected_message_count_)
       quit_.Run();
   }
 
   // These parameters must be accessed on the UI thread.
   std::vector<base::string16> messages_;
-  size_t expected_message_count_;
+  size_t expected_message_count_ = 0;
   base::Closure quit_;
 };
 
@@ -1115,11 +1115,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ("cache_name", response2.cache_storage_cache_name);
 }
 
-// Disabled because console_listener->OnReportConsoleMessageOnUI() will be
-// called before WaitForConsoleMessages() is called to set the expected number
-// of messages.  https://crbug.com/635599
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       DISABLED_FetchEvent_respondWithRejection) {
+                       FetchEvent_respondWithRejection) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
