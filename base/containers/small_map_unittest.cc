@@ -331,6 +331,36 @@ TEST(SmallMap, Erase) {
   EXPECT_TRUE(m.empty());
 }
 
+TEST(SmallMap, EraseReturnsIteratorFollowingRemovedElement) {
+  SmallMap<hash_map<std::string, int> > m;
+  SmallMap<hash_map<std::string, int> >::iterator iter;
+
+  m["a"] = 0;
+  m["b"] = 1;
+  m["c"] = 2;
+
+  // Erase first item.
+  auto following_iter = m.erase(m.begin());
+  EXPECT_EQ(m.begin(), following_iter);
+  EXPECT_EQ(2u, m.size());
+  EXPECT_EQ(m.count("a"), 0u);
+  EXPECT_EQ(m.count("b"), 1u);
+  EXPECT_EQ(m.count("c"), 1u);
+
+  // Iterate to last item and erase it.
+  ++following_iter;
+  following_iter = m.erase(following_iter);
+  ASSERT_EQ(1u, m.size());
+  EXPECT_EQ(m.end(), following_iter);
+  EXPECT_EQ(m.count("b"), 0u);
+  EXPECT_EQ(m.count("c"), 1u);
+
+  // Erase remaining item.
+  following_iter = m.erase(m.begin());
+  EXPECT_TRUE(m.empty());
+  EXPECT_EQ(m.end(), following_iter);
+}
+
 TEST(SmallMap, NonHashMap) {
   SmallMap<std::map<int, int>, 4, std::equal_to<int> > m;
   EXPECT_TRUE(m.empty());
