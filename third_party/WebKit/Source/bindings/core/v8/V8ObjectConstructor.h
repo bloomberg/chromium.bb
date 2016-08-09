@@ -51,7 +51,6 @@ public:
 
     ConstructorMode(v8::Isolate* isolate)
         : m_isolate(isolate)
-        , m_microtaskSuppression(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks)
     {
         V8PerIsolateData* data = V8PerIsolateData::from(m_isolate);
         m_previous = data->m_constructorMode;
@@ -72,7 +71,6 @@ public:
 private:
     v8::Isolate* m_isolate;
     bool m_previous;
-    v8::MicrotasksScope m_microtaskSuppression;
 };
 
 class CORE_EXPORT V8ObjectConstructor {
