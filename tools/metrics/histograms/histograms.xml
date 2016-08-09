@@ -47462,6 +47462,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ResourcePrefetchPredictor.ResourceStatus"
     enum="ResourcePrefetchPredictorResourceStatus">
+  <obsolete>
+    Deprecated 08/2016 with the removal of the recording code.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     The distribution of the reasons for which subresources are ignored during

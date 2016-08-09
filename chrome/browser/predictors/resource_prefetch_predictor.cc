@@ -63,7 +63,7 @@ enum ResourceStatus {
   RESOURCE_STATUS_UNSUPPORTED_RESOURCE_TYPE = 4,
   RESOURCE_STATUS_NOT_GET = 8,
   RESOURCE_STATUS_URL_TOO_LONG = 16,
-  RESOURCE_STATUS_NOT_CACHEABLE = 32,
+  RESOURCE_STATUS_NO_STORE = 32,
   RESOURCE_STATUS_HEADERS_MISSING = 64,
   RESOURCE_STATUS_MAX = 128,
 };
@@ -280,12 +280,8 @@ bool ResourcePrefetchPredictor::IsHandledSubresource(
   if (!response->response_info().headers.get())
     resource_status |= RESOURCE_STATUS_HEADERS_MISSING;
 
-  if (!IsCacheable(response))
-    resource_status |= RESOURCE_STATUS_NOT_CACHEABLE;
-
-  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.ResourceStatus",
-                            resource_status,
-                            RESOURCE_STATUS_MAX);
+  if (IsNoStore(response))
+    resource_status |= RESOURCE_STATUS_NO_STORE;
 
   return resource_status == 0;
 }
@@ -312,20 +308,14 @@ bool ResourcePrefetchPredictor::IsHandledResourceType(
 }
 
 // static
-bool ResourcePrefetchPredictor::IsCacheable(const net::URLRequest* response) {
+bool ResourcePrefetchPredictor::IsNoStore(const net::URLRequest* response) {
   if (response->was_cached())
-    return true;
+    return false;
 
-  // For non cached responses, we will ensure that the freshness lifetime is
-  // some sane value.
   const net::HttpResponseInfo& response_info = response->response_info();
   if (!response_info.headers.get())
     return false;
-  base::Time response_time(response_info.response_time);
-  response_time += base::TimeDelta::FromSeconds(1);
-  base::TimeDelta freshness =
-      response_info.headers->GetFreshnessLifetimes(response_time).freshness;
-  return freshness > base::TimeDelta();
+  return response_info.headers->HasHeaderValue("cache-control", "no-store");
 }
 
 // static

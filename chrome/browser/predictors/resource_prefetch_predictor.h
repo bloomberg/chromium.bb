@@ -66,8 +66,6 @@ class ResourcePrefetcherManager;
 // * ResourcePrefetcher - Lives entirely on the IO thread, owned by the
 //   ResourcePrefetcherManager, and issues net::URLRequest to fetch resources.
 //
-// TODO(shishir): Do speculative prefetching for https resources and/or https
-// main frame urls.
 // TODO(zhenw): Currently only main frame requests/redirects/responses are
 // recorded. Consider recording sub-frame responses independently or together
 // with main frame.
@@ -187,8 +185,8 @@ class ResourcePrefetchPredictor
   static bool IsHandledResourceType(content::ResourceType resource_type,
                                     const std::string& mime_type);
 
-  // Returns true if the request (should have a response in it) is cacheable.
-  static bool IsCacheable(const net::URLRequest* request);
+  // Returns true if the request (should have a response in it) is "no-store".
+  static bool IsNoStore(const net::URLRequest* request);
 
   // KeyedService methods override.
   void Shutdown() override;
