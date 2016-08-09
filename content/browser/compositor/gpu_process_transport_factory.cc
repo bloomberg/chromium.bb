@@ -39,7 +39,6 @@
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
 #include "content/browser/compositor/software_output_device_mus.h"
-#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -51,6 +50,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "services/shell/runner/common/client_util.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_constants.h"
@@ -58,10 +58,9 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(MOJO_RUNNER_CLIENT)
+#if defined(USE_AURA)
 #include "content/browser/compositor/mus_browser_compositor_output_surface.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "services/shell/runner/common/client_util.h"
 #include "services/ui/common/gpu_service.h"
 #endif
 
@@ -104,11 +103,7 @@ namespace {
 const int kNumRetriesBeforeSoftwareFallback = 4;
 
 bool IsUsingMus() {
-#if defined(MOJO_RUNNER_CLIENT)
   return shell::ShellIsRemote();
-#else
-  return false;
-#endif
 }
 
 scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
@@ -205,7 +200,7 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 std::unique_ptr<cc::SoftwareOutputDevice>
 GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
-#if defined(MOJO_RUNNER_CLIENT)
+#if defined(USE_AURA)
   if (shell::ShellIsRemote()) {
     return std::unique_ptr<cc::SoftwareOutputDevice>(
         new SoftwareOutputDeviceMus(compositor));
@@ -302,32 +297,25 @@ void GpuProcessTransportFactory::CreateOutputSurface(
 #endif
 
   const bool use_vulkan = static_cast<bool>(SharedVulkanContextProvider());
-  const bool use_mus = IsUsingMus();
   const bool create_gpu_output_surface =
       ShouldCreateGpuOutputSurface(compositor.get());
   if (create_gpu_output_surface && !use_vulkan) {
-    base::Closure callback(
+    gpu::GpuChannelEstablishedCallback callback(
         base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
                    callback_factory_.GetWeakPtr(), compositor,
                    create_gpu_output_surface, 0));
-    if (!use_mus) {
-      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(callback);
-    } else {
-#if defined(MOJO_RUNNER_CLIENT)
-      ui::GpuService::GetInstance()->EstablishGpuChannel(callback);
-#else
-      NOTREACHED();
-#endif
-    }
+    DCHECK(gpu_channel_factory_);
+    gpu_channel_factory_->EstablishGpuChannel(callback);
   } else {
-    EstablishedGpuChannel(compositor, create_gpu_output_surface, 0);
+    EstablishedGpuChannel(compositor, create_gpu_output_surface, 0, nullptr);
   }
 }
 
 void GpuProcessTransportFactory::EstablishedGpuChannel(
     base::WeakPtr<ui::Compositor> compositor,
     bool create_gpu_output_surface,
-    int num_attempts) {
+    int num_attempts,
+    scoped_refptr<gpu::GpuChannelHost> established_channel_host) {
   if (!compositor)
     return;
 
@@ -355,7 +343,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   scoped_refptr<cc::VulkanInProcessContextProvider> vulkan_context_provider =
       SharedVulkanContextProvider();
-  const bool use_mus = IsUsingMus();
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (create_gpu_output_surface && !vulkan_context_provider) {
     // Try to reuse existing worker context provider.
@@ -373,20 +360,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
 
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host;
-    if (GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
-      // We attempted to do EstablishGpuChannel already, so we just use
-      // GetGpuChannel() instead of EstablishGpuChannelSync().
-      if (!use_mus) {
-        gpu_channel_host =
-            BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
-      } else {
-#if defined(MOJO_RUNNER_CLIENT)
-        gpu_channel_host = ui::GpuService::GetInstance()->GetGpuChannel();
-#else
-        NOTREACHED();
-#endif
-      }
-    }
+    if (GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
+      gpu_channel_host = std::move(established_channel_host);
 
     if (!gpu_channel_host) {
       shared_worker_context_provider_ = nullptr;
@@ -451,19 +426,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
     if (!created_gpu_browser_compositor) {
       // Try again.
-      base::Closure callback(
+      gpu::GpuChannelEstablishedCallback callback(
           base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
                      callback_factory_.GetWeakPtr(), compositor,
                      create_gpu_output_surface, num_attempts + 1));
-      if (!use_mus) {
-        BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(callback);
-      } else {
-#if defined(MOJO_RUNNER_CLIENT)
-        ui::GpuService::GetInstance()->EstablishGpuChannel(callback);
-#else
-        NOTREACHED();
-#endif
-      }
+      DCHECK(gpu_channel_factory_);
+      gpu_channel_factory_->EstablishGpuChannel(callback);
       return;
     }
   }
@@ -530,6 +498,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       } else {
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
             validator;
+        const bool use_mus = IsUsingMus();
 #if !defined(OS_MACOSX)
         // Overlays are only supported on surfaceless output surfaces on Mac.
         if (!use_mus)
@@ -541,7 +510,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                   context_provider, compositor->vsync_manager(),
                   begin_frame_source.get(), std::move(validator)));
         } else {
-#if defined(MOJO_RUNNER_CLIENT)
+#if defined(USE_AURA)
           display_output_surface =
               base::WrapUnique(new MusBrowserCompositorOutputSurface(
                   data->surface_handle, context_provider,
@@ -772,6 +741,12 @@ display_compositor::GLHelper* GpuProcessTransportFactory::GetGLHelper() {
   return gl_helper_.get();
 }
 
+void GpuProcessTransportFactory::SetGpuChannelEstablishFactory(
+    gpu::GpuChannelEstablishFactory* factory) {
+  DCHECK(!gpu_channel_factory_ || !factory);
+  gpu_channel_factory_ = factory;
+}
+
 #if defined(OS_MACOSX)
 void GpuProcessTransportFactory::SetCompositorSuspendedForRecycle(
     ui::Compositor* compositor,
@@ -794,19 +769,9 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
     return nullptr;
 
-  const bool use_mus = IsUsingMus();
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host;
-  if (!use_mus) {
-    gpu_channel_host =
-        BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync();
-  } else {
-#if defined(MOJO_RUNNER_CLIENT)
-    gpu_channel_host = ui::GpuService::GetInstance()->EstablishGpuChannelSync();
-#else
-    NOTREACHED();
-#endif
-  }
-
+  DCHECK(gpu_channel_factory_);
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+      gpu_channel_factory_->EstablishGpuChannelSync();
   if (!gpu_channel_host)
     return nullptr;
 

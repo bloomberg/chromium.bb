@@ -231,7 +231,8 @@ gpu::GpuChannelHost* ContextProviderFactoryImpl::EnsureGpuChannelEstablished() {
   return nullptr;
 }
 
-void ContextProviderFactoryImpl::OnGpuChannelEstablished() {
+void ContextProviderFactoryImpl::OnGpuChannelEstablished(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
   establish_gpu_channel_timeout_.Stop();
 
   // We can queue the Gpu Channel initialization requests multiple times as

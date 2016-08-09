@@ -79,6 +79,8 @@ class GpuProcessTransportFactory
   ui::ContextFactory* GetContextFactory() override;
   cc::SurfaceManager* GetSurfaceManager() override;
   display_compositor::GLHelper* GetGLHelper() override;
+  void SetGpuChannelEstablishFactory(
+      gpu::GpuChannelEstablishFactory* factory) override;
 #if defined(OS_MACOSX)
   void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
                                         bool suspended) override;
@@ -90,9 +92,11 @@ class GpuProcessTransportFactory
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
   std::unique_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
       ui::Compositor* compositor);
-  void EstablishedGpuChannel(base::WeakPtr<ui::Compositor> compositor,
-                             bool create_gpu_output_surface,
-                             int num_attempts);
+  void EstablishedGpuChannel(
+      base::WeakPtr<ui::Compositor> compositor,
+      bool create_gpu_output_surface,
+      int num_attempts,
+      scoped_refptr<gpu::GpuChannelHost> established_channel_host);
 
   void OnLostMainThreadSharedContextInsideCallback();
   void OnLostMainThreadSharedContext();
@@ -113,6 +117,8 @@ class GpuProcessTransportFactory
   bool shared_vulkan_context_provider_initialized_ = false;
   scoped_refptr<cc::VulkanInProcessContextProvider>
       shared_vulkan_context_provider_;
+
+  gpu::GpuChannelEstablishFactory* gpu_channel_factory_ = nullptr;
 
 #if defined(OS_WIN)
   std::unique_ptr<OutputDeviceBacking> software_backing_;

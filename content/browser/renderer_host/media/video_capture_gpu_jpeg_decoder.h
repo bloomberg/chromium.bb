@@ -92,7 +92,8 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
 
   static void GpuChannelEstablishedOnUIThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this);
+      base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this,
+      scoped_refptr<gpu::GpuChannelHost> established_channel_host);
 
   void FinishInitialization(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);

@@ -99,7 +99,7 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
 
   // Will return nullptr if the Gpu channel has not been established.
   gpu::GpuChannelHost* EnsureGpuChannelEstablished();
-  void OnGpuChannelEstablished();
+  void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
   void OnGpuChannelTimeout();
 
   void HandlePendingRequests();

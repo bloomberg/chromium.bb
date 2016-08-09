@@ -62,6 +62,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   static bool Exists();
 
   shell::Connector* connector() { return connector_; }
+  ui::GpuService* gpu_service() { return gpu_service_.get(); }
 
   ui::Window* NewWindow(
       const std::map<std::string, std::vector<uint8_t>>& properties);

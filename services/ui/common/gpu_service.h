@@ -25,13 +25,11 @@ class Connector;
 
 namespace ui {
 
-class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
+class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory,
+                                     public gpu::GpuChannelEstablishFactory {
  public:
   ~GpuService() override;
 
-  void EstablishGpuChannel(const base::Closure& callback);
-  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
-  scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() const {
     return gpu_memory_buffer_manager_.get();
   }
@@ -40,6 +38,11 @@ class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
   // the gpu channel.
   static std::unique_ptr<GpuService> Initialize(shell::Connector* connector);
   static GpuService* GetInstance();
+
+  // gpu::GpuChannelEstablishFactory:
+  void EstablishGpuChannel(
+      const gpu::GpuChannelEstablishedCallback& callback) override;
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync() override;
 
  private:
   friend struct base::DefaultSingletonTraits<GpuService>;
@@ -72,7 +75,7 @@ class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
   bool is_establishing_;
   ui::mojom::GpuServicePtr gpu_service_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
-  std::vector<base::Closure> establish_callbacks_;
+  std::vector<gpu::GpuChannelEstablishedCallback> establish_callbacks_;
   base::ConditionVariable establishing_condition_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuService);

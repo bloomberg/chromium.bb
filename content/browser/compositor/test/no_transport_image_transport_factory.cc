@@ -46,4 +46,7 @@ display_compositor::GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
   return gl_helper_.get();
 }
 
+void NoTransportImageTransportFactory::SetGpuChannelEstablishFactory(
+    gpu::GpuChannelEstablishFactory* factory) {}
+
 }  // namespace content

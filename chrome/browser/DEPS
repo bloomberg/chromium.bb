@@ -40,6 +40,7 @@ include_rules = [
   "+mojo/converters",
   "+mojo/runner/child",
   "+services/shell/public/cpp",
+  "+services/ui/common", # TODO(sad): Should be removed: crbug.com/634377
   "+services/ui/public",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.

@@ -23,7 +23,8 @@ namespace content {
 class BrowserGpuMemoryBufferManager;
 
 class CONTENT_EXPORT BrowserGpuChannelHostFactory
-    : public gpu::GpuChannelHostFactory {
+    : public gpu::GpuChannelHostFactory,
+      public gpu::GpuChannelEstablishFactory {
  public:
   static void Initialize(bool establish_gpu_channel);
   static void Terminate();
@@ -36,15 +37,16 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       size_t size) override;
 
   int GpuProcessHostId() { return gpu_host_id_; }
-#if !defined(OS_ANDROID)
-  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
-#endif
-  void EstablishGpuChannel(const base::Closure& callback);
   gpu::GpuChannelHost* GetGpuChannel();
   int GetGpuChannelId() { return gpu_client_id_; }
 
   // Used to skip GpuChannelHost tests when there can be no GPU process.
   static bool CanUseForTesting();
+
+  // Overridden from gpu::GpuChannelEstablishFactory:
+  void EstablishGpuChannel(
+      const gpu::GpuChannelEstablishedCallback& callback) override;
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync() override;
 
  private:
   struct CreateRequest;
@@ -67,7 +69,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   std::unique_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   int gpu_host_id_;
   scoped_refptr<EstablishRequest> pending_request_;
-  std::vector<base::Closure> established_callbacks_;
+  std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks_;
 
   static BrowserGpuChannelHostFactory* instance_;
 

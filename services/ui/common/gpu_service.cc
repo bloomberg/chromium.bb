@@ -22,8 +22,10 @@ namespace {
 
 void PostTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
               const tracked_objects::Location& from_here,
-              const base::Closure& callback) {
-  runner->PostTask(from_here, callback);
+              const gpu::GpuChannelEstablishedCallback& callback,
+              scoped_refptr<gpu::GpuChannelHost> established_channel_host) {
+  runner->PostTask(from_here,
+                   base::Bind(callback, std::move(established_channel_host)));
 }
 
 GpuService* g_gpu_service = nullptr;
@@ -67,11 +69,13 @@ GpuService* GpuService::GetInstance() {
   return g_gpu_service;
 }
 
-void GpuService::EstablishGpuChannel(const base::Closure& callback) {
+void GpuService::EstablishGpuChannel(
+    const gpu::GpuChannelEstablishedCallback& callback) {
   base::AutoLock auto_lock(lock_);
   auto runner = base::ThreadTaskRunnerHandle::Get();
-  if (GetGpuChannelLocked()) {
-    runner->PostTask(FROM_HERE, callback);
+  scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannelLocked();
+  if (channel) {
+    PostTask(runner, FROM_HERE, callback, std::move(channel));
     return;
   }
   establish_callbacks_.push_back(
@@ -107,11 +111,6 @@ scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannelSync() {
     } while (is_establishing_);
   }
   return gpu_channel_;
-}
-
-scoped_refptr<gpu::GpuChannelHost> GpuService::GetGpuChannel() {
-  base::AutoLock auto_lock(lock_);
-  return GetGpuChannelLocked();
 }
 
 scoped_refptr<gpu::GpuChannelHost> GpuService::GetGpuChannelLocked() {
@@ -203,7 +202,7 @@ void GpuService::EstablishGpuChannelOnMainThreadDone(
   gpu_service_.reset();
 
   for (const auto& i : establish_callbacks_)
-    i.Run();
+    i.Run(gpu_channel_);
   establish_callbacks_.clear();
 }
 

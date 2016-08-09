@@ -244,6 +244,12 @@
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
 #endif
 
+#if defined(USE_AURA)
+#include "services/shell/runner/common/client_util.h"
+#include "services/ui/common/gpu_service.h"
+#include "ui/views/mus/window_manager_connection.h"
+#endif
+
 #if defined(USE_ASH)
 #include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 #endif
@@ -741,8 +747,7 @@ bool IsIntentPickerEnabled() {
 }  // namespace
 
 ChromeContentBrowserClient::ChromeContentBrowserClient()
-    :
-      weak_factory_(this) {
+    : weak_factory_(this) {
 #if defined(ENABLE_PLUGINS)
   for (size_t i = 0; i < arraysize(kPredefinedAllowedDevChannelOrigins); ++i)
     allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);
@@ -2511,6 +2516,15 @@ content::BrowserPpapiHost*
   }
 #endif
   return NULL;
+}
+
+gpu::GpuChannelEstablishFactory*
+ChromeContentBrowserClient::GetGpuChannelEstablishFactory() {
+#if defined(USE_AURA)
+  if (views::WindowManagerConnection::Exists())
+    return views::WindowManagerConnection::Get()->gpu_service();
+#endif
+  return nullptr;
 }
 
 bool ChromeContentBrowserClient::AllowPepperSocketAPI(

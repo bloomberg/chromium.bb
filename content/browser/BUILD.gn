@@ -392,9 +392,6 @@ source_set("browser") {
       "web_contents/web_contents_view_mus.cc",
       "web_contents/web_contents_view_mus.h",
     ]
-    if (toolkit_views) {
-      defines += [ "MOJO_RUNNER_CLIENT" ]
-    }
   } else {  # Not aura.
     sources -= [
       "media/capture/cursor_renderer_aura.cc",

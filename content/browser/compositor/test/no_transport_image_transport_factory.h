@@ -31,6 +31,8 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   ui::ContextFactory* GetContextFactory() override;
   cc::SurfaceManager* GetSurfaceManager() override;
   display_compositor::GLHelper* GetGLHelper() override;
+  void SetGpuChannelEstablishFactory(
+      gpu::GpuChannelEstablishFactory* factory) override;
 #if defined(OS_MACOSX)
   void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
                                         bool suspended) override {}

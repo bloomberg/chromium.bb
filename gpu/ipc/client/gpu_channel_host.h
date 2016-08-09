@@ -43,6 +43,19 @@ class GpuMemoryBufferManager;
 
 namespace gpu {
 
+class GpuChannelHost;
+using GpuChannelEstablishedCallback =
+    base::Callback<void(scoped_refptr<GpuChannelHost>)>;
+
+class GPU_EXPORT GpuChannelEstablishFactory {
+ public:
+  virtual ~GpuChannelEstablishFactory() {}
+
+  virtual void EstablishGpuChannel(
+      const GpuChannelEstablishedCallback& callback) = 0;
+  virtual scoped_refptr<GpuChannelHost> EstablishGpuChannelSync() = 0;
+};
+
 class GPU_EXPORT GpuChannelHostFactory {
  public:
   virtual ~GpuChannelHostFactory() {}

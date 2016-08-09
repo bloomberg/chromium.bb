@@ -28,10 +28,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
-
-#if defined(MOJO_RUNNER_CLIENT)
 #include "services/shell/runner/common/client_util.h"
-#endif
 
 namespace content {
 
@@ -209,7 +206,7 @@ void BrowserGpuChannelHostFactory::Initialize(bool establish_gpu_channel) {
   DCHECK(!instance_);
   instance_ = new BrowserGpuChannelHostFactory();
   if (establish_gpu_channel) {
-    instance_->EstablishGpuChannel(base::Closure());
+    instance_->EstablishGpuChannel(gpu::GpuChannelEstablishedCallback());
   }
 }
 
@@ -249,7 +246,7 @@ BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
   if (pending_request_.get())
     pending_request_->Cancel();
   for (size_t n = 0; n < established_callbacks_.size(); n++)
-    established_callbacks_[n].Run();
+    established_callbacks_[n].Run(nullptr);
   shutdown_event_->Signal();
   if (gpu_channel_) {
     gpu_channel_->DestroyChannel();
@@ -274,26 +271,9 @@ BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
   return shm;
 }
 
-// Blocking the UI thread to open a GPU channel is not supported on Android.
-// (Opening the initial channel to a child process involves handling a reply
-// task on the UI thread first, so we cannot block here.)
-#if !defined(OS_ANDROID)
-scoped_refptr<gpu::GpuChannelHost>
-BrowserGpuChannelHostFactory::EstablishGpuChannelSync() {
-  EstablishGpuChannel(base::Closure());
-
-  if (pending_request_.get())
-    pending_request_->Wait();
-
-  return gpu_channel_;
-}
-#endif
-
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
-    const base::Closure& callback) {
-#if defined(MOJO_RUNNER_CLIENT)
+    const gpu::GpuChannelEstablishedCallback& callback) {
   DCHECK(!shell::ShellIsRemote());
-#endif
   if (gpu_channel_.get() && gpu_channel_->IsLost()) {
     DCHECK(!pending_request_.get());
     // Recreate the channel if it has been lost.
@@ -309,10 +289,27 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
 
   if (!callback.is_null()) {
     if (gpu_channel_.get())
-      callback.Run();
+      callback.Run(gpu_channel_);
     else
       established_callbacks_.push_back(callback);
   }
+}
+
+// Blocking the UI thread to open a GPU channel is not supported on Android.
+// (Opening the initial channel to a child process involves handling a reply
+// task on the UI thread first, so we cannot block here.)
+scoped_refptr<gpu::GpuChannelHost>
+BrowserGpuChannelHostFactory::EstablishGpuChannelSync() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+  return nullptr;
+#endif
+  EstablishGpuChannel(gpu::GpuChannelEstablishedCallback());
+
+  if (pending_request_.get())
+    pending_request_->Wait();
+
+  return gpu_channel_;
 }
 
 gpu::GpuChannelHost* BrowserGpuChannelHostFactory::GetGpuChannel() {
@@ -349,7 +346,7 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
           "466866 BrowserGpuChannelHostFactory::GpuChannelEstablished2"));
 
   for (size_t n = 0; n < established_callbacks_.size(); n++)
-    established_callbacks_[n].Run();
+    established_callbacks_[n].Run(gpu_channel_);
 
   established_callbacks_.clear();
 }

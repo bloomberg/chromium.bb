@@ -6,6 +6,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -40,6 +41,39 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContext(
       nullptr, content::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
 }
 
+void OnEstablishedGpuChannel(
+    const base::Closure& quit_closure,
+    scoped_refptr<gpu::GpuChannelHost>* retvalue,
+    scoped_refptr<gpu::GpuChannelHost> established_host) {
+  if (retvalue)
+    *retvalue = std::move(established_host);
+  quit_closure.Run();
+}
+
+class EstablishGpuChannelHelper {
+ public:
+  EstablishGpuChannelHelper() {}
+  ~EstablishGpuChannelHelper() {}
+
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSyncRunLoop() {
+    if (!content::BrowserGpuChannelHostFactory::instance())
+      content::BrowserGpuChannelHostFactory::Initialize(true);
+
+    content::BrowserGpuChannelHostFactory* factory =
+        content::BrowserGpuChannelHostFactory::instance();
+    CHECK(factory);
+    base::RunLoop run_loop;
+    factory->EstablishGpuChannel(base::Bind(
+        &OnEstablishedGpuChannel, run_loop.QuitClosure(), &gpu_channel_host_));
+    run_loop.Run();
+    return std::move(gpu_channel_host_);
+  }
+
+ private:
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
+  DISALLOW_COPY_AND_ASSIGN(EstablishGpuChannelHelper);
+};
+
 class ContextTestBase : public content::ContentBrowserTest {
  public:
   void SetUpOnMainThread() override {
@@ -48,17 +82,9 @@ class ContextTestBase : public content::ContentBrowserTest {
     if (!content::BrowserGpuChannelHostFactory::CanUseForTesting())
       return;
 
-    if (!content::BrowserGpuChannelHostFactory::instance())
-      content::BrowserGpuChannelHostFactory::Initialize(true);
-
-    content::BrowserGpuChannelHostFactory* factory =
-        content::BrowserGpuChannelHostFactory::instance();
-    CHECK(factory);
-    base::RunLoop run_loop;
-    factory->EstablishGpuChannel(run_loop.QuitClosure());
-    run_loop.Run();
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
-        factory->GetGpuChannel());
+    EstablishGpuChannelHelper helper;
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+        helper.EstablishGpuChannelSyncRunLoop();
     CHECK(gpu_channel_host);
 
     provider_ = CreateContext(std::move(gpu_channel_host));
@@ -102,7 +128,6 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
     // consistent codepath.
     if (!BrowserGpuChannelHostFactory::instance())
       BrowserGpuChannelHostFactory::Initialize(false);
-
     CHECK(GetFactory());
 
     ContentBrowserTest::SetUpOnMainThread();
@@ -119,27 +144,30 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
     callback.Run();
   }
 
+  void Signal(bool* event,
+              scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+    CHECK_EQ(*event, false);
+    *event = true;
+    gpu_channel_host_ = std::move(gpu_channel_host);
+  }
+
  protected:
   BrowserGpuChannelHostFactory* GetFactory() {
     return BrowserGpuChannelHostFactory::instance();
   }
 
   bool IsChannelEstablished() {
-    return GetFactory()->GetGpuChannel() != NULL;
+    return gpu_channel_host_ && !gpu_channel_host_->IsLost();
   }
 
   void EstablishAndWait() {
-    base::RunLoop run_loop;
-    GetFactory()->EstablishGpuChannel(run_loop.QuitClosure());
-    run_loop.Run();
+    EstablishGpuChannelHelper helper;
+    gpu_channel_host_ = helper.EstablishGpuChannelSyncRunLoop();
   }
 
-  gpu::GpuChannelHost* GetGpuChannel() { return GetFactory()->GetGpuChannel(); }
+  gpu::GpuChannelHost* GetGpuChannel() { return gpu_channel_host_.get(); }
 
-  static void Signal(bool *event) {
-    CHECK_EQ(*event, false);
-    *event = true;
-  }
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
 };
 
 // Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
@@ -166,7 +194,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                        MAYBE_EstablishAndTerminate) {
   DCHECK(!IsChannelEstablished());
   base::RunLoop run_loop;
-  GetFactory()->EstablishGpuChannel(run_loop.QuitClosure());
+  GetFactory()->EstablishGpuChannel(
+      base::Bind(&OnEstablishedGpuChannel, run_loop.QuitClosure(), nullptr));
   GetFactory()->Terminate();
 
   // The callback should still trigger.
@@ -190,7 +219,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   // Expect established callback immediately.
   bool event = false;
   GetFactory()->EstablishGpuChannel(
-      base::Bind(&BrowserGpuChannelHostFactoryTest::Signal, &event));
+      base::Bind(&BrowserGpuChannelHostFactoryTest::Signal,
+                 base::Unretained(this), &event));
   EXPECT_TRUE(event);
   EXPECT_EQ(gpu_channel.get(), GetGpuChannel());
 }
@@ -253,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 // Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
 // establishes a GPU channel.
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_CrashAndRecover
+#define MAYBE_CrashAndRecover CrashAndRecover
 #else
 #define MAYBE_CrashAndRecover DISABLED_CrashAndRecover
 #endif

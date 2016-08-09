@@ -1122,7 +1122,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
   // Must happen after the IO thread is shutdown since this may be accessed from
   // it.
-  if (!shell::ShellIsRemote()) {
+  {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GPUChannelFactory");
     if (BrowserGpuChannelHostFactory::instance())
       BrowserGpuChannelHostFactory::Terminate();
@@ -1217,6 +1217,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
   ImageTransportFactory::Initialize();
+
+  gpu::GpuChannelEstablishFactory* factory =
+      GetContentClient()->browser()->GetGpuChannelEstablishFactory();
+  if (!factory)
+    factory = BrowserGpuChannelHostFactory::instance();
+  DCHECK(factory);
+  ImageTransportFactory::GetInstance()->SetGpuChannelEstablishFactory(factory);
 #if defined(USE_AURA)
   bool use_mus_in_renderer = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseMusInRenderer);
