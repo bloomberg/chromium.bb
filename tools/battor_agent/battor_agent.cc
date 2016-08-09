@@ -248,7 +248,7 @@ void BattOrAgent::OnMessageRead(bool success,
       case Action::READ_CALIBRATION_FRAME:
       case Action::READ_DATA_FRAME:
       case Action::READ_CURRENT_SAMPLE:
-        if (++num_read_attempts_ > kMaxReadAttempts) {
+        if (num_read_attempts_++ > kMaxReadAttempts) {
           CompleteCommand(BATTOR_ERROR_RECEIVE_ERROR);
           return;
         }

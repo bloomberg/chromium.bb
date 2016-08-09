@@ -355,7 +355,7 @@ TEST_F(BattOrAgentTest, StartTracingFailsIfInitSendFails) {
 TEST_F(BattOrAgentTest, StartTracingFailsIfInitAckReadFails) {
   RunStartTracingTo(BattOrAgentState::INIT_SENT);
 
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 21; i++) {
     OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
 
     // Bytes will be sent because INIT will be retried.
@@ -369,7 +369,7 @@ TEST_F(BattOrAgentTest, StartTracingFailsIfInitAckReadFails) {
 TEST_F(BattOrAgentTest, StartTracingFailsIfInitWrongAckRead) {
   RunStartTracingTo(BattOrAgentState::INIT_SENT);
 
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 21; i++) {
     OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
                   ToCharVector(kStartTracingAck));
 
@@ -569,7 +569,7 @@ TEST_F(BattOrAgentTest, StopTracingRetriesEEPROMRead) {
 TEST_F(BattOrAgentTest, StopTracingFailsIfEEPROMReadFails) {
   RunStopTracingTo(BattOrAgentState::EEPROM_REQUEST_SENT);
 
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 21; i++) {
     OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
   }
 
@@ -616,7 +616,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsWithManyCalibrationFrameReadFailures) {
   RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
   // We attempt the read a max of 20 times: send that many failures.
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 21; i++) {
     OnMessageRead(false, BATTOR_MESSAGE_TYPE_SAMPLES, nullptr);
   }
 
@@ -642,7 +642,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsWithManyDataFrameReadFailures) {
   RunStopTracingTo(BattOrAgentState::CALIBRATION_FRAME_RECEIVED);
 
   // We attempt the read a max of 20 times: send that many failures.
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 21; i++) {
     OnMessageRead(false, BATTOR_MESSAGE_TYPE_SAMPLES, nullptr);
   }
 
