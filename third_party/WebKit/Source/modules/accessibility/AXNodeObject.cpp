@@ -1141,10 +1141,14 @@ int AXNodeObject::headingLevel() const
     if (!node)
         return 0;
 
-    if (roleValue() == HeadingRole && hasAttribute(aria_levelAttr)) {
-        int level = getAttribute(aria_levelAttr).toInt();
-        if (level >= 1 && level <= 9)
-            return level;
+    if (roleValue() == HeadingRole) {
+        String levelStr = getAttribute(aria_levelAttr);
+        if (!levelStr.isEmpty()) {
+            int level = levelStr.toInt();
+            if (level >= 1 && level <= 9)
+                return level;
+            return 1;
+        }
     }
 
     if (!node->isHTMLElement())
@@ -1177,10 +1181,15 @@ unsigned AXNodeObject::hierarchicalLevel() const
     Node* node = this->getNode();
     if (!node || !node->isElementNode())
         return 0;
+
     Element* element = toElement(node);
-    String ariaLevel = element->getAttribute(aria_levelAttr);
-    if (!ariaLevel.isEmpty())
-        return ariaLevel.toInt();
+    String levelStr = element->getAttribute(aria_levelAttr);
+    if (!levelStr.isEmpty()) {
+        int level = levelStr.toInt();
+        if (level > 0)
+            return level;
+        return 1;
+    }
 
     // Only tree item will calculate its level through the DOM currently.
     if (roleValue() != TreeItemRole)
@@ -1388,8 +1397,14 @@ InvalidState AXNodeObject::getInvalidState() const
 int AXNodeObject::posInSet() const
 {
     if (supportsSetSizeAndPosInSet()) {
-        if (hasAttribute(aria_posinsetAttr))
-            return getAttribute(aria_posinsetAttr).toInt();
+        String posInSetStr = getAttribute(aria_posinsetAttr);
+        if (!posInSetStr.isEmpty()) {
+            int posInSet = posInSetStr.toInt();
+            if (posInSet > 0)
+                return posInSet;
+            return 1;
+        }
+
         return AXObject::indexInParent() + 1;
     }
 
@@ -1399,8 +1414,13 @@ int AXNodeObject::posInSet() const
 int AXNodeObject::setSize() const
 {
     if (supportsSetSizeAndPosInSet()) {
-        if (hasAttribute(aria_setsizeAttr))
-            return getAttribute(aria_setsizeAttr).toInt();
+        String setSizeStr = getAttribute(aria_setsizeAttr);
+        if (!setSizeStr.isEmpty()) {
+            int setSize = setSizeStr.toInt();
+            if (setSize > 0)
+                return setSize;
+            return 1;
+        }
 
         if (parentObject()) {
             const auto& siblings = parentObject()->children();

@@ -429,11 +429,11 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   if (!src.url().isEmpty())
     dst->AddStringAttribute(ui::AX_ATTR_URL, src.url().string().utf8());
 
-  if (dst->role == ui::AX_ROLE_HEADING)
+  if (dst->role == ui::AX_ROLE_HEADING && src.headingLevel()) {
     dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL, src.headingLevel());
-  else if ((dst->role == ui::AX_ROLE_TREE_ITEM ||
-            dst->role == ui::AX_ROLE_ROW) &&
-           src.hierarchicalLevel() > 0) {
+  } else if ((dst->role == ui::AX_ROLE_TREE_ITEM ||
+              dst->role == ui::AX_ROLE_ROW) &&
+             src.hierarchicalLevel()) {
     dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL,
                          src.hierarchicalLevel());
   }

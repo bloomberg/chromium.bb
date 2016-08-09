@@ -38,6 +38,10 @@
 <div class="ex" role="heading" data-expected="5" aria-level="5">X</div>
 <div class="ex" role="heading" data-expected="6" aria-level="6">X</div>
 
+<!-- A level that is specified either as 0 or as a ntegative number,should be set to 1. -->
+<div class="ex" role="heading" data-expected="1" aria-level="0">X</div>
+<div class="ex" role="heading" data-expected="1" aria-level="-1">X</div>
+
 <!-- todo: h1 elements nested in section elements should inherit nested level. -->
 
 <div id="console"></div>

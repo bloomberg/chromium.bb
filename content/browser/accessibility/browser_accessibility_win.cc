@@ -896,9 +896,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
   if (!group_level || !similar_items_in_group || !position_in_group)
     return E_INVALIDARG;
 
-  *group_level = 0;
+  *group_level = GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL);
   *similar_items_in_group = GetIntAttribute(ui::AX_ATTR_SET_SIZE);
   *position_in_group = GetIntAttribute(ui::AX_ATTR_POS_IN_SET);
+
+  if (*group_level == *similar_items_in_group == *position_in_group == 0)
+    return S_FALSE;
   return S_OK;
 }
 
@@ -3406,10 +3409,7 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   StringAttributeToIA2(ui::AX_ATTR_HTML_TAG, "tag");
   StringAttributeToIA2(ui::AX_ATTR_ROLE, "xml-roles");
 
-  // Expose "level" attribute for headings, trees, etc.
   IntAttributeToIA2(ui::AX_ATTR_HIERARCHICAL_LEVEL, "level");
-
-  // Expose the set size and position in set.
   IntAttributeToIA2(ui::AX_ATTR_SET_SIZE, "setsize");
   IntAttributeToIA2(ui::AX_ATTR_POS_IN_SET, "posinset");
 

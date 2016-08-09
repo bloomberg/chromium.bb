@@ -746,8 +746,9 @@ public:
     virtual String fontFamily() const { return nullAtom; }
     // Font size is in pixels.
     virtual float fontSize() const { return 0.0f; }
+    // Value should be 1-based. 0 means not supported.
     virtual int headingLevel() const { return 0; }
-    // 1-based, to match the aria-level spec.
+    // Value should be 1-based. 0 means not supported.
     virtual unsigned hierarchicalLevel() const { return 0; }
     virtual AccessibilityOrientation orientation() const;
     virtual String text() const { return String(); }
@@ -817,7 +818,7 @@ public:
     // Returns 0-based index.
     int indexInParent() const;
 
-    // Returns 1-based position in set.
+    // Value should be 1-based. 0 means not supported.
     virtual int posInSet() const { return 0; }
     virtual int setSize() const { return 0; }
     bool supportsSetSizeAndPosInSet() const;
