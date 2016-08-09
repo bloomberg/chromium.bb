@@ -7,6 +7,8 @@
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "jni/CastMetricsHelper_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace chromecast {
 
 // static

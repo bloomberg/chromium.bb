@@ -16,6 +16,7 @@
 namespace ui {
 
 using base::android::JavaRef;
+using base::android::ScopedJavaLocalRef;
 
 ViewAndroid::ScopedAnchorView::ScopedAnchorView(
     JNIEnv* env,

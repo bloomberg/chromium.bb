@@ -9,6 +9,8 @@
 #include "base/lazy_instance.h"
 #include "jni/ChromecastConfigAndroid_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace chromecast {
 namespace android {
 

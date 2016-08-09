@@ -24,6 +24,8 @@
 #include "jni/CastWindowManager_jni.h"
 #include "url/gurl.h"
 
+using base::android::JavaParamRef;
+
 namespace {
 
 base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >

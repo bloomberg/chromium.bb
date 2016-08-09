@@ -17,6 +17,8 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+using base::android::ScopedJavaLocalRef;
+
 AutofillCreditCardFillingInfoBar::AutofillCreditCardFillingInfoBar(
     std::unique_ptr<autofill::AutofillCreditCardFillingInfoBarDelegateMobile>
         delegate)
