@@ -260,10 +260,15 @@ bool ThemePainterMac::paintMenuListButton(const LayoutObject& o, const PaintInfo
     float centerY = bounds.y() + bounds.height() / 2.0f;
     float arrowHeight = LayoutThemeMac::menuListBaseArrowHeight * fontScale;
     float arrowWidth = LayoutThemeMac::menuListBaseArrowWidth * fontScale;
-    float leftEdge = bounds.maxX() - LayoutThemeMac::menuListArrowPaddingRight * o.styleRef().effectiveZoom() - arrowWidth;
     float spaceBetweenArrows = LayoutThemeMac::menuListBaseSpaceBetweenArrows * fontScale;
-
-    if (bounds.width() < arrowWidth + LayoutThemeMac::menuListArrowPaddingLeft * o.styleRef().effectiveZoom())
+    float scaledPaddingEnd = LayoutThemeMac::menuListArrowPaddingEnd * o.styleRef().effectiveZoom();
+    float leftEdge;
+    if (o.styleRef().direction() == LTR) {
+        leftEdge = bounds.maxX() - scaledPaddingEnd - arrowWidth;
+    } else {
+        leftEdge = bounds.x() + scaledPaddingEnd;
+    }
+    if (bounds.width() < arrowWidth + scaledPaddingEnd)
         return false;
 
     Color color = o.styleRef().visitedDependentColor(CSSPropertyColor);

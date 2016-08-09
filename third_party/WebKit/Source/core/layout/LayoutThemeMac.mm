@@ -476,6 +476,10 @@ bool LayoutThemeMac::isControlStyled(const ComputedStyle& style) const
             return true;
         if (!style.height().isIntrinsicOrAuto())
             return true;
+        // NSPopUpButtonCell on macOS 10.9 doesn't support
+        // NSUserInterfaceLayoutDirectionRightToLeft.
+        if (IsOSMavericks() && style.direction() == RTL)
+            return true;
     }
     // Some other cells don't work well when scaled.
     if (style.effectiveZoom() != 1) {
@@ -747,7 +751,7 @@ void LayoutThemeMac::adjustMenuListStyle(ComputedStyle& style, Element* e) const
 }
 
 static const int baseBorderRadius = 5;
-static const int styledPopupPaddingLeft = 8;
+static const int styledPopupPaddingStart = 8;
 static const int styledPopupPaddingTop = 1;
 static const int styledPopupPaddingBottom = 2;
 
@@ -755,23 +759,32 @@ static const int styledPopupPaddingBottom = 2;
 // by LayoutMenuList.
 int LayoutThemeMac::popupInternalPaddingLeft(const ComputedStyle& style) const
 {
+    bool isRTL = style.direction() == RTL;
     if (style.appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::LeftMargin] * style.effectiveZoom();
-    if (style.appearance() == MenulistButtonPart)
-        return styledPopupPaddingLeft * style.effectiveZoom();
-    return 0;
+        return popupButtonPadding(controlSizeForFont(style))[isRTL ? ThemeMac::RightMargin : ThemeMac::LeftMargin] * style.effectiveZoom();
+    if (style.appearance() != MenulistButtonPart)
+        return 0;
+    if (isRTL) {
+        float fontScale = style.fontSize() / baseFontSize;
+        float arrowWidth = menuListBaseArrowWidth * fontScale;
+        return static_cast<int>(ceilf(arrowWidth + (menuListArrowPaddingStart + menuListArrowPaddingEnd) * style.effectiveZoom()));
+    }
+    return styledPopupPaddingStart * style.effectiveZoom();
 }
 
 int LayoutThemeMac::popupInternalPaddingRight(const ComputedStyle& style) const
 {
+    bool isRTL = style.direction() == RTL;
     if (style.appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::RightMargin] * style.effectiveZoom();
-    if (style.appearance() == MenulistButtonPart) {
-        float fontScale = style.fontSize() / baseFontSize;
-        float arrowWidth = menuListBaseArrowWidth * fontScale;
-        return static_cast<int>(ceilf(arrowWidth + (menuListArrowPaddingLeft + menuListArrowPaddingRight) * style.effectiveZoom()));
+        return popupButtonPadding(controlSizeForFont(style))[isRTL ? ThemeMac::LeftMargin : ThemeMac::RightMargin] * style.effectiveZoom();
+    if (style.appearance() != MenulistButtonPart)
+        return 0;
+    if (isRTL) {
+        return styledPopupPaddingStart * style.effectiveZoom();
     }
-    return 0;
+    float fontScale = style.fontSize() / baseFontSize;
+    float arrowWidth = menuListBaseArrowWidth * fontScale;
+    return static_cast<int>(ceilf(arrowWidth + (menuListArrowPaddingStart + menuListArrowPaddingEnd) * style.effectiveZoom()));
 }
 
 int LayoutThemeMac::popupInternalPaddingTop(const ComputedStyle& style) const
@@ -817,6 +830,8 @@ void LayoutThemeMac::setPopupButtonCellState(const LayoutObject& object, const I
     updateCheckedState(popupButton, object);
     updateEnabledState(popupButton, object);
     updatePressedState(popupButton, object);
+
+    popupButton.userInterfaceLayoutDirection = object.styleRef().direction() == LTR ? NSUserInterfaceLayoutDirectionLeftToRight : NSUserInterfaceLayoutDirectionRightToLeft;
 }
 
 const IntSize* LayoutThemeMac::menuListSizes() const

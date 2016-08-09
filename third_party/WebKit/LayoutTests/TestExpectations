@@ -841,7 +841,12 @@ crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scrol
 crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Pass Timeout ]
 crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/552556 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
-
+crbug.com/232333 fast/forms/color/input-appearance-color.html [ NeedsRebaseline ]
+crbug.com/232333 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/232333 [ Mac ] fast/forms/select/select-writing-direction-natural.html [ NeedsRebaseline ]
+crbug.com/232333 [ Mac ] fast/text/international/bidi-menulist.html [ NeedsRebaseline ]
+crbug.com/232333 [ Mac ] fast/text/international/menulist-width-rtl.html [ NeedsRebaseline ]
+crbug.com/232333 [ Mac ] fast/text/international/pop-up-button-text-alignment-and-direction.html [ NeedsRebaseline ]
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Failure ]

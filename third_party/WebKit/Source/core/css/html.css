@@ -688,8 +688,8 @@ input[type="color" i][list] {
 }
 
 input[type="color" i][list]::-webkit-color-swatch-wrapper {
-    padding-left: 8px;
-    padding-right: 24px;
+    -webkit-padding-start: 8px;
+    -webkit-padding-end: 24px;
 }
 
 input[type="color" i][list]::-webkit-color-swatch {
