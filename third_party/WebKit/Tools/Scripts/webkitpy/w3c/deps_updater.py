@@ -84,7 +84,7 @@ class DepsUpdater(object):
                 self.write_test_expectations()
             else:
                 self.print_('No Failures, committing patch.')
-            self.run(['git', 'cl', 'land', '-f'])
+            self.run(['git', 'cl', 'land', '-f', '--auth-refresh-token-json', self.auth_refresh_token_json])
         return 0
 
     def parse_args(self, argv):
