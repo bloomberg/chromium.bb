@@ -23,6 +23,7 @@ class Display;
 }
 
 namespace gfx {
+class Insets;
 class Point;
 }
 
@@ -187,6 +188,10 @@ class ASH_EXPORT WmShell {
   // unconditionally maximized, overriding the heuristic that normally chooses
   // the window size.
   virtual bool IsForceMaximizeOnFirstRun() = 0;
+
+  // Sets work area insets of the display containing |window|, pings observers.
+  virtual void SetDisplayWorkAreaInsets(WmWindow* window,
+                                        const gfx::Insets& insets) = 0;
 
   // Returns true if a system-modal dialog window is currently open.
   bool IsSystemModalWindowOpen();

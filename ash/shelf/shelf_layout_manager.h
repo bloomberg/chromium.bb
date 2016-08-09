@@ -301,11 +301,6 @@ class ASH_EXPORT ShelfLayoutManager
   void CompleteGestureDrag(const ui::GestureEvent& gesture);
   void CancelGestureDrag();
 
-  // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
-  // our destructor. We avoid that as at the time we're deleted Shell is being
-  // deleted too.
-  aura::Window* root_window_;
-
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_;

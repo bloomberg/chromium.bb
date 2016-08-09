@@ -216,10 +216,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget);
 
-  // Sets the work area insets of the display that contains |window|,
-  // this notifies observers too.
-  // TODO(sky): this no longer really replicates what happens and is unreliable.
-  // Remove this.
+  // Sets work area insets of the display containing |window|, pings observers.
   void SetDisplayWorkAreaInsets(aura::Window* window,
                                 const gfx::Insets& insets);
 

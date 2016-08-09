@@ -112,6 +112,12 @@ bool WmShellAura::IsForceMaximizeOnFirstRun() {
   return delegate()->IsForceMaximizeOnFirstRun();
 }
 
+void WmShellAura::SetDisplayWorkAreaInsets(WmWindow* window,
+                                           const gfx::Insets& insets) {
+  aura::Window* aura_window = WmWindowAura::GetAuraWindow(window);
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(aura_window, insets);
+}
+
 bool WmShellAura::IsPinned() {
   return Shell::GetInstance()->screen_pinning_controller()->IsPinned();
 }

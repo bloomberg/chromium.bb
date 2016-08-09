@@ -193,8 +193,7 @@ class ShelfLayoutManager::RootWindowControllerObserverImpl
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
-    : root_window_(shelf_widget->GetNativeView()->GetRootWindow()),
-      updating_bounds_(false),
+    : updating_bounds_(false),
       shelf_widget_(shelf_widget),
       workspace_controller_(NULL),
       window_overlaps_shelf_(false),
@@ -481,7 +480,8 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   // window.
   if (WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked() &&
       keyboard_is_about_to_hide) {
-    Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, gfx::Insets());
+    WmWindow* window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+    WmShell::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets());
   }
 }
 
@@ -693,7 +693,8 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       // if keyboard is not shown.
       if (!state_.is_adding_user_screen || !keyboard_bounds_.IsEmpty())
         insets = target_bounds.work_area_insets;
-      Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, insets);
+      WmWindow* window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+      WmShell::Get()->SetDisplayWorkAreaInsets(window, insets);
     }
   }
 

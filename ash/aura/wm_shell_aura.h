@@ -38,6 +38,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
   display::Display GetFirstDisplay() const override;
   bool IsInUnifiedMode() const override;
   bool IsForceMaximizeOnFirstRun() override;
+  void SetDisplayWorkAreaInsets(WmWindow* window,
+                                const gfx::Insets& insets) override;
   bool IsPinned() override;
   void SetPinnedWindow(WmWindow* window) override;
   bool CanShowWindowForUser(WmWindow* window) override;

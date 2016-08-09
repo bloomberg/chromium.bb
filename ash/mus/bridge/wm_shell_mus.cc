@@ -240,6 +240,11 @@ bool WmShellMus::IsForceMaximizeOnFirstRun() {
   return false;
 }
 
+void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
+                                          const gfx::Insets& insets) {
+  NOTIMPLEMENTED();
+}
+
 bool WmShellMus::IsPinned() {
   NOTIMPLEMENTED();
   return false;
