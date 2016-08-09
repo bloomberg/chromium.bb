@@ -3,7 +3,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
 
     <!-- Font to use when a spec asks for "Roboto Medium".
          Bolding the text makes it look almost, but not quite, entirely unlike Roboto Medium,
