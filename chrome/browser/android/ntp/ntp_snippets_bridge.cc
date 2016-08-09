@@ -58,9 +58,16 @@ static void FetchSnippets(JNIEnv* env,
                           const JavaParamRef<jclass>& caller,
                           jboolean j_force_request) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
-  ContentSuggestionsServiceFactory::GetForProfile(profile)
-      ->ntp_snippets_service()
-      ->FetchSnippets(j_force_request);
+  ntp_snippets::NTPSnippetsService* service =
+      ContentSuggestionsServiceFactory::GetForProfile(profile)
+          ->ntp_snippets_service();
+
+  // Can be null if the feature has been disabled but the scheduler has not been
+  // unregistered yet. The next start should unregister it.
+  if (!service)
+    return;
+
+  service->FetchSnippets(j_force_request);
 }
 
 // Reschedules the fetching of snippets. Used to support different fetching
@@ -68,9 +75,16 @@ static void FetchSnippets(JNIEnv* env,
 static void RescheduleFetching(JNIEnv* env,
                                const JavaParamRef<jclass>& caller) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
-  ContentSuggestionsServiceFactory::GetForProfile(profile)
-      ->ntp_snippets_service()
-      ->RescheduleFetching();
+  ntp_snippets::NTPSnippetsService* service =
+      ContentSuggestionsServiceFactory::GetForProfile(profile)
+          ->ntp_snippets_service();
+
+  // Can be null if the feature has been disabled but the scheduler has not been
+  // unregistered yet. The next start should unregister it.
+  if (!service)
+    return;
+
+  service->RescheduleFetching();
 }
 
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,

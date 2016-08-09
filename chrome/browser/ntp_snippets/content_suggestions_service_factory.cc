@@ -66,6 +66,17 @@ using suggestions::ImageDecoderImpl;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
 
+namespace {
+
+// Clear the tasks that can be scheduled by running services.
+void ClearScheduledTasks() {
+#if defined(OS_ANDROID)
+  NTPSnippetsLauncher::Get()->Unschedule();
+#endif  // OS_ANDROID
+}
+
+}  // namespace
+
 // static
 ContentSuggestionsServiceFactory*
 ContentSuggestionsServiceFactory::GetInstance() {
@@ -106,8 +117,12 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
           ? State::ENABLED
           : State::DISABLED;
   ContentSuggestionsService* service = new ContentSuggestionsService(state);
-  if (state == State::DISABLED)
+  if (state == State::DISABLED) {
+    // Since we won't initialise the services, they won't get a chance to
+    // unschedule their tasks. We do it explicitly here instead.
+    ClearScheduledTasks();
     return service;
+  }
 
 #if defined(OS_ANDROID)
   // Create the OfflinePageSuggestionsProvider.
