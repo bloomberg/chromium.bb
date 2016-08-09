@@ -103,9 +103,6 @@ class PerfTest(object):
     def description(self):
         return self._description
 
-    def prepare(self, time_out_ms):
-        return True
-
     def _create_driver(self):
         return self._port.create_driver(worker_number=0, no_timeout=True)
 

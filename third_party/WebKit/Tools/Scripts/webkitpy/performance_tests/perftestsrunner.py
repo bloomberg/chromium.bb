@@ -200,10 +200,6 @@ class PerfTestsRunner(object):
             runs = ' (Run %d of %d)' % (run_count, repeat) if repeat > 1 else ''
             _log.info("Running %d tests%s", len(tests), runs)
 
-            for test in tests:
-                if not test.prepare(self._options.time_out_ms):
-                    return self.EXIT_CODE_BAD_PREPARATION
-
             try:
                 if needs_http:
                     self._start_http_servers()
