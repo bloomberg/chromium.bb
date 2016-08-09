@@ -81,19 +81,7 @@ std::unique_ptr<StepsTimingFunction> StepsTimingFunction::Create(
 }
 
 StepsTimingFunction::StepsTimingFunction(int steps, StepPosition step_position)
-    : steps_(steps) {
-  switch (step_position) {
-    case StepPosition::START:
-      steps_start_offset_ = 1;
-      break;
-    case StepPosition::MIDDLE:
-      steps_start_offset_ = 0.5;
-      break;
-    case StepPosition::END:
-      steps_start_offset_ = 0;
-      break;
-  }
-}
+    : steps_(steps), step_position_(step_position) {}
 
 StepsTimingFunction::~StepsTimingFunction() {
 }
@@ -103,10 +91,7 @@ TimingFunction::Type StepsTimingFunction::GetType() const {
 }
 
 float StepsTimingFunction::GetValue(double t) const {
-  const double steps = static_cast<double>(steps_);
-  const double value = MathUtil::ClampToRange(
-      std::floor((steps * t) + steps_start_offset_) / steps, 0.0, 1.0);
-  return static_cast<float>(value);
+  return static_cast<float>(GetPreciseValue(t));
 }
 
 std::unique_ptr<TimingFunction> StepsTimingFunction::Clone() const {
@@ -120,6 +105,26 @@ void StepsTimingFunction::Range(float* min, float* max) const {
 
 float StepsTimingFunction::Velocity(double x) const {
   return 0.0f;
+}
+
+double StepsTimingFunction::GetPreciseValue(double t) const {
+  const double steps = static_cast<double>(steps_);
+  return MathUtil::ClampToRange(
+      std::floor((steps * t) + GetStepsStartOffset()) / steps, 0.0, 1.0);
+}
+
+float StepsTimingFunction::GetStepsStartOffset() const {
+  switch (step_position_) {
+    case StepPosition::START:
+      return 1;
+    case StepPosition::MIDDLE:
+      return 0.5;
+    case StepPosition::END:
+      return 0;
+    default:
+      NOTREACHED();
+      return 1;
+  }
 }
 
 }  // namespace cc

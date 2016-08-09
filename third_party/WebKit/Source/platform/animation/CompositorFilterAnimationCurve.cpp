@@ -38,12 +38,12 @@ void CompositorFilterAnimationCurve::addCubicBezierKeyframe(const CompositorFilt
         timingFunction.cloneToCC()));
 }
 
-void CompositorFilterAnimationCurve::addStepsKeyframe(const CompositorFilterKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
+void CompositorFilterAnimationCurve::addStepsKeyframe(const CompositorFilterKeyframe& keyframe, const TimingFunction& timingFunction)
 {
     const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
     m_curve->AddKeyframe(cc::FilterKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time()), filterOperations,
-        cc::StepsTimingFunction::Create(steps, stepPosition)));
+        timingFunction.cloneToCC()));
 }
 
 void CompositorFilterAnimationCurve::setLinearTimingFunction()
@@ -56,9 +56,9 @@ void CompositorFilterAnimationCurve::setCubicBezierTimingFunction(const TimingFu
     m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
-void CompositorFilterAnimationCurve::setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition stepPosition)
+void CompositorFilterAnimationCurve::setStepsTimingFunction(const TimingFunction& timingFunction)
 {
-    m_curve->SetTimingFunction(cc::StepsTimingFunction::Create(numberOfSteps, stepPosition));
+    m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
 std::unique_ptr<cc::AnimationCurve> CompositorFilterAnimationCurve::cloneToAnimationCurve() const

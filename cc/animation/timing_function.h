@@ -86,11 +86,17 @@ class CC_EXPORT StepsTimingFunction : public TimingFunction {
   void Range(float* min, float* max) const override;
   float Velocity(double time) const override;
 
+  int steps() const { return steps_; }
+  StepPosition step_position() const { return step_position_; }
+  double GetPreciseValue(double t) const;
+
  private:
   StepsTimingFunction(int steps, StepPosition step_position);
 
+  float GetStepsStartOffset() const;
+
   int steps_;
-  float steps_start_offset_;
+  StepPosition step_position_;
 
   DISALLOW_ASSIGN(StepsTimingFunction);
 };

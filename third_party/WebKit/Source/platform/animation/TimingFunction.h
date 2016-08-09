@@ -202,19 +202,17 @@ public:
     void range(double* minValue, double* maxValue) const override;
     std::unique_ptr<cc::TimingFunction> cloneToCC() const override;
 
-    int numberOfSteps() const { return m_steps; }
-    StepPosition getStepPosition() const { return m_stepPosition; }
+    int numberOfSteps() const { return m_steps->steps(); }
+    StepPosition getStepPosition() const { return m_steps->step_position(); }
 
 private:
     StepsTimingFunction(int steps, StepPosition stepPosition)
         : TimingFunction(Type::STEPS)
-        , m_steps(steps)
-        , m_stepPosition(stepPosition)
+        , m_steps(cc::StepsTimingFunction::Create(steps, stepPosition))
     {
     }
 
-    int m_steps;
-    StepPosition m_stepPosition;
+    std::unique_ptr<cc::StepsTimingFunction> m_steps;
 };
 
 PLATFORM_EXPORT bool operator==(const LinearTimingFunction&, const TimingFunction&);

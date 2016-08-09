@@ -113,25 +113,12 @@ void StepsTimingFunction::range(double* minValue, double* maxValue) const
 
 double StepsTimingFunction::evaluate(double fraction, double) const
 {
-    double startOffset = 0;
-    switch (m_stepPosition) {
-    case StepPosition::START:
-        startOffset = 1;
-        break;
-    case StepPosition::MIDDLE:
-        startOffset = 0.5;
-        break;
-    case StepPosition::END:
-        startOffset = 0;
-        break;
-    }
-    return clampTo(floor((m_steps * fraction) + startOffset) / m_steps, 0.0, 1.0);
+    return m_steps->GetPreciseValue(fraction);
 }
 
 std::unique_ptr<cc::TimingFunction> StepsTimingFunction::cloneToCC() const
 {
-    // TODO(loyso): Migrate it to cc::StepsTimingFunction.
-    return nullptr;
+    return m_steps->Clone();
 }
 
 

@@ -451,7 +451,7 @@ void addCompositorKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, 
 
     case TimingFunction::Type::STEPS: {
         const StepsTimingFunction& steps = toStepsTimingFunction(*timingFunction);
-        curve.addStepsKeyframe(keyframe, steps.numberOfSteps(), steps.getStepPosition());
+        curve.addStepsKeyframe(keyframe, steps);
         break;
     }
 
@@ -481,7 +481,7 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
 
     case TimingFunction::Type::STEPS: {
         const StepsTimingFunction& steps = toStepsTimingFunction(*timingFunction);
-        curve.setStepsTimingFunction(steps.numberOfSteps(), steps.getStepPosition());
+        curve.setStepsTimingFunction(steps);
         break;
     }
 

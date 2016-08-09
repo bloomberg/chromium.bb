@@ -36,11 +36,11 @@ public:
 
     void addLinearKeyframe(const CompositorTransformKeyframe&);
     void addCubicBezierKeyframe(const CompositorTransformKeyframe&, const TimingFunction&);
-    void addStepsKeyframe(const CompositorTransformKeyframe&, int steps, StepsTimingFunction::StepPosition);
+    void addStepsKeyframe(const CompositorTransformKeyframe&, const TimingFunction&);
 
     void setLinearTimingFunction();
     void setCubicBezierTimingFunction(const TimingFunction&);
-    void setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition);
+    void setStepsTimingFunction(const TimingFunction&);
 
     // CompositorAnimationCurve implementation.
     std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;

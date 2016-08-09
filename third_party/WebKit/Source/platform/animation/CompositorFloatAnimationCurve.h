@@ -46,11 +46,11 @@ public:
 
     void addLinearKeyframe(const CompositorFloatKeyframe&);
     void addCubicBezierKeyframe(const CompositorFloatKeyframe&, const TimingFunction&);
-    void addStepsKeyframe(const CompositorFloatKeyframe&, int steps, StepsTimingFunction::StepPosition);
+    void addStepsKeyframe(const CompositorFloatKeyframe&, const TimingFunction&);
 
     void setLinearTimingFunction();
     void setCubicBezierTimingFunction(const TimingFunction&);
-    void setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition);
+    void setStepsTimingFunction(const TimingFunction&);
 
     float getValue(double time) const;
 

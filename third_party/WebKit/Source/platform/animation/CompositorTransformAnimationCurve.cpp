@@ -37,12 +37,12 @@ void CompositorTransformAnimationCurve::addCubicBezierKeyframe(const CompositorT
         timingFunction.cloneToCC()));
 }
 
-void CompositorTransformAnimationCurve::addStepsKeyframe(const CompositorTransformKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
+void CompositorTransformAnimationCurve::addStepsKeyframe(const CompositorTransformKeyframe& keyframe, const TimingFunction& timingFunction)
 {
     const cc::TransformOperations& transformOperations = keyframe.value().asTransformOperations();
     m_curve->AddKeyframe(cc::TransformKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time()), transformOperations,
-        cc::StepsTimingFunction::Create(steps, stepPosition)));
+        timingFunction.cloneToCC()));
 }
 
 void CompositorTransformAnimationCurve::setLinearTimingFunction()
@@ -55,9 +55,9 @@ void CompositorTransformAnimationCurve::setCubicBezierTimingFunction(const Timin
     m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
-void CompositorTransformAnimationCurve::setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition stepPosition)
+void CompositorTransformAnimationCurve::setStepsTimingFunction(const TimingFunction& timingFunction)
 {
-    m_curve->SetTimingFunction(cc::StepsTimingFunction::Create(numberOfSteps, stepPosition));
+    m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
 std::unique_ptr<cc::AnimationCurve> CompositorTransformAnimationCurve::cloneToAnimationCurve() const

@@ -87,11 +87,11 @@ void CompositorFloatAnimationCurve::addCubicBezierKeyframe(const CompositorFloat
         timingFunction.cloneToCC()));
 }
 
-void CompositorFloatAnimationCurve::addStepsKeyframe(const CompositorFloatKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
+void CompositorFloatAnimationCurve::addStepsKeyframe(const CompositorFloatKeyframe& keyframe, const TimingFunction& timingFunction)
 {
     m_curve->AddKeyframe(cc::FloatKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time), keyframe.value,
-        cc::StepsTimingFunction::Create(steps, stepPosition)));
+        timingFunction.cloneToCC()));
 }
 
 void CompositorFloatAnimationCurve::setLinearTimingFunction()
@@ -104,9 +104,9 @@ void CompositorFloatAnimationCurve::setCubicBezierTimingFunction(const TimingFun
     m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
-void CompositorFloatAnimationCurve::setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition stepPosition)
+void CompositorFloatAnimationCurve::setStepsTimingFunction(const TimingFunction& timingFunction)
 {
-    m_curve->SetTimingFunction(cc::StepsTimingFunction::Create(numberOfSteps, stepPosition));
+    m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
 float CompositorFloatAnimationCurve::getValue(double time) const
