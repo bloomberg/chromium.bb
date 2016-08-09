@@ -23,8 +23,6 @@ component("tracing") {
     "core/proto_zero_message_handle.h",
     "core/scattered_stream_writer.cc",
     "core/scattered_stream_writer.h",
-    "core/trace_buffer_writer.cc",
-    "core/trace_buffer_writer.h",
     "core/trace_ring_buffer.cc",
     "core/trace_ring_buffer.h",
     "tracing_export.h",
@@ -86,14 +84,12 @@ source_set("unit_tests") {
     "core/proto_utils_unittest.cc",
     "core/proto_zero_message_unittest.cc",
     "core/scattered_stream_writer_unittest.cc",
-    "core/trace_buffer_writer_unittest.cc",
     "core/trace_ring_buffer_unittest.cc",
     "test/fake_scattered_buffer.cc",
     "test/proto_zero_generation_unittest.cc",
   ]
 
   deps = [
-    ":golden_protos_for_tests",
     ":proto_zero_testing_messages",
     ":tracing",
     "//base/test:test_support",
@@ -106,14 +102,4 @@ source_set("unit_tests") {
     sources += [ "browser/trace_config_file_unittest.cc" ]
     deps += [ ":startup_tracing" ]
   }
-}
-
-# Official protobuf used by tests to verify that the Tracing V2 output is
-# effectively proto-compatible.
-proto_library("golden_protos_for_tests") {
-  visibility = [ ":unit_tests" ]
-  proto_out_dir = "components/tracing/test/golden_protos"
-  sources = [
-    "proto/events_chunk.proto",
-  ]
 }

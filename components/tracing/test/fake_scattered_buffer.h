@@ -21,7 +21,7 @@ namespace v2 {
 class FakeScatteredBuffer : public ScatteredStreamWriter::Delegate {
  public:
   explicit FakeScatteredBuffer(size_t chunk_size);
-  ~FakeScatteredBuffer() override;
+  ~FakeScatteredBuffer();
 
   // ScatteredStreamWriter::Delegate implementation.
   ContiguousMemoryRange GetNewBuffer() override;

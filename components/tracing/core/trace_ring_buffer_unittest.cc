@@ -11,6 +11,8 @@ namespace v2 {
 
 namespace {
 
+const size_t kChunkSize = TraceRingBuffer::Chunk::kSize;
+
 TEST(TraceRingBufferTest, BasicChunkWrapping) {
   const uint32_t kNumChunks = 5;
   const size_t kBufferSize = kChunkSize * kNumChunks;
@@ -48,7 +50,7 @@ TEST(TraceRingBufferTest, BasicChunkWrapping) {
 
 TEST(TraceRingBufferTest, ChunkBankrupcyDoesNotCrash) {
   const size_t kNumChunks = 2;
-  const size_t kBufferSize = kChunkSize * kNumChunks;
+  const size_t kBufferSize = TraceRingBuffer::Chunk::kSize * kNumChunks;
   std::unique_ptr<uint8_t[]> storage(new uint8_t[kBufferSize]);
   TraceRingBuffer ring_buffer(storage.get(), kBufferSize);
 

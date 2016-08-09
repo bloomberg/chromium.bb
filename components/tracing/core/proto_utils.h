@@ -95,12 +95,6 @@ void WriteRedundantVarIntU32(uint32_t value, uint8_t* buf) {
   DCHECK_EQ(0u, value) << "Buffer too short to encode the given value";
 }
 
-template <uint32_t field_id>
-void StaticAssertSingleBytePreamble() {
-  static_assert(field_id < 16,
-                "Proto field id too big to fit in a single byte preamble");
-};
-
 }  // namespace proto
 }  // namespace v2
 }  // namespace tracing

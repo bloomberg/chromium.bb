@@ -29,8 +29,6 @@ class ProtoZeroMessageHandleBase;
 // performance. None of the methods require any dynamic memory allocation.
 class TRACING_EXPORT ProtoZeroMessage {
  public:
-  ProtoZeroMessage();
-
   // Clears up the state, allowing the message to be reused as a fresh one.
   void Reset(ScatteredStreamWriter*);
 
@@ -61,6 +59,8 @@ class TRACING_EXPORT ProtoZeroMessage {
 #endif
 
  protected:
+  ProtoZeroMessage();
+
   void AppendVarIntU64(uint32_t field_id, uint64_t value);
   void AppendVarIntU32(uint32_t field_id, uint32_t value);
   void AppendFloat(uint32_t field_id, float value);

@@ -38,9 +38,8 @@ struct ContiguousMemoryRange {
 // ContiguousMemoryRange and defers the chunk-chaining logic to the Delegate.
 class TRACING_EXPORT ScatteredStreamWriter {
  public:
-  class TRACING_EXPORT Delegate {
+  class Delegate {
    public:
-    virtual ~Delegate();
     virtual ContiguousMemoryRange GetNewBuffer() = 0;
   };
 
