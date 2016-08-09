@@ -490,6 +490,11 @@ body.check-select .dialog-header
   width: 28px;
 }
 
+html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
+  left: auto;
+  right: 2px;
+}
+
 .dialog-header button.icon-button > .icon {
   background-position: center;
   background-repeat: no-repeat;
