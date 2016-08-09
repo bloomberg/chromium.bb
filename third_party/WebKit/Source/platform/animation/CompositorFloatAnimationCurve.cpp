@@ -80,19 +80,11 @@ void CompositorFloatAnimationCurve::addLinearKeyframe(const CompositorFloatKeyfr
             keyframe.value, nullptr));
 }
 
-void CompositorFloatAnimationCurve::addCubicBezierKeyframe(const CompositorFloatKeyframe& keyframe,
-    CubicBezierTimingFunction::EaseType easeType)
-{
-    m_curve->AddKeyframe(
-        cc::FloatKeyframe::Create(base::TimeDelta::FromSecondsD(keyframe.time),
-            keyframe.value, cc::CubicBezierTimingFunction::CreatePreset(easeType)));
-}
-
-void CompositorFloatAnimationCurve::addCubicBezierKeyframe(const CompositorFloatKeyframe& keyframe, double x1, double y1, double x2, double y2)
+void CompositorFloatAnimationCurve::addCubicBezierKeyframe(const CompositorFloatKeyframe& keyframe, const TimingFunction& timingFunction)
 {
     m_curve->AddKeyframe(cc::FloatKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time), keyframe.value,
-        cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)));
+        timingFunction.cloneToCC()));
 }
 
 void CompositorFloatAnimationCurve::addStepsKeyframe(const CompositorFloatKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
@@ -107,14 +99,9 @@ void CompositorFloatAnimationCurve::setLinearTimingFunction()
     m_curve->SetTimingFunction(nullptr);
 }
 
-void CompositorFloatAnimationCurve::setCubicBezierTimingFunction(CubicBezierTimingFunction::EaseType easeType)
+void CompositorFloatAnimationCurve::setCubicBezierTimingFunction(const TimingFunction& timingFunction)
 {
-    m_curve->SetTimingFunction(cc::CubicBezierTimingFunction::CreatePreset(easeType));
-}
-
-void CompositorFloatAnimationCurve::setCubicBezierTimingFunction(double x1, double y1, double x2, double y2)
-{
-    m_curve->SetTimingFunction(cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2));
+    m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
 void CompositorFloatAnimationCurve::setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition stepPosition)

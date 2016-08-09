@@ -434,7 +434,7 @@ template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframe
 void addCompositorKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const PlatformAnimationKeyframeType& keyframe, const TimingFunction* timingFunction)
 {
     if (!timingFunction) {
-        curve.addCubicBezierKeyframe(keyframe, CubicBezierTimingFunction::EaseType::EASE);
+        curve.addCubicBezierKeyframe(keyframe, *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE));
         return;
     }
 
@@ -445,10 +445,7 @@ void addCompositorKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, 
 
     case TimingFunction::Type::CUBIC_BEZIER: {
         const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timingFunction);
-        if (cubic.getEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM)
-            curve.addCubicBezierKeyframe(keyframe, cubic.x1(), cubic.y1(), cubic.x2(), cubic.y2());
-        else
-            curve.addCubicBezierKeyframe(keyframe, cubic.getEaseType());
+        curve.addCubicBezierKeyframe(keyframe, cubic);
         break;
     }
 
@@ -478,10 +475,7 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
 
     case TimingFunction::Type::CUBIC_BEZIER: {
         const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timingFunction);
-        if (cubic.getEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM)
-            curve.setCubicBezierTimingFunction(cubic.x1(), cubic.y1(), cubic.x2(), cubic.y2());
-        else
-            curve.setCubicBezierTimingFunction(cubic.getEaseType());
+        curve.setCubicBezierTimingFunction(cubic);
         break;
     }
 

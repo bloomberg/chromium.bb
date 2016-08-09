@@ -99,7 +99,7 @@ TEST(WebFloatAnimationCurveTest, UnsortedKeyframes)
 TEST(WebFloatAnimationCurveTest, CubicBezierTimingFunction)
 {
     std::unique_ptr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
-    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), 0.25, 0, 0.75, 1);
+    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), *CubicBezierTimingFunction::create(0.25, 0, 0.75, 1));
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     EXPECT_FLOAT_EQ(0, curve->getValue(0));
@@ -115,7 +115,7 @@ TEST(WebFloatAnimationCurveTest, CubicBezierTimingFunction)
 TEST(WebFloatAnimationCurveTest, EaseTimingFunction)
 {
     std::unique_ptr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
-    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), CubicBezierTimingFunction::EaseType::EASE);
+    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE));
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
@@ -143,7 +143,7 @@ TEST(WebFloatAnimationCurveTest, LinearTimingFunction)
 TEST(WebFloatAnimationCurveTest, EaseInTimingFunction)
 {
     std::unique_ptr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
-    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), CubicBezierTimingFunction::EaseType::EASE_IN);
+    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN));
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
@@ -158,7 +158,7 @@ TEST(WebFloatAnimationCurveTest, EaseInTimingFunction)
 TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction)
 {
     std::unique_ptr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
-    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), CubicBezierTimingFunction::EaseType::EASE_OUT);
+    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_OUT));
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
@@ -173,7 +173,7 @@ TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction)
 TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction)
 {
     std::unique_ptr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
-    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), CubicBezierTimingFunction::EaseType::EASE_IN_OUT);
+    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN_OUT));
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
@@ -192,7 +192,7 @@ TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction)
     double y1 = 0.2;
     double x2 = 0.8;
     double y2 = 0.7;
-    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), x1, y1, x2, y2);
+    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), *CubicBezierTimingFunction::create(x1, y1, x2, y2));
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
@@ -207,7 +207,7 @@ TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction)
 TEST(WebFloatAnimationCurveTest, DefaultTimingFunction)
 {
     std::unique_ptr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
-    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), CubicBezierTimingFunction::EaseType::EASE);
+    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0, 0), *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE));
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(

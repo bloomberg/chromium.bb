@@ -56,6 +56,9 @@ public:
     // calling evaluate();
     virtual void range(double* minValue, double* maxValue) const = 0;
 
+    // Create CC instance.
+    virtual std::unique_ptr<cc::TimingFunction> cloneToCC() const = 0;
+
 protected:
     TimingFunction(Type type)
         : m_type(type)
@@ -76,10 +79,12 @@ public:
 
     ~LinearTimingFunction() override { }
 
+    // TimingFunction implementation.
     String toString() const override;
-
     double evaluate(double fraction, double) const override;
     void range(double* minValue, double* maxValue) const override;
+    std::unique_ptr<cc::TimingFunction> cloneToCC() const override;
+
 private:
     LinearTimingFunction()
         : TimingFunction(Type::LINEAR)
@@ -93,15 +98,15 @@ public:
 
     static PassRefPtr<CubicBezierTimingFunction> create(double x1, double y1, double x2, double y2)
     {
-        return adoptRef(new CubicBezierTimingFunction(EaseType::CUSTOM, x1, y1, x2, y2));
+        return adoptRef(new CubicBezierTimingFunction(x1, y1, x2, y2));
     }
 
     static CubicBezierTimingFunction* preset(EaseType easeType)
     {
-        DEFINE_STATIC_REF(CubicBezierTimingFunction, ease, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE, 0.25, 0.1, 0.25, 1.0))));
-        DEFINE_STATIC_REF(CubicBezierTimingFunction, easeIn, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN, 0.42, 0.0, 1.0, 1.0))));
-        DEFINE_STATIC_REF(CubicBezierTimingFunction, easeOut, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_OUT, 0.0, 0.0, 0.58, 1.0))));
-        DEFINE_STATIC_REF(CubicBezierTimingFunction, easeInOut, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN_OUT, 0.42, 0.0, 0.58, 1.0))));
+        DEFINE_STATIC_REF(CubicBezierTimingFunction, ease, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE))));
+        DEFINE_STATIC_REF(CubicBezierTimingFunction, easeIn, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN))));
+        DEFINE_STATIC_REF(CubicBezierTimingFunction, easeOut, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_OUT))));
+        DEFINE_STATIC_REF(CubicBezierTimingFunction, easeInOut, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN_OUT))));
 
         switch (easeType) {
         case EaseType::EASE:
@@ -120,41 +125,46 @@ public:
 
     ~CubicBezierTimingFunction() override { }
 
+    // TimingFunction implementation.
     String toString() const override;
-
     double evaluate(double fraction, double accuracy) const override;
     void range(double* minValue, double* maxValue) const override;
+    std::unique_ptr<cc::TimingFunction> cloneToCC() const override;
 
-    double x1() const { return m_x1; }
-    double y1() const { return m_y1; }
-    double x2() const { return m_x2; }
-    double y2() const { return m_y2; }
-
-    EaseType getEaseType() const { return m_easeType; }
+    double x1() const { DCHECK_EQ(getEaseType(), EaseType::CUSTOM); return m_x1; }
+    double y1() const { DCHECK_EQ(getEaseType(), EaseType::CUSTOM); return m_y1; }
+    double x2() const { DCHECK_EQ(getEaseType(), EaseType::CUSTOM); return m_x2; }
+    double y2() const { DCHECK_EQ(getEaseType(), EaseType::CUSTOM); return m_y2; }
+    EaseType getEaseType() const { return m_bezier->ease_type(); }
 
 private:
-    explicit CubicBezierTimingFunction(EaseType easeType, double x1, double y1, double x2, double y2)
+    explicit CubicBezierTimingFunction(EaseType easeType)
         : TimingFunction(Type::CUBIC_BEZIER)
-        , m_bezier(x1, y1, x2, y2)
+        , m_bezier(cc::CubicBezierTimingFunction::CreatePreset(easeType))
+        , m_x1()
+        , m_y1()
+        , m_x2()
+        , m_y2()
+    {
+    }
+
+    CubicBezierTimingFunction(double x1, double y1, double x2, double y2)
+        : TimingFunction(Type::CUBIC_BEZIER)
+        , m_bezier(cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2))
         , m_x1(x1)
         , m_y1(y1)
         , m_x2(x2)
         , m_y2(y2)
-        , m_easeType(easeType)
     {
     }
 
-    // Finds points on the cubic bezier that cross the given horizontal
-    // line, storing their x values in solution1-3 and returning the
-    // number of solutions found.
-    size_t findIntersections(double intersectionY, double& solution1, double& solution2, double& solution3) const;
+    std::unique_ptr<cc::CubicBezierTimingFunction> m_bezier;
 
-    gfx::CubicBezier m_bezier;
+    // TODO(loyso): Get these values from m_bezier->bezier_ (gfx::CubicBezier)
     const double m_x1;
     const double m_y1;
     const double m_x2;
     const double m_y2;
-    const EaseType m_easeType;
 };
 
 class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
@@ -186,10 +196,11 @@ public:
 
     ~StepsTimingFunction() override { }
 
+    // TimingFunction implementation.
     String toString() const override;
-
     double evaluate(double fraction, double) const override;
     void range(double* minValue, double* maxValue) const override;
+    std::unique_ptr<cc::TimingFunction> cloneToCC() const override;
 
     int numberOfSteps() const { return m_steps; }
     StepPosition getStepPosition() const { return m_stepPosition; }

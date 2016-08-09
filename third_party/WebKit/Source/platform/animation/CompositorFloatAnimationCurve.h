@@ -45,15 +45,11 @@ public:
     bool keyframeHasLinearTimingFunctionForTesting(unsigned long index) const;
 
     void addLinearKeyframe(const CompositorFloatKeyframe&);
-    void addCubicBezierKeyframe(const CompositorFloatKeyframe&, CubicBezierTimingFunction::EaseType);
-    // Adds the keyframe with a custom, bezier timing function. Note, it is
-    // assumed that x0 = y0 , and x3 = y3 = 1.
-    void addCubicBezierKeyframe(const CompositorFloatKeyframe&, double x1, double y1, double x2, double y2);
+    void addCubicBezierKeyframe(const CompositorFloatKeyframe&, const TimingFunction&);
     void addStepsKeyframe(const CompositorFloatKeyframe&, int steps, StepsTimingFunction::StepPosition);
 
     void setLinearTimingFunction();
-    void setCubicBezierTimingFunction(CubicBezierTimingFunction::EaseType);
-    void setCubicBezierTimingFunction(double x1, double y1, double x2, double y2);
+    void setCubicBezierTimingFunction(const TimingFunction&);
     void setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition);
 
     float getValue(double time) const;

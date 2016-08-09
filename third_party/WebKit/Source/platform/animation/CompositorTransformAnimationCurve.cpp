@@ -29,20 +29,12 @@ void CompositorTransformAnimationCurve::addLinearKeyframe(const CompositorTransf
         base::TimeDelta::FromSecondsD(keyframe.time()), transformOperations, nullptr));
 }
 
-void CompositorTransformAnimationCurve::addCubicBezierKeyframe(const CompositorTransformKeyframe& keyframe, CubicBezierTimingFunction::EaseType easeType)
+void CompositorTransformAnimationCurve::addCubicBezierKeyframe(const CompositorTransformKeyframe& keyframe, const TimingFunction& timingFunction)
 {
     const cc::TransformOperations& transformOperations = keyframe.value().asTransformOperations();
     m_curve->AddKeyframe(cc::TransformKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time()), transformOperations,
-        cc::CubicBezierTimingFunction::CreatePreset(easeType)));
-}
-
-void CompositorTransformAnimationCurve::addCubicBezierKeyframe(const CompositorTransformKeyframe& keyframe,  double x1, double y1, double x2, double y2)
-{
-    const cc::TransformOperations& transformOperations = keyframe.value().asTransformOperations();
-    m_curve->AddKeyframe(cc::TransformKeyframe::Create(
-        base::TimeDelta::FromSecondsD(keyframe.time()), transformOperations,
-        cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)));
+        timingFunction.cloneToCC()));
 }
 
 void CompositorTransformAnimationCurve::addStepsKeyframe(const CompositorTransformKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
@@ -58,15 +50,9 @@ void CompositorTransformAnimationCurve::setLinearTimingFunction()
     m_curve->SetTimingFunction(nullptr);
 }
 
-void CompositorTransformAnimationCurve::setCubicBezierTimingFunction(CubicBezierTimingFunction::EaseType easeType)
+void CompositorTransformAnimationCurve::setCubicBezierTimingFunction(const TimingFunction& timingFunction)
 {
-    m_curve->SetTimingFunction(cc::CubicBezierTimingFunction::CreatePreset(easeType));
-}
-
-void CompositorTransformAnimationCurve::setCubicBezierTimingFunction(double x1, double y1, double x2, double y2)
-{
-    m_curve->SetTimingFunction(
-        cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2));
+    m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
 void CompositorTransformAnimationCurve::setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition stepPosition)

@@ -16,8 +16,8 @@ TimingFunction::TimingFunction() {}
 
 TimingFunction::~TimingFunction() {}
 
-std::unique_ptr<TimingFunction> CubicBezierTimingFunction::CreatePreset(
-    EaseType ease_type) {
+std::unique_ptr<CubicBezierTimingFunction>
+CubicBezierTimingFunction::CreatePreset(EaseType ease_type) {
   // These numbers come from
   // http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
   switch (ease_type) {
@@ -73,7 +73,6 @@ void CubicBezierTimingFunction::Range(float* min, float* max) const {
 std::unique_ptr<TimingFunction> CubicBezierTimingFunction::Clone() const {
   return base::WrapUnique(new CubicBezierTimingFunction(*this));
 }
-
 
 std::unique_ptr<StepsTimingFunction> StepsTimingFunction::Create(
     int steps,

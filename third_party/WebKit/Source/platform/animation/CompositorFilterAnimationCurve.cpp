@@ -30,20 +30,12 @@ void CompositorFilterAnimationCurve::addLinearKeyframe(const CompositorFilterKey
 
 }
 
-void CompositorFilterAnimationCurve::addCubicBezierKeyframe(const CompositorFilterKeyframe& keyframe, CubicBezierTimingFunction::EaseType easeType)
+void CompositorFilterAnimationCurve::addCubicBezierKeyframe(const CompositorFilterKeyframe& keyframe, const TimingFunction& timingFunction)
 {
     const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
     m_curve->AddKeyframe(cc::FilterKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time()), filterOperations,
-        cc::CubicBezierTimingFunction::CreatePreset(easeType)));
-}
-
-void CompositorFilterAnimationCurve::addCubicBezierKeyframe(const CompositorFilterKeyframe& keyframe, double x1, double y1, double x2, double y2)
-{
-    const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
-    m_curve->AddKeyframe(cc::FilterKeyframe::Create(
-        base::TimeDelta::FromSecondsD(keyframe.time()), filterOperations,
-        cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)));
+        timingFunction.cloneToCC()));
 }
 
 void CompositorFilterAnimationCurve::addStepsKeyframe(const CompositorFilterKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
@@ -59,14 +51,9 @@ void CompositorFilterAnimationCurve::setLinearTimingFunction()
     m_curve->SetTimingFunction(nullptr);
 }
 
-void CompositorFilterAnimationCurve::setCubicBezierTimingFunction(CubicBezierTimingFunction::EaseType easeType)
+void CompositorFilterAnimationCurve::setCubicBezierTimingFunction(const TimingFunction& timingFunction)
 {
-    m_curve->SetTimingFunction(cc::CubicBezierTimingFunction::CreatePreset(easeType));
-}
-
-void CompositorFilterAnimationCurve::setCubicBezierTimingFunction(double x1, double y1, double x2, double y2)
-{
-    m_curve->SetTimingFunction(cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2));
+    m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
 void CompositorFilterAnimationCurve::setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition stepPosition)

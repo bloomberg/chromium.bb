@@ -71,6 +71,10 @@ void CubicBezier::InitGradients(double p1x,
     end_gradient_ = 0;
 }
 
+// This works by taking taking the derivative of the cubic bezier, on the y
+// axis. We can then solve for where the derivative is zero to find the min
+// and max distance along the line. We the have to solve those in terms of time
+// rather than distance on the x-axis
 void CubicBezier::InitRange(double p1y, double p2y) {
   range_min_ = 0;
   range_max_ = 1;
@@ -112,6 +116,12 @@ void CubicBezier::InitRange(double p1y, double p2y) {
   double sol1 = 0;
   double sol2 = 0;
 
+  // If the solution is in the range [0,1] then we include it, otherwise we
+  // ignore it.
+
+  // An interesting fact about these beziers is that they are only
+  // actually evaluated in [0,1]. After that we take the tangent at that point
+  // and linearly project it out.
   if (0 < t1 && t1 < 1)
     sol1 = SampleCurveY(t1);
 
