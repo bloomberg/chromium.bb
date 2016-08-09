@@ -66,6 +66,7 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/ng/LayoutNGBlockFlow.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/ObjectPaintProperties.h"
@@ -187,6 +188,8 @@ LayoutObject* LayoutObject::createObject(Element* element, const ComputedStyle& 
         return new LayoutInline(element);
     case BLOCK:
     case INLINE_BLOCK:
+        if (RuntimeEnabledFeatures::layoutNGEnabled())
+            return new LayoutNGBlockFlow(element);
         return new LayoutBlockFlow(element);
     case LIST_ITEM:
         return new LayoutListItem(element);
