@@ -1421,6 +1421,7 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
     return GURL();
 
   std::string url_str = url.spec();
+  internal::YouTubeRewriteStatus result = internal::NUM_PLUGIN_ERROR;
 
   // If the website is using an invalid YouTube URL, we'll try and
   // fix the URL by ensuring that if there are multiple parameters,
@@ -1443,13 +1444,18 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   }
 
   GURL corrected_url = GURL(url_str);
-
-  // We don't modify any URLs that contain the enablejsapi=1 parameter
-  // since the page may be interacting with the YouTube Flash player in
-  // Javascript and we don't want to break working content.
+  // Unless we're on an Android device, we don't modify any URLs that contain
+  // the enablejsapi=1 parameter since the page may be interacting with the
+  // YouTube Flash player in Javascript and we don't want to break working
+  // content. If we're on an Android device and the URL contains the
+  // enablejsapi=1 parameter, we do override the URL.
   if (corrected_url.query().find("enablejsapi=1") != std::string::npos) {
+#if defined(OS_ANDROID)
+    result = internal::SUCCESS_ENABLEJSAPI;
+#else
     RecordYouTubeRewriteUMA(internal::FAILURE_ENABLEJSAPI);
     return GURL();
+#endif
   }
 
   // Change the path to use the YouTube HTML5 API
@@ -1459,7 +1465,9 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   url::Replacements<char> r;
   r.SetPath(path.c_str(), url::Component(0, path.length()));
 
-  RecordYouTubeRewriteUMA(invalid_url ? internal::SUCCESS_PARAMS_REWRITE
-                                      : internal::SUCCESS);
+  if (result == internal::NUM_PLUGIN_ERROR)
+    result = invalid_url ? internal::SUCCESS_PARAMS_REWRITE : internal::SUCCESS;
+
+  RecordYouTubeRewriteUMA(result);
   return corrected_url.ReplaceComponents(r);
 }

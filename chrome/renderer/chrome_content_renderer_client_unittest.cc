@@ -411,7 +411,8 @@ TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
       std::vector<GURL>(), GURL::EmptyGURL());
 }
 
-TEST_F(ChromeContentRendererClientTest, RewriteYouTubeFlashEmbed) {
+// These are tests that are common for both Android and desktop browsers.
+TEST_F(ChromeContentRendererClientTest, RewriteEmbedCommon) {
   struct TestData {
     std::string original;
     std::string expected;
@@ -429,14 +430,10 @@ TEST_F(ChromeContentRendererClientTest, RewriteYouTubeFlashEmbed) {
       {"http://www.youtube.com/embed/deadbeef", ""},
       // URL isn't using Flash, no www
       {"http://youtube.com/embed/deadbeef", ""},
-      // URL isn't using Flash, has JS API enabled
-      {"http://www.youtube.com/embed/deadbeef?enablejsapi=1", ""},
       // URL isn't using Flash, invalid parameter construct
       {"http://www.youtube.com/embed/deadbeef&start=4", ""},
       // URL is using Flash, no www
       {"http://youtube.com/v/deadbeef", "http://youtube.com/embed/deadbeef"},
-      // URL is using Flash, has JS API enabled
-      {"http://www.youtube.com/v/deadbeef?enablejsapi=1", ""},
       // URL is using Flash, is valid, https
       {"https://www.youtube.com/v/deadbeef",
        "https://www.youtube.com/embed/deadbeef"},
@@ -478,8 +475,6 @@ TEST_F(ChromeContentRendererClientTest, RewriteYouTubeFlashEmbed) {
        "http://www.youtube-nocookie.com/embed/123/"},
       // youtube-nocookie.com, isn't using flash
       {"http://www.youtube-nocookie.com/embed/123/", ""},
-      // youtube-nocookie.com, has JS API enabled
-      {"http://www.youtube-nocookie.com/v/123?enablejsapi=1", ""},
       // youtube-nocookie.com, has one parameter
       {"http://www.youtube-nocookie.com/v/123?start=foo",
        "http://www.youtube-nocookie.com/embed/123?start=foo"},
@@ -505,6 +500,63 @@ TEST_F(ChromeContentRendererClientTest, RewriteYouTubeFlashEmbed) {
               client.OverrideFlashEmbedWithHTML(GURL(data.original)));
 }
 
+#if defined(OS_ANDROID)
+TEST_F(ChromeContentRendererClientTest, RewriteEmbedAndroid) {
+  struct TestData {
+    std::string original;
+    std::string expected;
+  } test_data[] = {
+      // URL isn't using Flash, has JS API enabled
+      {"http://www.youtube.com/embed/deadbeef?enablejsapi=1", ""},
+      // URL is using Flash, has JS API enabled
+      {"http://www.youtube.com/v/deadbeef?enablejsapi=1",
+       "http://www.youtube.com/embed/deadbeef?enablejsapi=1"},
+      // youtube-nocookie.com, has JS API enabled
+      {"http://www.youtube-nocookie.com/v/123?enablejsapi=1",
+       "http://www.youtube-nocookie.com/embed/123?enablejsapi=1"},
+      // URL is using Flash, has JS API enabled, invalid parameter construct
+      {"http://www.youtube.com/v/deadbeef&enablejsapi=1",
+       "http://www.youtube.com/embed/deadbeef?enablejsapi=1"},
+      // URL is using Flash, has JS API enabled, invalid parameter construct,
+      // has multiple parameters
+      {"http://www.youtube.com/v/deadbeef&start=4&enablejsapi=1",
+       "http://www.youtube.com/embed/deadbeef?start=4&enablejsapi=1"},
+  };
+
+  ChromeContentRendererClient client;
+
+  for (const auto& data : test_data) {
+    EXPECT_EQ(GURL(data.expected),
+              client.OverrideFlashEmbedWithHTML(GURL(data.original)));
+  }
+}
+#else
+TEST_F(ChromeContentRendererClientTest, RewriteEmbedDesktop) {
+  struct TestData {
+    std::string original;
+    std::string expected;
+  } test_data[] = {
+      // URL isn't using Flash, has JS API enabled
+      {"http://www.youtube.com/embed/deadbeef?enablejsapi=1", ""},
+      // URL is using Flash, has JS API enabled
+      {"http://www.youtube.com/v/deadbeef?enablejsapi=1", ""},
+      // youtube-nocookie.com, has JS API enabled
+      {"http://www.youtube-nocookie.com/v/123?enablejsapi=1", ""},
+      // URL is using Flash, has JS API enabled, invalid parameter construct
+      {"http://www.youtube.com/v/deadbeef&enablejsapi=1", ""},
+      // URL is using Flash, has JS API enabled, invalid parameter construct,
+      // has multiple parameters
+      {"http://www.youtube.com/v/deadbeef&start=4&enablejsapi=1", ""},
+  };
+
+  ChromeContentRendererClient client;
+
+  for (const auto& data : test_data) {
+    EXPECT_EQ(GURL(data.expected),
+              client.OverrideFlashEmbedWithHTML(GURL(data.original)));
+  }
+}
+#endif
 class ChromeContentRendererClientMetricsTest : public testing::Test {
  public:
   ChromeContentRendererClientMetricsTest() = default;
@@ -621,7 +673,9 @@ TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedSuccessRewrite) {
   EXPECT_EQ(total_count, samples->TotalCount());
 }
 
-TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedFailureJSAPI) {
+#if defined(OS_ANDROID)
+TEST_F(ChromeContentRendererClientMetricsTest,
+       RewriteEmbedFailureJSAPIAndroid) {
   ChromeContentRendererClient client;
 
   std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
@@ -629,6 +683,37 @@ TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedFailureJSAPI) {
   EXPECT_EQ(total_count, samples->TotalCount());
 
   const std::string test_data[] = {
+      // Valid parameter construct, one parameter
+      "http://www.youtube.com/v/deadbeef?enablejsapi=1",
+      // Valid parameter construct, has multiple parameters
+      "http://www.youtube.com/v/deadbeef?enablejsapi=1&foo=2",
+      // Invalid parameter construct, one parameter
+      "http://www.youtube.com/v/deadbeef&enablejsapi=1",
+      // Invalid parameter construct, has multiple parameters
+      "http://www.youtube.com/v/deadbeef&enablejsapi=1&foo=2"};
+
+  for (const auto& data : test_data) {
+    ++total_count;
+    GURL gurl = GURL(data);
+    OverrideFlashEmbed(gurl);
+    samples = GetHistogramSamples();
+    EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS_ENABLEJSAPI));
+    EXPECT_EQ(total_count, samples->TotalCount());
+  }
+}
+
+#else
+TEST_F(ChromeContentRendererClientMetricsTest,
+       RewriteEmbedFailureJSAPIDesktop) {
+  ChromeContentRendererClient client;
+
+  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
+  auto total_count = 0;
+  EXPECT_EQ(total_count, samples->TotalCount());
+
+  const std::string test_data[] = {
+      // Valid parameter construct, one parameter
+      "http://www.youtube.com/v/deadbeef?enablejsapi=1",
       // Invalid parameter construct, one parameter
       "http://www.youtube.com/v/deadbeef&enablejsapi=1",
       // Invalid parameter construct, has multiple parameters
@@ -643,3 +728,4 @@ TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedFailureJSAPI) {
     EXPECT_EQ(total_count, samples->TotalCount());
   }
 }
+#endif
