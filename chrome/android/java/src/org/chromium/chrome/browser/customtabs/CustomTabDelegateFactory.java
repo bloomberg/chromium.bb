@@ -54,7 +54,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
 
         @Override
         public boolean startActivityIfNeeded(Intent intent) {
-            boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(intent.getDataString());
+            boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(intent.toUri(0));
             boolean hasDefaultHandler = hasDefaultHandler(intent);
             try {
                 // For a URL chrome can handle and there is no default set, handle it ourselves.
