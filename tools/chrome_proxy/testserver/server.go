@@ -35,12 +35,15 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
+	"time"
 )
 
 func init() {
 	http.HandleFunc("/requestHeader", requestHeader)
 	http.HandleFunc("/resource", resource)
 	http.HandleFunc("/default", defaultResponse)
+	http.HandleFunc("/blackhole", blackholeProxy)
 }
 
 // requestHander returns request headers in response body as text.
@@ -79,6 +82,19 @@ func defaultResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	if !wroteBody {
 		w.Write([]byte("ok"))
+	}
+}
+
+// blackholePoxy delays 90 seconds for proxied responses, in order to test if
+// the proxy will timeout on the site. Responds immediately to any other request.
+func blackholeProxy(w http.ResponseWriter, r *http.Request) {
+	if strings.Contains(r.Header.Get("via"), "Chrome-Compression-Proxy") {
+		// Causes timeout on proxy, will then send BLOCK_ONCE.
+		// Appspot will 502 traffic at 120 seconds with no response.
+		time.Sleep(90 * time.Second);
+		w.Write([]byte("You are proxy"));
+	} else {
+		w.Write([]byte("You are direct"));
 	}
 }
 

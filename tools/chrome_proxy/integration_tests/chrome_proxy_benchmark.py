@@ -10,6 +10,21 @@ from telemetry import benchmark
 DESKTOP_PLATFORMS = ['mac', 'linux', 'win', 'chromeos']
 WEBVIEW_PLATFORMS = ['android-webview', 'android-webview-shell']
 
+
+class ChromeProxyBypassOnTimeout(ChromeProxyBenchmark):
+  """Check that the proxy bypasses when origin times out.
+
+  If the origin site does not make an HTTP response in a reasonable
+  amount of time, the proxy should bypass.
+  """
+  tag = 'timeout_bypass'
+  test = measurements.ChromeProxyBypassOnTimeout
+  page_set = pagesets.BypassOnTimeoutStorySet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.timeout_bypass.timeout_bypass'
+
 class ChromeProxyClientType(ChromeProxyBenchmark):
   tag = 'client_type'
   test = measurements.ChromeProxyClientType
