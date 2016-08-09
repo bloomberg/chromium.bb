@@ -15,12 +15,16 @@
         android:layout_height="match_parent"
         android:background="#ffffff"
         android:orientation="vertical" >
-        
+
         <org.chromium.chrome.browser.download.ui.DownloadManagerToolbar
             android:id="@id/action_bar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/appbar_background" />
+            android:background="@color/appbar_background" >
+
+            <include layout="@layout/number_roll_view" />
+
+        </org.chromium.chrome.browser.download.ui.DownloadManagerToolbar>
 
         <org.chromium.chrome.browser.widget.FadingShadowView
             android:id="@+id/shadow"

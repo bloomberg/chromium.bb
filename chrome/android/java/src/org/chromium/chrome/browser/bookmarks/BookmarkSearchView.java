@@ -136,7 +136,7 @@ public class BookmarkSearchView extends LinearLayout implements OnItemClickListe
         mHistoryResultSwitcher = (HistoryResultSwitcher) findViewById(R.id.history_result_switcher);
 
         Toolbar searchBar = (Toolbar) findViewById(R.id.search_bar);
-        searchBar.setNavigationIcon(R.drawable.bookmark_back_normal);
+        searchBar.setNavigationIcon(R.drawable.back_normal);
         searchBar.setNavigationContentDescription(R.string.accessibility_toolbar_btn_back);
         searchBar.setNavigationOnClickListener(new OnClickListener() {
             @Override

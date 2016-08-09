@@ -201,6 +201,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_ADD" desc="Prompt for the user to add something, like a new address. [CHAR-LIMIT=20]">
         Add
       </message>
+      <message name="IDS_SHARE" desc="Content description for a button to share item(s). [CHAR-LIMIT=20]">
+        Share
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -2217,12 +2220,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_BOOKMARK_MISSING_URL" desc="Error message appearing when a user tries to create a bookmark without a url. [CHAR-LIMIT=32]">
         URL required
       </message>
-      <message name="IDS_ACCESSIBILITY_BOOKMARK_DRAWER_TOGGLE_BTN_OPEN" desc="Content description for the button to show the navigation drawer.">
-        Open navigation drawer
-      </message>
-      <message name="IDS_ACCESSIBILITY_BOOKMARK_DRAWER_TOGGLE_BTN_CLOSE" desc="Content description for the button to close the navigation drawer.">
-        Close navigation drawer
-      </message>
 
       <!-- Offline pages -->
       <message name="IDS_OFFLINE_PAGES_VIEWING_OFFLINE_PAGE" desc="Text explaining that the user is viewing an offline copy of a web page.">
@@ -2372,9 +2369,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_OMNIBOX_BTN_REFINE" desc="Content description for the omnibox refine button.">
         Refine
       </message>
-      <message name="IDS_ACCESSIBILITY_BOOKMARK_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected bookmarks.">
-        Cancel selection
-      </message>
       <message name="IDS_ACCESSIBILITY_BOOKMARK_MORE_INFO" desc="Content description for the button that shows option menu for a bookmark.">
         Options
       </message>
@@ -2386,6 +2380,15 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_ACCESSIBILITY_BOOKMARK_DETAIL_SAVE_BTN" desc="Content description for the save button that allows users to save the edited bookmark.">
         Save bookmark
+      </message>
+      <message name="IDS_ACCESSIBILITY_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected items in a selectable list view.">
+        Cancel selection
+      </message>
+      <message name="IDS_ACCESSIBILITY_DRAWER_TOGGLE_BTN_OPEN" desc="Content description for the button to show the navigation drawer.">
+        Open navigation drawer
+      </message>
+      <message name="IDS_ACCESSIBILITY_DRAWER_TOGGLE_BTN_CLOSE" desc="Content description for the button to close the navigation drawer.">
+        Close navigation drawer
       </message>
 
       <message name="IDS_VIDEO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video call is in progress.">

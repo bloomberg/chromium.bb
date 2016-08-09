@@ -7,14 +7,10 @@ package org.chromium.chrome.browser.bookmarks;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.Checkable;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
@@ -22,6 +18,7 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.widget.TintedImageButton;
+import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.List;
@@ -29,13 +26,11 @@ import java.util.List;
 /**
  * Common logic for bookmark and folder rows.
  */
-abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
-        Checkable, OnClickListener, OnLongClickListener {
+abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements BookmarkUIObserver {
 
     protected ImageView mIconImageView;
     protected TextView mTitleView;
     protected TintedImageButton mMoreIcon;
-    private BookmarkItemHighlightView mHighlightView;
 
     protected BookmarkDelegate mDelegate;
     protected BookmarkId mBookmarkId;
@@ -59,18 +54,11 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
         clearPopup();
         if (isSelectable()) {
             mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
-            setChecked(mDelegate.isBookmarkSelected(bookmarkId));
+            setChecked(mDelegate.getSelectionDelegate().isItemSelected(bookmarkId));
         }
+        super.setId(bookmarkId);
         return bookmarkItem;
     }
-
-    /**
-     * Same as {@link OnClickListener#onClick(View)} on this.
-     * Subclasses should override this instead of setting their own OnClickListener because this
-     * class handles onClick events in selection mode, and won't forward events to subclasses in
-     * that case.
-     */
-    protected abstract void onClick();
 
     private void initialize() {
         mDelegate.addUIObserver(this);
@@ -90,7 +78,8 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
     }
 
     private void updateSelectionState() {
-        if (isSelectable()) mMoreIcon.setClickable(!mDelegate.isSelectionEnabled());
+        if (isSelectable()) mMoreIcon.setClickable(
+                !mDelegate.getSelectionDelegate().isSelectionEnabled());
     }
 
     /**
@@ -150,7 +139,8 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
                 public void onItemClick(AdapterView<?> parent, View view, int position,
                         long id) {
                     if (position == 0) {
-                        setChecked(mDelegate.toggleSelectionForBookmark(mBookmarkId));
+                        setChecked(mDelegate.getSelectionDelegate().toggleSelectionForItem(
+                                mBookmarkId));
                     } else if (position == 1) {
                         BookmarkItem item = mDelegate.getModel().getBookmarkById(mBookmarkId);
                         if (item.isFolder()) {
@@ -187,8 +177,6 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
         mTitleView = (TextView) findViewById(R.id.title);
 
         if (isSelectable()) {
-            mHighlightView = (BookmarkItemHighlightView) findViewById(R.id.highlight);
-
             mMoreIcon = (TintedImageButton) findViewById(R.id.more);
             mMoreIcon.setVisibility(VISIBLE);
             mMoreIcon.setOnClickListener(new OnClickListener() {
@@ -198,9 +186,6 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
                 }
             });
         }
-
-        setOnClickListener(this);
-        setOnLongClickListener(this);
     }
 
     @Override
@@ -208,7 +193,6 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
         super.onAttachedToWindow();
         mIsAttachedToWindow = true;
         if (mDelegate != null) {
-            setChecked(mDelegate.isBookmarkSelected(mBookmarkId));
             initialize();
         }
     }
@@ -218,38 +202,19 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
         super.onDetachedFromWindow();
         mIsAttachedToWindow = false;
         cleanup();
-        setChecked(false);
     }
 
-    // OnClickListener implementation.
-
-    @Override
-    public final void onClick(View view) {
-        assert view == this;
-
-        if (mDelegate.isSelectionEnabled() && isSelectable()) {
-            onLongClick(view);
-        } else {
-            onClick();
-        }
-    }
-
-    // OnLongClickListener implementation.
-
+    // SelectableItem overrides.
     @Override
     public boolean onLongClick(View view) {
-        assert view == this;
         if (!isSelectable()) return false;
-        setChecked(mDelegate.toggleSelectionForBookmark(mBookmarkId));
-        return true;
+        return super.onLongClick(view);
     }
-
-    // Checkable implementations.
 
     @Override
     public boolean isChecked() {
-        if (mHighlightView == null) return false;
-        return mHighlightView.isChecked();
+        if (!isSelectable()) return false;
+        return super.isChecked();
     }
 
     @Override
@@ -260,13 +225,20 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
     @Override
     public void setChecked(boolean checked) {
         // Unselectable rows do not have highlight view.
-        if (mHighlightView != null) mHighlightView.setChecked(checked);
+        if (isSelectable()) super.setChecked(checked);
+    }
+
+    @Override
+    public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
+        if (isSelectable()) super.onSelectionStateChange(selectedBookmarks);
+        updateSelectionState();
     }
 
     // BookmarkUIObserver implementations.
 
     @Override
     public void onBookmarkDelegateInitialized(BookmarkDelegate delegate) {
+        super.setSelectionDelegate(delegate.getSelectionDelegate());
         mDelegate = delegate;
         if (mIsAttachedToWindow) initialize();
     }
@@ -284,8 +256,4 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
     public void onFolderStateSet(BookmarkId folder) {
     }
 
-    @Override
-    public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
-        updateSelectionState();
-    }
 }

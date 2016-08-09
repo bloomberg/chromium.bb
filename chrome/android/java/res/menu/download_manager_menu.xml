@@ -6,10 +6,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto" >
 
-    <item
-        android:id="@+id/close_menu_id"
-        android:icon="@drawable/btn_close"
-        android:title="@string/close"
-        chrome:showAsAction="ifRoom"/>
-
+    <group android:id="@+id/normal_menu_group" >
+        <item
+            android:id="@+id/close_menu_id"
+            android:icon="@drawable/btn_close"
+            android:title="@string/close"
+            chrome:showAsAction="ifRoom" />
+     </group>
+     <group
+        android:id="@+id/selection_mode_menu_group"
+        android:visible="false" >
+        <item
+            android:id="@+id/selection_mode_share_menu_id"
+            android:icon="@drawable/ic_share_white_24dp"
+            android:title="@string/remove"
+            chrome:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/selection_mode_delete_menu_id"
+            android:icon="@drawable/ic_delete_white_24dp"
+            android:title="@string/share"
+            chrome:showAsAction="ifRoom" />
+     </group>
 </menu>

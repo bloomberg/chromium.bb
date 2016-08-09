@@ -466,7 +466,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             views.setTextViewText(R.id.title, TextUtils.isEmpty(title) ? url : title);
 
             if (bookmark == mCurrentFolder.folder) {
-                views.setImageViewResource(R.id.favicon, R.drawable.bookmark_back_normal);
+                views.setImageViewResource(R.id.favicon, R.drawable.back_normal);
             } else if (bookmark.isFolder) {
                 views.setImageViewResource(R.id.favicon, R.drawable.bookmark_folder);
             } else {

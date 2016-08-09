@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
 
@@ -78,9 +79,13 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
     private BasicNativePage mNativePage;
 
+    private SelectionDelegate<String> mSelectionDelegate;
+
     public DownloadManagerUi(Activity activity) {
         mActivity = activity;
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
+
+        mSelectionDelegate = new SelectionDelegate<String>();
 
         mHistoryAdapter = new DownloadHistoryAdapter();
         mHistoryAdapter.initialize(this);
@@ -91,6 +96,12 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         mToolbar = (DownloadManagerToolbar) mMainView.findViewById(R.id.action_bar);
         mToolbar.initialize(this);
         mToolbar.setOnMenuItemClickListener(this);
+        DrawerLayout drawerLayout = null;
+        if (!DeviceFormFactor.isLargeTablet(activity)) {
+            drawerLayout = (DrawerLayout) mMainView;
+        }
+        mToolbar.initialize(mSelectionDelegate, R.string.menu_downloads, drawerLayout,
+                R.id.normal_menu_group, R.id.selection_mode_menu_group);
 
         mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);
         mFilterView = (ListView) mMainView.findViewById(R.id.section_list);
@@ -147,6 +158,10 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                 return true;
             }
         }
+        if (mSelectionDelegate.isSelectionEnabled()) {
+            mSelectionDelegate.clearSelection();
+            return true;
+        }
         return false;
     }
 
@@ -155,6 +170,13 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
      */
     public ViewGroup getView() {
         return mMainView;
+    }
+
+    /**
+     * @return The SelectionDelegate responsible for tracking selected download items.
+     */
+    public SelectionDelegate<String> getSelectionDelegate() {
+        return mSelectionDelegate;
     }
 
     /**
@@ -171,6 +193,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             mActivity.finish();
             return true;
         }
+        // TODO(twellington): Hook up delete and share icons.
         return false;
     }
 

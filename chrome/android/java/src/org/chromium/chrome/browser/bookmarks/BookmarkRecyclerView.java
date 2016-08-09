@@ -111,7 +111,7 @@ public class BookmarkRecyclerView extends RecyclerView implements BookmarkUIObse
 
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
-        if (!mDelegate.isSelectionEnabled()) {
+        if (!mDelegate.getSelectionDelegate().isSelectionEnabled()) {
             for (int i = 0; i < getLayoutManager().getChildCount(); ++i) {
                 View child = getLayoutManager().getChildAt(i);
                 if (child instanceof Checkable) ((Checkable) child).setChecked(false);

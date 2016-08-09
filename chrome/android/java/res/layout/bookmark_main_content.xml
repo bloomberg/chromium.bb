@@ -49,30 +49,8 @@
         android:layout_alignParentTop="true"
         android:background="@color/appbar_background" >
 
-        <org.chromium.chrome.browser.widget.NumberRollView
-            android:id="@+id/selection_mode_number"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:visibility="gone" >
+        <include layout="@layout/number_roll_view" />
 
-            <TextView
-                android:id="@+id/up"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:singleLine="true"
-                android:textColor="@android:color/white"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/down"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:singleLine="true"
-                android:textColor="@android:color/white"
-                android:textSize="20sp" />
-        </org.chromium.chrome.browser.widget.NumberRollView>
     </org.chromium.chrome.browser.bookmarks.BookmarkActionBar>
 
     <org.chromium.chrome.browser.widget.FadingShadowView

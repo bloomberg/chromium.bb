@@ -25,12 +25,9 @@ import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -47,13 +44,13 @@ public class BookmarkManager implements BookmarkDelegate {
     private BookmarkUndoController mUndoController;
     private final ObserverList<BookmarkUIObserver> mUIObservers =
             new ObserverList<BookmarkUIObserver>();
-    private Set<BookmarkId> mSelectedBookmarks = new HashSet<>();
     private BasicNativePage mNativePage;
     private BookmarkContentView mContentView;
     private BookmarkSearchView mSearchView;
     private ViewSwitcher mViewSwitcher;
     private DrawerLayout mDrawer;
     private BookmarkDrawerListView mDrawerListView;
+    private SelectionDelegate<BookmarkId> mSelectionDelegate;
     private final Stack<BookmarkUIState> mStateStack = new Stack<>();
     private LargeIconBridge mLargeIconBridge;
     private String mInitialUrl;
@@ -75,13 +72,13 @@ public class BookmarkManager implements BookmarkDelegate {
                     openFolder(parent.getId());
                 }
             }
-            clearSelection();
+            mSelectionDelegate.clearSelection();
         }
 
         @Override
         public void bookmarkNodeMoved(BookmarkItem oldParent, int oldIndex, BookmarkItem newParent,
                 int newIndex) {
-            clearSelection();
+            mSelectionDelegate.clearSelection();
         }
 
         @Override
@@ -91,7 +88,7 @@ public class BookmarkManager implements BookmarkDelegate {
             if (getCurrentState() == BookmarkUIState.STATE_FOLDER) {
                 setState(mStateStack.peek());
             }
-            clearSelection();
+            mSelectionDelegate.clearSelection();
         }
     };
 
@@ -117,6 +114,14 @@ public class BookmarkManager implements BookmarkDelegate {
     public BookmarkManager(Activity activity, boolean isDialogUi) {
         mActivity = activity;
         mIsDialogUi = isDialogUi;
+
+        mSelectionDelegate = new SelectionDelegate<BookmarkId>() {
+            @Override
+            public boolean toggleSelectionForItem(BookmarkId bookmark) {
+                if (!mBookmarkModel.getBookmarkById(bookmark).isEditable()) return false;
+                return super.toggleSelectionForItem(bookmark);
+            }
+        };
 
         mBookmarkModel = new BookmarkModel();
         mMainView = (ViewGroup) mActivity.getLayoutInflater().inflate(R.layout.bookmark_main, null);
@@ -277,7 +282,7 @@ public class BookmarkManager implements BookmarkDelegate {
             }
         }
 
-        clearSelection();
+        mSelectionDelegate.clearSelection();
 
         for (BookmarkUIObserver observer : mUIObservers) {
             notifyStateChange(observer);
@@ -304,39 +309,8 @@ public class BookmarkManager implements BookmarkDelegate {
     }
 
     @Override
-    public void clearSelection() {
-        mSelectedBookmarks.clear();
-        for (BookmarkUIObserver observer : mUIObservers) {
-            observer.onSelectionStateChange(new ArrayList<BookmarkId>(mSelectedBookmarks));
-        }
-    }
-
-    @Override
-    public boolean toggleSelectionForBookmark(BookmarkId bookmark) {
-        if (!mBookmarkModel.getBookmarkById(bookmark).isEditable()) return false;
-
-        if (mSelectedBookmarks.contains(bookmark)) mSelectedBookmarks.remove(bookmark);
-        else mSelectedBookmarks.add(bookmark);
-        for (BookmarkUIObserver observer : mUIObservers) {
-            observer.onSelectionStateChange(new ArrayList<BookmarkId>(mSelectedBookmarks));
-        }
-
-        return isBookmarkSelected(bookmark);
-    }
-
-    @Override
-    public boolean isBookmarkSelected(BookmarkId bookmark) {
-        return mSelectedBookmarks.contains(bookmark);
-    }
-
-    @Override
-    public boolean isSelectionEnabled() {
-        return !mSelectedBookmarks.isEmpty();
-    }
-
-    @Override
-    public List<BookmarkId> getSelectedBookmarks() {
-        return new ArrayList<BookmarkId>(mSelectedBookmarks);
+    public SelectionDelegate<BookmarkId> getSelectionDelegate() {
+        return mSelectionDelegate;
     }
 
     @Override
@@ -379,7 +353,7 @@ public class BookmarkManager implements BookmarkDelegate {
 
     @Override
     public void openBookmark(BookmarkId bookmark, int launchLocation) {
-        clearSelection();
+        mSelectionDelegate.clearSelection();
         if (BookmarkUtils.openBookmark(
                     mBookmarkModel, mActivity, bookmark, launchLocation)) {
             BookmarkUtils.finishActivityOnPhone(mActivity);

@@ -224,7 +224,7 @@ public class DownloadNotificationService extends Service {
         if (startTime > 0) builder.setWhen(startTime);
         Intent cancelIntent = buildActionIntent(
                 ACTION_DOWNLOAD_CANCEL, notificationId, downloadGuid, fileName);
-        builder.addAction(R.drawable.bookmark_cancel_active,
+        builder.addAction(R.drawable.btn_close_white,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, notificationId));
         Intent pauseIntent = buildActionIntent(
@@ -282,7 +282,7 @@ public class DownloadNotificationService extends Service {
         Intent dismissIntent = new Intent(cancelIntent);
         dismissIntent.putExtra(EXTRA_NOTIFICATION_DISMISSED, true);
         builder.setDeleteIntent(buildPendingIntent(dismissIntent, entry.notificationId));
-        builder.addAction(R.drawable.bookmark_cancel_active,
+        builder.addAction(R.drawable.btn_close_white,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, entry.notificationId));
         Intent resumeIntent = buildActionIntent(

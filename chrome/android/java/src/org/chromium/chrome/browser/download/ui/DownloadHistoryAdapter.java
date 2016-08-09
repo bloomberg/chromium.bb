@@ -30,7 +30,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     /** Holds onto a View that displays information about a downloaded file. */
     static class ItemViewHolder extends RecyclerView.ViewHolder {
-        public View mItemView;
+        public DownloadItemView mItemView;
         public ImageView mIconView;
         public TextView mFilenameView;
         public TextView mHostnameView;
@@ -38,7 +38,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
         public ItemViewHolder(View itemView) {
             super(itemView);
-            mItemView = itemView;
+
+            assert itemView instanceof DownloadItemView;
+            mItemView = (DownloadItemView) itemView;
+
             mIconView = (ImageView) itemView.findViewById(R.id.icon_view);
             mFilenameView = (TextView) itemView.findViewById(R.id.filename_view);
             mHostnameView = (TextView) itemView.findViewById(R.id.hostname_view);
@@ -88,6 +91,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     public ViewHolder createViewHolder(ViewGroup parent) {
         View v = LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.download_item_view, parent, false);
+        ((DownloadItemView) v).setSelectionDelegate(mManager.getSelectionDelegate());
         return new ItemViewHolder(v);
     }
 
@@ -102,12 +106,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                 UrlUtilities.formatUrlForSecurityDisplay(item.getDownloadInfo().getUrl(), false));
         holder.mFilesizeView.setText(
                 Formatter.formatFileSize(context, item.getDownloadInfo().getContentLength()));
-        holder.mItemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mManager.onDownloadItemClicked(item);
-            }
-        });
+        holder.mItemView.initialize(mManager, item);
 
         // Pick what icon to display for the item.
         int fileType = convertMimeTypeToFilterType(item.getDownloadInfo().getMimeType());

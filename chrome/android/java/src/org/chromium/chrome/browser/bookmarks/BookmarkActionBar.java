@@ -4,26 +4,21 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.app.Activity;
 import android.content.Context;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.View.OnClickListener;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.widget.NumberRollView;
-import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.chrome.browser.widget.selection.SelectionToolbar;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -34,23 +29,15 @@ import java.util.List;
  * Main action bar of bookmark UI. It is responsible for displaying title and buttons
  * associated with the current context.
  */
-public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
+public class BookmarkActionBar extends SelectionToolbar<BookmarkId> implements BookmarkUIObserver,
         OnMenuItemClickListener, OnClickListener {
-    private static final int NAVIGATION_BUTTON_NONE = 0;
-    private static final int NAVIGATION_BUTTON_MENU = 1;
-    private static final int NAVIGATION_BUTTON_BACK = 2;
-    private static final int NAVIGATION_BUTTON_SELECTION_BACK = 3;
-
-    private int mNavigationButton;
     private BookmarkItem mCurrentFolder;
     private BookmarkDelegate mDelegate;
-    private ActionBarDrawerToggle mActionBarDrawerToggle;
-    private boolean mIsSelectionEnabled;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
         public void bookmarkModelChanged() {
-            onSelectionStateChange(mDelegate.getSelectedBookmarks());
+            onSelectionStateChange(mDelegate.getSelectionDelegate().getSelectedItems());
         }
     };
 
@@ -69,26 +56,13 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
     }
 
     @Override
-    public void onClick(View view) {
-        switch (mNavigationButton) {
-            case NAVIGATION_BUTTON_NONE:
-                break;
-            case NAVIGATION_BUTTON_MENU:
-                // ActionBarDrawerToggle handles this.
-                break;
-            case NAVIGATION_BUTTON_BACK:
-                mDelegate.openFolder(mCurrentFolder.getParentId());
-                break;
-            case NAVIGATION_BUTTON_SELECTION_BACK:
-                mDelegate.clearSelection();
-                break;
-            default:
-                assert false : "Incorrect navigation button state";
-        }
+    protected void onNavigationBack() {
+        mDelegate.openFolder(mCurrentFolder.getParentId());
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
+        SelectionDelegate<BookmarkId> selectionDelegate = mDelegate.getSelectionDelegate();
         if (menuItem.getItemId() == R.id.edit_menu_id) {
             BookmarkAddEditFolderActivity.startEditFolderActivity(getContext(),
                     mCurrentFolder.getId());
@@ -100,7 +74,7 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
             mDelegate.openSearchUI();
             return true;
         } else if (menuItem.getItemId() == R.id.selection_mode_edit_menu_id) {
-            List<BookmarkId> list = mDelegate.getSelectedBookmarks();
+            List<BookmarkId> list = selectionDelegate.getSelectedItems();
             assert list.size() == 1;
             BookmarkItem item = mDelegate.getModel().getBookmarkById(list.get(0));
             if (item.isFolder()) {
@@ -110,7 +84,7 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
             }
             return true;
         } else if (menuItem.getItemId() == R.id.selection_mode_move_menu_id) {
-            List<BookmarkId> list = mDelegate.getSelectedBookmarks();
+            List<BookmarkId> list = selectionDelegate.getSelectedItems();
             if (list.size() >= 1) {
                 BookmarkFolderSelectActivity.startFolderSelectActivity(getContext(),
                         list.toArray(new BookmarkId[list.size()]));
@@ -118,86 +92,22 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
             return true;
         } else if (menuItem.getItemId() == R.id.selection_mode_delete_menu_id) {
             mDelegate.getModel().deleteBookmarks(
-                    mDelegate.getSelectedBookmarks().toArray(new BookmarkId[0]));
+                    selectionDelegate.getSelectedItems().toArray(new BookmarkId[0]));
             return true;
         } else if (menuItem.getItemId() == R.id.selection_open_in_new_tab_id) {
-            openBookmarksInNewTabs(mDelegate.getSelectedBookmarks(), new TabDelegate(false),
+            openBookmarksInNewTabs(selectionDelegate.getSelectedItems(), new TabDelegate(false),
                     mDelegate.getModel());
-            mDelegate.clearSelection();
+            selectionDelegate.clearSelection();
             return true;
         } else if (menuItem.getItemId() == R.id.selection_open_in_incognito_tab_id) {
-            openBookmarksInNewTabs(mDelegate.getSelectedBookmarks(), new TabDelegate(true),
+            openBookmarksInNewTabs(selectionDelegate.getSelectedItems(), new TabDelegate(true),
                     mDelegate.getModel());
-            mDelegate.clearSelection();
+            selectionDelegate.clearSelection();
             return true;
         }
 
         assert false : "Unhandled menu click.";
         return false;
-    }
-
-    /**
-     * Update the current navigation button (the top-left icon on LTR)
-     * @param navigationButton one of NAVIGATION_BUTTON_* constants.
-     */
-    private void setNavigationButton(int navigationButton) {
-        int iconResId = 0;
-        int contentDescriptionId = 0;
-
-        if (navigationButton == NAVIGATION_BUTTON_MENU && !mDelegate.doesDrawerExist()) {
-            mNavigationButton = NAVIGATION_BUTTON_NONE;
-        } else {
-            mNavigationButton = navigationButton;
-        }
-
-        if (mNavigationButton == NAVIGATION_BUTTON_MENU) {
-            initActionBarDrawerToggle();
-            // ActionBarDrawerToggle will take care of icon and content description, so just return.
-            return;
-        }
-
-        if (mActionBarDrawerToggle != null) {
-            mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);
-            mDelegate.getDrawerLayout().setDrawerListener(null);
-        }
-
-        setNavigationOnClickListener(this);
-
-        switch (mNavigationButton) {
-            case NAVIGATION_BUTTON_NONE:
-                break;
-            case NAVIGATION_BUTTON_BACK:
-                iconResId = R.drawable.bookmark_back_normal;
-                contentDescriptionId = R.string.accessibility_toolbar_btn_back;
-                break;
-            case NAVIGATION_BUTTON_SELECTION_BACK:
-                iconResId = R.drawable.bookmark_cancel_active;
-                contentDescriptionId = R.string.accessibility_bookmark_cancel_selection;
-                break;
-            default:
-                assert false : "Incorrect navigationButton argument";
-        }
-
-        if (iconResId == 0) {
-            setNavigationIcon(null);
-        } else {
-            setNavigationIcon(iconResId);
-        }
-        setNavigationContentDescription(contentDescriptionId);
-    }
-
-    /**
-     * Set up ActionBarDrawerToggle, a.k.a. hamburger button.
-     */
-    private void initActionBarDrawerToggle() {
-        // Sadly, the only way to set correct toolbar button listener for ActionBarDrawerToggle
-        // is constructing, so we will need to construct every time we re-show this button.
-        mActionBarDrawerToggle = new ActionBarDrawerToggle((Activity) getContext(),
-                mDelegate.getDrawerLayout(), this,
-                R.string.accessibility_bookmark_drawer_toggle_btn_open,
-                R.string.accessibility_bookmark_drawer_toggle_btn_close);
-        mDelegate.getDrawerLayout().setDrawerListener(mActionBarDrawerToggle);
-        mActionBarDrawerToggle.syncState();
     }
 
     void showLoadingUi() {
@@ -215,6 +125,12 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
         mDelegate.addUIObserver(this);
         if (!delegate.isDialogUi()) getMenu().removeItem(R.id.close_menu_id);
         delegate.getModel().addObserver(mBookmarkModelObserver);
+
+        // This class will handle setting the title. Pass 0 to the superclass so that it doesn't
+        // try to set the title when a selection is cleared.
+        int titleResId = 0;
+        initialize(delegate.getSelectionDelegate(), titleResId, delegate.getDrawerLayout(),
+                R.id.normal_menu_group, R.id.selection_mode_menu_group);
     }
 
     @Override
@@ -256,17 +172,8 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
 
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
-        boolean wasSelectionEnabled = mIsSelectionEnabled;
-        mIsSelectionEnabled = mDelegate.isSelectionEnabled();
-        NumberRollView numberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
+        super.onSelectionStateChange(selectedBookmarks);
         if (mIsSelectionEnabled) {
-            setOverflowIcon(TintedDrawable.constructTintedDrawable(getResources(),
-                    R.drawable.btn_menu, android.R.color.white));
-            setNavigationButton(NAVIGATION_BUTTON_SELECTION_BACK);
-            setTitle(null);
-
-            getMenu().setGroupVisible(R.id.normal_menu_group, false);
-            getMenu().setGroupVisible(R.id.selection_mode_menu_group, true);
             // Editing a bookmark action on multiple selected items doesn't make sense. So disable.
             getMenu().findItem(R.id.selection_mode_edit_menu_id).setVisible(
                     selectedBookmarks.size() == 1);
@@ -289,23 +196,7 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
                     break;
                 }
             }
-            setBackgroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color));
-
-            numberRollView.setVisibility(View.VISIBLE);
-            if (!wasSelectionEnabled) numberRollView.setNumber(0, false);
-            numberRollView.setNumber(selectedBookmarks.size(), true);
         } else {
-            setOverflowIcon(TintedDrawable.constructTintedDrawable(getResources(),
-                    R.drawable.btn_menu));
-            getMenu().setGroupVisible(R.id.normal_menu_group, true);
-            getMenu().setGroupVisible(R.id.selection_mode_menu_group, false);
-            setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.appbar_background));
-
-            numberRollView.setVisibility(View.GONE);
-            numberRollView.setNumber(0, false);
-
             mDelegate.notifyStateChange(this);
         }
     }
