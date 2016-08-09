@@ -1448,10 +1448,6 @@ TEST_F(HostContentSettingsMapTest, MigrateDomainScopedSettings) {
       CONTENT_SETTING_ALLOW,
       host_content_settings_map->GetContentSetting(
           http_host, http_host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
-                http_host_narrower, http_host_narrower,
-                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
   host_content_settings_map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromURL(https_host),
       ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_COOKIES,
@@ -1461,6 +1457,10 @@ TEST_F(HostContentSettingsMapTest, MigrateDomainScopedSettings) {
                 https_host, https_host, CONTENT_SETTINGS_TYPE_COOKIES,
                 std::string()));
   // Settings also apply to subdomains.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                http_host_narrower, http_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 https_host_narrower, https_host_narrower,
@@ -1503,19 +1503,19 @@ TEST_F(HostContentSettingsMapTest, MigrateDomainScopedSettings) {
               "https://example.com:443");
   EXPECT_TRUE(settings[1].primary_pattern.ToString() == "*");
 
-  // Cookie settings didn't get migrated.
   EXPECT_EQ(
       CONTENT_SETTING_ALLOW,
       host_content_settings_map->GetContentSetting(
           http_host, http_host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                http_host_narrower, http_host_narrower,
-                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
                 https_host, https_host, CONTENT_SETTINGS_TYPE_COOKIES,
                 std::string()));
+  // Settings still apply to subdomains. Cookie settings didn't get migrated.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                http_host_narrower, http_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 https_host_narrower, https_host_narrower,
