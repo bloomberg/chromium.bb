@@ -160,6 +160,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac only.
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['mac'], bug=483282)
+    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
+        ['mac'], bug=633022)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['mac'], bug=617820)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
