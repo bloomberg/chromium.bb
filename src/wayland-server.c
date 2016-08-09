@@ -1517,6 +1517,60 @@ wl_display_get_additional_shm_formats(struct wl_display *display)
 	return &display->additional_shm_formats;
 }
 
+/** Get the list of currently connected clients
+ *
+ * \param display The display object
+ *
+ * This function returns a pointer to the list of clients currently
+ * connected to the display. You can iterate on the list by using
+ * the \a wl_client_for_each macro.
+ * The returned value is valid for the lifetime of the \a display.
+ * You must not modify the returned list, but only access it.
+ *
+ * \sa wl_client_for_each()
+ * \sa wl_client_get_link()
+ * \sa wl_client_from_link()
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT struct wl_list *
+wl_display_get_client_list(struct wl_display *display)
+{
+	return &display->client_list;
+}
+
+/** Get the link by which a client is inserted in the client list
+ *
+ * \param client The client object
+ *
+ * \sa wl_client_for_each()
+ * \sa wl_display_get_client_list()
+ * \sa wl_client_from_link()
+ *
+ * \memberof wl_client
+ */
+WL_EXPORT struct wl_list *
+wl_client_get_link(struct wl_client *client)
+{
+	return &client->link;
+}
+
+/** Get a wl_client by its link
+ *
+ * \param link The link of a wl_client
+ *
+ * \sa wl_client_for_each()
+ * \sa wl_display_get_client_list()
+ * \sa wl_client_get_link()
+ *
+ * \memberof wl_client
+ */
+WL_EXPORT struct wl_client *
+wl_client_from_link(struct wl_list *link)
+{
+	return container_of(link, struct wl_client, link);
+}
+
 /** \cond */ /* Deprecated functions below. */
 
 uint32_t

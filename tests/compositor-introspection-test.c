@@ -58,6 +58,26 @@ client_created(struct wl_listener *listener, void *data)
 	c->client = data;
 }
 
+static void
+check_client_list(struct compositor *compositor)
+{
+	struct wl_list *client_list;
+	struct wl_client *client, *client_it;
+	int num_clients = 0;
+
+	client_list = wl_display_get_client_list(compositor->display);
+	wl_client_for_each(client_it, client_list) {
+		num_clients++;
+		client = client_it;
+	}
+	assert(num_clients == 1);
+	/* 'client_it' is not valid here, so we took a copy of the client in the loop.
+	 * We could also do this assert in the loop directly, but in case it fails it is
+	 * easier to understand the problem when we know that the previous assert passed,
+	 * so that there is only one client but the wrong one. */
+	assert(compositor->client == client);
+}
+
 TEST(new_client_connect)
 {
 	const char *socket;
@@ -79,6 +99,8 @@ TEST(new_client_connect)
 	wl_event_loop_dispatch(wl_display_get_event_loop(compositor.display), 100);
 
 	assert(compositor.client != NULL);
+
+	check_client_list(&compositor);
 
 	wl_display_disconnect(client.display);
 
