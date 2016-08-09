@@ -303,9 +303,13 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                                      updated_request.client_id()));
 
   } else if (status == Offliner::RequestStatus::SAVED ||
-             request.attempt_count() >= policy_->GetMaxTries()) {
+             request.completed_attempt_count() + 1 >=
+                 policy_->GetMaxCompletedTries()) {
     // Remove the request from the queue if it either succeeded or exceeded the
-    // max number of retries.
+    // max number of retries.  The +1 represents the request that just
+    // completed. Since we call MarkAttemptCompleted within the if branches,
+    // the completed_attempt_count has not yet been updated when we are checking
+    // the if condition.
     queue_->RemoveRequest(
         request.request_id(),
         base::Bind(&RequestCoordinator::UpdateRequestCallback,

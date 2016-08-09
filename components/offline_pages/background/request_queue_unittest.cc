@@ -259,7 +259,7 @@ TEST_F(RequestQueueTest, UpdateRequest) {
   PumpLoop();
 
   // Update the request, ensure it succeeded.
-  request.set_attempt_count(kRetryCount);
+  request.set_completed_attempt_count(kRetryCount);
   queue()->UpdateRequest(
       request,
       base::Bind(&RequestQueueTest::UpdateRequestDone, base::Unretained(this)));
@@ -272,7 +272,7 @@ TEST_F(RequestQueueTest, UpdateRequest) {
   PumpLoop();
   ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(1ul, last_requests().size());
-  ASSERT_EQ(kRetryCount, last_requests().front().attempt_count());
+  ASSERT_EQ(kRetryCount, last_requests().front().completed_attempt_count());
 }
 
 TEST_F(RequestQueueTest, UpdateRequestNotPresent) {

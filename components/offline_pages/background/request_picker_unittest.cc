@@ -29,6 +29,8 @@ const ClientId kClientId2("bookmark", "5678");
 const bool kUserRequested = true;
 const int kAttemptCount = 1;
 const int kTwoWeeksInSeconds = 60 * 60 * 24 * 7 * 2;
+const int kMaxStartedTries = 5;
+const int kMaxCompletedTries = 1;
 
 // Constants for policy values - These settings represent the default values.
 const bool kPreferUntried = false;
@@ -142,12 +144,17 @@ TEST_F(RequestPickerTest, PickFromEmptyQueue) {
 }
 
 TEST_F(RequestPickerTest, ChooseRequestWithHigherRetryCount) {
+  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
+                                   kPreferRetryCount, kMaxStartedTries,
+                                   kMaxCompletedTries + 1));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
+
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(
       kRequestId1, kUrl1, kClientId1, creation_time, kUserRequested);
   SavePageRequest request2(
       kRequestId2, kUrl2, kClientId2, creation_time, kUserRequested);
-  request2.set_attempt_count(kAttemptCount);
+  request2.set_completed_attempt_count(kAttemptCount);
 
   QueueRequestsAndChooseOne(request1, request2);
 
@@ -172,8 +179,9 @@ TEST_F(RequestPickerTest, ChooseRequestWithSameRetryCountButEarlier) {
 
 TEST_F(RequestPickerTest, ChooseEarlierRequest) {
   // We need a custom policy object prefering recency to retry count.
-  policy_.reset(
-      new OfflinerPolicy(kPreferUntried, kPreferEarlier, !kPreferRetryCount));
+  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
+                                   !kPreferRetryCount, kMaxStartedTries,
+                                   kMaxCompletedTries));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
 
   base::Time creation_time1 =
@@ -183,7 +191,7 @@ TEST_F(RequestPickerTest, ChooseEarlierRequest) {
                            kUserRequested);
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
                            kUserRequested);
-  request2.set_attempt_count(kAttemptCount);
+  request2.set_completed_attempt_count(kAttemptCount);
 
   QueueRequestsAndChooseOne(request1, request2);
 
@@ -193,8 +201,9 @@ TEST_F(RequestPickerTest, ChooseEarlierRequest) {
 
 TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
   // We need a custom policy object preferring recency to retry count.
-  policy_.reset(
-      new OfflinerPolicy(kPreferUntried, kPreferEarlier, !kPreferRetryCount));
+  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
+                                   !kPreferRetryCount, kMaxStartedTries,
+                                   kMaxCompletedTries + 1));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
 
   base::Time creation_time = base::Time::Now();
@@ -202,7 +211,7 @@ TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
                            kUserRequested);
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
                            kUserRequested);
-  request2.set_attempt_count(kAttemptCount);
+  request2.set_completed_attempt_count(kAttemptCount);
 
   QueueRequestsAndChooseOne(request1, request2);
 
@@ -212,8 +221,9 @@ TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
 
 TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
   // We need a custom policy object preferring lower retry count.
-  policy_.reset(
-      new OfflinerPolicy(!kPreferUntried, kPreferEarlier, kPreferRetryCount));
+  policy_.reset(new OfflinerPolicy(!kPreferUntried, kPreferEarlier,
+                                   kPreferRetryCount, kMaxStartedTries,
+                                   kMaxCompletedTries + 1));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
 
   base::Time creation_time = base::Time::Now();
@@ -221,7 +231,7 @@ TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
                            kUserRequested);
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
                            kUserRequested);
-  request2.set_attempt_count(kAttemptCount);
+  request2.set_completed_attempt_count(kAttemptCount);
 
   QueueRequestsAndChooseOne(request1, request2);
 
@@ -231,8 +241,9 @@ TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
 
 TEST_F(RequestPickerTest, ChooseLaterRequest) {
   // We need a custom policy preferring recency over retry, and later requests.
-  policy_.reset(
-      new OfflinerPolicy(kPreferUntried, !kPreferEarlier, !kPreferRetryCount));
+  policy_.reset(new OfflinerPolicy(kPreferUntried, !kPreferEarlier,
+                                   !kPreferRetryCount, kMaxStartedTries,
+                                   kMaxCompletedTries));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
 
   base::Time creation_time1 =
@@ -264,4 +275,41 @@ TEST_F(RequestPickerTest, ChooseUnexpiredRequest) {
   EXPECT_FALSE(request_queue_empty_called_);
 }
 
+TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededStartLimit) {
+  base::Time creation_time1 =
+      base::Time::Now() - base::TimeDelta::FromSeconds(1);
+  base::Time creation_time2 = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+                           kUserRequested);
+
+  // With default policy settings, we should choose the earlier request.
+  // However, we will make the earlier reqeust exceed the limit.
+  request1.set_started_attempt_count(policy_->GetMaxStartedTries());
+
+  QueueRequestsAndChooseOne(request1, request2);
+
+  EXPECT_EQ(kRequestId2, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_empty_called_);
+}
+
+TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededCompletionLimit) {
+  base::Time creation_time1 =
+      base::Time::Now() - base::TimeDelta::FromSeconds(1);
+  base::Time creation_time2 = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+                           kUserRequested);
+
+  // With default policy settings, we should choose the earlier request.
+  // However, we will make the earlier reqeust exceed the limit.
+  request1.set_completed_attempt_count(policy_->GetMaxCompletedTries());
+
+  QueueRequestsAndChooseOne(request1, request2);
+
+  EXPECT_EQ(kRequestId2, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_empty_called_);
+}
 }  // namespace offline_pages

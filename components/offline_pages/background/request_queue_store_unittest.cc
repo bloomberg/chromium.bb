@@ -40,8 +40,10 @@ bool operator==(const SavePageRequest& lhs, const SavePageRequest& rhs) {
          lhs.client_id() == rhs.client_id() &&
          lhs.creation_time() == rhs.creation_time() &&
          lhs.activation_time() == rhs.activation_time() &&
-         lhs.attempt_count() == rhs.attempt_count() &&
-         lhs.last_attempt_time() == rhs.last_attempt_time();
+         lhs.started_attempt_count() == rhs.started_attempt_count() &&
+         lhs.completed_attempt_count() == rhs.completed_attempt_count() &&
+         lhs.last_attempt_time() == rhs.last_attempt_time() &&
+         lhs.request_state() == rhs.request_state();
 }
 
 }  // namespace

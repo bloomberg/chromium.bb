@@ -31,7 +31,9 @@ bool CreateRequestQueueTable(sql::Connection* db) {
                       " creation_time INTEGER NOT NULL,"
                       " activation_time INTEGER NOT NULL DEFAULT 0,"
                       " last_attempt_time INTEGER NOT NULL DEFAULT 0,"
-                      " attempt_count INTEGER NOT NULL,"
+                      " started_attempt_count INTEGER NOT NULL,"
+                      " completed_attempt_count INTEGER NOT NULL,"
+                      " state INTEGER NOT NULL DEFAULT 0,"
                       " url VARCHAR NOT NULL,"
                       " client_namespace VARCHAR NOT NULL,"
                       " client_id VARCHAR NOT NULL"
@@ -40,7 +42,15 @@ bool CreateRequestQueueTable(sql::Connection* db) {
 }
 
 bool CreateSchema(sql::Connection* db) {
-  // TODO(fgorski): Upgrade code goes here and requires transaction.
+  // If there is not already a state column, we need to drop the old table.  We
+  // are choosing to drop instead of upgrade since the feature is not yet
+  // released, so we don't use a transaction to protect existing data, or try to
+  // migrate it.
+  if (!db->DoesColumnExist(REQUEST_QUEUE_TABLE_NAME, "state")) {
+    if (!db->Execute("DROP TABLE IF EXISTS " REQUEST_QUEUE_TABLE_NAME))
+      return false;
+  }
+
   if (!CreateRequestQueueTable(db))
     return false;
 
@@ -124,10 +134,13 @@ SavePageRequest MakeSavePageRequest(const sql::Statement& statement) {
       base::Time::FromInternalValue(statement.ColumnInt64(2));
   const base::Time last_attempt_time =
       base::Time::FromInternalValue(statement.ColumnInt64(3));
-  const int64_t last_attempt_count = statement.ColumnInt64(4);
-  const GURL url(statement.ColumnString(5));
-  const ClientId client_id(statement.ColumnString(6),
-                           statement.ColumnString(7));
+  const int64_t started_attempt_count = statement.ColumnInt64(4);
+  const int64_t completed_attempt_count = statement.ColumnInt64(5);
+  const SavePageRequest::RequestState state =
+      static_cast<SavePageRequest::RequestState>(statement.ColumnInt64(6));
+  const GURL url(statement.ColumnString(7));
+  const ClientId client_id(statement.ColumnString(8),
+                           statement.ColumnString(9));
 
   DVLOG(2) << "making save page request - id " << id << " url " << url
            << " client_id " << client_id.name_space << "-" << client_id.id
@@ -137,7 +150,9 @@ SavePageRequest MakeSavePageRequest(const sql::Statement& statement) {
   SavePageRequest request(
       id, url, client_id, creation_time, activation_time, kUserRequested);
   request.set_last_attempt_time(last_attempt_time);
-  request.set_attempt_count(last_attempt_count);
+  request.set_started_attempt_count(started_attempt_count);
+  request.set_completed_attempt_count(completed_attempt_count);
+  request.set_request_state(state);
   return request;
 }
 
@@ -149,19 +164,22 @@ RequestQueueStore::UpdateStatus InsertOrReplace(
   const char kInsertSql[] =
       "INSERT OR REPLACE INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time, last_attempt_time, "
-      " attempt_count, url, client_namespace, client_id) "
+      " started_attempt_count, completed_attempt_count, state, url, "
+      " client_namespace, client_id) "
       " VALUES "
-      " (?, ?, ?, ?, ?, ?, ?, ?)";
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kInsertSql));
   statement.BindInt64(0, request.request_id());
   statement.BindInt64(1, request.creation_time().ToInternalValue());
   statement.BindInt64(2, request.activation_time().ToInternalValue());
   statement.BindInt64(3, request.last_attempt_time().ToInternalValue());
-  statement.BindInt64(4, request.attempt_count());
-  statement.BindString(5, request.url().spec());
-  statement.BindString(6, request.client_id().name_space);
-  statement.BindString(7, request.client_id().id);
+  statement.BindInt64(4, request.started_attempt_count());
+  statement.BindInt64(5, request.completed_attempt_count());
+  statement.BindInt64(6, static_cast<int64_t>(request.request_state()));
+  statement.BindString(7, request.url().spec());
+  statement.BindString(8, request.client_id().name_space);
+  statement.BindString(9, request.client_id().id);
 
   // TODO(fgorski): Replace the UpdateStatus with boolean in the
   // RequestQueueStore interface and update this code.
@@ -218,7 +236,8 @@ void RequestQueueStoreSQL::GetRequestsSync(
     const GetRequestsCallback& callback) {
   const char kSql[] =
       "SELECT request_id, creation_time, activation_time,"
-      " last_attempt_time, attempt_count, url, client_namespace, client_id"
+      " last_attempt_time, started_attempt_count, completed_attempt_count,"
+      " state, url, client_namespace, client_id"
       " FROM " REQUEST_QUEUE_TABLE_NAME;
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));

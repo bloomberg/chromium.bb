@@ -32,7 +32,10 @@ TEST_F(SavePageRequestTest, CreatePendingReqeust) {
   ASSERT_EQ(creation_time, request.creation_time());
   ASSERT_EQ(creation_time, request.activation_time());
   ASSERT_EQ(base::Time(), request.last_attempt_time());
-  ASSERT_EQ(0, request.attempt_count());
+  ASSERT_EQ(0, request.completed_attempt_count());
+  ASSERT_EQ(SavePageRequest::RequestState::AVAILABLE, request.request_state());
+  ASSERT_EQ(0, request.started_attempt_count());
+  ASSERT_EQ(0, request.completed_attempt_count());
 }
 
 TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
@@ -53,7 +56,9 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
 
   // Attempt time, attempt count and status will though.
   ASSERT_EQ(start_time, request.last_attempt_time());
-  ASSERT_EQ(1, request.attempt_count());
+  ASSERT_EQ(1, request.started_attempt_count());
+  ASSERT_EQ(SavePageRequest::RequestState::PRERENDERING,
+            request.request_state());
 
   request.MarkAttemptCompleted();
 
@@ -65,16 +70,14 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   ASSERT_EQ(activation_time, request.activation_time());
 
   // Last attempt time and status are updated.
-  ASSERT_EQ(base::Time(), request.last_attempt_time());
-  ASSERT_EQ(1, request.attempt_count());
+  ASSERT_EQ(1, request.completed_attempt_count());
+  ASSERT_EQ(SavePageRequest::RequestState::AVAILABLE, request.request_state());
 }
 
 TEST_F(SavePageRequestTest, StartAndAbortRequest) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
                           kUserRequested);
-  int start_attempt_count = 2;
-  request.set_attempt_count(start_attempt_count);
 
   base::Time start_time = creation_time + base::TimeDelta::FromHours(3);
   request.MarkAttemptStarted(start_time);
@@ -87,7 +90,9 @@ TEST_F(SavePageRequestTest, StartAndAbortRequest) {
 
   // Attempt time and attempt count will though.
   ASSERT_EQ(start_time, request.last_attempt_time());
-  ASSERT_EQ(start_attempt_count + 1, request.attempt_count());
+  ASSERT_EQ(1, request.started_attempt_count());
+  ASSERT_EQ(SavePageRequest::RequestState::PRERENDERING,
+            request.request_state());
 
   request.MarkAttemptAborted();
 
@@ -97,9 +102,9 @@ TEST_F(SavePageRequestTest, StartAndAbortRequest) {
   ASSERT_EQ(kClientId, request.client_id());
   ASSERT_EQ(creation_time, request.creation_time());
 
-  // Last attempt time is updated and attempt count decremented.
-  ASSERT_EQ(base::Time(), request.last_attempt_time());
-  ASSERT_EQ(start_attempt_count, request.attempt_count());
+  // Last attempt time is updated and completed attempt count did not rise.
+  ASSERT_EQ(0, request.completed_attempt_count());
+  ASSERT_EQ(SavePageRequest::RequestState::AVAILABLE, request.request_state());
 }
 
 }  // namespace offline_pages

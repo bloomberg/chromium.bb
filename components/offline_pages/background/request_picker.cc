@@ -89,7 +89,7 @@ void RequestPicker::GetRequestResultCallback(
 bool RequestPicker::RequestConditionsSatisfied(const SavePageRequest& request) {
   // If the user did not request the page directly, make sure we are connected
   // to power and have WiFi and sufficient battery remaining before we take this
-  // reqeust.
+  // request.
   // TODO(petewil): We may later want to configure whether to allow 2G for non
   // user_requested items, add that to policy.
   if (!request.user_requested()) {
@@ -107,11 +107,18 @@ bool RequestPicker::RequestConditionsSatisfied(const SavePageRequest& request) {
     }
   }
 
-  // If we have already tried this page the max number of times, it is not
+  // If we have already started this page the max number of times, it is not
   // eligible to try again.
-  // TODO(petewil): Instead, we should have code to remove the page from the
+  // TODO(petewil): We should have code to remove the page from the
   // queue after the last retry.
-  if (request.attempt_count() > policy_->GetMaxTries())
+  if (request.started_attempt_count() >= policy_->GetMaxStartedTries())
+    return false;
+
+  // If we have already completed trying this page the max number of times, it
+  // is not eligible to try again.
+  // TODO(petewil): We should have code to remove the page from the
+  // queue after the last retry.
+  if (request.completed_attempt_count() >= policy_->GetMaxCompletedTries())
     return false;
 
   // If the request is expired, do not consider it.
@@ -187,7 +194,8 @@ bool RequestPicker::RecencyFirstCompareFunction(
 int RequestPicker::CompareRetryCount(
     const SavePageRequest* left, const SavePageRequest* right) {
   // Check the attempt count.
-  int result = signum(left->attempt_count() - right->attempt_count());
+  int result = signum(left->completed_attempt_count() -
+                      right->completed_attempt_count());
 
   // Flip the direction of comparison if policy prefers fewer retries.
   if (fewer_retries_better_)

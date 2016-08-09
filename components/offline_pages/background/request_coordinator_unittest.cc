@@ -459,7 +459,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
   EXPECT_EQ(1UL, last_requests().size());
   // Verify foreground cancel not counted as an attempt after all.
   const SavePageRequest& found_request = last_requests().front();
-  EXPECT_EQ(0L, found_request.attempt_count());
+  EXPECT_EQ(0L, found_request.completed_attempt_count());
 }
 
 // This tests a StopProcessing call before we have actually started the
@@ -588,7 +588,7 @@ TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
   offline_pages::SavePageRequest request2(
       kRequestId1 + 1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
-  request2.set_attempt_count(kAttemptCount);
+  request2.set_completed_attempt_count(kAttemptCount);
   coordinator()->queue()->AddRequest(
       request1,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
