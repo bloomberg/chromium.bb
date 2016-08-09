@@ -18,6 +18,7 @@
     {
       'target_name': 'internet_detail_page',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         '<(DEPTH)/ui/webui/resources/cr_elements/network/compiled_resources2.gyp:cr_onc_types',
         '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_network_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',

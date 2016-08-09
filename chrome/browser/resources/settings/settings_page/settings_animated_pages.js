@@ -36,12 +36,6 @@ Polymer({
     // Observe the light DOM so we know when it's ready.
     this.lightDomObserver_ = Polymer.dom(this).observeNodes(
         this.lightDomChanged_.bind(this));
-
-    this.addEventListener('subpage-back', function() {
-      var parent = settings.getCurrentRoute().parent;
-      assert(parent);
-      settings.navigateTo(parent);
-    }.bind(this));
   },
 
   /**

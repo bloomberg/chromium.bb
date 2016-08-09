@@ -135,7 +135,7 @@ Polymer({
   checkPointerSubpage_: function() {
     if (!this.hasMouse_ && !this.hasTouchpad_ &&
         settings.getCurrentRoute() == settings.Route.POINTERS) {
-      this.$.pages.fire('subpage-back');
+      settings.navigateTo(settings.Route.DEVICE);
     }
   },
 });

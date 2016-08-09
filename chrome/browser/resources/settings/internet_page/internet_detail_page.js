@@ -127,11 +127,9 @@ Polymer({
 
   /** @private */
   close_: function() {
-    // Delay sending subpage-back until the next render frame to allow other
-    // subpages to load first.
-    setTimeout(function() {
-      this.fire('subpage-back');
-    }.bind(this));
+    // Delay navigating until the next render frame to allow other subpages to
+    // load first.
+    setTimeout(function() { settings.navigateTo(settings.Route.INTERNET) });
   },
 
   /** @private */
