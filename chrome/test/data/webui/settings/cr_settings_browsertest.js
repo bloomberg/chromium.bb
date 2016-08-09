@@ -545,6 +545,40 @@ TEST_F('CrSettingsMenuTest', 'SettingsMenu', function() {
   mocha.run();
 });
 
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/settings_page/settings_subpage.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsSubpageTest() {}
+
+CrSettingsSubpageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/settings_page/settings_subpage.html',
+};
+
+TEST_F('CrSettingsSubpageTest', 'SettingsSubpage', function() {
+  suite('SettingsSubpage', function() {
+    test('can navigate to parent', function() {
+      PolymerTest.clearBody();
+
+      settings.navigateTo(settings.Route.SYNC);
+      assertEquals(settings.Route.SYNC, settings.getCurrentRoute());
+
+      var subpage = document.createElement('settings-subpage');
+      document.body.appendChild(subpage);
+
+      MockInteractions.tap(subpage.$$('paper-icon-button'));
+      assertEquals(settings.Route.PEOPLE, settings.getCurrentRoute());
+    });
+  });
+
+  mocha.run();
+});
+
 GEN('#if !defined(OS_CHROMEOS)');
 /**
  * @constructor

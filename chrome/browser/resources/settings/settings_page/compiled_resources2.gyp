@@ -37,6 +37,7 @@
     {
       'target_name': 'settings_subpage',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         'settings_subpage_search',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/neon-animation/compiled_resources2.gyp:neon-animatable-behavior-extracted',
