@@ -17,22 +17,23 @@ Polymer({
     },
 
     /**
+     * Whether the external container will accept change-route-source-click
+     * events.
+     * @private {boolean}
+     */
+    changeRouteSourceAvailable_: {
+      type: Boolean,
+      computed: 'computeChangeRouteSourceAvailable_(route, sink,' +
+                    'isAnySinkCurrentlyLaunching, shownCastModeValue)',
+    },
+
+    /**
      * Whether a sink is currently launching in the container.
      * @type {boolean}
      */
     isAnySinkCurrentlyLaunching: {
       type: Boolean,
       value: false,
-    },
-
-    /**
-     * Whether the external container will accept replace-route-click events.
-     * @private {boolean}
-     */
-    replaceRouteAvailable_: {
-      type: Boolean,
-      computed: 'computeReplaceRouteAvailable_(route, sink,' +
-                    'isAnySinkCurrentlyLaunching, shownCastModeValue)',
     },
 
     /**
@@ -91,12 +92,12 @@ Polymer({
 
   /**
    * @param {?media_router.Route|undefined} route
-   * @param {boolean} replaceRouteAvailable
+   * @param {boolean} changeRouteSourceAvailable
    * @return {boolean} Whether to show the button that allows casting to the
    *     current route or the current route's sink.
    */
-  computeCastButtonHidden_: function(route, replaceRouteAvailable) {
-    return !((route && route.canJoin) || replaceRouteAvailable);
+  computeCastButtonHidden_: function(route, changeRouteSourceAvailable) {
+    return !((route && route.canJoin) || changeRouteSourceAvailable);
   },
 
   /**
@@ -107,13 +108,14 @@ Polymer({
    *     now.
    * @param {number} shownCastModeValue Currently selected cast mode value or
    *     AUTO if no value has been explicitly selected.
-   * @return {boolean} Whether the replace route function should be available
-   *     when displaying |currentRoute| in the route details view. Replace route
-   *     should not be available when the source that would be cast from when
-   *     creating a new route would be the same as the route's current source.
+   * @return {boolean} Whether the change route source function should be
+   *     available when displaying |currentRoute| in the route details view.
+   *     Changing the route source should not be available when the currently
+   *     selected source that would be cast is the same as the route's current
+   *     source.
    * @private
    */
-  computeReplaceRouteAvailable_: function(
+  computeChangeRouteSourceAvailable_: function(
       route, sink, isAnySinkCurrentlyLaunching, shownCastModeValue) {
     if (isAnySinkCurrentlyLaunching || !route || !sink) {
       return false;
@@ -121,19 +123,43 @@ Polymer({
     if (!route.currentCastMode) {
       return true;
     }
-    var selectedCastMode = shownCastModeValue;
-    if (selectedCastMode == media_router.CastModeType.AUTO) {
-      selectedCastMode = sink.castModes & -sink.castModes;
-    }
-    return ((selectedCastMode & sink.castModes) != 0) &&
+    var selectedCastMode =
+        this.computeSelectedCastMode_(shownCastModeValue, sink);
+    return (selectedCastMode != 0) &&
         (selectedCastMode != route.currentCastMode);
   },
 
   /**
+   * @param {number} castMode User selected cast mode or AUTO.
+   * @param {?media_router.Sink} sink Sink to which we will cast.
+   * @return {number} The selected cast mode when |castMode| is selected in the
+   *     dialog and casting to |sink|.  Returning 0 means there is no cast mode
+   *     available to |sink| and therefore the start-casting-to-route button
+   *     will not be shown.
+   */
+  computeSelectedCastMode_: function(castMode, sink) {
+    // |sink| can be null when there is a local route, which is shown in the
+    // dialog, but the sink to which it is connected isn't in the current set of
+    // sinks known to the dialog.  This can happen, for example, with DIAL
+    // devices.  A route is created to a DIAL device, but opening the dialog on
+    // a tab that only supports mirroring will not show the DIAL device.  The
+    // route will be shown in route details if it is the only local route, so
+    // you arrive at this function with a null |sink|.
+    if (!sink) {
+      return 0;
+    }
+    if (castMode == media_router.CastModeType.AUTO) {
+      return sink.castModes & -sink.castModes;
+    }
+    return castMode & sink.castModes;
+  },
+
+  /**
    * Fires a join-route-click event if the current route is joinable, otherwise
-   * it fires a replace-route-click event, which stops the current route and
-   * immediately launches a new route to the same sink. This is called when the
-   * button to start casting to the current route is clicked.
+   * it fires a change-route-source-click event, which changes the source of the
+   * current route. This may cause the current route to be closed and a new
+   * route to be started. This is called when the button to start casting to the
+   * current route is clicked.
    *
    * @private
    */
@@ -141,7 +167,11 @@ Polymer({
     if (this.route.canJoin) {
       this.fire('join-route-click', {route: this.route});
     } else {
-      this.fire('replace-route-click', {route: this.route});
+      this.fire('change-route-source-click', {
+        route: this.route,
+        selectedCastMode:
+            this.computeSelectedCastMode_(this.shownCastModeValue, this.sink)
+      });
     }
   },
 

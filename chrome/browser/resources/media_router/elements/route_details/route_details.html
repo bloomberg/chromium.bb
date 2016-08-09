@@ -14,7 +14,7 @@
     <div id="route-action-buttons" class="layout">
       <paper-button flat class="route-button button"
           id="start-casting-to-route-button"
-          hidden$="[[computeCastButtonHidden_(route, replaceRouteAvailable_)]]"
+          hidden$="[[computeCastButtonHidden_(route, changeRouteSourceAvailable_)]]"
           on-tap="startCastingToRoute_">
         <span>[[i18n('startCastingButtonText')]]</span>
       </paper-button>

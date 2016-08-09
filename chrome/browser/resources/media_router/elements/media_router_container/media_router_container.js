@@ -192,17 +192,6 @@ Polymer({
     },
 
     /**
-     * Whether the sink with a pending route creation, whose ID is given by
-     * |currentLaunchingSinkId_|, is waiting for the current route to it to be
-     * closed so a new one can be started.
-     * @private {boolean}
-     */
-    launchingSinkAwaitingRouteClose_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * Whether the user's mouse is positioned over the dialog.
      * @private {boolean|undefined}
      */
@@ -1589,6 +1578,26 @@ Polymer({
   },
 
   /**
+   * Handles a change-route-source-click event. Sets the currently launching
+   * sink to be the current route's sink and shows the sink list.
+   *
+   * @param {!Event} event The event object.
+   * Parameters in |event|.detail:
+   *   route - route to modify.
+   *   selectedCastMode - cast mode to use for the new source.
+   * @private
+   */
+  onChangeRouteSourceClick_: function(event) {
+    /** @type {{route: !media_router.Route, selectedCastMode: number}} */
+    var detail = event.detail;
+    this.currentLaunchingSinkId_ = detail.route.sinkId;
+    var sink = this.sinkMap_[detail.route.sinkId];
+    this.showSinkList_();
+    this.maybeReportUserFirstAction(
+        media_router.MediaRouterUserAction.REPLACE_LOCAL_ROUTE);
+  },
+
+  /**
    * Handles a close-route event. Shows the sink list and starts a timer to
    * close the dialog if there is no click within three seconds.
    *
@@ -1741,28 +1750,6 @@ Polymer({
     if (this.currentView_ == media_router.MediaRouterView.FILTER) {
       this.filterSinks_(this.searchInputText_);
     }
-  },
-
-  /**
-   * Handles a replace-route-click event. Closes the currently displayed local
-   * route and shows the sink list. When the current route has been successfully
-   * removed from the route map, the container will launch a new route for the
-   * same sink.
-   *
-   * @param {!Event} event The event object.
-   * Parameters in |event|.detail:
-   *   route - route to close.
-   * @private
-   */
-  onReplaceRouteClick_: function(event) {
-    /** @type {{route: !media_router.Route}} */
-    var detail = event.detail;
-    this.currentLaunchingSinkId_ = detail.route.sinkId;
-    this.launchingSinkAwaitingRouteClose_ = true;
-    this.fire('close-route', detail);
-    this.showSinkList_();
-    this.maybeReportUserFirstAction(
-        media_router.MediaRouterUserAction.REPLACE_LOCAL_ROUTE);
   },
 
   /**
@@ -1976,14 +1963,6 @@ Polymer({
 
     this.sinkToRouteMap_ = tempSinkToRouteMap;
     this.rebuildSinksToShow_();
-
-    // A sink was waiting for its route to be closed and removed from the route
-    // map so a new route to it can be started.
-    if (this.launchingSinkAwaitingRouteClose_ &&
-        !(this.currentLaunchingSinkId_ in this.sinkToRouteMap_) &&
-        this.currentLaunchingSinkId_ in this.sinkMap_) {
-      this.showOrCreateRoute_(this.sinkMap_[this.currentLaunchingSinkId_]);
-    }
   },
 
   /**
@@ -2223,9 +2202,7 @@ Polymer({
       this.fire('navigate-sink-list-to-details');
       this.maybeReportUserFirstAction(
           media_router.MediaRouterUserAction.STATUS_REMOTE);
-    } else if ((this.launchingSinkAwaitingRouteClose_ &&
-                this.currentLaunchingSinkId_ == sink.id) ||
-               this.currentLaunchingSinkId_ == '') {
+    } else if (this.currentLaunchingSinkId_ == '') {
       // Allow one launch at a time.
       var selectedCastModeValue =
           this.shownCastModeValue_ == media_router.CastModeType.AUTO ?
@@ -2252,11 +2229,7 @@ Polymer({
             window.performance.now() - this.populatedSinkListSeenTimeMs_;
         this.fire('report-sink-click-time', {timeMs: timeToSelectSink});
       }
-      if (!this.launchingSinkAwaitingRouteClose_) {
-        this.currentLaunchingSinkId_ = sink.id;
-      } else {
-        this.launchingSinkAwaitingRouteClose_ = false;
-      }
+      this.currentLaunchingSinkId_ = sink.id;
       if (sink.isPseudoSink) {
         this.rebuildSinksToShow_();
       }

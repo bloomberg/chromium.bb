@@ -157,7 +157,7 @@ cr.define('route_details', function() {
       // route is not joinable.
       test('start casting button click replaces route', function(done) {
         details.addEventListener(
-            'replace-route-click', function() { done(); });
+            'change-route-source-click', function() { done(); });
         details.route = fakeRouteOne;
         details.availableCastModes = 1;
         MockInteractions.tap(details.$['start-casting-to-route-button']);

@@ -203,6 +203,19 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Modifies |route| by changing its source to the one identified by
+   * |selectedCastMode|.
+   *
+   * @param {!media_router.Route} route The route being modified.
+   * @param {number} selectedCastMode The value of the cast mode the user
+   *   selected.
+   */
+  function changeRouteSource(route, selectedCastMode) {
+    chrome.send('requestRoute',
+                [{sinkId: route.sinkId, selectedCastMode: selectedCastMode}]);
+  }
+
+  /**
    * Closes the dialog.
    *
    * @param {boolean} pressEscToClose Whether the user pressed ESC to close the
@@ -387,6 +400,7 @@ cr.define('media_router.browserApi', function() {
   return {
     acknowledgeFirstRunFlow: acknowledgeFirstRunFlow,
     actOnIssue: actOnIssue,
+    changeRouteSource: changeRouteSource,
     closeDialog: closeDialog,
     closeRoute: closeRoute,
     joinRoute: joinRoute,
