@@ -757,31 +757,21 @@ static const int styledPopupPaddingBottom = 2;
 
 // These functions are called with MenuListPart or MenulistButtonPart appearance
 // by LayoutMenuList.
-int LayoutThemeMac::popupInternalPaddingLeft(const ComputedStyle& style) const
+int LayoutThemeMac::popupInternalPaddingStart(const ComputedStyle& style) const
 {
-    bool isRTL = style.direction() == RTL;
     if (style.appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[isRTL ? ThemeMac::RightMargin : ThemeMac::LeftMargin] * style.effectiveZoom();
-    if (style.appearance() != MenulistButtonPart)
-        return 0;
-    if (isRTL) {
-        float fontScale = style.fontSize() / baseFontSize;
-        float arrowWidth = menuListBaseArrowWidth * fontScale;
-        return static_cast<int>(ceilf(arrowWidth + (menuListArrowPaddingStart + menuListArrowPaddingEnd) * style.effectiveZoom()));
-    }
-    return styledPopupPaddingStart * style.effectiveZoom();
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::LeftMargin] * style.effectiveZoom();
+    if (style.appearance() == MenulistButtonPart)
+        return styledPopupPaddingStart * style.effectiveZoom();
+    return 0;
 }
 
-int LayoutThemeMac::popupInternalPaddingRight(const ComputedStyle& style) const
+int LayoutThemeMac::popupInternalPaddingEnd(const ComputedStyle& style) const
 {
-    bool isRTL = style.direction() == RTL;
     if (style.appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[isRTL ? ThemeMac::LeftMargin : ThemeMac::RightMargin] * style.effectiveZoom();
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::RightMargin] * style.effectiveZoom();
     if (style.appearance() != MenulistButtonPart)
         return 0;
-    if (isRTL) {
-        return styledPopupPaddingStart * style.effectiveZoom();
-    }
     float fontScale = style.fontSize() / baseFontSize;
     float arrowWidth = menuListBaseArrowWidth * fontScale;
     return static_cast<int>(ceilf(arrowWidth + (menuListArrowPaddingStart + menuListArrowPaddingEnd) * style.effectiveZoom()));

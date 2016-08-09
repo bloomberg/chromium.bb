@@ -146,8 +146,8 @@ public:
 
     virtual void adjustSliderThumbSize(ComputedStyle&) const;
 
-    virtual int popupInternalPaddingLeft(const ComputedStyle&) const { return 0; }
-    virtual int popupInternalPaddingRight(const ComputedStyle&) const { return 0; }
+    virtual int popupInternalPaddingStart(const ComputedStyle&) const { return 0; }
+    virtual int popupInternalPaddingEnd(const ComputedStyle&) const { return 0; }
     virtual int popupInternalPaddingTop(const ComputedStyle&) const { return 0; }
     virtual int popupInternalPaddingBottom(const ComputedStyle&) const { return 0; }
 

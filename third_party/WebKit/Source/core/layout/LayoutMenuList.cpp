@@ -98,8 +98,10 @@ void LayoutMenuList::adjustInnerStyle()
         innerStyle.setAlignSelfPosition(ItemPositionFlexStart);
     }
 
-    innerStyle.setPaddingLeft(Length(LayoutTheme::theme().popupInternalPaddingLeft(styleRef()), Fixed));
-    innerStyle.setPaddingRight(Length(LayoutTheme::theme().popupInternalPaddingRight(styleRef()), Fixed));
+    Length paddingStart = Length(LayoutTheme::theme().popupInternalPaddingStart(styleRef()), Fixed);
+    Length paddingEnd = Length(LayoutTheme::theme().popupInternalPaddingEnd(styleRef()), Fixed);
+    innerStyle.setPaddingLeft(styleRef().direction() == LTR ? paddingStart : paddingEnd);
+    innerStyle.setPaddingRight(styleRef().direction() == LTR ? paddingEnd : paddingStart);
     innerStyle.setPaddingTop(Length(LayoutTheme::theme().popupInternalPaddingTop(styleRef()), Fixed));
     innerStyle.setPaddingBottom(Length(LayoutTheme::theme().popupInternalPaddingBottom(styleRef()), Fixed));
 

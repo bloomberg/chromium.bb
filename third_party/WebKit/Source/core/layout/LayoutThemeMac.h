@@ -66,8 +66,8 @@ public:
     IntSize sliderTickSize() const override;
     int sliderTickOffsetFromTrackCenter() const override;
 
-    int popupInternalPaddingLeft(const ComputedStyle&) const override;
-    int popupInternalPaddingRight(const ComputedStyle&) const override;
+    int popupInternalPaddingStart(const ComputedStyle&) const override;
+    int popupInternalPaddingEnd(const ComputedStyle&) const override;
     int popupInternalPaddingTop(const ComputedStyle&) const override;
     int popupInternalPaddingBottom(const ComputedStyle&) const override;
 
