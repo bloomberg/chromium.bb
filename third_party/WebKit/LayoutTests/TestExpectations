@@ -134,6 +134,9 @@ crbug.com/518992 [ Win Release ] imported/wpt/user-timing/test_user_timing_measu
 crbug.com/567965 [ Debug ] imported/wpt/user-timing/test_user_timing_mark.html [ Skip ]
 crbug.com/518993 imported/wpt/user-timing/test_user_timing_measure_navigation_timing.html [ Skip ]
 
+crbug.com/631222 printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsRebaseline ]
+crbug.com/631222 virtual/threaded/printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsRebaseline ]
+
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Failure Pass ]

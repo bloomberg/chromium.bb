@@ -43,8 +43,10 @@ void TableSectionPainter::paintRepeatingHeaderGroup(const PaintInfo& paintInfo, 
     LayoutTable* table = m_layoutTableSection.table();
     LayoutPoint paginationOffset = paintOffset;
     LayoutUnit pageHeight = table->pageLogicalHeightForOffset(LayoutUnit());
-    // Move paginationOffset to the top of the second page.
-    paginationOffset.move(0, pageHeight - table->pageLogicalOffset());
+
+    // Move paginationOffset to the top of the next page.
+    LayoutUnit offsetToNextPage = pageHeight - intMod(table->pageLogicalOffset(), pageHeight);
+    paginationOffset.move(0, offsetToNextPage);
     // Now move paginationOffset to the top of the page the cull rect starts on.
     if (paintInfo.cullRect().m_rect.y() > paginationOffset.y())
         paginationOffset.move(0, pageHeight * static_cast<int>((paintInfo.cullRect().m_rect.y() - paginationOffset.y()) / pageHeight));
