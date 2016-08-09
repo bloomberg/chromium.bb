@@ -48,7 +48,6 @@ interface AnimationEffectTiming
     getter fill
     getter iterationStart
     getter iterations
-    getter playbackRate
     method constructor
     setter delay
     setter direction
@@ -58,7 +57,6 @@ interface AnimationEffectTiming
     setter fill
     setter iterationStart
     setter iterations
-    setter playbackRate
 interface AnimationEvent : Event
     attribute @@toStringTag
     getter animationName
@@ -72,12 +70,9 @@ interface AnimationPlayerEvent : Event
 interface AnimationTimeline
     attribute @@toStringTag
     getter currentTime
-    getter playbackRate
     method constructor
     method getAnimations
-    method play
     setter currentTime
-    setter playbackRate
 interface AppBannerPromptResult
     attribute @@toStringTag
     getter outcome

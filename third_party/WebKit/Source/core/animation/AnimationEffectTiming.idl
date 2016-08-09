@@ -14,8 +14,6 @@
     [RaisesException=Setter] attribute double iterationStart;
     [RaisesException=Setter] attribute unrestricted double iterations;
     [RaisesException=Setter] attribute (unrestricted double or DOMString) duration;
-    // TODO(dstockwell): playbackRate has been removed from level 1.
-    attribute double playbackRate;
     attribute DOMString direction;
     [RaisesException=Setter] attribute DOMString easing;
 };

@@ -66,7 +66,7 @@ test(function() {
 
 test(function() {
   var timing = new KeyframeEffect(element, keyframes).timing;
-  for (var attr of ['delay', 'endDelay', 'iterationStart', 'playbackRate']) {
+  for (var attr of ['delay', 'endDelay', 'iterationStart']) {
     assert_throws(new TypeError, function() { timing[attr] = NaN; }, attr);
     assert_throws(new TypeError, function() { timing[attr] = Infinity; }, attr);
   }
