@@ -231,6 +231,12 @@ config("common_sanitizer_flags") {
   if (using_sanitizer) {
     assert(is_clang, "sanitizers only supported with clang")
     cflags += [ "-gline-tables-only" ]
+    if (is_win) {
+      # Just -gline-tables-only currently causes clang-cl to emit debug info
+      # in DWARF format.
+      # TODO(thakis): Remove this once we have a clang at LLVM r278139+
+      cflags += [ "/Z7" ]
+    }
   }
 
   # Common options for AddressSanitizer, LeakSanitizer, ThreadSanitizer,
