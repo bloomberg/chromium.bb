@@ -135,44 +135,48 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     service->RegisterProvider(std::move(bookmark_suggestions_provider));
   }
 
-  // Create the NTPSnippetsService (articles provider).
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  OAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  scoped_refptr<net::URLRequestContextGetter> request_context =
-      content::BrowserContext::GetDefaultStoragePartition(context)
-          ->GetURLRequestContext();
-  SuggestionsService* suggestions_service =
-      SuggestionsServiceFactory::GetForProfile(profile);
-  NTPSnippetsScheduler* scheduler = nullptr;
+  if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
+    // Create the NTPSnippetsService (articles provider).
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetForProfile(profile);
+    OAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    scoped_refptr<net::URLRequestContextGetter> request_context =
+        content::BrowserContext::GetDefaultStoragePartition(context)
+            ->GetURLRequestContext();
+    SuggestionsService* suggestions_service =
+        SuggestionsServiceFactory::GetForProfile(profile);
+    NTPSnippetsScheduler* scheduler = nullptr;
 #if defined(OS_ANDROID)
-  scheduler = NTPSnippetsLauncher::Get();
+    scheduler = NTPSnippetsLauncher::Get();
 #endif  // OS_ANDROID
-  base::FilePath database_dir(
-      profile->GetPath().Append(ntp_snippets::kDatabaseFolder));
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      BrowserThread::GetBlockingPool()
-          ->GetSequencedTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::GetSequenceToken(),
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  std::unique_ptr<NTPSnippetsService> ntp_snippets_service =
-      base::MakeUnique<NTPSnippetsService>(
-          service, service->category_factory(), profile->GetPrefs(),
-          suggestions_service, g_browser_process->GetApplicationLocale(),
-          scheduler, base::MakeUnique<NTPSnippetsFetcher>(
-                         signin_manager, token_service, request_context,
-                         profile->GetPrefs(),
-                         base::Bind(&safe_json::SafeJsonParser::Parse),
-                         chrome::GetChannel() == version_info::Channel::STABLE),
-          base::MakeUnique<ImageFetcherImpl>(
-              base::MakeUnique<ImageDecoderImpl>(), request_context.get()),
-          base::MakeUnique<ImageDecoderImpl>(),
-          base::MakeUnique<NTPSnippetsDatabase>(database_dir, task_runner),
-          base::MakeUnique<NTPSnippetsStatusService>(signin_manager,
-                                                     profile->GetPrefs()));
-  service->set_ntp_snippets_service(ntp_snippets_service.get());
-  service->RegisterProvider(std::move(ntp_snippets_service));
+    base::FilePath database_dir(
+        profile->GetPath().Append(ntp_snippets::kDatabaseFolder));
+    scoped_refptr<base::SequencedTaskRunner> task_runner =
+        BrowserThread::GetBlockingPool()
+            ->GetSequencedTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::GetSequenceToken(),
+                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+    bool is_stable_channel =
+        chrome::GetChannel() == version_info::Channel::STABLE;
+    std::unique_ptr<NTPSnippetsService> ntp_snippets_service =
+        base::MakeUnique<NTPSnippetsService>(
+            service, service->category_factory(), profile->GetPrefs(),
+            suggestions_service, g_browser_process->GetApplicationLocale(),
+            scheduler, base::MakeUnique<NTPSnippetsFetcher>(
+                           signin_manager, token_service, request_context,
+                           profile->GetPrefs(),
+                           base::Bind(&safe_json::SafeJsonParser::Parse),
+                           is_stable_channel),
+            base::MakeUnique<ImageFetcherImpl>(
+                base::MakeUnique<ImageDecoderImpl>(), request_context.get()),
+            base::MakeUnique<ImageDecoderImpl>(),
+            base::MakeUnique<NTPSnippetsDatabase>(database_dir, task_runner),
+            base::MakeUnique<NTPSnippetsStatusService>(signin_manager,
+                                                       profile->GetPrefs()));
+    service->set_ntp_snippets_service(ntp_snippets_service.get());
+    service->RegisterProvider(std::move(ntp_snippets_service));
+  }
 
   return service;
 }

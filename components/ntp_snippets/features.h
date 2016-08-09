@@ -9,7 +9,12 @@
 
 namespace ntp_snippets {
 
+// Features to turn individual providers on/off.
+extern const base::Feature kArticleSuggestionsFeature;
 extern const base::Feature kBookmarkSuggestionsFeature;
+
+// Global toggle for the whole content suggestions feature. If this is set to
+// false, all the per-provider features are ignored.
 extern const base::Feature kContentSuggestionsFeature;
 
 }  // namespace ntp_snippets
