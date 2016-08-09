@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
@@ -29,7 +28,6 @@ import org.chromium.ui.base.WindowAndroid;
 public class ShellManager extends FrameLayout {
 
     public static final String DEFAULT_SHELL_URL = "http://www.google.com";
-    private static boolean sStartup = true;
     private WindowAndroid mWindow;
     private Shell mActiveShell;
 
@@ -69,26 +67,9 @@ public class ShellManager extends FrameLayout {
      * @param window The window used to generate all shells.
      */
     public void setWindow(WindowAndroid window) {
-        setWindow(window, true);
-    }
-
-    /**
-     * @param window The window used to generate all shells.
-     * @param initialLoadingNeeded Whether initial loading is needed or not.
-     */
-    @VisibleForTesting
-    public void setWindow(WindowAndroid window, final boolean initialLoadingNeeded) {
         assert window != null;
         mWindow = window;
-        mContentViewRenderView = new ContentViewRenderView(getContext()) {
-            @Override
-            protected void onReadyToRender() {
-                if (sStartup) {
-                    if (initialLoadingNeeded) mActiveShell.loadUrl(mStartupUrl);
-                    sStartup = false;
-                }
-            }
-        };
+        mContentViewRenderView = new ContentViewRenderView(getContext());
         mContentViewRenderView.onNativeLibraryLoaded(window);
     }
 

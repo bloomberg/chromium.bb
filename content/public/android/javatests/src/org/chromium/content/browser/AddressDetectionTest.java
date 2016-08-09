@@ -26,7 +26,6 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     public void testMultipleAddressesInText() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_multiple.html");
-        assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),
                 "1600 Amphitheatre Parkway Mountain View, CA 94043"));
@@ -40,7 +39,6 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     public void testSplitAddresses() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_split.html");
-        assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),
                 "9606 North MoPac Expressway Suite 400 Austin, TX 78759"));
@@ -60,7 +58,6 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     public void testAddressLimits() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_limits.html");
-        assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),
                 "2590 Pearl Street Suite 100 Boulder, CO 80302"));
@@ -80,7 +77,6 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     public void testRealAddresses() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_real.html");
-        assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),
                 "57th Street and Lake Shore Drive Chicago, IL 60637"));
@@ -100,7 +96,6 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
     public void testSpecialChars() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_special_chars.html");
-        assertWaitForPageScaleFactorMatch(1.0f);
 
         assertTrue(isExpectedGeoIntent(scrollAndTapExpectingIntent("test1"),
                 "100 34th Avenue , San Francisco, CA 94121"));

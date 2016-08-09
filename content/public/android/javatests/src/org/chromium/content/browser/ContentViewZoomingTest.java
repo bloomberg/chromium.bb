@@ -82,7 +82,6 @@ public class ContentViewZoomingTest extends ContentShellTestBase {
         super.setUp();
         launchContentShellWithUrl(LARGE_PAGE);
         waitForActiveShellToBeDoneLoading();
-        assertWaitForPageScaleFactorMatch(2.0f);
     }
 
     @SmallTest

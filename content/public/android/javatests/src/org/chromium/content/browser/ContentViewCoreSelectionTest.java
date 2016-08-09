@@ -50,7 +50,6 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         waitForActiveShellToBeDoneLoading();
 
         mContentViewCore = getContentViewCore();
-        assertWaitForPageScaleFactorMatch(1.1f);
         waitForSelectActionBarVisible(false);
         waitForPastePopupStatus(false);
     }
