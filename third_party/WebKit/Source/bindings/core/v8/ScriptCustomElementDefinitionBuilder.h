@@ -15,6 +15,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
+#include "wtf/text/StringView.h"
 
 namespace blink {
 
@@ -57,8 +58,8 @@ private:
     HashSet<AtomicString> m_observedAttributes;
     ExceptionState& m_exceptionState;
 
-    bool valueForName(const v8::Local<v8::Object>&, const String&, v8::Local<v8::Value>&) const;
-    bool callableForName(const String&, v8::Local<v8::Function>&) const;
+    bool valueForName(const v8::Local<v8::Object>&, const StringView&, v8::Local<v8::Value>&) const;
+    bool callableForName(const StringView&, v8::Local<v8::Function>&) const;
     bool retrieveObservedAttributes();
 };
 
