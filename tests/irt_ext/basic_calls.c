@@ -39,7 +39,7 @@ static int my_gettod(struct timeval *tv) {
 }
 
 /* Returns number of ticks which will just be seconds in current time. */
-static int my_clock(clock_t *ticks) {
+static int my_clock(nacl_irt_clock_t *ticks) {
   if (g_activated_env) {
     *ticks = g_activated_env->current_time;
 

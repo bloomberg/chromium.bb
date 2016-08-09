@@ -17,7 +17,7 @@ static int nacl_irt_gettod(struct timeval *tv) {
   return -NACL_SYSCALL(gettimeofday)(tv);
 }
 
-static int nacl_irt_clock(clock_t *ticks) {
+static int nacl_irt_clock(nacl_irt_clock_t *ticks) {
   *ticks = NACL_SYSCALL(clock)();  /* Cannot fail.  */
   return 0;
 }

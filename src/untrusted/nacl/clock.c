@@ -10,11 +10,11 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 clock_t clock(void) {
-  clock_t result;
+  nacl_irt_clock_t result;
   int error = __libnacl_irt_basic.clock(&result);
   if (error) {
     errno = error;
     return (clock_t) -1;
   }
-  return result;
+  return (clock_t) result;
 }

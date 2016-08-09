@@ -19,6 +19,7 @@ struct NaClExceptionContext;
 struct NaClMemMappingInfo;
 
 typedef int64_t nacl_irt_off_t;
+typedef int32_t nacl_irt_clock_t;
 typedef uint32_t nacl_irt_clockid_t;
 typedef uintptr_t nacl_irt_tid_t;
 #define NACL_IRT_MAIN_THREAD_TID 0
@@ -92,7 +93,7 @@ size_t nacl_interface_query(const char *interface_ident,
 struct nacl_irt_basic {
   void (*exit)(int status);
   int (*gettod)(struct timeval *tv);
-  int (*clock)(clock_t *ticks);
+  int (*clock)(nacl_irt_clock_t *ticks);
   int (*nanosleep)(const struct timespec *req, struct timespec *rem);
   int (*sched_yield)(void);
   int (*sysconf)(int name, int *value);

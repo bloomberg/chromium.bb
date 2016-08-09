@@ -265,9 +265,9 @@ static void irt_exit(int status) {
   _exit(status);
 }
 
-static int irt_clock_func(clock_t *ticks) {
-  clock_t result = clock();
-  if (result == (clock_t) -1)
+static int irt_clock_func(nacl_irt_clock_t *ticks) {
+  nacl_irt_clock_t result = clock();
+  if (result == (nacl_irt_clock_t) -1)
     return errno;
   *ticks = result;
   return 0;
