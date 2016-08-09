@@ -82,7 +82,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
-	'<(DEPTH)//third_party/qcms/qcms.gyp:qcms",
+        '<(DEPTH)//third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         'gfx_geometry',
         'gfx_range',
