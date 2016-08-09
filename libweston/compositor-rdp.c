@@ -58,7 +58,7 @@
 #	define NSC_RESET(C, W, H) nsc_context_reset(C, W, H)
 #	define RFX_RESET(C, W, H) rfx_context_reset(C, W, H)
 #else
-#	define NSC_RESET(C, W, H) do { nsc_context_reset(C); C->width = W; C->height = H; } while(0)
+#	define NSC_RESET(C, W, H) do { nsc_context_reset(C); C->width = W; C->height = H; } while(0)
 #	define RFX_RESET(C, W, H) do { rfx_context_reset(C); C->width = W; C->height = H; } while(0)
 #endif
 #define FREERDP_CB_RET_TYPE BOOL
