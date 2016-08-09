@@ -271,7 +271,7 @@ protected:
         unsigned m_styleType : 6; // PseudoId
         unsigned m_pseudoBits : 8;
         unsigned m_explicitInheritance : 1; // Explicitly inherits a non-inherited property
-        unsigned m_variableReference : 1; // A non-inherited property references a variable.
+        unsigned m_variableReference : 1; // A non-inherited property references a variable or @apply is used.
         unsigned m_unique : 1; // Style can not be shared.
 
         unsigned m_emptyState : 1;

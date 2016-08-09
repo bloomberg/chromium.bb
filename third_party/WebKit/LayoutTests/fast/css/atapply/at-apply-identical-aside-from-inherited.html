@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<style>
+#parent1 {
+  --mixin: {
+    border: 5px solid black;
+  };
+}
+#parent2 {
+  --mixin: {
+    border: 10px dotted orange;
+  };
+}
+
+#child1, #child2, #child3 {
+  @apply --mixin;
+}
+</style>
+<div id="parent1">
+  <div id="child1">X</div>
+</div>
+<div id="parent2">
+  <div id="child2">X</div>
+</div>
+<div id="parent3">
+  <div id="child3">X</div>
+</div>
+<script>
+test(function() {
+  assert_equals(getComputedStyle(child1).borderWidth, '5px');
+  assert_equals(getComputedStyle(child2).borderWidth, '10px');
+  assert_equals(getComputedStyle(child3).borderWidth, '0px');
+}, "Elements style identically aside from an @apply'd variable with different inherited values are computed properly");
+</script>

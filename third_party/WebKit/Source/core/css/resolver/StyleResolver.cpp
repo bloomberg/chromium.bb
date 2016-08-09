@@ -1431,12 +1431,14 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, const CSSValue& 
 }
 
 template <CSSPropertyPriority priority>
-void StyleResolver::applyPropertiesForApplyAtRule(StyleResolverState& state, const CSSValue& value, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
+void StyleResolver::applyPropertiesForApplyAtRule(StyleResolverState& state, const CSSValue& value, bool isImportant, PropertyWhitelistType propertyWhitelistType)
 {
+    state.style()->setHasVariableReferenceFromNonInheritedProperty();
     if (!state.style()->variables())
         return;
     const String& name = toCSSCustomIdentValue(value).value();
     const StylePropertySet* propertySet = state.customPropertySetForApplyAtRule(name);
+    bool inheritedOnly = false;
     if (propertySet)
         applyProperties<priority>(state, propertySet, isImportant, inheritedOnly, propertyWhitelistType);
 }
@@ -1450,7 +1452,8 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
         CSSPropertyID property = current.id();
 
         if (property == CSSPropertyApplyAtRule) {
-            applyPropertiesForApplyAtRule<priority>(state, current.value(), isImportant, inheritedOnly, propertyWhitelistType);
+            DCHECK(!inheritedOnly);
+            applyPropertiesForApplyAtRule<priority>(state, current.value(), isImportant, propertyWhitelistType);
             continue;
         }
 

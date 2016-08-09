@@ -208,7 +208,7 @@ private:
     template <CSSPropertyPriority priority>
     void applyAllProperty(StyleResolverState&, const CSSValue&, bool inheritedOnly, PropertyWhitelistType);
     template <CSSPropertyPriority priority>
-    void applyPropertiesForApplyAtRule(StyleResolverState&, const CSSValue&, bool isImportant, bool inheritedOnly, PropertyWhitelistType);
+    void applyPropertiesForApplyAtRule(StyleResolverState&, const CSSValue&, bool isImportant, PropertyWhitelistType);
 
     bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, const ComputedStyle* parentStyle, StyleResolverState&);
     bool hasAuthorBackground(const StyleResolverState&);
