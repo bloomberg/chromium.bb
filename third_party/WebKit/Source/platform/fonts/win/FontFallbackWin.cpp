@@ -68,11 +68,15 @@ static inline bool isFontPresent(const UChar* fontName, SkFontMgr* fontManager)
     return matchesRequestedFamily;
 }
 
+struct FontMapping {
+    const UChar* familyName;
+    const UChar** candidateFamilyNames;
+};
 // A simple mapping from UScriptCode to family name. This is a sparse array,
 // which works well since the range of UScriptCode values is small.
-typedef const UChar* ScriptToFontMap[USCRIPT_CODE_LIMIT];
+typedef FontMapping ScriptToFontMap[USCRIPT_CODE_LIMIT];
 
-void initializeScriptMonospaceFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontManager)
+const UChar* findMonospaceFontForScript(UScriptCode script)
 {
     struct FontMap {
         UScriptCode script;
@@ -84,25 +88,15 @@ void initializeScriptMonospaceFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr*
         { USCRIPT_ARABIC, L"courier new" },
     };
 
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontMap); ++i)
-        scriptFontMap[fontMap[i].script] = fontMap[i].family;
+    for (const auto& fontFamily : fontMap) {
+        if (fontFamily.script == script)
+            return fontFamily.family;
+    }
+    return nullptr;
 }
 
-void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontManager)
+void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
 {
-    struct FontMap {
-        UScriptCode script;
-        const UChar* family;
-    };
-
-    static const FontMap fontMap[] = {
-        { USCRIPT_LATIN, L"Times New Roman" },
-        { USCRIPT_GREEK, L"Times New Roman" },
-        { USCRIPT_CYRILLIC, L"Times New Roman" },
-        // For USCRIPT_COMMON, we map blocks to scripts when
-        // that makes sense.
-    };
-
     struct ScriptToFontFamilies {
         UScriptCode script;
         const UChar** families;
@@ -131,6 +125,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* copticFonts[] = { L"Segoe UI Symbol", 0 };
     static const UChar* cuneiformFonts[] = { L"Segoe UI Historic", 0 };
     static const UChar* cypriotFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* cyrillicFonts[] = { L"Times New Roman", 0 };
     static const UChar* deseretFonts[] = { L"Segoe UI Symbol", 0 };
     static const UChar* devanagariFonts[] = { L"Nirmala UI", L"Mangal", 0 };
     static const UChar* egyptianHieroglyphsFonts[] = { L"Segoe UI Historic",
@@ -143,6 +138,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         L"Segoe UI Symbol", 0 };
     static const UChar* gothicFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
+    static const UChar* greekFonts[] = { L"Times New Roman", 0 };
     static const UChar* gujaratiFonts[] = { L"Nirmala UI", L"Shruti", 0 };
     static const UChar* gurmukhiFonts[] = { L"Nirmala UI", L"Raavi", 0 };
     static const UChar* hangulFonts[] = { L"Malgun Gothic", L"Gulim", 0 };
@@ -163,6 +159,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         L"Khmer OS", L"MoolBoran", L"DaunPenh", 0 };
     static const UChar* laoFonts[] = { L"Leelawadee UI", L"Lao UI",
         L"DokChampa", L"Saysettha OT", L"Phetsarath OT", L"Code2000", 0 };
+    static const UChar* latinFonts[] = { L"Times New Roman", 0 };
     static const UChar* lisuFonts[] = { L"Segoe UI", 0 };
     static const UChar* lycianFonts[] = { L"Segoe UI Historic", 0 };
     static const UChar* lydianFonts[] = { L"Segoe UI Historic", 0 };
@@ -226,6 +223,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         { USCRIPT_COPTIC, copticFonts },
         { USCRIPT_CUNEIFORM, cuneiformFonts },
         { USCRIPT_CYPRIOT, cypriotFonts },
+        { USCRIPT_CYRILLIC, cyrillicFonts },
         { USCRIPT_DESERET, deseretFonts },
         { USCRIPT_DEVANAGARI, devanagariFonts },
         { USCRIPT_EGYPTIAN_HIEROGLYPHS, egyptianHieroglyphsFonts },
@@ -233,6 +231,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         { USCRIPT_GEORGIAN, georgianFonts },
         { USCRIPT_GLAGOLITIC, glagoliticFonts },
         { USCRIPT_GOTHIC, gothicFonts },
+        { USCRIPT_GREEK, greekFonts },
         { USCRIPT_GUJARATI, gujaratiFonts },
         { USCRIPT_GURMUKHI, gurmukhiFonts },
         { USCRIPT_HANGUL, hangulFonts },
@@ -248,6 +247,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         { USCRIPT_KHAROSHTHI, kharoshthiFonts },
         { USCRIPT_KHMER, khmerFonts },
         { USCRIPT_LAO, laoFonts },
+        { USCRIPT_LATIN, latinFonts },
         { USCRIPT_LISU, lisuFonts },
         { USCRIPT_LYCIAN, lycianFonts },
         { USCRIPT_LYDIAN, lydianFonts },
@@ -285,30 +285,27 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         { USCRIPT_YI, yiFonts }
     };
 
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontMap); ++i)
-        scriptFontMap[fontMap[i].script] = fontMap[i].family;
-
-    // FIXME: Instead of scanning the hard-coded list, we have to
-    // use EnumFont* to 'inspect' fonts to pick up fonts covering scripts
-    // when it's possible (e.g. using OS/2 table). If we do that, this
-    // had better be pulled out of here.
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(scriptToFontFamilies); ++i) {
-        UScriptCode script = scriptToFontFamilies[i].script;
-        scriptFontMap[script] = 0;
-        const UChar** familyPtr = scriptToFontFamilies[i].families;
-        while (*familyPtr) {
-            if (isFontPresent(*familyPtr, fontManager)) {
-                scriptFontMap[script] = *familyPtr;
-                break;
-            }
-            ++familyPtr;
-        }
+    for (const auto& fontFamily : scriptToFontFamilies) {
+        scriptFontMap[fontFamily.script].candidateFamilyNames = fontFamily.families;
     }
 
     // Initialize the locale-dependent mapping from system locale.
     UScriptCode hanScript = LayoutLocale::getSystem().scriptForHan();
-    if (const UChar* localeFamily = scriptFontMap[hanScript])
-        scriptFontMap[USCRIPT_HAN] = localeFamily;
+    DCHECK(hanScript != USCRIPT_HAN);
+    if (scriptFontMap[hanScript].candidateFamilyNames) {
+        scriptFontMap[USCRIPT_HAN].candidateFamilyNames = scriptFontMap[hanScript].candidateFamilyNames;
+    }
+}
+
+void findFirstExistingCandidateFont(FontMapping& scriptFontMapping, SkFontMgr* fontManager)
+{
+    for (const UChar** familyPtr = scriptFontMapping.candidateFamilyNames; *familyPtr; familyPtr++) {
+        if (isFontPresent(*familyPtr, fontManager)) {
+            scriptFontMapping.familyName = *familyPtr;
+            break;
+        }
+    }
+    scriptFontMapping.candidateFamilyNames = nullptr;
 }
 
 // There are a lot of characters in USCRIPT_COMMON that can be covered
@@ -436,19 +433,23 @@ const UChar* getFontFamilyForScript(UScriptCode script,
     SkFontMgr* fontManager)
 {
     static ScriptToFontMap scriptFontMap;
-    static ScriptToFontMap scriptMonospaceFontMap;
     static bool initialized = false;
     if (!initialized) {
-        initializeScriptFontMap(scriptFontMap, fontManager);
-        initializeScriptMonospaceFontMap(scriptMonospaceFontMap, fontManager);
+        initializeScriptFontMap(scriptFontMap);
         initialized = true;
     }
+
     if (script == USCRIPT_INVALID_CODE)
         return 0;
     ASSERT(script < USCRIPT_CODE_LIMIT);
-    if (generic == FontDescription::MonospaceFamily && scriptMonospaceFontMap[script])
-        return scriptMonospaceFontMap[script];
-    return scriptFontMap[script];
+    if (generic == FontDescription::MonospaceFamily) {
+        const UChar* monospaceFamily = findMonospaceFontForScript(script);
+        if (monospaceFamily)
+            return monospaceFamily;
+    }
+    if (scriptFontMap[script].candidateFamilyNames)
+        findFirstExistingCandidateFont(scriptFontMap[script], fontManager);
+    return scriptFontMap[script].familyName;
 }
 
 // FIXME:
