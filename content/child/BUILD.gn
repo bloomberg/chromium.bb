@@ -53,6 +53,8 @@ target(link_target_type, "child") {
     "//content/public/common:common_sources",
     "//crypto:platform",
     "//gpu/command_buffer/client",
+    "//ipc",
+    "//ipc:mojom",
     "//media",
     "//mojo/common",
     "//mojo/edk/system",
