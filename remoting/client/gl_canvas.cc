@@ -66,6 +66,8 @@ const char kDrawTexFrag[] =
 namespace remoting {
 
 GlCanvas::GlCanvas(int gl_version) : gl_version_(gl_version) {
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
+
   vertex_shader_ = CompileShader(GL_VERTEX_SHADER, kTexCoordToViewVert);
   fragment_shader_ = CompileShader(GL_FRAGMENT_SHADER, kDrawTexFrag);
   program_ = CreateProgram(vertex_shader_, fragment_shader_);
@@ -137,6 +139,10 @@ void GlCanvas::DrawTexture(int texture_id,
 
 int GlCanvas::GetGlVersion() const {
   return gl_version_;
+}
+
+int GlCanvas::GetMaxTextureSize() const {
+  return max_texture_size_;
 }
 
 }  // namespace remoting

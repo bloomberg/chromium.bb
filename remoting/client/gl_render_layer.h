@@ -25,12 +25,14 @@ class GlRenderLayer {
 
   // Sets the texture (RGBA 8888) to be drawn. Please use UpdateTexture() if the
   // texture size isn't changed.
-  void SetTexture(const uint8_t* texture, int width, int height);
-
-  // Updates a subregion (RGBA 8888) of the texture.
   // stride: byte distance between two rows in |subtexture|.
   // If |stride| is 0 or |stride| == |width|*kBytesPerPixel, |subtexture| will
   // be treated as tightly packed.
+  void SetTexture(const uint8_t* texture, int width, int height, int stride);
+
+  // Updates a subregion (RGBA 8888) of the texture. Can only be called after
+  // SetTexture() has been called.
+  // stride: See SetTexture().
   void UpdateTexture(const uint8_t* subtexture,
                      int offset_x,
                      int offset_y,
@@ -54,14 +56,30 @@ class GlRenderLayer {
   // Draws the texture on the canvas. Texture must be set before calling Draw().
   void Draw(float alpha_multiplier);
 
+  // true if the texture is already set by calling SetTexture().
+  bool is_texture_set() { return texture_set_; }
+
  private:
+  // Returns pointer to the texture buffer that can be used by glTexImage2d or
+  // glTexSubImage2d. The returned value will be |data| if the texture can be
+  // used without manual packing, otherwise the data will be manually packed and
+  // the pointer to |update_buffer_| will be returned.
+  // should_reset_row_length: Pointer to a bool that will be set by the
+  //                          function. If this is true, the user need to call
+  //                          glPixelStorei(GL_UNPACK_ROW_LENGTH, 0) after
+  //                          updating the texture to reset the stride.
+  const uint8_t* PrepareTextureBuffer(const uint8_t* data,
+                                      int width,
+                                      int height,
+                                      int stride,
+                                      bool* should_reset_row_length);
+
   int texture_id_;
   GlCanvas* canvas_;
 
   GLuint texture_handle_;
   GLuint buffer_handle_;
 
-  // true IFF the texture is already set by calling SetTexture().
   bool texture_set_ = false;
 
   bool vertex_position_set_ = false;

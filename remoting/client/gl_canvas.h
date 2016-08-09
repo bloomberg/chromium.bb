@@ -60,9 +60,14 @@ class GlCanvas {
   // Returns the version number of current OpenGL ES context. Either 2 or 3.
   int GetGlVersion() const;
 
+  // Returns the maximum texture resolution limitation. Neither the width nor
+  // the height of the texture can exceed this limitation.
+  int GetMaxTextureSize() const;
+
  private:
   int gl_version_;
 
+  int max_texture_size_ = 0;
   bool transformation_set_ = false;
   bool view_size_set_ = false;
 

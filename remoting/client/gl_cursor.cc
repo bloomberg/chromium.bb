@@ -8,17 +8,14 @@
 #include "remoting/client/gl_canvas.h"
 #include "remoting/client/gl_math.h"
 #include "remoting/client/gl_render_layer.h"
+#include "remoting/client/gl_texture_ids.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 
 namespace remoting {
 
 namespace {
-
-// TODO(yuweih): Create separate header file for texture IDs to avoid conflicts.
-const int kTextureId = 1;
 const int kDefaultCursorDataSize = 32 * 32 * GlRenderLayer::kBytesPerPixel;
-
 }  // namespace
 
 GlCursor::GlCursor() {}
@@ -76,7 +73,7 @@ void GlCursor::SetCanvas(GlCanvas* canvas) {
     layer_.reset();
     return;
   }
-  layer_.reset(new GlRenderLayer(kTextureId, canvas));
+  layer_.reset(new GlRenderLayer(kGlCursorTextureId, canvas));
   if (current_cursor_data_) {
     SetCurrentCursorShape(true);
   }
@@ -93,7 +90,7 @@ void GlCursor::SetCurrentCursorShape(bool size_changed) {
   if (layer_) {
     if (size_changed) {
       layer_->SetTexture(current_cursor_data_.get(), current_cursor_width_,
-                         current_cursor_height_);
+                         current_cursor_height_, 0);
     } else {
       layer_->UpdateTexture(current_cursor_data_.get(), 0, 0,
                             current_cursor_width_, current_cursor_width_, 0);

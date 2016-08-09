@@ -74,7 +74,7 @@ void GlRenderer::OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
     canvas_height_ = frame->size().height();
   }
 
-  desktop_.SetVideoFrame(std::move(frame));
+  desktop_.SetVideoFrame(*frame);
   pending_done_callbacks_.push(done);
   RequestRender();
 }

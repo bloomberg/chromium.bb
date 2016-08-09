@@ -12,12 +12,10 @@
 #include "remoting/client/gl_cursor_feedback_texture.h"
 #include "remoting/client/gl_math.h"
 #include "remoting/client/gl_render_layer.h"
+#include "remoting/client/gl_texture_ids.h"
 
 namespace {
-
-const int kTextureId = 2;
 const float kAnimationDurationMs = 220.f;
-
 }  // namespace
 
 namespace remoting {
@@ -31,11 +29,11 @@ void GlCursorFeedback::SetCanvas(GlCanvas* canvas) {
     layer_.reset();
     return;
   }
-  layer_.reset(new GlRenderLayer(kTextureId, canvas));
+  layer_.reset(new GlRenderLayer(kGlCursorFeedbackTextureId, canvas));
   GlCursorFeedbackTexture* texture = GlCursorFeedbackTexture::GetInstance();
   layer_->SetTexture(texture->GetTexture().data(),
                      GlCursorFeedbackTexture::kTextureWidth,
-                     GlCursorFeedbackTexture::kTextureWidth);
+                     GlCursorFeedbackTexture::kTextureWidth, 0);
 }
 
 void GlCursorFeedback::StartAnimation(int x, int y, float diameter) {

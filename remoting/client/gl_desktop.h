@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_OPENGL_GL_DESKTOP_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -26,7 +27,7 @@ class GlDesktop {
   virtual ~GlDesktop();
 
   // |frame| can be either a full frame or updated regions only frame.
-  void SetVideoFrame(std::unique_ptr<webrtc::DesktopFrame> frame);
+  void SetVideoFrame(const webrtc::DesktopFrame& frame);
 
   // Sets the canvas on which the desktop will be drawn. Caller must feed a
   // full desktop frame after calling this function.
@@ -37,8 +38,15 @@ class GlDesktop {
   void Draw();
 
  private:
-  std::unique_ptr<GlRenderLayer> layer_;
+  struct GlDesktopTextureContainer;
+
+  void ReallocateTextures(const webrtc::DesktopSize& size);
+
+  std::vector<std::unique_ptr<GlDesktopTextureContainer>> textures_;
+
   webrtc::DesktopSize last_desktop_size_;
+  int max_texture_size_ = 0;
+  GlCanvas* canvas_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GlDesktop);
 };
