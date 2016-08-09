@@ -233,7 +233,7 @@ component("gl") {
     ]
 
     if (is_official_build) {
-      include_dirs = [ "//third_party/swiftshader/include" ]
+      include_dirs += [ "//third_party/swiftshader/include" ]
     }
   }
   if (is_mac) {
