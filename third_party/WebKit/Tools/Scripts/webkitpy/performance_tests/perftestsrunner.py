@@ -37,7 +37,6 @@ import datetime
 
 from webkitpy.common import find_files
 from webkitpy.common.checkout.scm.detection import SCMDetector
-from webkitpy.common.config.urls import view_source_url
 from webkitpy.common.host import Host
 from webkitpy.common.net.file_uploader import FileUploader
 from webkitpy.performance_tests.perftest import PerfTestFactory
@@ -290,7 +289,8 @@ class PerfTestsRunner(object):
                 path = test.test_name_without_file_extension().split('/')
                 for i in range(0, len(path)):
                     is_last_token = i + 1 == len(path)
-                    url = view_source_url('PerformanceTests/' + (test.test_name() if is_last_token else '/'.join(path[0:i + 1])))
+                    url = self.view_source_url(
+                        'PerformanceTests/' + (test.test_name() if is_last_token else '/'.join(path[0:i + 1])))
                     tests.setdefault(path[i], {'url': url})
                     current_test = tests[path[i]]
                     if is_last_token:
@@ -302,6 +302,10 @@ class PerfTestsRunner(object):
                         tests = current_test['tests']
 
         return contents
+
+    @staticmethod
+    def view_source_url(path_from_blink):
+        return 'https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/%s' % path_from_blink
 
     @staticmethod
     def _datetime_in_ES5_compatible_iso_format(datetime):

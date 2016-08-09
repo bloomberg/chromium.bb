@@ -272,8 +272,11 @@ Finished: 0.1 s
 
 """
 
-    results = {'url': 'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings/event-target-wrapper.html',
-               'metrics': {'Time': {'current': [[1486.0, 1471.0, 1510.0, 1505.0, 1478.0, 1490.0]] * 4}}}
+    results = {
+        'url': ('https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit'
+                '/PerformanceTests/Bindings/event-target-wrapper.html'),
+        'metrics': {'Time': {'current': [[1486.0, 1471.0, 1510.0, 1505.0, 1478.0, 1490.0]] * 4}}
+    }
 
 
 class SomeParserTestData:
@@ -526,9 +529,11 @@ class IntegrationTest(unittest.TestCase):
         return logs
 
     _event_target_wrapper_and_inspector_results = {
-        "Bindings":
-            {"url": "https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings",
-             "tests": {"event-target-wrapper": EventTargetWrapperTestData.results}}}
+        "Bindings": {
+            "url": "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/Bindings",
+            "tests": {"event-target-wrapper": EventTargetWrapperTestData.results}
+        }
+    }
 
     def test_run_with_json_output(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
@@ -735,11 +740,13 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(output['tests'].keys(), ['Bindings'])
         self.assertEqual(sorted(output['tests']['Bindings'].keys()), ['tests', 'url'])
         self.assertEqual(output['tests']['Bindings']['url'],
-                         'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings')
+                         'https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/Bindings')
         self.assertEqual(output['tests']['Bindings']['tests'].keys(), ['event-target-wrapper'])
         self.assertEqual(output['tests']['Bindings']['tests']['event-target-wrapper'], {
-            'url': 'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings/event-target-wrapper.html',
-            'metrics': {'Time': {'current': [[1486.0, 1471.0, 1510.0, 1505.0, 1478.0, 1490.0]] * 4}}})
+            'url': ('https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit'
+                    '/PerformanceTests/Bindings/event-target-wrapper.html'),
+            'metrics': {'Time': {'current': [[1486.0, 1471.0, 1510.0, 1505.0, 1478.0, 1490.0]] * 4}}
+        })
 
     def test_run_with_repeat(self):
         self.maxDiff = None
