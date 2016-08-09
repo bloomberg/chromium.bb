@@ -298,32 +298,14 @@ bool ChannelInfo::SetReadyMode(bool value) {
   return SetModifier(MOD_READY_MODE, value, &value_);
 }
 
-bool ChannelInfo::SetStage(const wchar_t* stage) {
+bool ChannelInfo::ClearStage() {
   base::string16::size_type position;
   base::string16::size_type length;
-  bool have_modifier = FindModifier(MOD_STAGE, value_, &position, &length);
-  if (stage != NULL && *stage != L'\0') {
-    base::string16 stage_str(kModStage);
-    stage_str.append(stage);
-    if (!have_modifier) {
-      value_.insert(FindInsertionPoint(MOD_STAGE, value_), stage_str);
-      return true;
-    }
-    if (value_.compare(position, length, stage_str) != 0) {
-      value_.replace(position, length, stage_str);
-      return true;
-    }
-  } else {
-    if (have_modifier) {
-      value_.erase(position, length);
-      return true;
-    }
+  if (FindModifier(MOD_STAGE, value_, &position, &length)) {
+    value_.erase(position, length);
+    return true;
   }
   return false;
-}
-
-base::string16 ChannelInfo::GetStage() const {
-  return GetModifierValue(MOD_STAGE, value_);
 }
 
 base::string16 ChannelInfo::GetStatsDefault() const {

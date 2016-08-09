@@ -46,52 +46,6 @@ namespace {
 
 const char kEnvProgramFilesPath[] = "CHROME_PROBED_PROGRAM_FILES_PATH";
 const wchar_t kRegDowngradeVersion[] = L"DowngradeVersion";
-const wchar_t kStageBinaryPatching[] = L"binary_patching";
-const wchar_t kStageBuilding[] = L"building";
-const wchar_t kStageConfiguringAutoLaunch[] = L"configuring_auto_launch";
-const wchar_t kStageCopyingPreferencesFile[] = L"copying_prefs";
-const wchar_t kStageCreatingShortcuts[] = L"creating_shortcuts";
-const wchar_t kStageEnsemblePatching[] = L"ensemble_patching";
-const wchar_t kStageExecuting[] = L"executing";
-const wchar_t kStageFinishing[] = L"finishing";
-const wchar_t kStagePreconditions[] = L"preconditions";
-const wchar_t kStageRefreshingPolicy[] = L"refreshing_policy";
-const wchar_t kStageRegisteringChrome[] = L"registering_chrome";
-const wchar_t kStageRemovingOldVersions[] = L"removing_old_ver";
-const wchar_t kStageRollingback[] = L"rollingback";
-const wchar_t kStageUncompressing[] = L"uncompressing";
-const wchar_t kStageUnpacking[] = L"unpacking";
-const wchar_t kStageUpdatingChannels[] = L"updating_channels";
-const wchar_t kStageCreatingVisualManifest[] = L"creating_visual_manifest";
-const wchar_t kStageUninstallingBinaries[] = L"uninstalling_binaries";
-const wchar_t kStageUninstallingChromeFrame[] = L"uninstalling_chrome_frame";
-
-const wchar_t* const kStages[] = {
-  NULL,
-  kStagePreconditions,
-  kStageUncompressing,
-  kStageEnsemblePatching,
-  kStageBinaryPatching,
-  kStageUnpacking,
-  kStageBuilding,
-  kStageExecuting,
-  kStageRollingback,
-  kStageRefreshingPolicy,
-  kStageUpdatingChannels,
-  kStageCopyingPreferencesFile,
-  kStageCreatingShortcuts,
-  kStageRegisteringChrome,
-  kStageRemovingOldVersions,
-  kStageFinishing,
-  kStageConfiguringAutoLaunch,
-  kStageCreatingVisualManifest,
-  nullptr,      // Deprecated with InstallerStage(18) in util_constants.h.
-  kStageUninstallingBinaries,
-  kStageUninstallingChromeFrame,
-};
-
-static_assert(installer::NUM_STAGES == arraysize(kStages),
-              "kStages disagrees with Stage; they must match!");
 
 // Creates a zero-sized non-decorated foreground window that doesn't appear
 // in the taskbar. This is used as a parent window for calls to ShellExecuteEx
@@ -349,15 +303,6 @@ void InstallUtil::UpdateInstallerStage(bool system_install,
       LOG_IF(ERROR, result != ERROR_SUCCESS)
           << "Failed writing installer stage to " << state_key_path
           << "; result: " << result;
-    }
-    // TODO(grt): Remove code below here once we're convinced that our use of
-    // Google Update's new InstallerExtraCode1 value is good.
-    installer::ChannelInfo channel_info;
-    // This will return false if the "ap" value isn't present, which is fine.
-    channel_info.Initialize(state_key);
-    if (channel_info.SetStage(kStages[stage]) &&
-        !channel_info.Write(&state_key)) {
-      LOG(ERROR) << "Failed writing installer stage to " << state_key_path;
     }
   } else {
     LOG(ERROR) << "Failed opening " << state_key_path

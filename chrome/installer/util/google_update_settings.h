@@ -203,6 +203,8 @@ class GoogleUpdateSettings {
   // There is no fall-back for full installer :)
   // - Unconditionally remove "-multifail" since we haven't crashed.
   // |state_key| should be obtained via InstallerState::state_key().
+  // - Unconditionally clear a legacy "-stage:" modifier since such information
+  // is now propagated through Google Update's InstallerExtraCode1 value.
   static void UpdateInstallStatus(bool system_install,
                                   installer::ArchiveType archive_type,
                                   int install_return_code,

@@ -623,7 +623,7 @@ void InstallerState::UpdateChannels() const {
     if (is_multi_install()) {
       // Remove the -stage: modifier since we don't want to propagate that to
       // the other app_guids.
-      channel_info.SetStage(NULL);
+      channel_info.ClearStage();
 
       // Synchronize the other products and the package with this one.
       ChannelInfo other_info;

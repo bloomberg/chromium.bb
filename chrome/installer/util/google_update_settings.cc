@@ -585,6 +585,12 @@ bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
     modified = true;
   }
 
+  if (value->ClearStage()) {
+    VLOG(1) << "Removed (legacy) stage information; switching to channel: "
+            << value->value();
+    modified = true;
+  }
+
   return modified;
 }
 
