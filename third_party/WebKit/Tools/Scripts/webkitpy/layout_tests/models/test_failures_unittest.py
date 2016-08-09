@@ -28,7 +28,10 @@
 
 import unittest
 
-from webkitpy.layout_tests.models.test_failures import *
+from webkitpy.layout_tests.models.test_failures import (
+    ALL_FAILURE_CLASSES, determine_result_type,
+    FailureCrash, FailureTimeout, TestFailure
+)
 
 
 class TestFailuresTest(unittest.TestCase):

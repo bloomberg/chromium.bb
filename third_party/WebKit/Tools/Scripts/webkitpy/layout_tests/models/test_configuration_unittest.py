@@ -28,7 +28,7 @@
 
 import unittest
 
-from webkitpy.layout_tests.models.test_configuration import *
+from webkitpy.layout_tests.models.test_configuration import SpecifierSorter, TestConfiguration, TestConfigurationConverter
 
 
 def make_mock_all_test_configurations_set():

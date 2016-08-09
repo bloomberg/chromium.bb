@@ -31,9 +31,12 @@ import unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.outputcapture import OutputCapture
-
-from webkitpy.layout_tests.models.test_configuration import *
-from webkitpy.layout_tests.models.test_expectations import *
+from webkitpy.layout_tests.models.test_configuration import TestConfiguration, TestConfigurationConverter
+from webkitpy.layout_tests.models.test_expectations import (
+    TestExpectationLine, TestExpectations, ParseError, TestExpectationParser,
+    PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO,
+    TIMEOUT, CRASH, LEAK, SKIP, WONTFIX, NEEDS_REBASELINE, MISSING
+)
 
 
 class Base(unittest.TestCase):

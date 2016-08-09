@@ -7,17 +7,13 @@ import unittest
 
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.layouttestresults import LayoutTestResults
-from webkitpy.common.net.rietveld import Build
-from webkitpy.common.system.executive_mock import MockExecutive
-from webkitpy.common.system.executive_mock import MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
-from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
-from webkitpy.tool.commands.rebaseline import CopyExistingBaselinesInternal
-from webkitpy.tool.commands.rebaseline import Rebaseline
-from webkitpy.tool.commands.rebaseline import RebaselineExpectations
-from webkitpy.tool.commands.rebaseline import RebaselineJson
-from webkitpy.tool.commands.rebaseline import RebaselineTest
+from webkitpy.tool.commands.rebaseline import (
+    AbstractParallelRebaselineCommand, CopyExistingBaselinesInternal,
+    Rebaseline, RebaselineExpectations, RebaselineJson, RebaselineTest
+)
 from webkitpy.tool.mock_tool import MockWebKitPatch
 
 
