@@ -30,7 +30,7 @@ void Domain::RemoveObserver(Observer* observer) {
     {# Skip redirected commands. #}
     {% if "redirect" in command %}{% continue %}{% endif %}
 
-    {% set class_name = 'ExperimentalDomain' if command.hidden else 'Domain' %}
+    {% set class_name = 'ExperimentalDomain' if command.experimental else 'Domain' %}
     {% set method_name = command.name | to_title_case %}
     {% if "parameters" in command and "returns" in command %}
 void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback) {
@@ -48,8 +48,8 @@ void {{class_name}}::{{method_name}}(base::Callback<void()> callback) {
 }
     {# Generate convenience methods that take the required parameters directly. #}
     {% if not "parameters" in command %}{% continue %}{% endif %}
-    {# Don't generate these for hidden commands. #}
-    {% if command.hidden %}{% continue %}{% endif %}
+    {# Don't generate these for experimental commands. #}
+    {% if command.experimental %}{% continue %}{% endif %}
 
 void {{class_name}}::{{method_name}}({##}
     {% for parameter in command.parameters -%}

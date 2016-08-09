@@ -30,8 +30,8 @@
   void {{method_name}}(base::Callback<void()> callback = base::Callback<void()>());
   {% endif %}
   {# Generate convenience methods that take the required parameters directly. #}
-  {# Don't generate these for hidden commands. #}
-  {% if "parameters" in command and not command.hidden %}
+  {# Don't generate these for experimental commands. #}
+  {% if "parameters" in command and not command.experimental %}
   void {{method_name}}({##}
     {% for parameter in command.parameters -%}
       {% if parameter.get("optional", False) -%}
@@ -71,9 +71,9 @@ class HEADLESS_EXPORT Observer : public ExperimentalObserver {
   virtual ~Observer() {}
   {% for event in domain.events %}
     {% if event.description %}
-  // {% if event.hidden %}Experimental: {% endif %}{{event.description}}
+  // {% if event.experimental %}Experimental: {% endif %}{{event.description}}
     {% endif %}
-  virtual void On{{event.name | to_title_case}}(const {{event.name | to_title_case}}Params& params) {% if event.hidden %}final {% endif %}{}
+  virtual void On{{event.name | to_title_case}}(const {{event.name | to_title_case}}Params& params) {% if event.experimental %}final {% endif %}{}
   {% endfor %}
 };
 {% endif %}
@@ -98,8 +98,8 @@ class HEADLESS_EXPORT Domain {
   {% for command in domain.commands %}
     {# Skip redirected commands. #}
     {% if "redirect" in command %}{% continue %}{% endif %}
-    {# Skip hidden commands. #}
-    {% if command.hidden %}{% continue %}{% endif %}
+    {# Skip experimental commands. #}
+    {% if command.experimental %}{% continue %}{% endif %}
 {{ command_decl(command) }}
   {% endfor %}
  protected:
@@ -143,8 +143,8 @@ class ExperimentalDomain : public Domain {
   {% for command in domain.commands %}
     {# Skip redirected commands. #}
     {% if "redirect" in command %}{% continue %}{% endif %}
-    {# Skip non-hidden commands. #}
-    {% if not command.hidden %}{% continue %}{% endif %}
+    {# Skip non-experimental commands. #}
+    {% if not command.experimental %}{% continue %}{% endif %}
 {{ command_decl(command) }}
   {% endfor %}
 

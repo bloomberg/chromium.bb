@@ -351,12 +351,12 @@ class ClientApiGeneratorTest(unittest.TestCase):
     types = json_api['domains'][0]['types']
     self.assertListEqual(types, expected_types)
 
-  def test_PatchHiddenDomains(self):
+  def test_PatchExperimentalDomains(self):
     json_api = {
       'domains': [
         {
           'domain': 'domain',
-          'hidden': True,
+          'experimental': True,
           'commands': [
             {
               'name': 'FooCommand',
@@ -390,17 +390,17 @@ class ClientApiGeneratorTest(unittest.TestCase):
         'properties': [],
       }
     ]
-    client_api_generator.PatchHiddenCommandsAndEvents(json_api)
+    client_api_generator.PatchExperimentalCommandsAndEvents(json_api)
     client_api_generator.SynthesizeCommandTypes(json_api)
     client_api_generator.SynthesizeEventTypes(json_api)
     for command in json_api['domains'][0]['commands']:
-      self.assertTrue(command['hidden'])
+      self.assertTrue(command['experimental'])
     for event in json_api['domains'][0]['events']:
-      self.assertTrue(command['hidden'])
+      self.assertTrue(command['experimental'])
     types = json_api['domains'][0]['types']
     self.assertListEqual(types, expected_types)
 
-  def test_PatchHiddenCommandsAndEvents(self):
+  def test_PatchExperimentalCommandsAndEvents(self):
     json_api = {
       'domains': [
         {
@@ -408,13 +408,13 @@ class ClientApiGeneratorTest(unittest.TestCase):
           'commands': [
             {
               'name': 'FooCommand',
-              'hidden': True,
+              'experimental': True,
             }
           ],
           'events': [
             {
               'name': 'BarEvent',
-              'hidden': True,
+              'experimental': True,
             }
           ]
         }
@@ -440,13 +440,13 @@ class ClientApiGeneratorTest(unittest.TestCase):
         'properties': [],
       }
     ]
-    client_api_generator.PatchHiddenCommandsAndEvents(json_api)
+    client_api_generator.PatchExperimentalCommandsAndEvents(json_api)
     client_api_generator.SynthesizeCommandTypes(json_api)
     client_api_generator.SynthesizeEventTypes(json_api)
     for command in json_api['domains'][0]['commands']:
-      self.assertTrue(command['hidden'])
+      self.assertTrue(command['experimental'])
     for event in json_api['domains'][0]['events']:
-      self.assertTrue(command['hidden'])
+      self.assertTrue(command['experimental'])
     types = json_api['domains'][0]['types']
     self.assertListEqual(types, expected_types)
 
