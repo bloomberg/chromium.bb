@@ -1,0 +1,28 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.showScriptSource("inspector-test.js", onSourceFrame);
+    function onSourceFrame(sourceFrame)
+    {
+        InspectorTest.addResult("initial: focused = " + sourceFrame.hasFocus());
+        WebInspector.inspectorView.showPanel("elements")
+            .then(() => WebInspector.inspectorView.showPanel("sources"))
+            .then(onPanelReselected.bind(null, sourceFrame));
+    }
+
+    function onPanelReselected(sourceFrame)
+    {
+        InspectorTest.addResult("after panel reselected: focused = " + sourceFrame.hasFocus());
+        InspectorTest.completeTest();
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verifies that text editor has focus after panel re-selecting.</p>
+</body>
+</html>
