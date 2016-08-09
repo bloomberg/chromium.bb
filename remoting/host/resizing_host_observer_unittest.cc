@@ -99,12 +99,12 @@ class FakeDesktopResizer : public DesktopResizer {
 class ResizingHostObserverTest : public testing::Test {
  public:
   ResizingHostObserverTest()
-      : now_(base::Time::Now()) {
+      : now_(base::TimeTicks::Now()) {
   }
 
   // This needs to be public because the derived test-case class needs to
   // pass it to Bind, which fails if it's protected.
-  base::Time GetTime() {
+  base::TimeTicks GetTime() {
     return now_;
   }
 
@@ -144,8 +144,8 @@ class ResizingHostObserverTest : public testing::Test {
     }
   }
 
-  base::Time GetTimeAndIncrement() {
-    base::Time result = now_;
+  base::TimeTicks GetTimeAndIncrement() {
+    base::TimeTicks result = now_;
     now_ += base::TimeDelta::FromSeconds(1);
     return result;
   }
@@ -153,7 +153,7 @@ class ResizingHostObserverTest : public testing::Test {
   ScreenResolution current_resolution_;
   FakeDesktopResizer::CallCounts call_counts_;
   std::unique_ptr<ResizingHostObserver> resizing_host_observer_;
-  base::Time now_;
+  base::TimeTicks now_;
 };
 
 // Check that the resolution isn't restored if it wasn't changed by this class.
