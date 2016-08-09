@@ -8,6 +8,27 @@ PASS If constructor is object, should throw a TypeError
 PASS If constructor is string, should throw a TypeError 
 PASS If constructor is arrow function, should throw a TypeError 
 PASS If constructor is method, should throw a TypeError 
+FAIL If constructor is HTMLElement, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-HTMLElement" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is HTMLButtonElement, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-HTMLButtonElement" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is HTMLImageElement, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-HTMLImageElement" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is HTMLMediaElement, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-HTMLMediaElement" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is Image, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-Image" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is Audio, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-Audio" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is Option, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-Option" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
 PASS Element names: defining an element named a- should succeed 
 PASS Element names: defining an element named a-a should succeed 
 PASS Element names: defining an element named aa- should succeed 
@@ -73,7 +94,6 @@ FAIL If extends is spacer, should throw a NotSupportedError assert_throws: funct
 FAIL If extends is elementnametobeunknownelement, should throw a NotSupportedError assert_throws: function "() =>  {
         customElements.define('test-define-extend-' + name, class {}, { extends: name });
       }" did not throw
-PASS If constructor.observedAttributes throws, should rethrow 
 PASS If constructor.prototype throws, should rethrow 
 PASS If Type(constructor.prototype) is undefined, should throw a TypeError 
 PASS If Type(constructor.prototype) is string, should throw a TypeError 

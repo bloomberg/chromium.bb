@@ -22,6 +22,7 @@ FAIL Keyframes can be replaced with a keyframe sequence with duplicate values fo
 FAIL Keyframes can be replaced with a keyframe sequence with duplicate values for offsets 0 and 1 effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a two property four keyframe sequence effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a single keyframe sequence with omitted offsets effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a single keyframe sequence with string offset effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a one property keyframe sequence with some omitted offsets effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a two property keyframe sequence with some omitted offsets effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a one property keyframe sequence with all omitted offsets effect.setKeyframes is not a function

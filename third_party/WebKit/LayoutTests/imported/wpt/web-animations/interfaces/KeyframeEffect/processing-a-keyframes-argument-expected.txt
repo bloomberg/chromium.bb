@@ -31,5 +31,28 @@ FAIL non-animatable property 'transitionProperty' is not accessed when using a k
 FAIL non-animatable property 'transitionTimingFunction' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
 FAIL non-animatable property 'display' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
 FAIL non-animatable property 'unsupportedProperty' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL Equivalent property indexed and sequenced keyframes: two properties with one value KeyframeEffectReadOnly is not defined
+FAIL Equivalent property indexed and sequenced keyframes: two properties with three values KeyframeEffectReadOnly is not defined
+FAIL Equivalent property indexed and sequenced keyframes: two properties with different numbers of values KeyframeEffectReadOnly is not defined
+FAIL Equivalent property indexed and sequenced keyframes: same offset applied to all keyframes KeyframeEffectReadOnly is not defined
+FAIL Equivalent property indexed and sequenced keyframes: same easing applied to all keyframes KeyframeEffectReadOnly is not defined
+FAIL Equivalent property indexed and sequenced keyframes: same composite applied to all keyframes KeyframeEffectReadOnly is not defined
+FAIL Custom iterator with basic keyframes. effect.getKeyframes is not a function
+FAIL easing and offset are ignored on iterable objects. effect.getKeyframes is not a function
+FAIL Custom iterator with multiple properties specified. effect.getKeyframes is not a function
+FAIL Custom iterator with offset specified. effect.getKeyframes is not a function
+FAIL Custom iterator with non object keyframe should throw. assert_throws: function "function () {
+    new KeyframeEffect(null, createIterable([
+      {done: false, value: {left: '100px'}},
+      {done: false, value: 1234},
+      {done: false, value: {left: '200px'}},
+      {done: true},
+    ]));
+  }" did not throw
+FAIL Custom iterator with value list in keyframe should give bizarre string representation of list. effect.getKeyframes is not a function
+FAIL Only enumerable properties on keyframes are considered anim.effect.getKeyframes is not a function
+FAIL Only properties defined directly on keyframes are considered anim.effect.getKeyframes is not a function
+FAIL Only enumerable properties on property indexed keyframes are considered anim.effect.getKeyframes is not a function
+FAIL Only properties defined directly on property indexed keyframes are considered anim.effect.getKeyframes is not a function
 Harness: the test ran to completion.
 

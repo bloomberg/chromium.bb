@@ -1,6 +1,9 @@
 This is a testharness.js-based test.
 PASS Element.animate() creates an Animation object 
+FAIL Element.animate() creates an Animation object in the relevant realm of the target element Cannot read property 'prototype' of undefined
 PASS Element.animate() creates an Animation object with a KeyframeEffect 
+PASS Element.animate() creates an Animation object with a KeyframeEffect that is created in the relevant realm of the target element 
+PASS Element.animate() creates an Animation object with a KeyframeEffect whose AnimationEffectTiming object is created in the relevant realm of the target element 
 FAIL Element.animate() accepts a one property two value property-indexed keyframes specification anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one shorthand property two value property-indexed keyframes specification anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification anim.effect.getKeyframes is not a function
@@ -23,6 +26,7 @@ FAIL Element.animate() accepts a keyframe sequence with duplicate values for a g
 FAIL Element.animate() accepts a keyframe sequence with duplicate values for offsets 0 and 1 anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property four keyframe sequence anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a single keyframe sequence with omitted offsets anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a single keyframe sequence with string offset anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property keyframe sequence with some omitted offsets anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property keyframe sequence with some omitted offsets anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property keyframe sequence with all omitted offsets anim.effect.getKeyframes is not a function

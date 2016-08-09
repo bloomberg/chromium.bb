@@ -51,6 +51,8 @@ FAIL a KeyframeEffectReadOnly can be constructed with a two property four keyfra
 FAIL a KeyframeEffectReadOnly constructed with a two property four keyframe sequence roundtrips KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with omitted offsets KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with omitted offsets roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with string offset KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with string offset roundtrips KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some omitted offsets KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly constructed with a one property keyframe sequence with some omitted offsets roundtrips KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly can be constructed with a two property keyframe sequence with some omitted offsets KeyframeEffectReadOnly is not defined

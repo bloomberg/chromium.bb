@@ -86,6 +86,7 @@ PASS IDBDatabase interface: operation deleteObjectStore(DOMString)
 PASS IDBDatabase interface: operation transaction([object Object],[object Object],IDBTransactionMode) 
 PASS IDBDatabase interface: operation close() 
 PASS IDBDatabase interface: attribute onabort 
+PASS IDBDatabase interface: attribute onclose 
 PASS IDBDatabase interface: attribute onerror 
 PASS IDBDatabase interface: attribute onversionchange 
 PASS IDBObjectStore interface: existence and properties of interface object 

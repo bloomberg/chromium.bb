@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS "toNativeLineEndings" should not be supported 
-PASS "FileError" should not be supported 
-PASS "FileException" should not be supported 
-PASS Blob should not support slice prefixed 
-PASS BlobBuilder should not be supported. 
-FAIL FileReader should not support readAsBinaryString assert_false: should not be in reader expected false got true
-Harness: the test ran to completion.
-
