@@ -247,6 +247,14 @@ void BluetoothTestMac::SimulateGattServicesDiscovered(
   DidDiscoverServices(peripheral_mock);
 }
 
+void BluetoothTestMac::SimulateGattServicesChanged(BluetoothDevice* device) {
+  BluetoothLowEnergyDeviceMac* device_mac =
+      static_cast<BluetoothLowEnergyDeviceMac*>(device);
+  CBPeripheral* peripheral = device_mac->GetPeripheral();
+  MockCBPeripheral* peripheral_mock = ObjCCast<MockCBPeripheral>(peripheral);
+  [peripheral_mock didModifyServices:@[]];
+}
+
 void BluetoothTestMac::SimulateGattServiceRemoved(
     BluetoothRemoteGattService* service) {
   BluetoothUUID bluetooth_service_uuid = service->GetUUID();

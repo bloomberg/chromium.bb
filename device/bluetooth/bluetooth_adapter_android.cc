@@ -182,7 +182,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     const JavaParamRef<jstring>& address,
     const JavaParamRef<jobject>&
         bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
-    const JavaParamRef<jobject>&
+    const JavaParamRef<jobjectArray>&
         advertised_uuids) {  // Java Type: List<ParcelUuid>
   std::string device_address = ConvertJavaStringToUTF8(env, address);
   DevicesMap::const_iterator iter = devices_.find(device_address);
@@ -202,10 +202,10 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     BluetoothDeviceAndroid* device_android =
         static_cast<BluetoothDeviceAndroid*>(iter->second);
     device_android->UpdateTimestamp();
-    if (device_android->UpdateAdvertisedUUIDs(advertised_uuids)) {
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceChanged(this, device_android));
-    }
+    device_android->UpdateAdvertisedUUIDs(advertised_uuids);
+
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      DeviceChanged(this, device_android));
   }
 }
 

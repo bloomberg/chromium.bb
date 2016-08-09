@@ -243,6 +243,22 @@ bool BluetoothDevice::IsTrustable() const {
   return false;
 }
 
+BluetoothDevice::UUIDList BluetoothDevice::GetUUIDs() const {
+  if (!IsGattConnected()) {
+    DCHECK(service_uuids_.empty());
+    return advertised_uuids_;
+  }
+
+  if (IsGattServicesDiscoveryComplete()) {
+    DCHECK(advertised_uuids_.empty());
+    return service_uuids_;
+  }
+
+  DCHECK(service_uuids_.empty());
+  DCHECK(advertised_uuids_.empty());
+  return BluetoothDevice::UUIDList();
+}
+
 void BluetoothDevice::CreateGattConnection(
     const GattConnectionCallback& callback,
     const ConnectErrorCallback& error_callback) {
@@ -333,6 +349,7 @@ BluetoothDevice::UUIDList BluetoothDevice::GetServiceDataUUIDs() const {
 }
 
 void BluetoothDevice::DidConnectGatt() {
+  advertised_uuids_.clear();
   for (const auto& callback : create_gatt_connection_success_callbacks_) {
     callback.Run(
         base::WrapUnique(new BluetoothGattConnection(adapter_, GetAddress())));
@@ -377,6 +394,14 @@ void BluetoothDevice::RemoveGattConnection(
   DCHECK(erased_count);
   if (gatt_connections_.size() == 0)
     DisconnectGatt();
+}
+
+void BluetoothDevice::UpdateServiceUUIDs() {
+  std::unordered_set<BluetoothUUID, BluetoothUUIDHash> uuid_set;
+  for (const auto& gatt_service_pair : gatt_services_) {
+    uuid_set.insert(gatt_service_pair.second->GetUUID());
+  }
+  service_uuids_ = UUIDList(uuid_set.begin(), uuid_set.end());
 }
 
 void BluetoothDevice::ClearServiceData() { services_data_->Clear(); }

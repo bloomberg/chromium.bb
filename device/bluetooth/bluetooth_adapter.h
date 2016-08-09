@@ -97,6 +97,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     //  * IsPaired()
     //  * IsTrustable()
     //
+    // On Android and MacOS this method is called for each advertisement packet
+    // received. On Chrome OS and Linux, we can't guarantee that this method
+    // will be called for each Adv. Packet received but, because the RSSI is
+    // always changing, it's very likely this method will be called for each
+    // Adv. Packet.
     // |device| should not be cached. Instead, copy its Bluetooth address.
     virtual void DeviceChanged(BluetoothAdapter* adapter,
                                BluetoothDevice* device) {}

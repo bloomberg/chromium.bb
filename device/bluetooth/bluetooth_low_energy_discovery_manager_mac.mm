@@ -64,7 +64,15 @@ void BluetoothLowEnergyDiscoveryManagerMac::TryStartDiscovery() {
   };
 
   VLOG(1) << "TryStartDiscovery scanForPeripheralsWithServices";
-  [central_manager_ scanForPeripheralsWithServices:services options:nil];
+  // Start a scan with the Allow Duplicates option so that we get notified
+  // of each new Advertisement Packet. This allows us to provide up to date
+  // values for RSSI, Advertised Services, Advertised Data, etc.
+  [central_manager_
+      scanForPeripheralsWithServices:services
+                             options:@{
+                               CBCentralManagerScanOptionAllowDuplicatesKey :
+                                   @YES
+                             }];
   pending_ = false;
 }
 

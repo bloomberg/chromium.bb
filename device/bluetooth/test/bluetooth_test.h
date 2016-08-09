@@ -136,6 +136,9 @@ class BluetoothTestBase : public testing::Test {
       BluetoothDevice* device,
       const std::vector<std::string>& uuids) {}
 
+  // Simulates a GATT Services changed event.
+  virtual void SimulateGattServicesChanged(BluetoothDevice* device) {}
+
   // Simulates remove of a |service|.
   virtual void SimulateGattServiceRemoved(BluetoothRemoteGattService* service) {
   }

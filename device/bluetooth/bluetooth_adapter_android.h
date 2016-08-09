@@ -105,8 +105,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
       const base::android::JavaParamRef<jstring>& address,
       const base::android::JavaParamRef<jobject>&
           bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
-      const base::android::JavaParamRef<jobject>&
-          advertised_uuids);  // Java Type: List<ParcelUuid>
+      const base::android::JavaParamRef<jobjectArray>&
+          advertised_uuids);  // Java Type: String[]
 
  protected:
   BluetoothAdapterAndroid();

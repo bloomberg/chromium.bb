@@ -56,7 +56,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
-  BluetoothDevice::UUIDList GetUUIDs() const override;
   int16_t GetInquiryRSSI() const override;
   int16_t GetInquiryTxPower() const override;
   bool ExpectingPinCode() const override;
@@ -149,9 +148,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // A local address for the device created by hashing the peripheral
   // identifier.
   std::string hash_address_;
-
-  // The services (identified by UUIDs) that this device provides.
-  std::set<BluetoothUUID> advertised_uuids_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyDeviceMac);
 };

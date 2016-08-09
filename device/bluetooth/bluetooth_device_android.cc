@@ -51,9 +51,13 @@ BluetoothDeviceAndroid::~BluetoothDeviceAndroid() {
       AttachCurrentThread(), j_device_.obj());
 }
 
-bool BluetoothDeviceAndroid::UpdateAdvertisedUUIDs(jobject advertised_uuids) {
-  return Java_ChromeBluetoothDevice_updateAdvertisedUUIDs(
-      AttachCurrentThread(), j_device_.obj(), advertised_uuids);
+void BluetoothDeviceAndroid::UpdateAdvertisedUUIDs(
+    jobjectArray advertised_uuids) {
+  JNIEnv* env = AttachCurrentThread();
+  std::vector<std::string> uuid_strings;
+  AppendJavaStringArrayToStringVector(env, advertised_uuids, &uuid_strings);
+
+  advertised_uuids_ = UUIDList(uuid_strings.begin(), uuid_strings.end());
 }
 
 // static
@@ -133,20 +137,6 @@ bool BluetoothDeviceAndroid::IsConnectable() const {
 bool BluetoothDeviceAndroid::IsConnecting() const {
   NOTIMPLEMENTED();
   return false;
-}
-
-BluetoothDevice::UUIDList BluetoothDeviceAndroid::GetUUIDs() const {
-  JNIEnv* env = AttachCurrentThread();
-  std::vector<std::string> uuid_strings;
-  AppendJavaStringArrayToStringVector(
-      env, Java_ChromeBluetoothDevice_getUuids(env, j_device_.obj()).obj(),
-      &uuid_strings);
-  BluetoothDevice::UUIDList uuids;
-  uuids.reserve(uuid_strings.size());
-  for (auto uuid_string : uuid_strings) {
-    uuids.push_back(BluetoothUUID(uuid_string));
-  }
-  return uuids;
 }
 
 int16_t BluetoothDeviceAndroid::GetInquiryRSSI() const {
@@ -252,6 +242,7 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(
     // Otherwise an existing connection was terminated.
     RecordConnectionTerminatedResult(status);
     gatt_services_.clear();
+    service_uuids_.clear();
     SetGattServicesDiscoveryComplete(false);
     DidDisconnectGatt();
   }
@@ -260,6 +251,7 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(
 void BluetoothDeviceAndroid::OnGattServicesDiscovered(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
+  UpdateServiceUUIDs();
   SetGattServicesDiscoveryComplete(true);
   adapter_->NotifyGattServicesDiscovered(this);
 }

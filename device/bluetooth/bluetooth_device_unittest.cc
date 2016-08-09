@@ -118,6 +118,81 @@ TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+// Tests GetUUIDs returns the right UUIDs when device connects and disconnects.
+TEST_F(BluetoothTest, GetUUIDs) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+
+  // Check advertised UUIDs:
+  EXPECT_EQ(2u, device->GetUUIDs().size());
+  EXPECT_TRUE(
+      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDGenericAccess)));
+  EXPECT_TRUE(ContainsValue(device->GetUUIDs(),
+                            BluetoothUUID(kTestUUIDGenericAttribute)));
+
+  // Connect.
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  TestBluetoothAdapterObserver observer(adapter_);
+  SimulateGattConnection(device);
+  ASSERT_TRUE(device->IsConnected());
+
+  // No UUIDs until services are completely discovered.
+  EXPECT_EQ(0u, device->GetUUIDs().size());
+
+  // Discover services.
+  std::vector<std::string> services;
+  services.push_back(BluetoothUUID(kTestUUIDGenericAccess).canonical_value());
+  SimulateGattServicesDiscovered(device, services);
+
+  // GetUUIDs should return UUIDs of services in device.
+  EXPECT_EQ(1u, device->GetUUIDs().size());
+  EXPECT_TRUE(
+      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDGenericAccess)));
+
+#if defined(OS_MACOSX)
+  // Android and Windows don't yet support service changed events.
+  // http://crbug.com/548280
+  // http://crbug.com/579202
+  SimulateGattServicesChanged(device);
+
+  // After service changed event we don't know what UUIDs the device has.
+  ASSERT_FALSE(device->IsGattServicesDiscoveryComplete());
+  EXPECT_EQ(0u, device->GetUUIDs().size());
+
+  SimulateGattServicesDiscovered(device, {} /* services */);
+
+  // GetUUIDs should return UUIDs of services in device.
+  EXPECT_EQ(1u, device->GetUUIDs().size());
+  EXPECT_TRUE(
+      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDGenericAccess)));
+#endif  // defined(OS_MACOSX)
+
+  // Disconnect.
+  device->DisconnectGatt();
+  SimulateGattDisconnection(device);
+
+  // After disconnection we don't know what UUIDs the device has.
+  EXPECT_EQ(0u, device->GetUUIDs().size());
+
+  // Discover the device again with different UUIDs.
+  device = SimulateLowEnergyDevice(2);
+
+  // Check advertised UUIDs.
+  EXPECT_EQ(2u, device->GetUUIDs().size());
+  EXPECT_TRUE(ContainsValue(device->GetUUIDs(),
+                            BluetoothUUID(kTestUUIDImmediateAlert)));
+  EXPECT_TRUE(
+      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDLinkLoss)));
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // GetName for Device with no name.
 TEST_F(BluetoothTest, GetName_NullName) {
   if (!PlatformSupportsLowEnergy()) {

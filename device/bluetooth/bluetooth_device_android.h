@@ -49,10 +49,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
     return static_cast<BluetoothAdapterAndroid*>(adapter_);
   }
 
-  // Updates cached copy of advertised UUIDs discovered during a scan.
-  // Returns true if new UUIDs differed from cached values.
-  bool UpdateAdvertisedUUIDs(
-      jobject advertised_uuids);  // Java Type: List<ParcelUuid>
+  // Replaces cached copy of advertised UUIDs discovered during a scan.
+  void UpdateAdvertisedUUIDs(
+      jobjectArray advertised_uuids);  // Java Type: String[]
 
   // BluetoothDevice:
   uint32_t GetBluetoothClass() const override;
@@ -68,7 +67,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
-  UUIDList GetUUIDs() const override;
   int16_t GetInquiryRSSI() const override;
   int16_t GetInquiryTxPower() const override;
   bool ExpectingPinCode() const override;

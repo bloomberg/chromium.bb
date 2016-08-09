@@ -8,7 +8,6 @@ import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.Build;
-import android.os.ParcelUuid;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -16,8 +15,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * Exposes android.bluetooth.BluetoothDevice as necessary for C++
@@ -32,7 +29,6 @@ final class ChromeBluetoothDevice {
 
     private long mNativeBluetoothDeviceAndroid;
     final Wrappers.BluetoothDeviceWrapper mDevice;
-    private HashSet<String> mUuidsFromScan;
     Wrappers.BluetoothGattWrapper mBluetoothGatt;
     private final BluetoothGattCallbackImpl mBluetoothGattCallbackImpl;
     final HashMap<Wrappers.BluetoothGattCharacteristicWrapper,
@@ -44,7 +40,6 @@ final class ChromeBluetoothDevice {
             long nativeBluetoothDeviceAndroid, Wrappers.BluetoothDeviceWrapper deviceWrapper) {
         mNativeBluetoothDeviceAndroid = nativeBluetoothDeviceAndroid;
         mDevice = deviceWrapper;
-        mUuidsFromScan = new HashSet<String>();
         mBluetoothGattCallbackImpl = new BluetoothGattCallbackImpl();
         mWrapperToChromeCharacteristicsMap =
                 new HashMap<Wrappers.BluetoothGattCharacteristicWrapper,
@@ -79,19 +74,6 @@ final class ChromeBluetoothDevice {
                 nativeBluetoothDeviceAndroid, (Wrappers.BluetoothDeviceWrapper) deviceWrapper);
     }
 
-    // Implements BluetoothDeviceAndroid::UpdateAdvertisedUUIDs.
-    @CalledByNative
-    private boolean updateAdvertisedUUIDs(List<ParcelUuid> uuidsFromScan) {
-        if (uuidsFromScan == null) {
-            return false;
-        }
-        boolean uuidsUpdated = false;
-        for (ParcelUuid uuid : uuidsFromScan) {
-            uuidsUpdated |= mUuidsFromScan.add(uuid.toString());
-        }
-        return uuidsUpdated;
-    }
-
     // Implements BluetoothDeviceAndroid::GetBluetoothClass.
     @CalledByNative
     private int getBluetoothClass() {
@@ -114,14 +96,6 @@ final class ChromeBluetoothDevice {
     @CalledByNative
     private boolean isPaired() {
         return mDevice.getBondState() == BluetoothDevice.BOND_BONDED;
-    }
-
-    // Implements BluetoothDeviceAndroid::GetUUIDs.
-    @CalledByNative
-    private String[] getUuids() {
-        // TODO(scheib): return merged list of UUIDs from scan results and,
-        // after a device is connected, discoverServices. crbug.com/508648
-        return mUuidsFromScan.toArray(new String[mUuidsFromScan.size()]);
     }
 
     // Implements BluetoothDeviceAndroid::CreateGattConnectionImpl.

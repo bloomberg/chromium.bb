@@ -288,11 +288,21 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // such as vendor and product id.
   bool IsTrustable() const;
 
-  // Returns the set of UUIDs that this device supports. For classic Bluetooth
-  // devices this data is collected from both the EIR data and SDP tables,
-  // for Low Energy devices this data is collected from AD and GATT primary
-  // services, for dual mode devices this may be collected from both./
-  virtual UUIDList GetUUIDs() const = 0;
+  // Returns the set of UUIDs that this device supports.
+  //  * For classic Bluetooth devices this data is collected from both the EIR
+  //    data and SDP tables.
+  //  * For non-connected Low Energy Devices this returns the latest advertised
+  //    UUIDs.
+  //  * For connected Low Energy Devices for which services have not been
+  //    discovered returns an empty list.
+  //  * For connected Low Energy Devices for which services have been discovered
+  //    returns the UUIDs of the device's services.
+  //  * For dual mode devices this may be collected from both.
+  //
+  // Note: On ChromeOS and Linux, Bluez persists all services meaning if
+  // a device stops advertising a service this function will still return
+  // its UUID.
+  virtual UUIDList GetUUIDs() const;
 
   // The received signal strength, in dBm. This field is avaliable and valid
   // only during discovery. If not during discovery, or RSSI wasn't reported,
@@ -492,6 +502,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
  protected:
   // BluetoothGattConnection is a friend to call Add/RemoveGattConnection.
   friend BluetoothGattConnection;
+  FRIEND_TEST_ALL_PREFIXES(BluetoothTest, GetUUIDs);
   FRIEND_TEST_ALL_PREFIXES(
       BluetoothTest,
       BluetoothGattConnection_DisconnectGatt_SimulateConnect);
@@ -536,6 +547,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   void AddGattConnection(BluetoothGattConnection*);
   void RemoveGattConnection(BluetoothGattConnection*);
 
+  void UpdateServiceUUIDs();
+
   // Clears the list of service data.
   void ClearServiceData();
 
@@ -564,6 +577,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
       GattServiceMap;
   GattServiceMap gatt_services_;
   bool gatt_services_discovery_complete_;
+
+  // Last advertised service UUIDs. Should be empty if the device is connected.
+  UUIDList advertised_uuids_;
+  // UUIDs of the device's services. Should be empty if the device is not
+  // connected or it's services have not been discovered yet.
+  UUIDList service_uuids_;
 
   // Mapping from service UUID represented as a std::string of a bluetooth
   // service to

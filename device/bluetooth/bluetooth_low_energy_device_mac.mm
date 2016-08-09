@@ -61,18 +61,20 @@ void BluetoothLowEnergyDeviceMac::Update(NSDictionary* advertisement_data,
     SetServiceData(service_uuid, static_cast<const char*>([data bytes]),
                    [data length]);
   }
+
+  std::unordered_set<BluetoothUUID, BluetoothUUIDHash> uuid_set;
   NSArray* service_uuids =
       [advertisement_data objectForKey:CBAdvertisementDataServiceUUIDsKey];
   for (CBUUID* uuid in service_uuids) {
-    advertised_uuids_.insert(
-        BluetoothUUID(std::string([[uuid UUIDString] UTF8String])));
+    uuid_set.emplace([[uuid UUIDString] UTF8String]);
   }
   NSArray* overflow_service_uuids = [advertisement_data
       objectForKey:CBAdvertisementDataOverflowServiceUUIDsKey];
   for (CBUUID* uuid in overflow_service_uuids) {
-    advertised_uuids_.insert(
-        BluetoothUUID(std::string([[uuid UUIDString] UTF8String])));
+    uuid_set.emplace([[uuid UUIDString] UTF8String]);
   }
+
+  advertised_uuids_ = UUIDList(uuid_set.begin(), uuid_set.end());
 }
 
 std::string BluetoothLowEnergyDeviceMac::GetIdentifier() const {
@@ -139,11 +141,6 @@ bool BluetoothLowEnergyDeviceMac::IsConnectable() const {
 
 bool BluetoothLowEnergyDeviceMac::IsConnecting() const {
   return ([peripheral_ state] == CBPeripheralStateConnecting);
-}
-
-BluetoothDevice::UUIDList BluetoothLowEnergyDeviceMac::GetUUIDs() const {
-  return BluetoothDevice::UUIDList(advertised_uuids_.begin(),
-                                   advertised_uuids_.end());
 }
 
 int16_t BluetoothLowEnergyDeviceMac::GetInquiryRSSI() const {
@@ -303,6 +300,7 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
                 ->IsDiscoveryComplete();
           }) == gatt_services_.end();
   if (discovery_complete) {
+    UpdateServiceUUIDs();
     SetGattServicesDiscoveryComplete(true);
     adapter_->NotifyGattServicesDiscovered(this);
   }
@@ -318,6 +316,7 @@ void BluetoothLowEnergyDeviceMac::DidModifyServices(
         gatt_services_.take_and_erase(gatt_service->GetIdentifier());
     adapter_->NotifyGattServiceRemoved(scoped_service.get());
   }
+  service_uuids_.clear();
   SetGattServicesDiscoveryComplete(false);
   [GetPeripheral() discoverServices:nil];
 }
