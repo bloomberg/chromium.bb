@@ -10,8 +10,8 @@ layer at (0,0) size 800x71
         LayoutText {#text} at (682,0) size 102x16
           text run at (682,0) width 102 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
       LayoutBlockFlow (anonymous) at (0,36) size 784x19
-        LayoutMenuList {SELECT} at (666,1) size 118x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 118x21
-            LayoutText (anonymous) at (8,2) size 87x13
-              text run at (8,2) width 87 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
+        LayoutMenuList {SELECT} at (674,1) size 110x18 [bgcolor=#F8F8F8] [border: (1px solid #A6A6A6)]
+          LayoutBlockFlow (anonymous) at (1,1) size 108x19
+            LayoutText (anonymous) at (13,1) size 87x13
+              text run at (13,1) width 87 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
         LayoutText {#text} at (0,0) size 0x0

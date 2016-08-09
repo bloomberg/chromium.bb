@@ -146,4 +146,14 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {INPUT} at (188,0) size 88x23 [bgcolor=#DDDDDD] [border: (1px solid #00FF00)]
           LayoutFlexibleBox {DIV} at (3,2) size 82x19
             LayoutBlockFlow {DIV} at (8,4) size 50x11 [bgcolor=#FF0000] [border: (1px solid #000000)]
+        LayoutText {#text} at (276,1) size 4x19
+          text run at (276,1) width 4: " "
+        LayoutBlockFlow {INPUT} at (280,0) size 44x23 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+          LayoutFlexibleBox {DIV} at (3,2) size 38x19
+            LayoutBlockFlow {DIV} at (2,4) size 34x11 [bgcolor=#40E0D0] [border: (1px solid #777777)]
+        LayoutText {#text} at (324,1) size 4x19
+          text run at (324,1) width 4: " "
+        LayoutBlockFlow {INPUT} at (328,0) size 88x23 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+          LayoutFlexibleBox {DIV} at (3,2) size 82x19
+            LayoutBlockFlow {DIV} at (24,4) size 50x11 [bgcolor=#FF0000] [border: (1px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
