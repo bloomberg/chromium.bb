@@ -99,15 +99,10 @@ class ComponentLoader {
   void Reload(const std::string& extension_id);
 
 #if defined(OS_CHROMEOS)
-  // Add a component extension from a specific directory. Assumes that the
-  // extension uses a different manifest file when this is a guest session.
-  // Calls |done_cb| on success, unless the component loader is
-  // shut down during loading.
-  void AddComponentFromDir(
-      const base::FilePath& root_directory,
-      const char* extension_id,
-      const base::Closure& done_cb);
-
+  // Calls |done_cb|, if not a null callback, on success.
+  // NOTE: |done_cb| is not called if the component loader is shut down
+  // during loading.
+  void AddChromeVoxExtension(const base::Closure& done_cb);
   void AddChromeOsSpeechSynthesisExtension();
 #endif
 
@@ -180,10 +175,18 @@ class ComponentLoader {
   void EnableFileSystemInGuestMode(const std::string& id);
 
 #if defined(OS_CHROMEOS)
-  // Used as a reply callback by |AddComponentFromDir|.
+  // Adds an extension where the manifest file is stored on the file system.
+  // |manifest_filename| can be relative to the |root_directory|.
+  void AddWithManifestFile(
+      const base::FilePath::CharType* manifest_filename,
+      const base::FilePath& root_directory,
+      const char* extension_id,
+      const base::Closure& done_cb);
+
+  // Used as a reply callback by |AddWithManifestFile|.
   // Called with a |root_directory| and parsed |manifest| and invokes
   // |done_cb| after adding the extension.
-  void FinishAddComponentFromDir(
+  void FinishAddWithManifestFile(
       const base::FilePath& root_directory,
       const char* extension_id,
       const base::Closure& done_cb,
