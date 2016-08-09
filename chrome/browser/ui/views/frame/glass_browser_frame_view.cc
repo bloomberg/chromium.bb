@@ -38,11 +38,8 @@ HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];
 
 namespace {
-// Thickness of the border in the client area that separates it from the
-// non-client area. Includes but is distinct from kClientEdgeThickness, which is
-// the thickness of the border between the web content and our frame border.
-const int kClientBorderThicknessPreWin10 = 3;
-const int kClientBorderThicknessWin10 = 1;
+// Thickness of the frame edge between the non-client area and the web content.
+const int kClientBorderThickness = 3;
 // Besides the frame border, there's empty space atop the window in restored
 // mode, to use to drag the window around.
 const int kNonClientRestoredExtraThickness = 11;
@@ -294,7 +291,7 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
     return;
   if (IsToolbarVisible())
     PaintToolbarBackground(canvas);
-  if (!frame()->IsMaximized())
+  if (ClientBorderThickness(false) > 0)
     PaintClientEdge(canvas);
 }
 
@@ -334,12 +331,14 @@ bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
 }
 
 int GlassBrowserFrameView::ClientBorderThickness(bool restored) const {
+  // The frame ends abruptly at the 1 pixel window border drawn by Windows 10.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    return 0;
+
   if ((frame()->IsMaximized() || frame()->IsFullscreen()) && !restored)
     return 0;
 
-  return (base::win::GetVersion() < base::win::VERSION_WIN10)
-             ? kClientBorderThicknessPreWin10
-             : kClientBorderThicknessWin10;
+  return kClientBorderThickness;
 }
 
 int GlassBrowserFrameView::FrameBorderThickness() const {
@@ -443,7 +442,6 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
                                         separator_rect, true);
 
     // Toolbar/content separator.
-    toolbar_bounds.Inset(kClientEdgeThickness, 0);
     BrowserView::Paint1pxHorizontalLine(canvas, separator_color, toolbar_bounds,
                                         true);
   } else {
