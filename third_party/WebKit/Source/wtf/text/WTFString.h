@@ -182,6 +182,10 @@ public:
     size_t find(const StringView& value, unsigned start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->find, (value, start)) : kNotFound; }
 
+    bool contains(char c) const { return find(c) != kNotFound; }
+    bool contains(const StringView& value, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return find(value, 0, caseSensitivity) != kNotFound; }
+
     // Find the last instance of a single character or string.
     size_t reverseFind(UChar c, unsigned start = UINT_MAX) const
         { return m_impl ? m_impl->reverseFind(c, start) : kNotFound; }
@@ -207,10 +211,6 @@ public:
     void prependTo(BufferType&, unsigned pos = 0, unsigned len = UINT_MAX) const;
 
     UChar32 characterStartingAt(unsigned) const;
-    template<typename CharacterType>
-    bool contains(CharacterType c) const { return find(c) != kNotFound; }
-    bool contains(const LChar* str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return find(str, 0, caseSensitivity) != kNotFound; }
-    bool contains(const String& str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return find(str, 0, caseSensitivity) != kNotFound; }
 
     bool startsWith(const StringView& prefix, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->startsWith, (prefix)) : prefix.isEmpty(); }

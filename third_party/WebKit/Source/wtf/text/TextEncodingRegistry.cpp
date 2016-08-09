@@ -293,7 +293,7 @@ const char* atomicCanonicalTextEncodingName(const String& alias)
     if (!alias.length())
         return 0;
 
-    if (alias.contains(static_cast<UChar>('\0')))
+    if (alias.contains('\0'))
         return 0;
 
     if (alias.is8Bit())

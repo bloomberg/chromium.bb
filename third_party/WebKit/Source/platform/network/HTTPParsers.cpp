@@ -186,7 +186,10 @@ bool isValidHTTPHeaderValue(const String& name)
     // FIXME: This should really match name against
     // field-value in section 4.2 of RFC 2616.
 
-    return name.containsOnlyLatin1() && !name.contains('\r') && !name.contains('\n') && !name.contains(static_cast<UChar>('\0'));
+    return name.containsOnlyLatin1()
+        && !name.contains('\r')
+        && !name.contains('\n')
+        && !name.contains('\0');
 }
 
 // See RFC 7230, Section 3.2.
