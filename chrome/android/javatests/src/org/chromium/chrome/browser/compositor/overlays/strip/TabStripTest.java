@@ -8,6 +8,7 @@ import android.content.pm.ActivityInfo;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -636,6 +637,7 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
      * Test that selecting a tab that isn't currently visible causes the ScrollingStripStacker
      * to scroll to make it visible.
      */
+    @DisabledTest(message = "crbug.com/635903")
     @LargeTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
