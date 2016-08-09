@@ -1,8 +1,8 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
   <meta charset="utf8">
-  <title i18n-content="title"></title>
+  <title>$i18n{title}</title>
   <link rel="import" href="chrome://resources/html/polymer.html">
   <link rel="import" href="chrome://extensions/manager.html">
   <style>
@@ -20,7 +20,6 @@
 <body>
   <extensions-manager></extensions-manager>
   <link rel="import" href="chrome://resources/html/load_time_data.html">
-  <link rel="import" href="chrome://resources/html/i18n_template.html">
   <link rel="import" href="chrome://extensions/strings.html">
   <link rel="import" href="chrome://extensions/service.html">
   <script src="chrome://extensions/extensions.js"></script>

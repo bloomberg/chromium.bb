@@ -19,8 +19,8 @@
     <extensions-drop-overlay></extensions-drop-overlay>
     <paper-header-panel id="panel">
       <div class="paper-header">
-        <h1 i18n-content="toolbarTitle"></h1>
-        <cr-search-field i18n-values="label:search"
+        <h1>$i18n{toolbarTitle}</h1>
+        <cr-search-field label="$i18n{search}"
             on-search-changed="onFilterChanged_"></cr-search-field>
       </div>
       <extensions-sidebar in-dev-mode="[[inDevMode]]">
