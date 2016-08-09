@@ -224,8 +224,6 @@
         'web_state/js/credential_util.mm',
         'web_state/js/crw_js_injection_manager.mm',
         'web_state/js/crw_js_injection_receiver.mm',
-        'web_state/js/crw_js_invoke_parameter_queue.h',
-        'web_state/js/crw_js_invoke_parameter_queue.mm',
         'web_state/js/crw_js_plugin_placeholder_manager.h',
         'web_state/js/crw_js_plugin_placeholder_manager.mm',
         'web_state/js/crw_js_post_request_loader.h',
