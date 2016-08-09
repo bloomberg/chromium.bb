@@ -199,8 +199,6 @@ paper-menu {
 
 .sink-name {
   min-width: 10%;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 #sink-search {
@@ -249,11 +247,11 @@ paper-menu {
 
 .sink-text {
   -webkit-padding-end: var(--dialog-padding-end);
-  display: inline-flex;
-  flex-direction: row;
   flex-flow: row nowrap;
   line-height: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  width: 250px;
+  width: 275px;
 }
 
