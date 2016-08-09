@@ -60,7 +60,14 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
+// Flaky failing DCHECK on Windows, see crbug.com/636052
+#if defined(OS_WIN)
+#define MAYBE_CloseRenderersNormally DISABLED_CloseRenderersNormally
+#else
+#define MAYBE_CloseRenderersNormally CloseRenderersNormally
+#endif
+IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest,
+    MAYBE_CloseRenderersNormally) {
   OpenTabs();
 
   // Verify that the expected stability metrics were recorded.
