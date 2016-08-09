@@ -45,6 +45,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginView.h"
+#include "platform/Histogram.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
@@ -56,6 +57,18 @@
 namespace blink {
 
 using namespace HTMLNames;
+
+namespace {
+
+// Used for histograms, do not change the order.
+enum PluginRequestObjectResult {
+    PluginRequestObjectResultFailure = 0,
+    PluginRequestObjectResultSuccess = 1,
+    // Keep at the end.
+    PluginRequestObjectResultMax
+};
+
+} // anonymous namespace
 
 HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc, bool createdByParser, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
     : HTMLFrameOwnerElement(tagName, doc)
@@ -96,6 +109,31 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
     }
     m_persistedPluginWidget = widget;
 }
+
+bool HTMLPlugInElement::requestObjectInternal(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues)
+{
+    if (url.isEmpty() && mimeType.isEmpty())
+        return false;
+
+    if (protocolIsJavaScript(url))
+        return false;
+
+    KURL completedURL = url.isEmpty() ? KURL() : document().completeURL(url);
+    if (!allowedToLoadObject(completedURL, mimeType))
+        return false;
+
+    bool useFallback;
+    if (!shouldUsePlugin(completedURL, mimeType, hasFallbackContent(), useFallback)) {
+        // If the plugin element already contains a subframe,
+        // loadOrRedirectSubframe will re-use it. Otherwise, it will create a
+        // new frame and set it as the LayoutPart's widget, causing what was
+        // previously in the widget to be torn down.
+        return loadOrRedirectSubframe(completedURL, getNameAttribute(), true);
+    }
+
+    return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback, true);
+}
+
 
 bool HTMLPlugInElement::canProcessDrag() const
 {
@@ -446,26 +484,12 @@ bool HTMLPlugInElement::wouldLoadAsNetscapePlugin(const String& url, const Strin
 
 bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues)
 {
-    if (url.isEmpty() && mimeType.isEmpty())
-        return false;
+    bool result = requestObjectInternal(url, mimeType, paramNames, paramValues);
 
-    if (protocolIsJavaScript(url))
-        return false;
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, resultHistogram, ("Plugin.RequestObjectResult", PluginRequestObjectResultMax));
+    resultHistogram.count(result ? PluginRequestObjectResultSuccess : PluginRequestObjectResultFailure);
 
-    KURL completedURL = url.isEmpty() ? KURL() : document().completeURL(url);
-    if (!allowedToLoadObject(completedURL, mimeType))
-        return false;
-
-    bool useFallback;
-    if (!shouldUsePlugin(completedURL, mimeType, hasFallbackContent(), useFallback)) {
-        // If the plugin element already contains a subframe,
-        // loadOrRedirectSubframe will re-use it. Otherwise, it will create a
-        // new frame and set it as the LayoutPart's widget, causing what was
-        // previously in the widget to be torn down.
-        return loadOrRedirectSubframe(completedURL, getNameAttribute(), true);
-    }
-
-    return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback, true);
+    return result;
 }
 
 bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireLayoutObject)

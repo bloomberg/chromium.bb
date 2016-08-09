@@ -137,6 +137,8 @@ private:
 
     void setPersistedPluginWidget(Widget*);
 
+    bool requestObjectInternal(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
+
     mutable RefPtr<SharedPersistent<v8::Object>> m_pluginWrapper;
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;

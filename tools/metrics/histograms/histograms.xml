@@ -42801,6 +42801,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Plugin.RequestObjectResult" enum="BooleanSuccess">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>Result of HTMLPluginElement::requestObject in Blink.</summary>
+</histogram>
+
 <histogram name="Plugin.SyncMessageTime" units="ms">
   <obsolete>
     Deprecated due to NPAPI removal.
