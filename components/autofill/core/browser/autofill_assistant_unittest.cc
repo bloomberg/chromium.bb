@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -58,11 +59,7 @@ class AutofillAssistantTest : public testing::Test {
         autofill_assistant_(&autofill_manager_) {}
 
   void EnableAutofillCreditCardAssist() {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(kAutofillCreditCardAssist.name,
-                                            std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeature(kAutofillCreditCardAssist);
   }
 
   // Returns an initialized FormStructure with credit card form data. To be
@@ -105,6 +102,7 @@ class AutofillAssistantTest : public testing::Test {
   testing::NiceMock<TestAutofillDriver> autofill_driver_;
   MockAutofillManager autofill_manager_;
   AutofillAssistant autofill_assistant_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 MATCHER_P(CreditCardMatches, guid, "") {

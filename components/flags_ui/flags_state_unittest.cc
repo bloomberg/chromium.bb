@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/flags_ui/feature_entry.h"
@@ -318,8 +319,8 @@ TEST_F(FlagsStateTest, RegisterAllFeatureVariationParametersNonDefault) {
 
   // Set the feature_list as the main instance so that
   // variations::GetVariationParamValueByFeature below works.
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
   // The param should have the value predefined in this variation.
   EXPECT_EQ(kTestParamValue,

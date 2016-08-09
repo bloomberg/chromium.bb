@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
@@ -765,16 +766,11 @@ class PasswordFormManagerTest : public testing::Test {
 class PasswordFormManagerFillOnAccountSelectTest
     : public PasswordFormManagerTest {
  public:
-  PasswordFormManagerFillOnAccountSelectTest() {}
-
-  void SetUp() override {
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    std::vector<const base::Feature*> enabled_features;
-    std::vector<const base::Feature*> disabled_features;
-    enabled_features.push_back(&features::kFillOnAccountSelect);
-    SetFeatures(enabled_features, disabled_features, std::move(feature_list));
-    PasswordFormManagerTest::SetUp();
+  PasswordFormManagerFillOnAccountSelectTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kFillOnAccountSelect);
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(PasswordFormManagerTest, TestNewLogin) {

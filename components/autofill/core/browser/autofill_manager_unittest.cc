@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -768,7 +769,6 @@ class AutofillManagerTest : public testing::Test {
     autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
     // Clear all the things.
-    base::FeatureList::ClearInstanceForTesting();
     variations::testing::ClearAllVariationParams();
   }
 
@@ -803,7 +803,7 @@ class AutofillManagerTest : public testing::Test {
     feature_list->RegisterFieldTrialOverride(
         kAutofillCreditCardSigninPromo.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
     // Double-checking our params made it.
     std::map<std::string, std::string> actualParams;
@@ -1000,6 +1000,7 @@ class AutofillManagerTest : public testing::Test {
   TestAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;
   base::FieldTrialList field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class TestFormStructure : public FormStructure {

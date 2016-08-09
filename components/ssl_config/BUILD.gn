@@ -30,6 +30,7 @@ source_set("unit_tests") {
   deps = [
     ":ssl_config",
     "//base",
+    "//base/test:test_support",
     "//components/prefs:test_support",
     "//net",
     "//testing/gtest",

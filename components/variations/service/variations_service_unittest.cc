@@ -272,10 +272,6 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeed) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  // Setup base::FeatureList.
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList()));
-
   // Create a local base::FieldTrialList, to hold the field trials created in
   // this test.
   base::FieldTrialList field_trial_list(nullptr);
@@ -303,10 +299,6 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeedNoLastFetchTime) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  // Setup base::FeatureList.
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList()));
-
   // Create a local base::FieldTrialList, to hold the field trials created in
   // this test.
   base::FieldTrialList field_trial_list(nullptr);
@@ -333,10 +325,6 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeedNoLastFetchTime) {
 TEST_F(VariationsServiceTest, CreateTrialsFromOutdatedSeed) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
-
-  // Setup base::FeatureList.
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList()));
 
   // Create a local base::FieldTrialList, to hold the field trials created in
   // this test.

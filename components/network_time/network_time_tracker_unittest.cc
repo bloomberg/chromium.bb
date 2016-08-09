@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/client_update_protocol/ecdsa.h"
@@ -181,7 +182,6 @@ class NetworkTimeTrackerTest : public testing::Test {
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
     // Clear all the things.
-    base::FeatureList::ClearInstanceForTesting();
     variations::testing::ClearAllVariationParams();
 
     std::map<std::string, std::string> params;
@@ -192,8 +192,9 @@ class NetworkTimeTrackerTest : public testing::Test {
     // FeatureList.  Don't get confused!  The FieldTrial is reference-counted,
     // and a reference is held by the FieldTrialList.  The FieldTrialList and
     // FeatureList are both singletons.  The authorized way to reset the former
-    // for testing is to destruct it (above).  The latter, by contrast, is reset
-    // with |ClearInstanceForTesting|, above.  If this comment was useful to you
+    // for testing is to destruct it (above).  The latter, by contrast, should
+    // should already start in a clean state and can be manipulated via the
+    // ScopedFeatureList helper class. If this comment was useful to you
     // please send me a postcard.
 
     field_trial_list_.reset();  // Averts a CHECK fail in constructor below.
@@ -212,7 +213,8 @@ class NetworkTimeTrackerTest : public testing::Test {
         kFeature.name, enable ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                               : base::FeatureList::OVERRIDE_DISABLE_FEATURE,
         trial);
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.reset(new base::test::ScopedFeatureList);
+    scoped_feature_list_->InitWithFeatureList(std::move(feature_list));
   }
 
   base::Thread io_thread_;
@@ -226,6 +228,7 @@ class NetworkTimeTrackerTest : public testing::Test {
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   std::unique_ptr<NetworkTimeTracker> tracker_;
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 TEST_F(NetworkTimeTrackerTest, Uninitialized) {

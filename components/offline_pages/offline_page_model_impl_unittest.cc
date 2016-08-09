@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1082,80 +1083,65 @@ TEST(CommandLineFlagsTest, OfflineBookmarks) {
   EXPECT_FALSE(offline_pages::IsOfflineBookmarksEnabled());
 
   // Check if feature is correctly enabled by command-line flag.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      offline_pages::kOfflineBookmarksFeature.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kOfflineBookmarksFeature);
   EXPECT_TRUE(offline_pages::IsOfflineBookmarksEnabled());
 }
 
 TEST(CommandLineFlagsTest, OffliningRecentPages) {
   // Enable offline bookmarks feature first.
   // TODO(dimich): once offline pages are enabled by default, remove this.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      offline_pages::kOfflineBookmarksFeature.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list(
+      new base::test::ScopedFeatureList);
+  scoped_feature_list->InitAndEnableFeature(kOfflineBookmarksFeature);
 
   // This feature is still disabled by default.
   EXPECT_FALSE(offline_pages::IsOffliningRecentPagesEnabled());
 
   // Check if feature is correctly enabled by command-line flag.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list2(new base::FeatureList);
-  feature_list2->InitializeFromCommandLine(
-      std::string(offline_pages::kOfflineBookmarksFeature.name) + "," +
-          offline_pages::kOffliningRecentPagesFeature.name,
+  scoped_feature_list.reset(new base::test::ScopedFeatureList);
+  scoped_feature_list->InitFromCommandLine(
+      std::string(kOfflineBookmarksFeature.name) + "," +
+          kOffliningRecentPagesFeature.name,
       "");
-  base::FeatureList::SetInstance(std::move(feature_list2));
   EXPECT_TRUE(offline_pages::IsOffliningRecentPagesEnabled());
 }
 
 TEST(CommandLineFlagsTest, OfflinePagesBackgroundLoading) {
   // Enable offline bookmarks feature first.
   // TODO(dimich): once offline pages are enabled by default, remove this.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      offline_pages::kOfflineBookmarksFeature.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list(
+      new base::test::ScopedFeatureList);
+  scoped_feature_list->InitAndEnableFeature(kOfflineBookmarksFeature);
 
   // This feature is still disabled by default.
   EXPECT_FALSE(offline_pages::IsOfflinePagesBackgroundLoadingEnabled());
 
   // Check if feature is correctly enabled by command-line flag.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list2(new base::FeatureList);
-  feature_list2->InitializeFromCommandLine(
-      std::string(offline_pages::kOfflineBookmarksFeature.name) + "," +
-          offline_pages::kOfflinePagesBackgroundLoadingFeature.name,
+  scoped_feature_list.reset(new base::test::ScopedFeatureList);
+  scoped_feature_list->InitFromCommandLine(
+      std::string(kOfflineBookmarksFeature.name) + "," +
+          kOfflinePagesBackgroundLoadingFeature.name,
       "");
-  base::FeatureList::SetInstance(std::move(feature_list2));
   EXPECT_TRUE(offline_pages::IsOfflinePagesBackgroundLoadingEnabled());
 }
 
 TEST(CommandLineFlagsTest, OfflinePagesSharing) {
   // Enable offline bookmarks feature first.
   // TODO(dimich): once offline pages are enabled by default, remove this.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      offline_pages::kOfflineBookmarksFeature.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list(
+      new base::test::ScopedFeatureList);
+  scoped_feature_list->InitAndEnableFeature(kOfflineBookmarksFeature);
 
   // This feature is still disabled by default.
   EXPECT_FALSE(offline_pages::IsOfflinePagesSharingEnabled());
 
   // Check if feature is correctly enabled by command-line flag.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list2(new base::FeatureList);
-  feature_list2->InitializeFromCommandLine(
-      std::string(offline_pages::kOfflineBookmarksFeature.name) + "," +
-          offline_pages::kOfflinePagesSharingFeature.name,
+  scoped_feature_list.reset(new base::test::ScopedFeatureList);
+  scoped_feature_list->InitFromCommandLine(
+      std::string(kOfflineBookmarksFeature.name) + "," +
+          kOfflinePagesSharingFeature.name,
       "");
-  base::FeatureList::SetInstance(std::move(feature_list2));
   EXPECT_TRUE(offline_pages::IsOfflinePagesSharingEnabled());
 }
 

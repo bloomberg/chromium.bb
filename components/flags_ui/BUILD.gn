@@ -48,6 +48,7 @@ source_set("unit_tests") {
     ":flags_ui",
     ":switches",
     "//base",
+    "//base/test:test_support",
     "//components/prefs:test_support",
     "//components/strings",
     "//components/variations",

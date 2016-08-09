@@ -73,13 +73,6 @@ MATCHER_P(UnorderedPasswordFormElementsAre, expectations, "") {
                                              result_listener->stream());
 }
 
-// Helper function to initialize feature overrides via command-line flags
-// supplied as |enable_features| and |disable_features| using the
-// |feature_list|.
-void SetFeatures(const std::vector<const base::Feature*>& enable_features,
-                 const std::vector<const base::Feature*>& disable_features,
-                 std::unique_ptr<base::FeatureList> feature_list);
-
 class MockPasswordStoreObserver : public PasswordStore::Observer {
  public:
   MockPasswordStoreObserver();

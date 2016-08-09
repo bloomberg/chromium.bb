@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -93,16 +94,10 @@ class TranslateUIDelegateTest : public ::testing::Test {
         new TranslateUIDelegate(manager_->GetWeakPtr(), "ar", "fr"));
 
     ASSERT_FALSE(client_->GetTranslatePrefs()->IsTooOftenDenied("ar"));
-    base::FeatureList::ClearInstanceForTesting();
-    base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList));
   }
 
   void TurnOnTranslate2016Q2UIFlag() {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(translate::kTranslateUI2016Q2.name,
-                                            std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeature(translate::kTranslateUI2016Q2);
   }
 
   MockTranslateDriver driver_;
@@ -110,6 +105,7 @@ class TranslateUIDelegateTest : public ::testing::Test {
   std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<TranslateManager> manager_;
   std::unique_ptr<TranslateUIDelegate> delegate_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateUIDelegateTest);

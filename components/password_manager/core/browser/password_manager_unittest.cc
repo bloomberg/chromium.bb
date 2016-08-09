@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -125,18 +126,6 @@ ACTION_P(SaveToScopedPtr, scoped) { scoped->reset(arg0); }
 class PasswordManagerTest : public testing::Test {
  protected:
   void SetUp() override {
-    // TODO(jww): The following FeatureList clear can be removed once
-    // https://crbug.com/620435 is resolved. This cleanup is needed because on
-    // some platforms (e.g. iOS), the base::FeatureList is not reset betwen
-    // test runs, so if these unit tests are run right after some other unit
-    // tests that turn on a feature, that might affect these tests. In
-    // particular, the earlier fill-on-account-select unit tests turned on
-    // their respective Feature and that was incorrectly left on for these
-    // tests.
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    base::FeatureList::SetInstance(std::move(feature_list));
-
     store_ = new testing::StrictMock<MockPasswordStore>;
     EXPECT_CALL(*store_, ReportMetrics(_, _)).Times(AnyNumber());
     CHECK(store_->Init(syncer::SyncableService::StartSyncFlare()));
@@ -1359,11 +1348,9 @@ TEST_F(PasswordManagerTest,
 
 TEST_F(PasswordManagerTest, ForceSavingPasswords) {
   // Add the enable-password-force-saving feature.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      password_manager::features::kEnablePasswordForceSaving.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kEnablePasswordForceSaving);
   PasswordForm form(MakeSimpleForm());
 
   std::vector<PasswordForm> observed;
@@ -1390,11 +1377,9 @@ TEST_F(PasswordManagerTest, ForceSavingPasswords) {
 // Forcing Chrome to save an empty passwords should fail without a crash.
 TEST_F(PasswordManagerTest, ForceSavingPasswords_Empty) {
   // Add the enable-password-force-saving feature.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      password_manager::features::kEnablePasswordForceSaving.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kEnablePasswordForceSaving);
   PasswordForm empty_password_form;
 
   std::vector<PasswordForm> observed;

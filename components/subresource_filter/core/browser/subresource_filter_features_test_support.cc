@@ -24,7 +24,6 @@ ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
     base::FeatureList::OverrideState feature_state,
     const std::string& maximum_activation_state,
     const std::string& activation_scope) {
-  base::FeatureList::ClearInstanceForTesting();
   variations::testing::ClearAllVariationParams();
 
   std::map<std::string, std::string> variation_params;
@@ -39,12 +38,11 @@ ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->RegisterFieldTrialOverride(kSafeBrowsingSubresourceFilter.name,
                                            feature_state, field_trial);
-  base::FeatureList::SetInstance(std::move(feature_list));
+  scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 }
 
 ScopedSubresourceFilterFeatureToggle::~ScopedSubresourceFilterFeatureToggle() {
   variations::testing::ClearAllVariationParams();
-  base::FeatureList::ClearInstanceForTesting();
 }
 
 }  // namespace testing

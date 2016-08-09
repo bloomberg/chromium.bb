@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -726,9 +727,9 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
 // Verify that OnLocalSetPassphraseEncryption triggers catch up configure sync
 // cycle, calls ClearServerData, shuts down and restarts sync.
 TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
-  base::FeatureList::ClearInstanceForTesting();
-  ASSERT_TRUE(base::FeatureList::InitializeInstance(
-      switches::kSyncClearDataOnPassphraseEncryption.name, std::string()));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      switches::kSyncClearDataOnPassphraseEncryption);
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
 
@@ -778,9 +779,9 @@ TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
 TEST_F(ProfileSyncServiceTest,
        OnLocalSetPassphraseEncryption_RestartDuringCatchUp) {
   syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
-  base::FeatureList::ClearInstanceForTesting();
-  ASSERT_TRUE(base::FeatureList::InitializeInstance(
-      switches::kSyncClearDataOnPassphraseEncryption.name, std::string()));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      switches::kSyncClearDataOnPassphraseEncryption);
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
   ExpectSyncBackendHostCreation(1);
@@ -834,9 +835,9 @@ TEST_F(ProfileSyncServiceTest,
        OnLocalSetPassphraseEncryption_RestartDuringClearServerData) {
   syncer::SyncManager::ClearServerDataCallback captured_callback;
   syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
-  base::FeatureList::ClearInstanceForTesting();
-  ASSERT_TRUE(base::FeatureList::InitializeInstance(
-      switches::kSyncClearDataOnPassphraseEncryption.name, std::string()));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      switches::kSyncClearDataOnPassphraseEncryption);
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
   ExpectSyncBackendHostCreationCaptureClearServerData(&captured_callback);

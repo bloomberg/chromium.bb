@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -141,11 +142,7 @@ class PersonalDataManagerTest : public testing::Test {
 
     // There are no field trials enabled by default.
     field_trial_list_.reset();
-
-    // There are no features enabled by default.
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.reset();
 
     // Reset the deduping pref to its default value.
     personal_data_->pref_service_->SetInteger(
@@ -199,11 +196,8 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   void EnableAutofillProfileCleanup() {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(kAutofillProfileCleanup.name,
-                                            std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.reset(new base::test::ScopedFeatureList);
+    scoped_feature_list_->InitAndEnableFeature(kAutofillProfileCleanup);
     personal_data_->is_autofill_profile_dedupe_pending_ = true;
   }
 
@@ -368,6 +362,7 @@ class PersonalDataManagerTest : public testing::Test {
 
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<base::FieldTrial> field_trial_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 TEST_F(PersonalDataManagerTest, AddProfile) {
@@ -5202,9 +5197,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_OncePerVersion) {
                        "", "Springfield", "IL", "91601", "", "");
 
   // Disable the profile cleanup before adding |profile3|.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  base::FeatureList::SetInstance(std::move(feature_list));
+  scoped_feature_list_.reset();
 
   personal_data_->AddProfile(profile3);
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())

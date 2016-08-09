@@ -64,6 +64,8 @@ static_library("test_support") {
     "power_monitor_test_base.h",
     "scoped_command_line.cc",
     "scoped_command_line.h",
+    "scoped_feature_list.cc",
+    "scoped_feature_list.h",
     "scoped_locale.cc",
     "scoped_locale.h",
     "scoped_path_override.cc",

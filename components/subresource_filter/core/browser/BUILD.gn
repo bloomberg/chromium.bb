@@ -30,6 +30,7 @@ static_library("test_support") {
   deps = [
     ":browser",
     "//base",
+    "//base/test:test_support",
     "//components/variations",
     "//testing/gtest",
   ]

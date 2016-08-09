@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
@@ -34,16 +35,6 @@ scoped_refptr<base::FieldTrial> CreateFieldTrial(
       base::FieldTrial::SESSION_RANDOMIZED, default_group_number);
 }
 
-void CreateFeatureWithTrial(const base::Feature& feature,
-                            base::FeatureList::OverrideState override_state,
-                            base::FieldTrial* trial) {
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->RegisterFieldTrialOverride(feature.name, override_state,
-                                           trial);
-  base::FeatureList::SetInstance(std::move(feature_list));
-}
-
 }  // namespace
 
 class VariationsAssociatedDataTest : public ::testing::Test {
@@ -58,8 +49,18 @@ class VariationsAssociatedDataTest : public ::testing::Test {
     testing::ClearAllVariationParams();
   }
 
+  void CreateFeatureWithTrial(const base::Feature& feature,
+                              base::FeatureList::OverrideState override_state,
+                              base::FieldTrial* trial) {
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(feature.name, override_state,
+                                             trial);
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
  private:
   base::FieldTrialList field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsAssociatedDataTest);
 };

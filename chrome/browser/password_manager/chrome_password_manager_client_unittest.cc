@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/channel_info.h"
@@ -167,13 +168,9 @@ TEST_F(ChromePasswordManagerClientTest,
 TEST_F(ChromePasswordManagerClientTest,
        IsAutomaticPasswordSavingEnabledWhenFlagIsSetTest) {
   // Add the enable-automatic-password-saving feature.
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  std::vector<const base::Feature*> enabled_features;
-  std::vector<const base::Feature*> disabled_features;
-  enabled_features.push_back(
-      &password_manager::features::kEnableAutomaticPasswordSaving);
-  password_manager::SetFeatures(enabled_features, disabled_features,
-                                std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kEnableAutomaticPasswordSaving);
 
   if (chrome::GetChannel() == version_info::Channel::UNKNOWN)
     EXPECT_TRUE(GetClient()->IsAutomaticPasswordSavingEnabled());

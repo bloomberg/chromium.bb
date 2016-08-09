@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 
 namespace subresource_filter {
 namespace testing {
@@ -25,6 +26,8 @@ class ScopedSubresourceFilterFeatureToggle {
   ~ScopedSubresourceFilterFeatureToggle();
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedSubresourceFilterFeatureToggle);
 };
 
