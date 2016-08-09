@@ -38,6 +38,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
                                int thickness,
                                SkAlpha alpha);
 
+  // See |is_cta_|.
   void SetCallToAction(bool cta);
   void set_bg_color_override(SkColor color) { bg_color_override_ = color; }
 
