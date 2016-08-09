@@ -162,6 +162,9 @@ void HpackEncoder::MaybeEmitTableSize() {
     return;
   }
   const size_t current_size = CurrentHeaderTableSizeSetting();
+  DVLOG(1) << "MaybeEmitTableSize current_size=" << current_size;
+  DVLOG(1) << "MaybeEmitTableSize min_table_size_setting_received_="
+           << min_table_size_setting_received_;
   if (min_table_size_setting_received_ < current_size) {
     output_stream_.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     output_stream_.AppendUint32(min_table_size_setting_received_);

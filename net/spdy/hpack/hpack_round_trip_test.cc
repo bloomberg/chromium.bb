@@ -4,7 +4,6 @@
 
 #include <cmath>
 #include <ctime>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -18,13 +17,14 @@
 namespace net {
 namespace test {
 
-using std::map;
 using std::string;
-using std::vector;
 
 namespace {
 
-class HpackRoundTripTest : public ::testing::Test {
+// Supports testing with the input split at every byte boundary.
+enum InputSizeParam { ALL_INPUT, ONE_BYTE, ZERO_THEN_ONE_BYTE };
+
+class HpackRoundTripTest : public ::testing::TestWithParam<InputSizeParam> {
  protected:
   HpackRoundTripTest() : encoder_(ObtainHpackHuffmanTable()), decoder_() {}
 
@@ -38,9 +38,32 @@ class HpackRoundTripTest : public ::testing::Test {
     string encoded;
     encoder_.EncodeHeaderSet(header_set, &encoded);
 
-    bool success =
-        decoder_.HandleControlFrameHeadersData(encoded.data(), encoded.size());
-    success &= decoder_.HandleControlFrameHeadersComplete(nullptr);
+    bool success = true;
+    if (GetParam() == ALL_INPUT) {
+      // Pass all the input to the decoder at once.
+      success = decoder_.HandleControlFrameHeadersData(encoded.data(),
+                                                       encoded.size());
+    } else if (GetParam() == ONE_BYTE) {
+      // Pass the input to the decoder one byte at a time.
+      const char* data = encoded.data();
+      for (size_t ndx = 0; ndx < encoded.size() && success; ++ndx) {
+        success = decoder_.HandleControlFrameHeadersData(data + ndx, 1);
+      }
+    } else if (GetParam() == ZERO_THEN_ONE_BYTE) {
+      // Pass the input to the decoder one byte at a time, but before each
+      // byte pass an empty buffer.
+      const char* data = encoded.data();
+      for (size_t ndx = 0; ndx < encoded.size() && success; ++ndx) {
+        success = (decoder_.HandleControlFrameHeadersData(data + ndx, 0) &&
+                   decoder_.HandleControlFrameHeadersData(data + ndx, 1));
+      }
+    } else {
+      ADD_FAILURE() << "Unknown param: " << GetParam();
+    }
+
+    if (success) {
+      success = decoder_.HandleControlFrameHeadersComplete(nullptr);
+    }
 
     EXPECT_EQ(header_set, decoder_.decoded_block());
     return success;
@@ -54,7 +77,13 @@ class HpackRoundTripTest : public ::testing::Test {
   HpackDecoder decoder_;
 };
 
-TEST_F(HpackRoundTripTest, ResponseFixtures) {
+INSTANTIATE_TEST_CASE_P(Tests,
+                        HpackRoundTripTest,
+                        ::testing::Values(ALL_INPUT,
+                                          ONE_BYTE,
+                                          ZERO_THEN_ONE_BYTE));
+
+TEST_P(HpackRoundTripTest, ResponseFixtures) {
   {
     SpdyHeaderBlock headers;
     headers[":status"] = "302";
@@ -86,7 +115,7 @@ TEST_F(HpackRoundTripTest, ResponseFixtures) {
   }
 }
 
-TEST_F(HpackRoundTripTest, RequestFixtures) {
+TEST_P(HpackRoundTripTest, RequestFixtures) {
   {
     SpdyHeaderBlock headers;
     headers[":authority"] = "www.example.com";
@@ -119,11 +148,11 @@ TEST_F(HpackRoundTripTest, RequestFixtures) {
   }
 }
 
-TEST_F(HpackRoundTripTest, RandomizedExamples) {
+TEST_P(HpackRoundTripTest, RandomizedExamples) {
   // Grow vectors of names & values, which are seeded with fixtures and then
   // expanded with dynamically generated data. Samples are taken using the
   // exponential distribution.
-  vector<string> pseudo_header_names, random_header_names;
+  std::vector<string> pseudo_header_names, random_header_names;
   pseudo_header_names.push_back(":authority");
   pseudo_header_names.push_back(":path");
   pseudo_header_names.push_back(":status");
@@ -131,7 +160,7 @@ TEST_F(HpackRoundTripTest, RandomizedExamples) {
   // TODO(jgraettinger): Enable "cookie" as a name fixture. Crumbs may be
   // reconstructed in any order, which breaks the simple validation used here.
 
-  vector<string> values;
+  std::vector<string> values;
   values.push_back("/");
   values.push_back("/index.html");
   values.push_back("200");
