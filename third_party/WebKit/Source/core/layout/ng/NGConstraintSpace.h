@@ -11,10 +11,12 @@
 
 namespace blink {
 
+class NGConstraintSpace;
 class NGDerivedConstraintSpace;
 class NGExclusion;
 class NGFragment;
 class NGLayoutOpportunityIterator;
+class LayoutBox;
 
 enum NGExclusionType {
     NGClearNone = 0,
@@ -49,6 +51,9 @@ public:
     NGConstraintSpace(LayoutUnit inlineContainerSize,
         LayoutUnit blockContainerSize);
     ~NGConstraintSpace() { }
+
+    // Constructs Layout NG constraint space from legacy layout object.
+    static NGConstraintSpace fromLayoutObject(const LayoutBox&);
 
     void addExclusion(const NGExclusion, unsigned options = 0);
     void setOverflowTriggersScrollbar(bool inlineTriggers,

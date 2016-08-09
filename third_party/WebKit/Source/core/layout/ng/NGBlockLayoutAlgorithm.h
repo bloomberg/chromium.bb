@@ -7,14 +7,9 @@
 
 namespace blink {
 
-class LayoutBox;
-class NGConstraintSpace;
-
 class NGBlockLayoutAlgorithm {
 public:
     NGBlockLayoutAlgorithm();
-
-    NGConstraintSpace createConstraintSpaceFromLayoutObject(const LayoutBox&);
 };
 
 } // namespace blink

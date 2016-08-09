@@ -4,6 +4,9 @@
 
 #include "core/layout/ng/NGConstraintSpace.h"
 
+#include "core/layout/LayoutBox.h"
+#include "core/style/ComputedStyle.h"
+
 namespace blink {
 
 NGConstraintSpace::NGConstraintSpace(LayoutUnit inlineContainerSize,
@@ -16,6 +19,34 @@ NGConstraintSpace::NGConstraintSpace(LayoutUnit inlineContainerSize,
     m_fixedInlineSize = 0;
     m_fixedBlockSize = 0;
     m_blockFragmentationType = FragmentNone;
+}
+
+NGConstraintSpace NGConstraintSpace::fromLayoutObject(
+    const LayoutBox& child)
+{
+    bool fixedInline = false, fixedBlock = false;
+    // XXX for orthogonal writing mode this is not right
+    LayoutUnit containerLogicalWidth = std::max(LayoutUnit(),
+        child.containingBlockLogicalWidthForContent());
+    // XXX Make sure this height is correct
+    LayoutUnit containerLogicalHeight =
+        child.containingBlockLogicalHeightForContent(
+            ExcludeMarginBorderPadding);
+    if (child.hasOverrideLogicalContentWidth()) {
+        containerLogicalWidth = child.overrideLogicalContentWidth();
+        fixedInline = true;
+    }
+    if (child.hasOverrideLogicalContentHeight()) {
+        containerLogicalWidth = child.overrideLogicalContentHeight();
+        fixedBlock = true;
+    }
+    NGConstraintSpace space(containerLogicalWidth, containerLogicalHeight);
+    // XXX vertical writing mode
+    space.setOverflowTriggersScrollbar(
+        child.styleRef().overflowX() == OverflowAuto,
+        child.styleRef().overflowY() == OverflowAuto);
+    space.setFixedSize(fixedInline, fixedBlock);
+    return space;
 }
 
 void NGConstraintSpace::addExclusion(const NGExclusion exclusion,
