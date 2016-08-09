@@ -234,12 +234,14 @@
           </div>
         </template>
       </neon-animatable>
-      <template is="dom-if" name="sync">
-        <settings-subpage
-            associated-control="[[$$('#customize-sync')]]"
-            page-title="$i18n{syncPageTitle}">
-          <settings-sync-page></settings-sync-page>
-        </settings-subpage>
+      <template is="dom-if" if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
+        <template is="dom-if" name="sync">
+          <settings-subpage
+              associated-control="[[$$('#customize-sync')]]"
+              page-title="$i18n{syncPageTitle}">
+            <settings-sync-page></settings-sync-page>
+          </settings-subpage>
+        </template>
       </template>
 <if expr="chromeos">
       <template is="dom-if" name="quick-unlock-authenticate" no-search>
