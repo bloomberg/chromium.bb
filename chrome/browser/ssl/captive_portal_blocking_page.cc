@@ -55,7 +55,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     const GURL& login_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
-    const base::Callback<void(bool)>& callback)
+    const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       login_url_(login_url),
       callback_(callback) {
@@ -220,7 +220,7 @@ void CaptivePortalBlockingPage::OnDontProceed() {
   // Need to explicity deny the certificate via the callback, otherwise memory
   // is leaked.
   if (!callback_.is_null()) {
-    callback_.Run(false);
+    callback_.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
     callback_.Reset();
   }
 }

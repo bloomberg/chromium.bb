@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "url/gurl.h"
 
 #if !defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -40,12 +41,14 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
   // Interstitial type, for testing.
   static const void* const kTypeForTesting;
 
-  CaptivePortalBlockingPage(content::WebContents* web_contents,
-                            const GURL& request_url,
-                            const GURL& login_url,
-                            std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-                            const net::SSLInfo& ssl_info,
-                            const base::Callback<void(bool)>& callback);
+  CaptivePortalBlockingPage(
+      content::WebContents* web_contents,
+      const GURL& request_url,
+      const GURL& login_url,
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      const net::SSLInfo& ssl_info,
+      const base::Callback<void(content::CertificateRequestResultType)>&
+          callback);
   ~CaptivePortalBlockingPage() override;
 
   // InterstitialPageDelegate method:
@@ -72,7 +75,7 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
   // URL of the login page, opened when the user clicks the "Connect" button.
   const GURL login_url_;
   std::unique_ptr<CertReportHelper> cert_report_helper_;
-  base::Callback<void(bool)> callback_;
+  base::Callback<void(content::CertificateRequestResultType)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPage);
 };

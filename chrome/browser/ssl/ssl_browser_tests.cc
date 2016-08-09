@@ -3040,7 +3040,8 @@ class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     return new SSLBlockingPage(
         contents, net::ERR_CERT_CONTAINS_ERRORS, ssl_info, request_url, 0,
-        base::Time::NowFromSystemTime(), nullptr, base::Callback<void(bool)>());
+        base::Time::NowFromSystemTime(), nullptr,
+        base::Callback<void(content::CertificateRequestResultType)>());
   }
 };
 

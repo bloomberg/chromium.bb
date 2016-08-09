@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
 
 class PrefService;
@@ -120,8 +121,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       bool overridable,
       bool strict_enforcement,
       bool expired_previous_decision,
-      const base::Callback<void(bool)>& callback,
-      content::CertificateRequestResultType* result) override;
+      const base::Callback<void(content::CertificateRequestResultType)>&
+          callback) override;
   void SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,

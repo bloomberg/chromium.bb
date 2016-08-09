@@ -33,11 +33,13 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
   ~AwContentsClientBridge() override;
 
   // AwContentsClientBridgeBase implementation
-  void AllowCertificateError(int cert_error,
-                             net::X509Certificate* cert,
-                             const GURL& request_url,
-                             const base::Callback<void(bool)>& callback,
-                             bool* cancel_request) override;
+  void AllowCertificateError(
+      int cert_error,
+      net::X509Certificate* cert,
+      const GURL& request_url,
+      const base::Callback<void(content::CertificateRequestResultType)>&
+          callback,
+      bool* cancel_request) override;
   void SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
@@ -80,7 +82,8 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
 
   JavaObjectWeakGlobalRef java_ref_;
 
-  typedef const base::Callback<void(bool)> CertErrorCallback;
+  typedef const base::Callback<void(content::CertificateRequestResultType)>
+      CertErrorCallback;
   IDMap<CertErrorCallback, IDMapOwnPointer> pending_cert_error_callbacks_;
   IDMap<content::JavaScriptDialogManager::DialogClosedCallback, IDMapOwnPointer>
       pending_js_dialog_callbacks_;

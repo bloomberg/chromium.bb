@@ -55,7 +55,7 @@ BadClockBlockingPage::BadClockBlockingPage(
     const base::Time& time_triggered,
     ssl_errors::ClockState clock_state,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(bool)>& callback)
+    const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       callback_(callback),
       ssl_info_(ssl_info),
@@ -160,5 +160,6 @@ void BadClockBlockingPage::NotifyDenyCertificate() {
   if (callback_.is_null())
     return;
 
-  base::ResetAndReturn(&callback_).Run(false);
+  base::ResetAndReturn(&callback_)
+      .Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
 }

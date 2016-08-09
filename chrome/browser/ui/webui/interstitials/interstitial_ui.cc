@@ -94,7 +94,8 @@ class CaptivePortalBlockingPageWithNetInfo : public CaptivePortalBlockingPage {
       const GURL& request_url,
       const GURL& login_url,
       const net::SSLInfo& ssl_info,
-      const base::Callback<void(bool)>& callback,
+      const base::Callback<void(content::CertificateRequestResultType)>&
+          callback,
       bool is_wifi,
       const std::string& wifi_ssid)
       : CaptivePortalBlockingPage(web_contents,
@@ -152,9 +153,10 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
     options_mask |= security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED;
   if (strict_enforcement)
     options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
-  return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
-                             options_mask, time_triggered_, nullptr,
-                             base::Callback<void(bool)>());
+  return new SSLBlockingPage(
+      web_contents, cert_error, ssl_info, request_url, options_mask,
+      time_triggered_, nullptr,
+      base::Callback<void(content::CertificateRequestResultType)>());
 }
 
 BadClockBlockingPage* CreateBadClockBlockingPage(
@@ -200,9 +202,10 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
     options_mask |= security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED;
   if (strict_enforcement)
     options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
-  return new BadClockBlockingPage(web_contents, cert_error, ssl_info,
-                                  request_url, base::Time::Now(), clock_state,
-                                  nullptr, base::Callback<void(bool)>());
+  return new BadClockBlockingPage(
+      web_contents, cert_error, ssl_info, request_url, base::Time::Now(),
+      clock_state, nullptr,
+      base::Callback<void(content::CertificateRequestResultType)>());
 }
 
 safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
@@ -294,7 +297,8 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
   CaptivePortalBlockingPage* blocking_page =
       new CaptivePortalBlockingPageWithNetInfo(
           web_contents, request_url, landing_url, ssl_info,
-          base::Callback<void(bool)>(), is_wifi_connection, wifi_ssid);
+          base::Callback<void(content::CertificateRequestResultType)>(),
+          is_wifi_connection, wifi_ssid);
   return blocking_page;
 }
 #endif

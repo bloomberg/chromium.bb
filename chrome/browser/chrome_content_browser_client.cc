@@ -2035,15 +2035,16 @@ void ChromeContentBrowserClient::AllowCertificateError(
     bool overridable,
     bool strict_enforcement,
     bool expired_previous_decision,
-    const base::Callback<void(bool)>& callback,
-    content::CertificateRequestResultType* result) {
+    const base::Callback<void(content::CertificateRequestResultType)>&
+        callback) {
   DCHECK(web_contents);
   if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
     // A sub-resource has a certificate error.  The user doesn't really
     // have a context for making the right decision, so block the
     // request hard, without an info bar to allow showing the insecure
     // content.
-    *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
+    if (!callback.is_null())
+      callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
     return;
   }
 
@@ -2052,7 +2053,9 @@ void ChromeContentBrowserClient::AllowCertificateError(
       prerender::PrerenderContents::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_SSL_ERROR);
-    *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
+    if (!callback.is_null()) {
+      callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
+    }
     return;
   }
 

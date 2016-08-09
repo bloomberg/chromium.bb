@@ -191,26 +191,31 @@ SecurityStyle SSLPolicy::GetSecurityStyleForResource(
 }
 
 void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
-                                   bool allow) {
+                                   CertificateRequestResultType decision) {
   DCHECK(handler->ssl_info().is_valid());
-  if (allow) {
-    // Default behavior for accepting a certificate.
-    // Note that we should not call SetMaxSecurityStyle here, because the active
-    // NavigationEntry has just been deleted (in HideInterstitialPage) and the
-    // new NavigationEntry will not be set until DidNavigate.  This is ok,
-    // because the new NavigationEntry will have its max security style set
-    // within DidNavigate.
-    //
-    // While AllowCertForHost() executes synchronously on this thread,
-    // ContinueRequest() gets posted to a different thread. Calling
-    // AllowCertForHost() first ensures deterministic ordering.
-    backend_->AllowCertForHost(*handler->ssl_info().cert.get(),
-                               handler->request_url().host(),
-                               handler->cert_error());
-    handler->ContinueRequest();
-  } else {
-    // Default behavior for rejecting a certificate.
-    handler->CancelRequest();
+  switch (decision) {
+    case CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE:
+      // Note that we should not call SetMaxSecurityStyle here, because the
+      // active
+      // NavigationEntry has just been deleted (in HideInterstitialPage) and the
+      // new NavigationEntry will not be set until DidNavigate.  This is ok,
+      // because the new NavigationEntry will have its max security style set
+      // within DidNavigate.
+      //
+      // While AllowCertForHost() executes synchronously on this thread,
+      // ContinueRequest() gets posted to a different thread. Calling
+      // AllowCertForHost() first ensures deterministic ordering.
+      backend_->AllowCertForHost(*handler->ssl_info().cert.get(),
+                                 handler->request_url().host(),
+                                 handler->cert_error());
+      handler->ContinueRequest();
+      return;
+    case CERTIFICATE_REQUEST_RESULT_TYPE_DENY:
+      handler->DenyRequest();
+      return;
+    case CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL:
+      handler->CancelRequest();
+      return;
   }
 }
 
@@ -223,28 +228,13 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
   bool strict_enforcement = (options_mask & STRICT_ENFORCEMENT) != 0;
   bool expired_previous_decision =
       (options_mask & EXPIRED_PREVIOUS_DECISION) != 0;
-  CertificateRequestResultType result =
-      CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE;
   GetContentClient()->browser()->AllowCertificateError(
       handler->GetManager()->controller()->GetWebContents(),
       handler->cert_error(), handler->ssl_info(), handler->request_url(),
       handler->resource_type(), overridable, strict_enforcement,
       expired_previous_decision,
       base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this),
-                 make_scoped_refptr(handler)),
-      &result);
-  switch (result) {
-    case CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE:
-      break;
-    case CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL:
-      handler->CancelRequest();
-      break;
-    case CERTIFICATE_REQUEST_RESULT_TYPE_DENY:
-      handler->DenyRequest();
-      break;
-    default:
-      NOTREACHED();
-  }
+                 make_scoped_refptr(handler)));
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {

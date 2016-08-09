@@ -56,13 +56,15 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
   // Entry point for the class. The parameters are the same as SSLBlockingPage
   // constructor.
-  static void HandleSSLError(content::WebContents* web_contents,
-                             int cert_error,
-                             const net::SSLInfo& ssl_info,
-                             const GURL& request_url,
-                             int options_mask,
-                             std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-                             const base::Callback<void(bool)>& callback);
+  static void HandleSSLError(
+      content::WebContents* web_contents,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      const GURL& request_url,
+      int options_mask,
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      const base::Callback<void(content::CertificateRequestResultType)>&
+          callback);
 
   // Testing methods.
   static void SetInterstitialDelayForTest(base::TimeDelta delay);
@@ -79,7 +81,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                   const GURL& request_url,
                   int options_mask,
                   std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-                  const base::Callback<void(bool)>& callback);
+                  const base::Callback<
+                      void(content::CertificateRequestResultType)>& callback);
 
   ~SSLErrorHandler() override;
 
@@ -132,7 +135,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   const net::SSLInfo ssl_info_;
   const GURL request_url_;
   const int options_mask_;
-  base::Callback<void(bool)> callback_;
+  base::Callback<void(content::CertificateRequestResultType)> callback_;
   Profile* const profile_;
 
   content::NotificationRegistrar registrar_;

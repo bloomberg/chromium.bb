@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/security_style.h"
 #include "net/cert/cert_status_flags.h"
@@ -65,7 +66,7 @@ class SSLPolicy {
 
   // Callback that the user chose to accept or deny the certificate.
   void OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
-                          bool allow);
+                          CertificateRequestResultType decision);
 
   // Helper method for derived classes handling certificate errors.
   //

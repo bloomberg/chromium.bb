@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/supports_user_data.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
 class GURL;
@@ -41,11 +42,13 @@ class AwContentsClientBridgeBase {
 
   virtual ~AwContentsClientBridgeBase();
 
-  virtual void AllowCertificateError(int cert_error,
-                                     net::X509Certificate* cert,
-                                     const GURL& request_url,
-                                     const base::Callback<void(bool)>& callback,
-                                     bool* cancel_request) = 0;
+  virtual void AllowCertificateError(
+      int cert_error,
+      net::X509Certificate* cert,
+      const GURL& request_url,
+      const base::Callback<void(content::CertificateRequestResultType)>&
+          callback,
+      bool* cancel_request) = 0;
   virtual void SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
       std::unique_ptr<content::ClientCertificateDelegate> delegate) = 0;

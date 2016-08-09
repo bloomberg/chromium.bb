@@ -155,7 +155,8 @@ void SSLErrorHandler::HandleSSLError(
     const GURL& request_url,
     int options_mask,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(content::CertificateRequestResultType)>&
+        callback) {
   DCHECK(!FromWebContents(web_contents));
   SSLErrorHandler* error_handler =
       new SSLErrorHandler(web_contents, cert_error, ssl_info, request_url,
@@ -188,7 +189,7 @@ SSLErrorHandler::SSLErrorHandler(
     const GURL& request_url,
     int options_mask,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(bool)>& callback)
+    const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : content::WebContentsObserver(web_contents),
       web_contents_(web_contents),
       cert_error_(cert_error),
@@ -409,7 +410,8 @@ void SSLErrorHandler::DeleteSSLErrorHandler() {
   // Need to explicity deny the certificate via the callback, otherwise memory
   // is leaked.
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(false);
+    base::ResetAndReturn(&callback_)
+        .Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
   }
   if (common_name_mismatch_handler_) {
     common_name_mismatch_handler_->Cancel();

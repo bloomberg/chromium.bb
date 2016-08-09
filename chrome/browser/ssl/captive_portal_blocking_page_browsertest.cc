@@ -67,7 +67,8 @@ class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
       const GURL& login_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info,
-      const base::Callback<void(bool)>& callback,
+      const base::Callback<void(content::CertificateRequestResultType)>&
+          callback,
       bool is_wifi,
       const std::string& wifi_ssid)
       : CaptivePortalBlockingPage(web_contents,
@@ -140,8 +141,9 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   CaptivePortalBlockingPage* blocking_page =
       new CaptivePortalBlockingPageForTesting(
           contents, GURL(kBrokenSSL), login_url, std::move(ssl_cert_reporter),
-          ssl_info, base::Callback<void(bool)>(), is_wifi_connection,
-          wifi_ssid);
+          ssl_info,
+          base::Callback<void(content::CertificateRequestResultType)>(),
+          is_wifi_connection, wifi_ssid);
   blocking_page->Show();
 
   WaitForInterstitialAttach(contents);
@@ -318,7 +320,8 @@ class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
     CaptivePortalBlockingPage* blocking_page =
         new CaptivePortalBlockingPageForTesting(
             contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
-            base::Callback<void(bool)>(), false, "");
+            base::Callback<void(content::CertificateRequestResultType)>(),
+            false, "");
     return blocking_page;
   }
 };

@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "components/certificate_reporting/error_report.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
@@ -59,7 +60,8 @@ class SSLBlockingPage : public SecurityInterstitialPage {
                   int options_mask,
                   const base::Time& time_triggered,
                   std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-                  const base::Callback<void(bool)>& callback);
+                  const base::Callback<
+                      void(content::CertificateRequestResultType)>& callback);
 
   // InterstitialPageDelegate method:
   InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
@@ -91,7 +93,7 @@ class SSLBlockingPage : public SecurityInterstitialPage {
  private:
   void NotifyDenyCertificate();
 
-  base::Callback<void(bool)> callback_;
+  base::Callback<void(content::CertificateRequestResultType)> callback_;
   const net::SSLInfo ssl_info_;
   const bool overridable_;  // The UI allows the user to override the error.
 

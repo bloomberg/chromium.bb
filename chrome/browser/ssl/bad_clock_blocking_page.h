@@ -14,6 +14,7 @@
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "components/ssl_errors/error_classification.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
 
 class CertReportHelper;
@@ -42,7 +43,8 @@ class BadClockBlockingPage : public SecurityInterstitialPage {
                        const base::Time& time_triggered,
                        ssl_errors::ClockState clock_state,
                        std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-                       const base::Callback<void(bool)>& callback);
+                       const base::Callback<void(
+                           content::CertificateRequestResultType)>& callback);
 
   ~BadClockBlockingPage() override;
 
@@ -68,7 +70,7 @@ class BadClockBlockingPage : public SecurityInterstitialPage {
  private:
   void NotifyDenyCertificate();
 
-  base::Callback<void(bool)> callback_;
+  base::Callback<void(content::CertificateRequestResultType)> callback_;
   const net::SSLInfo ssl_info_;
   const base::Time time_triggered_;
   std::unique_ptr<ChromeControllerClient> controller_;

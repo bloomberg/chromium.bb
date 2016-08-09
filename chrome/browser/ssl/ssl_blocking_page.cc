@@ -115,7 +115,7 @@ SSLBlockingPage::SSLBlockingPage(
     int options_mask,
     const base::Time& time_triggered,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(bool)>& callback)
+    const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       callback_(callback),
       ssl_info_(ssl_info),
@@ -240,7 +240,7 @@ void SSLBlockingPage::OnProceed() {
 
   // Accepting the certificate resumes the loading of the page.
   DCHECK(!callback_.is_null());
-  callback_.Run(true);
+  callback_.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE);
   callback_.Reset();
 }
 
@@ -261,7 +261,7 @@ void SSLBlockingPage::NotifyDenyCertificate() {
   if (callback_.is_null())
     return;
 
-  callback_.Run(false);
+  callback_.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
   callback_.Reset();
 }
 

@@ -330,11 +330,13 @@ void CastContentBrowserClient::AllowCertificateError(
     bool overridable,
     bool strict_enforcement,
     bool expired_previous_decision,
-    const base::Callback<void(bool)>& callback,
-    content::CertificateRequestResultType* result) {
+    const base::Callback<void(content::CertificateRequestResultType)>&
+        callback) {
   // Allow developers to override certificate errors.
   // Otherwise, any fatal certificate errors will cause an abort.
-  *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
+  if (!callback.is_null()) {
+    callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
+  }
   return;
 }
 
