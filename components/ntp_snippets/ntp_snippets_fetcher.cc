@@ -259,62 +259,68 @@ NTPSnippetsFetcher::RequestParams::~RequestParams() = default;
 
 std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
   auto request = base::MakeUnique<base::DictionaryValue>();
-  if (fetch_api == CHROME_READER_API) {
-    auto content_params = base::MakeUnique<base::DictionaryValue>();
-    content_params->SetBoolean("only_return_personalized_results",
-                               only_return_personalized_results);
+  switch (fetch_api) {
+    case CHROME_READER_API: {
+      auto content_params = base::MakeUnique<base::DictionaryValue>();
+      content_params->SetBoolean("only_return_personalized_results",
+                                 only_return_personalized_results);
 
-    auto content_restricts = base::MakeUnique<base::ListValue>();
-    for (const auto* metadata : {"TITLE", "SNIPPET", "THUMBNAIL"}) {
-      auto entry = base::MakeUnique<base::DictionaryValue>();
-      entry->SetString("type", "METADATA");
-      entry->SetString("value", metadata);
-      content_restricts->Append(std::move(entry));
+      auto content_restricts = base::MakeUnique<base::ListValue>();
+      for (const auto* metadata : {"TITLE", "SNIPPET", "THUMBNAIL"}) {
+        auto entry = base::MakeUnique<base::DictionaryValue>();
+        entry->SetString("type", "METADATA");
+        entry->SetString("value", metadata);
+        content_restricts->Append(std::move(entry));
+      }
+
+      auto content_selectors = base::MakeUnique<base::ListValue>();
+      for (const auto& host : host_restricts) {
+        auto entry = base::MakeUnique<base::DictionaryValue>();
+        entry->SetString("type", "HOST_RESTRICT");
+        entry->SetString("value", host);
+        content_selectors->Append(std::move(entry));
+      }
+
+      auto local_scoring_params = base::MakeUnique<base::DictionaryValue>();
+      local_scoring_params->Set("content_params", std::move(content_params));
+      local_scoring_params->Set("content_restricts",
+                                std::move(content_restricts));
+      local_scoring_params->Set("content_selectors",
+                                std::move(content_selectors));
+
+      auto global_scoring_params = base::MakeUnique<base::DictionaryValue>();
+      global_scoring_params->SetInteger("num_to_return", count_to_fetch);
+      global_scoring_params->SetInteger("sort_type", 1);
+
+      auto advanced = base::MakeUnique<base::DictionaryValue>();
+      advanced->Set("local_scoring_params", std::move(local_scoring_params));
+      advanced->Set("global_scoring_params", std::move(global_scoring_params));
+
+      request->SetString("response_detail_level", "STANDARD");
+      request->Set("advanced_options", std::move(advanced));
+      if (!obfuscated_gaia_id.empty()) {
+        request->SetString("obfuscated_gaia_id", obfuscated_gaia_id);
+      }
+      if (!user_locale.empty()) {
+        request->SetString("user_locale", user_locale);
+      }
+      break;
     }
 
-    auto content_selectors = base::MakeUnique<base::ListValue>();
-    for (const auto& host : host_restricts) {
-      auto entry = base::MakeUnique<base::DictionaryValue>();
-      entry->SetString("type", "HOST_RESTRICT");
-      entry->SetString("value", host);
-      content_selectors->Append(std::move(entry));
-    }
+    case CHROME_CONTENT_SUGGESTIONS_API: {
+      if (!user_locale.empty()) {
+        request->SetString("uiLanguage", user_locale);
+      }
+      auto regular_hosts = base::MakeUnique<base::ListValue>();
+      for (const auto& host : host_restricts) {
+        regular_hosts->AppendString(host);
+      }
+      request->Set("regularlyVisitedHostNames", std::move(regular_hosts));
 
-    auto local_scoring_params = base::MakeUnique<base::DictionaryValue>();
-    local_scoring_params->Set("content_params", std::move(content_params));
-    local_scoring_params->Set("content_restricts",
-                              std::move(content_restricts));
-    local_scoring_params->Set("content_selectors",
-                              std::move(content_selectors));
-
-    auto global_scoring_params = base::MakeUnique<base::DictionaryValue>();
-    global_scoring_params->SetInteger("num_to_return", count_to_fetch);
-    global_scoring_params->SetInteger("sort_type", 1);
-
-    auto advanced = base::MakeUnique<base::DictionaryValue>();
-    advanced->Set("local_scoring_params", std::move(local_scoring_params));
-    advanced->Set("global_scoring_params", std::move(global_scoring_params));
-
-    request->SetString("response_detail_level", "STANDARD");
-    request->Set("advanced_options", std::move(advanced));
-    if (!obfuscated_gaia_id.empty()) {
-      request->SetString("obfuscated_gaia_id", obfuscated_gaia_id);
+      // TODO(sfiera): support authentication and personalization
+      // TODO(sfiera): support count_to_fetch
+      break;
     }
-    if (!user_locale.empty()) {
-      request->SetString("user_locale", user_locale);
-    }
-  } else {
-    if (!user_locale.empty()) {
-      request->SetString("uiLanguage", user_locale);
-    }
-    auto regular_hosts = base::MakeUnique<base::ListValue>();
-    for (const auto& host : host_restricts) {
-      regular_hosts->AppendString(host);
-    }
-    request->Set("regularlyVisitedHostNames", std::move(regular_hosts));
-
-    // TODO(sfiera): support authentication and personalization
-    // TODO(sfiera): support count_to_fetch
   }
 
   std::string request_json;
@@ -494,31 +500,37 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
     return false;
   }
 
-  if (fetch_api_ == CHROME_READER_API) {
-    const base::ListValue* recos = nullptr;
-    return top_dict->GetList("recos", &recos) &&
-           AddSnippetsFromListValue(/* content_suggestions_api = */ false,
-                                    *recos, snippets);
-  } else {
-    const base::ListValue* categories = nullptr;
-    if (!top_dict->GetList("categories", &categories)) {
-      return false;
+  switch (fetch_api_) {
+    case CHROME_READER_API: {
+      const base::ListValue* recos = nullptr;
+      return top_dict->GetList("recos", &recos) &&
+             AddSnippetsFromListValue(/* content_suggestions_api = */ false,
+                                      *recos, snippets);
     }
 
-    // Merge all categories together, for now.
-    // TODO(sfiera): preserve categories from server.
-    for (const auto& v : *categories) {
-      const base::DictionaryValue* category = nullptr;
-      const base::ListValue* suggestions = nullptr;
-      if (!(v->GetAsDictionary(&category) &&
-            category->GetList("suggestions", &suggestions) &&
-            AddSnippetsFromListValue(/* content_suggestions_api = */ true,
-                                     *suggestions, snippets))) {
+    case CHROME_CONTENT_SUGGESTIONS_API: {
+      const base::ListValue* categories = nullptr;
+      if (!top_dict->GetList("categories", &categories)) {
         return false;
       }
+
+      // Merge all categories together, for now.
+      // TODO(sfiera): preserve categories from server.
+      for (const auto& v : *categories) {
+        const base::DictionaryValue* category = nullptr;
+        const base::ListValue* suggestions = nullptr;
+        if (!(v->GetAsDictionary(&category) &&
+              category->GetList("suggestions", &suggestions) &&
+              AddSnippetsFromListValue(/* content_suggestions_api = */ true,
+                                       *suggestions, snippets))) {
+          return false;
+        }
+      }
+      return true;
     }
-    return true;
   }
+  NOTREACHED();
+  return false;
 }
 
 void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
