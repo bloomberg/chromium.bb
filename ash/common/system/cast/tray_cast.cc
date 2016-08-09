@@ -353,8 +353,8 @@ CastTrayView::~CastTrayView() {}
 void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.
   views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
-                                             ? views::BoxLayout::kVertical
-                                             : views::BoxLayout::kHorizontal;
+                                             ? views::BoxLayout::kHorizontal
+                                             : views::BoxLayout::kVertical;
   SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
   Layout();
 }
