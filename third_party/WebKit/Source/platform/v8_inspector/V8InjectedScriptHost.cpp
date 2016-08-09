@@ -51,7 +51,6 @@ v8::Local<v8::Object> V8InjectedScriptHost::create(v8::Local<v8::Context> contex
     setFunctionProperty(context, injectedScriptHost, "objectHasOwnProperty", V8InjectedScriptHost::objectHasOwnPropertyCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "bind", V8InjectedScriptHost::bindCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "proxyTargetValue", V8InjectedScriptHost::proxyTargetValueCallback, debuggerExternal);
-    setFunctionProperty(context, injectedScriptHost, "prototype", V8InjectedScriptHost::prototypeCallback, debuggerExternal);
     return injectedScriptHost;
 }
 
@@ -182,12 +181,6 @@ void V8InjectedScriptHost::proxyTargetValueCallback(const v8::FunctionCallbackIn
     while (target->IsProxy())
         target = v8::Local<v8::Proxy>::Cast(target)->GetTarget();
     info.GetReturnValue().Set(target);
-}
-
-void V8InjectedScriptHost::prototypeCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    DCHECK(info.Length() > 0 && info[0]->IsObject());
-    info.GetReturnValue().Set(info[0].As<v8::Object>()->GetPrototype());
 }
 
 } // namespace blink

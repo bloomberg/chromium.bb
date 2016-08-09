@@ -29,7 +29,6 @@ private:
     static void objectHasOwnPropertyCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void bindCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void proxyTargetValueCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void prototypeCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 } // namespace blink

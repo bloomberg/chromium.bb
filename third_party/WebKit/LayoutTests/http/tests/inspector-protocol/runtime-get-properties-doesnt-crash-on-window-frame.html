@@ -1,0 +1,18 @@
+<html>
+<head>
+<script type="text/javascript" src="./inspector-protocol-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.sendCommandPromise("Runtime.evaluate", { expression: "window.frames[0]" })
+        .then((message) => InspectorTest.sendCommandPromise("Runtime.getProperties", { objectId: message.result.result.objectId }))
+        .then(() => InspectorTest.completeTest());
+}
+</script>
+</head>
+<body>
+Tests that Runtime.getProperties doesn't crash on window.frames[0]. Should not crash.
+<iframe src="data:text/plain, <b>bold</b>" onload="runTest()"></iframe>
+</body>
+</html>
+

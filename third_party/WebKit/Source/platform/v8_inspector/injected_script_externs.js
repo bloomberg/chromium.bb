@@ -58,12 +58,6 @@ InjectedScriptHostClass.prototype.bind = function(value, groupName) {}
  */
 InjectedScriptHostClass.prototype.proxyTargetValue = function(object) {}
 
-/**
- * @param {!Object} object
- * @return {Object|undefined}
- */
-InjectedScriptHostClass.prototype.prototype = function(object) {}
-
 /** @type {!InjectedScriptHostClass} */
 var InjectedScriptHost;
 /** @type {!Window} */

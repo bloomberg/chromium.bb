@@ -369,6 +369,21 @@ InjectedScript.prototype = {
 
     /**
      * @param {!Object} object
+     * @return {?Object}
+     */
+    _objectPrototype: function(object)
+    {
+        if (InjectedScriptHost.subtype(object) === "proxy")
+            return null;
+        try {
+            return Object.getPrototypeOf(object);
+        } catch (e) {
+            return null;
+        }
+    },
+
+    /**
+     * @param {!Object} object
      * @param {boolean=} ownProperties
      * @param {boolean=} accessorPropertiesOnly
      * @param {?Array.<string>=} propertyNamesOnly
@@ -439,7 +454,7 @@ InjectedScript.prototype = {
         if (propertyNamesOnly) {
             for (var i = 0; i < propertyNamesOnly.length; ++i) {
                 var name = propertyNamesOnly[i];
-                for (var o = object; this._isDefined(o); o = InjectedScriptHost.prototype(o)) {
+                for (var o = object; this._isDefined(o); o = this._objectPrototype(o)) {
                     if (InjectedScriptHost.objectHasOwnProperty(o, name)) {
                         for (var descriptor of process(o, [name]))
                             yield descriptor;
@@ -467,7 +482,7 @@ InjectedScript.prototype = {
         } catch (e) {
         }
 
-        for (var o = object; this._isDefined(o); o = InjectedScriptHost.prototype(o)) {
+        for (var o = object; this._isDefined(o); o = this._objectPrototype(o)) {
             if (InjectedScriptHost.subtype(o) === "proxy")
                 continue;
             if (skipGetOwnPropertyNames && o === object) {
@@ -486,7 +501,7 @@ InjectedScript.prototype = {
                     yield descriptor;
             }
             if (ownProperties) {
-                var proto = InjectedScriptHost.prototype(o);
+                var proto = this._objectPrototype(o);
                 if (proto && !accessorPropertiesOnly)
                     yield { name: "__proto__", value: proto, writable: true, configurable: true, enumerable: false, isOwn: true, __proto__: null };
                 break;
