@@ -22,6 +22,7 @@ enum HalPixelFormatExtension {
   // ArcVideoAccelerator to identify the input format.
   HAL_PIXEL_FORMAT_H264 = 0x34363248,
   HAL_PIXEL_FORMAT_VP8 = 0x00385056,
+  HAL_PIXEL_FORMAT_VP9 = 0x00395056,
 };
 
 enum PortType {

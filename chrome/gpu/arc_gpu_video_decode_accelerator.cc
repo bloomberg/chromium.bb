@@ -104,6 +104,9 @@ ArcVideoAccelerator::Result ArcGpuVideoDecodeAccelerator::Initialize(
     case HAL_PIXEL_FORMAT_VP8:
       vda_config.profile = media::VP8PROFILE_ANY;
       break;
+    case HAL_PIXEL_FORMAT_VP9:
+      vda_config.profile = media::VP9PROFILE_PROFILE0;
+      break;
     default:
       DLOG(ERROR) << "Unsupported input format: " << config.input_pixel_format;
       return INVALID_ARGUMENT;
