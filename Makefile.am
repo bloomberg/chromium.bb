@@ -615,8 +615,8 @@ nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/viewporter-protocol.c			\
 	protocol/viewporter-client-protocol.h		\
-	protocol/xdg-shell-unstable-v5-protocol.c			\
-	protocol/xdg-shell-unstable-v5-client-protocol.h		\
+	protocol/xdg-shell-unstable-v6-protocol.c			\
+	protocol/xdg-shell-unstable-v6-client-protocol.h		\
 	protocol/ivi-application-protocol.c		\
 	protocol/ivi-application-client-protocol.h	\
 	protocol/pointer-constraints-unstable-v1-protocol.c		\
@@ -836,6 +836,8 @@ BUILT_SOURCES +=					\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
 	protocol/xdg-shell-unstable-v5-protocol.c			\
 	protocol/xdg-shell-unstable-v5-client-protocol.h		\
+	protocol/xdg-shell-unstable-v6-protocol.c			\
+	protocol/xdg-shell-unstable-v6-client-protocol.h		\
 	protocol/ivi-hmi-controller-protocol.c		\
 	protocol/ivi-hmi-controller-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\

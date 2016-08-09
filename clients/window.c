@@ -71,7 +71,7 @@ typedef void *EGLContext;
 #include "shared/helpers.h"
 #include "shared/xalloc.h"
 #include "shared/zalloc.h"
-#include "xdg-shell-unstable-v5-client-protocol.h"
+#include "xdg-shell-unstable-v6-client-protocol.h"
 #include "text-cursor-position-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
@@ -103,7 +103,7 @@ struct display {
 	struct wl_shm *shm;
 	struct wl_data_device_manager *data_device_manager;
 	struct text_cursor_position *text_cursor_position;
-	struct xdg_shell *xdg_shell;
+	struct zxdg_shell_v6 *xdg_shell;
 	struct ivi_application *ivi_application; /* ivi style shell */
 	struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
 	struct zwp_pointer_constraints_v1 *pointer_constraints;
@@ -232,6 +232,7 @@ struct window {
 	struct rectangle pending_allocation;
 	struct rectangle last_geometry;
 	int x, y;
+	int redraw_inhibited;
 	int redraw_needed;
 	int redraw_task_scheduled;
 	struct task redraw_task;
@@ -258,8 +259,9 @@ struct window {
 	window_locked_pointer_motion_handler_t locked_pointer_motion_handler;
 
 	struct surface *main_surface;
-	struct xdg_surface *xdg_surface;
-	struct xdg_popup *xdg_popup;
+	struct zxdg_surface_v6 *xdg_surface;
+	struct zxdg_toplevel_v6 *xdg_toplevel;
+	struct zxdg_popup_v6 *xdg_popup;
 
 	struct window *parent;
 	struct window *last_parent;
@@ -1588,10 +1590,12 @@ window_destroy(struct window *window)
 	if (window->frame)
 		window_frame_destroy(window->frame);
 
-	if (window->xdg_surface)
-		xdg_surface_destroy(window->xdg_surface);
+	if (window->xdg_toplevel)
+		zxdg_toplevel_v6_destroy(window->xdg_toplevel);
 	if (window->xdg_popup)
-		xdg_popup_destroy(window->xdg_popup);
+		zxdg_popup_v6_destroy(window->xdg_popup);
+	if (window->xdg_surface)
+		zxdg_surface_v6_destroy(window->xdg_surface);
 
 	if (window->ivi_surface)
 		ivi_surface_destroy(window->ivi_surface);
@@ -2422,22 +2426,22 @@ frame_handle_status(struct window_frame *frame, struct input *input,
 		return;
 	}
 
-	if ((status & FRAME_STATUS_MOVE) && window->xdg_surface) {
+	if ((status & FRAME_STATUS_MOVE) && window->xdg_toplevel) {
 		input_ungrab(input);
-		xdg_surface_move(window->xdg_surface,
-				 input_get_seat(input),
-				 window->display->serial);
+		zxdg_toplevel_v6_move(window->xdg_toplevel,
+				      input_get_seat(input),
+				      window->display->serial);
 
 		frame_status_clear(frame->frame, FRAME_STATUS_MOVE);
 	}
 
-	if ((status & FRAME_STATUS_RESIZE) && window->xdg_surface) {
+	if ((status & FRAME_STATUS_RESIZE) && window->xdg_toplevel) {
 		input_ungrab(input);
 
-		xdg_surface_resize(window->xdg_surface,
-				   input_get_seat(input),
-				   window->display->serial,
-				   location);
+		zxdg_toplevel_v6_resize(window->xdg_toplevel,
+					input_get_seat(input),
+					window->display->serial,
+					location);
 
 		frame_status_clear(frame->frame, FRAME_STATUS_RESIZE);
 	}
@@ -3974,10 +3978,10 @@ input_receive_selection_data_to_fd(struct input *input,
 void
 window_move(struct window *window, struct input *input, uint32_t serial)
 {
-	if (!window->xdg_surface)
+	if (!window->xdg_toplevel)
 		return;
 
-	xdg_surface_move(window->xdg_surface, input->seat, serial);
+	zxdg_toplevel_v6_move(window->xdg_toplevel, input->seat, serial);
 }
 
 static void
@@ -4182,9 +4186,45 @@ window_get_shadow_margin(struct window *window)
 }
 
 static void
-handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
-			 int32_t width, int32_t height,
-			 struct wl_array *states, uint32_t serial)
+window_inhibit_redraw(struct window *window)
+{
+	window->redraw_inhibited = 1;
+	wl_list_remove(&window->redraw_task.link);
+	wl_list_init(&window->redraw_task.link);
+	window->redraw_task_scheduled = 0;
+}
+
+static void
+window_uninhibit_redraw(struct window *window)
+{
+	window->redraw_inhibited = 0;
+	if (window->redraw_needed || window->resize_needed)
+		window_schedule_redraw_task(window);
+}
+
+static void
+xdg_surface_handle_configure(void *data,
+			     struct zxdg_surface_v6 *zxdg_surface_v6,
+			     uint32_t serial)
+{
+	struct window *window = data;
+
+	zxdg_surface_v6_ack_configure(window->xdg_surface, serial);
+
+	if (window->state_changed_handler)
+		window->state_changed_handler(window, window->user_data);
+
+	window_uninhibit_redraw(window);
+}
+
+static const struct zxdg_surface_v6_listener xdg_surface_listener = {
+	xdg_surface_handle_configure
+};
+
+static void
+xdg_toplevel_handle_configure(void *data, struct zxdg_toplevel_v6 *xdg_toplevel,
+			      int32_t width, int32_t height,
+			      struct wl_array *states)
 {
 	struct window *window = data;
 	uint32_t *p;
@@ -4197,16 +4237,16 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 	wl_array_for_each(p, states) {
 		uint32_t state = *p;
 		switch (state) {
-		case XDG_SURFACE_STATE_MAXIMIZED:
+		case ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED:
 			window->maximized = 1;
 			break;
-		case XDG_SURFACE_STATE_FULLSCREEN:
+		case ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN:
 			window->fullscreen = 1;
 			break;
-		case XDG_SURFACE_STATE_RESIZING:
+		case ZXDG_TOPLEVEL_V6_STATE_RESIZING:
 			window->resizing = 1;
 			break;
-		case XDG_SURFACE_STATE_ACTIVATED:
+		case ZXDG_TOPLEVEL_V6_STATE_ACTIVATED:
 			window->focused = 1;
 			break;
 		default:
@@ -4238,34 +4278,30 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 		window_schedule_resize(window,
 				       width + margin * 2,
 				       height + margin * 2);
-	} else {
+	} else if (window->saved_allocation.width > 0 &&
+		   window->saved_allocation.height > 0) {
 		window_schedule_resize(window,
 				       window->saved_allocation.width,
 				       window->saved_allocation.height);
 	}
-
-	xdg_surface_ack_configure(window->xdg_surface, serial);
-
-	if (window->state_changed_handler)
-		window->state_changed_handler(window, window->user_data);
 }
 
 static void
-handle_surface_delete(void *data, struct xdg_surface *xdg_surface)
+xdg_toplevel_handle_close(void *data, struct zxdg_toplevel_v6 *xdg_surface)
 {
 	struct window *window = data;
 	window_close(window);
 }
 
-static const struct xdg_surface_listener xdg_surface_listener = {
-	handle_surface_configure,
-	handle_surface_delete,
+static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
+	xdg_toplevel_handle_configure,
+	xdg_toplevel_handle_close,
 };
 
 static void
 window_sync_parent(struct window *window)
 {
-	struct xdg_surface *parent_surface;
+	struct zxdg_toplevel_v6 *parent_toplevel;
 
 	if (!window->xdg_surface)
 		return;
@@ -4274,11 +4310,11 @@ window_sync_parent(struct window *window)
 		return;
 
 	if (window->parent)
-		parent_surface = window->parent->xdg_surface;
+		parent_toplevel = window->parent->xdg_toplevel;
 	else
-		parent_surface = NULL;
+		parent_toplevel = NULL;
 
-	xdg_surface_set_parent(window->xdg_surface, parent_surface);
+	zxdg_toplevel_v6_set_parent(window->xdg_toplevel, parent_toplevel);
 	window->last_parent = window->parent;
 }
 
@@ -4310,11 +4346,11 @@ window_sync_geometry(struct window *window)
 	    geometry.height == window->last_geometry.height)
 		return;
 
-	xdg_surface_set_window_geometry(window->xdg_surface,
-					geometry.x,
-					geometry.y,
-					geometry.width,
-					geometry.height);
+	zxdg_surface_v6_set_window_geometry(window->xdg_surface,
+					    geometry.x,
+					    geometry.y,
+					    geometry.width,
+					    geometry.height);
 	window->last_geometry = geometry;
 }
 
@@ -4323,11 +4359,13 @@ window_flush(struct window *window)
 {
 	struct surface *surface;
 
+	assert(!window->redraw_inhibited);
+
 	if (!window->custom) {
-		if (window->xdg_surface) {
-			window_sync_parent(window);
+		if (window->xdg_surface)
 			window_sync_geometry(window);
-		}
+		if (window->xdg_toplevel)
+			window_sync_parent(window);
 	}
 
 	wl_list_for_each(surface, &window->subsurface_list, link) {
@@ -4480,6 +4518,9 @@ idle_redraw(struct task *task, uint32_t events)
 static void
 window_schedule_redraw_task(struct window *window)
 {
+	if (window->redraw_inhibited)
+		return;
+
 	if (!window->redraw_task_scheduled) {
 		window->redraw_task.run = idle_redraw;
 		display_defer(window->display, &window->redraw_task);
@@ -4509,16 +4550,16 @@ window_is_fullscreen(struct window *window)
 void
 window_set_fullscreen(struct window *window, int fullscreen)
 {
-	if (!window->xdg_surface)
+	if (!window->xdg_toplevel)
 		return;
 
 	if (window->fullscreen == fullscreen)
 		return;
 
 	if (fullscreen)
-		xdg_surface_set_fullscreen(window->xdg_surface, NULL);
+		zxdg_toplevel_v6_set_fullscreen(window->xdg_toplevel, NULL);
 	else
-		xdg_surface_unset_fullscreen(window->xdg_surface);
+		zxdg_toplevel_v6_unset_fullscreen(window->xdg_toplevel);
 }
 
 int
@@ -4530,16 +4571,16 @@ window_is_maximized(struct window *window)
 void
 window_set_maximized(struct window *window, int maximized)
 {
-	if (!window->xdg_surface)
+	if (!window->xdg_toplevel)
 		return;
 
 	if (window->maximized == maximized)
 		return;
 
 	if (maximized)
-		xdg_surface_set_maximized(window->xdg_surface);
+		zxdg_toplevel_v6_set_maximized(window->xdg_toplevel);
 	else
-		xdg_surface_unset_maximized(window->xdg_surface);
+		zxdg_toplevel_v6_unset_maximized(window->xdg_toplevel);
 }
 
 int
@@ -4551,10 +4592,10 @@ window_is_resizing(struct window *window)
 void
 window_set_minimized(struct window *window)
 {
-	if (!window->xdg_surface)
+	if (!window->xdg_toplevel)
 		return;
 
-	xdg_surface_set_minimized(window->xdg_surface);
+	zxdg_toplevel_v6_set_minimized(window->xdg_toplevel);
 }
 
 void
@@ -4657,8 +4698,8 @@ window_set_title(struct window *window, const char *title)
 		frame_set_title(window->frame->frame, title);
 		widget_schedule_redraw(window->frame->widget);
 	}
-	if (window->xdg_surface)
-		xdg_surface_set_title(window->xdg_surface, title);
+	if (window->xdg_toplevel)
+		zxdg_toplevel_v6_set_title(window->xdg_toplevel, title);
 }
 
 const char *
@@ -5100,13 +5141,23 @@ window_create(struct display *display)
 
 	if (window->display->xdg_shell) {
 		window->xdg_surface =
-			xdg_shell_get_xdg_surface(window->display->xdg_shell,
-						  window->main_surface->surface);
+			zxdg_shell_v6_get_xdg_surface(window->display->xdg_shell,
+						      window->main_surface->surface);
 		fail_on_null(window->xdg_surface, 0, __FILE__, __LINE__);
 
-		xdg_surface_set_user_data(window->xdg_surface, window);
-		xdg_surface_add_listener(window->xdg_surface,
-					 &xdg_surface_listener, window);
+		zxdg_surface_v6_add_listener(window->xdg_surface,
+					     &xdg_surface_listener, window);
+
+		window->xdg_toplevel =
+			zxdg_surface_v6_get_toplevel(window->xdg_surface);
+		fail_on_null(window->xdg_toplevel, 0, __FILE__, __LINE__);
+
+		zxdg_toplevel_v6_add_listener(window->xdg_toplevel,
+					      &xdg_toplevel_listener, window);
+
+		window_inhibit_redraw(window);
+
+		wl_surface_commit(window->main_surface->surface);
 	} else if (display->ivi_application) {
 		/* auto generation of ivi_id based on process id + basement of id */
 		id_ivisurf = IVI_SURFACE_ID + (uint32_t)getpid();
@@ -5266,7 +5317,17 @@ menu_redraw_handler(struct widget *widget, void *data)
 }
 
 static void
-handle_popup_popup_done(void *data, struct xdg_popup *xdg_popup)
+xdg_popup_handle_configure(void *data,
+			   struct zxdg_popup_v6 *zxdg_popup_v6,
+			   int32_t x,
+			   int32_t y,
+			   int32_t width,
+			   int32_t height)
+{
+}
+
+static void
+xdg_popup_handle_popup_done(void *data, struct zxdg_popup_v6 *xdg_popup)
 {
 	struct window *window = data;
 	struct menu *menu = window->main_surface->widget->user_data;
@@ -5275,8 +5336,9 @@ handle_popup_popup_done(void *data, struct xdg_popup *xdg_popup)
 	menu_destroy(menu);
 }
 
-static const struct xdg_popup_listener xdg_popup_listener = {
-	handle_popup_popup_done,
+static const struct zxdg_popup_v6_listener xdg_popup_listener = {
+	xdg_popup_handle_configure,
+	xdg_popup_handle_popup_done,
 };
 
 static struct menu *
@@ -5345,6 +5407,25 @@ window_create_menu(struct display *display,
 	return menu->window;
 }
 
+static struct zxdg_positioner_v6 *
+create_simple_positioner(struct display *display,
+			 int x, int y)
+{
+	struct zxdg_positioner_v6 *positioner;
+
+	positioner = zxdg_shell_v6_create_positioner(display->xdg_shell);
+	fail_on_null(positioner, 0, __FILE__, __LINE__);
+	zxdg_positioner_v6_set_anchor_rect(positioner, x, y, 1, 1);
+	zxdg_positioner_v6_set_anchor(positioner,
+				      ZXDG_POSITIONER_V6_ANCHOR_TOP |
+				      ZXDG_POSITIONER_V6_ANCHOR_LEFT);
+	zxdg_positioner_v6_set_gravity(positioner,
+				      ZXDG_POSITIONER_V6_ANCHOR_BOTTOM |
+				      ZXDG_POSITIONER_V6_ANCHOR_RIGHT);
+
+	return positioner;
+}
+
 void
 window_show_menu(struct display *display,
 		 struct input *input, uint32_t time, struct window *parent,
@@ -5354,6 +5435,8 @@ window_show_menu(struct display *display,
 	struct menu *menu;
 	struct window *window;
 	int32_t ix, iy;
+	struct rectangle parent_geometry;
+	struct zxdg_positioner_v6 *positioner;
 
 	menu = create_menu(display, input, time, func, entries, count, parent);
 
@@ -5369,22 +5452,37 @@ window_show_menu(struct display *display,
 	window->y = y;
 
 	frame_interior(menu->frame, &ix, &iy, NULL, NULL);
+	window_get_geometry(parent, &parent_geometry);
 
 	if (!display->xdg_shell)
 		return;
 
-	window->xdg_popup = xdg_shell_get_xdg_popup(display->xdg_shell,
-						    window->main_surface->surface,
-						    parent->main_surface->surface,
-						    input->seat,
-						    display_get_serial(window->display),
-						    window->x - ix,
-						    window->y - iy);
-	fail_on_null(window->xdg_popup, 0, __FILE__, __LINE__);
+	window->xdg_surface =
+		zxdg_shell_v6_get_xdg_surface(display->xdg_shell,
+					      window->main_surface->surface);
+	fail_on_null(window->xdg_surface, 0, __FILE__, __LINE__);
 
-	xdg_popup_set_user_data(window->xdg_popup, window);
-	xdg_popup_add_listener(window->xdg_popup,
-			       &xdg_popup_listener, window);
+	zxdg_surface_v6_add_listener(window->xdg_surface,
+				     &xdg_surface_listener, window);
+
+	positioner = create_simple_positioner(display,
+					      window->x - (ix + parent_geometry.x),
+					      window->y - (iy + parent_geometry.y));
+	window->xdg_popup =
+		zxdg_surface_v6_get_popup(window->xdg_surface,
+					  parent->xdg_surface,
+					  positioner);
+	fail_on_null(window->xdg_popup, 0, __FILE__, __LINE__);
+	zxdg_positioner_v6_destroy(positioner);
+	zxdg_popup_v6_grab(window->xdg_popup,
+			   input->seat,
+			   display_get_serial(window->display));
+	zxdg_popup_v6_add_listener(window->xdg_popup,
+				   &xdg_popup_listener, window);
+
+	window_inhibit_redraw(window);
+
+	wl_surface_commit(window->main_surface->surface);
 }
 
 void
@@ -5779,20 +5877,14 @@ struct wl_shm_listener shm_listener = {
 };
 
 static void
-xdg_shell_ping(void *data, struct xdg_shell *shell, uint32_t serial)
+xdg_shell_handle_ping(void *data, struct zxdg_shell_v6 *shell, uint32_t serial)
 {
-	xdg_shell_pong(shell, serial);
+	zxdg_shell_v6_pong(shell, serial);
 }
 
-static const struct xdg_shell_listener xdg_shell_listener = {
-	xdg_shell_ping,
+static const struct zxdg_shell_v6_listener xdg_shell_listener = {
+	xdg_shell_handle_ping,
 };
-
-#define XDG_VERSION 5 /* The version of xdg-shell that we implement */
-#ifdef static_assert
-static_assert(XDG_VERSION == XDG_SHELL_VERSION_CURRENT,
-	      "Interface version doesn't match implementation version");
-#endif
 
 static void
 registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
@@ -5835,11 +5927,10 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 			wl_registry_bind(registry, id,
 					 &wl_data_device_manager_interface,
 					 d->data_device_manager_version);
-	} else if (strcmp(interface, "xdg_shell") == 0) {
+	} else if (strcmp(interface, "zxdg_shell_v6") == 0) {
 		d->xdg_shell = wl_registry_bind(registry, id,
-						&xdg_shell_interface, 1);
-		xdg_shell_use_unstable_version(d->xdg_shell, XDG_VERSION);
-		xdg_shell_add_listener(d->xdg_shell, &xdg_shell_listener, d);
+						&zxdg_shell_v6_interface, 1);
+		zxdg_shell_v6_add_listener(d->xdg_shell, &xdg_shell_listener, d);
 	} else if (strcmp(interface, "text_cursor_position") == 0) {
 		d->text_cursor_position =
 			wl_registry_bind(registry, id,
@@ -6150,7 +6241,7 @@ display_destroy(struct display *display)
 		wl_subcompositor_destroy(display->subcompositor);
 
 	if (display->xdg_shell)
-		xdg_shell_destroy(display->xdg_shell);
+		zxdg_shell_v6_destroy(display->xdg_shell);
 
 	if (display->ivi_application)
 		ivi_application_destroy(display->ivi_application);
