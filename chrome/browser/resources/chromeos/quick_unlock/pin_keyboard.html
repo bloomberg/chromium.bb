@@ -2,11 +2,25 @@
                              what i18n to use for keypad, ie, does 1 ABC make
                              sense in every scenario? -->
 
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/paper-styles.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+
+<iron-iconset-svg name="pin-keyboard" size="24">
+  <svg>
+    <defs>
+      <!--
+      Inlined from Polymer's iron-icons to avoid importing everything.
+      See http://goo.gl/Y1OdAq for instructions on adding additional icons.
+      -->
+      <g id="forward"><path d="M12 8V4l8 8-8 8v-4H4V8z"></path></g>
+  </defs>
+</svg>
+</iron-iconset-svg>
 
 <dom-module id="pin-keyboard">
   <template>
@@ -140,7 +154,7 @@
 
     <div id="root">
       <div id="container-constrained-width">
-        <div class="row horizontal-center">
+        <div class="row">
           <input id="pin-input" type="[[getInputType_(enablePassword)]]"
                  class$="[[getInputClass_(value)]]
                          [[getSubmitHiddenClass_(enableSubmitButton)]]"
@@ -151,7 +165,7 @@
                                 [[getSubmitHiddenClass_(enableSubmitButton)]]"
                         on-tap="firePinSubmitEvent_">
             <div class$="icon-container [[getSubmitClass_(value)]]">
-                <iron-icon class="icon" icon="icons:forward"><iron-icon>
+                <iron-icon class="icon" icon="pin-keyboard:forward"><iron-icon>
             </div>
           </paper-button>
         </div>
@@ -200,7 +214,7 @@
           </paper-button>
           <paper-button class="digit-button clear-button" on-tap="onPinClear_">
             <div class="icon-container">
-              <iron-icon class="icon" icon="icons:clear"><iron-icon>
+              <iron-icon class="icon" icon="cr:clear"><iron-icon>
             </div>
             <inner-text class="icon-subheading">
               $i18n{pinKeyboardClear}
