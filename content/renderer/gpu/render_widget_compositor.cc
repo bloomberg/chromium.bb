@@ -512,7 +512,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.use_cached_picture_raster =
       !cmd.HasSwitch(cc::switches::kDisableCachedPictureRaster);
 
-  if (cmd.HasSwitch(switches::kUseRemoteCompositing))
+  if (cmd.HasSwitch(switches::kUseRemoteCompositing) ||
+      cmd.HasSwitch(switches::kIsRunningInMash))
     settings.use_external_begin_frame_source = false;
 
   return settings;
