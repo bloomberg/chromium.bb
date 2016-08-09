@@ -40,6 +40,12 @@ button:focus {
   width: 17px;
 }
 
+html[dir='rtl'] .bubble .pointer {
+  margin: 0 -5px 0 0;
+  left: auto;
+  right: 24px;
+}
+
 .bubble .pointer:not(.bottom) {
   top: -11px;
 }
@@ -59,6 +65,11 @@ button:focus {
   right: 3px;
   top: 3px;
   width: 21px;
+}
+
+html[dir='rtl'] .bubble .close-x {
+  right: auto;
+  left: 3px;
 }
 
 .bubble .close-x:hover {
@@ -358,6 +369,11 @@ files-toggle-ripple::shadow .ripple.activated {
   left: 20px;
   position: absolute;
   width: 220px;
+}
+
+html[dir='rtl'] .gallery .toolbar .bubble {
+  left: auto;
+  right: 20px;
 }
 
 .gallery:not([editing]) .toolbar .bubble {
