@@ -44,7 +44,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (paintInfo.phase != PaintPhaseForeground)
         return;
 
-    if (m_layoutListMarker.style()->visibility() != VISIBLE)
+    if (m_layoutListMarker.style()->visibility() != EVisibility::Visible)
         return;
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutListMarker, paintInfo.phase))

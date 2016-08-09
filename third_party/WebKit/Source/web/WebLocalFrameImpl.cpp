@@ -654,7 +654,7 @@ WebSize WebLocalFrameImpl::contentsSize() const
 bool WebLocalFrameImpl::hasVisibleContent() const
 {
     if (LayoutPart* layoutObject = frame()->ownerLayoutObject()) {
-        if (layoutObject->style()->visibility() != VISIBLE)
+        if (layoutObject->style()->visibility() != EVisibility::Visible)
             return false;
     }
 

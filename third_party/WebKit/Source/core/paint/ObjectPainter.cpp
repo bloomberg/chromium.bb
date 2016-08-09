@@ -206,7 +206,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     ASSERT(shouldPaintSelfOutline(paintInfo.phase));
 
     const ComputedStyle& styleToUse = m_layoutObject.styleRef();
-    if (!styleToUse.hasOutline() || styleToUse.visibility() != VISIBLE)
+    if (!styleToUse.hasOutline() || styleToUse.visibility() != EVisibility::Visible)
         return;
 
     // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
@@ -268,7 +268,7 @@ void ObjectPainter::paintInlineChildrenOutlines(const PaintInfo& paintInfo, cons
 void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.isPrinting());
-    if (m_layoutObject.isElementContinuation() || !m_layoutObject.node() || !m_layoutObject.node()->isLink() || m_layoutObject.styleRef().visibility() != VISIBLE)
+    if (m_layoutObject.isElementContinuation() || !m_layoutObject.node() || !m_layoutObject.node()->isLink() || m_layoutObject.styleRef().visibility() != EVisibility::Visible)
         return;
 
     KURL url = toElement(m_layoutObject.node())->hrefURL();

@@ -241,12 +241,12 @@ bool Element::layoutObjectIsFocusable() const
     if (isInCanvasSubtree()) {
         const HTMLCanvasElement* canvas = Traversal<HTMLCanvasElement>::firstAncestorOrSelf(*this);
         DCHECK(canvas);
-        return canvas->layoutObject() && canvas->layoutObject()->style()->visibility() == VISIBLE;
+        return canvas->layoutObject() && canvas->layoutObject()->style()->visibility() == EVisibility::Visible;
     }
 
     // FIXME: Even if we are not visible, we might have a child that is visible.
     // Hyatt wants to fix that some day with a "has visible content" flag or the like.
-    return layoutObject() && layoutObject()->style()->visibility() == VISIBLE;
+    return layoutObject() && layoutObject()->style()->visibility() == EVisibility::Visible;
 }
 
 Node* Element::cloneNode(bool deep)

@@ -69,7 +69,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
 
 void FieldsetPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_layoutFieldset.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
+    if (m_layoutFieldset.style()->visibility() != EVisibility::Visible || paintInfo.phase != PaintPhaseMask)
         return;
 
     LayoutRect paintRect = LayoutRect(paintOffset, m_layoutFieldset.size());

@@ -1462,7 +1462,7 @@ bool isNodeRendered(const Node& node)
     if (!layoutObject)
         return false;
 
-    return layoutObject->style()->visibility() == VISIBLE;
+    return layoutObject->style()->visibility() == EVisibility::Visible;
 }
 
 // return first preceding DOM position rendered at a different location, or "this"

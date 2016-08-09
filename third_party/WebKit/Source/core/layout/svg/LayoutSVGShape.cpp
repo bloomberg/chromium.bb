@@ -250,7 +250,7 @@ bool LayoutSVGShape::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& p
 
 bool LayoutSVGShape::nodeAtFloatPointInternal(const HitTestRequest& request, const FloatPoint& localPoint, PointerEventsHitRules hitRules)
 {
-    bool isVisible = (style()->visibility() == VISIBLE);
+    bool isVisible = (style()->visibility() == EVisibility::Visible);
     if (isVisible || !hitRules.requireVisible) {
         const SVGComputedStyle& svgStyle = style()->svgStyle();
         WindRule fillRule = svgStyle.fillRule();

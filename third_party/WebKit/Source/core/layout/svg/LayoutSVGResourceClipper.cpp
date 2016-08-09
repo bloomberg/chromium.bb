@@ -86,7 +86,7 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded()
             continue;
 
         const ComputedStyle* style = childLayoutObject->style();
-        if (!style || style->display() == NONE || (style->visibility() != VISIBLE && !isSVGUseElement(*childElement)))
+        if (!style || style->display() == NONE || (style->visibility() != EVisibility::Visible && !isSVGUseElement(*childElement)))
             continue;
 
         // Current shape in clip-path gets clipped too. Fallback to masking.
@@ -177,7 +177,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture()
             continue;
 
         const ComputedStyle* style = layoutObject->style();
-        if (!style || style->display() == NONE || (style->visibility() != VISIBLE && !isSVGUseElement(*childElement)))
+        if (!style || style->display() == NONE || (style->visibility() != EVisibility::Visible && !isSVGUseElement(*childElement)))
             continue;
 
         bool isUseElement = isSVGUseElement(*childElement);
@@ -221,7 +221,7 @@ void LayoutSVGResourceClipper::calculateLocalClipBounds()
         if (!layoutObject->isSVGShape() && !layoutObject->isSVGText() && !isSVGUseElement(*childElement))
             continue;
         const ComputedStyle* style = layoutObject->style();
-        if (!style || style->display() == NONE || (style->visibility() != VISIBLE && !isSVGUseElement(*childElement)))
+        if (!style || style->display() == NONE || (style->visibility() != EVisibility::Visible && !isSVGUseElement(*childElement)))
             continue;
         if (isSVGUseElement(*childElement) && !toSVGUseElement(*childElement).visibleTargetGraphicsElementForClipping())
             continue;

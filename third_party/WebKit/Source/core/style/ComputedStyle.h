@@ -298,7 +298,7 @@ protected:
         m_inheritedData.m_captionSide = initialCaptionSide();
         m_inheritedData.m_listStyleType = initialListStyleType();
         m_inheritedData.m_listStylePosition = initialListStylePosition();
-        m_inheritedData.m_visibility = initialVisibility();
+        m_inheritedData.m_visibility = static_cast<unsigned>(initialVisibility());
         m_inheritedData.m_textAlign = initialTextAlign();
         m_inheritedData.m_textTransform = initialTextTransform();
         m_inheritedData.m_textUnderline = false;
@@ -1468,9 +1468,9 @@ public:
     void setTextTransform(ETextTransform v) { m_inheritedData.m_textTransform = v; }
 
     // visibility
-    static EVisibility initialVisibility() { return VISIBLE; }
+    static EVisibility initialVisibility() { return EVisibility::Visible; }
     EVisibility visibility() const { return static_cast<EVisibility>(m_inheritedData.m_visibility); }
-    void setVisibility(EVisibility v) { m_inheritedData.m_visibility = v; }
+    void setVisibility(EVisibility v) { m_inheritedData.m_visibility = static_cast<unsigned>(v); }
 
     // white-space inherited
     static EWhiteSpace initialWhiteSpace() { return NORMAL; }

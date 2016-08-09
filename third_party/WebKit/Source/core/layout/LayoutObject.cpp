@@ -2668,7 +2668,7 @@ void LayoutObject::insertedIntoTree()
 
     // If |this| is visible but this object was not, tell the layer it has some visible content
     // that needs to be drawn and layer visibility optimization can't be used
-    if (parent()->style()->visibility() != VISIBLE && style()->visibility() == VISIBLE && !hasLayer()) {
+    if (parent()->style()->visibility() != EVisibility::Visible && style()->visibility() == EVisibility::Visible && !hasLayer()) {
         if (!layer)
             layer = parent()->enclosingLayer();
         if (layer)
@@ -2725,7 +2725,7 @@ void LayoutObject::willBeRemovedFromTree()
 
     // If we remove a visible child from an invisible parent, we don't know the layer visibility any more.
     PaintLayer* layer = nullptr;
-    if (parent()->style()->visibility() != VISIBLE && style()->visibility() == VISIBLE && !hasLayer()) {
+    if (parent()->style()->visibility() != EVisibility::Visible && style()->visibility() == EVisibility::Visible && !hasLayer()) {
         layer = parent()->enclosingLayer();
         if (layer)
             layer->dirtyVisibleContentStatus();
@@ -3118,7 +3118,7 @@ void LayoutObject::getTextDecorations(unsigned decorations, AppliedTextDecoratio
 void LayoutObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
 {
     // Convert the style regions to absolute coordinates.
-    if (style()->visibility() != VISIBLE || !isBox())
+    if (style()->visibility() != EVisibility::Visible || !isBox())
         return;
 
     if (style()->getDraggableRegionMode() == DraggableRegionNone)
@@ -3137,7 +3137,7 @@ void LayoutObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
 bool LayoutObject::willRenderImage()
 {
     // Without visibility we won't render (and therefore don't care about animation).
-    if (style()->visibility() != VISIBLE)
+    if (style()->visibility() != EVisibility::Visible)
         return false;
 
     // We will not render a new image when Active DOM is suspended

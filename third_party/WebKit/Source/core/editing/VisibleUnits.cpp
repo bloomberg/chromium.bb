@@ -1558,7 +1558,7 @@ PositionTemplate<Strategy> startOfParagraphAlgorithm(const PositionTemplate<Stra
             continue;
         }
         const ComputedStyle& style = layoutItem.styleRef();
-        if (style.visibility() != VISIBLE) {
+        if (style.visibility() != EVisibility::Visible) {
             prevousNodeIterator = Strategy::previousPostOrder(*prevousNodeIterator, startBlock);
             continue;
         }
@@ -1649,7 +1649,7 @@ static PositionTemplate<Strategy> endOfParagraphAlgorithm(const PositionTemplate
             continue;
         }
         const ComputedStyle& style = layoutObject->styleRef();
-        if (style.visibility() != VISIBLE) {
+        if (style.visibility() != EVisibility::Visible) {
             nextNodeItreator = Strategy::next(*nextNodeItreator, startBlock);
             continue;
         }
@@ -2457,7 +2457,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTempla
 
         // skip position in non-laid out or invisible node
         LayoutObject* layoutObject = associatedLayoutObjectOf(*currentNode, currentPos.offsetInLeafNode());
-        if (!layoutObject || layoutObject->style()->visibility() != VISIBLE)
+        if (!layoutObject || layoutObject->style()->visibility() != EVisibility::Visible)
             continue;
 
         if (rule == CanCrossEditingBoundary && boundaryCrossed) {
@@ -2505,7 +2505,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTempla
                         // |Text| node with :first-letter.
                         DCHECK_GE(currentPos.offsetInLeafNode(), 1);
                         LayoutObject* firstLetterLayoutObject = toLayoutTextFragment(layoutObject)->firstLetterPseudoElement()->layoutObject();
-                        if (firstLetterLayoutObject && firstLetterLayoutObject->style()->visibility() == VISIBLE)
+                        if (firstLetterLayoutObject && firstLetterLayoutObject->style()->visibility() == EVisibility::Visible)
                             return currentPos.computePosition();
                     }
                     continue;
@@ -2608,7 +2608,7 @@ PositionTemplate<Strategy> mostForwardCaretPosition(const PositionTemplate<Strat
 
         // skip position in non-laid out or invisible node
         LayoutObject* layoutObject = associatedLayoutObjectOf(*currentNode, currentPos.offsetInLeafNode());
-        if (!layoutObject || layoutObject->style()->visibility() != VISIBLE)
+        if (!layoutObject || layoutObject->style()->visibility() != EVisibility::Visible)
             continue;
 
         if (rule == CanCrossEditingBoundary && boundaryCrossed) {
@@ -2726,7 +2726,7 @@ static bool isVisuallyEquivalentCandidateAlgorithm(const PositionTemplate<Strate
     if (!layoutObject)
         return false;
 
-    if (layoutObject->style()->visibility() != VISIBLE)
+    if (layoutObject->style()->visibility() != EVisibility::Visible)
         return false;
 
     if (layoutObject->isBR()) {

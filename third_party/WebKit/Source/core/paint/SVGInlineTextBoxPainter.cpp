@@ -82,7 +82,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
     ASSERT(m_svgInlineTextBox.truncation() == cNoTruncation);
 
-    if (m_svgInlineTextBox.getLineLayoutItem().style()->visibility() != VISIBLE)
+    if (m_svgInlineTextBox.getLineLayoutItem().style()->visibility() != EVisibility::Visible)
         return;
 
     // We're explicitly not supporting composition & custom underlines and custom highlighters -- unlike InlineTextBox.
@@ -191,7 +191,7 @@ void SVGInlineTextBoxPainter::paintTextFragments(const PaintInfo& paintInfo, Lay
 
 void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInfo)
 {
-    if (m_svgInlineTextBox.getLineLayoutItem().style()->visibility() != VISIBLE)
+    if (m_svgInlineTextBox.getLineLayoutItem().style()->visibility() != EVisibility::Visible)
         return;
 
     ASSERT(!paintInfo.isPrinting());
@@ -276,7 +276,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
     LayoutObject* decorationLayoutObject = findLayoutObjectDefininingTextDecoration(m_svgInlineTextBox.parent());
     const ComputedStyle& decorationStyle = decorationLayoutObject->styleRef();
 
-    if (decorationStyle.visibility() != VISIBLE)
+    if (decorationStyle.visibility() != EVisibility::Visible)
         return;
 
     float scalingFactor = 1;

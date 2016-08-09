@@ -81,8 +81,8 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(AnimatableUnknown::create(CSSPrimitiveValue::createIdentifier(CSSValueNone))));
 
     EXPECT_EQ(
-        ::std::string("AnimatableVisibility(VISIBLE)"),
-        PrintToString(AnimatableVisibility::create(VISIBLE)));
+        ::std::string("AnimatableVisibility(EVisibility::Visible)"),
+        PrintToString(AnimatableVisibility::create(EVisibility::Visible)));
 }
 
 } // namespace blink

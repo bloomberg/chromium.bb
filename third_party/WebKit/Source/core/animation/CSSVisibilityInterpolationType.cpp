@@ -32,8 +32,8 @@ public:
             return m_start;
         if (fraction >= 1)
             return m_end;
-        if (m_start == VISIBLE || m_end == VISIBLE)
-            return VISIBLE;
+        if (m_start == EVisibility::Visible || m_end == EVisibility::Visible)
+            return EVisibility::Visible;
         return fraction < 0.5 ? m_start : m_end;
     }
 
@@ -113,7 +113,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertNeutral(const Int
 
 InterpolationValue CSSVisibilityInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
-    return createVisibilityValue(VISIBLE);
+    return createVisibilityValue(EVisibility::Visible);
 }
 
 InterpolationValue CSSVisibilityInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const

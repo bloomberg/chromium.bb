@@ -441,7 +441,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
 
 static bool hasVisibleTextNode(LayoutText* layoutObject)
 {
-    if (layoutObject->style()->visibility() == VISIBLE)
+    if (layoutObject->style()->visibility() == EVisibility::Visible)
         return true;
 
     if (!layoutObject->isTextFragment())
@@ -453,7 +453,7 @@ static bool hasVisibleTextNode(LayoutText* layoutObject)
 
     DCHECK(fragment->firstLetterPseudoElement());
     LayoutObject* pseudoElementLayoutObject = fragment->firstLetterPseudoElement()->layoutObject();
-    return pseudoElementLayoutObject && pseudoElementLayoutObject->style()->visibility() == VISIBLE;
+    return pseudoElementLayoutObject && pseudoElementLayoutObject->style()->visibility() == EVisibility::Visible;
 }
 
 template<typename Strategy>
@@ -497,7 +497,7 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode()
                 return false;
             }
         }
-        if (layoutObject->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
+        if (layoutObject->style()->visibility() != EVisibility::Visible && !ignoresStyleVisibility())
             return false;
         int strLength = str.length();
         int end = (textNode == m_endContainer) ? m_endOffset : INT_MAX;
@@ -518,7 +518,7 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode()
         handleTextNodeFirstLetter(toLayoutTextFragment(layoutObject));
 
     if (!layoutObject->firstTextBox() && str.length() > 0 && !shouldHandleFirstLetter) {
-        if (layoutObject->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
+        if (layoutObject->style()->visibility() != EVisibility::Visible && !ignoresStyleVisibility())
             return false;
         m_lastTextNodeEndedWithCollapsedSpace = true; // entire block is collapsed space
         return true;
@@ -547,7 +547,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
 {
     LayoutText* layoutObject = m_firstLetterText ? m_firstLetterText : toLayoutText(m_node->layoutObject());
 
-    if (layoutObject->style()->visibility() != VISIBLE && !ignoresStyleVisibility()) {
+    if (layoutObject->style()->visibility() != EVisibility::Visible && !ignoresStyleVisibility()) {
         m_textBox = nullptr;
     } else {
         String str = layoutObject->text();
@@ -660,7 +660,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextNodeFirstLetter(LayoutTextFragme
         return;
 
     LayoutObject* pseudoLayoutObject = firstLetterElement->layoutObject();
-    if (pseudoLayoutObject->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
+    if (pseudoLayoutObject->style()->visibility() != EVisibility::Visible && !ignoresStyleVisibility())
         return;
 
     LayoutObject* firstLetter = pseudoLayoutObject->slowFirstChild();
@@ -694,7 +694,7 @@ bool TextIteratorAlgorithm<Strategy>::handleReplacedElement()
         return false;
 
     LayoutObject* layoutObject = m_node->layoutObject();
-    if (layoutObject->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
+    if (layoutObject->style()->visibility() != EVisibility::Visible && !ignoresStyleVisibility())
         return false;
 
     if (emitsObjectReplacementCharacter()) {
@@ -912,7 +912,7 @@ bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero()
     // If this node is unrendered or invisible the VisiblePosition checks below won't have much meaning.
     // Additionally, if the range we are iterating over contains huge sections of unrendered content,
     // we would create VisiblePositions on every call to this function without this check.
-    if (!m_node->layoutObject() || m_node->layoutObject()->style()->visibility() != VISIBLE
+    if (!m_node->layoutObject() || m_node->layoutObject()->style()->visibility() != EVisibility::Visible
         || (m_node->layoutObject()->isLayoutBlockFlow() && !toLayoutBlock(m_node->layoutObject())->size().height() && !isHTMLBodyElement(*m_node)))
         return false;
 

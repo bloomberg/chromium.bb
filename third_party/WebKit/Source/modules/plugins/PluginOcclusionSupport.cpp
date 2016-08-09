@@ -115,7 +115,7 @@ static bool iframeIsAbovePlugin(const Vector<const LayoutObject*>& iframeZstack,
 static bool intersectsRect(const LayoutObject* renderer, const IntRect& rect)
 {
     return renderer->absoluteBoundingBoxRectIgnoringTransforms().intersects(rect)
-        && (!renderer->style() || renderer->style()->visibility() == VISIBLE);
+        && (!renderer->style() || renderer->style()->visibility() == EVisibility::Visible);
 }
 
 static void addToOcclusions(const LayoutBox* renderer, Vector<IntRect>& occlusions)

@@ -66,7 +66,7 @@ FloatRect SVGLayoutSupport::localOverflowRectForPaintInvalidation(const LayoutOb
     ASSERT(!object.isSVGRoot());
 
     // Return early for any cases where we don't actually paint
-    if (object.styleRef().visibility() != VISIBLE && !object.enclosingLayer()->hasVisibleContent())
+    if (object.styleRef().visibility() != EVisibility::Visible && !object.enclosingLayer()->hasVisibleContent())
         return FloatRect();
 
     FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalSVGCoordinates();

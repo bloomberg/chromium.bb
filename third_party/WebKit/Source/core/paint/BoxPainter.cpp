@@ -657,7 +657,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo
 
 void BoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_layoutBox.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
+    if (m_layoutBox.style()->visibility() != EVisibility::Visible || paintInfo.phase != PaintPhaseMask)
         return;
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutBox, paintInfo.phase))
@@ -707,7 +707,7 @@ void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint
 {
     ASSERT(paintInfo.phase == PaintPhaseClippingMask);
 
-    if (m_layoutBox.style()->visibility() != VISIBLE)
+    if (m_layoutBox.style()->visibility() != EVisibility::Visible)
         return;
 
     if (!m_layoutBox.layer() || m_layoutBox.layer()->compositingState() != PaintsIntoOwnBacking)

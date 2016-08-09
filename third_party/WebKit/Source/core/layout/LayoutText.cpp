@@ -1632,7 +1632,7 @@ LayoutRect LayoutText::visualOverflowRect() const
 
 LayoutRect LayoutText::localOverflowRectForPaintInvalidation() const
 {
-    if (style()->visibility() != VISIBLE)
+    if (style()->visibility() != EVisibility::Visible)
         return LayoutRect();
 
     return unionRect(visualOverflowRect(), localSelectionRect());

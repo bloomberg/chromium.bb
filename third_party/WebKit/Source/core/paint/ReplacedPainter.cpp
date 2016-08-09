@@ -30,7 +30,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
 
     LayoutRect borderRect(adjustedPaintOffset, m_layoutReplaced.size());
 
-    if (m_layoutReplaced.style()->visibility() == VISIBLE && m_layoutReplaced.hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
+    if (m_layoutReplaced.style()->visibility() == EVisibility::Visible && m_layoutReplaced.hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
         m_layoutReplaced.paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
 
     if (paintInfo.phase == PaintPhaseMask) {
@@ -103,7 +103,7 @@ bool ReplacedPainter::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint&
 
     // If we're invisible or haven't received a layout yet, just bail.
     // But if it's an SVG root, there can be children, so we'll check visibility later.
-    if (!m_layoutReplaced.isSVGRoot() && m_layoutReplaced.style()->visibility() != VISIBLE)
+    if (!m_layoutReplaced.isSVGRoot() && m_layoutReplaced.style()->visibility() != EVisibility::Visible)
         return false;
 
     LayoutRect paintRect(m_layoutReplaced.visualOverflowRect());

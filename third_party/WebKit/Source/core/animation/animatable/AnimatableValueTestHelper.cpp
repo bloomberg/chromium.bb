@@ -159,17 +159,17 @@ void PrintTo(const AnimatableVisibility& animVisibility, ::std::ostream* os)
 {
     *os << "AnimatableVisibility(";
     switch (animVisibility.visibility()) {
-    case VISIBLE:
-        *os << "VISIBLE";
+    case EVisibility::Visible:
+        *os << "EVisibility::Visible";
         break;
-    case HIDDEN:
-        *os << "HIDDEN";
+    case EVisibility::Hidden:
+        *os << "EVisibility::Hidden";
         break;
-    case COLLAPSE:
-        *os << "COLLAPSE";
+    case EVisibility::Collapse:
+        *os << "EVisibility::Collapse";
         break;
     default:
-        *os << "Unknown Visbilility - update switch in AnimatableValueTestHelper.h";
+        *os << "Unknown Visibility - update switch in AnimatableValueTestHelper.h";
     }
     *os << ")";
 }

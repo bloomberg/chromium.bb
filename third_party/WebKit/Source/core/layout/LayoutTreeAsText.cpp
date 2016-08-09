@@ -580,7 +580,7 @@ static void write(TextStream& ts, PaintLayer& layer,
 
     writeIndent(ts, indent);
 
-    if (layer.layoutObject()->style()->visibility() == HIDDEN)
+    if (layer.layoutObject()->style()->visibility() == EVisibility::Hidden)
         ts << "hidden ";
 
     ts << "layer ";

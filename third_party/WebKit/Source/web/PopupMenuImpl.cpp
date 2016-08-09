@@ -294,7 +294,7 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& 
     // TODO(tkent): We generate unnecessary "style: {\n},\n" even if no
     // additional style.
     PagePopupClient::addString("style: {\n", data);
-    if (style->visibility() == HIDDEN)
+    if (style->visibility() == EVisibility::Hidden)
         addProperty("visibility", String("hidden"), data);
     if (style->display() == NONE)
         addProperty("display", String("none"), data);

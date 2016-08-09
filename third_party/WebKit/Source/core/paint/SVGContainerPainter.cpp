@@ -57,7 +57,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
     if (paintInfoBeforeFiltering.phase != PaintPhaseForeground)
         return;
 
-    if (m_layoutSVGContainer.style()->outlineWidth() && m_layoutSVGContainer.style()->visibility() == VISIBLE) {
+    if (m_layoutSVGContainer.style()->outlineWidth() && m_layoutSVGContainer.style()->visibility() == EVisibility::Visible) {
         PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
         outlinePaintInfo.phase = PaintPhaseSelfOutlineOnly;
         ObjectPainter(m_layoutSVGContainer).paintOutline(outlinePaintInfo, LayoutPoint(boundingBox.location()));

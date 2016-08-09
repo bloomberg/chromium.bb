@@ -341,7 +341,7 @@ LayoutRect LayoutSVGRoot::localOverflowRectForPaintInvalidation() const
     // (does not have background/border/etc., see LayoutSVGRootTest.OverflowRectMappingWithViewportClipWithoutBorder).
 
     // Return early for any cases where we don't actually paint.
-    if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
+    if (style()->visibility() != EVisibility::Visible && !enclosingLayer()->hasVisibleContent())
         return LayoutRect();
 
     // Compute the paint invalidation rect of the content of the SVG in the border-box coordinate space.

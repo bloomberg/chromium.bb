@@ -2509,13 +2509,13 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EVisibility e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case VISIBLE:
+    case EVisibility::Visible:
         m_value.valueID = CSSValueVisible;
         break;
-    case HIDDEN:
+    case EVisibility::Hidden:
         m_value.valueID = CSSValueHidden;
         break;
-    case COLLAPSE:
+    case EVisibility::Collapse:
         m_value.valueID = CSSValueCollapse;
         break;
     }
@@ -2526,17 +2526,17 @@ template<> inline EVisibility CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueHidden:
-        return HIDDEN;
+        return EVisibility::Hidden;
     case CSSValueVisible:
-        return VISIBLE;
+        return EVisibility::Visible;
     case CSSValueCollapse:
-        return COLLAPSE;
+        return EVisibility::Collapse;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return VISIBLE;
+    return EVisibility::Visible;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EWhiteSpace e)

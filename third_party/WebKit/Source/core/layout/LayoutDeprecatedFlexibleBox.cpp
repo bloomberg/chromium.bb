@@ -130,7 +130,7 @@ static bool shouldCheckLines(LayoutBlockFlow* blockFlow)
 
 static int getHeightForLineCount(const LayoutBlockFlow* blockFlow, int lineCount, bool includeBottom, int& count)
 {
-    if (blockFlow->style()->visibility() != VISIBLE)
+    if (blockFlow->style()->visibility() != EVisibility::Visible)
         return -1;
     if (blockFlow->childrenInline()) {
         for (RootInlineBox* box = blockFlow->firstRootBox(); box; box = box->nextRootBox()) {
@@ -160,7 +160,7 @@ static RootInlineBox* lineAtIndex(const LayoutBlockFlow* blockFlow, int i)
 {
     ASSERT(i >= 0);
 
-    if (blockFlow->style()->visibility() != VISIBLE)
+    if (blockFlow->style()->visibility() != EVisibility::Visible)
         return nullptr;
 
     if (blockFlow->childrenInline()) {
@@ -185,7 +185,7 @@ static RootInlineBox* lineAtIndex(const LayoutBlockFlow* blockFlow, int i)
 
 static int lineCount(const LayoutBlockFlow* blockFlow, const RootInlineBox* stopRootInlineBox = nullptr, bool* found = nullptr)
 {
-    if (blockFlow->style()->visibility() != VISIBLE)
+    if (blockFlow->style()->visibility() != EVisibility::Visible)
         return 0;
     int count = 0;
     if (blockFlow->childrenInline()) {
@@ -218,7 +218,7 @@ static int lineCount(const LayoutBlockFlow* blockFlow, const RootInlineBox* stop
 
 static void clearTruncation(LayoutBlockFlow* blockFlow)
 {
-    if (blockFlow->style()->visibility() != VISIBLE)
+    if (blockFlow->style()->visibility() != EVisibility::Visible)
         return;
     if (blockFlow->childrenInline() && blockFlow->hasMarkupTruncation()) {
         blockFlow->setHasMarkupTruncation(false);
@@ -273,7 +273,7 @@ static LayoutUnit marginWidthForChild(LayoutBox* child)
 static bool childDoesNotAffectWidthOrFlexing(LayoutObject* child)
 {
     // Positioned children and collapsed children don't affect the min/max width.
-    return child->isOutOfFlowPositioned() || child->style()->visibility() == COLLAPSE;
+    return child->isOutOfFlowPositioned() || child->style()->visibility() == EVisibility::Collapse;
 }
 
 static LayoutUnit contentWidthForChild(LayoutBox* child)
@@ -505,7 +505,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                 continue;
             }
 
-            if (child->style()->visibility() == COLLAPSE) {
+            if (child->style()->visibility() == EVisibility::Collapse) {
                 // visibility: collapsed children do not participate in our positioning.
                 // But we need to lay them down.
                 child->layoutIfNeeded();
@@ -606,7 +606,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
 
                     // Now distribute the space to objects.
                     for (LayoutBox* child = iterator.first(); child && spaceAvailableThisPass && totalFlex; child = iterator.next()) {
-                        if (child->style()->visibility() == COLLAPSE)
+                        if (child->style()->visibility() == EVisibility::Collapse)
                             continue;
 
                         if (allowedChildFlex(child, expanding, i)) {
@@ -748,7 +748,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             if (!haveLineClamp && (relayoutChildren || (child->isAtomicInlineLevel() && (child->style()->width().hasPercent() || child->style()->height().hasPercent()))))
                 layoutScope.setChildNeedsLayout(child);
 
-            if (child->style()->visibility() == COLLAPSE) {
+            if (child->style()->visibility() == EVisibility::Collapse) {
                 // visibility: collapsed children do not participate in our positioning.
                 // But we need to lay them down.
                 child->layoutIfNeeded();

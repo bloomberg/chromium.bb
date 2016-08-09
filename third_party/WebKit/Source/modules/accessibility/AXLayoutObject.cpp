@@ -598,7 +598,7 @@ AXObjectInclusion AXLayoutObject::defaultObjectInclusion(IgnoredReasons* ignored
         return IgnoreObject;
     }
 
-    if (m_layoutObject->style()->visibility() != VISIBLE) {
+    if (m_layoutObject->style()->visibility() != EVisibility::Visible) {
         // aria-hidden is meant to override visibility as the determinant in AX hierarchy inclusion.
         if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "false"))
             return DefaultBehavior;

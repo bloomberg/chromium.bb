@@ -666,7 +666,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             return true;
     }
 
-    if ((visibility() == COLLAPSE) != (other.visibility() == COLLAPSE))
+    if ((visibility() == EVisibility::Collapse) != (other.visibility() == EVisibility::Collapse))
         return true;
 
     if (hasPseudoStyle(PseudoIdScrollbar) != other.hasPseudoStyle(PseudoIdScrollbar))

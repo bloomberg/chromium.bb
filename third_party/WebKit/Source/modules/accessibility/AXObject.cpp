@@ -761,7 +761,7 @@ bool AXObject::isHiddenForTextAlternativeCalculation() const
         return false;
 
     if (getLayoutObject())
-        return getLayoutObject()->style()->visibility() != VISIBLE;
+        return getLayoutObject()->style()->visibility() != EVisibility::Visible;
 
     // This is an obscure corner case: if a node has no LayoutObject, that means it's not rendered,
     // but we still may be exploring it as part of a text alternative calculation, for example if it
@@ -771,7 +771,7 @@ bool AXObject::isHiddenForTextAlternativeCalculation() const
     Document* doc = getDocument();
     if (doc && doc->frame() && getNode() && getNode()->isElementNode()) {
         RefPtr<ComputedStyle> style = doc->ensureStyleResolver().styleForElement(toElement(getNode()));
-        return style->display() == NONE || style->visibility() != VISIBLE;
+        return style->display() == NONE || style->visibility() != EVisibility::Visible;
     }
 
     return false;

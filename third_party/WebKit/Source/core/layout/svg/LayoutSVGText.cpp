@@ -290,7 +290,7 @@ bool LayoutSVGText::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& po
         return false;
 
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING, result.hitTestRequest(), style()->pointerEvents());
-    bool isVisible = (style()->visibility() == VISIBLE);
+    bool isVisible = (style()->visibility() == EVisibility::Visible);
     if (isVisible || !hitRules.requireVisible) {
         if ((hitRules.canHitBoundingBox && !objectBoundingBox().isEmpty())
             || (hitRules.canHitStroke && (style()->svgStyle().hasStroke() || !hitRules.requireStroke))

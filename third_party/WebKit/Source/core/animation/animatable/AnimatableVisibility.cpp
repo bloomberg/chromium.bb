@@ -36,20 +36,20 @@ bool AnimatableVisibility::usesDefaultInterpolationWith(const AnimatableValue* v
 {
     EVisibility from = m_visibility;
     EVisibility to = toAnimatableVisibility(value)->m_visibility;
-    return from != VISIBLE && to != VISIBLE;
+    return from != EVisibility::Visible && to != EVisibility::Visible;
 }
 
 PassRefPtr<AnimatableValue> AnimatableVisibility::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     EVisibility from = m_visibility;
     EVisibility to = toAnimatableVisibility(value)->m_visibility;
-    if (from != VISIBLE && to != VISIBLE)
+    if (from != EVisibility::Visible && to != EVisibility::Visible)
         return defaultInterpolateTo(this, value, fraction);
     if (fraction <= 0)
         return takeConstRef(this);
     if (fraction >= 1)
         return takeConstRef(value);
-    return takeConstRef(from == VISIBLE ? this : value);
+    return takeConstRef(from == EVisibility::Visible ? this : value);
 }
 
 bool AnimatableVisibility::equalTo(const AnimatableValue* value) const

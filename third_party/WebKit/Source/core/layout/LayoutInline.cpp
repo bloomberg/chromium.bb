@@ -1050,7 +1050,7 @@ LayoutRect LayoutInline::localOverflowRectForPaintInvalidation() const
     if (!alwaysCreateLineBoxes())
         return LayoutRect();
 
-    if (style()->visibility() != VISIBLE)
+    if (style()->visibility() != EVisibility::Visible)
         return LayoutRect();
 
     return visualOverflowRect();
@@ -1336,7 +1336,7 @@ void LayoutInline::computeSelfHitTestRects(Vector<LayoutRect>& rects, const Layo
 void LayoutInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
 {
     // Convert the style regions to absolute coordinates.
-    if (style()->visibility() != VISIBLE)
+    if (style()->visibility() != EVisibility::Visible)
         return;
 
     if (style()->getDraggableRegionMode() == DraggableRegionNone)

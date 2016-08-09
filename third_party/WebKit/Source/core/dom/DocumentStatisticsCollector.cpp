@@ -64,7 +64,7 @@ bool isVisible(const Element& element)
         return false;
     return (
         style->display() != NONE
-        && style->visibility() != HIDDEN
+        && style->visibility() != EVisibility::Hidden
         && style->opacity() != 0
     );
 }

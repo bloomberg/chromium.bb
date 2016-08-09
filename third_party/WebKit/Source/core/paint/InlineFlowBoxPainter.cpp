@@ -172,7 +172,7 @@ InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintTyp
 void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& cullRect)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground);
-    if (m_inlineFlowBox.getLineLayoutItem().style()->visibility() != VISIBLE)
+    if (m_inlineFlowBox.getLineLayoutItem().style()->visibility() != EVisibility::Visible)
         return;
 
     // You can use p::first-line to specify a background. If so, the root line boxes for
@@ -232,7 +232,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
 void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_inlineFlowBox.getLineLayoutItem().style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
+    if (m_inlineFlowBox.getLineLayoutItem().style()->visibility() != EVisibility::Visible || paintInfo.phase != PaintPhaseMask)
         return;
 
     LayoutRect frameRect = frameRectClampedToLineTopAndBottomIfNeeded();

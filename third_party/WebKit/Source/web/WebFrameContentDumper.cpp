@@ -62,7 +62,7 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
         LayoutPart* ownerLayoutObject = curLocalChild->ownerLayoutObject();
         if (contentLayoutItem.isNull() || !contentLayoutItem.size().width() || !contentLayoutItem.size().height()
             || (contentLayoutItem.location().x() + contentLayoutItem.size().width() <= 0) || (contentLayoutItem.location().y() + contentLayoutItem.size().height() <= 0)
-            || (ownerLayoutObject && ownerLayoutObject->style() && ownerLayoutObject->style()->visibility() != VISIBLE)) {
+            || (ownerLayoutObject && ownerLayoutObject->style() && ownerLayoutObject->style()->visibility() != EVisibility::Visible)) {
             continue;
         }
 

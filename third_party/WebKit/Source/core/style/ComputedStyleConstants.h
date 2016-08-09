@@ -30,6 +30,11 @@
 
 namespace blink {
 
+// TODO(sashab): Change these enums to enum classes with an unsigned underlying
+// type. Enum classes provide better type safety, and forcing an unsigned
+// underlying type prevents msvc from interpreting enums as negative numbers.
+// See: crbug.com/628043
+
 // Sides used when drawing borders and outlines. The values should run clockwise from top.
 enum BoxSide {
     BSTop,
@@ -386,7 +391,9 @@ enum ECaptionSide {
 
 enum EListStylePosition { ListStylePositionOutside, ListStylePositionInside };
 
-enum EVisibility { VISIBLE, HIDDEN, COLLAPSE };
+// TODO(sashab): Add a static_assert when this is used in bitfields to ensure it
+// uses unsigned as the underlying type.
+enum class EVisibility : unsigned { Visible, Hidden, Collapse };
 
 enum ECursor {
     // The following must match the order in CSSValueKeywords.in.

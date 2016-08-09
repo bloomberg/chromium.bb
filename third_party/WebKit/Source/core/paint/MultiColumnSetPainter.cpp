@@ -16,7 +16,7 @@ namespace blink {
 
 void MultiColumnSetPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_layoutMultiColumnSet.style()->visibility() != VISIBLE)
+    if (m_layoutMultiColumnSet.style()->visibility() != EVisibility::Visible)
         return;
 
     BlockPainter(m_layoutMultiColumnSet).paintObject(paintInfo, paintOffset);

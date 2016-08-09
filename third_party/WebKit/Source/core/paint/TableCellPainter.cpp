@@ -58,7 +58,7 @@ static EBorderStyle collapsedBorderStyle(EBorderStyle style)
 
 void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue)
 {
-    if (m_layoutTableCell.style()->visibility() != VISIBLE)
+    if (m_layoutTableCell.style()->visibility() != EVisibility::Visible)
         return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableCell.location();
@@ -130,7 +130,7 @@ void TableCellPainter::paintContainerBackgroundBehindCell(const PaintInfo& paint
 {
     DCHECK(backgroundObject != m_layoutTableCell);
 
-    if (m_layoutTableCell.style()->visibility() != VISIBLE)
+    if (m_layoutTableCell.style()->visibility() != EVisibility::Visible)
         return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableCell.location();
@@ -202,7 +202,7 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
 
 void TableCellPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_layoutTableCell.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
+    if (m_layoutTableCell.style()->visibility() != EVisibility::Visible || paintInfo.phase != PaintPhaseMask)
         return;
 
     LayoutTable* tableElt = m_layoutTableCell.table();

@@ -1404,7 +1404,7 @@ static bool isCandidateForOpaquenessTest(const LayoutBox& childBox)
     const ComputedStyle& childStyle = childBox.styleRef();
     if (childStyle.position() != StaticPosition && childBox.containingBlock() != childBox.parent())
         return false;
-    if (childStyle.visibility() != VISIBLE || childStyle.shapeOutside())
+    if (childStyle.visibility() != EVisibility::Visible || childStyle.shapeOutside())
         return false;
     if (childBox.size().isZero())
         return false;
@@ -2065,7 +2065,7 @@ bool LayoutBox::paintedOutputOfObjectHasNoEffect() const
 
 LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const
 {
-    if (style()->visibility() != VISIBLE)
+    if (style()->visibility() != EVisibility::Visible)
         return LayoutRect();
 
     return selfVisualOverflowRect();
@@ -3892,7 +3892,7 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point)
 
     for (LayoutObject* layoutObject = firstChild; layoutObject; layoutObject = layoutObject->nextSibling()) {
         if ((!layoutObject->slowFirstChild() && !layoutObject->isInline() && !layoutObject->isLayoutBlockFlow() )
-            || layoutObject->style()->visibility() != VISIBLE)
+            || layoutObject->style()->visibility() != EVisibility::Visible)
             continue;
 
         if (!layoutObject->isBox())
