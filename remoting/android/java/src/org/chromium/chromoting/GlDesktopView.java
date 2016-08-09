@@ -20,10 +20,19 @@ public class GlDesktopView extends AbstractDesktopView implements SurfaceHolder.
     private Object mOnHostSizeChangedListenerKey;
     private Object mOnCanvasRenderedListenerKey;
 
+    private Event.ParameterRunnable<Void> mProcessAnimationRunnable;
+
     public GlDesktopView(GlDisplay display, Desktop desktop, Client client) {
         super(desktop, client);
         Preconditions.notNull(display);
         mDisplay = display;
+
+        mProcessAnimationRunnable = new Event.ParameterRunnable<Void>() {
+            @Override
+            public void run(Void p) {
+                mInputHandler.processAnimation();
+            }
+        };
 
         getHolder().addCallback(this);
     }
@@ -62,7 +71,14 @@ public class GlDesktopView extends AbstractDesktopView implements SurfaceHolder.
 
     @Override
     public void setAnimationEnabled(boolean enabled) {
-        mDisplay.setRenderEventEnabled(enabled);
+        if (enabled && mOnCanvasRenderedListenerKey == null) {
+            mOnCanvasRenderedListenerKey = mDisplay.onCanvasRendered()
+                    .add(mProcessAnimationRunnable);
+            mInputHandler.processAnimation();
+        } else if (!enabled && mOnCanvasRenderedListenerKey != null) {
+            mDisplay.onCanvasRendered().remove(mOnCanvasRenderedListenerKey);
+            mOnCanvasRenderedListenerKey = null;
+        }
     }
 
     @Override
@@ -78,19 +94,6 @@ public class GlDesktopView extends AbstractDesktopView implements SurfaceHolder.
                         // mOnHostSizeChanged is triggered. mInputHandler expects the image size in
                         // mRenderData updated before its callback is called.
                         mOnHostSizeChanged.raise(p);
-                    }
-                });
-
-        mOnCanvasRenderedListenerKey = mDisplay
-                .onCanvasRendered().add(new Event.ParameterRunnable<Void>() {
-                    @Override
-                    public void run(Void p) {
-                        getHandler().post(new Runnable() {
-                            @Override
-                            public void run() {
-                                mInputHandler.processAnimation();
-                            }
-                        });
                     }
                 });
 
@@ -111,8 +114,12 @@ public class GlDesktopView extends AbstractDesktopView implements SurfaceHolder.
         // GlDisplay's life time spans to the whole session while GlDesktopView may be created and
         // destroyed for multiple times (say when the phone is rotated). It is important to remove
         // the listeners when the surface is about to be destroyed.
-        mDisplay.onHostSizeChanged().remove(mOnHostSizeChangedListenerKey);
-        mDisplay.onCanvasRendered().remove(mOnCanvasRenderedListenerKey);
+        if (mOnHostSizeChangedListenerKey != null) {
+            mDisplay.onHostSizeChanged().remove(mOnHostSizeChangedListenerKey);
+        }
+        if (mOnCanvasRenderedListenerKey != null) {
+            mDisplay.onCanvasRendered().remove(mOnCanvasRenderedListenerKey);
+        }
         mDisplay.surfaceDestroyed();
     }
 }

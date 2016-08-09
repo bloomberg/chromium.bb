@@ -114,6 +114,7 @@ base::WeakPtr<GlRenderer> GlRenderer::GetWeakPtr() {
 }
 
 void GlRenderer::RequestRender() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (render_scheduled_) {
     return;
   }

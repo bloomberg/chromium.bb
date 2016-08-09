@@ -60,6 +60,7 @@ shared_library("remoting_client_jni") {
     "//remoting/client/jni/remoting_jni_registrar.h",
   ]
   libs = [
+    "android",
     "OpenSLES",
     "EGL",
   ]

@@ -85,9 +85,7 @@ public class GlDisplay {
         }
     }
 
-    /**
-     * Moves the cursor to the corresponding location on the desktop.
-     */
+    /** Moves the cursor to the corresponding location on the desktop. */
     public void cursorPixelPositionChanged(int x, int y) {
         if (mNativeJniGlDisplay != 0) {
             nativeOnCursorPixelPositionChanged(mNativeJniGlDisplay, x, y);
@@ -139,17 +137,6 @@ public class GlDisplay {
     }
 
     /**
-     * Enables or disables render event callback. {@link GlDisplay#onCanvasRendered()} will only be
-     * triggered if this is set to true.
-     * @param enabled true to enable and false to disable
-     */
-    public void setRenderEventEnabled(boolean enabled) {
-        if (mNativeJniGlDisplay != 0) {
-            nativeSetRenderEventEnabled(mNativeJniGlDisplay, enabled);
-        }
-    }
-
-    /**
      * Shows the cursor input feedback animation with the given diameter at the given desktop
      * location.
      */
@@ -186,6 +173,4 @@ public class GlDisplay {
                                                     int x, int y, float diameter);
     private native void nativeOnCursorVisibilityChanged(long nativeJniGlDisplayHandler,
                                                         boolean visible);
-    private native void nativeSetRenderEventEnabled(long nativeJniGlDisplayHandler,
-                                                    boolean enabled);
 }

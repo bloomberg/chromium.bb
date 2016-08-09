@@ -311,6 +311,8 @@
       'client/normalizing_input_filter_mac.h',
       'client/normalizing_input_filter_win.cc',
       'client/normalizing_input_filter_win.h',
+      'client/queued_task_poster.cc',
+      'client/queued_task_poster.h',
       'client/server_log_entry_client.cc',
       'client/server_log_entry_client.h',
       'client/software_video_renderer.cc',

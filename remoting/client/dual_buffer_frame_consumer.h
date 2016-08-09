@@ -13,10 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/frame_consumer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
-
-namespace webrtc {
-class SharedDesktopFrame;
-}  // namespace webrtc
+#include "third_party/webrtc/modules/desktop_capture/shared_desktop_frame.h"
 
 namespace remoting {
 
