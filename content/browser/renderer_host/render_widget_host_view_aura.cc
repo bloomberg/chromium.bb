@@ -3023,11 +3023,28 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  if (!GetTextInputManager() || !GetTextInputManager()->GetActiveWidget())
+  if (!GetTextInputManager())
     return;
 
-  const TextInputManager::TextSelection* text_selection =
-      GetTextInputManager()->GetTextSelection();
+  const TextInputManager::TextSelection* text_selection = nullptr;
+  if (is_guest_view_hack_) {
+    // We obtain the TextSelection from focused RWH which is obtained from the
+    // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
+    // and the focused RWH will be that of the embedder which is incorrect. In
+    // this case we should use TextSelection for |this| since RWHV for guest
+    // forwards text selection information to its platform view.
+    text_selection = GetTextInputManager()->GetTextSelection(this);
+  } else {
+    RenderWidgetHostImpl* focused_widget =
+        host_->delegate()->GetFocusedRenderWidgetHost(host_);
+    if (!!focused_widget && !!focused_widget->GetView()) {
+      text_selection = GetTextInputManager()->GetTextSelection(
+          focused_widget->GetView());
+    }
+  }
+
+  if (!text_selection)
+    return;
 
   if (text_selection->text.empty() || text_selection->range.is_empty())
     return;

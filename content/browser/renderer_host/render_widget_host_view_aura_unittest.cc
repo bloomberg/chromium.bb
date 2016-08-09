@@ -76,6 +76,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -163,13 +164,21 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
 
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
-  MockRenderWidgetHostDelegate() : rwh_(nullptr), is_fullscreen_(false) {}
+  MockRenderWidgetHostDelegate()
+      : rwh_(nullptr), is_fullscreen_(false), focused_widget_(nullptr) {}
   ~MockRenderWidgetHostDelegate() override {}
   const NativeWebKeyboardEvent* last_event() const { return last_event_.get(); }
   void set_widget_host(RenderWidgetHostImpl* rwh) { rwh_ = rwh; }
   void set_is_fullscreen(bool is_fullscreen) { is_fullscreen_ = is_fullscreen; }
   TextInputManager* GetTextInputManager() override {
     return &text_input_manager_;
+  }
+  RenderWidgetHostImpl* GetFocusedRenderWidgetHost(
+      RenderWidgetHostImpl* widget_host) override {
+    return !!focused_widget_ ? focused_widget_ : widget_host;
+  }
+  void set_focused_widget(RenderWidgetHostImpl* focused_widget) {
+    focused_widget_ = focused_widget;
   }
 
  protected:
@@ -194,6 +203,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   RenderWidgetHostImpl* rwh_;
   bool is_fullscreen_;
   TextInputManager text_input_manager_;
+  RenderWidgetHostImpl* focused_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
@@ -568,11 +578,23 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
  protected:
   BrowserContext* browser_context() { return browser_context_.get(); }
 
+  MockRenderWidgetHostDelegate* render_widget_host_delegate() const {
+    return delegates_.back().get();
+  }
+
   // Sets the |view| active in TextInputManager with the given |type|. |type|
   // cannot be ui::TEXT_INPUT_TYPE_NONE.
+  // Must not be called in the destruction path of |view|.
   void ActivateViewForTextInputManager(RenderWidgetHostViewBase* view,
                                        ui::TextInputType type) {
     DCHECK_NE(ui::TEXT_INPUT_TYPE_NONE, type);
+    // First mock-focus the widget if not already.
+    if (render_widget_host_delegate()->GetFocusedRenderWidgetHost(
+            widget_host_) != view->GetRenderWidgetHost()) {
+      render_widget_host_delegate()->set_focused_widget(
+          RenderWidgetHostImpl::From(view->GetRenderWidgetHost()));
+    }
+
     TextInputManager* manager =
         static_cast<RenderWidgetHostImpl*>(view->GetRenderWidgetHost())
             ->delegate()
@@ -4233,10 +4255,6 @@ class InputMethodAuraTestBase : public RenderWidgetHostViewAuraTest {
   }
 
  protected:
-  MockRenderWidgetHostDelegate* render_widget_host_delegate() const {
-    return delegates_.back().get();
-  }
-
   ui::TextInputClient* text_input_client() const { return view_; }
 
   bool has_composition_text() const {
@@ -4538,5 +4556,32 @@ TEST_F(InputMethodStateAuraTest, GetSelectionRange) {
     expected_range.set_end(expected_range.end() + 1U);
   }
 }
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+// This test will verify that after selection, the selected text is written to
+// the clipboard from the focused widget.
+TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  EXPECT_TRUE(!!clipboard);
+  std::vector<std::string> texts = {"text0", "text1", "text2", "text3"};
+  for (auto index : active_view_sequence_) {
+    clipboard->Clear(ui::CLIPBOARD_TYPE_SELECTION);
+
+    // Focus the corresponding widget.
+    render_widget_host_delegate()->set_focused_widget(
+        RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
+
+    // Change the selection of the currently focused widget. It suffices to just
+    // call the method on the view.
+    base::string16 expected_text = base::ASCIIToUTF16(texts[index]);
+    views_[index]->SelectionChanged(expected_text, 0U, gfx::Range(0, 5));
+
+    // Retrieve the selected text from clipboard and verify it is as expected.
+    base::string16 result_text;
+    clipboard->ReadText(ui::CLIPBOARD_TYPE_SELECTION, &result_text);
+    EXPECT_EQ(expected_text, result_text);
+  }
+}
+#endif
 
 }  // namespace content
