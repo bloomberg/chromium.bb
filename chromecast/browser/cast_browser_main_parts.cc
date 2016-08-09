@@ -59,6 +59,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 #if !defined(OS_ANDROID)
 #include <signal.h>
@@ -245,6 +246,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // Enable navigator.connection API.
   // TODO(derekjchow): Remove this switch when enabled by default.
   { switches::kEnableNetworkInformation, "" },
+  { switches::kHideScrollbars, "" },
   { NULL, NULL },  // Termination
 };
 
