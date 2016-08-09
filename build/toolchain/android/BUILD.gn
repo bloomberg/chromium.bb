@@ -98,7 +98,7 @@ android_gcc_toolchains_helper("mipsel") {
 }
 
 android_gcc_toolchains_helper("x64") {
-  toolchain_cpu = "x86_64"
+  toolchain_cpu = "x64"
   toolchain_root = x86_64_android_toolchain_root
   sysroot = "$android_ndk_root/$x86_64_android_sysroot_subdir"
   lib_dir = "usr/lib64"
