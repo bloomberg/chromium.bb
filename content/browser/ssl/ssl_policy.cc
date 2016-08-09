@@ -156,9 +156,6 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
   if (web_contents->DisplayedInsecureContent())
     entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
 
-  if (entry->GetSSL().security_style == SECURITY_STYLE_AUTHENTICATION_BROKEN)
-    return;
-
   SiteInstance* site_instance = entry->site_instance();
   // Note that |site_instance| can be NULL here because NavigationEntries don't
   // necessarily have site instances.  Without a process, the entry can't
@@ -169,7 +166,6 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
     entry->GetSSL().security_style =
         SECURITY_STYLE_AUTHENTICATION_BROKEN;
     entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
-    return;
   }
 }
 

@@ -736,6 +736,29 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSWithInsecureContent) {
                                  AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
+// Tests that the NavigationEntry gets marked as active mixed content,
+// even if there is a certificate error. Regression test for
+// https://crbug.com/593950.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSWithActiveInsecureContent) {
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+
+  // Navigate to a page with a certificate error and click through the
+  // interstitial.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server_expired_.GetURL("/ssl/page_runs_insecure_content.html"));
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+  ProceedThroughInterstitial(tab);
+
+  // Now check that the page is marked as having run insecure content.
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::RAN_INSECURE_CONTENT);
+}
+
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_Proceed) {
   ASSERT_TRUE(https_server_expired_.Start());
   ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
@@ -917,8 +940,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreLocalhostCertErrors,
 
   // We should see no interstitial, but we should have an error
   // (red-crossed-out-https) in the URL bar.
+  // TODO(estark): once http://crbug.com/634171 is fixed and certificate
+  // errors for subresources don't generate
+  // DISPLAYED/RAN_INSECURE_CONTENT switch this back to AuthState::NONE.
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 AuthState::NONE);
+                                 AuthState::RAN_INSECURE_CONTENT);
 
   // We should see that the script tag in the page loaded and ran (and
   // wasn't blocked by the certificate error).
@@ -2205,8 +2231,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
   observer.Wait();
 
   // We should still be authentication broken.
-  CheckAuthenticationBrokenState(
-      tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
+  // TODO(estark): once http://crbug.com/634171 is fixed and certificate
+  // errors for subresources don't generate
+  // DISPLAYED/RAN_INSECURE_CONTENT switch this back to AuthState::NONE.
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::RAN_INSECURE_CONTENT);
 }
 
 // From an HTTP top frame, navigate to good and bad HTTPS (security state should
@@ -2361,11 +2390,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       tab, "window.domAutomationController.send(IsFooSet());", &js_result));
   EXPECT_TRUE(js_result);
-  // TODO(estark): once http://crbug.com/634171 is fixed and certificate errors
-  // for subresources don't generate DISPLAYED_INSECURE_CONTENT switch this back
-  // to AuthState::NONE.
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 AuthState::DISPLAYED_INSECURE_CONTENT);
+  // TODO(estark): once http://crbug.com/634171 is fixed and certificate
+  // errors for subresources don't generate
+  // DISPLAYED/RAN_INSECURE_CONTENT switch this back to AuthState::NONE.
+  CheckAuthenticationBrokenState(
+      tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+      AuthState::DISPLAYED_INSECURE_CONTENT | AuthState::RAN_INSECURE_CONTENT);
 }
 
 // Like the test above, but only displaying inactive content (an image).
