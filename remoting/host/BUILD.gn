@@ -1298,7 +1298,24 @@ if (enable_me2me_host) {
       ]
 
       _generated_files = rebase_path(inputs, root_build_dir)
-      _extra_files = []
+      _generated_files += [ rebase_path("//remoting/resources/chromoting.ico") ]
+
+      # _generated_dst_files must contain the same files in the same order as
+      # _generated_files, otherwise the Windows MSI will not be built correctly.
+      _generated_dst_files = [
+        "files/remote_assistance_host.exe",
+        "files/remote_security_key.exe",
+        "files/remoting_core.dll",
+        "files/remoting_desktop.exe",
+        "files/remoting_host.exe",
+        "files/remoting_native_messaging_host.exe",
+        "files/remoting_start_host.exe",
+        "files/CREDITS.txt",
+        "files/com.google.chrome.remote_assistance.json",
+        "files/com.google.chrome.remote_desktop.json",
+        "files/icudtl.dat",
+        "files/chromoting.ico",
+      ]
 
       args =
           [
@@ -1314,24 +1331,11 @@ if (enable_me2me_host) {
             "--generated-files",
           ] + _generated_files +
           [
-            rebase_path("//remoting/resources/chromoting.ico"),
-
             # Position of files in zip file
             "--generated-files-dst",
-            "files/remote_assistance_host.exe",
-            "files/remote_security_key.exe",
-            "files/remoting_core.dll",
-            "files/remoting_desktop.exe",
-            "files/remoting_host.exe",
-            "files/remoting_native_messaging_host.exe",
-            "files/remoting_start_host.exe",
-            "files/CREDITS.txt",
-            "files/com.google.chrome.remote_assistance.json",
-            "files/com.google.chrome.remote_desktop.json",
-            "files/chromoting.ico",
-            "files/icudtl.dat",
-          ] + _extra_files +  # Defs
+          ] + _generated_dst_files +
           [
+            # Defs
             "--defs",
             "BRANDING=$_branding",
             "DAEMON_CONTROLLER_CLSID={$daemon_controller_clsid}",
