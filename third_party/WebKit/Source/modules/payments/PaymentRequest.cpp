@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/HashSet.h"
 #include <utility>
 
@@ -488,6 +489,7 @@ DEFINE_TRACE(PaymentRequest)
 
 void PaymentRequest::onCompleteTimeoutForTesting()
 {
+    m_completeTimer.stop();
     onCompleteTimeout(0);
 }
 
@@ -686,7 +688,6 @@ void PaymentRequest::OnAbort(bool abortedSuccessfully)
 
 void PaymentRequest::onCompleteTimeout(TimerBase*)
 {
-    m_completeTimer.stop();
     m_paymentProvider->Complete(mojom::blink::PaymentComplete(Fail));
     clearResolversAndCloseMojoConnection();
 }
