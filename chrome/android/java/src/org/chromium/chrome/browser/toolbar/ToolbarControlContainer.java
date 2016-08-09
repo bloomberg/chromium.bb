@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.FrameLayout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
@@ -132,6 +134,12 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
         @Override
         protected boolean isReadyForCapture() {
             return mReadyForBitmapCapture;
+        }
+
+        @Override
+        public boolean gatherTransparentRegion(Region region) {
+            ViewUtils.gatherTransparentRegionsForOpaqueView(this, region);
+            return true;
         }
     }
 

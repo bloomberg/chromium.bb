@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.util;
 
 import android.graphics.Canvas;
+import android.graphics.Region;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -12,6 +13,8 @@ import android.view.ViewGroup;
  * View-related utility methods.
  */
 public class ViewUtils {
+    private static final int[] sLocationTmp = new int[2];
+
     /**
      * Invalidates a view and all of its descendants.
      */
@@ -75,5 +78,18 @@ public class ViewUtils {
             outPosition[1] += childView.getY();
             childView = (View) childView.getParent();
         }
+    }
+
+    /**
+     * Helper for overriding {@link View#gatherTransparentRegions()} for views that are fully opaque
+     * and have children extending beyond their bounds. If the transparent region optimization is
+     * turned on (which is the case whenever the view hierarchy contains a SurfaceView somewhere),
+     * the children might otherwise confuse the SurfaceFlinger.
+     */
+    public static void gatherTransparentRegionsForOpaqueView(View view, Region region) {
+        view.getLocationInWindow(sLocationTmp);
+        region.op(sLocationTmp[0], sLocationTmp[1],
+                sLocationTmp[0] + view.getRight() - view.getLeft(),
+                sLocationTmp[1] + view.getBottom() - view.getTop(), Region.Op.DIFFERENCE);
     }
 }
