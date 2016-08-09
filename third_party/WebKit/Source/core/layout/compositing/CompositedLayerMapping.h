@@ -329,6 +329,13 @@ private:
     // not appear earlier in the set of layers for this object.
     bool invalidateLayerIfNoPrecedingEntry(size_t);
 
+    // Returns true for layers with scrollable overflow which have a background
+    // that can be painted into the composited scrolling contents layer (i.e.
+    // the background can scroll with the content). When the background is also
+    // opaque this allows us to composite the scroller even on low DPI as we can
+    // draw with subpixel anti-aliasing.
+    bool shouldPaintBackgroundOntoScrollingContentsLayer() const;
+
     PaintLayer& m_owningLayer;
 
     // The hierarchy of layers that is maintained by the CompositedLayerMapping looks like this:

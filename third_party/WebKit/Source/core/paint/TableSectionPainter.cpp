@@ -297,7 +297,7 @@ void TableSectionPainter::paintBoxShadow(const PaintInfo& paintInfo, const Layou
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableSection, type))
         return;
 
-    LayoutRect bounds = BoxPainter(m_layoutTableSection).boundsForDrawingRecorder(paintOffset);
+    LayoutRect bounds = BoxPainter(m_layoutTableSection).boundsForDrawingRecorder(paintInfo, paintOffset);
     LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableSection, type, bounds);
     BoxPainter::paintBoxShadow(paintInfo, LayoutRect(paintOffset, m_layoutTableSection.size()), m_layoutTableSection.styleRef(), shadowStyle);
 }

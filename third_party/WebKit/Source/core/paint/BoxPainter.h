@@ -58,7 +58,7 @@ public:
     static void paintBoxShadow(const PaintInfo&, const LayoutRect&, const ComputedStyle&, ShadowStyle, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static bool shouldForceWhiteBackgroundForPrintEconomy(const ComputedStyle&, const Document&);
 
-    LayoutRect boundsForDrawingRecorder(const LayoutPoint& adjustedPaintOffset);
+    LayoutRect boundsForDrawingRecorder(const PaintInfo&, const LayoutPoint& adjustedPaintOffset);
 
 private:
     void paintBackground(const PaintInfo&, const LayoutRect&, const Color& backgroundColor, BackgroundBleedAvoidance = BackgroundBleedNone);

@@ -309,8 +309,22 @@ void CompositedLayerMapping::updateContentsOpaque()
         m_graphicsLayer->setContentsOpaque(false);
         m_backgroundLayer->setContentsOpaque(m_owningLayer.backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
     } else {
-        // For non-root layers, background is always painted by the primary graphics layer.
-        m_graphicsLayer->setContentsOpaque(m_owningLayer.backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
+        // For non-root layers, background is painted by the scrolling contents layer if all backgrounds
+        // are background attachment local, otherwise background is painted by the primary graphics layer.
+        if (hasScrollingLayer() && shouldPaintBackgroundOntoScrollingContentsLayer()) {
+            // Backgrounds painted onto the foreground are clipped by the padding box rect.
+            // TODO(flackr): This should actually check the entire overflow rect within the
+            // scrolling contents layer but since we currently only trigger this for solid
+            // color backgrounds the answer will be the same.
+            m_scrollingContentsLayer->setContentsOpaque(m_owningLayer.backgroundIsKnownToBeOpaqueInRect(toLayoutBox(layoutObject())->paddingBoxRect()));
+
+            // When we paint the background onto the scrolling contents layer we are going
+            // to leave a hole in the m_graphicsLayer where the background is so it is
+            // not opaque.
+            m_graphicsLayer->setContentsOpaque(false);
+        } else {
+            m_graphicsLayer->setContentsOpaque(m_owningLayer.backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
+        }
     }
 }
 
@@ -2425,6 +2439,8 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
     PaintLayerFlags paintLayerFlags = 0;
     if (graphicsLayerPaintingPhase & GraphicsLayerPaintBackground)
         paintLayerFlags |= PaintLayerPaintingCompositingBackgroundPhase;
+    else
+        paintLayerFlags |= PaintLayerPaintingSkipRootBackground;
     if (graphicsLayerPaintingPhase & GraphicsLayerPaintForeground)
         paintLayerFlags |= PaintLayerPaintingCompositingForegroundPhase;
     if (graphicsLayerPaintingPhase & GraphicsLayerPaintMask)
@@ -2438,7 +2454,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
 
     if (graphicsLayer == m_backgroundLayer.get())
         paintLayerFlags |= (PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingCompositingForegroundPhase); // Need PaintLayerPaintingCompositingForegroundPhase to walk child layers.
-    else if (compositor()->fixedRootBackgroundLayer())
+    else if (compositor()->fixedRootBackgroundLayer() && m_owningLayer.isRootLayer())
         paintLayerFlags |= PaintLayerPaintingSkipRootBackground;
 
     if (graphicsLayer == m_graphicsLayer.get()
@@ -2448,6 +2464,14 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         || graphicsLayer == m_childClippingMaskLayer.get()
         || graphicsLayer == m_scrollingContentsLayer.get()) {
 
+        bool paintRootBackgroundOntoScrollingContentsLayer = shouldPaintBackgroundOntoScrollingContentsLayer();
+        DCHECK(!paintRootBackgroundOntoScrollingContentsLayer || (!m_backgroundLayer && !m_foregroundLayer));
+        if (paintRootBackgroundOntoScrollingContentsLayer) {
+            if (graphicsLayer == m_scrollingContentsLayer.get())
+                paintLayerFlags &= ~PaintLayerPaintingSkipRootBackground;
+            else
+                paintLayerFlags |= PaintLayerPaintingSkipRootBackground;
+        }
         GraphicsLayerPaintInfo paintInfo;
         paintInfo.paintLayer = &m_owningLayer;
         paintInfo.compositedBounds = compositedBounds();
@@ -2557,6 +2581,19 @@ bool CompositedLayerMapping::invalidateLayerIfNoPrecedingEntry(size_t indexToCle
         return true;
     }
     return false;
+}
+
+bool CompositedLayerMapping::shouldPaintBackgroundOntoScrollingContentsLayer() const
+{
+    // TODO(flackr): Add support for painting locally attached background images. https://crbug.com/625882
+    const FillLayer& backgroundLayer = m_owningLayer.layoutObject()->style()->backgroundLayers();
+    return !m_owningLayer.isRootLayer()
+        && m_owningLayer.scrollsOverflow()
+        && !backgroundLayer.image()
+        && !backgroundLayer.next()
+        && (backgroundLayer.attachment() == LocalBackgroundAttachment
+            || backgroundLayer.clip() == PaddingFillBox)
+        && !m_owningLayer.stackingNode()->hasNegativeZOrderList();
 }
 
 bool CompositedLayerMapping::updateSquashingLayerAssignment(PaintLayer* squashedLayer, size_t nextSquashedLayerIndex)

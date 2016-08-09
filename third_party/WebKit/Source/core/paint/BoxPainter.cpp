@@ -35,6 +35,17 @@
 
 namespace blink {
 
+namespace {
+
+bool isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(const LayoutBoxModelObject* obj, const PaintInfo& paintInfo)
+{
+    return paintInfo.paintFlags() & PaintLayerPaintingOverflowContents
+        && !(paintInfo.paintFlags() & PaintLayerPaintingCompositingBackgroundPhase)
+        && obj == paintInfo.paintContainer();
+}
+
+} // namespace
+
 void BoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBox.location();
@@ -46,14 +57,34 @@ void BoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffse
 
 void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutRect paintRect = m_layoutBox.borderBoxRect();
+    LayoutRect paintRect;
+    if (isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(&m_layoutBox, paintInfo)) {
+        // For the case where we are painting the background into the scrolling contents layer
+        // of a composited scroller we need to include the entire overflow rect.
+        paintRect = m_layoutBox.layoutOverflowRect();
+        paintRect.move(-m_layoutBox.scrolledContentOffset());
+
+        // The background painting code assumes that the borders are part of the paintRect so we
+        // expand the paintRect by the border size when painting the background into the
+        // scrolling contents layer.
+        paintRect.expandEdges(
+            LayoutUnit(m_layoutBox.borderTop()),
+            LayoutUnit(m_layoutBox.borderRight()),
+            LayoutUnit(m_layoutBox.borderBottom()),
+            LayoutUnit(m_layoutBox.borderLeft()));
+    } else {
+        paintRect = m_layoutBox.borderBoxRect();
+    }
+
     paintRect.moveBy(paintOffset);
     paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, paintRect);
 }
 
-LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& adjustedPaintOffset)
+LayoutRect BoxPainter::boundsForDrawingRecorder(const PaintInfo& paintInfo, const LayoutPoint& adjustedPaintOffset)
 {
-    LayoutRect bounds = m_layoutBox.selfVisualOverflowRect();
+    LayoutRect bounds = isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(&m_layoutBox, paintInfo)
+        ? m_layoutBox.layoutOverflowRect()
+        : m_layoutBox.selfVisualOverflowRect();
     bounds.moveBy(adjustedPaintOffset);
     return bounds;
 }
@@ -69,6 +100,7 @@ bool bleedAvoidanceIsClipping(BackgroundBleedAvoidance bleedAvoidance)
 
 void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
 {
+    bool paintingOverflowContents = isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(&m_layoutBox, paintInfo);
     const ComputedStyle& style = m_layoutBox.styleRef();
 
     // FIXME: For now we don't have notification on media buffered range change from media player
@@ -80,23 +112,26 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground))
         return;
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintOffset));
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintInfo, paintOffset));
 
     BoxDecorationData boxDecorationData(m_layoutBox);
-
-    // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
-    // custom shadows of their own.
-    if (!m_layoutBox.boxShadowShouldBeAppliedToBackground(boxDecorationData.bleedAvoidance))
-        paintBoxShadow(paintInfo, paintRect, style, Normal);
-
     GraphicsContextStateSaver stateSaver(paintInfo.context, false);
-    if (bleedAvoidanceIsClipping(boxDecorationData.bleedAvoidance)) {
-        stateSaver.save();
-        FloatRoundedRect border = style.getRoundedBorderFor(paintRect);
-        paintInfo.context.clipRoundedRect(border);
 
-        if (boxDecorationData.bleedAvoidance == BackgroundBleedClipLayer)
-            paintInfo.context.beginLayer();
+    if (!paintingOverflowContents) {
+        // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
+        // custom shadows of their own.
+        if (!m_layoutBox.boxShadowShouldBeAppliedToBackground(boxDecorationData.bleedAvoidance)) {
+            paintBoxShadow(paintInfo, paintRect, style, Normal);
+        }
+
+        if (bleedAvoidanceIsClipping(boxDecorationData.bleedAvoidance)) {
+            stateSaver.save();
+            FloatRoundedRect border = style.getRoundedBorderFor(paintRect);
+            paintInfo.context.clipRoundedRect(border);
+
+            if (boxDecorationData.bleedAvoidance == BackgroundBleedClipLayer)
+                paintInfo.context.beginLayer();
+        }
     }
 
     // If we have a native theme appearance, paint that before painting our background.
@@ -104,19 +139,26 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
     ThemePainter& themePainter = LayoutTheme::theme().painter();
     bool themePainted = boxDecorationData.hasAppearance && !themePainter.paint(m_layoutBox, paintInfo, snappedPaintRect);
-    if (!themePainted) {
+    bool shouldPaintBackground = !themePainted
+        && (!paintInfo.skipRootBackground()
+            || paintInfo.paintContainer() != &m_layoutBox);
+    if (shouldPaintBackground) {
         paintBackground(paintInfo, paintRect, boxDecorationData.backgroundColor, boxDecorationData.bleedAvoidance);
 
         if (boxDecorationData.hasAppearance)
             themePainter.paintDecorations(m_layoutBox, paintInfo, snappedPaintRect);
     }
-    paintBoxShadow(paintInfo, paintRect, style, Inset);
 
-    // The theme will tell us whether or not we should also paint the CSS border.
-    if (boxDecorationData.hasBorderDecoration
-        && (!boxDecorationData.hasAppearance || (!themePainted && LayoutTheme::theme().painter().paintBorderOnly(m_layoutBox, paintInfo, snappedPaintRect)))
-        && !(m_layoutBox.isTable() && toLayoutTable(&m_layoutBox)->collapseBorders()))
-        paintBorder(m_layoutBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance);
+    if (!paintingOverflowContents) {
+        paintBoxShadow(paintInfo, paintRect, style, Inset);
+
+        // The theme will tell us whether or not we should also paint the CSS border.
+        if (boxDecorationData.hasBorderDecoration
+            && (!boxDecorationData.hasAppearance || (!themePainted && LayoutTheme::theme().painter().paintBorderOnly(m_layoutBox, paintInfo, snappedPaintRect)))
+            && !(m_layoutBox.isTable() && toLayoutTable(&m_layoutBox)->collapseBorders())) {
+            paintBorder(m_layoutBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance);
+        }
+    }
 
     if (boxDecorationData.bleedAvoidance == BackgroundBleedClipLayer)
         paintInfo.context.endLayer();
@@ -506,7 +548,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo
 
     GraphicsContextStateSaver clipWithScrollingStateSaver(context, info.isClippedWithLocalScrolling);
     LayoutRect scrolledPaintRect = rect;
-    if (info.isClippedWithLocalScrolling) {
+    if (info.isClippedWithLocalScrolling && !isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(&obj, paintInfo)) {
         // Clip to the overflow area.
         const LayoutBox& thisBox = toLayoutBox(obj);
         // TODO(chrishtr): this should be pixel-snapped.

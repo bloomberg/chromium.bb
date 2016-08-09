@@ -62,7 +62,7 @@ void TableRowPainter::paintBoxShadow(const PaintInfo& paintInfo, const LayoutPoi
         return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableRow.location();
-    LayoutRect bounds = BoxPainter(m_layoutTableRow).boundsForDrawingRecorder(adjustedPaintOffset);
+    LayoutRect bounds = BoxPainter(m_layoutTableRow).boundsForDrawingRecorder(paintInfo, adjustedPaintOffset);
     LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableRow, type, bounds);
     BoxPainter::paintBoxShadow(paintInfo, LayoutRect(adjustedPaintOffset, m_layoutTableRow.size()), m_layoutTableRow.styleRef(), shadowStyle);
 }

@@ -381,7 +381,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
             scopedPaintChunkProperties.emplace(context.getPaintController(), m_paintLayer, properties);
         }
 
-        bool shouldPaintBackground = isPaintingCompositedBackground && shouldPaintContent && !selectionOnly;
+        bool isPaintingRootLayer = (&m_paintLayer) == paintingInfo.rootLayer;
+        bool shouldPaintBackground = shouldPaintContent && !selectionOnly
+            && (isPaintingCompositedBackground || (isPaintingRootLayer && !(paintFlags & PaintLayerPaintingSkipRootBackground)));
         bool shouldPaintNegZOrderList = (isPaintingScrollingContent && isPaintingOverflowContents) || (!isPaintingScrollingContent && isPaintingCompositedBackground);
         bool shouldPaintOwnContents = isPaintingCompositedForeground && shouldPaintContent;
         bool shouldPaintNormalFlowAndPosZOrderLists = isPaintingCompositedForeground;
@@ -574,6 +576,11 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintFragmentByApplyingTransfo
     PaintLayerPaintingInfo transformedPaintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect))), paintingInfo.getGlobalPaintFlags(),
         adjustedSubPixelAccumulation);
     transformedPaintingInfo.ancestorHasClipPathClipping = paintingInfo.ancestorHasClipPathClipping;
+
+    // Remove skip root background flag when we're painting with a new root.
+    if (&m_paintLayer != paintingInfo.rootLayer)
+        paintFlags &= ~PaintLayerPaintingSkipRootBackground;
+
     return paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags, ForceSingleFragment);
 }
 
