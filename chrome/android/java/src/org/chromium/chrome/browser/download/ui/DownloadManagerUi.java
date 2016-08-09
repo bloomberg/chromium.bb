@@ -27,7 +27,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.download.DownloadItem;
-import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -61,7 +60,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         /**
          * Called when the download manager is not shown anymore.
          */
-        public void onDestroy(DownloadManagerUi manager);
+        public void onManagerDestroyed(DownloadManagerUi manager);
     }
 
     private static final String TAG = "download_ui";
@@ -90,6 +89,10 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         mHistoryAdapter = new DownloadHistoryAdapter();
         mHistoryAdapter.initialize(this);
 
+        mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);
+        mHistoryAdapter.registerAdapterDataObserver(mSpaceDisplay);
+        mSpaceDisplay.onChanged();
+
         mFilterAdapter = new FilterAdapter();
         mFilterAdapter.initialize(this);
 
@@ -103,7 +106,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         mToolbar.initialize(mSelectionDelegate, R.string.menu_downloads, drawerLayout,
                 R.id.normal_menu_group, R.id.selection_mode_menu_group);
 
-        mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);
         mFilterView = (ListView) mMainView.findViewById(R.id.section_list);
         mFilterView.setAdapter(mFilterAdapter);
         mFilterView.setOnItemClickListener(mFilterAdapter);
@@ -120,14 +122,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                     R.color.toolbar_shadow_color), FadingShadow.POSITION_TOP);
         }
 
-        mSpaceDisplay.onChanged();
         mToolbar.setTitle(R.string.menu_downloads);
 
-        getDownloadManagerService().addDownloadHistoryAdapter(mHistoryAdapter);
-        mHistoryAdapter.registerAdapterDataObserver(mSpaceDisplay);
-
         // TODO(ianwen): add support for loading state.
-        getDownloadManagerService().getAllDownloads();
     }
 
     /**
@@ -141,7 +138,11 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
      * Called when the activity/native page is destroyed.
      */
     public void onDestroyed() {
-        getDownloadManagerService().removeDownloadHistoryAdapter(mHistoryAdapter);
+        for (DownloadUiObserver observer : mObservers) {
+            observer.onManagerDestroyed(this);
+            removeObserver(observer);
+        }
+
         mHistoryAdapter.unregisterAdapterDataObserver(mSpaceDisplay);
     }
 
@@ -268,11 +269,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
      */
     void removeObserver(DownloadUiObserver observer) {
         mObservers.removeObserver(observer);
-    }
-
-    private static DownloadManagerService getDownloadManagerService() {
-        return DownloadManagerService.getDownloadManagerService(
-                ContextUtils.getApplicationContext());
     }
 
 }

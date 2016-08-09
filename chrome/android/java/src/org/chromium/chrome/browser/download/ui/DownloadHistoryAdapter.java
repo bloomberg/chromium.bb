@@ -15,15 +15,21 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
+import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflinePageItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /** Bridges the user's download history and the UI used to display it. */
 public class DownloadHistoryAdapter extends DateDividedAdapter implements DownloadUiObserver {
@@ -49,35 +55,53 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         }
     }
 
-    private static final String MIMETYPE_VIDEO = "video";
-    private static final String MIMETYPE_AUDIO = "audio";
-    private static final String MIMETYPE_IMAGE = "image";
-    private static final String MIMETYPE_DOCUMENT = "text";
-
-    private final List<DownloadItem> mAllItems = new ArrayList<>();
-    private final List<DownloadItem> mFilteredItems = new ArrayList<>();
+    private final List<DownloadItemWrapper> mDownloadItems = new ArrayList<>();
+    private final List<OfflinePageItemWrapper> mOfflinePageItems = new ArrayList<>();
+    private final List<DownloadHistoryItemWrapper> mFilteredItems = new ArrayList<>();
 
     private int mFilter = DownloadFilter.FILTER_ALL;
     private DownloadManagerUi mManager;
+    private OfflinePageDownloadBridge mOfflinePageBridge;
 
     @Override
     public void initialize(DownloadManagerUi manager) {
         manager.addObserver(this);
         mManager = manager;
+
+        getDownloadManagerService().addDownloadHistoryAdapter(this);
+        getDownloadManagerService().getAllDownloads();
+
+        initializeOfflinePageBridge();
     }
 
-    /** Called when the user's download history has been gathered into a List of DownloadItems. */
-    public void onAllDownloadsRetrieved(List<DownloadItem> list) {
-        mAllItems.clear();
-        mAllItems.addAll(list);
+    /** Called when the user's download history has been gathered. */
+    public void onAllDownloadsRetrieved(List<DownloadItem> result) {
+        mDownloadItems.clear();
+        for (DownloadItem item : result) {
+            mDownloadItems.add(new DownloadItemWrapper(item));
+        }
+        filter(DownloadFilter.FILTER_ALL);
+    }
+
+    /** Called when the user's offline page history has been gathered. */
+    private void onAllOfflinePagesRetrieved(List<OfflinePageDownloadItem> result) {
+        mOfflinePageItems.clear();
+        for (OfflinePageDownloadItem item : result) {
+            mOfflinePageItems.add(new OfflinePageItemWrapper(item));
+        }
+
+        // TODO(ianwen): Implement a loading screen to prevent filter-changing wonkiness.
         filter(DownloadFilter.FILTER_ALL);
     }
 
     /** Returns the total size of all the downloaded items. */
     public long getTotalDownloadSize() {
         long totalSize = 0;
-        for (int i = 0; i < mAllItems.size(); i++) {
-            totalSize += mAllItems.get(i).getDownloadInfo().getContentLength();
+        for (DownloadHistoryItemWrapper wrapper : mDownloadItems) {
+            totalSize += wrapper.getFileSize();
+        }
+        for (DownloadHistoryItemWrapper wrapper : mOfflinePageItems) {
+            totalSize += wrapper.getFileSize();
         }
         return totalSize;
     }
@@ -97,19 +121,19 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     @Override
     public void bindViewHolderForTimedItem(ViewHolder current, TimedItem timedItem) {
-        final DownloadItem item = (DownloadItem) timedItem;
+        final DownloadHistoryItemWrapper item = (DownloadHistoryItemWrapper) timedItem;
 
         ItemViewHolder holder = (ItemViewHolder) current;
         Context context = holder.mFilesizeView.getContext();
-        holder.mFilenameView.setText(item.getDownloadInfo().getFileName());
+        holder.mFilenameView.setText(item.getDisplayFileName());
         holder.mHostnameView.setText(
-                UrlUtilities.formatUrlForSecurityDisplay(item.getDownloadInfo().getUrl(), false));
+                UrlUtilities.formatUrlForSecurityDisplay(item.getUrl(), false));
         holder.mFilesizeView.setText(
-                Formatter.formatFileSize(context, item.getDownloadInfo().getContentLength()));
+                Formatter.formatFileSize(context, item.getFileSize()));
         holder.mItemView.initialize(mManager, item);
 
         // Pick what icon to display for the item.
-        int fileType = convertMimeTypeToFilterType(item.getDownloadInfo().getMimeType());
+        int fileType = item.getFilterType();
         int iconResource = R.drawable.ic_drive_file_white_24dp;
         switch (fileType) {
             case DownloadFilter.FILTER_PAGE:
@@ -140,15 +164,15 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         boolean isFound = false;
 
         // Search for an existing entry representing the DownloadItem.
-        for (int i = 0; i < mAllItems.size() && !isFound; i++) {
-            if (TextUtils.equals(mAllItems.get(i).getId(), item.getId())) {
-                mAllItems.set(i, item);
+        for (int i = 0; i < mDownloadItems.size() && !isFound; i++) {
+            if (TextUtils.equals(mDownloadItems.get(i).getId(), item.getId())) {
+                mDownloadItems.set(i, new DownloadItemWrapper(item));
                 isFound = true;
             }
         }
 
         // Add a new entry if one doesn't already exist.
-        if (!isFound) mAllItems.add(item);
+        if (!isFound) mDownloadItems.add(new DownloadItemWrapper(item));
         filter(mFilter);
     }
 
@@ -158,8 +182,14 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     }
 
     @Override
-    public void onDestroy(DownloadManagerUi manager) {
-        manager.removeObserver(this);
+    public void onManagerDestroyed(DownloadManagerUi manager) {
+        getDownloadManagerService().removeDownloadHistoryAdapter(this);
+
+        if (mOfflinePageBridge != null) {
+            mOfflinePageBridge.destroy();
+            mOfflinePageBridge = null;
+        }
+
         mManager = null;
     }
 
@@ -168,35 +198,69 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         mFilter = filterType;
         mFilteredItems.clear();
         if (filterType == DownloadFilter.FILTER_ALL) {
-            mFilteredItems.addAll(mAllItems);
+            mFilteredItems.addAll(mDownloadItems);
+            mFilteredItems.addAll(mOfflinePageItems);
         } else {
-            for (int i = 0; i < mAllItems.size(); i++) {
-                int currentFiletype = convertMimeTypeToFilterType(
-                        mAllItems.get(i).getDownloadInfo().getMimeType());
-                if (currentFiletype == filterType) mFilteredItems.add(mAllItems.get(i));
+            for (DownloadHistoryItemWrapper item : mDownloadItems) {
+                if (item.getFilterType() == filterType) mFilteredItems.add(item);
+            }
+
+            if (filterType == DownloadFilter.FILTER_PAGE) {
+                for (DownloadHistoryItemWrapper item : mOfflinePageItems) mFilteredItems.add(item);
             }
         }
 
         loadItems(mFilteredItems);
     }
 
-    /** Identifies the type of file represented by the given MIME type string. */
-    private static int convertMimeTypeToFilterType(String mimeType) {
-        if (TextUtils.isEmpty(mimeType)) return DownloadFilter.FILTER_OTHER;
+    private void initializeOfflinePageBridge() {
+        mOfflinePageBridge = new OfflinePageDownloadBridge(
+                Profile.getLastUsedProfile().getOriginalProfile());
 
-        String[] pieces = mimeType.toLowerCase(Locale.getDefault()).split("/");
-        if (pieces.length != 2) return DownloadFilter.FILTER_OTHER;
+        mOfflinePageBridge.addObserver(new OfflinePageDownloadBridge.Observer() {
+            @Override
+            public void onItemsLoaded() {
+                onAllOfflinePagesRetrieved(mOfflinePageBridge.getAllItems());
+            }
 
-        if (MIMETYPE_VIDEO.equals(pieces[0])) {
-            return DownloadFilter.FILTER_VIDEO;
-        } else if (MIMETYPE_AUDIO.equals(pieces[0])) {
-            return DownloadFilter.FILTER_AUDIO;
-        } else if (MIMETYPE_IMAGE.equals(pieces[0])) {
-            return DownloadFilter.FILTER_IMAGE;
-        } else if (MIMETYPE_DOCUMENT.equals(pieces[0])) {
-            return DownloadFilter.FILTER_DOCUMENT;
-        } else {
-            return DownloadFilter.FILTER_OTHER;
-        }
+            @Override
+            public void onItemAdded(OfflinePageDownloadItem item) {
+                mOfflinePageItems.add(new OfflinePageItemWrapper(item));
+                updateFilter();
+            }
+
+            @Override
+            public void onItemDeleted(String guid) {
+                for (int i = 0; i < mOfflinePageItems.size(); i++) {
+                    if (TextUtils.equals(mOfflinePageItems.get(i).getId(), guid)) {
+                        mOfflinePageItems.remove(mOfflinePageItems.get(i));
+                        updateFilter();
+                        return;
+                    }
+                }
+            }
+
+            @Override
+            public void onItemUpdated(OfflinePageDownloadItem item) {
+                for (int i = 0; i < mOfflinePageItems.size(); i++) {
+                    if (TextUtils.equals(mOfflinePageItems.get(i).getId(), item.getGuid())) {
+                        mOfflinePageItems.set(i, new OfflinePageItemWrapper(item));
+                        updateFilter();
+                        return;
+                    }
+                }
+            }
+
+            private void updateFilter() {
+                // Re-filter the items if needed.
+                if (mFilter == DownloadFilter.FILTER_PAGE) filter(mFilter);
+            }
+        });
     }
+
+    private static DownloadManagerService getDownloadManagerService() {
+        return DownloadManagerService.getDownloadManagerService(
+                ContextUtils.getApplicationContext());
+    }
+
 }

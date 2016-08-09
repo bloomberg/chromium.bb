@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.ui;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 
 /**
@@ -15,7 +14,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemView;
  */
 public class DownloadItemView extends SelectableItemView<String> {
     DownloadManagerUi mManager;
-    DownloadItem mItem;
+    DownloadHistoryItemWrapper mItem;
 
     /**
      * Constructor for inflating from XML.
@@ -28,9 +27,9 @@ public class DownloadItemView extends SelectableItemView<String> {
      * Initialize the DownloadItemView. Must be called before the item can respond to click events.
      *
      * @param manager The DownloadManagerUi responsible for opening DownloadItems.
-     * @param item The DownloadItem represented by this DownloadItemView.
+     * @param item The item represented by this DownloadItemView.
      */
-    public void initialize(DownloadManagerUi manager, DownloadItem item) {
+    public void initialize(DownloadManagerUi manager, DownloadHistoryItemWrapper item) {
         mManager = manager;
         mItem = item;
         setId(item.getId());
@@ -38,6 +37,6 @@ public class DownloadItemView extends SelectableItemView<String> {
 
     @Override
     public void onClick() {
-        mManager.onDownloadItemClicked(mItem);
+        mItem.onClicked(mManager);
     }
 }

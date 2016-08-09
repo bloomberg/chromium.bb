@@ -38,7 +38,6 @@ public class DownloadManagerToolbar extends SelectionToolbar<String> implements 
     }
 
     @Override
-    public void onDestroy(DownloadManagerUi manager) {
-        manager.removeObserver(this);
+    public void onManagerDestroyed(DownloadManagerUi manager) {
     }
 }

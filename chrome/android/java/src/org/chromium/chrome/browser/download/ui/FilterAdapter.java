@@ -99,8 +99,7 @@ class FilterAdapter extends BaseAdapter
     }
 
     @Override
-    public void onDestroy(DownloadManagerUi manager) {
-        mManagerUi.removeObserver(this);
+    public void onManagerDestroyed(DownloadManagerUi manager) {
         mManagerUi = null;
     }
 }
