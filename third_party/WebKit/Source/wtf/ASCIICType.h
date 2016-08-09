@@ -124,16 +124,6 @@ inline char toASCIILower(char c)
     return static_cast<char>(ASCIICaseFoldTable[static_cast<LChar>(c)]);
 }
 
-template<typename CharType> inline CharType toASCIILowerUnchecked(CharType character)
-{
-    // This function can be used for comparing any input character
-    // to a lowercase English character. The isASCIIAlphaCaselessEqual
-    // below should be used for regular comparison of ASCII alpha
-    // characters, but switch statements in CSS tokenizer require
-    // direct use of this function.
-    return character | 0x20;
-}
-
 template<typename CharType> inline CharType toASCIIUpper(CharType c)
 {
     return c & ~((c >= 'a' && c <= 'z') << 5);
@@ -168,7 +158,7 @@ template<typename CharType> inline bool isASCIIAlphaCaselessEqual(CharType cssCh
     // This function compares a (preferrably) constant ASCII
     // lowercase letter to any input character.
     ASSERT(character >= 'a' && character <= 'z');
-    return LIKELY(toASCIILowerUnchecked(cssCharacter) == character);
+    return LIKELY((cssCharacter | 0x20) == character);
 }
 
 } // namespace WTF
@@ -185,7 +175,6 @@ using WTF::isASCIISpace;
 using WTF::isASCIIUpper;
 using WTF::toASCIIHexValue;
 using WTF::toASCIILower;
-using WTF::toASCIILowerUnchecked;
 using WTF::toASCIIUpper;
 using WTF::lowerNibbleToASCIIHexDigit;
 using WTF::upperNibbleToASCIIHexDigit;

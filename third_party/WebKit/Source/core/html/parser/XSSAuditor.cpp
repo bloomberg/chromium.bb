@@ -119,13 +119,11 @@ static bool startsMultiLineCommentAt(const String& string, size_t start)
 
 static bool startsOpeningScriptTagAt(const String& string, size_t start)
 {
-    return start + 6 < string.length() && string[start] == '<'
-        && WTF::toASCIILowerUnchecked(string[start + 1]) == 's'
-        && WTF::toASCIILowerUnchecked(string[start + 2]) == 'c'
-        && WTF::toASCIILowerUnchecked(string[start + 3]) == 'r'
-        && WTF::toASCIILowerUnchecked(string[start + 4]) == 'i'
-        && WTF::toASCIILowerUnchecked(string[start + 5]) == 'p'
-        && WTF::toASCIILowerUnchecked(string[start + 6]) == 't';
+    if (start + 6 >= string.length())
+        return false;
+    // TODO(esprehn): StringView should probably have startsWith.
+    StringView script("<script");
+    return equalIgnoringASCIICase(StringView(string, start, script.length()), script);
 }
 
 // If other files need this, we should move this to core/html/parser/HTMLParserIdioms.h
