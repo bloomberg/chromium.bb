@@ -127,6 +127,7 @@ const char *util_lookup_connector_type_name(unsigned int type)
 
 static const char * const modules[] = {
 	"i915",
+	"amdgpu",
 	"radeon",
 	"nouveau",
 	"vmwgfx",
