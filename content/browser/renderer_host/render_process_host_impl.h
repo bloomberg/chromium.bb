@@ -523,9 +523,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::WaitableEvent never_signaled_;
 #endif
 
-  std::string mojo_channel_token_;
-  mojo::ScopedMessagePipeHandle in_process_renderer_handle_;
-
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);

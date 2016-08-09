@@ -165,6 +165,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_privileged.h"
+#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
@@ -820,8 +821,7 @@ bool RenderProcessHostImpl::Init() {
         g_renderer_main_thread_factory(InProcessChildThreadParams(
             channel_id,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-            mojo_channel_token_,
-            mojo_child_connection_->service_token())));
+            std::string(), mojo_child_connection_->service_token())));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
@@ -881,12 +881,11 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     const std::string& channel_id) {
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  mojo_channel_token_ = mojo::edk::GenerateRandomToken();
-  mojo::ScopedMessagePipeHandle handle =
-      mojo::edk::CreateParentMessagePipe(mojo_channel_token_, child_token_);
-
+  IPC::mojom::ChannelBootstrapPtr bootstrap;
+  GetRemoteInterfaces()->GetInterface(&bootstrap);
   std::unique_ptr<IPC::ChannelFactory> channel_factory =
-      IPC::ChannelMojo::CreateServerFactory(std::move(handle), runner);
+      IPC::ChannelMojo::CreateServerFactory(
+          bootstrap.PassInterface().PassHandle(), runner);
 
   // Do NOT expand ifdef or run time condition checks here! Synchronous
   // IPCs from browser process are banned. It is only narrowly allowed
@@ -1421,10 +1420,6 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 
   AppendCompositorCommandLineFlags(command_line);
 
-  if (!mojo_channel_token_.empty()) {
-    command_line->AppendSwitchASCII(switches::kMojoChannelToken,
-                                    mojo_channel_token_);
-  }
   command_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
                                   mojo_child_connection_->service_token());
 }
