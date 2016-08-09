@@ -141,17 +141,6 @@ const CSSValue* StylePropertySerializer::StylePropertySetForSerializer::getPrope
     return value.value();
 }
 
-String StylePropertySerializer::StylePropertySetForSerializer::getPropertyValue(CSSPropertyID propertyID) const
-{
-    if (!hasExpandedAllProperty())
-        return m_propertySet->getPropertyValue(propertyID);
-
-    const CSSValue* value = getPropertyCSSValue(propertyID);
-    if (!value)
-        return String();
-    return value->cssText();
-}
-
 bool StylePropertySerializer::StylePropertySetForSerializer::isPropertyImplicit(CSSPropertyID propertyID) const
 {
     int index = findPropertyIndex(propertyID);
@@ -159,15 +148,6 @@ bool StylePropertySerializer::StylePropertySetForSerializer::isPropertyImplicit(
         return false;
     StylePropertySerializer::PropertyValueForSerializer value = propertyAt(index);
     return value.isImplicit();
-}
-
-bool StylePropertySerializer::StylePropertySetForSerializer::propertyIsImportant(CSSPropertyID propertyID) const
-{
-    int index = findPropertyIndex(propertyID);
-    if (index == -1)
-        return false;
-    StylePropertySerializer::PropertyValueForSerializer value = propertyAt(index);
-    return value.isImportant();
 }
 
 StylePropertySerializer::StylePropertySerializer(const StylePropertySet& properties)

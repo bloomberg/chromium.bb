@@ -109,9 +109,7 @@ private:
         bool shouldProcessPropertyAt(unsigned index) const;
         int findPropertyIndex(CSSPropertyID) const;
         const CSSValue* getPropertyCSSValue(CSSPropertyID) const;
-        String getPropertyValue(CSSPropertyID) const;
         bool isPropertyImplicit(CSSPropertyID) const;
-        bool propertyIsImportant(CSSPropertyID) const;
 
         DECLARE_TRACE();
 
