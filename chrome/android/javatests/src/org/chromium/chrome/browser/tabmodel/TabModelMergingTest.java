@@ -18,7 +18,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -28,7 +27,6 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStoreTest.MockTabPersistentStoreObserver;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -42,7 +40,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 @MinAndroidSdkLevel(24)
-@CommandLineFlags.Add(FeatureUtilities.MERGE_TABS_FLAG)
 public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
 
     private static final String TEST_URL_0 = UrlUtils.encodeHtmlDataUri("<html>test_url_0.</html>");

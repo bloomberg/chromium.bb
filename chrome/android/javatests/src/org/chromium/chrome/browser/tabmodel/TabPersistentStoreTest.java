@@ -14,7 +14,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -27,7 +26,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabModelMetaDataInfo;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
@@ -605,7 +603,6 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     @MinAndroidSdkLevel(24)
-    @CommandLineFlags.Add(FeatureUtilities.MERGE_TABS_FLAG)
     public void testDuplicateTabIdsOnColdStart() throws Exception {
         final TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
 
