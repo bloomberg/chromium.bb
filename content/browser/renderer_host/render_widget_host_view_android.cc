@@ -963,8 +963,9 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
   RemoveLayers();
   if (!surface_id_.is_null()) {
     DCHECK(surface_factory_.get());
-    surface_factory_->Destroy(surface_id_);
-    surface_id_ = cc::SurfaceId();
+    cc::SurfaceId surface_id;
+    std::swap(surface_id, surface_id_);
+    surface_factory_->Destroy(surface_id);
   }
   view_.SetLayer(nullptr);
 }
