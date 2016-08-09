@@ -184,6 +184,9 @@ To style it:
 
       :host([no-label-float]) label {
         top: 8px;
+        /* Since the label doesn't need to float, remove the animation duration
+        which slows down visibility changes (i.e. when a selection is made) */
+        transition-duration: 0s;
       }
 
       label.label-is-floating {
@@ -192,7 +195,7 @@ To style it:
       }
 
       label.label-is-hidden {
-        display: none;
+        visibility: hidden;
       }
 
       :host([focused]) label.label-is-floating {

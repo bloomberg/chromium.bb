@@ -272,11 +272,11 @@ Revision: 34c1d82dc3048dff33c83047bfaa95414e36d673
 Tree link: https://github.com/PolymerElements/paper-drawer-panel/tree/v1.0.10
 
 Name: paper-dropdown-menu
-Version: 1.3.3
+Version: 1.3.4
 Repository: git://github.com/PolymerElements/paper-dropdown-menu.git
-Tag: v1.3.3
-Revision: 3684eba30503adb1ae2f395e917f7e5ed1ae38cd
-Tree link: https://github.com/PolymerElements/paper-dropdown-menu/tree/v1.3.3
+Tag: v1.3.4
+Revision: 208e1c1df91ae941d0fc772acaf143e6e4f013dd
+Tree link: https://github.com/PolymerElements/paper-dropdown-menu/tree/v1.3.4
 
 Name: paper-fab
 Version: 1.2.0
