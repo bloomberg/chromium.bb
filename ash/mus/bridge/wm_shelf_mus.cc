@@ -116,14 +116,6 @@ bool WmShelfMus::ProcessGestureEvent(const ui::GestureEvent& event) {
   return false;
 }
 
-void WmShelfMus::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {
-  NOTIMPLEMENTED();
-}
-
-void WmShelfMus::UpdateAutoHideForGestureEvent(ui::GestureEvent* event) {
-  NOTIMPLEMENTED();
-}
-
 void WmShelfMus::AddObserver(WmShelfObserver* observer) {
   observers_.AddObserver(observer);
 }

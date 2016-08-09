@@ -144,16 +144,6 @@ void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
     status_area_widget_delegate_->SetPaneFocusAndFocusDefault();
 }
 
-void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
-  Widget::OnMouseEvent(event);
-  wm_shelf_->UpdateAutoHideForMouseEvent(event);
-}
-
-void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
-  Widget::OnGestureEvent(event);
-  wm_shelf_->UpdateAutoHideForGestureEvent(event);
-}
-
 void StatusAreaWidget::UpdateShelfItemBackground(int alpha) {
   web_notification_tray_->UpdateShelfItemBackground(alpha);
   system_tray_->UpdateShelfItemBackground(alpha);

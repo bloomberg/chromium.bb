@@ -21,7 +21,6 @@
 #include "ash/shelf/dimmer_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shell.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/memory/ptr_util.h"
@@ -517,18 +516,6 @@ void ShelfWidget::UpdateShelfItemBackground(int alpha) {
 void ShelfWidget::WillDeleteShelfLayoutManager() {
   shelf_layout_manager_->RemoveObserver(this);
   shelf_layout_manager_ = nullptr;
-}
-
-void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
-  Widget::OnMouseEvent(event);
-  if (Shell::GetInstance()->in_mus() && shelf_layout_manager_)
-    shelf_layout_manager_->UpdateAutoHideForMouseEvent(event);
-}
-
-void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
-  Widget::OnGestureEvent(event);
-  if (Shell::GetInstance()->in_mus() && shelf_layout_manager_)
-    shelf_layout_manager_->UpdateAutoHideForGestureEvent(event);
 }
 
 }  // namespace ash

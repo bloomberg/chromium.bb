@@ -98,11 +98,10 @@ class ASH_EXPORT ShelfLayoutManager
   // Invoked by the shelf when the auto-hide state may have changed.
   void UpdateAutoHideState();
 
-  // Updates the auto-hide state for certain events. In classic ash these come
-  // from an EventHandler. In mash these come from events that hit the shelf
-  // widget and status tray widget.
-  void UpdateAutoHideForMouseEvent(ui::MouseEvent* event);
-  void UpdateAutoHideForGestureEvent(ui::GestureEvent* event);
+  // Updates the auto-hide state for certain events.
+  // TODO(mash): Add similar event handling support for mash.
+  void UpdateAutoHideForMouseEvent(ui::MouseEvent* event, WmWindow* target);
+  void UpdateAutoHideForGestureEvent(ui::GestureEvent* event, WmWindow* target);
 
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;
@@ -188,7 +187,6 @@ class ASH_EXPORT ShelfLayoutManager
   void SetChromeVoxPanelHeight(int height);
 
  private:
-  class AutoHideEventFilter;
   class RootWindowControllerObserverImpl;
   class UpdateShelfObserver;
   friend class PanelLayoutManagerTest;
@@ -276,7 +274,7 @@ class ASH_EXPORT ShelfLayoutManager
       ShelfVisibilityState visibility_state) const;
 
   // Returns true if |window| is a descendant of the shelf.
-  bool IsShelfWindow(aura::Window* window);
+  bool IsShelfWindow(WmWindow* window);
 
   int GetWorkAreaInsets(const State& state, int size) const;
 
@@ -307,6 +305,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   bool in_shutdown_ = false;
 
+  // True if the last mouse event was a mouse drag.
+  bool in_mouse_drag_ = false;
+
   // Current state.
   State state_;
 
@@ -322,10 +323,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Whether the mouse was over the shelf when the auto hide timer started.
   // False when neither the auto hide timer nor the timer task are running.
   bool mouse_over_shelf_when_auto_hide_timer_started_;
-
-  // EventFilter used to detect when user moves the mouse over the shelf to
-  // trigger showing the shelf. Used in classic ash.
-  std::unique_ptr<AutoHideEventFilter> auto_hide_event_filter_;
 
   // EventFilter used to detect when user issues a gesture on a bezel sensor.
   std::unique_ptr<ShelfBezelEventFilter> bezel_event_filter_;

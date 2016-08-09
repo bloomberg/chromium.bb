@@ -106,10 +106,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   class DelegateView;
   friend class DelegateView;
 
-  // views::Widget:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-
   WmShelfAura* wm_shelf_aura_;
 
   // Owned by the shelf container's aura::Window.

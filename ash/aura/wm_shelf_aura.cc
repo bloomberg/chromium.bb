@@ -14,6 +14,37 @@
 
 namespace ash {
 
+// WmShelfAura::AutoHideEventHandler -------------------------------------------
+
+// Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
+// TODO(mash): Add similar event handling support for mash.
+class WmShelfAura::AutoHideEventHandler : public ui::EventHandler {
+ public:
+  explicit AutoHideEventHandler(ShelfLayoutManager* shelf_layout_manager)
+      : shelf_layout_manager_(shelf_layout_manager) {
+    Shell::GetInstance()->AddPreTargetHandler(this);
+  }
+  ~AutoHideEventHandler() override {
+    Shell::GetInstance()->RemovePreTargetHandler(this);
+  }
+
+  // Overridden from ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    shelf_layout_manager_->UpdateAutoHideForMouseEvent(
+        event, WmWindowAura::Get(static_cast<aura::Window*>(event->target())));
+  }
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    shelf_layout_manager_->UpdateAutoHideForGestureEvent(
+        event, WmWindowAura::Get(static_cast<aura::Window*>(event->target())));
+  }
+
+ private:
+  ShelfLayoutManager* shelf_layout_manager_;
+  DISALLOW_COPY_AND_ASSIGN(AutoHideEventHandler);
+};
+
+// WmShelfAura -----------------------------------------------------------------
+
 WmShelfAura::WmShelfAura() {}
 
 WmShelfAura::~WmShelfAura() {}
@@ -48,6 +79,7 @@ Shelf* WmShelfAura::GetShelf(WmShelf* shelf) {
 void WmShelfAura::ResetShelfLayoutManager() {
   if (!shelf_layout_manager_)
     return;
+  auto_hide_event_handler_.reset();
   shelf_layout_manager_->RemoveObserver(this);
   shelf_layout_manager_ = nullptr;
 }
@@ -140,18 +172,6 @@ bool WmShelfAura::ProcessGestureEvent(const ui::GestureEvent& event) {
   return shelf_layout_manager_->ProcessGestureEvent(event);
 }
 
-void WmShelfAura::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {
-  // Auto-hide support for ash_sysui.
-  if (Shell::GetInstance()->in_mus() && shelf_layout_manager_)
-    shelf_layout_manager_->UpdateAutoHideForMouseEvent(event);
-}
-
-void WmShelfAura::UpdateAutoHideForGestureEvent(ui::GestureEvent* event) {
-  // Auto-hide support for ash_sysui.
-  if (Shell::GetInstance()->in_mus() && shelf_layout_manager_)
-    shelf_layout_manager_->UpdateAutoHideForGestureEvent(event);
-}
-
 void WmShelfAura::AddObserver(WmShelfObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -188,6 +208,13 @@ void WmShelfAura::OnBackgroundUpdated(
 void WmShelfAura::WillChangeVisibilityState(ShelfVisibilityState new_state) {
   FOR_EACH_OBSERVER(WmShelfObserver, observers_,
                     WillChangeVisibilityState(new_state));
+
+  if (new_state != SHELF_AUTO_HIDE) {
+    auto_hide_event_handler_.reset();
+  } else if (!auto_hide_event_handler_) {
+    auto_hide_event_handler_.reset(
+        new AutoHideEventHandler(shelf_layout_manager_));
+  }
 }
 
 void WmShelfAura::OnAutoHideStateChanged(ShelfAutoHideState new_state) {

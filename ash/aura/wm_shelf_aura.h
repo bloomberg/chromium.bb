@@ -35,6 +35,8 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   static Shelf* GetShelf(WmShelf* shelf);
 
  private:
+  class AutoHideEventHandler;
+
   void ResetShelfLayoutManager();
 
   // WmShelf:
@@ -57,8 +59,6 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   void UpdateIconPositionForWindow(WmWindow* window) override;
   gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) override;
   bool ProcessGestureEvent(const ui::GestureEvent& event) override;
-  void UpdateAutoHideForMouseEvent(ui::MouseEvent* event) override;
-  void UpdateAutoHideForGestureEvent(ui::GestureEvent* event) override;
   void AddObserver(WmShelfObserver* observer) override;
   void RemoveObserver(WmShelfObserver* observer) override;
   void SetKeyboardBoundsForTesting(const gfx::Rect& bounds) override;
@@ -82,6 +82,9 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   ShelfLayoutManager* shelf_layout_manager_ = nullptr;
 
   base::ObserverList<WmShelfObserver> observers_;
+
+  // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
+  std::unique_ptr<AutoHideEventHandler> auto_hide_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShelfAura);
 };

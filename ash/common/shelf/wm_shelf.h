@@ -14,7 +14,6 @@ class Rect;
 
 namespace ui {
 class GestureEvent;
-class MouseEvent;
 }
 
 namespace ash {
@@ -90,10 +89,6 @@ class ASH_EXPORT WmShelf {
   // auto-hide with a swipe, even if that gesture event hits another window.
   // Returns true if the event was handled.
   virtual bool ProcessGestureEvent(const ui::GestureEvent& event) = 0;
-
-  // TODO(jamescook): Nuke when ash_sysui is removed. http://crbug.com/621112
-  virtual void UpdateAutoHideForMouseEvent(ui::MouseEvent* event) = 0;
-  virtual void UpdateAutoHideForGestureEvent(ui::GestureEvent* event) = 0;
 
   virtual void AddObserver(WmShelfObserver* observer) = 0;
   virtual void RemoveObserver(WmShelfObserver* observer) = 0;

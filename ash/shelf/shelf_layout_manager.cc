@@ -39,7 +39,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
-#include "ui/events/event_handler.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
@@ -72,56 +71,6 @@ ui::Layer* GetLayer(views::Widget* widget) {
 }
 
 }  // namespace
-
-// ShelfLayoutManager::AutoHideEventFilter -------------------------------------
-
-// Notifies ShelfLayoutManager any time the mouse moves. Not used on mash.
-// TODO(jamescook): Delete this once the mash implementation handles drags on
-// and off the shelf.
-class ShelfLayoutManager::AutoHideEventFilter : public ui::EventHandler {
- public:
-  explicit AutoHideEventFilter(ShelfLayoutManager* shelf);
-  ~AutoHideEventFilter() override;
-
-  // Returns true if the last mouse event was a mouse drag.
-  bool in_mouse_drag() const { return in_mouse_drag_; }
-
-  // Overridden from ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-
- private:
-  ShelfLayoutManager* shelf_;
-  bool in_mouse_drag_;
-  DISALLOW_COPY_AND_ASSIGN(AutoHideEventFilter);
-};
-
-ShelfLayoutManager::AutoHideEventFilter::AutoHideEventFilter(
-    ShelfLayoutManager* shelf)
-    : shelf_(shelf), in_mouse_drag_(false) {
-  Shell::GetInstance()->AddPreTargetHandler(this);
-}
-
-ShelfLayoutManager::AutoHideEventFilter::~AutoHideEventFilter() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
-}
-
-void ShelfLayoutManager::AutoHideEventFilter::OnMouseEvent(
-    ui::MouseEvent* event) {
-  // This also checks IsShelfWindow() to make sure we don't attempt to hide the
-  // shelf if the mouse down occurs on the shelf.
-  in_mouse_drag_ =
-      (event->type() == ui::ET_MOUSE_DRAGGED ||
-       (in_mouse_drag_ && event->type() != ui::ET_MOUSE_RELEASED &&
-        event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)) &&
-      !shelf_->IsShelfWindow(static_cast<aura::Window*>(event->target()));
-  shelf_->UpdateAutoHideForMouseEvent(event);
-}
-
-void ShelfLayoutManager::AutoHideEventFilter::OnGestureEvent(
-    ui::GestureEvent* event) {
-  shelf_->UpdateAutoHideForGestureEvent(event);
-}
 
 // ShelfLayoutManager::UpdateShelfObserver -------------------------------------
 
@@ -229,7 +178,6 @@ void ShelfLayoutManager::PrepareForShutdown() {
   // Clear all event filters, otherwise sometimes those filters may catch
   // synthesized mouse event and cause crashes during the shutdown.
   set_workspace_controller(NULL);
-  auto_hide_event_filter_.reset();
   bezel_event_filter_.reset();
   // Stop observing changes to avoid updating a partially destructed shelf.
   WmShell::Get()->RemoveActivationObserver(this);
@@ -346,7 +294,15 @@ void ShelfLayoutManager::UpdateAutoHideState() {
   }
 }
 
-void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {
+void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event,
+                                                     WmWindow* target) {
+  // This also checks IsShelfWindow() to make sure we don't attempt to hide the
+  // shelf if the mouse down occurs on the shelf.
+  in_mouse_drag_ = (event->type() == ui::ET_MOUSE_DRAGGED ||
+                    (in_mouse_drag_ && event->type() != ui::ET_MOUSE_RELEASED &&
+                     event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)) &&
+                   !IsShelfWindow(target);
+
   // Don't update during shutdown because synthetic mouse events (e.g. mouse
   // exit) may be generated during status area widget teardown.
   if (visibility_state() != SHELF_AUTO_HIDE || in_shutdown_)
@@ -359,13 +315,12 @@ void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void ShelfLayoutManager::UpdateAutoHideForGestureEvent(
-    ui::GestureEvent* event) {
+void ShelfLayoutManager::UpdateAutoHideForGestureEvent(ui::GestureEvent* event,
+                                                       WmWindow* target) {
   if (visibility_state() != SHELF_AUTO_HIDE || in_shutdown_)
     return;
 
-  aura::Window* target_window = static_cast<aura::Window*>(event->target());
-  if (IsShelfWindow(target_window) && ProcessGestureEvent(*event))
+  if (IsShelfWindow(target) && ProcessGestureEvent(*event))
     event->StopPropagation();
 }
 
@@ -543,19 +498,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     WillChangeVisibilityState(visibility_state));
-
-  // mash does not support global event handlers. It uses events on the shelf
-  // and status area widgets to update auto-hide.
-  if (!Shell::GetInstance()->in_mus()) {
-    if (state.visibility_state == SHELF_AUTO_HIDE) {
-      // When state is SHELF_AUTO_HIDE we need to track when the mouse is over
-      // the shelf to unhide it. AutoHideEventFilter does that for us.
-      if (!auto_hide_event_filter_)
-        auto_hide_event_filter_.reset(new AutoHideEventFilter(this));
-    } else {
-      auto_hide_event_filter_.reset(NULL);
-    }
-  }
 
   StopAutoHideTimer();
 
@@ -989,7 +931,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return gesture_drag_auto_hide_state_;
 
   // Don't show if the user is dragging the mouse.
-  if (auto_hide_event_filter_.get() && auto_hide_event_filter_->in_mouse_drag())
+  if (in_mouse_drag_)
     return SHELF_AUTO_HIDE_HIDDEN;
 
   // Ignore the mouse position if mouse events are disabled.
@@ -1037,14 +979,14 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   return SHELF_AUTO_HIDE_HIDDEN;
 }
 
-bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
-  if (!window)
+bool ShelfLayoutManager::IsShelfWindow(WmWindow* window) {
+  if (!window || !shelf_widget_)
     return false;
-  return (shelf_widget_ &&
-          shelf_widget_->GetNativeWindow()->Contains(window)) ||
-         (shelf_widget_->status_area_widget() &&
-          shelf_widget_->status_area_widget()->GetNativeWindow()->Contains(
-              window));
+  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  WmWindow* status_window =
+      WmLookup::Get()->GetWindowForWidget(shelf_widget_->status_area_widget());
+  return (shelf_window && shelf_window->Contains(window)) ||
+         (status_window && status_window->Contains(window));
 }
 
 int ShelfLayoutManager::GetWorkAreaInsets(const State& state, int size) const {
