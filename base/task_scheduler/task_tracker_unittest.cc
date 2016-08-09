@@ -382,13 +382,11 @@ TEST_P(TaskSchedulerTaskTrackerTest, SingletonAllowed) {
     tracker.RunNextTaskInSequence(
         CreateSequenceWithTask(std::move(task)).get());
   } else {
-#if !defined(OS_LINUX)  // http://crbug.com/634552
     EXPECT_DCHECK_DEATH(
         {
           tracker.RunNextTaskInSequence(
               CreateSequenceWithTask(std::move(task)).get());
         });
-#endif  // !defined(OS_LINUX)
   }
 }
 
