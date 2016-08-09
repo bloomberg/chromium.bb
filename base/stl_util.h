@@ -15,6 +15,8 @@
 
 #include "base/logging.h"
 
+namespace base {
+
 // Clears internal memory of an STL object.
 // STL clear()/reserve(0) does not always free internal memory allocated
 // This function uses swap/destructor to ensure the internal memory is freed.
@@ -198,8 +200,6 @@ bool ContainsValue(const Collection& collection, const Value& value) {
       collection.end();
 }
 
-namespace base {
-
 // Returns true if the container is sorted.
 template <typename Container>
 bool STLIsSorted(const Container& cont) {
@@ -258,5 +258,21 @@ bool STLIncludes(const Arg1& a1, const Arg2& a2) {
 }
 
 }  // namespace base
+
+// TODO(skyostil): Remove these global aliases once all call sites have been
+// fixed.
+using base::ContainsKey;
+using base::ContainsValue;
+using base::STLClearObject;
+using base::STLCount;
+using base::STLDeleteContainerPairFirstPointers;
+using base::STLDeleteContainerPairPointers;
+using base::STLDeleteContainerPairSecondPointers;
+using base::STLDeleteContainerPointers;
+using base::STLDeleteElements;
+using base::STLDeleteValues;
+using base::STLElementDeleter;
+using base::STLValueDeleter;
+using base::string_as_array;
 
 #endif  // BASE_STL_UTIL_H_
