@@ -355,7 +355,7 @@ cr.define('site_list', function() {
               assertEquals(
                   settings.PermissionValues.ALLOW, testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
-              assertMenu(['Block', 'Reset to ask'], testElement);
+              assertMenu(['Block', 'Remove'], testElement);
               assertEquals('Allow - 2', testElement.$.header.innerText.trim());
 
               // Site list should show, no matter what category default is set
@@ -386,7 +386,7 @@ cr.define('site_list', function() {
               assertEquals(
                   settings.PermissionValues.BLOCK, testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
-              assertMenu(['Allow', 'Reset to ask'], testElement);
+              assertMenu(['Allow', 'Remove'], testElement);
               assertEquals('Block - 2', testElement.$.header.innerText.trim());
 
               // Site list should only show when category default is enabled.
@@ -414,7 +414,7 @@ cr.define('site_list', function() {
               assertEquals(settings.PermissionValues.SESSION_ONLY,
                   testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
-              assertMenu(['Allow', 'Block', 'Reset to ask'], testElement);
+              assertMenu(['Allow', 'Block', 'Remove'], testElement);
               assertEquals('Clear on exit - 1',
                   testElement.$.header.innerText.trim());
 

@@ -1323,8 +1323,8 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK_MENU" desc="Label for the menu item to block permission for a particular site.">
     Block
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_RESET_MENU" desc="Label for the menu item to reset the permission for a particular site (make it ask you again next time).">
-    Reset to ask
+  <message name="IDS_SETTINGS_SITE_SETTINGS_RESET_MENU" desc="Label for the menu item to remove the permission for a particular site (make it ask you again next time).">
+    Remove
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SESSION_ONLY_MENU" desc="Label for the menu item to set cookies to be deleted on browser exit.">
     Clear on exit
