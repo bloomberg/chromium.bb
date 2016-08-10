@@ -180,9 +180,13 @@
 
         var prefix = 'Distance model: "' + options.distanceModel.model + '"';
         prefix += ', rolloff: ' + options.distanceModel.rolloff;
-        success = Should(prefix + ": left channel", actualLeft)
+        success = Should(prefix + ": left channel", actualLeft, {
+            precision: 5
+          })
           .beCloseToArray(expectedLeft, 0) && success;
-        success = Should(prefix + ": right channel", actualRight)
+        success = Should(prefix + ": right channel", actualRight, {
+            precision: 5
+          })
           .beCloseToArray(expectedRight, 0) && success;
 
         var message = 'Moving AudioListener with distance model: "';

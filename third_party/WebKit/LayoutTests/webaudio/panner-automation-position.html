@@ -251,9 +251,13 @@
             if (options.errorThreshold)
                errorThreshold = options.errorThreshold[channelCount - 1]
 
-            Should(prefix + "distanceModel: " + info + ", left channel", data0)
+            Should(prefix + "distanceModel: " + info + ", left channel", data0, {
+                precision: 5
+              })
               .beCloseToArray(expected0, errorThreshold);
-            Should(prefix + "distanceModel: " + info + ", right channel", data1)
+            Should(prefix + "distanceModel: " + info + ", right channel", data1, {
+                precision: 5
+              })
               .beCloseToArray(expected1, errorThreshold);
           });
       }

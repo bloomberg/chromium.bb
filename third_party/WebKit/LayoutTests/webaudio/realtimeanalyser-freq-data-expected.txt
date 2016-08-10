@@ -23,19 +23,19 @@ PASS 512-point float FFT equals [-99.7,-95.6,-90.0,-86.2,-82.1,-36.4,-22.3,-19.0
 PASS Min FFT value is less than or equal to -100.
 PASS Max FFT value is greater than or equal to -30.
 PASS 512-point byte FFT equals [0,16,36,50,65,231,255,255,255,208,59,75,219,255,255,247,...] with an element-wise tolerance of 0.
-PASS 1024-point float FFT equals [-100,-100,-100,-100,-99.4,-96.6,-93.6,-90.2,-86.4,-82.5,-79.7,-70.4,-33.9,-21.4,-19.2,-26.1,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.000012765}.
+PASS 1024-point float FFT equals [-100,-100,-100,-100,-99.4,-96.6,-93.6,-90.2,-86.4,-82.5,-79.7,-70.4,-33.9,-21.4,-19.2,-26.1,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.000020483}.
 PASS Min FFT value is less than or equal to -100.
 PASS Max FFT value is greater than or equal to -30.
 PASS 1024-point byte FFT equals [0,0,0,0,2,12,23,35,49,63,74,107,240,255,255,255,...] with an element-wise tolerance of 0.
-PASS 2048-point float FFT equals [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.000008492}.
+PASS 2048-point float FFT equals [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.000013456}.
 PASS Min FFT value is less than or equal to -100.
 PASS Max FFT value is greater than or equal to -30.
 PASS 2048-point byte FFT equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 0.
-PASS 4096-point float FFT equals [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 4.3344e-7}.
+PASS 4096-point float FFT equals [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 4.6116e-7}.
 PASS Min FFT value is less than or equal to -100.
 PASS Max FFT value is greater than or equal to -30.
 PASS 4096-point byte FFT equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 0.
-PASS 8192-point float FFT equals [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 3.1314e-7}.
+PASS 8192-point float FFT equals [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,-100,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 3.2106e-7}.
 PASS Min FFT value is less than or equal to -100.
 PASS Max FFT value is greater than or equal to -30.
 PASS 8192-point byte FFT equals [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 0.

@@ -290,7 +290,7 @@
         f.detune.linearRampToValueAtTime(parameters.detune[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createPeakingFilter, 3.1233e-4, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createPeakingFilter, 6.2907e-4, parameters, b.getChannelData(0),
             "Output of peaking filter with automation of all parameters"))
           .then(done);
       });

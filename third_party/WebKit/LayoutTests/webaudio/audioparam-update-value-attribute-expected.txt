@@ -48,25 +48,25 @@ PASS exponentialRamp(100, 0.05859375) at frame 2431 is 100.0000 within a relativ
 PASS Gain .value attribute correctly updated during automation.
 
 PASS Initialize setTargetAtTime(0, 0, 0.1) with setValueAtTime(0.25, 0).
-PASS setTargetAtTime(0, 0, 0.1) at frame 127 is 0.2404960 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 255 is 0.2312828 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 383 is 0.2224225 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 511 is 0.2139016 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 639 is 0.2057072 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 767 is 0.1978266 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 895 is 0.1902480 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 1023 is 0.1829597 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 1151 is 0.1759507 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 1279 is 0.1692101 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 1407 is 0.1627278 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 1535 is 0.1564938 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 1663 is 0.1504986 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 1791 is 0.1447331 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 1919 is 0.1391884 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 2047 is 0.1338562 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 2175 is 0.1287283 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 2303 is 0.1237967 within a relative error of 0.0000012869.
-PASS setTargetAtTime(0, 0, 0.1) at frame 2431 is 0.1190542 within a relative error of 0.0000012869.
+PASS setTargetAtTime(0, 0, 0.1) at frame 127 is 0.2404960 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 255 is 0.2312828 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 383 is 0.2224225 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 511 is 0.2139016 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 639 is 0.2057072 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 767 is 0.1978266 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 895 is 0.1902480 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 1023 is 0.1829597 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 1151 is 0.1759507 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 1279 is 0.1692101 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 1407 is 0.1627278 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 1535 is 0.1564938 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 1663 is 0.1504986 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 1791 is 0.1447331 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 1919 is 0.1391884 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 2047 is 0.1338562 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 2175 is 0.1287283 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 2303 is 0.1237967 within a relative error of 0.0000022599.
+PASS setTargetAtTime(0, 0, 0.1) at frame 2431 is 0.1190542 within a relative error of 0.0000022599.
 PASS Gain .value attribute correctly updated during automation.
 
 PASS Initialize setValueCurveAtTime([1,1.5,4], 0, 0.05859375) with setValueAtTime(0.25, 0).
