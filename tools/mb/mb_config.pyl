@@ -710,11 +710,13 @@
       # but it's not clear if that's actually used anywhere.
       'win': 'gn_official_x86',
       'win-asan': 'gn_official_syzyasan_x86',
+      'win-clang': 'gn_official_clang_x86',
       'win-pgo': [
         'gn_official_chrome_pgo_phase_1_x86',
         'gn_official_chrome_pgo_phase_2_x86',
       ],
       'win64': 'gn_official_x64',
+      'win64-clang': 'gn_official_clang_x64',
       'win64-pgo': [
         'gn_official_chrome_pgo_phase_1_x64',
         'gn_official_chrome_pgo_phase_2_x64',
@@ -1235,6 +1237,14 @@
 
     'gn_official': [
       'gn', 'official',
+    ],
+
+    'gn_official_clang_x64': [
+      'gn', 'clang', 'official', 'x64',
+    ],
+
+    'gn_official_clang_x86': [
+      'gn', 'clang', 'official', 'x86',
     ],
 
     'gn_official_x86': [
