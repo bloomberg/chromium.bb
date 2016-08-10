@@ -73,14 +73,11 @@ template("mac_toolchain") {
       # Populate toolchain args from the invoker.
       forward_variables_from(invoker.toolchain_args, "*")
 
-      # These values need to be passed through unchanged to all secondary
-      # toolchains. BUILDCONFIG.gn sets some defaults based on the values of
-      # the operating system and compiler, and we want to force the values to
-      # be consistent if re-running the computation in another context leads
-      # to different defaults.
+      # The host toolchain value computed by the default toolchain's setup
+      # needs to be passed through unchanged to all secondary toolchains to
+      # ensure that it's always the same, regardless of the values that may be
+      # set on those toolchains.
       host_toolchain = host_toolchain
-      target_os = target_os
-      target_cpu = target_cpu
     }
 
     # When the invoker has explicitly overridden use_goma or cc_wrapper in the
