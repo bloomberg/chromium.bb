@@ -216,26 +216,44 @@ document.addEventListener('click', function(e) {
   if (e.defaultPrevented)
     return;
 
+  var eventPath = e.path;
+  var anchor = null;
+  if (eventPath) {
+    for (var i = 0; i < eventPath.length; i++) {
+      var element = eventPath[i];
+      if (element.tagName === 'A' && element.href) {
+        anchor = element;
+        break;
+      }
+    }
+  }
+
+  // Fallback if Event.path is not available.
   var el = e.target;
-  if (el.nodeType == Node.ELEMENT_NODE &&
+  if (!anchor && el.nodeType == Node.ELEMENT_NODE &&
       el.webkitMatchesSelector('A, A *')) {
     while (el.tagName != 'A') {
       el = el.parentElement;
     }
+    anchor = el;
+  }
 
-    if ((el.protocol == 'file:' || el.protocol == 'about:') &&
-        (e.button == 0 || e.button == 1)) {
-      chrome.send('navigateToUrl', [
-        el.href,
-        el.target,
-        e.button,
-        e.altKey,
-        e.ctrlKey,
-        e.metaKey,
-        e.shiftKey
-      ]);
-      e.preventDefault();
-    }
+  if (!anchor)
+    return;
+
+  anchor = /** @type {!HTMLAnchorElement} */(anchor);
+  if ((anchor.protocol == 'file:' || anchor.protocol == 'about:') &&
+      (e.button == 0 || e.button == 1)) {
+    chrome.send('navigateToUrl', [
+      anchor.href,
+      anchor.target,
+      e.button,
+      e.altKey,
+      e.ctrlKey,
+      e.metaKey,
+      e.shiftKey
+    ]);
+    e.preventDefault();
   }
 });
 

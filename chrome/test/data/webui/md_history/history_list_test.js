@@ -306,10 +306,29 @@ cr.define('md_history.history_list_test', function() {
         });
       });
 
+      test('clicking file:// url sends message to chrome', function(done) {
+        var fileURL = 'file:///home/myfile';
+        app.historyResult(createHistoryInfo(), [
+          createHistoryEntry('2016-03-15', fileURL),
+        ]);
+        flush().then(function() {
+          var items =
+              Polymer.dom(element.root).querySelectorAll('history-item');
+
+          registerMessageCallback('navigateToUrl', this, function(info) {
+            assertEquals(fileURL, info[0]);
+            done();
+          });
+
+          MockInteractions.tap(items[0].$.title);
+        });
+      });
+
       teardown(function() {
         element.historyData_ = [];
         registerMessageCallback('removeVisits', this, undefined);
         registerMessageCallback('queryHistory', this, function() {});
+        registerMessageCallback('navigateToUrl', this, undefined);
         app.queryState_.queryingDisabled = true;
         app.set('queryState_.searchTerm', '');
         return flush();
