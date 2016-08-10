@@ -2356,6 +2356,20 @@
     ]
   },
   "ClangToTAndroidASan": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "components_browsertests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "gfx_unittests"
+      }
+    ],
     "junit_tests": [
       {
         "test": "base_junit_tests"
