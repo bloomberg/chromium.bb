@@ -12,6 +12,7 @@
 namespace gpu {
 
 class GpuChannelManager;
+struct SharedData;
 
 class ChildWindowSurfaceWin : public gl::NativeViewGLSurfaceEGL {
  public:
@@ -26,17 +27,17 @@ class ChildWindowSurfaceWin : public gl::NativeViewGLSurfaceEGL {
   gfx::SwapResult SwapBuffers() override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
 
-  void InvalidateWindowRect(const gfx::Rect& rect);
-
  protected:
   ~ChildWindowSurfaceWin() override;
 
  private:
   void ClearInvalidContents();
 
+  // This member contains all the data that can be accessed from the main or
+  // window owner threads.
+  std::unique_ptr<SharedData> shared_data_;
   HWND parent_window_;
   GpuChannelManager* manager_;
-  gfx::Rect rect_to_clear_;
   bool alpha_;
   bool first_swap_;
 
