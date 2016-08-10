@@ -457,6 +457,7 @@ def SetupBuild(options):
   if result.returncode == 0:
     base.append('USE_STDINT=1')
 
+  base.append('BUILD_ROM=1')
   if options.trace:
     base.append('FTRACE=1')
   if options.separate:
