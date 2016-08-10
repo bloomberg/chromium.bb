@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -876,16 +877,15 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   // Log the PLT to the info log.
   LogPageLoadTime(document_state, frame->dataSource());
 
-  // Since there are currently no guarantees that renderer histograms will be
-  // sent to the browser, we initiate a PostTask here to be sure that we send
-  // the histograms we generated.  Without this call, pages that don't have an
-  // on-close-handler might generate data that is lost when the renderer is
-  // shutdown abruptly (perchance because the user closed the tab).
-  // TODO(jar) BUG=33233: This needs to be moved to a PostDelayedTask, and it
-  // should post when the onload is complete, so that it doesn't interfere with
-  // the next load.
-  content::RenderThread::Get()->UpdateHistograms(
-      content::kHistogramSynchronizerReservedSequenceNumber);
+  // If persistent histograms are not enabled, initiate a PostTask here to be
+  // sure that we send the histograms generated. Without this call, pages
+  // that don't have an on-close-handler might generate data that is lost if
+  // the renderer is shutdown abruptly (e.g. the user closed the tab).
+  // TODO(bcwhite): Remove completely when persistence is on-by-default.
+  if (!base::GlobalHistogramAllocator::Get()) {
+    content::RenderThread::Get()->UpdateHistograms(
+        content::kHistogramSynchronizerReservedSequenceNumber);
+  }
 }
 
 void PageLoadHistograms::FrameWillClose(WebFrame* frame) {
