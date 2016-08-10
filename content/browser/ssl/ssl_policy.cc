@@ -163,7 +163,8 @@ void SSLPolicy::OnRequestStarted(const GURL& url,
     if (backend_->HasAllowException(url.host())) {
       // If there's no certificate error, a good certificate has been seen, so
       // clear out any exceptions that were made by the user for bad
-      // certificates.
+      // certificates. This intentionally does not apply to cached resources
+      // (see https://crbug.com/634553 for an explanation).
       backend_->RevokeUserAllowExceptions(url.host());
       event = HAD_PREVIOUS_EXCEPTION;
     }

@@ -28,7 +28,6 @@ class NavigationEntryImpl;
 class NavigationControllerImpl;
 class SSLPolicy;
 struct LoadCommittedDetails;
-struct LoadFromMemoryCacheDetails;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
 
@@ -83,7 +82,6 @@ class CONTENT_EXPORT SSLManager {
   NavigationControllerImpl* controller() { return controller_; }
 
   void DidCommitProvisionalLoad(const LoadCommittedDetails& details);
-  void DidLoadFromMemoryCache(const LoadFromMemoryCacheDetails& details);
   void DidStartResourceResponse(const ResourceRequestDetails& details);
   void DidReceiveResourceRedirect(const ResourceRedirectDetails& details);
 

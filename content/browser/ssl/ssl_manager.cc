@@ -19,7 +19,6 @@
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/load_from_memory_cache_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/common/ssl_status.h"
@@ -165,12 +164,6 @@ void SSLManager::DidRunInsecureContent(const GURL& security_origin) {
   NavigationEntryImpl* navigation_entry = controller_->GetLastCommittedEntry();
   policy()->DidRunInsecureContent(navigation_entry, security_origin);
   UpdateEntry(navigation_entry);
-}
-
-void SSLManager::DidLoadFromMemoryCache(
-    const LoadFromMemoryCacheDetails& details) {
-  // Simulate loading this resource through the usual path.
-  policy()->OnRequestStarted(details.url, details.cert_id, details.cert_status);
 }
 
 void SSLManager::DidStartResourceResponse(

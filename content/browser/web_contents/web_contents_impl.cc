@@ -3460,9 +3460,6 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   LoadFromMemoryCacheDetails details(
       url, status.cert_id, status.cert_status, http_method, mime_type,
       resource_type);
-
-  controller_.ssl_manager()->DidLoadFromMemoryCache(details);
-
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidLoadResourceFromMemoryCache(details));
 
