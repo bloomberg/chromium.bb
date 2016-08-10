@@ -30,29 +30,14 @@
 #ifndef GOOGLE_BREAKPAD_ANDROID_INCLUDE_LINK_H
 #define GOOGLE_BREAKPAD_ANDROID_INCLUDE_LINK_H
 
-// TODO(rmcilroy): Remove this file once the ndk is updated for other
-// architectures - crbug.com/358831
-
-// Android doesn't provide all the data-structures required in
-// its <link.h> before release 21. Provide custom version here and
-// rename Bionic-provided structures to avoid conflicts.
-
-#if !defined(__aarch64__) && !defined(__x86_64__) && \
-    !(defined(__mips__) && _MIPS_SIM == _ABI64)
-
-#define r_debug   __bionic_r_debug
-#define link_map  __bionic_link_map
-
-#endif  // !defined(__aarch64__) && !defined(__x86_64__) && \
-           !(defined(__mips__) && _MIPS_SIM == _ABI64)
-
+/* Android doesn't provide all the data-structures required in its <link.h>.
+   Provide custom version here. */
 #include_next <link.h>
 
+// TODO(rmcilroy): Remove this file once the ndk is updated for other
+// architectures - crbug.com/358831
 #if !defined(__aarch64__) && !defined(__x86_64__) && \
     !(defined(__mips__) && _MIPS_SIM == _ABI64)
-
-#undef r_debug
-#undef link_map
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,7 +66,6 @@ struct link_map {
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // !defined(__aarch64__) && !defined(__x86_64__) && \
-           !(defined(__mips__) && _MIPS_SIM == _ABI64)
+#endif  // !defined(__aarch64__) && !defined(__x86_64__)
 
 #endif /* GOOGLE_BREAKPAD_ANDROID_INCLUDE_LINK_H */
