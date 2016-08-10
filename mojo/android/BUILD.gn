@@ -29,6 +29,7 @@ generate_jni("system_java_jni_headers") {
   sources = [
     "system/src/org/chromium/mojo/system/impl/BaseRunLoop.java",
     "system/src/org/chromium/mojo/system/impl/CoreImpl.java",
+    "system/src/org/chromium/mojo/system/impl/WatcherImpl.java",
   ]
 
   jni_package = "mojo"
@@ -40,12 +41,15 @@ source_set("libsystem_java") {
     "system/base_run_loop.h",
     "system/core_impl.cc",
     "system/core_impl.h",
+    "system/watcher_impl.cc",
+    "system/watcher_impl.h",
   ]
 
   deps = [
     ":system_java_jni_headers",
     "//base",
-    "//mojo/message_pump",
+    "//mojo/public/c/system",
+    "//mojo/public/cpp/system",
   ]
 }
 
@@ -59,6 +63,7 @@ android_library("system_java") {
     "system/src/org/chromium/mojo/system/impl/MessagePipeHandleImpl.java",
     "system/src/org/chromium/mojo/system/impl/SharedBufferHandleImpl.java",
     "system/src/org/chromium/mojo/system/impl/UntypedHandleImpl.java",
+    "system/src/org/chromium/mojo/system/impl/WatcherImpl.java",
   ]
 
   deps = [
@@ -90,6 +95,7 @@ android_library("mojo_javatests") {
     "javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java",
     "javatests/src/org/chromium/mojo/bindings/ValidationTestUtilTest.java",
     "javatests/src/org/chromium/mojo/system/impl/CoreImplTest.java",
+    "javatests/src/org/chromium/mojo/system/impl/WatcherImplTest.java",
   ]
 
   deps = [
@@ -127,7 +133,6 @@ shared_library("mojo_java_unittests") {
     "//base/test/:test_support",
     "//build/config/sanitizers:deps",
     "//mojo/edk/system",
-    "//mojo/message_pump",
     "//mojo/public/cpp/bindings/tests:mojo_public_bindings_test_utils",
     "//mojo/public/cpp/test_support:test_utils",
   ]

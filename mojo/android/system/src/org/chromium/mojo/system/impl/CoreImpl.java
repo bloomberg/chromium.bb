@@ -7,7 +7,6 @@ package org.chromium.mojo.system.impl;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.mojo.system.AsyncWaiter;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.DataPipe;
 import org.chromium.mojo.system.DataPipe.ConsumerHandle;
@@ -23,6 +22,7 @@ import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.DuplicateOptions;
 import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 import org.chromium.mojo.system.UntypedHandle;
+import org.chromium.mojo.system.Watcher;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -35,7 +35,7 @@ import java.util.List;
  */
 @JNINamespace("mojo::android")
 @MainDex
-public class CoreImpl implements Core, AsyncWaiter {
+public class CoreImpl implements Core {
     /**
      * Discard flag for the |MojoReadData| operation.
      */
@@ -216,11 +216,11 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * @see Core#getDefaultAsyncWaiter()
+     * @see Core#getWatcher()
      */
     @Override
-    public AsyncWaiter getDefaultAsyncWaiter() {
-        return this;
+    public Watcher getWatcher() {
+        return new WatcherImpl();
     }
 
     /**
@@ -249,15 +249,6 @@ public class CoreImpl implements Core, AsyncWaiter {
      */
     void clearCurrentRunLoop() {
         mCurrentRunLoop.remove();
-    }
-
-    /**
-     * @see AsyncWaiter#asyncWait(Handle, Core.HandleSignals, long, Callback)
-     */
-    @Override
-    public Cancellable asyncWait(
-            Handle handle, HandleSignals signals, long deadline, Callback callback) {
-        return nativeAsyncWait(getMojoHandle(handle), signals.getFlags(), deadline, callback);
     }
 
     int closeWithResult(int mojoHandle) {
@@ -497,59 +488,6 @@ public class CoreImpl implements Core, AsyncWaiter {
         return buffer.order(ByteOrder.nativeOrder());
     }
 
-    /**
-     * Implementation of {@link org.chromium.mojo.system.AsyncWaiter.Cancellable}.
-     */
-    private class AsyncWaiterCancellableImpl implements AsyncWaiter.Cancellable {
-        private final long mId;
-        private final long mDataPtr;
-        private boolean mActive = true;
-
-        private AsyncWaiterCancellableImpl(long id, long dataPtr) {
-            this.mId = id;
-            this.mDataPtr = dataPtr;
-        }
-
-        /**
-         * @see org.chromium.mojo.system.AsyncWaiter.Cancellable#cancel()
-         */
-        @Override
-        public void cancel() {
-            if (mActive) {
-                mActive = false;
-                nativeCancelAsyncWait(mId, mDataPtr);
-            }
-        }
-
-        private boolean isActive() {
-            return mActive;
-        }
-
-        private void deactivate() {
-            mActive = false;
-        }
-    }
-
-    @CalledByNative
-    private AsyncWaiterCancellableImpl newAsyncWaiterCancellableImpl(long id, long dataPtr) {
-        return new AsyncWaiterCancellableImpl(id, dataPtr);
-    }
-
-    @CalledByNative
-    private void onAsyncWaitResult(
-            int mojoResult, AsyncWaiter.Callback callback, AsyncWaiterCancellableImpl cancellable) {
-        if (!cancellable.isActive()) {
-            // If cancellable is not active, the user cancelled the wait.
-            return;
-        }
-        cancellable.deactivate();
-        if (isUnrecoverableError(mojoResult)) {
-            callback.onError(new MojoException(mojoResult));
-            return;
-        }
-        callback.onResult(mojoResult);
-    }
-
     @CalledByNative
     private static ResultAnd<ByteBuffer> newResultAndBuffer(int mojoResult, ByteBuffer buffer) {
         return new ResultAnd<>(mojoResult, buffer);
@@ -628,11 +566,6 @@ public class CoreImpl implements Core, AsyncWaiter {
             int mojoHandle, long offset, long numBytes, int flags);
 
     private native int nativeUnmap(ByteBuffer buffer);
-
-    private native AsyncWaiterCancellableImpl nativeAsyncWait(
-            int mojoHandle, int signals, long deadline, AsyncWaiter.Callback callback);
-
-    private native void nativeCancelAsyncWait(long mId, long dataPtr);
 
     private native int nativeGetNativeBufferOffset(ByteBuffer buffer, int alignment);
 }

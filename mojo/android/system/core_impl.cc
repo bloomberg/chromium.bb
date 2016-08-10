@@ -7,58 +7,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
-
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/bind.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "jni/CoreImpl_jni.h"
-#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/c/system/core.h"
-
-using base::android::JavaParamRef;
-using base::android::ScopedJavaLocalRef;
-
-namespace {
-
-using MojoAsyncWaitID = uintptr_t;
-const MojoAsyncWaitID kInvalidHandleCancelID = 0;
-
-struct AsyncWaitCallbackData {
-  base::android::ScopedJavaGlobalRef<jobject> core_impl;
-  base::android::ScopedJavaGlobalRef<jobject> callback;
-  base::android::ScopedJavaGlobalRef<jobject> cancellable;
-
-  AsyncWaitCallbackData(JNIEnv* env, jobject core_impl, jobject callback) {
-    this->core_impl.Reset(env, core_impl);
-    this->callback.Reset(env, callback);
-  }
-};
-
-void AsyncWaitCallback(mojo::common::HandleWatcher* watcher,
-                       void* data,
-                       MojoResult result) {
-  delete watcher;
-  std::unique_ptr<AsyncWaitCallbackData> callback_data(
-      static_cast<AsyncWaitCallbackData*>(data));
-  mojo::android::Java_CoreImpl_onAsyncWaitResult(
-      base::android::AttachCurrentThread(),
-      callback_data->core_impl.obj(),
-      result,
-      callback_data->callback.obj(),
-      callback_data->cancellable.obj());
-}
-
-}  // namespace
 
 namespace mojo {
 namespace android {
+
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 static jlong GetTimeTicksNow(JNIEnv* env,
                              const JavaParamRef<jobject>& jcaller) {
@@ -366,51 +327,6 @@ static int Unmap(JNIEnv* env,
   void* buffer_start = env->GetDirectBufferAddress(buffer);
   DCHECK(buffer_start);
   return MojoUnmapBuffer(buffer_start);
-}
-
-static ScopedJavaLocalRef<jobject> AsyncWait(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    jint mojo_handle,
-    jint signals,
-    jlong deadline,
-    const JavaParamRef<jobject>& callback) {
-  AsyncWaitCallbackData* callback_data =
-      new AsyncWaitCallbackData(env, jcaller, callback);
-  MojoAsyncWaitID cancel_id;
-  if (static_cast<MojoHandle>(mojo_handle) != MOJO_HANDLE_INVALID) {
-    common::HandleWatcher* watcher = new common::HandleWatcher();
-    cancel_id = reinterpret_cast<MojoAsyncWaitID>(watcher);
-    watcher->Start(Handle(static_cast<MojoHandle>(mojo_handle)), signals,
-                   deadline,
-                   base::Bind(&AsyncWaitCallback, watcher, callback_data));
-  } else {
-    cancel_id = kInvalidHandleCancelID;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AsyncWaitCallback, nullptr, callback_data,
-                              MOJO_RESULT_INVALID_ARGUMENT));
-  }
-  base::android::ScopedJavaLocalRef<jobject> cancellable =
-      Java_CoreImpl_newAsyncWaiterCancellableImpl(
-          env, jcaller, cancel_id, reinterpret_cast<intptr_t>(callback_data));
-  callback_data->cancellable.Reset(env, cancellable.obj());
-  return cancellable;
-}
-
-static void CancelAsyncWait(JNIEnv* env,
-                            const JavaParamRef<jobject>& jcaller,
-                            jlong id,
-                            jlong data_ptr) {
-  if (id == 0) {
-    // If |id| is |kInvalidHandleCancelID|, the async wait was done on an
-    // invalid handle, so the AsyncWaitCallback will be called and will clear
-    // the data_ptr.
-    return;
-  }
-  std::unique_ptr<AsyncWaitCallbackData> deleter(
-      reinterpret_cast<AsyncWaitCallbackData*>(data_ptr));
-  delete reinterpret_cast<common::HandleWatcher*>(
-      static_cast<MojoAsyncWaitID>(id));
 }
 
 static jint GetNativeBufferOffset(JNIEnv* env,

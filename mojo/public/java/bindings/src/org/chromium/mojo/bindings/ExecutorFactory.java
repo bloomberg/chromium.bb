@@ -4,8 +4,6 @@
 
 package org.chromium.mojo.bindings;
 
-import org.chromium.mojo.system.AsyncWaiter;
-import org.chromium.mojo.system.AsyncWaiter.Callback;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MessagePipeHandle.ReadMessageResult;
@@ -13,6 +11,8 @@ import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.MojoResult;
 import org.chromium.mojo.system.Pair;
 import org.chromium.mojo.system.ResultAnd;
+import org.chromium.mojo.system.Watcher;
+import org.chromium.mojo.system.Watcher.Callback;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -58,32 +58,23 @@ class ExecutorFactory {
          */
         private final Object mLock;
         /**
-         * The {@link AsyncWaiter} to get notified of new message availability on |mReadHandle|.
+         * The {@link Watcher} to get notified of new message availability on |mReadHandle|.
          */
-        private final AsyncWaiter mWaiter;
+        private final Watcher mWatcher;
 
         /**
          * Constructor.
          */
         public PipedExecutor(Core core) {
-            mWaiter = core.getDefaultAsyncWaiter();
-            assert mWaiter != null;
+            mWatcher = core.getWatcher();
+            assert mWatcher != null;
             mLock = new Object();
             Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(
                     new MessagePipeHandle.CreateOptions());
             mReadHandle = handles.first;
             mWriteHandle = handles.second;
             mPendingActions = new ArrayList<Runnable>();
-            asyncWait();
-        }
-
-        /**
-         * Asynchronously wait for the next command to arrive. This should only be called on the
-         * executor thread.
-         */
-        private void asyncWait() {
-            mWaiter.asyncWait(mReadHandle, Core.HandleSignals.READABLE, Core.DEADLINE_INFINITE,
-                    this);
+            mWatcher.start(mReadHandle, Core.HandleSignals.READABLE, this);
         }
 
         /**
@@ -99,14 +90,6 @@ class ExecutorFactory {
         }
 
         /**
-         * @see Callback#onError(MojoException)
-         */
-        @Override
-        public void onError(MojoException exception) {
-            close();
-        }
-
-        /**
          * Close the handles. Should only be called on the executor thread.
          */
         private void close() {
@@ -114,6 +97,8 @@ class ExecutorFactory {
                 mWriteHandle.close();
                 mPendingActions.clear();
             }
+            mWatcher.cancel();
+            mWatcher.destroy();
             mReadHandle.close();
         }
 
@@ -126,7 +111,6 @@ class ExecutorFactory {
                 ResultAnd<ReadMessageResult> readMessageResult =
                         mReadHandle.readMessage(NOTIFY_BUFFER, 0, MessagePipeHandle.ReadFlags.NONE);
                 if (readMessageResult.getMojoResult() == MojoResult.OK) {
-                    asyncWait();
                     return true;
                 }
             } catch (MojoException e) {

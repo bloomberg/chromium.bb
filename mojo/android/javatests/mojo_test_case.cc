@@ -16,14 +16,13 @@
 #include "base/test/test_support_android.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jni/MojoTestCase_jni.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 
 using base::android::JavaParamRef;
 
 namespace {
 
 struct TestEnvironment {
-  TestEnvironment() : message_loop(mojo::common::MessagePumpMojo::Create()) {}
+  TestEnvironment() {}
 
   base::ShadowingAtExitManager at_exit;
   base::MessageLoop message_loop;

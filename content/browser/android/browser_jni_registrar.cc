@@ -31,6 +31,7 @@
 #include "content/browser/time_zone_monitor_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "mojo/android/system/core_impl.h"
+#include "mojo/android/system/watcher_impl.h"
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
@@ -64,6 +65,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},
     {"TimeZoneMonitorAndroid", content::TimeZoneMonitorAndroid::Register},
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
+    {"WatcherImpl", mojo::android::RegisterWatcherImpl},
     {"WebContentsAndroid", content::WebContentsAndroid::Register},
     {"WebContentsObserver", content::RegisterWebContentsObserverProxy},
     {"WebViewStatics", content::RegisterWebViewStatics},

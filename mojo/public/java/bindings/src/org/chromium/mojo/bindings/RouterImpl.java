@@ -6,9 +6,9 @@ package org.chromium.mojo.bindings;
 
 import android.annotation.SuppressLint;
 
-import org.chromium.mojo.system.AsyncWaiter;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MessagePipeHandle;
+import org.chromium.mojo.system.Watcher;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -109,23 +109,23 @@ public class RouterImpl implements Router {
     private final Executor mExecutor;
 
     /**
-     * Constructor that will use the default {@link AsyncWaiter}.
+     * Constructor that will use the default {@link Watcher}.
      *
      * @param messagePipeHandle The {@link MessagePipeHandle} to route message for.
      */
     public RouterImpl(MessagePipeHandle messagePipeHandle) {
-        this(messagePipeHandle, BindingsHelper.getDefaultAsyncWaiterForHandle(messagePipeHandle));
+        this(messagePipeHandle, BindingsHelper.getWatcherForHandle(messagePipeHandle));
     }
 
     /**
      * Constructor.
      *
      * @param messagePipeHandle The {@link MessagePipeHandle} to route message for.
-     * @param asyncWaiter the {@link AsyncWaiter} to use to get notification of new messages on the
+     * @param watcher the {@link Watcher} to use to get notification of new messages on the
      *            handle.
      */
-    public RouterImpl(MessagePipeHandle messagePipeHandle, AsyncWaiter asyncWaiter) {
-        mConnector = new Connector(messagePipeHandle, asyncWaiter);
+    public RouterImpl(MessagePipeHandle messagePipeHandle, Watcher watcher) {
+        mConnector = new Connector(messagePipeHandle, watcher);
         mConnector.setIncomingMessageReceiver(new HandleIncomingMessageThunk());
         Core core = messagePipeHandle.getCore();
         if (core != null) {

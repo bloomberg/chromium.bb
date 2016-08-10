@@ -10,14 +10,16 @@
 #include "mojo/android/javatests/mojo_test_case.h"
 #include "mojo/android/javatests/validation_test_util.h"
 #include "mojo/android/system/core_impl.h"
+#include "mojo/android/system/watcher_impl.h"
 #include "mojo/edk/embedder/embedder.h"
 
 namespace {
 
 base::android::RegistrationMethod kMojoRegisteredMethods[] = {
-  { "CoreImpl", mojo::android::RegisterCoreImpl },
-  { "MojoTestCase", mojo::android::RegisterMojoTestCase },
-  { "ValidationTestUtil", mojo::android::RegisterValidationTestUtil },
+    {"CoreImpl", mojo::android::RegisterCoreImpl},
+    {"MojoTestCase", mojo::android::RegisterMojoTestCase},
+    {"ValidationTestUtil", mojo::android::RegisterValidationTestUtil},
+    {"WatcherImpl", mojo::android::RegisterWatcherImpl},
 };
 
 bool RegisterJNI(JNIEnv* env) {

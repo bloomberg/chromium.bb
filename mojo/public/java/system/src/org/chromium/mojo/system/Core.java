@@ -305,9 +305,9 @@ public interface Core {
     public UntypedHandle acquireNativeHandle(int handle);
 
     /**
-     * Returns a default implementation of {@link AsyncWaiter}.
+     * Returns an implementation of {@link Watcher}.
      */
-    public AsyncWaiter getDefaultAsyncWaiter();
+    public Watcher getWatcher();
 
     /**
      * Returns a new run loop.
