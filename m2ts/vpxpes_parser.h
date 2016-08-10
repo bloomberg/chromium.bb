@@ -146,6 +146,25 @@ class VpxPesParser {
   bool AccumulateFragmentedPayload(std::size_t pes_packet_length,
                                    std::size_t payload_length);
 
+  // The byte sequence 0x0 0x0 0x1 is a start code in PES. When PES muxers
+  // encounter 0x0 0x0 0x1 or 0x0 0x0 0x3, an additional 0x3 is inserted into
+  // the PES. The following change occurs:
+  //    0x0 0x0 0x1  =>  0x0 0x0 0x3 0x1
+  //    0x0 0x0 0x3  =>  0x0 0x0 0x3 0x3
+  // PES demuxers must reverse the change:
+  //    0x0 0x0 0x3 0x1  =>  0x0 0x0 0x1
+  //    0x0 0x0 0x3 0x3  =>  0x0 0x0 0x3
+  // PES optional header, BCMV header, and payload data must be preprocessed to
+  // avoid potentially invalid data due to the presence of inserted bytes.
+  //
+  // Removes start code emulation prevention bytes while copying data from
+  // |raw_data| to |processed_data|. Returns true when |bytes_required| bytes
+  // have been written to |processed_data|. Reports bytes consumed during the
+  // operation via |bytes_consumed|.
+  bool RemoveStartCodeEmulationPreventionBytes(
+      const std::uint8_t* raw_data, std::size_t bytes_required,
+      PacketData* processed_data, std::size_t* bytes_consumed) const;
+
   std::size_t pes_file_size_ = 0;
   PacketData payload_;
   PesFileData pes_file_data_;
