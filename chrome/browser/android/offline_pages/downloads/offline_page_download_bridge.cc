@@ -55,7 +55,8 @@ OfflinePageDownloadBridge::OfflinePageDownloadBridge(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     DownloadUIAdapter* download_ui_adapter)
-    : download_ui_adapter_(download_ui_adapter) {
+    : weak_java_ref_(env, obj),
+      download_ui_adapter_(download_ui_adapter) {
   DCHECK(download_ui_adapter_);
   download_ui_adapter_->AddObserver(this);
 }
