@@ -8,7 +8,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/streams/ReadableStream.h"
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"

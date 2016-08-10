@@ -500,7 +500,7 @@ TEST_F(BodyStreamBufferTest, SourceHandleAndReaderShouldBeDestructedWhenCanceled
     BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), std::move(handle));
     checkpoint.Call(1);
     ScriptValue reason(scope.getScriptState(), v8String(scope.getScriptState()->isolate(), "reason"));
-    buffer->cancelSource(scope.getScriptState(), reason);
+    buffer->cancel(scope.getScriptState(), reason);
     checkpoint.Call(2);
 }
 

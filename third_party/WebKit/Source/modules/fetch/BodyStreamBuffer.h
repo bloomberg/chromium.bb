@@ -8,9 +8,6 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/DOMException.h"
-#include "core/streams/ReadableByteStream.h"
-#include "core/streams/ReadableByteStreamReader.h"
-#include "core/streams/UnderlyingSource.h"
 #include "core/streams/UnderlyingSourceBase.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
@@ -24,7 +21,7 @@ namespace blink {
 class EncodedFormData;
 class ScriptState;
 
-class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase, public UnderlyingSource, public WebDataConsumerHandle::Client {
+class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase, public WebDataConsumerHandle::Client {
     WTF_MAKE_NONCOPYABLE(BodyStreamBuffer);
     USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
 public:
@@ -45,10 +42,6 @@ public:
     void startLoading(FetchDataLoader*, FetchDataLoader::Client* /* client */);
     void tee(BodyStreamBuffer**, BodyStreamBuffer**);
 
-    // UnderlyingSource
-    void pullSource() override;
-    ScriptPromise cancelSource(ScriptState*, ScriptValue reason) override;
-
     // UnderlyingSourceBase
     ScriptPromise pull(ScriptState*) override;
     ScriptPromise cancel(ScriptState*, ScriptValue reason) override;
@@ -68,10 +61,8 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(m_stream);
         visitor->trace(m_loader);
         UnderlyingSourceBase::trace(visitor);
-        UnderlyingSource::trace(visitor);
     }
 
 private:
@@ -87,7 +78,6 @@ private:
     RefPtr<ScriptState> m_scriptState;
     std::unique_ptr<FetchDataConsumerHandle> m_handle;
     std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
-    Member<ReadableByteStream> m_stream;
     // We need this member to keep it alive while loading.
     Member<FetchDataLoader> m_loader;
     bool m_streamNeedsMore = false;

@@ -26,7 +26,6 @@
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/ReadableStreamDataConsumerHandle.h"
 #include "modules/fetch/ResponseInit.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
@@ -149,21 +148,8 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(body.As<v8::Object>())->toEncodedFormData();
         bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(executionContext, formData.release()));
         contentType = "application/x-www-form-urlencoded;charset=UTF-8";
-    } else if (RuntimeEnabledFeatures::responseConstructedWithReadableStreamEnabled() && ReadableStreamOperations::isReadableStream(scriptState, bodyValue)) {
-        if (RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled()) {
-            bodyBuffer = new BodyStreamBuffer(scriptState, bodyValue);
-        } else {
-            std::unique_ptr<FetchDataConsumerHandle> bodyHandle;
-            reader = ReadableStreamOperations::getReader(scriptState, bodyValue, exceptionState);
-            if (exceptionState.hadException()) {
-                reader = ScriptValue();
-                bodyHandle = createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle());
-                exceptionState.clearException();
-            } else {
-                bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, reader);
-            }
-            bodyBuffer = new BodyStreamBuffer(scriptState, std::move(bodyHandle));
-        }
+    } else if (ReadableStreamOperations::isReadableStream(scriptState, bodyValue)) {
+        bodyBuffer = new BodyStreamBuffer(scriptState, bodyValue);
     } else {
         String string = toUSVString(isolate, body, exceptionState);
         if (exceptionState.hadException())
