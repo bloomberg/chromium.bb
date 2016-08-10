@@ -20,6 +20,11 @@
             "group_name": "Enabled"
         }
     ],
+    "BlockSmallPluginContent": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "CaptivePortalInterstitial": [
         {
             "group_name": "Enabled"

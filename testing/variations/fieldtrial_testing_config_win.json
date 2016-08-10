@@ -31,6 +31,11 @@
             }
         }
     ],
+    "BlockSmallPluginContent": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "BrowserBlacklist": [
         {
             "group_name": "Enabled"
