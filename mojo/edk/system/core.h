@@ -62,6 +62,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // Called in the parent process when a child process fails to launch.
   void ChildLaunchFailed(const std::string& child_token);
 
+  // Called to connect to a peer process. This should be called only if there
+  // is no common ancestor for the processes involved within this mojo system.
+  // Both processes must call this function, each passing one end of a platform
+  // channel. This returns one end of a message pipe to each process.
+  ScopedMessagePipeHandle ConnectToPeerProcess(
+      ScopedPlatformHandle pipe_handle);
+
   // Called in a child process exactly once during early initialization.
   void InitChild(ScopedPlatformHandle platform_handle);
 

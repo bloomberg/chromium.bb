@@ -68,6 +68,16 @@ class MultiprocessMessagePipeTest : public test::MojoTestBase {
   };
 };
 
+class MultiprocessMessagePipeTestWithPeerSupport
+    : public MultiprocessMessagePipeTest,
+      public testing::WithParamInterface<test::MojoTestBase::LaunchType> {
+ protected:
+  void SetUp() override {
+    test::MojoTestBase::SetUp();
+    set_launch_type(GetParam());
+  }
+};
+
 // For each message received, sends a reply message with the same contents
 // repeated twice, until the other end is closed or it receives "quitquitquit"
 // (which it doesn't reply to). It'll return the number of messages received,
@@ -116,7 +126,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(EchoEcho, MultiprocessMessagePipeTest, h) {
   return rv;
 }
 
-TEST_F(MultiprocessMessagePipeTest, Basic) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, Basic) {
   RUN_CHILD_ON_PIPE(EchoEcho, h)
     std::string hello("hello");
     ASSERT_EQ(MOJO_RESULT_OK,
@@ -152,7 +162,7 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
   END_CHILD_AND_EXPECT_EXIT_CODE(1 % 100);
 }
 
-TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, QueueMessages) {
   static const size_t kNumMessages = 1001;
   RUN_CHILD_ON_PIPE(EchoEcho, h)
     for (size_t i = 0; i < kNumMessages; i++) {
@@ -509,7 +519,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
   return 0;
 }
 
-TEST_F(MultiprocessMessagePipeTest, MessagePipePassing) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, MessagePipePassing) {
   RUN_CHILD_ON_PIPE(CheckMessagePipe, h)
     MojoCreateSharedBufferOptions options;
     options.struct_size = sizeof(options);
@@ -551,7 +561,7 @@ TEST_F(MultiprocessMessagePipeTest, MessagePipePassing) {
   END_CHILD()
 }
 
-TEST_F(MultiprocessMessagePipeTest, MessagePipeTwoPassing) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, MessagePipeTwoPassing) {
   RUN_CHILD_ON_PIPE(CheckMessagePipe, h)
     MojoHandle mp1, mp2;
     ASSERT_EQ(MOJO_RESULT_OK,
@@ -681,7 +691,7 @@ TEST_F(MultiprocessMessagePipeTest, DataPipeConsumer) {
   END_CHILD();
 }
 
-TEST_F(MultiprocessMessagePipeTest, CreateMessagePipe) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, CreateMessagePipe) {
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
   VerifyTransmission(p0, p1, "hey man");
@@ -693,7 +703,7 @@ TEST_F(MultiprocessMessagePipeTest, CreateMessagePipe) {
   CloseHandle(p1);
 }
 
-TEST_F(MultiprocessMessagePipeTest, PassMessagePipeLocal) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, PassMessagePipeLocal) {
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
   VerifyTransmission(p0, p1, "testing testing");
@@ -733,7 +743,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(ChannelEchoClient, MultiprocessMessagePipeTest,
   return 0;
 }
 
-TEST_F(MultiprocessMessagePipeTest, MultiprocessChannelPipe) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, MultiprocessChannelPipe) {
   RUN_CHILD_ON_PIPE(ChannelEchoClient, h)
     VerifyEcho(h, "in an interstellar burst");
     VerifyEcho(h, "i am back to save the universe");
@@ -758,7 +768,8 @@ DEFINE_TEST_CLIENT_WITH_PIPE(EchoServiceClient, MultiprocessMessagePipeTest,
   return 0;
 }
 
-TEST_F(MultiprocessMessagePipeTest, PassMessagePipeCrossProcess) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
+       PassMessagePipeCrossProcess) {
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
   RUN_CHILD_ON_PIPE(EchoServiceClient, h)
@@ -815,7 +826,8 @@ DEFINE_TEST_CLIENT_WITH_PIPE(EchoServiceFactoryClient,
   return 0;
 }
 
-TEST_F(MultiprocessMessagePipeTest, PassMoarMessagePipesCrossProcess) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
+       PassMoarMessagePipesCrossProcess) {
   MojoHandle echo_factory_proxy, echo_factory_request;
   CreateMessagePipe(&echo_factory_proxy, &echo_factory_request);
 
@@ -860,7 +872,8 @@ TEST_F(MultiprocessMessagePipeTest, PassMoarMessagePipesCrossProcess) {
   CloseHandle(echo_proxy_c);
 }
 
-TEST_F(MultiprocessMessagePipeTest, ChannelPipesWithMultipleChildren) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
+       ChannelPipesWithMultipleChildren) {
   RUN_CHILD_ON_PIPE(ChannelEchoClient, a)
     RUN_CHILD_ON_PIPE(ChannelEchoClient, b)
       VerifyEcho(a, "hello child 0");
@@ -890,7 +903,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(PingPongPipeClient,
   EXPECT_EQ("quit", ReadMessage(h));
 }
 
-TEST_F(MultiprocessMessagePipeTest, PingPongPipe) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, PingPongPipe) {
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
 
@@ -1096,11 +1109,12 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceivePipeWithClosedPeer,
   MojoHandle p;
   EXPECT_EQ("foo", ReadMessageWithHandles(h, &p, 1));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(p, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+  auto result = MojoWait(p, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                         MOJO_DEADLINE_INDEFINITE, nullptr);
+  EXPECT_EQ(MOJO_RESULT_OK, result);
 }
 
-TEST_F(MultiprocessMessagePipeTest, SendPipeThenClosePeer) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, SendPipeThenClosePeer) {
   RUN_CHILD_ON_PIPE(ReceivePipeWithClosedPeer, h)
     MojoHandle a, b;
     CreateMessagePipe(&a, &b);
@@ -1176,8 +1190,7 @@ TEST_F(MultiprocessMessagePipeTest,
   END_CHILD()
 }
 
-
-TEST_F(MultiprocessMessagePipeTest, SendClosePeerSend) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, SendClosePeerSend) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
@@ -1220,7 +1233,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(WriteCloseSendPeerClient,
   EXPECT_EQ("quit", ReadMessage(h));
 }
 
-TEST_F(MultiprocessMessagePipeTest, WriteCloseSendPeer) {
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport, WriteCloseSendPeer) {
   MojoHandle pipe[2];
   CreateMessagePipe(&pipe[0], &pipe[1]);
 
@@ -1345,7 +1358,10 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
   EXPECT_NE(std::string::npos, first_process_error.find(kFirstErrorMessage));
   EXPECT_NE(std::string::npos, second_process_error.find(kSecondErrorMessage));
 }
-
+INSTANTIATE_TEST_CASE_P(,
+                        MultiprocessMessagePipeTestWithPeerSupport,
+                        testing::Values(test::MojoTestBase::LaunchType::CHILD,
+                                        test::MojoTestBase::LaunchType::PEER));
 }  // namespace
 }  // namespace edk
 }  // namespace mojo

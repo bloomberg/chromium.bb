@@ -187,6 +187,17 @@ void Core::ChildLaunchFailed(const std::string& child_token) {
   GetNodeController()->CloseChildPorts(child_token);
 }
 
+ScopedMessagePipeHandle Core::ConnectToPeerProcess(
+    ScopedPlatformHandle pipe_handle) {
+  RequestContext request_context;
+  ports::PortRef port0, port1;
+  GetNodeController()->node()->CreatePortPair(&port0, &port1);
+  MojoHandle handle = AddDispatcher(new MessagePipeDispatcher(
+      GetNodeController(), port0, kUnknownPipeIdForDebug, 0));
+  GetNodeController()->ConnectToPeer(std::move(pipe_handle), port1);
+  return ScopedMessagePipeHandle(MessagePipeHandle(handle));
+}
+
 void Core::InitChild(ScopedPlatformHandle platform_handle) {
   GetNodeController()->ConnectToParent(std::move(platform_handle));
 }

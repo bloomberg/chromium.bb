@@ -47,6 +47,7 @@ enum class MessageType : uint32_t {
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   PORTS_MESSAGE_FROM_RELAY,
 #endif
+  ACCEPT_PEER,
 };
 
 struct Header {
@@ -65,6 +66,12 @@ struct AcceptChildData {
 struct AcceptParentData {
   ports::NodeName token;
   ports::NodeName child_name;
+};
+
+struct AcceptPeerData {
+  ports::NodeName token;
+  ports::NodeName peer_name;
+  ports::PortName port_name;
 };
 
 // This message may include a process handle on plaforms that require it.
@@ -279,6 +286,18 @@ void NodeChannel::AcceptParent(const ports::NodeName& token,
       MessageType::ACCEPT_PARENT, sizeof(AcceptParentData), 0, &data);
   data->token = token;
   data->child_name = child_name;
+  WriteChannelMessage(std::move(message));
+}
+
+void NodeChannel::AcceptPeer(const ports::NodeName& sender_name,
+                             const ports::NodeName& token,
+                             const ports::PortName& port_name) {
+  AcceptPeerData* data;
+  Channel::MessagePtr message =
+      CreateMessage(MessageType::ACCEPT_PEER, sizeof(AcceptPeerData), 0, &data);
+  data->token = token;
+  data->peer_name = sender_name;
+  data->port_name = port_name;
   WriteChannelMessage(std::move(message));
 }
 
@@ -727,6 +746,16 @@ void NodeChannel::OnChannelMessage(const void* payload,
       break;
 
 #endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+
+    case MessageType::ACCEPT_PEER: {
+      const AcceptPeerData* data;
+      if (GetMessagePayload(payload, payload_size, &data)) {
+        delegate_->OnAcceptPeer(remote_node_name_, data->token, data->peer_name,
+                                data->port_name);
+        return;
+      }
+      break;
+    }
 
     default:
       break;

@@ -46,25 +46,23 @@
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
-#define DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(client_name, test_base)       \
-  class client_name##_MainFixture : public test_base {                    \
-   public:                                                                \
-    void Main();                                                          \
-  };                                                                      \
-  MULTIPROCESS_TEST_MAIN_WITH_SETUP(                                      \
-      client_name##TestChildMain,                                         \
-      ::mojo::edk::test::MultiprocessTestHelper::ChildSetup) {            \
-    CHECK(!mojo::edk::test::MultiprocessTestHelper::primordial_pipe_token \
-               .empty());                                                 \
-    client_name##_MainFixture test;                                       \
-    test.Init(mojo::edk::CreateChildMessagePipe(                          \
-        mojo::edk::test::MultiprocessTestHelper::primordial_pipe_token)); \
-    test.Main();                                                          \
-    return (::testing::Test::HasFatalFailure() ||                         \
-            ::testing::Test::HasNonfatalFailure())                        \
-               ? 1                                                        \
-               : 0;                                                       \
-  }                                                                       \
+#define DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(client_name, test_base)           \
+  class client_name##_MainFixture : public test_base {                        \
+   public:                                                                    \
+    void Main();                                                              \
+  };                                                                          \
+  MULTIPROCESS_TEST_MAIN_WITH_SETUP(                                          \
+      client_name##TestChildMain,                                             \
+      ::mojo::edk::test::MultiprocessTestHelper::ChildSetup) {                \
+    client_name##_MainFixture test;                                           \
+    test.Init(                                                                \
+        std::move(mojo::edk::test::MultiprocessTestHelper::primordial_pipe)); \
+    test.Main();                                                              \
+    return (::testing::Test::HasFatalFailure() ||                             \
+            ::testing::Test::HasNonfatalFailure())                            \
+               ? 1                                                            \
+               : 0;                                                           \
+  }                                                                           \
   void client_name##_MainFixture::Main()
 
 namespace {

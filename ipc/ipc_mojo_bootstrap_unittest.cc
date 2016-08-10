@@ -77,8 +77,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   base::RunLoop run_loop;
   TestingDelegate delegate(run_loop.QuitClosure());
   std::unique_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
-      mojo::edk::CreateChildMessagePipe(
-          mojo::edk::test::MultiprocessTestHelper::primordial_pipe_token),
+      std::move(mojo::edk::test::MultiprocessTestHelper::primordial_pipe),
       IPC::Channel::MODE_CLIENT, &delegate,
       base::ThreadTaskRunnerHandle::Get());
 

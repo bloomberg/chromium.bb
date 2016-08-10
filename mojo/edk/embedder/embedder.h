@@ -70,6 +70,13 @@ MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(ScopedPlatformHandle pipe);
 // PlatformChannelPair for details.
 MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandleFromCommandLine();
 
+// Called to connect to a peer process. This should be called only if there
+// is no common ancestor for the processes involved within this mojo system.
+// Both processes must call this function, each passing one end of a platform
+// channel. This returns one end of a message pipe to each process.
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
+ConnectToPeerProcess(ScopedPlatformHandle pipe);
+
 // Must be called first, or just after setting configuration parameters, to
 // initialize the (global, singleton) system.
 MOJO_SYSTEM_IMPL_EXPORT void Init();

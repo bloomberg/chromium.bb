@@ -39,10 +39,11 @@ namespace {
 
 const char kMojoPrimordialPipeToken[] = "mojo-primordial-pipe-token";
 
-int RunClientFunction(std::function<int(MojoHandle)> handler) {
-  CHECK(!MultiprocessTestHelper::primordial_pipe_token.empty());
-  ScopedMessagePipeHandle pipe = CreateChildMessagePipe(
-      MultiprocessTestHelper::primordial_pipe_token);
+template <typename Func>
+int RunClientFunction(Func handler) {
+  CHECK(MultiprocessTestHelper::primordial_pipe.is_valid());
+  ScopedMessagePipeHandle pipe =
+      std::move(MultiprocessTestHelper::primordial_pipe);
   return handler(pipe.get().value());
 }
 
@@ -55,15 +56,17 @@ MultiprocessTestHelper::~MultiprocessTestHelper() {
 }
 
 ScopedMessagePipeHandle MultiprocessTestHelper::StartChild(
-    const std::string& test_child_name) {
-  return StartChildWithExtraSwitch(
-      test_child_name, std::string(), std::string());
+    const std::string& test_child_name,
+    LaunchType launch_type) {
+  return StartChildWithExtraSwitch(test_child_name, std::string(),
+                                   std::string(), launch_type);
 }
 
 ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     const std::string& test_child_name,
     const std::string& switch_string,
-    const std::string& switch_value) {
+    const std::string& switch_value,
+    LaunchType launch_type) {
   CHECK(!test_child_name.empty());
   CHECK(!test_child_.IsValid());
 
@@ -93,7 +96,8 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
                                                   &handle_passing_info);
 
   std::string pipe_token = mojo::edk::GenerateRandomToken();
-  command_line.AppendSwitchASCII(kMojoPrimordialPipeToken, pipe_token);
+  if (launch_type == LaunchType::CHILD)
+    command_line.AppendSwitchASCII(kMojoPrimordialPipeToken, pipe_token);
 
   if (!switch_string.empty()) {
     CHECK(!command_line.HasSwitch(switch_string));
@@ -116,18 +120,23 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
 #error "Not supported yet."
 #endif
 
+  ScopedMessagePipeHandle pipe;
   std::string child_token = mojo::edk::GenerateRandomToken();
-  ScopedMessagePipeHandle pipe = CreateParentMessagePipe(pipe_token,
-                                                         child_token);
+  if (launch_type == LaunchType::CHILD)
+    pipe = CreateParentMessagePipe(pipe_token, child_token);
+  else if (launch_type == LaunchType::PEER)
+    pipe = ConnectToPeerProcess(channel.PassServerHandle());
 
   test_child_ =
       base::SpawnMultiProcessTestChild(test_child_main, command_line, options);
   channel.ChildProcessLaunched();
 
-  ChildProcessLaunched(test_child_.Handle(), channel.PassServerHandle(),
-                       child_token, process_error_callback_);
-  CHECK(test_child_.IsValid());
+  if (launch_type == LaunchType::CHILD) {
+    ChildProcessLaunched(test_child_.Handle(), channel.PassServerHandle(),
+                         child_token, process_error_callback_);
+  }
 
+  CHECK(test_child_.IsValid());
   return pipe;
 }
 
@@ -155,17 +164,21 @@ bool MultiprocessTestHelper::WaitForChildTestShutdown() {
 void MultiprocessTestHelper::ChildSetup() {
   CHECK(base::CommandLine::InitializedForCurrentProcess());
 
-  primordial_pipe_token = base::CommandLine::ForCurrentProcess()
-      ->GetSwitchValueASCII(kMojoPrimordialPipeToken);
-  CHECK(!primordial_pipe_token.empty());
-
+  std::string primordial_pipe_token =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kMojoPrimordialPipeToken);
+  if (!primordial_pipe_token.empty()) {
+    primordial_pipe = CreateChildMessagePipe(primordial_pipe_token);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  CHECK(base::MachPortBroker::ChildSendTaskPortToParent("mojo_test"));
+    CHECK(base::MachPortBroker::ChildSendTaskPortToParent("mojo_test"));
 #endif
-
-  SetParentPipeHandle(
-      PlatformChannelPair::PassClientHandleFromParentProcess(
-          *base::CommandLine::ForCurrentProcess()));
+    SetParentPipeHandle(PlatformChannelPair::PassClientHandleFromParentProcess(
+        *base::CommandLine::ForCurrentProcess()));
+  } else {
+    primordial_pipe = ConnectToPeerProcess(
+        PlatformChannelPair::PassClientHandleFromParentProcess(
+            *base::CommandLine::ForCurrentProcess()));
+  }
 }
 
 // static
@@ -187,7 +200,7 @@ int MultiprocessTestHelper::RunClientTestMain(
 }
 
 // static
-std::string MultiprocessTestHelper::primordial_pipe_token;
+mojo::ScopedMessagePipeHandle MultiprocessTestHelper::primordial_pipe;
 
 }  // namespace test
 }  // namespace edk

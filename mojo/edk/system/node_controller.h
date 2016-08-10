@@ -85,6 +85,10 @@ class NodeController : public ports::NodeDelegate,
   // handshake.
   void ConnectToParent(ScopedPlatformHandle platform_handle);
 
+  // Connects this node to a peer node. On success, |port| will be merged with
+  // the corresponding port in the peer node.
+  void ConnectToPeer(ScopedPlatformHandle handle, const ports::PortRef& port);
+
   // Sets a port's observer. If |observer| is null the port's current observer
   // is removed.
   void SetPortObserver(const ports::PortRef& port,
@@ -146,6 +150,10 @@ class NodeController : public ports::NodeDelegate,
       const ProcessErrorCallback& process_error_callback);
   void ConnectToParentOnIOThread(ScopedPlatformHandle platform_handle);
 
+  void ConnectToPeerOnIOThread(ScopedPlatformHandle handle,
+                               ports::NodeName token,
+                               ports::PortRef port);
+
   scoped_refptr<NodeChannel> GetPeerChannel(const ports::NodeName& name);
   scoped_refptr<NodeChannel> GetParentChannel();
   scoped_refptr<NodeChannel> GetBrokerChannel();
@@ -206,6 +214,10 @@ class NodeController : public ports::NodeDelegate,
                                const ports::NodeName& source_node,
                                Channel::MessagePtr message) override;
 #endif
+  void OnAcceptPeer(const ports::NodeName& from_node,
+                    const ports::NodeName& token,
+                    const ports::NodeName& peer_name,
+                    const ports::PortName& port_name) override;
   void OnChannelError(const ports::NodeName& from_node,
                       NodeChannel* channel) override;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -304,6 +316,11 @@ class NodeController : public ports::NodeDelegate,
 
   // Channels to children during handshake.
   NodeMap pending_children_;
+
+  using PeerNodeMap =
+      std::unordered_map<ports::NodeName,
+                         std::pair<scoped_refptr<NodeChannel>, ports::PortRef>>;
+  PeerNodeMap pending_peers_;
 
   // Indicates whether this object should delete itself on IO thread shutdown.
   // Must only be accessed from the IO thread.

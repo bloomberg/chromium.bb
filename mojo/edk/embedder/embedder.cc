@@ -76,6 +76,12 @@ void SetParentPipeHandleFromCommandLine() {
   SetParentPipeHandle(std::move(platform_channel));
 }
 
+ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe) {
+  CHECK(internal::g_process_delegate);
+  DCHECK(pipe.is_valid());
+  return internal::g_core->ConnectToPeerProcess(std::move(pipe));
+}
+
 void Init() {
   MojoSystemThunks thunks = MakeSystemThunks();
   size_t expected_size = MojoEmbedderSetSystemThunks(&thunks);
