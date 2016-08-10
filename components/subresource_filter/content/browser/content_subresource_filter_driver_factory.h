@@ -30,6 +30,7 @@ namespace subresource_filter {
 using HostSet = std::set<std::string>;
 
 class ContentSubresourceFilterDriver;
+class SubresourceFilterClient;
 
 // Controls the activation of subresource filtering for each page load in a
 // WebContents and manufactures the per-frame ContentSubresourceFilterDrivers.
@@ -40,12 +41,15 @@ class ContentSubresourceFilterDriverFactory
     : public base::SupportsUserData::Data,
       public content::WebContentsObserver {
  public:
-  static void CreateForWebContents(content::WebContents* web_contents);
+  static void CreateForWebContents(
+      content::WebContents* web_contents,
+      std::unique_ptr<SubresourceFilterClient> client);
   static ContentSubresourceFilterDriverFactory* FromWebContents(
       content::WebContents* web_contents);
 
   explicit ContentSubresourceFilterDriverFactory(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      std::unique_ptr<SubresourceFilterClient> client);
   ~ContentSubresourceFilterDriverFactory() override;
 
   void OnMainResourceMatchedSafeBrowsingBlacklist(
@@ -98,9 +102,15 @@ class ContentSubresourceFilterDriverFactory
       bool is_error_page,
       bool is_iframe_srcdoc) override;
 
+  // Sends the current maximum activation state to the given |render_frame_host|
+  // and prompts the user if needed.
+  void SendActivationStateAndPromptUser(
+      content::RenderFrameHost* render_frame_host);
+
   static const char kWebContentsUserDataKey[];
 
   FrameHostToOwnedDriverMap frame_drivers_;
+  std::unique_ptr<SubresourceFilterClient> client_;
 
   HostSet activate_on_hosts_;
   HostSet whitelisted_hosts_;

@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
+#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -177,8 +178,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ChromeSecurityStateModelClient::CreateForWebContents(web_contents);
   if (SiteEngagementService::IsEnabled())
     SiteEngagementService::Helper::CreateForWebContents(web_contents);
+  std::unique_ptr<ChromeSubresourceFilterClient> subresource_filter_client(
+      new ChromeSubresourceFilterClient(web_contents));
   subresource_filter::ContentSubresourceFilterDriverFactory::
-      CreateForWebContents(web_contents);
+      CreateForWebContents(web_contents, std::move(subresource_filter_client));
   // TODO(vabr): Remove TabSpecificContentSettings from here once their function
   // is taken over by ChromeContentSettingsClient. http://crbug.com/387075
   TabSpecificContentSettings::CreateForWebContents(web_contents);

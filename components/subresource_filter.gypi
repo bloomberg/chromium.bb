@@ -23,6 +23,7 @@
         'subresource_filter/core/browser/ruleset_distributor.h',
         'subresource_filter/core/browser/ruleset_service.cc',
         'subresource_filter/core/browser/ruleset_service.h',
+        'subresource_filter/core/browser/subresource_filter_client.h',
         'subresource_filter/core/browser/subresource_filter_constants.cc',
         'subresource_filter/core/browser/subresource_filter_constants.h',
         'subresource_filter/core/browser/subresource_filter_features.cc',

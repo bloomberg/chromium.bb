@@ -12,6 +12,7 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/core/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "content/public/browser/navigation_handle.h"
@@ -49,6 +50,18 @@ class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
 };
 
+class MockSubresourceFilterClient : public SubresourceFilterClient {
+ public:
+  MockSubresourceFilterClient() {}
+
+  ~MockSubresourceFilterClient() override = default;
+
+  MOCK_METHOD1(ToggleNotificationVisibility, void(bool));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterClient);
+};
+
 class SubresourceFilterNavigationThrottleTest
     : public content::RenderViewHostTestHarness {
  public:
@@ -57,7 +70,8 @@ class SubresourceFilterNavigationThrottleTest
   // content::RenderViewHostTestHarness:
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
-    ContentSubresourceFilterDriverFactory::CreateForWebContents(web_contents());
+    ContentSubresourceFilterDriverFactory::CreateForWebContents(
+        web_contents(), base::WrapUnique(new MockSubresourceFilterClient()));
 
     driver_ = new MockSubresourceFilterDriver(main_rfh());
     factory()->SetDriverForFrameHostForTesting(main_rfh(),

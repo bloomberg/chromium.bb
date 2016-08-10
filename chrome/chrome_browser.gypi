@@ -614,6 +614,8 @@
       'browser/storage/durable_storage_permission_context.h',
       'browser/storage/storage_info_fetcher.cc',
       'browser/storage/storage_info_fetcher.h',
+      'browser/subresource_filter/chrome_subresource_filter_client.cc',
+      'browser/subresource_filter/chrome_subresource_filter_client.h',
       'browser/tab_contents/navigation_metrics_recorder.cc',
       'browser/tab_contents/navigation_metrics_recorder.h',
       'browser/tab_contents/origins_seen_service_factory.cc',

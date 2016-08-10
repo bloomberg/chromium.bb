@@ -8,6 +8,7 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/core/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "content/public/browser/web_contents.h"
@@ -32,6 +33,18 @@ class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
 };
 
+class MockSubresourceFilterClient : public SubresourceFilterClient {
+ public:
+  MockSubresourceFilterClient() {}
+
+  ~MockSubresourceFilterClient() override = default;
+
+  MOCK_METHOD1(ToggleNotificationVisibility, void(bool));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterClient);
+};
+
 class ContentSubresourceFilterDriverFactoryTest
     : public content::RenderViewHostTestHarness {
  public:
@@ -42,10 +55,16 @@ class ContentSubresourceFilterDriverFactoryTest
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
-    ContentSubresourceFilterDriverFactory::CreateForWebContents(web_contents());
+    client_ = new MockSubresourceFilterClient();
+    ContentSubresourceFilterDriverFactory::CreateForWebContents(
+        web_contents(), base::WrapUnique(client()));
     driver_ = new MockSubresourceFilterDriver(web_contents()->GetMainFrame());
     factory()->SetDriverForFrameHostForTesting(main_rfh(),
-                                               base::WrapUnique(driver_));
+                                               base::WrapUnique(driver()));
+  }
+
+  void SendActivationStateAndPromptUser() {
+    factory()->SendActivationStateAndPromptUser(main_rfh());
   }
 
   ContentSubresourceFilterDriverFactory* factory() {
@@ -53,10 +72,12 @@ class ContentSubresourceFilterDriverFactoryTest
         web_contents());
   }
 
+  MockSubresourceFilterClient* client() { return client_; }
   MockSubresourceFilterDriver* driver() { return driver_; }
 
  private:
   // Owned by the factory.
+  MockSubresourceFilterClient* client_;
   MockSubresourceFilterDriver* driver_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactoryTest);
@@ -125,17 +146,21 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationStateEnabled,
       kActivationScopeNoSites);
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
+  EXPECT_CALL(*client(), ToggleNotificationVisibility(false)).Times(1);
   factory()->ActivateForFrameHostIfNeeded(main_rfh(), GURL("https://test.com"));
   ::testing::Mock::VerifyAndClearExpectations(driver());
+  ::testing::Mock::VerifyAndClearExpectations(client());
 
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
       GURL("https://example.com/soceng?q=engsoc"), std::vector<GURL>(),
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
+  EXPECT_CALL(*client(), ToggleNotificationVisibility(false)).Times(1);
   factory()->ActivateForFrameHostIfNeeded(main_rfh(),
                                           GURL("https://example.com"));
   ::testing::Mock::VerifyAndClearExpectations(driver());
+  ::testing::Mock::VerifyAndClearExpectations(client());
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, ActivateForFrameHostNeeded) {
@@ -149,13 +174,16 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, ActivateForFrameHostNeeded) {
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
+  EXPECT_CALL(*client(), ToggleNotificationVisibility(false)).Times(1);
   factory()->ActivateForFrameHostIfNeeded(main_rfh(), GURL("https://test.com"));
   ::testing::Mock::VerifyAndClearExpectations(driver());
 
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(1);
+  EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(1);
   factory()->ActivateForFrameHostIfNeeded(main_rfh(),
                                           GURL("https://example.com"));
   ::testing::Mock::VerifyAndClearExpectations(driver());
+  ::testing::Mock::VerifyAndClearExpectations(client());
 }
 
 TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest, NonSocEngHit) {
@@ -182,6 +210,39 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest, NonSocEngHit) {
         GURL("http://" + redirect.host() + "/path?q=q")));
   }
 };
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       ActivationPromptNotShownWhenExperimentDisabled) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
+  EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
+  SendActivationStateAndPromptUser();
+  ::testing::Mock::VerifyAndClearExpectations(client());
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       ActivationPromptNotShownWhenExperimentDryRun) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
+      kActivationScopeActivationList);
+  EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
+  SendActivationStateAndPromptUser();
+  ::testing::Mock::VerifyAndClearExpectations(client());
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       ActivationPromptShownWhenExperimentEnabled) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
+  EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(1);
+  SendActivationStateAndPromptUser();
+  ::testing::Mock::VerifyAndClearExpectations(client());
+}
 
 INSTANTIATE_TEST_CASE_P(
     NoSonEngHit,

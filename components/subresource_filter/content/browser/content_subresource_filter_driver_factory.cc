@@ -6,6 +6,7 @@
 
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
+#include "components/subresource_filter/core/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -19,12 +20,13 @@ const char ContentSubresourceFilterDriverFactory::kWebContentsUserDataKey[] =
 
 // static
 void ContentSubresourceFilterDriverFactory::CreateForWebContents(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    std::unique_ptr<SubresourceFilterClient> client) {
   if (FromWebContents(web_contents))
     return;
-  web_contents->SetUserData(
-      kWebContentsUserDataKey,
-      new ContentSubresourceFilterDriverFactory(web_contents));
+  web_contents->SetUserData(kWebContentsUserDataKey,
+                            new ContentSubresourceFilterDriverFactory(
+                                web_contents, std::move(client)));
 }
 
 // static
@@ -36,8 +38,9 @@ ContentSubresourceFilterDriverFactory::FromWebContents(
 }
 
 ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    content::WebContents* web_contents,
+    std::unique_ptr<SubresourceFilterClient> client)
+    : content::WebContentsObserver(web_contents), client_(std::move(client)) {
   content::RenderFrameHost* main_frame_host = web_contents->GetMainFrame();
   if (main_frame_host && main_frame_host->IsRenderFrameLive())
     CreateDriverForFrameHostIfNeeded(main_frame_host);
@@ -90,11 +93,11 @@ void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
     content::RenderFrameHost* render_frame_host,
     const GURL& url) {
   if (GetCurrentActivationScope() != ActivationScope::ACTIVATION_LIST ||
-      !ShouldActivateForURL(url))
+      !ShouldActivateForURL(url)) {
+    client_->ToggleNotificationVisibility(false /* visible */);
     return;
-  ContentSubresourceFilterDriver* driver =
-      DriverFromFrameHost(render_frame_host);
-  driver->ActivateForProvisionalLoad(GetMaximumActivationState());
+  }
+  SendActivationStateAndPromptUser(render_frame_host);
 }
 
 void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
@@ -137,9 +140,17 @@ void ContentSubresourceFilterDriverFactory::DidStartProvisionalLoadForFrame(
     bool is_error_page,
     bool is_iframe_srcdoc) {
   if (GetCurrentActivationScope() == ActivationScope::ALL_SITES) {
-    DriverFromFrameHost(render_frame_host)
-        ->ActivateForProvisionalLoad(GetMaximumActivationState());
+    SendActivationStateAndPromptUser(render_frame_host);
   }
+}
+
+void ContentSubresourceFilterDriverFactory::SendActivationStateAndPromptUser(
+    content::RenderFrameHost* render_frame_host) {
+  ContentSubresourceFilterDriver* driver =
+      DriverFromFrameHost(render_frame_host);
+  driver->ActivateForProvisionalLoad(GetMaximumActivationState());
+  if (GetMaximumActivationState() == ActivationState::ENABLED)
+    client_->ToggleNotificationVisibility(true /* visible */);
 }
 
 }  // namespace subresource_filter
