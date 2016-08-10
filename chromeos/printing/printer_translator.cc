@@ -37,22 +37,12 @@ const char kUUID[] = "uuid";
 std::unique_ptr<Printer::PPDFile> DictionaryToPPDFile(
     const base::DictionaryValue* value) {
   std::unique_ptr<Printer::PPDFile> ppd = base::MakeUnique<Printer::PPDFile>();
-  int id = -1;
-  value->GetInteger(kPPDid, &id);
-  ppd->id = id;
-
-  std::string file_name;
-  if (value->GetString(kFileName, &file_name))
-    ppd->file_name = file_name;
-
-  int version_number = 0;
-  if (value->GetInteger(kVersionNumber, &version_number))
-    ppd->version_number = version_number;
-
-  bool from_quirks;
-  if (value->GetBoolean(kFromQuirks, &from_quirks))
-    ppd->from_quirks_server = from_quirks;
-
+  // struct PPDFile defines default values for these fields so there is no need
+  // to check return values.
+  value->GetInteger(kPPDid, &ppd->id);
+  value->GetString(kFileName, &ppd->file_name);
+  value->GetInteger(kVersionNumber, &ppd->version_number);
+  value->GetBoolean(kFromQuirks, &ppd->from_quirks_server);
   return ppd;
 }
 

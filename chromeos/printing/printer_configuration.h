@@ -19,17 +19,17 @@ class CHROMEOS_EXPORT Printer {
   // setup.
   struct PPDFile {
     // Identifier from the quirks server. -1 otherwise.
-    int id;
+    int id = -1;
 
     std::string file_name;
 
     // If there is a file with a later version on the quirks server, that file
     // should be used. The default value is 0.
-    int version_number;
+    int version_number = 0;
 
     // This will be true if the file was retrived from the quirks server.
     // Otherwise, the file was saved to disk by the user.
-    bool from_quirks_server;
+    bool from_quirks_server = false;
   };
 
   // Constructs a printer object that is completely empty.
