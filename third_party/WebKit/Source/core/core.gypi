@@ -552,6 +552,8 @@
             'layout/ng/ng_fragment_base.h',
             'layout/ng/ng_fragment.cc',
             'layout/ng/ng_fragment.h',
+            'layout/ng/ng_length_utils.cc',
+            'layout/ng/ng_length_utils.h',
             'layout/ng/ng_margin_strut.h',
             'layout/ng/ng_text.cc',
             'layout/ng/ng_text.h',

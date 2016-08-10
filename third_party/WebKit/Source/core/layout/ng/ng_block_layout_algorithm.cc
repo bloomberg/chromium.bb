@@ -7,6 +7,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_length_utils.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 
@@ -19,15 +20,15 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
 
 NGFragment* NGBlockLayoutAlgorithm::layout(
     const NGConstraintSpace& constraintSpace) {
-  LayoutUnit inlineSize = valueForLength(m_style->logicalWidth(),
-                                         constraintSpace.inlineContainerSize());
-  LayoutUnit blockSize = valueForLength(m_style->logicalHeight(),
-                                        constraintSpace.blockContainerSize());
+  LayoutUnit inlineSize =
+      computeInlineSizeForFragment(constraintSpace, *m_style);
 
   for (NGBox curr = m_firstChild; curr; curr.nextSibling()) {
     curr.layout(constraintSpace);
   }
 
+  LayoutUnit blockSize =
+      computeBlockSizeForFragment(constraintSpace, *m_style, LayoutUnit());
   return new NGFragment(inlineSize, blockSize, inlineSize, blockSize);
 }
 
