@@ -14,7 +14,9 @@
 #include <vector>
 
 #include "ash/common/root_window_controller_common.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
@@ -204,6 +206,18 @@ void RootWindowController::OnShelfWindowAvailable() {
   // DockedWindowLayoutManagerObserver so that it can inset by the docked
   // windows.
   // docked_layout_manager_->AddObserver(shelf_->shelf_layout_manager());
+
+  WmWindowMus* status_container =
+      GetWindowByShellWindowId(kShellWindowId_StatusContainer);
+  // Owned by native widget.
+  StatusAreaWidget* status_area_widget =
+      new StatusAreaWidget(status_container, wm_shelf_.get());
+  status_area_widget->CreateTrayViews();
+  // TODO(jamescook): Remove this when ash::ShelfLayoutManager is working
+  // in mash. http://crbug.com/621112
+  status_area_widget->SetBounds(gfx::Rect(845, 720, 120, 40));
+  if (WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted())
+    status_area_widget->Show();
 }
 
 void RootWindowController::CreateLayoutManagers() {
