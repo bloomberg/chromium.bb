@@ -33,9 +33,9 @@ BlimpContentsObserverProxy::BlimpContentsObserverProxy(
     JNIEnv* env,
     jobject obj,
     BlimpContentsImplAndroid* blimp_contents_impl_android)
-    : blimp_contents_impl_android_(blimp_contents_impl_android) {
+    : BlimpContentsObserver(blimp_contents_impl_android->blimp_contents_impl()),
+      blimp_contents_impl_android_(blimp_contents_impl_android) {
   java_obj_.Reset(env, obj);
-  blimp_contents_impl_android_->blimp_contents_impl()->AddObserver(this);
 }
 
 BlimpContentsObserverProxy::~BlimpContentsObserverProxy() {}

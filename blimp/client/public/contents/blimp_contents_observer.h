@@ -11,19 +11,33 @@
 namespace blimp {
 namespace client {
 
+class BlimpContents;
+
 // An observer API implemented by classes which are interested in various events
 // related to BlimpContents.
 class BlimpContentsObserver {
  public:
-  virtual ~BlimpContentsObserver() = default;
+  virtual ~BlimpContentsObserver();
 
   // Invoked when the navigation state of the BlimpContents has changed.
   virtual void OnNavigationStateChanged() {}
 
+  // Called by BlimpContentsDying().
+  virtual void OnContentsDestroyed() {}
+
+  // Invoke when the destructor of blimp contents is called. This will clear
+  // the contents_ to nullptr.
+  void BlimpContentsDying();
+
+  BlimpContents* blimp_contents() { return contents_; }
+
  protected:
-  BlimpContentsObserver() {}
+  explicit BlimpContentsObserver(BlimpContents* blimp_contents);
 
  private:
+  // The BlimpContents being tracked by this BlimpContentsObserver.
+  BlimpContents* contents_;
+
   DISALLOW_COPY_AND_ASSIGN(BlimpContentsObserver);
 };
 

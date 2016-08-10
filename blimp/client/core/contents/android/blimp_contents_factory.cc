@@ -12,6 +12,10 @@
 
 using base::android::JavaParamRef;
 
+namespace {
+const int kDummyTabId = 0;
+}
+
 namespace blimp {
 namespace client {
 
@@ -20,7 +24,7 @@ static base::android::ScopedJavaLocalRef<jobject> CreateBlimpContents(
     const JavaParamRef<jclass>& clazz) {
   // To delete |blimp_contents_impl|, the Java caller must call the
   // destroy() method on BlimpContents.
-  BlimpContentsImpl* blimp_contents_impl = new BlimpContentsImpl;
+  BlimpContentsImpl* blimp_contents_impl = new BlimpContentsImpl(kDummyTabId);
   return blimp_contents_impl->GetJavaBlimpContentsImpl();
 }
 

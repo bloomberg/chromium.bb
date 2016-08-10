@@ -13,6 +13,8 @@ source_set("contents") {
   sources = [
     "blimp_contents_impl.cc",
     "blimp_contents_impl.h",
+    "blimp_contents_manager.cc",
+    "blimp_contents_manager.h",
     "blimp_navigation_controller_delegate.h",
     "blimp_navigation_controller_impl.cc",
     "blimp_navigation_controller_impl.h",
@@ -80,6 +82,8 @@ source_set("unit_tests") {
 
   sources = [
     "blimp_contents_impl_unittest.cc",
+    "blimp_contents_manager_unittest.cc",
+    "blimp_contents_observer_unittest.cc",
     "blimp_navigation_controller_impl_unittest.cc",
     "navigation_feature_unittest.cc",
   ]

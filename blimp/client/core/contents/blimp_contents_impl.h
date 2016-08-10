@@ -29,7 +29,7 @@ class BlimpNavigationController;
 class BlimpContentsImpl : public BlimpContents,
                           public BlimpNavigationControllerDelegate {
  public:
-  BlimpContentsImpl();
+  explicit BlimpContentsImpl(int id);
   ~BlimpContentsImpl() override;
 
 #if defined(OS_ANDROID)
@@ -42,8 +42,13 @@ class BlimpContentsImpl : public BlimpContents,
   void AddObserver(BlimpContentsObserver* observer) override;
   void RemoveObserver(BlimpContentsObserver* observer) override;
 
+  // Check if some observer is in the observer list.
+  bool HasObserver(BlimpContentsObserver* observer);
+
   // BlimpNavigationControllerDelegate implementation.
   void OnNavigationStateChanged() override;
+
+  int id() { return id_; }
 
  private:
   // Handles the back/forward list and loading URLs.
@@ -51,6 +56,10 @@ class BlimpContentsImpl : public BlimpContents,
 
   // A list of all the observers of this BlimpContentsImpl.
   base::ObserverList<BlimpContentsObserver> observers_;
+
+  // The id is assigned during contents creation. It is used by
+  // BlimpContentsManager to control the life time of the its observer.
+  int id_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentsImpl);
 };

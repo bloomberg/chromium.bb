@@ -91,14 +91,14 @@ source_set("app_unit_tests") {
 
 source_set("feature") {
   sources = [
+    "core/contents/tab_control_feature.cc",
+    "core/contents/tab_control_feature.h",
     "feature/ime_feature.cc",
     "feature/ime_feature.h",
     "feature/render_widget_feature.cc",
     "feature/render_widget_feature.h",
     "feature/settings_feature.cc",
     "feature/settings_feature.h",
-    "feature/tab_control_feature.cc",
-    "feature/tab_control_feature.h",
   ]
 
   deps = [
@@ -193,9 +193,9 @@ source_set("feature_unit_tests") {
   testonly = true
 
   sources = [
+    "core/contents/tab_control_feature_unittest.cc",
     "feature/compositor/blimp_compositor_manager_unittest.cc",
     "feature/render_widget_feature_unittest.cc",
-    "feature/tab_control_feature_unittest.cc",
   ]
 
   deps = [

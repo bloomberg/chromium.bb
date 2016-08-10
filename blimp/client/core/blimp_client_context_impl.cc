@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "blimp/client/core/contents/blimp_contents_manager.h"
 #include "blimp/client/core/session/cross_thread_network_event_observer.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 
@@ -37,6 +38,7 @@ BlimpClientContextImpl::BlimpClientContextImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
     : BlimpClientContext(),
       io_thread_task_runner_(io_thread_task_runner),
+      blimp_contents_manager_(new BlimpContentsManager),
       weak_factory_(this) {
   blimp_connection_statistics_ = new BlimpConnectionStatistics();
   net_components_.reset(new ClientNetworkComponents(
@@ -66,7 +68,7 @@ void BlimpClientContextImpl::SetDelegate(BlimpClientContextDelegate* delegate) {
 
 std::unique_ptr<BlimpContents> BlimpClientContextImpl::CreateBlimpContents() {
   std::unique_ptr<BlimpContents> blimp_contents =
-      base::MakeUnique<BlimpContentsImpl>();
+      blimp_contents_manager_->CreateBlimpContents();
   delegate_->AttachBlimpContentsHelpers(blimp_contents.get());
   return blimp_contents;
 }

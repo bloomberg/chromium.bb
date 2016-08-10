@@ -17,10 +17,12 @@ namespace {
 
 const char kExampleURL[] = "https://www.example.com/";
 const char kOtherExampleURL[] = "https://www.otherexample.com/";
+const int kDummyTabId = 0;
 
 class MockBlimpContentsObserver : public BlimpContentsObserver {
  public:
-  MockBlimpContentsObserver() = default;
+  explicit MockBlimpContentsObserver(BlimpContents* blimp_contents)
+      : BlimpContentsObserver(blimp_contents) {}
   ~MockBlimpContentsObserver() override = default;
 
   MOCK_METHOD0(OnNavigationStateChanged, void());
@@ -31,7 +33,7 @@ class MockBlimpContentsObserver : public BlimpContentsObserver {
 
 TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   base::MessageLoop loop;
-  BlimpContentsImpl blimp_contents;
+  BlimpContentsImpl blimp_contents(kDummyTabId);
 
   BlimpNavigationControllerImpl& navigation_controller =
       blimp_contents.GetNavigationController();
@@ -39,10 +41,8 @@ TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   feature.SetDelegate(1, &navigation_controller);
   navigation_controller.SetNavigationFeatureForTesting(&feature);
 
-  testing::StrictMock<MockBlimpContentsObserver> observer1;
-  blimp_contents.AddObserver(&observer1);
-  testing::StrictMock<MockBlimpContentsObserver> observer2;
-  blimp_contents.AddObserver(&observer2);
+  testing::StrictMock<MockBlimpContentsObserver> observer1(&blimp_contents);
+  testing::StrictMock<MockBlimpContentsObserver> observer2(&blimp_contents);
 
   EXPECT_CALL(observer1, OnNavigationStateChanged());
   EXPECT_CALL(observer2, OnNavigationStateChanged()).Times(2);

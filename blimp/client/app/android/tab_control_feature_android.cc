@@ -5,7 +5,7 @@
 #include "blimp/client/app/android/tab_control_feature_android.h"
 
 #include "blimp/client/app/android/blimp_client_session_android.h"
-#include "blimp/client/feature/tab_control_feature.h"
+#include "blimp/client/core/contents/tab_control_feature.h"
 #include "jni/TabControlFeature_jni.h"
 #include "ui/gfx/geometry/size.h"
 

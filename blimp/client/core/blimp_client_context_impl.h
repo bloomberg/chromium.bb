@@ -22,6 +22,8 @@
 namespace blimp {
 namespace client {
 
+class BlimpContentsManager;
+
 // BlimpClientContextImpl is the implementation of the main context-class for
 // the blimp client.
 class BlimpClientContextImpl : public BlimpClientContext,
@@ -51,6 +53,8 @@ class BlimpClientContextImpl : public BlimpClientContext,
   // Collects details of network, such as number of commits and bytes
   // transferred over network. Owned by ClientNetworkComponents.
   BlimpConnectionStatistics* blimp_connection_statistics_;
+
+  std::unique_ptr<BlimpContentsManager> blimp_contents_manager_;
 
   // Container struct for network components.
   // Must be deleted on the IO thread.

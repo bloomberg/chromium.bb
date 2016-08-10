@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/tab_control_feature.h"
+#include "blimp/client/core/contents/tab_control_feature.h"
 
 #include <memory>
 

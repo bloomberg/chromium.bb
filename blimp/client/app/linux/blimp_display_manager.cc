@@ -4,8 +4,8 @@
 
 #include "blimp/client/app/linux/blimp_display_manager.h"
 
+#include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/feature/render_widget_feature.h"
-#include "blimp/client/feature/tab_control_feature.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/platform_window/platform_window.h"

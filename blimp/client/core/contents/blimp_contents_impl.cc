@@ -22,10 +22,12 @@ const char kBlimpContentsImplAndroidKey[] = "blimp_contents_impl_android";
 #endif  // OS_ANDROID
 }
 
-BlimpContentsImpl::BlimpContentsImpl()
-    : navigation_controller_(this, nullptr) {}
+BlimpContentsImpl::BlimpContentsImpl(int id)
+    : navigation_controller_(this, nullptr), id_(id) {}
 
-BlimpContentsImpl::~BlimpContentsImpl() {}
+BlimpContentsImpl::~BlimpContentsImpl() {
+  FOR_EACH_OBSERVER(BlimpContentsObserver, observers_, BlimpContentsDying());
+}
 
 #if defined(OS_ANDROID)
 
@@ -57,6 +59,10 @@ void BlimpContentsImpl::AddObserver(BlimpContentsObserver* observer) {
 
 void BlimpContentsImpl::RemoveObserver(BlimpContentsObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool BlimpContentsImpl::HasObserver(BlimpContentsObserver* observer) {
+  return observers_.HasObserver(observer);
 }
 
 void BlimpContentsImpl::OnNavigationStateChanged() {
