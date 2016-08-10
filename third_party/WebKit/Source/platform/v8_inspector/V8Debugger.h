@@ -85,6 +85,9 @@ public:
     void asyncTaskFinished(void* task);
     void allAsyncTasksCanceled();
 
+    void muteScriptParsedEvents();
+    void unmuteScriptParsedEvents();
+
 private:
     void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
@@ -112,6 +115,7 @@ private:
     v8::Local<v8::Object> m_executionState;
     v8::Local<v8::Context> m_pausedContext;
     bool m_runningNestedMessageLoop;
+    int m_ignoreScriptParsedEventsCounter;
 
     using AsyncTaskToStackTrace = protocol::HashMap<void*, std::unique_ptr<V8StackTraceImpl>>;
     AsyncTaskToStackTrace m_asyncTaskStacks;

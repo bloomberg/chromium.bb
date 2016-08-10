@@ -1,4 +1,6 @@
-{
+Compiling script: foo1.js
+         persist: false
+compilation result: {
     exceptionDetails : {
         columnNumber : 2
         lineNumber : 1
@@ -6,12 +8,22 @@
         text : Uncaught SyntaxError: Unexpected end of input
     }
 }
-{
+-----
+Compiling script: foo2.js
+         persist: true
+Debugger.scriptParsed: foo2.js
+compilation result: {
     scriptId : 0
 }
-{
+-----
+Compiling script: foo3.js
+         persist: false
+compilation result: {
 }
-{
+-----
+Compiling script: foo4.js
+         persist: false
+compilation result: {
     exceptionDetails : {
         columnNumber : 13
         lineNumber : 0
@@ -19,4 +31,5 @@
         text : Uncaught SyntaxError: Unexpected identifier
     }
 }
+-----
 

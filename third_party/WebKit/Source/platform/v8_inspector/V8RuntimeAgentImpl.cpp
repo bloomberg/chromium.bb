@@ -37,6 +37,7 @@
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8ConsoleMessage.h"
 #include "platform/v8_inspector/V8Debugger.h"
+#include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
@@ -503,7 +504,11 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
     if (!scope.initialize())
         return;
 
+    if (!persistScript)
+        m_inspector->debugger()->muteScriptParsedEvents();
     v8::Local<v8::Script> script = m_inspector->compileScript(scope.context(), toV8String(m_inspector->isolate(), expression), sourceURL, false);
+    if (!persistScript)
+        m_inspector->debugger()->unmuteScriptParsedEvents();
     if (script.IsEmpty()) {
         v8::Local<v8::Message> message = scope.tryCatch().Message();
         if (!message.IsEmpty())

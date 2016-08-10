@@ -48,6 +48,7 @@ V8Debugger::V8Debugger(v8::Isolate* isolate, V8InspectorImpl* inspector)
     , m_enableCount(0)
     , m_breakpointsActivated(true)
     , m_runningNestedMessageLoop(false)
+    , m_ignoreScriptParsedEventsCounter(0)
     , m_maxAsyncCallStackDepth(0)
 {
 }
@@ -504,7 +505,7 @@ void V8Debugger::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)
     V8DebuggerAgentImpl* agent = m_inspector->enabledDebuggerAgentForGroup(getGroupId(eventContext));
     if (agent) {
         v8::HandleScope scope(m_isolate);
-        if (event == v8::AfterCompile || event == v8::CompileError) {
+        if (m_ignoreScriptParsedEventsCounter == 0 && (event == v8::AfterCompile || event == v8::CompileError)) {
             v8::Context::Scope contextScope(debuggerContext());
             v8::Local<v8::Value> argv[] = { eventDetails.GetEventData() };
             v8::Local<v8::Value> value = callDebuggerMethod("getAfterCompileScript", 1, argv).ToLocalChecked();
@@ -804,6 +805,17 @@ void V8Debugger::allAsyncTasksCanceled()
     m_recurringTasks.clear();
     m_currentStacks.clear();
     m_currentTasks.clear();
+}
+
+void V8Debugger::muteScriptParsedEvents()
+{
+    ++m_ignoreScriptParsedEventsCounter;
+}
+
+void V8Debugger::unmuteScriptParsedEvents()
+{
+    --m_ignoreScriptParsedEventsCounter;
+    DCHECK_GE(m_ignoreScriptParsedEventsCounter, 0);
 }
 
 std::unique_ptr<V8StackTraceImpl> V8Debugger::captureStackTrace(bool fullStack)
