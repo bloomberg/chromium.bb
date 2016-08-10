@@ -85,8 +85,7 @@ static const EffectNode* ContentsTargetEffectNode(
                                      : effect_tree.Node(effect_node->target_id);
 }
 
-template <typename LayerType>
-bool ComputeClipRectInTargetSpace(const LayerType* layer,
+bool ComputeClipRectInTargetSpace(const LayerImpl* layer,
                                   const ClipNode* clip_node,
                                   const PropertyTrees* property_trees,
                                   int target_node_id,
@@ -352,16 +351,6 @@ void CalculateClipRects(
   }
 }
 
-bool GetLayerClipRect(const scoped_refptr<Layer> layer,
-                      const ClipNode* clip_node,
-                      const PropertyTrees* property_trees,
-                      int target_node_id,
-                      gfx::RectF* clip_rect_in_target_space) {
-  return ComputeClipRectInTargetSpace(layer.get(), clip_node, property_trees,
-                                      target_node_id,
-                                      clip_rect_in_target_space);
-}
-
 bool GetLayerClipRect(const LayerImpl* layer,
                       const ClipNode* clip_node,
                       const PropertyTrees* property_trees,
@@ -373,11 +362,9 @@ bool GetLayerClipRect(const LayerImpl* layer,
       ->ancestors_are_invertible;
 }
 
-template <typename LayerType>
-void CalculateVisibleRects(
-    const typename LayerType::LayerListType& visible_layer_list,
-    const PropertyTrees* property_trees,
-    bool non_root_surfaces_enabled) {
+void CalculateVisibleRects(const LayerImplList& visible_layer_list,
+                           const PropertyTrees* property_trees,
+                           bool non_root_surfaces_enabled) {
   const EffectTree& effect_tree = property_trees->effect_tree;
   const TransformTree& transform_tree = property_trees->transform_tree;
   const ClipTree& clip_tree = property_trees->clip_tree;
@@ -565,6 +552,22 @@ static int TransformTreeIndexForBackfaceVisibility(LayerType* layer,
   return layer->id() == node->owner_id ? tree.parent(node)->id : node->id;
 }
 
+static bool IsTargetSpaceTransformBackFaceVisible(Layer* layer,
+                                                  int transform_tree_index,
+                                                  const TransformTree& tree) {
+  // We do not skip back face invisible layers on main thread as target space
+  // transform will not be available here.
+  return false;
+}
+
+static bool IsTargetSpaceTransformBackFaceVisible(LayerImpl* layer,
+                                                  int transform_tree_index,
+                                                  const TransformTree& tree) {
+  return tree
+      .ToTarget(transform_tree_index, layer->render_target_effect_tree_index())
+      .IsBackFaceVisible();
+}
+
 template <typename LayerType>
 static bool IsLayerBackFaceVisible(LayerType* layer,
                                    int transform_tree_index,
@@ -572,9 +575,8 @@ static bool IsLayerBackFaceVisible(LayerType* layer,
   const TransformNode* node = tree.Node(transform_tree_index);
   return layer->use_local_transform_for_backface_visibility()
              ? node->local.IsBackFaceVisible()
-             : tree.ToTarget(transform_tree_index,
-                             layer->render_target_effect_tree_index())
-                   .IsBackFaceVisible();
+             : IsTargetSpaceTransformBackFaceVisible(
+                   layer, transform_tree_index, tree);
 }
 
 static inline bool TransformToScreenIsKnown(Layer* layer,
@@ -1101,8 +1103,8 @@ static void ComputeVisibleRectsInternal(
                             property_trees->effect_tree, visible_layer_list);
   CalculateClipRects<LayerImpl>(*visible_layer_list, property_trees,
                                 can_render_to_separate_surface);
-  CalculateVisibleRects<LayerImpl>(*visible_layer_list, property_trees,
-                                   can_render_to_separate_surface);
+  CalculateVisibleRects(*visible_layer_list, property_trees,
+                        can_render_to_separate_surface);
 }
 
 void UpdatePropertyTrees(PropertyTrees* property_trees,
@@ -1121,13 +1123,6 @@ void UpdatePropertyTrees(PropertyTrees* property_trees,
   // computing effects. So, ComputeEffects should be before ComputeClips.
   ComputeEffects(&property_trees->effect_tree);
   ComputeClips(property_trees, can_render_to_separate_surface);
-}
-
-void ComputeVisibleRectsForTesting(PropertyTrees* property_trees,
-                                   bool can_render_to_separate_surface,
-                                   LayerList* update_layer_list) {
-  CalculateVisibleRects<Layer>(*update_layer_list, property_trees,
-                               can_render_to_separate_surface);
 }
 
 void BuildPropertyTreesAndComputeVisibleRects(

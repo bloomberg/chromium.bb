@@ -169,6 +169,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
                                    page_scale_application_layer);
   }
 
+  const LayerList* GetUpdateLayerList() { return &update_layer_list_; }
+
   void ExecuteCalculateDrawPropertiesWithPropertyTrees(Layer* root_layer) {
     DCHECK(root_layer->layer_tree_host());
     PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
@@ -203,8 +205,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     draw_property_utils::FindLayersThatNeedUpdates(
         root_layer->layer_tree_host(), property_trees->transform_tree,
         property_trees->effect_tree, &update_layer_list_);
-    draw_property_utils::ComputeVisibleRectsForTesting(
-        property_trees, can_render_to_separate_surface, &update_layer_list_);
   }
 
   void ExecuteCalculateDrawPropertiesWithPropertyTrees(LayerImpl* root_layer) {
@@ -279,6 +279,12 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     return update_layer_list_impl_.get();
   }
   const LayerList& update_layer_list() const { return update_layer_list_; }
+
+  bool VerifyLayerInList(scoped_refptr<Layer> layer,
+                         const LayerList* layer_list) {
+    return std::find(layer_list->begin(), layer_list->end(), layer) !=
+           layer_list->end();
+  }
 
  private:
   std::unique_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
@@ -7884,45 +7890,47 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByBoundsDeltaGetUpdated) {
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> animated =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  host_impl()->CreatePendingTree();
+  std::unique_ptr<LayerImpl> pending_root =
+      LayerImpl::Create(host_impl()->pending_tree(), 1);
+  LayerImpl* root = pending_root.get();
+  host_impl()->pending_tree()->SetRootLayerForTesting(std::move(pending_root));
+  std::unique_ptr<LayerImpl> animated_ptr =
+      LayerImpl::Create(host_impl()->pending_tree(), 2);
+  LayerImpl* animated = animated_ptr.get();
+  root->test_properties()->AddChild(std::move(animated_ptr));
 
-  root->AddChild(animated);
-  host()->SetRootLayer(root);
-  host()->SetElementIdsForTesting();
+  animated->SetDrawsContent(true);
+  host_impl()->pending_tree()->SetElementIdsForTesting();
 
   root->SetBounds(gfx::Size(100, 100));
   root->SetMasksToBounds(true);
-  root->SetForceRenderSurfaceForTesting(true);
-  animated->SetOpacity(0.f);
+  root->test_properties()->force_render_surface = true;
+  animated->test_properties()->opacity = 0.f;
   animated->SetBounds(gfx::Size(20, 20));
 
-  AddOpacityTransitionToElementWithPlayer(animated->element_id(), timeline(),
-                                          10.0, 0.f, 1.f, false);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  AddOpacityTransitionToElementWithPlayer(
+      animated->element_id(), timeline_impl(), 10.0, 0.f, 1.f, false);
+  animated->test_properties()->opacity_can_animate = true;
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
 
-  EXPECT_FALSE(animated->visible_layer_rect_for_testing().IsEmpty());
+  EXPECT_FALSE(animated->visible_layer_rect().IsEmpty());
 }
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleContentRectForAnimatedLayerWithSingularTransform) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> clip = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> animated =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> descendant_of_animation =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* clip = AddChild<LayerImpl>(root);
+  LayerImpl* animated = AddChild<LayerImpl>(clip);
+  LayerImpl* surface = AddChild<LayerImpl>(animated);
+  LayerImpl* descendant_of_animation = AddChild<LayerImpl>(surface);
 
-  root->AddChild(clip);
-  clip->AddChild(animated);
-  animated->AddChild(surface);
-  surface->AddChild(descendant_of_animation);
+  SetElementIdsForTesting();
 
-  host()->SetRootLayer(root);
-  host()->SetElementIdsForTesting();
+  animated->SetDrawsContent(true);
+  surface->SetDrawsContent(true);
+  descendant_of_animation->SetDrawsContent(true);
 
   gfx::Transform uninvertible_matrix;
   uninvertible_matrix.Scale3d(6.f, 6.f, 0.f);
@@ -7933,44 +7941,41 @@ TEST_F(LayerTreeHostCommonTest,
   animated->SetTransform(uninvertible_matrix);
   animated->SetBounds(gfx::Size(120, 120));
   surface->SetBounds(gfx::Size(100, 100));
-  surface->SetForceRenderSurfaceForTesting(true);
+  surface->test_properties()->force_render_surface = true;
   descendant_of_animation->SetBounds(gfx::Size(200, 200));
 
   TransformOperations start_transform_operations;
   start_transform_operations.AppendMatrix(uninvertible_matrix);
   TransformOperations end_transform_operations;
 
-  SetElementIdsForTesting();
-  AddAnimatedTransformToElementWithPlayer(animated->element_id(), timeline(),
-                                          10.0, start_transform_operations,
-                                          end_transform_operations);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  AddAnimatedTransformToElementWithPlayer(
+      animated->element_id(), timeline_impl(), 10.0, start_transform_operations,
+      end_transform_operations);
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
 
   // The animated layer has a singular transform and maps to a non-empty rect in
   // clipped target space, so is treated as fully visible.
-  EXPECT_EQ(gfx::Rect(120, 120), animated->visible_layer_rect_for_testing());
+  EXPECT_EQ(gfx::Rect(120, 120), animated->visible_layer_rect());
 
   // The singular transform on |animated| is flattened when inherited by
   // |surface|, and this happens to make it invertible.
-  EXPECT_EQ(gfx::Rect(2, 2), surface->visible_layer_rect_for_testing());
-  EXPECT_EQ(gfx::Rect(2, 2),
-            descendant_of_animation->visible_layer_rect_for_testing());
+  EXPECT_EQ(gfx::Rect(2, 2), surface->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(2, 2), descendant_of_animation->visible_layer_rect());
 
   gfx::Transform zero_matrix;
   zero_matrix.Scale3d(0.f, 0.f, 0.f);
-  animated->SetTransform(zero_matrix);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  animated->OnTransformAnimated(zero_matrix);
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
 
   // The animated layer maps to the empty rect in clipped target space, so is
   // treated as having an empty visible rect.
-  EXPECT_EQ(gfx::Rect(), animated->visible_layer_rect_for_testing());
+  EXPECT_EQ(gfx::Rect(), animated->visible_layer_rect());
 
   // This time, flattening does not make |animated|'s transform invertible. This
   // means the clip cannot be projected into |surface|'s space, so we treat
   // |surface| and layers that draw into it as having empty visible rect.
-  EXPECT_EQ(gfx::Rect(), surface->visible_layer_rect_for_testing());
-  EXPECT_EQ(gfx::Rect(),
-            descendant_of_animation->visible_layer_rect_for_testing());
+  EXPECT_EQ(gfx::Rect(), surface->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(), descendant_of_animation->visible_layer_rect());
 }
 
 // Verify that having animated opacity but current opacity 1 still creates
@@ -8322,24 +8327,26 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
 
   // Check the non-skipped case.
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_layer_rect_for_testing());
+  const LayerList* update_list = GetUpdateLayerList();
+  EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 
   // Now we will reset the visible rect from property trees for the grandchild,
   // and we will configure |child| in several ways that should force the subtree
   // to be skipped. The visible content rect for |grandchild| should, therefore,
   // remain empty.
-  grandchild->set_visible_layer_rect(gfx::Rect());
   gfx::Transform singular;
   singular.matrix().set(0, 0, 0);
 
   child->SetTransform(singular);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_layer_rect_for_testing());
+  update_list = GetUpdateLayerList();
+  EXPECT_FALSE(VerifyLayerInList(grandchild, update_list));
   child->SetTransform(gfx::Transform());
 
   child->SetHideLayerAndSubtree(true);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_layer_rect_for_testing());
+  update_list = GetUpdateLayerList();
+  EXPECT_FALSE(VerifyLayerInList(grandchild, update_list));
   child->SetHideLayerAndSubtree(false);
 
   gfx::Transform zero_z_scale;
@@ -8357,15 +8364,16 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   AddAnimationToElementWithPlayer(child->element_id(), timeline(),
                                   std::move(animation));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_layer_rect_for_testing());
-  grandchild->set_visible_layer_rect(gfx::Rect());
+  update_list = GetUpdateLayerList();
+  EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 
   RemoveAnimationFromElementWithExistingPlayer(child->element_id(), timeline(),
                                                animation_id);
   child->SetTransform(gfx::Transform());
   child->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_layer_rect_for_testing());
+  update_list = GetUpdateLayerList();
+  EXPECT_FALSE(VerifyLayerInList(grandchild, update_list));
 
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
@@ -8373,8 +8381,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   grandchild->RequestCopyOfOutput(
       CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_layer_rect_for_testing());
-  greatgrandchild->set_visible_layer_rect(gfx::Rect());
+  update_list = GetUpdateLayerList();
+  EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 
   // Add an opacity animation with a start delay.
   animation_id = 1;
@@ -8386,7 +8394,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   AddAnimationToElementWithExistingPlayer(child->element_id(), timeline(),
                                           std::move(animation));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_layer_rect_for_testing());
+  update_list = GetUpdateLayerList();
+  EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 }
 
 TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
