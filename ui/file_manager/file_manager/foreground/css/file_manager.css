@@ -1087,20 +1087,27 @@ body.check-select .breadcrumbs {
 
 /* A single directory name in the list of path breadcrumbs. */
 .breadcrumbs .breadcrumb-path {
-  -webkit-margin-end: 0;  /* An arrow is used as a spacer instead. */
   box-sizing: border-box;
   cursor: pointer;
   flex: none;
   font-size: 14px;
   font-weight: 500;
+  margin: 0;
   min-width: 0;
   padding: 0 9px;
   text-transform: none;
   white-space: nowrap;
 }
 
-.breadcrumbs .breadcrumb-path:not(:first-child) {
-  -webkit-margin-start: 0;  /* An arrow is used as a spacer instead. */
+.breadcrumbs .breadcrumb-path:first-child {
+  /* -webkit-margin-start isn't proper
+     because folder names should be ltr even in RTL languages. */
+  margin-left: 8px;
+}
+
+html[dir='rtl'] .breadcrumbs .breadcrumb-path:first-child {
+  margin-left: 0;
+  margin-right: 8px;
 }
 
 .breadcrumbs .breadcrumb-path:active {
