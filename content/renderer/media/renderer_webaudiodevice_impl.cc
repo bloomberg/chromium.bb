@@ -39,6 +39,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     const url::Origin& security_origin)
     : params_(params),
       client_callback_(callback),
+      sink_is_running_(static_cast<base::AtomicRefCount>(0)),
       session_id_(session_id),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       null_audio_sink_(new media::NullAudioSink(task_runner_)),
@@ -76,6 +77,13 @@ void RendererWebAudioDeviceImpl::start() {
       render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE,
       session_id_, std::string(), security_origin_);
   sink_->Initialize(params_, this);
+  // TODO(miu): Remove this temporary instrumentation to root-cause a memory
+  // use-after-free issue. http://crbug.com/619463
+  {
+    CHECK(base::AtomicRefCountIsZero(&sink_is_running_))
+        << "Illegal state: sink_is_running_ should be 0.";
+    base::AtomicRefCountInc(&sink_is_running_);
+  }
   sink_->Start();
   sink_->Play();
   start_null_audio_sink_callback_.Reset(
@@ -88,6 +96,10 @@ void RendererWebAudioDeviceImpl::stop() {
 
   if (sink_) {
     sink_->Stop();
+    // TODO(miu): Remove this temporary instrumentation to root-cause a memory
+    // use-after-free issue. http://crbug.com/619463
+    CHECK(!base::AtomicRefCountDec(&sink_is_running_))
+        << "Illegal state: sink_is_running_ should have been 1.";
     sink_ = NULL;
   }
   null_audio_sink_->Stop();
@@ -103,6 +115,11 @@ double RendererWebAudioDeviceImpl::sampleRate() {
 int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
                                        uint32_t frames_delayed,
                                        uint32_t frames_skipped) {
+  // TODO(miu): Remove this temporary instrumentation to root-cause a memory
+  // use-after-free issue. http://crbug.com/619463
+  CHECK(base::AtomicRefCountIsOne(&sink_is_running_))
+      << "Contract violation: Render() being called after stop().";
+
 #if defined(OS_ANDROID)
   if (is_first_buffer_after_silence_) {
     DCHECK(!is_using_null_audio_sink_);
@@ -160,6 +177,12 @@ int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
     }
   }
 #endif
+
+  // TODO(miu): Remove this temporary instrumentation to root-cause a memory
+  // use-after-free issue. http://crbug.com/619463
+  CHECK(base::AtomicRefCountIsOne(&sink_is_running_))
+      << "Race condition: stop() was called during Render() operation.";
+
   return dest->frames();
 }
 

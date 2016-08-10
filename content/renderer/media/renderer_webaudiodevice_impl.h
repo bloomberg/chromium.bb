@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/atomic_ref_count.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -61,6 +62,10 @@ class RendererWebAudioDeviceImpl
 
   // When non-NULL, we are started.  When NULL, we are stopped.
   scoped_refptr<media::AudioRendererSink> sink_;
+
+  // TODO(miu): Remove this temporary instrumentation to root-cause a memory
+  // use-after-free issue. http://crbug.com/619463
+  base::AtomicRefCount sink_is_running_;
 
   // ID to allow browser to select the correct input device for unified IO.
   int session_id_;
