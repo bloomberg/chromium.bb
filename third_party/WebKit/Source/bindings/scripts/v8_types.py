@@ -870,7 +870,7 @@ CPP_VALUE_TO_V8_VALUE = {
         '{isolate}, impl->getExecutionContext()) : ' +
         'v8::Null({isolate}).As<v8::Value>()'),
     'ScriptValue': '{cpp_value}.v8Value()',
-    'SerializedScriptValue': '{cpp_value} ? {cpp_value}->deserialize() : v8::Local<v8::Value>(v8::Null({isolate}))',
+    'SerializedScriptValue': 'v8Deserialize({isolate}, {cpp_value})',
     # General
     'array': 'toV8({cpp_value}, {creation_context}, {isolate})',
     'FrozenArray': 'freezeV8Object(toV8({cpp_value}, {creation_context}, {isolate}), {isolate})',

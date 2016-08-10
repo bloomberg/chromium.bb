@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
 
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 
 namespace blink {
@@ -16,6 +17,13 @@ void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::Pr
     if (!perContextData)
         return;
     v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
+}
+
+v8::Local<v8::Value> v8Deserialize(v8::Isolate* isolate, PassRefPtr<SerializedScriptValue> value)
+{
+    if (value)
+        return value->deserialize();
+    return v8::Null(isolate);
 }
 
 } // namespace blink

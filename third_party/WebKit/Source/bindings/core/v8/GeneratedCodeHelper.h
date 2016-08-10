@@ -12,11 +12,16 @@
 #define GeneratedCodeHelper_h
 
 #include "core/CoreExport.h"
+#include "wtf/PassRefPtr.h"
 #include <v8.h>
 
 namespace blink {
 
+class SerializedScriptValue;
+
 CORE_EXPORT void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);
+
+CORE_EXPORT v8::Local<v8::Value> v8Deserialize(v8::Isolate*, PassRefPtr<SerializedScriptValue>);
 
 } // namespace blink
 
