@@ -300,7 +300,7 @@ class TestWebGraphicsContext3D {
 
   size_t NumUsedTextures() const { return used_textures_.size(); }
   bool UsedTexture(int texture) const {
-    return ContainsKey(used_textures_, texture);
+    return base::ContainsKey(used_textures_, texture);
   }
   void ResetUsedTextures() { used_textures_.clear(); }
 
