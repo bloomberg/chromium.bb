@@ -60,7 +60,7 @@ function push(array, var_args)
  */
 function toString(obj)
 {
-    // We don't use String(obj) because String16 could be overridden.
+    // We don't use String(obj) because String could be overridden.
     // Also the ("" + obj) expression may throw.
     try {
         return "" + obj;
@@ -171,7 +171,8 @@ function doesAttributeHaveObservableSideEffectOnGet(object, attribute)
 {
     for (var interfaceName in domAttributesWithObservableSideEffectOnGet) {
         var interfaceFunction = inspectedGlobalObject[interfaceName];
-        var isInstance = typeof interfaceFunction === "function" && object instanceof interfaceFunction;
+        // instanceof call looks safe after typeof check.
+        var isInstance = typeof interfaceFunction === "function" && /* suppressBlacklist */ object instanceof interfaceFunction;
         if (isInstance)
             return attribute in domAttributesWithObservableSideEffectOnGet[interfaceName];
     }
@@ -198,18 +199,17 @@ InjectedScript.primitiveTypes = {
 }
 
 /**
- * @type {!Map<string, string>}
+ * @type {!Object<string, string>}
  * @const
  */
-InjectedScript.closureTypes = new Map([
-    ["local", "Local"],
-    ["closure", "Closure"],
-    ["catch", "Catch"],
-    ["block", "Block"],
-    ["script", "Script"],
-    ["with", "With Block"],
-    ["global", "Global"]
-]);
+InjectedScript.closureTypes = { __proto__: null };
+InjectedScript.closureTypes["local"] = "Local";
+InjectedScript.closureTypes["closure"] = "Closure";
+InjectedScript.closureTypes["catch"] = "Catch";
+InjectedScript.closureTypes["block"] = "Block";
+InjectedScript.closureTypes["script"] = "Script";
+InjectedScript.closureTypes["with"] = "With Block";
+InjectedScript.closureTypes["global"] = "Global";
 
 InjectedScript.prototype = {
     /**
@@ -637,7 +637,8 @@ InjectedScript.prototype = {
 
         if (isSymbol(obj)) {
             try {
-                return obj.toString() || "Symbol";
+                // It isn't safe, because Symbol.prototype.toString can be overriden.
+                return /* suppressBlacklist */ obj.toString() || "Symbol";
             } catch (e) {
                 return "Symbol";
             }
@@ -668,7 +669,7 @@ InjectedScript.prototype = {
             return "Scopes[" + obj.length + "]";
 
         if (subtype === "internal#scope")
-            return (InjectedScript.closureTypes.get(obj.type) || "Unknown") + (obj.name ? " (" + obj.name + ")" : "");
+            return (InjectedScript.closureTypes[obj.type] || "Unknown") + (obj.name ? " (" + obj.name + ")" : "");
 
         return className;
     },
@@ -793,7 +794,8 @@ InjectedScript.RemoteObject.prototype = {
          */
         function logError(error)
         {
-            Promise.resolve().then(inspectedGlobalObject.console.error.bind(inspectedGlobalObject.console, "Custom Formatter Failed: " + error.message));
+            // We use user code to generate custom output for object, we can use user code for reporting error too.
+            Promise.resolve().then(/* suppressBlacklist */ inspectedGlobalObject.console.error.bind(inspectedGlobalObject.console, "Custom Formatter Failed: " + error.message));
         }
 
         /**
