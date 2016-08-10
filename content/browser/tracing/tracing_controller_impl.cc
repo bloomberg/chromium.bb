@@ -340,7 +340,8 @@ void TracingControllerImpl::OnAllTracingAgentsStarted() {
 }
 
 void TracingControllerImpl::AddMetadata(const base::DictionaryValue& data) {
-  metadata_->MergeDictionary(&data);
+  if (metadata_)
+    metadata_->MergeDictionary(&data);
 }
 
 bool TracingControllerImpl::StopTracing(
