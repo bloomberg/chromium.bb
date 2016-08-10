@@ -46,6 +46,8 @@ VALID_MSVS_GUID_CHARS = re.compile(r'^[A-F0-9\-]+$')
 
 
 generator_default_variables = {
+    'DRIVER_PREFIX': '',
+    'DRIVER_SUFFIX': '.sys',
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '.exe',
     'STATIC_LIB_PREFIX': '',
@@ -270,6 +272,10 @@ def _ToolSetOrAppend(tools, tool_name, setting, value, only_if_unset=False):
               value, setting, tool_name, str(tool[setting])))
   else:
     tool[setting] = value
+
+
+def _ConfigTargetVersion(config_data):
+  return config_data.get('msvs_target_version', 'Windows7')
 
 
 def _ConfigPlatform(config_data):
@@ -919,6 +925,8 @@ def _GetMsbuildToolsetOfProject(proj_path, spec, version):
   toolset = default_config.get('msbuild_toolset')
   if not toolset and version.DefaultToolset():
     toolset = version.DefaultToolset()
+  if spec['type'] == 'windows_driver':
+    toolset = 'WindowsKernelModeDriver10.0'
   return toolset
 
 
@@ -1102,6 +1110,7 @@ def _GetMSVSConfigurationType(spec, build_file):
         'shared_library': '2',  # .dll
         'loadable_module': '2',  # .dll
         'static_library': '4',  # .lib
+        'windows_driver': '5',  # .sys
         'none': '10',  # Utility type
         }[spec['type']]
   except KeyError:
@@ -1286,6 +1295,7 @@ def _GetOutputFilePathAndTool(spec, msbuild):
       'executable': ('VCLinkerTool', 'Link', '$(OutDir)', '.exe'),
       'shared_library': ('VCLinkerTool', 'Link', '$(OutDir)', '.dll'),
       'loadable_module': ('VCLinkerTool', 'Link', '$(OutDir)', '.dll'),
+      'windows_driver': ('VCLinkerTool', 'Link', '$(OutDir)', '.sys'),
       'static_library': ('VCLibrarianTool', 'Lib', '$(OutDir)lib\\', '.lib'),
   }
   output_file_props = output_file_map.get(spec['type'])
@@ -1348,7 +1358,8 @@ def _GetDisabledWarnings(config):
 
 def _GetModuleDefinition(spec):
   def_file = ''
-  if spec['type'] in ['shared_library', 'loadable_module', 'executable']:
+  if spec['type'] in ['shared_library', 'loadable_module', 'executable',
+                      'windows_driver']:
     def_files = [s for s in spec.get('sources', []) if s.endswith('.def')]
     if len(def_files) == 1:
       def_file = _FixPath(def_files[0])
@@ -2710,14 +2721,20 @@ def _GetMSBuildGlobalProperties(spec, guid, gyp_file_name):
 
   return properties
 
+
 def _GetMSBuildConfigurationDetails(spec, build_file):
   properties = {}
   for name, settings in spec['configurations'].iteritems():
     msbuild_attributes = _GetMSBuildAttributes(spec, settings, build_file)
     condition = _GetConfigurationCondition(name, settings)
     character_set = msbuild_attributes.get('CharacterSet')
+    config_type = msbuild_attributes.get('ConfigurationType')
     _AddConditionalProperty(properties, condition, 'ConfigurationType',
-                            msbuild_attributes['ConfigurationType'])
+                            config_type)
+    if config_type == 'Driver':
+      _AddConditionalProperty(properties, condition, 'DriverType', 'WDM')
+      _AddConditionalProperty(properties, condition, 'TargetVersion',
+                              _ConfigTargetVersion(settings))
     if character_set:
       if 'msvs_enable_winrt' not in spec :
         _AddConditionalProperty(properties, condition, 'CharacterSet',
@@ -2816,6 +2833,7 @@ def _ConvertMSVSConfigurationType(config_type):
         '1': 'Application',
         '2': 'DynamicLibrary',
         '4': 'StaticLibrary',
+        '5': 'Driver',
         '10': 'Utility'
     }[config_type]
   return config_type
@@ -2855,6 +2873,7 @@ def _GetMSBuildAttributes(spec, config, build_file):
       'executable': 'Link',
       'shared_library': 'Link',
       'loadable_module': 'Link',
+      'windows_driver': 'Link',
       'static_library': 'Lib',
   }
   msbuild_tool = msbuild_tool_map.get(spec['type'])
