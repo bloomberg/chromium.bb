@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (c) 2013, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,54 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/DocumentAnimations.h"
-
-#include "core/animation/AnimationClock.h"
-#include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentTimeline.h"
+
+#include "core/animation/KeyframeEffect.h"
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
+#include "core/testing/DummyPageHolder.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 
 namespace blink {
 
-namespace {
-
-void updateAnimationTiming(Document& document, TimingUpdateReason reason)
-{
-    document.timeline().serviceAnimations(reason);
-}
-
-} // namespace
-
-void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document)
-{
-    updateAnimationTiming(document, TimingUpdateForAnimationFrame);
-}
-
-bool DocumentAnimations::needsAnimationTimingUpdate(const Document& document)
-{
-    return document.timeline().hasOutdatedAnimation() || document.timeline().needsAnimationTimingUpdate();
-}
-
-void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document)
-{
-    if (needsAnimationTimingUpdate(document))
-        updateAnimationTiming(document, TimingUpdateOnDemand);
-}
-
-void DocumentAnimations::updateCompositorAnimations(Document& document)
-{
-    ASSERT(document.lifecycle().state() == DocumentLifecycle::CompositingClean);
-    if (document.compositorPendingAnimations().update()) {
-        ASSERT(document.view());
-        document.view()->scheduleAnimation();
+class AnimationDocumentTimelineTest : public ::testing::Test {
+protected:
+    virtual void SetUp()
+    {
+        pageHolder = DummyPageHolder::create();
+        document = &pageHolder->document();
     }
 
-    document.timeline().scheduleNextService();
+    virtual void TearDown()
+    {
+        document.release();
+        ThreadHeap::collectAllGarbage();
+    }
+
+    std::unique_ptr<DummyPageHolder> pageHolder;
+    Persistent<Document> document;
+    Persistent<DocumentTimeline> timeline;
+    Timing timing;
+};
+
+TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
+{
+    timing.iterationDuration = 2;
+    timing.startDelay = 5;
+
+    timeline = &document->timeline();
+    document = nullptr;
+
+    KeyframeEffect* keyframeEffect = KeyframeEffect::create(0, nullptr, timing);
+    // Test passes if this does not crash.
+    timeline->play(keyframeEffect);
 }
 
 } // namespace blink

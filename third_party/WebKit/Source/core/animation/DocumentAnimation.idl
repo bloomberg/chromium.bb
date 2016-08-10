@@ -7,6 +7,5 @@
 [
     RuntimeEnabled=WebAnimationsAPI,
 ] partial interface Document {
-    // TODO(dstockwell): This should be a DocumentTimeline.
-    readonly attribute AnimationTimeline timeline;
+    readonly attribute DocumentTimeline timeline;
 };

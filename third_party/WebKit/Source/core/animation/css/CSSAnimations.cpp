@@ -32,8 +32,8 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimations.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/InertEffect.h"
 #include "core/animation/Interpolation.h"

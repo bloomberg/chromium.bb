@@ -37,7 +37,7 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
-#include "core/animation/AnimationTimeline.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"

@@ -1,12 +1,12 @@
 This is a testharness.js-based test.
 PASS Web Animations API: DocumentTimeline tests 
-FAIL DocumentTimeline interface: existence and properties of interface object assert_own_property: self does not have own property "DocumentTimeline" expected property "DocumentTimeline" missing
-FAIL DocumentTimeline interface object length assert_own_property: self does not have own property "DocumentTimeline" expected property "DocumentTimeline" missing
-FAIL DocumentTimeline interface object name assert_own_property: self does not have own property "DocumentTimeline" expected property "DocumentTimeline" missing
-FAIL DocumentTimeline interface: existence and properties of interface prototype object assert_own_property: self does not have own property "DocumentTimeline" expected property "DocumentTimeline" missing
-FAIL DocumentTimeline interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "DocumentTimeline" expected property "DocumentTimeline" missing
-FAIL DocumentTimeline must be primary interface of document.timeline assert_own_property: self does not have own property "DocumentTimeline" expected property "DocumentTimeline" missing
-FAIL Stringification of document.timeline assert_equals: class string of document.timeline expected "[object DocumentTimeline]" but got "[object AnimationTimeline]"
+PASS DocumentTimeline interface: existence and properties of interface object 
+FAIL DocumentTimeline interface object length assert_equals: wrong value for DocumentTimeline.length expected 1 but got 0
+PASS DocumentTimeline interface object name 
+FAIL DocumentTimeline interface: existence and properties of interface prototype object assert_equals: class string of DocumentTimeline.prototype expected "[object DocumentTimelinePrototype]" but got "[object DocumentTimeline]"
+PASS DocumentTimeline interface: existence and properties of interface prototype object's "constructor" property 
+PASS DocumentTimeline must be primary interface of document.timeline 
+PASS Stringification of document.timeline 
 PASS AnimationTimeline interface: document.timeline must inherit property "currentTime" with the proper type (0) 
 Harness: the test ran to completion.
 

@@ -45,9 +45,9 @@
 #include "core/SVGNames.h"
 #include "core/XMLNSNames.h"
 #include "core/XMLNames.h"
-#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentAnimations.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
@@ -446,7 +446,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_taskRunner(MainThreadTaskRunner::create(this))
     , m_registrationContext(initializer.registrationContext(this))
     , m_elementDataCacheClearTimer(this, &Document::elementDataCacheClearTimerFired)
-    , m_timeline(AnimationTimeline::create(this))
+    , m_timeline(DocumentTimeline::create(this))
     , m_compositorPendingAnimations(new CompositorPendingAnimations())
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)

@@ -26,7 +26,7 @@
 #include "core/svg/animation/SMILTimeContainer.h"
 
 #include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationTimeline.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"

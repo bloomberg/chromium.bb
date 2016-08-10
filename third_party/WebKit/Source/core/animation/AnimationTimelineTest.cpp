@@ -339,20 +339,6 @@ TEST_F(AnimationAnimationTimelineTest, DelayBeforeAnimationStart)
     updateClockAndService(4.98);
 }
 
-TEST_F(AnimationAnimationTimelineTest, PlayAfterDocumentDeref)
-{
-    timing.iterationDuration = 2;
-    timing.startDelay = 5;
-
-    timeline = &document->timeline();
-    element = nullptr;
-    document = nullptr;
-
-    KeyframeEffect* keyframeEffect = KeyframeEffect::create(0, nullptr, timing);
-    // Test passes if this does not crash.
-    timeline->play(keyframeEffect);
-}
-
 TEST_F(AnimationAnimationTimelineTest, UseAnimationAfterTimelineDeref)
 {
     Animation* animation = timeline->play(0);

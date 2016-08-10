@@ -27,7 +27,7 @@
 
 #include "core/svg/graphics/SVGImage.h"
 
-#include "core/animation/AnimationTimeline.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/frame/Deprecation.h"

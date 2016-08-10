@@ -28,54 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/DocumentAnimations.h"
+#ifndef DocumentTimeline_h
+#define DocumentTimeline_h
 
-#include "core/animation/AnimationClock.h"
-#include "core/animation/CompositorPendingAnimations.h"
-#include "core/animation/DocumentTimeline.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
+#include "core/animation/AnimationTimeline.h"
 
 namespace blink {
 
-namespace {
+class Document;
 
-void updateAnimationTiming(Document& document, TimingUpdateReason reason)
-{
-    document.timeline().serviceAnimations(reason);
-}
-
-} // namespace
-
-void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document)
-{
-    updateAnimationTiming(document, TimingUpdateForAnimationFrame);
-}
-
-bool DocumentAnimations::needsAnimationTimingUpdate(const Document& document)
-{
-    return document.timeline().hasOutdatedAnimation() || document.timeline().needsAnimationTimingUpdate();
-}
-
-void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document)
-{
-    if (needsAnimationTimingUpdate(document))
-        updateAnimationTiming(document, TimingUpdateOnDemand);
-}
-
-void DocumentAnimations::updateCompositorAnimations(Document& document)
-{
-    ASSERT(document.lifecycle().state() == DocumentLifecycle::CompositingClean);
-    if (document.compositorPendingAnimations().update()) {
-        ASSERT(document.view());
-        document.view()->scheduleAnimation();
+class CORE_EXPORT DocumentTimeline final : public AnimationTimeline {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static DocumentTimeline* create(Document* document)
+    {
+        return new DocumentTimeline(document);
     }
 
-    document.timeline().scheduleNextService();
-}
+private:
+    DocumentTimeline(Document* document)
+        : AnimationTimeline(document, nullptr) {}
+
+    friend class AnimationDocumentTimelineTest;
+};
 
 } // namespace blink
+
+#endif

@@ -5,8 +5,8 @@
 #include "core/animation/AnimationStack.h"
 
 #include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorPendingAnimations.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/LegacyStyleInterpolation.h"
@@ -24,7 +24,7 @@ protected:
         pageHolder = DummyPageHolder::create();
         document = &pageHolder->document();
         document->animationClock().resetTimeForTesting();
-        timeline = AnimationTimeline::create(document.get());
+        timeline = DocumentTimeline::create(document.get());
         element = document->createElement("foo", ASSERT_NO_EXCEPTION);
     }
 
@@ -82,7 +82,7 @@ protected:
 
     std::unique_ptr<DummyPageHolder> pageHolder;
     Persistent<Document> document;
-    Persistent<AnimationTimeline> timeline;
+    Persistent<DocumentTimeline> timeline;
     Persistent<Element> element;
 };
 

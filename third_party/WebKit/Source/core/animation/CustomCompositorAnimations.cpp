@@ -5,7 +5,7 @@
 #include "CustomCompositorAnimations.h"
 
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationTimeline.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/animatable/AnimatableDouble.h"

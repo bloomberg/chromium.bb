@@ -25,8 +25,8 @@
 
 #include "core/layout/compositing/PaintLayerCompositor.h"
 
-#include "core/animation/AnimationTimeline.h"
 #include "core/animation/DocumentAnimations.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Fullscreen.h"

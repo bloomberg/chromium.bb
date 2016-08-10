@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL zero origin time DocumentTimeline is not defined
-FAIL positive origin time DocumentTimeline is not defined
-FAIL negative origin time DocumentTimeline is not defined
+FAIL zero origin time Illegal constructor
+FAIL positive origin time Illegal constructor
+FAIL negative origin time Illegal constructor
 Harness: the test ran to completion.
 

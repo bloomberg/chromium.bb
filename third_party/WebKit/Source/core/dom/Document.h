@@ -61,7 +61,7 @@
 namespace blink {
 
 class AnimationClock;
-class AnimationTimeline;
+class DocumentTimeline;
 class AXObjectCache;
 class Attr;
 class CDATASection;
@@ -993,7 +993,7 @@ public:
     Locale& getCachedLocale(const AtomicString& locale = nullAtom);
 
     AnimationClock& animationClock();
-    AnimationTimeline& timeline() const { return *m_timeline; }
+    DocumentTimeline& timeline() const { return *m_timeline; }
     CompositorPendingAnimations& compositorPendingAnimations() { return *m_compositorPendingAnimations; }
 
     void addToTopLayer(Element*, const Element* before = nullptr);
@@ -1385,7 +1385,7 @@ private:
     using LocaleIdentifierToLocaleMap = HashMap<AtomicString, std::unique_ptr<Locale>>;
     LocaleIdentifierToLocaleMap m_localeCache;
 
-    Member<AnimationTimeline> m_timeline;
+    Member<DocumentTimeline> m_timeline;
     Member<CompositorPendingAnimations> m_compositorPendingAnimations;
 
     Member<Document> m_templateDocument;
