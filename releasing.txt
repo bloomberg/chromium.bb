@@ -10,7 +10,20 @@ To make a release of Weston and/or Wayland, follow these steps.
       release with any needed protocol updates.
 
   2.  Update the first three lines of configure.ac to the intended
-      version, commit.  Then commit your changes:
+      version.
+
+      For Weston's x.y.0 releases, if libweston_major_version is greater than
+      weston_major_version, bump the Weston version numbers (major, minor,
+      micro) to match the libweston version numbers (major, minor, patch).
+
+      Additionally for all Weston releases, if libweston version
+      major.minor.patch is less than Weston version major.minor.micro, bump
+      libweston version numbers to match the Weston version numbers.
+
+      Weston releases are made with the Weston version number, not with the
+      libweston version number.
+
+      Then commit your changes:
 
       $ export RELEASE_NUMBER="x.y.z"
       $ export RELEASE_NAME="[alpha|beta|RC1|RC2|official|point]"
