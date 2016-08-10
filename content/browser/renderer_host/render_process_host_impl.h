@@ -366,8 +366,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::FilePath GetAecDumpFilePathWithExtensions(const base::FilePath& file);
 #endif
 
-  void DestroyConnectionFilter();
-
   static void OnMojoError(
       base::WeakPtr<RenderProcessHostImpl> process,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
