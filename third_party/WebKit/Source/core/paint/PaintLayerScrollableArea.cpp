@@ -1498,13 +1498,23 @@ static bool layerNeedsCompositedScrolling(PaintLayerScrollableArea::LCDTextMode 
     if (node && node->isElementNode() && (toElement(node)->compositorMutableProperties() & (CompositorMutableProperty::kScrollTop | CompositorMutableProperty::kScrollLeft)))
         return true;
 
-    if (mode == PaintLayerScrollableArea::ConsiderLCDText && !layer->compositor()->preferCompositingToLCDTextEnabled())
+    // TODO(schenney) The color test alone is inadequate. When https://codereview.chromium.org/2196583002 lands
+    // we should use PaintLayer::shouldPaintBackgroundOntoForeground() because we will not still get
+    // LCD text unless the conditions there are met. It also unifies logic for scrolling compositing decisions.
+    bool backgroundSupportsLCDText = RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled()
+        && !layer->layoutObject()->style()->visitedDependentColor(CSSPropertyBackgroundColor).hasAlpha();
+    if (mode == PaintLayerScrollableArea::ConsiderLCDText
+        && !layer->compositor()->preferCompositingToLCDTextEnabled()
+        && !backgroundSupportsLCDText)
         return false;
 
-    return !layer->size().isEmpty()
-        && !layer->hasDescendantWithClipPath()
-        && !layer->hasAncestorWithClipPath()
-        && !layer->layoutObject()->style()->hasBorderRadius();
+    // TODO(schenney) Tests fail if we do not also exclude layer->layoutObject()->style()->hasBorderDecoration()
+    // (missing background behind dashed borders). Resolve this case, or not, and update this check with
+    // the results.
+    return !(layer->size().isEmpty()
+        || layer->hasDescendantWithClipPath()
+        || layer->hasAncestorWithClipPath()
+        || layer->layoutObject()->style()->hasBorderRadius());
 }
 
 void PaintLayerScrollableArea::updateNeedsCompositedScrolling(LCDTextMode mode)

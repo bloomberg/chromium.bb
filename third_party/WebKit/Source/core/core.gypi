@@ -4228,6 +4228,7 @@
             'paint/PaintControllerPaintTest.h',
             'paint/PaintInfoTest.cpp',
             'paint/PaintLayerPainterTest.cpp',
+            'paint/PaintLayerScrollableAreaTest.cpp',
             'paint/PaintPropertyTreeBuilderTest.cpp',
             'paint/StubChromeClientForSPv2.h',
             'paint/SVGInlineTextBoxPainterTest.cpp',

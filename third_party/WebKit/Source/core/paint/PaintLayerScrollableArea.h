@@ -472,7 +472,6 @@ private:
     void updateResizerAreaSet();
     void updateResizerStyle();
 
-
     void updateScrollableAreaSet(bool hasOverflow);
 
     void updateCompositingLayersAfterScroll();

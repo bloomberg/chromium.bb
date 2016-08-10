@@ -40,6 +40,7 @@ Canvas2dFixedRenderingMode status=test
 EnableCanvas2dDynamicRenderingModeSwitching status=experimental
 Canvas2dImageChromium status=experimental
 ClientHints status=stable
+CompositeOpaqueScrollers
 CompositedSelectionUpdate
 CompositorWorker status=experimental
 ContextMenu status=test
