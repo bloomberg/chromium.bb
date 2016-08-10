@@ -12,7 +12,6 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.TextView;
 
 import org.chromium.base.test.util.Feature;
@@ -23,7 +22,6 @@ import org.chromium.net.test.EmbeddedTestServer;
  */
 public class CronetSampleTest extends
         ActivityInstrumentationTestCase2<CronetSampleActivity> {
-    private static final String TAG = CronetSampleTest.class.getSimpleName();
     private EmbeddedTestServer mTestServer;
     private String mUrl;
 
@@ -65,22 +63,15 @@ public class CronetSampleTest extends
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.equals("Completed " + mUrl + " (200)")) {
+                if (s.toString().equals("Completed " + mUrl + " (200)")) {
                     done.open();
-                } else {
-                    // TODO(xunjieli): remove this log once crbug.com/635021 is fixed.
-                    Log.e(CronetSampleTest.class.getSimpleName(), s.toString());
                 }
             }
         };
         textView.addTextChangedListener(textWatcher);
         // Check current text in case it changed before |textWatcher| was added.
         textWatcher.onTextChanged(textView.getText(), 0, 0, 0);
-        // TODO(xunjieli): remove this log once crbug.com/635021 is fixed.
-        Log.e(TAG, "waiting for text change**********************");
         done.block();
-        // TODO(xunjieli): remove this log once crbug.com/635021 is fixed.
-        Log.e(TAG, "received text change**********************");
     }
 
     /**
