@@ -170,10 +170,10 @@ class HtmlCheckerTest(SuperMoxTestBase):
 
   def testLabelCheckFails(self):
     lines = [
-      ' for="abc"',
-      "for=    ",
-      " \tfor=    ",
-      "   for="
+      ' <label for="abc"',
+      " <label for=    ",
+      " <label\tfor=    ",
+      ' <label\n blah="1" blee="3"\n for="goop"',
     ]
     for line in lines:
       self.ShouldFailCheck(line, self.checker.LabelCheck)
@@ -183,6 +183,7 @@ class HtmlCheckerTest(SuperMoxTestBase):
       ' my-for="abc" ',
       ' myfor="abc" ',
       " <for",
+      ' <paper-tooltip for="id-name"',
     ]
     for line in lines:
       self.ShouldPassCheck(line, self.checker.LabelCheck)

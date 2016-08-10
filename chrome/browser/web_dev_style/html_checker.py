@@ -67,8 +67,9 @@ class HtmlChecker(object):
 
   def LabelCheck(self, line_number, line):
     regex = self.input_api.re.compile("""
-        (?:^|\s) # start of line or whitespace
-        (for=)   # for=
+        (?:^|\s)     # start of line or whitespace
+        <label[^>]+? # <label tag
+        (for=)       # for=
         """,
         self.input_api.re.VERBOSE)
     return regex_check.RegexCheck(self.input_api.re, line_number, line, regex,
