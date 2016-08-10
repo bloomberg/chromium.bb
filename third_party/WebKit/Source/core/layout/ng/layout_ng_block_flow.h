@@ -11,16 +11,16 @@ namespace blink {
 
 // This overrides the default layout block algorithm to use Layout NG.
 class LayoutNGBlockFlow final : public LayoutBlockFlow {
-public:
-    explicit LayoutNGBlockFlow(Element*);
-    ~LayoutNGBlockFlow() override = default;
+ public:
+  explicit LayoutNGBlockFlow(Element*);
+  ~LayoutNGBlockFlow() override = default;
 
-private:
-    bool isOfType(LayoutObjectType) const override;
+ private:
+  bool isOfType(LayoutObjectType) const override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, isLayoutNGBlockFlow());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutNGBlockFlow_h
+#endif  // LayoutNGBlockFlow_h

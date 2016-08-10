@@ -12,13 +12,13 @@ namespace blink {
 
 // This struct is used for the margin collapsing calculation.
 struct NGMarginStrut {
-    LayoutUnit marginBlockStart;
-    LayoutUnit marginBlockEnd;
+  LayoutUnit marginBlockStart;
+  LayoutUnit marginBlockEnd;
 
-    LayoutUnit negativeMarginBlockStart;
-    LayoutUnit negativeMarginBlockEnd;
+  LayoutUnit negativeMarginBlockStart;
+  LayoutUnit negativeMarginBlockEnd;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NGMarginStrut_h
+#endif  // NGMarginStrut_h

@@ -10,37 +10,37 @@ namespace blink {
 class LayoutUnit;
 
 struct NGLogicalSize {
-    LayoutUnit inlineSize;
-    LayoutUnit blockSize;
+  LayoutUnit inlineSize;
+  LayoutUnit blockSize;
 };
 
 struct NGLogicalOffset {
-    LayoutUnit inlineOffset;
-    LayoutUnit blockOffset;
+  LayoutUnit inlineOffset;
+  LayoutUnit blockOffset;
 };
 
 struct NGPhysicalSize {
-    LayoutUnit width;
-    LayoutUnit height;
+  LayoutUnit width;
+  LayoutUnit height;
 };
 
 struct NGPhysicalLocation {
-    LayoutUnit top;
-    LayoutUnit left;
+  LayoutUnit top;
+  LayoutUnit left;
 };
 
 struct NGPhysicalRect {
-    NGPhysicalSize size;
-    NGPhysicalLocation location;
+  NGPhysicalSize size;
+  NGPhysicalLocation location;
 };
 
 struct NGPixelSnappedPhysicalRect {
-    int top;
-    int left;
-    int width;
-    int height;
+  int top;
+  int left;
+  int width;
+  int height;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NGUnits_h
+#endif  // NGUnits_h

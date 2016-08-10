@@ -66,7 +66,7 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/ng/LayoutNGBlockFlow.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/ObjectPaintProperties.h"
