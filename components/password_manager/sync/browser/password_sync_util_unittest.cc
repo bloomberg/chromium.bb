@@ -66,6 +66,8 @@ TEST_F(PasswordSyncUtilTest, IsSyncAccountCredential) {
        false},
       {SimpleNonGaiaForm("sync_user@example.org"), "sync_user@example.org",
        false},
+      {SimpleGaiaForm(""), "sync_user@example.org", true},
+      {SimpleNonGaiaForm(""), "sync_user@example.org", false},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {

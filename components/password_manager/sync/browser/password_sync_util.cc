@@ -39,6 +39,12 @@ bool IsSyncAccountCredential(const autofill::PasswordForm& form,
     return false;
   }
 
+  // The empty username can mean that Chrome did not detect it correctly. For
+  // reasons described in http://crbug.com/636292#c1, the username is suspected
+  // to be the sync username unless proven otherwise.
+  if (form.username_value.empty())
+    return true;
+
   return gaia::AreEmailsSame(
       base::UTF16ToUTF8(form.username_value),
       GetSyncUsernameIfSyncingPasswords(sync_service, signin_manager));
