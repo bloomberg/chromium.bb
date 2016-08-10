@@ -333,4 +333,16 @@ public class UiUtils {
                 ? ContentUriUtils.getContentUriFromFile(context, file)
                 : Uri.fromFile(file);
     }
+
+    /**
+     * Removes the view from its parent {@link ViewGroup}. No-op if the {@link View} is not yet
+     * attached to the view hierarchy.
+     *
+     * @param view The view to be removed from the parent.
+     */
+    public static void removeViewFromParent(View view) {
+        ViewGroup parent = (ViewGroup) view.getParent();
+        if (parent == null) return;
+        parent.removeView(view);
+    }
 }

@@ -83,7 +83,7 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
 
     @Override
     public void destroy() {
-        assert getView().getParent() == null : "Destroy called before removed from window";
+        assert !getView().isAttachedToWindow() : "Destroy called before removed from window";
     }
 
     @Override

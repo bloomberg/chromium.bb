@@ -764,7 +764,7 @@ public class NewTabPage
     @Override
     public void destroy() {
         assert !mIsDestroyed;
-        assert getView().getParent() == null : "Destroy called before removed from window";
+        assert !getView().isAttachedToWindow() : "Destroy called before removed from window";
         if (mIsLoaded && !mTab.isHidden()) recordNTPInteractionTime();
 
         if (mFaviconHelper != null) {
