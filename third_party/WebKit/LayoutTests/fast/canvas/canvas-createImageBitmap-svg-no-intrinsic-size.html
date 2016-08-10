@@ -40,7 +40,13 @@ function testCreateImageBitmap()
                 createImageBitmap(image2, 0, 0, 100, 100).then(function(bitmap3) {
                     testPassed("createImageBitmap from a zero size SVG with cropRect succeed");
                     checkImageBitmap(bitmap3);
-                    finishJSTest();
+                    createImageBitmap(image2, {resizeWidth: 50, resizeHeight: 50, resizeQuality: "high"}).then(function(bitmap4) {
+                        testPassed("createImageBitmap from a zero size SVG with resize and cropRect succeed");
+                        finishJSTest();
+                    }, function(e) {
+                        testFailed("createImageBitmap from a zero size SVG with resize and cropRect rejected: " + e);
+                        finishJSTest();
+                    });
                 }, function(e) {
                     testFailed("createImageBitmap from a zero size SVG with cropRect rejected: " + e);
                     finishJSTest();

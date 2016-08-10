@@ -56,7 +56,7 @@
 
 namespace blink {
 
-static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSourceUnion& value, ExceptionState& exceptionState, bool hasCropRect)
+static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSourceUnion& value, ExceptionState& exceptionState, const ImageBitmapOptions& options, bool hasCropRect)
 {
     if (value.isHTMLImageElement()) {
         HTMLImageElement* imageElement = value.getAsHTMLImageElement();
@@ -66,8 +66,8 @@ static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSo
         }
         if (imageElement->cachedImage()->getImage()->isSVGImage()) {
             SVGImage* image = toSVGImage(imageElement->cachedImage()->getImage());
-            if (!image->hasIntrinsicDimensions() && !hasCropRect) {
-                exceptionState.throwDOMException(InvalidStateError, "The image element contains an SVG image without intrinsic dimensions.");
+            if (!image->hasIntrinsicDimensions() && (!hasCropRect && (!options.hasResizeWidth() || !options.hasResizeHeight()))) {
+                exceptionState.throwDOMException(InvalidStateError, "The image element contains an SVG image without intrinsic dimensions, and no resize options or crop region are specified.");
                 return nullptr;
             }
         }
@@ -105,7 +105,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
 {
     UseCounter::Feature feature = UseCounter::CreateImageBitmap;
     UseCounter::count(scriptState->getExecutionContext(), feature);
-    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource, exceptionState, false);
+    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource, exceptionState, options, false);
     if (!bitmapSourceInternal)
         return ScriptPromise();
     return createImageBitmap(scriptState, eventTarget, bitmapSourceInternal, Optional<IntRect>(), options, exceptionState);
@@ -115,7 +115,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
 {
     UseCounter::Feature feature = UseCounter::CreateImageBitmap;
     UseCounter::count(scriptState->getExecutionContext(), feature);
-    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource, exceptionState, true);
+    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource, exceptionState, options, true);
     if (!bitmapSourceInternal)
         return ScriptPromise();
     Optional<IntRect> cropRect = IntRect(sx, sy, sw, sh);

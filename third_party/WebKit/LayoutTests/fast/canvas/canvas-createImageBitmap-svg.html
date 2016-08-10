@@ -17,6 +17,24 @@ function shouldBeBlue(x, y) {
     shouldBeEqualToNumber("d[3]", 255);
 }
 
+function checkBitmap(imageBitmap, width, height)
+{
+    bitmap = imageBitmap;
+    if (width == 200) {
+        shouldBe("bitmap.width", "200");
+        shouldBe("bitmap.height", "200");
+    } else {
+        shouldBe("bitmap.width", "50");
+        shouldBe("bitmap.height", "50");
+    }
+    ctx.clearRect(0, 0, 200, 200);
+    ctx.drawImage(bitmap, 0, 0);
+    shouldBeBlue(0, 0);
+    shouldBeBlue(0, width - 1);
+    shouldBeBlue(height - 1, 0);
+    shouldBeBlue(height - 1, width - 1);
+}
+
 var canvas = document.createElement("canvas");
 canvas.setAttribute("width", "200");
 canvas.setAttribute("height", "200");
@@ -25,16 +43,12 @@ var bitmap;
 
 var image = new Image();
 image.onload = function() {
-    createImageBitmap(image).then(function(imageBitmap) {
-        bitmap = imageBitmap;
-        shouldBe("bitmap.width", "200");
-        shouldBe("bitmap.height", "200");
-        ctx.clearRect(0, 0, 200, 200);
-        ctx.drawImage(imageBitmap, 0, 0);
-        shouldBeBlue(0, 0);
-        shouldBeBlue(0, 199);
-        shouldBeBlue(199, 0);
-        shouldBeBlue(199, 199);
+    imageBitmaps = {};
+    var p1 = createImageBitmap(image).then(function(image) { imageBitmaps.noResize = image });
+    var p2 = createImageBitmap(image, {resizeWidth: 50, resizeHeight: 50, resizeQuality: "high"}).then(function(image) { imageBitmaps.resize = image });
+    Promise.all([p1, p2]).then(function() {
+        checkBitmap(imageBitmaps.noResize, 200, 200);
+        checkBitmap(imageBitmaps.resize, 50, 50);
         finishJSTest();
     }, function (e) {
         testFailed("createImageBitmap promise rejected: " + e);
