@@ -25,7 +25,7 @@ executable("mac_installer") {
   libs = [ "Foundation.framework" ]
 }
 
-test("mac_installer_test") {
+test("mac_installer_unittests") {
   sources = [
     "testing/OmahaXMLRequest_test.mm",
     "testing/SystemInfo_test.mm",
@@ -37,4 +37,9 @@ test("mac_installer_test") {
     "//testing/gtest:gtest",
   ]
   libs = [ "Foundation.framework" ]
+  data = [
+    "testing/requestCheck.dtd",
+    "testing/requestSample.xml",
+    "testing/responseExample.xml",
+  ]
 }
