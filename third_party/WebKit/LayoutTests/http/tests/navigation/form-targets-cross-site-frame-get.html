@@ -26,7 +26,7 @@ was propagated correctly.
 <body onload="onLoad();">
 <form
   method="GET"
-  action="https://localhost:8443/navigation/resources/form-target.pl"
+  action="http://localhost:8080/navigation/resources/form-target.pl"
   target="cross-site-frame">
     Test field:
     <input name="test-field" type="text" value="test-value">
@@ -34,6 +34,6 @@ was propagated correctly.
 </form>
 <iframe
   name="cross-site-frame"
-  src="https://localhost:8443/navigation/resources/form-target.pl"></iframe>
+  src="http://localhost:8080/navigation/resources/otherpage.html"></iframe>
 </body>
 </html>

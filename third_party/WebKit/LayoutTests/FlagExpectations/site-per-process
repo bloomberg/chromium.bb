@@ -8,6 +8,9 @@ http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-
 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 http/tests/security/upgrade-insecure-requests/iframe-upgrade-csp.https.html [ Crash ]
 
+# https://crbug.com/635400 - Origin header is set to "null" in HTTP POST request made using OpenURL code path.
+http/tests/navigation/form-targets-cross-site-frame-post.html [ Failure ]
+
 # https://crbug.com/582494 - [sigsegv / av] blink::Document::styleEngine.
 http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Crash ]
 

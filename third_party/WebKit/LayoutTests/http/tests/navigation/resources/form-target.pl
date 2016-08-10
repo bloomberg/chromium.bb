@@ -24,6 +24,22 @@ foreach $paramName (@paramNames)
     print "<li>" . $paramName . " = " . $query->param($paramName) . "</li>"
 }
 
+print <<HEADER2;
+</ul>
+<p>Http headers:</p>
+<ul>
+HEADER2
+
+my %headers = map { $_ => $query->http($_) } $query->http();
+for my $header ( sort (keys %headers) ) {
+    if (("$header" ne "HTTP_ACCEPT_ENCODING") &&
+        ("$header" ne "HTTP_ACCEPT_LANGUAGE") &&
+        ("$header" ne "HTTP_ACCEPT") &&
+        ("$header" ne "HTTP_USER_AGENT")) {
+        print "<li>$header = $headers{$header}</li>\n";
+    }
+}
+
 print <<FOOTER
 </ul>
 <script>
