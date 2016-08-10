@@ -579,7 +579,7 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     } else if (checkTypeThenUseCount(event, EventTypeNames::mousedown, UseCounter::MouseDownFired)) {
     } else if (checkTypeThenUseCount(event, EventTypeNames::pointerdown, UseCounter::PointerDownFired)) {
         if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-            if (static_cast<PointerEvent*>(event)->pointerType() == "touch")
+            if (event->isPointerEvent() && static_cast<PointerEvent*>(event)->pointerType() == "touch")
                 UseCounter::count(executingWindow->document(), UseCounter::PointerDownFiredForTouch);
         }
     }
