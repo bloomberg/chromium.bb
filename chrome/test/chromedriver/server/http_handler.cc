@@ -48,14 +48,6 @@ const char kLocalStorage[] = "localStorage";
 const char kSessionStorage[] = "sessionStorage";
 const char kShutdownPath[] = "shutdown";
 
-void UnimplementedCommand(
-    const base::DictionaryValue& params,
-    const std::string& session_id,
-    const CommandCallback& callback) {
-  callback.Run(Status(kUnknownCommand), std::unique_ptr<base::Value>(),
-               session_id);
-}
-
 }  // namespace
 
 CommandMapping::CommandMapping(HttpMethod method,
@@ -203,12 +195,14 @@ HttpHandler::HttpHandler(
           kGet,
           "session/:sessionId/chromium/heap_snapshot",
           WrapToCommand("HeapSnapshot", base::Bind(&ExecuteTakeHeapSnapshot))),
-      CommandMapping(kPost,
-                     "session/:sessionId/visible",
-                     base::Bind(&UnimplementedCommand)),
-      CommandMapping(kGet,
-                     "session/:sessionId/visible",
-                     base::Bind(&UnimplementedCommand)),
+      CommandMapping(
+          kPost,
+          "session/:sessionId/visible",
+          WrapToCommand("Visible", base::Bind(&ExecuteUnimplementedCommand))),
+      CommandMapping(
+          kGet,
+          "session/:sessionId/visible",
+          WrapToCommand("Visible", base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(
           kPost,
           "session/:sessionId/element",
@@ -350,9 +344,10 @@ HttpHandler::HttpHandler(
       CommandMapping(kDelete,
                      "session/:sessionId/window",
                      WrapToCommand("CloseWindow", base::Bind(&ExecuteClose))),
-      CommandMapping(kPost,
-                     "session/:sessionId/element/:id/drag",
-                     base::Bind(&UnimplementedCommand)),
+      CommandMapping(
+          kPost,
+          "session/:sessionId/element/:id/drag",
+          WrapToCommand("Drag", base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(
           kGet,
           "session/:sessionId/element/:id/css/:propertyName",
@@ -370,9 +365,11 @@ HttpHandler::HttpHandler(
           kPost,
           "session/:sessionId/timeouts",
           WrapToCommand("SetTimeout", base::Bind(&ExecuteSetTimeout))),
-      CommandMapping(kPost,
-                     "session/:sessionId/execute_sql",
-                     base::Bind(&UnimplementedCommand)),
+      CommandMapping(
+          kPost,
+          "session/:sessionId/execute_sql",
+          WrapToCommand("ExecuteSql",
+                        base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(
           kGet,
           "session/:sessionId/location",
@@ -409,12 +406,16 @@ HttpHandler::HttpHandler(
       CommandMapping(kGet,
                      "session/:sessionId/application_cache/status",
                      base::Bind(&ExecuteGetStatus)),
-      CommandMapping(kGet,
-                     "session/:sessionId/browser_connection",
-                     base::Bind(&UnimplementedCommand)),
-      CommandMapping(kPost,
-                     "session/:sessionId/browser_connection",
-                     base::Bind(&UnimplementedCommand)),
+      CommandMapping(
+          kGet,
+          "session/:sessionId/browser_connection",
+          WrapToCommand("GetBrowserConnection",
+                        base::Bind(&ExecuteUnimplementedCommand))),
+      CommandMapping(
+          kPost,
+          "session/:sessionId/browser_connection",
+          WrapToCommand("SetBrowserConnection",
+                        base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(
           kGet,
           "session/:sessionId/local_storage/key/:key",
@@ -475,12 +476,16 @@ HttpHandler::HttpHandler(
           "session/:sessionId/session_storage/size",
           WrapToCommand("GetSessionStorageSize",
                         base::Bind(&ExecuteGetStorageSize, kSessionStorage))),
-      CommandMapping(kGet,
-                     "session/:sessionId/orientation",
-                     base::Bind(&UnimplementedCommand)),
-      CommandMapping(kPost,
-                     "session/:sessionId/orientation",
-                     base::Bind(&UnimplementedCommand)),
+      CommandMapping(
+          kGet,
+          "session/:sessionId/orientation",
+          WrapToCommand("GetOrientation",
+                        base::Bind(&ExecuteUnimplementedCommand))),
+      CommandMapping(
+          kPost,
+          "session/:sessionId/orientation",
+          WrapToCommand("SetOrientation",
+                        base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(kPost,
                      "session/:sessionId/click",
                      WrapToCommand("Click", base::Bind(&ExecuteMouseClick))),
@@ -506,19 +511,27 @@ HttpHandler::HttpHandler(
           WrapToCommand("Type", base::Bind(&ExecuteSendKeysToActiveElement))),
       CommandMapping(kGet,
                      "session/:sessionId/ime/available_engines",
-                     base::Bind(&UnimplementedCommand)),
-      CommandMapping(kGet,
-                     "session/:sessionId/ime/active_engine",
-                     base::Bind(&UnimplementedCommand)),
-      CommandMapping(kGet,
-                     "session/:sessionId/ime/activated",
-                     base::Bind(&UnimplementedCommand)),
-      CommandMapping(kPost,
-                     "session/:sessionId/ime/deactivate",
-                     base::Bind(&UnimplementedCommand)),
-      CommandMapping(kPost,
-                     "session/:sessionId/ime/activate",
-                     base::Bind(&UnimplementedCommand)),
+                     WrapToCommand("GetAvailableEngines",
+                                   base::Bind(&ExecuteUnimplementedCommand))),
+      CommandMapping(
+          kGet,
+          "session/:sessionId/ime/active_engine",
+          WrapToCommand("GetActiveEngine",
+                        base::Bind(&ExecuteUnimplementedCommand))),
+      CommandMapping(
+          kGet,
+          "session/:sessionId/ime/activated",
+          WrapToCommand("Activated",
+                        base::Bind(&ExecuteUnimplementedCommand))),
+      CommandMapping(
+          kPost,
+          "session/:sessionId/ime/deactivate",
+          WrapToCommand("Deactivate",
+                        base::Bind(&ExecuteUnimplementedCommand))),
+      CommandMapping(
+          kPost,
+          "session/:sessionId/ime/activate",
+          WrapToCommand("Activate", base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(kPost,
                      "session/:sessionId/touch/click",
                      WrapToCommand("Tap", base::Bind(&ExecuteTouchSingleTap))),
@@ -553,7 +566,10 @@ HttpHandler::HttpHandler(
                      "session/:sessionId/log/types",
                      WrapToCommand("GetLogTypes",
                                    base::Bind(&ExecuteGetAvailableLogTypes))),
-      CommandMapping(kPost, "logs", base::Bind(&UnimplementedCommand)),
+      CommandMapping(
+          kPost,
+          "Logs",
+          WrapToCommand("Logs", base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(kGet, "status", base::Bind(&ExecuteGetStatus)),
 
       // Custom Chrome commands:
@@ -689,16 +705,24 @@ void HttpHandler::PrepareResponse(
     const HttpResponseSenderFunc& send_response_func,
     const Status& status,
     std::unique_ptr<base::Value> value,
-    const std::string& session_id) {
+    const std::string& session_id,
+    bool w3c_compliant) {
   CHECK(thread_checker_.CalledOnValidThread());
-  std::unique_ptr<net::HttpServerResponseInfo> response =
-      PrepareResponseHelper(trimmed_path, status, std::move(value), session_id);
+  std::unique_ptr<net::HttpServerResponseInfo> response;
+  if (w3c_compliant)
+    response = PrepareStandardResponse(
+        trimmed_path, status, std::move(value), session_id);
+  else
+    response = PrepareLegacyResponse(trimmed_path,
+                                     status,
+                                     std::move(value),
+                                     session_id);
   send_response_func.Run(std::move(response));
   if (trimmed_path == kShutdownPath)
     quit_func_.Run();
 }
 
-std::unique_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
+std::unique_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareLegacyResponse(
     const std::string& trimmed_path,
     const Status& status,
     std::unique_ptr<base::Value> value,
@@ -738,6 +762,83 @@ std::unique_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
   response->SetBody(body, "application/json; charset=utf-8");
   return response;
 }
+
+std::unique_ptr<net::HttpServerResponseInfo>
+HttpHandler::PrepareStandardResponse(
+    const std::string& trimmed_path,
+    const Status& status,
+    std::unique_ptr<base::Value> value,
+    const std::string& session_id) {
+  std::unique_ptr<net::HttpServerResponseInfo> response;
+  switch (status.code()) {
+    case kOk:
+      response.reset(new net::HttpServerResponseInfo(net::HTTP_OK));
+      break;
+    case kNoSuchFrame:
+    case kStaleElementReference:
+    case kElementNotVisible:
+    case kInvalidElementState:
+    case kNoSuchWindow:
+    case kInvalidCookieDomain:
+    case kInvalidSelector:
+    case kXPathLookupError:
+    case kNoAlertOpen:
+    case kNoSuchExecutionContext:
+      response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
+      break;
+    case kNoSuchSession:
+    case kNoSuchElement:
+    case kUnknownCommand:
+      response.reset(new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
+      break;
+    case kTimeout:
+    case kScriptTimeout:
+      response.reset(
+          new net::HttpServerResponseInfo(net::HTTP_REQUEST_TIMEOUT));
+      break;
+    case kUnknownError:
+    case kJavaScriptError:
+    case kUnexpectedAlertOpen:
+    case kSessionNotCreatedException:
+    case kChromeNotReachable:
+    case kDisconnected:
+    case kForbidden:
+    case kTabCrashed:
+      response.reset(
+          new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
+      break;
+  }
+
+  if (!value)
+    value = base::Value::CreateNullValue();
+
+  base::DictionaryValue body_params;
+  if (status.IsError()){
+    // Separates status default message from additional details.
+    std::vector<std::string> status_details = base::SplitString(
+        status.message(), ":\n", base::TRIM_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
+    std::string message;
+    for (size_t i=1; i<status_details.size();++i)
+      message += status_details[i];
+
+    body_params.SetString("error", status_details[0]);
+    body_params.SetString("message", message);
+    body_params.SetString("stacktrace", status.stack_trace());
+  } else {
+    body_params.SetString("sessionId", session_id);
+    body_params.SetString("status", status.message());
+    body_params.Set("value", value.release());
+  }
+
+  std::string body;
+  base::JSONWriter::WriteWithOptions(
+      body_params, base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION,
+      &body);
+  response->SetBody(body, "application/json; charset=utf-8");
+  return response;
+}
+
 
 namespace internal {
 

@@ -34,6 +34,7 @@ const base::TimeDelta Session::kDefaultPageLoadTimeout =
 
 Session::Session(const std::string& id)
     : id(id),
+      w3c_compliant(false),
       quit(false),
       detach(false),
       force_devtools_screenshot(false),
@@ -44,6 +45,7 @@ Session::Session(const std::string& id)
 
 Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
     : id(id),
+      w3c_compliant(false),
       quit(false),
       detach(false),
       force_devtools_screenshot(false),

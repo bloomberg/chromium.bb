@@ -160,7 +160,13 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->driver_log.reset(
       new WebDriverLog(WebDriverLog::kDriverType, Log::kAll));
   const base::DictionaryValue* desired_caps;
-  if (!params.GetDictionary("desiredCapabilities", &desired_caps))
+  bool w3c_capability = false;
+  if (params.GetDictionary("capabilities.desiredCapabilities", &desired_caps)
+      && desired_caps->GetBoolean("chromeOptions.w3c", &w3c_capability)
+      && w3c_capability)
+    session->w3c_compliant = true;
+  else if (!params.GetDictionary("desiredCapabilities", &desired_caps) &&
+     !params.GetDictionary("capabilities.desiredCapabilities", &desired_caps))
     return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
 
   Capabilities capabilities;
@@ -820,4 +826,11 @@ Status ExecuteSetAutoReporting(Session* session,
     return Status(kUnknownError, "missing parameter 'enabled'");
   session->auto_reporting_enabled = enabled;
   return Status(kOk);
+}
+
+
+Status ExecuteUnimplementedCommand(Session* session,
+                                   const base::DictionaryValue& params,
+                                   std::unique_ptr<base::Value>* value) {
+  return Status(kUnknownCommand);
 }

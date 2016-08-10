@@ -49,7 +49,7 @@ void ExecuteGetStatus(
   info.Set("build", build.DeepCopy());
   info.Set("os", os.DeepCopy());
   callback.Run(Status(kOk), std::unique_ptr<base::Value>(info.DeepCopy()),
-               std::string());
+               std::string(), false);
 }
 
 void ExecuteCreateSession(
@@ -66,7 +66,8 @@ void ExecuteCreateSession(
   if (!thread->Start()) {
     callback.Run(
         Status(kUnknownError, "failed to start a thread for the new session"),
-        std::unique_ptr<base::Value>(), std::string());
+        std::unique_ptr<base::Value>(), std::string(),
+        session->w3c_compliant);
     return;
   }
 
@@ -84,7 +85,8 @@ void OnGetSession(const base::WeakPtr<size_t>& session_remaining_count,
                   base::ListValue* session_list,
                   const Status& status,
                   std::unique_ptr<base::Value> value,
-                  const std::string& session_id) {
+                  const std::string& session_id,
+                  bool w3c_compliant) {
   if (!session_remaining_count)
     return;
 
@@ -113,7 +115,7 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
   std::unique_ptr<base::ListValue> session_list(new base::ListValue());
 
   if (!get_remaining_count) {
-    callback.Run(Status(kOk), std::move(session_list), session_id);
+    callback.Run(Status(kOk), std::move(session_list), session_id, false);
     return;
   }
 
@@ -135,7 +137,7 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
   base::MessageLoop::current()->SetNestableTasksAllowed(true);
   run_loop.Run();
 
-  callback.Run(Status(kOk), std::move(session_list), session_id);
+  callback.Run(Status(kOk), std::move(session_list), session_id, false);
 }
 
 namespace {
@@ -144,7 +146,8 @@ void OnSessionQuit(const base::WeakPtr<size_t>& quit_remaining_count,
                    const base::Closure& all_quit_func,
                    const Status& status,
                    std::unique_ptr<base::Value> value,
-                   const std::string& session_id) {
+                   const std::string& session_id,
+                   bool w3c_compliant) {
   // |quit_remaining_count| may no longer be valid if a timeout occurred.
   if (!quit_remaining_count)
     return;
@@ -165,7 +168,8 @@ void ExecuteQuitAll(
   size_t quit_remaining_count = session_thread_map->size();
   base::WeakPtrFactory<size_t> weak_ptr_factory(&quit_remaining_count);
   if (!quit_remaining_count) {
-    callback.Run(Status(kOk), std::unique_ptr<base::Value>(), session_id);
+    callback.Run(Status(kOk), std::unique_ptr<base::Value>(),
+                 session_id, false);
     return;
   }
   base::RunLoop run_loop;
@@ -184,7 +188,8 @@ void ExecuteQuitAll(
   // commands have executed, or the timeout expires.
   base::MessageLoop::current()->SetNestableTasksAllowed(true);
   run_loop.Run();
-  callback.Run(Status(kOk), std::unique_ptr<base::Value>(), session_id);
+  callback.Run(Status(kOk), std::unique_ptr<base::Value>(),
+               session_id, false);
 }
 
 namespace {
@@ -209,7 +214,8 @@ void ExecuteSessionCommandOnSessionThread(
         base::Bind(callback_on_cmd,
                    Status(return_ok_without_session ? kOk : kNoSuchSession),
                    base::Passed(std::unique_ptr<base::Value>()),
-                   std::string()));
+                   std::string(),
+                   false));
     return;
   }
 
@@ -285,7 +291,8 @@ void ExecuteSessionCommandOnSessionThread(
 
   cmd_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(callback_on_cmd, status, base::Passed(&value), session->id));
+      base::Bind(callback_on_cmd, status, base::Passed(&value), session->id,
+                 session->w3c_compliant));
 
   if (session->quit) {
     SetThreadLocalSession(std::unique_ptr<Session>());
@@ -307,7 +314,7 @@ void ExecuteSessionCommand(
   SessionThreadMap::iterator iter = session_thread_map->find(session_id);
   if (iter == session_thread_map->end()) {
     Status status(return_ok_without_session ? kOk : kNoSuchSession);
-    callback.Run(status, std::unique_ptr<base::Value>(), session_id);
+    callback.Run(status, std::unique_ptr<base::Value>(), session_id, false);
   } else {
     iter->second->task_runner()->PostTask(
         FROM_HERE, base::Bind(&ExecuteSessionCommandOnSessionThread,

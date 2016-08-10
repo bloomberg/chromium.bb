@@ -4,6 +4,7 @@
 
 #include "chrome/test/chromedriver/chrome/status.h"
 
+#include "base/debug/stack_trace.h"
 #include "base/strings/stringprintf.h"
 
 namespace {
@@ -67,17 +68,25 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
 }  // namespace
 
 Status::Status(StatusCode code)
-    : code_(code), msg_(DefaultMessageForStatusCode(code)) {}
+    : code_(code), msg_(DefaultMessageForStatusCode(code)) {
+  if (code != kOk)
+    stack_trace_ = base::debug::StackTrace().ToString();
+}
 
 Status::Status(StatusCode code, const std::string& details)
     : code_(code),
       msg_(DefaultMessageForStatusCode(code) + std::string(": ") + details) {
+  if (code != kOk)
+        stack_trace_ = base::debug::StackTrace().ToString();
 }
 
 Status::Status(StatusCode code, const Status& cause)
     : code_(code),
       msg_(DefaultMessageForStatusCode(code) + std::string("\nfrom ") +
-           cause.message()) {}
+           cause.message()) {
+  if (code != kOk)
+    stack_trace_ = cause.stack_trace();
+}
 
 Status::Status(StatusCode code,
                const std::string& details,
@@ -85,6 +94,8 @@ Status::Status(StatusCode code,
     : code_(code),
       msg_(DefaultMessageForStatusCode(code) + std::string(": ") + details +
            "\nfrom " + cause.message()) {
+  if (code != kOk)
+    stack_trace_ = cause.stack_trace();
 }
 
 Status::~Status() {}
@@ -107,4 +118,8 @@ StatusCode Status::code() const {
 
 const std::string& Status::message() const {
   return msg_;
+}
+
+const std::string& Status::stack_trace() const {
+  return stack_trace_;
 }

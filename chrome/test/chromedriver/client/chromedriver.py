@@ -20,11 +20,17 @@ class UnknownCommand(ChromeDriverException):
   pass
 class StaleElementReference(ChromeDriverException):
   pass
+class ElementNotVisible(ChromeDriverException):
+  pass
+class InvalidElementState(ChromeDriverException):
+  pass
 class UnknownError(ChromeDriverException):
   pass
 class JavaScriptError(ChromeDriverException):
   pass
 class XPathLookupError(ChromeDriverException):
+  pass
+class Timeout(ChromeDriverException):
   pass
 class NoSuchWindow(ChromeDriverException):
   pass
@@ -40,20 +46,26 @@ class NoSuchSession(ChromeDriverException):
   pass
 class UnexpectedAlertOpen(ChromeDriverException):
   pass
+class NoAlertOpen(ChromeDriverException):
+  pass
 
-def _ExceptionForResponse(response):
+def _ExceptionForLegacyResponse(response):
   exception_class_map = {
     6: NoSuchSession,
     7: NoSuchElement,
     8: NoSuchFrame,
     9: UnknownCommand,
     10: StaleElementReference,
+    11: ElementNotVisible,
+    12: InvalidElementState,
     13: UnknownError,
     17: JavaScriptError,
     19: XPathLookupError,
+    21: Timeout,
     23: NoSuchWindow,
     24: InvalidCookieDomain,
     26: UnexpectedAlertOpen,
+    27: NoAlertOpen,
     28: ScriptTimeout,
     32: InvalidSelector,
     33: SessionNotCreatedException
@@ -62,6 +74,31 @@ def _ExceptionForResponse(response):
   msg = response['value']['message']
   return exception_class_map.get(status, ChromeDriverException)(msg)
 
+def _ExceptionForStandardResponse(response):
+  exception_map = {
+    'no such session' : NoSuchSession,
+    'no such element': NoSuchElement,
+    'no such frame': NoSuchFrame,
+    'unknown command': UnknownCommand,
+    'stale element reference': StaleElementReference,
+    'element not visible': ElementNotVisible,
+    'invalid element state': InvalidElementState,
+    'unknown error': UnknownError,
+    'javascript error': JavaScriptError,
+    'xpath lookup error': XPathLookupError,
+    'timeout': Timeout,
+    'no such window': NoSuchWindow,
+    'invalid cookie domain': InvalidCookieDomain,
+    'unexpected alert open': UnexpectedAlertOpen,
+    'no alert open': NoAlertOpen,
+    'asynchronous script timeout': ScriptTimeout,
+    'invalid selector': InvalidSelector,
+    'session not created exception': SessionNotCreatedException
+  }
+
+  error = response['error']
+  msg = response['message']
+  return exception_map.get(error, ChromeDriverException)(msg)
 
 class ChromeDriver(object):
   """Starts and controls a single Chrome instance on this machine."""
@@ -72,8 +109,9 @@ class ChromeDriver(object):
                chrome_extensions=None, chrome_log_path=None,
                debugger_address=None, logging_prefs=None,
                mobile_emulation=None, experimental_options=None,
-               download_dir=None, page_load_strategy=None,
-               network_connection=None):
+               download_dir=None, network_connection=None,
+               send_w3c_capability=None, send_w3c_request=None,
+               page_load_strategy=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
@@ -138,6 +176,9 @@ class ChromeDriver(object):
         options['prefs']['download'] = {}
       options['prefs']['download']['default_directory'] = download_dir
 
+    if send_w3c_capability:
+      options['w3c'] = send_w3c_capability
+
     params = {
       'desiredCapabilities': {
         'chromeOptions': options,
@@ -153,7 +194,17 @@ class ChromeDriver(object):
       params['desiredCapabilities']['networkConnectionEnabled'] = (
           network_connection)
 
+    if send_w3c_request:
+      params = {'capabilities': params}
+
     response = self._ExecuteCommand(Command.NEW_SESSION, params)
+    if isinstance(response['status'], basestring):
+      self.w3c_compliant = True
+    elif isinstance(response['status'], int):
+      self.w3c_compliant = False
+    else:
+      raise UnknownError("unexpected response")
+
     self._session_id = response['sessionId']
     self.capabilities = self._UnwrapValue(response['value'])
 
@@ -190,8 +241,11 @@ class ChromeDriver(object):
   def _ExecuteCommand(self, command, params={}):
     params = self._WrapValue(params)
     response = self._executor.Execute(command, params)
-    if response['status'] != 0:
-      raise _ExceptionForResponse(response)
+    if ('status' in response and isinstance(response['status'], int) and
+        response['status'] != 0):
+      raise _ExceptionForLegacyResponse(response)
+    elif 'error' in response:
+      raise _ExceptionForStandardResponse(response)
     return response
 
   def ExecuteCommand(self, command, params={}):

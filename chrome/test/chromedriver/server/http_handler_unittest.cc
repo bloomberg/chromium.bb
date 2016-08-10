@@ -27,7 +27,8 @@ void DummyCommand(
     const CommandCallback& callback) {
   callback.Run(status,
                std::unique_ptr<base::Value>(new base::FundamentalValue(1)),
-               "session_id");
+               "session_id",
+               false);
 }
 
 void OnResponse(net::HttpServerResponseInfo* response_to_set,

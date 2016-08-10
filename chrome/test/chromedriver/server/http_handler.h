@@ -94,8 +94,15 @@ class HttpHandler {
                        const HttpResponseSenderFunc& send_response_func,
                        const Status& status,
                        std::unique_ptr<base::Value> value,
-                       const std::string& session_id);
-  std::unique_ptr<net::HttpServerResponseInfo> PrepareResponseHelper(
+                       const std::string& session_id,
+                       bool w3c_compliant);
+  std::unique_ptr<net::HttpServerResponseInfo> PrepareLegacyResponse(
+      const std::string& trimmed_path,
+      const Status& status,
+      std::unique_ptr<base::Value> value,
+      const std::string& session_id);
+
+  std::unique_ptr<net::HttpServerResponseInfo> PrepareStandardResponse(
       const std::string& trimmed_path,
       const Status& status,
       std::unique_ptr<base::Value> value,

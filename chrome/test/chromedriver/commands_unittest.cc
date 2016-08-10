@@ -36,7 +36,8 @@ namespace {
 
 void OnGetStatus(const Status& status,
                  std::unique_ptr<base::Value> value,
-                 const std::string& session_id) {
+                 const std::string& session_id,
+                 bool w3c_compliant) {
   ASSERT_EQ(kOk, status.code());
   base::DictionaryValue* dict;
   ASSERT_TRUE(value->GetAsDictionary(&dict));
@@ -73,12 +74,13 @@ void ExecuteStubGetSession(int* count,
   capabilities->Set("capability1", new base::StringValue("test1"));
   capabilities->Set("capability2", new base::StringValue("test2"));
 
-  callback.Run(Status(kOk), std::move(capabilities), session_id);
+  callback.Run(Status(kOk), std::move(capabilities), session_id, false);
 }
 
 void OnGetSessions(const Status& status,
                    std::unique_ptr<base::Value> value,
-                   const std::string& session_id) {
+                   const std::string& session_id,
+                   bool w3c_compliant) {
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(value.get());
   base::ListValue* sessions;
@@ -162,12 +164,13 @@ void ExecuteStubQuit(
     EXPECT_STREQ("id2", session_id.c_str());
   }
   (*count)++;
-  callback.Run(Status(kOk), std::unique_ptr<base::Value>(), session_id);
+  callback.Run(Status(kOk), std::unique_ptr<base::Value>(), session_id, false);
 }
 
 void OnQuitAll(const Status& status,
                std::unique_ptr<base::Value> value,
-               const std::string& session_id) {
+               const std::string& session_id,
+               bool w3c_compliant) {
   ASSERT_EQ(kOk, status.code());
   ASSERT_FALSE(value.get());
 }
@@ -209,7 +212,8 @@ void OnSimpleCommand(base::RunLoop* run_loop,
                      base::Value* expected_value,
                      const Status& status,
                      std::unique_ptr<base::Value> value,
-                     const std::string& session_id) {
+                     const std::string& session_id,
+                     bool w3c_compliant) {
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(expected_value->Equals(value.get()));
   ASSERT_EQ(expected_session_id, session_id);
@@ -258,14 +262,16 @@ Status ShouldNotBeCalled(Session* session,
 
 void OnNoSuchSession(const Status& status,
                      std::unique_ptr<base::Value> value,
-                     const std::string& session_id) {
+                     const std::string& session_id,
+                     bool w3c_compliant) {
   EXPECT_EQ(kNoSuchSession, status.code());
   EXPECT_FALSE(value.get());
 }
 
 void OnNoSuchSessionIsOk(const Status& status,
                          std::unique_ptr<base::Value> value,
-                         const std::string& session_id) {
+                         const std::string& session_id,
+                         bool w3c_compliant) {
   EXPECT_EQ(kOk, status.code());
   EXPECT_FALSE(value.get());
 }
@@ -301,7 +307,8 @@ namespace {
 void OnNoSuchSessionAndQuit(base::RunLoop* run_loop,
                             const Status& status,
                             std::unique_ptr<base::Value> value,
-                            const std::string& session_id) {
+                            const std::string& session_id,
+                            bool w3c_compliant) {
   run_loop->Quit();
   EXPECT_EQ(kNoSuchSession, status.code());
   EXPECT_FALSE(value.get());
@@ -695,7 +702,8 @@ Status ExecuteQuitSessionCommand(Session* session,
 void OnSessionCommand(base::RunLoop* run_loop,
                       const Status& status,
                       std::unique_ptr<base::Value> value,
-                      const std::string& session_id) {
+                      const std::string& session_id,
+                      bool w3c_compliant) {
   ASSERT_EQ(kOk, status.code());
   run_loop->Quit();
 }
@@ -778,7 +786,8 @@ void AddListenerToSessionIfSessionExists(CommandListener* listener) {
 void OnFailBecauseErrorNotifyingListeners(base::RunLoop* run_loop,
                                           const Status& status,
                                           std::unique_ptr<base::Value> value,
-                                          const std::string& session_id) {
+                                          const std::string& session_id,
+                                          bool w3c_compliant) {
   EXPECT_EQ(kUnknownError, status.code());
   EXPECT_FALSE(value.get());
   run_loop->Quit();

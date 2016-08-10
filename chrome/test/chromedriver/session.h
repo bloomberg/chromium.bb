@@ -55,6 +55,7 @@ struct Session {
   std::string GetFirstBrowserError() const;
 
   const std::string id;
+  bool w3c_compliant;
   bool quit;
   bool detach;
   bool force_devtools_screenshot;

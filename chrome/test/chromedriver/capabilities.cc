@@ -426,6 +426,9 @@ Status ParseChromeOptions(
 
   parser_map["perfLoggingPrefs"] = base::Bind(&ParsePerfLoggingPrefs);
   parser_map["windowTypes"] = base::Bind(&ParseWindowTypes);
+  // Compliance is read when session is initialized and correct response is
+  // sent if not parsed correctly.
+  parser_map["w3c"] = base::Bind(&IgnoreCapability);
 
   if (is_android) {
     parser_map["androidActivity"] =

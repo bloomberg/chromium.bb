@@ -18,7 +18,7 @@ class Value;
 class Status;
 
 typedef base::Callback<
-    void(const Status&, std::unique_ptr<base::Value>, const std::string&)>
+    void(const Status&, std::unique_ptr<base::Value>, const std::string&, bool)>
     CommandCallback;
 
 typedef base::Callback<void(

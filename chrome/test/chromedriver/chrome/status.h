@@ -54,9 +54,12 @@ class Status {
 
   const std::string& message() const;
 
+  const std::string& stack_trace() const;
+
  private:
   StatusCode code_;
   std::string msg_;
+  std::string stack_trace_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_STATUS_H_
