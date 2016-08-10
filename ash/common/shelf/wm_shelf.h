@@ -20,6 +20,7 @@ namespace ash {
 
 class ShelfLockingManager;
 class ShelfView;
+class WmDimmerView;
 class WmShelfObserver;
 class WmWindow;
 
@@ -52,7 +53,15 @@ class ASH_EXPORT WmShelf {
 
   virtual ShelfBackgroundType GetBackgroundType() const = 0;
 
+  // Creates a view that dims shelf items. The returned view is owned by its
+  // widget. Returns null if shelf dimming is not supported (e.g. on mus).
+  // TODO(jamescook): Delete this after material design ships, as MD will not
+  // require shelf dimming. http://crbug.com/614453
+  virtual WmDimmerView* CreateDimmerView(bool disable_animations_for_test) = 0;
+
   // Shelf items are slightly dimmed (e.g. when a window is maximized).
+  // TODO(jamescook): Delete this after material design ships, as MD will not
+  // require shelf dimming. http://crbug.com/614453
   virtual bool IsDimmed() const = 0;
 
   // Whether the shelf item overflow bubble is visible.

@@ -62,14 +62,6 @@ void DimmerView::SetHovered(bool hovered) {
                                              : BACKGROUND_CHANGE_ANIMATE);
 }
 
-void DimmerView::ForceUndimming(bool force) {
-  bool previous = force_hovered_;
-  force_hovered_ = force;
-  // If the forced change does change the result we apply the change.
-  if (is_hovered_ || force_hovered_ != is_hovered_ || previous)
-    SetHovered(is_hovered_);
-}
-
 void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
   SkPaint paint;
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
@@ -102,6 +94,22 @@ void DimmerView::UpdateBackground(BackgroundAnimator* animator, int alpha) {
 }
 
 void DimmerView::BackgroundAnimationEnded(BackgroundAnimator* animator) {}
+
+views::Widget* DimmerView::GetDimmerWidget() {
+  return GetWidget();
+}
+
+void DimmerView::ForceUndimming(bool force) {
+  bool previous = force_hovered_;
+  force_hovered_ = force;
+  // If the forced change does change the result we apply the change.
+  if (is_hovered_ || force_hovered_ != is_hovered_ || previous)
+    SetHovered(is_hovered_);
+}
+
+int DimmerView::GetDimmingAlphaForTest() {
+  return alpha_;
+}
 
 void DimmerView::OnWindowBoundsChanged(WmWindow* window,
                                        const gfx::Rect& old_bounds,

@@ -64,8 +64,13 @@ ShelfBackgroundType WmShelfMus::GetBackgroundType() const {
   return SHELF_BACKGROUND_DEFAULT;
 }
 
+WmDimmerView* WmShelfMus::CreateDimmerView(bool disable_animations_for_test) {
+  // mus does not dim shelf items.
+  return nullptr;
+}
+
 bool WmShelfMus::IsDimmed() const {
-  NOTIMPLEMENTED();
+  // mus does not dim shelf items.
   return false;
 }
 

@@ -5,6 +5,7 @@
 #ifndef ASH_SHELF_DIMMER_VIEW_H_
 #define ASH_SHELF_DIMMER_VIEW_H_
 
+#include "ash/common/shelf/wm_dimmer_view.h"
 #include "ash/common/wm/background_animator.h"
 #include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
@@ -17,20 +18,21 @@ namespace ash {
 class WmShelf;
 
 // DimmerView slightly dims shelf items when a window is maximized and visible.
+// TODO(jamescook): Delete this after material design ships, as MD will not
+// require shelf dimming. http://crbug.com/614453
 class DimmerView : public views::View,
                    public views::WidgetDelegate,
                    public BackgroundAnimatorDelegate,
+                   public WmDimmerView,
                    public WmWindowObserver {
  public:
-  // Creates and shows a DimmerView and its Widget.
-  // If |disable_animations_for_test| is set, all changes apply instantly.
+  // Creates and shows a DimmerView and its Widget. The returned view is owned
+  // by its widget. If |disable_animations_for_test| is set, all changes apply
+  // instantly.
   static DimmerView* Create(WmShelf* shelf, bool disable_animations_for_test);
 
   // Called by |DimmerEventFilter| when the mouse |hovered| state changes.
   void SetHovered(bool hovered);
-
-  // Force the dimmer to be undimmed.
-  void ForceUndimming(bool force);
 
   // views::View overrides:
   void OnPaintBackground(gfx::Canvas* canvas) override;
@@ -43,6 +45,11 @@ class DimmerView : public views::View,
   void UpdateBackground(BackgroundAnimator* animator, int alpha) override;
   void BackgroundAnimationEnded(BackgroundAnimator* animator) override;
 
+  // WmDimmerView:
+  views::Widget* GetDimmerWidget() override;
+  void ForceUndimming(bool force) override;
+  int GetDimmingAlphaForTest() override;
+
   // WmWindowObserver overrides:
   // This will be called when the shelf itself changes its absolute position.
   // Since the |dimmer_| panel needs to be placed in screen coordinates it needs
@@ -51,9 +58,6 @@ class DimmerView : public views::View,
   void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
-
-  // A function to test the current alpha used.
-  int get_dimming_alpha_for_test() { return alpha_; }
 
  private:
   DimmerView(WmShelf* shelf, bool disable_animations_for_test);

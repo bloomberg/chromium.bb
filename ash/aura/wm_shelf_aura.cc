@@ -7,6 +7,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/wm_window.h"
+#include "ash/shelf/dimmer_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -118,6 +119,10 @@ void WmShelfAura::UpdateAutoHideState() {
 
 ShelfBackgroundType WmShelfAura::GetBackgroundType() const {
   return shelf_layout_manager_->shelf_widget()->GetBackgroundType();
+}
+
+WmDimmerView* WmShelfAura::CreateDimmerView(bool disable_animations_for_test) {
+  return DimmerView::Create(this, disable_animations_for_test);
 }
 
 bool WmShelfAura::IsDimmed() const {
