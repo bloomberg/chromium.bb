@@ -6896,6 +6896,41 @@ TEST_F(LayerTreeHostCommonTest, ScrollSnappingWithScrollChild) {
                                   scroll_child_impl->ScreenSpaceTransform());
 }
 
+TEST_F(LayerTreeHostCommonTest, NonFlatContainerForFixedPosLayer) {
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> container = Layer::Create();
+  scoped_refptr<Layer> scroller = Layer::Create();
+  scoped_refptr<Layer> fixed_pos = Layer::Create();
+
+  scroller->SetIsContainerForFixedPositionLayers(true);
+  root->AddChild(container);
+  container->AddChild(scroller);
+  scroller->AddChild(fixed_pos);
+  host()->SetRootLayer(root);
+
+  LayerPositionConstraint fixed_position;
+  fixed_position.set_is_fixed_position(true);
+  scroller->SetScrollClipLayerId(container->id());
+  fixed_pos->SetPositionConstraint(fixed_position);
+
+  root->SetBounds(gfx::Size(50, 50));
+  container->SetBounds(gfx::Size(50, 50));
+  scroller->SetBounds(gfx::Size(50, 50));
+  fixed_pos->SetBounds(gfx::Size(50, 50));
+
+  gfx::Transform rotate;
+  rotate.RotateAboutXAxis(20);
+  container->SetTransform(rotate);
+
+  ExecuteCalculateDrawProperties(root.get());
+  TransformTree& tree =
+      root->layer_tree_host()->property_trees()->transform_tree;
+  gfx::Transform transform;
+  tree.ComputeTranslation(fixed_pos->transform_tree_index(),
+                          container->transform_tree_index(), &transform);
+  EXPECT_TRUE(transform.IsIdentity());
+}
+
 TEST_F(LayerTreeHostCommonTest, ScrollSnappingWithFixedPosChild) {
   // This test verifies that a fixed pos child of a scrolling layer doesn't get
   // snapped to integer coordinates.

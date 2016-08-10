@@ -161,10 +161,44 @@ bool TransformTree::ComputeTransform(int source_id,
 bool TransformTree::ComputeTranslation(int source_id,
                                        int dest_id,
                                        gfx::Transform* transform) const {
-  bool success = ComputeTransform(source_id, dest_id, transform);
+  transform->MakeIdentity();
+  if (source_id == dest_id)
+    return true;
+
+  const TransformNode* dest = Node(dest_id);
+  if (!dest->ancestors_are_invertible)
+    return false;
+  if (source_id != kInvalidNodeId)
+    transform->ConcatTransform(ToScreen(source_id));
+  if (dest_id != kInvalidNodeId) {
+    if (dest->local.IsFlat() && (dest->node_and_ancestors_are_flat ||
+                                 dest->flattens_inherited_transform)) {
+      // In this case, flattenning will not affect the result, so we can use the
+      // FromScreen transform of the dest node.
+      transform->ConcatTransform(FromScreen(dest_id));
+    } else {
+      // In this case, some node between source and destination flattens
+      // inherited transform. Consider the tree R->A->B->C->D, where D is the
+      // source, A is the destination and C flattens inherited transform. The
+      // expected result is D * C * flattened(B). D's ToScreen will be D * C *
+      // flattened(B * A * R), but as the source to destination transform is
+      // at most translation, C and B cannot be non-flat and so flattened(B * A
+      // * R) = B * flattened(A * R). So, to get the expected result we have to
+      // multiply D's ToScreen transform with flattened(A * R)^{-1}, which is
+      // the inverse of flattened ToScreen of destination.
+      gfx::Transform to_screen = ToScreen(dest_id);
+      to_screen.FlattenTo2d();
+      gfx::Transform from_screen;
+      bool success = to_screen.GetInverse(&from_screen);
+      if (!success)
+        return false;
+      transform->ConcatTransform(from_screen);
+    }
+  }
+
   DCHECK(
       transform->IsApproximatelyIdentityOrTranslation(SkDoubleToMScalar(1e-4)));
-  return success;
+  return true;
 }
 
 bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
