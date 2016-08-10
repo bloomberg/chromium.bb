@@ -74,9 +74,13 @@ void FakeAppInstance::SendInstallShortcut(const mojom::ShortcutInfo& shortcut) {
   app_host_->OnInstallShortcut(shortcut.Clone());
 }
 
+void FakeAppInstance::SendAppAdded(const mojom::AppInfo& app) {
+  app_host_->OnAppAdded(mojom::AppInfo::From(app));
+}
+
 void FakeAppInstance::SendTaskCreated(int32_t taskId,
                                       const mojom::AppInfo& app) {
-  app_host_->OnTaskCreated(taskId, app.package_name, app.activity);
+  app_host_->OnTaskCreated(taskId, app.package_name, app.activity, app.name);
 }
 
 void FakeAppInstance::SendTaskDestroyed(int32_t taskId) {

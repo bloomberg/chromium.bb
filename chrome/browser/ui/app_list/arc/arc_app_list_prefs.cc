@@ -39,6 +39,7 @@ const char kNotificationsEnabled[] = "notifications_enabled";
 const char kLastBackupAndroidId[] = "last_backup_android_id";
 const char kLastBackupTime[] = "last_backup_time";
 const char kLastLaunchTime[] = "lastlaunchtime";
+const char kLaunchable[] = "launchable";
 const char kShouldSync[] = "should_sync";
 const char kSystem[] = "system";
 const char kOrientationLock[] = "orientation_lock";
@@ -455,6 +456,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   bool sticky = false;
   bool notifications_enabled = true;
   bool shortcut = false;
+  bool launchable = true;
   int orientation_lock_value = 0;
   app->GetString(kName, &name);
   app->GetString(kPackageName, &package_name);
@@ -464,6 +466,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   app->GetBoolean(kSticky, &sticky);
   app->GetBoolean(kNotificationsEnabled, &notifications_enabled);
   app->GetBoolean(kShortcut, &shortcut);
+  app->GetBoolean(kLaunchable, &launchable);
   app->GetInteger(kOrientationLock, &orientation_lock_value);
 
   DCHECK(!name.empty());
@@ -477,17 +480,18 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   }
 
   bool deferred;
-  if (SetNotificationsEnabledDeferred(prefs_).Get(app_id, &deferred)) {
+  if (SetNotificationsEnabledDeferred(prefs_).Get(app_id, &deferred))
     notifications_enabled = deferred;
-  }
+
   arc::mojom::OrientationLock orientation_lock =
       static_cast<arc::mojom::OrientationLock>(orientation_lock_value);
 
   return base::MakeUnique<AppInfo>(
       name, package_name, activity, intent_uri, icon_resource_id,
       last_launch_time, sticky, notifications_enabled,
-      ready_apps_.count(app_id) > 0, arc::ShouldShowInLauncher(app_id),
-      shortcut, orientation_lock);
+      ready_apps_.count(app_id) > 0,
+      launchable && arc::ShouldShowInLauncher(app_id), shortcut, launchable,
+      orientation_lock);
 }
 
 bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
@@ -588,6 +592,20 @@ void ArcAppListPrefs::OnInstanceClosed() {
   }
 }
 
+void ArcAppListPrefs::MayAddNonLaunchableApp(const std::string& name,
+                                             const std::string& package_name,
+                                             const std::string& activity) {
+  DCHECK(IsArcEnabled());
+  if (IsRegistered(GetAppId(package_name, activity)))
+    return;
+
+  AddAppAndShortcut(name, package_name, activity,
+                    std::string() /* intent_uri */,
+                    std::string() /* icon_resource_id */, false /* sticky */,
+                    false /* notifications_enabled */, false /* shortcut */,
+                    false /* launchable */, arc::mojom::OrientationLock::NONE);
+}
+
 void ArcAppListPrefs::AddAppAndShortcut(
     const std::string& name,
     const std::string& package_name,
@@ -597,13 +615,16 @@ void ArcAppListPrefs::AddAppAndShortcut(
     const bool sticky,
     const bool notifications_enabled,
     const bool shortcut,
+    const bool launchable,
     const arc::mojom::OrientationLock orientation_lock) {
   std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
                                 : GetAppId(package_name, activity);
-  bool was_registered = IsRegistered(app_id);
+  const bool was_registered = IsRegistered(app_id);
 
   if (was_registered) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_old_info = GetApp(app_id);
+    DCHECK(app_old_info);
+    DCHECK(launchable);
     if (name != app_old_info->name) {
       FOR_EACH_OBSERVER(Observer, observer_list_,
                         OnAppNameUpdated(app_id, name));
@@ -620,6 +641,7 @@ void ArcAppListPrefs::AddAppAndShortcut(
   app_dict->SetBoolean(kSticky, sticky);
   app_dict->SetBoolean(kNotificationsEnabled, notifications_enabled);
   app_dict->SetBoolean(kShortcut, shortcut);
+  app_dict->SetBoolean(kLaunchable, launchable);
   app_dict->SetInteger(kOrientationLock, static_cast<int>(orientation_lock));
 
   // From now, app is available.
@@ -632,8 +654,8 @@ void ArcAppListPrefs::AddAppAndShortcut(
   } else {
     AppInfo app_info(name, package_name, activity, intent_uri, icon_resource_id,
                      base::Time(), sticky, notifications_enabled, true,
-                     arc::ShouldShowInLauncher(app_id), shortcut,
-                     orientation_lock);
+                     launchable && arc::ShouldShowInLauncher(app_id), shortcut,
+                     launchable, orientation_lock);
     FOR_EACH_OBSERVER(Observer,
                       observer_list_,
                       OnAppRegistered(app_id, app_info));
@@ -693,7 +715,7 @@ void ArcAppListPrefs::OnAppListRefreshed(
                       std::string() /* intent_uri */,
                       std::string() /* icon_resource_id */, app->sticky,
                       app->notifications_enabled, false /* shortcut */,
-                      app->orientation_lock);
+                      true /* launchable */, app->orientation_lock);
   }
 
   // Detect removed ARC apps after current refresh.
@@ -733,7 +755,7 @@ void ArcAppListPrefs::OnAppAdded(arc::mojom::AppInfoPtr app) {
                     std::string() /* intent_uri */,
                     std::string() /* icon_resource_id */, app->sticky,
                     app->notifications_enabled, false /* shortcut */,
-                    app->orientation_lock);
+                    true /* launchable */, app->orientation_lock);
 }
 
 void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
@@ -746,7 +768,7 @@ void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
                     std::string() /* activity */, shortcut->intent_uri,
                     shortcut->icon_resource_id, false /* sticky */,
                     false /* notifications_enabled */, true /* shortcut */,
-                    arc::mojom::OrientationLock::NONE);
+                    true /* launchable */, arc::mojom::OrientationLock::NONE);
 }
 
 void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
@@ -814,7 +836,9 @@ void ArcAppListPrefs::OnIcon(const mojo::String& app_id,
 
 void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
                                     const mojo::String& package_name,
-                                    const mojo::String& activity) {
+                                    const mojo::String& activity,
+                                    const mojo::String& name) {
+  MayAddNonLaunchableApp(name, package_name, activity);
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnTaskCreated(task_id, package_name, activity));
 }
@@ -933,6 +957,7 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
                                   bool ready,
                                   bool showInLauncher,
                                   bool shortcut,
+                                  bool launchable,
                                   arc::mojom::OrientationLock orientation_lock)
     : name(name),
       package_name(package_name),
@@ -945,6 +970,7 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
       ready(ready),
       showInLauncher(showInLauncher),
       shortcut(shortcut),
+      launchable(launchable),
       orientation_lock(orientation_lock) {}
 
 // Need to add explicit destructor for chromium style checker error:

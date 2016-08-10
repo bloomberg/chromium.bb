@@ -911,3 +911,26 @@ TEST_F(ArcAppModelBuilderTest, AppLauncher) {
   ASSERT_EQ(2u, app_instance()->launch_requests().size());
   EXPECT_TRUE(app_instance()->launch_requests()[1]->IsForApp(app2));
 }
+
+// Validates an app that have no launchable flag.
+TEST_F(ArcAppModelBuilderTest, NonLaunchableApp) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
+  app_instance()->RefreshAppList();
+  // Send all except first.
+  std::vector<arc::mojom::AppInfo> apps(fake_apps().begin() + 1,
+                                        fake_apps().end());
+  app_instance()->SendRefreshAppList(apps);
+  ValidateHaveApps(apps);
+
+  const std::string app_id = ArcAppTest::GetAppId(fake_apps()[0]);
+
+  EXPECT_FALSE(prefs->IsRegistered(app_id));
+  EXPECT_FALSE(FindArcItem(app_id));
+  app_instance()->SendTaskCreated(0, fake_apps()[0]);
+  // App should not appear now in the model but should be registered.
+  EXPECT_FALSE(FindArcItem(app_id));
+  EXPECT_TRUE(prefs->IsRegistered(app_id));
+}

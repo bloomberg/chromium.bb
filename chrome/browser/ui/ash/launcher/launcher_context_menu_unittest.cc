@@ -157,7 +157,9 @@ TEST_F(LauncherContextMenuTest,
 // Verifies contextmenu items for Arc app
 TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   arc_test().app_instance()->RefreshAppList();
-  arc_test().app_instance()->SendRefreshAppList(arc_test().fake_apps());
+  arc_test().app_instance()->SendRefreshAppList(
+      std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
+                                       arc_test().fake_apps().begin() + 1));
   const std::string app_id = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
 
   controller()->PinAppWithID(app_id);
@@ -200,6 +202,19 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
   EXPECT_TRUE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_PIN));
+  EXPECT_TRUE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CLOSE));
+
+  // Arc non-launchable app is running.
+  const std::string app_id2 = ArcAppTest::GetAppId(arc_test().fake_apps()[1]);
+  arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1]);
+  item.id = controller()->GetShelfIDForAppID(app_id2);
+  ASSERT_TRUE(item.id);
+  menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));
+
+  EXPECT_FALSE(
+      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
   EXPECT_TRUE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CLOSE));
 }

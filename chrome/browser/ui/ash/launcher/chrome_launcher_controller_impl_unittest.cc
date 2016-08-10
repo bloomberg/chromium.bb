@@ -872,7 +872,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
         app_info.name, app_info.package_name, app_info.activity,
         std::string() /* intent_uri */, std::string() /* icon_resource_id */,
         false /* sticky */, true /* notifications_enabled */,
-        false /* shortcut */, app_info.orientation_lock);
+        false /* shortcut */, true /* launchable */, app_info.orientation_lock);
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
     EXPECT_TRUE(prefs->GetApp(app_id));
@@ -882,7 +882,8 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   void NotifyOnTaskCreated(const arc::mojom::AppInfo& appinfo,
                            int32_t task_id) {
     ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
-    prefs->OnTaskCreated(task_id, appinfo.package_name, appinfo.activity);
+    prefs->OnTaskCreated(task_id, appinfo.package_name, appinfo.activity,
+                         appinfo.name);
   }
 
   void NotifyOnTaskOrientationLockRequested(int32_t task_id,

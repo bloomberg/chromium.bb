@@ -183,6 +183,11 @@ bool LaunchAppWithRect(content::BrowserContext* context,
     return false;
   }
 
+  if (!app_info->launchable) {
+    VLOG(2) << "Cannot launch non-launchable app: " << app_id << ".";
+    return false;
+  }
+
   arc::mojom::AppInstance* app_instance =
       GetAppInstance(kMinVersion, kLaunchAppStr);
   if (!app_instance)
