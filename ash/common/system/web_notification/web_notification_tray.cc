@@ -62,8 +62,22 @@ namespace ash {
 namespace {
 
 // Menu commands
-const int kToggleQuietMode = 0;
-const int kEnableQuietModeDay = 2;
+constexpr int kToggleQuietMode = 0;
+constexpr int kEnableQuietModeDay = 2;
+
+constexpr int kMaximumSmallIconCount = 3;
+
+constexpr gfx::Size kTrayItemInnerIconSize(16, 16);
+constexpr gfx::Size kTrayItemInnerBellIconSize(18, 18);
+constexpr gfx::Size kTrayItemOuterSize(26, 26);
+constexpr gfx::Insets kTrayItemInsets(3, 3);
+
+constexpr int kTrayItemAnimationDurationMS = 200;
+
+constexpr size_t kMaximumNotificationNumber = 99;
+
+// Flag to disable animation. Only for testing.
+bool disable_animations_for_test = false;
 }
 
 namespace {
@@ -114,89 +128,169 @@ class WebNotificationBubbleWrapper {
   DISALLOW_COPY_AND_ASSIGN(WebNotificationBubbleWrapper);
 };
 
-class WebNotificationIcon : public views::View {
+class WebNotificationItem : public views::View, public gfx::AnimationDelegate {
  public:
-  WebNotificationIcon() : is_bubble_visible_(false), unread_count_(0) {
+  WebNotificationItem(gfx::AnimationContainer* container,
+                      WebNotificationTray* tray)
+      : tray_(tray) {
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+    views::View::SetVisible(false);
+    set_owned_by_client();
+
     SetLayoutManager(new views::FillLayout);
 
-    gfx::ImageSkia image;
-    if (MaterialDesignController::IsShelfMaterial()) {
-      image = CreateVectorIcon(gfx::VectorIconId::SHELF_NOTIFICATIONS,
-                               kShelfIconColor);
-    } else {
-      image =
-          CreateVectorIcon(gfx::VectorIconId::NOTIFICATIONS, kNoUnreadIconSize,
-                           kWebNotificationColorNoUnread);
+    animation_.reset(new gfx::SlideAnimation(this));
+    animation_->SetContainer(container);
+    animation_->SetSlideDuration(kTrayItemAnimationDurationMS);
+    animation_->SetTweenType(gfx::Tween::LINEAR);
+  }
+
+  void SetVisible(bool set_visible) override {
+    if (!GetWidget() || disable_animations_for_test) {
+      views::View::SetVisible(set_visible);
+      return;
     }
 
-    no_unread_icon_.SetImage(image);
-    no_unread_icon_.set_owned_by_client();
-
-    unread_label_.set_owned_by_client();
-    SetupLabelForTray(&unread_label_);
-
-    AddChildView(&no_unread_icon_);
+    if (!set_visible) {
+      animation_->Hide();
+      AnimationProgressed(animation_.get());
+    } else {
+      animation_->Show();
+      AnimationProgressed(animation_.get());
+      views::View::SetVisible(true);
+    }
   }
 
-  void SetBubbleVisible(bool visible) {
-    if (visible == is_bubble_visible_)
-      return;
+  void HideAndDelete() {
+    SetVisible(false);
 
-    is_bubble_visible_ = visible;
-    UpdateIconVisibility();
-  }
-
-  void SetUnreadCount(int unread_count) {
-    // base::FormatNumber doesn't convert to arabic numeric characters.
-    // TODO(mukai): use ICU to support conversion for such locales.
-    unread_count_ = unread_count;
-    UpdateIconVisibility();
+    if (!visible() && !animation_->is_animating()) {
+      if (parent())
+        parent()->RemoveChildView(this);
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+    } else {
+      delete_after_animation_ = true;
+    }
   }
 
  protected:
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override {
-    const int size = GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY);
-    return gfx::Size(size, size);
+    if (!animation_.get() || !animation_->is_animating())
+      return kTrayItemOuterSize;
+
+    // Animate the width (or height) when this item shows (or hides) so that
+    // the icons on the left are shifted with the animation.
+    // Note that TrayItemView does the same thing.
+    gfx::Size size = kTrayItemOuterSize;
+    if (IsHorizontalLayout()) {
+      size.set_width(std::max(
+          1, gfx::ToRoundedInt(size.width() * animation_->GetCurrentValue())));
+    } else {
+      size.set_height(std::max(
+          1, gfx::ToRoundedInt(size.height() * animation_->GetCurrentValue())));
+    }
+    return size;
   }
 
   int GetHeightForWidth(int width) const override {
     return GetPreferredSize().height();
   }
 
- private:
-  void UpdateIconVisibility() {
-    if (unread_count_ == 0) {
-      if (!Contains(&no_unread_icon_)) {
-        RemoveAllChildViews(false /* delete_children */);
-        AddChildView(&no_unread_icon_);
-      }
-    } else {
-      if (!Contains(&unread_label_)) {
-        RemoveAllChildViews(false /* delete_children */);
-        AddChildView(&unread_label_);
-      }
+  bool IsHorizontalLayout() const {
+    return IsHorizontalAlignment(tray_->shelf_alignment());
+  }
 
-      // TODO(mukai): move NINE_PLUS message to ui_strings, it doesn't need to
-      // be in ash_strings.
-      unread_label_.SetText(
-          (unread_count_ > 9) ? l10n_util::GetStringUTF16(
-                                    IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS)
-                              : base::FormatNumber(unread_count_));
-      unread_label_.SetEnabledColor((unread_count_ > 0)
-                                        ? kWebNotificationColorWithUnread
-                                        : kWebNotificationColorNoUnread);
+ private:
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    gfx::Transform transform;
+    if (IsHorizontalLayout()) {
+      transform.Translate(0, animation->CurrentValueBetween(
+                                 static_cast<double>(height()) / 2., 0.));
+    } else {
+      transform.Translate(
+          animation->CurrentValueBetween(static_cast<double>(width() / 2.), 0.),
+          0);
     }
+    transform.Scale(animation->GetCurrentValue(), animation->GetCurrentValue());
+    layer()->SetTransform(transform);
+    PreferredSizeChanged();
+  }
+  void AnimationEnded(const gfx::Animation* animation) override {
+    if (animation->GetCurrentValue() < 0.1)
+      views::View::SetVisible(false);
+
+    if (delete_after_animation_) {
+      if (parent())
+        parent()->RemoveChildView(this);
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+    }
+  }
+  void AnimationCanceled(const gfx::Animation* animation) override {
+    AnimationEnded(animation);
+  }
+
+  std::unique_ptr<gfx::SlideAnimation> animation_;
+  bool delete_after_animation_ = false;
+  WebNotificationTray* tray_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationItem);
+};
+
+class WebNotificationImage : public WebNotificationItem {
+ public:
+  WebNotificationImage(const gfx::ImageSkia& image,
+                       gfx::Size size,
+                       gfx::AnimationContainer* container,
+                       WebNotificationTray* tray)
+      : WebNotificationItem(container, tray) {
+    view_ = new views::ImageView();
+    view_->SetImage(image);
+    view_->SetImageSize(size);
+    AddChildView(view_);
+  }
+
+ private:
+  views::ImageView* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationImage);
+};
+
+class WebNotificationLabel : public WebNotificationItem {
+ public:
+  WebNotificationLabel(gfx::AnimationContainer* container,
+                       WebNotificationTray* tray)
+      : WebNotificationItem(container, tray) {
+    view_ = new views::Label();
+    SetupLabelForTray(view_);
+  }
+
+  void SetNotificationCount(bool small_icons_exist, size_t notification_count) {
+    notification_count = std::min(notification_count,
+                                  kMaximumNotificationNumber);  // cap with 99
+
+    // TODO(yoshiki): Use a string for "99" and "+99".
+
+    base::string16 str = base::FormatNumber(notification_count);
+    if (small_icons_exist) {
+      if (!base::i18n::IsRTL())
+        str = base::ASCIIToUTF16("+") + str;
+      else
+        str = str + base::ASCIIToUTF16("+");
+    }
+
+    view_->SetText(str);
+    view_->SetEnabledColor(kWebNotificationColorWithUnread);
+    AddChildView(view_);
     SchedulePaint();
   }
 
-  bool is_bubble_visible_;
-  int unread_count_;
+ private:
+  views::Label* view_;
 
-  views::ImageView no_unread_icon_;
-  views::Label unread_label_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationIcon);
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationLabel);
 };
 
 WebNotificationTray::WebNotificationTray(WmShelf* shelf,
@@ -205,7 +299,6 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
     : TrayBackgroundView(shelf),
       status_area_window_(status_area_window),
       system_tray_(system_tray),
-      icon_(new WebNotificationIcon),
       show_message_center_on_unlock_(false),
       should_update_tray_content_(false),
       should_block_shelf_auto_hide_(false) {
@@ -213,7 +306,23 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
   DCHECK(status_area_window_);
   DCHECK(system_tray_);
 
-  tray_container()->AddChildView(icon_);
+  gfx::ImageSkia bell_image;
+  if (MaterialDesignController::IsShelfMaterial()) {
+    bell_image = CreateVectorIcon(gfx::VectorIconId::SHELF_NOTIFICATIONS,
+                                  kShelfIconColor);
+  } else {
+    bell_image =
+        CreateVectorIcon(gfx::VectorIconId::NOTIFICATIONS, kNoUnreadIconSize,
+                         kWebNotificationColorNoUnread);
+  }
+  bell_icon_.reset(new WebNotificationImage(bell_image,
+                                            kTrayItemInnerBellIconSize,
+                                            animation_container_.get(), this));
+  tray_container()->AddChildView(bell_icon_.get());
+
+  counter_.reset(new WebNotificationLabel(animation_container_.get(), this));
+  tray_container()->AddChildView(counter_.get());
+
   SetContentsBackground();
   tray_container()->SetBorder(views::Border::NullBorder());
   message_center_tray_.reset(new message_center::MessageCenterTray(
@@ -227,6 +336,8 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
   popup_alignment_delegate_->StartObserving(display::Screen::GetScreen(),
                                             display);
   OnMessageCenterTrayChanged();
+
+  tray_container()->SetMargin(kTrayItemInsets);
 }
 
 WebNotificationTray::~WebNotificationTray() {
@@ -234,6 +345,11 @@ WebNotificationTray::~WebNotificationTray() {
   message_center_bubble_.reset();
   popup_alignment_delegate_.reset();
   popup_collection_.reset();
+}
+
+// static
+void WebNotificationTray::DisableAnimationsForTest(bool disable) {
+  disable_animations_for_test = disable;
 }
 
 // Public methods.
@@ -248,7 +364,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
                                               message_center_tray_.get(), true);
 
   int max_height;
-  if (IsHorizontalAlignment(shelf()->GetAlignment())) {
+  if (IsHorizontalAlignment(shelf_alignment())) {
     max_height = shelf()->GetIdealBounds().y();
   } else {
     // Assume the status area and bubble bottoms are aligned when vertical.
@@ -266,7 +382,6 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
 
   system_tray_->SetHideNotifications(true);
   shelf()->UpdateAutoHideState();
-  icon_->SetBubbleVisible(true);
   SetDrawBackgroundAsActive(true);
   return true;
 }
@@ -284,7 +399,6 @@ void WebNotificationTray::HideMessageCenter() {
   show_message_center_on_unlock_ = false;
   system_tray_->SetHideNotifications(false);
   shelf()->UpdateAutoHideState();
-  icon_->SetBubbleVisible(false);
 }
 
 void WebNotificationTray::SetTrayBubbleHeight(int height) {
@@ -470,11 +584,61 @@ void WebNotificationTray::UpdateTrayContent() {
     return;
   should_update_tray_content_ = false;
 
+  std::unordered_set<std::string> notification_ids;
+  for (auto pair : visible_small_icons_)
+    notification_ids.insert(pair.first);
+
+  // Add small icons (up to kMaximumSmallIconCount = 3).
   message_center::MessageCenter* message_center =
       message_center_tray_->message_center();
-  icon_->SetUnreadCount(message_center->UnreadNotificationCount());
+  size_t visible_small_icon_count = 0;
+  for (const auto* notification : message_center->GetVisibleNotifications()) {
+    gfx::Image image = notification->small_image();
+    if (image.IsEmpty())
+      continue;
+
+    if (visible_small_icon_count >= kMaximumSmallIconCount)
+      break;
+    visible_small_icon_count++;
+
+    notification_ids.erase(notification->id());
+    if (visible_small_icons_.count(notification->id()) != 0)
+      continue;
+
+    auto* item =
+        new WebNotificationImage(image.AsImageSkia(), kTrayItemInnerIconSize,
+                                 animation_container_.get(), this);
+    visible_small_icons_.insert(std::make_pair(notification->id(), item));
+
+    tray_container()->AddChildViewAt(item, 0);
+    item->SetVisible(true);
+  }
+
+  // Remove unnecessary icons.
+  for (const std::string& id : notification_ids) {
+    WebNotificationImage* item = visible_small_icons_[id];
+    visible_small_icons_.erase(id);
+    item->HideAndDelete();
+  }
+
+  // Show or hide the bell icon.
+  size_t visible_notification_count = message_center->NotificationCount();
+  bell_icon_->SetVisible(visible_notification_count == 0);
+
+  // Show or hide the counter.
+  size_t hidden_icon_count =
+      visible_notification_count - visible_small_icon_count;
+  if (hidden_icon_count != 0) {
+    counter_->SetVisible(true);
+    counter_->SetNotificationCount(
+        (visible_small_icon_count != 0),  // small_icons_exist
+        hidden_icon_count);
+  } else {
+    counter_->SetVisible(false);
+  }
 
   SetVisible(IsLoggedIn());
+  PreferredSizeChanged();
   Layout();
   SchedulePaint();
   if (IsLoggedIn())

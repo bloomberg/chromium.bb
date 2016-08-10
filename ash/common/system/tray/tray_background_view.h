@@ -43,6 +43,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
     void set_size(const gfx::Size& size) { size_ = size; }
 
+    void SetMargin(const gfx::Insets& margin);
+
     // views::View:
     gfx::Size GetPreferredSize() const override;
 
@@ -58,6 +60,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
     ShelfAlignment alignment_;
     gfx::Size size_;
+    gfx::Insets margin_;
 
     DISALLOW_COPY_AND_ASSIGN(TrayContainer);
   };
