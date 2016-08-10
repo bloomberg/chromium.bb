@@ -13,7 +13,20 @@ overview over how to use GN can be found in the GN
 ## Building
 
 There are two different build configurations depending on what you want to
-build:
+build, either the client or the engine.
+
+Regardless of which you build, it is helpful to setup the following
+environment variable in your shell to get a better view of how the build is
+progressing:
+
+```bash
+export NINJA_STATUS="[%r %f/%s/%u/%t] "
+```
+
+It will give you a count for the following values:
+`[RUNNING FINISHED/STARTED/NOT_STARTED/TOTAL]`. See the
+[ninja manual](https://ninja-build.org/manual.html#_environment_variables)
+for a full list of template values.
 
 ### Android client
 
