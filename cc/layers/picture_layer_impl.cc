@@ -12,6 +12,7 @@
 #include <limits>
 #include <set>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
@@ -1229,6 +1230,8 @@ void PictureLayerImpl::UpdateIdealScales() {
   ideal_contents_scale_ = std::max(GetIdealContentsScale(), min_contents_scale);
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.IdealContentsScale",
+                              ideal_contents_scale_, 0, 10000, 50);
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(

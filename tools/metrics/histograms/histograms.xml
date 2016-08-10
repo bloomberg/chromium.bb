@@ -46690,6 +46690,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.IdealContentsScale">
+  <owner>vmpstr@chromium.org</owner>
+  <summary>
+    The contents scale at which picture layer impl should be rasterized in order
+    to appear crisp. This is also known as ideal contents scale. This value is
+    recorded any time the ideal contents scale changes. Some examples of this
+    are pinch-zoom and JavaScript transform changes.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.InvalidationRegionApproximateRectCount"
     units="rects">
   <owner>wiltzius@chromium.org</owner>
