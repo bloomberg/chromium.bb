@@ -23,13 +23,23 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
   LayoutUnit inlineSize =
       computeInlineSizeForFragment(constraintSpace, *m_style);
 
+  HeapVector<Member<const NGFragmentBase>> childFragments;
+
+  LayoutUnit contentSize;
   for (NGBox curr = m_firstChild; curr; curr.nextSibling()) {
-    curr.layout(constraintSpace);
+    NGFragment* fragment = curr.layout(constraintSpace);
+    // TODO(layout-ng): Take margins into account
+    fragment->setOffset(LayoutUnit(), contentSize);
+    contentSize += fragment->blockSize();
+    childFragments.append(fragment);
   }
 
   LayoutUnit blockSize =
-      computeBlockSizeForFragment(constraintSpace, *m_style, LayoutUnit());
-  return new NGFragment(inlineSize, blockSize, inlineSize, blockSize);
+      computeBlockSizeForFragment(constraintSpace, *m_style, contentSize);
+  NGFragment* returnFragment =
+      new NGFragment(inlineSize, blockSize, inlineSize, blockSize);
+  returnFragment->swapChildren(childFragments);
+  return returnFragment;
 }
 
 }  // namespace blink

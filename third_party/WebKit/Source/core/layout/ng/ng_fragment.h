@@ -28,6 +28,10 @@ class CORE_EXPORT NGFragment final : public NGFragmentBase {
     NGFragmentBase::traceAfterDispatch(visitor);
   }
 
+  void swapChildren(HeapVector<Member<const NGFragmentBase>>& children) {
+    m_children.swap(children);
+  }
+
  private:
   HeapVector<Member<const NGFragmentBase>> m_children;
   bool m_isText;
