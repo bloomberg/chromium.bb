@@ -434,7 +434,8 @@ weston_slide_run(struct weston_view *view, float start, float stop,
 struct weston_move_animation {
 	int dx;
 	int dy;
-	int reverse;
+	bool reverse;
+	bool scale;
 	weston_view_animation_done_func_t done;
 };
 
@@ -452,7 +453,9 @@ move_frame(struct weston_view_animation *animation)
                 (animation->stop - animation->start) *
                 progress;
 	weston_matrix_init(&animation->transform.matrix);
-	weston_matrix_scale(&animation->transform.matrix, scale, scale, 1.0f);
+	if (move->scale)
+		weston_matrix_scale(&animation->transform.matrix, scale, scale,
+				    1.0f);
 	weston_matrix_translate(&animation->transform.matrix,
                                 move->dx * progress, move->dy * progress,
 				0);
@@ -469,10 +472,11 @@ move_done(struct weston_view_animation *animation, void *data)
 	free(move);
 }
 
-WL_EXPORT struct weston_view_animation *
-weston_move_scale_run(struct weston_view *view, int dx, int dy,
-		      float start, float end, int reverse,
-		      weston_view_animation_done_func_t done, void *data)
+static struct weston_view_animation *
+weston_move_scale_run_internal(struct weston_view *view, int dx, int dy,
+			       float start, float end, bool reverse, bool scale,
+			       weston_view_animation_done_func_t done,
+			       void *data)
 {
 	struct weston_move_animation *move;
 	struct weston_view_animation *animation;
@@ -483,6 +487,7 @@ weston_move_scale_run(struct weston_view *view, int dx, int dy,
 	move->dx = dx;
 	move->dy = dy;
 	move->reverse = reverse;
+	move->scale = scale;
 	move->done = done;
 
 	animation = weston_view_animation_create(view, start, end, move_frame,
@@ -499,4 +504,22 @@ weston_move_scale_run(struct weston_view *view, int dx, int dy,
 	weston_view_animation_run(animation);
 
 	return animation;
+}
+
+WL_EXPORT struct weston_view_animation *
+weston_move_scale_run(struct weston_view *view, int dx, int dy,
+		      float start, float end, bool reverse,
+		      weston_view_animation_done_func_t done, void *data)
+{
+	return weston_move_scale_run_internal(view, dx, dy, start, end, reverse,
+					      true, done, data);
+}
+
+WL_EXPORT struct weston_view_animation *
+weston_move_run(struct weston_view *view, int dx, int dy,
+		float start, float end, bool reverse,
+		weston_view_animation_done_func_t done, void *data)
+{
+	return weston_move_scale_run_internal(view, dx, dy, start, end, reverse,
+					      false, done, data);
 }

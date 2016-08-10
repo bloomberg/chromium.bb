@@ -1707,8 +1707,13 @@ weston_fade_run(struct weston_view *view,
 
 struct weston_view_animation *
 weston_move_scale_run(struct weston_view *view, int dx, int dy,
-		      float start, float end, int reverse,
+		      float start, float end, bool reverse,
 		      weston_view_animation_done_func_t done, void *data);
+
+struct weston_view_animation *
+weston_move_run(struct weston_view *view, int dx, int dy,
+		float start, float end, bool reverse,
+		weston_view_animation_done_func_t done, void *data);
 
 void
 weston_fade_update(struct weston_view_animation *fade, float target);
