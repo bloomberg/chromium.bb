@@ -239,7 +239,7 @@ class DromaeoJslibEventPrototype(_DromaeoBenchmark):
     return 'dromaeo.jslibeventprototype'
 
 
-# win: http://crbug.com/479796, http://crbug.com/529330, http://crbug.com/598705
+# win: http://crbug.com/479796, http://crbug.com/598705
 # android: http://crbug.com/503138
 # linux: http://crbug.com/583075
 @benchmark.Disabled('win-reference', 'android', 'linux')
