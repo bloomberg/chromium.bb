@@ -16,6 +16,9 @@ declare_args() {
   # warnings, so normally this is done on a build machine and only the new
   # warnings are examined.
   use_vs_code_analysis = false
+
+  # Turn this on to have the linker output extra timing information.
+  win_linker_timing = false
 }
 
 # This is included by reference in the //build/config/compiler config that
@@ -267,13 +270,10 @@ config("common_linker_setup") {
     "/maxilksize:0x7ff00000",
   ]
 
-  # Flags not supported in version 2013.
-  if (visual_studio_version != "2013" && visual_studio_version != "2013e") {
-    ldflags += [
-      # Tell the linker to crash on failures.
-      "/fastfail",
-    ]
-  }
+  ldflags += [
+    # Tell the linker to crash on failures.
+    "/fastfail",
+  ]
 
   # ASLR makes debugging with windbg difficult because Chrome.exe and
   # Chrome.dll share the same base name. As result, windbg will name the
@@ -285,6 +285,13 @@ config("common_linker_setup") {
     ldflags += [ "/DYNAMICBASE:NO" ]
   } else {
     ldflags += [ "/DYNAMICBASE" ]
+  }
+
+  if (win_linker_timing) {
+    ldflags += [
+      "/time",
+      "/verbose:incr",
+    ]
   }
 }
 
