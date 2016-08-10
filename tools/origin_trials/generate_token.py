@@ -35,6 +35,9 @@ DNS_LABEL_REGEX = re.compile(r"^(?!-)[a-z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 # This script generates Version 2 tokens.
 VERSION = "\x02"
 
+# Default key file, relative to script_dir.
+DEFAULT_KEY_FILE = 'eftest.key'
+
 def HostnameFromArg(arg):
   """Determines whether a string represents a valid hostname.
 
@@ -98,6 +101,8 @@ def FormatToken(version, signature, data):
                           struct.pack(">I",len(data)) + data)
 
 def main():
+  default_key_file_absolute = os.path.join(script_dir, DEFAULT_KEY_FILE)
+
   parser = argparse.ArgumentParser(
       description="Generate tokens for enabling experimental APIs")
   parser.add_argument("origin",
@@ -111,7 +116,7 @@ def main():
                            "RuntimeFeatures.in")
   parser.add_argument("--key-file",
                       help="Ed25519 private key file to sign the token with",
-                      default="eftest.key")
+                      default=default_key_file_absolute)
   expiry_group = parser.add_mutually_exclusive_group()
   expiry_group.add_argument("--expire-days",
                             help="Days from now when the token should exipire",
