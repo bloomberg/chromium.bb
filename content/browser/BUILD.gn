@@ -112,6 +112,7 @@ source_set("browser") {
     "//ui/base",
     "//ui/base/ime",
     "//ui/display",
+    "//ui/display/types",
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/events/blink",

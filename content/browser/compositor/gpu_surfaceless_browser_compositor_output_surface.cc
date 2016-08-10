@@ -28,12 +28,12 @@ GpuSurfacelessBrowserCompositorOutputSurface::
             overlay_candidate_validator,
         unsigned int target,
         unsigned int internalformat,
+        gfx::BufferFormat format,
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(std::move(context),
                                         std::move(vsync_manager),
                                         begin_frame_source,
                                         std::move(overlay_candidate_validator)),
-      internalformat_(internalformat),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
@@ -49,8 +49,8 @@ GpuSurfacelessBrowserCompositorOutputSurface::
   gl_helper_.reset(new display_compositor::GLHelper(
       context_provider_->ContextGL(), context_provider_->ContextSupport()));
   buffer_queue_.reset(new display_compositor::BufferQueue(
-      context_provider_->ContextGL(), target, internalformat_, gl_helper_.get(),
-      gpu_memory_buffer_manager_, surface_handle));
+      context_provider_->ContextGL(), target, internalformat, format,
+      gl_helper_.get(), gpu_memory_buffer_manager_, surface_handle));
   buffer_queue_->Initialize();
 }
 

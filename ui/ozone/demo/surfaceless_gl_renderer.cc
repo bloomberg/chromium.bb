@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -39,14 +40,14 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
   glGenFramebuffersEXT(1, &gl_fb_);
   glGenTextures(1, &gl_tex_);
 
+  gfx::BufferFormat format = ui::DisplaySnapshot::PrimaryFormat();
   scoped_refptr<NativePixmap> pixmap =
       OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(widget, size, gfx::BufferFormat::BGRX_8888,
-                               gfx::BufferUsage::SCANOUT);
+          ->CreateNativePixmap(widget, size, format, gfx::BufferUsage::SCANOUT);
   scoped_refptr<ui::GLImageOzoneNativePixmap> image(
       new ui::GLImageOzoneNativePixmap(size, GL_RGB));
-  if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRX_8888)) {
+  if (!image->Initialize(pixmap.get(), format)) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }

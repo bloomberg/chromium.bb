@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -76,6 +77,9 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   // Used when no product id known.
   static const int64_t kInvalidProductID = -1;
+
+  // Return the buffer format to be used for the primary plane buffer.
+  static gfx::BufferFormat PrimaryFormat();
 
  protected:
   // Display id for this output.

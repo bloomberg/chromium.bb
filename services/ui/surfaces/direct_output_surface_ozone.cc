@@ -19,6 +19,7 @@
 #include "services/ui/common/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/gpu/mus_gpu_memory_buffer_manager.h"
 #include "services/ui/surfaces/surfaces_context_provider.h"
+#include "ui/display/types/display_snapshot.h"
 
 using display_compositor::BufferQueue;
 
@@ -35,9 +36,10 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
                  context_provider->ContextSupport()),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
       weak_ptr_factory_(this) {
-  buffer_queue_.reset(new BufferQueue(
-      context_provider->ContextGL(), target, internalformat, &gl_helper_,
-      MusGpuMemoryBufferManager::current(), widget));
+  buffer_queue_.reset(
+      new BufferQueue(context_provider->ContextGL(), target, internalformat,
+                      ui::DisplaySnapshot::PrimaryFormat(), &gl_helper_,
+                      MusGpuMemoryBufferManager::current(), widget));
 
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;

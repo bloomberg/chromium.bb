@@ -33,6 +33,7 @@ source_set("surfaces") {
     "//services/ui/common:mus_common",
     "//services/ui/gpu",
     "//services/ui/public/interfaces",
+    "//ui/display/types",
     "//ui/gfx",
     "//ui/gfx/geometry/mojo",
     "//ui/gl",

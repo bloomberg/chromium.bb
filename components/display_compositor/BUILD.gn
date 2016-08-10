@@ -30,6 +30,7 @@ component("display_compositor") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
     "//skia",
+    "//ui/display/types",
     "//ui/gfx",
   ]
 
@@ -85,6 +86,7 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/display/types",
     "//ui/gl:test_support",
   ]
 

@@ -48,7 +48,8 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
                format == gfx::BufferFormat::BGRX_8888 ||
                format == gfx::BufferFormat::YVU_420;
       case gfx::BufferUsage::SCANOUT:
-        return format == gfx::BufferFormat::BGRX_8888;
+        return format == gfx::BufferFormat::BGRX_8888 ||
+               format == gfx::BufferFormat::RGBX_8888;
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT: {
 #if defined(OS_CHROMEOS)

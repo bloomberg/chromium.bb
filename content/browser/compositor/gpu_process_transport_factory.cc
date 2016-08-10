@@ -56,6 +56,7 @@
 #include "ui/compositor/compositor_constants.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(USE_AURA)
@@ -492,7 +493,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 context_provider, data->surface_handle,
                 compositor->vsync_manager(), begin_frame_source.get(),
                 CreateOverlayCandidateValidator(compositor->widget()),
-                GL_TEXTURE_2D, GL_RGB,
+                GL_TEXTURE_2D, GL_RGB, ui::DisplaySnapshot::PrimaryFormat(),
                 BrowserGpuMemoryBufferManager::current()));
 #endif
       } else {

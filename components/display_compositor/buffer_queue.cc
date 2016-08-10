@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/skia_util.h"
 
@@ -22,6 +23,7 @@ namespace display_compositor {
 BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
                          uint32_t texture_target,
                          uint32_t internal_format,
+                         gfx::BufferFormat format,
                          GLHelper* gl_helper,
                          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                          gpu::SurfaceHandle surface_handle)
@@ -30,9 +32,13 @@ BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
       allocated_count_(0),
       texture_target_(texture_target),
       internal_format_(internal_format),
+      format_(format),
       gl_helper_(gl_helper),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      surface_handle_(surface_handle) {}
+      surface_handle_(surface_handle) {
+  DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(internal_format,
+                                                               format_));
+}
 
 BufferQueue::~BufferQueue() {
   FreeAllSurfaces();
@@ -211,11 +217,9 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
 
   // We don't want to allow anything more than triple buffering.
   DCHECK_LT(allocated_count_, 4U);
-
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
-          size_, gpu::DefaultBufferFormatForImageFormat(internal_format_),
-          gfx::BufferUsage::SCANOUT, surface_handle_));
+          size_, format_, gfx::BufferUsage::SCANOUT, surface_handle_));
   if (!buffer.get()) {
     gl_->DeleteTextures(1, &texture);
     DLOG(ERROR) << "Failed to allocate GPU memory buffer";

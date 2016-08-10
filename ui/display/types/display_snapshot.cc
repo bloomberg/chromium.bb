@@ -56,4 +56,9 @@ DisplaySnapshot::DisplaySnapshot(
 
 DisplaySnapshot::~DisplaySnapshot() {}
 
+// static
+gfx::BufferFormat DisplaySnapshot::PrimaryFormat() {
+  return gfx::BufferFormat::BGRX_8888;
+}
+
 }  // namespace ui

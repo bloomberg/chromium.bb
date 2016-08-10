@@ -7,4 +7,5 @@ include_rules = [
   "+mojo/common",
   "+mojo/converters",
   "+mojo/public",
+  "+ui/display/types",
 ]

@@ -66,6 +66,7 @@ bool HardwareDisplayPlane::Initialize(DrmDevice* drm,
   if (is_dummy) {
     type_ = kDummy;
     supported_formats_.push_back(DRM_FORMAT_XRGB8888);
+    supported_formats_.push_back(DRM_FORMAT_XBGR8888);
     return true;
   }
 

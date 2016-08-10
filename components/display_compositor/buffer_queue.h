@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/display_compositor/display_compositor_export.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -44,6 +45,7 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
   BufferQueue(gpu::gles2::GLES2Interface* gl,
               uint32_t texture_target,
               uint32_t internal_format,
+              gfx::BufferFormat format,
               GLHelper* gl_helper,
               gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
               gpu::SurfaceHandle surface_handle);
@@ -110,6 +112,7 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
   size_t allocated_count_;
   uint32_t texture_target_;
   uint32_t internal_format_;
+  gfx::BufferFormat format_;
   // This surface is currently bound. This may be nullptr if no surface has
   // been bound, or if allocation failed at bind.
   std::unique_ptr<AllocatedSurface> current_surface_;

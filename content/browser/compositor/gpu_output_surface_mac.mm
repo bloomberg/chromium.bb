@@ -12,6 +12,7 @@
 #include "gpu/ipc/client/gpu_process_hosted_ca_layer_tree_params.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/mac/io_surface.h"
 
 namespace content {
@@ -62,6 +63,7 @@ GpuOutputSurfaceMac::GpuOutputSurfaceMac(
           std::move(overlay_candidate_validator),
           GL_TEXTURE_RECTANGLE_ARB,
           GL_RGBA,
+          gfx::BufferFormat::RGBA_8888,
           gpu_memory_buffer_manager),
       remote_layers_(new RemoteLayers) {}
 

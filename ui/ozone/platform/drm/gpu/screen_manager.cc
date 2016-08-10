@@ -10,6 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -341,9 +342,10 @@ OverlayPlane ScreenManager::GetModesetBuffer(
       return *primary;
   }
 
+  gfx::BufferFormat format = ui::DisplaySnapshot::PrimaryFormat();
   scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
-  scoped_refptr<ScanoutBuffer> buffer = buffer_generator_->Create(
-      drm, gfx::BufferFormat::BGRA_8888, bounds.size());
+  scoped_refptr<ScanoutBuffer> buffer =
+      buffer_generator_->Create(drm, format, bounds.size());
   if (!buffer) {
     LOG(ERROR) << "Failed to create scanout buffer";
     return OverlayPlane(nullptr, 0, gfx::OVERLAY_TRANSFORM_INVALID, gfx::Rect(),
