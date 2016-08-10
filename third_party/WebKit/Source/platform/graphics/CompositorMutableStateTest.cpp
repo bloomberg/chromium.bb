@@ -33,7 +33,7 @@ using cc::TestSharedBitmapManager;
 class CompositorMutableStateTest : public testing::Test {
 public:
     CompositorMutableStateTest()
-        : m_outputSurface(FakeOutputSurface::Create3d())
+        : m_outputSurface(FakeOutputSurface::CreateDelegating3d())
     {
         LayerTreeSettings settings;
         settings.layer_transforms_should_scale_layer_contents = true;

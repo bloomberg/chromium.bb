@@ -24,6 +24,7 @@
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_task_manager.h"
+#include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_layer_tree_host_base.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -46,10 +47,8 @@ namespace {
 class TileManagerTilePriorityQueueTest : public TestLayerTreeHostBase {
  public:
   LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings;
+    LayerTreeSettingsForTesting settings;
     settings.create_low_res_tiling = true;
-    settings.verify_clip_tree_calculations = true;
-    settings.verify_transform_tree_calculations = true;
     settings.renderer_settings.buffer_to_texture_target_map =
         DefaultBufferToTextureTargetMapForTesting();
     return settings;
@@ -1502,10 +1501,9 @@ class TileManagerTest : public TestLayerTreeHostBase {
         task_graph_runner, gpu_memory_buffer_manager));
   }
 
-  // By default use SoftwareOutputSurface.
+  // By default use software compositing (no context provider).
   std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    return FakeOutputSurface::CreateSoftware(
-        base::WrapUnique(new SoftwareOutputDevice));
+    return FakeOutputSurface::CreateDelegatingSoftware();
   }
 
   MockLayerTreeHostImpl& MockHostImpl() {

@@ -254,8 +254,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
 
   TestSharedBitmapManager shared_bitmap_manager;
   std::unique_ptr<FakeOutputSurface> output_surface =
-      FakeOutputSurface::CreateSoftware(
-          base::WrapUnique(new SoftwareOutputDevice));
+      FakeOutputSurface::CreateDelegatingSoftware();
   FakeLayerTreeHostImpl host_impl(LayerTreeSettings(),
                                   &impl_task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);

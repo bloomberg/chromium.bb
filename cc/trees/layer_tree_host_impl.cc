@@ -53,8 +53,6 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/delegating_renderer.h"
-#include "cc/output/gl_renderer.h"
-#include "cc/output/software_renderer.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
@@ -2108,22 +2106,10 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   DCHECK(output_surface_);
   DCHECK(resource_provider_);
 
-  if (output_surface_->capabilities().delegated_rendering) {
-    renderer_ =
-        DelegatingRenderer::Create(this, &settings_.renderer_settings,
-                                   output_surface_, resource_provider_.get());
-  } else if (output_surface_->context_provider()) {
-    renderer_ = GLRenderer::Create(
-        this, &settings_.renderer_settings, output_surface_,
-        resource_provider_.get(), texture_mailbox_deleter_.get(),
-        settings_.renderer_settings.highp_threshold_min);
-  } else if (output_surface_->software_device()) {
-    renderer_ =
-        SoftwareRenderer::Create(this, &settings_.renderer_settings,
+  DCHECK(output_surface_->capabilities().delegated_rendering);
+  renderer_ =
+      DelegatingRenderer::Create(this, &settings_.renderer_settings,
                                  output_surface_, resource_provider_.get());
-  }
-  DCHECK(renderer_);
-
   renderer_->SetVisible(visible_);
   SetFullRootLayerDamage();
 

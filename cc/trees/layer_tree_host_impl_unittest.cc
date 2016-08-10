@@ -10706,22 +10706,12 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
 // A mock output surface which lets us detect calls to ForceReclaimResources.
 class MockReclaimResourcesOutputSurface : public FakeOutputSurface {
  public:
-  static std::unique_ptr<MockReclaimResourcesOutputSurface> Create3d() {
-    return base::WrapUnique(new MockReclaimResourcesOutputSurface(
-        TestContextProvider::Create(), TestContextProvider::CreateWorker(),
-        false));
-  }
+  MockReclaimResourcesOutputSurface()
+      : FakeOutputSurface(TestContextProvider::Create(),
+                          TestContextProvider::CreateWorker(),
+                          true) {}
 
   MOCK_METHOD0(ForceReclaimResources, void());
-
- protected:
-  MockReclaimResourcesOutputSurface(
-      scoped_refptr<ContextProvider> context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider,
-      bool delegated_rendering)
-      : FakeOutputSurface(context_provider,
-                          worker_context_provider,
-                          delegated_rendering) {}
 };
 
 // Display::Draw (and the planned Display Scheduler) currently rely on resources
@@ -10729,8 +10719,7 @@ class MockReclaimResourcesOutputSurface : public FakeOutputSurface {
 // ensures that BeginCommit triggers ForceReclaimResources. See
 // crbug.com/489515.
 TEST_F(LayerTreeHostImplTest, BeginCommitReclaimsResources) {
-  std::unique_ptr<MockReclaimResourcesOutputSurface> output_surface(
-      MockReclaimResourcesOutputSurface::Create3d());
+  auto output_surface = base::MakeUnique<MockReclaimResourcesOutputSurface>();
   // Hold an unowned pointer to the output surface to use for mock expectations.
   MockReclaimResourcesOutputSurface* mock_output_surface = output_surface.get();
 
