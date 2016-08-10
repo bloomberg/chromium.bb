@@ -56,8 +56,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
-  int16_t GetInquiryRSSI() const override;
-  int16_t GetInquiryTxPower() const override;
+  base::Optional<int8_t> GetInquiryRSSI() const override;
+  base::Optional<int8_t> GetInquiryTxPower() const override;
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;

@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -85,6 +86,16 @@ void ParseModalias(const dbus::ObjectPath& object_path,
     *product_id = product_value;
   if (device_id != NULL)
     *device_id = device_value;
+}
+
+int8_t ClampPower(int16_t power) {
+  if (power < INT8_MIN) {
+    return INT8_MIN;
+  }
+  if (power > INT8_MAX) {
+    return INT8_MAX;
+  }
+  return static_cast<int8_t>(power);
 }
 
 void RecordPairingResult(BluetoothDevice::ConnectErrorCode error_code) {
@@ -353,28 +364,34 @@ BluetoothDeviceBlueZ::UUIDList BluetoothDeviceBlueZ::GetUUIDs() const {
   return uuids;
 }
 
-int16_t BluetoothDeviceBlueZ::GetInquiryRSSI() const {
+base::Optional<int8_t> BluetoothDeviceBlueZ::GetInquiryRSSI() const {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
   if (!properties->rssi.is_valid())
-    return kUnknownPower;
+    return base::nullopt;
 
-  return properties->rssi.value();
+  // BlueZ uses int16_t because there is no int8_t for DBus, so we should never
+  // get an int16_t that cannot be represented by an int8_t. But just in case
+  // clamp the value.
+  return ClampPower(properties->rssi.value());
 }
 
-int16_t BluetoothDeviceBlueZ::GetInquiryTxPower() const {
+base::Optional<int8_t> BluetoothDeviceBlueZ::GetInquiryTxPower() const {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
   if (!properties->tx_power.is_valid())
-    return kUnknownPower;
+    return base::nullopt;
 
-  return properties->tx_power.value();
+  // BlueZ uses int16_t because there is no int8_t for DBus, so we should never
+  // get an int16_t that cannot be represented by an int8_t. But just in case
+  // clamp the value.
+  return ClampPower(properties->tx_power.value());
 }
 
 bool BluetoothDeviceBlueZ::ExpectingPinCode() const {

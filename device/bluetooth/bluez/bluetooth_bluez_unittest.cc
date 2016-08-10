@@ -2490,7 +2490,13 @@ TEST_F(BluetoothBlueZTest, DeviceInquiryRSSIInvalidated) {
   properties->rssi.ReplaceValue(-75);
   properties->rssi.set_valid(true);
 
-  ASSERT_EQ(-75, devices[idx]->GetInquiryRSSI());
+  ASSERT_EQ(-75, devices[idx]->GetInquiryRSSI().value());
+
+  properties->rssi.ReplaceValue(INT8_MAX + 1);
+  ASSERT_EQ(INT8_MAX, devices[idx]->GetInquiryRSSI().value());
+
+  properties->rssi.ReplaceValue(INT8_MIN - 1);
+  ASSERT_EQ(INT8_MIN, devices[idx]->GetInquiryRSSI().value());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we invalidate the RSSI of the device.
@@ -2503,8 +2509,7 @@ TEST_F(BluetoothBlueZTest, DeviceInquiryRSSIInvalidated) {
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_EQ(devices[idx], observer.last_device());
 
-  int unknown_power = BluetoothDevice::kUnknownPower;
-  EXPECT_EQ(unknown_power, devices[idx]->GetInquiryRSSI());
+  EXPECT_FALSE(devices[idx]->GetInquiryRSSI());
 }
 
 TEST_F(BluetoothBlueZTest, DeviceInquiryTxPowerInvalidated) {
@@ -2527,7 +2532,13 @@ TEST_F(BluetoothBlueZTest, DeviceInquiryTxPowerInvalidated) {
   properties->tx_power.ReplaceValue(0);
   properties->tx_power.set_valid(true);
 
-  ASSERT_EQ(0, devices[idx]->GetInquiryTxPower());
+  ASSERT_EQ(0, devices[idx]->GetInquiryTxPower().value());
+
+  properties->tx_power.ReplaceValue(INT8_MAX + 1);
+  ASSERT_EQ(INT8_MAX, devices[idx]->GetInquiryTxPower().value());
+
+  properties->tx_power.ReplaceValue(INT8_MIN - 1);
+  ASSERT_EQ(INT8_MIN, devices[idx]->GetInquiryTxPower().value());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we invalidate the tx_power of the device.
@@ -2540,8 +2551,7 @@ TEST_F(BluetoothBlueZTest, DeviceInquiryTxPowerInvalidated) {
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_EQ(devices[idx], observer.last_device());
 
-  int unknown_power = BluetoothDevice::kUnknownPower;
-  EXPECT_EQ(unknown_power, devices[idx]->GetInquiryTxPower());
+  EXPECT_FALSE(devices[idx]->GetInquiryTxPower());
 }
 
 TEST_F(BluetoothBlueZTest, ForgetDevice) {

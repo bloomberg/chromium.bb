@@ -116,13 +116,16 @@ BluetoothDevice::UUIDList BluetoothDeviceWin::GetUUIDs() const {
   return uuids_;
 }
 
-int16_t BluetoothDeviceWin::GetInquiryRSSI() const {
-  return kUnknownPower;
+base::Optional<int8_t> BluetoothDeviceWin::GetInquiryRSSI() const {
+  // In windows, we can only get connected devices and connected
+  // devices don't have an Inquiry RSSI.
+  return base::nullopt;
 }
 
-int16_t BluetoothDeviceWin::GetInquiryTxPower() const {
-  NOTIMPLEMENTED();
-  return kUnknownPower;
+base::Optional<int8_t> BluetoothDeviceWin::GetInquiryTxPower() const {
+  // In windows, we can only get connected devices and connected
+  // devices don't have an Inquiry Tx Power.
+  return base::nullopt;
 }
 
 bool BluetoothDeviceWin::ExpectingPinCode() const {

@@ -165,6 +165,8 @@ struct BluetoothGattValue {
   array<uint8> value;
 };
 
+const int8 kUnknownPower = 127;
+
 // Copy from Bluetooth Assigned Numbers Document, Generic Access Profile
 // https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile
 [Extensible]

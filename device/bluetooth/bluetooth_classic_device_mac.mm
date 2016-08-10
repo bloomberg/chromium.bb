@@ -148,13 +148,12 @@ BluetoothDevice::UUIDList BluetoothClassicDeviceMac::GetUUIDs() const {
   return uuids;
 }
 
-int16_t BluetoothClassicDeviceMac::GetInquiryRSSI() const {
-  return kUnknownPower;
+base::Optional<int8_t> BluetoothClassicDeviceMac::GetInquiryRSSI() const {
+  return base::nullopt;
 }
 
-int16_t BluetoothClassicDeviceMac::GetInquiryTxPower() const {
-  NOTIMPLEMENTED();
-  return kUnknownPower;
+base::Optional<int8_t> BluetoothClassicDeviceMac::GetInquiryTxPower() const {
+  return base::nullopt;
 }
 
 bool BluetoothClassicDeviceMac::ExpectingPinCode() const {
