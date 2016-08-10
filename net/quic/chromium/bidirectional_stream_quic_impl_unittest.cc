@@ -69,6 +69,9 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
         read_buf_len_(read_buf_len),
         timer_(std::move(timer)),
         loop_(nullptr),
+        next_proto_(kProtoUnknown),
+        received_bytes_(0),
+        sent_bytes_(0),
         error_(OK),
         on_data_read_count_(0),
         on_data_sent_count_(0),
@@ -180,19 +183,34 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
     return rv;
   }
 
-  // Cancels |stream_|.
-  void CancelStream() { stream_->Cancel(); }
-
-  NextProto GetProtocol() const { return stream_->GetProtocol(); }
-
-  int64_t GetTotalReceivedBytes() const {
-    return stream_->GetTotalReceivedBytes();
+  NextProto GetProtocol() const {
+    if (stream_)
+      return stream_->GetProtocol();
+    return next_proto_;
   }
 
-  int64_t GetTotalSentBytes() const { return stream_->GetTotalSentBytes(); }
+  int64_t GetTotalReceivedBytes() const {
+    if (stream_)
+      return stream_->GetTotalReceivedBytes();
+    return received_bytes_;
+  }
+
+  int64_t GetTotalSentBytes() const {
+    if (stream_)
+      return stream_->GetTotalSentBytes();
+    return sent_bytes_;
+  }
 
   void DoNotSendRequestHeadersAutomatically() {
     send_request_headers_automatically_ = false;
+  }
+
+  // Deletes |stream_|.
+  void DeleteStream() {
+    next_proto_ = stream_->GetProtocol();
+    received_bytes_ = stream_->GetTotalReceivedBytes();
+    sent_bytes_ = stream_->GetTotalSentBytes();
+    stream_.reset();
   }
 
   // Const getters for internal states.
@@ -209,9 +227,6 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   // Quits |loop_|.
   void QuitLoop() { loop_->Quit(); }
 
-  // Deletes |stream_|.
-  void DeleteStream() { stream_.reset(); }
-
  private:
   std::unique_ptr<BidirectionalStreamQuicImpl> stream_;
   scoped_refptr<IOBuffer> read_buf_;
@@ -221,6 +236,9 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   std::unique_ptr<base::RunLoop> loop_;
   SpdyHeaderBlock response_headers_;
   SpdyHeaderBlock trailers_;
+  NextProto next_proto_;
+  int64_t received_bytes_;
+  int64_t sent_bytes_;
   int error_;
   int on_data_read_count_;
   int on_data_sent_count_;
@@ -1343,68 +1361,6 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
             delegate->GetTotalReceivedBytes());
 }
 
-TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterSendData) {
-  SetRequest("POST", "/", DEFAULT_PRIORITY);
-  size_t spdy_request_headers_frame_length;
-  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY,
-                                         &spdy_request_headers_frame_length));
-  AddWrite(ConstructAckAndDataPacket(2, !kIncludeVersion, 2, 1, !kFin, 0,
-                                     kUploadData, &client_maker_));
-  AddWrite(ConstructRstStreamCancelledPacket(3, strlen(kUploadData),
-                                             &client_maker_));
-
-  Initialize();
-
-  BidirectionalStreamRequestInfo request;
-  request.method = "POST";
-  request.url = GURL("http://www.google.com/");
-  request.end_stream_on_headers = false;
-  request.priority = DEFAULT_PRIORITY;
-
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
-  std::unique_ptr<TestDelegateBase> delegate(
-      new TestDelegateBase(read_buffer.get(), kReadBufferSize));
-  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
-  ConfirmHandshake();
-  delegate->WaitUntilNextCallback();  // OnStreamReady
-
-  // Server acks the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
-
-  // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
-  size_t spdy_response_headers_frame_length;
-  ProcessPacket(
-      ConstructResponseHeadersPacket(2, !kFin, std::move(response_headers),
-                                     &spdy_response_headers_frame_length, 0));
-
-  delegate->WaitUntilNextCallback();  // OnHeadersReceived
-  EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
-
-  // Send a DATA frame.
-  scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kUploadData));
-
-  delegate->SendData(buf, buf->size(), false);
-  delegate->WaitUntilNextCallback();  // OnDataSent
-
-  delegate->CancelStream();
-  base::RunLoop().RunUntilIdle();
-
-  // Try to send data after Cancel(), should not get called back.
-  delegate->SendData(buf, buf->size(), false);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(delegate->on_failed_called());
-
-  EXPECT_EQ(0, delegate->on_data_read_count());
-  EXPECT_EQ(1, delegate->on_data_sent_count());
-  EXPECT_EQ(kProtoQUIC1SPDY3, delegate->GetProtocol());
-  EXPECT_EQ(static_cast<int64_t>(spdy_request_headers_frame_length +
-                                 strlen(kUploadData)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(static_cast<int64_t>(spdy_response_headers_frame_length),
-            delegate->GetTotalReceivedBytes());
-}
-
 TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
@@ -1462,7 +1418,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
             delegate->GetTotalReceivedBytes());
 }
 
-TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterReadData) {
+TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY,
@@ -1500,7 +1456,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterReadData) {
   // Cancel the stream after ReadData returns ERR_IO_PENDING.
   TestCompletionCallback cb;
   EXPECT_THAT(delegate->ReadData(cb.callback()), IsError(ERR_IO_PENDING));
-  delegate->CancelStream();
+  delegate->DeleteStream();
 
   base::RunLoop().RunUntilIdle();
 

@@ -59,6 +59,8 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
         read_buf_len_(read_buf_len),
         timer_(std::move(timer)),
         loop_(nullptr),
+        received_bytes_(0),
+        sent_bytes_(0),
         error_(OK),
         on_data_read_count_(0),
         on_data_sent_count_(0),
@@ -82,6 +84,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
     CHECK(!not_expect_callback_);
 
     response_headers_ = response_headers.Clone();
+
     if (!do_not_start_read_)
       StartOrContinueReading();
   }
@@ -175,19 +178,31 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
     return rv;
   }
 
-  // Cancels |stream_|.
-  void CancelStream() { stream_->Cancel(); }
-
   // Deletes |stream_|.
-  void DeleteStream() { stream_.reset(); }
-
-  NextProto GetProtocol() const { return stream_->GetProtocol(); }
-
-  int64_t GetTotalReceivedBytes() const {
-    return stream_->GetTotalReceivedBytes();
+  void DeleteStream() {
+    next_proto_ = stream_->GetProtocol();
+    received_bytes_ = stream_->GetTotalReceivedBytes();
+    sent_bytes_ = stream_->GetTotalSentBytes();
+    stream_.reset();
   }
 
-  int64_t GetTotalSentBytes() const { return stream_->GetTotalSentBytes(); }
+  NextProto GetProtocol() const {
+    if (stream_)
+      return stream_->GetProtocol();
+    return next_proto_;
+  }
+
+  int64_t GetTotalReceivedBytes() const {
+    if (stream_)
+      return stream_->GetTotalReceivedBytes();
+    return received_bytes_;
+  }
+
+  int64_t GetTotalSentBytes() const {
+    if (stream_)
+      return stream_->GetTotalSentBytes();
+    return sent_bytes_;
+  }
 
   // Const getters for internal states.
   const std::string& data_received() const { return data_received_; }
@@ -220,6 +235,9 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
   std::unique_ptr<base::RunLoop> loop_;
   SpdyHeaderBlock response_headers_;
   SpdyHeaderBlock trailers_;
+  NextProto next_proto_;
+  int64_t received_bytes_;
+  int64_t sent_bytes_;
   int error_;
   int on_data_read_count_;
   int on_data_sent_count_;
@@ -234,7 +252,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
 };
 
 // A delegate that deletes the stream in a particular callback.
-class CancelOrDeleteStreamDelegate : public TestDelegateBase {
+class DeleteStreamDelegate : public TestDelegateBase {
  public:
   // Specifies in which callback the stream can be deleted.
   enum Phase {
@@ -244,17 +262,14 @@ class CancelOrDeleteStreamDelegate : public TestDelegateBase {
     ON_FAILED,
   };
 
-  CancelOrDeleteStreamDelegate(IOBuffer* buf,
-                               int buf_len,
-                               Phase phase,
-                               bool do_cancel)
-      : TestDelegateBase(buf, buf_len), phase_(phase), do_cancel_(do_cancel) {}
-  ~CancelOrDeleteStreamDelegate() override {}
+  DeleteStreamDelegate(IOBuffer* buf, int buf_len, Phase phase)
+      : TestDelegateBase(buf, buf_len), phase_(phase) {}
+  ~DeleteStreamDelegate() override {}
 
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
     TestDelegateBase::OnHeadersReceived(response_headers);
     if (phase_ == ON_HEADERS_RECEIVED) {
-      CancelOrDelete();
+      DeleteStream();
       QuitLoop();
     }
   }
@@ -268,7 +283,7 @@ class CancelOrDeleteStreamDelegate : public TestDelegateBase {
     }
     TestDelegateBase::OnDataRead(bytes_read);
     if (phase_ == ON_DATA_READ) {
-      CancelOrDelete();
+      DeleteStream();
       QuitLoop();
     }
   }
@@ -280,7 +295,7 @@ class CancelOrDeleteStreamDelegate : public TestDelegateBase {
     }
     TestDelegateBase::OnTrailersReceived(trailers);
     if (phase_ == ON_TRAILERS_RECEIVED) {
-      CancelOrDelete();
+      DeleteStream();
       QuitLoop();
     }
   }
@@ -291,26 +306,16 @@ class CancelOrDeleteStreamDelegate : public TestDelegateBase {
       return;
     }
     TestDelegateBase::OnFailed(error);
-    CancelOrDelete();
+    DeleteStream();
     QuitLoop();
   }
 
  private:
-  void CancelOrDelete() {
-    if (do_cancel_) {
-      CancelStream();
-    } else {
-      DeleteStream();
-    }
-  }
-
   // Indicates in which callback the delegate should cancel or delete the
   // stream.
   Phase phase_;
-  // Indicates whether to cancel or delete the stream.
-  bool do_cancel_;
 
-  DISALLOW_COPY_AND_ASSIGN(CancelOrDeleteStreamDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DeleteStreamDelegate);
 };
 
 // A Timer that does not start a delayed task unless the timer is fired.
@@ -1064,7 +1069,7 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
             delegate->GetTotalReceivedBytes());
 }
 
-TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
+TEST_F(BidirectionalStreamTest, DeleteStreamAfterSendData) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
   SpdySerializedFrame data_frame(spdy_util_.ConstructSpdyDataFrame(
@@ -1113,22 +1118,23 @@ TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
   delegate->SendData(buf, buf->size(), false);
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
-  // Cancel the stream.
-  delegate->CancelStream();
+
+  delegate->DeleteStream();
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   EXPECT_EQ(0, delegate->on_data_read_count());
-  // EXPECT_EQ(1, delegate->on_data_send_count());
   // OnDataSent may or may not have been invoked.
-  // Calling after stream is canceled gives kProtoUnknown.
-  EXPECT_EQ(kProtoUnknown, delegate->GetProtocol());
-  EXPECT_EQ(0, delegate->GetTotalSentBytes());
-  EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  // Bytes sent excludes the RST frame.
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
+            delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            delegate->GetTotalReceivedBytes());
 }
 
-TEST_F(BidirectionalStreamTest, CancelStreamDuringReadData) {
+TEST_F(BidirectionalStreamTest, DeleteStreamDuringReadData) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
   SpdySerializedFrame rst(
@@ -1167,20 +1173,24 @@ TEST_F(BidirectionalStreamTest, CancelStreamDuringReadData) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
-  // Cancel the stream after ReadData returns ERR_IO_PENDING.
+  // Delete the stream after ReadData returns ERR_IO_PENDING.
   int rv = delegate->ReadData();
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  delegate->CancelStream();
+  delegate->DeleteStream();
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
-  // Calling after stream is canceled gives kProtoUnknown.
-  EXPECT_EQ(kProtoUnknown, delegate->GetProtocol());
-  EXPECT_EQ(0, delegate->GetTotalSentBytes());
-  EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  // Bytes sent excludes the RST frame.
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
+            delegate->GetTotalSentBytes());
+  // Response body frame isn't read becase stream is deleted once read returns
+  // ERR_IO_PENDING.
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads) - 2),
+            delegate->GetTotalReceivedBytes());
 }
 
 // Receiving a header with uppercase ASCII will result in a protocol error,
@@ -1251,11 +1261,7 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
   EXPECT_THAT(net_error, IsError(ERR_SPDY_PROTOCOL_ERROR));
 }
 
-INSTANTIATE_TEST_CASE_P(CancelOrDeleteTests,
-                        BidirectionalStreamTest,
-                        ::testing::Values(true, false));
-
-TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnHeadersReceived) {
+TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnHeadersReceived) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
 
   SpdySerializedFrame rst(
@@ -1283,11 +1289,9 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnHeadersReceived) {
   request_info->end_stream_on_headers = true;
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
-  std::unique_ptr<CancelOrDeleteStreamDelegate> delegate(
-      new CancelOrDeleteStreamDelegate(
-          read_buffer.get(), kReadBufferSize,
-          CancelOrDeleteStreamDelegate::Phase::ON_HEADERS_RECEIVED,
-          GetParam()));
+  std::unique_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
+      read_buffer.get(), kReadBufferSize,
+      DeleteStreamDelegate::Phase::ON_HEADERS_RECEIVED));
   delegate->SetRunUntilCompletion(true);
   delegate->Start(std::move(request_info), http_session_.get());
   // Makes sure delegate does not get called.
@@ -1299,15 +1303,15 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnHeadersReceived) {
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(0, delegate->on_data_read_count());
 
-  // If stream is destroyed, do not call into stream.
-  if (!GetParam())
-    return;
-  EXPECT_EQ(0, delegate->GetTotalSentBytes());
-  EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
-  EXPECT_EQ(kProtoUnknown, delegate->GetProtocol());
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  // Bytes sent excludes the RST frame.
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
+            delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            delegate->GetTotalReceivedBytes());
 }
 
-TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnDataRead) {
+TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnDataRead) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
 
   SpdySerializedFrame rst(
@@ -1339,10 +1343,9 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnDataRead) {
   request_info->end_stream_on_headers = true;
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
-  std::unique_ptr<CancelOrDeleteStreamDelegate> delegate(
-      new CancelOrDeleteStreamDelegate(
-          read_buffer.get(), kReadBufferSize,
-          CancelOrDeleteStreamDelegate::Phase::ON_DATA_READ, GetParam()));
+  std::unique_ptr<DeleteStreamDelegate> delegate(
+      new DeleteStreamDelegate(read_buffer.get(), kReadBufferSize,
+                               DeleteStreamDelegate::Phase::ON_DATA_READ));
   delegate->SetRunUntilCompletion(true);
   delegate->Start(std::move(request_info), http_session_.get());
   // Makes sure delegate does not get called.
@@ -1354,15 +1357,15 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnDataRead) {
             static_cast<int>(delegate->data_received().size()));
   EXPECT_EQ(0, delegate->on_data_sent_count());
 
-  // If stream is destroyed, do not call into stream.
-  if (!GetParam())
-    return;
-  EXPECT_EQ(0, delegate->GetTotalSentBytes());
-  EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
-  EXPECT_EQ(kProtoUnknown, delegate->GetProtocol());
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  // Bytes sent excludes the RST frame.
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
+            delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            delegate->GetTotalReceivedBytes());
 }
 
-TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
+TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnTrailersReceived) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
 
   SpdySerializedFrame rst(
@@ -1399,11 +1402,9 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
   request_info->end_stream_on_headers = true;
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
-  std::unique_ptr<CancelOrDeleteStreamDelegate> delegate(
-      new CancelOrDeleteStreamDelegate(
-          read_buffer.get(), kReadBufferSize,
-          CancelOrDeleteStreamDelegate::Phase::ON_TRAILERS_RECEIVED,
-          GetParam()));
+  std::unique_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
+      read_buffer.get(), kReadBufferSize,
+      DeleteStreamDelegate::Phase::ON_TRAILERS_RECEIVED));
   delegate->SetRunUntilCompletion(true);
   delegate->Start(std::move(request_info), http_session_.get());
   // Makes sure delegate does not get called.
@@ -1414,17 +1415,16 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
   EXPECT_EQ("bar", delegate->trailers().find("foo")->second);
   EXPECT_EQ(0, delegate->on_data_sent_count());
   // OnDataRead may or may not have been fired before the stream is
-  // canceled/deleted.
-
-  // If stream is destroyed, do not call into stream.
-  if (!GetParam())
-    return;
-  EXPECT_EQ(0, delegate->GetTotalSentBytes());
-  EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
-  EXPECT_EQ(kProtoUnknown, delegate->GetProtocol());
+  // deleted.
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  // Bytes sent excludes the RST frame.
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
+            delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            delegate->GetTotalReceivedBytes());
 }
 
-TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnFailed) {
+TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnFailed) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
 
   SpdySerializedFrame rst(
@@ -1452,10 +1452,9 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnFailed) {
   request_info->end_stream_on_headers = true;
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
-  std::unique_ptr<CancelOrDeleteStreamDelegate> delegate(
-      new CancelOrDeleteStreamDelegate(
-          read_buffer.get(), kReadBufferSize,
-          CancelOrDeleteStreamDelegate::Phase::ON_FAILED, GetParam()));
+  std::unique_ptr<DeleteStreamDelegate> delegate(
+      new DeleteStreamDelegate(read_buffer.get(), kReadBufferSize,
+                               DeleteStreamDelegate::Phase::ON_FAILED));
   delegate->SetRunUntilCompletion(true);
   delegate->Start(std::move(request_info), http_session_.get());
   // Makes sure delegate does not get called.
@@ -1466,12 +1465,12 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnFailed) {
   EXPECT_EQ(0, delegate->on_data_read_count());
   EXPECT_THAT(delegate->error(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
-  // If stream is destroyed, do not call into stream.
-  if (!GetParam())
-    return;
-  EXPECT_EQ(0, delegate->GetTotalSentBytes());
-  EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
-  EXPECT_EQ(kProtoUnknown, delegate->GetProtocol());
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  // Bytes sent excludes the RST frame.
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
+            delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {

@@ -154,11 +154,6 @@ class NET_EXPORT BidirectionalStream
                  const std::vector<int>& lengths,
                  bool end_stream);
 
-  // If |stream_request_| is non-NULL, cancel it. If |stream_impl_| is
-  // established, cancel it. No delegate method will be called after Cancel().
-  // Any pending operations may or may not succeed.
-  void Cancel();
-
   // Returns the protocol used by this stream. If stream has not been
   // established, return kProtoUnknown.
   NextProto GetProtocol() const;

@@ -126,7 +126,6 @@ BidirectionalStream::BidirectionalStream(
 }
 
 BidirectionalStream::~BidirectionalStream() {
-  Cancel();
   if (net_log_.IsCapturing()) {
     net_log_.EndEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE);
   }
@@ -190,14 +189,6 @@ void BidirectionalStream::SendvData(
   for (size_t i = 0; i < buffers.size(); ++i) {
     write_buffer_list_.push_back(buffers[i]);
     write_buffer_len_list_.push_back(lengths[i]);
-  }
-}
-
-void BidirectionalStream::Cancel() {
-  stream_request_.reset();
-  if (stream_impl_) {
-    stream_impl_->Cancel();
-    stream_impl_.reset();
   }
 }
 
