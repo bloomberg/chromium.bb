@@ -927,6 +927,9 @@ SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
  * @param {string} keyID Key of the KeyboardEvent.
  */
 SlideMode.prototype.advanceWithKeyboard = function(keyID) {
+  if (this.getItemCount_() === 0)
+    return;
+
   var prev = (keyID === 'ArrowUp' ||
               keyID === 'ArrowLeft' ||
               keyID === 'MediaTrackPrevious');
