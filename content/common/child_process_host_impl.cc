@@ -28,11 +28,13 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_privileged.h"
+#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/message_filter.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -128,6 +130,10 @@ void ChildProcessHostImpl::AddFilter(IPC::MessageFilter* filter) {
     filter->OnFilterAdded(channel_.get());
 }
 
+shell::InterfaceProvider* ChildProcessHostImpl::GetRemoteInterfaces() {
+  return delegate_->GetRemoteInterfaces();
+}
+
 void ChildProcessHostImpl::ForceShutdown() {
   Send(new ChildProcessMsg_Shutdown());
 }
@@ -144,6 +150,26 @@ std::string ChildProcessHostImpl::CreateChannelMojo(
     return std::string();
 
   return channel_id_;
+}
+
+void ChildProcessHostImpl::CreateChannelMojo() {
+  // TODO(rockot): Remove |channel_id_| once this is the only code path by which
+  // the Channel is created. For now it serves to at least mutually exclude
+  // different CreateChannel* calls.
+  DCHECK(channel_id_.empty());
+  channel_id_ = "ChannelMojo";
+
+  shell::InterfaceProvider* remote_interfaces = GetRemoteInterfaces();
+  DCHECK(remote_interfaces);
+
+  IPC::mojom::ChannelBootstrapPtr bootstrap;
+  remote_interfaces->GetInterface(&bootstrap);
+  channel_ = IPC::ChannelMojo::Create(bootstrap.PassInterface().PassHandle(),
+                                      IPC::Channel::MODE_SERVER, this);
+  DCHECK(channel_);
+
+  bool initialized = InitChannel();
+  DCHECK(initialized);
 }
 
 std::string ChildProcessHostImpl::CreateChannel() {

@@ -85,7 +85,7 @@ void LaunchAppInUtilityProcess(const std::string& app_name,
 // thread.
 void RequestGpuProcessControl(
     mojo::InterfaceRequest<mojom::ProcessControl> request) {
-  BrowserChildProcessHostDelegate* process_host =
+  GpuProcessHost* process_host =
       GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
   if (!process_host) {
     DLOG(ERROR) << "GPU process host not available.";
@@ -223,7 +223,6 @@ class MojoShellContext::InProcessServiceManagerContext
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceManagerContext);
 };
 
-
 MojoShellContext::MojoShellContext() {
   shell::mojom::ServiceRequest request;
   if (shell::ShellIsRemote()) {
@@ -243,6 +242,8 @@ MojoShellContext::MojoShellContext() {
                                            IDR_MOJO_CONTENT_BROWSER_MANIFEST);
     manifest_provider->AddManifestResource(kGpuMojoApplicationName,
                                            IDR_MOJO_CONTENT_GPU_MANIFEST);
+    manifest_provider->AddManifestResource(kPluginMojoApplicationName,
+                                           IDR_MOJO_CONTENT_PLUGIN_MANIFEST);
     manifest_provider->AddManifestResource(kRendererMojoApplicationName,
                                            IDR_MOJO_CONTENT_RENDERER_MANIFEST);
     manifest_provider->AddManifestResource(kUtilityMojoApplicationName,

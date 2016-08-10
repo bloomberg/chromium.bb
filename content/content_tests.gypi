@@ -76,6 +76,8 @@
       'public/test/test_launcher.h',
       'public/test/test_mojo_app.cc',
       'public/test/test_mojo_app.h',
+      'public/test/test_mojo_shell_context.cc',
+      'public/test/test_mojo_shell_context.h',
       'public/test/test_navigation_observer.cc',
       'public/test/test_navigation_observer.h',
       'public/test/test_notification_tracker.cc',

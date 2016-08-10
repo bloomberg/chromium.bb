@@ -45,13 +45,13 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
       content::ProcessType process_type,
       BrowserChildProcessHostDelegate* delegate);
 
-  // Used to create a child process host, with a unique token to identify the
-  // child process to Mojo. |mojo_child_token| should be a unique string
-  // generated using mojo::edk::GenerateRandomToken().
+  // Used to create a child process host, connecting the process to the shell
+  // as a new service instance identified by |service_name| and (optional)
+  // |instance_id|.
   static BrowserChildProcessHost* Create(
       content::ProcessType process_type,
       BrowserChildProcessHostDelegate* delegate,
-      const std::string& mojo_child_token);
+      const std::string& service_name);
 
   // Returns the child process host with unique id |child_process_id|, or
   // nullptr if it doesn't exist. |child_process_id| is NOT the process ID, but
@@ -91,10 +91,6 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // they need to call this method so that the process handle is associated with
   // this object.
   virtual void SetHandle(base::ProcessHandle handle) = 0;
-
-  // Returns the shell::InterfaceProvider the browser process can use to bind
-  // interfaces exposed to it from the child.
-  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
 
 #if defined(OS_MACOSX)
   // Returns a PortProvider used to get the task port for child processes.

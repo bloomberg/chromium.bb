@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
@@ -111,11 +112,11 @@ base::string16 GetLocalizedTitle(const base::string16& title,
   return result_title;
 }
 
-// Connects the |resource_reporter| to the ServiceRegistry of the
+// Connects the |resource_reporter| to the InterfaceRegistry of the
 // BrowserChildProcessHost whose unique ID is |unique_child_process_id|.
 void ConnectResourceReporterOnIOThread(
     int unique_child_process_id,
-    mojo::InterfaceRequest<mojom::ResourceUsageReporter> resource_reporter) {
+    mojom::ResourceUsageReporterRequest resource_reporter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   content::BrowserChildProcessHost* host =
@@ -123,7 +124,7 @@ void ConnectResourceReporterOnIOThread(
   if (!host)
     return;
 
-  shell::InterfaceProvider* interfaces = host->GetRemoteInterfaces();
+  shell::InterfaceProvider* interfaces = host->GetHost()->GetRemoteInterfaces();
   if (interfaces)
     interfaces->GetInterface(std::move(resource_reporter));
 }
@@ -133,18 +134,15 @@ void ConnectResourceReporterOnIOThread(
 // |unique_child_process_id|.
 ProcessResourceUsage* CreateProcessResourcesSampler(
     int unique_child_process_id) {
-  mojom::ResourceUsageReporterPtr service;
-  mojo::InterfaceRequest<mojom::ResourceUsageReporter> usage_reporter =
-      mojo::GetProxy(&service);
-
+  mojom::ResourceUsageReporterPtr usage_reporter;
+  mojom::ResourceUsageReporterRequest request = mojo::GetProxy(&usage_reporter);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(&ConnectResourceReporterOnIOThread,
-                 unique_child_process_id,
-                 base::Passed(&usage_reporter)));
+                 unique_child_process_id, base::Passed(&request)));
 
-  return new ProcessResourceUsage(std::move(service));
+  return new ProcessResourceUsage(std::move(usage_reporter));
 }
 
 bool UsesV8Memory(int process_type) {

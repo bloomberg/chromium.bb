@@ -6,8 +6,8 @@
 #define SERVICES_CATALOG_ENTRY_H_
 
 #include <memory>
-#include <set>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
@@ -24,7 +24,6 @@ class Entry {
  public:
   Entry();
   explicit Entry(const std::string& name);
-  explicit Entry(const Entry& other);
   ~Entry();
 
   std::unique_ptr<base::DictionaryValue> Serialize() const;
@@ -55,7 +54,10 @@ class Entry {
   }
   const Entry* package() const { return package_; }
   void set_package(Entry* package) { package_ = package; }
-  const std::set<Entry*>& services() { return services_; }
+
+  std::vector<std::unique_ptr<Entry>> TakeChildren() {
+    return std::move(children_);
+  }
 
  private:
   std::string name_;
@@ -64,7 +66,7 @@ class Entry {
   std::string display_name_;
   shell::CapabilitySpec capabilities_;
   Entry* package_ = nullptr;
-  std::set<Entry*> services_;
+  std::vector<std::unique_ptr<Entry>> children_;
 };
 
 }  // namespace catalog

@@ -1,6 +1,8 @@
 include_rules = [
   "-storage/browser",
 
+  "+services/shell/public/cpp",
+
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",

@@ -59,6 +59,7 @@ source_set("common") {
     "//gpu/ipc/common",
     "//gpu/skia_bindings",
     "//ipc",
+    "//ipc:mojom",
     "//media",
     "//media:shared_memory_support",
     "//media/base/ipc",

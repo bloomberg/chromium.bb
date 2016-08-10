@@ -119,6 +119,7 @@ grit("resources") {
   deps = [
     "//content/public/app:browser_manifest",
     "//content/public/app:gpu_manifest",
+    "//content/public/app:plugin_manifest",
     "//content/public/app:renderer_manifest",
     "//content/public/app:utility_manifest",
     "//services/catalog:manifest",
