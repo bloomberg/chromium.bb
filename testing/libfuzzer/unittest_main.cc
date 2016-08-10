@@ -35,7 +35,16 @@ size_t LLVMFuzzerMutate(uint8_t *Data, size_t Size, size_t MaxSize) {
 
 int main(int argc, char **argv) {
   if (argc == 1) {
-    std::cerr << "Usage: " << argv[0] << " <file>..." << std::endl;
+    std::cerr
+        << "Usage: " << argv[0]
+        << " <file>...\n"
+           "\n"
+           "Alternatively, try building this target with "
+           "use_libfuzzer=true for a better test driver. For details see:\n"
+           "\n"
+           "https://chromium.googlesource.com/chromium/src/+/master/"
+           "testing/libfuzzer/getting_started.md"
+        << std::endl;
     exit(1);
   }
 
