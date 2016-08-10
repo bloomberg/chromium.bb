@@ -34,39 +34,52 @@ struct FindResults {
 class TestWebContentsDelegate : public WebContentsDelegate {
  public:
   TestWebContentsDelegate()
-      : last_finished_request_id_(kInvalidId),
-        waiting_request_id_(kInvalidId) {}
+      : last_request_id_(kInvalidId),
+        last_finished_request_id_(kInvalidId),
+        next_reply_received_(false),
+        waiting_for_(NOTHING) {}
   ~TestWebContentsDelegate() override {}
-
-  // Waits for the final reply to the find request with ID |request_id|.
-  void WaitForFinalReply(int request_id) {
-    if (last_finished_request_id_ >= request_id)
-      return;
-
-    waiting_request_id_ = request_id;
-    find_message_loop_runner_ = new content::MessageLoopRunner;
-    find_message_loop_runner_->Run();
-  }
 
   // Returns the current find results.
   FindResults GetFindResults() {
     return current_results_;
   }
 
-#if defined(OS_ANDROID)
-  // Waits for the next find reply. This is useful for waiting for a single
-  // match to be activated, which results in a single find reply (without a
-  // unique request ID).
-  void WaitForNextReply() {
-    waiting_request_id_ = 0;
-    find_message_loop_runner_ = new content::MessageLoopRunner;
-    find_message_loop_runner_->Run();
+  // Waits for all pending replies to be received.
+  void WaitForFinalReply() {
+    if (last_finished_request_id_ >= last_request_id_)
+      return;
+
+    WaitFor(FINAL_REPLY);
   }
 
+  // Waits for the next find reply. This is useful for waiting for a single
+  // match to be activated, or for a new frame to be searched.
+  void WaitForNextReply() {
+    if (next_reply_received_)
+      return;
+
+    WaitFor(NEXT_REPLY);
+  }
+
+  // Indicates that the next find reply from this point will be the one to wait
+  // for when WaitForNextReply() is called. It may be the case that the reply
+  // comes before the call to WaitForNextReply(), in which case it will return
+  // immediately.
+  void MarkNextReply() {
+    next_reply_received_ = false;
+  }
+
+  // Called when a new find request is issued, so the delegate knows the last
+  // request ID.
+  void UpdateLastRequest(int request_id) {
+    last_request_id_ = request_id;
+  }
+
+#if defined(OS_ANDROID)
   // Waits for all of the find match rects to be received.
   void WaitForMatchRects() {
-    match_rects_message_loop_runner_ = new content::MessageLoopRunner;
-    match_rects_message_loop_runner_->Run();
+    WaitFor(MATCH_RECTS);
   }
 
   const std::vector<gfx::RectF>& find_match_rects() const {
@@ -79,6 +92,15 @@ class TestWebContentsDelegate : public WebContentsDelegate {
 #endif
 
  private:
+  enum WaitingFor {
+    NOTHING,
+    FINAL_REPLY,
+    NEXT_REPLY,
+#if defined(OS_ANDROID)
+    MATCH_RECTS
+#endif
+  };
+
   // WebContentsDelegate override.
   void FindReply(WebContents* web_contents,
                  int request_id,
@@ -94,17 +116,47 @@ class TestWebContentsDelegate : public WebContentsDelegate {
     if (active_match_ordinal != -1)
       current_results_.active_match_ordinal = active_match_ordinal;
 
-    if (final_update)
-      last_finished_request_id_ = request_id;
+    if (!final_update)
+      return;
 
-    // If we are waiting for a final reply and this is it, stop waiting.
-    if (find_message_loop_runner_.get() &&
-        last_finished_request_id_ >= waiting_request_id_) {
-      find_message_loop_runner_->Quit();
+    if (request_id > last_finished_request_id_)
+      last_finished_request_id_ = request_id;
+    next_reply_received_ = true;
+
+    // If we are waiting for this find reply, stop waiting.
+    if (waiting_for_ == NEXT_REPLY ||
+        (waiting_for_ == FINAL_REPLY &&
+         last_finished_request_id_ >= last_request_id_)) {
+      StopWaiting();
     }
   }
 
+  // Uses |message_loop_runner_| to wait for various things.
+  void WaitFor(WaitingFor wait_for) {
+    ASSERT_EQ(NOTHING, waiting_for_);
+    ASSERT_NE(NOTHING, wait_for);
+
+    // Wait for |wait_for|.
+    waiting_for_ = wait_for;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+
+    // Done waiting.
+    waiting_for_ = NOTHING;
+    message_loop_runner_ = nullptr;
+  }
+
+  // Stop waiting for |waiting_for_|.
+  void StopWaiting() {
+    if (!message_loop_runner_.get())
+      return;
+
+    ASSERT_NE(NOTHING, waiting_for_);
+    message_loop_runner_->Quit();
+  }
+
 #if defined(OS_ANDROID)
+  // WebContentsDelegate override.
   void FindMatchRectsReply(WebContents* web_contents,
                            int version,
                            const std::vector<gfx::RectF>& rects,
@@ -114,8 +166,8 @@ class TestWebContentsDelegate : public WebContentsDelegate {
     active_match_rect_ = active_rect;
 
     // If we are waiting for match rects, stop waiting.
-    if (match_rects_message_loop_runner_.get())
-      match_rects_message_loop_runner_->Quit();
+    if (waiting_for_ == MATCH_RECTS)
+      StopWaiting();
   }
 
   std::vector<gfx::RectF> find_match_rects_;
@@ -126,15 +178,19 @@ class TestWebContentsDelegate : public WebContentsDelegate {
   // The latest known results from the current find request.
   FindResults current_results_;
 
+  // The ID of the last find request issued.
+  int last_request_id_;
+
   // The ID of the last find request to finish (all replies received).
   int last_finished_request_id_;
 
-  // If waiting using |find_message_loop_runner_|, this is the ID of the find
-  // request being waited for.
-  int waiting_request_id_;
+  // Indicates whether the next reply after MarkNextReply() has been received.
+  bool next_reply_received_;
 
-  scoped_refptr<content::MessageLoopRunner> find_message_loop_runner_;
-  scoped_refptr<content::MessageLoopRunner> match_rects_message_loop_runner_;
+  // Indicates what |message_loop_runner_| is waiting for, if anything.
+  WaitingFor waiting_for_;
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsDelegate);
 };
@@ -206,13 +262,10 @@ class FindRequestManagerTest : public ContentBrowserTest,
 
   void Find(const std::string& search_text,
             const blink::WebFindOptions& options) {
-    contents()->Find(++last_request_id_,
+    delegate()->UpdateLastRequest(++last_request_id_);
+    contents()->Find(last_request_id_,
                      base::UTF8ToUTF16(search_text),
                      options);
-  }
-
-  void WaitForFinalReply() const {
-    delegate()->WaitForFinalReply(last_request_id_);
   }
 
   WebContents* contents() const {
@@ -292,7 +345,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
 
   blink::WebFindOptions options;
   Find("result", options);
-  WaitForFinalReply();
+  delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
   EXPECT_EQ(last_request_id(), results.request_id);
@@ -302,7 +355,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
   options.findNext = true;
   for (int i = 2; i <= 10; ++i) {
     Find("result", options);
-    WaitForFinalReply();
+    delegate()->WaitForFinalReply();
 
     results = delegate()->GetFindResults();
     EXPECT_EQ(last_request_id(), results.request_id);
@@ -313,7 +366,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
   options.forward = false;
   for (int i = 9; i >= 5; --i) {
     Find("result", options);
-    WaitForFinalReply();
+    delegate()->WaitForFinalReply();
 
     results = delegate()->GetFindResults();
     EXPECT_EQ(last_request_id(), results.request_id);
@@ -336,7 +389,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(CharacterByCharacter)) {
   Find("resu", default_options);
   Find("resul", default_options);
   Find("result", default_options);
-  WaitForFinalReply();
+  delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
   EXPECT_EQ(last_request_id(), results.request_id);
@@ -356,7 +409,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RapidFire)) {
   options.findNext = true;
   for (int i = 2; i <= 1000; ++i)
     Find("result", options);
-  WaitForFinalReply();
+  delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
   EXPECT_EQ(last_request_id(), results.request_id);
@@ -378,7 +431,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RemoveFrame)) {
   Find("result", options);
   Find("result", options);
   Find("result", options);
-  WaitForFinalReply();
+  delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
   EXPECT_EQ(last_request_id(), results.request_id);
@@ -394,7 +447,6 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RemoveFrame)) {
   // The number of matches and active match ordinal should update automatically
   // to exclude the matches from the removed frame.
   results = delegate()->GetFindResults();
-  EXPECT_EQ(last_request_id(), results.request_id);
   EXPECT_EQ(12, results.number_of_matches);
   EXPECT_EQ(8, results.active_match_ordinal);
 
@@ -408,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(HiddenFrame)) {
 
   blink::WebFindOptions default_options;
   Find("hello", default_options);
-  WaitForFinalReply();
+  delegate()->WaitForFinalReply();
   FindResults results = delegate()->GetFindResults();
 
   EXPECT_EQ(last_request_id(), results.request_id);
@@ -423,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindMatchRects)) {
 
   blink::WebFindOptions default_options;
   Find("result", default_options);
-  WaitForFinalReply();
+  delegate()->WaitForFinalReply();
   EXPECT_EQ(19, delegate()->GetFindResults().number_of_matches);
 
   // Request the find match rects.
@@ -505,7 +557,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest,
 
   blink::WebFindOptions default_options;
   Find("result", default_options);
-  WaitForFinalReply();
+  delegate()->WaitForFinalReply();
   EXPECT_EQ(19, delegate()->GetFindResults().number_of_matches);
 
   // Get the find match rects.
@@ -519,6 +571,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest,
   int order[19] =
       {11, 13, 2, 0, 16, 5, 7, 10, 6, 1, 15, 14, 9, 17, 18, 3, 8, 12, 4};
   for (int i = 0; i < 19; ++i) {
+    delegate()->MarkNextReply();
     contents()->ActivateNearestFindResult(
         rects[order[i]].CenterPoint().x(), rects[order[i]].CenterPoint().y());
     delegate()->WaitForNextReply();
