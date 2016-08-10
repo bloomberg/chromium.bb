@@ -345,7 +345,8 @@ void WorkerThreadableLoader::Bridge::didStart(Peer* peer)
     DCHECK(!m_peer);
     DCHECK(peer);
     if (m_clientWrapper->done()) {
-        // The loading is already cancelled.
+        // The thread is terminating.
+        m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::cancel, wrapCrossThreadPersistent(peer)));
         return;
     }
 
