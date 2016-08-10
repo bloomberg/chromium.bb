@@ -2072,7 +2072,6 @@ Element* AXNodeObject::actionElement() const
     case MenuItemRole:
     case MenuItemCheckBoxRole:
     case MenuItemRadioRole:
-    case ListItemRole:
         return toElement(node);
     default:
         break;

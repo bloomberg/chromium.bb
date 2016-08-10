@@ -14,7 +14,6 @@
   <div role="menuitem" id="menuitem" tabindex="0">menu item</div>
   <div role="menuitemcheckbox" id="menuitemcheckbox" tabindex="0">menu item checkbox</div>
   <div role="menuitemradio" id="menuitemradio" tabindex="0">menu item radio</div>
-  <div role="listitem" id="listitem" tabindex="0">list item</div>
 </div>
 
 <p id="description"></p>
@@ -47,8 +46,6 @@
           shouldBeTrue("eventSrcElement == document.getElementById('menuitemcheckbox')");
        else if (pressCount == 7)
           shouldBeTrue("eventSrcElement == document.getElementById('menuitemradio')");
-       else if (pressCount == 8)
-          shouldBeTrue("eventSrcElement == document.getElementById('listitem')");
 
        pressCount++;
     }
@@ -57,7 +54,7 @@
 
     if (window.accessibilityController) {
 
-        var items = new Array("group", "button", "tab", "radio", "checkbox", "menuitem", "menuitemcheckbox", "menuitemradio", "listitem");
+        var items = new Array("group", "button", "tab", "radio", "checkbox", "menuitem", "menuitemcheckbox", "menuitemradio");
         for (var k = 0; k < items.length; k++) {
            document.getElementById(items[k]).focus();
            accessibilityController.focusedElement.press();
