@@ -5,12 +5,12 @@
 #ifndef NGBlockLayoutAlgorithm_h
 #define NGBlockLayoutAlgorithm_h
 
+#include "core/layout/ng/ng_box.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class ComputedStyle;
-class LayoutBox;
 class NGConstraintSpace;
 class NGFragment;
 
@@ -18,7 +18,7 @@ class NGFragment;
 // Lays out the children in sequence.
 class NGBlockLayoutAlgorithm {
  public:
-  NGBlockLayoutAlgorithm(const ComputedStyle*);
+  NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>, NGBox);
 
   // Actual layout implementation. Lays out the children in sequence within the
   // constraints given by the NGConstraintSpace. Returns a fragment with the
@@ -29,6 +29,7 @@ class NGBlockLayoutAlgorithm {
 
  private:
   RefPtr<const ComputedStyle> m_style;
+  NGBox m_firstChild;
 };
 
 }  // namespace blink

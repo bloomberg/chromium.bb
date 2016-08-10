@@ -12,8 +12,10 @@
 
 namespace blink {
 
-NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(const ComputedStyle* style)
-    : m_style(style) {}
+NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
+    PassRefPtr<const ComputedStyle> style,
+    NGBox firstChild)
+    : m_style(style), m_firstChild(firstChild) {}
 
 NGFragment* NGBlockLayoutAlgorithm::layout(
     const NGConstraintSpace& constraintSpace) {
@@ -21,6 +23,11 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
                                          constraintSpace.inlineContainerSize());
   LayoutUnit blockSize = valueForLength(m_style->logicalHeight(),
                                         constraintSpace.blockContainerSize());
+
+  for (NGBox curr = m_firstChild; curr; curr.nextSibling()) {
+    curr.layout(constraintSpace);
+  }
+
   return new NGFragment(inlineSize, blockSize, inlineSize, blockSize);
 }
 

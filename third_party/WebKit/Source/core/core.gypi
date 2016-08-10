@@ -544,6 +544,8 @@
             'layout/ng/layout_ng_block_flow.h',
             'layout/ng/ng_block_layout_algorithm.cc',
             'layout/ng/ng_block_layout_algorithm.h',
+            'layout/ng/ng_box.cc',
+            'layout/ng/ng_box.h',
             'layout/ng/ng_constraint_space.cc',
             'layout/ng/ng_constraint_space.h',
             'layout/ng/ng_fragment.cc',
