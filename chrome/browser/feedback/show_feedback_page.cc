@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/md_feedback/md_feedback_dialog_controller.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -77,6 +79,11 @@ void ShowFeedbackPage(Browser* browser,
                 ? multi_user_util::GetProfileFromAccountId(display_account_id)
                 : profile;
 #endif
+
+  if (::switches::MdFeedbackEnabled()) {
+    MdFeedbackDialogController::GetInstance()->Show(profile);
+    return;
+  }
 
   extensions::FeedbackPrivateAPI* api =
       extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);

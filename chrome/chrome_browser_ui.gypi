@@ -1907,6 +1907,8 @@
       'browser/ui/webui/md_downloads/md_downloads_dom_handler.h',
       'browser/ui/webui/md_downloads/md_downloads_ui.cc',
       'browser/ui/webui/md_downloads/md_downloads_ui.h',
+      'browser/ui/webui/md_feedback/md_feedback_dialog_controller.cc',
+      'browser/ui/webui/md_feedback/md_feedback_dialog_controller.h',
       'browser/ui/webui/md_feedback/md_feedback_ui.cc',
       'browser/ui/webui/md_feedback/md_feedback_ui.h',
       'browser/ui/webui/md_history_ui.cc',
