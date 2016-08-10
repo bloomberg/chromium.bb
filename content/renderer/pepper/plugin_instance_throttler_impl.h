@@ -33,7 +33,8 @@ class RenderFrameImpl;
 class CONTENT_EXPORT PluginInstanceThrottlerImpl
     : public PluginInstanceThrottler {
  public:
-  PluginInstanceThrottlerImpl();
+  explicit PluginInstanceThrottlerImpl(
+      RenderFrame::RecordPeripheralDecision record_decision);
 
   ~PluginInstanceThrottlerImpl() override;
 
@@ -89,6 +90,8 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
 
   void AudioThrottledFrameTimeout();
   void EngageThrottle();
+
+  RenderFrame::RecordPeripheralDecision record_decision_;
 
   ThrottlerState state_;
 

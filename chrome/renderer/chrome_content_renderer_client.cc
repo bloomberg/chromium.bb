@@ -808,7 +808,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
         std::unique_ptr<content::PluginInstanceThrottler> throttler;
         if (power_saver_info.power_saver_enabled) {
-          throttler = PluginInstanceThrottler::Create();
+          throttler =
+              PluginInstanceThrottler::Create(RenderFrame::RECORD_DECISION);
           // PluginPreroller manages its own lifetime.
           new PluginPreroller(
               render_frame, frame, params, info, identifier, group_name,

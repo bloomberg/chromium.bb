@@ -42852,13 +42852,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Plugin.PowerSaver.PeripheralHeuristic"
     enum="PluginPowerSaverPeripheralHeuristicDecision">
+  <obsolete>
+    Deprecated in favor of Plugin.PowerSaver.PeripheralHeuristicFinalDecision.
+  </obsolete>
   <owner>tommycli@chromium.org</owner>
   <summary>
-    Record the initial decision of the Plugin Power Saver peripheral content
-    heuristic. For each plugin instance, this heuristic decides whether the
-    plugin instance is essential content or peripheral. All same-origin content
-    is essential. Cross-origin content is peripheral if it is small and not on
-    the origin whitelist.
+    Records each decision of the Plugin Power Saver peripheral content
+    heuristic. This UMA is counted once per peripheral query, and may count a
+    single plugin instance multiple times as it is resized.
+  </summary>
+</histogram>
+
+<histogram name="Plugin.PowerSaver.PeripheralHeuristicInitialDecision"
+    enum="PluginPowerSaverPeripheralHeuristicDecision">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    Records the initial decision of the Plugin Power Saver peripheral content
+    heuristic for each plugin instance. This is recorded once per plugin
+    instance.
   </summary>
 </histogram>
 

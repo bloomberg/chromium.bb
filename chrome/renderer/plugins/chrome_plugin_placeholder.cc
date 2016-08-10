@@ -383,7 +383,9 @@ blink::WebPlugin* ChromePluginPlaceholder::CreatePlugin() {
   // If the plugin has already been marked essential in its placeholder form,
   // we shouldn't create a new throttler and start the process all over again.
   if (power_saver_enabled()) {
-    throttler = content::PluginInstanceThrottler::Create();
+    throttler = content::PluginInstanceThrottler::Create(
+        heuristic_run_before_ ? content::RenderFrame::DONT_RECORD_DECISION
+                              : content::RenderFrame::RECORD_DECISION);
     // PluginPreroller manages its own lifetime.
     new PluginPreroller(render_frame(), GetFrame(), GetPluginParams(),
                         GetPluginInfo(), GetIdentifier(), title_,

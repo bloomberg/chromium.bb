@@ -32,6 +32,7 @@
 
 using base::UserMetricsAction;
 using content::PluginInstanceThrottler;
+using content::RenderFrame;
 using content::RenderThread;
 
 namespace plugins {
@@ -51,15 +52,17 @@ void LoadablePluginPlaceholder::SetPremadePlugin(
     content::PluginInstanceThrottler* throttler) {
   DCHECK(throttler);
   DCHECK(!premade_throttler_);
+  heuristic_run_before_ = true;
   premade_throttler_ = throttler;
 }
 
 LoadablePluginPlaceholder::LoadablePluginPlaceholder(
-    content::RenderFrame* render_frame,
+    RenderFrame* render_frame,
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params,
     const std::string& html_data)
     : PluginPlaceholderBase(render_frame, frame, params, html_data),
+      heuristic_run_before_(false),
       is_blocked_for_tinyness_(false),
       is_blocked_for_background_tab_(false),
       is_blocked_for_prerendering_(false),
@@ -68,7 +71,6 @@ LoadablePluginPlaceholder::LoadablePluginPlaceholder(
       premade_throttler_(nullptr),
       allow_loading_(false),
       finished_loading_(false),
-      heuristic_run_before_(premade_throttler_ != nullptr),
       weak_factory_(this) {}
 
 LoadablePluginPlaceholder::~LoadablePluginPlaceholder() {
@@ -199,27 +201,27 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
 
   // On a size update check if we now qualify as a essential plugin.
   url::Origin content_origin = url::Origin(GetPluginParams().url);
-  content::RenderFrame::PeripheralContentStatus status =
+  RenderFrame::PeripheralContentStatus status =
       render_frame()->GetPeripheralContentStatus(
           render_frame()->GetWebFrame()->top()->getSecurityOrigin(),
-          content_origin, gfx::Size(width, height));
+          content_origin, gfx::Size(width, height),
+          heuristic_run_before_ ? RenderFrame::DONT_RECORD_DECISION
+                                : RenderFrame::RECORD_DECISION);
 
   bool plugin_is_tiny_and_blocked =
       is_blocked_for_tinyness_ &&
-      status ==
-          content::RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY;
+      status == RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY;
 
   // Early exit for plugins that we've discovered to be essential.
   if (!plugin_is_tiny_and_blocked &&
-      status != content::RenderFrame::CONTENT_STATUS_PERIPHERAL) {
+      status != RenderFrame::CONTENT_STATUS_PERIPHERAL) {
     MarkPluginEssential(
         heuristic_run_before_
             ? PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE
             : PluginInstanceThrottler::UNTHROTTLE_METHOD_DO_NOT_RECORD);
 
     if (!heuristic_run_before_ &&
-        status ==
-            content::RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG) {
+        status == RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG) {
       render_frame()->WhitelistContentOrigin(content_origin);
     }
 

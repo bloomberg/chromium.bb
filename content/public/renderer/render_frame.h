@@ -82,6 +82,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
     CONTENT_STATUS_NUM_ITEMS
   };
 
+  enum RecordPeripheralDecision {
+    DONT_RECORD_DECISION = 0,
+    RECORD_DECISION = 1
+  };
+
   // Returns the RenderFrame given a WebFrame.
   static RenderFrame* FromWebFrame(blink::WebFrame* web_frame);
 
@@ -177,7 +182,8 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual PeripheralContentStatus GetPeripheralContentStatus(
       const url::Origin& main_frame_origin,
       const url::Origin& content_origin,
-      const gfx::Size& unobscured_size) const = 0;
+      const gfx::Size& unobscured_size,
+      RecordPeripheralDecision record_decision) const = 0;
 
   // Whitelists a |content_origin| so its content will never be throttled in
   // this RenderFrame. Whitelist is cleared by top level navigation.

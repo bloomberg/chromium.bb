@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/public/renderer/render_frame.h"
 
 namespace blink {
 class WebPlugin;
@@ -73,7 +74,8 @@ class CONTENT_EXPORT PluginInstanceThrottler {
     virtual void OnThrottlerDestroyed() {}
   };
 
-  static std::unique_ptr<PluginInstanceThrottler> Create();
+  static std::unique_ptr<PluginInstanceThrottler> Create(
+      RenderFrame::RecordPeripheralDecision record_decision);
 
   static void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method);
 

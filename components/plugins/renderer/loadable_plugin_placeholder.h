@@ -82,6 +82,9 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   void DidFinishLoadingCallback();
   void DidFinishIconRepositionForTestingCallback();
 
+  // True if the power saver heuristic has already been run on this content.
+  bool heuristic_run_before_;
+
  private:
   // WebViewPlugin::Delegate methods:
   void PluginDestroyed() override;
@@ -134,9 +137,6 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   std::string identifier_;
 
   gfx::Rect unobscured_rect_;
-
-  // True if the power saver heuristic has already been run on this content.
-  bool heuristic_run_before_;
 
   base::WeakPtrFactory<LoadablePluginPlaceholder> weak_factory_;
 

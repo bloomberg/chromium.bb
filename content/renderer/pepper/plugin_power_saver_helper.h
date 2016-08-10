@@ -50,7 +50,8 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   RenderFrame::PeripheralContentStatus GetPeripheralContentStatus(
       const url::Origin& main_frame_origin,
       const url::Origin& content_origin,
-      const gfx::Size& unobscured_size) const;
+      const gfx::Size& unobscured_size,
+      RenderFrame::RecordPeripheralDecision record_decision) const;
   void WhitelistContentOrigin(const url::Origin& content_origin);
 
   // RenderFrameObserver implementation.

@@ -25,7 +25,7 @@ namespace content {
 namespace {
 
 const char kPeripheralHeuristicHistogram[] =
-    "Plugin.PowerSaver.PeripheralHeuristic";
+    "Plugin.PowerSaver.PeripheralHeuristicInitialDecision";
 
 }  // namespace
 
@@ -102,7 +102,8 @@ RenderFrame::PeripheralContentStatus
 PluginPowerSaverHelper::GetPeripheralContentStatus(
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
-    const gfx::Size& unobscured_size) const {
+    const gfx::Size& unobscured_size,
+    RenderFrame::RecordPeripheralDecision record_decision) const {
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kOverridePluginPowerSaverForTesting) == "always") {
     return RenderFrame::CONTENT_STATUS_PERIPHERAL;
@@ -110,15 +111,14 @@ PluginPowerSaverHelper::GetPeripheralContentStatus(
 
   auto status = PeripheralContentHeuristic::GetPeripheralStatus(
       origin_whitelist_, main_frame_origin, content_origin, unobscured_size);
-  if (status == RenderFrame::CONTENT_STATUS_ESSENTIAL_UNKNOWN_SIZE) {
-    // Early exit here to avoid recording a UMA. Every plugin will call this
-    // method once before the size is known (to faciliate early-exit for
-    // same-origin and whitelisted-origin content).
-    return status;
+
+  // Never record ESSENTIAL_UNKNOWN_SIZE. Wait for retest after size is known.
+  if (record_decision == RenderFrame::RECORD_DECISION &&
+      status != RenderFrame::CONTENT_STATUS_ESSENTIAL_UNKNOWN_SIZE) {
+    UMA_HISTOGRAM_ENUMERATION(kPeripheralHeuristicHistogram, status,
+                              RenderFrame::CONTENT_STATUS_NUM_ITEMS);
   }
 
-  UMA_HISTOGRAM_ENUMERATION(kPeripheralHeuristicHistogram, status,
-                            RenderFrame::CONTENT_STATUS_NUM_ITEMS);
   return status;
 }
 

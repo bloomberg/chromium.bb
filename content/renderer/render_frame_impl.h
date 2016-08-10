@@ -414,7 +414,8 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderFrame::PeripheralContentStatus GetPeripheralContentStatus(
       const url::Origin& main_frame_origin,
       const url::Origin& content_origin,
-      const gfx::Size& unobscured_size) const override;
+      const gfx::Size& unobscured_size,
+      RecordPeripheralDecision record_decision) const override;
   void WhitelistContentOrigin(const url::Origin& content_origin) override;
 #endif
   bool IsFTPDirectoryListing() override;
