@@ -1208,6 +1208,8 @@ crbug.com/613510 fast/forms/suggestion-picker/date-suggestion-picker-appearance-
 
 crbug.com/636258 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-fractional-width.html [ Failure ]
 
+crbug.com/636304 [ Trusty ] fast/forms/select-popup/popup-menu-appearance-zoom.html [ Failure ]
+
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
