@@ -58,6 +58,10 @@ public class ImeLollipopTest extends ImeTest {
         });
         requestCursorUpdates(InputConnection.CURSOR_UPDATE_IMMEDIATE);
         waitForUpdateCursorAnchorInfoComposingText("abcd");
+
+        setComposingText("abcde", 2);
+        requestCursorUpdates(InputConnection.CURSOR_UPDATE_IMMEDIATE);
+        waitForUpdateCursorAnchorInfoComposingText("abcde");
     }
 
     private void requestCursorUpdates(final int cursorUpdateMode) {

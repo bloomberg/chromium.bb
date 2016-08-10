@@ -13,7 +13,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.inputmethod.CursorAnchorInfo;
-import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -141,10 +140,11 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         assertFalse(
                 "IC#onRequestCursorUpdates() must be rejected if the focused node is not editable.",
-                controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR, view));
+                controller.onRequestCursorUpdates(
+                        false /* immediate request */, true /* monitor request */, view));
 
         // Make sure that the focused node is considered to be non-editable by default.
-        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f});
+        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f}, view);
         composingTextDelegate.updateTextAndSelection(controller, "0", 0, 1, 0, 1);
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
                 true, true, 2.0f, 0.0f, 3.0f, view);
@@ -155,7 +155,7 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         // Make sure that the controller does not crash even if it is called while the focused node
         // is not editable.
-        controller.setCompositionCharacterBounds(new float[] {30.0f, 1.0f, 32.0f, 3.0f});
+        controller.setCompositionCharacterBounds(new float[] {30.0f, 1.0f, 32.0f, 3.0f}, view);
         composingTextDelegate.updateTextAndSelection(controller, "1", 0, 1, 0, 1);
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 100.0f),
                 true, true, 2.0f, 0.0f, 3.0f, view);
@@ -179,9 +179,9 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         // Make sure that #updateCursorAnchorInfo() is not be called until the matrix info becomes
         // available with #onUpdateFrameInfo().
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_IMMEDIATE,
-                view));
-        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f});
+        assertTrue(controller.onRequestCursorUpdates(
+                true /* immediate request */, false /* monitor request */, view));
+        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f}, view);
         composingTextDelegate.updateTextAndSelection(controller, "0", 0, 1, 0, 1);
         assertEquals(0, immw.getUpdateCursorAnchorInfoCounter());
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
@@ -205,8 +205,8 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         // Make sure that #onUpdateFrameInfo() is immediately called because the matrix info is
         // already available.
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_IMMEDIATE,
-                view));
+        assertTrue(controller.onRequestCursorUpdates(
+                true /* immediate request */, false /* monitor request */, view));
         assertEquals(2, immw.getUpdateCursorAnchorInfoCounter());
         assertScaleAndTranslate(2.0f, 0.0f, 0.0f, immw.getLastCursorAnchorInfo());
         assertHasInsertionMarker(CursorAnchorInfo.FLAG_HAS_VISIBLE_REGION, 2.0f, 0.0f, 3.0f,
@@ -222,8 +222,7 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
         // Make sure that CURSOR_UPDATE_IMMEDIATE and CURSOR_UPDATE_MONITOR can be specified at
         // the same time.
         assertTrue(controller.onRequestCursorUpdates(
-                InputConnection.CURSOR_UPDATE_IMMEDIATE | InputConnection.CURSOR_UPDATE_MONITOR,
-                view));
+                true /* immediate request*/, true /* monitor request */, view));
         assertEquals(3, immw.getUpdateCursorAnchorInfoCounter());
         assertScaleAndTranslate(2.0f, 0.0f, 0.0f, immw.getLastCursorAnchorInfo());
         immw.clearLastCursorAnchorInfo();
@@ -246,8 +245,8 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
         controller.focusedNodeChanged(false);
         controller.focusedNodeChanged(true);
         composingTextDelegate.clearTextAndSelection(controller);
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_IMMEDIATE,
-                view));
+        assertTrue(controller.onRequestCursorUpdates(
+                true /* immediate request */, false /* monitor request */, view));
         controller.focusedNodeChanged(false);
         composingTextDelegate.clearTextAndSelection(controller);
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 100.0f),
@@ -257,8 +256,8 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
         // Make sure that CURSOR_UPDATE_IMMEDIATE can be enabled again.
         controller.focusedNodeChanged(true);
         composingTextDelegate.clearTextAndSelection(controller);
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_IMMEDIATE,
-                view));
+        assertTrue(controller.onRequestCursorUpdates(
+                true /* immediate request */, false /* monitor request */, view));
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
                 true, true, 2.0f, 0.0f, 3.0f, view);
         assertEquals(5, immw.getUpdateCursorAnchorInfoCounter());
@@ -289,8 +288,9 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         // Make sure that #updateCursorAnchorInfo() is not be called until the matrix info becomes
         // available with #onUpdateFrameInfo().
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR, view));
-        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f});
+        assertTrue(controller.onRequestCursorUpdates(
+                false /* immediate request */, true /* monitor request */, view));
+        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f}, view);
         composingTextDelegate.updateTextAndSelection(controller, "0", 0, 1, 0, 1);
         assertEquals(0, immw.getUpdateCursorAnchorInfoCounter());
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
@@ -309,15 +309,15 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         // Make sure that #updateCursorAnchorInfo() is not be called if any coordinate parameter is
         // changed for better performance.
-        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f});
+        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f}, view);
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
                 true, true, 2.0f, 0.0f, 3.0f, view);
         assertEquals(1, immw.getUpdateCursorAnchorInfoCounter());
 
         // Make sure that #updateCursorAnchorInfo() is called if #setCompositionCharacterBounds()
         // is called with a different parameter.
-        controller.setCompositionCharacterBounds(new float[] {30.0f, 1.0f, 32.0f, 3.0f});
-        assertEquals(1, immw.getUpdateCursorAnchorInfoCounter());
+        controller.setCompositionCharacterBounds(new float[] {30.0f, 1.0f, 32.0f, 3.0f}, view);
+        assertEquals(2, immw.getUpdateCursorAnchorInfoCounter());
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
                 true, true, 2.0f, 0.0f, 3.0f, view);
         assertEquals(2, immw.getUpdateCursorAnchorInfoCounter());
@@ -388,10 +388,11 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
         controller.focusedNodeChanged(false);
         controller.focusedNodeChanged(true);
         composingTextDelegate.clearTextAndSelection(controller);
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR, view));
+        assertTrue(controller.onRequestCursorUpdates(
+                false /* immediate request */, true /* monitor request */, view));
         controller.focusedNodeChanged(false);
         composingTextDelegate.clearTextAndSelection(controller);
-        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f});
+        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f}, view);
         composingTextDelegate.updateTextAndSelection(controller, "0", 0, 1, 0, 1);
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
                 true, true, 2.0f, 0.0f, 3.0f, view);
@@ -400,8 +401,9 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
         // Make sure that CURSOR_UPDATE_MONITOR can be enabled again.
         controller.focusedNodeChanged(true);
         composingTextDelegate.clearTextAndSelection(controller);
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR, view));
-        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f});
+        assertTrue(controller.onRequestCursorUpdates(
+                false /* immediate request */, true /* monitor request */, view));
+        controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f}, view);
         composingTextDelegate.updateTextAndSelection(controller, "0", 0, 1, 0, 1);
         assertEquals(5, immw.getUpdateCursorAnchorInfoCounter());
         viewDelegate.locationX = 0;
@@ -436,11 +438,12 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         controller.focusedNodeChanged(true);
         composingTextDelegate.clearTextAndSelection(controller);
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR, view));
+        assertTrue(controller.onRequestCursorUpdates(
+                false /* immediate request */, true /* monitor request */, view));
 
         composingTextDelegate.updateTextAndSelection(controller, "01234", 1, 3, 1, 1);
         controller.setCompositionCharacterBounds(new float[] {0.0f, 1.0f, 2.0f, 3.0f,
-                4.0f, 1.1f, 6.0f, 2.9f});
+                4.0f, 1.1f, 6.0f, 2.9f}, view);
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
                 false, false, Float.NaN, Float.NaN, Float.NaN, view);
         assertEquals(1, immw.getUpdateCursorAnchorInfoCounter());
@@ -475,7 +478,8 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         controller.focusedNodeChanged(true);
         composingTextDelegate.clearTextAndSelection(controller);
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR, view));
+        assertTrue(controller.onRequestCursorUpdates(
+                false /* immediate request */, true /* monitor request */, view));
 
         composingTextDelegate.updateTextAndSelection(controller, "01234", 3, 3, 1, 1);
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
@@ -507,7 +511,8 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         controller.focusedNodeChanged(true);
         composingTextDelegate.clearTextAndSelection(controller);
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR, view));
+        assertTrue(controller.onRequestCursorUpdates(
+                false /* immediate request */, true /* monitor request */, view));
 
         // Test no insertion marker.
         controller.onUpdateFrameInfo(createRenderCoordinates(1.0f, 0.0f),
@@ -545,7 +550,8 @@ public class CursorAnchorInfoControllerTest extends InstrumentationTestCase {
 
         controller.focusedNodeChanged(true);
         composingTextDelegate.clearTextAndSelection(controller);
-        assertTrue(controller.onRequestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR, view));
+        assertTrue(controller.onRequestCursorUpdates(
+                false /* immediate request */, true /* monitor request */, view));
 
         // Test no transformation
         viewDelegate.locationX = 0;

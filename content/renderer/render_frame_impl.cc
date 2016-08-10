@@ -1272,7 +1272,8 @@ void RenderFrameImpl::PepperCancelComposition(
     return;
   Send(new InputHostMsg_ImeCancelComposition(render_view_->GetRoutingID()));
 #if defined(OS_MACOSX) || defined(USE_AURA)
-  GetRenderWidget()->UpdateCompositionInfo(true);
+  GetRenderWidget()->UpdateCompositionInfo(
+      false /* not an immediate request */);
 #endif
 }
 

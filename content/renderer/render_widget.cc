@@ -247,6 +247,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       text_input_flags_(0),
       can_compose_inline_(true),
+      composition_range_(gfx::Range::InvalidRange()),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
       screen_info_(screen_info),
@@ -254,6 +255,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
 #if defined(OS_ANDROID)
       text_field_is_dirty_(false),
 #endif
+      monitor_composition_info_(false),
       popup_origin_scale_for_emulation_(0.f),
       frame_swap_message_queue_(new FrameSwapMessageQueue()),
       resizing_mode_selector_(new ResizingModeSelector()),
@@ -495,6 +497,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetSurfaceClientId, OnSetSurfaceClientId)
     IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
+    IPC_MESSAGE_HANDLER(InputMsg_RequestCompositionUpdate,
+                        OnRequestCompositionUpdate)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(InputMsg_ImeEventAck, OnImeEventAck)
     IPC_MESSAGE_HANDLER(InputMsg_RequestTextInputStateUpdate,
@@ -1365,7 +1369,7 @@ void RenderWidget::OnImeSetComposition(
     // sure we are in a consistent state.
     Send(new InputHostMsg_ImeCancelComposition(routing_id()));
   }
-  UpdateCompositionInfo(true);
+  UpdateCompositionInfo(false /* not an immediate request */);
 }
 
 void RenderWidget::OnImeConfirmComposition(const base::string16& text,
@@ -1394,7 +1398,7 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
   else
     webwidget_->confirmComposition(WebWidget::DoNotKeepSelection);
   input_handler_->set_handling_input_event(false);
-  UpdateCompositionInfo(true);
+  UpdateCompositionInfo(false /* not an immediate request */);
 }
 
 void RenderWidget::OnDeviceScaleFactorChanged() {
@@ -1479,19 +1483,26 @@ ui::TextInputType RenderWidget::GetTextInputType() {
   return ui::TEXT_INPUT_TYPE_NONE;
 }
 
-void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
-  TRACE_EVENT0("renderer", "RenderWidget::UpdateCompositionInfo");
-  gfx::Range range = gfx::Range();
-  if (should_update_range) {
-    GetCompositionRange(&range);
-  } else {
-    range = composition_range_;
-  }
-  std::vector<gfx::Rect> character_bounds;
-  GetCompositionCharacterBounds(&character_bounds);
+void RenderWidget::UpdateCompositionInfo(bool immediate_request) {
+  if (!monitor_composition_info_ && !immediate_request)
+    return;  // Do not calculate composition info if not requested.
 
-  if (!ShouldUpdateCompositionInfo(range, character_bounds))
+  TRACE_EVENT0("renderer", "RenderWidget::UpdateCompositionInfo");
+  gfx::Range range;
+  std::vector<gfx::Rect> character_bounds;
+
+  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
+    // Composition information is only available on editable node.
+    range = gfx::Range::InvalidRange();
+  } else {
+    GetCompositionRange(&range);
+    GetCompositionCharacterBounds(&character_bounds);
+  }
+
+  if (!immediate_request &&
+      !ShouldUpdateCompositionInfo(range, character_bounds)) {
     return;
+  }
   composition_character_bounds_ = character_bounds;
   composition_range_ = range;
   Send(new InputHostMsg_ImeCompositionRangeChanged(
@@ -1549,6 +1560,14 @@ void RenderWidget::OnRequestTextInputStateUpdate() {
   UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_IME);
 }
 #endif
+
+void RenderWidget::OnRequestCompositionUpdate(bool immediate_request,
+                                              bool monitor_request) {
+  monitor_composition_info_ = monitor_request;
+  if (!immediate_request)
+    return;
+  UpdateCompositionInfo(true /* immediate request */);
+}
 
 bool RenderWidget::ShouldHandleImeEvent() {
 #if defined(OS_ANDROID)
@@ -1741,7 +1760,7 @@ void RenderWidget::UpdateSelectionBounds() {
     }
   }
 
-  UpdateCompositionInfo(false);
+  UpdateCompositionInfo(false /* not an immediate request */);
 }
 
 void RenderWidget::SetDeviceColorProfileForTesting(
@@ -1886,7 +1905,7 @@ void RenderWidget::resetInputMethod() {
       Send(new InputHostMsg_ImeCancelComposition(routing_id()));
   }
 
-  UpdateCompositionInfo(true);
+  UpdateCompositionInfo(false /* not an immediate request */);
 }
 
 #if defined(OS_ANDROID)
