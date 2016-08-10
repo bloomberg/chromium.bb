@@ -153,9 +153,9 @@ ArcAuthService* ArcAuthService::Get() {
 // static
 void ArcAuthService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kArcEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // TODO(dspaid): Implement a mechanism to allow this to sync on first boot
+  // only.
+  registry->RegisterBooleanPref(prefs::kArcEnabled, false);
   registry->RegisterBooleanPref(prefs::kArcSignedIn, false);
   registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, true);
   registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, true);
@@ -518,6 +518,9 @@ void ArcAuthService::StopArc() {
 void ArcAuthService::OnOptInPreferenceChanged() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
+
+  // TODO(dspaid): Move code from OnSyncedPrefChanged into this method.
+  OnSyncedPrefChanged(prefs::kArcEnabled, IsArcManaged());
 
   const bool arc_enabled = IsArcEnabled();
   FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInEnabled(arc_enabled));
