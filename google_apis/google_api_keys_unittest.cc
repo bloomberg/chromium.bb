@@ -10,14 +10,11 @@
 // This is a little unorthodox, but it lets us test the behavior as
 // close to unmodified as possible.
 
-#include "google_apis/google_api_keys.h"
-
-#include <memory>
+#include "google_apis/google_api_keys_unittest.h"
 
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_switches.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 // The Win builders fail (with a linker crash) when trying to link
 // unit_tests, and the Android builders complain about multiply
@@ -38,74 +35,58 @@
 
 #include <string>
 #include "base/command_line.h"
-#include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/stringize_macros.h"
 
+#if defined(OS_MACOSX)
+#include "google_apis/google_api_keys_mac.h"
+#endif
+
+GoogleAPIKeysTest::GoogleAPIKeysTest() : env_(base::Environment::Create()) {
+  static_assert(11 == 3 + 2 * google_apis::CLIENT_NUM_ITEMS,
+                "Unexpected number of key entries.");
+  env_cache_[0].variable_name = "GOOGLE_API_KEY";
+  env_cache_[1].variable_name = "GOOGLE_CLIENT_ID_MAIN";
+  env_cache_[2].variable_name = "GOOGLE_CLIENT_SECRET_MAIN";
+  env_cache_[3].variable_name = "GOOGLE_CLIENT_ID_CLOUD_PRINT";
+  env_cache_[4].variable_name = "GOOGLE_CLIENT_SECRET_CLOUD_PRINT";
+  env_cache_[5].variable_name = "GOOGLE_CLIENT_ID_REMOTING";
+  env_cache_[6].variable_name = "GOOGLE_CLIENT_SECRET_REMOTING";
+  env_cache_[7].variable_name = "GOOGLE_CLIENT_ID_REMOTING_HOST";
+  env_cache_[8].variable_name = "GOOGLE_CLIENT_SECRET_REMOTING_HOST";
+  env_cache_[9].variable_name = "GOOGLE_DEFAULT_CLIENT_ID";
+  env_cache_[10].variable_name = "GOOGLE_DEFAULT_CLIENT_SECRET";
+}
+
+GoogleAPIKeysTest::~GoogleAPIKeysTest() {}
+
+void GoogleAPIKeysTest::SetUp() {
+  // Unset all environment variables that can affect these tests,
+  // for the duration of the tests.
+  for (size_t i = 0; i < arraysize(env_cache_); ++i) {
+    EnvironmentCache& cache = env_cache_[i];
+    cache.was_set = env_->HasVar(cache.variable_name);
+    cache.value.clear();
+    if (cache.was_set) {
+      env_->GetVar(cache.variable_name, &cache.value);
+      env_->UnSetVar(cache.variable_name);
+    }
+  }
+}
+
+void GoogleAPIKeysTest::TearDown() {
+  // Restore environment.
+  for (size_t i = 0; i < arraysize(env_cache_); ++i) {
+    EnvironmentCache& cache = env_cache_[i];
+    if (cache.was_set) {
+      env_->SetVar(cache.variable_name, cache.value);
+    }
+  }
+}
+
 // This is the default baked-in value for OAuth IDs and secrets.
 static const char kDummyToken[] = "dummytoken";
-
-struct EnvironmentCache {
- public:
-  EnvironmentCache() : variable_name(NULL), was_set(false) {}
-
-  const char* variable_name;
-  bool was_set;
-  std::string value;
-};
-
-class GoogleAPIKeysTest : public testing::Test {
- public:
-  GoogleAPIKeysTest() : env_(base::Environment::Create()) {
-    env_cache_[0].variable_name = "GOOGLE_API_KEY";
-    env_cache_[1].variable_name = "GOOGLE_CLIENT_ID_MAIN";
-    env_cache_[2].variable_name = "GOOGLE_CLIENT_SECRET_MAIN";
-    env_cache_[3].variable_name = "GOOGLE_CLIENT_ID_CLOUD_PRINT";
-    env_cache_[4].variable_name = "GOOGLE_CLIENT_SECRET_CLOUD_PRINT";
-    env_cache_[5].variable_name = "GOOGLE_CLIENT_ID_REMOTING";
-    env_cache_[6].variable_name = "GOOGLE_CLIENT_SECRET_REMOTING";
-    env_cache_[7].variable_name = "GOOGLE_CLIENT_ID_REMOTING_HOST";
-    env_cache_[8].variable_name = "GOOGLE_CLIENT_SECRET_REMOTING_HOST";
-    env_cache_[9].variable_name = "GOOGLE_DEFAULT_CLIENT_ID";
-    env_cache_[10].variable_name = "GOOGLE_DEFAULT_CLIENT_SECRET";
-  }
-
-  void SetUp() override {
-    // Unset all environment variables that can affect these tests,
-    // for the duration of the tests.
-    for (size_t i = 0; i < arraysize(env_cache_); ++i) {
-      EnvironmentCache& cache = env_cache_[i];
-      cache.was_set = env_->HasVar(cache.variable_name);
-      cache.value.clear();
-      if (cache.was_set) {
-        env_->GetVar(cache.variable_name, &cache.value);
-        env_->UnSetVar(cache.variable_name);
-      }
-    }
-  }
-
-  void TearDown() override {
-    // Restore environment.
-    for (size_t i = 0; i < arraysize(env_cache_); ++i) {
-      EnvironmentCache& cache = env_cache_[i];
-      if (cache.was_set) {
-        env_->SetVar(cache.variable_name, cache.value);
-      }
-    }
-  }
-
- private:
-  std::unique_ptr<base::Environment> env_;
-
-  // Why 3?  It is for GOOGLE_API_KEY, GOOGLE_DEFAULT_CLIENT_ID and
-  // GOOGLE_DEFAULT_CLIENT_SECRET.
-  //
-  // Why 2 times CLIENT_NUM_ITEMS?  This is the number of different
-  // clients in the OAuth2Client enumeration, and for each of these we
-  // have both an ID and a secret.
-  EnvironmentCache env_cache_[3 + 2 * google_apis::CLIENT_NUM_ITEMS];
-};
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
 // Test official build behavior, since we are in a checkout where this

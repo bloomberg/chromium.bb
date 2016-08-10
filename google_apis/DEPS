@@ -3,4 +3,5 @@ include_rules = [
   "-content",
   "+crypto",
   "+net",
+  "+third_party/ocmock",
 ]

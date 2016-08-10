@@ -18,6 +18,10 @@
 #include "base/strings/stringize_macros.h"
 #include "google_apis/gaia/gaia_switches.h"
 
+#if defined(OS_MACOSX)
+#include "google_apis/google_api_keys_mac.h"
+#endif
+
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
 #include "google_apis/internal/google_chrome_api_keys.h"
 #endif
@@ -236,6 +240,16 @@ class APIKeyCache {
                                        base::CommandLine* command_line) {
     std::string key_value = baked_in_value;
     std::string temp;
+#if defined(OS_MACOSX)
+    // macOS and iOS can also override the API key with a value from the
+    // Info.plist.
+    temp = ::google_apis::GetAPIKeyFromInfoPlist(environment_variable_name);
+    if (!temp.empty()) {
+      key_value = temp;
+      VLOG(1) << "Overriding API key " << environment_variable_name
+              << " with value " << key_value << " from Info.plist.";
+    }
+#endif
     if (environment->GetVar(environment_variable_name, &temp)) {
       key_value = temp;
       VLOG(1) << "Overriding API key " << environment_variable_name
