@@ -29,6 +29,8 @@ extern const base::Feature kBackgroundModeAllowRestart;
 
 extern const base::Feature kBackspaceGoesBackFeature;
 
+extern const base::Feature kBlockPromptsIfDismissedOften;
+
 extern const base::Feature kBlockSmallContent;
 
 extern const base::Feature kBrowserHangFixesExperiment;

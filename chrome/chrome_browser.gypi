@@ -2391,6 +2391,8 @@
       'browser/permissions/delegation_tracker.h',
       'browser/permissions/permission_context_base.cc',
       'browser/permissions/permission_context_base.h',
+      'browser/permissions/permission_decision_auto_blocker.cc',
+      'browser/permissions/permission_decision_auto_blocker.h',
       'browser/permissions/permission_infobar_delegate.cc',
       'browser/permissions/permission_infobar_delegate.h',
       'browser/permissions/permission_manager.cc',

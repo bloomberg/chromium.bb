@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -13,6 +14,9 @@
 
 PermissionInfobarDelegate::~PermissionInfobarDelegate() {
   if (!action_taken_) {
+    PermissionDecisionAutoBlocker(profile_).RecordIgnore(requesting_origin_,
+                                                         permission_type_);
+
     PermissionUmaUtil::PermissionIgnored(
         permission_type_,
         user_gesture_ ? PermissionRequestGestureType::GESTURE

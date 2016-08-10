@@ -181,6 +181,7 @@
       'browser/permissions/chooser_context_base_unittest.cc',
       'browser/permissions/delegation_tracker_unittest.cc',
       'browser/permissions/permission_context_base_unittest.cc',
+      'browser/permissions/permission_decision_auto_blocker_unittest.cc',
       'browser/permissions/permission_manager_unittest.cc',
       'browser/permissions/permission_uma_util_unittest.cc',
       'browser/permissions/permission_util_unittest.cc',

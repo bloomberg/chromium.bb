@@ -7,10 +7,12 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -25,6 +27,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
+#include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/permissions/permission_queue_controller.h"
@@ -45,6 +48,7 @@ PermissionContextBase::PermissionContextBase(
     const content::PermissionType permission_type,
     const ContentSettingsType content_settings_type)
     : profile_(profile),
+      decision_auto_blocker_(new PermissionDecisionAutoBlocker(profile)),
       permission_type_(permission_type),
       content_settings_type_(content_settings_type),
       weak_factory_(this) {
@@ -232,6 +236,15 @@ void PermissionContextBase::PermissionDecided(
                                            requesting_origin, profile_);
   }
 #endif
+
+  // Check if we should convert a dismiss decision into a block decision. This
+  // is gated on enabling the kBlockPromptsIfDismissedOften feature.
+  if (!persist &&
+      decision_auto_blocker_->ShouldChangeDismissalToBlock(requesting_origin,
+                                                           permission_type_)) {
+    persist = true;
+    content_setting = CONTENT_SETTING_BLOCK;
+  }
 
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                       persist, content_setting);

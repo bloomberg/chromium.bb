@@ -7,9 +7,8 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -17,11 +16,12 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/permission_type.h"
-#include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 class PermissionQueueController;
 #endif
+class GURL;
+class PermissionDecisionAutoBlocker;
 class PermissionRequestID;
 class Profile;
 
@@ -157,10 +157,13 @@ class PermissionContextBase : public KeyedService {
   }
 
  private:
+  friend class PermissionContextBaseTests;
+
   // Called when a request is no longer used so it can be cleaned up.
   void CleanUpRequest(const PermissionRequestID& id);
 
   Profile* profile_;
+  std::unique_ptr<PermissionDecisionAutoBlocker> decision_auto_blocker_;
   const content::PermissionType permission_type_;
   const ContentSettingsType content_settings_type_;
 #if defined(OS_ANDROID)

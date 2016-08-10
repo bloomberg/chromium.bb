@@ -13,7 +13,6 @@
 #include "content/public/browser/permission_type.h"
 
 class GURL;
-class PermissionContextBase;
 class Profile;
 
 // Default implementation of PermissionRequest, it is assumed that the

@@ -85,8 +85,7 @@ const std::string GetRapporMetric(PermissionType permission,
       break;
   }
 
-  std::string permission_str =
-      PermissionUtil::GetPermissionString(permission);
+  std::string permission_str = PermissionUtil::GetPermissionString(permission);
   if (permission_str.empty())
     return "";
   return base::StringPrintf("ContentSettings.PermissionActions_%s.%s.Url",
@@ -102,8 +101,7 @@ void RecordPermissionRequest(PermissionType permission,
     if (permission == PermissionType::GEOLOCATION) {
       // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
       rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service,
-          "ContentSettings.PermissionRequested.Geolocation.Url",
+          rappor_service, "ContentSettings.PermissionRequested.Geolocation.Url",
           requesting_origin);
       rappor_service->RecordSample(
           "ContentSettings.PermissionRequested.Geolocation.Url2",
@@ -123,8 +121,7 @@ void RecordPermissionRequest(PermissionType permission,
                permission == PermissionType::MIDI_SYSEX) {
       // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
       rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service,
-          "ContentSettings.PermissionRequested.Midi.Url",
+          rappor_service, "ContentSettings.PermissionRequested.Midi.Url",
           requesting_origin);
       rappor_service->RecordSample(
           "ContentSettings.PermissionRequested.Midi.Url2",
@@ -354,6 +351,100 @@ void PermissionUmaUtil::PermissionPromptDenied(
   PERMISSION_BUBBLE_GESTURE_TYPE_UMA(
       kPermissionsPromptDeniedGesture, kPermissionsPromptDeniedNoGesture,
       requests[0]->GetGestureType(), requests[0]->GetPermissionRequestType());
+}
+
+void PermissionUmaUtil::PermissionPromptDismissed(
+    content::PermissionType permission,
+    int count) {
+  switch (permission) {
+    case PermissionType::GEOLOCATION:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.Geolocation",
+                               count);
+      break;
+    case PermissionType::NOTIFICATIONS:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.Notifications",
+                               count);
+      break;
+    case PermissionType::MIDI_SYSEX:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.MidiSysEx",
+                               count);
+      break;
+    case PermissionType::PUSH_MESSAGING:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.PushMessaging",
+                               count);
+      break;
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.ProtectedMedia",
+                               count);
+      break;
+    case PermissionType::DURABLE_STORAGE:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.DurableStorage",
+                               count);
+      break;
+    case PermissionType::AUDIO_CAPTURE:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.AudioCapture",
+                               count);
+      break;
+    case PermissionType::VIDEO_CAPTURE:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.VideoCapture",
+                               count);
+      break;
+    // The user is not prompted for these permissions, thus there is no dismiss
+    // recorded for them.
+    case PermissionType::MIDI:
+    case PermissionType::BACKGROUND_SYNC:
+    case PermissionType::NUM:
+      NOTREACHED() << "PERMISSION "
+                   << PermissionUtil::GetPermissionString(permission)
+                   << " not accounted for";
+  }
+}
+
+void PermissionUmaUtil::PermissionPromptIgnored(
+    content::PermissionType permission,
+    int count) {
+  switch (permission) {
+    case PermissionType::GEOLOCATION:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.Geolocation",
+                               count);
+      break;
+    case PermissionType::NOTIFICATIONS:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.Notifications",
+                               count);
+      break;
+    case PermissionType::MIDI_SYSEX:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.MidiSysEx",
+                               count);
+      break;
+    case PermissionType::PUSH_MESSAGING:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.PushMessaging",
+                               count);
+      break;
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.ProtectedMedia",
+                               count);
+      break;
+    case PermissionType::DURABLE_STORAGE:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.DurableStorage",
+                               count);
+      break;
+    case PermissionType::AUDIO_CAPTURE:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.AudioCapture",
+                               count);
+      break;
+    case PermissionType::VIDEO_CAPTURE:
+      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.VideoCapture",
+                               count);
+      break;
+    // The user is not prompted for these permissions, thus there is no
+    // ignore recorded for them.
+    case PermissionType::MIDI:
+    case PermissionType::BACKGROUND_SYNC:
+    case PermissionType::NUM:
+      NOTREACHED() << "PERMISSION "
+                   << PermissionUtil::GetPermissionString(permission)
+                   << " not accounted for";
+  }
 }
 
 bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {

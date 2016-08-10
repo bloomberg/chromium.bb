@@ -114,6 +114,16 @@ class PermissionUmaUtil {
   static void PermissionPromptDenied(
       const std::vector<PermissionRequest*>& requests);
 
+  // Records |count| total dismissal actions for a prompt of type |permission|
+  // for a single origin.
+  static void PermissionPromptDismissed(content::PermissionType permission,
+                                        int count);
+
+  // Records |count| total ignore actions for a prompt of type |permission| for
+  // a single origin.
+  static void PermissionPromptIgnored(content::PermissionType permission,
+                                      int count);
+
  private:
   friend class PermissionUmaUtilTest;
 

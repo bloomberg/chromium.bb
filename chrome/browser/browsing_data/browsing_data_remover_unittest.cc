@@ -41,6 +41,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -72,6 +73,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread.h"
@@ -1019,6 +1021,36 @@ class RemovePasswordsTester {
   password_manager::MockPasswordStore* store_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovePasswordsTester);
+};
+
+class RemovePermissionPromptCountsTest {
+ public:
+  explicit RemovePermissionPromptCountsTest(TestingProfile* profile)
+      : blocker_(new PermissionDecisionAutoBlocker(profile)) {}
+
+  int GetDismissCount(const GURL& url, content::PermissionType permission) {
+    return blocker_->GetActionCountForTest(url, permission,
+        PermissionDecisionAutoBlocker::kPromptDismissCountKey);
+  }
+
+  int GetIgnoreCount(const GURL& url, content::PermissionType permission) {
+    return blocker_->GetActionCountForTest(url, permission,
+        PermissionDecisionAutoBlocker::kPromptIgnoreCountKey);
+  }
+
+  int RecordIgnore(const GURL& url, content::PermissionType permission) {
+    return blocker_->RecordIgnore(url, permission);
+  }
+
+  bool ShouldChangeDismissalToBlock(const GURL& url,
+                                    content::PermissionType permission) {
+    return blocker_->ShouldChangeDismissalToBlock(url, permission);
+  }
+
+ private:
+  std::unique_ptr<PermissionDecisionAutoBlocker> blocker_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovePermissionPromptCountsTest);
 };
 
 // Test Class ----------------------------------------------------------------
@@ -2597,6 +2629,112 @@ TEST_F(BrowsingDataRemoverTest, ClearWithPredicate) {
   EXPECT_EQ(1u, host_settings.size());
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(url1),
             host_settings[0].primary_pattern);
+}
+
+TEST_F(BrowsingDataRemoverTest, ClearPermissionPromptCounts) {
+  RemovePermissionPromptCountsTest tester(GetProfile());
+
+  RegistrableDomainFilterBuilder filter_builder_1(
+      RegistrableDomainFilterBuilder::WHITELIST);
+  filter_builder_1.AddRegisterableDomain(kTestRegisterableDomain1);
+
+  RegistrableDomainFilterBuilder filter_builder_2(
+      RegistrableDomainFilterBuilder::BLACKLIST);
+  filter_builder_2.AddRegisterableDomain(kTestRegisterableDomain1);
+
+  {
+    // Test REMOVE_HISTORY.
+    EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
+                                     content::PermissionType::GEOLOCATION));
+    EXPECT_EQ(2, tester.RecordIgnore(kOrigin1,
+                                     content::PermissionType::GEOLOCATION));
+    EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
+                                     content::PermissionType::NOTIFICATIONS));
+    tester.ShouldChangeDismissalToBlock(kOrigin1,
+                                        content::PermissionType::MIDI_SYSEX);
+    EXPECT_EQ(1, tester.RecordIgnore(kOrigin2,
+                                     content::PermissionType::DURABLE_STORAGE));
+    tester.ShouldChangeDismissalToBlock(kOrigin2,
+                                        content::PermissionType::NOTIFICATIONS);
+
+    BlockUntilOriginDataRemoved(browsing_data::LAST_HOUR,
+                                BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
+                                filter_builder_1);
+
+    // kOrigin1 should be gone, but kOrigin2 remains.
+    EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
+                                       content::PermissionType::GEOLOCATION));
+    EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
+                                       content::PermissionType::NOTIFICATIONS));
+    EXPECT_EQ(0, tester.GetDismissCount(kOrigin1,
+                                        content::PermissionType::MIDI_SYSEX));
+    EXPECT_EQ(1, tester.GetIgnoreCount(
+                     kOrigin2, content::PermissionType::DURABLE_STORAGE));
+    EXPECT_EQ(1, tester.GetDismissCount(
+                     kOrigin2, content::PermissionType::NOTIFICATIONS));
+
+    BlockUntilBrowsingDataRemoved(browsing_data::LAST_HOUR,
+                                  BrowsingDataRemover::REMOVE_HISTORY, false);
+
+    // Everything should be gone.
+    EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
+                                       content::PermissionType::GEOLOCATION));
+    EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
+                                       content::PermissionType::NOTIFICATIONS));
+    EXPECT_EQ(0, tester.GetDismissCount(kOrigin1,
+                                        content::PermissionType::MIDI_SYSEX));
+    EXPECT_EQ(0, tester.GetIgnoreCount(
+                     kOrigin2, content::PermissionType::DURABLE_STORAGE));
+    EXPECT_EQ(0, tester.GetDismissCount(
+                     kOrigin2, content::PermissionType::NOTIFICATIONS));
+  }
+  {
+    // Test REMOVE_SITE_DATA.
+    EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
+                                     content::PermissionType::GEOLOCATION));
+    EXPECT_EQ(2, tester.RecordIgnore(kOrigin1,
+                                     content::PermissionType::GEOLOCATION));
+    EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
+                                     content::PermissionType::NOTIFICATIONS));
+    tester.ShouldChangeDismissalToBlock(kOrigin1,
+                                        content::PermissionType::MIDI_SYSEX);
+    EXPECT_EQ(1, tester.RecordIgnore(kOrigin2,
+                                     content::PermissionType::DURABLE_STORAGE));
+    tester.ShouldChangeDismissalToBlock(kOrigin2,
+                                        content::PermissionType::NOTIFICATIONS);
+
+    BlockUntilOriginDataRemoved(browsing_data::LAST_HOUR,
+                                BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
+                                filter_builder_2);
+
+    // kOrigin2 should be gone, but kOrigin1 remains.
+    EXPECT_EQ(2, tester.GetIgnoreCount(kOrigin1,
+                                       content::PermissionType::GEOLOCATION));
+    EXPECT_EQ(1, tester.GetIgnoreCount(kOrigin1,
+                                       content::PermissionType::NOTIFICATIONS));
+    EXPECT_EQ(1, tester.GetDismissCount(kOrigin1,
+                                        content::PermissionType::MIDI_SYSEX));
+    EXPECT_EQ(0, tester.GetIgnoreCount(
+                     kOrigin2, content::PermissionType::DURABLE_STORAGE));
+    EXPECT_EQ(0, tester.GetDismissCount(
+                     kOrigin2, content::PermissionType::NOTIFICATIONS));
+
+    BlockUntilBrowsingDataRemoved(browsing_data::LAST_HOUR,
+                                  BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
+                                  false);
+
+    // Everything should be gone.
+    EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
+                                       content::PermissionType::GEOLOCATION));
+    EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
+                                       content::PermissionType::NOTIFICATIONS));
+    EXPECT_EQ(0, tester.GetDismissCount(kOrigin1,
+                                        content::PermissionType::MIDI_SYSEX));
+    EXPECT_EQ(0, tester.GetIgnoreCount(
+                     kOrigin2, content::PermissionType::DURABLE_STORAGE));
+    EXPECT_EQ(0, tester.GetDismissCount(
+                     kOrigin2, content::PermissionType::NOTIFICATIONS));
+  }
 }
 
 class MultipleTasksObserver {

@@ -34,6 +34,11 @@ const base::Feature kBackspaceGoesBackFeature {
   "BackspaceGoesBack", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+// Enables or disables whether permission prompts are automatically blocked
+// after the user has explicitly dismissed them too many times.
+const base::Feature kBlockPromptsIfDismissedOften{
+    "BlockPromptsIfDismissedOften", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Experiment to disable small cross-origin content. (http://crbug.com/608886)
 const base::Feature kBlockSmallContent{"BlockSmallPluginContent",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

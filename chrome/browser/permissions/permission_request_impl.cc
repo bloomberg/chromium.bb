@@ -5,7 +5,7 @@
 #include "chrome/browser/permissions/permission_request_impl.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
@@ -33,6 +33,9 @@ PermissionRequestImpl::PermissionRequestImpl(
 PermissionRequestImpl::~PermissionRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_) {
+    PermissionDecisionAutoBlocker(profile_).RecordIgnore(request_origin_,
+                                                         permission_type_);
+
     PermissionUmaUtil::PermissionIgnored(permission_type_, GetGestureType(),
                                          request_origin_, profile_);
   }

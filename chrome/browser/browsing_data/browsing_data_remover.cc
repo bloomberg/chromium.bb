@@ -32,6 +32,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -798,6 +799,8 @@ void BrowsingDataRemover::RemoveImpl(
         HostContentSettingsMapFactory::GetForProfile(profile_),
         CONTENT_SETTINGS_TYPE_APP_BANNER,
         base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
+
+    PermissionDecisionAutoBlocker::RemoveCountsByUrl(profile_, filter);
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {

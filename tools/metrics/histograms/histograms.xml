@@ -39570,6 +39570,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Permissions.Prompt.DismissCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt dismissal, records
+    the total number of prompt dismissal events for this origin since the last
+    time the user cleared their history or site data, inclusive of the current
+    dismissal. Every event in a bucket larger than 1 in this histogram will also
+    have an event in each smaller bucket. The suffix of the histogram indicates
+    which particular permission.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Prompt.IgnoreCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt ignore, records the
+    total number of prompt ignore events for this origin since the last time the
+    user cleared their history or site data, inclusive of the current ignore.
+    Every event in a bucket larger than 1 in this histogram will also have an
+    event in each smaller bucket. The suffix of the histogram indicates which
+    particular permission.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Prompt.MergedBubbleAccepted"
     enum="PermissionRequestType">
   <owner>benwells@chromium.org</owner>
@@ -100808,6 +100832,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Permissions.Action"/>
   <affected-histogram name="Permissions.Action.InsecureOrigin"/>
   <affected-histogram name="Permissions.Action.SecureOrigin"/>
+  <affected-histogram name="Permissions.Prompt.DismissCount"/>
+  <affected-histogram name="Permissions.Prompt.IgnoreCount"/>
   <affected-histogram name="Permissions.Requested.CrossOrigin"/>
 </histogram_suffixes>
 
