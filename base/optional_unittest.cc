@@ -1298,4 +1298,49 @@ TEST(OptionalTest, Hash_UseInSet) {
   EXPECT_NE(setOptInt.end(), setOptInt.find(3));
 }
 
+TEST(OptionalTest, HasValue) {
+  Optional<int> a;
+  EXPECT_FALSE(a.has_value());
+
+  a = 42;
+  EXPECT_TRUE(a.has_value());
+
+  a = nullopt;
+  EXPECT_FALSE(a.has_value());
+
+  a = 0;
+  EXPECT_TRUE(a.has_value());
+
+  a = Optional<int>();
+  EXPECT_FALSE(a.has_value());
+}
+
+TEST(OptionalTest, Reset_int) {
+  Optional<int> a(0);
+  EXPECT_TRUE(a.has_value());
+  EXPECT_EQ(0, a.value());
+
+  a.reset();
+  EXPECT_FALSE(a.has_value());
+  EXPECT_EQ(-1, a.value_or(-1));
+}
+
+TEST(OptionalTest, Reset_Object) {
+  Optional<TestObject> a(TestObject(0, 0.1));
+  EXPECT_TRUE(a.has_value());
+  EXPECT_EQ(TestObject(0, 0.1), a.value());
+
+  a.reset();
+  EXPECT_FALSE(a.has_value());
+  EXPECT_EQ(TestObject(42, 0.0), a.value_or(TestObject(42, 0.0)));
+}
+
+TEST(OptionalTest, Reset_NoOp) {
+  Optional<int> a;
+  EXPECT_FALSE(a.has_value());
+
+  a.reset();
+  EXPECT_FALSE(a.has_value());
+}
+
 }  // namespace base

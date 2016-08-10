@@ -163,6 +163,8 @@ class Optional {
 
   constexpr explicit operator bool() const { return !storage_.is_null_; }
 
+  constexpr bool has_value() const { return !storage_.is_null_; }
+
   // TODO(mlamouri): using 'constexpr' here breaks compiler that assume it was
   // meant to be 'constexpr const'.
   T& value() & {
@@ -229,6 +231,10 @@ class Optional {
     DCHECK(!storage_.is_null_ && !other.storage_.is_null_);
     using std::swap;
     swap(**this, *other);
+  }
+
+  void reset() {
+    FreeIfNeeded();
   }
 
   template <class... Args>
