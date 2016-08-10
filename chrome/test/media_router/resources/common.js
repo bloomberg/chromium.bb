@@ -151,7 +151,7 @@ function sendMessageAndExpectResponse(message) {
   }
   startedConnection.onmessage = function(receivedMessage) {
     var expectedResponse = 'Pong: ' + message;
-    var actualResponse = JSON.parse(receivedMessage.data);
+    var actualResponse = receivedMessage.data;
     if (actualResponse != expectedResponse) {
       sendResult(false, 'Expected message: ' + expectedResponse +
           ', but got: ' + actualResponse);

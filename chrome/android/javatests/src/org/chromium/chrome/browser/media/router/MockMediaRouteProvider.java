@@ -177,8 +177,7 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
         if (mCloseRouteWithErrorOnSend) {
             mManager.onRouteClosedWithError(routeId, "Sending message failed. Closing the route.");
         } else {
-            // Sending a string enclosed by double quotes to behave like JSON.stringify().
-            mManager.onMessage(routeId, "\"" + "Pong: " + message + "\"");
+            mManager.onMessage(routeId, "Pong: " + message);
         }
     }
 
