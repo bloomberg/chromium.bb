@@ -508,15 +508,16 @@ class CONTENT_EXPORT RenderFrameHostManager
   void ActiveFrameCountIsZero(SiteInstanceImpl* site_instance) override;
   void RenderProcessGone(SiteInstanceImpl* site_instance) override;
 
+  // Cancels and destroys the pending or speculative RenderFrameHost if they
+  // match the provided |render_frame_host|.
+  void CancelPendingIfNecessary(RenderFrameHostImpl* render_frame_host);
+
   // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not
   // null, it creates a RenderFrameProxy in the target renderer process which is
   // used to route IPC messages when in swapped out state.  Returns early if the
   // RenderViewHost has already been initialized for another RenderFrameHost.
   bool InitRenderView(RenderViewHostImpl* render_view_host,
     RenderFrameProxyHost* proxy);
-
-  // Terminates and deletes the pending RenderFrameHost.
-  void CancelPending();
 
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
@@ -712,6 +713,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   // SwapOutOldFrame is used instead).
   void DiscardUnusedFrame(
       std::unique_ptr<RenderFrameHostImpl> render_frame_host);
+
+  // Terminates and deletes the pending RenderFrameHost.
+  void CancelPending();
 
   // Clears pending_render_frame_host_, returning it to the caller for disposal.
   std::unique_ptr<RenderFrameHostImpl> UnsetPendingRenderFrameHost();

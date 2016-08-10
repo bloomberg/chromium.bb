@@ -1029,6 +1029,17 @@ void RenderFrameHostManager::RenderProcessGone(SiteInstanceImpl* instance) {
   GetRenderFrameProxyHost(instance)->set_render_frame_proxy_created(false);
 }
 
+void RenderFrameHostManager::CancelPendingIfNecessary(
+    RenderFrameHostImpl* render_frame_host) {
+  if (render_frame_host == pending_render_frame_host_.get())
+    CancelPending();
+  else if (render_frame_host == speculative_render_frame_host_.get()) {
+    // TODO(nasko, clamy): This should just clean up the speculative RFH
+    // without canceling the request.  See https://crbug.com/636119.
+    frame_tree_node_->ResetNavigationRequest(false);
+  }
+}
+
 void RenderFrameHostManager::ActiveFrameCountIsZero(
     SiteInstanceImpl* site_instance) {
   // |site_instance| no longer contains any active RenderFrameHosts, so we don't
@@ -2136,6 +2147,8 @@ void RenderFrameHostManager::CommitPending() {
   if (is_main_frame) {
     render_frame_host_->render_view_host()->set_main_frame_routing_id(
         render_frame_host_->routing_id());
+    render_frame_host_->render_view_host()->set_is_active(true);
+    render_frame_host_->render_view_host()->set_is_swapped_out(false);
     old_render_frame_host->render_view_host()->set_main_frame_routing_id(
         MSG_ROUTING_NONE);
   }
@@ -2193,9 +2206,15 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   // different SiteInstance, we want to get back to normal and then navigate as
   // usual.  We will reuse the pending RFH below if it matches the destination
   // SiteInstance.
-  if (pending_render_frame_host_ &&
-      pending_render_frame_host_->GetSiteInstance() != new_instance)
-    CancelPending();
+  if (pending_render_frame_host_) {
+    if (pending_render_frame_host_->GetSiteInstance() != new_instance) {
+      CancelPending();
+    } else {
+      // When a pending RFH is reused, it should always be live, since it is
+      // cleared whenever a process dies.
+      CHECK(pending_render_frame_host_->IsRenderFrameLive());
+    }
+  }
 
   if (new_instance.get() != current_instance) {
     TRACE_EVENT_INSTANT2(

@@ -325,7 +325,7 @@ bool RenderViewHostImpl::CreateRenderView(
 
   // We should not set both main_frame_routing_id_ and proxy_route_id.  Log
   // cases that this happens (without crashing) to track down
-  // https://crbug.com/574245.
+  // https://crbug.com/575245.
   // TODO(creis): Remove this once we've found the cause.
   if (main_frame_routing_id_ != MSG_ROUTING_NONE &&
       proxy_route_id != MSG_ROUTING_NONE)

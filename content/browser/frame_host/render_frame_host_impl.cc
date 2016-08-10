@@ -980,7 +980,8 @@ void RenderFrameHostImpl::OnCancelInitialHistoryLoad() {
   // TODO(creis, clamy): Cancel any cross-process navigation in PlzNavigate.
   if (GetParent() && !frame_tree_node_->has_committed_real_load() &&
       frame_tree_node_->render_manager()->pending_frame_host()) {
-    frame_tree_node_->render_manager()->CancelPending();
+    frame_tree_node_->render_manager()->CancelPendingIfNecessary(
+        frame_tree_node_->render_manager()->pending_frame_host());
   }
 }
 
@@ -1478,11 +1479,16 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
     iter.second.Run(ui::AXTreeUpdate());
   ax_tree_snapshot_callbacks_.clear();
 
-  // If the process has died, we don't need to wait for the swap out ack from
-  // this RenderFrame if it is pending deletion.  Complete the swap out to
-  // destroy it.
-  if (!is_active())
+  if (!is_active()) {
+    // If the process has died, we don't need to wait for the swap out ack from
+    // this RenderFrame if it is pending deletion.  Complete the swap out to
+    // destroy it.
     OnSwappedOut();
+  } else {
+    // If this was the current pending or speculative RFH dying, cancel and
+    // destroy it.
+    frame_tree_node_->render_manager()->CancelPendingIfNecessary(this);
+  }
 
   // Note: don't add any more code at this point in the function because
   // |this| may be deleted. Any additional cleanup should happen before
@@ -2139,13 +2145,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
 void RenderFrameHostImpl::ResetWaitingState() {
   DCHECK(is_active());
-
-  // The active state of the RVH is determined by its main frame, since
-  // subframes should have their own widgets.
-  if (frame_tree_node_->IsMainFrame()) {
-    render_view_host_->set_is_active(true);
-    render_view_host_->set_is_swapped_out(false);
-  }
 
   // Whenever we reset the RFH state, we should not be waiting for beforeunload
   // or close acks.  We clear them here to be safe, since they can cause

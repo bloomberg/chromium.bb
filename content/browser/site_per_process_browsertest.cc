@@ -7648,4 +7648,118 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessGestureBrowserTest,
 }
 #endif
 
+// Test that the pending RenderFrameHost is canceled and destroyed when its
+// process dies. Previously, reusing a top-level pending RFH which
+// is not live was hitting a CHECK in CreateRenderView due to having neither a
+// main frame routing ID nor a proxy routing ID.  See https://crbug.com/627400
+// for more details.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       PendingRFHIsCanceledWhenItsProcessDies) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Open a popup at b.com.
+  GURL popup_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  Shell* popup_shell = OpenPopup(root, popup_url, "foo");
+  EXPECT_TRUE(popup_shell);
+
+  // The RenderViewHost for b.com in the main tab should not be active.
+  SiteInstance* b_instance = popup_shell->web_contents()->GetSiteInstance();
+  RenderViewHostImpl* rvh =
+      web_contents()->GetFrameTree()->GetRenderViewHost(b_instance);
+  EXPECT_FALSE(rvh->is_active());
+
+  // Navigate main tab to a b.com URL that will not commit.
+  GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  TestNavigationManager delayer(shell()->web_contents(), stall_url);
+  shell()->LoadURL(stall_url);
+  EXPECT_TRUE(delayer.WaitForWillStartRequest());
+
+  // The pending RFH should be in the same process as the popup.
+  RenderFrameHostImpl* pending_rfh =
+      IsBrowserSideNavigationEnabled()
+          ? root->render_manager()->speculative_frame_host()
+          : root->render_manager()->pending_frame_host();
+  RenderProcessHost* pending_process = pending_rfh->GetProcess();
+  EXPECT_EQ(pending_process,
+            popup_shell->web_contents()->GetMainFrame()->GetProcess());
+
+  // Kill the b.com process, currently in use by the pending RenderFrameHost
+  // and the popup.
+  RenderProcessHostWatcher crash_observer(
+      pending_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(pending_process->Shutdown(0, false));
+  crash_observer.Wait();
+
+  // The pending RFH should have been canceled and destroyed, so that it won't
+  // be reused while it's not live in the next navigation.
+  {
+    RenderFrameHostImpl* pending_rfh =
+        IsBrowserSideNavigationEnabled()
+            ? root->render_manager()->speculative_frame_host()
+            : root->render_manager()->pending_frame_host();
+    EXPECT_FALSE(pending_rfh);
+  }
+
+  // Navigate main tab to b.com again.  This should not crash.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), b_url));
+
+  // The b.com RVH in the main tab should become active.
+  EXPECT_TRUE(rvh->is_active());
+}
+
+// Test that killing a pending RenderFrameHost's process doesn't leave its
+// RenderViewHost confused whether it's active or not for future navigations
+// that try to reuse it.  See https://crbug.com/627893 for more details.
+// Similar to the test above for https://crbug.com/627400, except the popup is
+// navigated after pending RFH's process is killed, rather than the main tab.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       RenderViewHostKeepsSwappedOutStateIfPendingRFHDies) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Open a popup at b.com.
+  GURL popup_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  Shell* popup_shell = OpenPopup(root, popup_url, "foo");
+  EXPECT_TRUE(popup_shell);
+
+  // The RenderViewHost for b.com in the main tab should not be active.
+  SiteInstance* b_instance = popup_shell->web_contents()->GetSiteInstance();
+  RenderViewHostImpl* rvh =
+      web_contents()->GetFrameTree()->GetRenderViewHost(b_instance);
+  EXPECT_FALSE(rvh->is_active());
+
+  // Navigate main tab to a b.com URL that will not commit.
+  GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  TestNavigationManager delayer(shell()->web_contents(), stall_url);
+  shell()->LoadURL(stall_url);
+  EXPECT_TRUE(delayer.WaitForWillStartRequest());
+
+  // Kill the b.com process, currently in use by the pending RenderFrameHost
+  // and the popup.
+  RenderProcessHost* pending_process =
+      popup_shell->web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      pending_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(pending_process->Shutdown(0, false));
+  crash_observer.Wait();
+
+  // Since the navigation above didn't commit, the b.com RenderViewHost in the
+  // main tab should still not be active.
+  EXPECT_FALSE(rvh->is_active());
+
+  // Navigate popup to b.com to recreate the b.com process.  When creating
+  // opener proxies, |rvh| should be reused as a swapped out RVH.  In
+  // https://crbug.com/627893, recreating the opener RenderView was hitting a
+  // CHECK(params.swapped_out) in the renderer process, since its
+  // RenderViewHost was brought into an active state by the navigation to
+  // |stall_url| above, even though it never committed.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  EXPECT_TRUE(NavigateToURL(popup_shell, b_url));
+  EXPECT_FALSE(rvh->is_active());
+}
+
 }  // namespace content
