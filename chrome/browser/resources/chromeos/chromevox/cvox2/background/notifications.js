@@ -71,30 +71,23 @@ UpdateNotification.prototype = {
 Notifications.currentUpdate;
 
 /**
- * Runs notifications that should be shown for startup.
- */
-Notifications.onStartup = function() {
-  // Only run on background page.
-  if (document.location.href.indexOf('background.html') == -1)
-    return;
-
-  Notifications.reset();
-  Notifications.currentUpdate = new UpdateNotification();
-  Notifications.currentUpdate.show();
-};
-
-/**
  * Runs notifications that should be shown for mode changes.
+ * @param {ChromeVoxMode} newMode
+ * @param {?ChromeVoxMode} oldMode Can be null at startup when no range was
+ *  previously set.
  */
-Notifications.onModeChange = function() {
+Notifications.onModeChange = function(newMode, oldMode) {
   // Only run on background page.
   if (document.location.href.indexOf('background.html') == -1)
     return;
 
-  if (ChromeVoxState.instance.mode !== ChromeVoxMode.FORCE_NEXT)
+  if (newMode !== ChromeVoxMode.FORCE_NEXT)
     return;
 
-  Notifications.reset();
+  // Reset the notifications only when mode changes after startup. This prevents
+  // us from making notification announcements every time on startup.
+  if (oldMode)
+    Notifications.reset();
   Notifications.currentUpdate = new UpdateNotification();
   Notifications.currentUpdate.show();
 };

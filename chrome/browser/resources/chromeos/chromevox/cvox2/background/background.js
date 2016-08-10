@@ -143,8 +143,6 @@ Background = function() {
 
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       this.onAccessibilityGesture_);
-
-  Notifications.onStartup();
 };
 
 /**
@@ -236,6 +234,7 @@ Background.prototype = {
   onModeChanged_: function(newMode, oldMode) {
     this.keyboardHandler_.onModeChanged(newMode, oldMode);
     CommandHandler.onModeChanged(newMode, oldMode);
+    Notifications.onModeChange(newMode, oldMode);
 
     if (newMode == ChromeVoxMode.CLASSIC)
       chrome.accessibilityPrivate.setFocusRing([]);
