@@ -493,6 +493,10 @@ ScriptPromise Cache::matchImpl(ScriptState* scriptState, const Request* request,
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
+    if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+        resolver->resolve();
+        return promise;
+    }
     m_webCache->dispatchMatch(new CacheMatchCallbacks(resolver), webRequest, toWebQueryParams(options));
     return promise;
 }
@@ -513,6 +517,10 @@ ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, const Request* reque
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
+    if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+        resolver->resolve(HeapVector<Member<Response>>());
+        return promise;
+    }
     m_webCache->dispatchMatchAll(new CacheWithResponsesCallbacks(resolver), webRequest, toWebQueryParams(options));
     return promise;
 }
@@ -549,6 +557,10 @@ ScriptPromise Cache::deleteImpl(ScriptState* scriptState, const Request* request
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
+    if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+        resolver->resolve(false);
+        return promise;
+    }
     m_webCache->dispatchBatch(new CacheDeleteCallback(resolver), batchOperations);
     return promise;
 }
@@ -619,6 +631,10 @@ ScriptPromise Cache::keysImpl(ScriptState* scriptState, const Request* request, 
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
+    if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+        resolver->resolve(HeapVector<Member<Request>>());
+        return promise;
+    }
     m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), webRequest, toWebQueryParams(options));
     return promise;
 }

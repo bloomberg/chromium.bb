@@ -596,6 +596,13 @@ void CacheStorageCache::QueryCache(
     return;
   }
 
+  if (!options.ignore_method && request && !request->method.empty() &&
+      request->method != "GET") {
+    callback.Run(CACHE_STORAGE_OK, base::MakeUnique<QueryCacheResults>(
+                                       std::move(request), options, callback));
+    return;
+  }
+
   std::unique_ptr<QueryCacheResults> query_cache_results(
       new QueryCacheResults(std::move(request), options, callback));
   OpenAllEntries(base::Bind(&CacheStorageCache::QueryCacheDidOpenAllEntries,
@@ -697,6 +704,13 @@ void CacheStorageCache::MatchImpl(
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   if (backend_state_ != BACKEND_OPEN) {
     callback.Run(CACHE_STORAGE_ERROR_STORAGE,
+                 std::unique_ptr<ServiceWorkerResponse>(),
+                 std::unique_ptr<storage::BlobDataHandle>());
+    return;
+  }
+
+  if (!request->method.empty() && request->method != "GET") {
+    callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND,
                  std::unique_ptr<ServiceWorkerResponse>(),
                  std::unique_ptr<storage::BlobDataHandle>());
     return;

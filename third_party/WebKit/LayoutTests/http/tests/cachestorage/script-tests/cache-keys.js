@@ -3,6 +3,15 @@ if (self.importScripts) {
     importScripts('../resources/test-helpers.js');
 }
 
+cache_test(cache => {
+    return cache.keys()
+      .then(requests => {
+          assert_equals(
+            requests.length, 0,
+            'Cache.keys should resolve to an empty array for an empty cache');
+        });
+  }, 'Cache.keys() called on an empty cache');
+
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.keys('not-present-in-the-cache')
       .then(function(result) {
@@ -122,5 +131,15 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
             'Cache.keys without parameters should match all entries.');
         });
   }, 'Cache.keys without parameters');
+
+prepopulated_cache_test(simple_entries, function(cache, entries) {
+    return cache.keys(new Request(entries.cat.request.url, {method: 'HEAD'}))
+      .then(function(result) {
+          assert_request_array_equals(
+            result, [],
+            'Cache.keys should not match HEAD request unless ignoreMethod ' +
+            'option is set.');
+        });
+  }, 'Cache.keys with a HEAD Request');
 
 done();

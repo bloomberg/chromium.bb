@@ -320,6 +320,11 @@ ScriptPromise CacheStorage::matchImpl(ScriptState* scriptState, const Request* r
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
 
+    if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+        resolver->resolve();
+        return promise;
+    }
+
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchMatch(new MatchCallbacks(resolver), webRequest, Cache::toWebQueryParams(options));
     else

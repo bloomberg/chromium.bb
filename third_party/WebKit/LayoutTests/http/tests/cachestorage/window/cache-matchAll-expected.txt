@@ -1,9 +1,10 @@
-CONSOLE WARNING: line 162: Cache.match() does not support 'ignoreVary' option yet. See http://crbug.com/499216
+CONSOLE WARNING: line 172: Cache.match() does not support 'ignoreVary' option yet. See http://crbug.com/499216
 This is a testharness.js-based test.
 PASS Cache.matchAll with no matching entries 
 PASS Cache.matchAll with URL 
 PASS Cache.matchAll with Request 
 PASS Cache.matchAll with new Request 
+PASS Cache.matchAll with HEAD 
 PASS Cache.matchAll with ignoreSearch option (request with no search parameters) 
 PASS Cache.matchAll with ignoreSearch option (request with search parameters) 
 PASS Cache.matchAll with URL containing fragment 

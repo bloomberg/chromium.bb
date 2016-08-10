@@ -384,6 +384,9 @@ class CacheStorageCacheTest : public testing::Test {
     no_body_request_ =
         ServiceWorkerFetchRequest(GURL("http://example.com/no_body.html"),
                                   "GET", headers, Referrer(), false);
+    body_head_request_ =
+        ServiceWorkerFetchRequest(GURL("http://example.com/body.html"), "HEAD",
+                                  headers, Referrer(), false);
 
     std::string expected_response;
     for (int i = 0; i < 100; ++i)
@@ -692,6 +695,7 @@ class CacheStorageCacheTest : public testing::Test {
   ServiceWorkerResponse body_response_with_query_;
   ServiceWorkerFetchRequest no_body_request_;
   ServiceWorkerResponse no_body_response_;
+  ServiceWorkerFetchRequest body_head_request_;
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;
   std::string expected_blob_data_;
 
@@ -805,7 +809,7 @@ TEST_P(CacheStorageCacheTestP, PutReplace) {
   EXPECT_FALSE(callback_response_data_);
 }
 
-TEST_P(CacheStorageCacheTestP, PutReplcaceInBatch) {
+TEST_P(CacheStorageCacheTestP, PutReplaceInBatch) {
   CacheStorageBatchOperation operation1;
   operation1.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
   operation1.request = body_request_;
@@ -842,6 +846,11 @@ TEST_P(CacheStorageCacheTestP, MatchBody) {
       ResponseMetadataEqual(SetCacheName(body_response_), *callback_response_));
   EXPECT_TRUE(
       ResponseBodiesEqual(expected_blob_data_, *callback_response_data_));
+}
+
+TEST_P(CacheStorageCacheTestP, MatchBodyHead) {
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_FALSE(Match(body_head_request_));
 }
 
 TEST_P(CacheStorageCacheTestP, MatchAll_Empty) {
@@ -946,6 +955,28 @@ TEST_P(CacheStorageCacheTestP, MatchAll_IgnoreSearch) {
     }
   }
   EXPECT_EQ(2u, matched_set.size());
+}
+
+TEST_P(CacheStorageCacheTestP, MatchAll_Head) {
+  EXPECT_TRUE(Put(body_request_, body_response_));
+
+  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_search = true;
+  EXPECT_TRUE(
+      MatchAll(body_head_request_, match_params, &responses, &body_handles));
+  EXPECT_TRUE(responses->empty());
+  EXPECT_TRUE(body_handles->empty());
+
+  match_params.ignore_method = true;
+  EXPECT_TRUE(
+      MatchAll(body_head_request_, match_params, &responses, &body_handles));
+  ASSERT_EQ(1u, responses->size());
+  ASSERT_EQ(1u, body_handles->size());
+  EXPECT_TRUE(
+      ResponseMetadataEqual(SetCacheName(body_response_), responses->at(0)));
+  EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, body_handles->at(0)));
 }
 
 TEST_P(CacheStorageCacheTestP, Vary) {
