@@ -706,6 +706,7 @@ public:
     bool hasClipRelatedProperty() const { return hasClip() || hasOverflowClip() || style()->containsPaint(); }
 
     bool hasTransformRelatedProperty() const { return m_bitfields.hasTransformRelatedProperty(); }
+    bool isTransformApplicable() const { return isBox() || isSVG(); }
     bool hasMask() const { return style() && style()->hasMask(); }
     bool hasClipPath() const { return style() && style()->clipPath(); }
     bool hasHiddenBackface() const { return style() && style()->backfaceVisibility() == BackfaceVisibilityHidden; }

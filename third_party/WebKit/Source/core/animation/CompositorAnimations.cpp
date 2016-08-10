@@ -237,7 +237,7 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
             return false;
 
         if (isTransformRelatedCSSProperty(property)) {
-            if (targetElement.layoutObject() && targetElement.layoutObject()->isInline() && !targetElement.layoutObject()->isInlineBlockOrInlineTable()) {
+            if (targetElement.layoutObject() && !targetElement.layoutObject()->isTransformApplicable()) {
                 return false;
             }
             transformPropertyCount++;
