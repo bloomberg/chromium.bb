@@ -19,8 +19,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     crash_minidump_path = self._browser.GetMostRecentMinidumpPath()
     #self.assertIsNotNone(crash_minidump_path)
 
-    logging.info('testSymbolizeMinidump: most recent path = '
-        + crash_minidump_path)
+    if crash_minidump_path is not None:
+      logging.info('testSymbolizeMinidump: most recent path = '
+          + crash_minidump_path)
     all_paths = self._browser.GetAllMinidumpPaths()
     logging.info('testSymbolizeMinidump: all paths ' + ''.join(all_paths))
     all_unsymbolized_paths = self._browser.GetAllUnsymbolizedMinidumpPaths()
@@ -41,7 +42,6 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
 
   @decorators.Isolated
   @decorators.Enabled('mac')
-  @decorators.Disabled('mac')  # crbug.com/634156
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')
@@ -49,8 +49,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     first_crash_path = self._browser.GetMostRecentMinidumpPath()
 
     #self.assertIsNotNone(first_crash_path)
-    logging.info('testMultipleCrashMinidumps: first crash most recent path'
-        + first_crash_path)
+    if first_crash_path is not None:
+      logging.info('testMultipleCrashMinidumps: first crash most recent path'
+          + first_crash_path)
     all_paths = self._browser.GetAllMinidumpPaths()
     logging.info('testMultipleCrashMinidumps: first crash all paths: '
         + ''.join(all_paths))
@@ -70,8 +71,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self._browser.tabs.New().Navigate('chrome://gpucrash', timeout=5)
     second_crash_path = self._browser.GetMostRecentMinidumpPath()
     #self.assertIsNotNone(second_crash_path)
-    logging.info('testMultipleCrashMinidumps: second crash most recent path'
-        + second_crash_path)
+    if second_crash_path is not None:
+      logging.info('testMultipleCrashMinidumps: second crash most recent path'
+          + second_crash_path)
     second_crash_all_paths = self._browser.GetAllMinidumpPaths()
     logging.info('testMultipleCrashMinidumps: second crash all paths: '
         + ''.join(second_crash_all_paths))
