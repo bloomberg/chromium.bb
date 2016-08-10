@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.UiConfig;
@@ -23,9 +24,10 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
 
     private final int mMaxSnippetHeaderHeight;
     private final int mMaxPeekPadding;
+    private final TextView mHeaderTextView;
     private final NewTabPageRecyclerView mRecyclerView;
 
-    private SnippetHeaderListItem mHeader;
+    private SnippetHeaderListItem mHeaderListItem;
 
     /** Can the header transition. */
     private boolean mCanTransition = false;
@@ -39,13 +41,14 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
         mMaxPeekPadding = itemView.getResources().getDimensionPixelSize(
                 R.dimen.snippets_padding_and_peeking_card_height);
 
+        mHeaderTextView = (TextView) itemView.findViewById(R.id.suggestions_section_header);
         mRecyclerView = recyclerView;
         MarginResizer.createWithViewAdapter(itemView, config);
     }
 
     @Override
     public void onBindViewHolder(NewTabPageListItem header) {
-        mHeader = (SnippetHeaderListItem) header;
+        mHeaderListItem = (SnippetHeaderListItem) header;
         updateDisplay();
     }
 
@@ -60,7 +63,7 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
      * @return The header height we want to set.
      */
     private int getHeaderHeight() {
-        if (!mHeader.isVisible()) return 0;
+        if (!mHeaderListItem.isVisible()) return 0;
 
         // If the header cannot transition but is visible - set the height to the maximum so
         // it always displays
@@ -78,6 +81,7 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
      * Update the view for the fade in/out and heading height.
      */
     public void updateDisplay() {
+        mHeaderTextView.setText(mHeaderListItem.getHeaderText());
         RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) itemView.getLayoutParams();
         int headerHeight = getHeaderHeight();
 

@@ -30,17 +30,20 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaIntArray;
 using ntp_snippets::Category;
+using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::KnownCategories;
+using ntp_snippets::ContentSuggestion;
 
 namespace {
 
-void SnippetVisitedHistoryRequestCallback(
-      base::android::ScopedJavaGlobalRef<jobject> callback,
-      bool success,
-      const history::URLRow& row,
-      const history::VisitVector& visitVector) {
+void URLVisitedHistoryRequestCallback(
+    base::android::ScopedJavaGlobalRef<jobject> callback,
+    bool success,
+    const history::URLRow& row,
+    const history::VisitVector& visitVector) {
   bool visited = success && row.visit_count() != 0;
   base::android::RunCallbackAndroid(callback, visited);
 }
@@ -107,94 +110,108 @@ void NTPSnippetsBridge::SetObserver(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     const JavaParamRef<jobject>& j_observer) {
   observer_.Reset(env, j_observer);
-  OnNewSuggestions();
 }
 
-void NTPSnippetsBridge::FetchImage(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj,
-                                   const JavaParamRef<jstring>& snippet_id,
-                                   const JavaParamRef<jobject>& j_callback) {
-  base::android::ScopedJavaGlobalRef<jobject> callback(j_callback);
-  content_suggestions_service_->FetchSuggestionImage(
-      ConvertJavaStringToUTF8(env, snippet_id),
-      base::Bind(&NTPSnippetsBridge::OnImageFetched,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void NTPSnippetsBridge::DiscardSnippet(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj,
-                                       const JavaParamRef<jstring>& id) {
-  content_suggestions_service_->DismissSuggestion(
-      ConvertJavaStringToUTF8(env, id));
-}
-
-void NTPSnippetsBridge::SnippetVisited(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj,
-                                       const JavaParamRef<jobject>& jcallback,
-                                       const JavaParamRef<jstring>& jurl) {
-  base::android::ScopedJavaGlobalRef<jobject> callback(jcallback);
-
-  history_service_->QueryURL(
-      GURL(ConvertJavaStringToUTF8(env, jurl)),
-      false,
-      base::Bind(&SnippetVisitedHistoryRequestCallback, callback),
-      &tracker_);
+ScopedJavaLocalRef<jintArray> NTPSnippetsBridge::GetCategories(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  std::vector<int> category_ids;
+  for (Category category : content_suggestions_service_->GetCategories()) {
+    category_ids.push_back(category.id());
+  }
+  return ToJavaIntArray(env, category_ids);
 }
 
 int NTPSnippetsBridge::GetCategoryStatus(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj,
                                          jint category) {
   return static_cast<int>(content_suggestions_service_->GetCategoryStatus(
-      content_suggestions_service_->category_factory()->FromKnownCategory(
-          KnownCategories::ARTICLES)));
+      content_suggestions_service_->category_factory()->FromIDValue(category)));
+}
+
+base::android::ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetCategoryInfo(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint category) {
+  base::Optional<CategoryInfo> info =
+      content_suggestions_service_->GetCategoryInfo(
+          content_suggestions_service_->category_factory()->FromIDValue(
+              category));
+  if (!info)
+    return base::android::ScopedJavaLocalRef<jobject>(env, nullptr);
+  return Java_SnippetsBridge_createSuggestionsCategoryInfo(
+      env, ConvertUTF16ToJavaString(env, info->title()).obj(),
+      static_cast<int>(info->card_layout()));
+}
+
+ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint category) {
+  const std::vector<ContentSuggestion>& suggestions =
+      content_suggestions_service_->GetSuggestionsForCategory(
+          content_suggestions_service_->category_factory()->FromIDValue(
+              category));
+  ScopedJavaLocalRef<jobject> result =
+      Java_SnippetsBridge_createSuggestionList(env);
+  for (const ContentSuggestion& suggestion : suggestions) {
+    Java_SnippetsBridge_addSuggestion(
+        env, result.obj(), ConvertUTF8ToJavaString(env, suggestion.id()).obj(),
+        ConvertUTF16ToJavaString(env, suggestion.title()).obj(),
+        ConvertUTF16ToJavaString(env, suggestion.publisher_name()).obj(),
+        ConvertUTF16ToJavaString(env, suggestion.snippet_text()).obj(),
+        ConvertUTF8ToJavaString(env, suggestion.url().spec()).obj(),
+        ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()).obj(),
+        suggestion.publish_date().ToJavaTime(), suggestion.score());
+  }
+  return result;
+}
+
+void NTPSnippetsBridge::FetchSuggestionImage(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& suggestion_id,
+    const JavaParamRef<jobject>& j_callback) {
+  base::android::ScopedJavaGlobalRef<jobject> callback(j_callback);
+  content_suggestions_service_->FetchSuggestionImage(
+      ConvertJavaStringToUTF8(env, suggestion_id),
+      base::Bind(&NTPSnippetsBridge::OnImageFetched,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void NTPSnippetsBridge::DismissSuggestion(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& suggestion_id) {
+  content_suggestions_service_->DismissSuggestion(
+      ConvertJavaStringToUTF8(env, suggestion_id));
+}
+
+void NTPSnippetsBridge::GetURLVisited(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj,
+                                      const JavaParamRef<jobject>& jcallback,
+                                      const JavaParamRef<jstring>& jurl) {
+  base::android::ScopedJavaGlobalRef<jobject> callback(jcallback);
+
+  history_service_->QueryURL(
+      GURL(ConvertJavaStringToUTF8(env, jurl)), false,
+      base::Bind(&URLVisitedHistoryRequestCallback, callback), &tracker_);
 }
 
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
-void NTPSnippetsBridge::OnNewSuggestions() {
+void NTPSnippetsBridge::OnNewSuggestions(Category category) {
   if (observer_.is_null())
     return;
 
-  // Show all suggestions from all categories, even though we currently display
-  // them in a single section on the UI.
-  // TODO(pke): This is only for debugging new sections and will be replaced
-  // with proper multi-section UI support.
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> suggestions =
-      Java_SnippetsBridge_createSuggestionList(env);
-  for (Category category :
-       content_suggestions_service_->GetCategories()) {
-    if (content_suggestions_service_->GetCategoryStatus(category) !=
-        CategoryStatus::AVAILABLE) {
-      continue;
-    }
-    for (const ntp_snippets::ContentSuggestion& suggestion :
-         content_suggestions_service_->GetSuggestionsForCategory(category)) {
-      Java_SnippetsBridge_addSuggestion(
-          env, suggestions.obj(),
-          ConvertUTF8ToJavaString(env, suggestion.id()).obj(),
-          ConvertUTF16ToJavaString(env, suggestion.title()).obj(),
-          ConvertUTF16ToJavaString(env, suggestion.publisher_name()).obj(),
-          ConvertUTF16ToJavaString(env, suggestion.snippet_text()).obj(),
-          ConvertUTF8ToJavaString(env, suggestion.url().spec()).obj(),
-          ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()).obj(),
-          suggestion.publish_date().ToJavaTime(), suggestion.score());
-    }
-  }
-
-  // TODO(mvanouwerkerk): Do not hard code ARTICLES.
-  Java_SnippetsBridge_onSuggestionsAvailable(
-      env, observer_.obj(),
-      static_cast<int>(
-          content_suggestions_service_->category_factory()->FromKnownCategory(
-              KnownCategories::ARTICLES).id()),
-      suggestions.obj());
+  Java_SnippetsBridge_onNewSuggestions(env, observer_.obj(),
+                                       static_cast<int>(category.id()));
 }
 
 void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
                                                 CategoryStatus new_status) {
-  // TODO(mvanouwerkerk): Do not hard code ARTICLES.
-  if (!category.IsKnownCategory(KnownCategories::ARTICLES))
+  if (observer_.is_null())
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();

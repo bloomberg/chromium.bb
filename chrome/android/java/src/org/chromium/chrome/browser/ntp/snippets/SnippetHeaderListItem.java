@@ -18,6 +18,13 @@ public class SnippetHeaderListItem implements NewTabPageListItem {
     /** Whether the header should be shown. */
     private boolean mVisible = false;
 
+    /** The header text to be shown. */
+    private final String mHeaderText;
+
+    public SnippetHeaderListItem(String headerText) {
+        this.mHeaderText = headerText;
+    }
+
     /**
      * Creates the View object for displaying the header for a group of snippets
      *
@@ -40,5 +47,9 @@ public class SnippetHeaderListItem implements NewTabPageListItem {
 
     public void setVisible(boolean visible) {
         mVisible = visible;
+    }
+
+    public String getHeaderText() {
+        return mHeaderText;
     }
 }

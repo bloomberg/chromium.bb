@@ -93,8 +93,9 @@ void ContentSuggestionsService::ClearAllCachedSuggestionsForDebugging() {
   for (const auto& category_provider_pair : providers_by_category_) {
     category_provider_pair.second->ClearCachedSuggestionsForDebugging(
         category_provider_pair.first);
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnNewSuggestions(category_provider_pair.first));
   }
-  FOR_EACH_OBSERVER(Observer, observers_, OnNewSuggestions());
 }
 
 void ContentSuggestionsService::ClearCachedSuggestionsForDebugging(
@@ -197,7 +198,7 @@ void ContentSuggestionsService::OnNewSuggestions(
 
   suggestions_by_category_[category] = std::move(new_suggestions);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnNewSuggestions());
+  FOR_EACH_OBSERVER(Observer, observers_, OnNewSuggestions(category));
 }
 
 void ContentSuggestionsService::OnCategoryStatusChanged(

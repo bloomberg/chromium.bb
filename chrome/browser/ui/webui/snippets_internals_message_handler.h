@@ -32,7 +32,7 @@ class SnippetsInternalsMessageHandler
   void RegisterMessages() override;
 
   // ntp_snippets::ContentSuggestionsService::Observer:
-  void OnNewSuggestions() override;
+  void OnNewSuggestions(ntp_snippets::Category category) override;
   void OnCategoryStatusChanged(
       ntp_snippets::Category category,
       ntp_snippets::CategoryStatus new_status) override;

@@ -90,7 +90,8 @@ class ContentSuggestionsProvider {
   // Fetches the image for the suggestion with the given ID and returns it
   // through the callback. This fetch may occur locally or from the internet.
   // If that suggestion doesn't exist, doesn't have an image or if the fetch
-  // fails, the callback gets a null image.
+  // fails, the callback gets a null image. The callback will not be called
+  // synchronously.
   virtual void FetchSuggestionImage(const std::string& suggestion_id,
                                     const ImageFetchedCallback& callback) = 0;
 

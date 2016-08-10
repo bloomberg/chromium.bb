@@ -103,7 +103,7 @@ class MockProvider : public ContentSuggestionsProvider {
 
 class MockServiceObserver : public ContentSuggestionsService::Observer {
  public:
-  MOCK_METHOD0(OnNewSuggestions, void());
+  MOCK_METHOD1(OnNewSuggestions, void(Category category));
   MOCK_METHOD2(OnCategoryStatusChanged,
                void(Category changed_category, CategoryStatus new_status));
   MOCK_METHOD0(ContentSuggestionsServiceShutdown, void());
@@ -317,27 +317,27 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
   service()->AddObserver(&observer);
 
   // Send suggestions 1 and 2
-  EXPECT_CALL(observer, OnNewSuggestions()).Times(1);
+  EXPECT_CALL(observer, OnNewSuggestions(articles_category)).Times(1);
   provider1->FireSuggestionsChanged(articles_category, {1, 2});
   ExpectThatSuggestionsAre(articles_category, {1, 2});
   Mock::VerifyAndClearExpectations(&observer);
 
   // Send them again, make sure they're not reported twice
-  EXPECT_CALL(observer, OnNewSuggestions()).Times(1);
+  EXPECT_CALL(observer, OnNewSuggestions(articles_category)).Times(1);
   provider1->FireSuggestionsChanged(articles_category, {1, 2});
   ExpectThatSuggestionsAre(articles_category, {1, 2});
   ExpectThatSuggestionsAre(offline_pages_category, std::vector<int>());
   Mock::VerifyAndClearExpectations(&observer);
 
   // Send suggestions 13 and 14
-  EXPECT_CALL(observer, OnNewSuggestions()).Times(1);
+  EXPECT_CALL(observer, OnNewSuggestions(offline_pages_category)).Times(1);
   provider2->FireSuggestionsChanged(offline_pages_category, {13, 14});
   ExpectThatSuggestionsAre(articles_category, {1, 2});
   ExpectThatSuggestionsAre(offline_pages_category, {13, 14});
   Mock::VerifyAndClearExpectations(&observer);
 
   // Send suggestion 1 only
-  EXPECT_CALL(observer, OnNewSuggestions()).Times(1);
+  EXPECT_CALL(observer, OnNewSuggestions(articles_category)).Times(1);
   provider1->FireSuggestionsChanged(articles_category, {1});
   ExpectThatSuggestionsAre(articles_category, {1});
   ExpectThatSuggestionsAre(offline_pages_category, {13, 14});

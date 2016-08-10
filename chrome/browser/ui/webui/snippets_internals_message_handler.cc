@@ -114,7 +114,7 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
           base::Unretained(this)));
 }
 
-void SnippetsInternalsMessageHandler::OnNewSuggestions() {
+void SnippetsInternalsMessageHandler::OnNewSuggestions(Category category) {
   if (!dom_loaded_)
     return;
   SendContentSuggestions();

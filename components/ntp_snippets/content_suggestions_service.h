@@ -36,11 +36,11 @@ class ContentSuggestionsService : public KeyedService,
 
   class Observer {
    public:
-    // Fired every time the service receives a new set of data, replacing any
-    // previously available data (though in most cases there will be an overlap
-    // and only a few changes within the data). The new data is then available
-    // through the getters of the service.
-    virtual void OnNewSuggestions() = 0;
+    // Fired every time the service receives a new set of data for the given
+    // |category|, replacing any previously available data (though in most cases
+    // there will be an overlap and only a few changes within the data). The new
+    // data is then available through |GetSuggestionsForCategory(category)|.
+    virtual void OnNewSuggestions(Category category) = 0;
 
     // Fired when the status of a suggestions category changed. When the status
     // changes to an unavailable status, the suggestions of the respective
@@ -90,7 +90,8 @@ class ContentSuggestionsService : public KeyedService,
 
   // Fetches the image for the suggestion with the given |suggestion_id| and
   // runs the |callback|. If that suggestion doesn't exist or the fetch fails,
-  // the callback gets an empty image.
+  // the callback gets an empty image. The callback will not be called
+  // synchronously.
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback);
 

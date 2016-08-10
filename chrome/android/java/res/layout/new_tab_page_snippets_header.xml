@@ -5,10 +5,9 @@
 
 <TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/snippets_list_header"
+    android:id="@+id/suggestions_section_header"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:text="@string/snippets_header"
     android:textColor="@color/snippets_list_header_text_color"
     android:textSize="12sp"
     android:paddingStart="@dimen/snippets_padding_and_peeking_card_height"

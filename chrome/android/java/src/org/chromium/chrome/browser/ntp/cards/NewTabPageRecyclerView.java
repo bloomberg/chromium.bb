@@ -146,10 +146,15 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * below the fold to push the header up to to the top of the screen.
      */
     int calculateBottomSpacing() {
+        int firstHeaderPos = getNewTabPageAdapter().getFirstHeaderPosition();
         int firstVisiblePos = mLayoutManager.findFirstVisibleItemPosition();
+        if (firstHeaderPos == RecyclerView.NO_POSITION
+                || firstVisiblePos == RecyclerView.NO_POSITION) {
+            return mMinBottomSpacing;
+        }
 
         // We have enough items to fill the view, since the snap point item is not even visible.
-        if (firstVisiblePos > getNewTabPageAdapter().getFirstHeaderPosition()) {
+        if (firstVisiblePos > firstHeaderPos) {
             return mMinBottomSpacing;
         }
 

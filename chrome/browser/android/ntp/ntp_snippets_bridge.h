@@ -33,27 +33,41 @@ class NTPSnippetsBridge
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jobject>& j_observer);
 
-  void FetchImage(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& obj,
-                  const base::android::JavaParamRef<jstring>& snippet_id,
-                  const base::android::JavaParamRef<jobject>& j_callback);
+  base::android::ScopedJavaLocalRef<jintArray> GetCategories(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
-  // Discards the snippet with the given ID.
-  void DiscardSnippet(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj,
-                      const base::android::JavaParamRef<jstring>& snippet_id);
-
-  // Checks if the URL has been visited.
-  void SnippetVisited(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj,
-                      const base::android::JavaParamRef<jobject>& callback,
-                      const base::android::JavaParamRef<jstring>& jurl);
-
-  // Returns the status of |category|.
-  // See CategoryStatus for more info.
   int GetCategoryStatus(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
                         jint category);
+
+  base::android::ScopedJavaLocalRef<jobject> GetCategoryInfo(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint category);
+
+  base::android::ScopedJavaLocalRef<jobject> GetSuggestionsForCategory(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint category);
+
+  void FetchSuggestionImage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& suggestion_id,
+      const base::android::JavaParamRef<jobject>& j_callback);
+
+  void DismissSuggestion(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& suggestion_id);
+
+  // Checks if the URL has been visited. The callback will not be called
+  // synchronously.
+  void GetURLVisited(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jobject>& callback,
+                     const base::android::JavaParamRef<jstring>& jurl);
 
   static bool Register(JNIEnv* env);
 
@@ -61,7 +75,7 @@ class NTPSnippetsBridge
   ~NTPSnippetsBridge() override;
 
   // ContentSuggestionsService::Observer overrides
-  void OnNewSuggestions() override;
+  void OnNewSuggestions(ntp_snippets::Category category) override;
   void OnCategoryStatusChanged(
       ntp_snippets::Category category,
       ntp_snippets::CategoryStatus new_status) override;
