@@ -15,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/sysui/public/interfaces/wallpaper.mojom.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -168,6 +169,16 @@ wallpaper::WallpaperFilesId HashWallpaperFilesIdStr(
   std::string result = base::HexEncode(binmd, sizeof(binmd));
   std::transform(result.begin(), result.end(), result.begin(), ::tolower);
   return wallpaper::WallpaperFilesId::FromString(result);
+}
+
+// Returns true if HashWallpaperFilesIdStr will not assert().
+bool CanGetFilesId() {
+  return SystemSaltGetter::Get()->GetRawSalt();
+}
+
+// Call |closure| when HashWallpaperFilesIdStr will not assert().
+void CallWhenCanGetFilesId(const base::Closure& closure) {
+  SystemSaltGetter::Get()->AddOnSystemSaltReady(closure);
 }
 
 void SetKnownUserWallpaperFilesId(
@@ -881,6 +892,14 @@ void WallpaperManager::RemovePendingWallpaperFromList(
 void WallpaperManager::SetPolicyControlledWallpaper(
     const AccountId& account_id,
     std::unique_ptr<user_manager::UserImage> user_image) {
+  if (!CanGetFilesId()) {
+    CallWhenCanGetFilesId(
+        base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
+                   weak_factory_.GetWeakPtr(), account_id,
+                   base::Passed(std::move(user_image))));
+    return;
+  }
+
   const wallpaper::WallpaperFilesId wallpaper_files_id = GetFilesId(account_id);
 
   if (!wallpaper_files_id.is_valid())

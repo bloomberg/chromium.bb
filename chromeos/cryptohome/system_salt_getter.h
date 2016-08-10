@@ -39,6 +39,10 @@ class CHROMEOS_EXPORT SystemSaltGetter {
   // an empty string (e.g. errors in D-Bus layer)
   void GetSystemSalt(const GetSystemSaltCallback& callback);
 
+  // Adds another callback to be called when system salt is received.
+  // (If system salt is available, closure will be called immediately).
+  void AddOnSystemSaltReady(const base::Closure& closure);
+
   // Returns pointer to binary system salt if it is already known.
   // Returns nullptr if system salt is not known.
   const RawSalt* GetRawSalt() const;
@@ -60,6 +64,9 @@ class CHROMEOS_EXPORT SystemSaltGetter {
 
   RawSalt raw_salt_;
   std::string system_salt_;
+
+  // List of callbacks waiting for system salt ready event.
+  std::vector<base::Closure> on_system_salt_ready_;
 
   base::WeakPtrFactory<SystemSaltGetter> weak_ptr_factory_;
 

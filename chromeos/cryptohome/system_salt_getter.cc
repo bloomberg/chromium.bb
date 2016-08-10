@@ -42,6 +42,15 @@ void SystemSaltGetter::GetSystemSalt(
                  callback));
 }
 
+void SystemSaltGetter::AddOnSystemSaltReady(const base::Closure& closure) {
+  if (!raw_salt_.empty()) {
+    closure.Run();
+    return;
+  }
+
+  on_system_salt_ready_.push_back(closure);
+}
+
 const SystemSaltGetter::RawSalt* SystemSaltGetter::GetRawSalt() const {
   return raw_salt_.empty() ? nullptr : &raw_salt_;
 }
@@ -74,6 +83,12 @@ void SystemSaltGetter::DidGetSystemSalt(
       system_salt.size() % 2 == 0U) {
       raw_salt_ = system_salt;
     system_salt_ = ConvertRawSaltToHexString(system_salt);
+
+    std::vector<base::Closure> callbacks;
+    callbacks.swap(on_system_salt_ready_);
+    for (const base::Closure& callback : callbacks) {
+      callback.Run();
+    }
   } else {
     LOG(WARNING) << "System salt not available";
   }
