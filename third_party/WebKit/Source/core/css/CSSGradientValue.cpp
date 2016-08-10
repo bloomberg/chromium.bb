@@ -1053,6 +1053,11 @@ FloatSize radiusToSide(const FloatPoint& point, const FloatSize& size, EndShapeT
 // width/height given by aspectRatio.
 inline FloatSize ellipseRadius(const FloatPoint& p, float aspectRatio)
 {
+    // If the aspectRatio is 0 or infinite, the ellipse is completely flat.
+    // TODO(sashab): Implement Degenerate Radial Gradients, see crbug.com/635727.
+    if (aspectRatio == 0 || std::isinf(aspectRatio))
+        return FloatSize(0, 0);
+
     // x^2/a^2 + y^2/b^2 = 1
     // a/b = aspectRatio, b = a/aspectRatio
     // a = sqrt(x^2 + y^2/(1/r^2))
