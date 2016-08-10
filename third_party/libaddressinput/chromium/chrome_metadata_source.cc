@@ -59,7 +59,7 @@ ChromeMetadataSource::ChromeMetadataSource(
       getter_(getter) {}
 
 ChromeMetadataSource::~ChromeMetadataSource() {
-  STLDeleteValues(&requests_);
+  base::STLDeleteValues(&requests_);
 }
 
 void ChromeMetadataSource::Get(const std::string& key,

@@ -49,7 +49,7 @@ class Json::JsonImpl {
       : owned_(Parse(json, &parser_error_)),
         dict_(*owned_) {}
 
-  ~JsonImpl() { STLDeleteElements(&sub_dicts_); }
+  ~JsonImpl() { base::STLDeleteElements(&sub_dicts_); }
 
   bool parser_error() const { return parser_error_; }
 
