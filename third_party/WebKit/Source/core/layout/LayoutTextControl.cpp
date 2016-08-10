@@ -120,8 +120,7 @@ void LayoutTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUni
         logicalHeight = computeControlLogicalHeight(innerEditorBox->lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes), nonContentHeight);
 
         // We are able to have a horizontal scrollbar if the overflow style is scroll, or if its auto and there's no word wrap.
-        if ((isHorizontalWritingMode() && (style()->overflowX() == OverflowScroll ||  (style()->overflowX() == OverflowAuto && innerEditor->layoutObject()->style()->overflowWrap() == NormalOverflowWrap)))
-            || (!isHorizontalWritingMode() && (style()->overflowY() == OverflowScroll ||  (style()->overflowY() == OverflowAuto && innerEditor->layoutObject()->style()->overflowWrap() == NormalOverflowWrap))))
+        if (style()->overflowInlineDirection() == OverflowScroll || (style()->overflowInlineDirection() == OverflowAuto && innerEditor->layoutObject()->style()->overflowWrap() == NormalOverflowWrap))
             logicalHeight += scrollbarThickness();
 
         // FIXME: The logical height of the inner text box should have been added before calling computeLogicalHeight to

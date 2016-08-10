@@ -37,10 +37,9 @@ NGConstraintSpace NGConstraintSpace::fromLayoutObject(const LayoutBox& child) {
     fixedBlock = true;
   }
   NGConstraintSpace space(containerLogicalWidth, containerLogicalHeight);
-  // XXX vertical writing mode
   space.setOverflowTriggersScrollbar(
-      child.styleRef().overflowX() == OverflowAuto,
-      child.styleRef().overflowY() == OverflowAuto);
+      child.styleRef().overflowInlineDirection() == OverflowAuto,
+      child.styleRef().overflowBlockDirection() == OverflowAuto);
   space.setFixedSize(fixedInline, fixedBlock);
   return space;
 }

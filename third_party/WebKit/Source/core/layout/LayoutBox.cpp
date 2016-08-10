@@ -2279,7 +2279,7 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     // Width calculations
     if (treatAsReplaced) {
         computedValues.m_extent = LayoutUnit(logicalWidthLength.value()) + borderAndPaddingLogicalWidth();
-    } else if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->logicalMinWidth().isAuto() && style()->overflowX() == OverflowVisible && containerWidthInInlineDirection < minPreferredLogicalWidth()) {
+    } else if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->logicalMinWidth().isAuto() && style()->overflowInlineDirection() == OverflowVisible && containerWidthInInlineDirection < minPreferredLogicalWidth()) {
         // TODO (lajava) Move this logic to the LayoutGrid class.
         // Implied minimum size of Grid items.
         computedValues.m_extent = constrainLogicalWidthByMinMax(minPreferredLogicalWidth(), containerWidthInInlineDirection, cb);
