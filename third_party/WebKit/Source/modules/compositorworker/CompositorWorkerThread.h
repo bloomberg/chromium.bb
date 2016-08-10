@@ -5,35 +5,27 @@
 #ifndef CompositorWorkerThread_h
 #define CompositorWorkerThread_h
 
-#include "core/workers/WorkerThread.h"
 #include "modules/ModulesExport.h"
+#include "modules/compositorworker/AbstractAnimationWorkletThread.h"
 #include <memory>
 
 namespace blink {
 
 class InProcessWorkerObjectProxy;
 
-class MODULES_EXPORT CompositorWorkerThread final : public WorkerThread {
+class MODULES_EXPORT CompositorWorkerThread final : public AbstractAnimationWorkletThread {
 public:
     static std::unique_ptr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
     ~CompositorWorkerThread() override;
 
     InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
-    WorkerBackingThread& workerBackingThread() override;
-    bool shouldAttachThreadDebugger() const override { return false; }
-
-    static void ensureSharedBackingThread();
-    static void createSharedBackingThreadForTest();
-
-    static void clearSharedBackingThread();
 
 protected:
-    CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
-
     WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
-    bool isOwningBackingThread() const override { return false; }
 
 private:
+    CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
+
     InProcessWorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;
 };
