@@ -16,6 +16,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/command_line.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -23,6 +24,7 @@
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/visibility_controller.h"
 
 namespace ash {
@@ -117,6 +119,8 @@ class WindowPreviewView : public views::View {
     AddChildView(preview_background_);
 
     AddChildView(mirror_view_);
+
+    SetFocusBehavior(FocusBehavior::ALWAYS);
   }
   ~WindowPreviewView() override {}
 
@@ -150,6 +154,11 @@ class WindowPreviewView : public views::View {
     preview_background_->SetVisible(true);
     preview_area_bounds.ClampToCenteredSize(mirror_view_->size());
     mirror_view_->SetPosition(preview_area_bounds.origin());
+  }
+
+  void GetAccessibleState(ui::AXViewState* state) override {
+    state->role = ui::AX_ROLE_WINDOW;
+    state->name = window_title_->text();
   }
 
  private:
@@ -212,7 +221,7 @@ class WindowPreviewView : public views::View {
 };
 
 // A view that shows a collection of windows the user can tab through.
-class WindowCycleView : public views::View {
+class WindowCycleView : public views::WidgetDelegateView {
  public:
   explicit WindowCycleView(const WindowCycleList::WindowList& windows)
       : mirror_container_(new views::View()),
@@ -271,8 +280,11 @@ class WindowCycleView : public views::View {
 
   void SetTargetWindow(WmWindow* target) {
     target_window_ = target;
-    if (GetWidget())
+    if (GetWidget()) {
       Layout();
+      DCHECK(Contains(GetFocusManager()->GetFocusedView()));
+      window_view_map_[target_window_]->RequestFocus();
+    }
   }
 
   void HandleWindowDestruction(WmWindow* destroying_window,
@@ -283,7 +295,7 @@ class WindowCycleView : public views::View {
     SetTargetWindow(new_target);
   }
 
-  // views::View overrides:
+  // views::WidgetDelegateView overrides:
   gfx::Size GetPreferredSize() const override {
     return mirror_container_->GetPreferredSize();
   }
@@ -312,6 +324,12 @@ class WindowCycleView : public views::View {
     const int kHighlightPaddingDip = 5;
     target_bounds.Inset(gfx::InsetsF(-kHighlightPaddingDip));
     highlight_view_->SetBoundsRect(gfx::ToEnclosingRect(target_bounds));
+  }
+
+  View* GetContentsView() override { return this; }
+
+  View* GetInitiallyFocusedView() override {
+    return window_view_map_[target_window_];
   }
 
   WmWindow* target_window() { return target_window_; }
@@ -384,9 +402,12 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
     window->AddObserver(this);
 
   if (ShouldShowUi()) {
+    cycle_view_ = new WindowCycleView(windows_);
+
     WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params;
+    params.delegate = cycle_view_;
     params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -398,9 +419,6 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
             widget, kShellWindowId_OverlayContainer, &params);
     widget->Init(params);
 
-    cycle_view_ = new WindowCycleView(windows_);
-
-    widget->SetContentsView(cycle_view_);
     // TODO(estade): right now this just extends past the edge of the screen if
     // there are too many windows. Handle this more gracefully. Also, if
     // the display metrics change, cancel the UI.
