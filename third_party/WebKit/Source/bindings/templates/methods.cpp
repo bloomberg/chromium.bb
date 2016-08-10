@@ -342,7 +342,7 @@ setMinimumArityTypeError(exceptionState, {{number_of_required_arguments}}, info.
 v8SetReturnValue(info, ScriptPromise::rejectRaw(ScriptState::current(info.GetIsolate()), {{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}));
 return;
 {%- else %}
-V8ThrowException::throwException({{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}, info.GetIsolate());
+V8ThrowException::throwException(info.GetIsolate(), {{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}});
 return;
 {%- endif %}
 {%- endmacro %}

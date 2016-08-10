@@ -25,11 +25,11 @@ class ScriptWrappable;
     X(CustomEvent, Detail) \
     X(DOMException, Error) \
     X(ErrorEvent, Error) \
-    X(IDBObserver, Callback)              \
-    X(IntersectionObserver, Callback)     \
+    X(IDBObserver, Callback) \
+    X(IntersectionObserver, Callback) \
     X(MessageEvent, CachedData) \
-    X(MutationObserver, Callback)         \
-    X(PerformanceObserver, Callback)      \
+    X(MutationObserver, Callback) \
+    X(PerformanceObserver, Callback) \
     X(PrivateScriptRunner, IsInitialized) \
     X(SameObject, NotificationActions) \
     X(SameObject, NotificationData) \

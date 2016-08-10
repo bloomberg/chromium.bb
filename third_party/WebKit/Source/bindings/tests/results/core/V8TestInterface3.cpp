@@ -54,7 +54,7 @@ static void readonlyStringifierAttributeAttributeGetterCallback(const v8::Functi
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDocument", "TestInterface3", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDocument", "TestInterface3", 1, info.Length()));
         return;
     }
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());

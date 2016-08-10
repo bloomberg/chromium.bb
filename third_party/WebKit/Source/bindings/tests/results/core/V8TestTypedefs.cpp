@@ -158,7 +158,7 @@ static void voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallback
 static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", 1, info.Length()));
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
@@ -276,7 +276,7 @@ static void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCall
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "TestTypedefs", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "TestTypedefs", 1, info.Length()));
         return;
     }
     V8StringResource<> stringArg;

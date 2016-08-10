@@ -303,7 +303,7 @@ static void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCall
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestInterfaceEmptyArg", "TestInterface5", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestInterfaceEmptyArg", "TestInterface5", 1, info.Length()));
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());

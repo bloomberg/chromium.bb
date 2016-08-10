@@ -73,7 +73,7 @@ static void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Valu
 static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "func", "TestInterfaceGarbageCollected", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "func", "TestInterfaceGarbageCollected", 1, info.Length()));
         return;
     }
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
@@ -305,7 +305,7 @@ static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "TestInterfaceGarbageCollected", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "TestInterfaceGarbageCollected", 1, info.Length()));
         return;
     }
     V8StringResource<> str;

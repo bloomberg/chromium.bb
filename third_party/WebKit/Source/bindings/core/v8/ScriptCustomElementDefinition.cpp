@@ -242,8 +242,7 @@ bool ScriptCustomElementDefinition::runConstructor(Element* element)
         v8::Local<v8::Value> exception =  V8ThrowException::createDOMException(
             m_scriptState->isolate(),
             InvalidStateError,
-            message,
-            constructor());
+            message);
         fireErrorEvent(m_scriptState.get(), message, exception, std::move(location));
         return false;
     }

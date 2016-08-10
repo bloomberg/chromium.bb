@@ -67,7 +67,7 @@ static void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Val
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDocument", "TestIntegerIndexedPrimaryGlobal", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDocument", "TestIntegerIndexedPrimaryGlobal", 1, info.Length()));
         return;
     }
     TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::toImpl(info.Holder());

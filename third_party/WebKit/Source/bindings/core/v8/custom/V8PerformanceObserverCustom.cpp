@@ -19,7 +19,7 @@ namespace blink {
 void V8PerformanceObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "createPerformanceObserver", "Performance", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "createPerformanceObserver", "Performance", 1, info.Length()));
         return;
     }
 

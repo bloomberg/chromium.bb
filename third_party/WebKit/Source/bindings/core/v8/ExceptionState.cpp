@@ -68,7 +68,7 @@ void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& me
     m_code = ec;
     String processedMessage = addExceptionContext(message);
     m_message = processedMessage;
-    setException(V8ThrowException::createDOMException(m_isolate, ec, processedMessage, m_creationContext));
+    setException(V8ThrowException::createDOMException(m_isolate, ec, processedMessage));
 }
 
 void ExceptionState::throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage)
@@ -80,7 +80,7 @@ void ExceptionState::throwSecurityError(const String& sanitizedMessage, const St
     m_message = finalSanitized;
     String finalUnsanitized = addExceptionContext(unsanitizedMessage);
 
-    setException(V8ThrowException::createDOMException(m_isolate, SecurityError, finalSanitized, finalUnsanitized, m_creationContext));
+    setException(V8ThrowException::createDOMException(m_isolate, SecurityError, finalSanitized, finalUnsanitized));
 }
 
 void ExceptionState::setException(v8::Local<v8::Value> exception)
@@ -97,7 +97,7 @@ void ExceptionState::setException(v8::Local<v8::Value> exception)
 void ExceptionState::throwException()
 {
     ASSERT(!m_exception.isEmpty());
-    V8ThrowException::throwException(m_exception.newLocal(m_isolate), m_isolate);
+    V8ThrowException::throwException(m_isolate, m_exception.newLocal(m_isolate));
 }
 
 void ExceptionState::throwTypeError(const String& message)

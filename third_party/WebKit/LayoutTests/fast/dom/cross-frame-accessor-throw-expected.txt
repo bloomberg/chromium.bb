@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL Check that DOM exception is created in called function's context. assert_not_equals: got disallowed value [stringifying object threw TypeError: Illegal invocation with type object]
-FAIL Check that DOM exception is created in setter's context. assert_not_equals: got disallowed value [stringifying object threw TypeError: Illegal invocation with type object]
+PASS Check that DOM exception is created in called function's context. 
+FAIL Check that DOM exception is created in setter's context. assert_equals: expected [stringifying object threw TypeError: Illegal invocation with type object] but got [stringifying object threw TypeError: Illegal invocation with type object]
 PASS Check that native exception is created in setter's context. 
 Harness: the test ran to completion.
 

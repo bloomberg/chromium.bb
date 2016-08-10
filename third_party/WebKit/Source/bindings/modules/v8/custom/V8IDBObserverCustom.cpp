@@ -16,7 +16,7 @@ namespace blink {
 void V8IDBObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "IDBObserver", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "IDBObserver", 1, info.Length()));
         return;
     }
 

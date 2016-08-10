@@ -43,7 +43,7 @@ namespace TestSpecialOperationsV8Internal {
 static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "namedItem", "TestSpecialOperations", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "namedItem", "TestSpecialOperations", 1, info.Length()));
         return;
     }
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());

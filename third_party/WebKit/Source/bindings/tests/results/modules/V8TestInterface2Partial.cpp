@@ -26,7 +26,7 @@ namespace TestInterface2PartialV8Internal {
 static void voidMethodPartial1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodPartial1", "TestInterface2", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodPartial1", "TestInterface2", 1, info.Length()));
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
@@ -47,7 +47,7 @@ static void voidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::
 static void voidMethodPartial2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodPartial2", "TestInterface2", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodPartial2", "TestInterface2", 1, info.Length()));
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());

@@ -26,34 +26,40 @@
 #define V8ThrowException_h
 
 #include "core/CoreExport.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
 
+// Provides utility functions to create and/or throw a V8 exception.
+// Mostly a set of wrapper functions for v8::Exception class.
 class CORE_EXPORT V8ThrowException {
     STATIC_ONLY(V8ThrowException);
 public:
+    // Creates and returns an exception object, or returns an empty handle if
+    // failed.  |unsanitizedMessage| should not be specified unless it's
+    // SecurityError.
+    static v8::Local<v8::Value> createDOMException(v8::Isolate*, ExceptionCode, const String& sanitizedMessage, const String& unsanitizedMessage = String());
 
-    static v8::Local<v8::Value> createDOMException(v8::Isolate* isolate, int ec, const String& message, const v8::Local<v8::Object>& creationContext)
+    static void throwException(v8::Isolate* isolate, v8::Local<v8::Value> exception)
     {
-        return createDOMException(isolate, ec, message, String(), creationContext);
+        if (!isolate->IsExecutionTerminating())
+            isolate->ThrowException(exception);
     }
-    static v8::Local<v8::Value> createDOMException(v8::Isolate*, int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext);
 
-    static v8::Local<v8::Value> throwException(v8::Local<v8::Value>, v8::Isolate*);
+    static v8::Local<v8::Value> createGeneralError(v8::Isolate*, const String& message);
+    static v8::Local<v8::Value> createRangeError(v8::Isolate*, const String& message);
+    static v8::Local<v8::Value> createReferenceError(v8::Isolate*, const String& message);
+    static v8::Local<v8::Value> createSyntaxError(v8::Isolate*, const String& message);
+    static v8::Local<v8::Value> createTypeError(v8::Isolate*, const String& message);
 
-    static v8::Local<v8::Value> createGeneralError(v8::Isolate*, const String&);
-    static v8::Local<v8::Value> throwGeneralError(v8::Isolate*, const String&);
-    static v8::Local<v8::Value> createTypeError(v8::Isolate*, const String&);
-    static v8::Local<v8::Value> throwTypeError(v8::Isolate*, const String&);
-    static v8::Local<v8::Value> createRangeError(v8::Isolate*, const String&);
-    static v8::Local<v8::Value> throwRangeError(v8::Isolate*, const String&);
-    static v8::Local<v8::Value> createSyntaxError(v8::Isolate*, const String&);
-    static v8::Local<v8::Value> throwSyntaxError(v8::Isolate*, const String&);
-    static v8::Local<v8::Value> createReferenceError(v8::Isolate*, const String&);
-    static v8::Local<v8::Value> throwReferenceError(v8::Isolate*, const String&);
+    static void throwGeneralError(v8::Isolate*, const String& message);
+    static void throwRangeError(v8::Isolate*, const String& message);
+    static void throwReferenceError(v8::Isolate*, const String& message);
+    static void throwSyntaxError(v8::Isolate*, const String& message);
+    static void throwTypeError(v8::Isolate*, const String& message);
 };
 
 } // namespace blink
