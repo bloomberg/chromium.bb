@@ -126,7 +126,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebSpeechRecognizerClient.h"
 #include "public/web/WebTextCheckingResult.h"
-#include "public/web/WebTextCheckingType.h"
 #include "public/web/WebTextDecorationType.h"
 #include "public/web/WebTouchAction.h"
 #include "public/web/WebView.h"
@@ -587,14 +586,6 @@ STATIC_ASSERT_ENUM(WebFileErrorInvalidModification, FileError::kInvalidModificat
 STATIC_ASSERT_ENUM(WebFileErrorQuotaExceeded, FileError::kQuotaExceededErr);
 STATIC_ASSERT_ENUM(WebFileErrorTypeMismatch, FileError::kTypeMismatchErr);
 STATIC_ASSERT_ENUM(WebFileErrorPathExists, FileError::kPathExistsErr);
-
-STATIC_ASSERT_ENUM(WebTextCheckingTypeSpelling, TextCheckingTypeSpelling);
-STATIC_ASSERT_ENUM(WebTextCheckingTypeGrammar, TextCheckingTypeGrammar);
-
-// TODO(rouslan): Remove these comparisons between text-checking and text-decoration enum values after removing the
-// deprecated constructor WebTextCheckingResult(WebTextCheckingType).
-STATIC_ASSERT_ENUM(WebTextCheckingTypeSpelling, TextDecorationTypeSpelling);
-STATIC_ASSERT_ENUM(WebTextCheckingTypeGrammar, TextDecorationTypeGrammar);
 
 STATIC_ASSERT_ENUM(WebTextDecorationTypeSpelling, TextDecorationTypeSpelling);
 STATIC_ASSERT_ENUM(WebTextDecorationTypeGrammar, TextDecorationTypeGrammar);

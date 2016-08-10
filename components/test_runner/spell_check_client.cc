@@ -43,34 +43,6 @@ void SpellCheckClient::spellCheck(
   spell_check_.SpellCheckWord(text, &misspelled_offset, &misspelled_length);
 }
 
-void SpellCheckClient::checkTextOfParagraph(
-    const blink::WebString& text,
-    blink::WebTextCheckingTypeMask mask,
-    blink::WebVector<blink::WebTextCheckingResult>* web_results) {
-  std::vector<blink::WebTextCheckingResult> results;
-  if (mask & blink::WebTextCheckingTypeSpelling) {
-    size_t offset = 0;
-    base::string16 data = text;
-    while (offset < data.length()) {
-      int misspelled_position = 0;
-      int misspelled_length = 0;
-      spell_check_.SpellCheckWord(
-          data.substr(offset), &misspelled_position, &misspelled_length);
-      if (!misspelled_length)
-        break;
-      blink::WebTextCheckingResult result;
-      result.decoration = blink::WebTextDecorationTypeSpelling;
-      result.location = offset + misspelled_position;
-      result.length = misspelled_length;
-      results.push_back(result);
-      offset += misspelled_position + misspelled_length;
-    }
-  }
-  if (mask & blink::WebTextCheckingTypeGrammar)
-    MockGrammarCheck::CheckGrammarOfString(text, &results);
-  web_results->assign(results);
-}
-
 void SpellCheckClient::requestCheckingOfText(
     const blink::WebString& text,
     const blink::WebVector<uint32_t>& markers,

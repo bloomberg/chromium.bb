@@ -37,10 +37,6 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
       int& offset,
       int& length,
       blink::WebVector<blink::WebString>* optional_suggestions) override;
-  void checkTextOfParagraph(
-      const blink::WebString& text,
-      blink::WebTextCheckingTypeMask mask,
-      blink::WebVector<blink::WebTextCheckingResult>* web_results) override;
   void requestCheckingOfText(
       const blink::WebString& text,
       const blink::WebVector<uint32_t>& markers,

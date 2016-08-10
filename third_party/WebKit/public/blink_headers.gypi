@@ -451,7 +451,6 @@
       "web/WebTestingSupport.h",
       "web/WebTextCheckingCompletion.h",
       "web/WebTextCheckingResult.h",
-      "web/WebTextCheckingType.h",
       "web/WebTextDecorationType.h",
       "web/WebTextDirection.h",
       "web/WebTextInputInfo.h",

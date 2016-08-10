@@ -40,7 +40,6 @@ SpellCheckRequest::SpellCheckRequest(
     Range* checkingRange,
     Range* paragraphRange,
     const String& text,
-    TextCheckingTypeMask mask,
     TextCheckingProcessType processType,
     const Vector<uint32_t>& documentMarkersInRange,
     const Vector<unsigned>& documentMarkerOffsets,
@@ -49,7 +48,7 @@ SpellCheckRequest::SpellCheckRequest(
     , m_checkingRange(checkingRange)
     , m_paragraphRange(paragraphRange)
     , m_rootEditableElement(blink::rootEditableElement(*m_checkingRange->startContainer()))
-    , m_requestData(unrequestedTextCheckingSequence, text, mask, processType, documentMarkersInRange, documentMarkerOffsets)
+    , m_requestData(unrequestedTextCheckingSequence, text, processType, documentMarkersInRange, documentMarkerOffsets)
     , m_requestNumber(requestNumber)
 {
     DCHECK(m_checkingRange);
@@ -81,7 +80,7 @@ void SpellCheckRequest::dispose()
 }
 
 // static
-SpellCheckRequest* SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber)
+SpellCheckRequest* SpellCheckRequest::create(TextCheckingProcessType processType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber)
 {
     if (checkingRange.isNull())
         return nullptr;
@@ -108,7 +107,7 @@ SpellCheckRequest* SpellCheckRequest::create(TextCheckingTypeMask textCheckingOp
         offsets[i] = markers[i]->startOffset();
     }
 
-    return new SpellCheckRequest(checkingRangeObject, paragraphRangeObject, text, textCheckingOptions, processType, hashes, offsets, requestNumber);
+    return new SpellCheckRequest(checkingRangeObject, paragraphRangeObject, text, processType, hashes, offsets, requestNumber);
 }
 
 const TextCheckingRequestData& SpellCheckRequest::data() const
@@ -292,10 +291,6 @@ void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckin
     TextCheckingRequestData requestData = m_processingRequest->data();
     if (requestData.sequence() == sequence) {
         DocumentMarker::MarkerTypes markers = DocumentMarker::SpellCheckClientMarkers();
-        if (!requestData.maskContains(TextCheckingTypeSpelling))
-            markers.remove(DocumentMarker::Spelling);
-        if (!requestData.maskContains(TextCheckingTypeGrammar))
-            markers.remove(DocumentMarker::Grammar);
         if (m_processingRequest->isValid()) {
             Range* checkingRange = m_processingRequest->checkingRange();
             frame().document()->markers().removeMarkers(EphemeralRange(checkingRange), markers);

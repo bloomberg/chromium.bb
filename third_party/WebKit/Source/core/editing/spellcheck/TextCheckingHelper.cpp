@@ -365,8 +365,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool& outIsSpelling,
                 unsigned grammarDetailIndex = 0;
 
                 Vector<TextCheckingResult> results;
-                TextCheckingTypeMask checkingTypes = TextCheckingTypeSpelling | TextCheckingTypeGrammar;
-                checkTextOfParagraph(m_client->textChecker(), paragraphString, checkingTypes, results);
+                checkTextOfParagraph(m_client->textChecker(), paragraphString, results);
 
                 for (unsigned i = 0; i < results.size(); i++) {
                     const TextCheckingResult* result = &results[i];
@@ -554,27 +553,24 @@ bool TextCheckingHelper::unifiedTextCheckerEnabled() const
     return blink::unifiedTextCheckerEnabled(doc.frame());
 }
 
-void checkTextOfParagraph(TextCheckerClient& client, const String& text, TextCheckingTypeMask checkingTypes, Vector<TextCheckingResult>& results)
+void checkTextOfParagraph(TextCheckerClient& client, const String& text, Vector<TextCheckingResult>& results)
 {
     Vector<UChar> characters;
     text.appendTo(characters);
     unsigned length = text.length();
 
     Vector<TextCheckingResult> spellingResult;
-    if (checkingTypes & TextCheckingTypeSpelling)
-        findMisspellings(client, characters.data(), 0, length, spellingResult);
+    findMisspellings(client, characters.data(), 0, length, spellingResult);
+
+    // Only checks grammartical error before the first misspellings
+    int grammarCheckLength = length;
+    for (const auto& spelling : spellingResult) {
+        if (spelling.location < grammarCheckLength)
+            grammarCheckLength = spelling.location;
+    }
 
     Vector<TextCheckingResult> grammarResult;
-    if (checkingTypes & TextCheckingTypeGrammar) {
-        // Only checks grammartical error before the first misspellings
-        int grammarCheckLength = length;
-        for (const auto& spelling : spellingResult) {
-            if (spelling.location < grammarCheckLength)
-                grammarCheckLength = spelling.location;
-        }
-
-        findBadGrammars(client, characters.data(), 0, grammarCheckLength, grammarResult);
-    }
+    findBadGrammars(client, characters.data(), 0, grammarCheckLength, grammarResult);
 
     if (grammarResult.size())
         results.swap(grammarResult);

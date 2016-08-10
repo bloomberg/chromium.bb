@@ -144,23 +144,6 @@ void SpellCheckProvider::spellCheck(
   }
 }
 
-void SpellCheckProvider::checkTextOfParagraph(
-    const blink::WebString& text,
-    blink::WebTextCheckingTypeMask mask,
-    blink::WebVector<blink::WebTextCheckingResult>* results) {
-  if (!results)
-    return;
-
-  if (!(mask & blink::WebTextCheckingTypeSpelling))
-    return;
-
-  // TODO(groby): As far as I can tell, this method is never invoked.
-  // UMA results seem to support that. Investigate, clean up if true.
-  NOTREACHED();
-  spellcheck_->SpellCheckParagraph(text, results);
-  UMA_HISTOGRAM_COUNTS("SpellCheck.api.paragraph", text.length());
-}
-
 void SpellCheckProvider::requestCheckingOfText(
     const WebString& text,
     const WebVector<uint32_t>& markers,

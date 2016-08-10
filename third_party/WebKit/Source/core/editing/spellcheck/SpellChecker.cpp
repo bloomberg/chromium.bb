@@ -517,7 +517,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingPa
     // Check the full paragraph instead if the paragraph is short, which saves
     // the cost on sentence boundary finding.
     if (fullParagraphToCheck.rangeLength() <= kChunkSize) {
-        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
+        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
         return;
@@ -528,7 +528,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingPa
         EphemeralRange chunkRange = checkRangeIterator.calculateCharacterSubrange(0, kChunkSize);
         EphemeralRange checkRange = requestNum ? expandEndToSentenceBoundary(chunkRange) : expandRangeToSentenceBoundary(chunkRange);
 
-        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
+        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
 
@@ -558,11 +558,7 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
         return;
     }
 
-    TextCheckingTypeMask textCheckingOptions = request->data().mask();
     TextCheckingParagraph paragraph(request->checkingRange(), request->paragraphRange());
-
-    bool shouldMarkSpelling = textCheckingOptions & TextCheckingTypeSpelling;
-    bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
 
     // Expand the range to encompass entire paragraphs, since text checking needs that much context.
     int selectionOffset = 0;
@@ -571,17 +567,15 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
     bool restoreSelectionAfterChange = false;
     bool adjustSelectionForParagraphBoundaries = false;
 
-    if (shouldMarkSpelling) {
-        if (frame().selection().isCaret()) {
-            // Attempt to save the caret position so we can restore it later if needed
-            Position caretPosition = frame().selection().end();
-            selectionOffset = paragraph.offsetTo(caretPosition);
-            restoreSelectionAfterChange = true;
-            if (selectionOffset > 0 && (static_cast<unsigned>(selectionOffset) > paragraph.text().length() || paragraph.textCharAt(selectionOffset - 1) == newlineCharacter))
-                adjustSelectionForParagraphBoundaries = true;
-            if (selectionOffset > 0 && static_cast<unsigned>(selectionOffset) <= paragraph.text().length() && isAmbiguousBoundaryCharacter(paragraph.textCharAt(selectionOffset - 1)))
-                ambiguousBoundaryOffset = selectionOffset - 1;
-        }
+    if (frame().selection().isCaret()) {
+        // Attempt to save the caret position so we can restore it later if needed
+        Position caretPosition = frame().selection().end();
+        selectionOffset = paragraph.offsetTo(caretPosition);
+        restoreSelectionAfterChange = true;
+        if (selectionOffset > 0 && (static_cast<unsigned>(selectionOffset) > paragraph.text().length() || paragraph.textCharAt(selectionOffset - 1) == newlineCharacter))
+            adjustSelectionForParagraphBoundaries = true;
+        if (selectionOffset > 0 && static_cast<unsigned>(selectionOffset) <= paragraph.text().length() && isAmbiguousBoundaryCharacter(paragraph.textCharAt(selectionOffset - 1)))
+            ambiguousBoundaryOffset = selectionOffset - 1;
     }
 
     // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
@@ -599,16 +593,16 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
             bool resultEndsAtAmbiguousBoundary = ambiguousBoundaryOffset >= 0 && resultLocation + resultLength == ambiguousBoundaryOffset;
 
             // Only mark misspelling if:
-            // 1. Current text checking isn't done for autocorrection, in which case shouldMarkSpelling is false.
+            // 1. Current text checking isn't done for autocorrection.
             // 2. Result falls within spellingRange.
             // 3. The word in question doesn't end at an ambiguous boundary. For instance, we would not mark
             //    "wouldn'" as misspelled right after apostrophe is typed.
-            if (shouldMarkSpelling && result->decoration == TextDecorationTypeSpelling && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset && !resultEndsAtAmbiguousBoundary) {
+            if (result->decoration == TextDecorationTypeSpelling && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset && !resultEndsAtAmbiguousBoundary) {
                 DCHECK_GT(resultLength, 0);
                 DCHECK_GE(resultLocation, 0);
                 const EphemeralRange misspellingRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation, resultLength);
                 frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling, result->replacement, result->hash);
-            } else if (shouldMarkGrammar && result->decoration == TextDecorationTypeGrammar && paragraph.checkingRangeCovers(resultLocation, resultLength)) {
+            } else if (result->decoration == TextDecorationTypeGrammar && paragraph.checkingRangeCovers(resultLocation, resultLength)) {
                 DCHECK_GT(resultLength, 0);
                 DCHECK_GE(resultLocation, 0);
                 for (unsigned j = 0; j < result->details.size(); j++) {
@@ -933,7 +927,7 @@ void SpellChecker::cancelCheck()
 void SpellChecker::requestTextChecking(const Element& element)
 {
     const EphemeralRange rangeToCheck = EphemeralRange::rangeOfContents(element);
-    m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
+    m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
 }
 
 DEFINE_TRACE(SpellChecker)

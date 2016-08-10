@@ -80,10 +80,6 @@ class SpellCheckProvider
       int& offset,
       int& length,
       blink::WebVector<blink::WebString>* optional_suggestions) override;
-  void checkTextOfParagraph(
-      const blink::WebString& text,
-      blink::WebTextCheckingTypeMask mask,
-      blink::WebVector<blink::WebTextCheckingResult>* results) override;
 
   void requestCheckingOfText(
       const blink::WebString& text,
