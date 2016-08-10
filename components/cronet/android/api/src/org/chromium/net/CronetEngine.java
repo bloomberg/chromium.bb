@@ -648,6 +648,11 @@ public abstract class CronetEngine {
                 throw new IllegalArgumentException("Hostname " + hostName + " is illegal."
                         + " A hostname should not consist of digits and/or dots only.");
             }
+            // Workaround for crash, see crbug.com/634914
+            if (hostName.length() > 255) {
+                throw new IllegalArgumentException("Hostname " + hostName + " is too long."
+                        + " The name of the host does not comply with RFC 1122 and RFC 1123.");
+            }
             try {
                 return IDN.toASCII(hostName, IDN.USE_STD3_ASCII_RULES);
             } catch (IllegalArgumentException ex) {
