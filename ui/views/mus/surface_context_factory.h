@@ -13,7 +13,6 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/compositor/compositor.h"
 #include "ui/views/mus/mus_export.h"
-#include "ui/views/mus/surface_binding.h"
 
 namespace ui {
 class Window;
@@ -23,8 +22,7 @@ namespace views {
 
 class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
  public:
-  SurfaceContextFactory(ui::Window* window,
-                        ui::mojom::SurfaceType surface_type);
+  SurfaceContextFactory();
   ~SurfaceContextFactory() override;
 
  private:
@@ -57,7 +55,6 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   void AddObserver(ui::ContextFactoryObserver* observer) override {}
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
-  SurfaceBinding surface_binding_;
   uint32_t next_surface_id_namespace_;
   ui::RasterThreadHelper raster_thread_helper_;
   ui::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;

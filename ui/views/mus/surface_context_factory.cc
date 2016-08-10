@@ -8,9 +8,12 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "services/ui/public/cpp/context_provider.h"
+#include "services/ui/public/cpp/output_surface.h"
 #include "services/ui/public/cpp/window.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/views/mus/native_widget_mus.h"
 
 namespace views {
 namespace {
@@ -26,20 +29,20 @@ class FakeReflector : public ui::Reflector {
 
 }  // namespace
 
-SurfaceContextFactory::SurfaceContextFactory(
-    ui::Window* window,
-    ui::mojom::SurfaceType surface_type)
-    : surface_binding_(window, surface_type), next_surface_id_namespace_(1u) {}
+SurfaceContextFactory::SurfaceContextFactory()
+    : next_surface_id_namespace_(1u) {}
 
 SurfaceContextFactory::~SurfaceContextFactory() {}
 
 void SurfaceContextFactory::CreateOutputSurface(
     base::WeakPtr<ui::Compositor> compositor) {
-  // NOTIMPLEMENTED();
-  std::unique_ptr<cc::OutputSurface> surface =
-      surface_binding_.CreateOutputSurface();
-  if (surface)
-    compositor->SetOutputSurface(std::move(surface));
+  ui::Window* window = compositor->window();
+  NativeWidgetMus* native_widget = NativeWidgetMus::GetForWindow(window);
+  ui::mojom::SurfaceType surface_type = native_widget->surface_type();
+  scoped_refptr<cc::ContextProvider> context_provider(new ui::ContextProvider);
+  std::unique_ptr<cc::OutputSurface> surface(new ui::OutputSurface(
+              context_provider, window->RequestSurface(surface_type)));
+  compositor->SetOutputSurface(std::move(surface));
 }
 
 std::unique_ptr<ui::Reflector> SurfaceContextFactory::CreateReflector(

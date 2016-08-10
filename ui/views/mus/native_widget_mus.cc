@@ -516,8 +516,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
     : window_(window),
       last_cursor_(ui::mojom::Cursor::CURSOR_NULL),
       native_widget_delegate_(delegate),
-      is_parallel_widget_in_window_manager_(surface_type ==
-                                            ui::mojom::SurfaceType::UNDERLAY),
+      surface_type_(surface_type),
       show_state_before_fullscreen_(ui::mojom::ShowState::DEFAULT),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       content_(new aura::Window(this)),
@@ -535,7 +534,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
   ui::ContextFactory* default_context_factory =
       aura::Env::GetInstance()->context_factory();
   if (!default_context_factory) {
-    context_factory_.reset(new SurfaceContextFactory(window_, surface_type));
+    context_factory_.reset(new SurfaceContextFactory);
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   }
 
@@ -569,11 +568,16 @@ void NativeWidgetMus::NotifyFrameChanged(ui::WindowTreeClient* client) {
 }
 
 // static
-Widget* NativeWidgetMus::GetWidgetForWindow(ui::Window* window) {
-  if (!window)
-    return nullptr;
+NativeWidgetMus* NativeWidgetMus::GetForWindow(ui::Window* window) {
+  DCHECK(window);
   NativeWidgetMus* native_widget =
       window->GetLocalProperty(kNativeWidgetMusKey);
+  return native_widget;
+}
+
+// static
+Widget* NativeWidgetMus::GetWidgetForWindow(ui::Window* window) {
+  NativeWidgetMus* native_widget = GetForWindow(window);
   if (!native_widget)
     return nullptr;
   return native_widget->GetWidget();
