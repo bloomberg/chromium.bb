@@ -50,11 +50,24 @@ CSSStyleValueVector InlineStylePropertyMap::getAllInternal(AtomicString customPr
 
 Vector<String> InlineStylePropertyMap::getProperties()
 {
+    DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
     Vector<String> result;
+    bool containsAtApply = false;
     StylePropertySet& inlineStyleSet = m_ownerElement->ensureMutableInlineStyle();
     for (unsigned i = 0; i < inlineStyleSet.propertyCount(); i++) {
         CSSPropertyID propertyID = inlineStyleSet.propertyAt(i).id();
-        result.append(getPropertyNameString(propertyID));
+        if (propertyID == CSSPropertyVariable) {
+            StylePropertySet::PropertyReference propertyReference = inlineStyleSet.propertyAt(i);
+            const CSSCustomPropertyDeclaration& customDeclaration = toCSSCustomPropertyDeclaration(propertyReference.value());
+            result.append(customDeclaration.name());
+        } else if (propertyID == CSSPropertyApplyAtRule) {
+            if (!containsAtApply) {
+                result.append(kAtApply);
+                containsAtApply = true;
+            }
+        } else {
+            result.append(getPropertyNameString(propertyID));
+        }
     }
     return result;
 }
@@ -146,6 +159,7 @@ void InlineStylePropertyMap::remove(CSSPropertyID propertyID, ExceptionState& ex
 
 HeapVector<StylePropertyMap::StylePropertyMapEntry> InlineStylePropertyMap::getIterationEntries()
 {
+    DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
     HeapVector<StylePropertyMap::StylePropertyMapEntry> result;
     StylePropertySet& inlineStyleSet = m_ownerElement->ensureMutableInlineStyle();
     for (unsigned i = 0; i < inlineStyleSet.propertyCount(); i++) {
@@ -159,7 +173,7 @@ HeapVector<StylePropertyMap::StylePropertyMapEntry> InlineStylePropertyMap::getI
             // TODO(meade): Eventually custom properties will support other types, so actually return them instead of always returning a CSSUnsupportedStyleValue.
             value.setCSSStyleValue(CSSUnsupportedStyleValue::create(customDeclaration.customCSSText()));
         } else if (propertyID == CSSPropertyApplyAtRule) {
-            name = "@apply";
+            name = kAtApply;
             value.setCSSStyleValue(CSSUnsupportedStyleValue::create(toCSSCustomIdentValue(propertyReference.value()).value()));
         } else {
             name = getPropertyNameString(propertyID);

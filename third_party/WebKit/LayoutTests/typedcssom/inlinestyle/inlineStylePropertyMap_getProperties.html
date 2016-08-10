@@ -40,9 +40,26 @@ test(function() {
   testElement.styleMap.set('border-top-width', new CSSSimpleLength(10, 'px'));
   var result = testElement.styleMap.getProperties();
   // TODO(meade): The spec should describe an order for this.
-  assert_equals(2, result.length, 2);
+  assert_equals(result.length, 2);
   assert_true(result.indexOf('width') >= 0);
   assert_true(result.indexOf('border-top-width') >= 0);
 }, "getProperties returns multiple properties if they are set.");
+
+test(function() {
+  testElement.style = '';
+  testElement.style.setProperty('--my-custom-property', '5px');
+
+  assert_array_equals(testElement.styleMap.getProperties(), ['--my-custom-property']);
+}, "getProperties returns expected values for custom properties");
+
+test(function() {
+    testElement.style.cssText = "@apply --foo";
+    assert_array_equals(testElement.styleMap.getProperties(), ['@apply']);
+}, "getProperties returns expected values when @apply is used");
+
+test(function() {
+    testElement.style.cssText = "@apply --foo; @apply --bar;";
+    assert_array_equals(testElement.styleMap.getProperties(), ['@apply']);
+}, "getProperties returns only one @apply when multiple things are applied");
 
 </script>
