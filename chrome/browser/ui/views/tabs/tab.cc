@@ -124,14 +124,14 @@ struct PaintBackgroundParams {
                         gfx::Rect rect,
                         SkColor stroke_color,
                         SkColor toolbar_color,
-                        SkColor background_color)
+                        SkColor background_tab_color)
       : is_active(is_active),
         fill_image(fill_image_ptr ? *fill_image_ptr : gfx::ImageSkia()),
         has_custom_image(has_custom_image),
         rect(rect),
         stroke_color(stroke_color),
         toolbar_color(toolbar_color),
-        background_color(background_color) {}
+        background_tab_color(background_tab_color) {}
 
   const bool is_active;
   const gfx::ImageSkia fill_image;
@@ -139,7 +139,7 @@ struct PaintBackgroundParams {
   const gfx::Rect rect;
   const SkColor stroke_color;
   const SkColor toolbar_color;
-  const SkColor background_color;
+  const SkColor background_tab_color;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -475,9 +475,10 @@ void PaintTabFill(gfx::Canvas* canvas,
 void PaintTabBackgroundUsingParams(gfx::Canvas* canvas,
                                    views::GlowHoverController* hc,
                                    const PaintBackgroundParams& params) {
+  const gfx::Rect& rect = params.rect;
   const SkScalar kMinHoverRadius = 16;
   const SkScalar radius =
-      std::max(SkFloatToScalar(params.rect.width() / 4.f), kMinHoverRadius);
+      std::max(SkFloatToScalar(rect.width() / 4.f), kMinHoverRadius);
   const bool draw_hover = !params.is_active && hc;
   SkPoint hover_location(
       gfx::PointToSkPoint(draw_hover ? hc->location() : gfx::Point()));
@@ -489,7 +490,7 @@ void PaintTabBackgroundUsingParams(gfx::Canvas* canvas,
     const float scale = canvas->UndoDeviceScaleFactor();
 
     // Draw the fill.
-    gfx::Path fill = GetFillPath(scale, params.rect.size());
+    gfx::Path fill = GetFillPath(scale, rect.size());
     SkPaint paint;
     paint.setAntiAlias(true);
     {
@@ -498,15 +499,13 @@ void PaintTabBackgroundUsingParams(gfx::Canvas* canvas,
       if (!params.fill_image.isNull()) {
         gfx::ScopedCanvas scale_scoper(canvas);
         canvas->sk_canvas()->scale(scale, scale);
-        canvas->TileImageInt(params.fill_image, params.rect.x(),
-                             params.rect.y(), 0, 0, params.rect.width(),
-                             params.rect.height());
+        canvas->TileImageInt(params.fill_image, rect.x(), rect.y(), 0, 0,
+                             rect.width(), rect.height());
       } else {
         paint.setColor(params.is_active ? params.toolbar_color
-                                        : params.background_color);
+                                        : params.background_tab_color);
         canvas->DrawRect(
-            gfx::ScaleToEnclosingRect(gfx::Rect(params.rect.size()), scale),
-            paint);
+            gfx::ScaleToEnclosingRect(gfx::Rect(rect.size()), scale), paint);
       }
       if (draw_hover) {
         hover_location.scale(SkFloatToScalar(scale));
@@ -515,13 +514,13 @@ void PaintTabBackgroundUsingParams(gfx::Canvas* canvas,
     }
 
     // Draw the stroke.
-    gfx::Path stroke = GetBorderPath(scale, false, false, params.rect.size());
+    gfx::Path stroke = GetBorderPath(scale, false, false, rect.size());
     Op(stroke, fill, kDifference_SkPathOp, &stroke);
     if (!params.is_active) {
       // Clip out the bottom line; this will be drawn for us by
       // TabStrip::PaintChildren().
-      canvas->ClipRect(gfx::RectF(params.rect.width() * scale,
-                                  params.rect.height() * scale - 1));
+      canvas->ClipRect(gfx::RectF(rect.width() * scale,
+                                  rect.height() * scale - 1));
     }
     paint.setColor(params.stroke_color);
     canvas->DrawPath(stroke, paint);
@@ -529,21 +528,19 @@ void PaintTabBackgroundUsingParams(gfx::Canvas* canvas,
     if (draw_hover) {
       // Draw everything to a temporary canvas so we can extract an image for
       // use in masking the hover glow.
-      gfx::Canvas background_canvas(params.rect.size(), canvas->image_scale(),
-                                    false);
-      PaintTabFill(&background_canvas, params.fill_image, params.rect,
+      gfx::Canvas background_canvas(rect.size(), canvas->image_scale(), false);
+      PaintTabFill(&background_canvas, params.fill_image, rect,
                    params.is_active);
       gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
       canvas->DrawImageInt(background_image, 0, 0);
 
-      gfx::Canvas hover_canvas(params.rect.size(), canvas->image_scale(),
-                               false);
+      gfx::Canvas hover_canvas(rect.size(), canvas->image_scale(), false);
       DrawHighlight(&hover_canvas, hover_location, radius, hover_color);
       gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
           gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
       canvas->DrawImageInt(result, 0, 0);
     } else {
-      PaintTabFill(canvas, params.fill_image, params.rect, params.is_active);
+      PaintTabFill(canvas, params.fill_image, rect, params.is_active);
     }
 
     // Now draw the stroke, highlights, and shadows around the tab edge.
@@ -552,10 +549,10 @@ void PaintTabBackgroundUsingParams(gfx::Canvas* canvas,
     canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
     canvas->TileImageInt(
         *stroke_images->image_c, stroke_images->l_width, 0,
-        params.rect.width() - stroke_images->l_width - stroke_images->r_width,
-        params.rect.height());
+        rect.width() - stroke_images->l_width - stroke_images->r_width,
+        rect.height());
     canvas->DrawImageInt(*stroke_images->image_r,
-                         params.rect.width() - stroke_images->r_width, 0);
+                         rect.width() - stroke_images->r_width, 0);
   }
 }
 
@@ -702,7 +699,9 @@ class Tab::TabCloseButton : public views::ImageButton,
     // reached, it may be from someone calling GetEventHandlerForPoint() while a
     // touch happens to be occurring.  In such a case, maybe we don't want this
     // code to run?  It's possible this block should be removed, or maybe this
-    // whole function deleted.
+    // whole function deleted.  Note that in these cases, we should probably
+    // also remove the padding on the close button bounds (see Tab::Layout()),
+    // as it will be pointless.
     if (aura::Env::GetInstance()->is_touch_down())
       contents_bounds = GetLocalBounds();
 #endif
@@ -1218,10 +1217,12 @@ void Tab::Layout() {
     // The close button should be as large as possible so that there is a larger
     // hit-target for touch events. So the close button bounds extends to the
     // edges of the tab. However, the larger hit-target should be active only
-    // for mouse events, and the close-image should show up in the right place.
+    // for touch events, and the close-image should show up in the right place.
     // So a border is added to the button with necessary padding. The close
-    // button (BaseTab::TabCloseButton) makes sure the padding is a hit-target
-    // only for touch events.
+    // button (Tab::TabCloseButton) makes sure the padding is a hit-target only
+    // for touch events.
+    // TODO(pkasting): The padding should maybe be removed, see comments in
+    // TabCloseButton::TargetForRect().
     close_button_->SetBorder(views::Border::NullBorder());
     const gfx::Size close_button_size(close_button_->GetPreferredSize());
     const int top = lb.y() + (lb.height() - close_button_size.height() + 1) / 2;
