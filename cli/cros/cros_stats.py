@@ -89,7 +89,8 @@ class StatsCommand(command.CliCommand):
     # What kind of report do we generate?
     report_group = parser.add_mutually_exclusive_group()
     report_group.add_argument('--report', default='standard',
-                              choices=['standard', 'stability', 'success'],
+                              choices=['standard', 'stability', 'success',
+                                       'stage-stability'],
                               help='What type of report to generate?')
 
 
@@ -201,3 +202,7 @@ class StatsCommand(command.CliCommand):
           sys.stdout,
           description,
           builds_timings)
+    elif self.options.report == 'stage-stability':
+      pbss = build_time_stats.GetPerBuildStageStats(builds_statuses)
+      build_time_stats.PerBuildStageStabilityReport(sys.stdout, description,
+                                                    pbss)

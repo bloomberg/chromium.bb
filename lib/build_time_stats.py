@@ -36,6 +36,37 @@ StageTiming = collections.namedtuple(
     'StageTiming', ['name', 'start', 'finish', 'duration'])
 
 
+def GetPerBuildStageStats(build_statuses):
+  """Creates a map of builders to their individual stages.
+
+  Args:
+    build_statuses: List of build_status dictionaries as returned by various
+                    CIDB methods.
+
+  Returns:
+    final_map: A map of builders to a dict of the individual stages for that
+      builder.
+  """
+  all_builds = {}
+  final_map = {}
+
+  # Group all builds by build config.
+  for status in build_statuses:
+    all_builds.setdefault(status['build_config'], []).extend(status['stages'])
+
+  # Group the individual stages now.
+  for b in all_builds:
+    stage_map = {}
+    stages = all_builds[b]
+
+    for s in stages:
+      stage_map.setdefault(s['name'], []).append(s)
+
+    final_map[b] = stage_map
+
+  return final_map
+
+
 class TimeDeltaStats(collections.namedtuple(
     'TimeDeltaStats', ['median', 'mean', 'min', 'max'])):
   """Collection a stats about a set of time.timedelta values."""
@@ -416,7 +447,7 @@ def Report(output, description, focus_build, builds_timings,
   """Generate a report describing our stats.
 
   Args:
-    output: A file object to write the report too.
+    output: A file object to write the report to.
     description: A user friendly string description what the report covers.
     focus_build: A BuildTiming object for a build to compare against stats.
     builds_timings: List of BuildTiming objects to display stats for.
@@ -496,7 +527,7 @@ def ReportCsv(output, description, focus_build, builds_timings, stages=True):
   """Generate a report describing our stats.
 
   Args:
-    output: A file object to write the report too.
+    output: A file object to write the report to.
     description: A user friendly string description what the report covers.
     focus_build: A BuildTiming object for a build to compare against stats.
     builds_timings: List of BuildTiming objects to display stats for.
@@ -597,7 +628,7 @@ def StabilityReport(output, description, builds_timings):
   """Generate a report describing general health of our builds.
 
   Args:
-    output: A file object to write the report too.
+    output: A file object to write the report to.
     description: A user friendly string description what the report covers.
     builds_timings: List of BuildTiming objects to display stats for.
   """
@@ -632,6 +663,49 @@ def StabilityReport(output, description, builds_timings):
                   Percent(timeouts, total),
                   total))
 
+def PerBuildStageStabilityReport(output, description, per_build_stage_stats):
+  """Generate a report showing stage failures by builder.
+
+  Args:
+    output: A file object to write the report to.
+    description: A user friendly string description what the report covers.
+    per_build_stage_stats: A map of each builder to a dict of the individual
+                           stages.
+  """
+  assert per_build_stage_stats
+
+  output.write('\n%s\n\n' % description)
+
+  sorted_builders = sorted(per_build_stage_stats)
+  for builder in sorted_builders:
+    output.write('%s\n' % builder)
+    # Calculate the max length stage name for aligning the percentages.
+    max_stage_name_len = max(len(name) for name in
+                             per_build_stage_stats[builder])
+
+    sorted_stages = sorted(per_build_stage_stats[builder])
+    for stage in sorted_stages:
+      successes = 0
+      valid_stages = 0
+
+      for status in per_build_stage_stats[builder][stage]:
+        # We only care about 'pass, fail, or aborted'.  Assuming that 'missing'
+        # isn't a failure.
+        if status['status'] not in ('pass', 'fail', 'aborted'):
+          continue
+
+        valid_stages += 1
+        if status['status'] == 'pass':
+          successes += 1
+
+      stage_name = ('%s' % stage).ljust(max_stage_name_len + 1)
+      # We'll ignore 100% success rates.
+      if successes == valid_stages:
+        continue
+      if valid_stages:
+        output.write('  %s %s (%d/%d)\n' % (stage_name,
+                                            Percent(successes, valid_stages),
+                                            successes, valid_stages))
 
 def SuccessReport(
     output, description, build_success_rates, stage_success_rates):
@@ -640,7 +714,7 @@ def SuccessReport(
   Report includes success rate by builder and by stage.
 
   Args:
-    output: A file object to write the report too.
+    output: A file object to write the report to.
     description: A user friendly string description what the report covers.
     build_success_rates: Dictionary of success rates by builder.
     stage_success_rates: Dictionary of success rates by stage.
@@ -677,7 +751,7 @@ def SuccessReportCsv(output, build_success_rates, stage_success_rates):
   Report includes success rate by builder and by stage.
 
   Args:
-    output: A file object to write the report too.
+    output: A file object to write the report to.
     build_success_rates: Dictionary of success rates by builder.
     stage_success_rates: Dictionary of success rates by stage.
   """
