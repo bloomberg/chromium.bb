@@ -224,6 +224,7 @@ class CC_EXPORT ResourceProvider
     unsigned texture_id() const { return texture_id_; }
     GLenum target() const { return target_; }
     const gfx::Size& size() const { return size_; }
+    const gfx::ColorSpace& color_space() const { return color_space_; }
 
    private:
     ResourceProvider* resource_provider_;
@@ -231,6 +232,7 @@ class CC_EXPORT ResourceProvider
     unsigned texture_id_;
     GLenum target_;
     gfx::Size size_;
+    gfx::ColorSpace color_space_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
   };
@@ -248,6 +250,9 @@ class CC_EXPORT ResourceProvider
 
     unsigned texture_id() const { return resource_lock_.texture_id(); }
     GLenum target() const { return target_; }
+    const gfx::ColorSpace& color_space() const {
+      return resource_lock_.color_space();
+    }
 
    private:
     ScopedReadLockGL resource_lock_;

@@ -654,9 +654,13 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   child_context_->genSyncToken(child_context_->insertFenceSync(),
                                external_sync_token.GetData());
   EXPECT_TRUE(external_sync_token.HasData());
+
+  gfx::ColorSpace id4_color_space = gfx::ColorSpace::CreateSRGB();
+  TextureMailbox id4_mailbox(external_mailbox, external_sync_token,
+                             GL_TEXTURE_EXTERNAL_OES);
+  id4_mailbox.set_color_space(id4_color_space);
   ResourceId id4 = child_resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(external_mailbox, external_sync_token,
-                     GL_TEXTURE_EXTERNAL_OES),
+      id4_mailbox,
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
 
   ReturnedResourceArray returned_to_child;
@@ -741,6 +745,18 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   GetResourcePixels(
       resource_provider_.get(), context(), mapped_id2, size, format, result);
   EXPECT_EQ(0, memcmp(data2, result, pixel_size));
+
+  EXPECT_FALSE(resource_provider_->IsOverlayCandidate(mapped_id1));
+  EXPECT_FALSE(resource_provider_->IsOverlayCandidate(mapped_id2));
+  EXPECT_TRUE(resource_provider_->IsOverlayCandidate(mapped_id3));
+  EXPECT_FALSE(resource_provider_->IsOverlayCandidate(mapped_id4));
+
+  {
+    resource_provider_->WaitSyncTokenIfNeeded(mapped_id4);
+    ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                            mapped_id4);
+    EXPECT_TRUE(lock.color_space() == id4_color_space);
+  }
 
   {
     // Check that transfering again the same resource from the child to the

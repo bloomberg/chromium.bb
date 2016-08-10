@@ -668,6 +668,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
                  base::Owned(release_callback_impl.release()));
   resource->read_lock_fences_enabled = read_lock_fences_enabled;
   resource->is_overlay_candidate = mailbox.is_overlay_candidate();
+  resource->color_space = mailbox.color_space();
 
   return id;
 }
@@ -1031,6 +1032,7 @@ ResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
   texture_id_ = resource->gl_id;
   target_ = resource->target;
   size_ = resource->size;
+  color_space_ = resource->color_space;
 }
 
 ResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {
