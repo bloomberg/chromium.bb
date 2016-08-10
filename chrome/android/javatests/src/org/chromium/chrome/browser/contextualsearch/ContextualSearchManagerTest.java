@@ -76,6 +76,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests the Contextual Search Manager using instrumentation tests.
  */
+@CommandLineFlags.Add(ContextualSearchFieldTrial.SUPPRESSION_TAPS + "=1000")
 public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEST_PAGE =
