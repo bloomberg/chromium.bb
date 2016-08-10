@@ -16,6 +16,7 @@ testserver.log
 .settings/
 
 # toolchain_build/toolchain_build.py creates these.
+/cmake343/
 /toolchain_build/cache/
 /toolchain_build/git_cache/
 /toolchain_build/out/
