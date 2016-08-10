@@ -52,6 +52,7 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/SaturatedArithmetic.h"
 #include <algorithm>
 #include <memory>
 
@@ -1791,7 +1792,7 @@ int ComputedStyle::outlineOutsetExtent() const
         return 0;
     if (outlineStyleIsAuto())
         return GraphicsContext::focusRingOutsetExtent(outlineOffset(), outlineWidth());
-    return std::max(0, outlineWidth() + outlineOffset());
+    return std::max(0, saturatedAddition(outlineWidth(), outlineOffset()));
 }
 
 bool ComputedStyle::columnRuleEquivalent(const ComputedStyle* otherStyle) const
