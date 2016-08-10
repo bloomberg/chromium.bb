@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,6 +56,7 @@ class CencUtilsTest : public testing::Test {
 
     box->reserve(size);
     // Add size.
+    DCHECK(size < std::numeric_limits<uint8_t>::max());
     box->push_back(0);
     box->push_back(0);
     box->push_back(0);

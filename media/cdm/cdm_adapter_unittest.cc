@@ -44,7 +44,8 @@ const uint8_t kKeyId[] = {
 const char kKeyIdAsJWK[] = "{\"kids\": [\"AQIDBAUGBwgJCgsMDQ4PEA\"]}";
 
 const uint8_t kKeyIdAsPssh[] = {
-    0x00, 0x00, 0x00, 0x00, 'p',  's',  's',  'h',   // size = 0
+    0x00, 0x00, 0x00, 0x34,                          // size = 52
+    'p',  's',  's',  'h',                           // 'pssh'
     0x01,                                            // version = 1
     0x00, 0x00, 0x00,                                // flags
     0x10, 0x77, 0xEF, 0xEC, 0xC0, 0xB2, 0x4D, 0x02,  // Common SystemID
