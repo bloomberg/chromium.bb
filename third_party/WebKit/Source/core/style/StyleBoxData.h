@@ -25,6 +25,7 @@
 #ifndef StyleBoxData_h
 #define StyleBoxData_h
 
+#include "core/CoreExport.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Length.h"
 #include "wtf/PassRefPtr.h"
@@ -35,7 +36,7 @@ namespace blink {
 // TODO(sashab): Move this into a private class on ComputedStyle, and remove
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
-class StyleBoxData : public RefCounted<StyleBoxData> {
+class CORE_EXPORT StyleBoxData : public RefCounted<StyleBoxData> {
 public:
     static PassRefPtr<StyleBoxData> create() { return adoptRef(new StyleBoxData); }
     PassRefPtr<StyleBoxData> copy() const { return adoptRef(new StyleBoxData(*this)); }

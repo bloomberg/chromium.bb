@@ -5,6 +5,7 @@
 #ifndef NGBlockLayoutAlgorithm_h
 #define NGBlockLayoutAlgorithm_h
 
+#include "core/CoreExport.h"
 #include "core/layout/ng/ng_box.h"
 #include "wtf/RefPtr.h"
 
@@ -16,7 +17,7 @@ class NGFragment;
 
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.
-class NGBlockLayoutAlgorithm {
+class CORE_EXPORT NGBlockLayoutAlgorithm {
  public:
   NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>, NGBox);
 
