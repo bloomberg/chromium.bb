@@ -1141,8 +1141,8 @@ template("ios_framework_bundle") {
       }
 
       bundle_root_dir = _framework_root_dir
-      bundle_resources_dir = "$bundle_root_dir/Resources"
-      bundle_executable_dir = "$bundle_root_dir"
+      bundle_resources_dir = _framework_root_dir
+      bundle_executable_dir = _framework_root_dir
 
       if (!defined(deps)) {
         deps = []
