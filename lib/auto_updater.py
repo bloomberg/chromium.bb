@@ -135,6 +135,7 @@ class BaseUpdater(object):
 class ChromiumOSFlashUpdater(BaseUpdater):
   """Used to update DUT with image."""
   DEVSERVER_FILENAME = 'devserver.py'
+  STATEFUL_UPDATE_FILE = 'stateful_update'
   STATEFUL_UPDATE_BIN = '/usr/bin/stateful_update'
   REMOTE_STATEUL_UPDATE_PATH = '/usr/local/bin/stateful_update'
   UPDATE_ENGINE_BIN = 'update_engine_client'
@@ -145,7 +146,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   UPDATE_CHECK_INTERVAL_NORMAL = 10
 
 
-  def __init__(self, device, payload_dir, tempdir=None,
+  def __init__(self, device, payload_dir, dev_dir='', tempdir=None,
                do_rootfs_update=True, do_stateful_update=True, reboot=True,
                disable_verification=False, clobber_stateful=False, yes=False):
     """Initialize a ChromiumOSFlashUpdater for auto-update a chromium OS device.
@@ -153,6 +154,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     Args:
       device: the ChromiumOSDevice to be updated.
       payload_dir: the directory of payload(s).
+      dev_dir: the directory of the devserver that runs the CrOS auto-update.
       tempdir: the temp directory in caller, not in the device. For example,
           the tempdir for cros flash is /tmp/cros-flash****/, used to
           temporarily keep files when transferring devserver package, and
@@ -175,6 +177,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       self.tempdir = tempdir
     else:
       self.tempdir = tempfile.mkdtemp(prefix='cros-update')
+
+    self.dev_dir = dev_dir
 
     # Update setting
     self._cmd_kwargs = {}
@@ -326,8 +330,17 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     stateful_update_path = path_util.FromChrootPath(self.STATEFUL_UPDATE_BIN)
 
     if not os.path.exists(stateful_update_path):
-      logging.warning('Could not find chroot stateful_update script, falling '
-                      'back on client copy.')
+      logging.warning('Could not find chroot stateful_update script in %s, '
+                      'falling back to the client copy.', stateful_update_path)
+      stateful_update_path = os.path.join(self.dev_dir,
+                                          self.STATEFUL_UPDATE_FILE)
+      if os.path.exists(stateful_update_path):
+        logging.debug('Use stateful_update script in devserver path: %s',
+                      stateful_update_path)
+        return True, stateful_update_path
+
+      logging.debug('Cannot find stateful_update script, will use the script '
+                    'on the host')
       return False, self.REMOTE_STATEUL_UPDATE_PATH
     else:
       return True, stateful_update_path
@@ -606,15 +619,16 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   # return from reboot' bug is solved.
   REBOOT_TIMEOUT = 480
 
-  def __init__(self, device, build_name, payload_dir, log_file=None,
-               tempdir=None, autodir=None, clobber_stateful=True,
-               local_devserver=False, yes=False):
+  def __init__(self, device, build_name, payload_dir, dev_dir='',
+               log_file=None, tempdir=None, autodir=None,
+               clobber_stateful=True, local_devserver=False, yes=False):
     """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
 
     Args:
       device: the ChromiumOSDevice to be updated.
       build_name: the target update version for the device.
       payload_dir: the directory of payload(s).
+      dev_dir: the directory of the devserver that runs the CrOS auto-update.
       log_file: The file to save running logs.
       tempdir: the temp directory in caller, not in the device. For example,
           the tempdir for cros flash is /tmp/cros-flash****/, used to
@@ -630,7 +644,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
           auto-update.
     """
     super(ChromiumOSUpdater, self).__init__(
-        device, payload_dir, tempdir=tempdir,
+        device, payload_dir, dev_dir=dev_dir, tempdir=tempdir,
         clobber_stateful=clobber_stateful, yes=yes)
 
     if log_file:
