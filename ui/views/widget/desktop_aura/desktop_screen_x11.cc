@@ -327,6 +327,8 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
     if (!is_connected)
       continue;
 
+    bool is_primary_display = output_id == primary_display_id;
+
     if (output_info->crtc) {
       gfx::XScopedPtr<XRRCrtcInfo,
                       gfx::XObjectDeleter<XRRCrtcInfo, void, XRRFreeCrtcInfo>>
@@ -349,7 +351,9 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
 
       if (has_work_area) {
         gfx::Rect intersection_in_pixels = crtc_bounds;
-        intersection_in_pixels.Intersect(work_area_in_pixels);
+        if (is_primary_display) {
+          intersection_in_pixels.Intersect(work_area_in_pixels);
+        }
         // SetScaleAndBounds() above does the conversion from pixels to DIP for
         // us, but set_work_area does not, so we need to do it here.
         display.set_work_area(gfx::Rect(
@@ -374,7 +378,7 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
           break;
       }
 
-      if (output_id == primary_display_id)
+      if (is_primary_display)
         primary_display_index_ = displays.size();
 
       displays.push_back(display);
