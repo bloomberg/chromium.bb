@@ -26,7 +26,7 @@ LazyInstance<ThreadLocalPointer<const TaskToken>>::Leaky
 }  // namespace
 
 bool SequenceToken::operator==(const SequenceToken& other) const {
-  return token_ == other.token_ && token_ != kInvalidSequenceToken;
+  return token_ == other.token_ && IsValid();
 }
 
 bool SequenceToken::operator!=(const SequenceToken& other) const {
@@ -48,7 +48,7 @@ SequenceToken SequenceToken::GetForCurrentThread() {
 }
 
 bool TaskToken::operator==(const TaskToken& other) const {
-  return token_ == other.token_ && token_ != kInvalidTaskToken;
+  return token_ == other.token_ && IsValid();
 }
 
 bool TaskToken::operator!=(const TaskToken& other) const {

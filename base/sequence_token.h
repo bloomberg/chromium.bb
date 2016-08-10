@@ -39,7 +39,7 @@ class BASE_EXPORT SequenceToken {
   static SequenceToken GetForCurrentThread();
 
  private:
-  SequenceToken(int token) : token_(token) {}
+  explicit SequenceToken(int token) : token_(token) {}
 
   static constexpr int kInvalidSequenceToken = -1;
   int token_ = kInvalidSequenceToken;
@@ -77,7 +77,7 @@ class BASE_EXPORT TaskToken {
  private:
   friend class ScopedSetSequenceTokenForCurrentThread;
 
-  TaskToken(int token) : token_(token) {}
+  explicit TaskToken(int token) : token_(token) {}
 
   // Returns a valid TaskToken which isn't equal to any previously returned
   // TaskToken. This is private as it only meant to be instantiated by
