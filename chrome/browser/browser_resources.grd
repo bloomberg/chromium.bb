@@ -299,6 +299,7 @@
       <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" />
       <include name="IDR_OMNIBOX_JS" file="resources\omnibox\omnibox.js" type="BINDATA" />
       <include name="IDR_OMNIBOX_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\omnibox\omnibox.mojom.js" use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_ORIGIN_MOJO_JS" file="${root_gen_dir}\url\mojo\origin.mojom.js" use_base_dir="false" type="BINDATA"/>
       <if expr="enable_plugins">
         <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PLUGINS_JS" file="resources\plugins.js" type="BINDATA" />
@@ -371,6 +372,10 @@
       <include name="IDR_UBER_FRAME_HTML" file="resources\uber\uber_frame.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_FRAME_JS" file="resources\uber\uber_frame.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_UTILS_JS" file="resources\uber\uber_utils.js" type="BINDATA" />
+      <include name="IDR_USB_INTERNALS_CSS" file="resources\usb_internals\usb_internals.css" type="BINDATA" />
+      <include name="IDR_USB_INTERNALS_HTML" file="resources\usb_internals\usb_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_USB_INTERNALS_JS" file="resources\usb_internals\usb_internals.js" type="BINDATA" />
+      <include name="IDR_USB_INTERNALS_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\usb_internals\usb_internals.mojom.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_USER_ACTIONS_HTML" file="resources\user_actions\user_actions.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_USER_ACTIONS_CSS" file="resources\user_actions\user_actions.css" type="BINDATA" />
       <include name="IDR_USER_ACTIONS_JS" file="resources\user_actions\user_actions.js" type="BINDATA" />

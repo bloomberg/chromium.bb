@@ -90,6 +90,40 @@ void UsbService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void UsbService::AddDeviceForTesting(scoped_refptr<UsbDevice> device) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!ContainsKey(devices_, device->guid()));
+  devices_[device->guid()] = device;
+  testing_devices_.insert(device->guid());
+  NotifyDeviceAdded(device);
+}
+
+void UsbService::RemoveDeviceForTesting(const std::string& device_guid) {
+  DCHECK(CalledOnValidThread());
+  // Allow only devices added with AddDeviceForTesting to be removed with this
+  // method.
+  auto testing_devices_it = testing_devices_.find(device_guid);
+  if (testing_devices_it != testing_devices_.end()) {
+    auto devices_it = devices_.find(device_guid);
+    DCHECK(devices_it != devices_.end());
+    scoped_refptr<UsbDevice> device = devices_it->second;
+    devices_.erase(devices_it);
+    testing_devices_.erase(testing_devices_it);
+    UsbService::NotifyDeviceRemoved(device);
+  }
+}
+
+void UsbService::GetTestDevices(
+    std::vector<scoped_refptr<UsbDevice>>* devices) {
+  devices->clear();
+  devices->reserve(testing_devices_.size());
+  for (const std::string& guid : testing_devices_) {
+    auto it = devices_.find(guid);
+    DCHECK(it != devices_.end());
+    devices->push_back(it->second);
+  }
+}
+
 void UsbService::NotifyDeviceAdded(scoped_refptr<UsbDevice> device) {
   DCHECK(CalledOnValidThread());
 

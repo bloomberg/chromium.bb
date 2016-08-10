@@ -250,6 +250,7 @@ const char kChromeUITouchIconHost[] = "touch-icon";
 const char kChromeUITranslateInternalsHost[] = "translate-internals";
 const char kChromeUIUberFrameHost[] = "uber-frame";
 const char kChromeUIUberHost[] = "chrome";
+const char kChromeUIUsbInternalsHost[] = "usb-internals";
 const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
 const char kChromeUIWorkersHost[] = "workers";
@@ -625,6 +626,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUITermsHost,
   kChromeUIThumbnailListHost,
   kChromeUITranslateInternalsHost,
+  kChromeUIUsbInternalsHost,
   kChromeUIUserActionsHost,
   kChromeUIVersionHost,
   content::kChromeUIAccessibilityHost,

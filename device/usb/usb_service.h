@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/bind_helpers.h"
@@ -64,6 +65,12 @@ class UsbService : public base::NonThreadSafe {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Methods to add and remove devices for testing purposes. Only a device added
+  // by this method can be removed by RemoveDeviceForTesting().
+  void AddDeviceForTesting(scoped_refptr<UsbDevice> device);
+  void RemoveDeviceForTesting(const std::string& device_guid);
+  void GetTestDevices(std::vector<scoped_refptr<UsbDevice>>* devices);
+
  protected:
   UsbService(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
              scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
@@ -89,6 +96,7 @@ class UsbService : public base::NonThreadSafe {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unordered_map<std::string, scoped_refptr<UsbDevice>> devices_;
+  std::unordered_set<std::string> testing_devices_;
   base::ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbService);
