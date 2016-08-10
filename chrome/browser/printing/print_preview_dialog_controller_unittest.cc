@@ -12,9 +12,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/web_contents_tester.h"
@@ -169,93 +167,6 @@ TEST_F(PrintPreviewDialogControllerUnitTest, ClearInitiatorDetails) {
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   // Verify a new print preview dialog has been created.
   EXPECT_NE(new_preview_dialog, preview_dialog);
-}
-
-// Test that print preview dialogs close on navigation to new pages
-// and when navigating to old pages via fwd/back, but that auto navigation
-// (typed + address bar) to an existing page as occurs in gmail does not cause
-// the dialogs to close.
-TEST_F(PrintPreviewDialogControllerUnitTest, CloseDialogOnNavigation) {
-  // Two similar URLs (same webpage, different URL fragments)
-  GURL tiger_barb("https://www.google.com/#q=tiger+barb");
-  GURL tiger("https://www.google.com/#q=tiger");
-
-  // Set up by opening a new tab and getting web contents
-  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(0, browser()->tab_strip_model()->count());
-  chrome::NewTab(browser());
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-  content::NavigationController& nav_controller = web_contents->GetController();
-
-  // Navigate to first page
-  nav_controller.LoadURL(tiger, content::Referrer(),
-                         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK),
-                         std::string());
-  CommitPendingLoad(&nav_controller);
-
-  // Get the preview dialog
-  PrintPreviewDialogController* dialog_controller =
-      PrintPreviewDialogController::GetInstance();
-  ASSERT_TRUE(dialog_controller);
-  PrintViewManager* manager = PrintViewManager::FromWebContents(web_contents);
-  manager->PrintPreviewNow(false);
-  WebContents* tiger_preview_dialog =
-      dialog_controller->GetOrCreatePreviewDialog(web_contents);
-
-  // New print preview dialog is a constrained window, so the number of tabs is
-  // still 1.
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_NE(web_contents, tiger_preview_dialog);
-
-  // Navigate via link to a similar page.
-  nav_controller.LoadURL(tiger_barb, content::Referrer(),
-                         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK),
-                         std::string());
-  CommitPendingLoad(&nav_controller);
-
-  // Print preview now should return true as the navigation should have closed
-  // |tiger_preview_dialog|
-  EXPECT_TRUE(manager->PrintPreviewNow(false));
-  WebContents* tiger_barb_preview_dialog =
-      dialog_controller->GetOrCreatePreviewDialog(web_contents);
-
-  // Check that new dialog was created
-  ASSERT_TRUE(tiger_barb_preview_dialog);
-  EXPECT_NE(tiger_preview_dialog, tiger_barb_preview_dialog);
-  EXPECT_NE(tiger_barb_preview_dialog, web_contents);
-
-  // Now this returns false as |tiger_barb_preview_dialog| is open.
-  EXPECT_FALSE(manager->PrintPreviewNow(false));
-
-  // Navigate with back button or ALT+LEFT ARROW to a similar page.
-  nav_controller.GoBack();
-  CommitPendingLoad(&nav_controller);
-  EXPECT_TRUE(manager->PrintPreviewNow(false));
-  WebContents* tiger_preview_dialog_2 =
-      dialog_controller->GetOrCreatePreviewDialog(web_contents);
-  ASSERT_TRUE(tiger_preview_dialog_2);
-  EXPECT_NE(tiger_barb_preview_dialog, tiger_preview_dialog_2);
-  EXPECT_NE(tiger_preview_dialog_2, web_contents);
-
-  // Try to simulate Gmail navigation: Navigate to an existing page (via
-  // Forward) but modify the navigation type while pending to look like an
-  // address bar + typed transition (like Gmail auto navigation)
-  nav_controller.GoForward();
-  nav_controller.GetPendingEntry()->SetTransitionType(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
-  CommitPendingLoad(&nav_controller);
-
-  // Print preview should not have changed due to this navigation type so print
-  // preview now should return false and the dialogs should be the same.
-  EXPECT_FALSE(manager->PrintPreviewNow(false));
-  WebContents* tiger_preview_dialog_2b =
-      dialog_controller->GetOrCreatePreviewDialog(web_contents);
-  ASSERT_TRUE(tiger_preview_dialog_2b);
-  EXPECT_EQ(tiger_preview_dialog_2b, tiger_preview_dialog_2);
-  EXPECT_NE(tiger_preview_dialog_2b, web_contents);
 }
 
 }  // namespace printing

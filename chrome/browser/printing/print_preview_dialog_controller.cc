@@ -351,12 +351,8 @@ void PrintPreviewDialogController::OnNavEntryCommitted(
     ui::PageTransition type = details->entry->GetTransitionType();
     content::NavigationType nav_type = details->type;
     if (nav_type == content::NAVIGATION_TYPE_EXISTING_PAGE &&
-        (ui::PageTransitionTypeIncludingQualifiersIs(
-             type,
-             ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) ||
-         ui::PageTransitionTypeIncludingQualifiersIs(type,
-                                                     ui::PAGE_TRANSITION_LINK)))
+        (ui::PageTransitionCoreTypeIs(type, ui::PAGE_TRANSITION_TYPED) ||
+         ui::PageTransitionCoreTypeIs(type, ui::PAGE_TRANSITION_LINK)))
       return;
   }
 
