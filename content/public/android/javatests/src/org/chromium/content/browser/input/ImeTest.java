@@ -1490,7 +1490,12 @@ public class ImeTest extends ContentShellTestBase {
         });
     }
 
-    private <T> T runBlockingOnImeThread(Callable<T> c) throws Exception {
+    /**
+     * Run the {@Callable} on IME thread (or UI thread if not applicable).
+     * @param c The callable
+     * @return The result from running the callable.
+     */
+    protected <T> T runBlockingOnImeThread(Callable<T> c) throws Exception {
         return ImeTestUtils.runBlockingOnHandler(mConnectionFactory.getHandler(), c);
     }
 
