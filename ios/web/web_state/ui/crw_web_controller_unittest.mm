@@ -510,7 +510,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressAlert) {
   [[web_delegate_mock() expect]
       webControllerDidSuppressDialog:web_controller()];
   [web_controller() setShouldSuppressDialogs:YES];
-  EvaluateJavaScriptAsString(@"alert('test')");
+  ExecuteJavaScript(@"alert('test')");
 };
 
 // Tests that window.alert dialog is shown for DIALOG_POLICY_ALLOW.
@@ -531,7 +531,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowAlert) {
             }];
 
   [web_controller() setShouldSuppressDialogs:NO];
-  EvaluateJavaScriptAsString(@"alert('test')");
+  ExecuteJavaScript(@"alert('test')");
 };
 
 // Tests that window.confirm dialog is suppressed for DIALOG_POLICY_SUPPRESS.
@@ -539,7 +539,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressConfirm) {
   [[web_delegate_mock() expect]
       webControllerDidSuppressDialog:web_controller()];
   [web_controller() setShouldSuppressDialogs:YES];
-  EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"confirm('test')"));
+  EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
 };
 
 // Tests that window.confirm dialog is shown for DIALOG_POLICY_ALLOW and
@@ -562,7 +562,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithTrue) {
       }];
 
   [web_controller() setShouldSuppressDialogs:NO];
-  EXPECT_NSEQ(@"true", EvaluateJavaScriptAsString(@"confirm('test')"));
+  EXPECT_NSEQ(@YES, ExecuteJavaScript(@"confirm('test')"));
 }
 
 // Tests that window.confirm dialog is shown for DIALOG_POLICY_ALLOW and
@@ -585,7 +585,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithFalse) {
       }];
 
   [web_controller() setShouldSuppressDialogs:NO];
-  EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"confirm('test')"));
+  EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
 }
 
 // Tests that window.prompt dialog is suppressed for DIALOG_POLICY_SUPPRESS.
@@ -593,7 +593,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressPrompt) {
   [[web_delegate_mock() expect]
       webControllerDidSuppressDialog:web_controller()];
   [web_controller() setShouldSuppressDialogs:YES];
-  EXPECT_NSEQ(@"", EvaluateJavaScriptAsString(@"prompt('Yes?', 'No')"));
+  EXPECT_EQ([NSNull null], ExecuteJavaScript(@"prompt('Yes?', 'No')"));
 }
 
 // Tests that window.prompt dialog is shown for DIALOG_POLICY_ALLOW.
@@ -617,7 +617,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowPrompt) {
             }];
 
   [web_controller() setShouldSuppressDialogs:NO];
-  EXPECT_NSEQ(@"Maybe", EvaluateJavaScriptAsString(@"prompt('Yes?', 'No')"));
+  EXPECT_NSEQ(@"Maybe", ExecuteJavaScript(@"prompt('Yes?', 'No')"));
 }
 
 // Tests that geolocation dialog is suppressed for DIALOG_POLICY_SUPPRESS.
@@ -631,7 +631,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressGeolocation) {
   [[web_delegate_mock() expect]
       webControllerDidSuppressDialog:web_controller()];
   [web_controller() setShouldSuppressDialogs:YES];
-  EvaluateJavaScriptAsString(@"navigator.geolocation.getCurrentPosition()");
+  ExecuteJavaScript(@"navigator.geolocation.getCurrentPosition()");
 }
 
 // Tests that window.open is suppressed for DIALOG_POLICY_SUPPRESS.
@@ -639,7 +639,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressWindowOpen) {
   [[web_delegate_mock() expect]
       webControllerDidSuppressDialog:web_controller()];
   [web_controller() setShouldSuppressDialogs:YES];
-  EvaluateJavaScriptAsString(@"window.open('')");
+  ExecuteJavaScript(@"window.open('')");
 }
 
 // A separate test class, as none of the |CRWWebControllerTest| setup is
@@ -758,8 +758,8 @@ typedef web::WebTestWithWebController CRWWebControllerJSExecutionTest;
 // Tests that a script correctly evaluates to string.
 TEST_F(CRWWebControllerJSExecutionTest, LegacyAPIExecution) {
   LoadHtml(@"<p></p>");
-  EXPECT_NSEQ(@"true", EvaluateJavaScriptAsString(@"true"));
-  EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"false"));
+  EXPECT_NSEQ(@YES, ExecuteJavaScript(@"true"));
+  EXPECT_NSEQ(@NO, ExecuteJavaScript(@"false"));
 }
 
 // Tests that a script correctly evaluates to boolean.
@@ -773,15 +773,15 @@ TEST_F(CRWWebControllerJSExecutionTest, Execution) {
 TEST_F(CRWWebControllerJSExecutionTest, LegacyAPIWindowIdMissmatch) {
   LoadHtml(@"<p></p>");
   // Script is evaluated since windowID is matched.
-  EvaluateJavaScriptAsString(@"window.test1 = '1';");
-  EXPECT_NSEQ(@"1", EvaluateJavaScriptAsString(@"window.test1"));
+  ExecuteJavaScript(@"window.test1 = '1';");
+  EXPECT_NSEQ(@"1", ExecuteJavaScript(@"window.test1"));
 
   // Change windowID.
-  EvaluateJavaScriptAsString(@"__gCrWeb['windowId'] = '';");
+  ExecuteJavaScript(@"__gCrWeb['windowId'] = '';");
 
   // Script is not evaluated because of windowID mismatch.
-  EvaluateJavaScriptAsString(@"window.test2 = '2';");
-  EXPECT_NSEQ(@"", EvaluateJavaScriptAsString(@"window.test2"));
+  ExecuteJavaScript(@"window.test2 = '2';");
+  EXPECT_FALSE(ExecuteJavaScript(@"window.test2"));
 }
 
 // Tests that a script is not executed on windowID mismatch.
@@ -890,11 +890,11 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
   }
   // Executes JavaScript that opens a new window and returns evaluation result
   // as a string.
-  NSString* OpenWindowByDOM() {
+  id OpenWindowByDOM() {
     NSString* const kOpenWindowScript =
         @"var w = window.open('javascript:void(0);', target='_blank');"
          "w.toString();";
-    NSString* windowJSObject = EvaluateJavaScriptAsString(kOpenWindowScript);
+    id windowJSObject = ExecuteJavaScript(kOpenWindowScript);
     WaitForBackgroundTasks();
     return windowJSObject;
   }
@@ -908,7 +908,7 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
 TEST_F(CRWWebControllerWindowOpenTest, NoDelegate) {
   [web_controller() setDelegate:nil];
 
-  EXPECT_NSEQ(@"", OpenWindowByDOM());
+  EXPECT_FALSE(OpenWindowByDOM());
 
   EXPECT_FALSE([delegate_ blockedPopupInfo]);
 }
@@ -942,7 +942,7 @@ TEST_F(CRWWebControllerWindowOpenTest, AllowPopup) {
       }];
 
   ASSERT_FALSE([web_controller() userIsInteracting]);
-  EXPECT_NSEQ(@"", OpenWindowByDOM());
+  EXPECT_FALSE(OpenWindowByDOM());
   base::test::ios::WaitUntilCondition(^bool() {
     return [delegate_ blockedPopupInfo];
   });
@@ -973,7 +973,7 @@ TEST_F(CRWWebControllerWindowOpenTest, DontBlockPopup) {
 // Tests that window.open executed w/o user gesture does not open a new window.
 TEST_F(CRWWebControllerWindowOpenTest, BlockPopup) {
   ASSERT_FALSE([web_controller() userIsInteracting]);
-  EXPECT_NSEQ(@"", OpenWindowByDOM());
+  EXPECT_FALSE(OpenWindowByDOM());
   base::test::ios::WaitUntilCondition(^bool() {
     return [delegate_ blockedPopupInfo];
   });

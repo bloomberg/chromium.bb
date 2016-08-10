@@ -95,7 +95,7 @@ class CredentialManagerJsTest : public web::WebTestWithWebState {
   // Adds handlers for resolving and rejecting the promise returned by
   // executing the code in |promise|.
   void PrepareResolverAndRejecter(NSString* promise) {
-    EvaluateJavaScriptAsString(
+    ExecuteJavaScript(
         [NSString stringWithFormat:@"var resolved = false;             "
                                    @"var rejected = false;             "
                                    @"var resolvedCredential = null;    "
@@ -112,49 +112,46 @@ class CredentialManagerJsTest : public web::WebTestWithWebState {
                                    promise]);
     // Wait until the promise executor has executed.
     WaitForCondition(^bool {
-      return [EvaluateJavaScriptAsString(
+      return [ExecuteJavaScript(
           @"Object.keys(__gCrWeb.credentialManager.resolvers_).length > 0")
-          isEqualToString:@"true"];
+          boolValue];
     });
   }
 
   // Checks that the Credential returned to the resolve handler in JavaScript
   // matches the structure of |test_credential()|.
   void CheckResolvedCredentialMatchesTestCredential() {
-    EXPECT_NSEQ(@"true", EvaluateJavaScriptAsString(@"resolved"));
-    EXPECT_NSEQ(
-        @"PasswordCredential",
-        EvaluateJavaScriptAsString(@"resolvedCredential.constructor.name"));
-    EXPECT_NSEQ(@"bob", EvaluateJavaScriptAsString(@"resolvedCredential.id"));
+    EXPECT_NSEQ(@YES, ExecuteJavaScript(@"resolved"));
+    EXPECT_NSEQ(@"PasswordCredential",
+                ExecuteJavaScript(@"resolvedCredential.constructor.name"));
+    EXPECT_NSEQ(@"bob", ExecuteJavaScript(@"resolvedCredential.id"));
     EXPECT_NSEQ(@"bobiscool",
-                EvaluateJavaScriptAsString(@"resolvedCredential.password_"));
-    EXPECT_NSEQ(@"Bob Boblaw",
-                EvaluateJavaScriptAsString(@"resolvedCredential.name"));
+                ExecuteJavaScript(@"resolvedCredential.password_"));
+    EXPECT_NSEQ(@"Bob Boblaw", ExecuteJavaScript(@"resolvedCredential.name"));
     EXPECT_NSEQ(@"https://bobboblawslawblog.com/bob.jpg",
-                EvaluateJavaScriptAsString(@"resolvedCredential.avatarURL"));
+                ExecuteJavaScript(@"resolvedCredential.avatarURL"));
   }
 
   // Checks that the promise set up by |PrepareResolverAndRejecter| was resolved
   // without a credential.
   void CheckResolvedWithoutCredential() {
-    EXPECT_NSEQ(@"true", EvaluateJavaScriptAsString(@"resolved"));
-    EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"!!resolvedCredential"));
+    EXPECT_NSEQ(@YES, ExecuteJavaScript(@"resolved"));
+    EXPECT_NSEQ(@NO, ExecuteJavaScript(@"!!resolvedCredential"));
   }
 
   // Checks that the promise set up by |PrepareResolverAndRejecter| was rejected
   // with an error with name |error_name| and |message|.
   void CheckRejected(NSString* error_name, NSString* message) {
-    EXPECT_NSEQ(@"true", EvaluateJavaScriptAsString(@"rejected"));
-    EXPECT_NSEQ(error_name, EvaluateJavaScriptAsString(@"rejectedError.name"));
-    EXPECT_NSEQ(message, EvaluateJavaScriptAsString(@"rejectedError.message"));
+    EXPECT_NSEQ(@YES, ExecuteJavaScript(@"rejected"));
+    EXPECT_NSEQ(error_name, ExecuteJavaScript(@"rejectedError.name"));
+    EXPECT_NSEQ(message, ExecuteJavaScript(@"rejectedError.message"));
   }
 
   // Waits until the promise set up by |PrepareResolverAndRejecter| has been
   // either resolved or rejected.
   void WaitUntilPromiseResolvedOrRejected() {
     WaitForCondition(^bool {
-      return [EvaluateJavaScriptAsString(@"resolved || rejected")
-          isEqualToString:@"true"];
+      return [ExecuteJavaScript(@"resolved || rejected") boolValue];
     });
   }
 
@@ -209,13 +206,13 @@ class CredentialManagerJsTest : public web::WebTestWithWebState {
   // Tests that the promise set up by |PrepareResolverAndRejecter| wasn't
   // rejected.
   void CheckNeverRejected() {
-    EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"rejected"));
+    EXPECT_NSEQ(@NO, ExecuteJavaScript(@"rejected"));
   }
 
   // Tests that the promise set up by |PrepareResolverAndRejecter| wasn't
   // resolved.
   void CheckNeverResolved() {
-    EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"resolved"));
+    EXPECT_NSEQ(@NO, ExecuteJavaScript(@"resolved"));
   }
 
   // Returns the JSCredentialManager for testing.
@@ -270,17 +267,17 @@ class CredentialManagerJsTest : public web::WebTestWithWebState {
 TEST_F(CredentialManagerJsTest, RequestIdentifiersDiffer) {
   Inject();
   EXPECT_CALL(observer(), CredentialsRequested(0, _, _, _, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.request()");
+  ExecuteJavaScript(@"navigator.credentials.request()");
   EXPECT_CALL(observer(), SignInFailed(1, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.notifyFailedSignIn()");
+  ExecuteJavaScript(@"navigator.credentials.notifyFailedSignIn()");
   EXPECT_CALL(observer(), SignInFailed(2, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.notifyFailedSignIn()");
+  ExecuteJavaScript(@"navigator.credentials.notifyFailedSignIn()");
   EXPECT_CALL(observer(), SignedIn(3, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.notifySignedIn()");
+  ExecuteJavaScript(@"navigator.credentials.notifySignedIn()");
   EXPECT_CALL(observer(), SignedOut(4, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.notifySignedOut()");
+  ExecuteJavaScript(@"navigator.credentials.notifySignedOut()");
   EXPECT_CALL(observer(), CredentialsRequested(5, _, _, _, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.request()");
+  ExecuteJavaScript(@"navigator.credentials.request()");
 }
 
 // Tests that navigator.credentials.request() creates and forwards the right
@@ -295,32 +292,30 @@ TEST_F(CredentialManagerJsTest, DISABLED_RequestToApp) {
 
   EXPECT_CALL(observer(),
               CredentialsRequested(0, _, false, empty_federations, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.request()");
+  ExecuteJavaScript(@"navigator.credentials.request()");
 
   EXPECT_CALL(observer(),
               CredentialsRequested(1, _, false, empty_federations, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.request({})");
+  ExecuteJavaScript(@"navigator.credentials.request({})");
 
   EXPECT_CALL(observer(),
               CredentialsRequested(2, _, true, empty_federations, _));
-  EvaluateJavaScriptAsString(
-      @"navigator.credentials.request({suppressUI: true})");
+  ExecuteJavaScript(@"navigator.credentials.request({suppressUI: true})");
 
   EXPECT_CALL(observer(),
               CredentialsRequested(3, _, false, nonempty_federations, _));
-  EvaluateJavaScriptAsString(
+  ExecuteJavaScript(
       @"navigator.credentials.request({federations: ['foo', 'bar']})");
 
   EXPECT_CALL(observer(),
               CredentialsRequested(4, _, true, nonempty_federations, _));
-  EvaluateJavaScriptAsString(
-      @"navigator.credentials.request("
-      @"    { suppressUI: true, federations: ['foo', 'bar'] })");
+  ExecuteJavaScript(@"navigator.credentials.request("
+                    @"    { suppressUI: true, federations: ['foo', 'bar'] })");
 
   EXPECT_CALL(observer(),
               CredentialsRequested(5, _, false, empty_federations, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.request("
-                             @"    { suppressUI: false, federations: [] })");
+  ExecuteJavaScript(@"navigator.credentials.request("
+                    @"    { suppressUI: false, federations: [] })");
 }
 
 // Tests that navigator.credentials.notifySignedIn() creates and forwards the
@@ -328,10 +323,10 @@ TEST_F(CredentialManagerJsTest, DISABLED_RequestToApp) {
 TEST_F(CredentialManagerJsTest, NotifySignedInToApp) {
   Inject();
   EXPECT_CALL(observer(), SignedIn(0, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.notifySignedIn()");
+  ExecuteJavaScript(@"navigator.credentials.notifySignedIn()");
 
   EXPECT_CALL(observer(), SignedIn(1, _, IsEqualTo(test_credential())));
-  EvaluateJavaScriptAsString(
+  ExecuteJavaScript(
       [NSString stringWithFormat:@"navigator.credentials.notifySignedIn(%@)",
                                  test_credential_js()]);
 }
@@ -341,7 +336,7 @@ TEST_F(CredentialManagerJsTest, NotifySignedInToApp) {
 TEST_F(CredentialManagerJsTest, NotifySignedOutToApp) {
   Inject();
   EXPECT_CALL(observer(), SignedOut(0, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.notifySignedOut()");
+  ExecuteJavaScript(@"navigator.credentials.notifySignedOut()");
 }
 
 // Tests that navigator.credentials.notifyFailedSignIn() creates and forwards
@@ -349,10 +344,10 @@ TEST_F(CredentialManagerJsTest, NotifySignedOutToApp) {
 TEST_F(CredentialManagerJsTest, NotifyFailedSignInToApp) {
   Inject();
   EXPECT_CALL(observer(), SignInFailed(0, _));
-  EvaluateJavaScriptAsString(@"navigator.credentials.notifyFailedSignIn()");
+  ExecuteJavaScript(@"navigator.credentials.notifyFailedSignIn()");
 
   EXPECT_CALL(observer(), SignInFailed(1, _, IsEqualTo(test_credential())));
-  EvaluateJavaScriptAsString([NSString
+  ExecuteJavaScript([NSString
       stringWithFormat:@"navigator.credentials.notifyFailedSignIn(%@)",
                        test_credential_js()]);
 }

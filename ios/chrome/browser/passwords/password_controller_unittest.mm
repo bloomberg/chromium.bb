@@ -194,7 +194,7 @@ class PasswordControllerTest : public web::WebTestWithWebState {
     NSString* kFormNamingScript =
         @"__gCrWeb.common.getFormIdentifier("
          "    document.querySelectorAll('form')[%d]);";
-    return base::SysNSStringToUTF8(EvaluateJavaScriptAsString(
+    return base::SysNSStringToUTF8(ExecuteJavaScript(
         [NSString stringWithFormat:kFormNamingScript, form_number]));
   }
 
@@ -649,7 +649,7 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
                                     << " and number_of_forms_to_submit="
                                     << data.number_of_forms_to_submit);
     LoadHtml(data.html_string);
-    EvaluateJavaScriptAsString(data.java_script);
+    ExecuteJavaScript(data.java_script);
     __block BOOL block_was_called = NO;
     id completion_handler = ^(BOOL found, const PasswordForm& form) {
       block_was_called = YES;
@@ -767,8 +767,7 @@ struct FillPasswordFormTestData {
 TEST_F(PasswordControllerTest, FillPasswordForm) {
   LoadHtml(kHtmlWithMultiplePasswordForms);
 
-  EXPECT_NSEQ(@"true",
-              EvaluateJavaScriptAsString(@"__gCrWeb.hasPasswordField()"));
+  EXPECT_NSEQ(@YES, ExecuteJavaScript(@"__gCrWeb.hasPasswordField()"));
 
   const std::string base_url = BaseUrl();
   // clang-format off
@@ -866,7 +865,7 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
   // clang-format on
 
   for (const FillPasswordFormTestData& data : test_data) {
-    EvaluateJavaScriptAsString(kClearInputFieldsScript);
+    ExecuteJavaScript(kClearInputFieldsScript);
 
     PasswordFormFillData form_data;
     SetPasswordFormFillData(form_data, data.origin, data.action,
@@ -884,8 +883,7 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
       return block_was_called;
     });
 
-    NSString* result =
-        EvaluateJavaScriptAsString(kInputFieldValueVerificationScript);
+    id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
     EXPECT_NSEQ(data.expected_result, result);
   }
 }
@@ -908,8 +906,7 @@ TEST_F(PasswordControllerTest, FindAndFillOnePasswordForm) {
     return call_counter == 1;
   });
   EXPECT_EQ(1, success_counter);
-  NSString* result =
-      EvaluateJavaScriptAsString(kInputFieldValueVerificationScript);
+  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
   EXPECT_NSEQ(@"un=john.doe@gmail.com;pw=super!secret;", result);
 }
 
@@ -941,8 +938,7 @@ TEST_F(PasswordControllerTest, FindAndFillMultiplePasswordForms) {
     return call_counter == 3;
   });
   EXPECT_EQ(2, success_counter);
-  NSString* result =
-      EvaluateJavaScriptAsString(kInputFieldValueVerificationScript);
+  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
   EXPECT_NSEQ(@"u2=john.doe@gmail.com;p2=super!secret;"
                "u3=john.doe@gmail.com;p3=super!secret;",
               result);
@@ -950,8 +946,7 @@ TEST_F(PasswordControllerTest, FindAndFillMultiplePasswordForms) {
 
 BOOL PasswordControllerTest::BasicFormFill(NSString* html) {
   LoadHtml(html);
-  EXPECT_NSEQ(@"true",
-              EvaluateJavaScriptAsString(@"__gCrWeb.hasPasswordField()"));
+  EXPECT_NSEQ(@YES, ExecuteJavaScript(@"__gCrWeb.hasPasswordField()"));
   const std::string base_url = BaseUrl();
   PasswordFormFillData form_data;
   SetPasswordFormFillData(form_data, base_url, base_url, "u0", "test_user",
@@ -1037,7 +1032,7 @@ struct SuggestionTestData {
 TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   LoadHtml(kHtmlWithPasswordForm);
   const std::string base_url = BaseUrl();
-  EvaluateJavaScriptAsString(kUsernameAndPasswordTestPreparationScript);
+  ExecuteJavaScript(kUsernameAndPasswordTestPreparationScript);
 
   // Initialize |form_data| with test data and an indicator that autofill
   // should not be performed while the user is entering the username so that
@@ -1061,7 +1056,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
 
   // Verify that the form has not been autofilled.
   EXPECT_NSEQ(@"[]=, onkeyup=false, onchange=false",
-              EvaluateJavaScriptAsString(kUsernamePasswordVerificationScript));
+              ExecuteJavaScript(kUsernamePasswordVerificationScript));
 
   // clang-format off
   SuggestionTestData test_data[] = {
@@ -1134,19 +1129,19 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
                  << "for description=" << data.description
                  << " and eval_scripts=" << data.eval_scripts);
     // Prepare the test.
-    EvaluateJavaScriptAsString(kUsernameAndPasswordTestPreparationScript);
+    ExecuteJavaScript(kUsernameAndPasswordTestPreparationScript);
 
     for (NSString* script in data.eval_scripts) {
       // Trigger events.
-      EvaluateJavaScriptAsString(script);
+      ExecuteJavaScript(script);
 
       // Pump the run loop so that the host can respond.
       WaitForBackgroundTasks();
     }
 
     EXPECT_NSEQ(data.expected_suggestions, GetSortedSuggestionValues());
-    EXPECT_NSEQ(data.expected_result, EvaluateJavaScriptAsString(
-                                          kUsernamePasswordVerificationScript));
+    EXPECT_NSEQ(data.expected_result,
+                ExecuteJavaScript(kUsernamePasswordVerificationScript));
     // Clear all suggestions.
     [suggestionController_ setSuggestions:nil];
   }
@@ -1156,7 +1151,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
 TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
   LoadHtml(kHtmlWithPasswordForm);
   const std::string base_url = BaseUrl();
-  EvaluateJavaScriptAsString(kUsernameAndPasswordTestPreparationScript);
+  ExecuteJavaScript(kUsernameAndPasswordTestPreparationScript);
 
   // Initialize |form_data| with test data and an indicator that autofill
   // should not be performed while the user is entering the username so that
@@ -1179,7 +1174,7 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
 
   // Verify that the form has not been autofilled.
   EXPECT_NSEQ(@"[]=, onkeyup=false, onchange=false",
-              EvaluateJavaScriptAsString(kUsernamePasswordVerificationScript));
+              ExecuteJavaScript(kUsernamePasswordVerificationScript));
 
   // Tell PasswordController that a suggestion was selected. It should fill
   // out the password form with the corresponding credentials.

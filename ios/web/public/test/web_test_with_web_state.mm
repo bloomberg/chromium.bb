@@ -188,7 +188,7 @@ const web::WebState* WebTestWithWebState::web_state() const {
 }
 
 bool WebTestWithWebState::ResetPageIfNavigationStalled(NSString* load_check) {
-  NSString* inner_html = EvaluateJavaScriptAsString(
+  id inner_html = ExecuteJavaScript(
       @"(document && document.body && document.body.innerHTML) || 'undefined'");
   if ([inner_html rangeOfString:load_check].location == NSNotFound) {
     web_state_->SetWebUsageEnabled(false);

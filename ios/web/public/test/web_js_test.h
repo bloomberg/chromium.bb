@@ -61,14 +61,13 @@ class WebJsTest : public WebTestT {
 template <class WebTestT>
 void WebJsTest<WebTestT>::Inject() {
   // Main web injection should have occured.
-  ASSERT_NSEQ(@"object",
-              WebTestT::EvaluateJavaScriptAsString(@"typeof __gCrWeb"));
+  ASSERT_NSEQ(@"object", WebTestT::ExecuteJavaScript(@"typeof __gCrWeb"));
 
   for (NSString* java_script_path in java_script_paths_.get()) {
     NSString* path =
         [base::mac::FrameworkBundle() pathForResource:java_script_path
                                                ofType:@"js"];
-    WebTestT::EvaluateJavaScriptAsString([NSString
+    WebTestT::ExecuteJavaScript([NSString
         stringWithContentsOfFile:path
                         encoding:NSUTF8StringEncoding
                            error:nil]);
