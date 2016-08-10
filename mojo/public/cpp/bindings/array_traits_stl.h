@@ -57,6 +57,30 @@ struct ArrayTraits<std::vector<T>> {
   }
 };
 
+// This ArrayTraits specialization is used only for serialization.
+template <typename T>
+struct ArrayTraits<std::set<T>> {
+  using Element = T;
+  using ConstIterator = typename std::set<T>::const_iterator;
+
+  static bool IsNull(const std::set<T>& input) {
+    // std::set<> is always converted to non-null mojom array.
+    return false;
+  }
+
+  static size_t GetSize(const std::set<T>& input) { return input.size(); }
+
+  static ConstIterator GetBegin(const std::set<T>& input) {
+    return input.begin();
+  }
+  static void AdvanceIterator(ConstIterator& iterator) {
+    ++iterator;
+  }
+  static const T& GetValue(ConstIterator& iterator) {
+    return *iterator;
+  }
+};
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_STL_H_

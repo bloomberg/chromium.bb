@@ -274,6 +274,8 @@ TEST_F(StructTraitsTest, EchoStructWithTraits) {
   input.set_uint64(42);
   input.set_string("hello world!");
   input.get_mutable_string_array().assign({"hello", "world!"});
+  input.get_mutable_string_set().insert("hello");
+  input.get_mutable_string_set().insert("world!");
   input.get_mutable_struct().value = 42;
   input.get_mutable_struct_array().resize(2);
   input.get_mutable_struct_array()[0].value = 1;
@@ -408,7 +410,9 @@ TEST_F(StructTraitsTest, SerializeStructWithTraits) {
   input.set_uint32(7);
   input.set_uint64(42);
   input.set_string("hello world!");
-  input.get_mutable_string_array().assign({"hello", "world!"});
+  input.get_mutable_string_array().assign({ "hello", "world!" });
+  input.get_mutable_string_set().insert("hello");
+  input.get_mutable_string_set().insert("world!");
   input.get_mutable_struct().value = 42;
   input.get_mutable_struct_array().resize(2);
   input.get_mutable_struct_array()[0].value = 1;
@@ -426,6 +430,7 @@ TEST_F(StructTraitsTest, SerializeStructWithTraits) {
   EXPECT_EQ(input.get_uint64(), output.get_uint64());
   EXPECT_EQ(input.get_string(), output.get_string());
   EXPECT_EQ(input.get_string_array(), output.get_string_array());
+  EXPECT_EQ(input.get_string_set(), output.get_string_set());
   EXPECT_EQ(input.get_struct(), output.get_struct());
   EXPECT_EQ(input.get_struct_array(), output.get_struct_array());
   EXPECT_EQ(input.get_struct_map(), output.get_struct_map());

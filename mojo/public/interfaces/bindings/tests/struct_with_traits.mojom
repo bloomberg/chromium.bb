@@ -23,6 +23,7 @@ struct StructWithTraits {
   string f_string;
   string f_string2;
   array<string> f_string_array;
+  array<string> f_string_set;
   NestedStructWithTraits f_struct;
   array<NestedStructWithTraits> f_struct_array;
   map<string, NestedStructWithTraits> f_struct_map;

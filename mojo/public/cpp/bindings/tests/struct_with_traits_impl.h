@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -61,6 +62,11 @@ class StructWithTraitsImpl {
   }
   std::vector<std::string>& get_mutable_string_array() { return string_array_; }
 
+  const std::set<std::string>& get_string_set() const {
+    return string_set_;
+  }
+  std::set<std::string>& get_mutable_string_set() { return string_set_; }
+
   const NestedStructWithTraitsImpl& get_struct() const { return struct_; }
   NestedStructWithTraitsImpl& get_mutable_struct() { return struct_; }
 
@@ -86,6 +92,7 @@ class StructWithTraitsImpl {
   uint64_t uint64_ = 0;
   std::string string_;
   std::vector<std::string> string_array_;
+  std::set<std::string> string_set_;
   NestedStructWithTraitsImpl struct_;
   std::vector<NestedStructWithTraitsImpl> struct_array_;
   std::map<std::string, NestedStructWithTraitsImpl> struct_map_;

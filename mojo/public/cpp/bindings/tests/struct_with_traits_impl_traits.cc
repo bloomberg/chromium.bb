@@ -103,6 +103,16 @@ bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
   if (!data.ReadFStringArray(&out->get_mutable_string_array()))
     return false;
 
+  // We can't deserialize as a std::set, so we have to manually copy from the
+  // data view.
+  ArrayDataView<StringDataView> string_set_data_view;
+  data.GetFStringSetDataView(&string_set_data_view);
+  for (size_t i = 0; i < string_set_data_view.size(); ++i) {
+    std::string value;
+    string_set_data_view.Read(i, &value);
+    out->get_mutable_string_set().insert(value);
+  }
+
   if (!data.ReadFStruct(&out->get_mutable_struct()))
     return false;
 

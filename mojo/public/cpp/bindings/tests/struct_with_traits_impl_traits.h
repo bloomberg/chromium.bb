@@ -76,6 +76,11 @@ struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
     return value.get_string_array();
   }
 
+  static const std::set<std::string>& f_string_set(
+      const test::StructWithTraitsImpl& value) {
+    return value.get_string_set();
+  }
+
   static const test::NestedStructWithTraitsImpl& f_struct(
       const test::StructWithTraitsImpl& value) {
     return value.get_struct();
