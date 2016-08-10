@@ -18,9 +18,9 @@ namespace dom_distiller {
 
 class DistilledPagePrefs;
 
-// An interface for a dom_distiller ViewRequestDelegate that distills a URL and
-// calls the given callback with the distilled HTML string and the images it
-// contains.
+// A very simple and naive implementation of the dom_distiller
+// ViewRequestDelegate: From an URL it builds an HTML string and notifies when
+// finished.
 class DistillerViewer : public DomDistillerRequestViewBase {
  public:
   typedef struct {
@@ -35,26 +35,10 @@ class DistillerViewer : public DomDistillerRequestViewBase {
       DistillationFinishedCallback;
 
   DistillerViewer(dom_distiller::DomDistillerService* distillerService,
-                  PrefService* prefs)
-      : DomDistillerRequestViewBase(new DistilledPagePrefs(prefs)) {}
-  ~DistillerViewer() override {}
-
-  void OnArticleReady(
-      const dom_distiller::DistilledArticleProto* article_proto) override = 0;
-
-  void SendJavaScript(const std::string& buffer) override = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(DistillerViewer);
-};
-
-// A very simple and naive implementation of the DistillerViewer.
-class DistillerViewerImpl : public DistillerViewer {
- public:
-  DistillerViewerImpl(dom_distiller::DomDistillerService* distillerService,
-                      PrefService* prefs,
-                      const GURL& url,
-                      const DistillationFinishedCallback& callback);
-  ~DistillerViewerImpl() override;
+                  PrefService* prefs,
+                  const GURL& url,
+                  const DistillationFinishedCallback& callback);
+  ~DistillerViewer() override;
 
   void OnArticleReady(
       const dom_distiller::DistilledArticleProto* article_proto) override;
@@ -69,7 +53,7 @@ class DistillerViewerImpl : public DistillerViewer {
   // Callback to run once distillation is complete.
   const DistillationFinishedCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(DistillerViewerImpl);
+  DISALLOW_COPY_AND_ASSIGN(DistillerViewer);
 };
 
 }  // namespace dom_distiller

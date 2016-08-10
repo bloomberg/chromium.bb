@@ -55,9 +55,7 @@ void URLDownloader::OfflineURLExists(const GURL& url,
 
 void URLDownloader::RemoveOfflineURL(const GURL& url) {
   // Remove all download tasks for this url as it would be pointless work.
-  tasks_.erase(
-      std::remove(tasks_.begin(), tasks_.end(), std::make_pair(DOWNLOAD, url)),
-      tasks_.end());
+  std::remove(tasks_.begin(), tasks_.end(), std::make_pair(DOWNLOAD, url));
   tasks_.push_back(std::make_pair(DELETE, url));
   HandleNextTask();
 }
@@ -114,8 +112,7 @@ void URLDownloader::DownloadURL(GURL url, bool offlineURLExists) {
     DownloadCompletionHandler(url, false);
     return;
   }
-
-  distiller_.reset(new dom_distiller::DistillerViewerImpl(
+  distiller_.reset(new dom_distiller::DistillerViewer(
       distiller_service_, pref_service_, url,
       base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this))));
 }

@@ -17,12 +17,14 @@
 
 namespace dom_distiller {
 
-DistillerViewerImpl::DistillerViewerImpl(
+DistillerViewer::DistillerViewer(
     dom_distiller::DomDistillerService* distillerService,
     PrefService* prefs,
     const GURL& url,
     const DistillationFinishedCallback& callback)
-    : DistillerViewer(distillerService, prefs), url_(url), callback_(callback) {
+    : DomDistillerRequestViewBase(new DistilledPagePrefs(prefs)),
+      url_(url),
+      callback_(callback) {
   DCHECK(distillerService);
   DCHECK(url.is_valid());
 
@@ -32,9 +34,10 @@ DistillerViewerImpl::DistillerViewerImpl(
   TakeViewerHandle(std::move(viewer_handle));
 }
 
-DistillerViewerImpl::~DistillerViewerImpl() {}
+DistillerViewer::~DistillerViewer() {
+}
 
-void DistillerViewerImpl::OnArticleReady(
+void DistillerViewer::OnArticleReady(
     const dom_distiller::DistilledArticleProto* article_proto) {
   DomDistillerRequestViewBase::OnArticleReady(article_proto);
 
@@ -54,7 +57,7 @@ void DistillerViewerImpl::OnArticleReady(
   callback_.Run(url_, html_and_script, images);
 }
 
-void DistillerViewerImpl::SendJavaScript(const std::string& buffer) {
+void DistillerViewer::SendJavaScript(const std::string& buffer) {
   js_buffer_ += buffer;
 }
 
