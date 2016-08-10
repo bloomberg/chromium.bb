@@ -175,7 +175,7 @@ void RecordErrorMetrics(int error_message) {
 
 void RecordHotwordEnabledMetric(HotwordService *service, Profile* profile) {
   HotwordEnabled enabled_state = DISABLED;
-  auto prefs = profile->GetPrefs();
+  auto* prefs = profile->GetPrefs();
   if (!prefs->HasPrefPath(prefs::kHotwordSearchEnabled) &&
       !prefs->HasPrefPath(prefs::kHotwordAlwaysOnSearchEnabled)) {
     enabled_state = UNSET;
