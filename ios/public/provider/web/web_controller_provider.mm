@@ -37,6 +37,13 @@ void WebControllerProvider::InjectScript(const std::string& script,
     completion(nil, nil);
 }
 
+void WebControllerProvider::InjectScript(
+    const std::string& script,
+    web::JavaScriptResultBlock completion) {
+  if (completion)
+    completion(nil, nil);
+}
+
 WebControllerProviderFactory::WebControllerProviderFactory() {
 }
 
