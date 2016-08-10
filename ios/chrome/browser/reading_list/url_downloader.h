@@ -28,6 +28,8 @@ class DomDistillerService;
 // hashing to create unique file names. When a deletion is requested, all
 // previous downloads for that URL are cancelled as they would be deleted.
 class URLDownloader {
+  friend class MockURLDownloader;
+
  public:
   // A completion callback that takes a GURL and a bool indicating
   // success and returns void.
@@ -86,7 +88,7 @@ class URLDownloader {
   // Saves |html| to disk in the correct location for |url|; returns success.
   bool SaveHTMLForURL(std::string html, const GURL& url);
   // Downloads |url|, depending on |offlineURLExists| state.
-  void DownloadURL(GURL url, bool offlineURLExists);
+  virtual void DownloadURL(GURL url, bool offlineURLExists);
   // Saves distilled html to disk, including saving images and main file.
   bool SaveDistilledHTML(
       const GURL& url,
