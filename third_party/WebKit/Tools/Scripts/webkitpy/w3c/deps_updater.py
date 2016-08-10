@@ -342,9 +342,10 @@ class DepsUpdater(object):
         self.print_('## Adding test expectations lines to LayoutTests/TestExpectations.')
         script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
         self.run([self.host.executable, script_path])
-        message = '\'Modified TestExpectations for newly imported tests.\''
+        message = '\'Modifies TestExpectations and/or downloads new baselines for tests .\''
         self.check_run(['git', 'commit', '-a', '-m', message])
-        self.check_run(['git', 'cl', 'upload', '-m', message])
+        self.check_run(['git', 'cl', 'upload', '-m', message,
+                        '--auth-refresh-token-json', self.auth_refresh_token_json])
 
     def has_failing_results(self):
         while True:
