@@ -27,8 +27,19 @@ void MediaCapsImpl::SetSupportedHdmiSinkCodecs(
       });
 }
 
+void MediaCapsImpl::ScreenResolutionChanged(unsigned width, unsigned height) {
+  screen_resolution_ = gfx::Size(width, height);
+
+  observers_.ForAllPtrs(
+      [width, height](mojom::MediaCapsObserver* observer) {
+        observer->ScreenResolutionChanged(width, height);
+      });
+}
+
 void MediaCapsImpl::AddObserver(mojom::MediaCapsObserverPtr observer) {
   observer->SupportedHdmiSinkCodecsChanged(supported_codecs_bitmask_);
+  observer->ScreenResolutionChanged(screen_resolution_.width(),
+                                    screen_resolution_.height());
   observers_.AddPtr(std::move(observer));
 }
 

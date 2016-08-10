@@ -50,6 +50,7 @@ source_set("base") {
     "//crypto",
     "//crypto:platform",
     "//media",
+    "//ui/gfx/geometry",
   ]
 }
 

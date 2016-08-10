@@ -4,34 +4,44 @@
 
 #include "chromecast/media/base/media_caps.h"
 
+namespace chromecast {
 namespace media {
 
-namespace {
-unsigned int g_hdmi_codecs = 0;
-}  // namespace
+unsigned int MediaCapabilities::g_hdmi_codecs = 0;
+gfx::Size MediaCapabilities::g_screen_resolution(0, 0);
 
-void SetHdmiSinkCodecs(unsigned int codecs_mask) {
+void MediaCapabilities::SetHdmiSinkCodecs(unsigned int codecs_mask) {
   g_hdmi_codecs = codecs_mask;
 }
 
-bool HdmiSinkSupportsAC3() {
+bool MediaCapabilities::HdmiSinkSupportsAC3() {
   return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecAc3;
 }
 
-bool HdmiSinkSupportsDTS() {
+bool MediaCapabilities::HdmiSinkSupportsDTS() {
   return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecDts;
 }
 
-bool HdmiSinkSupportsDTSHD() {
+bool MediaCapabilities::HdmiSinkSupportsDTSHD() {
   return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecDtsHd;
 }
 
-bool HdmiSinkSupportsEAC3() {
+bool MediaCapabilities::HdmiSinkSupportsEAC3() {
   return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecEac3;
 }
 
-bool HdmiSinkSupportsPcmSurroundSound() {
+bool MediaCapabilities::HdmiSinkSupportsPcmSurroundSound() {
   return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecPcmSurroundSound;
 }
 
+void MediaCapabilities::ScreenResolutionChanged(const gfx::Size& res) {
+  VLOG(1) << __FUNCTION__ << " resolution=" << res.ToString();
+  g_screen_resolution = res;
+}
+
+gfx::Size MediaCapabilities::GetScreenResolution() {
+  return g_screen_resolution;
+}
+
 }  // namespace media
+}  // namespace chromecast

@@ -9,6 +9,7 @@
 #include "chromecast/common/media/media_caps.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chromecast {
 namespace media {
@@ -21,12 +22,14 @@ class MediaCapsImpl : public mojom::MediaCaps {
   void AddBinding(mojom::MediaCapsRequest request);
 
   void SetSupportedHdmiSinkCodecs(unsigned int supported_codecs_bitmask);
+  void ScreenResolutionChanged(unsigned width, unsigned height);
 
  private:
   // chromecast::mojom::MediaCaps implementation.
   void AddObserver(mojom::MediaCapsObserverPtr observer) override;
 
   unsigned int supported_codecs_bitmask_;
+  gfx::Size screen_resolution_;
   mojo::InterfacePtrSet<mojom::MediaCapsObserver> observers_;
   mojo::BindingSet<mojom::MediaCaps> bindings_;
 

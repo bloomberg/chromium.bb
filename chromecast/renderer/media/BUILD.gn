@@ -15,6 +15,7 @@ source_set("media") {
   deps = [
     "//chromecast/common/media:interfaces",
     "//chromecast/media/base",
+    "//ui/gfx/geometry",
   ]
 
   if (enable_cma) {
@@ -43,7 +44,6 @@ source_set("media") {
       "//gpu/command_buffer/common",
       "//ipc",
       "//media",
-      "//ui/gfx/geometry",
     ]
   }
 }

@@ -16,7 +16,12 @@ MediaCapsObserverImpl::~MediaCapsObserverImpl() = default;
 
 void MediaCapsObserverImpl::SupportedHdmiSinkCodecsChanged(
     uint32_t codec_support_bitmask) {
-  ::media::SetHdmiSinkCodecs(codec_support_bitmask);
+  MediaCapabilities::SetHdmiSinkCodecs(codec_support_bitmask);
+}
+
+void MediaCapsObserverImpl::ScreenResolutionChanged(uint32_t width,
+                                                    uint32_t height) {
+  MediaCapabilities::ScreenResolutionChanged(gfx::Size(width, height));
 }
 
 }  // namespace media

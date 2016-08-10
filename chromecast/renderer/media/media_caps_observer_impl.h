@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chromecast/common/media/media_caps.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chromecast {
 namespace media {
@@ -20,6 +21,7 @@ class MediaCapsObserverImpl : public mojom::MediaCapsObserver {
  private:
   void SupportedHdmiSinkCodecsChanged(
       uint32_t supported_codec_bitmask) override;
+  void ScreenResolutionChanged(uint32_t width, uint32_t height) override;
 
   mojo::Binding<mojom::MediaCapsObserver> binding_;
 

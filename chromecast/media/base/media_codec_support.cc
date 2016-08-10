@@ -27,13 +27,13 @@ bool IsCodecSupported(const std::string& codec) {
     return false;
 
   if (codec == "aac51") {
-    return ::media::HdmiSinkSupportsPcmSurroundSound();
+    return MediaCapabilities::HdmiSinkSupportsPcmSurroundSound();
   }
   if (codec == "ac-3" || codec == "mp4a.a5" || codec == "mp4a.A5") {
-    return ::media::HdmiSinkSupportsAC3();
+    return MediaCapabilities::HdmiSinkSupportsAC3();
   }
   if (codec == "ec-3" || codec == "mp4a.a6" || codec == "mp4a.A6") {
-    return ::media::HdmiSinkSupportsEAC3();
+    return MediaCapabilities::HdmiSinkSupportsEAC3();
   }
 
   // This function is invoked from MimeUtil::AreSupportedCodecs to check if a
