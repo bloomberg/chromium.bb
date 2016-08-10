@@ -85,13 +85,14 @@ void AddToHomescreenDialogHelper::Destroy(JNIEnv* env,
   delete this;
 }
 
-SkBitmap AddToHomescreenDialogHelper::FinalizeLauncherIcon(
-      const SkBitmap& bitmap,
-      const GURL& url,
-      bool* is_generated) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+SkBitmap AddToHomescreenDialogHelper::FinalizeLauncherIconInBackground(
+    const SkBitmap& bitmap,
+    const GURL& url,
+    bool* is_generated) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
-  return ShortcutHelper::FinalizeLauncherIcon(bitmap, url, is_generated);
+  return ShortcutHelper::FinalizeLauncherIconInBackground(bitmap, url,
+                                                          is_generated);
 }
 
 void AddToHomescreenDialogHelper::AddShortcut(

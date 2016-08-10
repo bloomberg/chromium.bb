@@ -102,9 +102,10 @@ class ShortcutHelper {
   // Returns the given icon, modified to match the launcher requirements.
   // This method may generate an entirely new icon; if this is the case,
   // |is_generated| will be set to |true|.
-  static SkBitmap FinalizeLauncherIcon(const SkBitmap& icon,
-                                       const GURL& url,
-                                       bool* is_generated);
+  // Must be called on a background worker thread.
+  static SkBitmap FinalizeLauncherIconInBackground(const SkBitmap& icon,
+                                                   const GURL& url,
+                                                   bool* is_generated);
 
   // Returns true if WebAPKs are enabled and there is a WebAPK installed which
   // can handle |url|.

@@ -236,10 +236,11 @@ void ShortcutHelper::StoreWebappSplashImage(
 }
 
 // static
-SkBitmap ShortcutHelper::FinalizeLauncherIcon(const SkBitmap& bitmap,
-                                              const GURL& url,
-                                              bool* is_generated) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
+    const SkBitmap& bitmap,
+    const GURL& url,
+    bool* is_generated) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> result;

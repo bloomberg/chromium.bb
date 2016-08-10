@@ -47,9 +47,9 @@ class AddToHomescreenDialogHelper :
   // AddToHomescreenDataFetcher::Observer
   void OnUserTitleAvailable(const base::string16& user_title) override;
   void OnDataAvailable(const ShortcutInfo& info, const SkBitmap& icon) override;
-  SkBitmap FinalizeLauncherIcon(const SkBitmap& icon,
-                                const GURL& url,
-                                bool* is_generated) override;
+  SkBitmap FinalizeLauncherIconInBackground(const SkBitmap& icon,
+                                            const GURL& url,
+                                            bool* is_generated) override;
 
  private:
   virtual ~AddToHomescreenDialogHelper();
