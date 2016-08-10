@@ -18,10 +18,16 @@ class CORE_EXPORT NGFragment final : public NGFragmentBase {
   NGFragment(LayoutUnit inlineSize,
              LayoutUnit blockSize,
              LayoutUnit inlineOverflow,
-             LayoutUnit blockOverflow)
-      : NGFragmentBase(inlineSize, blockSize, inlineOverflow, blockOverflow) {
-    m_isText = false;
-  }
+             LayoutUnit blockOverflow,
+             NGWritingMode writingMode,
+             NGDirection direction)
+      : NGFragmentBase(inlineSize,
+                       blockSize,
+                       inlineOverflow,
+                       blockOverflow,
+                       writingMode,
+                       direction,
+                       FragmentBox) {}
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
     visitor->trace(m_children);
@@ -34,7 +40,6 @@ class CORE_EXPORT NGFragment final : public NGFragmentBase {
 
  private:
   HeapVector<Member<const NGFragmentBase>> m_children;
-  bool m_isText;
 };
 
 }  // namespace blink

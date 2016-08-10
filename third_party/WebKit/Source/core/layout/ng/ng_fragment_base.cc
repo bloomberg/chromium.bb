@@ -11,20 +11,30 @@ namespace blink {
 NGFragmentBase::NGFragmentBase(LayoutUnit inlineSize,
                                LayoutUnit blockSize,
                                LayoutUnit inlineOverflow,
-                               LayoutUnit blockOverflow)
+                               LayoutUnit blockOverflow,
+                               NGWritingMode writingMode,
+                               NGDirection direction,
+                               NGFragmentType type)
     : m_inlineSize(inlineSize),
       m_blockSize(blockSize),
       m_inlineOverflow(inlineOverflow),
-      m_blockOverflow(blockOverflow) {}
+      m_blockOverflow(blockOverflow),
+      m_type(type),
+      m_writingMode(writingMode),
+      m_direction(direction),
+      m_hasBeenPlaced(false) {}
 
 void NGFragmentBase::setOffset(LayoutUnit inlineOffset,
                                LayoutUnit blockOffset) {
+  // setOffset should only be called once.
+  DCHECK(!m_hasBeenPlaced);
   m_inlineOffset = inlineOffset;
   m_blockOffset = blockOffset;
+  m_hasBeenPlaced = true;
 }
 
 DEFINE_TRACE(NGFragmentBase) {
-  if (m_isText)
+  if (type() == FragmentText)
     static_cast<NGText*>(this)->traceAfterDispatch(visitor);
   else
     static_cast<NGFragment*>(this)->traceAfterDispatch(visitor);

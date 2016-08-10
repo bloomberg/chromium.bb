@@ -14,6 +14,26 @@ namespace blink {
 
 class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
  public:
+  enum NGFragmentType { FragmentBox = 0, FragmentText = 1 };
+
+  // TODO(eae): We might want to re-use WritingMode and Direction from style.
+  enum NGWritingMode {
+    HorizontalTopBottom = 0,
+    VerticalRightLeft = 1,
+    VerticalLeftRight = 2,
+    SidewaysRightLeft = 3,
+    SidewaysLeftRight = 4
+  };
+  enum NGDirection { LeftToRight = 0, RightToLeft = 1 };
+
+  NGFragmentType type() const { return static_cast<NGFragmentType>(m_type); }
+  NGWritingMode writingMode() const {
+    return static_cast<NGWritingMode>(m_writingMode);
+  }
+  NGDirection direction() const {
+    return static_cast<NGDirection>(m_direction);
+  }
+
   // Returns the border-box size.
   LayoutUnit inlineSize() const { return m_inlineSize; }
   LayoutUnit blockSize() const { return m_blockSize; }
@@ -36,7 +56,10 @@ class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
   NGFragmentBase(LayoutUnit inlineSize,
                  LayoutUnit blockSize,
                  LayoutUnit inlineOverflow,
-                 LayoutUnit blockOverflow);
+                 LayoutUnit blockOverflow,
+                 NGWritingMode,
+                 NGDirection,
+                 NGFragmentType);
 
   LayoutUnit m_inlineSize;
   LayoutUnit m_blockSize;
@@ -44,7 +67,11 @@ class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
   LayoutUnit m_blockOverflow;
   LayoutUnit m_inlineOffset;
   LayoutUnit m_blockOffset;
-  bool m_isText;
+
+  unsigned m_type : 1;
+  unsigned m_writingMode : 3;
+  unsigned m_direction : 1;
+  unsigned m_hasBeenPlaced : 1;
 };
 
 }  // namespace blink

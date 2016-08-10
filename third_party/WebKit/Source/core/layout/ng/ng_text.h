@@ -17,10 +17,16 @@ class CORE_EXPORT NGText final : public NGFragmentBase {
   NGText(LayoutUnit inlineSize,
          LayoutUnit blockSize,
          LayoutUnit inlineOverflow,
-         LayoutUnit blockOverflow)
-      : NGFragmentBase(inlineSize, blockSize, inlineOverflow, blockOverflow) {
-    m_isText = true;
-  }
+         LayoutUnit blockOverflow,
+         NGWritingMode writingMode,
+         NGDirection direction)
+      : NGFragmentBase(inlineSize,
+                       blockSize,
+                       inlineOverflow,
+                       blockOverflow,
+                       writingMode,
+                       direction,
+                       FragmentText) {}
 
   const String text() const { return String(); }
 

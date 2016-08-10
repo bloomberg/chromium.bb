@@ -36,8 +36,9 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
 
   LayoutUnit blockSize =
       computeBlockSizeForFragment(constraintSpace, *m_style, contentSize);
-  NGFragment* returnFragment =
-      new NGFragment(inlineSize, blockSize, inlineSize, blockSize);
+  NGFragment* returnFragment = new NGFragment(
+      inlineSize, blockSize, inlineSize, blockSize,
+      NGFragmentBase::HorizontalTopBottom, NGFragmentBase::LeftToRight);
   returnFragment->swapChildren(childFragments);
   return returnFragment;
 }
