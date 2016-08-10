@@ -93,6 +93,7 @@ source_set("context") {
     "//blimp/client/core/contents",
     "//blimp/client/core/session",
     "//blimp/client/public:public_headers",
+    "//url",
   ]
 
   if (is_android) {
@@ -184,7 +185,10 @@ if (is_android) {
   android_library("settings_java") {
     visibility = [ "//blimp/client/*" ]
 
-    java_files = [ "android/java/src/org/chromium/blimp/core/settings/AboutBlimpPreferences.java" ]
+    java_files = [
+      "android/java/src/org/chromium/blimp/core/settings/AboutBlimpPreferences.java",
+      "android/java/src/org/chromium/blimp/core/settings/PreferencesUtil.java",
+    ]
 
     # TODO(xingliu): Remove android support v7 dependency and move android resources to Chrome
     # after Blimp merge to Chrome.

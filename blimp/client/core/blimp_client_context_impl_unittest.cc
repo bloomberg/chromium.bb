@@ -35,18 +35,17 @@ class BlimpClientContextImplTest : public testing::Test {
   }
 
  protected:
-  // The thread to use for IO related tasks.
   base::Thread io_thread_;
 
  private:
-  // Message loop for the test thread.
   base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpClientContextImplTest);
 };
 
 TEST_F(BlimpClientContextImplTest, CreatedBlimpContentsGetsHelpersAttached) {
-  BlimpClientContextImpl blimp_client_context(io_thread_.task_runner());
+  BlimpClientContextImpl blimp_client_context(io_thread_.task_runner(),
+                                              io_thread_.task_runner());
   TestBlimpClientContextDelegate delegate;
   blimp_client_context.SetDelegate(&delegate);
 

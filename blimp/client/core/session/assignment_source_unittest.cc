@@ -150,7 +150,7 @@ class AssignmentSourceTest : public testing::Test {
   }
 
   MOCK_METHOD2(AssignmentResponse,
-               void(AssignmentSource::Result, const Assignment&));
+               void(AssignmentRequestResult, const Assignment&));
 
  protected:
   Assignment BuildSslAssignment();
@@ -221,7 +221,7 @@ TEST_F(AssignmentSourceTest, TestTCPAlternateEndpointSuccess) {
 
   CHECK_EQ("MyVoiceIsMyPassport", assignment.client_token);
 
-  EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
+  EXPECT_CALL(*this, AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_OK,
                                         AssignmentEquals(assignment)))
       .Times(1);
 
@@ -245,7 +245,7 @@ TEST_F(AssignmentSourceTest, TestSSLAlternateEndpointSuccess) {
 
   assignment.client_token = GetClientToken(*cmd_line);
 
-  EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
+  EXPECT_CALL(*this, AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_OK,
                                         AssignmentEquals(assignment)))
       .Times(1);
 
@@ -255,7 +255,7 @@ TEST_F(AssignmentSourceTest, TestSSLAlternateEndpointSuccess) {
 TEST_F(AssignmentSourceTest, TestSuccess) {
   Assignment assignment = BuildSslAssignment();
 
-  EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
+  EXPECT_CALL(*this, AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_OK,
                                         AssignmentEquals(assignment)))
       .Times(1);
 
@@ -268,12 +268,12 @@ TEST_F(AssignmentSourceTest, TestValidAfterError) {
   InSequence sequence;
   Assignment assignment = BuildSslAssignment();
 
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_NETWORK_FAILURE, _))
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_NETWORK_FAILURE, _))
       .Times(1)
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
+  EXPECT_CALL(*this, AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_OK,
                                         AssignmentEquals(assignment)))
       .Times(1)
       .RetiresOnSaturation();
@@ -288,54 +288,53 @@ TEST_F(AssignmentSourceTest, TestValidAfterError) {
 }
 
 TEST_F(AssignmentSourceTest, TestNetworkFailure) {
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_NETWORK_FAILURE, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_NETWORK_FAILURE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK,
                                          net::Error::ERR_INSUFFICIENT_RESOURCES,
                                          "", kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestBadRequest) {
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_BAD_REQUEST, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_BAD_REQUEST, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_BAD_REQUEST, net::Error::OK,
                                          "", kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestUnauthorized) {
-  EXPECT_CALL(*this,
-              AssignmentResponse(
-                  AssignmentSource::Result::RESULT_EXPIRED_ACCESS_TOKEN, _));
+  EXPECT_CALL(*this, AssignmentResponse(
+                         ASSIGNMENT_REQUEST_RESULT_EXPIRED_ACCESS_TOKEN, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_UNAUTHORIZED, net::Error::OK,
                                          "", kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestForbidden) {
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_USER_INVALID, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_USER_INVALID, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_FORBIDDEN, net::Error::OK,
                                          "", kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestTooManyRequests) {
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_OUT_OF_VMS, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_OUT_OF_VMS, _));
   GetNetworkAssignmentAndWaitForResponse(static_cast<net::HttpStatusCode>(429),
                                          net::Error::OK, "", kTestAuthToken,
                                          kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestInternalServerError) {
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_SERVER_ERROR, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_SERVER_ERROR, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_INTERNAL_SERVER_ERROR,
                                          net::Error::OK, "", kTestAuthToken,
                                          kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestUnexpectedNetCodeFallback) {
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_NOT_IMPLEMENTED,
                                          net::Error::OK, "", kTestAuthToken,
                                          kProtocolVersion);
@@ -348,8 +347,8 @@ TEST_F(AssignmentSourceTest, TestInvalidJsonResponse) {
   std::string response = ValueToString(*BuildAssignerResponse());
   response = response.substr(response.size() / 2);
 
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK, response,
                                          kTestAuthToken, kProtocolVersion);
 }
@@ -357,8 +356,8 @@ TEST_F(AssignmentSourceTest, TestInvalidJsonResponse) {
 TEST_F(AssignmentSourceTest, TestMissingResponsePort) {
   std::unique_ptr<base::DictionaryValue> response = BuildAssignerResponse();
   response->Remove("port", nullptr);
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
                                          ValueToString(*response),
                                          kTestAuthToken, kProtocolVersion);
@@ -368,8 +367,8 @@ TEST_F(AssignmentSourceTest, TestInvalidIPAddress) {
   std::unique_ptr<base::DictionaryValue> response = BuildAssignerResponse();
   response->SetString("host", "happywhales.test");
 
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
                                          ValueToString(*response),
                                          kTestAuthToken, kProtocolVersion);
@@ -378,8 +377,8 @@ TEST_F(AssignmentSourceTest, TestInvalidIPAddress) {
 TEST_F(AssignmentSourceTest, TestMissingCert) {
   std::unique_ptr<base::DictionaryValue> response = BuildAssignerResponse();
   response->Remove("certificate", nullptr);
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
                                          ValueToString(*response),
                                          kTestAuthToken, kProtocolVersion);
@@ -388,8 +387,8 @@ TEST_F(AssignmentSourceTest, TestMissingCert) {
 TEST_F(AssignmentSourceTest, TestInvalidCert) {
   std::unique_ptr<base::DictionaryValue> response = BuildAssignerResponse();
   response->SetString("certificate", "h4x0rz!");
-  EXPECT_CALL(*this, AssignmentResponse(
-                         AssignmentSource::Result::RESULT_INVALID_CERT, _));
+  EXPECT_CALL(*this,
+              AssignmentResponse(ASSIGNMENT_REQUEST_RESULT_INVALID_CERT, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
                                          ValueToString(*response),
                                          kTestAuthToken, kProtocolVersion);

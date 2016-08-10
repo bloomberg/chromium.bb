@@ -25,6 +25,7 @@ source_set("session") {
 
   public_deps = [
     "//base",
+    "//blimp/client/public:public_headers",
     "//blimp/net",
     "//components/safe_json",
     "//net",
@@ -69,16 +70,6 @@ source_set("unit_tests") {
     data += [
       "test_selfsigned_cert.pem",
       "//blimp/test/data/test_client_token",
-    ]
-  }
-}
-
-if (is_android) {
-  java_cpp_enum("java_enums_srcjar") {
-    visibility = [ "//blimp/client/*" ]
-
-    sources = [
-      "assignment_source.h",
     ]
   }
 }

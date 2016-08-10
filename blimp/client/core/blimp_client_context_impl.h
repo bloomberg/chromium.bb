@@ -16,8 +16,10 @@
 #include "blimp/client/core/session/network_event_observer.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_contents.h"
+#include "blimp/client/public/session/assignment.h"
 #include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/thread_pipe_manager.h"
+#include "url/gurl.h"
 
 namespace blimp {
 namespace client {
@@ -31,24 +33,45 @@ class BlimpClientContextImpl : public BlimpClientContext,
  public:
   // The |io_thread_task_runner| must be the task runner to use for IO
   // operations.
-  explicit BlimpClientContextImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
+  // The |file_thread_task_runner| must be the task runner to use for file
+  // operations.
+  BlimpClientContextImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner);
   ~BlimpClientContextImpl() override;
 
   // BlimpClientContext implementation.
   void SetDelegate(BlimpClientContextDelegate* delegate) override;
   std::unique_ptr<BlimpContents> CreateBlimpContents() override;
+  void Connect(const std::string& client_auth_token) override;
 
   // NetworkEventObserver implementation.
   void OnConnected() override;
   void OnDisconnected(int result) override;
 
+ protected:
+  // Returns the URL to use for connections to the assigner. Used to construct
+  // the AssignmentSource.
+  virtual GURL GetAssignerURL();
+
  private:
+  // The AssignmentCallback for when an assignment is ready. This will trigger
+  // a connection to the engine.
+  virtual void ConnectWithAssignment(AssignmentRequestResult result,
+                                     const Assignment& assignment);
+
   // Provides functionality from the embedder.
-  BlimpClientContextDelegate* delegate_;
+  BlimpClientContextDelegate* delegate_ = nullptr;
 
   // The task runner to use for IO operations.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
+
+  // The task runner to use for file operations.
+  scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner_;
+
+  // The AssignmentSource is used when the user of BlimpClientContextImpl calls
+  // Connect() to get a valid assignment and later connect to the engine.
+  std::unique_ptr<AssignmentSource> assignment_source_;
 
   // Collects details of network, such as number of commits and bytes
   // transferred over network. Owned by ClientNetworkComponents.

@@ -4,6 +4,7 @@
 
 #include "blimp/client/core/dummy_blimp_client_context.h"
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 
@@ -20,7 +21,8 @@ namespace client {
 // any binary using BlimpClientContext::Create.
 // static
 BlimpClientContext* BlimpClientContext::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner) {
 #if defined(OS_ANDROID)
   return new DummyBlimpClientContextAndroid();
 #else
@@ -37,6 +39,10 @@ void DummyBlimpClientContext::SetDelegate(
 
 std::unique_ptr<BlimpContents> DummyBlimpClientContext::CreateBlimpContents() {
   return nullptr;
+}
+
+void DummyBlimpClientContext::Connect(const std::string& client_auth_token) {
+  NOTREACHED();
 }
 
 }  // namespace client

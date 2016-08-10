@@ -21,8 +21,11 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
 
   // The |io_thread_task_runner| must be the task runner to use for IO
   // operations.
+  // The |file_thread_task_runner| must be the task runner to use for file
+  // operations.
   explicit BlimpClientContextImplAndroid(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner);
   ~BlimpClientContextImplAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
@@ -30,6 +33,10 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
   base::android::ScopedJavaLocalRef<jobject> CreateBlimpContentsJava(
       JNIEnv* env,
       jobject jobj);
+
+ protected:
+  // BlimpClientContextImpl implementation.
+  GURL GetAssignerURL() override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

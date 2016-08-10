@@ -168,23 +168,6 @@ Assignment GetAssignmentFromCommandLine() {
 
 }  // namespace
 
-Assignment::Assignment() : transport_protocol(TransportProtocol::UNKNOWN) {}
-
-Assignment::Assignment(const Assignment& other) = default;
-
-Assignment::~Assignment() {}
-
-bool Assignment::IsValid() const {
-  if (engine_endpoint.address().empty() || engine_endpoint.port() == 0 ||
-      transport_protocol == TransportProtocol::UNKNOWN) {
-    return false;
-  }
-  if (transport_protocol == TransportProtocol::SSL && !cert) {
-    return false;
-  }
-  return true;
-}
-
 AssignmentSource::AssignmentSource(
     const GURL& assigner_endpoint,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
@@ -221,7 +204,7 @@ void AssignmentSource::OnGetAssignmentFromCommandLineDone(
   // If GetAssignmentFromCommandLine succeeded, then return its output.
   if (parsed_assignment.IsValid()) {
     base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::RESULT_OK, parsed_assignment);
+        .Run(ASSIGNMENT_REQUEST_RESULT_OK, parsed_assignment);
     return;
   }
 
@@ -259,7 +242,7 @@ void AssignmentSource::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "Assignment request failed due to network error: "
              << net::ErrorToString(source->GetStatus().error());
     base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::Result::RESULT_NETWORK_FAILURE, Assignment());
+        .Run(ASSIGNMENT_REQUEST_RESULT_NETWORK_FAILURE, Assignment());
     return;
   }
 
@@ -269,28 +252,29 @@ void AssignmentSource::OnURLFetchComplete(const net::URLFetcher* source) {
       break;
     case net::HTTP_BAD_REQUEST:
       base::ResetAndReturn(&callback_)
-          .Run(AssignmentSource::Result::RESULT_BAD_REQUEST, Assignment());
+          .Run(ASSIGNMENT_REQUEST_RESULT_BAD_REQUEST, Assignment());
       break;
     case net::HTTP_UNAUTHORIZED:
       base::ResetAndReturn(&callback_)
-          .Run(AssignmentSource::Result::RESULT_EXPIRED_ACCESS_TOKEN,
-               Assignment());
+          .Run(ASSIGNMENT_REQUEST_RESULT_EXPIRED_ACCESS_TOKEN, Assignment());
       break;
     case net::HTTP_FORBIDDEN:
       base::ResetAndReturn(&callback_)
-          .Run(AssignmentSource::Result::RESULT_USER_INVALID, Assignment());
+          .Run(ASSIGNMENT_REQUEST_RESULT_USER_INVALID, Assignment());
       break;
     case 429:  // Too Many Requests
       base::ResetAndReturn(&callback_)
-          .Run(AssignmentSource::Result::RESULT_OUT_OF_VMS, Assignment());
+          .Run(ASSIGNMENT_REQUEST_RESULT_OUT_OF_VMS, Assignment());
       break;
     case net::HTTP_INTERNAL_SERVER_ERROR:
       base::ResetAndReturn(&callback_)
-          .Run(AssignmentSource::Result::RESULT_SERVER_ERROR, Assignment());
+          .Run(ASSIGNMENT_REQUEST_RESULT_SERVER_ERROR, Assignment());
       break;
     default:
+      LOG(WARNING) << "Defaulting to BAD_RESPONSE for HTTP response code "
+                   << source->GetResponseCode();
       base::ResetAndReturn(&callback_)
-          .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
+          .Run(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, Assignment());
       break;
   }
 }
@@ -303,8 +287,9 @@ void AssignmentSource::ParseAssignerResponse() {
   // Grab the response from the assigner request.
   std::string response;
   if (!url_fetcher_->GetResponseAsString(&response)) {
+    LOG(WARNING) << "Unable to retrieve response as string from URLFetcher.";
     base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
+        .Run(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, Assignment());
     return;
   }
 
@@ -318,8 +303,9 @@ void AssignmentSource::ParseAssignerResponse() {
 void AssignmentSource::OnJsonParsed(std::unique_ptr<base::Value> json) {
   const base::DictionaryValue* dict;
   if (!json->GetAsDictionary(&dict)) {
+    LOG(WARNING) << "Unable to parse JSON data as a dictionary.";
     base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
+        .Run(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, Assignment());
     return;
   }
 
@@ -331,21 +317,24 @@ void AssignmentSource::OnJsonParsed(std::unique_ptr<base::Value> json) {
   if (!(dict->GetString(kClientTokenKey, &client_token) &&
         dict->GetString(kHostKey, &host) && dict->GetInteger(kPortKey, &port) &&
         dict->GetString(kCertificateKey, &cert_str))) {
+    LOG(WARNING) << "Not all fields present in assignment JSON data.";
     base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
+        .Run(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, Assignment());
     return;
   }
 
   net::IPAddress ip_address;
   if (!ip_address.AssignFromIPLiteral(host)) {
+    LOG(WARNING) << "Unable to assign IP address from string literal " << host;
     base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
+        .Run(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, Assignment());
     return;
   }
 
   if (!base::IsValueInRangeForNumericType<uint16_t>(port)) {
+    LOG(WARNING) << "Assignment port number not in range for uint16_t";
     base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
+        .Run(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, Assignment());
     return;
   }
 
@@ -355,7 +344,7 @@ void AssignmentSource::OnJsonParsed(std::unique_ptr<base::Value> json) {
           net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
   if (cert_list.size() != 1) {
     base::ResetAndReturn(&callback_)
-        .Run(AssignmentSource::Result::RESULT_INVALID_CERT, Assignment());
+        .Run(ASSIGNMENT_REQUEST_RESULT_INVALID_CERT, Assignment());
     return;
   }
 
@@ -368,13 +357,13 @@ void AssignmentSource::OnJsonParsed(std::unique_ptr<base::Value> json) {
   assignment.cert = std::move(cert_list[0]);
 
   base::ResetAndReturn(&callback_)
-      .Run(AssignmentSource::Result::RESULT_OK, assignment);
+      .Run(ASSIGNMENT_REQUEST_RESULT_OK, assignment);
 }
 
 void AssignmentSource::OnJsonParseError(const std::string& error) {
   DLOG(ERROR) << "Error while parsing assigner JSON: " << error;
   base::ResetAndReturn(&callback_)
-      .Run(AssignmentSource::Result::RESULT_BAD_RESPONSE, Assignment());
+      .Run(ASSIGNMENT_REQUEST_RESULT_BAD_RESPONSE, Assignment());
 }
 
 }  // namespace client

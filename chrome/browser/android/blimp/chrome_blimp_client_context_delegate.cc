@@ -27,3 +27,7 @@ void ChromeBlimpClientContextDelegate::AttachBlimpContentsHelpers(
     blimp::client::BlimpContents* blimp_contents) {
   AttachProfileToBlimpContents(blimp_contents, profile_);
 }
+
+void ChromeBlimpClientContextDelegate::OnAssignmentConnectionAttempted(
+    blimp::client::AssignmentRequestResult result,
+    const blimp::client::Assignment& assignment) {}

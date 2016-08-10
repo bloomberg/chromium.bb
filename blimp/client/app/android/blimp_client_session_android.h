@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/macros.h"
+#include "blimp/client/public/session/assignment.h"
 #include "blimp/client/session/blimp_client_session.h"
 
 namespace blimp {
@@ -44,7 +45,7 @@ class BlimpClientSessionAndroid : public BlimpClientSession {
   ~BlimpClientSessionAndroid() override;
 
   // BlimpClientSession implementation.
-  void OnAssignmentConnectionAttempted(AssignmentSource::Result result,
+  void OnAssignmentConnectionAttempted(AssignmentRequestResult result,
                                        const Assignment& assignment) override;
 
   // NetworkEventObserver implementation.

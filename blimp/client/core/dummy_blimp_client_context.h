@@ -12,7 +12,10 @@
 namespace blimp {
 namespace client {
 
-// A dummy implementation of the BlimpClientContext.
+// A dummy implementation of the BlimpClientContext which is in use by
+// embedders that do not set the GN argument |enable_blimp_client| to true.
+// It exists so that it is possible for an embedder to still have code depending
+// on the public APIs of blimp, without in fact linking in all the core code.
 class DummyBlimpClientContext : public BlimpClientContext {
  public:
   DummyBlimpClientContext();
@@ -21,6 +24,7 @@ class DummyBlimpClientContext : public BlimpClientContext {
   // BlimpClientContext implementation.
   void SetDelegate(BlimpClientContextDelegate* delegate) override;
   std::unique_ptr<BlimpContents> CreateBlimpContents() override;
+  void Connect(const std::string& client_auth_token) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyBlimpClientContext);

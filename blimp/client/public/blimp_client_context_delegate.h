@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_PUBLIC_BLIMP_CLIENT_CONTEXT_DELEGATE_H_
 
 #include "base/macros.h"
+#include "blimp/client/public/session/assignment.h"
 
 namespace blimp {
 namespace client {
@@ -19,6 +20,16 @@ class BlimpClientContextDelegate {
 
   // Attaches any required base::SupportsUserData::Data to the BlimpContents.
   virtual void AttachBlimpContentsHelpers(BlimpContents* blimp_contents) = 0;
+
+  // Called whenever an assignment request has finished and the resulting
+  // Assignment is ready to be used in an attempt to connect to the engine. The
+  // |result| is the result for the assignment request itself, not for the
+  // connection attempt. Only when |result| is ASSIGNMENT_REQUEST_RESULT_OK
+  // will an attempt actually be made to connect to the engine using the
+  // Assignment.
+  virtual void OnAssignmentConnectionAttempted(
+      AssignmentRequestResult result,
+      const Assignment& assignment) = 0;
 
  protected:
   BlimpClientContextDelegate() = default;

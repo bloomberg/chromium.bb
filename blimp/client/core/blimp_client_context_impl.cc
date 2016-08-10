@@ -20,24 +20,34 @@
 namespace blimp {
 namespace client {
 
+namespace {
+const char kDefaultAssignerUrl[] =
+    "https://blimp-pa.googleapis.com/v1/assignment";
+}  // namespace
+
 // This function is declared in //blimp/client/public/blimp_client_context.h,
 // and either this function or the one in
 // //blimp/client/core/dummy_blimp_client_context.cc should be linked in to
 // any binary using BlimpClientContext::Create.
 // static
 BlimpClientContext* BlimpClientContext::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner) {
 #if defined(OS_ANDROID)
-  return new BlimpClientContextImplAndroid(io_thread_task_runner);
+  return new BlimpClientContextImplAndroid(io_thread_task_runner,
+                                           file_thread_task_runner);
 #else
-  return new BlimpClientContextImpl(io_thread_task_runner);
+  return new BlimpClientContextImpl(io_thread_task_runner,
+                                    file_thread_task_runner);
 #endif  // defined(OS_ANDROID)
 }
 
 BlimpClientContextImpl::BlimpClientContextImpl(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner)
     : BlimpClientContext(),
       io_thread_task_runner_(io_thread_task_runner),
+      file_thread_task_runner_(file_thread_task_runner),
       blimp_contents_manager_(new BlimpContentsManager),
       weak_factory_(this) {
   blimp_connection_statistics_ = new BlimpConnectionStatistics();
@@ -73,9 +83,46 @@ std::unique_ptr<BlimpContents> BlimpClientContextImpl::CreateBlimpContents() {
   return blimp_contents;
 }
 
+void BlimpClientContextImpl::Connect(const std::string& client_auth_token) {
+  if (!assignment_source_) {
+    assignment_source_.reset(new AssignmentSource(
+        GetAssignerURL(), io_thread_task_runner_, file_thread_task_runner_));
+  }
+
+  VLOG(1) << "Trying to get assignment.";
+  assignment_source_->GetAssignment(
+      client_auth_token,
+      base::Bind(&BlimpClientContextImpl::ConnectWithAssignment,
+                 weak_factory_.GetWeakPtr()));
+}
+
 void BlimpClientContextImpl::OnConnected() {}
 
 void BlimpClientContextImpl::OnDisconnected(int result) {}
+
+GURL BlimpClientContextImpl::GetAssignerURL() {
+  return GURL(kDefaultAssignerUrl);
+}
+
+void BlimpClientContextImpl::ConnectWithAssignment(
+    AssignmentRequestResult result,
+    const Assignment& assignment) {
+  VLOG(1) << "Assignment result: " << result;
+
+  if (delegate_) {
+    delegate_->OnAssignmentConnectionAttempted(result, assignment);
+  }
+
+  if (result != ASSIGNMENT_REQUEST_RESULT_OK) {
+    LOG(ERROR) << "Assignment failed, reason: " << result;
+    return;
+  }
+
+  io_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ClientNetworkComponents::ConnectWithAssignment,
+                 base::Unretained(net_components_.get()), assignment));
+}
 
 }  // namespace client
 }  // namespace blimp

@@ -33,11 +33,14 @@ source_set("public_headers") {
     "contents/blimp_contents_observer.cc",
     "contents/blimp_contents_observer.h",
     "contents/blimp_navigation_controller.h",
+    "session/assignment.cc",
+    "session/assignment.h",
   ]
 
   public_deps = [
     "//base",
     "//components/keyed_service/core",
+    "//net",
     "//url",
   ]
 
@@ -75,6 +78,22 @@ if (is_android) {
       "android/java/src/org/chromium/blimp_public/BlimpClientContext.java",
       "android/java/src/org/chromium/blimp_public/BlimpClientContextDelegate.java",
       "android/java/src/org/chromium/blimp_public/BlimpSettingsCallbacks.java",
+    ]
+
+    deps = [
+      "//third_party/android_tools:android_support_annotations_java",
+    ]
+
+    # The enums are added here for convenience for embedders, so they can still
+    # only depend on :public_java.
+    srcjar_deps = [ ":public_headers_java_enums_srcjar" ]
+  }
+
+  java_cpp_enum("public_headers_java_enums_srcjar") {
+    visibility = [ ":*" ]
+
+    sources = [
+      "session/assignment.h",
     ]
   }
 }

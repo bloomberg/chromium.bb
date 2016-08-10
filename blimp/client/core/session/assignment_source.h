@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/ip_endpoint.h"
+#include "blimp/client/public/session/assignment.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -22,64 +22,16 @@ class Value;
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
-class X509Certificate;
 }
 
 namespace blimp {
 namespace client {
 
-// An Assignment contains the configuration data needed for a client
-// to connect to the engine.
-struct Assignment {
-  enum TransportProtocol {
-    UNKNOWN = 0,
-    SSL = 1,
-    TCP = 2,
-  };
-
-  Assignment();
-  Assignment(const Assignment& other);
-  ~Assignment();
-
-  // Returns true if the net::IPEndPoint has an unspecified IP, port, or
-  // transport protocol.
-  bool IsValid() const;
-
-  // Specifies the transport to use to connect to the engine.
-  TransportProtocol transport_protocol;
-
-  // Specifies the IP address and port on which to reach the engine.
-  net::IPEndPoint engine_endpoint;
-
-  // Used to authenticate to the specified engine.
-  std::string client_token;
-
-  // Specifies the X.509 certificate that the engine must report.
-  scoped_refptr<net::X509Certificate> cert;
-};
-
 // AssignmentSource provides functionality to find out how a client should
 // connect to an engine.
 class AssignmentSource : public net::URLFetcherDelegate {
  public:
-  // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blimp.core.session.assignment
-  enum Result {
-    RESULT_UNKNOWN = 0,
-    RESULT_OK = 1,
-    RESULT_BAD_REQUEST = 2,
-    RESULT_BAD_RESPONSE = 3,
-    RESULT_INVALID_PROTOCOL_VERSION = 4,
-    RESULT_EXPIRED_ACCESS_TOKEN = 5,
-    RESULT_USER_INVALID = 6,
-    RESULT_OUT_OF_VMS = 7,
-    RESULT_SERVER_ERROR = 8,
-    RESULT_SERVER_INTERRUPTED = 9,
-    RESULT_NETWORK_FAILURE = 10,
-    RESULT_INVALID_CERT = 11,
-  };
-
-  typedef base::Callback<void(AssignmentSource::Result, const Assignment&)>
+  typedef base::Callback<void(AssignmentRequestResult, const Assignment&)>
       AssignmentCallback;
 
   // |assigner_endpoint|: The URL of the Assigner service to query.

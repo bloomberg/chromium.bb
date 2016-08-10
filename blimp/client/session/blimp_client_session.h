@@ -15,6 +15,7 @@
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/core/session/assignment_source.h"
 #include "blimp/client/core/session/network_event_observer.h"
+#include "blimp/client/public/session/assignment.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/blimp_message_processor.h"
@@ -73,7 +74,7 @@ class BlimpClientSession
 
   // The AssignmentCallback for when an assignment is ready. This will trigger
   // a connection to the engine.
-  virtual void ConnectWithAssignment(AssignmentSource::Result result,
+  virtual void ConnectWithAssignment(AssignmentRequestResult result,
                                      const Assignment& assignment);
 
  protected:
@@ -81,7 +82,7 @@ class BlimpClientSession
 
   // Notified every time the AssignmentSource returns the result of an attempted
   // assignment request.
-  virtual void OnAssignmentConnectionAttempted(AssignmentSource::Result result,
+  virtual void OnAssignmentConnectionAttempted(AssignmentRequestResult result,
                                                const Assignment& assignment);
 
  private:

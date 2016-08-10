@@ -102,7 +102,7 @@ void BlimpClientSessionAndroid::Destroy(JNIEnv* env,
 }
 
 void BlimpClientSessionAndroid::OnAssignmentConnectionAttempted(
-    AssignmentSource::Result result,
+    AssignmentRequestResult result,
     const Assignment& assignment) {
   // Notify the front end of the assignment result.
   std::string engine_ip = IPAddressToStringWithPort(

@@ -9,6 +9,7 @@ import android.preference.PreferenceFragment;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.core.settings.AboutBlimpPreferences;
+import org.chromium.blimp.core.settings.PreferencesUtil;
 import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.blimp_public.BlimpSettingsCallbacks;
@@ -81,6 +82,11 @@ public class BlimpClientContextImpl implements BlimpClientContext {
     private long getNativePtr() {
         assert mNativeBlimpClientContextImplAndroid != 0;
         return mNativeBlimpClientContextImplAndroid;
+    }
+
+    @CalledByNative
+    private String getAssignerUrl() {
+        return PreferencesUtil.getLastUsedAssigner();
     }
 
     private native BlimpContents nativeCreateBlimpContentsJava(

@@ -21,6 +21,8 @@ class TestBlimpClientContextDelegate : public BlimpClientContextDelegate {
 
   // BlimpClientContextDelegate implementation.
   MOCK_METHOD1(AttachBlimpContentsHelpers, void(BlimpContents*));
+  MOCK_METHOD2(OnAssignmentConnectionAttempted,
+               void(AssignmentRequestResult, const Assignment&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBlimpClientContextDelegate);

@@ -31,6 +31,9 @@ class ChromeBlimpClientContextDelegate
   // BlimpClientContextDelegate implementation.
   void AttachBlimpContentsHelpers(
       blimp::client::BlimpContents* blimp_contents) override;
+  void OnAssignmentConnectionAttempted(
+      blimp::client::AssignmentRequestResult result,
+      const blimp::client::Assignment& assignment) override;
 
  private:
   // The profile this delegate is used for.

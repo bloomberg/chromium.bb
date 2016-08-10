@@ -35,7 +35,9 @@ KeyedService* BlimpClientContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return blimp::client::BlimpClientContext::Create(
       content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO));
+          content::BrowserThread::IO),
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::FILE));
 }
 
 content::BrowserContext* BlimpClientContextFactory::GetBrowserContextToUse(

@@ -82,11 +82,11 @@ void BlimpClientSession::Connect(const std::string& client_auth_token) {
                                     weak_factory_.GetWeakPtr()));
 }
 
-void BlimpClientSession::ConnectWithAssignment(AssignmentSource::Result result,
+void BlimpClientSession::ConnectWithAssignment(AssignmentRequestResult result,
                                                const Assignment& assignment) {
   OnAssignmentConnectionAttempted(result, assignment);
 
-  if (result != AssignmentSource::Result::RESULT_OK) {
+  if (result != ASSIGNMENT_REQUEST_RESULT_OK) {
     LOG(ERROR) << "Assignment failed, reason: " << result;
     return;
   }
@@ -100,7 +100,7 @@ void BlimpClientSession::ConnectWithAssignment(AssignmentSource::Result result,
 }
 
 void BlimpClientSession::OnAssignmentConnectionAttempted(
-    AssignmentSource::Result result,
+    AssignmentRequestResult result,
     const Assignment& assignment) {}
 
 void BlimpClientSession::RegisterFeatures() {

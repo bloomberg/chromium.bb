@@ -11,6 +11,7 @@
 #include "blimp/client/feature/mock_ime_feature_delegate.h"
 #include "blimp/client/feature/mock_render_widget_feature_delegate.h"
 #include "blimp/client/feature/render_widget_feature.h"
+#include "blimp/client/public/session/assignment.h"
 #include "blimp/client/session/test_client_session.h"
 #include "blimp/engine/browser_tests/blimp_browser_test.h"
 #include "content/public/test/browser_test.h"
@@ -72,8 +73,8 @@ IN_PROC_BROWSER_TEST_F(EngineBrowserTest, LoadUrl) {
       .WillOnce(InvokeWithoutArgs(this, &EngineBrowserTest::QuitRunLoop));
 
   // Skip assigner. Engine info is already available.
-  client_session_->ConnectWithAssignment(
-      client::AssignmentSource::Result::RESULT_OK, GetAssignment());
+  client_session_->ConnectWithAssignment(client::ASSIGNMENT_REQUEST_RESULT_OK,
+                                         GetAssignment());
   client_session_->GetTabControlFeature()->SetSizeAndScale(gfx::Size(100, 100),
                                                            1);
   client_session_->GetTabControlFeature()->CreateTab(kDummyTabId);

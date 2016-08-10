@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_PUBLIC_BLIMP_CLIENT_CONTEXT_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -41,14 +42,20 @@ class BlimpClientContext : public KeyedService {
   // linked in.
   // The |io_thread_task_runner| must be the task runner to use for IO
   // operations.
+  // The |file_thread_task_runner| must be the task runner to use for file
+  // operations.
   static BlimpClientContext* Create(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner);
 
   // The delegate provides all the required functionality from the embedder.
   virtual void SetDelegate(BlimpClientContextDelegate* delegate) = 0;
 
   // Creates a new BlimpContents.
   virtual std::unique_ptr<BlimpContents> CreateBlimpContents() = 0;
+
+  // Initiates the process for connecting to the engine.
+  virtual void Connect(const std::string& client_auth_token) = 0;
 
  protected:
   BlimpClientContext() = default;

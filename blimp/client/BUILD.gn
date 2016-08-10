@@ -390,8 +390,6 @@ if (is_android) {
       "app/android/java/src/org/chromium/blimp/toolbar/ToolbarMenu.java",
       "app/android/java/src/org/chromium/blimp/toolbar/UrlBar.java",
     ]
-
-    srcjar_deps = [ "//blimp/client/core/session:java_enums_srcjar" ]
   }
 
   android_library("blimp_test_java") {

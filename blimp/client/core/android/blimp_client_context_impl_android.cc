@@ -5,6 +5,7 @@
 #include "blimp/client/core/android/blimp_client_context_impl_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/public/blimp_client_context.h"
@@ -39,8 +40,9 @@ base::android::ScopedJavaLocalRef<jobject> BlimpClientContext::GetJavaObject(
 }
 
 BlimpClientContextImplAndroid::BlimpClientContextImplAndroid(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
-    : BlimpClientContextImpl(io_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner)
+    : BlimpClientContextImpl(io_thread_task_runner, file_thread_task_runner) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   java_obj_.Reset(env, Java_BlimpClientContextImpl_create(
@@ -67,6 +69,15 @@ BlimpClientContextImplAndroid::CreateBlimpContentsJava(JNIEnv* env,
   BlimpContentsImpl* blimp_contents_impl =
       static_cast<BlimpContentsImpl*>(blimp_contents.release());
   return blimp_contents_impl->GetJavaBlimpContentsImpl();
+}
+
+GURL BlimpClientContextImplAndroid::GetAssignerURL() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> jurl =
+      Java_BlimpClientContextImpl_getAssignerUrl(env, java_obj_.obj());
+  GURL assigner_url = GURL(ConvertJavaStringToUTF8(env, jurl));
+  DCHECK(assigner_url.is_valid());
+  return assigner_url;
 }
 
 }  // namespace client
