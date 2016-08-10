@@ -65,7 +65,7 @@
       "-u",
       "import sys;print \"Patch download failed. See bot_update step for details\";sys.exit(1)"
     ],
-    "name": "Patch failure",
+    "name": "Patch failure - Try Rebasing",
     "~followup_annotations": [
       "step returned non-zero exit code: 1",
       "@@@STEP_LOG_LINE@python.inline@import sys;print \"Patch download failed. See bot_update step for details\";sys.exit(1)@@@",
@@ -75,7 +75,7 @@
   },
   {
     "name": "$result",
-    "reason": "Infra Failure: Step('Patch failure') returned 1",
+    "reason": "Infra Failure: Step('Patch failure - Try Rebasing') returned 1",
     "recipe_result": null,
     "status_code": 1
   }

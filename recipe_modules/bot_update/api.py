@@ -276,7 +276,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
             # This is download failure, hence an infra failure.
             # Sadly, python.failing_step doesn't support kwargs.
             self.m.python.inline(
-                'Patch failure',
+                'Patch failure - Try Rebasing',
                 ('import sys;'
                  'print "Patch download failed. See bot_update step for'
                  ' details";sys.exit(1)'),
