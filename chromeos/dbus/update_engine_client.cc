@@ -223,10 +223,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     update_engine_proxy_ = bus->GetObjectProxy(
         update_engine::kUpdateEngineServiceName,
         dbus::ObjectPath(update_engine::kUpdateEngineServicePath));
-
-    // Monitor the D-Bus signal for brightness changes. Only the power
-    // manager knows the actual brightness level. We don't cache the
-    // brightness level in Chrome as it will make things less reliable.
     update_engine_proxy_->ConnectToSignal(
         update_engine::kUpdateEngineInterface,
         update_engine::kStatusUpdate,
@@ -234,15 +230,22 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&UpdateEngineClientImpl::StatusUpdateConnected,
                    weak_ptr_factory_.GetWeakPtr()));
-
-    // Get update engine status for the initial status. Update engine won't
-    // send StatusUpdate signal unless there is a status change. If chrome
-    // crashes after UPDATE_STATUS_UPDATED_NEED_REBOOT status is set,
-    // restarted chrome would not get this status. See crbug.com/154104.
-    GetUpdateEngineStatus();
+    update_engine_proxy_->WaitForServiceToBeAvailable(
+        base::Bind(&UpdateEngineClientImpl::OnProxyAvailabilityChanged,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
+  void OnProxyAvailabilityChanged(bool service_is_available) {
+    if (service_is_available) {
+      // Get update engine status for the initial status. Update engine won't
+      // send StatusUpdate signal unless there is a status change. If chrome
+      // crashes after UPDATE_STATUS_UPDATED_NEED_REBOOT status is set,
+      // restarted chrome would not get this status. See crbug.com/154104.
+      GetUpdateEngineStatus();
+    }
+  }
+
   void GetUpdateEngineStatus() {
     dbus::MethodCall method_call(
         update_engine::kUpdateEngineInterface,
