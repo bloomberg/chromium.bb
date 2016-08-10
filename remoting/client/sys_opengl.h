@@ -9,10 +9,16 @@
 
 #if defined(OS_IOS)
 #include <OpenGLES/ES3/gl.h>
-#elif defined(OS_ANDROID)
-#include <GLES3/gl3.h>
+#elif defined(OS_LINUX)
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
+#elif defined(OS_MACOSX)
+#define GL_GLEXT_PROTOTYPES
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
 #else
-#error OpenGL renderer not supported on this platform.
-#endif
+#include <GLES3/gl3.h>
+#endif  // defined(OS_IOS)
 
 #endif  // REMOTING_CLIENT_SYS_OPENGL_H_

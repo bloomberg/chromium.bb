@@ -5,6 +5,9 @@
 #ifndef REMOTING_CLIENT_OPENGL_GL_RENDER_LAYER_H_
 #define REMOTING_CLIENT_OPENGL_GL_RENDER_LAYER_H_
 
+#include <array>
+#include <memory>
+
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/client/sys_opengl.h"

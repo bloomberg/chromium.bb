@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_OPENGL_GL_CURSOR_H_
 
 #include <array>
+#include <cstdint>
 #include <memory>
 
 #include "base/macros.h"

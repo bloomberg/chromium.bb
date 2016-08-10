@@ -130,11 +130,13 @@ void GlRenderer::OnRender() {
     return;
   }
 
-  glClear(GL_COLOR_BUFFER_BIT);
-  desktop_.Draw();
-  cursor_.Draw();
-  if (cursor_feedback_.Draw()) {
-    RequestRender();
+  if (canvas_) {
+    glClear(GL_COLOR_BUFFER_BIT);
+    desktop_.Draw();
+    cursor_.Draw();
+    if (cursor_feedback_.Draw()) {
+      RequestRender();
+    }
   }
 
   delegate_->OnFrameRendered();

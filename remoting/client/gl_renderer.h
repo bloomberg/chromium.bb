@@ -28,6 +28,7 @@ class CursorShapeInfo;
 
 class GlCanvas;
 class GlRendererDelegate;
+class GlRendererTest;
 
 // Renders desktop and cursor on the OpenGL surface. Can be created on any
 // thread but thereafter must be used and deleted on the same thread (usually
@@ -94,6 +95,8 @@ class GlRenderer {
   base::WeakPtr<GlRenderer> GetWeakPtr();
 
  private:
+  friend class GlRendererTest;
+
   // Post a rendering task to the task runner of current thread.
   // Do nothing if render_callback_ is not set yet or an existing rendering task
   // in the queue will cover changes before this function is called.

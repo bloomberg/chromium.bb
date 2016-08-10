@@ -41,20 +41,30 @@ static_library("client") {
   }
 }
 
-if (is_android || is_ios) {
-  source_set("opengl_renderer") {
-    sources =
-        rebase_path(remoting_srcs_gypi_values.remoting_opengl_renderer_sources,
-                    ".",
-                    "//remoting")
+source_set("opengl_renderer") {
+  sources =
+      rebase_path(remoting_srcs_gypi_values.remoting_opengl_renderer_sources,
+                  ".",
+                  "//remoting")
 
-    deps = [
-      "//remoting/proto",
-      "//third_party/libyuv",
-      "//third_party/webrtc",
-    ]
+  deps = [
+    "//remoting/proto",
+    "//third_party/libyuv",
+    "//third_party/webrtc",
+  ]
 
-    configs += [ "//third_party/khronos:khronos_headers" ]
+  configs += [ "//third_party/khronos:khronos_headers" ]
+
+  if (is_linux) {
+    libs = [ "GL" ]
+  }
+
+  if (is_mac) {
+    libs = [ "OpenGL.framework" ]
+  }
+
+  if (is_win) {
+    deps += [ "//third_party/angle:libGLESv2" ]
   }
 }
 
@@ -87,6 +97,7 @@ source_set("unit_tests") {
     "client_telemetry_logger_unittest.cc",
     "dual_buffer_frame_consumer_unittest.cc",
     "empty_cursor_filter_unittest.cc",
+    "gl_renderer_unittest.cc",
     "key_event_mapper_unittest.cc",
     "normalizing_input_filter_cros_unittest.cc",
     "normalizing_input_filter_mac_unittest.cc",
@@ -105,6 +116,7 @@ source_set("unit_tests") {
 
   deps = [
     ":client",
+    ":opengl_renderer",
     ":test_support",
     "//remoting/proto",
     "//testing/gmock",
