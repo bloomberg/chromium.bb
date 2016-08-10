@@ -27,6 +27,7 @@ public:
         KeywordType,
         NumberType,
         PositionType,
+        ResourceType,
         SimpleLengthType,
         TokenStreamType,
         TransformType,

@@ -68,6 +68,9 @@ CONSOLE MESSAGE: line 137: interface CSSPositionValue : CSSStyleValue
 CONSOLE MESSAGE: line 137:     getter x
 CONSOLE MESSAGE: line 137:     getter y
 CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSResourceValue : CSSStyleValue
+CONSOLE MESSAGE: line 137:     getter state
+CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CSSRotation : CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter angle
 CONSOLE MESSAGE: line 137:     getter x

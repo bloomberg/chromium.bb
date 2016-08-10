@@ -526,6 +526,10 @@ interface CSSPositionValue : CSSStyleValue
     getter x
     getter y
     method constructor
+interface CSSResourceValue : CSSStyleValue
+    attribute @@toStringTag
+    getter state
+    method constructor
 interface CSSRotation : CSSTransformComponent
     attribute @@toStringTag
     getter angle
