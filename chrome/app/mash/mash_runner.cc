@@ -5,7 +5,6 @@
 #include "chrome/app/mash/mash_runner.h"
 
 #include "ash/mus/window_manager_application.h"
-#include "ash/sysui/sysui_application.h"
 #include "ash/touch_hud/mus/touch_hud_application.h"
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -86,8 +85,6 @@ class DefaultService : public shell::Service,
   // TODO(sky): move this into mash.
   std::unique_ptr<shell::Service> CreateService(
       const std::string& name) {
-    if (name == "mojo:ash_sysui")
-      return base::WrapUnique(new ash::sysui::SysUIApplication);
     if (name == "mojo:ash")
       return base::WrapUnique(new ash::mus::WindowManagerApplication);
     if (name == "mojo:touch_hud")

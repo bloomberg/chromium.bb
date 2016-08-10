@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/sysui/public/interfaces/wallpaper.mojom.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"

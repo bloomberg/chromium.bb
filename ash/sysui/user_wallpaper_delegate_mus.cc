@@ -14,15 +14,15 @@
 namespace {
 
 wallpaper::WallpaperLayout WallpaperLayoutFromMojo(
-    ash::sysui::mojom::WallpaperLayout layout) {
+    ash::mojom::WallpaperLayout layout) {
   switch (layout) {
-    case ash::sysui::mojom::WallpaperLayout::CENTER:
+    case ash::mojom::WallpaperLayout::CENTER:
       return wallpaper::WALLPAPER_LAYOUT_CENTER;
-    case ash::sysui::mojom::WallpaperLayout::CENTER_CROPPED:
+    case ash::mojom::WallpaperLayout::CENTER_CROPPED:
       return wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
-    case ash::sysui::mojom::WallpaperLayout::STRETCH:
+    case ash::mojom::WallpaperLayout::STRETCH:
       return wallpaper::WALLPAPER_LAYOUT_STRETCH;
-    case ash::sysui::mojom::WallpaperLayout::TILE:
+    case ash::mojom::WallpaperLayout::TILE:
       return wallpaper::WALLPAPER_LAYOUT_TILE;
   }
   NOTREACHED();

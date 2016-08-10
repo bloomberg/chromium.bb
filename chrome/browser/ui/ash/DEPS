@@ -1,5 +1,5 @@
 include_rules = [
-  "+ash/sysui/public/interfaces",
+  "+ash/public/interfaces",
   "+components/arc",
   "+components/drive",
   "+components/user_manager",

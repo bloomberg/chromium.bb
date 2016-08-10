@@ -5,9 +5,9 @@
   "capabilities": {
     "required": {
       "*": { "classes": [ "app" ] },
-      "mojo:ash_sysui": {
+      "mojo:ash": {
         "interfaces": [
-          "ash::sysui::mojom::WallpaperController",
+          "ash::mojom::WallpaperController",
           "mash::shelf::mojom::ShelfController"
         ]
       }

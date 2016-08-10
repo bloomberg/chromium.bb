@@ -12,8 +12,8 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "ash/shell.h"
-#include "ash/sysui/public/interfaces/wallpaper.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -188,23 +188,23 @@ void SetKnownUserWallpaperFilesId(
                                           wallpaper_files_id.id());
 }
 
-ash::sysui::mojom::WallpaperLayout WallpaperLayoutToMojo(
+ash::mojom::WallpaperLayout WallpaperLayoutToMojo(
     wallpaper::WallpaperLayout layout) {
   switch (layout) {
     case wallpaper::WALLPAPER_LAYOUT_CENTER:
-      return ash::sysui::mojom::WallpaperLayout::CENTER;
+      return ash::mojom::WallpaperLayout::CENTER;
     case wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED:
-      return ash::sysui::mojom::WallpaperLayout::CENTER_CROPPED;
+      return ash::mojom::WallpaperLayout::CENTER_CROPPED;
     case wallpaper::WALLPAPER_LAYOUT_STRETCH:
-      return ash::sysui::mojom::WallpaperLayout::STRETCH;
+      return ash::mojom::WallpaperLayout::STRETCH;
     case wallpaper::WALLPAPER_LAYOUT_TILE:
-      return ash::sysui::mojom::WallpaperLayout::TILE;
+      return ash::mojom::WallpaperLayout::TILE;
     case wallpaper::NUM_WALLPAPER_LAYOUT:
       NOTREACHED();
-      return ash::sysui::mojom::WallpaperLayout::CENTER;
+      return ash::mojom::WallpaperLayout::CENTER;
   }
   NOTREACHED();
-  return ash::sysui::mojom::WallpaperLayout::CENTER;
+  return ash::mojom::WallpaperLayout::CENTER;
 }
 
 // A helper to set the wallpaper image for Ash and Mash.
@@ -213,8 +213,8 @@ void SetWallpaper(const gfx::ImageSkia& image,
   if (chrome::IsRunningInMash()) {
     shell::Connector* connector =
         content::MojoShellConnection::GetForProcess()->GetConnector();
-    ash::sysui::mojom::WallpaperControllerPtr wallpaper_controller;
-    connector->ConnectToInterface("mojo:ash_sysui", &wallpaper_controller);
+    ash::mojom::WallpaperControllerPtr wallpaper_controller;
+    connector->ConnectToInterface("mojo:ash", &wallpaper_controller);
     wallpaper_controller->SetWallpaper(*image.bitmap(),
                                        WallpaperLayoutToMojo(layout));
     return;

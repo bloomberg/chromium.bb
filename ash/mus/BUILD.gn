@@ -56,8 +56,6 @@ source_set("lib") {
     "shadow.h",
     "shadow_controller.cc",
     "shadow_controller.h",
-    "shelf_layout_impl.cc",
-    "shelf_layout_impl.h",
     "shelf_layout_manager.cc",
     "shelf_layout_manager.h",
     "shelf_layout_manager_delegate.h",
@@ -65,8 +63,6 @@ source_set("lib") {
     "shell_delegate_mus.h",
     "status_layout_manager.cc",
     "status_layout_manager.h",
-    "user_window_controller_impl.cc",
-    "user_window_controller_impl.h",
     "window_manager.cc",
     "window_manager.h",
     "window_manager_application.cc",
@@ -76,6 +72,7 @@ source_set("lib") {
 
   deps = [
     "//components/user_manager",
+    "//mash/shelf/public/interfaces",
     "//ui/app_list/presenter",
     "//ui/message_center",
   ]

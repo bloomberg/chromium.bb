@@ -64,7 +64,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//ash/sysui/public/interfaces",
+    "//ash/public/interfaces",
     "//mash/shelf/public/interfaces",
   ]
 

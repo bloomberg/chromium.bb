@@ -5,14 +5,8 @@
   "capabilities": {
     "required": {
       "*": { "classes": [ "app" ] },
-      "mojo:ash": {
-        "interfaces": [
-          "ash::mojom::ShelfLayout",
-          "ash::mojom::UserWindowController"
-        ]
-      },
       "exe:chrome" : {
-        "interfaces": [ "ash::sysui::mojom::WallpaperManager" ],
+        "interfaces": [ "ash::mojom::WallpaperManager" ],
         "classes": [ "app_list:presenter" ]
       }
     }

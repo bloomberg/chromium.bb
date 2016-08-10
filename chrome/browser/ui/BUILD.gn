@@ -274,7 +274,7 @@ split_static_library("ui") {
       "//ash",
       "//ash:ash_with_content",
       "//ash/common/strings",
-      "//ash/sysui/public/interfaces",
+      "//ash/public/interfaces",
       "//components/user_manager",
       "//mash/shelf/public/interfaces",
       "//ui/app_list/presenter",

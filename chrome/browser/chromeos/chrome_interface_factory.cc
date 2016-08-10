@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/sysui/public/interfaces/wallpaper.mojom.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -113,7 +113,7 @@ class FactoryImpl {
     launchable_->ProcessRequest(std::move(request));
   }
 
-  void BindRequest(ash::sysui::mojom::WallpaperManagerRequest request) {
+  void BindRequest(ash::mojom::WallpaperManagerRequest request) {
     if (!wallpaper_manager_)
       wallpaper_manager_.reset(new ChromeWallpaperManager);
     wallpaper_manager_->ProcessRequest(std::move(request));
@@ -156,7 +156,7 @@ bool ChromeInterfaceFactory::OnConnect(const shell::Identity& remote_identity,
                                                      main_thread_task_runner_);
   FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,
                                                    main_thread_task_runner_);
-  FactoryImpl::AddFactory<ash::sysui::mojom::WallpaperManager>(
+  FactoryImpl::AddFactory<ash::mojom::WallpaperManager>(
       registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<app_list::mojom::AppListPresenter>(
       registry, main_thread_task_runner_);

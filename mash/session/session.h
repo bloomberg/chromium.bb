@@ -49,7 +49,6 @@ class Session : public shell::Service,
               mojom::SessionRequest request) override;
 
   void StartWindowManager();
-  void StartSystemUI();
   void StartAppDriver();
   void StartQuickLaunch();
 

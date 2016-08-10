@@ -12,7 +12,6 @@ source_set("mash") {
   deps = [
     "//ash/mus:lib",
     "//ash/resources",
-    "//ash/sysui:lib",
     "//ash/touch_hud/mus:lib",
     "//base:i18n",
     "//content/public/common",
@@ -45,7 +44,6 @@ service_manifest("manifest") {
   source = "chrome_mash_manifest.json"
   deps = [
     "//ash/mus:manifest",
-    "//ash/sysui:manifest",
     "//ash/touch_hud/mus:manifest",
     "//mash/app_driver:manifest",
     "//mash/quick_launch:manifest",
@@ -56,7 +54,6 @@ service_manifest("manifest") {
   packaged_services = [
     "app_driver",
     "ash",
-    "ash_sysui",
     "mash_session",
     "quick_launch",
     "task_viewer",

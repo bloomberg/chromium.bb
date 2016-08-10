@@ -8,13 +8,10 @@ mojom("interfaces") {
   sources = [
     "ash_window_type.mojom",
     "container.mojom",
-    "shelf_layout.mojom",
-    "user_window_controller.mojom",
+    "wallpaper.mojom",
   ]
 
-  public_deps = [
-    "//mash/shelf/public/interfaces",
+  deps = [
+    "//skia/public/interfaces",
   ]
-
-  use_new_wrapper_types = false
 }

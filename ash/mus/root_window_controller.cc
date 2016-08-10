@@ -164,17 +164,6 @@ WmWindowMus* RootWindowController::GetWindowByShellWindowId(int id) {
       WmWindowMus::Get(root_)->GetChildByShellWindowId(id));
 }
 
-ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
-  return static_cast<ShelfLayoutManager*>(
-      layout_managers_[GetWindowForContainer(Container::USER_PRIVATE_SHELF)]
-          .get());
-}
-
-StatusLayoutManager* RootWindowController::GetStatusLayoutManager() {
-  return static_cast<StatusLayoutManager*>(
-      layout_managers_[GetWindowForContainer(Container::STATUS)].get());
-}
-
 gfx::Rect RootWindowController::CalculateDefaultBounds(
     ui::Window* window) const {
   if (window->HasSharedProperty(
@@ -206,13 +195,7 @@ void RootWindowController::OnShelfWindowAvailable() {
   DockedWindowLayoutManager* docked_window_layout_manager =
       DockedWindowLayoutManager::Get(WmWindowMus::Get(root_));
 
-  // Following code expects the shelf to be called only once.
-  // TODO(sky): this check is only necessary while we have shelf hosted in
-  // sysui (as sysui can restart). Once that is fixed there should be a DCHECK
-  // that the shelf hasn't been set.
-  if (docked_window_layout_manager->shelf())
-    return;
-
+  DCHECK(!docked_window_layout_manager->shelf());
   docked_window_layout_manager->SetShelf(wm_shelf_.get());
 
   PanelLayoutManager::Get(WmWindowMus::Get(root_))->SetShelf(wm_shelf_.get());

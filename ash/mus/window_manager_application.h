@@ -10,9 +10,6 @@
 #include <memory>
 #include <set>
 
-#include "ash/mus/window_manager_observer.h"
-#include "ash/public/interfaces/shelf_layout.mojom.h"
-#include "ash/public/interfaces/user_window_controller.mojom.h"
 #include "base/macros.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -36,18 +33,14 @@ namespace ash {
 namespace mus {
 
 class AcceleratorRegistrarImpl;
-class RootWindowController;
-class ShelfLayoutImpl;
-class UserWindowControllerImpl;
 class WindowManager;
 
+// Hosts the window manager and the ash system user interface for mash.
+// TODO(mash): Port ash_sysui's ShelfController and WallpaperController here.
 class WindowManagerApplication
     : public shell::Service,
-      public shell::InterfaceFactory<mojom::ShelfLayout>,
-      public shell::InterfaceFactory<mojom::UserWindowController>,
       public shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>,
-      public mash::session::mojom::ScreenlockStateListener,
-      public WindowManagerObserver {
+      public mash::session::mojom::ScreenlockStateListener {
  public:
   WindowManagerApplication();
   ~WindowManagerApplication() override;
@@ -69,15 +62,6 @@ class WindowManagerApplication
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry) override;
 
-  // shell::InterfaceFactory<mojom::ShelfLayout>:
-  void Create(const shell::Identity& remote_identity,
-              mojo::InterfaceRequest<mojom::ShelfLayout> request) override;
-
-  // shell::InterfaceFactory<mojom::UserWindowController>:
-  void Create(
-      const shell::Identity& remote_identity,
-      mojo::InterfaceRequest<mojom::UserWindowController> request) override;
-
   // shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
   void Create(
       const shell::Identity& remote_identity,
@@ -86,29 +70,9 @@ class WindowManagerApplication
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;
 
-  // WindowManagerObserver:
-  void OnRootWindowControllerAdded(RootWindowController* controller) override;
-  void OnWillDestroyRootWindowController(
-      RootWindowController* controller) override;
-
   tracing::Provider tracing_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
-
-  // The |shelf_layout_| object is created once OnEmbed() is called. Until that
-  // time |shelf_layout_requests_| stores pending interface requests.
-  std::unique_ptr<ShelfLayoutImpl> shelf_layout_;
-  mojo::BindingSet<mojom::ShelfLayout> shelf_layout_bindings_;
-  std::vector<mojo::InterfaceRequest<mojom::ShelfLayout>>
-      shelf_layout_requests_;
-
-  // |user_window_controller_| is created once OnEmbed() is called. Until that
-  // time |user_window_controller_requests_| stores pending interface requests.
-  std::unique_ptr<UserWindowControllerImpl> user_window_controller_;
-  mojo::BindingSet<mojom::UserWindowController>
-      user_window_controller_bindings_;
-  std::vector<mojo::InterfaceRequest<mojom::UserWindowController>>
-      user_window_controller_requests_;
 
   std::unique_ptr<ui::GpuService> gpu_service_;
   std::unique_ptr<WindowManager> window_manager_;

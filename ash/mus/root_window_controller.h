@@ -27,8 +27,6 @@ class WorkspaceLayoutManager;
 namespace mus {
 
 class LayoutManager;
-class ShelfLayoutManager;
-class StatusLayoutManager;
 class WindowManager;
 class WmRootWindowControllerMus;
 class WmShelfMus;
@@ -64,8 +62,6 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
 
   const display::Display& display() const { return display_; }
 
-  ShelfLayoutManager* GetShelfLayoutManager();
-  StatusLayoutManager* GetStatusLayoutManager();
   WorkspaceLayoutManager* workspace_layout_manager() {
     return workspace_layout_manager_;
   }

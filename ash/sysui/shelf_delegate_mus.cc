@@ -27,18 +27,16 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/mus/window_manager_connection.h"
 
-using ash::mojom::UserWindowController;
-
 namespace ash {
 namespace sysui {
 
 namespace {
 
-// A ShelfItemDelegate used for pinned items and open user windows.
+// A ShelfItemDelegate used for pinned items.
+// TODO(mash): Support open user windows, etc.
 class ShelfItemDelegateMus : public ShelfItemDelegate {
  public:
-  explicit ShelfItemDelegateMus(UserWindowController* user_window_controller)
-      : user_window_controller_(user_window_controller) {}
+  ShelfItemDelegateMus() {}
   ~ShelfItemDelegateMus() override {}
 
   void SetDelegate(
@@ -90,7 +88,7 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
       return command_id > 0;
     }
     void ExecuteCommand(int command_id, int event_flags) override {
-      item_delegate_->user_window_controller_->ActivateUserWindow(command_id);
+      NOTIMPLEMENTED();
     }
 
    private:
@@ -107,9 +105,8 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
       return kNewWindowCreated;
     }
     if (window_id_to_title_.size() == 1) {
-      user_window_controller_->ActivateUserWindow(
-          window_id_to_title_.begin()->first);
-      return kExistingWindowActivated;
+      // TODO(mash): Activate the window and return kExistingWindowActivated.
+      NOTIMPLEMENTED();
     }
     return kNoAction;
   }
@@ -141,7 +138,6 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
   bool pinned_ = false;
   std::map<uint32_t, base::string16> window_id_to_title_;
   base::string16 title_;
-  UserWindowController* user_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfItemDelegateMus);
 };
@@ -175,15 +171,7 @@ gfx::ImageSkia GetShelfIconFromSerializedBitmap(
 
 }  // namespace
 
-ShelfDelegateMus::ShelfDelegateMus(ShelfModel* model)
-    : model_(model), binding_(this) {
-  ::shell::Connector* connector =
-      views::WindowManagerConnection::Get()->connector();
-  connector->ConnectToInterface("mojo:ash", &shelf_layout_);
-  connector->ConnectToInterface("mojo:ash", &user_window_controller_);
-  user_window_controller_->AddUserWindowObserver(
-      binding_.CreateInterfacePtrAndBind());
-}
+ShelfDelegateMus::ShelfDelegateMus(ShelfModel* model) : model_(model) {}
 
 ShelfDelegateMus::~ShelfDelegateMus() {}
 
@@ -202,8 +190,6 @@ void ShelfDelegateMus::OnShelfAlignmentChanged(Shelf* shelf) {
   SetShelfPreferredSizes(shelf);
   mash::shelf::mojom::Alignment alignment =
       static_cast<mash::shelf::mojom::Alignment>(shelf->alignment());
-  shelf_layout_->SetAlignment(alignment);
-
   observers_.ForAllPtrs(
       [alignment](mash::shelf::mojom::ShelfObserver* observer) {
         observer->OnAlignmentChanged(alignment);
@@ -214,8 +200,6 @@ void ShelfDelegateMus::OnShelfAutoHideBehaviorChanged(Shelf* shelf) {
   mash::shelf::mojom::AutoHideBehavior behavior =
       static_cast<mash::shelf::mojom::AutoHideBehavior>(
           shelf->auto_hide_behavior());
-  shelf_layout_->SetAutoHideBehavior(behavior);
-
   observers_.ForAllPtrs(
       [behavior](mash::shelf::mojom::ShelfObserver* observer) {
         observer->OnAutoHideBehaviorChanged(behavior);
@@ -312,7 +296,7 @@ void ShelfDelegateMus::PinItem(
   model_->Add(shelf_item);
 
   std::unique_ptr<ShelfItemDelegateMus> item_delegate(
-      new ShelfItemDelegateMus(user_window_controller_.get()));
+      new ShelfItemDelegateMus());
   item_delegate->SetDelegate(std::move(delegate));
   item_delegate->set_pinned(true);
   item_delegate->set_title(item->app_title.To<base::string16>());
@@ -342,115 +326,6 @@ void ShelfDelegateMus::SetItemImage(const mojo::String& app_id,
   DCHECK_GE(index, 0);
   ShelfItem item = *model_->ItemByID(shelf_id);
   item.image = GetShelfIconFromBitmap(image);
-  model_->Set(index, item);
-}
-
-void ShelfDelegateMus::OnUserWindowObserverAdded(
-    mojo::Array<ash::mojom::UserWindowPtr> user_windows) {
-  for (size_t i = 0; i < user_windows.size(); ++i)
-    OnUserWindowAdded(std::move(user_windows[i]));
-}
-
-void ShelfDelegateMus::OnUserWindowAdded(
-    ash::mojom::UserWindowPtr user_window) {
-  DCHECK(!window_id_to_shelf_id_.count(user_window->window_id));
-
-  if (user_window->ignored_by_shelf)
-    return;
-
-  std::string app_id(user_window->window_app_id.To<std::string>());
-  if (app_id_to_shelf_id_.count(app_id)) {
-    ShelfID shelf_id = app_id_to_shelf_id_[app_id];
-    window_id_to_shelf_id_.insert(
-        std::make_pair(user_window->window_id, shelf_id));
-
-    ShelfItemDelegateMus* item_delegate = GetShelfItemDelegate(shelf_id);
-    item_delegate->AddWindow(user_window->window_id,
-                             user_window->window_title.To<base::string16>());
-    return;
-  }
-
-  ShelfID shelf_id = model_->next_id();
-  window_id_to_shelf_id_.insert(
-      std::make_pair(user_window->window_id, shelf_id));
-  app_id_to_shelf_id_.insert(std::make_pair(app_id, shelf_id));
-  shelf_id_to_app_id_.insert(std::make_pair(shelf_id, app_id));
-
-  ShelfItem item;
-  item.type = TYPE_PLATFORM_APP;
-  item.status = user_window->window_has_focus ? STATUS_ACTIVE : STATUS_RUNNING;
-  item.image = GetShelfIconFromSerializedBitmap(user_window->window_app_icon);
-  model_->Add(item);
-
-  std::unique_ptr<ShelfItemDelegateMus> item_delegate(
-      new ShelfItemDelegateMus(user_window_controller_.get()));
-  item_delegate->AddWindow(user_window->window_id,
-                           user_window->window_title.To<base::string16>());
-  model_->SetShelfItemDelegate(shelf_id, std::move(item_delegate));
-}
-
-void ShelfDelegateMus::OnUserWindowRemoved(uint32_t window_id) {
-  if (!window_id_to_shelf_id_.count(window_id))
-    return;
-  ShelfID shelf_id = window_id_to_shelf_id_[window_id];
-  ShelfItemDelegateMus* item_delegate = GetShelfItemDelegate(shelf_id);
-  item_delegate->RemoveWindow(window_id);
-  window_id_to_shelf_id_.erase(window_id);
-  if (item_delegate->window_id_to_title().empty() && !item_delegate->pinned()) {
-    model_->RemoveItemAt(model_->ItemIndexByID(shelf_id));
-    const std::string& app_id = shelf_id_to_app_id_[shelf_id];
-    app_id_to_shelf_id_.erase(app_id);
-    shelf_id_to_app_id_.erase(shelf_id);
-  }
-}
-
-void ShelfDelegateMus::OnUserWindowTitleChanged(
-    uint32_t window_id,
-    const mojo::String& window_title) {
-  if (!window_id_to_shelf_id_.count(window_id))
-    return;
-  ShelfID shelf_id = window_id_to_shelf_id_[window_id];
-  ShelfItemDelegateMus* item_delegate = GetShelfItemDelegate(shelf_id);
-  item_delegate->SetWindowTitle(window_id, window_title.To<base::string16>());
-
-  // There's nothing in the ShelfItem that needs to be updated. But we still
-  // need to update the ShelfModel so that the observers can pick up any
-  // changes.
-  int index = model_->ItemIndexByID(shelf_id);
-  DCHECK_GE(index, 0);
-  ShelfItems::const_iterator iter = model_->ItemByID(shelf_id);
-  DCHECK(iter != model_->items().end());
-  model_->Set(index, *iter);
-}
-
-void ShelfDelegateMus::OnUserWindowAppIconChanged(
-    uint32_t window_id,
-    mojo::Array<uint8_t> app_icon) {
-  if (!window_id_to_shelf_id_.count(window_id))
-    return;
-  // Find the shelf ID for this window.
-  ShelfID shelf_id = window_id_to_shelf_id_[window_id];
-  DCHECK_GT(shelf_id, 0);
-
-  // Update the icon in the ShelfItem.
-  int index = model_->ItemIndexByID(shelf_id);
-  DCHECK_GE(index, 0);
-  ShelfItem item = *model_->ItemByID(shelf_id);
-  item.image = GetShelfIconFromSerializedBitmap(app_icon);
-  model_->Set(index, item);
-}
-
-void ShelfDelegateMus::OnUserWindowFocusChanged(uint32_t window_id,
-                                                bool has_focus) {
-  if (!window_id_to_shelf_id_.count(window_id))
-    return;
-  ShelfID shelf_id = window_id_to_shelf_id_[window_id];
-  int index = model_->ItemIndexByID(shelf_id);
-  DCHECK_GE(index, 0);
-  ShelfItems::const_iterator iter = model_->ItemByID(shelf_id);
-  DCHECK(iter != model_->items().end());
-  ShelfItem item = *iter;
-  item.status = has_focus ? STATUS_ACTIVE : STATUS_RUNNING;
   model_->Set(index, item);
 }
 

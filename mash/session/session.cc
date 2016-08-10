@@ -30,8 +30,9 @@ Session::~Session() {}
 void Session::OnStart(const shell::Identity& identity) {
   StartAppDriver();
   StartWindowManager();
-  StartSystemUI();
   StartQuickLaunch();
+  // Launch a chrome window for dev convience; don't do this in the long term.
+  connector()->Connect("exe:chrome");
 }
 
 bool Session::OnConnect(const shell::Identity& remote_identity,
@@ -93,12 +94,6 @@ void Session::StartWindowManager() {
       "mojo:ash",
       base::Bind(&Session::StartWindowManager,
                  base::Unretained(this)));
-}
-
-void Session::StartSystemUI() {
-  StartRestartableService("mojo:ash_sysui",
-                          base::Bind(&Session::StartSystemUI,
-                                     base::Unretained(this)));
 }
 
 void Session::StartAppDriver() {

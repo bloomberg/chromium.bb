@@ -8,9 +8,6 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/mus/accelerators/accelerator_registrar_impl.h"
-#include "ash/mus/root_window_controller.h"
-#include "ash/mus/shelf_layout_impl.h"
-#include "ash/mus/user_window_controller_impl.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -92,7 +89,6 @@ void WindowManagerApplication::InitWindowManager(
   InitializeComponents();
 
   window_manager_->Init(window_tree_client);
-  window_manager_->AddObserver(this);
 }
 
 void WindowManagerApplication::OnStart(const shell::Identity& identity) {
@@ -113,8 +109,6 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
 
 bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,
                                          shell::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::ShelfLayout>(this);
-  registry->AddInterface<mojom::UserWindowController>(this);
   registry->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
   if (remote_identity.name() == "mojo:mash_session") {
     connector()->ConnectToInterface(remote_identity, &session_);
@@ -122,28 +116,6 @@ bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,
         screenlock_state_listener_binding_.CreateInterfacePtrAndBind());
   }
   return true;
-}
-
-void WindowManagerApplication::Create(
-    const shell::Identity& remote_identity,
-    mojo::InterfaceRequest<mojom::ShelfLayout> request) {
-  // TODO(msw): Handle multiple shelves (one per display).
-  if (!window_manager_->GetRootWindowControllers().empty()) {
-    shelf_layout_bindings_.AddBinding(shelf_layout_.get(), std::move(request));
-  } else {
-    shelf_layout_requests_.push_back(std::move(request));
-  }
-}
-
-void WindowManagerApplication::Create(
-    const shell::Identity& remote_identity,
-    mojo::InterfaceRequest<mojom::UserWindowController> request) {
-  if (!window_manager_->GetRootWindowControllers().empty()) {
-    user_window_controller_bindings_.AddBinding(user_window_controller_.get(),
-                                                std::move(request));
-  } else {
-    user_window_controller_requests_.push_back(std::move(request));
-  }
 }
 
 void WindowManagerApplication::Create(
@@ -167,41 +139,6 @@ void WindowManagerApplication::Create(
 
 void WindowManagerApplication::ScreenlockStateChanged(bool locked) {
   window_manager_->SetScreenLocked(locked);
-}
-
-void WindowManagerApplication::OnRootWindowControllerAdded(
-    RootWindowController* controller) {
-  if (user_window_controller_)
-    return;
-
-  // TODO(sky): |shelf_layout_| and |user_window_controller_| should really
-  // be owned by WindowManager and/or RootWindowController. But this code is
-  // temporary while migrating away from sysui.
-
-  shelf_layout_.reset(new ShelfLayoutImpl);
-  user_window_controller_.reset(new UserWindowControllerImpl());
-
-  // TODO(msw): figure out if this should be per display, or global.
-  user_window_controller_->Initialize(controller);
-  for (auto& request : user_window_controller_requests_)
-    user_window_controller_bindings_.AddBinding(user_window_controller_.get(),
-                                                std::move(request));
-  user_window_controller_requests_.clear();
-
-  // TODO(msw): figure out if this should be per display, or global.
-  shelf_layout_->Initialize(controller);
-  for (auto& request : shelf_layout_requests_)
-    shelf_layout_bindings_.AddBinding(shelf_layout_.get(), std::move(request));
-  shelf_layout_requests_.clear();
-}
-
-void WindowManagerApplication::OnWillDestroyRootWindowController(
-    RootWindowController* controller) {
-  // TODO(msw): this isn't right, ownership should belong in WindowManager
-  // and/or RootWindowController. But this is temporary until we get rid of
-  // sysui.
-  shelf_layout_.reset();
-  user_window_controller_.reset();
 }
 
 }  // namespace mus

@@ -7,8 +7,7 @@
       "*": { "classes": [ "app", "test" ] },
       "mojo:ash": {
         "interfaces": [
-          "ui::mojom::AcceleratorRegistrar",
-          "ash::mojom::UserWindowController"
+          "ui::mojom::AcceleratorRegistrar"
         ]
       }
     }

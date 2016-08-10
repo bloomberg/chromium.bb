@@ -6,7 +6,7 @@
 #define ASH_SYSUI_USER_WALLPAPER_DELEGATE_MUS_H_
 
 #include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/sysui/public/interfaces/wallpaper.mojom.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 
 namespace ash {

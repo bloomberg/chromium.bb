@@ -11,7 +11,7 @@ ChromeWallpaperManager::ChromeWallpaperManager() {}
 ChromeWallpaperManager::~ChromeWallpaperManager() {}
 
 void ChromeWallpaperManager::ProcessRequest(
-    ash::sysui::mojom::WallpaperManagerRequest request) {
+    ash::mojom::WallpaperManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
