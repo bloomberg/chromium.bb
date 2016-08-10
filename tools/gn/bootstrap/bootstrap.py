@@ -373,6 +373,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/base_switches.cc',
       'base/callback_internal.cc',
       'base/command_line.cc',
+      'base/debug/activity_tracker.cc',
       'base/debug/alias.cc',
       'base/debug/stack_trace.cc',
       'base/debug/task_annotator.cc',
