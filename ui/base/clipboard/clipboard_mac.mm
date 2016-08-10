@@ -39,11 +39,9 @@ NSString* const kPepperCustomDataPboardType =
     @"org.chromium.pepper-custom-data";
 
 NSPasteboard* GetPasteboard() {
-  // The pasteboard should not be nil in a UI session, but this handy DCHECK
-  // can help track down problems if someone tries using clipboard code outside
-  // of a UI session.
+  // The pasteboard can always be nil, since there is a finite amount of storage
+  // that must be shared between all pasteboards.
   NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-  DCHECK(pasteboard);
   return pasteboard;
 }
 
@@ -227,11 +225,12 @@ void ClipboardMac::ReadAvailableTypes(ClipboardType type,
     types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
   if (IsFormatAvailable(Clipboard::GetRtfFormatType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
-  if ([NSImage canInitWithPasteboard:GetPasteboard()])
+
+  NSPasteboard* pb = GetPasteboard();
+  if (pb && [NSImage canInitWithPasteboard:pb])
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 
-  NSPasteboard* pb = GetPasteboard();
   if ([[pb types] containsObject:kWebCustomDataPboardType]) {
     NSData* data = [pb dataForType:kWebCustomDataPboardType];
     if ([data length])
@@ -320,7 +319,8 @@ SkBitmap ClipboardMac::ReadImage(ClipboardType type) const {
             initWithContentsOfURL:[NSURL fileURLWithPath:[paths lastObject]]]);
       }
     } else {
-      image.reset([[NSImage alloc] initWithPasteboard:pb]);
+      if (pb)
+        image.reset([[NSImage alloc] initWithPasteboard:pb]);
     }
   } @catch (id exception) {
   }
