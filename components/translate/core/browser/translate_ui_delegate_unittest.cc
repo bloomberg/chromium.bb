@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -96,16 +95,11 @@ class TranslateUIDelegateTest : public ::testing::Test {
     ASSERT_FALSE(client_->GetTranslatePrefs()->IsTooOftenDenied("ar"));
   }
 
-  void TurnOnTranslate2016Q2UIFlag() {
-    scoped_feature_list_.InitAndEnableFeature(translate::kTranslateUI2016Q2);
-  }
-
   MockTranslateDriver driver_;
   std::unique_ptr<MockTranslateClient> client_;
   std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<TranslateManager> manager_;
   std::unique_ptr<TranslateUIDelegate> delegate_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateUIDelegateTest);

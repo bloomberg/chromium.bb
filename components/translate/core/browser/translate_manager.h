@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/callback_list.h"
+#include "base/feature_list.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/translate/core/browser/language_state.h"
@@ -21,9 +23,16 @@ class PrefService;
 
 namespace translate {
 
+extern const base::Feature kTranslateLanguageByULP;
+
 class TranslateClient;
 class TranslateDriver;
 class TranslatePrefs;
+
+namespace testing {
+class TranslateManagerTest;
+}  // namespace testing
+
 struct TranslateErrorDetails;
 
 // The TranslateManager class is responsible for showing an info-bar when a page
@@ -52,6 +61,7 @@ class TranslateManager {
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
   // translation service:
+  //     High confidence and high probability reading language in ULP
   //     the UI language
   //     the accept-language list
   // If no language is found then an empty string is returned.
@@ -103,10 +113,20 @@ class TranslateManager {
   static void SetIgnoreMissingKeyForTesting(bool ignore);
 
  private:
+  friend class translate::testing::TranslateManagerTest;
+
   // Sends a translation request to the TranslateDriver.
   void DoTranslatePage(const std::string& translate_script,
                        const std::string& source_lang,
                        const std::string& target_lang);
+
+  // Returns the language to translate to by looking at ULP. Return empty string
+  // If it cannot conclude from ULP.
+  static std::string GetTargetLanguageFromULP(const TranslatePrefs* prefs);
+
+  // Return true if the language is in the ULP with high confidence and high
+  // probability.
+  bool LanguageInULP(const std::string& language) const;
 
   // Notifies all registered callbacks of translate errors.
   void NotifyTranslateError(TranslateErrors::Type error_type);

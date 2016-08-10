@@ -4,8 +4,10 @@
 
 #include "components/translate/core/browser/translate_manager.h"
 
+#include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -16,13 +18,20 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
+using testing::Return;
+using testing::SetArgPointee;
+
 namespace translate {
 
 namespace {
+
+const char kTrialName[] = "MyTrial";
 
 #if defined(OS_CHROMEOS)
 const char kLanguagePreferredLanguages[] =
@@ -115,6 +124,10 @@ class MockTranslateClient : public TranslateClient {
   PrefService* prefs_;
 };
 
+}  // namespace
+
+namespace testing {
+
 class TranslateManagerTest : public ::testing::Test {
  protected:
   TranslateManagerTest()
@@ -122,7 +135,8 @@ class TranslateManagerTest : public ::testing::Test {
                          kAcceptLanguages,
                          kLanguagePreferredLanguages),
         manager_(TranslateDownloadManager::GetInstance()),
-        mock_translate_client_(&driver_, &prefs_) {}
+        mock_translate_client_(&driver_, &prefs_),
+        field_trial_list_(new base::FieldTrialList(nullptr)) {}
 
   void SetUp() override {
     // Ensure we're not requesting a server-side translate language list.
@@ -139,6 +153,74 @@ class TranslateManagerTest : public ::testing::Test {
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
     manager_->ResetForTesting();
   }
+
+  void TearDown() override {
+    manager_->ResetForTesting();
+    variations::testing::ClearAllVariationParams();
+  }
+
+  // Utility function to prepare translate_manager_ for testing.
+  void PrepareTranslateManager() {
+    TranslateManager::SetIgnoreMissingKeyForTesting(true);
+    translate_manager_.reset(new translate::TranslateManager(
+        &mock_translate_client_, kAcceptLanguages));
+  }
+
+  // Prepare the test for ULP related tests.
+  // Put the ulp json into profile.
+  void PrepareULPTest(const char* ulp_json, bool turn_on_feature) {
+    PrepareTranslateManager();
+    std::unique_ptr<base::Value> profile(CreateProfileFromJSON(ulp_json));
+    prefs_.SetUserPref(TranslatePrefs::kPrefLanguageProfile, profile.release());
+    if (turn_on_feature)
+      TurnOnTranslateByULP();
+  }
+
+  std::unique_ptr<base::Value> CreateProfileFromJSON(const char* json) {
+    int error_code = 0;
+    std::string error_msg;
+    int error_line = 0;
+    int error_column = 0;
+
+    std::unique_ptr<base::Value> profile(base::JSONReader::ReadAndReturnError(
+        json, 0, &error_code, &error_msg, &error_line, &error_column));
+
+    EXPECT_EQ(0, error_code) << error_msg << " at " << error_line << ":"
+                             << error_column << std::endl
+                             << json;
+    return profile;
+  }
+
+  void TurnOnTranslateByULP() {
+    scoped_refptr<base::FieldTrial> trial(
+        CreateFieldTrial(kTrialName, 100, "Enabled", NULL));
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        translate::kTranslateLanguageByULP.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
+  scoped_refptr<base::FieldTrial> CreateFieldTrial(
+      const std::string& trial_name,
+      int total_probability,
+      const std::string& default_group_name,
+      int* default_group_number) {
+    return base::FieldTrialList::FactoryGetFieldTrial(
+        trial_name, total_probability, default_group_name,
+        base::FieldTrialList::kNoExpirationYear, 1, 1,
+        base::FieldTrial::SESSION_RANDOMIZED, default_group_number);
+  }
+
+  // Functions to help TEST_F in subclass to access private functions in
+  // TranslteManager so we can unit test them.
+  std::string CallGetTargetLanguageFromULP() {
+    return TranslateManager::GetTargetLanguageFromULP(&translate_prefs_);
+  }
+  bool CallLanguageInULP(const std::string& language) {
+    return translate_manager_->LanguageInULP(language);
+  }
+
   user_prefs::TestingPrefServiceSyncable prefs_;
 
   // TODO(groby): request TranslatePrefs from |mock_translate_client_| instead.
@@ -149,11 +231,10 @@ class TranslateManagerTest : public ::testing::Test {
   translate::testing::MockTranslateDriver driver_;
   ::testing::NiceMock<MockTranslateClient> mock_translate_client_;
   std::unique_ptr<TranslateManager> translate_manager_;
-
-  void TearDown() override { manager_->ResetForTesting(); }
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-}  // namespace
 
 // Target language comes from application locale if the locale's language
 // is supported.
@@ -224,5 +305,149 @@ TEST_F(TranslateManagerTest, DontTranslateOffline) {
       translate::TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS,
       1);
 }
+
+// Utility function to set the threshold params
+void ChangeThresholdInParams(
+    const char* initiate_translation_confidence_threshold,
+    const char* initiate_translation_probability_threshold,
+    const char* target_language_confidence_threshold,
+    const char* target_language_probability_threshold) {
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      kTrialName, "Enabled", {{"initiate_translation_ulp_confidence_threshold",
+                               initiate_translation_confidence_threshold},
+                              {"initiate_translation_ulp_probability_threshold",
+                               initiate_translation_probability_threshold},
+                              {"target_language_ulp_confidence_threshold",
+                               target_language_confidence_threshold},
+                              {"target_language_ulp_probability_threshold",
+                               target_language_probability_threshold}}));
+}
+
+// Normal ULP in Json
+const char ulp_1[] =
+    "{\n"
+    "  \"reading\": {\n"
+    "    \"confidence\": 0.8,\n"
+    "    \"preference\": [\n"
+    "      {\n"
+    "        \"language\": \"fr\",\n"
+    "        \"probability\": 0.6\n"
+    "      }, {\n"
+    "        \"language\": \"pt-PT\",\n"
+    "        \"probability\": 0.4\n"
+    "      }\n"
+    "    ]\n"
+    "  }\n"
+    "}";
+
+// ULP in Json with smaller probability of several es-* language codes
+// sum up to 0.7.
+const char ulp_2[] =
+    "{\n"
+    "  \"reading\": {\n"
+    "    \"confidence\": 0.9,\n"
+    "    \"preference\": [\n"
+    "      {\n"
+    "        \"language\": \"fr\",\n"
+    "        \"probability\": 0.3\n"
+    "      }, {\n"
+    "        \"language\": \"es-419\",\n"
+    "        \"probability\": 0.2\n"
+    "      }, {\n"
+    "        \"language\": \"es-MX\",\n"
+    "        \"probability\": 0.2\n"
+    "      }, {\n"
+    "        \"language\": \"es-US\",\n"
+    "        \"probability\": 0.2\n"
+    "      }, {\n"
+    "        \"language\": \"es-CL\",\n"
+    "        \"probability\": 0.1\n"
+    "      }\n"
+    "    ]\n"
+    "  }\n"
+    "}";
+
+TEST_F(TranslateManagerTest, TestGetTargetLanguageFromULPFeatureOff) {
+  PrepareULPTest(ulp_1, false);
+
+  EXPECT_STREQ("", CallGetTargetLanguageFromULP().c_str());
+}
+
+TEST_F(TranslateManagerTest, TestGetTargetLanguageFromULPHighConfidence) {
+  PrepareULPTest(ulp_1, true);
+
+  // The default hardcoded threshold are confidence: 0.7, probability: 0.55
+  EXPECT_STREQ("fr", CallGetTargetLanguageFromULP().c_str());
+}
+
+TEST_F(TranslateManagerTest,
+       TestGetTargetLanguageFromULPHighConfidenceThresholdFromConfig) {
+  PrepareULPTest(ulp_1, true);
+  ChangeThresholdInParams("", "", "0.81", "0.5");
+
+  // Should get empty string as result since the confidence threshold is above
+  // the ULP (0.8 in the ulp_1).
+  EXPECT_STREQ("", CallGetTargetLanguageFromULP().c_str());
+}
+
+TEST_F(TranslateManagerTest,
+       TestGetTargetLanguageFromULPHighProbabilityThresholdFromConfig) {
+  PrepareULPTest(ulp_1, true);
+  ChangeThresholdInParams("", "", "0.4", "0.61");
+
+  // Should get empty string as result since the confidence threshold is above
+  // the ULP (0.6 for fr in the ulp_1).
+  EXPECT_STREQ("", CallGetTargetLanguageFromULP().c_str());
+}
+
+TEST_F(TranslateManagerTest, TestGetTargetLanguageFromULPProbabilitySumUp) {
+  PrepareULPTest(ulp_2, true);
+  ChangeThresholdInParams("", "", "0.4", "0.61");
+
+  // Should get "es" since the sum of the "es-*" probability is 0.7.
+  EXPECT_STREQ("es", CallGetTargetLanguageFromULP().c_str());
+}
+
+TEST_F(TranslateManagerTest, TestLanguageInULPFeatureOff) {
+  PrepareULPTest(ulp_1, false);
+
+  EXPECT_FALSE(CallLanguageInULP("fr"));
+  EXPECT_FALSE(CallLanguageInULP("pt"));
+  EXPECT_FALSE(CallLanguageInULP("zh-TW"));
+}
+
+TEST_F(TranslateManagerTest, TestLanguageInULPDefaultThreshold) {
+  PrepareULPTest(ulp_1, true);
+
+  // The default hardcoded threshold are confidence: 0.75, probability: 0.5
+  EXPECT_TRUE(CallLanguageInULP("fr"));
+  EXPECT_FALSE(CallLanguageInULP("pt"));
+  EXPECT_FALSE(CallLanguageInULP("zh-TW"));
+}
+
+TEST_F(TranslateManagerTest,
+       TestLanguageInULPHighConfidenceThresholdFromConfig) {
+  PrepareULPTest(ulp_1, true);
+  ChangeThresholdInParams("0.9", "0.5", "", "");
+  // "fr" and "pt" should return false because the confidence threshold is set
+  // to 0.9.
+  EXPECT_FALSE(CallLanguageInULP("fr"));
+  EXPECT_FALSE(CallLanguageInULP("pt"));
+  EXPECT_FALSE(CallLanguageInULP("zh-TW"));
+}
+
+TEST_F(TranslateManagerTest,
+       TestLanguageInULPLowConfidenceThresholdFromConfig) {
+  PrepareULPTest(ulp_1, true);
+  ChangeThresholdInParams("0.79", "0.39", "", "");
+  // Both "fr" and "pt" should reutrn true because the confidence threshold is
+  // 0.79 and lower than 0.8 and the probability threshold is lower than both
+  // the one with "fr" (0.6) and "pt-PT" (0.4).
+  EXPECT_TRUE(CallLanguageInULP("fr"));
+  EXPECT_TRUE(CallLanguageInULP("pt"));
+  EXPECT_FALSE(CallLanguageInULP("zh-TW"));
+}
+
+}  // namespace testing
 
 }  // namespace translate

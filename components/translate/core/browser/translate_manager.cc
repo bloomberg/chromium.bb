@@ -4,10 +4,13 @@
 
 #include "components/translate/core/browser/translate_manager.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -30,6 +33,7 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/translate/core/common/translate_util.h"
+#include "components/variations/variations_associated_data.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
@@ -37,6 +41,8 @@
 
 namespace translate {
 
+const base::Feature kTranslateLanguageByULP{"TranslateLanguageByULP",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 namespace {
 
 // Callbacks for translate errors.
@@ -51,6 +57,60 @@ const char kSourceLanguageQueryName[] = "sl";
 
 // Used in kReportLanguageDetectionErrorURL to specify the page URL.
 const char kUrlQueryName[] = "u";
+
+// Name for params in config for considering ULP in GetTargetLanguage().
+const char kTargetLanguageULPConfidenceThresholdName[] =
+    "target_language_ulp_confidence_threshold";
+const char kTargetLanguageULPProbabilityThresholdName[] =
+    "target_language_ulp_probability_threshold";
+
+// Name for params in config for considering ULP in InitiateTranslation().
+const char kInitiateTranslationULPConfidenceThresholdName[] =
+    "initiate_translation_ulp_confidence_threshold";
+const char kInitiateTranslationULPProbabilityThresholdName[] =
+    "initiate_translation_ulp_probability_threshold";
+
+// Constants for considering ULP. These built-in constatants of default will be
+// override by the value in config params if present.
+//   Default constants for the GetTargetLanguage() function:
+//     The confidence threshold that we will consider to use the ULP
+//     "reading list".
+const double kDefaultTargetLanguageULPConfidenceThreshold = 0.7;
+//     The probability threshold that we will consider to use a language on
+//     ULP "reading list".
+const double kDefaultTargetLanguageULPProbabilityThreshold = 0.55;
+
+//   Default constants for the InitiateTranslation() function:
+//     The confidence threshold that we will consider to use the ULP
+//     "reading list".
+const double kDefaultInitiateTranslationULPConfidenceThreshold = 0.75;
+//     The probability threshold that we will consider to use a language on
+//     ULP "reading list".
+const double kDefaultInitiateTranslationULPProbabilityThreshold = 0.5;
+
+// Return the probability of the |language| in the |list|, or 0.0 if it is not
+// in
+// the |list|.
+double GetLanguageProbability(
+    const TranslatePrefs::LanguageAndProbabilityList& list,
+    const std::string language) {
+  for (const auto& it : list) {
+    if (language == it.first) {
+      return it.second;
+    }
+  }
+  return 0.0;
+}
+
+// Get a value from the |map| by |key| and return the converted double, if
+// failed
+// return the |default_value| instead.
+double GetDoubleFromMap(std::map<std::string, std::string>& map,
+                        const std::string& key,
+                        double default_value) {
+  double value = default_value;
+  return base::StringToDouble(map[key], &value) ? value : default_value;
+}
 
 }  // namespace
 
@@ -189,8 +249,6 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
   if (!translate_driver_->IsOffTheRecord()) {
-    std::unique_ptr<TranslatePrefs> translate_prefs =
-        translate_client_->GetTranslatePrefs();
     std::string auto_target_lang =
         GetAutoTargetLanguage(language_code, translate_prefs.get());
     if (!auto_target_lang.empty()) {
@@ -210,6 +268,12 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
+  if (LanguageInULP(language_code)) {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_LANGUAGE_IN_ULP);
+    return;
+  }
+
   TranslateBrowserMetrics::ReportInitiationStatus(
       TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR);
 
@@ -219,6 +283,27 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
                                      target_lang,
                                      TranslateErrors::NONE,
                                      false);
+}
+
+bool TranslateManager::LanguageInULP(const std::string& language) const {
+  if (!base::FeatureList::IsEnabled(kTranslateLanguageByULP))
+    return false;
+  std::map<std::string, std::string> params;
+  variations::GetVariationParamsByFeature(translate::kTranslateLanguageByULP,
+                                          &params);
+  // Check the language & probability on the reading list.
+  TranslatePrefs::LanguageAndProbabilityList reading;
+  if (translate_client_->GetTranslatePrefs()->GetReadingFromUserLanguageProfile(
+          &reading) >
+          GetDoubleFromMap(params,
+                           kInitiateTranslationULPConfidenceThresholdName,
+                           kDefaultInitiateTranslationULPConfidenceThreshold) &&
+      GetLanguageProbability(reading, language) >
+          GetDoubleFromMap(params,
+                           kInitiateTranslationULPProbabilityThresholdName,
+                           kDefaultInitiateTranslationULPProbabilityThreshold))
+    return true;
+  return false;
 }
 
 void TranslateManager::TranslatePage(const std::string& original_source_lang,
@@ -355,14 +440,24 @@ void TranslateManager::OnTranslateScriptFetchComplete(
 
 // static
 std::string TranslateManager::GetTargetLanguage(const TranslatePrefs* prefs) {
-  std::string ui_lang = TranslateDownloadManager::GetLanguageCode(
-      TranslateDownloadManager::GetInstance()->application_locale());
-  translate::ToTranslateLanguageSynonym(&ui_lang);
+  std::string language;
 
-  TranslateExperiment::OverrideUiLanguage(prefs->GetCountry(), &ui_lang);
+  // Get the override UI language.
+  TranslateExperiment::OverrideUiLanguage(prefs->GetCountry(), &language);
 
-  if (TranslateDownloadManager::IsSupportedLanguage(ui_lang))
-    return ui_lang;
+  // If there are no override.
+  if (language.empty()) {
+    // Get the language from ULP.
+    language = TranslateManager::GetTargetLanguageFromULP(prefs);
+    if (!language.empty())
+      return language;
+
+    // Get the browser's user interface language.
+    language = TranslateDownloadManager::GetLanguageCode(
+        TranslateDownloadManager::GetInstance()->application_locale());
+  }
+  if (TranslateDownloadManager::IsSupportedLanguage(language))
+    return language;
 
   // Will translate to the first supported language on the Accepted Language
   // list or not at all if no such candidate exists.
@@ -373,6 +468,29 @@ std::string TranslateManager::GetTargetLanguage(const TranslatePrefs* prefs) {
     if (TranslateDownloadManager::IsSupportedLanguage(lang_code))
       return lang_code;
   }
+  return std::string();
+}
+
+// static
+std::string TranslateManager::GetTargetLanguageFromULP(
+    const TranslatePrefs* prefs) {
+  if (!base::FeatureList::IsEnabled(kTranslateLanguageByULP))
+    return std::string();
+  std::map<std::string, std::string> params;
+  variations::GetVariationParamsByFeature(translate::kTranslateLanguageByULP,
+                                          &params);
+  TranslatePrefs::LanguageAndProbabilityList reading;
+  // We only consider ULP if the confidence is greater than the threshold.
+  if (prefs->GetReadingFromUserLanguageProfile(&reading) <=
+      GetDoubleFromMap(params, kTargetLanguageULPConfidenceThresholdName,
+                       kDefaultTargetLanguageULPConfidenceThreshold))
+    return std::string();
+
+  if (reading.size() > 0 &&
+      reading[0].second >
+          GetDoubleFromMap(params, kTargetLanguageULPProbabilityThresholdName,
+                           kDefaultTargetLanguageULPProbabilityThreshold))
+    return reading[0].first;
   return std::string();
 }
 
