@@ -108,10 +108,18 @@ int AwBrowserMainParts::PreCreateThreads() {
 
   // Try to directly mmap the webviewchromium.pak from the apk. Fall back to
   // load from file, using PATH_SERVICE, otherwise.
-  base::FilePath pak_file_path;
-  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_file_path);
-  pak_file_path = pak_file_path.AppendASCII("webviewchromium.pak");
-  ui::LoadMainAndroidPackFile("assets/webviewchromium.pak", pak_file_path);
+  base::FilePath base_pak_file_path;
+  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &base_pak_file_path);
+  // If Webview is a separate APK from Chrome then it uses webviewchromium.pak
+  base::FilePath webview_pak_file_path = base_pak_file_path.AppendASCII(
+      "webviewchromium.pak");
+  if (!ui::LoadMainAndroidPackFile("assets/webviewchromium.pak",
+      webview_pak_file_path)) {
+    // If it the same APK as Chrome (Monochrome) then it shares resources.pak
+    base::FilePath chromium_pak_file_path = base_pak_file_path.AppendASCII(
+        "resources.pak");
+    ui::LoadMainAndroidPackFile("assets/resources.pak", chromium_pak_file_path);
+  }
 
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(
       base::android::AttachCurrentThread());

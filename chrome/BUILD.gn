@@ -1409,6 +1409,10 @@ repack("packed_extra_resources") {
     "//ui/resources",
   ]
 
+  if (is_android) {
+    sources += [ "$root_gen_dir/android_webview/aw_resources.pak" ]
+    deps += [ "//android_webview:generate_aw_resources" ]
+  }
   if (!is_ios && !is_android) {
     # New paks should be added here by default.
     sources += [
