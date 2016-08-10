@@ -1626,10 +1626,10 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
           DatagramSocket::DEFAULT_BIND, RandIntCallback(),
           session->net_log().net_log(), session->net_log().source()));
   if (ConfigureSocket(socket.get(), peer_address, network) != OK) {
-    session->CloseSessionOnError(ERR_NETWORK_CHANGED, QUIC_INTERNAL_ERROR);
     HistogramAndLogMigrationFailure(
         bound_net_log, MIGRATION_STATUS_INTERNAL_ERROR,
         session->connection_id(), "Socket configuration failed");
+    session->CloseSessionOnError(ERR_NETWORK_CHANGED, QUIC_INTERNAL_ERROR);
     return;
   }
   std::unique_ptr<QuicChromiumPacketReader> new_reader(

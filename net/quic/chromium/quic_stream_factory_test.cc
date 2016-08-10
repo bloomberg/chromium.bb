@@ -2799,6 +2799,70 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteErrorMigrationDisabled) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
+TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyToBadSocket) {
+  // This simulates the case where we attempt to migrate to a new
+  // socket but the socket is unusable, such as an ipv4/ipv6 mismatch.
+  InitializeConnectionMigrationTest(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  std::unique_ptr<QuicEncryptedPacket> request_packet(
+      ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
+                                  request_packet->length(), 1)};
+  SequencedSocketData socket_data(reads, arraysize(reads), writes,
+                                  arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                            callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = url_;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+
+  // Set up second socket that will immediately return disconnected.
+  // The stream factory will attempt to migrate to the new socket and
+  // immediately fail.
+  MockConnect connect_result =
+      MockConnect(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED);
+  SequencedSocketData socket_data1(connect_result, nullptr, 0, nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data1);
+
+  // Trigger early connection migration.
+  session->OnPathDegrading();
+
+  // Migration fails, and the session is marked as going away.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
 TEST_P(QuicStreamFactoryTest, ServerMigration) {
   allow_server_migration_ = true;
   Initialize();
