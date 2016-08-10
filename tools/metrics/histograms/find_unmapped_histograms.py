@@ -124,7 +124,9 @@ def readChromiumHistograms():
   names that might vary during a single run of the app.
 
   Returns:
-    A set containing any found literal histogram names.
+    A tuple of
+      a set containing any found literal histogram names, and
+      a set mapping histogram name to first filename:line where it was found
   """
   logging.info('Scanning Chromium source for histograms...')
 
@@ -136,14 +138,14 @@ def readChromiumHistograms():
   filenames = set([location.split(':')[0] for location in locations])
 
   histograms = set()
+  location_map = dict()
   for filename in filenames:
     contents = ''
     with open(filename, 'r') as f:
       contents = f.read()
 
-    matches = set(HISTOGRAM_REGEX.findall(contents))
-    for histogram in matches:
-      histogram = collapseAdjacentCStrings(histogram)
+    for match in HISTOGRAM_REGEX.finditer(contents):
+      histogram = collapseAdjacentCStrings(match.group(1))
 
       # Must begin and end with a quotation mark.
       if not histogram or histogram[0] != '"' or histogram[-1] != '"':
@@ -156,9 +158,12 @@ def readChromiumHistograms():
         logNonLiteralHistogram(filename, histogram)
         continue
 
-      histograms.add(histogram_stripped)
+      if histogram_stripped not in histograms:
+        histograms.add(histogram_stripped)
+        line_number = contents[:match.start()].count('\n') + 1
+        location_map[histogram_stripped] = '%s:%d' % (filename, line_number)
 
-  return histograms
+  return histograms, location_map
 
 
 def readXmlHistograms(histograms_file_location):
@@ -212,6 +217,11 @@ def main():
          '--root-directory) [optional, defaults to "%s"]' %
          default_extra_histograms_path,
     metavar='FILE')
+  parser.add_option(
+      '--verbose', action='store_true', dest='verbose', default=False,
+      help=(
+          'print file position information with histograms ' +
+          '[optional, defaults to %default]'))
 
   (options, args) = parser.parse_args()
   if args:
@@ -225,7 +235,7 @@ def main():
   except EnvironmentError as e:
     logging.error("Could not change to root directory: %s", e)
     sys.exit(1)
-  chromium_histograms = readChromiumHistograms()
+  chromium_histograms, location_map = readChromiumHistograms()
   xml_histograms = readXmlHistograms(options.histograms_file_location)
   unmapped_histograms = chromium_histograms - xml_histograms
 
@@ -241,7 +251,11 @@ def main():
     logging.info('Histograms in Chromium but not in XML files:')
     logging.info('-------------------------------------------------')
     for histogram in sorted(unmapped_histograms):
-      logging.info('  %s - %s', histogram, hashHistogramName(histogram))
+      if options.verbose:
+        logging.info('%s: %s - %s', location_map[histogram], histogram,
+                     hashHistogramName(histogram))
+      else:
+        logging.info('  %s - %s', histogram, hashHistogramName(histogram))
   else:
     logging.info('Success!  No unmapped histograms found.')
 
