@@ -18,7 +18,6 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -427,14 +426,14 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (::switches::IsTouchFeedbackEnabled() && state() != STATE_DISABLED) {
+      if (state() != STATE_DISABLED) {
         SetState(STATE_PRESSED);
         event->SetHandled();
       }
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
-      if (::switches::IsTouchFeedbackEnabled() && state() != STATE_DISABLED)
+      if (state() != STATE_DISABLED)
         SetState(STATE_NORMAL);
       break;
     case ui::ET_GESTURE_LONG_PRESS:

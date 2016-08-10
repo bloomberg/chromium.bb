@@ -40,9 +40,6 @@ const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
 // Disables touch event based drag and drop.
 const char kDisableTouchDragDrop[] = "disable-touch-drag-drop";
 
-// Disables additional visual feedback to touch input.
-const char kDisableTouchFeedback[] = "disable-touch-feedback";
-
 // Enables large icons on the New Tab page.
 const char kEnableIconNtp[] = "enable-icon-ntp";
 

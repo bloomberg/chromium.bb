@@ -10,7 +10,6 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
@@ -65,9 +64,6 @@ class PageSwitcherButton : public views::CustomButton {
  private:
   void OnGestureEvent(ui::GestureEvent* event) override {
     CustomButton::OnGestureEvent(event);
-
-    if (!switches::IsTouchFeedbackEnabled())
-      return;
 
     if (event->type() == ui::ET_GESTURE_TAP_DOWN)
       SetState(views::CustomButton::STATE_HOVERED);

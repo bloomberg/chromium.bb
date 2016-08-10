@@ -9,7 +9,6 @@
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -241,13 +240,11 @@ void HoverHighlightView::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void HoverHighlightView::OnGestureEvent(ui::GestureEvent* event) {
-  if (switches::IsTouchFeedbackEnabled()) {
-    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-      SetHoverHighlight(true);
-    } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
-               event->type() == ui::ET_GESTURE_TAP) {
-      SetHoverHighlight(false);
-    }
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    SetHoverHighlight(true);
+  } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+             event->type() == ui::ET_GESTURE_TAP) {
+    SetHoverHighlight(false);
   }
   ActionableView::OnGestureEvent(event);
 }

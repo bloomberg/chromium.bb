@@ -5799,12 +5799,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION" desc="Description for the flag to enable the mirrored screen mode.">
           Enable the mirrored screen mode. This mode flips the screen image horizontally.
         </message>
-        <message name="IDS_FLAGS_TOUCH_FEEDBACK_NAME" desc="Title for the flag for additional visual feedback for touch.">
-          Additional touch feedback on UI components
-        </message>
-        <message name="IDS_FLAGS_TOUCH_FEEDBACK_DESCRIPTION" desc="Description for the flag that disables additional visual feedback for touch.">
-          Certain UI components will display visual feedback upon touch interactions.
-        </message>
         <message name="IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_FAST" desc="Description for the flag that sets material design ink drop animation speed of fast.">
           Fast
         </message>

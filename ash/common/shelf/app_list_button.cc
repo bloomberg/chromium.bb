@@ -21,7 +21,6 @@
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -103,14 +102,12 @@ bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
 
 void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
   const bool is_material = ash::MaterialDesignController::IsShelfMaterial();
-  const bool touch_feedback =
-      !is_material && switches::IsTouchFeedbackEnabled();
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      if (touch_feedback)
-        SetDrawBackgroundAsActive(false);
-      else if (is_material)
+      if (is_material)
         AnimateInkDrop(views::InkDropState::HIDDEN, event);
+      else
+        SetDrawBackgroundAsActive(false);
       shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
       event->SetHandled();
       return;
@@ -124,15 +121,15 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       return;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (touch_feedback)
+      if (!is_material)
         SetDrawBackgroundAsActive(true);
-      else if (is_material && !WmShell::Get()->IsApplistVisible())
+      else if (!WmShell::Get()->IsApplistVisible())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       ImageButton::OnGestureEvent(event);
       break;
     case ui::ET_GESTURE_TAP_CANCEL:
     case ui::ET_GESTURE_TAP:
-      if (touch_feedback)
+      if (!is_material)
         SetDrawBackgroundAsActive(false);
       ImageButton::OnGestureEvent(event);
       break;

@@ -989,11 +989,6 @@ const FeatureEntry kFeatureEntries[] = {
         SINGLE_VALUE_TYPE(ash::switches::kAshEnableTouchViewTesting),
     },
     {
-        "disable-touch-feedback", IDS_FLAGS_TOUCH_FEEDBACK_NAME,
-        IDS_FLAGS_TOUCH_FEEDBACK_DESCRIPTION, kOsCrOS,
-        SINGLE_DISABLE_VALUE_TYPE(switches::kDisableTouchFeedback),
-    },
-    {
         "ash-enable-mirrored-screen", IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_NAME,
         IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION, kOsCrOS,
         SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),

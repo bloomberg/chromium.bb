@@ -18,7 +18,6 @@
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -212,13 +211,11 @@ void DateView::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void DateView::OnGestureEvent(ui::GestureEvent* event) {
-  if (switches::IsTouchFeedbackEnabled()) {
-    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-      SetActive(true);
-    } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
-               event->type() == ui::ET_GESTURE_END) {
-      SetActive(false);
-    }
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    SetActive(true);
+  } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+             event->type() == ui::ET_GESTURE_END) {
+    SetActive(false);
   }
   BaseDateTimeView::OnGestureEvent(event);
 }

@@ -20,11 +20,4 @@ bool IsTouchDragDropEnabled() {
 #endif
 }
 
-bool IsTouchFeedbackEnabled() {
-  static bool touch_feedback_enabled =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTouchFeedback);
-  return touch_feedback_enabled;
-}
-
 }  // namespace switches

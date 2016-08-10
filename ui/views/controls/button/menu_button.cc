@@ -9,7 +9,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -256,17 +255,15 @@ void MenuButton::OnGestureEvent(ui::GestureEvent* event) {
         SetState(Button::STATE_NORMAL);
       return;
     }
-    if (switches::IsTouchFeedbackEnabled()) {
-      if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-        event->SetHandled();
-        if (pressed_lock_count_ == 0)
-          SetState(Button::STATE_HOVERED);
-      } else if (state() == Button::STATE_HOVERED &&
-                 (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
-                  event->type() == ui::ET_GESTURE_END) &&
-                 pressed_lock_count_ == 0) {
-        SetState(Button::STATE_NORMAL);
-      }
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+      event->SetHandled();
+      if (pressed_lock_count_ == 0)
+        SetState(Button::STATE_HOVERED);
+    } else if (state() == Button::STATE_HOVERED &&
+               (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+                event->type() == ui::ET_GESTURE_END) &&
+               pressed_lock_count_ == 0) {
+      SetState(Button::STATE_NORMAL);
     }
   }
   LabelButton::OnGestureEvent(event);
