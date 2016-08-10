@@ -401,7 +401,7 @@ android_apk("cronet_sample_apk") {
 # "tested apk" are removed from the "instrumentation test apk".
 android_resources("cronet_sample_test_apk_resources") {
   resource_dirs = [ "sample/res" ]
-  android_manifest = "sample/AndroidManifest.xml"
+  android_manifest = "sample/javatests/AndroidManifest.xml"
 }
 
 instrumentation_test_apk("cronet_sample_test_apk") {
