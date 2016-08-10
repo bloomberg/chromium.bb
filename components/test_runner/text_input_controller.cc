@@ -283,18 +283,14 @@ void TextInputController::SetComposition(const std::string& text) {
   key_down.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
   view()->handleInputEvent(key_down);
 
-  // The value returned by std::string::length() may not correspond to the
-  // actual number of encoded characters in sequences of multi-byte or
-  // variable-length characters.
-  blink::WebString newText = blink::WebString::fromUTF8(text);
-  size_t textLength = newText.length();
-
   std::vector<blink::WebCompositionUnderline> underlines;
-  underlines.push_back(blink::WebCompositionUnderline(
-      0, textLength, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
+  underlines.push_back(blink::WebCompositionUnderline(0, text.length(),
+                                                      SK_ColorBLACK, false,
+                                                      SK_ColorTRANSPARENT));
   view()->setComposition(
-      newText, blink::WebVector<blink::WebCompositionUnderline>(underlines),
-      textLength, textLength);
+      blink::WebString::fromUTF8(text),
+      blink::WebVector<blink::WebCompositionUnderline>(underlines),
+      text.length(), text.length());
 }
 
 blink::WebView* TextInputController::view() {
