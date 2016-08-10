@@ -90,9 +90,7 @@ class NET_EXPORT URLRequestContextStorage {
   }
 
  private:
-  // We use a raw pointer to prevent reference cycles, since
-  // URLRequestContextStorage can often be contained within a URLRequestContext
-  // subclass.
+  // Not owned.
   URLRequestContext* const context_;
 
   // Owned members.
@@ -103,7 +101,7 @@ class NET_EXPORT URLRequestContextStorage {
   std::unique_ptr<ChannelIDService> channel_id_service_;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<ProxyService> proxy_service_;
-  // TODO(willchan): Remove refcounting on these members.
+  // TODO(willchan): Remove refcounting on this member.
   scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
