@@ -189,8 +189,8 @@ public:
     // Find the last instance of a single character or string.
     size_t reverseFind(UChar c, unsigned start = UINT_MAX) const
         { return m_impl ? m_impl->reverseFind(c, start) : kNotFound; }
-    size_t reverseFind(const String& str, unsigned start = UINT_MAX) const
-        { return m_impl ? m_impl->reverseFind(str.impl(), start) : kNotFound; }
+    size_t reverseFind(const StringView& value, unsigned start = UINT_MAX) const
+        { return m_impl ? m_impl->reverseFind(value, start) : kNotFound; }
 
     // Case insensitive string matching.
     size_t findIgnoringCase(const LChar* str, unsigned start = 0) const
@@ -603,7 +603,6 @@ using WTF::equal;
 using WTF::find;
 using WTF::isAllSpecialCharacters;
 using WTF::isSpaceOrNewline;
-using WTF::reverseFind;
 
 #include "wtf/text/AtomicString.h"
 #endif // WTFString_h

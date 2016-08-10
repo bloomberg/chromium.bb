@@ -1317,7 +1317,7 @@ size_t StringImpl::reverseFind(UChar c, unsigned index)
 }
 
 template <typename SearchCharacterType, typename MatchCharacterType>
-ALWAYS_INLINE static size_t reverseFindInner(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned length, unsigned matchLength)
+ALWAYS_INLINE static size_t reverseFindInternal(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned length, unsigned matchLength)
 {
     // Optimization: keep a running hash of the strings,
     // only call equal if the hashes match.
@@ -1343,12 +1343,12 @@ ALWAYS_INLINE static size_t reverseFindInner(const SearchCharacterType* searchCh
     return delta;
 }
 
-size_t StringImpl::reverseFind(StringImpl* matchString, unsigned index)
+size_t StringImpl::reverseFind(const StringView& matchString, unsigned index)
 {
-    // Check for null or empty string to match against
-    if (!matchString)
+    if (UNLIKELY(matchString.isNull()))
         return kNotFound;
-    unsigned matchLength = matchString->length();
+
+    unsigned matchLength = matchString.length();
     unsigned ourLength = length();
     if (!matchLength)
         return min(index, ourLength);
@@ -1356,8 +1356,8 @@ size_t StringImpl::reverseFind(StringImpl* matchString, unsigned index)
     // Optimization 1: fast case for strings of length 1.
     if (matchLength == 1) {
         if (is8Bit())
-            return WTF::reverseFind(characters8(), ourLength, (*matchString)[0], index);
-        return WTF::reverseFind(characters16(), ourLength, (*matchString)[0], index);
+            return WTF::reverseFind(characters8(), ourLength, matchString[0], index);
+        return WTF::reverseFind(characters16(), ourLength, matchString[0], index);
     }
 
     // Check index & matchLength are in range.
@@ -1365,15 +1365,13 @@ size_t StringImpl::reverseFind(StringImpl* matchString, unsigned index)
         return kNotFound;
 
     if (is8Bit()) {
-        if (matchString->is8Bit())
-            return reverseFindInner(characters8(), matchString->characters8(), index, ourLength, matchLength);
-        return reverseFindInner(characters8(), matchString->characters16(), index, ourLength, matchLength);
+        if (matchString.is8Bit())
+            return reverseFindInternal(characters8(), matchString.characters8(), index, ourLength, matchLength);
+        return reverseFindInternal(characters8(), matchString.characters16(), index, ourLength, matchLength);
     }
-
-    if (matchString->is8Bit())
-        return reverseFindInner(characters16(), matchString->characters8(), index, ourLength, matchLength);
-
-    return reverseFindInner(characters16(), matchString->characters16(), index, ourLength, matchLength);
+    if (matchString.is8Bit())
+        return reverseFindInternal(characters16(), matchString.characters8(), index, ourLength, matchLength);
+    return reverseFindInternal(characters16(), matchString.characters16(), index, ourLength, matchLength);
 }
 
 bool StringImpl::startsWith(UChar character) const

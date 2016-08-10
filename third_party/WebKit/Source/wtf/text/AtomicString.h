@@ -90,6 +90,12 @@ public:
     bool contains(const StringView& value, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return find(value, 0, caseSensitivity) != kNotFound; }
 
+    // Find the last instance of a single character or string.
+    size_t reverseFind(UChar c, unsigned start = UINT_MAX) const
+        { return m_string.reverseFind(c, start); }
+    size_t reverseFind(const StringView& value, unsigned start = UINT_MAX) const
+        { return m_string.reverseFind(value, start); }
+
     bool startsWith(const StringView& prefix, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_string.startsWith(prefix, caseSensitivity); }
     bool startsWith(UChar character) const

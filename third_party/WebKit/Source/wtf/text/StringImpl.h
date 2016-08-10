@@ -378,7 +378,7 @@ public:
     size_t findIgnoringASCIICase(const StringView&, unsigned index = 0);
 
     size_t reverseFind(UChar, unsigned index = UINT_MAX);
-    size_t reverseFind(StringImpl*, unsigned index = UINT_MAX);
+    size_t reverseFind(const StringView&, unsigned index = UINT_MAX);
 
     bool startsWith(UChar) const;
     bool startsWith(const StringView&) const;
@@ -716,5 +716,6 @@ using WTF::TextCaseSensitivity;
 using WTF::equal;
 using WTF::equalNonNull;
 using WTF::lengthOfNullTerminatedString;
+using WTF::reverseFind;
 
 #endif
