@@ -27,8 +27,11 @@ bool StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>>::Read(
   for (size_t i = 0; i < quads.size(); ++i) {
     cc::mojom::DrawQuadDataView quad_data_view;
     quads.GetDataView(i, &quad_data_view);
+    cc::mojom::DrawQuadStateDataView quad_state_data_view;
+    quad_data_view.GetDrawQuadStateDataView(&quad_state_data_view);
+
     cc::DrawQuad* quad =
-        AllocateAndConstruct(quad_data_view.material(), &(*out)->quad_list);
+        AllocateAndConstruct(quad_state_data_view.tag(), &(*out)->quad_list);
     if (!quad)
       return false;
     if (!quads.Read(i, quad))

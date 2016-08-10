@@ -7,135 +7,46 @@
 
 namespace mojo {
 
-cc::DrawQuad* AllocateAndConstruct(cc::mojom::Material material,
-                                   cc::QuadList* list) {
+cc::DrawQuad* AllocateAndConstruct(
+    cc::mojom::DrawQuadState::DataView::Tag material,
+    cc::QuadList* list) {
   cc::DrawQuad* quad = nullptr;
   switch (material) {
-    case cc::mojom::Material::INVALID:
-      return nullptr;
-    case cc::mojom::Material::DEBUG_BORDER:
+    case cc::mojom::DrawQuadState::DataView::Tag::DEBUG_BORDER_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::DebugBorderDrawQuad>();
       quad->material = cc::DrawQuad::DEBUG_BORDER;
       return quad;
-    case cc::mojom::Material::PICTURE_CONTENT:
-      quad = list->AllocateAndConstruct<cc::PictureDrawQuad>();
-      quad->material = cc::DrawQuad::PICTURE_CONTENT;
-      return quad;
-    case cc::mojom::Material::RENDER_PASS:
+    case cc::mojom::DrawQuadState::DataView::Tag::RENDER_PASS_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::RenderPassDrawQuad>();
       quad->material = cc::DrawQuad::RENDER_PASS;
       return quad;
-    case cc::mojom::Material::SOLID_COLOR:
+    case cc::mojom::DrawQuadState::DataView::Tag::SOLID_COLOR_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::SolidColorDrawQuad>();
       quad->material = cc::DrawQuad::SOLID_COLOR;
       return quad;
-    case cc::mojom::Material::STREAM_VIDEO_CONTENT:
+    case cc::mojom::DrawQuadState::DataView::Tag::STREAM_VIDEO_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::StreamVideoDrawQuad>();
       quad->material = cc::DrawQuad::STREAM_VIDEO_CONTENT;
       return quad;
-    case cc::mojom::Material::SURFACE_CONTENT:
+    case cc::mojom::DrawQuadState::DataView::Tag::SURFACE_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::SurfaceDrawQuad>();
       quad->material = cc::DrawQuad::SURFACE_CONTENT;
       return quad;
-    case cc::mojom::Material::TEXTURE_CONTENT:
+    case cc::mojom::DrawQuadState::DataView::Tag::TEXTURE_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::TextureDrawQuad>();
       quad->material = cc::DrawQuad::TEXTURE_CONTENT;
       return quad;
-    case cc::mojom::Material::TILED_CONTENT:
+    case cc::mojom::DrawQuadState::DataView::Tag::TILE_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::TileDrawQuad>();
       quad->material = cc::DrawQuad::TILED_CONTENT;
       return quad;
-    case cc::mojom::Material::YUV_VIDEO_CONTENT:
+    case cc::mojom::DrawQuadState::DataView::Tag::YUV_VIDEO_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::YUVVideoDrawQuad>();
       quad->material = cc::DrawQuad::YUV_VIDEO_CONTENT;
       return quad;
   }
   NOTREACHED();
   return nullptr;
-}
-namespace {
-
-bool ReadDrawQuad(cc::mojom::DrawQuadDataView data, cc::DrawQuad* quad) {
-  cc::DrawQuad::Material material;
-  if (!data.ReadMaterial(&material) || material != quad->material) {
-    return false;
-  }
-  if (!data.ReadRect(&quad->rect) || !data.ReadOpaqueRect(&quad->opaque_rect) ||
-      !data.ReadVisibleRect(&quad->visible_rect)) {
-    return false;
-  }
-  quad->needs_blending = data.needs_blending();
-  return true;
-}
-
-}  // namespace
-
-// static
-cc::mojom::Material
-EnumTraits<cc::mojom::Material, cc::DrawQuad::Material>::ToMojom(
-    cc::DrawQuad::Material material) {
-  switch (material) {
-    case cc::DrawQuad::INVALID:
-      return cc::mojom::Material::INVALID;
-    case cc::DrawQuad::DEBUG_BORDER:
-      return cc::mojom::Material::DEBUG_BORDER;
-    case cc::DrawQuad::PICTURE_CONTENT:
-      return cc::mojom::Material::PICTURE_CONTENT;
-    case cc::DrawQuad::RENDER_PASS:
-      return cc::mojom::Material::RENDER_PASS;
-    case cc::DrawQuad::SOLID_COLOR:
-      return cc::mojom::Material::SOLID_COLOR;
-    case cc::DrawQuad::STREAM_VIDEO_CONTENT:
-      return cc::mojom::Material::STREAM_VIDEO_CONTENT;
-    case cc::DrawQuad::SURFACE_CONTENT:
-      return cc::mojom::Material::SURFACE_CONTENT;
-    case cc::DrawQuad::TEXTURE_CONTENT:
-      return cc::mojom::Material::TEXTURE_CONTENT;
-    case cc::DrawQuad::TILED_CONTENT:
-      return cc::mojom::Material::TILED_CONTENT;
-    case cc::DrawQuad::YUV_VIDEO_CONTENT:
-      return cc::mojom::Material::YUV_VIDEO_CONTENT;
-  }
-  return cc::mojom::Material::INVALID;
-}
-
-// static
-bool EnumTraits<cc::mojom::Material, cc::DrawQuad::Material>::FromMojom(
-    cc::mojom::Material input,
-    cc::DrawQuad::Material* out) {
-  switch (input) {
-    case cc::mojom::Material::INVALID:
-      *out = cc::DrawQuad::INVALID;
-      return true;
-    case cc::mojom::Material::DEBUG_BORDER:
-      *out = cc::DrawQuad::DEBUG_BORDER;
-      return true;
-    case cc::mojom::Material::PICTURE_CONTENT:
-      *out = cc::DrawQuad::PICTURE_CONTENT;
-      return true;
-    case cc::mojom::Material::RENDER_PASS:
-      *out = cc::DrawQuad::RENDER_PASS;
-      return true;
-    case cc::mojom::Material::SOLID_COLOR:
-      *out = cc::DrawQuad::SOLID_COLOR;
-      return true;
-    case cc::mojom::Material::STREAM_VIDEO_CONTENT:
-      *out = cc::DrawQuad::STREAM_VIDEO_CONTENT;
-      return true;
-    case cc::mojom::Material::SURFACE_CONTENT:
-      *out = cc::DrawQuad::SURFACE_CONTENT;
-      return true;
-    case cc::mojom::Material::TEXTURE_CONTENT:
-      *out = cc::DrawQuad::TEXTURE_CONTENT;
-      return true;
-    case cc::mojom::Material::TILED_CONTENT:
-      *out = cc::DrawQuad::TILED_CONTENT;
-      return true;
-    case cc::mojom::Material::YUV_VIDEO_CONTENT:
-      *out = cc::DrawQuad::YUV_VIDEO_CONTENT;
-      return true;
-  }
-  return false;
 }
 
 // static
@@ -310,34 +221,12 @@ bool StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad>::Read(
 bool StructTraits<cc::mojom::DrawQuad, cc::DrawQuad>::Read(
     cc::mojom::DrawQuadDataView data,
     cc::DrawQuad* out) {
-  if (!ReadDrawQuad(data, out))
+  if (!data.ReadRect(&out->rect) || !data.ReadOpaqueRect(&out->opaque_rect) ||
+      !data.ReadVisibleRect(&out->visible_rect)) {
     return false;
-  switch (data.material()) {
-    case cc::mojom::Material::INVALID:
-      break;
-    case cc::mojom::Material::DEBUG_BORDER:
-      return data.ReadDebugBorderQuadState(out);
-    case cc::mojom::Material::PICTURE_CONTENT:
-      // TODO(fsamuel): Implement PictureDrawQuad
-      // serialization/deserialization.
-      break;
-    case cc::mojom::Material::RENDER_PASS:
-      return data.ReadRenderPassQuadState(out);
-    case cc::mojom::Material::SOLID_COLOR:
-      return data.ReadSolidColorQuadState(out);
-    case cc::mojom::Material::STREAM_VIDEO_CONTENT:
-      return data.ReadStreamVideoQuadState(out);
-    case cc::mojom::Material::SURFACE_CONTENT:
-      return data.ReadSurfaceQuadState(out);
-    case cc::mojom::Material::TEXTURE_CONTENT:
-      return data.ReadTextureQuadState(out);
-    case cc::mojom::Material::TILED_CONTENT:
-      return data.ReadTileQuadState(out);
-    case cc::mojom::Material::YUV_VIDEO_CONTENT:
-      return data.ReadYuvVideoQuadState(out);
   }
-  NOTREACHED();
-  return false;
+  out->needs_blending = data.needs_blending();
+  return data.ReadDrawQuadState(out);
 }
 
 }  // namespace mojo

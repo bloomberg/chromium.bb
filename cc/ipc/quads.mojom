@@ -46,6 +46,12 @@ struct SolidColorQuadState {
   bool force_anti_aliasing_off;
 };
 
+struct StreamVideoQuadState {
+  uint32 resource_id;
+  gfx.mojom.Size resource_size_in_pixels;
+  gfx.mojom.Transform matrix;
+};
+
 struct SurfaceQuadState {
   cc.mojom.SurfaceId surface;
 };
@@ -70,12 +76,6 @@ struct TileQuadState {
   bool nearest_neighbor;
 };
 
-struct StreamVideoQuadState {
-  uint32 resource_id;
-  gfx.mojom.Size resource_size_in_pixels;
-  gfx.mojom.Transform matrix;
-};
-
 enum YUVColorSpace {
   REC_601,       // SDTV standard with restricted "studio swing" color range.
   REC_709,       // HDTV standard with restricted "studio swing" color range.
@@ -97,22 +97,18 @@ struct YUVVideoQuadState {
   uint32 bits_per_channel;
 };
 
-enum Material {
-  INVALID,
-  DEBUG_BORDER,
-  PICTURE_CONTENT,
-  RENDER_PASS,
-  SOLID_COLOR,
-  STREAM_VIDEO_CONTENT,
-  SURFACE_CONTENT,
-  TEXTURE_CONTENT,
-  TILED_CONTENT,
-  YUV_VIDEO_CONTENT,
+union DrawQuadState {
+  DebugBorderQuadState debug_border_quad_state;
+  RenderPassQuadState render_pass_quad_state;
+  SolidColorQuadState solid_color_quad_state;
+  StreamVideoQuadState stream_video_quad_state;
+  SurfaceQuadState surface_quad_state;
+  TextureQuadState texture_quad_state;
+  TileQuadState tile_quad_state;
+  YUVVideoQuadState yuv_video_quad_state;
 };
 
 struct DrawQuad {
-  Material material;
-
   // This rect, after applying the quad_transform(), gives the geometry that
   // this quad should draw to. This rect lives in content space.
   gfx.mojom.Rect rect;
@@ -133,13 +129,5 @@ struct DrawQuad {
   // quads.
   SharedQuadState? sqs;
 
-  // Only one of the following will be set, depending on the material.
-  DebugBorderQuadState? debug_border_quad_state;
-  RenderPassQuadState? render_pass_quad_state;
-  SolidColorQuadState? solid_color_quad_state;
-  SurfaceQuadState? surface_quad_state;
-  TextureQuadState? texture_quad_state;
-  TileQuadState? tile_quad_state;
-  StreamVideoQuadState? stream_video_quad_state;
-  YUVVideoQuadState? yuv_video_quad_state;
+  DrawQuadState draw_quad_state;
 };

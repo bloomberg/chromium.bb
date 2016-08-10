@@ -24,26 +24,98 @@
 
 namespace mojo {
 
-cc::DrawQuad* AllocateAndConstruct(cc::mojom::Material material,
-                                   cc::QuadList* list);
+cc::DrawQuad* AllocateAndConstruct(
+    cc::mojom::DrawQuadState::DataView::Tag material,
+    cc::QuadList* list);
+
 template <>
-struct EnumTraits<cc::mojom::Material, cc::DrawQuad::Material> {
-  static cc::mojom::Material ToMojom(cc::DrawQuad::Material material);
-  static bool FromMojom(cc::mojom::Material input, cc::DrawQuad::Material* out);
+struct UnionTraits<cc::mojom::DrawQuadState, cc::DrawQuad> {
+  static cc::mojom::DrawQuadState::DataView::Tag GetTag(
+      const cc::DrawQuad& quad) {
+    switch (quad.material) {
+      case cc::DrawQuad::INVALID:
+        break;
+      case cc::DrawQuad::DEBUG_BORDER:
+        return cc::mojom::DrawQuadState::DataView::Tag::DEBUG_BORDER_QUAD_STATE;
+      case cc::DrawQuad::PICTURE_CONTENT:
+        break;
+      case cc::DrawQuad::RENDER_PASS:
+        return cc::mojom::DrawQuadState::DataView::Tag::RENDER_PASS_QUAD_STATE;
+      case cc::DrawQuad::SOLID_COLOR:
+        return cc::mojom::DrawQuadState::DataView::Tag::SOLID_COLOR_QUAD_STATE;
+      case cc::DrawQuad::STREAM_VIDEO_CONTENT:
+        return cc::mojom::DrawQuadState::DataView::Tag::STREAM_VIDEO_QUAD_STATE;
+      case cc::DrawQuad::SURFACE_CONTENT:
+        return cc::mojom::DrawQuadState::DataView::Tag::SURFACE_QUAD_STATE;
+      case cc::DrawQuad::TEXTURE_CONTENT:
+        return cc::mojom::DrawQuadState::DataView::Tag::TEXTURE_QUAD_STATE;
+      case cc::DrawQuad::TILED_CONTENT:
+        return cc::mojom::DrawQuadState::DataView::Tag::TILE_QUAD_STATE;
+      case cc::DrawQuad::YUV_VIDEO_CONTENT:
+        return cc::mojom::DrawQuadState::DataView::Tag::YUV_VIDEO_QUAD_STATE;
+    }
+    NOTREACHED();
+    return cc::mojom::DrawQuadState::DataView::Tag::DEBUG_BORDER_QUAD_STATE;
+  }
+
+  static const cc::DrawQuad& debug_border_quad_state(const cc::DrawQuad& quad) {
+    return quad;
+  }
+
+  static const cc::DrawQuad& render_pass_quad_state(const cc::DrawQuad& quad) {
+    return quad;
+  }
+
+  static const cc::DrawQuad& solid_color_quad_state(const cc::DrawQuad& quad) {
+    return quad;
+  }
+
+  static const cc::DrawQuad& surface_quad_state(const cc::DrawQuad& quad) {
+    return quad;
+  }
+
+  static const cc::DrawQuad& texture_quad_state(const cc::DrawQuad& quad) {
+    return quad;
+  }
+
+  static const cc::DrawQuad& tile_quad_state(const cc::DrawQuad& quad) {
+    return quad;
+  }
+
+  static const cc::DrawQuad& stream_video_quad_state(const cc::DrawQuad& quad) {
+    return quad;
+  }
+
+  static const cc::DrawQuad& yuv_video_quad_state(const cc::DrawQuad& quad) {
+    return quad;
+  }
+
+  static bool Read(cc::mojom::DrawQuadState::DataView data, cc::DrawQuad* out) {
+    switch (data.tag()) {
+      case cc::mojom::DrawQuadState::DataView::Tag::DEBUG_BORDER_QUAD_STATE:
+        return data.ReadDebugBorderQuadState(out);
+      case cc::mojom::DrawQuadState::DataView::Tag::RENDER_PASS_QUAD_STATE:
+        return data.ReadRenderPassQuadState(out);
+      case cc::mojom::DrawQuadState::DataView::Tag::SOLID_COLOR_QUAD_STATE:
+        return data.ReadSolidColorQuadState(out);
+      case cc::mojom::DrawQuadState::DataView::Tag::SURFACE_QUAD_STATE:
+        return data.ReadSurfaceQuadState(out);
+      case cc::mojom::DrawQuadState::DataView::Tag::TEXTURE_QUAD_STATE:
+        return data.ReadTextureQuadState(out);
+      case cc::mojom::DrawQuadState::DataView::Tag::TILE_QUAD_STATE:
+        return data.ReadTileQuadState(out);
+      case cc::mojom::DrawQuadState::DataView::Tag::STREAM_VIDEO_QUAD_STATE:
+        return data.ReadStreamVideoQuadState(out);
+      case cc::mojom::DrawQuadState::DataView::Tag::YUV_VIDEO_QUAD_STATE:
+        return data.ReadYuvVideoQuadState(out);
+    }
+    NOTREACHED();
+    return false;
+  }
 };
 
 template <>
 struct StructTraits<cc::mojom::DebugBorderQuadState, cc::DrawQuad> {
-  static bool IsNull(const cc::DrawQuad& input) {
-    return input.material != cc::DrawQuad::DEBUG_BORDER;
-  }
-
-  static void SetToNull(cc::DrawQuad* output) {
-    // There is nothing to deserialize here if the DrawQuad is not a
-    // DebugBorderDrawQuad. If it is, then this should not be called.
-    DCHECK_NE(cc::DrawQuad::DEBUG_BORDER, output->material);
-  }
-
   static uint32_t color(const cc::DrawQuad& input) {
     const cc::DebugBorderDrawQuad* quad =
         cc::DebugBorderDrawQuad::MaterialCast(&input);
@@ -62,16 +134,6 @@ struct StructTraits<cc::mojom::DebugBorderQuadState, cc::DrawQuad> {
 
 template <>
 struct StructTraits<cc::mojom::RenderPassQuadState, cc::DrawQuad> {
-  static bool IsNull(const cc::DrawQuad& quad) {
-    return quad.material != cc::DrawQuad::RENDER_PASS;
-  }
-
-  static void SetToNull(cc::DrawQuad* output) {
-    // There is nothing to deserialize here if the DrawQuad is not a
-    // RenderPassDrawQuad. If it is, then this should not be called.
-    DCHECK_NE(cc::DrawQuad::RENDER_PASS, output->material);
-  }
-
   static const cc::RenderPassId& render_pass_id(const cc::DrawQuad& input) {
     const cc::RenderPassDrawQuad* quad =
         cc::RenderPassDrawQuad::MaterialCast(&input);
@@ -121,16 +183,6 @@ struct StructTraits<cc::mojom::RenderPassQuadState, cc::DrawQuad> {
 
 template <>
 struct StructTraits<cc::mojom::SolidColorQuadState, cc::DrawQuad> {
-  static bool IsNull(const cc::DrawQuad& input) {
-    return input.material != cc::DrawQuad::SOLID_COLOR;
-  }
-
-  static void SetToNull(cc::DrawQuad* output) {
-    // There is nothing to deserialize here if the DrawQuad is not a
-    // SolidColorDrawQuad. If it is, then this should not be called.
-    DCHECK_NE(cc::DrawQuad::SOLID_COLOR, output->material);
-  }
-
   static uint32_t color(const cc::DrawQuad& input) {
     const cc::SolidColorDrawQuad* quad =
         cc::SolidColorDrawQuad::MaterialCast(&input);
@@ -149,16 +201,6 @@ struct StructTraits<cc::mojom::SolidColorQuadState, cc::DrawQuad> {
 
 template <>
 struct StructTraits<cc::mojom::StreamVideoQuadState, cc::DrawQuad> {
-  static bool IsNull(const cc::DrawQuad& input) {
-    return input.material != cc::DrawQuad::STREAM_VIDEO_CONTENT;
-  }
-
-  static void SetToNull(cc::DrawQuad* output) {
-    // There is nothing to deserialize here if the DrawQuad is not a
-    // StreamVideoDrawQuad. If it is, then this should not be called.
-    DCHECK_NE(cc::DrawQuad::STREAM_VIDEO_CONTENT, output->material);
-  }
-
   static uint32_t resource_id(const cc::DrawQuad& input) {
     const cc::StreamVideoDrawQuad* quad =
         cc::StreamVideoDrawQuad::MaterialCast(&input);
@@ -184,16 +226,6 @@ struct StructTraits<cc::mojom::StreamVideoQuadState, cc::DrawQuad> {
 
 template <>
 struct StructTraits<cc::mojom::SurfaceQuadState, cc::DrawQuad> {
-  static bool IsNull(const cc::DrawQuad& input) {
-    return input.material != cc::DrawQuad::SURFACE_CONTENT;
-  }
-
-  static void SetToNull(cc::DrawQuad* output) {
-    // There is nothing to deserialize here if the DrawQuad is not a
-    // SurfaceDrawQuad. If it is, then this should not be called.
-    DCHECK_NE(cc::DrawQuad::SURFACE_CONTENT, output->material);
-  }
-
   static const cc::SurfaceId& surface(const cc::DrawQuad& input) {
     const cc::SurfaceDrawQuad* quad = cc::SurfaceDrawQuad::MaterialCast(&input);
     return quad->surface_id;
@@ -204,16 +236,6 @@ struct StructTraits<cc::mojom::SurfaceQuadState, cc::DrawQuad> {
 
 template <>
 struct StructTraits<cc::mojom::TextureQuadState, cc::DrawQuad> {
-  static bool IsNull(const cc::DrawQuad& input) {
-    return input.material != cc::DrawQuad::TEXTURE_CONTENT;
-  }
-
-  static void SetToNull(cc::DrawQuad* output) {
-    // There is nothing to deserialize here if the DrawQuad is not a
-    // TextureContentDrawQuad. If it is, then this should not be called.
-    DCHECK_NE(cc::DrawQuad::TEXTURE_CONTENT, output->material);
-  }
-
   static uint32_t resource_id(const cc::DrawQuad& input) {
     const cc::TextureDrawQuad* quad = cc::TextureDrawQuad::MaterialCast(&input);
     return quad->resource_id();
@@ -264,16 +286,6 @@ struct StructTraits<cc::mojom::TextureQuadState, cc::DrawQuad> {
 
 template <>
 struct StructTraits<cc::mojom::TileQuadState, cc::DrawQuad> {
-  static bool IsNull(const cc::DrawQuad& input) {
-    return input.material != cc::DrawQuad::TILED_CONTENT;
-  }
-
-  static void SetToNull(cc::DrawQuad* output) {
-    // There is nothing to deserialize here if the DrawQuad is not a
-    // TileDrawQuad. If it is, then this should not be called.
-    DCHECK_NE(cc::DrawQuad::TILED_CONTENT, output->material);
-  }
-
   static const gfx::RectF& tex_coord_rect(const cc::DrawQuad& input) {
     const cc::TileDrawQuad* quad = cc::TileDrawQuad::MaterialCast(&input);
     return quad->tex_coord_rect;
@@ -312,16 +324,6 @@ struct EnumTraits<cc::mojom::YUVColorSpace, cc::YUVVideoDrawQuad::ColorSpace> {
 
 template <>
 struct StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad> {
-  static bool IsNull(const cc::DrawQuad& input) {
-    return input.material != cc::DrawQuad::YUV_VIDEO_CONTENT;
-  }
-
-  static void SetToNull(cc::DrawQuad* output) {
-    // There is nothing to deserialize here if the DrawQuad is not a
-    // YUVVideoDrawQuad. If it is, then this should not be called.
-    DCHECK_NE(cc::DrawQuad::YUV_VIDEO_CONTENT, output->material);
-  }
-
   static const gfx::RectF& ya_tex_coord_rect(const cc::DrawQuad& input) {
     const cc::YUVVideoDrawQuad* quad =
         cc::YUVVideoDrawQuad::MaterialCast(&input);
@@ -406,11 +408,6 @@ struct DrawQuadWithSharedQuadState {
 
 template <>
 struct StructTraits<cc::mojom::DrawQuad, DrawQuadWithSharedQuadState> {
-  static cc::DrawQuad::Material material(
-      const DrawQuadWithSharedQuadState& input) {
-    return input.quad->material;
-  }
-
   static const gfx::Rect& rect(const DrawQuadWithSharedQuadState& input) {
     return input.quad->rect;
   }
@@ -429,48 +426,13 @@ struct StructTraits<cc::mojom::DrawQuad, DrawQuadWithSharedQuadState> {
     return input.quad->needs_blending;
   }
 
-  static const cc::DrawQuad& debug_border_quad_state(
-      const DrawQuadWithSharedQuadState& input) {
-    return *input.quad;
-  }
-
-  static const cc::DrawQuad& render_pass_quad_state(
-      const DrawQuadWithSharedQuadState& input) {
-    return *input.quad;
-  }
-
-  static const cc::DrawQuad& solid_color_quad_state(
-      const DrawQuadWithSharedQuadState& input) {
-    return *input.quad;
-  }
-
-  static const cc::DrawQuad& surface_quad_state(
-      const DrawQuadWithSharedQuadState& input) {
-    return *input.quad;
-  }
-
-  static const cc::DrawQuad& texture_quad_state(
-      const DrawQuadWithSharedQuadState& input) {
-    return *input.quad;
-  }
-
-  static const cc::DrawQuad& tile_quad_state(
-      const DrawQuadWithSharedQuadState& input) {
-    return *input.quad;
-  }
-
-  static const cc::DrawQuad& stream_video_quad_state(
-      const DrawQuadWithSharedQuadState& input) {
-    return *input.quad;
-  }
-
-  static const cc::DrawQuad& yuv_video_quad_state(
-      const DrawQuadWithSharedQuadState& input) {
-    return *input.quad;
-  }
-
   static OptSharedQuadState sqs(const DrawQuadWithSharedQuadState& input) {
     return {input.shared_quad_state};
+  }
+
+  static const cc::DrawQuad& draw_quad_state(
+      const DrawQuadWithSharedQuadState& input) {
+    return *input.quad;
   }
 };
 
