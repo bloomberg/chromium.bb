@@ -143,14 +143,14 @@ void PrivateWorkingSetSnapshot::Sample() {
     // Allocate enough space for the results of both queries.
     std::vector<char> buffer(buffer_size1 * 2);
     // Retrieve the process ID data.
-    auto process_id_data =
+    auto* process_id_data =
         reinterpret_cast<PDH_FMT_COUNTERVALUE_ITEM*>(&buffer[0]);
     if (PdhGetFormattedCounterArray(counter_pair.process_id_handle,
                                     PDH_FMT_LONG, &buffer_size1, &item_count1,
                                     process_id_data) != ERROR_SUCCESS)
       continue;
     // Retrieve the private working set data.
-    auto private_ws_data =
+    auto* private_ws_data =
         reinterpret_cast<PDH_FMT_COUNTERVALUE_ITEM*>(&buffer[buffer_size1]);
     if (PdhGetFormattedCounterArray(counter_pair.private_ws_handle,
                                     PDH_FMT_LARGE, &buffer_size1, &item_count1,

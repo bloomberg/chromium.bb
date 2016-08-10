@@ -711,7 +711,7 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
 bool DeleteUserRegistryKeys(const std::vector<const base::string16*>* key_paths,
                             const wchar_t* user_sid,
                             base::win::RegKey* key) {
-  for (const auto& key_path : *key_paths) {
+  for (const auto* key_path : *key_paths) {
     LONG result = key->DeleteKey(key_path->c_str());
     if (result == ERROR_SUCCESS) {
       VLOG(1) << "Deleted " << user_sid << "\\" << *key_path;
