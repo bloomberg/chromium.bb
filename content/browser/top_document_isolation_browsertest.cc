@@ -278,16 +278,9 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 }
 
-// Flaky on Mac and Windows. See http://crbug.com/611300.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_NavigateToSubframeSiteWithPopup2 \
-    DISABLED_NavigateToSubframeSiteWithPopup2
-#else
-#define MAYBE_NavigateToSubframeSiteWithPopup2 NavigateToSubframeSiteWithPopup2
-#endif
-
+// Flaky. See http://crbug.com/611300.
 IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
-                       MAYBE_NavigateToSubframeSiteWithPopup2) {
+                       DISABLED_NavigateToSubframeSiteWithPopup2) {
   if (content::AreAllSitesIsolatedForTesting())
     return;  // Top Document Isolation is disabled in this mode.
 
