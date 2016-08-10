@@ -263,7 +263,7 @@ cr.define('site_list', function() {
         browserProxy = new TestSiteSettingsPrefsBrowserProxy();
         settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
-        testElement = document.createElement('settings-site-list');
+        testElement = document.createElement('site-list');
         document.body.appendChild(testElement);
       });
 

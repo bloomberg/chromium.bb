@@ -25,11 +25,11 @@
         -webkit-margin-start: -11px;
       }
 
-      settings-site-list {
+      site-list {
         border-bottom: 1px solid var(--paper-grey-300);
       }
 
-      settings-site-list:last-of-type {
+      site-list:last-of-type {
         border-bottom: none;
       }
 
@@ -49,24 +49,24 @@
 
     <content select=".cookie-controls"></content>
 
-    <settings-site-list
+    <site-list
         category="[[category]]"
         category-subtype="[[PermissionValues.BLOCK]]"
         category-enabled="[[categoryEnabled]]"
         selected-site="{{selectedSite}}">
-    </settings-site-list>
-    <settings-site-list
+    </site-list>
+    <site-list
         category="[[category]]"
         category-subtype="[[PermissionValues.ALLOW]]"
         category-enabled="[[categoryEnabled]]"
         selected-site="{{selectedSite}}">
-    </settings-site-list>
-    <settings-site-list
+    </site-list>
+    <site-list
         category="[[category]]"
         category-subtype="[[PermissionValues.SESSION_ONLY]]"
         category-enabled="[[categoryEnabled]]"
         selected-site="{{selectedSite}}">
-    </settings-site-list>
+    </site-list>
 
     <div class="settings-box">
       <content select=".site-data"></content>

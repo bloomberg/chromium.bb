@@ -4,12 +4,12 @@
 
 /**
  * @fileoverview
- * 'settings-site-list' shows a list of Allowed and Blocked sites for a given
+ * 'site-list' shows a list of Allowed and Blocked sites for a given
  * category.
  */
 Polymer({
 
-  is: 'settings-site-list',
+  is: 'site-list',
 
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
