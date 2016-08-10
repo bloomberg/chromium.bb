@@ -9,14 +9,10 @@ package budget_service;
 // Chrome requires this.
 option optimize_for = LITE_RUNTIME;
 
-// Next available id: 3
+// Next available id: 2
 message Budget {
-  // How much budget the origin needs to accumulate before it will be allowed to
-  // perform another budget action.
-  optional double debt = 1;
-
   // The sequence of budget chunks and their expiration times.
-  repeated BudgetChunk budget = 2;
+  repeated BudgetChunk budget = 1;
 }
 
 // Next available id: 3
@@ -24,7 +20,7 @@ message BudgetChunk {
   // The amount of budget remaining in this chunk.
   optional double amount = 1;
 
-  // The timestamp when the budget expires. Format is double to integrate with
-  // Site Engagement and Blink and is the number of seconds since Jan 1, 1970.
-  optional double expiration = 2;
+  // The timestamp when the budget expires. This stores the internal value
+  // needed to construct a base::Time object.
+  optional int64 expiration = 2;
 }

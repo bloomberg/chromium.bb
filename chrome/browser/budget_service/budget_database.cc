@@ -72,8 +72,7 @@ void BudgetDatabase::AddBudget(const GURL& origin,
   // Add a new chunk of budget for the origin at the default expiration time.
   base::Time expiration =
       clock_->Now() + base::TimeDelta::FromHours(kBudgetDurationInHours);
-  budget_map_[origin.spec()].second.push_back(
-      std::make_pair(amount, expiration));
+  budget_map_[origin.spec()].emplace_back(amount, expiration);
 
   // Now that the cache is updated, write the data to the database.
   WriteCachedValuesToDatabase(origin, callback);
@@ -101,13 +100,12 @@ void BudgetDatabase::AddToCache(
   // Add the data to the cache, converting from the proto format to an STL
   // format which is better for removing things from the list.
   BudgetChunks chunks;
-  for (const auto& chunk : budget_proto->budget())
-    chunks.push_back(std::make_pair(
-        chunk.amount(), base::Time::FromInternalValue(chunk.expiration())));
+  for (const auto& chunk : budget_proto->budget()) {
+    chunks.emplace_back(chunk.amount(),
+                        base::Time::FromInternalValue(chunk.expiration()));
+  }
 
-  DCHECK(budget_proto->has_debt());
-  budget_map_[origin.spec()] =
-      std::make_pair(budget_proto->debt(), std::move(chunks));
+  budget_map_[origin.spec()] = std::move(chunks);
 
   callback.Run(success);
 }
@@ -118,7 +116,7 @@ void BudgetDatabase::DidGetBudget(const GURL& origin,
   // If the database wasn't able to read the information, return the
   // failure and an empty BudgetExpectation.
   if (!success) {
-    callback.Run(success, 0, BudgetExpectation());
+    callback.Run(success, BudgetExpectation());
     return;
   }
 
@@ -131,23 +129,21 @@ void BudgetDatabase::DidGetBudget(const GURL& origin,
   // and the budget at those times.
   BudgetExpectation expectation;
   double total = 0;
-  double debt = 0;
 
   if (IsCached(origin)) {
     // Starting with the chunks that expire the farthest in the future, build up
     // the budget expectations for those future times.
-    const BudgetInfo& info = budget_map_[origin.spec()];
-    for (const auto& chunk : base::Reversed(info.second)) {
-      expectation.push_front(std::make_pair(total, chunk.second));
-      total += chunk.first;
+    const BudgetChunks& chunks = budget_map_[origin.spec()];
+    for (const auto& chunk : base::Reversed(chunks)) {
+      expectation.emplace_front(total, chunk.expiration);
+      total += chunk.amount;
     }
-    debt = info.first;
   }
 
   // Always add one entry at the front of the list for the total budget now.
-  expectation.push_front(std::make_pair(total, clock_->Now()));
+  expectation.emplace_front(total, clock_->Now());
 
-  callback.Run(true /* success */, debt, expectation);
+  callback.Run(true /* success */, expectation);
 }
 
 void BudgetDatabase::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
@@ -173,12 +169,11 @@ void BudgetDatabase::WriteCachedValuesToDatabase(
   if (IsCached(origin)) {
     // Build the Budget proto object.
     budget_service::Budget budget;
-    const BudgetInfo& info = budget_map_[origin.spec()];
-    budget.set_debt(info.first);
-    for (const auto& chunk : info.second) {
+    const BudgetChunks& chunks = budget_map_[origin.spec()];
+    for (const auto& chunk : chunks) {
       budget_service::BudgetChunk* budget_chunk = budget.add_budget();
-      budget_chunk->set_amount(chunk.first);
-      budget_chunk->set_expiration(chunk.second.ToInternalValue());
+      budget_chunk->set_amount(chunk.amount);
+      budget_chunk->set_expiration(chunk.expiration.ToInternalValue());
     }
     entries->push_back(std::make_pair(origin.spec(), budget));
   } else {
@@ -196,11 +191,11 @@ void BudgetDatabase::CleanupExpiredBudget(const GURL& origin) {
 
   base::Time now = clock_->Now();
 
-  BudgetChunks& chunks = budget_map_[origin.spec()].second;
+  BudgetChunks& chunks = budget_map_[origin.spec()];
   auto cleanup_iter = chunks.begin();
 
   // This relies on the list of chunks being in timestamp order.
-  while (cleanup_iter != chunks.end() && cleanup_iter->second <= now)
+  while (cleanup_iter != chunks.end() && cleanup_iter->expiration <= now)
     cleanup_iter = chunks.erase(cleanup_iter);
 
   // If the entire budget is empty now, cleanup the map.

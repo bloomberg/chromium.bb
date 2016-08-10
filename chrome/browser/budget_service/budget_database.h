@@ -31,15 +31,28 @@ class GURL;
 // assigned to an origin. The class uses an underlying LevelDB.
 class BudgetDatabase {
  public:
+  // Data structure to hold information about the cumulative amount of budget
+  // at a particular point in time in the future. The budget described by a
+  // BudgetStatus represents the budget from zero or more BudgetChunk objects.
+  struct BudgetStatus {
+    BudgetStatus(double budget_at, base::Time time)
+        : budget_at(budget_at), time(time) {}
+    BudgetStatus(const BudgetStatus& other)
+        : budget_at(other.budget_at), time(other.time) {}
+
+    double budget_at;
+    base::Time time;
+  };
+
   // Data structure for returing the budget decay expectations to the caller.
-  using BudgetExpectation = std::list<std::pair<double, base::Time>>;
+  using BudgetExpectation = std::list<BudgetStatus>;
 
   // Callback for setting a budget value.
   using StoreBudgetCallback = base::Callback<void(bool success)>;
 
   // Callback for getting a list of all budget chunks.
-  using GetBudgetDetailsCallback = base::Callback<
-      void(bool success, double debt, const BudgetExpectation& expectation)>;
+  using GetBudgetDetailsCallback =
+      base::Callback<void(bool success, const BudgetExpectation& expectation)>;
 
   // The database_dir specifies the location of the budget information on
   // disk. The task_runner is used by the ProtoDatabase to handle all blocking
@@ -48,9 +61,8 @@ class BudgetDatabase {
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~BudgetDatabase();
 
-  // Get the full budget expectation for the origin. This will return any
-  // debt as well as a sequence of time points and the expected budget at
-  // those times.
+  // Get the full budget expectation for the origin. This will return a
+  // sequence of time points and the expected budget at those times.
   void GetBudgetDetails(const GURL& origin,
                         const GetBudgetDetailsCallback& callback);
 
@@ -68,9 +80,20 @@ class BudgetDatabase {
   // Used to allow tests to change time for testing.
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
+  // Holds information about individual pieces of awarded budget. There is a
+  // one-to-one mapping of these to the chunks in the underlying database.
+  struct BudgetChunk {
+    BudgetChunk(double amount, base::Time expiration)
+        : amount(amount), expiration(expiration) {}
+    BudgetChunk(const BudgetChunk& other)
+        : amount(other.amount), expiration(other.expiration) {}
+
+    double amount;
+    base::Time expiration;
+  };
+
   // Data structure for caching budget information.
-  using BudgetChunks = std::vector<std::pair<double, base::Time>>;
-  using BudgetInfo = std::pair<double, BudgetChunks>;
+  using BudgetChunks = std::vector<BudgetChunk>;
 
   using AddToCacheCallback = base::Callback<void(bool success)>;
 
@@ -96,7 +119,7 @@ class BudgetDatabase {
   std::unique_ptr<leveldb_proto::ProtoDatabase<budget_service::Budget>> db_;
 
   // Cached data for the origins which have been loaded.
-  std::unordered_map<std::string, BudgetInfo> budget_map_;
+  std::unordered_map<std::string, BudgetChunks> budget_map_;
 
   // The clock used to vend times.
   std::unique_ptr<base::Clock> clock_;

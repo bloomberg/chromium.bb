@@ -54,10 +54,8 @@ class BudgetDatabaseTest : public ::testing::Test {
   void GetBudgetDetailsComplete(
       base::Closure run_loop_closure,
       bool success,
-      double debt,
       const BudgetDatabase::BudgetExpectation& expectation) {
     success_ = success;
-    debt_ = debt;
     expectation_ = expectation;
     run_loop_closure.Run();
   }
@@ -95,7 +93,6 @@ class BudgetDatabaseTest : public ::testing::Test {
   std::unique_ptr<budget_service::Budget> budget_;
   TestingProfile profile_;
   BudgetDatabase db_;
-  double debt_ = 0;
   BudgetDatabase::BudgetExpectation expectation_;
 };
 
@@ -125,19 +122,19 @@ TEST_F(BudgetDatabaseTest, ReadAndWriteTest) {
   auto iter = expected_value.begin();
 
   // First value should be [total_budget, now]
-  EXPECT_EQ(kDefaultBudget1 + kDefaultBudget2, iter->first);
-  EXPECT_EQ(clock->Now(), iter->second);
+  EXPECT_EQ(kDefaultBudget1 + kDefaultBudget2, iter->budget_at);
+  EXPECT_EQ(clock->Now(), iter->time);
 
   // The next value should be the budget after the first chunk expires.
   iter++;
-  EXPECT_EQ(kDefaultBudget2, iter->first);
-  EXPECT_EQ(expiration_time, iter->second);
+  EXPECT_EQ(kDefaultBudget2, iter->budget_at);
+  EXPECT_EQ(expiration_time, iter->time);
 
   // The final value gives the budget of 0.0 after the second chunk expires.
   expiration_time += base::TimeDelta::FromDays(1);
   iter++;
-  EXPECT_EQ(0, iter->first);
-  EXPECT_EQ(expiration_time, iter->second);
+  EXPECT_EQ(0, iter->budget_at);
+  EXPECT_EQ(expiration_time, iter->time);
 
   // Advance the time until the first chunk of budget should be expired.
   clock->SetNow(starting_time +
@@ -147,9 +144,9 @@ TEST_F(BudgetDatabaseTest, ReadAndWriteTest) {
   GetBudgetDetails();
   iter = expectation().begin();
   ASSERT_EQ(2U, expectation().size());
-  EXPECT_EQ(kDefaultBudget2, iter->first);
+  EXPECT_EQ(kDefaultBudget2, iter->budget_at);
   iter++;
-  EXPECT_EQ(0, iter->first);
+  EXPECT_EQ(0, iter->budget_at);
 
   // Advace the time until both chunks of budget should be expired.
   clock->SetNow(starting_time +
@@ -159,7 +156,7 @@ TEST_F(BudgetDatabaseTest, ReadAndWriteTest) {
   GetBudgetDetails();
   iter = expectation().begin();
   ASSERT_EQ(1U, expectation().size());
-  EXPECT_EQ(0, iter->first);
+  EXPECT_EQ(0, iter->budget_at);
 
   // Now that the entire budget has expired, check that the entry in the map
   // has been removed.
