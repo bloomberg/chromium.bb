@@ -10,8 +10,6 @@
 #include "wtf/PtrUtil.h"
 #include <memory>
 
-using blink::CompositorFloatKeyframe;
-
 namespace blink {
 
 CompositorFloatAnimationCurve::CompositorFloatAnimationCurve()
@@ -73,38 +71,14 @@ bool CompositorFloatAnimationCurve::keyframeHasLinearTimingFunctionForTesting(un
     return !m_curve->keyframes_for_testing()[index]->timing_function();
 }
 
-void CompositorFloatAnimationCurve::addLinearKeyframe(const CompositorFloatKeyframe& keyframe)
-{
-    m_curve->AddKeyframe(
-        cc::FloatKeyframe::Create(base::TimeDelta::FromSecondsD(keyframe.time),
-            keyframe.value, nullptr));
-}
-
-void CompositorFloatAnimationCurve::addCubicBezierKeyframe(const CompositorFloatKeyframe& keyframe, const TimingFunction& timingFunction)
+void CompositorFloatAnimationCurve::addKeyframe(const CompositorFloatKeyframe& keyframe, const TimingFunction& timingFunction)
 {
     m_curve->AddKeyframe(cc::FloatKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time), keyframe.value,
         timingFunction.cloneToCC()));
 }
 
-void CompositorFloatAnimationCurve::addStepsKeyframe(const CompositorFloatKeyframe& keyframe, const TimingFunction& timingFunction)
-{
-    m_curve->AddKeyframe(cc::FloatKeyframe::Create(
-        base::TimeDelta::FromSecondsD(keyframe.time), keyframe.value,
-        timingFunction.cloneToCC()));
-}
-
-void CompositorFloatAnimationCurve::setLinearTimingFunction()
-{
-    m_curve->SetTimingFunction(nullptr);
-}
-
-void CompositorFloatAnimationCurve::setCubicBezierTimingFunction(const TimingFunction& timingFunction)
-{
-    m_curve->SetTimingFunction(timingFunction.cloneToCC());
-}
-
-void CompositorFloatAnimationCurve::setStepsTimingFunction(const TimingFunction& timingFunction)
+void CompositorFloatAnimationCurve::setTimingFunction(const TimingFunction& timingFunction)
 {
     m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }

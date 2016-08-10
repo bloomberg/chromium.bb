@@ -658,7 +658,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 
     EXPECT_EQ(1.0, keyframes[1].time);
     EXPECT_EQ(5.0f, keyframes[1].value);
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::EASE, keyframedFloatCurve->getKeyframeEaseTypeForTesting(1));
+    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(1));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
@@ -719,7 +719,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     EXPECT_EQ(1.0, keyframes[3].time);
     EXPECT_EQ(5.0f, keyframes[3].value);
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::EASE, keyframedFloatCurve->getKeyframeEaseTypeForTesting(3));
+    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(3));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay)
@@ -794,7 +794,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     EXPECT_EQ(2.0, keyframes[3].time);
     EXPECT_EQ(5.0f, keyframes[3].value);
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::EASE, keyframedFloatCurve->getKeyframeEaseTypeForTesting(3));
+    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(3));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
@@ -844,7 +844,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 
     EXPECT_EQ(1.0, keyframes[3].time);
     EXPECT_EQ(5.0f, keyframes[3].value);
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::EASE, keyframedFloatCurve->getKeyframeEaseTypeForTesting(3));
+    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(3));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegativeStartDelay)
@@ -954,7 +954,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
 
     EXPECT_EQ(1.0, keyframes[1].time);
     EXPECT_EQ(5.0f, keyframes[1].value);
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::EASE, keyframedFloatCurve->getKeyframeEaseTypeForTesting(1));
+    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(1));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, cancelIncompatibleCompositorAnimations)

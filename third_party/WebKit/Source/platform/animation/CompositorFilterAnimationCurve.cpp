@@ -9,8 +9,6 @@
 #include "cc/output/filter_operations.h"
 #include "platform/graphics/CompositorFilterOperations.h"
 
-using blink::CompositorFilterKeyframe;
-
 namespace blink {
 
 CompositorFilterAnimationCurve::CompositorFilterAnimationCurve()
@@ -22,15 +20,7 @@ CompositorFilterAnimationCurve::~CompositorFilterAnimationCurve()
 {
 }
 
-void CompositorFilterAnimationCurve::addLinearKeyframe(const CompositorFilterKeyframe& keyframe)
-{
-    const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
-    m_curve->AddKeyframe(cc::FilterKeyframe::Create(
-        base::TimeDelta::FromSecondsD(keyframe.time()), filterOperations, nullptr));
-
-}
-
-void CompositorFilterAnimationCurve::addCubicBezierKeyframe(const CompositorFilterKeyframe& keyframe, const TimingFunction& timingFunction)
+void CompositorFilterAnimationCurve::addKeyframe(const CompositorFilterKeyframe& keyframe, const TimingFunction& timingFunction)
 {
     const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
     m_curve->AddKeyframe(cc::FilterKeyframe::Create(
@@ -38,25 +28,7 @@ void CompositorFilterAnimationCurve::addCubicBezierKeyframe(const CompositorFilt
         timingFunction.cloneToCC()));
 }
 
-void CompositorFilterAnimationCurve::addStepsKeyframe(const CompositorFilterKeyframe& keyframe, const TimingFunction& timingFunction)
-{
-    const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
-    m_curve->AddKeyframe(cc::FilterKeyframe::Create(
-        base::TimeDelta::FromSecondsD(keyframe.time()), filterOperations,
-        timingFunction.cloneToCC()));
-}
-
-void CompositorFilterAnimationCurve::setLinearTimingFunction()
-{
-    m_curve->SetTimingFunction(nullptr);
-}
-
-void CompositorFilterAnimationCurve::setCubicBezierTimingFunction(const TimingFunction& timingFunction)
-{
-    m_curve->SetTimingFunction(timingFunction.cloneToCC());
-}
-
-void CompositorFilterAnimationCurve::setStepsTimingFunction(const TimingFunction& timingFunction)
+void CompositorFilterAnimationCurve::setTimingFunction(const TimingFunction& timingFunction)
 {
     m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }

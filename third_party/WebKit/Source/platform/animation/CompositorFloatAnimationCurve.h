@@ -44,13 +44,8 @@ public:
     CubicBezierTimingFunction::EaseType getKeyframeEaseTypeForTesting(unsigned long index) const;
     bool keyframeHasLinearTimingFunctionForTesting(unsigned long index) const;
 
-    void addLinearKeyframe(const CompositorFloatKeyframe&);
-    void addCubicBezierKeyframe(const CompositorFloatKeyframe&, const TimingFunction&);
-    void addStepsKeyframe(const CompositorFloatKeyframe&, const TimingFunction&);
-
-    void setLinearTimingFunction();
-    void setCubicBezierTimingFunction(const TimingFunction&);
-    void setStepsTimingFunction(const TimingFunction&);
+    void addKeyframe(const CompositorFloatKeyframe&, const TimingFunction&);
+    void setTimingFunction(const TimingFunction&);
 
     float getValue(double time) const;
 

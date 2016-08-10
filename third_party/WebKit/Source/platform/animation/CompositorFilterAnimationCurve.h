@@ -33,13 +33,8 @@ public:
     }
     ~CompositorFilterAnimationCurve() override;
 
-    void addLinearKeyframe(const CompositorFilterKeyframe&);
-    void addCubicBezierKeyframe(const CompositorFilterKeyframe&, const TimingFunction&);
-    void addStepsKeyframe(const CompositorFilterKeyframe&, const TimingFunction&);
-
-    void setLinearTimingFunction();
-    void setCubicBezierTimingFunction(const TimingFunction&);
-    void setStepsTimingFunction(const TimingFunction&);
+    void addKeyframe(const CompositorFilterKeyframe&, const TimingFunction&);
+    void setTimingFunction(const TimingFunction&);
 
     // blink::CompositorAnimationCurve implementation.
     std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;

@@ -223,10 +223,6 @@ bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const EffectMod
     return true;
 }
 
-// -----------------------------------------------------------------------
-// CompositorAnimations public API
-// -----------------------------------------------------------------------
-
 bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& timing, const Element& targetElement, const Animation* animationToAdd, const EffectModel& effect, double animationPlaybackRate)
 {
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
@@ -430,91 +426,31 @@ bool CompositorAnimations::convertTimingForCompositor(const Timing& timing, doub
 
 namespace {
 
-template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
-void addCompositorKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const PlatformAnimationKeyframeType& keyframe, const TimingFunction* timingFunction)
-{
-    if (!timingFunction) {
-        curve.addCubicBezierKeyframe(keyframe, *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE));
-        return;
-    }
-
-    switch (timingFunction->getType()) {
-    case TimingFunction::Type::LINEAR:
-        curve.addLinearKeyframe(keyframe);
-        break;
-
-    case TimingFunction::Type::CUBIC_BEZIER: {
-        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timingFunction);
-        curve.addCubicBezierKeyframe(keyframe, cubic);
-        break;
-    }
-
-    case TimingFunction::Type::STEPS: {
-        const StepsTimingFunction& steps = toStepsTimingFunction(*timingFunction);
-        curve.addStepsKeyframe(keyframe, steps);
-        break;
-    }
-
-    default:
-        NOTREACHED();
-    }
-}
-
-template <typename PlatformAnimationCurveType>
-void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction* timingFunction)
-{
-    if (!timingFunction) {
-        curve.setLinearTimingFunction();
-        return;
-    }
-
-    switch (timingFunction->getType()) {
-    case TimingFunction::Type::LINEAR:
-        curve.setLinearTimingFunction();
-        break;
-
-    case TimingFunction::Type::CUBIC_BEZIER: {
-        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timingFunction);
-        curve.setCubicBezierTimingFunction(cubic);
-        break;
-    }
-
-    case TimingFunction::Type::STEPS: {
-        const StepsTimingFunction& steps = toStepsTimingFunction(*timingFunction);
-        curve.setStepsTimingFunction(steps);
-        break;
-    }
-
-    default:
-        NOTREACHED();
-    }
-}
-
 void addKeyframeToCurve(CompositorFilterAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
-    const AnimatableValue* value, const TimingFunction* keyframeTimingFunction)
+    const AnimatableValue* value, const TimingFunction& keyframeTimingFunction)
 {
     std::unique_ptr<CompositorFilterOperations> ops = CompositorFilterOperations::create();
     toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
 
     CompositorFilterKeyframe filterKeyframe(keyframe->offset(), std::move(ops));
-    addCompositorKeyframeWithTimingFunction(curve, filterKeyframe, keyframeTimingFunction);
+    curve.addKeyframe(filterKeyframe, keyframeTimingFunction);
 }
 
 void addKeyframeToCurve(CompositorFloatAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
-    const AnimatableValue* value, const TimingFunction* keyframeTimingFunction)
+    const AnimatableValue* value, const TimingFunction& keyframeTimingFunction)
 {
     CompositorFloatKeyframe floatKeyframe(keyframe->offset(), toAnimatableDouble(value)->toDouble());
-    addCompositorKeyframeWithTimingFunction(curve, floatKeyframe, keyframeTimingFunction);
+    curve.addKeyframe(floatKeyframe, keyframeTimingFunction);
 }
 
 void addKeyframeToCurve(CompositorTransformAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
-    const AnimatableValue* value, const TimingFunction* keyframeTimingFunction)
+    const AnimatableValue* value, const TimingFunction& keyframeTimingFunction)
 {
     std::unique_ptr<CompositorTransformOperations> ops = CompositorTransformOperations::create();
     toCompositorTransformOperations(toAnimatableTransform(value)->transformOperations(), ops.get());
 
     CompositorTransformKeyframe transformKeyframe(keyframe->offset(), std::move(ops));
-    addCompositorKeyframeWithTimingFunction(curve, transformKeyframe, keyframeTimingFunction);
+    curve.addKeyframe(transformKeyframe, keyframeTimingFunction);
 }
 
 template <typename PlatformAnimationCurveType>
@@ -523,16 +459,18 @@ void addKeyframesToCurve(PlatformAnimationCurveType& curve, const AnimatableValu
     auto* lastKeyframe = keyframes.last().get();
     for (const auto& keyframe : keyframes) {
         const TimingFunction* keyframeTimingFunction = 0;
-        if (keyframe != lastKeyframe) { // Ignore timing function of last frame.
+        // Ignore timing function of last frame.
+        if (keyframe == lastKeyframe)
+            keyframeTimingFunction = LinearTimingFunction::shared();
+        else
             keyframeTimingFunction = &keyframe->easing();
-        }
 
         // FIXME: This relies on StringKeyframes being eagerly evaluated, which will
         // not happen eventually. Instead we should extract the CSSValue here
         // and convert using another set of toAnimatableXXXOperations functions.
         const AnimatableValue* value = keyframe->getAnimatableValue().get();
 
-        addKeyframeToCurve(curve, keyframe.get(), value, keyframeTimingFunction);
+        addKeyframeToCurve(curve, keyframe.get(), value, *keyframeTimingFunction);
     }
 }
 
@@ -560,12 +498,13 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
 
         CompositorTargetProperty::Type targetProperty;
         std::unique_ptr<CompositorAnimationCurve> curve;
+        DCHECK(timing.timingFunction);
         switch (property.cssProperty()) {
         case CSSPropertyOpacity: {
             targetProperty = CompositorTargetProperty::OPACITY;
             std::unique_ptr<CompositorFloatAnimationCurve> floatCurve = CompositorFloatAnimationCurve::create();
             addKeyframesToCurve(*floatCurve, values);
-            setTimingFunctionOnCurve(*floatCurve, timing.timingFunction.get());
+            floatCurve->setTimingFunction(*timing.timingFunction);
             curve = std::move(floatCurve);
             break;
         }
@@ -574,7 +513,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             targetProperty = CompositorTargetProperty::FILTER;
             std::unique_ptr<CompositorFilterAnimationCurve> filterCurve = CompositorFilterAnimationCurve::create();
             addKeyframesToCurve(*filterCurve, values);
-            setTimingFunctionOnCurve(*filterCurve, timing.timingFunction.get());
+            filterCurve->setTimingFunction(*timing.timingFunction);
             curve = std::move(filterCurve);
             break;
         }
@@ -585,7 +524,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             targetProperty = CompositorTargetProperty::TRANSFORM;
             std::unique_ptr<CompositorTransformAnimationCurve> transformCurve = CompositorTransformAnimationCurve::create();
             addKeyframesToCurve(*transformCurve, values);
-            setTimingFunctionOnCurve(*transformCurve, timing.timingFunction.get());
+            transformCurve->setTimingFunction(*timing.timingFunction);
             curve = std::move(transformCurve);
             break;
         }
