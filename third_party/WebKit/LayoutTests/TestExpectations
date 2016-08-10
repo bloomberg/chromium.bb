@@ -940,6 +940,12 @@ crbug.com/336604 imported/csswg-test/css-flexbox-1/flexbox_visibility-collapse-l
 crbug.com/336604 imported/csswg-test/css-flexbox-1/flexbox_visibility-collapse.html [ Failure ]
 crbug.com/249112 imported/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-006.xht [ Failure ]
 
+crbug.com/636208 [ Linux Trusty ] fast/forms/select-popup/popup-menu-appearance-many.html [ NeedsRebaseline ]
+crbug.com/636208 [ Linux Trusty ] fast/forms/select-popup/popup-menu-appearance-long.html [ NeedsRebaseline ]
+crbug.com/636208 [ Linux Trusty ] fast/forms/select-popup/popup-menu-appearance-rtl-default.html [ NeedsRebaseline ]
+crbug.com/636208 [ Linux Trusty ] fast/forms/select-popup/popup-menu-appearance-rtl.html [ NeedsRebaseline ]
+crbug.com/636208 [ Linux Trusty ] fast/forms/select-popup/popup-menu-appearance-zoom090.html [ NeedsRebaseline ]
+
 crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-aspect-ratio-img-column-003.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-aspect-ratio-img-row-002.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-aspect-ratio-img-row-003.html [ Failure ]
