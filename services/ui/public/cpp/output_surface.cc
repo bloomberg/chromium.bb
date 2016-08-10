@@ -7,14 +7,15 @@
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
+#include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/window_surface.h"
 
 namespace ui {
 
-OutputSurface::OutputSurface(
-    const scoped_refptr<cc::ContextProvider>& context_provider,
-    std::unique_ptr<ui::WindowSurface> surface)
-    : cc::OutputSurface(context_provider, nullptr, nullptr),
+OutputSurface::OutputSurface(std::unique_ptr<ui::WindowSurface> surface)
+    : cc::OutputSurface(make_scoped_refptr(new ContextProvider()),
+                        nullptr,
+                        nullptr),
       surface_(std::move(surface)) {
   capabilities_.delegated_rendering = true;
 }

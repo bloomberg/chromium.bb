@@ -7,8 +7,6 @@
 source_set("cpp") {
   sources = [
     "bitmap_uploader.h",
-    "context_provider.h",
-    "gles2_context.h",
     "input_event_handler.h",
     "output_surface.h",
     "property_type_converters.h",
@@ -94,7 +92,9 @@ source_set("internal") {
     "command_buffer_client_impl.cc",
     "command_buffer_client_impl.h",
     "context_provider.cc",
+    "context_provider.h",
     "gles2_context.cc",
+    "gles2_context.h",
     "in_flight_change.cc",
     "in_flight_change.h",
     "output_surface.cc",

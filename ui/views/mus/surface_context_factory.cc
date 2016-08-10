@@ -8,7 +8,6 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/output_surface.h"
 #include "services/ui/public/cpp/window.h"
 #include "ui/compositor/reflector.h"
@@ -39,9 +38,8 @@ void SurfaceContextFactory::CreateOutputSurface(
   ui::Window* window = compositor->window();
   NativeWidgetMus* native_widget = NativeWidgetMus::GetForWindow(window);
   ui::mojom::SurfaceType surface_type = native_widget->surface_type();
-  scoped_refptr<cc::ContextProvider> context_provider(new ui::ContextProvider);
-  std::unique_ptr<cc::OutputSurface> surface(new ui::OutputSurface(
-              context_provider, window->RequestSurface(surface_type)));
+  std::unique_ptr<cc::OutputSurface> surface(
+      new ui::OutputSurface(window->RequestSurface(surface_type)));
   compositor->SetOutputSurface(std::move(surface));
 }
 

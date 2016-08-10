@@ -16,8 +16,7 @@ namespace ui {
 
 class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
  public:
-  OutputSurface(const scoped_refptr<cc::ContextProvider>& context_provider,
-                std::unique_ptr<WindowSurface> surface);
+  explicit OutputSurface(std::unique_ptr<WindowSurface> surface);
   ~OutputSurface() override;
 
   // cc::OutputSurface implementation.

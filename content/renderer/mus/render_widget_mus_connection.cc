@@ -11,7 +11,6 @@
 #include "content/renderer/mus/compositor_mus_connection.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/output_surface.h"
 #include "services/ui/public/interfaces/command_buffer.mojom.h"
 #include "services/ui/public/interfaces/surface.mojom.h"
@@ -44,10 +43,9 @@ std::unique_ptr<cc::OutputSurface>
 RenderWidgetMusConnection::CreateOutputSurface() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!window_surface_binding_);
-  scoped_refptr<cc::ContextProvider> context_provider(new ui::ContextProvider);
 
   std::unique_ptr<cc::OutputSurface> surface(new ui::OutputSurface(
-      context_provider, ui::WindowSurface::Create(&window_surface_binding_)));
+      ui::WindowSurface::Create(&window_surface_binding_)));
   if (compositor_mus_connection_) {
     compositor_mus_connection_->AttachSurfaceOnMainThread(
         std::move(window_surface_binding_));
