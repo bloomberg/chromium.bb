@@ -16,33 +16,73 @@ function processLangZoneTerms() {
   var selectLangZoneTerms = doc.getElementById('play-footer').
       getElementsByTagName('select')[0];
 
-  if (window.location.href == 'https://play.google.com/about/play-terms.html') {
-    var matchByLangZone = '/intl/' + navigator.language + '_' +
-        document.countryCode + '/about/play-terms.html';
-    for (var i = selectLangZoneTerms.options.length - 1; i >= 0; --i) {
-      var option = selectLangZoneTerms.options[i];
-      if (option.value == matchByLangZone) {
-        window.location.href = option.value;
-        return;
+  var initialLoad = window.location.href ==
+      'https://play.google.com/about/play-terms.html';
+  var langSegments = navigator.language.split('-');
+  if (initialLoad) {
+    var applyTermsForLangAndZone = function(termsLang) {
+      var matchByLangZone = '/intl/' + termsLang + '_' +
+          document.countryCode + '/about/play-terms.html';
+      for (var i = selectLangZoneTerms.options.length - 1; i >= 0; --i) {
+        var option = selectLangZoneTerms.options[i];
+        if (option.value == matchByLangZone) {
+          window.location.href = option.value;
+          return true;
+        }
       }
+      return false;
+    };
+
+    // Try two versions of the language, full and short (if it exists, for
+    // example en-GB -> en). Note, terms may contain entries for both types, for
+    // example: en_ie, es-419_ar, es_as, pt-PT_pt.
+    if (applyTermsForLangAndZone(navigator.language)) {
+      return;
+    }
+    if (langSegments.length == 2 &&
+        applyTermsForLangAndZone(langSegments[0])) {
+      return;
     }
   }
 
   var matchByLang = '/intl/' + navigator.language + '_';
+  var matchByLangShort = null;
+  if (langSegments.length == 2) {
+    matchByLangShort = '/intl/' + langSegments[0] + '_';
+  }
+
   var matchByZone = '_' + document.countryCode + '/about/play-terms.html';
   var matchByDefault = '/intl/en/about/play-terms.html';
 
+  // We are allowed to display terms by default only in language that matches
+  // current UI language. In other cases we have to switch to default version.
+  var langMatch = false;
+  var defaultExist = false;
+
   for (var i = selectLangZoneTerms.options.length - 1; i >= 0; --i) {
     var option = selectLangZoneTerms.options[i];
-    if (selectLangZoneTerms.selectedIndex != i &&
-        !option.value.startsWith(matchByLang) &&
+    if (selectLangZoneTerms.selectedIndex == i) {
+      langMatch = option.value.startsWith(matchByLang) ||
+          (matchByLangShort && option.value.startsWith(matchByLangShort));
+      continue;
+    }
+    if (option.value == matchByDefault) {
+      defaultExist = true;
+      continue;
+    }
+    if (!option.value.startsWith(matchByLang) &&
         !option.value.endsWith(matchByZone) &&
-        option.value != matchByDefault && option.text != 'English') {
+        !(matchByLangShort && option.value.startsWith(matchByLangShort)) &&
+        option.text != 'English') {
       selectLangZoneTerms.removeChild(option);
     }
   }
-  // Show content once we reached target url.
-  document.body.hidden = false;
+  if (initialLoad && !langMatch && defaultExist) {
+    window.location.href = matchByDefault;
+  } else {
+    // Show content once we reached target url.
+    document.body.hidden = false;
+  }
 }
 
 /**
