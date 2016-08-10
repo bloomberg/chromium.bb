@@ -30,7 +30,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
-#include "chrome/installer/setup/app_launcher_installer.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
