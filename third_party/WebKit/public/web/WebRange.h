@@ -31,47 +31,33 @@
 #ifndef WebRange_h
 #define WebRange_h
 
-#include "WebFrame.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/WebVector.h"
 
 namespace blink {
 
 class Range;
 class WebString;
+class LocalFrame;
 
-// Provides readonly access to some properties of a DOM range.
-class WebRange {
+class WebRange final {
 public:
-    ~WebRange() { reset(); }
+    BLINK_EXPORT WebRange(int start, int length);
 
-    WebRange() { }
-    WebRange(const WebRange& r) { assign(r); }
-    WebRange& operator=(const WebRange& r)
-    {
-        assign(r);
-        return *this;
-    }
+    int startOffset() const { return m_start; }
+    int endOffset() const { return m_end; }
+    int length() const { return m_end - m_start; }
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebRange&);
-
-    bool isNull() const { return m_private.isNull(); }
-
-    BLINK_EXPORT int startOffset() const;
-    BLINK_EXPORT int endOffset() const;
-    BLINK_EXPORT WebString toPlainText() const;
-
-    BLINK_EXPORT static WebRange fromDocumentRange(WebLocalFrame*, int start, int length);
+    bool isNull() const { return m_start == -1 && m_end == -1; }
 
 #if BLINK_IMPLEMENTATION
     WebRange(Range*);
-    operator Range*() const;
+
+    Range* createRange(LocalFrame*) const;
 #endif
 
 private:
-    WebPrivatePtr<Range> m_private;
+    int m_start = -1;
+    int m_end = -1;
 };
 
 } // namespace blink

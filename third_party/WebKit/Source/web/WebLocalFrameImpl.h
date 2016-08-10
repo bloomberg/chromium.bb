@@ -161,6 +161,7 @@ public:
     bool selectWordAroundCaret() override;
     void selectRange(const WebPoint& base, const WebPoint& extent) override;
     void selectRange(const WebRange&) override;
+    WebString rangeAsText(const WebRange&) override;
     void moveRangeSelectionExtent(const WebPoint&) override;
     void moveRangeSelection(const WebPoint& base, const WebPoint& extent, WebFrame::TextGranularity = CharacterGranularity) override;
     void moveCaretSelection(const WebPoint&) override;

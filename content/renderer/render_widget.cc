@@ -111,7 +111,6 @@ using blink::WebNode;
 using blink::WebPagePopup;
 using blink::WebPoint;
 using blink::WebPopupType;
-using blink::WebRange;
 using blink::WebRect;
 using blink::WebScreenInfo;
 using blink::WebSize;

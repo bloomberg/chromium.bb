@@ -30,71 +30,36 @@
 
 #include "public/web/WebRange.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "core/dom/Range.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "public/platform/WebString.h"
-#include "public/web/WebExceptionCode.h"
-#include "public/web/WebNode.h"
-#include "web/WebLocalFrameImpl.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-void WebRange::reset()
+WebRange::WebRange(int start, int length)
+    : m_start(start)
+    , m_end(start + length)
 {
-    m_private.reset();
+    DCHECK(start != -1 && length != 0) << "These values are reserved to indicate that the range is null";
 }
 
-void WebRange::assign(const WebRange& other)
+WebRange::WebRange(Range* range)
 {
-    m_private = other.m_private;
+    if (!range)
+        return;
+
+    m_start = range->startOffset();
+    m_end = range->endOffset();
 }
 
-int WebRange::startOffset() const
+Range* WebRange::createRange(LocalFrame* frame) const
 {
-    return m_private->startOffset();
-}
+    Element* selectionRoot = frame->selection().rootEditableElement();
+    ContainerNode* scope = selectionRoot ? selectionRoot : frame->document()->documentElement();
 
-int WebRange::endOffset() const
-{
-    return m_private->endOffset();
-}
-
-WebString WebRange::toPlainText() const
-{
-    return m_private->text();
-}
-
-// static
-WebRange WebRange::fromDocumentRange(WebLocalFrame* frame, int start, int length)
-{
-    LocalFrame* webFrame = toWebLocalFrameImpl(frame)->frame();
-    Element* selectionRoot = webFrame->selection().rootEditableElement();
-    ContainerNode* scope = selectionRoot ? selectionRoot : webFrame->document()->documentElement();
-
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    scope->document().updateStyleAndLayoutIgnorePendingStylesheets();
-
-    return createRange(PlainTextRange(start, start + length).createRange(*scope));
-}
-
-WebRange::WebRange(Range*range)
-    : m_private(range)
-{
-}
-
-WebRange::operator Range*() const
-{
-    return m_private.get();
+    return blink::createRange(PlainTextRange(m_start, m_end).createRange(*scope));
 }
 
 } // namespace blink

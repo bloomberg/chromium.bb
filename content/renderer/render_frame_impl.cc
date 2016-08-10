@@ -1840,7 +1840,7 @@ void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
   length += end_adjust - start_adjust;
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  frame_->selectRange(WebRange::fromDocumentRange(frame_, start, length));
+  frame_->selectRange(WebRange(start, length));
 }
 
 void RenderFrameImpl::OnUnselect() {
@@ -2208,7 +2208,7 @@ void RenderFrameImpl::OnReloadLoFiImages() {
 
 void RenderFrameImpl::OnTextSurroundingSelectionRequest(uint32_t max_length) {
   blink::WebSurroundingText surroundingText;
-  surroundingText.initialize(frame_->selectionRange(), max_length);
+  surroundingText.initializeFromCurrentSelection(frame_, max_length);
 
   if (surroundingText.isNull()) {
     // |surroundingText| might not be correctly initialized, for example if
@@ -5645,9 +5645,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
       else
         offset = 0;
       length = location + length - offset + kExtraCharsBeforeAndAfterSelection;
-      WebRange webrange = WebRange::fromDocumentRange(frame_, offset, length);
-      if (!webrange.isNull())
-        text = webrange.toPlainText();
+      text = frame_->rangeAsText(WebRange(offset, length));
     } else {
       offset = location;
       text = frame_->selectionAsText();
@@ -5659,6 +5657,9 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
     }
   }
 
+  // TODO(dglazkov): Investigate if and why this would be happening,
+  // and resolve this. We shouldn't be carrying selection text here.
+  // http://crbug.com/632920.
   // Sometimes we get repeated didChangeSelection calls from webkit when
   // the selection hasn't actually changed. We don't want to report these
   // because it will cause us to continually claim the X clipboard.

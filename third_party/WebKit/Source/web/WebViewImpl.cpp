@@ -2860,11 +2860,8 @@ bool WebViewImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds)
 
 void WebViewImpl::applyReplacementRange(int start, int length)
 {
-    if (WebLocalFrame* frame = focusedFrame()) {
-        WebRange webrange = WebRange::fromDocumentRange(frame, start, length);
-        if (!webrange.isNull())
-            frame->selectRange(webrange);
-    }
+    if (WebLocalFrame* frame = focusedFrame())
+        frame->selectRange(WebRange(start, length));
 }
 
 // WebView --------------------------------------------------------------------

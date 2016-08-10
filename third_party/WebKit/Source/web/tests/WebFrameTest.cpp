@@ -5151,7 +5151,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange)
 
     const int allTextBeginOffset = 0;
     const int allTextLength = 11;
-    frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
+    frame->selectRange(WebRange(allTextBeginOffset, allTextLength));
     EphemeralRange selectionRange = frame->frame()->selection().selection().toNormalizedEphemeralRange();
 
     EXPECT_EQ(1, spellcheck.numberOfTimesChecked());
@@ -5185,7 +5185,7 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers)
 
     const int allTextBeginOffset = 0;
     const int allTextLength = 11;
-    frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
+    frame->selectRange(WebRange(allTextBeginOffset, allTextLength));
     EphemeralRange selectionRange = frame->frame()->selection().selection().toNormalizedEphemeralRange();
 
     EXPECT_EQ(0U, document->markers().markersInRange(selectionRange, DocumentMarker::Spelling).size());

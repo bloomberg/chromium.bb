@@ -240,6 +240,7 @@ public:
     virtual void selectRange(const WebPoint& base, const WebPoint& extent) = 0;
 
     virtual void selectRange(const WebRange&) = 0;
+    virtual WebString rangeAsText(const WebRange&) = 0;
 
     // Move the current selection to the provided viewport point/points. If the
     // current selection is editable, the new selection will be restricted to

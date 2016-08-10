@@ -897,8 +897,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
 // Test to verify that preview generated only for one page.
 TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
   LoadHTML(kMultipageHTML);
-  GetMainFrame()->selectRange(
-      blink::WebRange::fromDocumentRange(GetMainFrame(), 1, 3));
+  GetMainFrame()->selectRange(blink::WebRange(1, 3));
 
   // Fill in some dummy values.
   base::DictionaryValue dict;

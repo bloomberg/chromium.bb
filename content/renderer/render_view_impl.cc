@@ -238,7 +238,6 @@ using blink::WebPeerConnectionHandler;
 using blink::WebPeerConnectionHandlerClient;
 using blink::WebPluginAction;
 using blink::WebPoint;
-using blink::WebRange;
 using blink::WebRect;
 using blink::WebReferrerPolicy;
 using blink::WebScriptSource;

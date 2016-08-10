@@ -1158,8 +1158,33 @@ void WebLocalFrameImpl::selectRange(const WebPoint& baseInViewport, const WebPoi
 void WebLocalFrameImpl::selectRange(const WebRange& webRange)
 {
     TRACE_EVENT0("blink", "WebLocalFrameImpl::selectRange");
-    if (Range* range = static_cast<Range*>(webRange))
+
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope(frame()->document()->lifecycle());
+
+    // TODO(dglazkov): Use EphemeralRange here.
+    // See http://crbug.com/636216 for more details.
+    if (Range* range = webRange.createRange(frame()))
         frame()->selection().setSelectedRange(range, VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
+}
+
+WebString WebLocalFrameImpl::rangeAsText(const WebRange& webRange)
+{
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope(frame()->document()->lifecycle());
+
+    // TODO(dglazkov): Use EphemeralRange here.
+    // See http://crbug.com/636216 for more details.
+    if (Range* range = webRange.createRange(frame()))
+        return range->text();
+
+    return WebString();
 }
 
 void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)

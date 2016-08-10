@@ -35,6 +35,7 @@ namespace blink {
 class SurroundingText;
 class WebNode;
 class WebRange;
+class WebLocalFrame;
 struct WebPoint;
 
 // WebSurroundingText is a Blink API that gives access to the SurroundingText
@@ -50,11 +51,10 @@ public:
     // position relative to a provided node.
     // The maximum length of the contents retrieved is defined by maxLength.
     BLINK_EXPORT void initialize(const WebNode&, const WebPoint&, size_t maxLength);
-
-    // Initializes the object to get the text surrounding a given range.
+    // Initializes the object with the current selection in a given frame.
     // The maximum length of the contents retrieved is defined by maxLength.
     // It does not include the text inside the range.
-    BLINK_EXPORT void initialize(const WebRange&, size_t maxLength);
+    BLINK_EXPORT void initializeFromCurrentSelection(WebLocalFrame*, size_t maxLength);
 
     // Surrounding text content retrieved.
     BLINK_EXPORT WebString textContent() const;
