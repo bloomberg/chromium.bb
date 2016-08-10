@@ -34,9 +34,6 @@ const char kDisableIOSPasswordGeneration[] = "disable-ios-password-generation";
 const char kDisableIOSPasswordSuggestions[] =
     "disable-ios-password-suggestions";
 
-// Disables the use of WKWebView instead of UIWebView.
-const char kDisableIOSWKWebView[] = "disable-wkwebview";
-
 // Disable the snapshots lru cache.
 const char kDisableLRUSnapshotCache[] = "disable-lru-snapshot-cache";
 
@@ -73,9 +70,6 @@ const char kEnableIOSHandoffToOtherDevices[] =
 
 // Enable password generation for iOS.
 const char kEnableIOSPasswordGeneration[] = "enable-ios-password-generation";
-
-// Enables the use of WKWebView instead of UIWebView.
-const char kEnableIOSWKWebView[] = "enable-wkwebview";
 
 // Enables the snapshot lru cache.
 const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";

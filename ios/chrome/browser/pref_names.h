@@ -25,7 +25,6 @@ extern const char kIosBookmarkPromoAlreadySeen[];
 extern const char kIosHandoffToOtherDevices[];
 extern const char kIosPhysicalWebEnabled[];
 extern const char kLastSessionExitedCleanly[];
-extern const char kLastSessionUsedWKWebViewControlGroup[];
 extern const char kMetricsReportingWifiOnly[];
 extern const char kNtpShownPage[];
 extern const char kSavingBrowserHistoryDisabled[];

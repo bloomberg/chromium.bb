@@ -176,14 +176,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     }
   }
 
-  // Populate command line flags from EnableWKWebView.
-  NSString* enableWKWebViewValue = [defaults stringForKey:@"EnableWKWebView"];
-  if ([enableWKWebViewValue isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableIOSWKWebView);
-  } else if ([enableWKWebViewValue isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableIOSWKWebView);
-  }
-
   // Set the UA flag if UseMobileSafariUA is enabled.
   if ([defaults boolForKey:@"UseMobileSafariUA"]) {
     // Safari uses "Vesion/", followed by the OS version excluding bugfix, where
