@@ -1396,6 +1396,8 @@ crbug.com/636271 [ Mac10.10 ] fast/repaint/resize-iframe-text.html [ Pass Failur
 
 crbug.com/636311 [ Win10 ] svg/custom/use-clipped-hit.svg [ Pass Failure ]
 
+crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
+
 # This test breaks when the feature introduced in the bug is enabled. We keep
 # this tested without the feature by using the virtual test. See
 # virtual/stable/http/tests/navigation/beacon-cross-origin-redirect-blob-expected.txt
