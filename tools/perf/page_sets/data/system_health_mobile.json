@@ -43,9 +43,6 @@
         "system_health_mobile_006.wpr": [
             "load:news:cnn"
         ],
-        "system_health_mobile_007.wpr": [
-            "load:social:facebook"
-        ],
         "system_health_mobile_008.wpr": [
             "load:news:hackernews"
         ],
@@ -92,6 +89,7 @@
             "browse:news:reddit"
         ],
         "system_health_mobile_028.wpr": [
+            "load:social:facebook",
             "browse:social:facebook"
         ],
         "system_health_mobile_029.wpr": [
@@ -106,7 +104,8 @@
             "browse:media:youtube"
         ],
         "system_health_mobile_040.wpr": [
-            "browse:media:facebook"
+            "load:media:facebook_photos",
+            "browse:media:facebook_photos"
         ]
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating."

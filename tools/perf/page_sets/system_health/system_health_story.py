@@ -23,11 +23,7 @@ class _MetaSystemHealthStory(type):
     story set. This field is NOT inherited by subclasses (that's why it's
     defined on the metaclass).
     """
-    return cls.__dict__.get('__ABSTRACT_STORY__', False)
-
-  @ABSTRACT_STORY.setter
-  def ABSTRACT_STORY(cls, ABSTRACT_STORY):
-    cls.__dict__['__ABSTRACT_STORY__'] = ABSTRACT_STORY
+    return cls.__dict__.get('ABSTRACT_STORY', False)
 
 
 class SystemHealthStory(page.Page):

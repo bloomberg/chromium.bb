@@ -280,8 +280,8 @@ class YouTubeDesktopStory(_MediaBrowsingStory):
   ITEM_SELECTOR_INDEX = 3
 
 
-class FacebookMobileStory(_MediaBrowsingStory):
-  NAME = 'browse:media:facebook'
+class FacebookPhotosMediaStory(_MediaBrowsingStory):
+  NAME = 'browse:media:facebook_photos'
   URL = (
       'https://m.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&source=54&ref=page_internal')
   ITEM_SELECTOR = '._57-r.touchable'
@@ -289,13 +289,9 @@ class FacebookMobileStory(_MediaBrowsingStory):
   IS_SINGLE_PAGE_APP = True
   ITEM_SELECTOR_INDEX = 0
 
-  def _Login(self, action_runner):
-    action_runner.Navigate('https://m.facebook.com/rihanna')
-    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
 
-
-class FacebookDesktopStory(_MediaBrowsingStory):
-  NAME = 'browse:media:facebook'
+class FacebookPhotosDesktopStory(_MediaBrowsingStory):
+  NAME = 'browse:media:facebook_photos'
   URL = (
       'https://www.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&theater')
   ITEM_SELECTOR = '.snowliftPager.next'
@@ -303,7 +299,3 @@ class FacebookDesktopStory(_MediaBrowsingStory):
   # theater viewer.
   SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
   IS_SINGLE_PAGE_APP = True
-
-  def _Login(self, action_runner):
-    action_runner.Navigate('https://www.facebook.com/rihanna')
-    action_runner.tab.WaitForDocumentReadyStateToBeComplete()

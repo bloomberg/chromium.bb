@@ -232,7 +232,7 @@ class Load9GagStory(_LoadingStory):
   URL = 'https://www.9gag.com/'
 
 
-class LoadFlickr(_LoadingStory):
+class LoadFlickrStory(_LoadingStory):
   NAME = 'load:media:flickr'
   URL = 'https://www.flickr.com/photos/tags/farm'
 
@@ -244,9 +244,25 @@ class LoadFlickr(_LoadingStory):
                 !== null''')
 
 
-class LoadImgur(_LoadingStory):
+class LoadImgurStory(_LoadingStory):
   NAME = 'load:media:imgur'
   URL = 'http://imgur.com/gallery/5UlBN'
+
+
+class LoadFacebookPhotosMobileStory(_LoadingStory):
+  NAME = 'load:media:facebook_photos'
+  URL = (
+      'https://m.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&source=54&ref=page_internal')
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+
+class LoadFacebookPhotosDesktopStory(_LoadingStory):
+  NAME = 'load:media:facebook_photos'
+  URL = (
+      'https://www.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&theater')
+  # Recording currently does not work. The page gets stuck in the
+  # theater viewer.
+  SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
 
 
 ################################################################################
@@ -263,7 +279,7 @@ class LoadDocsStory(_LoadingStory):
 class _LoadGmailBaseStory(_LoadingStory):
   NAME = 'load:tools:gmail'
   URL = 'https://mail.google.com/mail/'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  ABSTRACT_STORY = True
 
   def _Login(self, action_runner):
     google_login.LoginGoogleAccount(action_runner, 'googletest',
