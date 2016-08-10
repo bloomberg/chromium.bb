@@ -43,12 +43,11 @@ struct SubtagScript {
 
 using SubtagScriptMap = HashMap<String, UScriptCode, CaseFoldingHash>;
 
-static SubtagScriptMap createSubtagScriptMap(const SubtagScript list[], size_t size)
+static void createSubtagScriptMap(SubtagScriptMap& map, const SubtagScript list[], size_t size)
 {
-    SubtagScriptMap map;
+    map.reserveCapacityForSize(size);
     for (size_t i = 0; i < size; ++i)
         map.set(list[i].subtag, list[i].script);
-    return map;
 }
 
 UScriptCode scriptNameToCode(const String& scriptName)
@@ -165,8 +164,9 @@ UScriptCode scriptNameToCode(const String& scriptName)
         { "zxxx", USCRIPT_UNWRITTEN_LANGUAGES },
         { "zzzz", USCRIPT_UNKNOWN }
     };
-    DEFINE_STATIC_LOCAL(SubtagScriptMap, scriptNameCodeMap,
-        (createSubtagScriptMap(scriptNameCodeList, WTF_ARRAY_LENGTH(scriptNameCodeList))));
+    DEFINE_STATIC_LOCAL(SubtagScriptMap, scriptNameCodeMap, ());
+    if (scriptNameCodeMap.isEmpty())
+        createSubtagScriptMap(scriptNameCodeMap, scriptNameCodeList, WTF_ARRAY_LENGTH(scriptNameCodeList));
 
     const auto& it = scriptNameCodeMap.find(scriptName);
     if (it != scriptNameCodeMap.end())
@@ -453,8 +453,9 @@ UScriptCode localeToScriptCodeForFontSelection(const String& locale)
         { "zh-mo", USCRIPT_TRADITIONAL_HAN },
         { "zh-tw", USCRIPT_TRADITIONAL_HAN },
     };
-    DEFINE_STATIC_LOCAL(SubtagScriptMap, localeScriptMap,
-        (createSubtagScriptMap(localeScriptList, WTF_ARRAY_LENGTH(localeScriptList))));
+    DEFINE_STATIC_LOCAL(SubtagScriptMap, localeScriptMap, ());
+    if (localeScriptMap.isEmpty())
+        createSubtagScriptMap(localeScriptMap, localeScriptList, WTF_ARRAY_LENGTH(localeScriptList));
 
     // BCP 47 uses '-' as the delimiter but ICU uses '_'.
     // https://tools.ietf.org/html/bcp47
@@ -487,8 +488,9 @@ static UScriptCode scriptCodeForHanFromRegion(const String& region)
         { "mo", USCRIPT_TRADITIONAL_HAN },
         { "tw", USCRIPT_TRADITIONAL_HAN },
     };
-    DEFINE_STATIC_LOCAL(SubtagScriptMap, regionScriptMap,
-        (createSubtagScriptMap(regionScriptList, WTF_ARRAY_LENGTH(regionScriptList))));
+    DEFINE_STATIC_LOCAL(SubtagScriptMap, regionScriptMap, ());
+    if (regionScriptMap.isEmpty())
+        createSubtagScriptMap(regionScriptMap, regionScriptList, WTF_ARRAY_LENGTH(regionScriptList));
 
     const auto& it = regionScriptMap.find(region);
     return it != regionScriptMap.end() ? it->value : USCRIPT_COMMON;
