@@ -31,22 +31,47 @@ class WebJsTest : public WebTestT {
 
   // Returns a NSString representation of the JavaScript's evaluation results;
   // the JavaScript is passed in as a |format| and its arguments.
+  // DEPRECATED. TODO(crbug.com/595761): Remove this API.
   NSString* EvaluateJavaScriptWithFormat(NSString* format, ...)
+      __attribute__((format(__NSString__, 2, 3)));
+
+  // Returns an id representation of the JavaScript's evaluation results;
+  // the JavaScript is passed in as a |format| and its arguments.
+  id ExecuteJavaScriptWithFormat(NSString* format, ...)
       __attribute__((format(__NSString__, 2, 3)));
 
   // Helper method that EXPECTs the |java_script| evaluation results on each
   // element obtained by scripts in |get_element_javas_cripts|; the expected
-  // result is the corresponding entry in |expected_results|.
+  // result string is the corresponding entry in |expected_results|.
+  // DEPRECATED. TODO(crbug.com/595761): Remove this API.
   void EvaluateJavaScriptOnElementsAndCheck(NSString* java_script,
                                             NSArray* get_element_java_scripts,
                                             NSArray* expected_results);
+
+  // Helper method that EXPECTs the |java_script| evaluation results on each
+  // element obtained by scripts in |get_element_javas_cripts|; the expected
+  // result is the corresponding entry in |expected_results|.
+  void ExecuteJavaScriptOnElementsAndCheck(NSString* java_script,
+                                           NSArray* get_element_java_scripts,
+                                           NSArray* expected_results);
 
   // Helper method that EXPECTs the |java_script| evaluation results on each
   // element obtained by JavaScripts in |get_element_java_scripts|. The
   // expected results are boolean and are true only for elements in
   // |get_element_java_scripts_expecting_true| which is subset of
   // |get_element_java_scripts|.
+  // DEPRECATED. TODO(crbug.com/595761): Remove this API.
   void EvaluateBooleanJavaScriptOnElementsAndCheck(
+      NSString* java_script,
+      NSArray* get_element_java_scripts,
+      NSArray* get_element_java_scripts_expecting_true);
+
+  // Helper method that EXPECTs the |java_script| evaluation results on each
+  // element obtained by JavaScripts in |get_element_java_scripts|. The
+  // expected results are boolean and are true only for elements in
+  // |get_element_java_scripts_expecting_true| which is subset of
+  // |get_element_java_scripts|.
+  void ExecuteBooleanJavaScriptOnElementsAndCheck(
       NSString* java_script,
       NSArray* get_element_java_scripts,
       NSArray* get_element_java_scripts_expecting_true);
@@ -87,6 +112,17 @@ NSString* WebJsTest<WebTestT>::EvaluateJavaScriptWithFormat(NSString* format,
 }
 
 template <class WebTestT>
+id WebJsTest<WebTestT>::ExecuteJavaScriptWithFormat(NSString* format, ...) {
+  va_list args;
+  va_start(args, format);
+  base::scoped_nsobject<NSString> java_script(
+      [[NSString alloc] initWithFormat:format arguments:args]);
+  va_end(args);
+
+  return WebTestT::ExecuteJavaScript(java_script);
+}
+
+template <class WebTestT>
 void WebJsTest<WebTestT>::EvaluateJavaScriptOnElementsAndCheck(
     NSString* java_script,
     NSArray* get_element_java_scripts,
@@ -95,6 +131,18 @@ void WebJsTest<WebTestT>::EvaluateJavaScriptOnElementsAndCheck(
     EXPECT_NSEQ(
         expected_results[i],
         EvaluateJavaScriptWithFormat(java_script, get_element_java_scripts[i]));
+  }
+}
+
+template <class WebTestT>
+void WebJsTest<WebTestT>::ExecuteJavaScriptOnElementsAndCheck(
+    NSString* java_script,
+    NSArray* get_element_java_scripts,
+    NSArray* expected_results) {
+  for (NSUInteger i = 0; i < get_element_java_scripts.count; ++i) {
+    EXPECT_NSEQ(
+        expected_results[i],
+        ExecuteJavaScriptWithFormat(java_script, get_element_java_scripts[i]));
   }
 }
 
@@ -112,6 +160,21 @@ void WebJsTest<WebTestT>::EvaluateBooleanJavaScriptOnElementsAndCheck(
     EXPECT_NSEQ(expected, EvaluateJavaScriptWithFormat(java_script,
                                                        get_element_java_script))
         << [NSString stringWithFormat:@"%@ on %@ should return %@", java_script,
+                                      get_element_java_script, expected];
+  }
+}
+
+template <class WebTestT>
+void WebJsTest<WebTestT>::ExecuteBooleanJavaScriptOnElementsAndCheck(
+    NSString* java_script,
+    NSArray* get_element_java_scripts,
+    NSArray* get_element_java_scripts_expecting_true) {
+  for (NSString* get_element_java_script in get_element_java_scripts) {
+    BOOL expected = [get_element_java_scripts_expecting_true
+        containsObject:get_element_java_script];
+    EXPECT_NSEQ(@(expected), ExecuteJavaScriptWithFormat(
+                                 java_script, get_element_java_script))
+        << [NSString stringWithFormat:@"%@ on %@ should return %d", java_script,
                                       get_element_java_script, expected];
   }
 }
