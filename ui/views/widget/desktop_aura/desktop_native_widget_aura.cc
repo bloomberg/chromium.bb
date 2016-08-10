@@ -651,6 +651,9 @@ void DesktopNativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                              const gfx::ImageSkia& app_icon) {
   if (content_window_)
     desktop_window_tree_host_->SetWindowIcons(window_icon, app_icon);
+
+  NativeWidgetAura::AssignIconToAuraWindow(content_window_, window_icon,
+                                           app_icon);
 }
 
 void DesktopNativeWidgetAura::InitModalType(ui::ModalType modal_type) {

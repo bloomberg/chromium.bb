@@ -97,6 +97,23 @@ void NativeWidgetAura::RegisterNativeWidgetForWindow(
   window->set_user_data(native_widget);
 }
 
+// static
+void NativeWidgetAura::AssignIconToAuraWindow(aura::Window* window,
+                                              const gfx::ImageSkia& window_icon,
+                                              const gfx::ImageSkia& app_icon) {
+  if (!window)
+    return;
+
+  if (window_icon.isNull() && app_icon.isNull()) {
+    window->ClearProperty(aura::client::kWindowIconKey);
+    return;
+  }
+
+  window->SetProperty(
+      aura::client::kWindowIconKey,
+      new gfx::ImageSkia(!window_icon.isNull() ? window_icon : app_icon));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
@@ -355,7 +372,7 @@ bool NativeWidgetAura::SetWindowTitle(const base::string16& title) {
 
 void NativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                       const gfx::ImageSkia& app_icon) {
-  // Aura doesn't have window icons.
+  AssignIconToAuraWindow(window_, window_icon, app_icon);
 }
 
 void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {

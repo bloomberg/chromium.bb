@@ -71,6 +71,9 @@ AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
 // the web contents for app windows and varies for fullscreen windows.
 AURA_EXPORT extern const aura::WindowProperty<int>* const kTopViewInset;
 
+// A property key to store window icon.
+AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
+
 // Alphabetical sort.
 
 }  // namespace client

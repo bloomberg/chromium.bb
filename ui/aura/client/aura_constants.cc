@@ -9,6 +9,7 @@
 
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, bool)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::ModalType)
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, gfx::ImageSkia*)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, gfx::Rect*)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::InputMethod*)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::WindowShowState)
@@ -28,16 +29,17 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kCanResizeKey, true);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kConstrainedWindowKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kDrawAttentionKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kExcludeFromMruKey, false);
-DEFINE_WINDOW_PROPERTY_KEY(Window*, kHostWindowKey, NULL);
+DEFINE_WINDOW_PROPERTY_KEY(Window*, kHostWindowKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(ui::ModalType, kModalKey, ui::MODAL_TYPE_NONE);
 // gfx::Rect object for RestoreBoundsKey property is owned by the window
 // and will be freed automatically.
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, NULL);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(int, kTopViewInset, 0);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::ImageSkia, kWindowIconKey, nullptr);
 
 }  // namespace client
 }  // namespace aura

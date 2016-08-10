@@ -50,6 +50,11 @@ class VIEWS_EXPORT NativeWidgetAura
       internal::NativeWidgetPrivate* native_widget,
       aura::Window* window);
 
+  // Assign an icon to aura window.
+  static void AssignIconToAuraWindow(aura::Window* window,
+                                     const gfx::ImageSkia& window_icon,
+                                     const gfx::ImageSkia& app_icon);
+
   // Overridden from internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
   void OnWidgetInitDone() override;
