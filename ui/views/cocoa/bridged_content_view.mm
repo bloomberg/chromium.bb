@@ -437,10 +437,11 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   if (textInputClient_ && ![self activeMenuController]) {
     // If a single character is inserted by keyDown's call to
     // interpretKeyEvents: then use InsertChar() to allow editing events to be
-    // merged. We use ui::VKEY_UNKOWN as the key code since it's not feasible to
-    // determine the correct key code for each unicode character. Also a correct
-    // keycode is not needed in the current context. Send ui::EF_NONE as the key
-    // modifier since |text| already accounts for the pressed key modifiers.
+    // merged. We use ui::VKEY_UNKNOWN as the key code since it's not feasible
+    // to determine the correct key code for each unicode character. Also a
+    // correct keycode is not needed in the current context. Send ui::EF_NONE as
+    // the key modifier since |text| already accounts for the pressed key
+    // modifiers.
 
     // Also, note we don't use |keyDownEvent_| to generate the synthetic
     // ui::KeyEvent since for text inserted using an IME, [keyDownEvent_
@@ -762,8 +763,10 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 // Selection movement and scrolling.
 
 - (void)moveForward:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveLeft:sender]
-                              : [self moveRight:sender];
+  [self handleAction:ui::TextEditCommand::MOVE_FORWARD
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveRight:(id)sender {
@@ -774,8 +777,10 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveBackward:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveRight:sender]
-                              : [self moveLeft:sender];
+  [self handleAction:ui::TextEditCommand::MOVE_BACKWARD
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveLeft:(id)sender {
@@ -800,13 +805,17 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveWordForward:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveWordLeft:sender]
-                              : [self moveWordRight:sender];
+  [self handleAction:ui::TextEditCommand::MOVE_WORD_FORWARD
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveWordBackward:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveWordRight:sender]
-                              : [self moveWordLeft:sender];
+  [self handleAction:ui::TextEditCommand::MOVE_WORD_BACKWARD
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveToBeginningOfLine:(id)sender {
@@ -824,22 +833,28 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveToBeginningOfParagraph:(id)sender {
-  [self moveToBeginningOfLine:sender];
+  [self handleAction:ui::TextEditCommand::MOVE_TO_BEGINNING_OF_PARAGRAPH
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveToEndOfParagraph:(id)sender {
-  [self moveToEndOfLine:sender];
+  [self handleAction:ui::TextEditCommand::MOVE_TO_END_OF_PARAGRAPH
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveToEndOfDocument:(id)sender {
-  [self handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_END_OF_DOCUMENT
              keyCode:ui::VKEY_END
              domCode:ui::DomCode::END
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
 - (void)moveToBeginningOfDocument:(id)sender {
-  [self handleAction:ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_TO_BEGINNING_OF_DOCUMENT
              keyCode:ui::VKEY_HOME
              domCode:ui::DomCode::HOME
           eventFlags:ui::EF_CONTROL_DOWN];
@@ -860,23 +875,32 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveBackwardAndModifySelection:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveRightAndModifySelection:sender]
-                              : [self moveLeftAndModifySelection:sender];
+  [self handleAction:ui::TextEditCommand::MOVE_BACKWARD_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveForwardAndModifySelection:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveLeftAndModifySelection:sender]
-                              : [self moveRightAndModifySelection:sender];
+  [self handleAction:ui::TextEditCommand::MOVE_FORWARD_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveWordForwardAndModifySelection:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveWordLeftAndModifySelection:sender]
-                              : [self moveWordRightAndModifySelection:sender];
+  [self handleAction:ui::TextEditCommand::MOVE_WORD_FORWARD_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveWordBackwardAndModifySelection:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveWordRightAndModifySelection:sender]
-                              : [self moveWordLeftAndModifySelection:sender];
+  [self
+      handleAction:ui::TextEditCommand::MOVE_WORD_BACKWARD_AND_MODIFY_SELECTION
+           keyCode:ui::VKEY_UNKNOWN
+           domCode:ui::DomCode::NONE
+        eventFlags:0];
 }
 
 - (void)moveUpAndModifySelection:(id)sender {
@@ -912,24 +936,32 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveToBeginningOfParagraphAndModifySelection:(id)sender {
-  [self moveToBeginningOfLineAndModifySelection:sender];
+  [self handleAction:ui::TextEditCommand::
+                         MOVE_TO_BEGINNING_OF_PARAGRAPH_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveToEndOfParagraphAndModifySelection:(id)sender {
-  [self moveToEndOfLineAndModifySelection:sender];
+  [self handleAction:ui::TextEditCommand::
+                         MOVE_TO_END_OF_PARAGRAPH_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)moveToEndOfDocumentAndModifySelection:(id)sender {
-  [self
-      handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-           keyCode:ui::VKEY_END
-           domCode:ui::DomCode::END
-        eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+  [self handleAction:ui::TextEditCommand::
+                         MOVE_TO_END_OF_DOCUMENT_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_END
+             domCode:ui::DomCode::END
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveToBeginningOfDocumentAndModifySelection:(id)sender {
   [self handleAction:ui::TextEditCommand::
-                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+                         MOVE_TO_BEGINNING_OF_DOCUMENT_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_HOME
              domCode:ui::DomCode::HOME
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
@@ -1085,11 +1117,17 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)deleteToBeginningOfParagraph:(id)sender {
-  [self deleteToBeginningOfLine:sender];
+  [self handleAction:ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)deleteToEndOfParagraph:(id)sender {
-  [self deleteToEndOfLine:sender];
+  [self handleAction:ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH
+             keyCode:ui::VKEY_UNKNOWN
+             domCode:ui::DomCode::NONE
+          eventFlags:0];
 }
 
 - (void)yank:(id)sender {
