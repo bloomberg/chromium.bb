@@ -207,6 +207,14 @@ Polymer({
   },
 
   /**
+   * End fetching synced tabs when sync is disabled.
+   */
+  tabSyncDisabled: function() {
+    this.fetchingSyncedTabs_ = false;
+    this.clearDisplayedSyncedDevices_();
+  },
+
+  /**
    * Get called when user's sign in state changes, this will affect UI of synced
    * tabs page. Sign in promo gets displayed when user is signed out, and
    * different messages are shown when there are no synced tabs.

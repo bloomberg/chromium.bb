@@ -40,7 +40,15 @@ cr.define('md_history.history_synced_tabs_test', function() {
       var getCards = function() {
         return Polymer.dom(element.root).
             querySelectorAll('history-synced-device-card');
-      }
+      };
+
+      var assertNoSyncedTabsMessageShown = function(stringID) {
+        assertFalse(element.$['no-synced-tabs'].hidden);
+        var message = loadTimeData.getString(stringID);
+        assertNotEquals(
+            -1,
+            element.$['no-synced-tabs'].textContent.indexOf(message));
+      };
 
       suiteSetup(function() {
         app = $('history-app');
@@ -237,10 +245,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           return flush();
         }).then(function() {
           // When user signs in, first show loading message.
-          assertFalse(element.$['no-synced-tabs'].hidden);
-          var loading = loadTimeData.getString('loading');
-          assertNotEquals(
-              -1, element.$['no-synced-tabs'].textContent.indexOf(loading));
+          assertNoSyncedTabsMessageShown('loading');
 
           var sessionList = [];
           setForeignSessions(sessionList, true);
@@ -249,13 +254,9 @@ cr.define('md_history.history_synced_tabs_test', function() {
           cards = getCards();
           assertEquals(0, cards.length);
           // If no synced tabs are fetched, show 'no synced tabs'.
-          assertFalse(element.$['no-synced-tabs'].hidden);
-          var noSyncedResults = loadTimeData.getString('noSyncedResults');
-          assertNotEquals(
-              -1,
-              element.$['no-synced-tabs'].textContent.indexOf(noSyncedResults));
+          assertNoSyncedTabsMessageShown('noSyncedResults');
 
-          var sessionList = [
+          sessionList = [
             createSession(
                 'Nexus 5',
                 [createWindow(['http://www.google.com', 'http://example.com'])]
@@ -275,6 +276,34 @@ cr.define('md_history.history_synced_tabs_test', function() {
         }).then(function() {
           // When user signs out, don't show the message.
           assertTrue(element.$['no-synced-tabs'].hidden);
+        });
+      });
+
+      test('enable and disable tab sync', function() {
+        updateSignInState(true);
+        var sessionList = [
+          createSession(
+              'Nexus 5',
+              [createWindow(['http://www.google.com', 'http://example.com'])]
+          )
+        ];
+        // Open tabs sync is enabled.
+        setForeignSessions(sessionList, true);
+
+        return flush().then(function() {
+          var cards = getCards();
+          assertEquals(1, cards.length);
+          assertTrue(element.$['no-synced-tabs'].hidden);
+
+          // Open tabs sync is disabled.
+          setForeignSessions(sessionList, false);
+
+          return flush();
+        }).then(function() {
+          cards = getCards();
+          assertEquals(0, cards.length);
+          // If tab sync is disabled, show 'no synced tabs'.
+          assertNoSyncedTabsMessageShown('noSyncedResults');
         });
       });
 
