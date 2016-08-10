@@ -1375,7 +1375,7 @@ crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-2.html [ S
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-angle.html [ Skip ]
 
 crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
-crbug.com/399507 [ Mac10.9 Mac10.10 Linux ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
+crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
 
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/subframe-scrollBy.html [ Pass Failure ]
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-element-scroll.html [ Pass Failure ]
