@@ -437,17 +437,6 @@ bool Webm2Pes::WritePesPacket(const VideoFrame& frame,
     frame_ranges.push_back(Range(0, frame.buffer().length));
   }
 
-  ///
-  /// TODO: DEBUG/REMOVE
-  ///
-  printf("-FRAME TOTAL LENGTH %u\n",
-         static_cast<unsigned int>(frame.buffer().length));
-  for (const Range& frame_range : frame_ranges) {
-    printf("--frame range: off:%u len:%u\n",
-           static_cast<unsigned int>(frame_range.offset),
-           static_cast<unsigned int>(frame_range.length));
-  }
-
   const std::int64_t khz90_pts =
       NanosecondsTo90KhzTicks(frame.nanosecond_pts());
   PesHeader header;
@@ -486,9 +475,6 @@ bool Webm2Pes::WritePesPacket(const VideoFrame& frame,
       return false;
     }
 
-    printf("---wrote payload size=%u\n",
-           static_cast<unsigned int>(bytes_to_copy));
-
     std::size_t bytes_copied = bytes_to_copy;
     while (extra_bytes) {
       // Write PES packets for the remaining data, but omit the PTS and BCMV
@@ -510,11 +496,6 @@ bool Webm2Pes::WritePesPacket(const VideoFrame& frame,
       }
 
       bytes_copied += extra_bytes_to_copy;
-
-      // TODO: DEBUG/REMOVE
-      printf("----wrote fragment total=%u this_fragment=%u\n",
-             static_cast<unsigned int>(bytes_copied),
-             static_cast<unsigned int>(extra_bytes_to_copy));
     }
   }
 
