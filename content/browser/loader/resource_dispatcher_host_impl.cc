@@ -286,69 +286,6 @@ void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
   request->set_referrer_policy(net_referrer_policy);
 }
 
-// Consults the RendererSecurity policy to determine whether the
-// ResourceDispatcherHostImpl should service this request.  A request might be
-// disallowed if the renderer is not authorized to retrieve the request URL or
-// if the renderer is attempting to upload an unauthorized file.
-bool ShouldServiceRequest(int process_type,
-                          int child_id,
-                          const ResourceRequest& request_data,
-                          const net::HttpRequestHeaders& headers,
-                          ResourceMessageFilter* filter,
-                          ResourceContext* resource_context) {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  // Check if the renderer is permitted to request the requested URL.
-  if (!policy->CanRequestURL(child_id, request_data.url)) {
-    VLOG(1) << "Denied unauthorized request for "
-            << request_data.url.possibly_invalid_spec();
-    return false;
-  }
-
-  // Check if the renderer is using an illegal Origin header.  If so, kill it.
-  std::string origin_string;
-  bool has_origin = headers.GetHeader("Origin", &origin_string) &&
-                    origin_string != "null";
-  if (has_origin) {
-    GURL origin(origin_string);
-    if (!policy->CanCommitURL(child_id, origin) ||
-        GetContentClient()->browser()->IsIllegalOrigin(resource_context,
-                                                       child_id, origin)) {
-      VLOG(1) << "Killed renderer for illegal origin: " << origin_string;
-      bad_message::ReceivedBadMessage(filter, bad_message::RDH_ILLEGAL_ORIGIN);
-      return false;
-    }
-  }
-
-  // Check if the renderer is permitted to upload the requested files.
-  if (request_data.request_body.get()) {
-    const std::vector<ResourceRequestBodyImpl::Element>* uploads =
-        request_data.request_body->elements();
-    std::vector<ResourceRequestBodyImpl::Element>::const_iterator iter;
-    for (iter = uploads->begin(); iter != uploads->end(); ++iter) {
-      if (iter->type() == ResourceRequestBodyImpl::Element::TYPE_FILE &&
-          !policy->CanReadFile(child_id, iter->path())) {
-        NOTREACHED() << "Denied unauthorized upload of "
-                     << iter->path().value();
-        return false;
-      }
-      if (iter->type() ==
-          ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM) {
-        storage::FileSystemURL url =
-            filter->file_system_context()->CrackURL(iter->filesystem_url());
-        if (!policy->CanReadFileSystemFile(child_id, url)) {
-          NOTREACHED() << "Denied unauthorized upload of "
-                       << iter->filesystem_url().spec();
-          return false;
-        }
-      }
-    }
-  }
-
-  return true;
-}
-
 void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
                                                const base::FilePath& path) {
   ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
@@ -492,6 +429,13 @@ void NotifyForEachFrameFromUI(
 }
 
 }  // namespace
+
+ResourceDispatcherHostImpl::HeaderInterceptorInfo::HeaderInterceptorInfo() {}
+
+ResourceDispatcherHostImpl::HeaderInterceptorInfo::~HeaderInterceptorInfo() {}
+
+ResourceDispatcherHostImpl::HeaderInterceptorInfo::HeaderInterceptorInfo(
+    const HeaderInterceptorInfo& other) {}
 
 // static
 ResourceDispatcherHost* ResourceDispatcherHost::Get() {
@@ -747,6 +691,23 @@ void ResourceDispatcherHostImpl::ClearLoginDelegateForRequest(
     if (loader)
       loader->ClearLoginDelegate();
   }
+}
+
+void ResourceDispatcherHostImpl::RegisterInterceptor(
+    const std::string& http_header,
+    const std::string& starts_with,
+    const InterceptorCallback& interceptor) {
+  DCHECK(!http_header.empty());
+  DCHECK(interceptor);
+  // Only one interceptor per header is supported.
+  DCHECK(http_header_interceptor_map_.find(http_header) ==
+         http_header_interceptor_map_.end());
+
+  HeaderInterceptorInfo interceptor_info;
+  interceptor_info.starts_with = starts_with;
+  interceptor_info.interceptor = interceptor;
+
+  http_header_interceptor_map_[http_header] = interceptor_info;
 }
 
 void ResourceDispatcherHostImpl::Shutdown() {
@@ -1357,12 +1318,53 @@ void ResourceDispatcherHostImpl::BeginRequest(
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(request_data.headers);
 
-  if (is_shutdown_ ||
-      !ShouldServiceRequest(process_type, child_id, request_data, headers,
-                            filter_, resource_context)) {
+  BeginRequestStatus begin_request_status = CONTINUE;
+  OnHeaderProcessedCallback callback;
+  if (!is_shutdown_) {
+    callback =
+        base::Bind(&ResourceDispatcherHostImpl::ContinuePendingBeginRequest,
+                   base::Unretained(this), request_id, request_data,
+                   sync_result, route_id, headers);
+    begin_request_status =
+        ShouldServiceRequest(process_type, child_id, request_data, headers,
+                             filter_, resource_context, callback);
+  } else {
+    begin_request_status = ABORT;
+  }
+  if (begin_request_status == ABORT) {
+    AbortRequestBeforeItStarts(filter_, sync_result, request_id);
+    return;
+  } else if (begin_request_status == CONTINUE) {
+    callback.Run(true, 0);
+  }
+}
+
+void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
+    int request_id,
+    const ResourceRequest& request_data,
+    IPC::Message* sync_result,  // only valid for sync
+    int route_id,
+    const net::HttpRequestHeaders& headers,
+    bool continue_request,
+    int error_code) {
+  if (!continue_request) {
+    bad_message::ReceivedBadMessage(
+        filter_, static_cast<bad_message::BadMessageReason>(error_code));
     AbortRequestBeforeItStarts(filter_, sync_result, request_id);
     return;
   }
+
+  int process_type = filter_->process_type();
+  int child_id = filter_->child_id();
+
+  bool is_navigation_stream_request =
+      IsBrowserSideNavigationEnabled() &&
+      IsResourceTypeFrame(request_data.resource_type);
+
+  ResourceContext* resource_context = NULL;
+  net::URLRequestContext* request_context = NULL;
+  filter_->GetContexts(request_data.resource_type, &resource_context,
+                       &request_context);
 
   // Allow the observer to block/handle the request.
   if (delegate_ && !delegate_->ShouldBeginRequest(request_data.method,
@@ -2603,6 +2605,89 @@ void ResourceDispatcherHostImpl::UpdateResponseCertificateForTransfer(
 CertStore* ResourceDispatcherHostImpl::GetCertStore() {
   return cert_store_for_testing_ ? cert_store_for_testing_
                                  : CertStore::GetInstance();
+}
+
+ResourceDispatcherHostImpl::BeginRequestStatus
+ResourceDispatcherHostImpl::ShouldServiceRequest(
+    int process_type,
+    int child_id,
+    const ResourceRequest& request_data,
+    const net::HttpRequestHeaders& headers,
+    ResourceMessageFilter* filter,
+    ResourceContext* resource_context,
+    OnHeaderProcessedCallback callback) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  // Check if the renderer is permitted to request the requested URL.
+  if (!policy->CanRequestURL(child_id, request_data.url)) {
+    VLOG(1) << "Denied unauthorized request for "
+            << request_data.url.possibly_invalid_spec();
+    return ABORT;
+  }
+
+  // Check if the renderer is using an illegal Origin header.  If so, kill it.
+  std::string origin_string;
+  bool has_origin =
+      headers.GetHeader("Origin", &origin_string) && origin_string != "null";
+  if (has_origin) {
+    GURL origin(origin_string);
+    if (!policy->CanCommitURL(child_id, origin)) {
+      VLOG(1) << "Killed renderer for illegal origin: " << origin_string;
+      bad_message::ReceivedBadMessage(filter, bad_message::RDH_ILLEGAL_ORIGIN);
+      return ABORT;
+    }
+  }
+
+  // Check if the renderer is permitted to upload the requested files.
+  if (request_data.request_body.get()) {
+    const std::vector<ResourceRequestBodyImpl::Element>* uploads =
+        request_data.request_body->elements();
+    std::vector<ResourceRequestBodyImpl::Element>::const_iterator iter;
+    for (iter = uploads->begin(); iter != uploads->end(); ++iter) {
+      if (iter->type() == ResourceRequestBodyImpl::Element::TYPE_FILE &&
+          !policy->CanReadFile(child_id, iter->path())) {
+        NOTREACHED() << "Denied unauthorized upload of "
+                     << iter->path().value();
+        return ABORT;
+      }
+      if (iter->type() ==
+          ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM) {
+        storage::FileSystemURL url =
+            filter->file_system_context()->CrackURL(iter->filesystem_url());
+        if (!policy->CanReadFileSystemFile(child_id, url)) {
+          NOTREACHED() << "Denied unauthorized upload of "
+                       << iter->filesystem_url().spec();
+          return ABORT;
+        }
+      }
+    }
+  }
+
+  // Check if we have a registered interceptor for the headers passed in. If
+  // yes then we need to mark the current request as pending and wait for the
+  // interceptor to invoke the |callback| with a status code indicating whether
+  // the request needs to be aborted or continued.
+  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();) {
+    HeaderInterceptorMap::iterator index =
+        http_header_interceptor_map_.find(it.name());
+    if (index != http_header_interceptor_map_.end()) {
+      HeaderInterceptorInfo& interceptor_info = index->second;
+
+      bool call_interceptor = true;
+      if (!interceptor_info.starts_with.empty()) {
+        call_interceptor =
+            base::StartsWith(it.value(), interceptor_info.starts_with,
+                             base::CompareCase::INSENSITIVE_ASCII);
+      }
+      if (call_interceptor) {
+        interceptor_info.interceptor.Run(it.name(), it.value(), child_id,
+                                         resource_context, callback);
+        return PENDING;
+      }
+    }
+  }
+  return CONTINUE;
 }
 
 }  // namespace content

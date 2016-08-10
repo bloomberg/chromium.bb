@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
@@ -24,6 +25,27 @@ class ResourceDispatcherHostDelegate;
 struct DownloadSaveInfo;
 struct Referrer;
 class RenderFrameHost;
+
+// This callback is invoked when the interceptor finishes processing the
+// header.
+// Parameter 1 is a bool indicating success or failure.
+// Parameter 2 contains the error code in case of failure, else 0.
+typedef base::Callback<void(bool, int)> OnHeaderProcessedCallback;
+
+// This callback is registered by interceptors who are interested in being
+// notified of certain HTTP headers in outgoing requests. For e.g. Origin.
+// Parameter 1 contains the HTTP header.
+// Parameter 2 contains its value.
+// Parameter 3 contains the child process id.
+// Parameter 4 contains the current ResourceContext.
+// Parameter 5 contains the callback which needs to be invoked once the
+// interceptor finishes its processing.
+typedef base::Callback<void(const std::string&,
+                            const std::string&,
+                            int,
+                            ResourceContext*,
+                            OnHeaderProcessedCallback)>
+    InterceptorCallback;
 
 class CONTENT_EXPORT ResourceDispatcherHost {
  public:
@@ -50,6 +72,17 @@ class CONTENT_EXPORT ResourceDispatcherHost {
 
   // Clears the ResourceDispatcherHostLoginDelegate associated with the request.
   virtual void ClearLoginDelegateForRequest(net::URLRequest* request) = 0;
+
+  // Registers the |interceptor| for the |http_header| passed in.
+  // The |starts_with| parameter is used to match the prefix of the
+  // |http_header| in the response and the interceptor will be invoked if there
+  // is a match. If the |starts_with| parameter is empty, the interceptor will
+  // be invoked for every occurrence of the |http_header|.
+  // Currently only HTTP header based interceptors are supported.
+  // At the moment we only support one interceptor per |http_header|.
+  virtual void RegisterInterceptor(const std::string& http_header,
+                                   const std::string& starts_with,
+                                   const InterceptorCallback& interceptor) = 0;
 
  protected:
   virtual ~ResourceDispatcherHost() {}

@@ -28,6 +28,7 @@ enum BadMessageReason {
   AVG_BAD_INST_ID = 4,
   AVG_BAD_EXT_ID = 5,
   AVG_NULL_AVG = 6,
+  INVALID_ORIGIN = 7,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. ExtensionHost becomes EH) plus a unique description of the
   // reason. After making changes, you MUST update histograms.xml by running:

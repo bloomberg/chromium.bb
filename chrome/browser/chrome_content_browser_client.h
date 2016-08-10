@@ -87,9 +87,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsHandledURL(const GURL& url) override;
   bool CanCommitURL(content::RenderProcessHost* process_host,
                     const GURL& url) override;
-  bool IsIllegalOrigin(content::ResourceContext* resource_context,
-                       int child_process_id,
-                       const GURL& origin) override;
   bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
                           const GURL& url) override;
   void OverrideOpenURLParams(content::SiteInstance* site_instance,

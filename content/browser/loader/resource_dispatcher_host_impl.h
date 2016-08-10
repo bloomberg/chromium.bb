@@ -107,6 +107,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
   void SetAllowCrossOriginAuthPrompt(bool value) override;
   void ClearLoginDelegateForRequest(net::URLRequest* request) override;
+  void RegisterInterceptor(const std::string& http_header,
+                           const std::string& starts_with,
+                           const InterceptorCallback& interceptor) override;
 
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
@@ -325,6 +328,23 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Map from ProcessID+RouteID pair to the "most interesting" LoadState.
   typedef std::map<GlobalRoutingID, LoadInfo> LoadInfoMap;
 
+  // Information about a HTTP header interceptor.
+  struct HeaderInterceptorInfo {
+    // Structure is sufficiently complicated to require the constructor
+    // destructor definitions in the cc file.
+    HeaderInterceptorInfo();
+    ~HeaderInterceptorInfo();
+    HeaderInterceptorInfo(const HeaderInterceptorInfo& other);
+
+    // Used to prefix match the value of the http header.
+    std::string starts_with;
+    // The interceptor.
+    InterceptorCallback interceptor;
+  };
+
+  // Map from HTTP header to its information HeaderInterceptorInfo.
+  typedef std::map<std::string, HeaderInterceptorInfo> HeaderInterceptorMap;
+
   // ResourceLoaderDelegate implementation:
   ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       ResourceLoader* loader,
@@ -454,6 +474,24 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                     IPC::Message* sync_result,  // only valid for sync
                     int route_id);              // only valid for async
 
+  // There are requests which need decisions to be made like the following:
+  // Whether the presence of certain HTTP headers like the Origin header are
+  // valid, etc. These requests may need to be aborted based on these
+  // decisions which could be time consuming. We allow for these decisions
+  // to be made asynchronously. The request proceeds when we hear back from
+  // the interceptors about whether to continue or not.
+  // The |continue_request| parameter in the function indicates whether the
+  // request should be continued or aborted. The |error_code| parameter is set
+  // if |continue_request| is false.
+  void ContinuePendingBeginRequest(
+      int request_id,
+      const ResourceRequest& request_data,
+      IPC::Message* sync_result,  // only valid for sync
+      int route_id,
+      const net::HttpRequestHeaders& headers,
+      bool continue_request,
+      int error_code);
+
   // Creates a ResourceHandler to be used by BeginRequest() for normal resource
   // loading.
   std::unique_ptr<ResourceHandler> CreateResourceHandler(
@@ -536,6 +574,28 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                             int child_id);
 
   CertStore* GetCertStore();
+
+  // This enum holds values which indicate how we want to proceed with a
+  // request that is about to be started.
+  enum BeginRequestStatus {
+    CONTINUE = 0,  // Continue with the request.
+    ABORT = 1,     // Abort.
+    PENDING = 2,   // Wait for the decision to come back.
+    LAST_SERVICE_REQUEST_STATUS = PENDING,
+  };
+
+  // Consults the RendererSecurity policy to determine whether the
+  // ResourceDispatcherHostImpl should service this request.  A request might
+  // be disallowed if the renderer is not authorized to retrieve the request
+  // URL or if the renderer is attempting to upload an unauthorized file.
+  BeginRequestStatus ShouldServiceRequest(
+      int process_type,
+      int child_id,
+      const ResourceRequest& request_data,
+      const net::HttpRequestHeaders& headers,
+      ResourceMessageFilter* filter,
+      ResourceContext* resource_context,
+      OnHeaderProcessedCallback callback);
 
   LoaderMap pending_loaders_;
 
@@ -630,6 +690,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Allows tests to use a mock CertStore. If set, the CertStore must
   // outlive this ResourceDispatcherHostImpl.
   CertStore* cert_store_for_testing_;
+
+  // Used to invoke an interceptor for the HTTP header.
+  HeaderInterceptorMap http_header_interceptor_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

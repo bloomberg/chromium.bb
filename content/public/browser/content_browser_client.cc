@@ -72,12 +72,6 @@ bool ContentBrowserClient::CanCommitURL(RenderProcessHost* process_host,
   return true;
 }
 
-bool ContentBrowserClient::IsIllegalOrigin(ResourceContext* resource_context,
-                                           int child_process_id,
-                                           const GURL& origin) {
-  return false;
-}
-
 bool ContentBrowserClient::ShouldAllowOpenURL(SiteInstance* site_instance,
                                               const GURL& url) {
   return true;
