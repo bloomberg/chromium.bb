@@ -35,6 +35,7 @@
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
+#include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8ConsoleMessage.h"
 #include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
@@ -81,12 +82,12 @@ public:
         ProtocolPromiseHandler<Callback>* handler = new ProtocolPromiseHandler(inspector, contextGroupId, executionContextId, objectGroup, returnByValue, generatePreview, std::move(callback));
         v8::Local<v8::Value> wrapper = handler->m_wrapper.Get(inspector->isolate());
 
-        v8::Local<v8::Function> thenCallbackFunction = v8::Function::New(context, thenCallback, wrapper, 0, v8::ConstructorBehavior::kThrow).ToLocalChecked();
+        v8::Local<v8::Function> thenCallbackFunction = V8_FUNCTION_NEW_REMOVE_PROTOTYPE(context, thenCallback, wrapper, 0).ToLocalChecked();
         if (promise->Then(context, thenCallbackFunction).IsEmpty()) {
             rawCallback->sendFailure("Internal error");
             return;
         }
-        v8::Local<v8::Function> catchCallbackFunction = v8::Function::New(context, catchCallback, wrapper, 0, v8::ConstructorBehavior::kThrow).ToLocalChecked();
+        v8::Local<v8::Function> catchCallbackFunction = V8_FUNCTION_NEW_REMOVE_PROTOTYPE(context, catchCallback, wrapper, 0).ToLocalChecked();
         if (promise->Catch(context, catchCallbackFunction).IsEmpty()) {
             rawCallback->sendFailure("Internal error");
             return;
