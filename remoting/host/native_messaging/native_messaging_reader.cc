@@ -4,8 +4,7 @@
 
 #include "remoting/host/native_messaging/native_messaging_reader.h"
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <string>
 #include <utility>
 
@@ -17,9 +16,17 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+
+#include "base/threading/platform_thread.h"
+#include "base/win/scoped_handle.h"
+#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -137,7 +144,9 @@ void NativeMessagingReader::Core::NotifyEof() {
 NativeMessagingReader::NativeMessagingReader(base::File file)
     : reader_thread_("Reader"),
       weak_factory_(this) {
-  reader_thread_.Start();
+  reader_thread_.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, /*size=*/0));
+
   read_task_runner_ = reader_thread_.task_runner();
   core_.reset(new Core(std::move(file), base::ThreadTaskRunnerHandle::Get(),
                        read_task_runner_, weak_factory_.GetWeakPtr()));
@@ -145,6 +154,29 @@ NativeMessagingReader::NativeMessagingReader(base::File file)
 
 NativeMessagingReader::~NativeMessagingReader() {
   read_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+
+#if defined(OS_WIN)
+  // The ReadMessage() method uses a blocking read (on all platforms) which
+  // cause a deadlock if the owning thread attempts to destroy this object
+  // while there is a read operation pending.
+  // On POSIX platforms, closing the write end of the pipe causes the Chrome
+  // process to close the read end so that this class can be cleaned up.
+  // On Windows, closing the write end of the pipe does nothing as the parent
+  // process is cmd.exe which doesn't care.  Thus, the read end of the pipe
+  // remains open, the read operation is blocked, and we hang in the d'tor.
+  // Canceling the pending I/O here prevents the hang on Windows and isn't
+  // needed for POSIX since it works correctly.
+  base::PlatformThreadId thread_id = reader_thread_.GetThreadId();
+  base::win::ScopedHandle thread_handle(
+      OpenThread(THREAD_TERMINATE, /*bInheritHandle=*/false, thread_id));
+  if (!CancelSynchronousIo(thread_handle.Get())) {
+    // ERROR_NOT_FOUND means there were no pending IO requests so don't treat
+    // that result as an error.
+    if (GetLastError() != ERROR_NOT_FOUND) {
+      PLOG(ERROR) << "CancelSynchronousIo() failed";
+    }
+  }
+#endif  // defined(OS_WIN)
 }
 
 void NativeMessagingReader::Start(MessageCallback message_callback,

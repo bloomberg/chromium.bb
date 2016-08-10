@@ -193,8 +193,9 @@ void Me2MeNativeMessagingHost::ProcessClearPairedClients(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message)))
+    if (!DelegateToElevatedHost(std::move(message))) {
       SendBooleanResult(std::move(response), false);
+    }
     return;
   }
 
@@ -213,8 +214,9 @@ void Me2MeNativeMessagingHost::ProcessDeletePairedClient(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message)))
+    if (!DelegateToElevatedHost(std::move(message))) {
       SendBooleanResult(std::move(response), false);
+    }
     return;
   }
 
@@ -284,8 +286,9 @@ void Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message)))
+    if (!DelegateToElevatedHost(std::move(message))) {
       SendAsyncResult(std::move(response), DaemonController::RESULT_FAILED);
+    }
     return;
   }
 
@@ -344,8 +347,9 @@ void Me2MeNativeMessagingHost::ProcessStartDaemon(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message)))
+    if (!DelegateToElevatedHost(std::move(message))) {
       SendAsyncResult(std::move(response), DaemonController::RESULT_FAILED);
+    }
     return;
   }
 
@@ -374,8 +378,9 @@ void Me2MeNativeMessagingHost::ProcessStopDaemon(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message)))
+    if (!DelegateToElevatedHost(std::move(message))) {
       SendAsyncResult(std::move(response), DaemonController::RESULT_FAILED);
+    }
     return;
   }
 
@@ -588,9 +593,6 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
       binary, parent_window_handle_,
       /*elevate_process=*/true, &read_handle, &write_handle);
   if (result != PROCESS_LAUNCH_RESULT_SUCCESS) {
-    if (result != PROCESS_LAUNCH_RESULT_CANCELLED) {
-      OnError(std::string());
-    }
     return;
   }
 
