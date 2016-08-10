@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
-#include "content/common/process_control.mojom.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -28,6 +27,7 @@
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
@@ -44,7 +44,7 @@ class TargetServices;
 }
 
 namespace content {
-class GpuProcessControlImpl;
+class GpuServiceFactory;
 class GpuWatchdogThread;
 struct EstablishChannelParams;
 
@@ -130,7 +130,7 @@ class GpuChildThread : public ChildThreadImpl,
 #endif
   void OnLoseAllContexts();
 
-  void BindProcessControlRequest(mojom::ProcessControlRequest request);
+  void BindServiceFactoryRequest(shell::mojom::ServiceFactoryRequest request);
 
   gpu::GpuPreferences gpu_preferences_;
 
@@ -164,11 +164,11 @@ class GpuChildThread : public ChildThreadImpl,
   // The gpu::GpuMemoryBufferFactory instance used to allocate GpuMemoryBuffers.
   gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
-  // Process control for Mojo application hosting.
-  std::unique_ptr<GpuProcessControlImpl> process_control_;
+  // ServiceFactory for shell::Service hosting.
+  std::unique_ptr<GpuServiceFactory> service_factory_;
 
-  // Bindings to the mojom::ProcessControl impl.
-  mojo::BindingSet<mojom::ProcessControl> process_control_bindings_;
+  // Bindings to the shell::mojom::ServiceFactory impl.
+  mojo::BindingSet<shell::mojom::ServiceFactory> service_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

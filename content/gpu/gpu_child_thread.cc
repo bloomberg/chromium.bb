@@ -18,7 +18,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/establish_channel_params.h"
 #include "content/common/gpu_host_messages.h"
-#include "content/gpu/gpu_process_control_impl.h"
+#include "content/gpu/gpu_service_factory.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -385,10 +385,10 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
 #endif
 
   // Only set once per process instance.
-  process_control_.reset(new GpuProcessControlImpl());
+  service_factory_.reset(new GpuServiceFactory);
 
   GetInterfaceRegistry()->AddInterface(base::Bind(
-      &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
+      &GpuChildThread::BindServiceFactoryRequest, base::Unretained(this)));
 
   if (GetContentClient()->gpu()) {  // NULL in tests.
     GetContentClient()->gpu()->ExposeInterfacesToBrowser(
@@ -554,11 +554,11 @@ void GpuChildThread::OnLoseAllContexts() {
   }
 }
 
-void GpuChildThread::BindProcessControlRequest(
-    mojom::ProcessControlRequest request) {
-  DVLOG(1) << "GPU: Binding ProcessControl request";
-  DCHECK(process_control_);
-  process_control_bindings_.AddBinding(process_control_.get(),
+void GpuChildThread::BindServiceFactoryRequest(
+    shell::mojom::ServiceFactoryRequest request) {
+  DVLOG(1) << "GPU: Binding shell::mojom::ServiceFactoryRequest";
+  DCHECK(service_factory_);
+  service_factory_bindings_.AddBinding(service_factory_.get(),
                                        std::move(request));
 }
 

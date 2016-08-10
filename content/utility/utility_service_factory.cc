@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/utility/utility_process_control_impl.h"
+#include "content/utility/utility_service_factory.h"
 
 #include "base/bind.h"
 #include "content/public/common/content_client.h"
@@ -16,25 +16,26 @@
 
 namespace content {
 
-UtilityProcessControlImpl::UtilityProcessControlImpl() {}
+UtilityServiceFactory::UtilityServiceFactory() {}
 
-UtilityProcessControlImpl::~UtilityProcessControlImpl() {}
+UtilityServiceFactory::~UtilityServiceFactory() {}
 
-void UtilityProcessControlImpl::RegisterApplications(ApplicationMap* apps) {
-  GetContentClient()->utility()->RegisterMojoApplications(apps);
+void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
+  GetContentClient()->utility()->RegisterMojoApplications(services);
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  MojoApplicationInfo app_info;
-  app_info.application_factory = base::Bind(&media::CreateMojoMediaApplication);
-  apps->insert(std::make_pair("mojo:media", app_info));
+  MojoApplicationInfo service_info;
+  service_info.application_factory =
+      base::Bind(&media::CreateMojoMediaApplication);
+  services->insert(std::make_pair("mojo:media", service_info));
 #endif
 }
 
-void UtilityProcessControlImpl::OnApplicationQuit() {
+void UtilityServiceFactory::OnServiceQuit() {
   UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
-void UtilityProcessControlImpl::OnLoadFailed() {
+void UtilityServiceFactory::OnLoadFailed() {
   UtilityThreadImpl* utility_thread =
       static_cast<UtilityThreadImpl*>(UtilityThread::Get());
   utility_thread->Shutdown();

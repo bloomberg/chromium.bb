@@ -14,9 +14,9 @@
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
-#include "content/common/process_control.mojom.h"
 #include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/interfaces/service_factory.mojom.h"
 
 namespace base {
 class FilePath;
@@ -25,7 +25,7 @@ class FilePath;
 namespace content {
 class BlinkPlatformImpl;
 class UtilityBlinkPlatformImpl;
-class UtilityProcessControlImpl;
+class UtilityServiceFactory;
 
 #if defined(COMPILER_MSVC)
 // See explanation for other RenderViewHostImpl which is the same issue.
@@ -56,19 +56,18 @@ class UtilityThreadImpl : public UtilityThread,
   void OnBatchModeStarted();
   void OnBatchModeFinished();
 
-  void BindProcessControlRequest(
-      mojo::InterfaceRequest<content::mojom::ProcessControl> request);
+  void BindServiceFactoryRequest(shell::mojom::ServiceFactoryRequest request);
 
   // True when we're running in batch mode.
   bool batch_mode_;
 
   std::unique_ptr<UtilityBlinkPlatformImpl> blink_platform_impl_;
 
-  // Process control for Mojo application hosting.
-  std::unique_ptr<UtilityProcessControlImpl> process_control_;
+  // shell::mojom::ServiceFactory for shell::Service hosting.
+  std::unique_ptr<UtilityServiceFactory> service_factory_;
 
-  // Bindings to the mojom::ProcessControl impl.
-  mojo::BindingSet<mojom::ProcessControl> process_control_bindings_;
+  // Bindings to the shell::mojom::ServiceFactory impl.
+  mojo::BindingSet<shell::mojom::ServiceFactory> service_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };

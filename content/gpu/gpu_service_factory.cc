@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/gpu/gpu_process_control_impl.h"
+#include "content/gpu/gpu_service_factory.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #include "base/bind.h"
@@ -12,16 +12,17 @@
 
 namespace content {
 
-GpuProcessControlImpl::GpuProcessControlImpl() {}
+GpuServiceFactory::GpuServiceFactory() {}
 
-GpuProcessControlImpl::~GpuProcessControlImpl() {}
+GpuServiceFactory::~GpuServiceFactory() {}
 
-void GpuProcessControlImpl::RegisterApplications(ApplicationMap* apps) {
+void GpuServiceFactory::RegisterServices(ServiceMap* services) {
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  MojoApplicationInfo app_info;
-  app_info.application_factory = base::Bind(&media::CreateMojoMediaApplication);
-  app_info.use_own_thread = true;
-  apps->insert(std::make_pair("mojo:media", app_info));
+  MojoApplicationInfo service_info;
+  service_info.application_factory =
+      base::Bind(&media::CreateMojoMediaApplication);
+  service_info.use_own_thread = true;
+  services->insert(std::make_pair("mojo:media", service_info));
 #endif
 }
 

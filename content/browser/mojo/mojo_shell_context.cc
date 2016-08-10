@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/mojo/constants.h"
-#include "content/common/process_control.mojom.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -46,7 +46,7 @@ base::LazyInstance<std::unique_ptr<shell::Connector>>::Leaky
 
 void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
-void StartUtilityProcessOnIOThread(mojom::ProcessControlRequest request,
+void StartUtilityProcessOnIOThread(shell::mojom::ServiceFactoryRequest request,
                                    const base::string16& process_name,
                                    bool use_sandbox) {
   UtilityProcessHost* process_host =
@@ -55,36 +55,26 @@ void StartUtilityProcessOnIOThread(mojom::ProcessControlRequest request,
   if (!use_sandbox)
     process_host->DisableSandbox();
   process_host->Start();
-
   process_host->GetRemoteInterfaces()->GetInterface(std::move(request));
 }
 
-void OnApplicationLoaded(const std::string& name, bool success) {
-  if (!success)
-    LOG(ERROR) << "Failed to launch Mojo application for " << name;
-}
-
-void LaunchAppInUtilityProcess(const std::string& app_name,
-                               const base::string16& process_name,
-                               bool use_sandbox,
-                               shell::mojom::ServiceRequest request) {
-  mojom::ProcessControlPtr process_control;
-  mojom::ProcessControlRequest process_request =
-      mojo::GetProxy(&process_control);
+void StartServiceInUtilityProcess(const std::string& service_name,
+                                  const base::string16& process_name,
+                                  bool use_sandbox,
+                                  shell::mojom::ServiceRequest request) {
+  shell::mojom::ServiceFactoryPtr service_factory;
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&StartUtilityProcessOnIOThread,
-                                     base::Passed(&process_request),
+                                     base::Passed(GetProxy(&service_factory)),
                                      process_name, use_sandbox));
-  process_control->LoadApplication(app_name, std::move(request),
-                                   base::Bind(&OnApplicationLoaded, app_name));
+  service_factory->CreateService(std::move(request), service_name);
 }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 
-// Request mojom::ProcessControl from GPU process host. Must be called on IO
-// thread.
-void RequestGpuProcessControl(
-    mojo::InterfaceRequest<mojom::ProcessControl> request) {
+// Request shell::mojom::ServiceFactory from GPU process host. Must be called on
+// IO thread.
+void RequestGpuServiceFactory(shell::mojom::ServiceFactoryRequest request) {
   BrowserChildProcessHostDelegate* process_host =
       GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
   if (!process_host) {
@@ -94,22 +84,19 @@ void RequestGpuProcessControl(
 
   // TODO(xhwang): It's possible that |process_host| is non-null, but the actual
   // process is dead. In that case, |request| will be dropped and application
-  // load requests through mojom::ProcessControl will also fail. Make sure we
-  // handle
+  // load requests through ServiceFactory will also fail. Make sure we handle
   // these cases correctly.
   process_host->GetRemoteInterfaces()->GetInterface(std::move(request));
 }
 
-void LaunchAppInGpuProcess(const std::string& app_name,
-                           shell::mojom::ServiceRequest request) {
-  mojom::ProcessControlPtr process_control;
-  mojom::ProcessControlRequest process_request =
-      mojo::GetProxy(&process_control);
+void StartServiceInGpuProcess(const std::string& service_name,
+                              shell::mojom::ServiceRequest request) {
+  shell::mojom::ServiceFactoryPtr service_factory;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RequestGpuProcessControl, base::Passed(&process_request)));
-  process_control->LoadApplication(app_name, std::move(request),
-                                   base::Bind(&OnApplicationLoaded, app_name));
+      base::Bind(&RequestGpuServiceFactory,
+                 base::Passed(GetProxy(&service_factory))));
+  service_factory->CreateService(std::move(request), service_name);
 }
 
 #endif  // ENABLE_MOJO_MEDIA_IN_GPU_PROCESS
@@ -280,7 +267,7 @@ MojoShellContext::MojoShellContext() {
   for (const auto& app : sandboxed_apps) {
     MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
         app.first,
-        base::Bind(&LaunchAppInUtilityProcess, app.first, app.second,
+        base::Bind(&StartServiceInUtilityProcess, app.first, app.second,
                    true /* use_sandbox */));
   }
 
@@ -291,13 +278,13 @@ MojoShellContext::MojoShellContext() {
   for (const auto& app : unsandboxed_apps) {
     MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
         app.first,
-        base::Bind(&LaunchAppInUtilityProcess, app.first, app.second,
+        base::Bind(&StartServiceInUtilityProcess, app.first, app.second,
                    false /* use_sandbox */));
   }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
-      "mojo:media", base::Bind(&LaunchAppInGpuProcess, "mojo:media"));
+      "mojo:media", base::Bind(&StartServiceInGpuProcess, "mojo:media"));
 #endif
 }
 
