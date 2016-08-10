@@ -4731,7 +4731,7 @@ def CMDset_commit(parser, args):
   if options.dry_run and options.clear:
     parser.error('Make up your mind: both --dry-run and --clear not allowed')
 
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
   if options.clear:
     state = _CQState.NONE
   elif options.dry_run:
