@@ -339,6 +339,8 @@ source_set("browser") {
     "reading_list/reading_list_entry.h",
     "reading_list/reading_list_model.cc",
     "reading_list/reading_list_model.h",
+    "reading_list/reading_list_model_bridge_observer.h",
+    "reading_list/reading_list_model_bridge_observer.mm",
     "reading_list/reading_list_model_factory.cc",
     "reading_list/reading_list_model_factory.h",
     "reading_list/reading_list_model_impl.cc",
