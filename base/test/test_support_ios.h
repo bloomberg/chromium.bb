@@ -19,9 +19,6 @@ void InitIOSRunHook(TestSuite* suite, int argc, char* argv[]);
 // InitIOSRunHook.
 void RunTestsFromIOSApp();
 
-// Returns true if the test app is being run with an XCTest module.
-bool IsRunningWithXCTest();
-
 }  // namespace base
 
 #endif  // BASE_TEST_TEST_SUPPORT_IOS_H_

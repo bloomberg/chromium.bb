@@ -238,13 +238,7 @@ int TestSuite::Run() {
   // Check to see if we are being run as a client process.
   if (!client_func.empty())
     return multi_process_function_list::InvokeChildProcessTest(client_func);
-
 #if defined(OS_IOS)
-  if (IsRunningWithXCTest()) {
-    // XCTest will drive the tests if running in XCTest mode on iOS.  There is
-    // no need to run the tests here or to tear down the test suite.
-    return 0;
-  }
   test_listener_ios::RegisterTestEndListener();
 #endif
 
