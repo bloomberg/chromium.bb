@@ -35,16 +35,12 @@ ThreadSpecific<WTFThreadData>* WTFThreadData::staticData;
 
 WTFThreadData::WTFThreadData()
     : m_atomicStringTable(new AtomicStringTable)
-    , m_compressibleStringTable(nullptr)
-    , m_compressibleStringTableDestructor(nullptr)
     , m_cachedConverterICU(new ICUConverterWrapper)
 {
 }
 
 WTFThreadData::~WTFThreadData()
 {
-    if (m_compressibleStringTableDestructor)
-        m_compressibleStringTableDestructor(m_compressibleStringTable);
 }
 
 } // namespace WTF

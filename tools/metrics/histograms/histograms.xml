@@ -23640,6 +23640,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Memory.CompressibleStringCount"
     enum="CompressibleStringCountType">
+  <obsolete>
+    Deprecated as of Aug 2016. CompressibleString has been reverted once at
+    https://crrev.com/2227933002.
+  </obsolete>
   <owner>hajimehoshi@chromium.org</owner>
   <summary>
     This records the frequency with which JavaScript source strings are
@@ -70764,6 +70768,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="CompressibleStringCountType" type="int">
+  <obsolete>
+    Dprecated as of Aug 2016. CompressibleString has been reverted once at
+    https://crrev.com/2227933002.
+  </obsolete>
   <int value="0" label="Compressed in a background tab"/>
   <int value="1" label="Decompressed in a background or a foreground tab"/>
 </enum>

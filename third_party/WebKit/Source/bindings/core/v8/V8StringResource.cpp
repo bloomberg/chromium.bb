@@ -47,7 +47,7 @@ struct StringTraits<String> {
 
 template<>
 struct StringTraits<AtomicString> {
-    static AtomicString fromStringResource(WebCoreStringResourceBase* resource)
+    static const AtomicString& fromStringResource(WebCoreStringResourceBase* resource)
     {
         return resource->getAtomicString();
     }
@@ -106,17 +106,10 @@ StringType v8StringToWebCoreString(v8::Local<v8::String> v8String, ExternalMode 
         v8::String::ExternalStringResourceBase* resource = v8String->GetExternalStringResourceBase(&encoding);
         if (LIKELY(!!resource)) {
             WebCoreStringResourceBase* base;
-            if (UNLIKELY(resource->IsCompressible())) {
-                if (encoding == v8::String::ONE_BYTE_ENCODING)
-                    base = static_cast<WebCoreCompressibleStringResource8*>(resource);
-                else
-                    base = static_cast<WebCoreCompressibleStringResource16*>(resource);
-            } else {
-                if (encoding == v8::String::ONE_BYTE_ENCODING)
-                    base = static_cast<WebCoreStringResource8*>(resource);
-                else
-                    base = static_cast<WebCoreStringResource16*>(resource);
-            }
+            if (encoding == v8::String::ONE_BYTE_ENCODING)
+                base = static_cast<WebCoreStringResource8*>(resource);
+            else
+                base = static_cast<WebCoreStringResource16*>(resource);
             return StringTraits<StringType>::fromStringResource(base);
         }
     }

@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CoreExport.h"
-#include "platform/text/CompressibleString.h"
 #include "wtf/Allocator.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
@@ -63,52 +62,24 @@ public:
         v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(string));
     }
 
-    explicit WebCoreStringResourceBase(const CompressibleString& string)
-        : m_compressibleString(string)
-    {
-#if ENABLE(ASSERT)
-        m_threadId = WTF::currentThread();
-#endif
-        ASSERT(!string.isNull());
-        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(string));
-    }
-
     virtual ~WebCoreStringResourceBase()
     {
 #if ENABLE(ASSERT)
         ASSERT(m_threadId == WTF::currentThread());
 #endif
-        int reducedExternalMemory = 0;
-        if (LIKELY(m_compressibleString.isNull())) {
-            reducedExternalMemory = -memoryConsumption(m_plainString);
-            if (m_plainString.impl() != m_atomicString.impl() && !m_atomicString.isNull())
-                reducedExternalMemory -= memoryConsumption(m_atomicString.getString());
-        } else {
-            reducedExternalMemory = -memoryConsumption(m_compressibleString);
-        }
+        int reducedExternalMemory = -memoryConsumption(m_plainString);
+        if (m_plainString.impl() != m_atomicString.impl() && !m_atomicString.isNull())
+            reducedExternalMemory -= memoryConsumption(m_atomicString);
         v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(reducedExternalMemory);
     }
 
-    const String& webcoreString()
-    {
-        if (UNLIKELY(!m_compressibleString.isNull())) {
-            ASSERT(m_plainString.isNull());
-            ASSERT(m_atomicString.isNull());
-            return m_compressibleString.toString();
-        }
-        return m_plainString;
-    }
+    const String& webcoreString() { return m_plainString; }
 
-    AtomicString getAtomicString()
+    const AtomicString& getAtomicString()
     {
 #if ENABLE(ASSERT)
         ASSERT(m_threadId == WTF::currentThread());
 #endif
-        if (UNLIKELY(!m_compressibleString.isNull())) {
-            ASSERT(m_plainString.isNull());
-            ASSERT(m_atomicString.isNull());
-            return AtomicString(m_compressibleString.toString());
-        }
         if (m_atomicString.isNull()) {
             m_atomicString = AtomicString(m_plainString);
             ASSERT(!m_atomicString.isNull());
@@ -117,8 +88,6 @@ public:
         }
         return m_atomicString;
     }
-
-    const CompressibleString& getCompressibleString() { return m_compressibleString; }
 
 protected:
     // A shallow copy of the string. Keeps the string buffer alive until the V8 engine garbage collects it.
@@ -130,19 +99,11 @@ protected:
     // into that string.
     AtomicString m_atomicString;
 
-    CompressibleString m_compressibleString;
-
 private:
     static int memoryConsumption(const String& string)
     {
         return string.length() * (string.is8Bit() ? sizeof(LChar) : sizeof(UChar));
     }
-
-    static int memoryConsumption(const CompressibleString& string)
-    {
-        return string.currentSizeInBytes();
-    }
-
 #if ENABLE(ASSERT)
     WTF::ThreadIdentifier m_threadId;
 #endif
@@ -189,50 +150,6 @@ public:
     const char* data() const override
     {
         return reinterpret_cast<const char*>(m_plainString.impl()->characters8());
-    }
-};
-
-class WebCoreCompressibleStringResource16 final : public WebCoreStringResourceBase, public v8::String::ExternalStringResource {
-    WTF_MAKE_NONCOPYABLE(WebCoreCompressibleStringResource16);
-public:
-    explicit WebCoreCompressibleStringResource16(const CompressibleString& string)
-        : WebCoreStringResourceBase(string)
-    {
-        ASSERT(!m_compressibleString.is8Bit());
-    }
-
-    bool IsCompressible() const override { return true; }
-
-    size_t length() const override
-    {
-        return m_compressibleString.length();
-    }
-
-    const uint16_t* data() const override
-    {
-        return reinterpret_cast<const uint16_t*>(m_compressibleString.characters16());
-    }
-};
-
-class WebCoreCompressibleStringResource8 final : public WebCoreStringResourceBase, public v8::String::ExternalOneByteStringResource {
-    WTF_MAKE_NONCOPYABLE(WebCoreCompressibleStringResource8);
-public:
-    explicit WebCoreCompressibleStringResource8(const CompressibleString& string)
-        : WebCoreStringResourceBase(string)
-    {
-        ASSERT(m_compressibleString.is8Bit());
-    }
-
-    bool IsCompressible() const override { return true; }
-
-    size_t length() const override
-    {
-        return m_compressibleString.length();
-    }
-
-    const char* data() const override
-    {
-        return reinterpret_cast<const char*>(m_compressibleString.characters8());
     }
 };
 

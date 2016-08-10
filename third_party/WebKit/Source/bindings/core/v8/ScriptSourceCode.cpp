@@ -12,11 +12,6 @@ ScriptSourceCode::ScriptSourceCode()
 }
 
 ScriptSourceCode::ScriptSourceCode(const String& source, const KURL& url, const TextPosition& startPosition)
-    : ScriptSourceCode(CompressibleString(source.impl()), url, startPosition)
-{
-}
-
-ScriptSourceCode::ScriptSourceCode(const CompressibleString& source, const KURL& url, const TextPosition& startPosition)
     : m_source(source)
     , m_url(url)
     , m_startPosition(startPosition)
@@ -86,7 +81,7 @@ void ScriptSourceCode::treatNullSourceAsEmpty()
     // the empty script. Consequently, we need to disambiguate between such null string occurrences.
     // Do that by converting the latter case's null strings into empty ones.
     if (m_source.isNull())
-        m_source = CompressibleString();
+        m_source = "";
 }
 
 } // namespace blink

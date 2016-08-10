@@ -435,7 +435,7 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
             } else {
                 ASSERT(m_scriptNestingLevel > 1);
                 m_parserBlockingScript->releaseElementAndClear();
-                ScriptSourceCode sourceCode(CompressibleString(script->textContent().impl()), documentURLForScriptExecution(m_document), scriptStartPosition);
+                ScriptSourceCode sourceCode(script->textContent(), documentURLForScriptExecution(m_document), scriptStartPosition);
                 doExecuteScript(script, sourceCode, scriptStartPosition);
             }
         } else {

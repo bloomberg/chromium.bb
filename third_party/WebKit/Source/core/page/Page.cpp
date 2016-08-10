@@ -52,7 +52,6 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/plugins/PluginData.h"
-#include "platform/text/CompressibleString.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -133,7 +132,6 @@ Page::Page(PageClients& pageClients)
     , m_isPainting(false)
 #endif
     , m_frameHost(FrameHost::create(*this))
-    , m_timerForCompressStrings(this, &Page::compressStrings)
 {
     ASSERT(m_editorClient);
 
@@ -320,8 +318,6 @@ void Page::visitedStateChanged(LinkHash linkHash)
 
 void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitialState)
 {
-    static const double waitingTimeBeforeCompressingString = 10;
-
     if (m_visibilityState == visibilityState)
         return;
     m_visibilityState = visibilityState;
@@ -331,15 +327,6 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
 
     if (!isInitialState && m_mainFrame)
         m_mainFrame->didChangeVisibilityState();
-
-    // Compress CompressibleStrings when 10 seconds have passed since the page
-    // went to background.
-    if (m_visibilityState == PageVisibilityStateHidden) {
-        if (!m_timerForCompressStrings.isActive())
-            m_timerForCompressStrings.startOneShot(waitingTimeBeforeCompressingString, BLINK_FROM_HERE);
-    } else if (m_timerForCompressStrings.isActive()) {
-        m_timerForCompressStrings.stop();
-    }
 }
 
 PageVisibilityState Page::visibilityState() const
@@ -534,13 +521,6 @@ void Page::willBeDestroyed()
     m_mainFrame = nullptr;
 
     PageVisibilityNotifier::notifyContextDestroyed();
-}
-
-void Page::compressStrings(TimerBase* timer)
-{
-    ASSERT_UNUSED(timer, timer == &m_timerForCompressStrings);
-    if (m_visibilityState == PageVisibilityStateHidden)
-        CompressibleStringImpl::compressAll();
 }
 
 Page::PageClients::PageClients()

@@ -232,7 +232,7 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
         maybeEncodeTextContent(toCSSStyleSheetResource(cachedResource)->sheetText(), cachedResource->resourceBuffer(), result, base64Encoded);
         return true;
     case Resource::Script:
-        maybeEncodeTextContent(cachedResource->resourceBuffer() ? toScriptResource(cachedResource)->decodedText() : toScriptResource(cachedResource)->script().toString(), cachedResource->resourceBuffer(), result, base64Encoded);
+        maybeEncodeTextContent(cachedResource->resourceBuffer() ? toScriptResource(cachedResource)->decodedText() : toScriptResource(cachedResource)->script(), cachedResource->resourceBuffer(), result, base64Encoded);
         return true;
     default:
         String textEncodingName = cachedResource->response().textEncodingName();

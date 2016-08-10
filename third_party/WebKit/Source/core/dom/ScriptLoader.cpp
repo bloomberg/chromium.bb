@@ -370,10 +370,10 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
 
     const ContentSecurityPolicy* csp = elementDocument->contentSecurityPolicy();
     bool shouldBypassMainWorldCSP = (frame && frame->script().shouldBypassMainWorldCSP())
-        || csp->allowScriptWithHash(sourceCode.source().toString(), ContentSecurityPolicy::InlineType::Block)
+        || csp->allowScriptWithHash(sourceCode.source(), ContentSecurityPolicy::InlineType::Block)
         || (!isParserInserted() && csp->allowDynamic());
 
-    if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_element->fastGetAttribute(HTMLNames::nonceAttr), m_startLineNumber, sourceCode.source().toString()))) {
+    if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_element->fastGetAttribute(HTMLNames::nonceAttr), m_startLineNumber, sourceCode.source()))) {
         return false;
     }
 

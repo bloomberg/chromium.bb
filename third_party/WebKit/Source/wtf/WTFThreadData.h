@@ -36,16 +36,6 @@
 #include "wtf/text/StringHash.h"
 #include <memory>
 
-namespace blink {
-
-// TODO(hajimehoshi): CompressibleStringTable should be moved from blink to WTF
-// namespace. Fix this forward declaration when we do this.
-class CompressibleStringTable;
-
-typedef void (*CompressibleStringTableDestructor)(CompressibleStringTable*);
-
-}
-
 namespace WTF {
 
 class AtomicStringTable;
@@ -63,22 +53,14 @@ public:
         return *m_atomicStringTable;
     }
 
-    blink::CompressibleStringTable* compressibleStringTable()
-    {
-        return m_compressibleStringTable;
-    }
-
     ICUConverterWrapper& cachedConverterICU() { return *m_cachedConverterICU; }
 
 private:
     std::unique_ptr<AtomicStringTable> m_atomicStringTable;
-    blink::CompressibleStringTable* m_compressibleStringTable;
-    blink::CompressibleStringTableDestructor m_compressibleStringTableDestructor;
     std::unique_ptr<ICUConverterWrapper> m_cachedConverterICU;
 
     static ThreadSpecific<WTFThreadData>* staticData;
     friend WTFThreadData& wtfThreadData();
-    friend class blink::CompressibleStringTable;
 };
 
 inline WTFThreadData& wtfThreadData()

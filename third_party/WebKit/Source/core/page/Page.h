@@ -34,7 +34,6 @@
 #include "core/page/PageVisibilityObserver.h"
 #include "core/page/PageVisibilityState.h"
 #include "platform/Supplementable.h"
-#include "platform/Timer.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/Region.h"
 #include "platform/heap/Handle.h"
@@ -213,8 +212,6 @@ private:
     // SettingsDelegate overrides.
     void settingsChanged(SettingsDelegate::ChangeType) override;
 
-    void compressStrings(TimerBase*);
-
     Member<PageAnimator> m_animator;
     const Member<AutoscrollController> m_autoscrollController;
     Member<ChromeClient> m_chromeClient;
@@ -267,8 +264,6 @@ private:
     // A pointer to all the interfaces provided to in-process Frames for this Page.
     // FIXME: Most of the members of Page should move onto FrameHost.
     Member<FrameHost> m_frameHost;
-
-    Timer<Page> m_timerForCompressStrings;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;

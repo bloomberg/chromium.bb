@@ -200,7 +200,7 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
     return true;
 }
 
-ScriptValue WorkerOrWorkletScriptController::evaluate(const CompressibleString& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
+ScriptValue WorkerOrWorkletScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
 {
     if (!initializeContextIfNeeded())
         return ScriptValue();

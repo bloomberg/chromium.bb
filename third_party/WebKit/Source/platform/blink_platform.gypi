@@ -992,8 +992,6 @@
       'text/Character.cpp',
       'text/Character.h',
       'text/CharacterEmoji.cpp',
-      'text/CompressibleString.cpp',
-      'text/CompressibleString.h',
       'text/DateTimeFormat.cpp',
       'text/DateTimeFormat.h',
       'text/DecodeEscapeSequences.h',

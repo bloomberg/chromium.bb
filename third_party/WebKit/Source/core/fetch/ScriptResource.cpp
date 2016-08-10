@@ -76,11 +76,11 @@ void ScriptResource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebP
     Resource::onMemoryDump(levelOfDetail, memoryDump);
     const String name = getMemoryDumpName() + "/decoded_script";
     auto dump = memoryDump->createMemoryAllocatorDump(name);
-    dump->addScalar("size", "bytes", m_script.currentSizeInBytes());
+    dump->addScalar("size", "bytes", m_script.getString().sizeInBytes());
     memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
-const CompressibleString& ScriptResource::script()
+const String& ScriptResource::script()
 {
     ASSERT(!isPurgeable());
     ASSERT(isLoaded());
@@ -92,7 +92,7 @@ const CompressibleString& ScriptResource::script()
         // That's because the MemoryCache thinks that it can clear out decoded data by calling destroyDecodedData(),
         // but we can't destroy script in destroyDecodedData because that's our only copy of the data!
         setEncodedSize(script.sizeInBytes());
-        m_script = CompressibleString(script.impl());
+        m_script = AtomicString(script);
     }
 
     return m_script;
@@ -100,7 +100,7 @@ const CompressibleString& ScriptResource::script()
 
 void ScriptResource::destroyDecodedDataForFailedRevalidation()
 {
-    m_script = CompressibleString();
+    m_script = AtomicString();
 }
 
 bool ScriptResource::mimeTypeAllowedByNosniff() const

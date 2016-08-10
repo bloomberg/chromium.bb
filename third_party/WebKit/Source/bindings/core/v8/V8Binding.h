@@ -48,7 +48,6 @@
 #include "bindings/core/v8/V8ValueCache.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/text/CompressibleString.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringView.h"
 #include <v8.h>
@@ -413,13 +412,6 @@ inline v8::Local<v8::Value> v8StringOrNull(v8::Isolate* isolate, const AtomicStr
     if (string.isNull())
         return v8::Null(isolate);
     return V8PerIsolateData::from(isolate)->getStringCache()->v8ExternalString(isolate, string.impl());
-}
-
-inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const CompressibleString& string)
-{
-    if (string.isNull())
-        return v8::String::Empty(isolate);
-    return V8PerIsolateData::from(isolate)->getStringCache()->v8ExternalString(isolate, string);
 }
 
 inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate, const StringView& string)

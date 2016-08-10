@@ -36,7 +36,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
-#include "platform/text/CompressibleString.h"
 #include "wtf/Allocator.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/TextPosition.h"
@@ -97,7 +96,7 @@ private:
     class ExecutionState;
 
     // Evaluate a script file in the current execution environment.
-    ScriptValue evaluate(const CompressibleString& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
+    ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
     void disposeContextIfNeeded();
 
     Member<WorkerOrWorkletGlobalScope> m_globalScope;

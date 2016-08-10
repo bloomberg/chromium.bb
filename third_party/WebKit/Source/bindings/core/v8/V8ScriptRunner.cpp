@@ -351,7 +351,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode&
     return compileScript(v8String(isolate, source.source()), source.url(), source.sourceMapUrl(), source.startPosition(), isolate, source.resource(), source.streamer(), source.resource() ? source.resource()->cacheHandler() : nullptr, accessControlStatus, cacheOptions);
 }
 
-v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const CompressibleString& code, const String& fileName, const String& sourceMapUrl, const TextPosition& textPosition, v8::Isolate* isolate, CachedMetadataHandler* cacheMetadataHandler, AccessControlStatus accessControlStatus, V8CacheOptions v8CacheOptions)
+v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const String& code, const String& fileName, const String& sourceMapUrl, const TextPosition& textPosition, v8::Isolate* isolate, CachedMetadataHandler* cacheMetadataHandler, AccessControlStatus accessControlStatus, V8CacheOptions v8CacheOptions)
 {
     if (code.length() >= v8::String::kMaxLength) {
         V8ThrowException::throwGeneralError(isolate, "Source file too large.");
