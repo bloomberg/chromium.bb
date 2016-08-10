@@ -726,13 +726,13 @@ cr.define('options', function() {
 
       // Accessibility section (CrOS only).
       if (cr.isChromeOS) {
-        var updateAccessibilitySettingsButton = function() {
+        var updateAccessibilitySettingsSection = function() {
           $('accessibility-settings').hidden =
               !($('accessibility-spoken-feedback-check').checked);
         };
         Preferences.getInstance().addEventListener(
             'settings.accessibility',
-            updateAccessibilitySettingsButton);
+            updateAccessibilitySettingsSection);
         $('accessibility-learn-more').onclick = function(unused_event) {
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_AccessibilityLearnMore']);
@@ -740,9 +740,12 @@ cr.define('options', function() {
         $('accessibility-settings-button').onclick = function(unused_event) {
           window.open(loadTimeData.getString('accessibilitySettingsURL'));
         };
+        $('talkback-settings-button').onclick = function(unused_event) {
+          chrome.send('showAccessibilityTalkBackSettings');
+        };
         $('accessibility-spoken-feedback-check').onchange =
-            updateAccessibilitySettingsButton;
-        updateAccessibilitySettingsButton();
+            updateAccessibilitySettingsSection;
+        updateAccessibilitySettingsSection();
 
         var updateScreenMagnifierCenterFocus = function() {
           $('accessibility-screen-magnifier-center-focus-check').disabled =
@@ -834,11 +837,18 @@ cr.define('options', function() {
         $('android-apps-settings-label').innerHTML =
             loadTimeData.getString('androidAppsSettingsLabel');
         Preferences.getInstance().addEventListener('arc.enabled', function(e) {
-          var settings = $('android-apps-settings');
           // Only change settings visibility on committed settings changes.
-          if (!settings || e.value.uncommitted)
+          if (e.value.uncommitted)
             return;
-          settings.hidden = !e.value.value;
+
+          var isArcEnabled = !e.value.value;
+          var androidAppSettings = $('android-apps-settings');
+          if (androidAppSettings != null)
+            androidAppSettings.hidden = isArcEnabled;
+
+          var talkbackSettingsButton = $('talkback-settings-button');
+          if (talkbackSettingsButton != null)
+            talkbackSettingsButton.hidden = isArcEnabled;
         });
 
         $('android-apps-settings-link').addEventListener('click', function(e) {

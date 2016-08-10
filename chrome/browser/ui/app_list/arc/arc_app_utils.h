@@ -42,6 +42,9 @@ bool LaunchAppWithRect(content::BrowserContext* context,
                        const std::string& app_id,
                        const gfx::Rect& target_rect);
 
+// Open TalkBack settings window.
+void ShowTalkBackSettings();
+
 // Tests if the application can use the given target resolution.
 // The callback will receive the information once known.
 // A false will get returned if the result cannot be determined in which case

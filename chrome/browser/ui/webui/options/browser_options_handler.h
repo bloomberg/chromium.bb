@@ -337,6 +337,9 @@ class BrowserOptionsHandler
 
   // Called to show Android apps settings.
   void ShowAndroidAppsSettings(const base::ListValue* args);
+
+  // Called to show TalkBack settings.
+  void ShowAccessibilityTalkBackSettings(const base::ListValue *args);
 #endif
 
   // Setup the visibility for the metrics reporting setting.

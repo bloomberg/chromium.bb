@@ -30,6 +30,7 @@ constexpr int kNexus5Height = 690;
 // Minimum required versions.
 constexpr int kMinVersion = 0;
 constexpr int kCanHandleResolutionMinVersion = 1;
+constexpr int kSendBroadcastMinVersion = 1;
 constexpr int kUninstallPackageMinVersion = 2;
 constexpr int kShowPackageInfoMinVersion = 5;
 constexpr int kRemoveIconMinVersion = 9;
@@ -225,6 +226,31 @@ bool LaunchApp(content::BrowserContext* context,
 
   return (new LaunchAppWithoutSize(context, app_id, landscape_layout))
       ->LaunchAndRelease();
+}
+
+void ShowTalkBackSettings() {
+  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
+  if (!bridge_service) {
+    VLOG(2) << "ARC bridge is not ready";
+    return;
+  }
+
+  arc::mojom::IntentHelperInstance *intent_helper_instance =
+      bridge_service->intent_helper()->instance();
+  if (!intent_helper_instance) {
+    VLOG(2) << "ARC intent helper instance is not ready";
+    return;
+  }
+  if (bridge_service->intent_helper()->version() < kSendBroadcastMinVersion) {
+    VLOG(2) << "ARC intent helper instance is too old";
+    return;
+  }
+
+  intent_helper_instance->SendBroadcast(
+          "org.chromium.arc.intent_helper.SHOW_TALKBACK_SETTINGS",
+          "org.chromium.arc.intent_helper",
+          "org.chromium.arc.intent_helper.SettingsReceiver",
+          "{}");
 }
 
 bool CanHandleResolution(content::BrowserContext* context,

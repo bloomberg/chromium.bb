@@ -430,6 +430,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_STICKY_KEYS_DESCRIPTION },
     { "accessibilitySwitchAccess",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_DESCRIPTION },
+    { "accessibilityTalkBackSettings",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_TALKBACK_SETTINGS },
     { "accessibilityTapDragging",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_TOUCHPAD_TAP_DRAGGING_DESCRIPTION },
     { "accessibilityVirtualKeyboard",
@@ -799,6 +801,10 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "showAndroidAppsSettings",
       base::Bind(&BrowserOptionsHandler::ShowAndroidAppsSettings,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showAccessibilityTalkBackSettings",
+      base::Bind(&BrowserOptionsHandler::ShowAccessibilityTalkBackSettings,
                  base::Unretained(this)));
 #else
   web_ui()->RegisterMessageCallback(
@@ -1932,6 +1938,18 @@ void BrowserOptionsHandler::ShowAndroidAppsSettings(
   }
 
   arc::LaunchAndroidSettingsApp(profile);
+}
+
+void BrowserOptionsHandler::ShowAccessibilityTalkBackSettings(
+    const base::ListValue *args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  // Settings in secondary profile cannot access ARC.
+  if (!arc::ArcAuthService::IsAllowedForProfile(profile)) {
+    LOG(WARNING) << "Settings can't be invoked for non-primary profile";
+    return;
+  }
+
+  arc::ShowTalkBackSettings();
 }
 
 void BrowserOptionsHandler::SetupAccessibilityFeatures() {
