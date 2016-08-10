@@ -339,7 +339,8 @@ struct WorkerPoolVariationValues {
 // Converts |pool_descriptor| to a WorkerPoolVariationValues. Returns a default
 // WorkerPoolVariationValues on failure.
 //
-// |pool_descriptor| is a comma separated value string with the following items:
+// |pool_descriptor| is a semi-colon separated value string with the following
+// items:
 // 1. Minimum Thread Count (int)
 // 2. Maximum Thread Count (int)
 // 3. Thread Count Multiplier (double)
@@ -349,7 +350,7 @@ struct WorkerPoolVariationValues {
 WorkerPoolVariationValues StringToWorkerPoolVariationValues(
     const base::StringPiece pool_descriptor) {
   const std::vector<std::string> tokens =
-      SplitString(pool_descriptor, ",",
+      SplitString(pool_descriptor, ";",
                   base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   int minimum;
   int maximum;
