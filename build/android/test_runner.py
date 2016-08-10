@@ -422,9 +422,6 @@ def AddInstrumentationTestOptions(parser):
                      help='StrictMode command-line flag set on the device, '
                           'death/testing to kill the process, off to stop '
                           'checking, flash to flash only. Default testing.')
-  group.add_argument('--store-tombstones', dest='store_tombstones',
-                     action='store_true',
-                     help='Add tombstones in results if crash.')
 
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
