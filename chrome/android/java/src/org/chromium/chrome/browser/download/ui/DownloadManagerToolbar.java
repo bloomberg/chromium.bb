@@ -15,7 +15,8 @@ import org.chromium.ui.base.DeviceFormFactor;
 /**
  * Handles toolbar functionality for the {@link DownloadManagerUi}.
  */
-public class DownloadManagerToolbar extends SelectionToolbar<String> implements DownloadUiObserver {
+public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItemWrapper>
+        implements DownloadUiObserver {
     public DownloadManagerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
         inflateMenu(R.menu.download_manager_menu);

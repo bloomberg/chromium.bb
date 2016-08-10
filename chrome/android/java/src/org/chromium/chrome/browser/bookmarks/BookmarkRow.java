@@ -56,7 +56,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
             mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
             setChecked(mDelegate.getSelectionDelegate().isItemSelected(bookmarkId));
         }
-        super.setId(bookmarkId);
+        super.setItem(bookmarkId);
         return bookmarkItem;
     }
 

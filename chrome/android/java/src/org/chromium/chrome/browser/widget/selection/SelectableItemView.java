@@ -22,13 +22,13 @@ import java.util.List;
  * initially established via long-press. If a selection is already established, clicking on the item
  * will toggle its selection.
  *
- * @param <E> The type of the unique identifier for this SelectableItem.
+ * @param <E> The type of the item associated with this SelectableItemView.
  */
 public abstract class SelectableItemView<E> extends FrameLayout implements Checkable,
         OnClickListener, OnLongClickListener, SelectionObserver<E> {
     private SelectionDelegate<E> mSelectionDelegate;
     private SelectableItemHighlightView mHighlightView;
-    private E mId;
+    private E mItem;
 
     /**
      * Constructor for inflating from XML.
@@ -60,11 +60,11 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
     }
 
     /**
-     * @param id The unique identifier for this SelectableItem.
+     * @param item The item associated with this SelectableItemView.
      */
-    public void setId(E id) {
-        mId = id;
-        setChecked(mSelectionDelegate.isItemSelected(id));
+    public void setItem(E item) {
+        mItem = item;
+        setChecked(mSelectionDelegate.isItemSelected(item));
     }
 
     // FrameLayout implementations.
@@ -83,7 +83,7 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (mSelectionDelegate != null) {
-            setChecked(mSelectionDelegate.isItemSelected(mId));
+            setChecked(mSelectionDelegate.isItemSelected(mItem));
         }
     }
 
@@ -109,7 +109,7 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
     @Override
     public boolean onLongClick(View view) {
         assert view == this;
-        boolean checked = mSelectionDelegate.toggleSelectionForItem(mId);
+        boolean checked = mSelectionDelegate.toggleSelectionForItem(mItem);
         setChecked(checked);
         return true;
     }
@@ -133,7 +133,7 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
     // SelectionObserver implementation.
     @Override
     public void onSelectionStateChange(List<E> selectedItems) {
-        setChecked(mSelectionDelegate.isItemSelected(mId));
+        setChecked(mSelectionDelegate.isItemSelected(mItem));
     }
 
     /**

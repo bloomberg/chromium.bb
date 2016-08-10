@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 /**
  * The view for a downloaded item displayed in the Downloads list.
  */
-public class DownloadItemView extends SelectableItemView<String> {
+public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrapper> {
     DownloadManagerUi mManager;
     DownloadHistoryItemWrapper mItem;
 
@@ -32,7 +32,7 @@ public class DownloadItemView extends SelectableItemView<String> {
     public void initialize(DownloadManagerUi manager, DownloadHistoryItemWrapper item) {
         mManager = manager;
         mItem = item;
-        setId(item.getId());
+        setItem(item);
     }
 
     @Override

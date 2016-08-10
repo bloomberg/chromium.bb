@@ -14,6 +14,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -34,6 +35,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -64,6 +66,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     }
 
     private static final String TAG = "download_ui";
+    private static final String DEFAULT_MIME_TYPE = "*/*";
+    private static final String MIME_TYPE_DELIMITER = "/";
 
     private final DownloadHistoryAdapter mHistoryAdapter;
     private final FilterAdapter mFilterAdapter;
@@ -78,13 +82,13 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
     private BasicNativePage mNativePage;
 
-    private SelectionDelegate<String> mSelectionDelegate;
+    private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
 
     public DownloadManagerUi(Activity activity) {
         mActivity = activity;
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
 
-        mSelectionDelegate = new SelectionDelegate<String>();
+        mSelectionDelegate = new SelectionDelegate<DownloadHistoryItemWrapper>();
 
         mHistoryAdapter = new DownloadHistoryAdapter();
         mHistoryAdapter.initialize(this);
@@ -176,7 +180,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     /**
      * @return The SelectionDelegate responsible for tracking selected download items.
      */
-    public SelectionDelegate<String> getSelectionDelegate() {
+    public SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate() {
         return mSelectionDelegate;
     }
 
@@ -194,7 +198,10 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             mActivity.finish();
             return true;
         }
-        // TODO(twellington): Hook up delete and share icons.
+        if (item.getItemId() == R.id.selection_mode_share_menu_id) {
+            shareSelectedItems();
+            return true;
+        }
         return false;
     }
 
@@ -271,4 +278,64 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         mObservers.removeObserver(observer);
     }
 
+    private void shareSelectedItems() {
+        // TODO(twellington): disable the share button when offline pages are selected.
+
+        List<DownloadHistoryItemWrapper> selectedItems = mSelectionDelegate.getSelectedItems();
+        assert selectedItems.size() > 0;
+
+        Intent shareIntent = new Intent();
+        String intentMimeType = Intent.normalizeMimeType(selectedItems.get(0).getMimeType());
+        String intentAction;
+
+        if (selectedItems.size() == 1) {
+            // Set up intent for 1 item.
+            intentAction = Intent.ACTION_SEND;
+            shareIntent.putExtra(Intent.EXTRA_STREAM, selectedItems.get(0).getUri());
+        } else {
+            // Set up intent for multiple items.
+            intentAction = Intent.ACTION_SEND_MULTIPLE;
+            ArrayList<Uri> itemUris = new ArrayList<Uri>();
+
+            String[] intentMimeParts = {"", ""};
+            if (intentMimeType != null) intentMimeParts = intentMimeType.split(MIME_TYPE_DELIMITER);
+
+            for (DownloadHistoryItemWrapper itemWrapper : mSelectionDelegate.getSelectedItems()) {
+                itemUris.add(itemWrapper.getUri());
+
+                String mimeType = Intent.normalizeMimeType(itemWrapper.getMimeType());
+
+                // If a mime type was not retrieved from the backend or could not be normalized,
+                // set the mime type to the default.
+                if (mimeType == null) {
+                    intentMimeType = DEFAULT_MIME_TYPE;
+                    continue;
+                }
+
+                // Either the mime type is already the default or it matches the current intent
+                // mime type. In either case, intentMimeType is already the correct value.
+                if (TextUtils.equals(intentMimeType, DEFAULT_MIME_TYPE)
+                        || TextUtils.equals(intentMimeType, mimeType)) {
+                    continue;
+                }
+
+                String[] mimeParts = mimeType.split(MIME_TYPE_DELIMITER);
+                if (!TextUtils.equals(intentMimeParts[0], mimeParts[0])) {
+                    // The top-level types don't match; fallback to the default mime type.
+                    intentMimeType = DEFAULT_MIME_TYPE;
+                } else {
+                    // The mime type should be {top-level type}/*
+                    intentMimeType = intentMimeParts[0] + MIME_TYPE_DELIMITER + "*";
+                }
+            }
+
+            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, itemUris);
+        }
+
+        shareIntent.setAction(intentAction);
+        shareIntent.setType(intentMimeType);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mActivity.startActivity(Intent.createChooser(shareIntent,
+                mActivity.getString(R.string.share_link_chooser_title)));
+    }
 }

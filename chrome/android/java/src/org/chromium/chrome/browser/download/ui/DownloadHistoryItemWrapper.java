@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.ui;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.download.DownloadItem;
@@ -24,6 +25,9 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
     /** @return String showing where the download resides. */
     abstract String getFilePath();
 
+    /** @return A URI to where the file resides. */
+    abstract Uri getUri();
+
     /** @return String to display for the file. */
     abstract String getDisplayFileName();
 
@@ -35,6 +39,9 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
 
     /** @return {@link DownloadFilter} that represents the file type. */
     abstract int getFilterType();
+
+    /** @return The mime type or null if the item doesn't have one. */
+    abstract String getMimeType();
 
     /** Called when the item has been clicked on. */
     abstract void onClicked(DownloadManagerUi manager);
@@ -73,6 +80,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
+        public Uri getUri() {
+            return Uri.fromFile(new File(getFilePath()));
+        }
+
+        @Override
         public String getDisplayFileName() {
             return mItem.getDownloadInfo().getFileName();
         }
@@ -89,7 +101,12 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
 
         @Override
         public int getFilterType() {
-            return convertMimeTypeToFilterType(mItem.getDownloadInfo().getMimeType());
+            return convertMimeTypeToFilterType(getMimeType());
+        }
+
+        @Override
+        public String getMimeType() {
+            return mItem.getDownloadInfo().getMimeType();
         }
 
         @Override
@@ -147,6 +164,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
+        public Uri getUri() {
+            return Uri.fromFile(new File(getFilePath()));
+        }
+
+        @Override
         public String getDisplayFileName() {
             File path = new File(getFilePath());
             return path.getName();
@@ -165,6 +187,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         @Override
         public int getFilterType() {
             return DownloadFilter.FILTER_PAGE;
+        }
+
+        @Override
+        public String getMimeType() {
+            return null;
         }
 
         @Override

@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
  * A toolbar that changes its view depending on whether a selection is established. The XML inflated
  * for this class must include number_roll_view.xml.
  *
- * @param <E> The type of the unique identifier for selectable items this toolbar interacts with.
+ * @param <E> The type of the selectable items this toolbar interacts with.
  */
 public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>, OnClickListener {
     /** No navigation button is displayed. **/

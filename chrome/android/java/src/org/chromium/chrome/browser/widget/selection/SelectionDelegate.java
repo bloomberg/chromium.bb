@@ -13,7 +13,7 @@ import java.util.Set;
 
 /**
  * A generic delegate used to keep track of selected items.
- * @param <E> The type of the unique identifier for selectable items this delegate interacts with.
+ * @param <E> The type of the selectable items this delegate interacts with.
  */
 public class SelectionDelegate<E> {
 
