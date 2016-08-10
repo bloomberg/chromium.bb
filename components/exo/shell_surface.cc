@@ -652,11 +652,13 @@ bool ShellSurface::CanResize() const {
 }
 
 bool ShellSurface::CanMaximize() const {
-  return true;
+  // Shell surfaces in system modal container cannot be maximized.
+  return container_ != ash::kShellWindowId_SystemModalContainer;
 }
 
 bool ShellSurface::CanMinimize() const {
-  return true;
+  // Shell surfaces in system modal container cannot be minimized.
+  return container_ != ash::kShellWindowId_SystemModalContainer;
 }
 
 base::string16 ShellSurface::GetWindowTitle() const {
