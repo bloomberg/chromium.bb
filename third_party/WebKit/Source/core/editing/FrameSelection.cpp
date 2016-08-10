@@ -406,6 +406,38 @@ static bool removingNodeRemovesPosition(Node& node, const Position& position)
     return element.isShadowIncludingInclusiveAncestorOf(position.anchorNode());
 }
 
+static Position computePositionForChildrenRemoval(const Position& position, ContainerNode& container)
+{
+    Node* node = position.computeContainerNode();
+    if (container.containsIncludingHostElements(*node))
+        return Position::firstPositionInNode(&container);
+    return position;
+}
+
+void FrameSelection::nodeChildrenWillBeRemoved(ContainerNode& container)
+{
+    if (isNone() || !container.inActiveDocument())
+        return;
+    const Position& oldStart = selection().start();
+    const Position& newStart = computePositionForChildrenRemoval(oldStart, container);
+    const Position& oldEnd = selection().end();
+    const Position& newEnd = computePositionForChildrenRemoval(oldEnd, container);
+    const Position& oldBase = selection().base();
+    const Position& newBase = computePositionForChildrenRemoval(oldBase, container);
+    const Position& oldExtent = selection().extent();
+    const Position& newExtent = computePositionForChildrenRemoval(oldExtent, container);
+    if (newStart == oldStart && newEnd == oldEnd && newBase == oldBase && newExtent == oldExtent)
+        return;
+    if (selection().isBaseFirst())
+        m_selectionEditor->setWithoutValidation(newStart, newEnd);
+    else
+        m_selectionEditor->setWithoutValidation(newEnd, newStart);
+    m_frameCaret->setCaretRectNeedsUpdate();
+    if (document().isRunningExecCommand())
+        return;
+    TypingCommand::closeTyping(m_frame);
+}
+
 void FrameSelection::nodeWillBeRemoved(Node& node)
 {
     // There can't be a selection inside a fragment, so if a fragment's node is being removed,

@@ -880,6 +880,8 @@ crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure 
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 
+crbug.com/632333 svg/custom/use-clipped-hit.svg [ NeedsRebaseline ]
+
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
 # Broken on Win10

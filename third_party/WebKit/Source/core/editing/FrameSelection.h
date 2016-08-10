@@ -174,6 +174,7 @@ public:
 
     void documentAttached(Document*);
     void documentDetached(const Document&);
+    void nodeChildrenWillBeRemoved(ContainerNode&);
     void nodeWillBeRemoved(Node&);
     void dataWillChange(const CharacterData& node);
     void didUpdateCharacterData(CharacterData*, unsigned offset, unsigned oldLength, unsigned newLength);
