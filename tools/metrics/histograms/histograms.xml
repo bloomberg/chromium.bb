@@ -89638,6 +89638,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="ReadyToPersist"/>
   <int value="5" label="Persist"/>
   <int value="6" label="ExternalCacheHit"/>
+  <int value="7" label="ResetWaitForDataReady"/>
 </enum>
 
 <enum name="QuicDiskCacheEntryState" type="int">
@@ -89656,6 +89657,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="READY_TO_PERSIST_FAILURE"/>
   <int value="8" label="PERSIST_NO_BACKEND_FAILURE"/>
   <int value="9" label="WRITE_FAILURE"/>
+  <int value="10" label="NO_FAILURE"/>
+  <int value="11" label="PARSE_DATA_DECODE_FAILURE"/>
 </enum>
 
 <enum name="QuicErrorCodes" type="int">
@@ -100021,6 +100024,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="NoBackend" label="DiskCache didn't have a backend"/>
   <suffix name="DiskCache" label="DiskCache backend is using disk cache."/>
   <suffix name="MemoryCache" label="DiskCache backend is using memory cache."/>
+  <suffix name="PropertiesBasedCache" label="Preferences based cache is used."/>
   <suffix name="WaitForDataReady"
       label="Tracks the last failure reason until WaitForDataReady or its
              callback is executed. This is recorded when data is ready in

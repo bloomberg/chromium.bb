@@ -1988,7 +1988,7 @@ void QuicStreamFactory::MaybeInitialize() {
   // touches quic_server_info_map.
   const QuicServerInfoMap& quic_server_info_map =
       http_server_properties_->quic_server_info_map();
-  std::vector<QuicServerId> server_list(quic_server_info_map.size());
+  std::vector<QuicServerId> server_list;
   for (const auto& key_value : quic_server_info_map)
     server_list.push_back(key_value.first);
   for (auto it = server_list.rbegin(); it != server_list.rend(); ++it) {
