@@ -7,15 +7,10 @@
 
 #include <memory>
 
-#include "base/callback.h"
-#include "base/id_map.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
-#include "base/synchronization/lock.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -33,10 +28,7 @@ class BrowserCompositorOutputSurface;
 
 // A reflector implementation that copies the framebuffer content
 // to the texture, then draw it onto the mirroring compositor.
-class CONTENT_EXPORT ReflectorImpl
-    : public base::SupportsWeakPtr<ReflectorImpl>,
-      public ui::Reflector,
-      public ui::CompositorObserver {
+class CONTENT_EXPORT ReflectorImpl : public ui::Reflector {
  public:
   ReflectorImpl(ui::Compositor* mirrored_compositor,
                 ui::Layer* mirroring_layer);
@@ -52,15 +44,6 @@ class CONTENT_EXPORT ReflectorImpl
   void OnMirroringCompositorResized() override;
   void AddMirroringLayer(ui::Layer* layer) override;
   void RemoveMirroringLayer(ui::Layer* layer) override;
-
-  // ui::CompositorObserver:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override {}
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override;
-  void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingAborted(ui::Compositor* compositor) override {}
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
 
   // Called in |BrowserCompositorOutputSurface::SwapBuffers| to copy
   // the full screen image to the |mailbox_| texture.
@@ -91,9 +74,7 @@ class CONTENT_EXPORT ReflectorImpl
 
   scoped_refptr<OwnedMailbox> mailbox_;
   bool flip_texture_;
-  int composition_count_;
   BrowserCompositorOutputSurface* output_surface_;
-  base::Closure composition_started_callback_;
 };
 
 }  // namespace content

@@ -56,10 +56,6 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   // Called when |reflector_| was updated.
   virtual void OnReflectorChanged();
 
-  // Returns a callback that will be called when all mirroring
-  // compositors have started composition.
-  virtual base::Closure CreateCompositionStartedCallback();
-
   // Called when a swap completion is sent from the GPU process.
   // The argument |params_mac| is used to communicate parameters needed on Mac
   // to display the CALayer for the swap in the browser process.

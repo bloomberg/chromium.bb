@@ -134,11 +134,6 @@ void BrowserCompositorOutputSurface::SetReflector(ReflectorImpl* reflector) {
 void BrowserCompositorOutputSurface::OnReflectorChanged() {
 }
 
-base::Closure
-BrowserCompositorOutputSurface::CreateCompositionStartedCallback() {
-  return base::Closure();
-}
-
 cc::OverlayCandidateValidator*
 BrowserCompositorOutputSurface::GetOverlayCandidateValidator() const {
   return overlay_candidate_validator_.get();

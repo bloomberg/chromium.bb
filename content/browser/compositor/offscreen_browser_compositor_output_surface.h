@@ -49,7 +49,6 @@ class OffscreenBrowserCompositorOutputSurface
 
   // BrowserCompositorOutputSurface
   void OnReflectorChanged() override;
-  base::Closure CreateCompositionStartedCallback() override;
   void OnGpuSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result,

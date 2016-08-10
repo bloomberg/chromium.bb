@@ -23,7 +23,6 @@ ReflectorImpl::ReflectorImpl(ui::Compositor* mirrored_compositor,
                              ui::Layer* mirroring_layer)
     : mirrored_compositor_(mirrored_compositor),
       flip_texture_(false),
-      composition_count_(0),
       output_surface_(nullptr) {
   if (mirroring_layer)
     AddMirroringLayer(mirroring_layer);
@@ -60,9 +59,6 @@ void ReflectorImpl::OnSourceSurfaceReady(
 
   output_surface_ = output_surface;
 
-  composition_started_callback_ =
-      output_surface_->CreateCompositionStartedCallback();
-
   flip_texture_ = !output_surface->capabilities().flipped_output_surface;
 
   output_surface_->SetReflector(this);
@@ -82,8 +78,6 @@ void ReflectorImpl::AddMirroringLayer(ui::Layer* layer) {
     layer_data->needs_set_mailbox = true;
   mirroring_layers_.push_back(layer_data);
   mirrored_compositor_->ScheduleFullRedraw();
-
-  layer->GetCompositor()->AddObserver(this);
 }
 
 void ReflectorImpl::RemoveMirroringLayer(ui::Layer* layer) {
@@ -94,21 +88,8 @@ void ReflectorImpl::RemoveMirroringLayer(ui::Layer* layer) {
   (*iter)->layer->SetShowSolidColorContent();
   mirroring_layers_.erase(iter);
 
-  layer->GetCompositor()->RemoveObserver(this);
-  composition_count_--;
-  if (composition_count_ == 0 && !composition_started_callback_.is_null())
-    composition_started_callback_.Run();
-
   if (mirroring_layers_.empty() && output_surface_)
     DetachFromOutputSurface();
-}
-
-void ReflectorImpl::OnCompositingStarted(ui::Compositor* compositor,
-                                         base::TimeTicks start_time) {
-  if (composition_count_ > 0 && --composition_count_ == 0 &&
-      !composition_started_callback_.is_null()) {
-    composition_started_callback_.Run();
-  }
 }
 
 void ReflectorImpl::OnSourceTextureMailboxUpdated(
@@ -127,11 +108,8 @@ void ReflectorImpl::OnSourceTextureMailboxUpdated(
 }
 
 void ReflectorImpl::OnSourceSwapBuffers() {
-  if (mirroring_layers_.empty()) {
-    if (!composition_started_callback_.is_null())
-      composition_started_callback_.Run();
+  if (mirroring_layers_.empty())
     return;
-  }
 
   // Should be attached to the source output surface already.
   DCHECK(mailbox_.get());
@@ -141,15 +119,11 @@ void ReflectorImpl::OnSourceSwapBuffers() {
   // Request full redraw on mirroring compositor.
   for (LayerData* layer_data : mirroring_layers_)
     UpdateTexture(layer_data, size, layer_data->layer->bounds());
-  composition_count_ = mirroring_layers_.size();
 }
 
 void ReflectorImpl::OnSourcePostSubBuffer(const gfx::Rect& rect) {
-  if (mirroring_layers_.empty()) {
-    if (!composition_started_callback_.is_null())
-      composition_started_callback_.Run();
+  if (mirroring_layers_.empty())
     return;
-  }
 
   // Should be attached to the source output surface already.
   DCHECK(mailbox_.get());
@@ -165,7 +139,6 @@ void ReflectorImpl::OnSourcePostSubBuffer(const gfx::Rect& rect) {
   // Request redraw of the dirty portion in mirroring compositor.
   for (LayerData* layer_data : mirroring_layers_)
     UpdateTexture(layer_data, size, mirroring_rect);
-  composition_count_ = mirroring_layers_.size();
 }
 
 static void ReleaseMailbox(scoped_refptr<OwnedMailbox> mailbox,

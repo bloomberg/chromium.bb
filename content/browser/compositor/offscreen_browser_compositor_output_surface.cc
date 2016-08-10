@@ -164,9 +164,4 @@ void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
     EnsureBackbuffer();
 }
 
-base::Closure
-OffscreenBrowserCompositorOutputSurface::CreateCompositionStartedCallback() {
-  return base::Closure();
-}
-
 }  // namespace content
