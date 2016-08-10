@@ -67,6 +67,10 @@ public:
                                        const WebVector<unsigned>& markerOffsets,
                                        WebTextCheckingCompletion* completionCallback) { }
 
+    // Clear all stored references to requests, so that it will not become a
+    // leak source.
+    virtual void cancelAllPendingRequests() { }
+
     // Show or hide the spelling UI.
     virtual void showSpellingUI(bool show) { }
 

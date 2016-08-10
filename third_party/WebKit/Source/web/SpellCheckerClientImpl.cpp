@@ -147,6 +147,13 @@ void SpellCheckerClientImpl::requestCheckingOfString(TextCheckingRequest* reques
     m_webView->spellCheckClient()->requestCheckingOfText(text, markers, markerOffsets, new WebTextCheckingCompletionImpl(request));
 }
 
+void SpellCheckerClientImpl::cancelAllPendingRequests()
+{
+    if (!m_webView->spellCheckClient())
+        return;
+    m_webView->spellCheckClient()->cancelAllPendingRequests();
+}
+
 void SpellCheckerClientImpl::checkGrammarOfString(const String& text, WTF::Vector<GrammarDetail>& details, int* badGrammarLocation, int* badGrammarLength)
 {
     if (badGrammarLocation)

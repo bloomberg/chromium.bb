@@ -175,6 +175,14 @@ void SpellCheckProvider::requestCheckingOfText(
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
 }
 
+void SpellCheckProvider::cancelAllPendingRequests() {
+  for (WebTextCheckCompletions::iterator iter(&text_check_completions_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    iter.GetCurrentValue()->didCancelCheckingText();
+  }
+  text_check_completions_.Clear();
+}
+
 void SpellCheckProvider::showSpellingUI(bool show) {
 #if defined(USE_BROWSER_SPELLCHECKER)
   UMA_HISTOGRAM_BOOLEAN("SpellCheck.api.showUI", show);

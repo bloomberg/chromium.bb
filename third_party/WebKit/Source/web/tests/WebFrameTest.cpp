@@ -5266,6 +5266,14 @@ public:
         m_completion = completion;
     }
 
+    void cancelAllPendingRequests() override
+    {
+        if (!m_completion)
+            return;
+        m_completion->didCancelCheckingText();
+        m_completion = nullptr;
+    }
+
     void kickNoResults()
     {
         kick(-1, -1, WebTextDecorationTypeSpelling);

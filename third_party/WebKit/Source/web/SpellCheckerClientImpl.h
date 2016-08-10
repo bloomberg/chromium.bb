@@ -54,6 +54,7 @@ public:
     void showSpellingUI(bool show) override;
     bool spellingUIIsShowing() override;
     void requestCheckingOfString(TextCheckingRequest*) override;
+    void cancelAllPendingRequests() override;
 
     TextCheckerClient& textChecker() override { return *this; }
 

@@ -166,6 +166,10 @@ void EmptyTextCheckerClient::requestCheckingOfString(TextCheckingRequest*)
 {
 }
 
+void EmptyTextCheckerClient::cancelAllPendingRequests()
+{
+}
+
 std::unique_ptr<WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider()
 {
     return nullptr;

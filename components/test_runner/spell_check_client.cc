@@ -96,6 +96,13 @@ void SpellCheckClient::requestCheckingOfText(
         0);
 }
 
+void SpellCheckClient::cancelAllPendingRequests() {
+  if (!last_requested_text_checking_completion_)
+    return;
+  last_requested_text_checking_completion_->didCancelCheckingText();
+  last_requested_text_checking_completion_ = nullptr;
+}
+
 void SpellCheckClient::FinishLastTextCheck() {
   if (!last_requested_text_checking_completion_)
     return;

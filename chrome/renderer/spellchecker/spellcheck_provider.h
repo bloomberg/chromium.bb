@@ -91,6 +91,7 @@ class SpellCheckProvider
       const blink::WebVector<unsigned>& marker_offsets,
       blink::WebTextCheckingCompletion* completion) override;
 
+  void cancelAllPendingRequests() override;
   void showSpellingUI(bool show) override;
   bool isShowingSpellingUI() override;
   void updateSpellingUIWithMisspelledWord(
