@@ -12,15 +12,14 @@
 
 WebUIURLFetcher::WebUIURLFetcher(content::BrowserContext* context,
                                  int render_process_id,
-                                 int render_view_id,
+                                 int render_frame_id,
                                  const GURL& url,
                                  const WebUILoadFileCallback& callback)
     : context_(context),
       render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
+      render_frame_id_(render_frame_id),
       url_(url),
-      callback_(callback) {
-}
+      callback_(callback) {}
 
 WebUIURLFetcher::~WebUIURLFetcher() {
 }
@@ -33,7 +32,7 @@ void WebUIURLFetcher::Start() {
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
 
   content::AssociateURLFetcherWithRenderFrame(
-      fetcher_.get(), url_, render_process_id_, render_view_id_);
+      fetcher_.get(), url_, render_process_id_, render_frame_id_);
   fetcher_->Start();
 }
 

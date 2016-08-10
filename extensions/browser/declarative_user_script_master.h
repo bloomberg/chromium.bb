@@ -37,11 +37,11 @@ class DeclarativeUserScriptMaster {
 
   // Adds a set of scripts to shared meomory region. The fetch of the content
   // of the script on WebUI requires to start URL request to the associated
-  // render specified by |render_process_id, render_view_id|.
+  // render specified by |render_process_id, render_frame_id|.
   // This may not happen right away if a script load is in progress.
   void AddScripts(const std::set<UserScript>& scripts,
                   int render_process_id,
-                  int render_view_id);
+                  int render_frame_id);
 
   // Removes script from shared memory region. This may not happen right away if
   // a script load is in progress.

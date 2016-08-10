@@ -40,8 +40,8 @@ void DeclarativeUserScriptMaster::AddScript(const UserScript& script) {
 void DeclarativeUserScriptMaster::AddScripts(
     const std::set<UserScript>& scripts,
     int render_process_id,
-    int render_view_id) {
-  loader_->AddScripts(scripts, render_process_id, render_view_id);
+    int render_frame_id) {
+  loader_->AddScripts(scripts, render_process_id, render_frame_id);
 }
 
 void DeclarativeUserScriptMaster::RemoveScript(const UserScript& script) {

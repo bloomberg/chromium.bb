@@ -440,7 +440,7 @@ bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
 
   url_fetcher_.reset(new WebUIURLFetcher(
       this->browser_context(), render_frame_host()->GetProcess()->GetID(),
-      render_view_host_do_not_use()->GetRoutingID(), file_url, callback));
+      render_frame_host()->GetRoutingID(), file_url, callback));
   url_fetcher_->Start();
   return true;
 }
@@ -515,8 +515,8 @@ WebViewInternalAddContentScriptsFunction::Run() {
   DCHECK(manager);
 
   manager->AddContentScripts(
-      sender_web_contents->GetRenderProcessHost()->GetID(),
-      render_view_host_do_not_use(), params->instance_id, host_id, result);
+      sender_web_contents->GetRenderProcessHost()->GetID(), render_frame_host(),
+      params->instance_id, host_id, result);
 
   return RespondNow(NoArguments());
 }

@@ -29,12 +29,13 @@ void SerializeOnFileThread(
 
 struct WebUIUserScriptLoader::UserScriptRenderInfo {
   int render_process_id;
-  int render_view_id;
+  int render_frame_id;
 
-  UserScriptRenderInfo() : render_process_id(-1), render_view_id(-1) {}
+  UserScriptRenderInfo() : render_process_id(-1), render_frame_id(-1) {}
 
-  UserScriptRenderInfo(int render_process_id, int render_view_id)
-      : render_process_id(render_process_id), render_view_id(render_view_id) {}
+  UserScriptRenderInfo(int render_process_id, int render_frame_id)
+      : render_process_id(render_process_id),
+        render_frame_id(render_frame_id) {}
 };
 
 WebUIUserScriptLoader::WebUIUserScriptLoader(
@@ -50,8 +51,8 @@ WebUIUserScriptLoader::~WebUIUserScriptLoader() {
 void WebUIUserScriptLoader::AddScripts(
     const std::set<extensions::UserScript>& scripts,
     int render_process_id,
-    int render_view_id) {
-  UserScriptRenderInfo info(render_process_id, render_view_id);
+    int render_frame_id) {
+  UserScriptRenderInfo info(render_process_id, render_frame_id);
   for (const extensions::UserScript& script : scripts) {
     script_render_info_map_.insert(
         std::pair<int, UserScriptRenderInfo>(script.id(), info));
@@ -81,16 +82,16 @@ void WebUIUserScriptLoader::LoadScripts(
     auto iter = script_render_info_map_.find(script.id());
     DCHECK(iter != script_render_info_map_.end());
     int render_process_id = iter->second.render_process_id;
-    int render_view_id = iter->second.render_view_id;
+    int render_frame_id = iter->second.render_frame_id;
 
     content::BrowserContext* browser_context =
         content::RenderProcessHost::FromID(render_process_id)
             ->GetBrowserContext();
 
     CreateWebUIURLFetchers(&script.js_scripts(), browser_context,
-                           render_process_id, render_view_id);
+                           render_process_id, render_frame_id);
     CreateWebUIURLFetchers(&script.css_scripts(), browser_context,
-                           render_process_id, render_view_id);
+                           render_process_id, render_frame_id);
 
     script_render_info_map_.erase(script.id());
   }
@@ -108,14 +109,14 @@ void WebUIUserScriptLoader::CreateWebUIURLFetchers(
     extensions::UserScript::FileList* script_files,
     content::BrowserContext* browser_context,
     int render_process_id,
-    int render_view_id) {
+    int render_frame_id) {
   for (extensions::UserScript::File& file : *script_files) {
     if (file.GetContent().empty()) {
       // The WebUIUserScriptLoader owns these WebUIURLFetchers. Once the
       // loader is destroyed, all the fetchers will be destroyed. Therefore,
       // we are sure it is safe to use base::Unretained(this) here.
       std::unique_ptr<WebUIURLFetcher> fetcher(new WebUIURLFetcher(
-          browser_context, render_process_id, render_view_id, file.url(),
+          browser_context, render_process_id, render_frame_id, file.url(),
           base::Bind(&WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete,
                      base::Unretained(this), &file)));
       fetchers_.push_back(std::move(fetcher));

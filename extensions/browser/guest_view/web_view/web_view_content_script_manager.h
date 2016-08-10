@@ -19,7 +19,7 @@ struct HostID;
 
 namespace content {
 class BrowserContext;
-class RenderViewHost;
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -41,7 +41,7 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data,
   // Adds content scripts for the WebView specified by
   // |embedder_process_id| and |view_instance_id|.
   void AddContentScripts(int embedder_process_id,
-                         content::RenderViewHost* render_view_host,
+                         content::RenderFrameHost* render_frame_host,
                          int view_instance_id,
                          const HostID& host_id,
                          const std::set<UserScript>& user_scripts);

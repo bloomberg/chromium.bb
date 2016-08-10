@@ -33,7 +33,7 @@ class WebUIURLFetcher : public net::URLFetcherDelegate {
 
   WebUIURLFetcher(content::BrowserContext* context,
                   int render_process_id,
-                  int render_view_id,
+                  int render_frame_id,
                   const GURL& url,
                   const WebUILoadFileCallback& callback);
   ~WebUIURLFetcher() override;
@@ -46,7 +46,7 @@ class WebUIURLFetcher : public net::URLFetcherDelegate {
 
   content::BrowserContext* context_;
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
   GURL url_;
   WebUILoadFileCallback callback_;
   std::unique_ptr<net::URLFetcher> fetcher_;

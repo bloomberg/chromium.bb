@@ -12,10 +12,9 @@ namespace content {
 
 namespace {
 
-base::SupportsUserData::Data* CreateURLRequestUserData(
-    int render_process_id,
-    int render_view_id) {
-  return new URLRequestUserData(render_process_id, render_view_id);
+base::SupportsUserData::Data* CreateURLRequestUserData(int render_process_id,
+                                                       int render_frame_id) {
+  return new URLRequestUserData(render_process_id, render_frame_id);
 }
 
 }  // namespace

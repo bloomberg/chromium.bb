@@ -63,12 +63,12 @@ class UserScriptLoader : public content::NotificationObserver {
   // Add |scripts| to the set of scripts managed by this loader.
   // The fetch of the content of the script starts URL request
   // to the associated render specified by
-  // |render_process_id, render_view_id|.
+  // |render_process_id, render_frame_id|.
   // TODO(hanxi): The renderer information doesn't really belong in this base
   // class, but it's not an easy fix.
   virtual void AddScripts(const std::set<UserScript>& scripts,
                           int render_process_id,
-                          int render_view_id);
+                          int render_frame_id);
 
   // Remove |scripts| from the set of scripts managed by this loader.
   void RemoveScripts(const std::set<UserScript>& scripts);
