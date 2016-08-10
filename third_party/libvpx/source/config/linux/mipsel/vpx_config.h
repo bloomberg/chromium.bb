@@ -14,8 +14,6 @@
 #define ARCH_MIPS 1
 #define ARCH_X86 0
 #define ARCH_X86_64 0
-#define HAVE_EDSP 0
-#define HAVE_MEDIA 0
 #define HAVE_NEON 0
 #define HAVE_NEON_ASM 0
 #define HAVE_MIPS32 1
