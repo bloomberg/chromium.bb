@@ -490,6 +490,73 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
                                      1);
 }
 
+// Tests that the network quality estimator writes and reads network quality
+// from the cache store correctly.
+TEST(NetworkQualityEstimatorTest, Caching) {
+  base::HistogramTester histogram_tester;
+  std::map<std::string, std::string> variation_params;
+  TestNetworkQualityEstimator estimator(variation_params);
+
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test");
+  histogram_tester.ExpectUniqueSample("NQE.CachedNetworkQualityAvailable",
+                                      false, 1);
+
+  base::TimeDelta rtt;
+  int32_t kbps;
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
+
+  TestDelegate test_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_quality_estimator(&estimator);
+  context.Init();
+
+  // Start two requests so that the network quality is added to cache store at
+  // the beginning of the second request from the network traffic observed from
+  // the first request.
+  for (size_t i = 0; i < 2; ++i) {
+    std::unique_ptr<URLRequest> request(context.CreateRequest(
+        estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+    request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
+    request->Start();
+    base::RunLoop().Run();
+  }
+
+  base::RunLoop().RunUntilIdle();
+
+  // Both RTT and downstream throughput should be updated.
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
+  EXPECT_NE(EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            estimator.GetEffectiveConnectionType());
+  EXPECT_FALSE(estimator.GetTransportRTTEstimate(&rtt));
+
+  histogram_tester.ExpectBucketCount("NQE.CachedNetworkQualityAvailable", false,
+                                     1);
+
+  // Add the observers before changing the network type.
+  TestEffectiveConnectionTypeObserver observer;
+  estimator.AddEffectiveConnectionTypeObserver(&observer);
+  TestRTTObserver rtt_observer;
+  estimator.AddRTTObserver(&rtt_observer);
+  TestThroughputObserver throughput_observer;
+  estimator.AddThroughputObserver(&throughput_observer);
+
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test");
+  histogram_tester.ExpectBucketCount("NQE.CachedNetworkQualityAvailable", true,
+                                     1);
+  histogram_tester.ExpectTotalCount("NQE.CachedNetworkQualityAvailable", 2);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the cached network quality was read, and observers were
+  // notified.
+  EXPECT_EQ(1U, observer.effective_connection_types().size());
+  EXPECT_EQ(1U, rtt_observer.observations().size());
+  EXPECT_EQ(1U, throughput_observer.observations().size());
+}
+
 TEST(NetworkQualityEstimatorTest, StoreObservations) {
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params);

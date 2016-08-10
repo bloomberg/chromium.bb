@@ -962,10 +962,11 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   RecordMetricsOnConnectionTypeChanged();
 
   // Write the estimates of the previous network to the cache.
-  network_quality_store_.Add(current_network_id_,
-                             nqe::internal::CachedNetworkQuality(
-                                 last_effective_connection_type_computation_,
-                                 estimated_quality_at_last_main_frame_));
+  network_quality_store_.Add(
+      current_network_id_,
+      nqe::internal::CachedNetworkQuality(
+          last_effective_connection_type_computation_,
+          estimated_quality_at_last_main_frame_, effective_connection_type_));
 
   // Clear the local state.
   last_connection_change_ = tick_clock_->NowTicks();
@@ -983,6 +984,10 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
 #endif  // OS_ANDROID
   min_signal_strength_since_connection_change_ = INT32_MAX;
   max_signal_strength_since_connection_change_ = INT32_MIN;
+  estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality();
+  effective_connection_type_ = EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  effective_connection_type_at_last_main_frame_ =
+      EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   // Update the local state as part of preparation for the new connection.
   current_network_id_ = GetCurrentNetworkID();
@@ -1462,6 +1467,16 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
 
   const base::TimeTicks now = tick_clock_->NowTicks();
 
+  if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    // Read the effective connection type from the cached estimate.
+    last_effective_connection_type_computation_ = now;
+    effective_connection_type_ =
+        cached_network_quality.effective_connection_type();
+
+    if (effective_connection_type_ != EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
+      NotifyObserversOfEffectiveConnectionTypeChanged();
+  }
+
   if (cached_network_quality.network_quality().downstream_throughput_kbps() !=
       nqe::internal::kInvalidThroughput) {
     ThroughputObservation througphput_observation(
@@ -1647,10 +1662,14 @@ void NetworkQualityEstimator::MaybeRecomputeEffectiveConnectionType() {
   // last computed or a connection change event was observed since the last
   // computation. Strict inequalities are used to ensure that effective
   // connection type is recomputed on connection change events even if the clock
-  // has not updated.
+  // has not updated.  Recompute the effective connection type if the effective
+  // connection type was previously unavailable. This is because the RTT
+  // observations are voluminous, so it may now be possible to compute the
+  // effective connection type.
   if (now - last_effective_connection_type_computation_ <
           effective_connection_type_recomputation_interval_ &&
-      last_connection_change_ < last_effective_connection_type_computation_) {
+      last_connection_change_ < last_effective_connection_type_computation_ &&
+      effective_connection_type_ != EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     return;
   }
 
@@ -1670,6 +1689,15 @@ void NetworkQualityEstimator::
   FOR_EACH_OBSERVER(
       EffectiveConnectionTypeObserver, effective_connection_type_observer_list_,
       OnEffectiveConnectionTypeChanged(effective_connection_type_));
+
+  // Add the estimates of the current network to the cache store.
+  if (effective_connection_type_ != EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    network_quality_store_.Add(
+        current_network_id_,
+        nqe::internal::CachedNetworkQuality(
+            tick_clock_->NowTicks(), estimated_quality_at_last_main_frame_,
+            effective_connection_type_));
+  }
 }
 
 }  // namespace net
