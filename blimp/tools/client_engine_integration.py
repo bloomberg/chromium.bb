@@ -294,6 +294,10 @@ def main():
     blacklist_file = args.blacklist_file
     serial = args.device
   else:
+    if not _IsNonEmptyFile(json_file_path):
+      logging.error('Cannot find json file: %s' + json_file_path)
+      logging.error('Run `client_engine_integration.py {run,start}` first.')
+      sys.exit(1)
     with open(json_file_path, 'r') as f:
       file_lines = f.readlines()
     jsonarg = json.loads(file_lines[0], object_hook=_FromJson)
