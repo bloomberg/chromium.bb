@@ -8,6 +8,7 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
+import os
 import re
 import sys
 
@@ -319,4 +320,56 @@ def CheckChangeOnCommit(input_api, output_api):
         json_url='http://chromium-status.appspot.com/current?format=json'))
     results.extend(input_api.canned_checks.CheckChangeHasDescription(
         input_api, output_api))
+    return results
+
+
+def _ArePaintOrCompositingDirectoriesModified(change):  # pylint: disable=C0103
+    """Checks whether CL has changes to paint or compositing directories."""
+    paint_or_compositing_paths = [
+        os.path.join('third_party', 'WebKit', 'Source', 'platform', 'graphics',
+                     'compositing'),
+        os.path.join('third_party', 'WebKit', 'Source', 'platform', 'graphics',
+                     'paint'),
+        os.path.join('third_party', 'WebKit', 'Source', 'core', 'layout',
+                     'compositing'),
+        os.path.join('third_party', 'WebKit', 'Source', 'core', 'paint'),
+    ]
+    for affected_file in change.AffectedFiles():
+        file_path = affected_file.LocalPath()
+        if any(x in file_path for x in paint_or_compositing_paths):
+            return True
+    return False
+
+
+def PostUploadHook(cl, change, output_api):  # pylint: disable=C0103
+    """git cl upload will call this hook after the issue is created/modified.
+
+    This hook adds extra try bots to the CL description in order to run slimming
+    paint v2 tests in addition to the CQ try bots if the change contains paint
+    or compositing changes (see: _ArePaintOrCompositingDirectoriesModified). For
+    more information about slimming-paint-v2 tests see https://crbug.com/601275.
+    """
+    if not _ArePaintOrCompositingDirectoriesModified(change):
+        return []
+
+    rietveld_obj = cl.RpcServer()
+    issue = cl.issue
+    description = rietveld_obj.get_description(issue)
+    if re.search(r'^CQ_INCLUDE_TRYBOTS=.*', description, re.M | re.I):
+        return []
+
+    bots = [
+        'master.tryserver.chromium.linux:linux_layout_tests_slimming_paint_v2',
+    ]
+
+    results = []
+    new_description = description
+    new_description += '\nCQ_INCLUDE_TRYBOTS=%s' % ';'.join(bots)
+    results.append(output_api.PresubmitNotifyResult(
+        'Automatically added slimming-paint-v2 tests to run on CQ due to '
+        'changes in paint or compositing directories.'))
+
+    if new_description != description:
+        rietveld_obj.update_description(issue, new_description)
+
     return results
