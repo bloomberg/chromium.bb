@@ -1009,13 +1009,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     /**
      * Test close Incognito tab by swiping in Overview Portrait mode.
      */
-    /*
-        @MediumTest
-        @Feature({"Android-TabSwitcher"})
-        Bug http://crbug.com/636344
-    */
+    @MediumTest
+    @Feature({"Android-TabSwitcher"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @DisabledTest
     public void testCloseIncognitoTabPortrait() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         newIncognitoTabsFromMenu(2);
@@ -1028,13 +1024,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     /**
      * Test close 5 Incognito tabs by swiping in Overview Portrait mode.
      */
-    /*
-        @Feature({"Android-TabSwitcher"})
-        @MediumTest
-        Bug http://crbug.com/636344
-    */
+    @Feature({"Android-TabSwitcher"})
+    @MediumTest
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @DisabledTest
     public void testCloseFiveIncognitoTabPortrait() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         newIncognitoTabsFromMenu(5);
