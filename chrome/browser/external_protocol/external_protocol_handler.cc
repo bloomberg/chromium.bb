@@ -165,9 +165,6 @@ void ExternalProtocolHandler::PrepopulateDictionary(
     "mailto",
     "news",
     "snews",
-#if defined(OS_WIN)
-    "ms-windows-store",
-#endif
   };
 
   bool should_block;
