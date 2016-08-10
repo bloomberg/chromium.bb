@@ -312,7 +312,6 @@ extern const char kWebApkServerUrl[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-extern const char kEnableIntentPicker[];
 extern const char kEnableNativeCups[];
 #endif // defined(OS_CHROMEOS)
 

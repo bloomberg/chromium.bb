@@ -1106,9 +1106,6 @@ const char kWebApkServerUrl[] = "webapk-server-url";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-// Enables the intent picker so the user can handle URL links with ARC apps.
-const char kEnableIntentPicker[] = "enable-intent-picker";
-
 // Enables native cups integration
 const char kEnableNativeCups[] = "enable-native-cups";
 #endif // defined(OS_CHROMEOS)

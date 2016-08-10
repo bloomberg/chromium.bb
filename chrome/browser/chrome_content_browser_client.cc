@@ -189,6 +189,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
@@ -737,13 +738,6 @@ bool GetDataSaverEnabledPref(const PrefService* prefs) {
          base::FieldTrialList::FindFullName("SaveDataHeader")
              .compare("Disabled");
 }
-
-#if defined(OS_CHROMEOS)
-bool IsIntentPickerEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableIntentPicker);
-}
-#endif
 
 }  // namespace
 
@@ -2965,7 +2959,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
     // TODO(djacobo): Support incognito mode by showing an aditional dialog as a
     // warning that the selected app is not in incognito mode.
-    if (IsIntentPickerEnabled() &&
+    const arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
+    if (auth_service && auth_service->IsArcEnabled() &&
         !handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()) {
       prerender::PrerenderContents* prerender_contents =
           prerender::PrerenderContents::FromWebContents(
