@@ -30,7 +30,8 @@ static_library("sdch") {
     "open-vcdiff/src/decodetable.cc",
     "open-vcdiff/src/decodetable.h",
     "open-vcdiff/src/encodetable.cc",
-    "open-vcdiff/src/encodetable.h",
+    "open-vcdiff/src/google/encodetable.h",
+    "open-vcdiff/src/google/jsonwriter.h",
     "open-vcdiff/src/google/output_string.h",
     "open-vcdiff/src/google/vcdecoder.h",
     "open-vcdiff/src/google/vcencoder.h",
@@ -39,7 +40,6 @@ static_library("sdch") {
     "open-vcdiff/src/instruction_map.cc",
     "open-vcdiff/src/instruction_map.h",
     "open-vcdiff/src/jsonwriter.cc",
-    "open-vcdiff/src/jsonwriter.h",
     "open-vcdiff/src/rolling_hash.h",
     "open-vcdiff/src/testing.h",
     "open-vcdiff/src/varint_bigendian.cc",
@@ -49,8 +49,6 @@ static_library("sdch") {
     "open-vcdiff/src/vcdiffengine.cc",
     "open-vcdiff/src/vcdiffengine.h",
     "open-vcdiff/src/vcencoder.cc",
-    "open-vcdiff/vsprojects/config.h",
-    "open-vcdiff/vsprojects/stdint.h",
   ]
 
   configs += [ ":sdch_warnings" ]
