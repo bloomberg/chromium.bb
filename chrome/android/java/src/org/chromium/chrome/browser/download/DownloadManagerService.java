@@ -1143,6 +1143,15 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     /**
+     * Removes a download from the list.
+     * @param downloadGuid GUID of the download.
+     * @param isOffTheRecord Whether the download is off the record.
+     */
+    public void removeDownload(String downloadGuid, boolean isOffTheRecord) {
+        nativeRemoveDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
+    }
+
+    /**
      * Helper method to create and retrieve the native DownloadManagerService when needed.
      * @return pointer to native DownloadManagerService.
      */
@@ -1501,7 +1510,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
         DownloadItem item = createDownloadItem(
                 guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes);
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
-            adapter.updateDownloadItem(item);
+            adapter.onDownloadItemUpdated(item);
+        }
+    }
+
+    @CalledByNative
+    private void onDownloadItemRemoved(String guid) {
+        for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
+            adapter.onDownloadItemRemoved(guid);
         }
     }
 
@@ -1591,6 +1607,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
             long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord,
             boolean isNotificationDismissed);
     private native void nativePauseDownload(long nativeDownloadManagerService, String downloadGuid,
+            boolean isOffTheRecord);
+    private native void nativeRemoveDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord);
     private native void nativeGetAllDownloads(long nativeDownloadManagerService);
     private native void nativeGetDownloadInfoFor(

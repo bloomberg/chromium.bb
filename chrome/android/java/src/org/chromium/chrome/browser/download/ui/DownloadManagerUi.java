@@ -5,10 +5,7 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,18 +20,14 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
-import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -197,8 +190,10 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         if (item.getItemId() == R.id.close_menu_id && !DeviceFormFactor.isTablet(mActivity)) {
             mActivity.finish();
             return true;
-        }
-        if (item.getItemId() == R.id.selection_mode_share_menu_id) {
+        } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
+            deleteSelectedItems();
+            return true;
+        } else if (item.getItemId() == R.id.selection_mode_share_menu_id) {
             shareSelectedItems();
             return true;
         }
@@ -219,38 +214,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
      */
     Activity getActivity() {
         return mActivity;
-    }
-
-    /** Called when a particular download item has been clicked. */
-    void onDownloadItemClicked(DownloadItem item) {
-        boolean success = false;
-
-        String mimeType = item.getDownloadInfo().getMimeType();
-        String filePath = item.getDownloadInfo().getFilePath();
-        Uri fileUri = Uri.fromFile(new File(filePath));
-
-        // Check if any apps can open the file.
-        Intent fileIntent = new Intent();
-        fileIntent.setAction(Intent.ACTION_VIEW);
-        fileIntent.setDataAndType(fileUri, mimeType);
-        fileIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        List<ResolveInfo> handlers = ContextUtils.getApplicationContext().getPackageManager()
-                .queryIntentActivities(fileIntent, PackageManager.MATCH_DEFAULT_ONLY);
-        if (handlers.size() > 0) {
-            Intent chooserIntent = Intent.createChooser(fileIntent, null);
-            chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            try {
-                mActivity.startActivity(chooserIntent);
-                success = true;
-            } catch (ActivityNotFoundException e) {
-                // Can't launch the Intent.
-            }
-        }
-
-        if (!success) {
-            Toast.makeText(mActivity, mActivity.getString(R.string.download_cant_open_file),
-                    Toast.LENGTH_SHORT).show();
-        }
     }
 
     /** Called when the filter has been changed by the user. */
@@ -337,5 +300,12 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mActivity.startActivity(Intent.createChooser(shareIntent,
                 mActivity.getString(R.string.share_link_chooser_title)));
+    }
+
+    private void deleteSelectedItems() {
+        for (DownloadHistoryItemWrapper wrappedItem : mSelectionDelegate.getSelectedItems()) {
+            wrappedItem.delete();
+        }
+        mSelectionDelegate.clearSelection();
     }
 }

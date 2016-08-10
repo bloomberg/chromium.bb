@@ -102,6 +102,18 @@ void DownloadManagerService::PauseDownload(
     EnqueueDownloadAction(download_guid, PAUSE);
 }
 
+void DownloadManagerService::RemoveDownload(
+    JNIEnv* env,
+    jobject obj,
+    const JavaParamRef<jstring>& jdownload_guid,
+    bool is_off_the_record) {
+  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  if (is_history_query_complete_ || is_off_the_record)
+    RemoveDownloadInternal(download_guid, is_off_the_record);
+  else
+    EnqueueDownloadAction(download_guid, REMOVE);
+}
+
 void DownloadManagerService::GetAllDownloads(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
   if (is_history_query_complete_)
@@ -227,6 +239,20 @@ void DownloadManagerService::OnHistoryQueryComplete() {
     }
   }
   pending_actions_.clear();
+
+  // Monitor all DownloadItems for changes.
+  content::DownloadManager* manager = GetDownloadManager(false);
+  if (manager)
+    original_notifier_.reset(new AllDownloadItemNotifier(manager, this));
+}
+
+void DownloadManagerService::OnDownloadRemoved(
+    content::DownloadManager* manager, content::DownloadItem* item) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_DownloadManagerService_onDownloadItemRemoved(
+      env,
+      java_ref_.obj(),
+      ConvertUTF8ToJavaString(env, item->GetGuid()).obj());
 }
 
 void DownloadManagerService::ResumeDownloadInternal(
@@ -275,6 +301,16 @@ void DownloadManagerService::PauseDownloadInternal(
   }
 }
 
+void DownloadManagerService::RemoveDownloadInternal(
+    const std::string& download_guid, bool is_off_the_record) {
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+  if (!manager)
+    return;
+  content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  if (item)
+    item->Remove();
+}
+
 void DownloadManagerService::EnqueueDownloadAction(
     const std::string& download_guid,
     DownloadAction action) {
@@ -293,6 +329,9 @@ void DownloadManagerService::EnqueueDownloadAction(
         iter->second = action;
       break;
     case CANCEL:
+      iter->second = action;
+      break;
+    case REMOVE:
       iter->second = action;
       break;
     case INITIALIZE_UI:

@@ -4,18 +4,32 @@
 
 package org.chromium.chrome.browser.download.ui;
 
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.text.TextUtils;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
+import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
+import org.chromium.ui.widget.Toast;
 
 import java.io.File;
+import java.util.List;
 import java.util.Locale;
 
 /** Wraps different classes that contain information about downloads. */
 abstract class DownloadHistoryItemWrapper implements TimedItem {
+    private static final String TAG = "download_ui";
+
     /** @return Item that is being wrapped. */
     abstract Object getItem();
 
@@ -43,8 +57,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
     /** @return The mime type or null if the item doesn't have one. */
     abstract String getMimeType();
 
-    /** Called when the item has been clicked on. */
-    abstract void onClicked(DownloadManagerUi manager);
+    /** Called when the user wants to open the file. */
+    abstract void open();
+
+    /** Called when the user wants to delete the file. */
+    abstract void delete();
 
     /** Wraps a {@link DownloadItem}. */
     static class DownloadItemWrapper extends DownloadHistoryItemWrapper {
@@ -110,8 +127,55 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public void onClicked(DownloadManagerUi manager) {
-            manager.onDownloadItemClicked(mItem);
+        public void open() {
+            Context context = ContextUtils.getApplicationContext();
+            boolean success = false;
+
+            String mimeType = mItem.getDownloadInfo().getMimeType();
+            Uri fileUri = Uri.fromFile(new File(getFilePath()));
+
+            // Check if any apps can open the file.
+            Intent fileIntent = new Intent();
+            fileIntent.setAction(Intent.ACTION_VIEW);
+            fileIntent.setDataAndType(fileUri, mimeType);
+            fileIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            List<ResolveInfo> handlers = context.getPackageManager()
+                    .queryIntentActivities(fileIntent, PackageManager.MATCH_DEFAULT_ONLY);
+            if (handlers.size() > 0) {
+                Intent chooserIntent = Intent.createChooser(fileIntent, null);
+                chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                try {
+                    context.startActivity(chooserIntent);
+                    success = true;
+                } catch (ActivityNotFoundException e) {
+                    // Can't launch the Intent.
+                }
+            }
+
+            if (!success) {
+                Toast.makeText(context, context.getString(R.string.download_cant_open_file),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        public void delete() {
+            // Tell the DownloadManager to remove the file from history.
+            DownloadManagerService service = DownloadManagerService.getDownloadManagerService(
+                    ContextUtils.getApplicationContext());
+            service.removeDownload(getId(), false);
+
+            // Delete the file from storage.
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                public Void doInBackground(Void... params) {
+                    File file = new File(getFilePath());
+                    if (file.exists() && !file.delete()) {
+                        Log.e(TAG, "Failed to delete: " + getFilePath());
+                    }
+                    return null;
+                }
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         /** Identifies the type of file represented by the given MIME type string. */
@@ -194,8 +258,12 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
             return null;
         }
 
+        public void open() {
+            // TODO(dfalcantara): Figure out what to do here.
+        }
+
         @Override
-        public void onClicked(DownloadManagerUi manager) {
+        public void delete() {
             // TODO(dfalcantara): Figure out what to do here.
         }
     }

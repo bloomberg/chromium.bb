@@ -55,6 +55,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         }
     }
 
+    /** See {@link #findItemIndex}. */
+    private static final int INVALID_INDEX = -1;
+
     private final List<DownloadItemWrapper> mDownloadItems = new ArrayList<>();
     private final List<OfflinePageItemWrapper> mOfflinePageItems = new ArrayList<>();
     private final List<DownloadHistoryItemWrapper> mFilteredItems = new ArrayList<>();
@@ -130,7 +133,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                 UrlUtilities.formatUrlForSecurityDisplay(item.getUrl(), false));
         holder.mFilesizeView.setText(
                 Formatter.formatFileSize(context, item.getFileSize()));
-        holder.mItemView.initialize(mManager, item);
+        holder.mItemView.initialize(item);
 
         // Pick what icon to display for the item.
         int fileType = item.getFilterType();
@@ -160,20 +163,32 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     /**
      * Updates the list when new information about a download comes in.
      */
-    public void updateDownloadItem(DownloadItem item) {
-        boolean isFound = false;
-
-        // Search for an existing entry representing the DownloadItem.
-        for (int i = 0; i < mDownloadItems.size() && !isFound; i++) {
-            if (TextUtils.equals(mDownloadItems.get(i).getId(), item.getId())) {
-                mDownloadItems.set(i, new DownloadItemWrapper(item));
-                isFound = true;
-            }
+    public void onDownloadItemUpdated(DownloadItem item) {
+        int index = findItemIndex(mDownloadItems, item.getId());
+        if (index == INVALID_INDEX) {
+            // Add a new entry.
+            mDownloadItems.add(new DownloadItemWrapper(item));
+        } else {
+            // Update the old one.
+            mDownloadItems.set(index, new DownloadItemWrapper(item));
         }
 
-        // Add a new entry if one doesn't already exist.
-        if (!isFound) mDownloadItems.add(new DownloadItemWrapper(item));
         filter(mFilter);
+    }
+
+    /**
+     * Removes the DownloadItem with the given ID.
+     * @param guid ID of the DownloadItem that has been removed.
+     */
+    public void onDownloadItemRemoved(String guid) {
+        int index = findItemIndex(mDownloadItems, guid);
+        if (index != INVALID_INDEX) {
+            DownloadItemWrapper wrapper = mDownloadItems.remove(index);
+            if (mManager.getSelectionDelegate().isItemSelected(wrapper)) {
+                mManager.getSelectionDelegate().toggleSelectionForItem(wrapper);
+            }
+            filter(mFilter);
+        }
     }
 
     @Override
@@ -231,31 +246,43 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
             @Override
             public void onItemDeleted(String guid) {
-                for (int i = 0; i < mOfflinePageItems.size(); i++) {
-                    if (TextUtils.equals(mOfflinePageItems.get(i).getId(), guid)) {
-                        mOfflinePageItems.remove(mOfflinePageItems.get(i));
-                        updateFilter();
-                        return;
+                int index = findItemIndex(mOfflinePageItems, guid);
+                if (index != INVALID_INDEX) {
+                    DownloadHistoryItemWrapper wrapper = mOfflinePageItems.remove(index);
+                    if (mManager.getSelectionDelegate().isItemSelected(wrapper)) {
+                        mManager.getSelectionDelegate().toggleSelectionForItem(wrapper);
                     }
+                    updateFilter();
                 }
             }
 
             @Override
             public void onItemUpdated(OfflinePageDownloadItem item) {
-                for (int i = 0; i < mOfflinePageItems.size(); i++) {
-                    if (TextUtils.equals(mOfflinePageItems.get(i).getId(), item.getGuid())) {
-                        mOfflinePageItems.set(i, new OfflinePageItemWrapper(item));
-                        updateFilter();
-                        return;
-                    }
+                int index = findItemIndex(mOfflinePageItems, item.getGuid());
+                if (index != INVALID_INDEX) {
+                    mOfflinePageItems.set(index, new OfflinePageItemWrapper(item));
+                    updateFilter();
                 }
             }
 
+            /** Re-filter the items if needed. */
             private void updateFilter() {
-                // Re-filter the items if needed.
                 if (mFilter == DownloadFilter.FILTER_PAGE) filter(mFilter);
             }
         });
+    }
+
+    /**
+     * Search for an existing entry for the {@link DownloadHistoryItemWrapper} with the given ID.
+     * @param list List to search through.
+     * @param guid GUID of the entry.
+     * @return The index of the item, or INVALID_INDEX if it couldn't be found.
+     */
+    private <T extends DownloadHistoryItemWrapper> int findItemIndex(List<T> list, String guid) {
+        for (int i = 0; i < list.size(); i++) {
+            if (TextUtils.equals(list.get(i).getId(), guid)) return i;
+        }
+        return INVALID_INDEX;
     }
 
     private static DownloadManagerService getDownloadManagerService() {

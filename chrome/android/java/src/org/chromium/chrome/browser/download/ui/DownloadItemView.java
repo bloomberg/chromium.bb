@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemView;
  * The view for a downloaded item displayed in the Downloads list.
  */
 public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrapper> {
-    DownloadManagerUi mManager;
     DownloadHistoryItemWrapper mItem;
 
     /**
@@ -26,17 +25,15 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     /**
      * Initialize the DownloadItemView. Must be called before the item can respond to click events.
      *
-     * @param manager The DownloadManagerUi responsible for opening DownloadItems.
      * @param item The item represented by this DownloadItemView.
      */
-    public void initialize(DownloadManagerUi manager, DownloadHistoryItemWrapper item) {
-        mManager = manager;
+    public void initialize(DownloadHistoryItemWrapper item) {
         mItem = item;
         setItem(item);
     }
 
     @Override
     public void onClick() {
-        mItem.onClicked(mManager);
+        if (mItem != null) mItem.open();
     }
 }
