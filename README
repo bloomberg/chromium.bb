@@ -36,7 +36,7 @@ input and output systems, so that people who just want to write a new
 "Wayland window manager" (WM) or a small desktop environment (DE) can
 focus on the WM part.
 
-Libweston was first introduced in Weston 1.9, and is expected to
+Libweston was first introduced in Weston 1.12, and is expected to
 continue evolving through many Weston releases before it achieves a
 stable API and feature completeness.
 
@@ -45,23 +45,24 @@ API/ABI (in)stability and parallel installability
 -------------------------------------------------
 
 As libweston's API surface is huge, it is impossible to get it right
-in one go. Therefore developers reserve the right to break the API/ABI
-between every 1.x.0 Weston release (minor version bumps), just like
-Weston's plugin API does. For git snapshots of the master branch, the
-API/ABI can break any time without warning or version bump.
+in one go. Therefore developers reserve the right to break the API/ABI and bump
+the major version to signify that. For git snapshots of the master branch, the
+API/ABI can break any time without warning.
 
-Libweston API or ABI will not be broken between Weston's stable
-releases 1.x.0 and 1.x.y, where y < 90.
+Libweston major can be bumped only once during a development cycle. This should
+happen on the first patch that breaks the API or ABI. Further breaks before the
+next Weston major.0.0 release do not cause a bump. This means that libweston
+API and ABI are allowed to break also after an alpha release, up to the final
+release. However, breaks after alpha should be judged by the usual practices
+for allowing minor features, fixes only, or critical fixes only.
 
 To make things tolerable for libweston users despite API/ABI breakages,
-libweston is designed to be perfectly parallel-installable. An
-API/ABI-version is defined for libweston, and it is bumped for releases as
-needed. Different non-backward compatible ABI versions of libweston can be
-installed in parallel, so that external projects can easily depend on a
-particular ABI-version. Thus they do not have to fight over which ABI-version
-is installed in a user's system. This allows a user to install many
-different compositors each requiring a different libweston ABI-version
-without tricks or conflicts.
+different libweston major versions are designed to be perfectly
+parallel-installable. This way external projects can easily depend on a
+particular API/ABI-version. Thus they do not have to fight over which
+ABI-version is installed in a user's system. This allows a user to install many
+different compositors each requiring a different libweston ABI-version without
+tricks or conflicts.
 
 Note, that versions of Weston itself will not be parallel-installable,
 only libweston is.
@@ -81,6 +82,26 @@ The document provides the full details, with the gist summed below:
  - Major - backward incompatible changes.
  - Minor - new backward compatible features.
  - Patch - internal (implementation specific) fixes.
+
+Weston and libweston have separate version numbers in configure.ac. All
+releases are made by the Weston version number. Libweston version number
+matches the Weston version number in all releases except maybe pre-releases.
+Pre-releases have the Weston micro version 91 or greater.
+
+A pre-release is allowed to install a libweston version greater than the Weston
+version in case libweston major was bumped. In that case, the libweston version
+must be Weston major + 1 and with minor and patch versions zero.
+
+Pkg-config files are named after libweston major, but carry the Weston version
+number. This means that Weston pre-release 2.1.91 may install libweston-3.pc
+for the future libweston 3.0.0, but the .pc file says the version is still
+2.1.91. When a libweston user wants to depend on the fully stable API and ABI
+of a libweston major, he should use (e.g. for major 3):
+
+	PKG_CHECK_MODULES(LIBWESTON, [libweston-3 >= 3.0.0])
+
+Depending only on libweston-3 without a specific version number still allows
+pre-releases which might have different API or ABI.
 
 
 Forward compatibility
