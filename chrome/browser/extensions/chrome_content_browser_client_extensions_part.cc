@@ -193,7 +193,8 @@ void OnHttpHeaderReceived(const std::string& header,
   DCHECK(origin.SchemeIs(extensions::kExtensionScheme));
 
   if (IsIllegalOrigin(resource_context, child_id, origin)) {
-    callback.Run(false, bad_message::INVALID_ORIGIN);
+    // TODO(ananta): Find a way to specify the right error code here.
+    callback.Run(false, 0);
   } else {
     callback.Run(true, 0);
   }

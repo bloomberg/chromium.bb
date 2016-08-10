@@ -1348,8 +1348,9 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     bool continue_request,
     int error_code) {
   if (!continue_request) {
-    bad_message::ReceivedBadMessage(
-        filter_, static_cast<bad_message::BadMessageReason>(error_code));
+    // TODO(ananta): Find a way to specify the right error code here.  Passing
+    // in a non-content error code is not safe.
+    bad_message::ReceivedBadMessage(filter_, bad_message::RDH_ILLEGAL_ORIGIN);
     AbortRequestBeforeItStarts(filter_, sync_result, request_id);
     return;
   }
