@@ -79,6 +79,7 @@ namespace http://www.w3.org/1999/xhtml
     property hasAttributeNS
     property hasAttributes
     property hasChildNodes
+    property hasPointerCapture
     property hidden
     property id
     property innerHTML
@@ -1187,6 +1188,7 @@ namespace http://www.w3.org/2000/svg
     property hasAttributeNS
     property hasAttributes
     property hasChildNodes
+    property hasPointerCapture
     property hidden
     property id
     property innerHTML

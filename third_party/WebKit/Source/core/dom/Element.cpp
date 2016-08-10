@@ -2755,6 +2755,11 @@ void Element::releasePointerCapture(int pointerId, ExceptionState& exceptionStat
     }
 }
 
+bool Element::hasPointerCapture(int pointerId)
+{
+    return document().frame() && document().frame()->eventHandler().hasPointerCapture(pointerId, this);
+}
+
 String Element::innerText()
 {
     // We need to update layout, since plainText uses line boxes in the layout tree.

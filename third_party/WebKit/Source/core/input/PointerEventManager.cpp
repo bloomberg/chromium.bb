@@ -760,6 +760,11 @@ void PointerEventManager::releasePointerCapture(int pointerId, EventTarget* targ
         releasePointerCapture(pointerId);
 }
 
+bool PointerEventManager::hasPointerCapture(int pointerId, EventTarget* target)
+{
+    return m_pendingPointerCaptureTarget.get(pointerId) == target;
+}
+
 void PointerEventManager::releasePointerCapture(int pointerId)
 {
     m_pendingPointerCaptureTarget.remove(pointerId);

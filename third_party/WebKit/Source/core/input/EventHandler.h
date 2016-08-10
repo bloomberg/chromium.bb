@@ -186,6 +186,8 @@ public:
 
     void setPointerCapture(int, EventTarget*);
     void releasePointerCapture(int, EventTarget*);
+    bool hasPointerCapture(int, EventTarget*);
+
     void elementRemoved(EventTarget*);
 
     void setMouseDownMayStartAutoscroll() { m_mouseDownMayStartAutoscroll = true; }

@@ -452,6 +452,7 @@ public:
 
     void setPointerCapture(int pointerId, ExceptionState&);
     void releasePointerCapture(int pointerId, ExceptionState&);
+    bool hasPointerCapture(int pointerId);
 
     String textFromChildren();
 

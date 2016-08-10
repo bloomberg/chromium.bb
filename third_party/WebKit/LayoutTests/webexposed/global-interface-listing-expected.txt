@@ -1598,6 +1598,7 @@ interface Element : Node
     method hasAttribute
     method hasAttributeNS
     method hasAttributes
+    method hasPointerCapture
     method insertAdjacentElement
     method insertAdjacentHTML
     method insertAdjacentText

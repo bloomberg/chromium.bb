@@ -38,6 +38,11 @@ interface Element : Node {
     // PointerEvent (http://www.w3.org/TR/pointerevents/#extensions-to-the-element-interface)
     [RuntimeEnabled=PointerEvent, RaisesException] void setPointerCapture (long pointerId);
     [RuntimeEnabled=PointerEvent, RaisesException] void releasePointerCapture (long pointerId);
+    [RuntimeEnabled=PointerEvent] attribute EventHandler ongotpointercapture;
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onlostpointercapture;
+
+    // PointerEvent v2 (https://w3c.github.io/pointerevents/#extensions-to-the-element-interface)
+    [RuntimeEnabled=PointerEvent] boolean hasPointerCapture (long pointerId);
 
     boolean hasAttributes();
     [SameObject, PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap attributes;
@@ -130,11 +135,6 @@ interface Element : Node {
     attribute EventHandler onsearch;
     attribute EventHandler onselectstart;
     attribute EventHandler onwheel;
-
-    // Pointerevent attributes (http://www.w3.org/TR/pointerevents/#extensions-to-the-element-interface)
-    [RuntimeEnabled=PointerEvent] attribute EventHandler ongotpointercapture;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onlostpointercapture;
-
 };
 
 Element implements ParentNode;

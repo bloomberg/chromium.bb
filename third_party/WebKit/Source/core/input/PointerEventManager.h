@@ -63,8 +63,11 @@ public:
     void clear();
 
     void elementRemoved(EventTarget*);
+
     void setPointerCapture(int, EventTarget*);
     void releasePointerCapture(int, EventTarget*);
+    bool hasPointerCapture(int, EventTarget*);
+
     bool isActive(const int) const;
 
     // Returns whether there is any touch on the screen.
