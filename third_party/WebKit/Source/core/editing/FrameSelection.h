@@ -261,9 +261,6 @@ private:
     void setOriginalBase(const VisiblePositionInFlatTree&);
 
     template <typename Strategy>
-    void setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelectionTemplate<Strategy>&, TextGranularity, EndPointsAdjustmentMode);
-
-    template <typename Strategy>
     void setSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>&, SetSelectionOptions, CursorAlignOnScroll, TextGranularity);
 
     void respondToNodeModification(Node&, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved);

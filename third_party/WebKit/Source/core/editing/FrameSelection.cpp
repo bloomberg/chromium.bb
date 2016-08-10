@@ -243,19 +243,17 @@ void FrameSelection::setOriginalBase(const VisiblePositionInFlatTree& newBase)
     m_originalBase = createVisiblePosition(toPositionInDOMTree(newBase.deepEquivalent()));
 }
 
-template <typename Strategy>
-void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelectionTemplate<Strategy>& passedNewSelection, TextGranularity granularity,
-    EndPointsAdjustmentMode endpointsAdjustmentMode)
+void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
-    VisibleSelectionTemplate<Strategy> newSelection = passedNewSelection;
+    VisibleSelectionInFlatTree newSelection = passedNewSelection;
     bool isDirectional = shouldAlwaysUseDirectionalSelection(m_frame) || newSelection.isDirectional();
 
-    const PositionTemplate<Strategy> basePosition = this->originalBase<Strategy>().deepEquivalent();
-    const VisiblePositionTemplate<Strategy> originalBase = basePosition.isConnected() ? createVisiblePosition(basePosition) : VisiblePositionTemplate<Strategy>();
-    const VisiblePositionTemplate<Strategy> base = originalBase.isNotNull() ? originalBase : createVisiblePosition(newSelection.base());
-    VisiblePositionTemplate<Strategy> newBase = base;
-    const VisiblePositionTemplate<Strategy> extent = createVisiblePosition(newSelection.extent());
-    VisiblePositionTemplate<Strategy> newExtent = extent;
+    const PositionInFlatTree basePosition = m_originalBaseInFlatTree.deepEquivalent();
+    const VisiblePositionInFlatTree originalBase = basePosition.isConnected() ? createVisiblePosition(basePosition) : VisiblePositionInFlatTree();
+    const VisiblePositionInFlatTree base = originalBase.isNotNull() ? originalBase : createVisiblePosition(newSelection.base());
+    VisiblePositionInFlatTree newBase = base;
+    const VisiblePositionInFlatTree extent = createVisiblePosition(newSelection.extent());
+    VisiblePositionInFlatTree newExtent = extent;
     if (endpointsAdjustmentMode == AdjustEndpointsAtBidiBoundary)
         adjustEndpointsAtBidiBoundary(newBase, newExtent);
 
@@ -264,23 +262,18 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
         newSelection.setBase(newBase);
         newSelection.setExtent(newExtent);
     } else if (originalBase.isNotNull()) {
-        if (visibleSelection<Strategy>().base() == newSelection.base())
+        if (visibleSelection<EditingInFlatTreeStrategy>().base() == newSelection.base())
             newSelection.setBase(originalBase);
-        setOriginalBase(VisiblePositionTemplate<Strategy>());
+        setOriginalBase(VisiblePositionInFlatTree());
     }
 
     // Adjusting base and extent will make newSelection always directional
     newSelection.setIsDirectional(isDirectional);
-    if (visibleSelection<Strategy>() == newSelection)
+    if (visibleSelection<EditingInFlatTreeStrategy>() == newSelection)
         return;
 
     const SetSelectionOptions options = CloseTyping | ClearTypingStyle;
     setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded, granularity);
-}
-
-void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
-{
-    setNonDirectionalSelectionIfNeededAlgorithm<EditingInFlatTreeStrategy>(passedNewSelection, granularity, endpointsAdjustmentMode);
 }
 
 template <typename Strategy>
