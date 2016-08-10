@@ -28,3 +28,7 @@ class InstrumentationTestResult(base_test_result.BaseTestResult):
       self._class_name = full_name
       self._test_name = full_name
     self._start_date = start_date
+    self._tombstones = None
+
+  def SetTombstones(self, tombstones):
+    self._tombstones = tombstones

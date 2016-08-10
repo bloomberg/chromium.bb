@@ -144,3 +144,4 @@ pylib/utils/repo_utils.py
 pylib/utils/test_environment.py
 pylib/valgrind_tools.py
 test_runner.py
+tombstones.py

@@ -393,6 +393,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._coverage_directory = None
     self._initializeTestCoverageAttributes(args)
 
+    self._store_tombstones = False
+    self._initializeTombstonesAttributes(args)
+
   def _initializeApkAttributes(self, args, error_func):
     if args.apk_under_test:
       apk_under_test_path = args.apk_under_test
@@ -535,6 +538,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   def _initializeTestCoverageAttributes(self, args):
     self._coverage_directory = args.coverage_dir
 
+  def _initializeTombstonesAttributes(self, args):
+    self._store_tombstones = args.store_tombstones
+
   @property
   def additional_apks(self):
     return self._additional_apks
@@ -574,6 +580,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def screenshot_dir(self):
     return self._screenshot_dir
+
+  @property
+  def store_tombstones(self):
+    return self._store_tombstones
 
   @property
   def suite(self):
