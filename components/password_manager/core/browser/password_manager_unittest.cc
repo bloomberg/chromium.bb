@@ -1319,24 +1319,32 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   const bool kFalseTrue[] = {false, true};
-  for (bool foundMatchedLoginsInStore : kFalseTrue) {
-    SCOPED_TRACE(testing::Message("foundMatchedLoginsInStore = ")
-                 << foundMatchedLoginsInStore);
+  for (bool found_matched_logins_in_store : kFalseTrue) {
+    SCOPED_TRACE(testing::Message("found_matched_logins_in_store = ")
+                 << found_matched_logins_in_store);
     std::vector<PasswordForm> observed;
     PasswordForm form(MakeFormWithOnlyNewPasswordField());
     observed.push_back(form);
-    if (foundMatchedLoginsInStore) {
+    if (found_matched_logins_in_store) {
       EXPECT_CALL(*store_, GetLogins(_, _))
           .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
       EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
-      EXPECT_CALL(client_, NotifySuccessfulLoginWithExistingPassword(_))
-          .Times(1);
     } else {
       EXPECT_CALL(*store_, GetLogins(_, _))
           .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
     }
-    EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
-    EXPECT_CALL(client_, AutomaticPasswordSaveIndicator()).Times(1);
+    std::unique_ptr<PasswordFormManager> form_manager;
+    if (found_matched_logins_in_store) {
+      EXPECT_CALL(
+          client_,
+          PromptUserToSaveOrUpdatePasswordPtr(
+              _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
+          .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager)));
+    } else {
+      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
+    }
+    EXPECT_CALL(client_, AutomaticPasswordSaveIndicator())
+        .Times(found_matched_logins_in_store ? 0 : 1);
     manager()->OnPasswordFormsParsed(&driver_, observed);
     manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1346,11 +1354,20 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
     ::testing::Mock::VerifyAndClearExpectations(store_.get());
 
-    EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, form)).WillOnce(Return());
+    if (!found_matched_logins_in_store)
+      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, form));
     OnPasswordFormSubmitted(form);
     observed.clear();
     manager()->OnPasswordFormsParsed(&driver_, observed);
     manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+    ::testing::Mock::VerifyAndClearExpectations(store_.get());
+    if (found_matched_logins_in_store) {
+      // Credentials should be updated only when the user explicitly chooses.
+      ASSERT_TRUE(form_manager);
+      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, form));
+      form_manager->Update(form_manager->pending_credentials());
+    }
   }
 }
 

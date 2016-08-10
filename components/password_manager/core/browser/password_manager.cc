@@ -570,7 +570,9 @@ bool PasswordManager::ShouldPromptUserToSavePassword() const {
           provisional_save_manager_->retry_password_form_password_update() ||
           (provisional_save_manager_->password_overridden() &&
            client_->IsUpdatePasswordUIEnabled())) &&
-         !provisional_save_manager_->has_generated_password() &&
+         !(provisional_save_manager_->has_generated_password() &&
+           (provisional_save_manager_->IsNewLogin() ||
+            !client_->IsUpdatePasswordUIEnabled())) &&
          !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
 }
 
