@@ -835,6 +835,7 @@ template("ios_framework_bundle") {
                                "assert_no_deps",
                                "bundle_deps",
                                "data_deps",
+                               "enable_code_signing",
                                "info_plist",
                                "info_plist_target",
                                "output_name",
@@ -984,6 +985,7 @@ template("ios_framework_bundle") {
                                "assert_no_deps",
                                "bundle_deps",
                                "data_deps",
+                               "enable_code_signing",
                                "info_plist",
                                "info_plist_target",
                                "output_name",
@@ -1152,13 +1154,18 @@ template("ios_framework_bundle") {
         _entitlements_path = invoker.entitlements_path
       }
 
+      _ios_enable_code_signing = ios_enable_code_signing
+      if (defined(invoker.enable_code_signing)) {
+        _ios_enable_code_signing = invoker.enable_code_signing
+      }
+
       code_signing_script = _code_signing_script_path
       code_signing_sources = [
         _entitlements_path,
         "$_shared_library_dir/$_output_name",
       ]
       code_signing_outputs = [ "$bundle_root_dir/$_output_name" ]
-      if (ios_enable_code_signing) {
+      if (_ios_enable_code_signing) {
         code_signing_outputs +=
             [ "$bundle_root_dir/_CodeSignature/CodeResources" ]
       }
@@ -1173,7 +1180,7 @@ template("ios_framework_bundle") {
             rebase_path("$_shared_library_dir/$_output_name", root_build_dir),
         rebase_path(bundle_root_dir, root_build_dir),
       ]
-      if (!ios_enable_code_signing) {
+      if (!_ios_enable_code_signing) {
         code_signing_args += [ "--disable-code-signature" ]
       }
     }
