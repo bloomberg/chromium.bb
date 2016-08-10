@@ -122,7 +122,7 @@ gcc_toolchain("v8_snapshot") {
     } else {
       current_cpu = "x64"
     }
-    v8_toolchain_cpu = v8_target_cpu
+    v8_current_cpu = v8_target_cpu
     current_os = "linux"
     use_sysroot = false
   }
