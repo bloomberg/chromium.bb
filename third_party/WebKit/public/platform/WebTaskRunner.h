@@ -13,7 +13,13 @@
 #include "wtf/Functional.h"
 #endif
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
+
+using SingleThreadTaskRunner = base::SingleThreadTaskRunner;
 
 // The blink representation of a chromium SingleThreadTaskRunner.
 class BLINK_PLATFORM_EXPORT WebTaskRunner {
@@ -58,6 +64,9 @@ public:
     // whether or not the WebTaskRunner is associated with a virtual time domain or a
     // real time domain.
     virtual double monotonicallyIncreasingVirtualTimeSeconds() const = 0;
+
+    // Returns the underlying task runner object.
+    virtual SingleThreadTaskRunner* taskRunner() = 0;
 
 #ifdef INSIDE_BLINK
     // Helpers for posting bound functions as tasks.

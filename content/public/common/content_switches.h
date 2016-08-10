@@ -40,6 +40,7 @@ CONTENT_EXPORT extern const char kDisableAudioSupportForDesktopShare[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char
     kDisableBackgroundingOccludedWindowsForTesting[];
+CONTENT_EXPORT extern const char kDisableBackgroundTimerThrottling[];
 CONTENT_EXPORT extern const char kDisableBlinkFeatures[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
 CONTENT_EXPORT extern const char kDisableDistanceFieldText[];

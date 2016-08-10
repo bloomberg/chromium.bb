@@ -4,13 +4,12 @@
 
 #include "content/utility/utility_blink_platform_impl.h"
 
-#include "content/utility/webthread_impl_for_utility_thread.h"
+#include "third_party/WebKit/public/platform/scheduler/utility/webthread_impl_for_utility_thread.h"
 
 namespace content {
 
 UtilityBlinkPlatformImpl::UtilityBlinkPlatformImpl()
-    : main_thread_(new WebThreadImplForUtilityThread()) {
-}
+    : main_thread_(new blink::scheduler::WebThreadImplForUtilityThread()) {}
 
 UtilityBlinkPlatformImpl::~UtilityBlinkPlatformImpl() {
 }

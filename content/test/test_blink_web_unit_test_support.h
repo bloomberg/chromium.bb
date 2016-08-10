@@ -27,8 +27,10 @@ namespace blink {
 class WebLayerTreeView;
 }
 
+namespace blink {
 namespace scheduler {
 class RendererScheduler;
+}
 }
 
 namespace content {
@@ -84,7 +86,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   cc_blink::WebCompositorSupportImpl compositor_support_;
-  std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler_;
+  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
   std::unique_ptr<blink::WebThread> web_thread_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

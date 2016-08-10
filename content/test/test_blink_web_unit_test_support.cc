@@ -18,9 +18,6 @@
 #include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/scheduler/renderer/renderer_scheduler_impl.h"
-#include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
-#include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
@@ -31,9 +28,10 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -111,8 +109,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
     dummy_task_runner_handle.reset(
         new base::ThreadTaskRunnerHandle(dummy_task_runner));
   }
-  renderer_scheduler_ = base::WrapUnique(new scheduler::RendererSchedulerImpl(
-      scheduler::LazySchedulerMessageLoopDelegateForTests::Create()));
+  renderer_scheduler_ = blink::scheduler::CreateRendererSchedulerForTests();
   web_thread_ = renderer_scheduler_->CreateMainThread();
 
   // Set up a FeatureList instance, so that code using that API will not hit a
@@ -187,11 +184,9 @@ blink::WebMimeRegistry* TestBlinkWebUnitTestSupport::mimeRegistry() {
 }
 
 blink::WebURLLoader* TestBlinkWebUnitTestSupport::createURLLoader() {
-  blink::WebThread* currentThread = Platform::current()->currentThread();
   // This loader should be used only for process-local resources such as
   // data URLs.
-  blink::WebURLLoader* default_loader = new WebURLLoaderImpl(
-      nullptr, currentThread->getWebTaskRunner()->clone());
+  blink::WebURLLoader* default_loader = new WebURLLoaderImpl(nullptr);
   return url_loader_factory_->createURLLoader(default_loader);
 }
 

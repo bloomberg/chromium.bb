@@ -26,16 +26,15 @@
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
 namespace blink {
+namespace scheduler {
+class RendererScheduler;
+}
 class WebInputElement;
 class WebWidget;
 }
 
 namespace gfx {
 class Rect;
-}
-
-namespace scheduler {
-class RendererScheduler;
 }
 
 namespace content {
@@ -62,7 +61,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
     void Shutdown();
 
    private:
-    std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler_;
+    std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
     std::unique_ptr<RendererBlinkPlatformImplTestOverrideImpl>
         blink_platform_impl_;
   };

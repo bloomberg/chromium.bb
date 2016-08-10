@@ -21,10 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/scheduler/child/web_scheduler_impl.h"
-#include "components/scheduler/child/web_task_runner_impl.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
-#include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/child/blob_storage/webblobregistry_impl.h"
 #include "content/child/database_util.h"
@@ -103,6 +99,7 @@
 #include "third_party/WebKit/public/platform/mime_registry.mojom.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
@@ -252,7 +249,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
 //------------------------------------------------------------------------------
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
-    scheduler::RendererScheduler* renderer_scheduler,
+    blink::scheduler::RendererScheduler* renderer_scheduler,
     base::WeakPtr<shell::InterfaceProvider> remote_interfaces)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
       main_thread_(renderer_scheduler->CreateMainThread()),
@@ -313,8 +310,7 @@ blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return new content::WebURLLoaderImpl(
-      child_thread ? child_thread->resource_dispatcher() : NULL,
-      currentThread()->getWebTaskRunner()->clone());
+      child_thread ? child_thread->resource_dispatcher() : NULL);
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {

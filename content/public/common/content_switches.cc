@@ -108,6 +108,10 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 extern const char kDisableBackgroundingOccludedWindowsForTesting[] =
     "disable-backgrounding-occluded-windows";
 
+// Disable task throttling of timer tasks from background pages.
+const char kDisableBackgroundTimerThrottling[] =
+    "disable-background-timer-throttling";
+
 // Disable one or more Blink runtime-enabled features.
 // Use names from RuntimeEnabledFeatures.in, separated by commas.
 // Applied after kEnableBlinkFeatures, and after other flags that change these

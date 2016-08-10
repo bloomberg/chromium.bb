@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
 #include "cc/trees/swap_promise_monitor.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/web_input_event_traits.h"
@@ -26,6 +25,7 @@
 #include "content/renderer/render_widget.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point_conversions.h"
 

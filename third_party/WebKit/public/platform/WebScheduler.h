@@ -6,6 +6,7 @@
 #define WebScheduler_h
 
 #include "WebCommon.h"
+#include "WebString.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
@@ -19,8 +20,18 @@ class WebView;
 
 // This class is used to submit tasks and pass other information from Blink to
 // the platform's scheduler.
+// TODO(skyostil): Replace this class with RendererScheduler.
 class BLINK_PLATFORM_EXPORT WebScheduler {
 public:
+    class BLINK_PLATFORM_EXPORT InterventionReporter {
+    public:
+        virtual ~InterventionReporter() {}
+
+        // The scheduler has performed an intervention, described by |message|,
+        // which should be reported to the developer.
+        virtual void ReportIntervention(const WebString& message) = 0;
+    };
+
     virtual ~WebScheduler() { }
 
     // Called to prevent any more pending tasks from running. Must be called on
@@ -69,7 +80,7 @@ public:
 
     // Creates a new WebViewScheduler for a given WebView. Must be called from
     // the associated WebThread.
-    virtual std::unique_ptr<WebViewScheduler> createWebViewScheduler(blink::WebView*) = 0;
+    virtual std::unique_ptr<WebViewScheduler> createWebViewScheduler(InterventionReporter*) = 0;
 
     // Suspends the timer queue and increments the timer queue suspension count.
     // May only be called from the main thread.

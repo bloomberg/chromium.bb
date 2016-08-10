@@ -9,16 +9,10 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
-#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
-#include "components/scheduler/child/web_task_runner_impl.h"
-#include "components/scheduler/renderer/renderer_scheduler_impl.h"
-#include "components/scheduler/renderer/renderer_web_scheduler_impl.h"
-#include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 #include "media/base/media.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebScheduler.h"
-#include "third_party/WebKit/public/platform/WebTaskRunner.h"
-#include "third_party/WebKit/public/platform/WebThread.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
 #if defined(OS_ANDROID)
@@ -30,53 +24,27 @@
 #include "gin/v8_initializer.h"
 #endif
 
-class CurrentThreadMock : public blink::WebThread {
+class TestBlinkPlatformSupport : public blink::Platform {
  public:
-  CurrentThreadMock()
-      : task_runner_delegate_(
-            scheduler::LazySchedulerMessageLoopDelegateForTests::Create()),
-        scheduler_(
-            new scheduler::RendererSchedulerImpl(task_runner_delegate_.get())),
-        web_scheduler_(
-            new scheduler::RendererWebSchedulerImpl(scheduler_.get())),
-        web_task_runner_(
-            new scheduler::WebTaskRunnerImpl(scheduler_->DefaultTaskRunner())) {
-  }
-
-  ~CurrentThreadMock() override {
-    scheduler_->Shutdown();
-  }
-
-  blink::WebTaskRunner* getWebTaskRunner() override {
-    return web_task_runner_.get();
-  }
-
-  bool isCurrentThread() const override { return true; }
-
-  blink::PlatformThreadId threadId() const override { return 17; }
-
-  blink::WebScheduler* scheduler() const override {
-    return web_scheduler_.get();
-  }
-
- private:
-  scoped_refptr<scheduler::SchedulerTqmDelegate> task_runner_delegate_;
-  std::unique_ptr<scheduler::RendererSchedulerImpl> scheduler_;
-  std::unique_ptr<blink::WebScheduler> web_scheduler_;
-  std::unique_ptr<blink::WebTaskRunner> web_task_runner_;
-};
-
-class TestBlinkPlatformSupport : NON_EXPORTED_BASE(public blink::Platform) {
- public:
+  TestBlinkPlatformSupport()
+      : renderer_scheduler_(
+            blink::scheduler::CreateRendererSchedulerForTests()),
+        main_thread_(renderer_scheduler_->CreateMainThread()) {}
   ~TestBlinkPlatformSupport() override;
 
-  blink::WebThread* currentThread() override { return &m_currentThread; }
+  blink::WebThread* currentThread() override {
+    EXPECT_TRUE(main_thread_->isCurrentThread());
+    return main_thread_.get();
+  }
 
  private:
-  CurrentThreadMock m_currentThread;
+  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
+  std::unique_ptr<blink::WebThread> main_thread_;
 };
 
-TestBlinkPlatformSupport::~TestBlinkPlatformSupport() {}
+TestBlinkPlatformSupport::~TestBlinkPlatformSupport() {
+  renderer_scheduler_->Shutdown();
+}
 
 class BlinkMediaTestSuite : public base::TestSuite {
  public:

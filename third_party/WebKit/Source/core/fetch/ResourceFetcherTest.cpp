@@ -69,6 +69,7 @@ class MockTaskRunner : public blink::WebTaskRunner {
     std::unique_ptr<WebTaskRunner> clone() override { return nullptr; }
     double virtualTimeSeconds() const override { return 0.0; }
     double monotonicallyIncreasingVirtualTimeSeconds() const override { return 0.0; }
+    SingleThreadTaskRunner* taskRunner() override { return nullptr; }
 };
 
 }

@@ -42,7 +42,6 @@ source_set("browser") {
     "//components/link_header_util",
     "//components/memory_coordinator/browser",
     "//components/mime_util",
-    "//components/scheduler:common",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//components/url_formatter",

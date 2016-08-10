@@ -21,7 +21,6 @@
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
@@ -31,6 +30,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -152,8 +152,8 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::android::RecordLibraryLoaderRendererHistograms();
 #endif
 
-  std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler(
-      scheduler::RendererScheduler::Create());
+  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler(
+      blink::scheduler::RendererScheduler::Create());
 
   // PlatformInitialize uses FieldTrials, so this must happen later.
   platform.PlatformInitialize();

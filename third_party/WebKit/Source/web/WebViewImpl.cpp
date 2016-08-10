@@ -137,6 +137,7 @@
 #include "public/web/WebAXObject.h"
 #include "public/web/WebActiveWheelFlingParameters.h"
 #include "public/web/WebAutofillClient.h"
+#include "public/web/WebConsoleMessage.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
@@ -1051,6 +1052,14 @@ void WebViewImpl::acceptLanguagesChanged()
         return;
 
     page()->acceptLanguagesChanged();
+}
+
+void WebViewImpl::ReportIntervention(const WebString& message)
+{
+    if (!mainFrame())
+        return;
+    WebConsoleMessage consoleMessage(WebConsoleMessage::LevelWarning, message);
+    mainFrame()->addMessageToConsole(consoleMessage);
 }
 
 WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)

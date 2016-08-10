@@ -282,6 +282,12 @@ private:
             return 0.0;
         }
 
+        base::SingleThreadTaskRunner* taskRunner() override
+        {
+            NOTREACHED();
+            return nullptr;
+        }
+
         Task* m_task;
     };
 

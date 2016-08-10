@@ -15,7 +15,6 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_delegating_output_surface.h"
-#include "components/scheduler/test/renderer_scheduler_test_support.h"
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_view_test_proxy.h"
@@ -41,6 +40,7 @@
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -571,9 +571,9 @@ std::string DumpBackForwardList(std::vector<PageState>& page_state,
 }
 
 void SchedulerRunIdleTasks(const base::Closure& callback) {
-    scheduler::RendererScheduler* scheduler =
-        content::RenderThreadImpl::current()->GetRendererScheduler();
-    scheduler::RunIdleTasksForTesting(scheduler, callback);
+  blink::scheduler::RendererScheduler* scheduler =
+      content::RenderThreadImpl::current()->GetRendererScheduler();
+  blink::scheduler::RunIdleTasksForTesting(scheduler, callback);
 }
 
 }  // namespace content

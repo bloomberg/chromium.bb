@@ -198,7 +198,6 @@ test("components_unittests") {
       "//components/precache/content:unit_tests",
       "//components/safe_browsing_db:unit_tests",
       "//components/safe_json:unit_tests",
-      "//components/scheduler:unit_tests",
       "//components/subresource_filter/content/browser:unit_tests",
       "//components/subresource_filter/content/renderer:unit_tests",
       "//components/test_runner:test_runner",
@@ -475,10 +474,6 @@ if (!is_ios) {
 
   test("components_perftests") {
     sources = [
-      "scheduler/base/task_queue_manager_delegate_for_test.cc",
-      "scheduler/base/task_queue_manager_delegate_for_test.h",
-      "scheduler/base/task_queue_manager_perftest.cc",
-      "scheduler/base/test_task_time_tracker.h",
       "visitedlink/test/visitedlink_perftest.cc",
     ]
 
@@ -489,7 +484,6 @@ if (!is_ios) {
       "//base",
       "//base/test:test_support",
       "//base/test:test_support_perf",
-      "//components/scheduler",
       "//components/visitedlink/browser",
       "//content/test:test_support",
       "//testing/gtest",

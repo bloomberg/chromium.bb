@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/buffer_to_texture_target_map.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/resource_messages.h"
@@ -31,6 +30,7 @@
 #include "content/test/render_thread_impl_browser_test_ipc_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 
 // IPC messages for testing ----------------------------------------------------
 
@@ -105,7 +105,7 @@ class RenderThreadImplForTest : public RenderThreadImpl {
  public:
   RenderThreadImplForTest(
       const InProcessChildThreadParams& params,
-      std::unique_ptr<scheduler::RendererScheduler> scheduler,
+      std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
       scoped_refptr<base::SingleThreadTaskRunner>& test_task_counter)
       : RenderThreadImpl(params, std::move(scheduler), test_task_counter) {}
 
@@ -173,8 +173,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
         cc::BufferToTextureTargetMapToString(
             cc::DefaultBufferToTextureTargetMapForTesting()));
 
-    std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler =
-        scheduler::RendererScheduler::Create();
+    std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
+        blink::scheduler::RendererScheduler::Create();
     InitializeMojo();
     scoped_refptr<base::SingleThreadTaskRunner> test_task_counter(
         test_task_counter_.get());

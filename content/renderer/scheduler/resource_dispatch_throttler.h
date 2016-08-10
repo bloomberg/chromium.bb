@@ -16,8 +16,10 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
 
+namespace blink {
 namespace scheduler {
 class RendererScheduler;
+}
 }
 
 namespace content {
@@ -36,7 +38,7 @@ class CONTENT_EXPORT ResourceDispatchThrottler : public IPC::Sender {
   // |flush_period| and |max_requests_per_flush| must be strictly positive
   // in duration/value.
   ResourceDispatchThrottler(IPC::Sender* proxied_sender,
-                            scheduler::RendererScheduler* scheduler,
+                            blink::scheduler::RendererScheduler* scheduler,
                             base::TimeDelta flush_period,
                             uint32_t max_requests_per_flush);
   ~ResourceDispatchThrottler() override;
@@ -59,7 +61,7 @@ class CONTENT_EXPORT ResourceDispatchThrottler : public IPC::Sender {
   base::ThreadChecker thread_checker_;
 
   IPC::Sender* const proxied_sender_;
-  scheduler::RendererScheduler* const scheduler_;
+  blink::scheduler::RendererScheduler* const scheduler_;
   const base::TimeDelta flush_period_;
   const uint32_t max_requests_per_flush_;
 

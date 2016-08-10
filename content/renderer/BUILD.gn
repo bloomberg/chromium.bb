@@ -42,7 +42,6 @@ target(link_target_type, "renderer") {
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//components/memory_coordinator/child",
-    "//components/scheduler:scheduler",
     "//components/url_formatter",
     "//content:resources",
     "//content/child",

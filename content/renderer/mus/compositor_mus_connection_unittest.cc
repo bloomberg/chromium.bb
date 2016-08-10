@@ -20,10 +20,10 @@
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "content/renderer/render_widget.h"
 #include "content/test/fake_compositor_dependencies.h"
-#include "content/test/fake_renderer_scheduler.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/ui/public/cpp/tests/test_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/fake_renderer_scheduler.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/mojo/event.mojom.h"
 #include "ui/events/mojo/event_constants.mojom.h"
@@ -66,7 +66,7 @@ class TestInputHandlerManager : public content::InputHandlerManager {
   TestInputHandlerManager(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       content::InputHandlerManagerClient* client,
-      scheduler::RendererScheduler* renderer_scheduler)
+      blink::scheduler::RendererScheduler* renderer_scheduler)
       : InputHandlerManager(task_runner, client, nullptr, renderer_scheduler),
         override_result_(false),
         result_(content::InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN) {}
@@ -248,7 +248,7 @@ class CompositorMusConnectionTest : public testing::Test {
   // Mocks/Fakes of the testing environment.
   TestInputHandlerManagerClient input_handler_manager_client_;
   FakeCompositorDependencies compositor_dependencies_;
-  FakeRendererScheduler renderer_scheduler_;
+  blink::scheduler::FakeRendererScheduler renderer_scheduler_;
   MockRenderThread render_thread_;
   scoped_refptr<TestRenderWidget> render_widget_;
   mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request_;

@@ -22,7 +22,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
@@ -35,6 +34,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_MACOSX)
@@ -49,6 +49,9 @@ struct ViewMsg_UpdateScrollbarTheme_Params;
 struct WorkerProcessMsg_CreateWorker_Params;
 
 namespace blink {
+namespace scheduler {
+class WebThreadBase;
+}
 class WebGamepads;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
@@ -80,10 +83,6 @@ class GpuVideoAcceleratorFactories;
 
 namespace memory_coordinator {
 class ChildMemoryCoordinatorImpl;
-}
-
-namespace scheduler {
-class WebThreadBase;
 }
 
 namespace ui {
@@ -153,13 +152,13 @@ class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
       public gpu::GpuChannelHostFactory,
-      public scheduler::RendererScheduler::RAILModeObserver,
+      public blink::scheduler::RendererScheduler::RAILModeObserver,
       NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
   static RenderThreadImpl* Create(
       std::unique_ptr<base::MessageLoop> main_message_loop,
-      std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler);
+      std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler);
   static RenderThreadImpl* current();
 
   ~RenderThreadImpl() override;
@@ -219,7 +218,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  scheduler::RendererScheduler* GetRendererScheduler() override;
+  blink::scheduler::RendererScheduler* GetRendererScheduler() override;
   std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
@@ -227,7 +226,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool AreImageDecodeTasksEnabled() override;
   bool IsThreadedAnimationEnabled() override;
 
-  // scheduler::RendererScheduler::RAILModeObserver implementation.
+  // blink::scheduler::RendererScheduler::RAILModeObserver implementation.
   void OnRAILModeChanged(v8::RAILMode rail_mode) override;
 
   // Synchronously establish a channel to the GPU plugin if not previously
@@ -458,10 +457,11 @@ class CONTENT_EXPORT RenderThreadImpl
  protected:
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
-      std::unique_ptr<scheduler::RendererScheduler> scheduler,
+      std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
       scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
-  RenderThreadImpl(std::unique_ptr<base::MessageLoop> main_message_loop,
-                   std::unique_ptr<scheduler::RendererScheduler> scheduler);
+  RenderThreadImpl(
+      std::unique_ptr<base::MessageLoop> main_message_loop,
+      std::unique_ptr<blink::scheduler::RendererScheduler> scheduler);
 
  private:
   // IPC::Listener
@@ -530,7 +530,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<AppCacheDispatcher> appcache_dispatcher_;
   std::unique_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   std::unique_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
-  std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler_;
+  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatchThrottler> resource_dispatch_throttler_;
   std::unique_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
@@ -609,7 +609,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<base::Thread> file_thread_;
 
   // May be null if overridden by ContentRendererClient.
-  std::unique_ptr<scheduler::WebThreadBase> compositor_thread_;
+  std::unique_ptr<blink::scheduler::WebThreadBase> compositor_thread_;
 
   // Utility class to provide GPU functionalities to media.
   // TODO(dcastagna): This should be just one scoped_ptr once

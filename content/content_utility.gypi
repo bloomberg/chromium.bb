@@ -23,8 +23,6 @@
       'utility/utility_process_control_impl.h',
       'utility/utility_thread_impl.cc',
       'utility/utility_thread_impl.h',
-      'utility/webthread_impl_for_utility_thread.cc',
-      'utility/webthread_impl_for_utility_thread.h',
     ],
     'public_utility_sources': [
       'public/utility/content_utility_client.cc',

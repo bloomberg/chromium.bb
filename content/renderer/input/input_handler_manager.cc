@@ -12,16 +12,16 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/input/input_handler.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager_client.h"
 #include "content/renderer/input/input_handler_wrapper.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "ui/events/blink/input_handler_proxy.h"
 
 using blink::WebInputEvent;
 using ui::InputHandlerProxy;
-using scheduler::RendererScheduler;
+using blink::scheduler::RendererScheduler;
 
 namespace content {
 
@@ -49,7 +49,7 @@ InputHandlerManager::InputHandlerManager(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     InputHandlerManagerClient* client,
     SynchronousInputHandlerProxyClient* sync_handler_client,
-    scheduler::RendererScheduler* renderer_scheduler)
+    blink::scheduler::RendererScheduler* renderer_scheduler)
     : task_runner_(task_runner),
       client_(client),
       synchronous_handler_proxy_client_(sync_handler_client),

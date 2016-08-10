@@ -43,7 +43,6 @@ target(link_target_type, "child") {
   deps = [
     "//base",
     "//components/mime_util",
-    "//components/scheduler:scheduler",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//components/webcrypto",

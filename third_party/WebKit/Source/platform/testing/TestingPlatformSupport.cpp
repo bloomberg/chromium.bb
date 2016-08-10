@@ -107,6 +107,12 @@ public:
         return 0.0;
     }
 
+    base::SingleThreadTaskRunner* taskRunner() override
+    {
+        NOTREACHED();
+        return nullptr;
+    }
+
 private:
     Deque<std::unique_ptr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
 };

@@ -26,8 +26,10 @@ class WebInputEvent;
 class WebMouseWheelEvent;
 }
 
+namespace blink {
 namespace scheduler {
 class RendererScheduler;
+}
 }
 
 namespace content {
@@ -49,7 +51,7 @@ class CONTENT_EXPORT InputHandlerManager {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       InputHandlerManagerClient* client,
       SynchronousInputHandlerProxyClient* sync_handler_client,
-      scheduler::RendererScheduler* renderer_scheduler);
+      blink::scheduler::RendererScheduler* renderer_scheduler);
   virtual ~InputHandlerManager();
 
   // Callable from the main thread only.
@@ -120,7 +122,7 @@ class CONTENT_EXPORT InputHandlerManager {
   InputHandlerManagerClient* const client_;
   // May be null.
   SynchronousInputHandlerProxyClient* const synchronous_handler_proxy_client_;
-  scheduler::RendererScheduler* const renderer_scheduler_;  // Not owned.
+  blink::scheduler::RendererScheduler* const renderer_scheduler_;  // Not owned.
 };
 
 }  // namespace content

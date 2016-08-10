@@ -85,7 +85,7 @@ FakeCompositorDependencies::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;
 }
 
-scheduler::RendererScheduler*
+blink::scheduler::RendererScheduler*
 FakeCompositorDependencies::GetRendererScheduler() {
   return &renderer_scheduler_;
 }

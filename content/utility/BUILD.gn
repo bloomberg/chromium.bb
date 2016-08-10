@@ -20,7 +20,6 @@ source_set("utility") {
 
   deps = [
     "//base",
-    "//components/scheduler",
     "//content:export",
     "//content/child",
     "//content/public/child:child_sources",

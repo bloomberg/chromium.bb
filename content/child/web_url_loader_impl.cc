@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/mime_util/mime_util.h"
-#include "components/scheduler/child/web_task_runner_impl.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/child/request_extra_data.h"
@@ -52,7 +51,7 @@
 #include "net/url_request/url_request_data_job.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebTraceLocation.h"
+#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoadTiming.h"
@@ -301,9 +300,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
  public:
   using ReceivedData = RequestPeer::ReceivedData;
 
-  Context(WebURLLoaderImpl* loader,
-          ResourceDispatcher* resource_dispatcher,
-          std::unique_ptr<blink::WebTaskRunner> task_runner);
+  Context(WebURLLoaderImpl* loader, ResourceDispatcher* resource_dispatcher);
 
   WebURLLoaderClient* client() const { return client_; }
   void set_client(WebURLLoaderClient* client) { client_ = client; }
@@ -314,7 +311,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
                          int intra_priority_value);
   void Start(const WebURLRequest& request,
              SyncLoadResponse* sync_load_response);
-  void SetWebTaskRunner(std::unique_ptr<blink::WebTaskRunner> task_runner);
+  void SetTaskRunner(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   void OnUploadProgress(uint64_t position, uint64_t size);
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
@@ -334,19 +332,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   friend class base::RefCounted<Context>;
   ~Context();
 
-  class HandleDataURLTask : public blink::WebTaskRunner::Task {
-   public:
-    explicit HandleDataURLTask(scoped_refptr<Context> context)
-        : context_(context) {}
-
-    void run() override {
-      context_->HandleDataURL();
-    }
-
-   private:
-    scoped_refptr<Context> context_;
-  };
-
   // Called when the body data stream is detached from the reader side.
   void CancelBodyStreaming();
   // We can optimize the handling of data URLs in most cases.
@@ -357,7 +342,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   WebURLRequest request_;
   WebURLLoaderClient* client_;
   ResourceDispatcher* resource_dispatcher_;
-  std::unique_ptr<blink::WebTaskRunner> web_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   WebReferrerPolicy referrer_policy_;
   std::unique_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   std::unique_ptr<StreamOverrideParameters> stream_override_;
@@ -396,14 +381,12 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
 
 // WebURLLoaderImpl::Context --------------------------------------------------
 
-WebURLLoaderImpl::Context::Context(
-    WebURLLoaderImpl* loader,
-    ResourceDispatcher* resource_dispatcher,
-    std::unique_ptr<blink::WebTaskRunner> web_task_runner)
+WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader,
+                                   ResourceDispatcher* resource_dispatcher)
     : loader_(loader),
       client_(NULL),
       resource_dispatcher_(resource_dispatcher),
-      web_task_runner_(std::move(web_task_runner)),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       referrer_policy_(blink::WebReferrerPolicyDefault),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1) {}
@@ -437,11 +420,8 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
     defers_loading_ = SHOULD_DEFER;
   } else if (!value && defers_loading_ != NOT_DEFERRING) {
     if (defers_loading_ == DEFERRED_DATA) {
-      // TODO(alexclarke): Find a way to let blink and chromium FROM_HERE
-      // coexist.
-      web_task_runner_->postTask(
-          BLINK_FROM_HERE,
-          new HandleDataURLTask(this));
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&Context::HandleDataURL, this));
     }
     defers_loading_ = NOT_DEFERRING;
   }
@@ -471,11 +451,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
           GetInfoFromDataURL(sync_load_response->url, sync_load_response,
                              &sync_load_response->data);
     } else {
-      // TODO(alexclarke): Find a way to let blink and chromium FROM_HERE
-      // coexist.
-      web_task_runner_->postTask(
-          BLINK_FROM_HERE,
-          new HandleDataURLTask(this));
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&Context::HandleDataURL, this));
     }
     return;
   }
@@ -546,7 +523,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       GetRequestContextFrameTypeForWebURLRequest(request);
   request_info.extra_data = request.getExtraData();
   request_info.report_raw_headers = request.reportRawHeaders();
-  request_info.loading_web_task_runner = web_task_runner_->clone();
+  request_info.loading_task_runner = task_runner_;
   request_info.lofi_state = static_cast<LoFiState>(request.getLoFiState());
 
   scoped_refptr<ResourceRequestBodyImpl> request_body =
@@ -579,9 +556,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_dispatcher_->SetDefersLoading(request_id_, true);
 }
 
-void WebURLLoaderImpl::Context::SetWebTaskRunner(
-    std::unique_ptr<blink::WebTaskRunner> web_task_runner) {
-  web_task_runner_ = std::move(web_task_runner);
+void WebURLLoaderImpl::Context::SetTaskRunner(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  task_runner_ = task_runner;
 }
 
 void WebURLLoaderImpl::Context::OnUploadProgress(uint64_t position,
@@ -944,11 +921,8 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
 
 // WebURLLoaderImpl -----------------------------------------------------------
 
-WebURLLoaderImpl::WebURLLoaderImpl(
-    ResourceDispatcher* resource_dispatcher,
-    std::unique_ptr<blink::WebTaskRunner> web_task_runner)
-    : context_(
-          new Context(this, resource_dispatcher, std::move(web_task_runner))) {}
+WebURLLoaderImpl::WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher)
+    : context_(new Context(this, resource_dispatcher)) {}
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
   cancel();
@@ -1183,9 +1157,7 @@ void WebURLLoaderImpl::didChangePriority(WebURLRequest::Priority new_priority,
 
 void WebURLLoaderImpl::setLoadingTaskRunner(
     blink::WebTaskRunner* loading_task_runner) {
-  // There's no guarantee on the lifetime of |loading_task_runner| so we take a
-  // copy.
-  context_->SetWebTaskRunner(loading_task_runner->clone());
+  context_->SetTaskRunner(loading_task_runner->taskRunner());
 }
 
 // This function is implemented here because it uses net functions. it is

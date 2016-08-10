@@ -48,10 +48,6 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/memory_coordinator/child/child_memory_coordinator_impl.h"
-#include "components/scheduler/child/compositor_worker_scheduler.h"
-#include "components/scheduler/child/webthread_base.h"
-#include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/blob_storage/blob_message_filter.h"
@@ -150,6 +146,9 @@
 #include "third_party/WebKit/public/platform/WebImageGenerator.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
+#include "third_party/WebKit/public/platform/scheduler/child/compositor_worker_scheduler.h"
+#include "third_party/WebKit/public/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -220,7 +219,7 @@ using blink::WebScriptController;
 using blink::WebSecurityPolicy;
 using blink::WebString;
 using blink::WebView;
-using scheduler::WebThreadImplForWorkerScheduler;
+using blink::scheduler::WebThreadImplForWorkerScheduler;
 
 namespace content {
 
@@ -288,8 +287,10 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
 
  private:
   // WebThreadImplForWorkerScheduler:
-  std::unique_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler() override {
-    return base::WrapUnique(new scheduler::CompositorWorkerScheduler(thread()));
+  std::unique_ptr<blink::scheduler::WorkerScheduler> CreateWorkerScheduler()
+      override {
+    return base::WrapUnique(
+        new blink::scheduler::CompositorWorkerScheduler(thread()));
   }
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
@@ -573,8 +574,8 @@ bool RenderThreadImpl::HistogramCustomizer::IsAlexaTop10NonGoogleSite(
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
     const InProcessChildThreadParams& params) {
-  std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler =
-      scheduler::RendererScheduler::Create();
+  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
+      blink::scheduler::RendererScheduler::Create();
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
   return new RenderThreadImpl(
       params, std::move(renderer_scheduler), test_task_counter);
@@ -583,7 +584,7 @@ RenderThreadImpl* RenderThreadImpl::Create(
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
     std::unique_ptr<base::MessageLoop> main_message_loop,
-    std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler) {
+    std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler) {
   return new RenderThreadImpl(std::move(main_message_loop),
                               std::move(renderer_scheduler));
 }
@@ -594,7 +595,7 @@ RenderThreadImpl* RenderThreadImpl::current() {
 
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
-    std::unique_ptr<scheduler::RendererScheduler> scheduler,
+    std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
     scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
@@ -611,7 +612,7 @@ RenderThreadImpl::RenderThreadImpl(
 // which means that we need to make the render thread pump UI events.
 RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<base::MessageLoop> main_message_loop,
-    std::unique_ptr<scheduler::RendererScheduler> scheduler)
+    std::unique_ptr<blink::scheduler::RendererScheduler> scheduler)
     : ChildThreadImpl(Options::Builder()
                           .UseMojoChannel(true)
                           .AutoStartMojoShellConnection(false)
@@ -1614,7 +1615,7 @@ gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
   return gpu_memory_buffer_manager();
 }
 
-scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
+blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
   return renderer_scheduler_.get();
 }
 

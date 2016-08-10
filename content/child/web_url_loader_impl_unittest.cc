@@ -19,9 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
-#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
-#include "components/scheduler/child/web_task_runner_impl.h"
-#include "components/scheduler/child/worker_scheduler.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
@@ -119,11 +116,8 @@ class TestResourceDispatcher : public ResourceDispatcher {
 
 class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
  public:
-  TestWebURLLoaderClient(ResourceDispatcher* dispatcher,
-                         scoped_refptr<scheduler::TaskQueue> task_runner)
-      : loader_(new WebURLLoaderImpl(
-            dispatcher,
-            base::WrapUnique(new scheduler::WebTaskRunnerImpl(task_runner)))),
+  TestWebURLLoaderClient(ResourceDispatcher* dispatcher)
+      : loader_(new WebURLLoaderImpl(dispatcher)),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),
         delete_on_receive_data_(false),
@@ -276,14 +270,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
 class WebURLLoaderImplTest : public testing::Test {
  public:
-  explicit WebURLLoaderImplTest()
-      : worker_scheduler_(scheduler::WorkerScheduler::Create(
-            scheduler::SchedulerTqmDelegateImpl::Create(
-                &message_loop_,
-                base::WrapUnique(new base::DefaultTickClock())))) {
-    worker_scheduler_->Init();
-    client_.reset(new TestWebURLLoaderClient(
-        &dispatcher_, worker_scheduler_->DefaultTaskRunner()));
+  WebURLLoaderImplTest() {
+    client_.reset(new TestWebURLLoaderClient(&dispatcher_));
   }
 
   ~WebURLLoaderImplTest() override {}
@@ -373,9 +361,6 @@ class WebURLLoaderImplTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
-  // WorkerScheduler is needed because WebURLLoaderImpl needs a
-  // scheduler::TaskQueue.
-  std::unique_ptr<scheduler::WorkerScheduler> worker_scheduler_;
   TestResourceDispatcher dispatcher_;
   std::unique_ptr<TestWebURLLoaderClient> client_;
 };

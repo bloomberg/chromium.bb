@@ -9,10 +9,6 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/task_runner_provider.h"
 
-namespace base {
-class SingleThreadIdleTaskRunner;
-}
-
 namespace cc {
 
 class FakeImplTaskRunnerProvider : public TaskRunnerProvider {

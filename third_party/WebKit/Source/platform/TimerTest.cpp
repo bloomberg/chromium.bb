@@ -111,6 +111,12 @@ public:
         return gCurrentTimeSecs;
     }
 
+    base::SingleThreadTaskRunner* taskRunner() override
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
     std::priority_queue<DelayedTask>* m_timerTasks; // NOT OWNED
 };
 
@@ -194,7 +200,7 @@ public:
     }
 
     void shutdown() override {}
-    std::unique_ptr<WebViewScheduler> createWebViewScheduler(blink::WebView*) override { return nullptr; }
+    std::unique_ptr<WebViewScheduler> createWebViewScheduler(InterventionReporter*) override { return nullptr; }
     void suspendTimerQueue() override { }
     void resumeTimerQueue() override { }
     void addPendingNavigation(WebScheduler::NavigatingFrameType) override { }

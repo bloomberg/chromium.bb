@@ -37,8 +37,10 @@ class MessageLoop;
 class WaitableEvent;
 }
 
+namespace blink {
 namespace scheduler {
 class WebThreadBase;
+}
 }
 
 namespace content {
@@ -136,11 +138,11 @@ class CONTENT_EXPORT BlinkPlatformImpl
   // This class does *not* own the compositor thread. It is the responsibility
   // of the caller to ensure that the compositor thread is cleared before it is
   // destructed.
-  void SetCompositorThread(scheduler::WebThreadBase* compositor_thread);
+  void SetCompositorThread(blink::scheduler::WebThreadBase* compositor_thread);
 
  private:
   void InternalInit();
-  void WaitUntilWebThreadTLSUpdate(scheduler::WebThreadBase* thread);
+  void WaitUntilWebThreadTLSUpdate(blink::scheduler::WebThreadBase* thread);
   void UpdateWebThreadTLS(blink::WebThread* thread, base::WaitableEvent* event);
 
   bool IsMainThread() const;
@@ -159,7 +161,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   scoped_refptr<PushDispatcher> push_dispatcher_;
   std::unique_ptr<BackgroundSyncProvider> main_thread_sync_provider_;
 
-  scheduler::WebThreadBase* compositor_thread_;
+  blink::scheduler::WebThreadBase* compositor_thread_;
 };
 
 }  // namespace content

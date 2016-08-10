@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
@@ -40,6 +39,7 @@
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -115,9 +115,8 @@ class RendererBlinkPlatformImplTestOverrideImpl
     : public RendererBlinkPlatformImpl {
  public:
   RendererBlinkPlatformImplTestOverrideImpl(
-      scheduler::RendererScheduler* scheduler)
-      : RendererBlinkPlatformImpl(scheduler, nullptr) {
-  }
+      blink::scheduler::RendererScheduler* scheduler)
+      : RendererBlinkPlatformImpl(scheduler, nullptr) {}
 
   // Get rid of the dependency to the sandbox, which is not available in
   // RenderViewTest.
@@ -126,7 +125,7 @@ class RendererBlinkPlatformImplTestOverrideImpl
 
 RenderViewTest::RendererBlinkPlatformImplTestOverride::
     RendererBlinkPlatformImplTestOverride() {
-  renderer_scheduler_ = scheduler::RendererScheduler::Create();
+  renderer_scheduler_ = blink::scheduler::RendererScheduler::Create();
   blink_platform_impl_.reset(
       new RendererBlinkPlatformImplTestOverrideImpl(renderer_scheduler_.get()));
 }

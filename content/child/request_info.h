@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -20,14 +21,13 @@
 #include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace blink {
-class WebTaskRunner;
-} // namespace blink
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace content {
 
@@ -123,7 +123,7 @@ struct CONTENT_EXPORT RequestInfo {
   blink::WebURLRequest::ExtraData* extra_data;
 
   // Optional, the specific task queue to execute loading tasks on.
-  std::unique_ptr<blink::WebTaskRunner> loading_web_task_runner;
+  scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner;
 
   // PlzNavigate: the stream URL to request during navigations to get access to
   // the ResourceBody that has already been fetched by the browser process.

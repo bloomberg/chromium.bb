@@ -611,6 +611,31 @@ test("blink_platform_unittests") {
   include_dirs = [ "$root_gen_dir/blink" ]
 }
 
+test("blink_platform_perftests") {
+  sources = [
+    "scheduler/base/task_queue_manager_delegate_for_test.cc",
+    "scheduler/base/task_queue_manager_delegate_for_test.h",
+    "scheduler/base/task_queue_manager_perftest.cc",
+  ]
+
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source:config",
+  ]
+
+  deps = [
+    ":blink_common",
+    ":platform",
+    "//base",
+    "//base/test:test_support",
+    "//base/test:test_support_perf",
+    "//testing/gtest",
+    "//testing/perf",
+  ]
+}
+
 group("blink_platform_unittests_data") {
   data = [
     "testing/data/",

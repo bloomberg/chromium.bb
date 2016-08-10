@@ -32,6 +32,10 @@ class SyncMessageFilter;
 }
 
 namespace blink {
+namespace scheduler {
+class RendererScheduler;
+class WebThreadImplForRendererScheduler;
+}
 class WebCanvasCaptureHandler;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
@@ -41,11 +45,6 @@ class WebMediaRecorderHandler;
 class WebMediaStream;
 class WebSecurityOrigin;
 class WebServiceWorkerCacheStorage;
-}
-
-namespace scheduler {
-class RendererScheduler;
-class WebThreadImplForRendererScheduler;
 }
 
 namespace shell {
@@ -67,7 +66,7 @@ class WebFileSystemImpl;
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
   RendererBlinkPlatformImpl(
-      scheduler::RendererScheduler* renderer_scheduler,
+      blink::scheduler::RendererScheduler* renderer_scheduler,
       base::WeakPtr<shell::InterfaceProvider> remote_interfaces);
   ~RendererBlinkPlatformImpl() override;
 
@@ -296,7 +295,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   IDMap<PlatformEventObserverBase, IDMapOwnPointer> platform_event_observers_;
 
-  scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
+  blink::scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
   TopLevelBlameContext top_level_blame_context_;
 
   WebTrialTokenValidatorImpl trial_token_validator_;

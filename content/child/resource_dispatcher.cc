@@ -591,11 +591,9 @@ int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
       std::move(peer), request->resource_type, request->origin_pid,
       frame_origin, request->url, request_info.download_to_file));
 
-  if (resource_scheduling_filter_.get() &&
-      request_info.loading_web_task_runner) {
+  if (resource_scheduling_filter_.get() && request_info.loading_task_runner) {
     resource_scheduling_filter_->SetRequestIdTaskRunner(
-        request_id,
-        request_info.loading_web_task_runner->clone());
+        request_id, request_info.loading_task_runner);
   }
 
   message_sender_->Send(new ResourceHostMsg_RequestResource(

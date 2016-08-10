@@ -35,8 +35,6 @@
 #include "blink/public/resources/grit/blink_resources.h"
 #include "build/build_config.h"
 #include "components/mime_util/mime_util.h"
-#include "components/scheduler/child/web_task_runner_impl.h"
-#include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/background_sync/background_sync_provider.h"
@@ -59,6 +57,7 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "ui/base/layout.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -71,7 +70,7 @@ using blink::WebThemeEngine;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLLoader;
-using scheduler::WebThreadImplForWorkerScheduler;
+using blink::scheduler::WebThreadImplForWorkerScheduler;
 
 namespace content {
 
@@ -390,7 +389,7 @@ void BlinkPlatformImpl::InternalInit() {
 }
 
 void BlinkPlatformImpl::WaitUntilWebThreadTLSUpdate(
-    scheduler::WebThreadBase* thread) {
+    blink::scheduler::WebThreadBase* thread) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread->GetTaskRunner()->PostTask(
@@ -454,7 +453,7 @@ blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
 }
 
 void BlinkPlatformImpl::SetCompositorThread(
-    scheduler::WebThreadBase* compositor_thread) {
+    blink::scheduler::WebThreadBase* compositor_thread) {
   compositor_thread_ = compositor_thread;
   if (compositor_thread_)
     WaitUntilWebThreadTLSUpdate(compositor_thread_);

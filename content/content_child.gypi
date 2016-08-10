@@ -5,7 +5,6 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../components/mime_util/mime_util.gyp:mime_util',
-    '../components/scheduler/scheduler.gyp:scheduler',
     '../components/tracing.gyp:tracing',
     '../components/webcrypto/webcrypto.gyp:webcrypto',
     '../ipc/ipc.gyp:ipc',

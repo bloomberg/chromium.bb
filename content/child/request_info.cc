@@ -4,6 +4,8 @@
 
 #include "content/child/request_info.h"
 
+#include "base/single_thread_task_runner.h"
+
 namespace content {
 
 RequestInfo::RequestInfo()
@@ -28,7 +30,6 @@ RequestInfo::RequestInfo()
       do_not_prompt_for_login(false),
       report_raw_headers(false),
       extra_data(NULL),
-      loading_web_task_runner(nullptr),
       lofi_state(LOFI_UNSPECIFIED) {}
 
 RequestInfo::~RequestInfo() {}

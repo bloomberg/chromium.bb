@@ -47,7 +47,6 @@
 #include "cc/output/buffer_to_texture_target_map.h"
 #include "components/memory_coordinator/browser/memory_coordinator.h"
 #include "components/memory_coordinator/common/memory_coordinator_features.h"
-#include "components/scheduler/common/scheduler_switches.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -1607,8 +1606,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kSlowDownRasterScaleFactor,
     cc::switches::kTopControlsHideThreshold,
     cc::switches::kTopControlsShowThreshold,
-
-    scheduler::switches::kDisableBackgroundTimerThrottling,
 
 #if defined(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,

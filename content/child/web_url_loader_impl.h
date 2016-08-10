@@ -38,8 +38,7 @@ class CONTENT_EXPORT WebURLLoaderImpl
  public:
 
   // Takes ownership of |web_task_runner|.
-  WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
-                   std::unique_ptr<blink::WebTaskRunner> web_task_runner);
+  WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher);
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const GURL& url,

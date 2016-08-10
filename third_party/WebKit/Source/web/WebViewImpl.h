@@ -46,6 +46,7 @@
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
+#include "public/platform/WebScheduler.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
@@ -99,7 +100,8 @@ class WebViewScheduler;
 class WEB_EXPORT WebViewImpl final : WTF_NON_EXPORTED_BASE(public WebView)
     , public RefCounted<WebViewImpl>
     , WTF_NON_EXPORTED_BASE(public WebGestureCurveTarget)
-    , public PageWidgetEventHandler {
+    , public PageWidgetEventHandler
+    , public WebScheduler::InterventionReporter {
 public:
     static WebViewImpl* create(WebViewClient*, WebPageVisibilityState);
     static HashSet<WebViewImpl*>& allInstances();
@@ -281,6 +283,9 @@ public:
     void setShowFPSCounter(bool) override;
     void setShowScrollBottleneckRects(bool) override;
     void acceptLanguagesChanged() override;
+
+    // WebScheduler::InterventionReporter implementation:
+    void ReportIntervention(const WebString& message) override;
 
     void didUpdateFullScreenSize();
 

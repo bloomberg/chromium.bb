@@ -11,8 +11,8 @@
 #include "base/memory/scoped_vector.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request.h"
-#include "content/test/fake_renderer_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/fake_renderer_scheduler.h"
 
 namespace content {
 namespace {
@@ -47,7 +47,8 @@ int GetRequestId(const IPC::Message& msg) {
   return request_id;
 }
 
-class RendererSchedulerForTest : public FakeRendererScheduler {
+class RendererSchedulerForTest
+    : public blink::scheduler::FakeRendererScheduler {
  public:
   RendererSchedulerForTest() : high_priority_work_anticipated_(false) {}
   ~RendererSchedulerForTest() override {}
@@ -69,8 +70,9 @@ class RendererSchedulerForTest : public FakeRendererScheduler {
 
 class ResourceDispatchThrottlerForTest : public ResourceDispatchThrottler {
  public:
-  ResourceDispatchThrottlerForTest(IPC::Sender* sender,
-                                   scheduler::RendererScheduler* scheduler)
+  ResourceDispatchThrottlerForTest(
+      IPC::Sender* sender,
+      blink::scheduler::RendererScheduler* scheduler)
       : ResourceDispatchThrottler(
             sender,
             scheduler,
