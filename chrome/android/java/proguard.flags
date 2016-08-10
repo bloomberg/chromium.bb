@@ -25,7 +25,7 @@
 }
 
 # Keep all Parcelables as they might be marshalled outside Chrome.
--keepnames class * implements android.os.Parcelable {
+-keepclassmembernames class * implements android.os.Parcelable {
    public static final ** CREATOR;
 }
 
