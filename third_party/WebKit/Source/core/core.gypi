@@ -548,6 +548,8 @@
             'layout/ng/ng_box.h',
             'layout/ng/ng_constraint_space.cc',
             'layout/ng/ng_constraint_space.h',
+            'layout/ng/ng_fragment_base.cc',
+            'layout/ng/ng_fragment_base.h',
             'layout/ng/ng_fragment.cc',
             'layout/ng/ng_fragment.h',
             'layout/ng/ng_margin_strut.h',

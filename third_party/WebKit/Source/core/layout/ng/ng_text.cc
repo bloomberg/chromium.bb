@@ -4,14 +4,4 @@
 
 #include "core/layout/ng/ng_text.h"
 
-namespace blink {
-
-NGText::NGText(LayoutUnit inlineSize, LayoutUnit blockSize)
-    : m_inlineSize(inlineSize), m_blockSize(blockSize) {}
-
-void NGText::setOffset(LayoutUnit inlineOffset, LayoutUnit blockOffset) {
-  m_inlineOffset = inlineOffset;
-  m_blockOffset = blockOffset;
-}
-
-}  // namespace blink
+namespace blink {}  // namespace blink

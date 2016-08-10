@@ -6,32 +6,27 @@
 #define NGText_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_fragment_base.h"
 #include "platform/LayoutUnit.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class CORE_EXPORT NGText final {
+class CORE_EXPORT NGText final : public NGFragmentBase {
  public:
-  NGText(LayoutUnit inlineSize, LayoutUnit blockSize);
-  ~NGText() {}
-
-  LayoutUnit inlineSize() const { return m_inlineSize; }
-  LayoutUnit blockSize() const { return m_blockSize; }
-
-  LayoutUnit inlineOffset() const { return m_inlineOffset; }
-  LayoutUnit blockOffset() const { return m_blockOffset; }
+  NGText(LayoutUnit inlineSize,
+         LayoutUnit blockSize,
+         LayoutUnit inlineOverflow,
+         LayoutUnit blockOverflow)
+      : NGFragmentBase(inlineSize, blockSize, inlineOverflow, blockOverflow) {
+    m_isText = true;
+  }
 
   const String text() const { return String(); }
 
-  void setOffset(LayoutUnit inlineOffset, LayoutUnit blockOffset);
-
- private:
-  LayoutUnit m_inlineSize;
-  LayoutUnit m_blockSize;
-
-  LayoutUnit m_inlineOffset;
-  LayoutUnit m_blockOffset;
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    NGFragmentBase::traceAfterDispatch(visitor);
+  }
 };
 
 }  // namespace blink
