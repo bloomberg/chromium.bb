@@ -512,6 +512,8 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
+crbug.com/636222 [ Mac10.10 ] fast/repaint/fixed-and-absolute-position-scrolled.html [ Failure ]
+
 crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-available-001.html [ Missing ]
 crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-fixed-001.html [ Missing ]
 crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-max-001.html [ Missing ]
