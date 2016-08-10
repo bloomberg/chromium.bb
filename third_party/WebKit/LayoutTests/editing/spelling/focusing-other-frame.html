@@ -1,37 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="resources/util.js"></script>
-<script src="../../resources/js-test.js"></script>
 </head>
 <body>
 <pre id="console"></pre>
-<iframe id="frame1" src="data:text/html,<body contenteditable></body>"></iframe>
-<iframe id="frame2" src="data:text/html,<body contenteditable></body>"></iframe>
+<iframe id="frame1"></iframe>
+<iframe id="frame2"></iframe>
 
 <script>
+var frame1 = document.getElementById('frame1');
+var testEditable1 = frame1.contentWindow.document.createElement('div');
+testEditable1.setAttribute('contentEditable', 'true');
+frame1.contentWindow.document.body.appendChild(testEditable1);
+var frame2 = document.getElementById('frame2');
+var testEditable2 = frame2.contentWindow.document.createElement('div');
+testEditable2.setAttribute('contentEditable', 'true');
+frame2.contentWindow.document.body.appendChild(testEditable2);
 
-description("Last word written in an editable in one frame should be " +
-"spellchecked when focusing other frame. To test manually type some " +
-"misspelled word in one frame and focus other frame. The word should be marked.");
+var steps = [
+    function() {
+        testEditable1.focus();
+        frame1.contentWindow.document.execCommand('InsertText', false, 'zz');
+    },
+    function() {
+        testEditable2.focus();
+    }
+];
 
-if (window.internals) {
-    var frame1 = document.getElementById("frame1");
-    var testEditable1 = frame1.contentWindow.document.createElement("div");
-    testEditable1.setAttribute("contentEditable", "true");
-    frame1.contentWindow.document.body.appendChild(testEditable1);
-    var frame2 = document.getElementById("frame2");
-    var testEditable2 = frame1.contentWindow.document.createElement("div");
-    testEditable2.setAttribute("contentEditable", "true");
-    frame2.contentWindow.document.body.appendChild(testEditable2);
-    testEditable1.focus();
-    frame1.contentWindow.document.execCommand("InsertText", false, "zz");
-    shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '0');
-    testEditable2.focus();
-    shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '1');
-} else {
-    log("Automatic testing impossible. Test manually. See steps in the description.");
-}
+var assertions = [
+    () => assert_equals(internals.markerCountForNode(testEditable1.childNodes[0], 'spelling'), 0),
+    () => assert_equals(internals.markerCountForNode(testEditable1.childNodes[0], 'spelling'), 1)
+];
+
+runSpellingTest(steps, assertions,'Text written in an editable in one frame should be spellchecked when focusing other frame')
 </script>
 </body>
 </html>

@@ -66,3 +66,32 @@ function typeText(elem, text)
         typeCharacterCommand(text[i]);
     }
 }
+
+function runNextStep(test, steps, assertions) {
+    if (!steps.length) {
+        test.done();
+        return;
+    }
+
+    var step = steps.shift();
+    var assertion = assertions.shift();
+
+    step();
+    step_timeout(() => {
+        test.step(() => assertion());
+        runNextStep(test, steps, assertions);
+    }, 50);
+}
+
+function runSpellingTest(steps, assertions, opt_title)
+{
+    var t = async_test(opt_title);
+    if (!window.internals) {
+        t.step(() => assert_unreached('internals is required for this test'));
+        t.done();
+        return;
+    }
+
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    runNextStep(t, steps, assertions);
+}

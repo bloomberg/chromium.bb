@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src=../../resources/js-test.js language="javascript" type="text/javascript"></script>
-<title>Testing moving cursor to a misspelled word</title> 
-</head> 
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<script src=resources/util.js></script>
+<title>Testing moving cursor to a misspelled word</title>
+</head>
 <body>
-<div id="src" contenteditable="true" spellcheck="true"></div><br/>
-<script language="javascript">
-description('Test if Chrome spellchecks a word again when changing a misspelled word.' +
-            'To test manually, type a misspelled word "zz " and type a backspace key twice.' +
-            'This test succeeds when "z" is not marked as misspelled.');
-
-jsTestIsAsync = true;
-
+<div id="src" contenteditable></div>
+<script>
 var node = document.getElementById('src');
-node.focus();
-function insertText(text) {
-    document.execCommand("InsertText", false, text);
-}
-shouldBeTrue('insertText("z"); insertText("z"); insertText(" "); internals.hasSpellingMarker(document, 0, 2)');
 
-debug('Enable asynchronous spellchecking, delete two characters, and insert a space');
-internals.settings.setUnifiedTextCheckerEnabled(true);
+var steps = [
+    function() {
+        node.focus();
+        document.execCommand('InsertText', false, 'z');
+        document.execCommand('InsertText', false, 'z');
+        document.execCommand('InsertText', false, ' ');
+    },
+    function() {
+        testRunner.execCommand('DeleteBackward');
+        testRunner.execCommand('DeleteBackward');
+        document.execCommand('InsertText', false, ' ');
+    }
+];
 
-testRunner.execCommand("DeleteBackward");
-testRunner.execCommand("DeleteBackward");
-document.execCommand("InsertText", false, ' ');
+var assertions = [
+    () => assert_true(internals.hasSpellingMarker(document, 0, 2)),
+    () => assert_false(internals.hasSpellingMarker(document, 0, 1))
+];
 
-shouldBecomeEqual('internals.hasSpellingMarker(document, 0, 1)', 'false', finishJSTest);
+runSpellingTest(steps, assertions, 'Blink spellchecks a word again when changing a misspelled word');
 </script>
 </body>
 </html>
