@@ -204,8 +204,8 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
 
     @VisibleForTesting
     protected void onRegisterProxyViewFailed() {
+        Log.w(TAG, "onRegisterProxyViewFailed");
         mInputMethodUma.recordProxyViewFailure();
-        throw new AssertionError("Failed to register proxy view");
     }
 
     @Override

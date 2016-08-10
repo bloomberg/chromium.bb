@@ -158,7 +158,7 @@ const base::Feature kAutoplayMutedVideos{"AutoplayMutedVideos",
 // Use IME's own thread instead of using main UI thread. It also means that
 // we will not use replica editor and do a round trip to renderer to synchronize
 // with Blink data.
-const base::Feature kImeThread{"ImeThread", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kImeThread{"ImeThread", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // FeatureList definition for the Seccomp field trial.
 const base::Feature kSeccompSandboxAndroid{"SeccompSandboxAndroid",
