@@ -70,7 +70,7 @@ static inline bool isFontPresent(const UChar* fontName, SkFontMgr* fontManager)
 
 struct FontMapping {
     const UChar* familyName;
-    const UChar** candidateFamilyNames;
+    const UChar* const * candidateFamilyNames;
 };
 // A simple mapping from UScriptCode to family name. This is a sparse array,
 // which works well since the range of UScriptCode values is small.
@@ -99,7 +99,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
 {
     struct ScriptToFontFamilies {
         UScriptCode script;
-        const UChar** families;
+        const UChar* const * families;
     };
 
     // For the following scripts, multiple fonts may be listed. They are tried
@@ -112,102 +112,102 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
     // Based on the "Script and Font Support in Windows" MSDN documentation [1]
     // with overrides and additional fallbacks as needed.
     // 1: https://msdn.microsoft.com/en-us/goglobal/bb688099.aspx
-    static const UChar* arabicFonts[] = { L"Tahoma", L"Segoe UI", 0 };
-    static const UChar* armenianFonts[] = { L"Segoe UI", L"Sylfaen", 0 };
-    static const UChar* bengaliFonts[] = { L"Nirmala UI", L"Vrinda", 0 };
-    static const UChar* brahmiFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* brailleFonts[] = { L"Segoe UI Symbol", 0 };
-    static const UChar* bugineseFonts[] = { L"Leelawadee UI", 0 };
-    static const UChar* canadianAaboriginalFonts[] = { L"Gadugi",
+    static const UChar* const arabicFonts[] = { L"Tahoma", L"Segoe UI", 0 };
+    static const UChar* const armenianFonts[] = { L"Segoe UI", L"Sylfaen", 0 };
+    static const UChar* const bengaliFonts[] = { L"Nirmala UI", L"Vrinda", 0 };
+    static const UChar* const brahmiFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const brailleFonts[] = { L"Segoe UI Symbol", 0 };
+    static const UChar* const bugineseFonts[] = { L"Leelawadee UI", 0 };
+    static const UChar* const canadianAaboriginalFonts[] = { L"Gadugi",
         L"Euphemia", 0 };
-    static const UChar* carianFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* cherokeeFonts[] = { L"Gadugi", L"Plantagenet", 0 };
-    static const UChar* copticFonts[] = { L"Segoe UI Symbol", 0 };
-    static const UChar* cuneiformFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* cypriotFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* cyrillicFonts[] = { L"Times New Roman", 0 };
-    static const UChar* deseretFonts[] = { L"Segoe UI Symbol", 0 };
-    static const UChar* devanagariFonts[] = { L"Nirmala UI", L"Mangal", 0 };
-    static const UChar* egyptianHieroglyphsFonts[] = { L"Segoe UI Historic",
+    static const UChar* const carianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const cherokeeFonts[] = { L"Gadugi", L"Plantagenet", 0 };
+    static const UChar* const copticFonts[] = { L"Segoe UI Symbol", 0 };
+    static const UChar* const cuneiformFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const cypriotFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const cyrillicFonts[] = { L"Times New Roman", 0 };
+    static const UChar* const deseretFonts[] = { L"Segoe UI Symbol", 0 };
+    static const UChar* const devanagariFonts[] = { L"Nirmala UI", L"Mangal", 0 };
+    static const UChar* const egyptianHieroglyphsFonts[] = { L"Segoe UI Historic",
         0 };
-    static const UChar* ethiopicFonts[] = { L"Nyala", L"Abyssinica SIL",
+    static const UChar* const ethiopicFonts[] = { L"Nyala", L"Abyssinica SIL",
         L"Ethiopia Jiret", L"Visual Geez Unicode", L"GF Zemen Unicode",
         L"Ebrima", 0 };
-    static const UChar* georgianFonts[] = { L"Sylfaen", L"Segoe UI", 0 };
-    static const UChar* glagoliticFonts[] = { L"Segoe UI Historic",
+    static const UChar* const georgianFonts[] = { L"Sylfaen", L"Segoe UI", 0 };
+    static const UChar* const glagoliticFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
-    static const UChar* gothicFonts[] = { L"Segoe UI Historic",
+    static const UChar* const gothicFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
-    static const UChar* greekFonts[] = { L"Times New Roman", 0 };
-    static const UChar* gujaratiFonts[] = { L"Nirmala UI", L"Shruti", 0 };
-    static const UChar* gurmukhiFonts[] = { L"Nirmala UI", L"Raavi", 0 };
-    static const UChar* hangulFonts[] = { L"Malgun Gothic", L"Gulim", 0 };
-    static const UChar* hebrewFonts[] = { L"David", L"Segoe UI", 0 };
-    static const UChar* imperialAramaicFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* inscriptionalPahlaviFonts[] = { L"Segoe UI Historic",
+    static const UChar* const greekFonts[] = { L"Times New Roman", 0 };
+    static const UChar* const gujaratiFonts[] = { L"Nirmala UI", L"Shruti", 0 };
+    static const UChar* const gurmukhiFonts[] = { L"Nirmala UI", L"Raavi", 0 };
+    static const UChar* const hangulFonts[] = { L"Malgun Gothic", L"Gulim", 0 };
+    static const UChar* const hebrewFonts[] = { L"David", L"Segoe UI", 0 };
+    static const UChar* const imperialAramaicFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const inscriptionalPahlaviFonts[] = { L"Segoe UI Historic",
         0 };
-    static const UChar* inscriptionalParthianFonts[] = { L"Segoe UI Historic",
+    static const UChar* const inscriptionalParthianFonts[] = { L"Segoe UI Historic",
         0 };
-    static const UChar* javaneseFonts[] = { L"Javanese Text", 0 };
-    static const UChar* kannadaFonts[] = { L"Tunga", L"Nirmala UI", 0 };
-    static const UChar* katakanaOrHiraganaFonts[] = { L"Meiryo", L"Yu Gothic",
+    static const UChar* const javaneseFonts[] = { L"Javanese Text", 0 };
+    static const UChar* const kannadaFonts[] = { L"Tunga", L"Nirmala UI", 0 };
+    static const UChar* const katakanaOrHiraganaFonts[] = { L"Meiryo", L"Yu Gothic",
         L"MS PGothic", L"Microsoft YaHei", 0 };
-    static const UChar* kharoshthiFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const kharoshthiFonts[] = { L"Segoe UI Historic", 0 };
     // Try Khmer OS before Vista fonts as it goes along better with Latin
     // and looks better/larger for the same size.
-    static const UChar* khmerFonts[] = { L"Leelawadee UI", L"Khmer UI",
+    static const UChar* const khmerFonts[] = { L"Leelawadee UI", L"Khmer UI",
         L"Khmer OS", L"MoolBoran", L"DaunPenh", 0 };
-    static const UChar* laoFonts[] = { L"Leelawadee UI", L"Lao UI",
+    static const UChar* const laoFonts[] = { L"Leelawadee UI", L"Lao UI",
         L"DokChampa", L"Saysettha OT", L"Phetsarath OT", L"Code2000", 0 };
-    static const UChar* latinFonts[] = { L"Times New Roman", 0 };
-    static const UChar* lisuFonts[] = { L"Segoe UI", 0 };
-    static const UChar* lycianFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* lydianFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* malayalamFonts[] = { L"Nirmala UI", L"Kartika", 0 };
-    static const UChar* meroiticCursiveFonts[] = { L"Segoe UI Historic",
+    static const UChar* const latinFonts[] = { L"Times New Roman", 0 };
+    static const UChar* const lisuFonts[] = { L"Segoe UI", 0 };
+    static const UChar* const lycianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const lydianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const malayalamFonts[] = { L"Nirmala UI", L"Kartika", 0 };
+    static const UChar* const meroiticCursiveFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
-    static const UChar* mongolianFonts[] = { L"Mongolian Baiti", 0 };
-    static const UChar* myanmarFonts[] = { L"Myanmar Text", L"Padauk",
+    static const UChar* const mongolianFonts[] = { L"Mongolian Baiti", 0 };
+    static const UChar* const myanmarFonts[] = { L"Myanmar Text", L"Padauk",
         L"Parabaik", L"Myanmar3", L"Code2000", 0 };
-    static const UChar* newTaiLueFonts[] = { L"Microsoft New Tai Lue", 0 };
-    static const UChar* nkoFonts[] = { L"Ebrima", 0 };
-    static const UChar* oghamFonts[] = { L"Segoe UI Historic",
+    static const UChar* const newTaiLueFonts[] = { L"Microsoft New Tai Lue", 0 };
+    static const UChar* const nkoFonts[] = { L"Ebrima", 0 };
+    static const UChar* const oghamFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
-    static const UChar* olChikiFonts[] = { L"Nirmala UI", 0 };
-    static const UChar* oldItalicFonts[] = { L"Segoe UI Historic",
+    static const UChar* const olChikiFonts[] = { L"Nirmala UI", 0 };
+    static const UChar* const oldItalicFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
-    static const UChar* oldPersianFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* oldSouthArabianFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* oriyaFonts[] = { L"Kalinga", L"ori1Uni",
+    static const UChar* const oldPersianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const oldSouthArabianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const oriyaFonts[] = { L"Kalinga", L"ori1Uni",
         L"Lohit Oriya", L"Nirmala UI", 0 };
-    static const UChar* orkhonFonts[] = { L"Segoe UI Historic",
+    static const UChar* const orkhonFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
-    static const UChar* osmanyaFonts[] = { L"Ebrima", 0 };
-    static const UChar* phagsPaFonts[] = { L"Microsoft PhagsPa", 0 };
-    static const UChar* runicFonts[] = { L"Segoe UI Historic",
+    static const UChar* const osmanyaFonts[] = { L"Ebrima", 0 };
+    static const UChar* const phagsPaFonts[] = { L"Microsoft PhagsPa", 0 };
+    static const UChar* const runicFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
-    static const UChar* shavianFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* simplifiedHanFonts[] = { L"simsun", L"Microsoft YaHei",
+    static const UChar* const shavianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* const simplifiedHanFonts[] = { L"simsun", L"Microsoft YaHei",
         0 };
-    static const UChar* sinhalaFonts[] = { L"Iskoola Pota", L"AksharUnicode",
+    static const UChar* const sinhalaFonts[] = { L"Iskoola Pota", L"AksharUnicode",
         L"Nirmala UI", 0 };
-    static const UChar* soraSompengFonts[] = { L"Nirmala UI", 0 };
-    static const UChar* symbolsFonts[] = { L"Segoe UI Symbol", 0 };
-    static const UChar* syriacFonts[] = { L"Estrangelo Edessa",
+    static const UChar* const soraSompengFonts[] = { L"Nirmala UI", 0 };
+    static const UChar* const symbolsFonts[] = { L"Segoe UI Symbol", 0 };
+    static const UChar* const syriacFonts[] = { L"Estrangelo Edessa",
         L"Estrangelo Nisibin", L"Code2000", 0 };
-    static const UChar* taiLeFonts[] = { L"Microsoft Tai Le", 0 };
-    static const UChar* tamilFonts[] = { L"Nirmala UI", L"Latha", 0 };
-    static const UChar* teluguFonts[] = { L"Nirmala UI", L"Gautami", 0 };
-    static const UChar* thaanaFonts[] = { L"MV Boli", 0 };
-    static const UChar* thaiFonts[] = { L"Tahoma", L"Leelawadee UI",
+    static const UChar* const taiLeFonts[] = { L"Microsoft Tai Le", 0 };
+    static const UChar* const tamilFonts[] = { L"Nirmala UI", L"Latha", 0 };
+    static const UChar* const teluguFonts[] = { L"Nirmala UI", L"Gautami", 0 };
+    static const UChar* const thaanaFonts[] = { L"MV Boli", 0 };
+    static const UChar* const thaiFonts[] = { L"Tahoma", L"Leelawadee UI",
         L"Leelawadee", 0 };
-    static const UChar* tibetanFonts[] = { L"Microsoft Himalaya", L"Jomolhari",
+    static const UChar* const tibetanFonts[] = { L"Microsoft Himalaya", L"Jomolhari",
         L"Tibetan Machine Uni", 0 };
-    static const UChar* tifinaghFonts[] = { L"Ebrima", 0 };
-    static const UChar* traditionalHanFonts[] = { L"pmingliu",
+    static const UChar* const tifinaghFonts[] = { L"Ebrima", 0 };
+    static const UChar* const traditionalHanFonts[] = { L"pmingliu",
         L"Microsoft JhengHei", 0 };
-    static const UChar* vaiFonts[] = { L"Ebrima", 0 };
-    static const UChar* yiFonts[] = { L"Microsoft Yi Baiti", L"Nuosu SIL",
+    static const UChar* const vaiFonts[] = { L"Ebrima", 0 };
+    static const UChar* const yiFonts[] = { L"Microsoft Yi Baiti", L"Nuosu SIL",
         L"Code2000", 0 };
 
     static const ScriptToFontFamilies scriptToFontFamilies[] = {
@@ -299,7 +299,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
 
 void findFirstExistingCandidateFont(FontMapping& scriptFontMapping, SkFontMgr* fontManager)
 {
-    for (const UChar** familyPtr = scriptFontMapping.candidateFamilyNames; *familyPtr; familyPtr++) {
+    for (const UChar* const * familyPtr = scriptFontMapping.candidateFamilyNames; *familyPtr; familyPtr++) {
         if (isFontPresent(*familyPtr, fontManager)) {
             scriptFontMapping.familyName = *familyPtr;
             break;
@@ -358,9 +358,9 @@ UScriptCode getScript(int ucs4)
 
 const UChar* getFontBasedOnUnicodeBlock(UBlockCode blockCode, SkFontMgr* fontManager)
 {
-    static const UChar* emojiFonts[] = {L"Segoe UI Emoji", L"Segoe UI Symbol"};
-    static const UChar* mathFonts[] = {L"Cambria Math", L"Segoe UI Symbol", L"Code2000"};
-    static const UChar* symbolFont = L"Segoe UI Symbol";
+    static const UChar* const emojiFonts[] = {L"Segoe UI Emoji", L"Segoe UI Symbol"};
+    static const UChar* const mathFonts[] = {L"Cambria Math", L"Segoe UI Symbol", L"Code2000"};
+    static const UChar* const symbolFont = L"Segoe UI Symbol";
     static const UChar* emojiFont = 0;
     static const UChar* mathFont = 0;
     static bool initialized = false;
