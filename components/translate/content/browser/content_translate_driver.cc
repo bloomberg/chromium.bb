@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -39,11 +38,17 @@ ContentTranslateDriver::ContentTranslateDriver(
       navigation_controller_(nav_controller),
       translate_manager_(NULL),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
+      next_page_seq_no_(0),
       weak_pointer_factory_(this) {
   DCHECK(navigation_controller_);
 }
 
 ContentTranslateDriver::~ContentTranslateDriver() {}
+
+void ContentTranslateDriver::BindRequest(
+    mojom::ContentTranslateDriverRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
 
 void ContentTranslateDriver::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
@@ -94,26 +99,30 @@ void ContentTranslateDriver::OnTranslateEnabledChanged() {
 }
 
 void ContentTranslateDriver::OnIsPageTranslatedChanged() {
-    content::WebContents* web_contents =
-        navigation_controller_->GetWebContents();
-    FOR_EACH_OBSERVER(
-        Observer, observer_list_, OnIsPageTranslatedChanged(web_contents));
+  content::WebContents* web_contents = navigation_controller_->GetWebContents();
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnIsPageTranslatedChanged(web_contents));
 }
 
 void ContentTranslateDriver::TranslatePage(int page_seq_no,
                                            const std::string& translate_script,
                                            const std::string& source_lang,
                                            const std::string& target_lang) {
-  content::WebContents* web_contents = navigation_controller_->GetWebContents();
-  web_contents->GetMainFrame()->Send(new ChromeFrameMsg_TranslatePage(
-      web_contents->GetMainFrame()->GetRoutingID(), page_seq_no,
-      translate_script, source_lang, target_lang));
+  auto it = pages_.find(page_seq_no);
+  if (it == pages_.end())
+    return;  // This page has navigated away.
+
+  it->second->Translate(translate_script, source_lang, target_lang,
+                        base::Bind(&ContentTranslateDriver::OnPageTranslated,
+                                   base::Unretained(this)));
 }
 
 void ContentTranslateDriver::RevertTranslation(int page_seq_no) {
-  content::WebContents* web_contents = navigation_controller_->GetWebContents();
-  web_contents->GetMainFrame()->Send(new ChromeFrameMsg_RevertTranslation(
-      web_contents->GetMainFrame()->GetRoutingID(), page_seq_no));
+  auto it = pages_.find(page_seq_no);
+  if (it == pages_.end())
+    return;  // This page has navigated away.
+
+  it->second->RevertTranslation();
 }
 
 bool ContentTranslateDriver::IsOffTheRecord() {
@@ -210,29 +219,21 @@ void ContentTranslateDriver::DidNavigateAnyFrame(
       details.is_in_page, details.is_main_frame, reload);
 }
 
-bool ContentTranslateDriver::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ContentTranslateDriver, message)
-    IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_TranslateAssignedSequenceNumber,
-                        OnTranslateAssignedSequenceNumber)
-    IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_TranslateLanguageDetermined,
-                        OnLanguageDetermined)
-    IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_PageTranslated, OnPageTranslated)
-  IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+void ContentTranslateDriver::OnPageAway(int page_seq_no) {
+  pages_.erase(page_seq_no);
 }
 
-void ContentTranslateDriver::OnTranslateAssignedSequenceNumber(
-    int page_seq_no) {
-  translate_manager_->set_current_seq_no(page_seq_no);
-}
-
-void ContentTranslateDriver::OnLanguageDetermined(
+// mojom::ContentTranslateDriver implementation.
+void ContentTranslateDriver::RegisterPage(
+    mojom::PagePtr page,
     const LanguageDetectionDetails& details,
     bool page_needs_translation) {
+  pages_[++next_page_seq_no_] = std::move(page);
+  pages_[next_page_seq_no_].set_connection_error_handler(
+      base::Bind(&ContentTranslateDriver::OnPageAway, base::Unretained(this),
+                 next_page_seq_no_));
+  translate_manager_->set_current_seq_no(next_page_seq_no_);
+
   translate_manager_->GetLanguageState().LanguageDetermined(
       details.adopted_language, page_needs_translation);
 
@@ -243,9 +244,13 @@ void ContentTranslateDriver::OnLanguageDetermined(
 }
 
 void ContentTranslateDriver::OnPageTranslated(
+    bool cancelled,
     const std::string& original_lang,
     const std::string& translated_lang,
     TranslateErrors::Type error_type) {
+  if (cancelled)
+    return;
+
   translate_manager_->PageTranslated(
       original_lang, translated_lang, error_type);
   FOR_EACH_OBSERVER(

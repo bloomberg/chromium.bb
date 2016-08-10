@@ -150,21 +150,30 @@
           # GN version: //components/translate/content/common
           'target_name': 'translate_content_common',
           'type': 'static_library',
+          'variables': {
+            'mojom_typemaps': [
+                'translate/content/common/translate.typemap',
+                  '<(DEPTH)/mojo/common/common_custom_types.typemap',
+                  '<(DEPTH)/url/mojo/gurl.typemap',
+            ],
+          },
+          'sources': [
+            'translate/content/common/translate_struct_traits.cc',
+            'translate/content/common/translate.mojom',
+          ],
+          'export_dependent_settings': [
+            '../mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
+            '../url/url.gyp:url_mojom',
+          ],
           'dependencies': [
             'translate_core_common',
             'translate_core_language_detection',
             '../base/base.gyp:base',
-            '../ipc/ipc.gyp:ipc',
-            '../url/ipc/url_ipc.gyp:url_ipc',
+            '../mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
+            '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+            '../url/url.gyp:url_mojom',
           ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            # Note: sources list duplicated in GN build.
-            'translate/content/common/translate_messages.cc',
-            'translate/content/common/translate_messages.h',
-           ],
+          'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
         },
         {
           # GN version: //components/translate/content/renderer
@@ -177,7 +186,6 @@
             '../base/base.gyp:base',
             '../content/content.gyp:content_common',
             '../content/content.gyp:content_renderer',
-            '../ipc/ipc.gyp:ipc',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../third_party/cld_2/cld_2.gyp:cld_2',
             '../url/url.gyp:url_lib',

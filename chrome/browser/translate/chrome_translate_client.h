@@ -71,6 +71,10 @@ class ChromeTranslateClient
                                     std::string* source,
                                     std::string* target);
 
+  static void BindContentTranslateDriver(
+      content::RenderFrameHost* render_frame_host,
+      translate::mojom::ContentTranslateDriverRequest request);
+
   // Gets the associated TranslateManager.
   translate::TranslateManager* GetTranslateManager();
 

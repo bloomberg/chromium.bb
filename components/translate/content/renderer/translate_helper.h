@@ -12,8 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/translate/content/common/translate.mojom.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -25,12 +27,13 @@ namespace translate {
 
 // This class deals with page translation.
 // There is one TranslateHelper per RenderView.
-class TranslateHelper : public content::RenderFrameObserver {
+class TranslateHelper : public content::RenderFrameObserver,
+                        public mojom::Page {
  public:
-  explicit TranslateHelper(content::RenderFrame* render_frame,
-                           int world_id,
-                           int extension_group,
-                           const std::string& extension_scheme);
+  TranslateHelper(content::RenderFrame* render_frame,
+                  int world_id,
+                  int extension_group,
+                  const std::string& extension_scheme);
   ~TranslateHelper() override;
 
   // Informs us that the page's text has been extracted.
@@ -41,15 +44,14 @@ class TranslateHelper : public content::RenderFrameObserver {
   // this URL loads, this is the time to prepare for it.
   void PrepareForUrl(const GURL& url);
 
- protected:
-  // The following methods are protected so they can be overridden in
-  // unit-tests.
-  void OnTranslatePage(int page_seq_no,
-                       const std::string& translate_script,
-                       const std::string& source_lang,
-                       const std::string& target_lang);
-  void OnRevertTranslation(int page_seq_no);
+  // mojom::Page implementation.
+  void Translate(const std::string& translate_script,
+                 const std::string& source_lang,
+                 const std::string& target_lang,
+                 const TranslateCallback& callback) override;
+  void RevertTranslation() override;
 
+ protected:
   // Returns true if the translate library is available, meaning the JavaScript
   // has already been injected in that page.
   virtual bool IsTranslateLibAvailable();
@@ -102,12 +104,10 @@ class TranslateHelper : public content::RenderFrameObserver {
   // Converts language code to the one used in server supporting list.
   static void ConvertLanguageCodeSynonym(std::string* code);
 
-  // RenderFrameObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void OnDestruct() override;
+  const mojom::ContentTranslateDriverPtr& GetTranslateDriver();
 
-  // Informs us that the page's text has been extracted.
-  void PageCapturedImpl(int page_seq_no, const base::string16& contents);
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
 
   // Cancels any translation that is currently being performed.  This does not
   // revert existing translations.
@@ -116,11 +116,11 @@ class TranslateHelper : public content::RenderFrameObserver {
   // Checks if the current running page translation is finished or errored and
   // notifies the browser accordingly.  If the translation has not terminated,
   // posts a task to check again later.
-  void CheckTranslateStatus(int page_seq_no);
+  void CheckTranslateStatus();
 
   // Called by TranslatePage to do the actual translation.  |count| is used to
   // limit the number of retries.
-  void TranslatePageImpl(int page_seq_no, int count);
+  void TranslatePageImpl(int count);
 
   // Sends a message to the browser to notify it that the translation failed
   // with |error|.
@@ -130,12 +130,8 @@ class TranslateHelper : public content::RenderFrameObserver {
   // if the page is being closed.
   blink::WebLocalFrame* GetMainFrame();
 
-  // An ever-increasing sequence number of the current page, used to match up
-  // translation requests with responses.
-  int page_seq_no_;
-
   // The states associated with the current translation.
-  bool translation_pending_;
+  TranslateCallback translate_callback_pending_;
   std::string source_lang_;
   std::string target_lang_;
 
@@ -151,6 +147,10 @@ class TranslateHelper : public content::RenderFrameObserver {
 
   // The URL scheme for translate extensions.
   std::string extension_scheme_;
+
+  mojom::ContentTranslateDriverPtr translate_driver_;
+
+  mojo::Binding<mojom::Page> binding_;
 
   // Method factory used to make calls to TranslatePageImpl.
   base::WeakPtrFactory<TranslateHelper> weak_method_factory_;

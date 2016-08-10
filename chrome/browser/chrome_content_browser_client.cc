@@ -83,6 +83,7 @@
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -2834,11 +2835,14 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
         base::Bind(&CreateWebUsbChooserService, render_frame_host));
   }
 
-  // Register mojo CredentialManager service only for main frame.
   if (!render_frame_host->GetParent()) {
+    // Register mojo CredentialManager interface only for main frame.
     registry->AddInterface(
         base::Bind(&ChromePasswordManagerClient::BindCredentialManager,
                    render_frame_host));
+    // Register mojo ContentTranslateDriver interface only for main frame.
+    registry->AddInterface(base::Bind(
+        &ChromeTranslateClient::BindContentTranslateDriver, render_frame_host));
   }
 
   registry->AddInterface(

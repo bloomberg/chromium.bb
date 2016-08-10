@@ -1323,6 +1323,7 @@ static_library("test_support_ui") {
     "//components/metrics:test_support",
     "//components/password_manager/content/public/interfaces",
     "//components/password_manager/core/browser:test_support",
+    "//components/translate/content/common",
     "//skia",
     "//testing/gtest",
   ]

@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -136,6 +135,27 @@ void ChromeTranslateClient::GetTranslateLanguages(
 
   *target =
       translate::TranslateManager::GetTargetLanguage(translate_prefs.get());
+}
+
+// static
+void ChromeTranslateClient::BindContentTranslateDriver(
+    content::RenderFrameHost* render_frame_host,
+    translate::mojom::ContentTranslateDriverRequest request) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
+
+  ChromeTranslateClient* instance =
+      ChromeTranslateClient::FromWebContents(web_contents);
+  // We try to bind to the driver, but if driver is not ready for now or totally
+  // not available for this render frame host, the request will be just dropped.
+  // This would cause the message pipe to be closed, which will raise a
+  // connection error on the peer side.
+  if (!instance)
+    return;
+
+  instance->translate_driver().BindRequest(std::move(request));
 }
 
 translate::TranslateManager* ChromeTranslateClient::GetTranslateManager() {

@@ -5,12 +5,16 @@
 #ifndef COMPONENTS_TRANSLATE_CONTENT_BROWSER_CONTENT_TRANSLATE_DRIVER_H_
 #define COMPONENTS_TRANSLATE_CONTENT_BROWSER_CONTENT_TRANSLATE_DRIVER_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "components/translate/content/common/translate.mojom.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
 class NavigationController;
@@ -22,12 +26,11 @@ namespace translate {
 struct LanguageDetectionDetails;
 class TranslateManager;
 
-
 // Content implementation of TranslateDriver.
 class ContentTranslateDriver : public TranslateDriver,
-                               public content::WebContentsObserver {
+                               public content::WebContentsObserver,
+                               public mojom::ContentTranslateDriver {
  public:
-
   // The observer for the ContentTranslateDriver.
   class Observer {
    public:
@@ -51,8 +54,11 @@ class ContentTranslateDriver : public TranslateDriver,
     virtual ~Observer() {}
   };
 
-  ContentTranslateDriver(content::NavigationController* nav_controller);
+  explicit ContentTranslateDriver(
+      content::NavigationController* nav_controller);
   ~ContentTranslateDriver() override;
+
+  void BindRequest(mojom::ContentTranslateDriverRequest request);
 
   // Adds or Removes observers.
   void AddObserver(Observer* observer);
@@ -93,18 +99,20 @@ class ContentTranslateDriver : public TranslateDriver,
   void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
                            const content::LoadCommittedDetails& details,
                            const content::FrameNavigateParams& params) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
 
-  // IPC handlers.
-  void OnTranslateAssignedSequenceNumber(int page_seq_no);
-  void OnLanguageDetermined(const LanguageDetectionDetails& details,
-                            bool page_needs_translation);
-  void OnPageTranslated(const std::string& original_lang,
+  void OnPageTranslated(bool cancelled,
+                        const std::string& original_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
 
+  // mojom::ContentTranslateDriver implementation.
+  void RegisterPage(mojom::PagePtr page,
+                    const LanguageDetectionDetails& details,
+                    bool page_needs_translation) override;
+
  private:
+  void OnPageAway(int page_seq_no);
+
   // The navigation controller of the tab we are associated with.
   content::NavigationController* navigation_controller_;
 
@@ -114,6 +122,14 @@ class ContentTranslateDriver : public TranslateDriver,
 
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
+
+  // Records mojo connections with all current alive pages.
+  int next_page_seq_no_;
+  std::map<int, mojom::PagePtr> pages_;
+
+  // ContentTranslateDriver is singleton per web contents ,
+  // serve for multiple render frames.
+  mojo::BindingSet<mojom::ContentTranslateDriver> bindings_;
 
   base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_;
 

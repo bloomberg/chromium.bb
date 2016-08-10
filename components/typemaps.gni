@@ -6,4 +6,5 @@ typemaps = [
   "//components/autofill/content/public/cpp/autofill_types.typemap",
   "//components/password_manager/content/public/cpp/credential_manager.typemap",
   "//components/safe_json/public/interfaces/safe_json.typemap",
+  "//components/translate/content/common/translate.typemap",
 ]

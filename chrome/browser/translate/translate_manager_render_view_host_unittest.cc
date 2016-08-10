@@ -36,7 +36,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/content/browser/content_translate_driver.h"
-#include "components/translate/content/common/translate_messages.h"
+#include "components/translate/content/common/translate.mojom.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_language_list.h"
@@ -52,8 +52,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -113,6 +113,62 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
   std::unique_ptr<TranslateBubbleModel> model_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTranslateBubbleFactory);
+};
+
+class FakePageImpl : public translate::mojom::Page {
+ public:
+  FakePageImpl()
+      : called_translate_(false),
+        called_revert_translation_(false),
+        binding_(this) {}
+  ~FakePageImpl() override {}
+
+  translate::mojom::PagePtr BindToNewPagePtr() {
+    binding_.Close();
+    translate_callback_pending_.Reset();
+    return binding_.CreateInterfacePtrAndBind();
+  }
+
+  // translate::mojom::Page implementation.
+  void Translate(const std::string& translate_script,
+                 const std::string& source_lang,
+                 const std::string& target_lang,
+                 const TranslateCallback& callback) override {
+    // Ensure pending callback gets called.
+    if (translate_callback_pending_) {
+      translate_callback_pending_.Run(true, "", "",
+                                      translate::TranslateErrors::NONE);
+      translate_callback_pending_.Reset();
+    }
+
+    called_translate_ = true;
+    source_lang_ = source_lang;
+    target_lang_ = target_lang;
+
+    translate_callback_pending_ = callback;
+  }
+
+  void RevertTranslation() override { called_revert_translation_ = true; }
+
+  void PageTranslated(bool cancelled,
+                      const std::string& source_lang,
+                      const std::string& target_lang,
+                      translate::TranslateErrors::Type error) {
+    translate_callback_pending_.Run(cancelled, source_lang, target_lang, error);
+    translate_callback_pending_.Reset();
+  }
+
+  bool called_translate_;
+  base::Optional<std::string> source_lang_;
+  base::Optional<std::string> target_lang_;
+  bool called_revert_translation_;
+
+ private:
+  TranslateCallback translate_callback_pending_;
+
+  mojo::Binding<translate::mojom::Page> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakePageImpl);
 };
 
 }  // namespace
@@ -238,40 +294,55 @@ class TranslateManagerRenderViewHostTest
                                              bool page_translatable) {
     translate::LanguageDetectionDetails details;
     details.adopted_language = lang;
-    main_rfh()->OnMessageReceived(
-        ChromeFrameHostMsg_TranslateLanguageDetermined(0, details,
-                                                       page_translatable));
+    ChromeTranslateClient::FromWebContents(web_contents())
+        ->translate_driver()
+        .RegisterPage(fake_page_.BindToNewPagePtr(), details,
+                      page_translatable);
   }
 
-  void SimulateOnPageTranslated(int routing_id,
-                                const std::string& source_lang,
+  void SimulateOnPageTranslated(const std::string& source_lang,
                                 const std::string& target_lang,
                                 translate::TranslateErrors::Type error) {
-    main_rfh()->OnMessageReceived(ChromeFrameHostMsg_PageTranslated(
-        routing_id, source_lang, target_lang, error));
+    // Ensure fake_page_ Translate() call gets dispatched.
+    base::RunLoop().RunUntilIdle();
+
+    fake_page_.PageTranslated(false, source_lang, target_lang, error);
+
+    // Ensure fake_page_ Translate() response callback gets dispatched.
+    base::RunLoop().RunUntilIdle();
   }
 
   void SimulateOnPageTranslated(const std::string& source_lang,
                                 const std::string& target_lang) {
-    SimulateOnPageTranslated(
-        0, source_lang, target_lang, translate::TranslateErrors::NONE);
+    SimulateOnPageTranslated(source_lang, target_lang,
+                             translate::TranslateErrors::NONE);
   }
 
   bool GetTranslateMessage(std::string* original_lang,
                            std::string* target_lang) {
-    const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-        ChromeFrameMsg_TranslatePage::ID);
-    if (!message)
+    base::RunLoop().RunUntilIdle();
+
+    if (!fake_page_.called_translate_)
       return false;
-    std::tuple<int, std::string, std::string, std::string> translate_param;
-    ChromeFrameMsg_TranslatePage::Read(message, &translate_param);
-    // Ignore get<0>(translate_param) which is the page seq no.
-    // Ignore get<1>(translate_param) which is the script injected in the page.
+    EXPECT_TRUE(fake_page_.source_lang_);
+    EXPECT_TRUE(fake_page_.target_lang_);
+
     if (original_lang)
-      *original_lang = std::get<2>(translate_param);
+      *original_lang = *fake_page_.source_lang_;
     if (target_lang)
-      *target_lang = std::get<3>(translate_param);
+      *target_lang = *fake_page_.target_lang_;
+
+    // Reset
+    fake_page_.called_translate_ = false;
+    fake_page_.source_lang_ = base::nullopt;
+    fake_page_.target_lang_ = base::nullopt;
+
     return true;
+  }
+
+  bool IsTranslationReverted() {
+    base::RunLoop().RunUntilIdle();
+    return fake_page_.called_revert_translation_;
   }
 
   InfoBarService* infobar_service() {
@@ -404,8 +475,6 @@ class TranslateManagerRenderViewHostTest
   }
 
   virtual void TearDown() {
-    process()->sink().ClearMessages();
-
     notification_registrar_.Remove(
         this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -492,6 +561,8 @@ class TranslateManagerRenderViewHostTest
   std::set<infobars::InfoBarDelegate*> removed_infobars_;
 
   std::unique_ptr<MockTranslateBubbleFactory> bubble_factory_;
+  FakePageImpl fake_page_;
+
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostTest);
 };
 
@@ -621,7 +692,6 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
             infobar->translate_step());
 
   // Simulate clicking translate.
-  process()->sink().ClearMessages();
   infobar->Translate();
 
   // The "Translating..." infobar should be showing.
@@ -649,7 +719,6 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
             infobar->translate_step());
 
   // Simulate changing the original language and translating.
-  process()->sink().ClearMessages();
   std::string new_original_lang = infobar->language_code_at(0);
   infobar->UpdateOriginalLanguage(new_original_lang);
   infobar->Translate();
@@ -662,7 +731,6 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   ASSERT_TRUE(infobar != NULL);
 
   // Simulate changing the target language and translating.
-  process()->sink().ClearMessages();
   std::string new_target_lang = infobar->language_code_at(1);
   infobar->UpdateTargetLanguage(new_target_lang);
   infobar->Translate();
@@ -704,7 +772,6 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateScriptNotAvailable) {
             infobar->translate_step());
 
   // Simulate clicking translate.
-  process()->sink().ClearMessages();
   infobar->Translate();
   SimulateTranslateScriptURLFetch(false);
 
@@ -766,8 +833,8 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateUnknownLanguage) {
   menu.reset(CreateContextMenu());
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
-  SimulateOnPageTranslated(
-      1, "en", "en", translate::TranslateErrors::IDENTICAL_LANGUAGES);
+  SimulateOnPageTranslated("en", "en",
+                           translate::TranslateErrors::IDENTICAL_LANGUAGES);
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(translate::TRANSLATE_STEP_TRANSLATE_ERROR,
@@ -781,8 +848,8 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateUnknownLanguage) {
   menu.reset(CreateContextMenu());
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
-  SimulateOnPageTranslated(
-      2, std::string(), "en", translate::TranslateErrors::UNKNOWN_LANGUAGE);
+  SimulateOnPageTranslated(std::string(), "en",
+                           translate::TranslateErrors::UNKNOWN_LANGUAGE);
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(translate::TRANSLATE_STEP_TRANSLATE_ERROR,
@@ -843,7 +910,6 @@ TEST_F(TranslateManagerRenderViewHostTest, AutoTranslateOnNavigate) {
   SimulateOnPageTranslated("fr", "en");
 
   // Now navigate to a new page in the same language.
-  process()->sink().ClearMessages();
   SimulateNavigation(GURL("http://news.google.fr"), "fr", true);
 
   // This should have automatically triggered a translation.
@@ -853,7 +919,6 @@ TEST_F(TranslateManagerRenderViewHostTest, AutoTranslateOnNavigate) {
   EXPECT_EQ("en", target_lang);
 
   // Now navigate to a page in a different language.
-  process()->sink().ClearMessages();
   SimulateNavigation(GURL("http://news.google.es"), "es", true);
 
   // This should not have triggered a translate.
@@ -1097,7 +1162,6 @@ TEST_F(TranslateManagerRenderViewHostTest, ServerReportsUnsupportedLanguage) {
   EnableBubbleTest();
 
   SimulateNavigation(GURL("http://mail.google.fr"), "fr", true);
-  process()->sink().ClearMessages();
   SimulateTranslatePress();
   SimulateTranslateScriptURLFetch(true);
   // Simulate the render notifying the translation has been done, but it
@@ -1118,11 +1182,8 @@ TEST_F(TranslateManagerRenderViewHostTest, ServerReportsUnsupportedLanguage) {
 
     // Pressing the button on that infobar should revert to the original
     // language.
-    process()->sink().ClearMessages();
     infobar->MessageInfoBarButtonPressed();
-    const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-        ChromeFrameMsg_RevertTranslation::ID);
-    EXPECT_TRUE(message != NULL);
+    EXPECT_TRUE(IsTranslationReverted());
     // And it should have removed the infobar.
     EXPECT_TRUE(GetTranslateInfoBar() == NULL);
   }
@@ -1373,7 +1434,6 @@ TEST_F(TranslateManagerRenderViewHostTest, AlwaysTranslateLanguagePref) {
   EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
-  process()->sink().ClearMessages();
 
   // Try another language, it should not be autotranslated.
   SimulateNavigation(GURL("http://www.google.es"), "es", true);
@@ -1450,7 +1510,6 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
-  process()->sink().ClearMessages();
 
   // This should also have reverted the blacklisting of this site and language.
   EXPECT_FALSE(translate_prefs->IsBlockedLanguage("fr"));
@@ -1473,7 +1532,6 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
-  process()->sink().ClearMessages();
   menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
@@ -1488,7 +1546,6 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
-  process()->sink().ClearMessages();
   menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
@@ -1548,7 +1605,6 @@ TEST_F(TranslateManagerRenderViewHostTest, BeforeTranslateExtraButtons) {
     if (i < 7) {
       EXPECT_FALSE(infobar->ShouldShowAlwaysTranslateShortcut());
       infobar->Translate();
-      process()->sink().ClearMessages();
     } else {
       EXPECT_TRUE(infobar->ShouldShowAlwaysTranslateShortcut());
     }
@@ -1564,7 +1620,6 @@ TEST_F(TranslateManagerRenderViewHostTest, BeforeTranslateExtraButtons) {
   // That should have triggered a page translate.
   std::string original_lang, target_lang;
   EXPECT_TRUE(GetTranslateMessage(&original_lang, &target_lang));
-  process()->sink().ClearMessages();
 
   // Now test that declining the translation causes a "never translate" button
   // to be shown (in non incognito mode only).
@@ -1591,7 +1646,6 @@ TEST_F(TranslateManagerRenderViewHostTest, BeforeTranslateExtraButtons) {
   EXPECT_TRUE(translate_prefs->IsBlockedLanguage("de"));
   // No translation should have occured and the infobar should be gone.
   EXPECT_FALSE(GetTranslateMessage(&original_lang, &target_lang));
-  process()->sink().ClearMessages();
   ASSERT_TRUE(GetTranslateInfoBar() == NULL);
 }
 
@@ -1625,9 +1679,10 @@ TEST_F(TranslateManagerRenderViewHostTest, ScriptExpires) {
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
   translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  process()->sink().ClearMessages();
   infobar->Translate();
   SimulateTranslateScriptURLFetch(true);
+  // The translate request should have been sent.
+  EXPECT_TRUE(GetTranslateMessage(NULL, NULL));
   SimulateOnPageTranslated("fr", "en");
 
   // A task should have been posted to clear the script, run it.
@@ -1637,12 +1692,10 @@ TEST_F(TranslateManagerRenderViewHostTest, ScriptExpires) {
   SimulateNavigation(GURL("http://www.google.es"), "es", true);
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  process()->sink().ClearMessages();
   infobar->Translate();
   // If we don't simulate the URL fetch, the TranslateManager should be waiting
   // for the script and no message should have been sent to the renderer.
-  EXPECT_TRUE(process()->sink().GetFirstMessageMatching(
-                  ChromeFrameMsg_TranslatePage::ID) == NULL);
+  EXPECT_FALSE(GetTranslateMessage(NULL, NULL));
   // Now simulate the URL fetch.
   SimulateTranslateScriptURLFetch(true);
   // Now the message should have been sent.
@@ -1679,7 +1732,6 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleNormalTranslate) {
             bubble->GetViewState());
 
   // Simulate clicking translate.
-  process()->sink().ClearMessages();
   bubble->Translate();
 
   // Check the bubble shows "Translating...".
@@ -1722,7 +1774,6 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleTranslateScriptNotAvailable) {
             bubble->GetViewState());
 
   // Simulate clicking translate.
-  process()->sink().ClearMessages();
   bubble->Translate();
   SimulateTranslateScriptURLFetch(false);
 
