@@ -92,7 +92,7 @@ enum {
 };
 
 enum V8ErrorType {
-    V8GeneralError = 1000,
+    V8Error = 1000,
     V8TypeError,
     V8RangeError,
     V8SyntaxError,

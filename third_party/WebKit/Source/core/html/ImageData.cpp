@@ -87,7 +87,7 @@ ImageData* ImageData::create(unsigned width, unsigned height, ExceptionState& ex
 
     DOMUint8ClampedArray* byteArray = DOMUint8ClampedArray::createOrNull(dataSize.ValueOrDie());
     if (!byteArray) {
-        exceptionState.throwDOMException(V8GeneralError, "Out of memory at ImageData creation");
+        exceptionState.throwDOMException(V8Error, "Out of memory at ImageData creation");
         return nullptr;
     }
 

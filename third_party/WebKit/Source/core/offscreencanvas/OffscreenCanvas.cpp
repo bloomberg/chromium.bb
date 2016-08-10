@@ -55,7 +55,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionSta
     ImageBitmap* image = m_context->transferToImageBitmap(exceptionState);
     if (!image) {
         // Undocumented exception (not in spec)
-        exceptionState.throwDOMException(V8GeneralError, "Out of memory");
+        exceptionState.throwDOMException(V8Error, "Out of memory");
     }
     return image;
 }

@@ -49,13 +49,13 @@ public:
             isolate->ThrowException(exception);
     }
 
-    static v8::Local<v8::Value> createGeneralError(v8::Isolate*, const String& message);
+    static v8::Local<v8::Value> createError(v8::Isolate*, const String& message);
     static v8::Local<v8::Value> createRangeError(v8::Isolate*, const String& message);
     static v8::Local<v8::Value> createReferenceError(v8::Isolate*, const String& message);
     static v8::Local<v8::Value> createSyntaxError(v8::Isolate*, const String& message);
     static v8::Local<v8::Value> createTypeError(v8::Isolate*, const String& message);
 
-    static void throwGeneralError(v8::Isolate*, const String& message);
+    static void throwError(v8::Isolate*, const String& message);
     static void throwRangeError(v8::Isolate*, const String& message);
     static void throwReferenceError(v8::Isolate*, const String& message);
     static void throwSyntaxError(v8::Isolate*, const String& message);

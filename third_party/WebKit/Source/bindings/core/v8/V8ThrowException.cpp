@@ -60,8 +60,8 @@ v8::Local<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, 
         return v8::Local<v8::Value>();
 
     switch (exceptionCode) {
-    case V8GeneralError:
-        return createGeneralError(isolate, sanitizedMessage);
+    case V8Error:
+        return createError(isolate, sanitizedMessage);
     case V8TypeError:
         return createTypeError(isolate, sanitizedMessage);
     case V8RangeError:
@@ -96,7 +96,7 @@ void V8ThrowException::throw##blinkErrorType(v8::Isolate* isolate, const String&
     throwException(isolate, create##blinkErrorType(isolate, message));    \
 }
 
-DEFINE_CREATE_AND_THROW_ERROR_FUNC(GeneralError, Error, "Error")
+DEFINE_CREATE_AND_THROW_ERROR_FUNC(Error, Error, "Error")
 DEFINE_CREATE_AND_THROW_ERROR_FUNC(RangeError, RangeError, "Range error")
 DEFINE_CREATE_AND_THROW_ERROR_FUNC(ReferenceError, ReferenceError, "Reference error")
 DEFINE_CREATE_AND_THROW_ERROR_FUNC(SyntaxError, SyntaxError, "Syntax error")

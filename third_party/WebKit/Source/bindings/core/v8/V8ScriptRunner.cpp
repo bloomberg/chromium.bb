@@ -111,7 +111,7 @@ void throwStackOverflowException(const v8::FunctionCallbackInfo<v8::Value>& info
 
 void throwScriptForbiddenException(v8::Isolate* isolate)
 {
-    V8ThrowException::throwGeneralError(isolate, "Script execution is forbidden.");
+    V8ThrowException::throwError(isolate, "Script execution is forbidden.");
 }
 
 v8::Local<v8::Value> throwStackOverflowExceptionIfNeeded(v8::Isolate* isolate)
@@ -345,7 +345,7 @@ std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, Sc
 v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus accessControlStatus, V8CacheOptions cacheOptions)
 {
     if (source.source().length() >= v8::String::kMaxLength) {
-        V8ThrowException::throwGeneralError(isolate, "Source file too large.");
+        V8ThrowException::throwError(isolate, "Source file too large.");
         return v8::Local<v8::Script>();
     }
     return compileScript(v8String(isolate, source.source()), source.url(), source.sourceMapUrl(), source.startPosition(), isolate, source.resource(), source.streamer(), source.resource() ? source.resource()->cacheHandler() : nullptr, accessControlStatus, cacheOptions);
@@ -354,7 +354,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode&
 v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const String& code, const String& fileName, const String& sourceMapUrl, const TextPosition& textPosition, v8::Isolate* isolate, CachedMetadataHandler* cacheMetadataHandler, AccessControlStatus accessControlStatus, V8CacheOptions v8CacheOptions)
 {
     if (code.length() >= v8::String::kMaxLength) {
-        V8ThrowException::throwGeneralError(isolate, "Source file too large.");
+        V8ThrowException::throwError(isolate, "Source file too large.");
         return v8::Local<v8::Script>();
     }
     return compileScript(v8String(isolate, code), fileName, sourceMapUrl, textPosition, isolate, nullptr, nullptr, cacheMetadataHandler, accessControlStatus, v8CacheOptions);

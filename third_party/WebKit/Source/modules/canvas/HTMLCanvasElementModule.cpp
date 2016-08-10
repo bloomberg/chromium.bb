@@ -22,7 +22,7 @@ void HTMLCanvasElementModule::getContext(HTMLCanvasElement& canvas, const String
 OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(HTMLCanvasElement& canvas, ExceptionState& exceptionState)
 {
     if (!canvas.createSurfaceLayer()) {
-        exceptionState.throwDOMException(V8GeneralError, "Offscreen canvas creation failed due to an internal timeout.");
+        exceptionState.throwDOMException(V8Error, "Offscreen canvas creation failed due to an internal timeout.");
         return nullptr;
     }
 

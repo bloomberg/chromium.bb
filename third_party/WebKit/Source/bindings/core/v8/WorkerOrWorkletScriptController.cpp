@@ -316,7 +316,7 @@ void WorkerOrWorkletScriptController::rethrowExceptionFromImportedScript(ErrorEv
     const String& errorMessage = errorEvent->message();
     if (m_executionState)
         m_executionState->m_errorEventFromImportedScript = errorEvent;
-    exceptionState.rethrowV8Exception(V8ThrowException::createGeneralError(m_isolate, errorMessage));
+    exceptionState.rethrowV8Exception(V8ThrowException::createError(m_isolate, errorMessage));
 }
 
 DEFINE_TRACE(WorkerOrWorkletScriptController)
