@@ -10,7 +10,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="files_icon_button.html">
 <link rel="import" href="files_metadata_box.html">
-<link rel="import" href="files_safe_img.html">
+<link rel="import" href="files_safe_media.html">
 <link rel="import" href="files_tooltip.html">
 <link rel="import" href="icons.html">
 
@@ -33,34 +33,32 @@
           <div class='close-on-click' id="innerContentPanel" tabindex="0">
             <template is="dom-if" if="[[isImage_(type)]]">
               <div class="close-on-click" hidden="[[!contentUrl]]">
-                <files-safe-img class="content" src="[[contentUrl]]"></files-safe-img>
+                <files-safe-media type="image" class="content" src="[[contentUrl]]"></files-safe-media>
               </div>
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="image"></div>
                 <div class="no-preivew" i18n-content="QUICK_VIEW_NO_PREVIEW_AVAILABLE"></div>
               </template>
             </template>
+            <!-- Video -->
+            <files-safe-media type="video" class="content" controls autoplay="[[autoplay]]" src="[[videoUrl_(contentUrl, type)]]" poster="[[videoPoster]]" hidden="[[!isVideo_(type)]]"></files-safe-media>
             <template is="dom-if" if="[[isVideo_(type)]]">
-              <template is="dom-if" if="[[contentUrl]]">
-                <video class="content" controls autoplay="[[autoplay]]" src="[[contentUrl]]" poster="[[videoPoster]]"></video>
-              </template>
               <template is="dom-if" if="[[!contentUrl]]">
                 <div class="thumbnail" hidden="[[!videoPoster]]">
-                  <files-safe-img id="video-poster" src="[[videoPoster]]"></files-safe-img>
+                  <files-safe-media type="image" id="video-poster" src="[[videoPoster]]"></files-safe-media>
                 </div>
                 <div hidden="[[videoPoster]]" generic-thumbnail="video"></div>
                 <div class="no-preview" i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
               </template>
             </template>
+            <!-- Audio -->
             <template is="dom-if" if="[[isAudio_(type)]]">
-              <template is="dom-if" if="[[audioArtwork]]">
-                <files-safe-img id="audio-artwork" src="[[audioArtwork]]"></files-safe-img>
-              </template>
-              <template is="dom-if" if="[[contentUrl]]">
-                <div>
-                  <audio autoplay="[[autoplay]]" controls src="[[contentUrl]]"></audio>
-                </div>
-              </template>
+              <files-safe-media type="image" id="audio-artwork" src="[[audioArtwork]]" hidden="[[!audioArtwork]]"></files-safe-media>
+            </template>
+            <div>
+              <files-safe-media type="audio" autoplay="[[autoplay]]" controls src="[[audioUrl_(contentUrl, type)]]" hidden="[[!isAudio_(type)]]"></files-safe-media>
+            </div>
+            <template is="dom-if" if="[[isAudio_(type)]]">
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="audio"></div>
                 <div class="no-preivew" i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>

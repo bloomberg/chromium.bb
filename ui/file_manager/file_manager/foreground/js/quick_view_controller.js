@@ -233,6 +233,15 @@ QuickViewController.prototype.getQuickViewParameters_ = function(entry, items) {
     filePath: entry.name,
   };
 
+  /**
+   * @type function(!FileEntry): !Promise<!File>
+   */
+  var getFile = function(entry) {
+    return new Promise(function(resolve, reject) {
+      entry.file(resolve, reject);
+    });
+  };
+
   if (type === 'image') {
     if (item.externalFileUrl) {
       if (item.thumbnailUrl) {
@@ -244,11 +253,9 @@ QuickViewController.prototype.getQuickViewParameters_ = function(entry, items) {
             }.bind(this));
       }
     } else {
-      return new Promise(function(resolve, reject) {
-        entry.file(function(file) {
-          params.contentUrl = URL.createObjectURL(file);
-          resolve(params);
-        });
+      return getFile(entry).then(function(file) {
+        params.contentUrl = URL.createObjectURL(file);
+        return params;
       });
     }
   } else if (type === 'video') {
@@ -263,26 +270,37 @@ QuickViewController.prototype.getQuickViewParameters_ = function(entry, items) {
             });
       }
     } else {
-      params.contentUrl = entry.toURL();
       params.autoplay = true;
       if (item.thumbnailUrl) {
         params.videoPoster = item.thumbnailUrl;
       }
+      return getFile(entry).then(function(file) {
+        params.contentUrl = URL.createObjectURL(file);
+        return params;
+      });
     }
   } else if (type === 'audio') {
     if (item.externalFileUrl) {
       // If the file is in Drive, we ask user to open it with external app.
     } else {
-      params.contentUrl = entry.toURL();
       params.autoplay = true;
-      return this.metadataModel_.get([entry], ['contentThumbnailUrl'])
-          .then(function(entry, items) {
+      return Promise
+          .all([
+            this.metadataModel_.get([entry], ['contentThumbnailUrl']),
+            getFile(entry)
+          ])
+          .then(function(values) {
+            /** @type {!Array<!MetadataItem>} */
+            var items = values[0];
+            /** @type {!File} */
+            var file = values[1];
             var item = items[0];
             if (item.contentThumbnailUrl) {
               params.audioArtwork = item.contentThumbnailUrl;
             }
+            params.contentUrl = URL.createObjectURL(file);
             return params;
-          }.bind(this, entry));
+          });
     }
   }
   return Promise.resolve(params);

@@ -26,7 +26,7 @@ var FilesQuickView = Polymer({
 
   listeners: {
     'iron-overlay-closed': 'clear',
-    'files-safe-img-tap-outside': 'close',
+    'files-safe-media-tap-outside': 'close',
   },
 
   // Clears fields.
@@ -115,6 +115,17 @@ var FilesQuickView = Polymer({
   },
 
   /**
+   * @param {string} contentUrl
+   * @param {string} type
+   * @return {string}
+   *
+   * @private
+   */
+  videoUrl_: function(contentUrl, type) {
+    return this.isVideo_(type) ? contentUrl : "";
+  },
+
+  /**
    * @param {string} type
    * @return {boolean}
    *
@@ -122,6 +133,17 @@ var FilesQuickView = Polymer({
    */
   isAudio_: function(type) {
     return type === 'audio';
+  },
+
+  /**
+   * @param {string} contentUrl
+   * @param {string} type
+   * @return {string}
+   *
+   * @private
+   */
+  audioUrl_: function(contentUrl, type) {
+    return this.isAudio_(type) ? contentUrl : "";
   },
 
   /**

@@ -51,7 +51,11 @@
   "webview": {
     "partitions": [{
       "name": "trusted",
-      "accessible_resources": ["foreground/elements/files_safe_img_webview_content.*"]
+      "accessible_resources": [
+        "foreground/elements/files_safe_audio_webview_content.*",
+        "foreground/elements/files_safe_img_webview_content.*",
+        "foreground/elements/files_safe_video_webview_content.*"
+      ]
     }]
   },
   "file_browser_handlers": [

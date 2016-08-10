@@ -21,10 +21,6 @@ paper-dialog {
   width: 100%;
 }
 
-video {
-  min-width: 192px;
-}
-
 #video-poster {
   max-height: 100%;
   max-width: 100%;
@@ -32,12 +28,6 @@ video {
 
 paper-button:focus:not(:active) {
   box-shadow: 0 0 0 2px rgba(191, 191, 191, 0.5);
-}
-
-video::-webkit-media-controls-fullscreen-button,
-audio::-webkit-media-controls-volume-slider,
-video::-webkit-media-controls-volume-slider {
-  display: none;
 }
 
 #audio-artwork {
