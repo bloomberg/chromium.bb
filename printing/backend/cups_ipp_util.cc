@@ -69,7 +69,7 @@ bool PrinterSupportsValue(const CupsOptionProvider& printer,
                           base::StringPiece value) {
   std::vector<base::StringPiece> values =
       printer.GetSupportedOptionValueStrings(name);
-  return ContainsValue(values, value);
+  return base::ContainsValue(values, value);
 }
 
 DuplexMode PrinterDefaultDuplex(const CupsOptionProvider& printer) {
