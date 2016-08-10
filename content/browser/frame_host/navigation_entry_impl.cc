@@ -636,6 +636,9 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // ResetForCommit: should_clear_history_list_
   // ResetForCommit: frame_tree_node_id_
   // ResetForCommit: intent_received_timestamp_
+#if defined(OS_ANDROID)
+  copy->has_user_gesture_ = has_user_gesture_;
+#endif
   copy->extra_data_ = extra_data_;
 
   return copy;
