@@ -260,6 +260,7 @@ bool Webm2Pes::ConvertToFile() {
             std::fprintf(stderr, "Webm2Pes: packet payload write failed.\n");
             return false;
           }
+          bytes_written_ += packet_data_.size();
         }
       }
       block_status = cluster->GetNext(block_entry, block_entry);
@@ -325,6 +326,7 @@ bool Webm2Pes::ConvertToPacketReceiver() {
             std::fprintf(stderr, "Webm2Pes: ReceivePacket failed.\n");
             return false;
           }
+          bytes_written_ += packet_data_.size();
         }
       }
       block_status = cluster->GetNext(block_entry, block_entry);

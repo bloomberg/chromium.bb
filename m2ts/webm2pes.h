@@ -224,6 +224,8 @@ class Webm2Pes {
   static bool WritePesPacket(const VideoFrame& frame,
                              PacketDataBuffer* packet_data);
 
+  uint64_t bytes_written() const { return bytes_written_; }
+
  private:
   bool InitWebmParser();
   bool ReadVideoFrame(const mkvparser::Block::Frame& mkvparser_frame,
@@ -250,6 +252,8 @@ class Webm2Pes {
   PacketReceiverInterface* packet_sink_ = nullptr;
 
   PacketDataBuffer packet_data_;
+
+  std::uint64_t bytes_written_ = 0;
 };
 
 // Copies |raw_input_length| bytes from |raw_input| to |packet_buffer| while
