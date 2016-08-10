@@ -214,8 +214,8 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mChooserDialog.addDevice("id-1", "Name 1");
-                mChooserDialog.addDevice("id-2", "Name 2");
+                mChooserDialog.addOrUpdateDevice("id-1", "Name 1");
+                mChooserDialog.addOrUpdateDevice("id-2", "Name 2");
             }
         });
 

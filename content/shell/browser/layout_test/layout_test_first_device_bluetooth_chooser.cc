@@ -45,10 +45,14 @@ void LayoutTestFirstDeviceBluetoothChooser::ShowDiscoveryState(
   }
 }
 
-void LayoutTestFirstDeviceBluetoothChooser::AddDevice(
-    const std::string& deviceId,
-    const base::string16& deviceName) {
-  event_handler_.Run(Event::SELECTED, deviceId);
+void LayoutTestFirstDeviceBluetoothChooser::AddOrUpdateDevice(
+    const std::string& device_id,
+    bool should_update_name,
+    const base::string16& deviceName,
+    bool is_gatt_connected,
+    bool is_paired,
+    const int8_t* rssi) {
+  event_handler_.Run(Event::SELECTED, device_id);
 }
 
 }  // namespace content

@@ -125,7 +125,7 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
     @VisibleForTesting
     @CalledByNative
     void addDevice(String deviceId, String deviceName) {
-        mItemChooserDialog.addItemToList(
+        mItemChooserDialog.addOrUpdateItem(
                 new ItemChooserDialog.ItemChooserRow(deviceId, deviceName));
     }
 

@@ -64,7 +64,7 @@ public class ItemChooserDialog {
      */
     public static class ItemChooserRow {
         private final String mKey;
-        private final String mDescription;
+        private String mDescription;
 
         public ItemChooserRow(String key, String description) {
             mKey = key;
@@ -148,6 +148,9 @@ public class ItemChooserDialog {
         // Item descriptions are counted in a map.
         private Map<String, Integer> mItemDescriptionMap = new HashMap<>();
 
+        // Map of keys to items so that we can access the items in O(1).
+        private Map<String, ItemChooserRow> mKeyToItemMap = new HashMap<>();
+
         public ItemAdapter(Context context, int resource) {
             super(context, resource);
 
@@ -159,17 +162,25 @@ public class ItemChooserDialog {
                     R.color.default_text_color);
         }
 
-        @Override
-        public void add(ItemChooserRow item) {
+        public void addOrUpdate(ItemChooserRow item) {
+            if (mKeyToItemMap.containsKey(item.mKey)) {
+                // TODO(ortuno): Update description.
+                // https://crbug.com/634366
+                return;
+            }
+            ItemChooserRow result = mKeyToItemMap.put(item.mKey, item);
+            assert result == null;
+
             String description = item.mDescription;
             int count = mItemDescriptionMap.containsKey(description)
                     ? mItemDescriptionMap.get(description) : 0;
             mItemDescriptionMap.put(description, count + 1);
-            super.add(item);
+            add(item);
         }
 
         @Override
         public void remove(ItemChooserRow item) {
+            mKeyToItemMap.remove(item.mKey);
             String description = item.mDescription;
             if (mItemDescriptionMap.containsKey(description)) {
                 int count = mItemDescriptionMap.get(description);
@@ -185,6 +196,7 @@ public class ItemChooserDialog {
         @Override
         public void clear() {
             mSelectedItem = ListView.INVALID_POSITION;
+            mKeyToItemMap.clear();
             mDisabledEntries.clear();
             mItemDescriptionMap.clear();
             mConfirmButton.setEnabled(false);
@@ -414,13 +426,14 @@ public class ItemChooserDialog {
     }
 
     /**
-    * Add an item to the end of the list to show in the dialog.
+    * Add an item to the end of the list to show in the dialog if the item
+    * was not in the chooser. Otherwise update the items description.
     *
-    * @param item The item to be added to the end of the chooser.
+    * @param item The item to be added to the end of the chooser or updated.
     */
-    public void addItemToList(ItemChooserRow item) {
+    public void addOrUpdateItem(ItemChooserRow item) {
         mProgressBar.setVisibility(View.GONE);
-        mItemAdapter.add(item);
+        mItemAdapter.addOrUpdate(item);
         setState(State.PROGRESS_UPDATE_AVAILABLE);
     }
 

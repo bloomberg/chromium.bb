@@ -92,14 +92,19 @@ void BluetoothChooserAndroid::ShowDiscoveryState(DiscoveryState state) {
       AttachCurrentThread(), java_dialog_.obj(), java_state);
 }
 
-void BluetoothChooserAndroid::AddDevice(const std::string& device_id,
-                                        const base::string16& device_name) {
+void BluetoothChooserAndroid::AddOrUpdateDevice(
+    const std::string& device_id,
+    bool should_update_name,
+    const base::string16& device_name,
+    bool is_gatt_connected,
+    bool is_paired,
+    const int8_t* rssi) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_device_id =
       ConvertUTF8ToJavaString(env, device_id);
   ScopedJavaLocalRef<jstring> java_device_name =
       ConvertUTF16ToJavaString(env, device_name);
-  Java_BluetoothChooserDialog_addDevice(
+  Java_BluetoothChooserDialog_addOrUpdateDevice(
       env, java_dialog_.obj(), java_device_id.obj(), java_device_name.obj());
 }
 

@@ -47,9 +47,15 @@ class BluetoothChooserController : public ChooserController {
   // discovery is happening.
   void OnDiscoveryStateChanged(content::BluetoothChooser::DiscoveryState state);
 
-  // Shows a new device in the chooser.
-  void AddDevice(const std::string& device_id,
-                 const base::string16& device_name);
+  // Shows a new device in the chooser or updates its information.
+  // TODO(ortuno): Update device's name if necessary.
+  // https://crbug.com/634366
+  void AddOrUpdateDevice(const std::string& device_id,
+                         bool should_update_name,
+                         const base::string16& device_name,
+                         bool is_gatt_connected,
+                         bool is_paired,
+                         const int8_t* rssi);
 
   // Tells the chooser that a device is no longer available.
   void RemoveDevice(const std::string& device_id);
@@ -63,11 +69,12 @@ class BluetoothChooserController : public ChooserController {
   // Bluetooth adapter is turned on or off, or when re-scan happens.
   void ClearAllDevices();
 
-  // Each pair is a (device name, device id).
-  std::vector<std::pair<base::string16, std::string>> device_names_and_ids_;
-  content::BluetoothChooser::EventHandler event_handler_;
+  std::vector<std::string> device_ids_;
+  std::unordered_map<std::string, base::string16> device_id_to_name_map_;
   // Maps from device name to number of devices.
   std::unordered_map<base::string16, int> device_name_map_;
+
+  content::BluetoothChooser::EventHandler event_handler_;
   base::string16 no_devices_text_;
   base::string16 status_text_;
 

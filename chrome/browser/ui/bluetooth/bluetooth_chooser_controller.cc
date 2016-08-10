@@ -50,19 +50,21 @@ base::string16 BluetoothChooserController::GetOkButtonLabel() const {
 }
 
 size_t BluetoothChooserController::NumOptions() const {
-  return device_names_and_ids_.size();
+  return device_ids_.size();
 }
 
 base::string16 BluetoothChooserController::GetOption(size_t index) const {
-  DCHECK_LT(index, device_names_and_ids_.size());
-  const base::string16& device_name = device_names_and_ids_[index].first;
-  const auto& it = device_name_map_.find(device_name);
+  DCHECK_LT(index, device_ids_.size());
+  const std::string& device_id = device_ids_[index];
+  const auto& device_name_it = device_id_to_name_map_.find(device_id);
+  DCHECK(device_name_it != device_id_to_name_map_.end());
+  const auto& it = device_name_map_.find(device_name_it->second);
   DCHECK(it != device_name_map_.end());
   return it->second == 1
-             ? device_name
+             ? device_name_it->second
              : l10n_util::GetStringFUTF16(
-                   IDS_DEVICE_CHOOSER_DEVICE_NAME_WITH_ID, device_name,
-                   base::UTF8ToUTF16(device_names_and_ids_[index].second));
+                   IDS_DEVICE_CHOOSER_DEVICE_NAME_WITH_ID,
+                   device_name_it->second, base::UTF8ToUTF16(device_id));
 }
 
 void BluetoothChooserController::RefreshOptions() {
@@ -83,9 +85,9 @@ void BluetoothChooserController::Select(size_t index) {
             BLUETOOTH_CHOOSER_EVENT_HANDLER_INVALID);
     return;
   }
-  DCHECK_LT(index, device_names_and_ids_.size());
+  DCHECK_LT(index, device_ids_.size());
   event_handler_.Run(content::BluetoothChooser::Event::SELECTED,
-                     device_names_and_ids_[index].second);
+                     device_ids_[index]);
 }
 
 void BluetoothChooserController::Cancel() {
@@ -161,27 +163,54 @@ void BluetoothChooserController::OnDiscoveryStateChanged(
   }
 }
 
-void BluetoothChooserController::AddDevice(const std::string& device_id,
-                                           const base::string16& device_name) {
-  device_names_and_ids_.push_back(std::make_pair(device_name, device_id));
+void BluetoothChooserController::AddOrUpdateDevice(
+    const std::string& device_id,
+    bool should_update_name,
+    const base::string16& device_name,
+    bool is_gatt_connected,
+    bool is_paired,
+    const int8_t* rssi) {
+  auto result = device_id_to_name_map_.insert({device_id, device_name});
+  if (!result.second) {
+    // TODO(ortuno): Update device's information.
+    // https://crbug.com/634366 Update name
+    // http://crbug.com/543466 Update connection and paired status
+    // http://crbug.com/629689 Update RSSI.
+    return;
+  }
+
+  device_ids_.push_back(device_id);
   ++device_name_map_[device_name];
   if (view())
-    view()->OnOptionAdded(device_names_and_ids_.size() - 1);
+    view()->OnOptionAdded(device_ids_.size() - 1);
 }
 
 void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
-  for (auto it = device_names_and_ids_.begin();
-       it != device_names_and_ids_.end(); ++it) {
-    if (it->second == device_id) {
-      size_t index = it - device_names_and_ids_.begin();
-      DCHECK_GT(device_name_map_[it->first], 0);
-      if (--device_name_map_[it->first] == 0)
-        device_name_map_.erase(it->first);
-      device_names_and_ids_.erase(it);
-      if (view())
-        view()->OnOptionRemoved(index);
-      return;
+  const auto& name_it = device_id_to_name_map_.find(device_id);
+  if (name_it == device_id_to_name_map_.end())
+    return;
+
+  size_t index = 0;
+  for (const auto& saved_device_id : device_ids_) {
+    if (saved_device_id != device_id) {
+      ++index;
+      continue;
     }
+
+    device_ids_.erase(device_ids_.begin() + index);
+
+    const auto& it = device_name_map_.find(name_it->second);
+    DCHECK(it != device_name_map_.end());
+    DCHECK_GT(it->second, 0);
+
+    if (--(it->second) == 0)
+      device_name_map_.erase(it);
+
+    device_id_to_name_map_.erase(name_it);
+
+    if (view())
+      view()->OnOptionRemoved(index);
+    return;
   }
 }
 
@@ -190,6 +219,7 @@ void BluetoothChooserController::ResetEventHandler() {
 }
 
 void BluetoothChooserController::ClearAllDevices() {
-  device_names_and_ids_.clear();
+  device_ids_.clear();
+  device_id_to_name_map_.clear();
   device_name_map_.clear();
 }

@@ -68,9 +68,15 @@ class CONTENT_EXPORT BluetoothChooser {
   enum class DiscoveryState { FAILED_TO_START, DISCOVERING, IDLE };
   virtual void ShowDiscoveryState(DiscoveryState state) {}
 
-  // Shows a new device in the chooser.
-  virtual void AddDevice(const std::string& device_id,
-                         const base::string16& device_name) {}
+  // Adds a new device to the chooser or updates the information of an existing
+  // device. Passing nullptr for |rssi| means that the device doesn't not have
+  // RSSI which happens when the device is already connected.
+  virtual void AddOrUpdateDevice(const std::string& device_id,
+                                 bool should_update_name,
+                                 const base::string16& device_name,
+                                 bool is_gatt_connected,
+                                 bool is_paired,
+                                 const int8_t* rssi) {}
 
   // Tells the chooser that a device is no longer available. The chooser should
   // not call DeviceSelected() for a device that's been removed.
