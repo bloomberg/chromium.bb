@@ -182,6 +182,14 @@ public:
     size_t find(const StringView& value, unsigned start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->find, (value, start)) : kNotFound; }
 
+    // Unicode aware case insensitive string matching.
+    size_t findIgnoringCase(const StringView& value, unsigned start = 0) const
+        { return m_impl ? m_impl->findIgnoringCase(value, start) : kNotFound; }
+
+    // ASCII case insensitive string matching.
+    size_t findIgnoringASCIICase(const StringView& value, unsigned start = 0) const
+        { return m_impl ? m_impl->findIgnoringASCIICase(value, start) : kNotFound; }
+
     bool contains(char c) const { return find(c) != kNotFound; }
     bool contains(const StringView& value, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return find(value, 0, caseSensitivity) != kNotFound; }
@@ -191,16 +199,6 @@ public:
         { return m_impl ? m_impl->reverseFind(c, start) : kNotFound; }
     size_t reverseFind(const StringView& value, unsigned start = UINT_MAX) const
         { return m_impl ? m_impl->reverseFind(value, start) : kNotFound; }
-
-    // Case insensitive string matching.
-    size_t findIgnoringCase(const LChar* str, unsigned start = 0) const
-        { return m_impl ? m_impl->findIgnoringCase(str, start) : kNotFound; }
-    size_t findIgnoringCase(const String& str, unsigned start = 0) const
-        { return m_impl ? m_impl->findIgnoringCase(str.impl(), start) : kNotFound; }
-
-    // ASCII case insensitive string matching.
-    size_t findIgnoringASCIICase(const String& str, unsigned start = 0) const
-        { return m_impl ? m_impl->findIgnoringASCIICase(str.impl(), start) : kNotFound; }
 
     unsigned copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const;
 

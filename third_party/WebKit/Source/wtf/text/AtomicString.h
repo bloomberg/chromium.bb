@@ -86,6 +86,14 @@ public:
     size_t find(const StringView& value, unsigned start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_string.find(value, start, caseSensitivity); }
 
+    // Unicode aware case insensitive string matching.
+    size_t findIgnoringCase(const StringView& value, unsigned start = 0) const
+        { return m_string.findIgnoringCase(value, start); }
+
+    // ASCII case insensitive string matching.
+    size_t findIgnoringASCIICase(const StringView& value, unsigned start = 0) const
+        { return m_string.findIgnoringASCIICase(value, start); }
+
     bool contains(char c) const { return find(c) != kNotFound; }
     bool contains(const StringView& value, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return find(value, 0, caseSensitivity) != kNotFound; }
