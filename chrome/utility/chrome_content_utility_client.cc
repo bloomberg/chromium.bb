@@ -178,7 +178,7 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   if (handled)
     return true;
 
-  for (const auto& handler : handlers_) {
+  for (auto* handler : handlers_) {
     // At least one of the utility process handlers adds a new handler to
     // |handlers_| when it handles a message. This causes any iterator over
     // |handlers_| to become invalid. Therefore, it is necessary to break the
