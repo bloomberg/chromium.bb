@@ -13,6 +13,4 @@ if __name__ == "__main__":
     host = host.Host()
     host.initialize_scm()
     port = host.port_factory.get()
-    return_code = main(host, port)
-
-sys.exit(return_code)
+    sys.exit(main(host, port))

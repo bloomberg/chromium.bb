@@ -28,9 +28,11 @@ def main(host, port):
     if not try_jobs:
         print 'No Try Job information was collected.'
         return 1
+
     for job in try_jobs:
         platform_results = expectations_line_adder.get_failing_results_dict(BuildBot(), job.builder_name, job.build_number)
         test_expectations = expectations_line_adder.merge_dicts(test_expectations, platform_results)
+
     for test_name, platform_result in test_expectations.iteritems():
         test_expectations[test_name] = expectations_line_adder.merge_same_valued_keys(platform_result)
     test_expectations = expectations_line_adder.get_expected_txt_files(test_expectations)
@@ -146,10 +148,12 @@ class W3CExpectationsLineAdder(object):
                 merged_dict[current_key] = dictionary[current_key]
                 keys.remove(current_key)
                 break
+
             for next_item in keys[1:]:
                 if dictionary[current_key] == dictionary[next_item]:
                     found_match = True
                     matching_value_keys.update([current_key, next_item])
+
                 if next_item == keys[-1]:
                     if found_match:
                         merged_dict[tuple(matching_value_keys)] = dictionary[current_key]
