@@ -35,7 +35,6 @@ class CommandLine;
 namespace content {
 
 class RenderFrameHost;
-class TestMojoShellContext;
 
 // Turns on nestable tasks, runs the message loop, then resets nestable tasks
 // to what they were originally. Prefer this over MessageLoop::Run for in
@@ -241,7 +240,6 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
 
   int child_thread_count_;
   scoped_refptr<MessageLoopRunner> runner_;
-  std::unique_ptr<TestMojoShellContext> shell_context_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);
 };

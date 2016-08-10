@@ -177,6 +177,9 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
 
   const bool is_broker_;
 
+  // A random token used to identify the child process to Mojo.
+  const std::string mojo_child_token_;
+
   std::unique_ptr<BrowserChildProcessHostImpl> process_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiPluginProcessHost);

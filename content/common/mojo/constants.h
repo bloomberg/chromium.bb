@@ -9,7 +9,6 @@ namespace content {
 
 extern const char kBrowserMojoApplicationName[];
 extern const char kGpuMojoApplicationName[];
-extern const char kPluginMojoApplicationName[];
 extern const char kRendererMojoApplicationName[];
 extern const char kUtilityMojoApplicationName[];
 

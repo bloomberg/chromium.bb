@@ -200,6 +200,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, CacheNotStarted) {
   loader_->StartLoading();
 
   EXPECT_FALSE(loader_->IsCacheRunning());
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
 }
 
 // Verifies that the cache can be started and stopped correctly.

@@ -392,10 +392,6 @@ void GpuProcessHost::RegisterGpuMainThreadFactory(
   g_gpu_main_thread_factory = create;
 }
 
-shell::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
-  return process_->child_connection()->GetRemoteInterfaces();
-}
-
 // static
 GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -417,7 +413,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       kind_(kind),
       process_launched_(false),
       initialized_(false),
-      uma_memory_stats_received_(false) {
+      uma_memory_stats_received_(false),
+      child_token_(mojo::edk::GenerateRandomToken()) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -441,8 +438,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       FROM_HERE,
       base::Bind(base::IgnoreResult(&GpuProcessHostUIShim::Create), host_id));
 
-  process_.reset(new BrowserChildProcessHostImpl(
-      PROCESS_TYPE_GPU, this, kGpuMojoApplicationName));
+  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_GPU, this,
+                                                 child_token_));
 }
 
 GpuProcessHost::~GpuProcessHost() {
@@ -550,7 +547,16 @@ bool GpuProcessHost::Init() {
 
   TRACE_EVENT_INSTANT0("gpu", "LaunchGpuProcess", TRACE_EVENT_SCOPE_THREAD);
 
-  process_->GetHost()->CreateChannelMojo();
+  const std::string mojo_channel_token =
+      process_->GetHost()->CreateChannelMojo(child_token_);
+  if (mojo_channel_token.empty())
+    return false;
+
+  DCHECK(!mojo_child_connection_);
+  mojo_child_connection_.reset(new MojoChildConnection(
+      kGpuMojoApplicationName, "", child_token_,
+      MojoShellContext::GetConnectorForIOThread(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
   gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
   if (in_process_) {
@@ -559,8 +565,7 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_.reset(g_gpu_main_thread_factory(
         InProcessChildThreadParams(
             std::string(), base::ThreadTaskRunnerHandle::Get(),
-            std::string(),
-            process_->child_connection()->service_token()),
+            mojo_channel_token, mojo_child_connection_->service_token()),
         gpu_preferences));
     base::Thread::Options options;
 #if defined(OS_WIN)
@@ -573,7 +578,7 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_->StartWithOptions(options);
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
-  } else if (!LaunchGpuProcess(&gpu_preferences)) {
+  } else if (!LaunchGpuProcess(mojo_channel_token, &gpu_preferences)) {
     return false;
   }
 
@@ -921,6 +926,10 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
       process_->GetTerminationStatus(true /* known_dead */, NULL));
 }
 
+shell::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
+  return mojo_child_connection_->GetRemoteInterfaces();
+}
+
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {
   return kind_;
 }
@@ -938,7 +947,8 @@ void GpuProcessHost::StopGpuProcess() {
   Send(new GpuMsg_Finalize());
 }
 
-bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
+bool GpuProcessHost::LaunchGpuProcess(const std::string& mojo_channel_token,
+                                      gpu::GpuPreferences* gpu_preferences) {
   if (!(gpu_enabled_ &&
       GpuDataManagerImpl::GetInstance()->ShouldUseSwiftShader()) &&
       !hardware_gpu_enabled_) {
@@ -973,6 +983,9 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
   base::CommandLine* cmd_line = new base::CommandLine(exe_path);
 #endif
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
+  cmd_line->AppendSwitchASCII(switches::kMojoChannelToken, mojo_channel_token);
+  cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
+                              mojo_child_connection_->service_token());
   BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
 
 #if defined(OS_WIN)

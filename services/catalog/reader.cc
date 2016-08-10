@@ -133,9 +133,8 @@ std::unique_ptr<Entry> ReadManifest(const base::FilePath& package_dir,
 }
 
 void AddEntryToCache(EntryCache* cache, std::unique_ptr<Entry> entry) {
-  std::vector<std::unique_ptr<Entry>> children = entry->TakeChildren();
-  for (auto& child : children)
-    AddEntryToCache(cache, std::move(child));
+  for (auto* child : entry->services())
+    AddEntryToCache(cache, base::WrapUnique(child));
   (*cache)[entry->name()] = std::move(entry);
 }
 

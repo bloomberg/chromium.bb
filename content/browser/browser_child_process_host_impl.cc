@@ -17,7 +17,6 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -25,8 +24,6 @@
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/memory/memory_message_filter.h"
-#include "content/browser/mojo/mojo_child_connection.h"
-#include "content/browser/mojo/mojo_shell_context.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/child_process_host_impl.h"
@@ -37,7 +34,6 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "ipc/attachment_broker.h"
@@ -87,14 +83,16 @@ void NotifyProcessKilled(const ChildProcessData& data, int exit_code) {
 BrowserChildProcessHost* BrowserChildProcessHost::Create(
     content::ProcessType process_type,
     BrowserChildProcessHostDelegate* delegate) {
-  return Create(process_type, delegate, std::string());
+  return new BrowserChildProcessHostImpl(
+      process_type, delegate, mojo::edk::GenerateRandomToken());
 }
 
 BrowserChildProcessHost* BrowserChildProcessHost::Create(
     content::ProcessType process_type,
     BrowserChildProcessHostDelegate* delegate,
-    const std::string& service_name) {
-  return new BrowserChildProcessHostImpl(process_type, delegate, service_name);
+    const std::string& mojo_child_token) {
+  return new BrowserChildProcessHostImpl(
+      process_type, delegate, mojo_child_token);
 }
 
 BrowserChildProcessHost* BrowserChildProcessHost::FromID(int child_process_id) {
@@ -137,10 +135,10 @@ void BrowserChildProcessHostImpl::RemoveObserver(
 BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     content::ProcessType process_type,
     BrowserChildProcessHostDelegate* delegate,
-    const std::string& service_name)
+    const std::string& mojo_child_token)
     : data_(process_type),
       delegate_(delegate),
-      child_token_(mojo::edk::GenerateRandomToken()),
+      mojo_child_token_(mojo_child_token),
       power_monitor_message_broadcaster_(this),
       is_channel_connected_(false),
       notify_child_disconnected_(false),
@@ -170,14 +168,6 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   GetContentClient()->browser()->BrowserChildProcessHostCreated(this);
 
   power_monitor_message_broadcaster_.Init();
-
-  if (!service_name.empty()) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    child_connection_.reset(new MojoChildConnection(
-        service_name, base::StringPrintf("%d", data_.id), child_token_,
-        MojoShellContext::GetConnectorForIOThread(),
-        base::ThreadTaskRunnerHandle::Get()));
-  }
 }
 
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
@@ -246,18 +236,13 @@ void BrowserChildProcessHostImpl::Launch(
   cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
                              arraysize(kForwardSwitches));
 
-  if (child_connection_) {
-    cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
-                                child_connection_->service_token());
-  }
-
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
       delegate,
       cmd_line,
       data_.id,
       this,
-      child_token_,
+      mojo_child_token_,
       base::Bind(&BrowserChildProcessHostImpl::OnMojoError,
                  weak_factory_.GetWeakPtr(),
                  base::ThreadTaskRunnerHandle::Get()),
@@ -293,6 +278,11 @@ void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {
   data_.handle = handle;
 }
 
+shell::InterfaceProvider* BrowserChildProcessHostImpl::GetRemoteInterfaces() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return delegate_->GetRemoteInterfaces();
+}
+
 void BrowserChildProcessHostImpl::ForceShutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   g_child_process_list.Get().remove(this);
@@ -305,14 +295,6 @@ void BrowserChildProcessHostImpl::SetBackgrounded(bool backgrounded) {
 
 void BrowserChildProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
   child_process_host_->AddFilter(filter->GetFilter());
-}
-
-shell::InterfaceProvider* BrowserChildProcessHostImpl::GetRemoteInterfaces() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!child_connection_)
-    return nullptr;
-
-  return child_connection_->GetRemoteInterfaces();
 }
 
 void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(

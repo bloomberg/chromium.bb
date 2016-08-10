@@ -300,7 +300,7 @@ ChildThreadImpl::Options::Options()
     : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
       use_mojo_channel(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMojoApplicationChannelToken)),
+          switches::kMojoChannelToken)),
       auto_start_mojo_shell_connection(true),
       connect_to_browser(false) {
 }

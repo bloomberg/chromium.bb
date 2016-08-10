@@ -580,8 +580,8 @@ mojom::Resolver* ServiceManager::GetResolver(const Identity& identity) {
 
 void ServiceManager::TerminateServiceManagerConnections() {
   Instance* instance = GetExistingInstance(CreateServiceManagerIdentity());
-  if (instance)
-    OnInstanceError(instance);
+  DCHECK(instance);
+  OnInstanceError(instance);
 }
 
 void ServiceManager::OnInstanceError(Instance* instance) {

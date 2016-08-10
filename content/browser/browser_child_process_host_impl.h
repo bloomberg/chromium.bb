@@ -40,7 +40,6 @@ namespace content {
 class BrowserChildProcessHostIterator;
 class BrowserChildProcessObserver;
 class BrowserMessageFilter;
-class MojoChildConnection;
 
 // Plugins/workers and other child processes that live on the IO thread use this
 // class. RenderProcessHostImpl is the main exception that doesn't use this
@@ -55,7 +54,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
  public:
   BrowserChildProcessHostImpl(content::ProcessType process_type,
                               BrowserChildProcessHostDelegate* delegate,
-                              const std::string& service_name);
+                              const std::string& mojo_child_token);
   ~BrowserChildProcessHostImpl() override;
 
   // Terminates all child processes and deletes each BrowserChildProcessHost
@@ -78,12 +77,12 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
                                                int* exit_code) override;
   void SetName(const base::string16& name) override;
   void SetHandle(base::ProcessHandle handle) override;
+  shell::InterfaceProvider* GetRemoteInterfaces() override;
 
   // ChildProcessHostDelegate implementation:
   bool CanShutdown() override;
   void OnChildDisconnected() override;
   const base::Process& GetProcess() const override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
@@ -105,10 +104,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   static void HistogramBadMessageTerminated(int process_type);
 
   BrowserChildProcessHostDelegate* delegate() const { return delegate_; }
-
-  MojoChildConnection* child_connection() const {
-    return child_connection_.get();
-  }
 
   typedef std::list<BrowserChildProcessHostImpl*> BrowserChildProcessList;
  private:
@@ -141,9 +136,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   ChildProcessData data_;
   BrowserChildProcessHostDelegate* delegate_;
   std::unique_ptr<ChildProcessHost> child_process_host_;
-
-  const std::string child_token_;
-  std::unique_ptr<MojoChildConnection> child_connection_;
+  const std::string mojo_child_token_;
 
   std::unique_ptr<ChildProcessLauncher> child_process_;
 

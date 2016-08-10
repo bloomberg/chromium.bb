@@ -123,6 +123,7 @@ bool BuildCapabilities(const base::DictionaryValue& value,
 Entry::Entry() {}
 Entry::Entry(const std::string& name)
     : name_(name), qualifier_(shell::GetNamePath(name)), display_name_(name) {}
+Entry::Entry(const Entry& other) = default;
 Entry::~Entry() {}
 
 std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
@@ -240,7 +241,7 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
       if (child) {
         child->set_package(entry.get());
         // Caller must assume ownership of these items.
-        entry->children_.emplace_back(std::move(child));
+        entry->services_.insert(child.release());
       }
     }
   }
