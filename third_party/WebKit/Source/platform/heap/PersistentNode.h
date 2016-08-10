@@ -226,6 +226,7 @@ public:
 
     void prepareForThreadStateTermination(ThreadState*);
 
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     static bool shouldTracePersistentNode(Visitor*, PersistentNode*);
 
 private:
