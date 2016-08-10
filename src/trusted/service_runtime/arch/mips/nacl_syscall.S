@@ -125,6 +125,7 @@ DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallSegRegsSaved):
 
   /* NOTREACHED */
 
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallSegEnd):
   /*
    * If the thread returns, which must not happen, it will be halted
    * by the following instruction.

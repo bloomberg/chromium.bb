@@ -14,7 +14,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/service_runtime/arch/arm/tramp_arm.h"
+
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/load_file.h"
@@ -29,6 +29,12 @@
 #include "native_client/src/trusted/service_runtime/thread_suspension_unwind.h"
 #include "native_client/tests/common/register_set.h"
 #include "native_client/tests/signal_handler_single_step/step_test_common.h"
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+# include "native_client/src/trusted/service_runtime/arch/arm/tramp_arm.h"
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+# include "native_client/src/trusted/service_runtime/arch/mips/tramp_mips.h"
+#endif
 
 
 /*
@@ -52,7 +58,7 @@
  *
  * On x86, we use single-stepping by setting the x86 trap flag.
  *
- * ARM does not support single-stepping in hardware, so instead we set
+ * ARM and MIPS do not support single-stepping in hardware, so instead we set
  * breakpoints on the code ranges we are interested in.
  */
 
@@ -72,7 +78,8 @@ static const int kSteppingSignal = SIGTRAP;
 #endif
 
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
+    NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 
 /*
  * This represents a range of address space that has been patched to
@@ -89,7 +96,7 @@ static unsigned g_patch_count = 0;
 /* Address from which the breakpoint has been temporarily removed. */
 uint32_t *g_unpatched_addr = NULL;
 
-const int kArmInstructionBundleSize = 16;
+const int kInstructionBundleSize = 16;
 
 /* Add breakpoints covering the given range of instructions. */
 static void AddBreakpoints(struct NaClApp *nap,
@@ -119,27 +126,20 @@ static void AddBreakpoints(struct NaClApp *nap,
   for (dest = (uint32_t *) start; dest < (uint32_t *) end; ) {
     /* In untrusted address space, avoid overwriting any constant pools. */
     if (NaClIsUserAddr(nap, (uintptr_t) dest) &&
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
         (*dest == NACL_HALT_WORD ||
          *dest == NACL_INSTR_ARM_LITERAL_POOL_HEAD)) {
+#else
+        *dest == NACL_HALT_WORD) {
+#endif
       do {
         dest++;
-      } while ((uintptr_t) dest % kArmInstructionBundleSize != 0);
+      } while ((uintptr_t) dest % kInstructionBundleSize != 0);
     } else {
-      *dest++ = NACL_INSTR_ARM_HALT_FILL;
+      *dest++ = NACL_HALT_WORD;
     }
   }
   __builtin___clear_cache((void *) start, (void *) end);
-}
-
-/*
- * This is a workaround for qemu-arm: Writing to an address that has
- * been executed doesn't seem to work unless we re-call mprotect() on
- * the address.
- */
-static void ResetPagePermissions(uintptr_t addr) {
-  int rc = mprotect((void *) (addr & ~(NACL_PAGESIZE - 1)), NACL_PAGESIZE,
-                    PROT_READ | PROT_WRITE | PROT_EXEC);
-  CHECK(rc == 0);
 }
 
 static uint32_t GetOverwrittenInstruction(uintptr_t addr) {
@@ -155,6 +155,19 @@ static uint32_t GetOverwrittenInstruction(uintptr_t addr) {
   _exit(1);
 }
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+
+/*
+ * This is a workaround for qemu-arm: Writing to an address that has
+ * been executed doesn't seem to work unless we re-call mprotect() on
+ * the address.
+ */
+static void ResetPagePermissions(uintptr_t addr) {
+  int rc = mprotect((void *) (addr & ~(NACL_PAGESIZE - 1)), NACL_PAGESIZE,
+                    PROT_READ | PROT_WRITE | PROT_EXEC);
+  CHECK(rc == 0);
+}
+
 static void TemporarilyRemoveBreakpoint(uintptr_t addr) {
   uint32_t *dest;
 
@@ -163,17 +176,90 @@ static void TemporarilyRemoveBreakpoint(uintptr_t addr) {
     ResetPagePermissions((uintptr_t) g_unpatched_addr);
     CHECK(*g_unpatched_addr
           == GetOverwrittenInstruction((uintptr_t) g_unpatched_addr));
-    *g_unpatched_addr = NACL_INSTR_ARM_HALT_FILL;
+    *g_unpatched_addr = NACL_HALT_WORD;
     __builtin___clear_cache(g_unpatched_addr, &g_unpatched_addr[1]);
   }
 
   dest = (uint32_t *) addr;
   ResetPagePermissions(addr);
-  CHECK(*dest == NACL_INSTR_ARM_HALT_FILL);
+  CHECK(*dest == NACL_HALT_WORD);
   *dest = GetOverwrittenInstruction(addr);
   __builtin___clear_cache(dest, &dest[1]);
   g_unpatched_addr = dest;
 }
+
+#else
+
+static int HasDelaySlot(uint32_t opcode) {
+  /*
+   * jr
+   * 0000 00xx xxx0 0000 0000 0000 0000 1000
+   *
+   * jalr
+   * 0000 00xx xxx0 0000 xxxx x000 0000 1001
+   *
+   * bltz, bgez, bltzl, bgezl, bltzal, bgezal, bltzall, bgezall
+   * 0000 01xx xxxx 00xx xxxx xxxx xxxx xxxx
+   *
+   * j, jal
+   * 0000 1xxx xxxx xxxx xxxx xxxx xxxx xxxx
+   *
+   * beq, bne, beql, bnel
+   * 0x01 0xxx xxxx xxxx xxxx xxxx xxxx xxxx
+   *
+   * blez, bgtz, blezl, bgtzl
+   * 0x01 1xxx xxx0 0000 xxxx xxxx xxxx xxxx
+   *
+   * bc1f, bc1fl, bc1t, bc1tl
+   * 0100 0101 000x xxxx xxxx xxxx xxxx xxxx
+   *
+   */
+
+  return ((opcode & 0xFC1FFFFF) == 0x00000008) ||
+         ((opcode & 0xFC1F07FF) == 0x00000009) ||
+         ((opcode & 0xFC0C0000) == 0x04000000) ||
+         ((opcode & 0xF8000000) == 0x08000000) ||
+         ((opcode & 0xB8000000) == 0x10000000) ||
+         ((opcode & 0xB81F0000) == 0x18000000) ||
+         ((opcode & 0xFFE00000) == 0x45000000);
+}
+
+static void TemporarilyRemoveBreakpoint(uintptr_t addr) {
+  uint32_t *dest;
+  /* MIPS version has to account for instruction in branch delay slot. */
+  uint32_t *delay_slot_addr;
+  int has_delay_slot;
+
+  if (g_unpatched_addr != NULL) {
+    has_delay_slot = HasDelaySlot(*g_unpatched_addr);
+    CHECK(*g_unpatched_addr
+          == GetOverwrittenInstruction((uintptr_t) g_unpatched_addr));
+    *g_unpatched_addr = NACL_HALT_WORD;
+
+    if (has_delay_slot) {
+      delay_slot_addr = g_unpatched_addr + 1;
+      CHECK(*delay_slot_addr
+             == GetOverwrittenInstruction((uintptr_t) delay_slot_addr));
+      *delay_slot_addr = NACL_HALT_WORD;
+    }
+    __builtin___clear_cache(g_unpatched_addr, &g_unpatched_addr[2]);
+  }
+
+  dest = (uint32_t *) addr;
+  CHECK(*dest == NACL_HALT_WORD);
+  *dest = GetOverwrittenInstruction(addr);
+
+  if (HasDelaySlot(*dest)) {
+    delay_slot_addr = dest + 1;
+    CHECK(*delay_slot_addr == NACL_HALT_WORD);
+    *delay_slot_addr = GetOverwrittenInstruction((uintptr_t) delay_slot_addr);
+   }
+
+  __builtin___clear_cache(dest, &dest[2]);
+  g_unpatched_addr = dest;
+}
+
+#endif
 
 static void SetUpBreakpoints(struct NaClApp *nap) {
   AddBreakpoints(nap, (uintptr_t) &NaClSyscallSeg,
@@ -188,7 +274,8 @@ static void SetUpBreakpoints(struct NaClApp *nap) {
 static int32_t TestSyscall(struct NaClAppThread *natp) {
   if (g_call_count == 0) {
     g_natp = natp;
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
+    NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
     SetUpBreakpoints(natp->nap);
 #else
     SetTrapFlag();
@@ -231,7 +318,8 @@ static void TrapSignalHandler(int signal,
     _exit(1);
   }
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
+    NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
   /* Remove breakpoint to allow the instruction to be executed. */
   TemporarilyRemoveBreakpoint(context_ptr->prog_ctr);
 #endif

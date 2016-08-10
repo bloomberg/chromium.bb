@@ -67,6 +67,28 @@ uint32_t g_regs_should_match;
             "str r7, [r5]\n" \
             "b ReturnFromSyscall\n" \
             ".popsection\n");
+#elif defined(__mips__)
+# define SYSCALL_CALLER(suffix) \
+    __asm__(".pushsection .text, \"ax\", @progbits\n" \
+            ".p2align 4\n" \
+            ".set noreorder\n" \
+            ".globl SyscallCaller" suffix "\n" \
+            "SyscallCaller" suffix ":\n" \
+            /* Set g_regs_should_match = 1. */ \
+            "sw $s2, 0($s1)\n" \
+            /* Call syscall. */ \
+            "jalr $s0\n" \
+            "nop\n" \
+            ".p2align 4\n" \
+            ".globl SyscallReturnAddress" suffix "\n" \
+            "SyscallReturnAddress" suffix ":\n" \
+            /* Set g_regs_should_match = 0. */ \
+            "sw $zero, 0($s1)\n" \
+            "lui $t9, %hi(ReturnFromSyscall)\n" \
+            "b ReturnFromSyscall\n" \
+            "addiu $t9, $t9, %lo(ReturnFromSyscall)\n" \
+            ".set reorder\n" \
+            ".popsection\n");
 #else
 # error Unsupported architecture
 #endif
@@ -128,6 +150,10 @@ int main(int argc, char **argv) {
     call_regs.r5 = (uintptr_t) &g_regs_should_match;
     call_regs.r6 = 1;
     call_regs.r7 = 0;
+#elif defined(__mips__)
+    call_regs.s0 = syscall_addr;
+    call_regs.s1 = (uintptr_t) &g_regs_should_match;
+    call_regs.s2 = 1;
 #else
 # error Unsupported architecture
 #endif

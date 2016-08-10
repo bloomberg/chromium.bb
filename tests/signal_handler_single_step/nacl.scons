@@ -17,8 +17,6 @@ trusted_env = env['TRUSTED_ENV']
 if not env.AllowInlineAssembly():
   Return()
 
-if not (env.Bit('build_x86') or env.Bit('build_arm')):
-  Return()
 # This test uses POSIX signal handling so does not build on Windows.
 if env.Bit('host_windows'):
   Return()
