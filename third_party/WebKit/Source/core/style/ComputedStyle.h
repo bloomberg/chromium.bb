@@ -2166,6 +2166,9 @@ public:
 
     // Overflow utility functions.
 
+    EOverflow overflowInlineDirection() const { return isHorizontalWritingMode() ? overflowX() : overflowY(); }
+    EOverflow overflowBlockDirection() const { return isHorizontalWritingMode() ? overflowY() : overflowX(); }
+
     // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
     bool isOverflowVisible() const { DCHECK(overflowX() != OverflowVisible || overflowX() == overflowY()); return overflowX() == OverflowVisible; }
     bool isOverflowPaged() const { return overflowY() == OverflowPagedX || overflowY() == OverflowPagedY; }
