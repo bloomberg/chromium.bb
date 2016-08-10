@@ -10,7 +10,11 @@ Polymer({
   is: 'settings-people-page',
 
   behaviors: [
+    I18nBehavior,
     WebUIListenerBehavior,
+<if expr="chromeos">
+    LockStateBehavior,
+</if>
   ],
 
   properties: {
@@ -135,6 +139,17 @@ Polymer({
 </if>
   },
 
+<if expr="chromeos">
+  /** @private */
+  getPasswordState_: function(hasPin, enableScreenLock) {
+    if (!enableScreenLock)
+      return this.i18n('lockScreenNone');
+    if (hasPin)
+      return this.i18n('lockScreenPinOrPassword');
+    return this.i18n('lockScreenPasswordOnly');
+  },
+</if>
+
   /**
    * Handler for when the profile's icon and name is updated.
    * @private
@@ -232,8 +247,8 @@ Polymer({
 
 <if expr="chromeos">
   /** @private */
-  onQuickUnlockTap_: function() {
-    settings.navigateTo(settings.Route.QUICK_UNLOCK_AUTHENTICATE);
+  onConfigureLockTap_: function() {
+    settings.navigateTo(settings.Route.LOCK_SCREEN);
   },
 
   /** @private */

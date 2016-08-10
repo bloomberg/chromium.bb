@@ -4,37 +4,16 @@
 
 /**
  * @fileoverview
- * 'settings-quick-unlock-setup-pin' is the settings page for choosing a PIN.
+ * 'settings-setup-pin-dialog' is the settings page for choosing a PIN.
  *
  * Example:
  *
- * <settings-quick-unlock-setup-pin set-modes="[[quickUnlockSetModes]]">
- * </settings-quick-unlock-setup-pin>
+ * <settings-setup-pin-dialog set-modes="[[quickUnlockSetModes]]">
+ * </settings-setup-pin-dialog>
  */
 
 (function() {
 'use strict';
-
-/**
- * Metainformation about a problem message to pass to showProblem. |class| is
- * the css class to show the problem message with. |messageId| is the i18n
- * string id to use.
- * @const
- */
-var ProblemInfo = {
-  TOO_SHORT: {
-    messageId: 'quickUnlockConfigurePinChoosePinTooShort',
-    class: 'error'
-  },
-  WEAK: {
-    messageId: 'quickUnlockConfigurePinChoosePinWeakPinWarning',
-    class: 'warning'
-  },
-  MISMATCHED: {
-    messageId: 'quickUnlockConfigurePinMismatchedPins',
-    class: 'error'
-  }
-};
 
 /**
  * A list of the top-10 most commmonly used PINs. This list is taken from
@@ -47,13 +26,9 @@ var WEAK_PINS = [
 ];
 
 Polymer({
-  is: 'settings-quick-unlock-setup-pin',
+  is: 'settings-setup-pin-dialog',
 
-  behaviors: [
-    I18nBehavior,
-    QuickUnlockPasswordDetectBehavior,
-    settings.RouteObserverBehavior
-  ],
+  behaviors: [I18nBehavior],
 
   properties: {
     /**
@@ -95,31 +70,21 @@ Polymer({
     },
   },
 
-  observers: ['onSetModesChanged_(setModes)'],
-
   /** @override */
   attached: function() {
     this.resetState_();
-
-    if (settings.getCurrentRoute() == settings.Route.QUICK_UNLOCK_SETUP_PIN)
-      this.askForPasswordIfUnset();
   },
 
-  /** @protected */
-  currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.Route.QUICK_UNLOCK_SETUP_PIN) {
-      this.askForPasswordIfUnset();
-    } else {
-      // If the user hits the back button, they can leave the element
-      // half-completed; therefore, reset state if the element is not active.
-      this.resetState_();
-    }
+  open: function() {
+    this.$.dialog.showModal();
+    this.$.pinKeyboard.focus();
   },
 
-  /** @private */
-  onSetModesChanged_: function() {
-    if (settings.getCurrentRoute() == settings.Route.QUICK_UNLOCK_SETUP_PIN)
-      this.askForPasswordIfUnset();
+  close: function() {
+    if (this.$.dialog.open)
+      this.$.dialog.close();
+
+    this.resetState_();
   },
 
   /**
@@ -132,6 +97,12 @@ Polymer({
     this.enableSubmit_ = false;
     this.isConfirmStep_ = false;
     this.onPinChange_();
+  },
+
+  /** @private */
+  onCancelTap_: function() {
+    this.resetState_();
+    this.$.dialog.cancel();
   },
 
   /**
@@ -182,11 +153,12 @@ Polymer({
   /**
    * Notify the user about a problem.
    * @private
-   * @param {!{messageId: string, class: string}} problemInfo
+   * @param {string} messageId
+   * @param {string} problemClass
    */
-  showProblem_: function(problemInfo) {
-    this.problemMessage_ = this.i18n(problemInfo.messageId);
-    this.problemClass_ = problemInfo.class;
+  showProblem_: function(messageId, problemClass) {
+    this.problemMessage_ = this.i18n(messageId);
+    this.problemClass_ = problemClass;
     this.updateStyles();
   },
 
@@ -203,9 +175,9 @@ Polymer({
       var isWeak = isPinLongEnough && this.isPinWeak_(this.pinKeyboardValue_);
 
       if (!isPinLongEnough && this.pinKeyboardValue_)
-        this.showProblem_(ProblemInfo.TOO_SHORT);
+        this.showProblem_('configurePinTooShort', 'error');
       else if (isWeak)
-        this.showProblem_(ProblemInfo.WEAK);
+        this.showProblem_('configurePinWeakPin', 'warning');
       else
         this.hideProblem_();
 
@@ -215,7 +187,7 @@ Polymer({
       var canSubmit = this.canSubmit_();
 
       if (!canSubmit && this.pinKeyboardValue_)
-        this.showProblem_(ProblemInfo.MISMATCHED);
+        this.showProblem_('configurePinMismatched', 'error');
       else
         this.hideProblem_();
 
@@ -245,7 +217,7 @@ Polymer({
         }
 
         this.resetState_();
-        settings.navigateTo(settings.Route.QUICK_UNLOCK_CHOOSE_METHOD);
+        this.fire('done');
       }
 
       this.setModes.call(
@@ -271,9 +243,8 @@ Polymer({
    * @return {string}
    */
   getTitleMessage_: function(isConfirmStep) {
-    if (!isConfirmStep)
-      return this.i18n('quickUnlockConfigurePinChoosePinTitle');
-    return this.i18n('quickUnlockConfigurePinConfirmPinTitle');
+    return this.i18n(isConfirmStep ? 'configurePinConfirmPinTitle' :
+                                     'configurePinChoosePinTitle');
   },
 
   /**
@@ -282,9 +253,7 @@ Polymer({
    * @return {string}
    */
   getContinueMessage_: function(isConfirmStep) {
-    if (!isConfirmStep)
-      return this.i18n('quickUnlockConfigurePinContinueButton');
-    return this.i18n('save');
+    return this.i18n(isConfirmStep ? 'confirm' : 'configurePinContinueButton');
   },
 });
 

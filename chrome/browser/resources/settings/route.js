@@ -121,16 +121,9 @@ cr.define('settings', function() {
 </if>
 <if expr="chromeos">
   r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture', 'changePicture');
-  r.QUICK_UNLOCK_AUTHENTICATE =
-      r.PEOPLE.createChild('/quickUnlock/authenticate',
-                           'quick-unlock-authenticate');
-  r.QUICK_UNLOCK_CHOOSE_METHOD =
-      r.PEOPLE.createChild('/quickUnlock/chooseMethod',
-                           'quick-unlock-choose-method');
-  r.QUICK_UNLOCK_SETUP_PIN =
-      r.QUICK_UNLOCK_CHOOSE_METHOD.createChild('/quickUnlock/setupPin',
-                                               'quick-unlock-setup-pin');
   r.ACCOUNTS = r.PEOPLE.createChild('/accounts', 'users');
+  r.LOCK_SCREEN = r.PEOPLE.createChild('/lockScreen', 'lockScreen');
+  r.SETUP_PIN = r.LOCK_SCREEN.createDialog('/setupPin', 'setupPin');
 
   r.DEVICE = r.BASIC.createSection('/device', 'device');
   r.POINTERS = r.DEVICE.createChild('/pointer-overlay', 'pointers');

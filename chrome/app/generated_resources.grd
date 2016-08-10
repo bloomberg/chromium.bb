@@ -495,6 +495,9 @@ are declared in build/common.gypi.
       <message name="IDS_SAVE" desc="Used on a button to save information you are editing.">
         Save
       </message>
+      <message name="IDS_CONFIRM" desc="A button that lets the user confirm something.">
+        Confirm
+      </message>
       <message name="IDS_DISABLE" desc="Used for Disable on buttons">
         Disable
       </message>

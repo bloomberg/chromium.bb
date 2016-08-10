@@ -5,27 +5,29 @@
 /**
  * @fileoverview
  *
- * 'settings-quick-unlock-authenticate' shows a password input prompt to the
- * user. It validates the password is correct. Once the user has entered their
- * account password, the page navigates to the quick unlock setup methods page.
+ * 'settings-password-prompt-dialog' shows a dialog which asks for the user to
+ * enter their password. It validates the password is correct. Once the user has
+ * entered their account password, the page fires an 'authenticated' event and
+ * updates the setModes binding.
  *
- * This element provides a wrapper around chrome.quickUnlockPrivate.setModes
- * which has a prebound account password (the |set-modes| property). The account
- * password by itself is not available for other elements to access.
+ * The setModes binding is a wrapper around chrome.quickUnlockPrivate.setModes
+ * which has a prebound account password. The account password by itself is not
+ * available for other elements to access.
  *
  * Example:
  *
- * <settings-quick-unlock-authenticate
- *     set-modes="[[setModes]]"
- *     profile-name="[[profileName_]]">
- * </settings-quick-unlock-authenticate>
+ * <settings-password-prompt-dialog
+ *   id="passwordPrompt"
+ *   set-modes="[[setModes]]">
+ * </settings-password-prompt-dialog>
+ *
+ * this.$.passwordPrompt.open()
  */
 
 (function() {
 'use strict';
 
 /** @const */ var PASSWORD_ACTIVE_DURATION_MS = 10 * 60 * 1000; // Ten minutes.
-/** @const */ var AUTOSUBMIT_DELAY_MS = 500; // .5 seconds
 
 /**
  * Helper method that checks if |password| is valid.
@@ -43,9 +45,7 @@ function checkAccountPassword_(password, onCheck) {
 }
 
 Polymer({
-  is: 'settings-quick-unlock-authenticate',
-
-  behavior: [settings.RouteObserverBehavior],
+  is: 'settings-password-prompt-dialog',
 
   properties: {
     /**
@@ -60,18 +60,16 @@ Polymer({
     },
 
     /**
-     * Name of the profile.
-     */
-    profileName: String,
-
-    /**
      * The actual value of the password field. This is cleared whenever the
      * authentication screen is not displayed so that the user's password is not
      * easily available to an attacker. The actual password is stored as an
      * captured closure variable inside of setModes.
      * @private
      */
-    password_: String,
+    password_: {
+      type: String,
+      observer: 'onPasswordChanged_'
+    },
 
     /**
      * Helper property which marks password as valid/invalid.
@@ -80,35 +78,44 @@ Polymer({
     passwordInvalid_: Boolean
   },
 
-  /** @protected */
-  currentRouteChanged: function() {
-    // Clear local state if this screen is not active so if this screen shows
-    // up again the user will get a fresh UI.
-    if (settings.getCurrentRoute() == settings.Route.QUICK_UNLOCK_AUTHENTICATE)
+  /**
+   * Open up the dialog. This will wait until the dialog has loaded before
+   * opening it.
+   */
+  open: function() {
+    // Wait until the dialog is attached to the DOM before trying to open it.
+    var dialog = /** @type {{isConnected: boolean}} */ (this.$.dialog);
+    if (!dialog.isConnected) {
+      setTimeout(this.open.bind(this));
       return;
+    }
+
+    this.$.dialog.showModal();
+  },
+
+  /** Close the dialog. */
+  close: function() {
+    if (this.$.dialog.open)
+      this.$.dialog.close();
 
     this.password_ = '';
-    this.passwordInvalid_ = false;
+  },
+
+  /** Cancel the password prompt. */
+  cancel: function() {
+    if (this.$.dialog.open)
+      this.$.dialog.cancel();
+
+    // We bind setModes_ in an on-change event, so when the user hits cancel
+    // after they enter their valid password we may have authenticated them.
+    this.setModes_ = undefined;
   },
 
   /**
-   * Start or restart a timer to check the account password and move past the
-   * authentication screen.
+   * Run the account password check.
    * @private
    */
-  startDelayedPasswordCheck_: function() {
-    clearTimeout(this.delayedPasswordCheckTimeout_);
-    this.delayedPasswordCheckTimeout_ =
-        setTimeout(this.checkPasswordNow_.bind(this), AUTOSUBMIT_DELAY_MS);
-  },
-
-  /**
-   * Run the account password check right now. This will cancel any delayed
-   * check.
-   * @private
-   */
-  checkPasswordNow_: function() {
-    clearTimeout(this.delayedPasswordCheckTimeout_);
+  checkPassword_: function() {
     clearTimeout(this.clearAccountPasswordTimeout_);
 
     // The user might have started entering a password and then deleted it all.
@@ -142,13 +149,22 @@ Polymer({
         }
 
         this.clearAccountPasswordTimeout_ = setTimeout(
-            clearSetModes.bind(this), PASSWORD_ACTIVE_DURATION_MS);
-
-        settings.navigateTo(settings.Route.QUICK_UNLOCK_CHOOSE_METHOD);
+          clearSetModes.bind(this), PASSWORD_ACTIVE_DURATION_MS);
+        this.close();
       }
     }
 
     checkAccountPassword_(this.password_, onPasswordChecked.bind(this));
+  },
+
+  /** @private */
+  onPasswordChanged_: function() {
+    this.passwordInvalid_ = false;
+  },
+
+  /** @private */
+  enableConfirm_: function() {
+    return !!this.password_ && !this.passwordInvalid_;
   }
 });
 
