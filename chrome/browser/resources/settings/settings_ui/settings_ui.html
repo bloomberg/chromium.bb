@@ -14,33 +14,6 @@
 <dom-module id="settings-ui">
   <template>
     <style include="settings-shared">
-      /* TODO(dbeam): remove appeal before launch. */
-      #appeal {
-        align-items: center;
-        background: rgb(123, 170, 247);
-        display: flex;
-      }
-
-      #request {
-        flex: 1;
-        font-size: .8125rem;
-        font-weight: bold;
-        padding: 8px 24px;
-      }
-
-      #request h1 {
-        font-size: 1rem;
-        margin: 0;
-      }
-
-      #request a {
-        color: rgb(100, 100, 255);
-      }
-
-      #close {
-        padding: 20px;
-      }
-
       :host {
         @apply(--layout-fit);
         --paper-header-panel-waterfall-container: {
@@ -110,11 +83,8 @@
         overflow: auto;
       }
     </style>
-    <!-- TODO(dpapad): Remove "coming soon" string once crbug.com/608535 fully
-      addressed -->
-    <cr-toolbar page-name="$i18n{settings}"
-        clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}
-        (coming soon!)" on-cr-menu-tap="onMenuButtonTap_"
+    <cr-toolbar page-name="$i18n{settings}" clear-label="$i18n{clearSearch}"
+        search-prompt="$i18n{searchPrompt}" on-cr-menu-tap="onMenuButtonTap_"
         spinner-active="[[toolbarSpinnerActive_]]">
     </cr-toolbar>
     <app-drawer swipe-open>
@@ -130,18 +100,6 @@
           page-visibility="[[pageVisibility_]]">
       </settings-main>
     </paper-header-panel>
-
-    <!-- TODO(dbeam): remove before launch. -->
-    <div id="appeal" hidden="[[appealClosed_]]">
-      <span id="request">
-        <h1>Please read: A personal appeal from the Chrome settings team.</h1>
-        <a href="[[appealBugUrl_]]">Please file bugs</a>
-        before you
-        <a href="chrome://settings-frame">go back to the old settings</a>.
-      </span>
-      <span id="close" tabindex=0 on-tap="onCloseAppealTap_">&#x2715;</span>
-    </div>
-
   </template>
   <script src="settings_ui.js"></script>
 </dom-module>
