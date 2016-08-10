@@ -78,6 +78,9 @@ class WebContents;
 // hidden while a permissions bubble is visible.)
 - (void)permissionBubbleWindowWillClose:(NSNotification*)notification;
 
+// Updates the anchor position of the permission bubble.
+- (void)updatePermissionBubbleAnchor;
+
 // Enter or exit fullscreen without using Cocoa's System Fullscreen API.  These
 // methods are internal implementations of |-setFullscreen:|.
 - (void)enterImmersiveFullscreen;

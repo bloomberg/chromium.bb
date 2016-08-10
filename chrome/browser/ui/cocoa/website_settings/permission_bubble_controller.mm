@@ -300,8 +300,9 @@ const NSSize kPermissionIconSize = {18, 18};
 }
 
 - (void)parentWindowDidResize:(NSNotification*)notification {
-  DCHECK(bridge_);
-  [self updateAnchorPosition];
+  // Override the base class implementation, which sets the anchor point. But
+  // it's not necessary since BrowserWindowController will notify the
+  // PermissionRequestManager to update the anchor position on a resize.
 }
 
 - (void)parentWindowDidMove:(NSNotification*)notification {

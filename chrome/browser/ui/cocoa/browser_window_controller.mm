@@ -1713,6 +1713,8 @@ bool IsTabDetachingInFullscreenEnabled() {
     statusBubble_->UpdateSizeAndPosition();
   }
 
+  [self updatePermissionBubbleAnchor];
+
   // The FindBar needs to know its own position to properly detect overlaps
   // with find results. The position changes whenever the window is resized,
   // and |layoutSubviews| computes the FindBar's position.

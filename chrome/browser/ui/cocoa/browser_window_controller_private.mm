@@ -269,9 +269,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // Will update the location of the permission bubble when showing/hiding the
   // top level toolbar in fullscreen.
-  PermissionRequestManager* manager = [self permissionRequestManager];
-  if (manager)
-    manager->UpdateAnchorPosition();
+  [self updatePermissionBubbleAnchor];
 
   browser_->GetBubbleManager()->UpdateAllBubbleAnchors();
 }
@@ -421,10 +419,7 @@ willPositionSheet:(NSWindow*)sheet
   if (statusBubble_)
     statusBubble_->SwitchParentWindow(destWindow);
 
-  // Updates the bubble position.
-  PermissionRequestManager* manager = [self permissionRequestManager];
-  if (manager)
-    manager->UpdateAnchorPosition();
+  [self updatePermissionBubbleAnchor];
 
   // Move the title over.
   [destWindow setTitle:[sourceWindow title]];
@@ -460,6 +455,12 @@ willPositionSheet:(NSWindow*)sheet
   [self releaseBarVisibilityForOwner:[notification object]
                        withAnimation:YES
                                delay:YES];
+}
+
+- (void)updatePermissionBubbleAnchor {
+  PermissionRequestManager* manager = [self permissionRequestManager];
+  if (manager)
+    manager->UpdateAnchorPosition();
 }
 
 - (void)configureFullscreenToolbarController {
