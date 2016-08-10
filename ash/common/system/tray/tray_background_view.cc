@@ -175,11 +175,6 @@ void TrayBackgroundView::TrayContainer::SetAlignment(ShelfAlignment alignment) {
   UpdateLayout();
 }
 
-void TrayBackgroundView::TrayContainer::SetMargin(const gfx::Insets& margin) {
-  margin_ = margin;
-  UpdateLayout();
-}
-
 gfx::Size TrayBackgroundView::TrayContainer::GetPreferredSize() const {
   if (size_.IsEmpty())
     return views::View::GetPreferredSize();
@@ -212,9 +207,8 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
     // Additional padding used to adjust the user-visible size of status tray
     // dark background.
     const int padding = 3;
-    SetBorder(views::Border::CreateEmptyBorder(gfx::Insets(padding) + margin_));
-  } else {
-    SetBorder(views::Border::CreateEmptyBorder(margin_));
+    SetBorder(
+        views::Border::CreateEmptyBorder(padding, padding, padding, padding));
   }
 
   views::BoxLayout* layout = new views::BoxLayout(orientation, 0, 0, 0);

@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/gfx/animation/animation_container.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -42,9 +41,7 @@ namespace ash {
 class AshPopupAlignmentDelegate;
 class SystemTray;
 class WebNotificationBubbleWrapper;
-class WebNotificationButton;
-class WebNotificationImage;
-class WebNotificationLabel;
+class WebNotificationIcon;
 class WmWindow;
 
 class ASH_EXPORT WebNotificationTray
@@ -58,8 +55,6 @@ class ASH_EXPORT WebNotificationTray
                       WmWindow* status_area_window,
                       SystemTray* system_tray);
   ~WebNotificationTray() override;
-
-  static void DisableAnimationsForTest(bool disable);
 
   // Sets the height of the system tray bubble (or legacy notification bubble)
   // from the edge of the work area so that the web notification popups don't
@@ -118,7 +113,7 @@ class ASH_EXPORT WebNotificationTray
   bool IsContextMenuEnabled() const override;
   message_center::MessageCenterTray* GetMessageCenterTray() override;
 
-  // Overridden from ui::SimpleMenuModel::Delegate.
+  // Overridden from SimpleMenuModel::Delegate.
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
@@ -174,13 +169,7 @@ class ASH_EXPORT WebNotificationTray
   std::unique_ptr<message_center::MessageCenterTray> message_center_tray_;
   std::unique_ptr<WebNotificationBubbleWrapper> message_center_bubble_;
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
-  std::unique_ptr<WebNotificationImage> bell_icon_;
-  std::unique_ptr<WebNotificationLabel> counter_;
-
-  scoped_refptr<gfx::AnimationContainer> animation_container_ =
-      new gfx::AnimationContainer();
-
-  std::unordered_map<std::string, WebNotificationImage*> visible_small_icons_;
+  WebNotificationIcon* icon_;
 
   bool show_message_center_on_unlock_;
 
