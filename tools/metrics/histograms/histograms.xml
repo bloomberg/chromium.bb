@@ -39483,6 +39483,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PaymentRequest.SelectedPaymentMethod"
+    enum="PaymentRequestPaymentMethods">
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    Tracks what payment method was used to complete a transaction in Payment
+    Request.
+  </summary>
+</histogram>
+
 <histogram name="PDF.DocumentFeature" enum="PDFFeatures">
   <owner>tsergeant@chromium.org</owner>
   <summary>
@@ -87747,6 +87756,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="NoMatchingPaymentMethod"/>
   <int value="7" label="NoSupportedPaymentMethod"/>
   <int value="8" label="Other"/>
+</enum>
+
+<enum name="PaymentRequestPaymentMethods" type="int">
+  <int value="0" label="Autofill credit cards"/>
+  <int value="1" label="Android Pay"/>
+  <int value="2" label="Other Payment App"/>
 </enum>
 
 <enum name="PaymentRequestRequestedInformation" type="int">

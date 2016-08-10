@@ -97,6 +97,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     private static final String TAG = "cr_PaymentRequest";
+    private static final String ANDROID_PAY_METHOD_NAME = "https://android.com/pay";
     private static final int SUGGESTIONS_LIMIT = 4;
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             new Comparator<Completable>() {
@@ -1032,11 +1033,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
-        // If the payment method was an Autofill credit card with an identifier, record its use.
-        if (mPaymentMethodsSection.getSelectedItem() instanceof AutofillPaymentInstrument
-                && !mPaymentMethodsSection.getSelectedItem().getIdentifier().isEmpty()) {
-            PersonalDataManager.getInstance().recordAndLogCreditCardUse(
-                    mPaymentMethodsSection.getSelectedItem().getIdentifier());
+        // Record the payment method used to complete the transaction. If the payment method was an
+        // Autofill credit card with an identifier, record its use.
+        PaymentOption selectedPaymentMethod = mPaymentMethodsSection.getSelectedItem();
+        if (selectedPaymentMethod instanceof AutofillPaymentInstrument) {
+            if (!selectedPaymentMethod.getIdentifier().isEmpty()) {
+                PersonalDataManager.getInstance().recordAndLogCreditCardUse(
+                        selectedPaymentMethod.getIdentifier());
+            }
+            PaymentRequestMetrics.recordSelectedPaymentMethodHistogram(
+                    PaymentRequestMetrics.SELECTED_METHOD_CREDIT_CARD);
+        } else if (methodName.equals(ANDROID_PAY_METHOD_NAME)) {
+            PaymentRequestMetrics.recordSelectedPaymentMethodHistogram(
+                    PaymentRequestMetrics.SELECTED_METHOD_ANDROID_PAY);
+        } else {
+            PaymentRequestMetrics.recordSelectedPaymentMethodHistogram(
+                    PaymentRequestMetrics.SELECTED_METHOD_OTHER_PAYMENT_APP);
         }
 
         mUI.showProcessingMessage();

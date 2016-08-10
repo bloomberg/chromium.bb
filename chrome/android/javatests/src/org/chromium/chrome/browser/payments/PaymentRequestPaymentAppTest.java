@@ -66,7 +66,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
     @MediumTest
     public void testPaymentWithInstrumentsAppResponseAfterDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        final BobPay app = installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        final TestPay app = installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         triggerUIAndWait(mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -84,7 +84,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
     @MediumTest
     public void testPaymentAppNoInstrumentsResponseAfterDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        final BobPay app = installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        final TestPay app = installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
         triggerUIAndWait(mShowFailed);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

@@ -46,7 +46,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     public void testSuccessCheckoutFunnel() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Initiate a payment request.
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait("ccBuy", mReadyToPay);
 
         // Make sure sure that the "Initiated" and "Shown" events were logged.
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
@@ -79,7 +79,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @MediumTest
     public void testAbortMetrics_AbortedByUser_CancelButton() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait("ccBuy", mReadyToPay);
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
 
         // Cancel the Payment Request.
@@ -104,7 +104,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @MediumTest
     public void testAbortMetrics_AbortedByUser_XButton() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait("ccBuy", mReadyToPay);
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
 
         // Press the [X] button.
@@ -122,7 +122,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @MediumTest
     public void testAbortMetrics_AbortedByUser_BackButton() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait("ccBuy", mReadyToPay);
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
 
         // Press the back button.
@@ -147,7 +147,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @MediumTest
     public void testAbortMetrics_AbortedByUser_TabClosed() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait("ccBuy", mReadyToPay);
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
 
         // Press the back button.
@@ -164,7 +164,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @MediumTest
     public void testAbortMetrics_AbortedByMerchant() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait("ccBuy", mReadyToPay);
 
         // Simulate an abort by the merchant.
         clickNodeAndWait("abort", mDismissed);
@@ -182,9 +182,9 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @MediumTest
     public void testAbortMetrics_NoMatchingPaymentMethod() throws InterruptedException,
             ExecutionException, TimeoutException {
-        // Bob pay is supported but no instruments are present.
-        installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
-        triggerUIAndWait("noMatching", mShowFailed);
+        // Android Pay is supported but no instruments are present.
+        installPaymentApp("https://android.com/pay", NO_INSTRUMENTS, DELAYED_RESPONSE);
+        triggerUIAndWait("androidPayBuy", mShowFailed);
         expectResultContains(new String[] {"The payment method is not supported"});
 
         assertOnlySpecificAbortMetricLogged(
@@ -207,6 +207,39 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     }
 
     /**
+     * Expect only the SELECTED_METHOD_CREDIT_CARD enum value to be logged for the
+     * "SelectedPaymentMethod" histogram when completing a Payment Request with a credit card.
+     */
+    @MediumTest
+    public void testSelectedPaymentMethod_CreditCard() throws InterruptedException,
+            ExecutionException, TimeoutException {
+        // Complete a Payment Request with a credit card.
+        triggerUIAndWait("ccBuy", mReadyToPay);
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+
+        assertOnlySpecificSelectedPaymentMethodMetricLogged(
+                PaymentRequestMetrics.SELECTED_METHOD_CREDIT_CARD);
+    }
+
+    /**
+     * Expect only the SELECTED_METHOD_ANDROID_PAY enum value to be logged for the
+     * "SelectedPaymentMethod" histogram when completing a Payment Request with Android Pay.
+     */
+    @MediumTest
+    public void testSelectedPaymentMethod_AndroidPay() throws InterruptedException,
+            ExecutionException, TimeoutException {
+        // Complete a Payment Request with Android Pay.
+        installPaymentApp("https://android.com/pay", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        triggerUIAndWait("androidPayBuy", mReadyToPay);
+        clickAndWait(R.id.button_primary, mDismissed);
+
+        assertOnlySpecificSelectedPaymentMethodMetricLogged(
+                PaymentRequestMetrics.SELECTED_METHOD_ANDROID_PAY);
+    }
+
+    /**
      * Asserts that only the specified reason for abort is logged.
      *
      * @param abortReason The only bucket in the abort histogram that should have a record.
@@ -216,6 +249,20 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
             assertEquals((i == abortReason ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.CheckoutFunnel.Aborted", i));
+        }
+    }
+
+    /**
+     * Asserts that only the specified selected payment method is logged.
+     *
+     * @param paymentMethod The only bucket in the selected payment method histogram that should
+     *                      have a record.
+     */
+    private void assertOnlySpecificSelectedPaymentMethodMetricLogged(int paymentMethod) {
+        for (int i = 0; i < PaymentRequestMetrics.SELECTED_METHOD_MAX; ++i) {
+            assertEquals((i == paymentMethod ? 1 : 0),
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            "PaymentRequest.SelectedPaymentMethod", i));
         }
     }
 }

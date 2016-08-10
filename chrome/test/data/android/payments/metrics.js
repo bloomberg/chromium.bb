@@ -12,7 +12,7 @@ var request;
 /**
  * Launches the PaymentRequest UI that accepts credit cards.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function ccBuy() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
         [{supportedMethods: ['visa']}], {
@@ -44,13 +44,12 @@ function buy() {  // eslint-disable-line no-unused-vars
 }
 
 /**
- * Launches the PaymentRequest UI which accepts a supported payment method but
- * does not accept credit cards.
+ * Launches the PaymentRequest UI which accepts only Android Pay.
  */
-function noMatching() {  // eslint-disable-line no-unused-vars
+function androidPayBuy() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [{supportedMethods: ['https://bobpay.com']}], {
+        [{supportedMethods: ['https://android.com/pay']}], {
           total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
           shippingOptions: [{
             id: 'freeShippingOption',

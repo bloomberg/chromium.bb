@@ -46,6 +46,16 @@ public final class PaymentRequestMetrics {
     @VisibleForTesting
     public static final int ABORT_REASON_MAX = 9;
 
+    // PaymentRequestPaymentMethods defined in tools/metrics/histograms/histograms.xml.
+    @VisibleForTesting
+    public static final int SELECTED_METHOD_CREDIT_CARD = 0;
+    @VisibleForTesting
+    public static final int SELECTED_METHOD_ANDROID_PAY = 1;
+    @VisibleForTesting
+    public static final int SELECTED_METHOD_OTHER_PAYMENT_APP = 2;
+    @VisibleForTesting
+    public static final int SELECTED_METHOD_MAX = 3;
+
     // There should be no instance of PaymentRequestMetrics created.
     private PaymentRequestMetrics() {}
 
@@ -65,5 +75,17 @@ public final class PaymentRequestMetrics {
                 | (requestShipping ? REQUESTED_INFORMATION_SHIPPING : 0);
         RecordHistogram.recordEnumeratedHistogram("PaymentRequest.RequestedInformation",
                 requestInformation, REQUESTED_INFORMATION_MAX);
+    }
+
+    /*
+     * Records the metric that keeps track of what payment method was used to complete a Payment
+     * Request transaction.
+     *
+     * @param paymentMethod The payment method that was used to complete the current transaction.
+     */
+    public static void recordSelectedPaymentMethodHistogram(int paymentMethod) {
+        assert paymentMethod < SELECTED_METHOD_MAX;
+        RecordHistogram.recordEnumeratedHistogram("PaymentRequest.SelectedPaymentMethod",
+                paymentMethod, SELECTED_METHOD_MAX);
     }
 }

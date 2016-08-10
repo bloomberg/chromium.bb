@@ -93,7 +93,7 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
         // Check the labesl of the instruments.
         int i = 0;
         if (instrumentPresence == HAVE_INSTRUMENTS) {
-            assertEquals("Bob Pay", getPaymentInstrumentLabel(i++));
+            assertEquals("Test Pay", getPaymentInstrumentLabel(i++));
         }
         // \u00A0\u22EF is a non-breaking space followed by a midline ellipsis.
         assertEquals("Visa\u00A0\u22EF1111\nJon Doe", getPaymentInstrumentLabel(i++));

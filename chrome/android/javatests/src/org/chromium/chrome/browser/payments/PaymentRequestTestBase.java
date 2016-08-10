@@ -119,6 +119,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         triggerUIAndWait("buy", helper);
     }
 
+    protected void triggerUIAndWait(String nodeId, PaymentsCallbackHelper<PaymentRequestUI> helper)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(nodeId, (CallbackHelper) helper);
+        mUI = helper.getTarget();
+    }
+
     protected void triggerUIAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, ExecutionException, TimeoutException {
         startMainActivityWithURL(mTestFilePath);
@@ -610,10 +616,25 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
      *                           or HAVE_INSTRUMENTS.
      * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
      *                           IMMEDIATE_RESPONSE, DELAYED_RESPONSE, or NO_RESPONSE.
-     * @return The install payment app.
+     * @return The installed payment app.
      */
-    protected BobPay installPaymentApp(final int instrumentPresence, final int responseSpeed) {
-        final BobPay app = new BobPay(instrumentPresence, responseSpeed);
+    protected TestPay installPaymentApp(final int instrumentPresence, final int responseSpeed) {
+        return installPaymentApp("https://bobpay.com", instrumentPresence, responseSpeed);
+    }
+
+    /**
+     * Installs a payment app for testing.
+     *
+     * @param methodName         The name of the payment method used in the payment app.
+     * @param instrumentPresence Whether the app has any payment instruments. Either NO_INSTRUMENTS
+     *                           or HAVE_INSTRUMENTS.
+     * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
+     *                           IMMEDIATE_RESPONSE, DELAYED_RESPONSE, or NO_RESPONSE.
+     * @return The installed payment app.
+     */
+    protected TestPay installPaymentApp(final String methodName, final int instrumentPresence,
+            final int responseSpeed) {
+        final TestPay app = new TestPay(methodName, instrumentPresence, responseSpeed);
         PaymentAppFactory.setAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
             public List<PaymentApp> create(WebContents webContents) {
@@ -626,12 +647,14 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     }
 
     /** A payment app implementation for test. */
-    protected static class BobPay implements PaymentApp {
+    protected static class TestPay implements PaymentApp {
+        private final String mMethodName;
         private final int mInstrumentPresence;
         private final int mResponseSpeed;
         private InstrumentsCallback mCallback;
 
-        BobPay(int instrumentPresence, int responseSpeed) {
+        TestPay(String methodName, int instrumentPresence, int responseSpeed) {
+            mMethodName = methodName;
             mInstrumentPresence = instrumentPresence;
             mResponseSpeed = responseSpeed;
         }
@@ -645,12 +668,14 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
         void respond() {
             final List<PaymentInstrument> instruments = new ArrayList<>();
-            if (mInstrumentPresence == HAVE_INSTRUMENTS) instruments.add(new BobPayInstrument());
+            if (mInstrumentPresence == HAVE_INSTRUMENTS) {
+                instruments.add(new TestPayInstrument(mMethodName));
+            }
             Runnable instrumentsReady = new Runnable() {
                 @Override
                 public void run() {
                     ThreadUtils.assertOnUiThread();
-                    mCallback.onInstrumentsReady(BobPay.this, instruments);
+                    mCallback.onInstrumentsReady(TestPay.this, instruments);
                 }
             };
             if (mResponseSpeed == IMMEDIATE_RESPONSE) {
@@ -663,32 +688,35 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         @Override
         public Set<String> getSupportedMethodNames() {
             Set<String> methodNames = new HashSet<>();
-            methodNames.add("https://bobpay.com");
+            methodNames.add(mMethodName);
             return methodNames;
         }
 
         @Override
         public String getIdentifier() {
-            return "https://bobpay.com";
+            return mMethodName;
         }
     }
 
     /** A payment instrument implementation for test. */
-    private static class BobPayInstrument extends PaymentInstrument {
-        BobPayInstrument() {
-            super("https://bobpay.com", "Bob Pay", null, NO_ICON);
+    private static class TestPayInstrument extends PaymentInstrument {
+        private final String mMethodName;
+
+        TestPayInstrument(String methodName) {
+            super(methodName, "Test Pay", null, NO_ICON);
+            mMethodName = methodName;
         }
 
         @Override
         public String getMethodName() {
-            return "https://bobpay.com";
+            return mMethodName;
         }
 
         @Override
         public void getDetails(String merchantName, String origin, PaymentItem total,
                 List<PaymentItem> cart, JSONObject details, DetailsCallback detailsCallback) {
             detailsCallback.onInstrumentDetailsReady(
-                    "https://bobpay.com", "{\"transaction\": 1337}");
+                    mMethodName, "{\"transaction\": 1337}");
         }
 
         @Override
