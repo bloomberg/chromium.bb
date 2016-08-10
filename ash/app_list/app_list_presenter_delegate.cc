@@ -336,6 +336,11 @@ void AppListPresenterDelegate::OnShelfAlignmentChanged(WmWindow* root_window) {
     view_->SetBubbleArrow(GetBubbleArrow(view_->GetWidget()->GetNativeView()));
 }
 
+void AppListPresenterDelegate::OnOverviewModeStarting() {
+  if (is_visible_)
+    presenter_->Dismiss();
+}
+
 void AppListPresenterDelegate::OnMaximizeModeStarted() {
   // The "fullscreen" app-list is initialized as in a different type of window,
   // therefore we can't switch between the fullscreen status and the normal

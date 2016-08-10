@@ -453,6 +453,27 @@ TEST_P(WindowSelectorTest, Basic) {
   EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
 }
 
+// Tests that entering overview mode with an App-list active properly focuses
+// and activates the overview text filter window.
+TEST_P(WindowSelectorTest, TextFilterActive) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  wm::ActivateWindow(window1.get());
+
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+  EXPECT_EQ(window1.get(), GetFocusedWindow());
+
+  WmShell::Get()->ToggleAppList();
+
+  // Activating overview cancels the App-list which normally would activate the
+  // previously active |window1|. Overview mode should properly transfer focus
+  // and activation to the text filter widget.
+  ToggleOverview();
+  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(GetFocusedWindow()));
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
+}
+
 // Tests that the ordering of windows is near the windows' original positions.
 TEST_P(WindowSelectorTest, MinimizeMovement) {
   // With Material Design the order of windows in overview mode is MRU.
