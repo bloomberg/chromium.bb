@@ -41,7 +41,8 @@ class SyncCredentialsFilter : public CredentialsFilter {
   ScopedVector<autofill::PasswordForm> FilterResults(
       ScopedVector<autofill::PasswordForm> results) const override;
   bool ShouldSave(const autofill::PasswordForm& form) const override;
-  void ReportFormUsed(const autofill::PasswordForm& form) const override;
+  void ReportFormLoginSuccess(
+      const PasswordFormManager& form_manager) const override;
 
  private:
   enum AutofillForSyncCredentialsState {

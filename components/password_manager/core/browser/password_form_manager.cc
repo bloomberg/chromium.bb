@@ -685,7 +685,8 @@ void PasswordFormManager::ProcessUpdate() {
 
   UpdateMetadataForUsage(&pending_credentials_);
 
-  client_->GetStoreResultFilter()->ReportFormUsed(pending_credentials_);
+  base::RecordAction(
+      base::UserMetricsAction("PasswordManager_LoginFollowingAutofill"));
 
   // Check to see if this form is a candidate for password generation.
   // Do not send votes on change password forms, since they were already sent in

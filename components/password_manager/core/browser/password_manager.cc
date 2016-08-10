@@ -676,6 +676,9 @@ void PasswordManager::OnLoginSuccessful() {
     logger->LogMessage(Logger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD);
   }
 
+  client_->GetStoreResultFilter()->ReportFormLoginSuccess(
+      *provisional_save_manager_);
+
   if (base::FeatureList::IsEnabled(features::kDropSyncCredential) &&
       !client_->GetStoreResultFilter()->ShouldSave(
           provisional_save_manager_->pending_credentials())) {

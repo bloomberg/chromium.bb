@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/user_action_tester.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
@@ -3020,6 +3021,25 @@ TEST_F(PasswordFormManagerFillOnAccountSelectTest, ProcessFrame) {
   EXPECT_CALL(*client()->mock_driver(),
               ShowInitialPasswordAccountSuggestions(_));
   SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
+}
+
+// Check that PasswordFormManager records
+// PasswordManager_LoginFollowingAutofill as part of processing a credential
+// update.
+TEST_F(PasswordFormManagerTest, ReportProcessingUpdate) {
+  SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
+  PasswordForm pending = *observed_form();
+  pending.username_value = saved_match()->username_value;
+  pending.password_value = saved_match()->password_value;
+  form_manager()->ProvisionallySave(
+      pending, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_FALSE(form_manager()->IsNewLogin());
+
+  base::UserActionTester tester;
+  EXPECT_EQ(0, tester.GetActionCount("PasswordManager_LoginFollowingAutofill"));
+  form_manager()->Update(*saved_match());
+  EXPECT_EQ(1, tester.GetActionCount("PasswordManager_LoginFollowingAutofill"));
 }
 
 }  // namespace password_manager

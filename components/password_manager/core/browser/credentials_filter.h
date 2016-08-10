@@ -11,6 +11,8 @@
 
 namespace password_manager {
 
+class PasswordFormManager;
+
 // This interface is used to filter credentials during saving, retrieval from
 // PasswordStore, etc.
 class CredentialsFilter {
@@ -26,9 +28,10 @@ class CredentialsFilter {
   // Should |form| be offered to be saved?
   virtual bool ShouldSave(const autofill::PasswordForm& form) const = 0;
 
-  // Call this if |form| was filled, and the subsequent sign-in looked like a
-  // success. Calling is optional, used only for statistics.
-  virtual void ReportFormUsed(const autofill::PasswordForm& form) const {}
+  // Call this if the form associated with |form_manager| was filled, and the
+  // subsequent sign-in looked like a success.
+  virtual void ReportFormLoginSuccess(
+      const PasswordFormManager& form_manager) const {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CredentialsFilter);

@@ -5,20 +5,30 @@
 #include "components/password_manager/sync/browser/sync_credentials_filter.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/user_action_tester.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/sync/browser/sync_username_test_base.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
@@ -27,20 +37,36 @@ namespace password_manager {
 
 namespace {
 
+const char kFilledAndLoginActionName[] =
+    "PasswordManager_SyncCredentialFilledAndLoginSuccessfull";
+
 class FakePasswordManagerClient : public StubPasswordManagerClient {
  public:
-  ~FakePasswordManagerClient() override {}
+  FakePasswordManagerClient()
+      : password_store_(new testing::NiceMock<MockPasswordStore>) {}
+
+  ~FakePasswordManagerClient() override {
+    password_store_->ShutdownOnUIThread();
+  }
 
   // PasswordManagerClient:
   const GURL& GetLastCommittedEntryURL() const override {
     return last_committed_entry_url_;
+  }
+  MockPasswordStore* GetPasswordStore() const override {
+    return password_store_.get();
   }
 
   void set_last_committed_entry_url(const char* url_spec) {
     last_committed_entry_url_ = GURL(url_spec);
   }
 
+ private:
+  base::MessageLoop message_loop_;  // For |password_store_|.
   GURL last_committed_entry_url_;
+  scoped_refptr<testing::NiceMock<MockPasswordStore>> password_store_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakePasswordManagerClient);
 };
 
 bool IsFormFiltered(const CredentialsFilter* filter, const PasswordForm& form) {
@@ -63,8 +89,12 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
     enum { NO_HISTOGRAM, HISTOGRAM_REPORTED } histogram_reported;
   };
 
+  // Flag for creating a PasswordFormManager, deciding its IsNewLogin() value.
+  enum class LoginState { NEW, EXISTING };
+
   CredentialsFilterTest()
-      : filter_(&client_,
+      : password_manager_(&client_),
+        filter_(&client_,
                 base::Bind(&SyncUsernameTestBase::sync_service,
                            base::Unretained(this)),
                 base::Bind(&SyncUsernameTestBase::signin_manager,
@@ -88,12 +118,37 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
     FakeSignout();
   }
 
+  // Creates a PasswordFormManager for the |pending| form and provisionally
+  // saves it. Ensures that the created manager's IsNewLogin responds according
+  // to |login_state|.
+  std::unique_ptr<PasswordFormManager> CreateFormManager(
+      LoginState login_state,
+      const PasswordForm& pending) {
+    auto form_manager = base::WrapUnique(new PasswordFormManager(
+        &password_manager_, &client_, driver_.AsWeakPtr(), pending,
+        base::WrapUnique(new StubFormSaver)));
+
+    form_manager->FetchDataFromPasswordStore();
+    ScopedVector<PasswordForm> saved_forms;
+    if (login_state == LoginState::EXISTING) {
+      saved_forms.push_back(new PasswordForm(pending));
+    }
+    form_manager->OnGetPasswordStoreResults(std::move(saved_forms));
+
+    form_manager->ProvisionallySave(
+        pending, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+    return form_manager;
+  }
+
   SyncCredentialsFilter* filter() { return &filter_; }
 
   FakePasswordManagerClient* client() { return &client_; }
 
  private:
   FakePasswordManagerClient client_;
+  PasswordManager password_manager_;
+  StubPasswordManagerDriver driver_;
 
   SyncCredentialsFilter filter_;
 };
@@ -225,11 +280,59 @@ TEST_F(CredentialsFilterTest, FilterResults_DisallowSync) {
   }
 }
 
-TEST_F(CredentialsFilterTest, ReportFormUsed) {
+TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_ExistingSyncCredentials) {
+  PasswordForm pending = SimpleGaiaForm("user@gmail.com");
+  FakeSigninAs("user@gmail.com");
+  SetSyncingPasswords(true);
+
   base::UserActionTester tester;
-  ASSERT_EQ(0, tester.GetActionCount("PasswordManager_SyncCredentialUsed"));
-  filter()->ReportFormUsed(PasswordForm());
-  EXPECT_EQ(1, tester.GetActionCount("PasswordManager_SyncCredentialUsed"));
+  auto form_manager = CreateFormManager(LoginState::EXISTING, pending);
+  filter()->ReportFormLoginSuccess(*form_manager);
+  EXPECT_EQ(1, tester.GetActionCount(kFilledAndLoginActionName));
+}
+
+TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NewSyncCredentials) {
+  PasswordForm pending = SimpleGaiaForm("user@gmail.com");
+  FakeSigninAs("user@gmail.com");
+  SetSyncingPasswords(true);
+
+  base::UserActionTester tester;
+  auto form_manager = CreateFormManager(LoginState::NEW, pending);
+  filter()->ReportFormLoginSuccess(*form_manager);
+  EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
+}
+
+TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_GAIANotSyncCredentials) {
+  PasswordForm pending = SimpleGaiaForm("user@gmail.com");
+  FakeSigninAs("other_user@gmail.com");
+  SetSyncingPasswords(true);
+
+  base::UserActionTester tester;
+  auto form_manager = CreateFormManager(LoginState::EXISTING, pending);
+  filter()->ReportFormLoginSuccess(*form_manager);
+  EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
+}
+
+TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NotGAIACredentials) {
+  PasswordForm pending = SimpleNonGaiaForm("user@gmail.com");
+  FakeSigninAs("user@gmail.com");
+  SetSyncingPasswords(true);
+
+  base::UserActionTester tester;
+  auto form_manager = CreateFormManager(LoginState::EXISTING, pending);
+  filter()->ReportFormLoginSuccess(*form_manager);
+  EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
+}
+
+TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NotSyncing) {
+  PasswordForm pending = SimpleGaiaForm("user@gmail.com");
+  FakeSigninAs("user@gmail.com");
+  SetSyncingPasswords(false);
+
+  base::UserActionTester tester;
+  auto form_manager = CreateFormManager(LoginState::EXISTING, pending);
+  filter()->ReportFormLoginSuccess(*form_manager);
+  EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
 TEST_F(CredentialsFilterTest, ShouldSave_NotSyncCredential) {

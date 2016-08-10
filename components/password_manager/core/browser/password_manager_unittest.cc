@@ -44,6 +44,8 @@ class MockStoreResultFilter : public CredentialsFilter {
   MOCK_CONST_METHOD1(FilterResultsPtr,
                      void(ScopedVector<autofill::PasswordForm>* results));
   MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
+  MOCK_CONST_METHOD1(ReportFormLoginSuccess,
+                     void(const PasswordFormManager& form_manager));
 
   // GMock cannot handle move-only arguments.
   ScopedVector<autofill::PasswordForm> FilterResults(
@@ -78,7 +80,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
   MOCK_CONST_METHOD0(IsUpdatePasswordUIEnabled, bool());
-  MOCK_CONST_METHOD0(GetStoreResultFilter, const CredentialsFilter*());
+  MOCK_CONST_METHOD0(GetStoreResultFilter, const MockStoreResultFilter*());
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
   bool PromptUserToSaveOrUpdatePassword(
@@ -240,7 +242,7 @@ class PasswordManagerTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   scoped_refptr<MockPasswordStore> store_;
-  MockPasswordManagerClient client_;
+  testing::NiceMock<MockPasswordManagerClient> client_;
   MockPasswordManagerDriver driver_;
   std::unique_ptr<PasswordAutofillManager> password_autofill_manager_;
   std::unique_ptr<PasswordManager> manager_;
@@ -592,6 +594,35 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   client_.FilterAllResultsForSaving();
 
   OnPasswordFormSubmitted(form);
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
+// On a successful login with an updated password,
+// CredentialsFilter::ReportFormLoginSuccess should be called.
+TEST_F(PasswordManagerTest, ReportFormLoginSuccessCalled) {
+  PasswordForm form(MakeSimpleForm());
+
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  // Simulate that |form| is already in the store, making this an update.
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Submit form and finish navigation.
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
+  manager()->ProvisionallySavePassword(form);
+
+  // Chrome should recognise the successful login and call
+  // ReportFormLoginSuccess.
+  EXPECT_CALL(*client_.GetStoreResultFilter(), ReportFormLoginSuccess(_));
+  EXPECT_CALL(*store_, UpdateLogin(_));
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);

@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
@@ -79,10 +80,16 @@ bool SyncCredentialsFilter::ShouldSave(
       signin_manager_factory_function_.Run());
 }
 
-void SyncCredentialsFilter::ReportFormUsed(
-    const autofill::PasswordForm& form) const {
-  base::RecordAction(
-      base::UserMetricsAction("PasswordManager_SyncCredentialUsed"));
+void SyncCredentialsFilter::ReportFormLoginSuccess(
+    const PasswordFormManager& form_manager) const {
+  if (!form_manager.IsNewLogin() &&
+      sync_util::IsSyncAccountCredential(
+          form_manager.pending_credentials(),
+          sync_service_factory_function_.Run(),
+          signin_manager_factory_function_.Run())) {
+    base::RecordAction(base::UserMetricsAction(
+        "PasswordManager_SyncCredentialFilledAndLoginSuccessfull"));
+  }
 }
 
 // static
