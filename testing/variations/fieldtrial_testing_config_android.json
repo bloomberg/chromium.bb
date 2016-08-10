@@ -213,6 +213,14 @@
             "group_name": "Enabled"
         }
     ],
+    "NTPSnippets": [
+        {
+            "enable_features": [
+                "NTPSnippets"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "NetworkQualityEstimator": [
         {
             "group_name": "Enabled",
