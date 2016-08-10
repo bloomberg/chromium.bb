@@ -38,7 +38,7 @@
 
 namespace {
 
-constexpr char kTestPackageName[] = "fakepackagename2";
+constexpr char kTestPackageName[] = "fake.package.name2";
 
 class FakeAppIconLoaderDelegate : public AppIconLoaderDelegate {
  public:
@@ -933,4 +933,37 @@ TEST_F(ArcAppModelBuilderTest, NonLaunchableApp) {
   // App should not appear now in the model but should be registered.
   EXPECT_FALSE(FindArcItem(app_id));
   EXPECT_TRUE(prefs->IsRegistered(app_id));
+}
+
+TEST_F(ArcAppModelBuilderTest, ArcAppsOnPackageUpdated) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  std::vector<arc::mojom::AppInfo> apps = fake_apps();
+  ASSERT_GE(3u, apps.size());
+  apps[0].package_name = apps[2].package_name;
+  apps[1].package_name = apps[2].package_name;
+  // Second app should be preserved after update.
+  std::vector<arc::mojom::AppInfo> apps1(apps.begin(), apps.begin() + 2);
+  std::vector<arc::mojom::AppInfo> apps2(apps.begin() + 1, apps.begin() + 3);
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(apps1);
+  ValidateHaveApps(apps1);
+
+  const std::string app_id = ArcAppTest::GetAppId(apps[1]);
+  const base::Time now_time = base::Time::Now();
+  prefs->SetLastLaunchTime(app_id, now_time);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info_before =
+      prefs->GetApp(app_id);
+  ASSERT_TRUE(app_info_before);
+  EXPECT_EQ(now_time, app_info_before->last_launch_time);
+
+  app_instance()->SendPackageAppListRefreshed(apps[0].package_name, apps2);
+  ValidateHaveApps(apps2);
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info_after =
+      prefs->GetApp(app_id);
+  ASSERT_TRUE(app_info_after);
+  EXPECT_EQ(now_time, app_info_after->last_launch_time);
 }

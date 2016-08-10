@@ -19,9 +19,9 @@
 
 namespace {
 
-constexpr char kPackageName1[] = "fakepackagename1";
-constexpr char kPackageName2[] = "fakepackagename2";
-constexpr char kPackageName3[] = "fakepackagename3";
+constexpr char kPackageName1[] = "fake.package.name1";
+constexpr char kPackageName2[] = "fake.package.name2";
+constexpr char kPackageName3[] = "fake.package.name3";
 }
 
 // static

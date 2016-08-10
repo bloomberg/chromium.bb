@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 14
+// Next MinVersion: 15
 
 module arc.mojom;
 
@@ -56,11 +56,11 @@ enum ShowPackageInfoPage {
   MANAGE_LINKS = 1,
 };
 
-// Next method ID: 13
+// Next method ID: 14
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
   // package added notification. Multiple apps may be added in the one package.
-  [MinVersion=1] OnAppAdded@2(AppInfo app);
+  [MinVersion=1] OnAppAddedDeprecated@2(AppInfo app);
 
   // Receives an icon of required |scale_factor| for specific ARC app. The app
   // is defined by |package_name| and |activity|. The icon content cannot be
@@ -76,6 +76,10 @@ interface AppHost {
 
   // Notifies that a package has been added.
   [MinVersion=8] OnPackageAdded@8(ArcPackageInfo arcPackageInfo);
+
+  // Notifies that a package list of apps has been updated.
+  [MinVersion=14] OnPackageAppListRefreshed@13(string package_name,
+                                               array<AppInfo> apps);
 
   // Receives a list of available ARC packages to Chrome. Members of
   // PackageInfo must contain non-empty string.

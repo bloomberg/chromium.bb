@@ -9,8 +9,8 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -230,7 +230,10 @@ class ArcAppListPrefs
 
   // arc::mojom::AppHost:
   void OnAppListRefreshed(mojo::Array<arc::mojom::AppInfoPtr> apps) override;
-  void OnAppAdded(arc::mojom::AppInfoPtr app) override;
+  void OnAppAddedDeprecated(arc::mojom::AppInfoPtr app) override;
+  void OnPackageAppListRefreshed(
+      const mojo::String& package_name,
+      mojo::Array<arc::mojom::AppInfoPtr> apps) override;
   void OnInstallShortcut(arc::mojom::ShortcutInfoPtr app) override;
   void OnPackageRemoved(const mojo::String& package_name) override;
   void OnAppIcon(const mojo::String& package_name,
@@ -256,6 +259,7 @@ class ArcAppListPrefs
       int32_t task_id,
       const arc::mojom::OrientationLock orientation_lock) override;
 
+  void AddApp(const arc::mojom::AppInfo& app_info);
   void AddAppAndShortcut(const std::string& name,
                          const std::string& package_name,
                          const std::string& activity,
@@ -282,6 +286,8 @@ class ArcAppListPrefs
   void OnIconInstalled(const std::string& app_id,
                        ui::ScaleFactor scale_factor,
                        bool install_succeed);
+  std::unordered_set<std::string> GetAppsForPackage(
+      const std::string& package_name) const;
 
   // This checks if app is not registered yet and in this case creates
   // non-launchable app entry.
@@ -302,7 +308,7 @@ class ArcAppListPrefs
   // stored.
   base::FilePath base_path_;
   // Contains set of ARC apps that are currently ready.
-  std::set<std::string> ready_apps_;
+  std::unordered_set<std::string> ready_apps_;
   // Keeps deferred icon load requests. Each app may contain several requests
   // for different scale factor. Scale factor is defined by specific bit
   // position.

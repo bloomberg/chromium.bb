@@ -63,6 +63,14 @@ void FakeAppInstance::SendRefreshAppList(
   app_host_->OnAppListRefreshed(mojo::Array<mojom::AppInfoPtr>::From(apps));
 }
 
+void FakeAppInstance::SendPackageAppListRefreshed(
+    const mojo::String& package_name,
+    const std::vector<mojom::AppInfo>& apps) {
+  app_host_->OnPackageAppListRefreshed(
+      package_name,
+      mojo::Array<mojom::AppInfoPtr>::From(apps));
+}
+
 void FakeAppInstance::SendInstallShortcuts(
     const std::vector<mojom::ShortcutInfo>& shortcuts) {
   for (auto& shortcut : shortcuts) {
@@ -75,7 +83,7 @@ void FakeAppInstance::SendInstallShortcut(const mojom::ShortcutInfo& shortcut) {
 }
 
 void FakeAppInstance::SendAppAdded(const mojom::AppInfo& app) {
-  app_host_->OnAppAdded(mojom::AppInfo::From(app));
+  app_host_->OnAppAddedDeprecated(mojom::AppInfo::From(app));
 }
 
 void FakeAppInstance::SendTaskCreated(int32_t taskId,

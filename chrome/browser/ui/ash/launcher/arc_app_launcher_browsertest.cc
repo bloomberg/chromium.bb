@@ -41,12 +41,39 @@ struct TypeConverter<arc::mojom::ArcPackageInfoPtr,
 namespace {
 
 const char kTestAppName[] = "Test Arc App";
+const char kTestAppName2[] = "Test Arc App 2";
 const char kTestAppPackage[] = "test.arc.app.package";
 const char kTestAppActivity[] = "test.arc.app.package.activity";
+const char kTestAppActivity2[] = "test.arc.app.package.activity2";
 constexpr int kAppAnimatedThresholdMs = 100;
 
-std::string GetTestAppId() {
+std::string GetTestApp1Id() {
   return ArcAppListPrefs::GetAppId(kTestAppPackage, kTestAppActivity);
+}
+
+std::string GetTestApp2Id() {
+  return ArcAppListPrefs::GetAppId(kTestAppPackage, kTestAppActivity2);
+}
+
+mojo::Array<arc::mojom::AppInfoPtr> GetTestAppsList(bool multi_app) {
+  std::vector<arc::mojom::AppInfo> apps;
+
+  arc::mojom::AppInfo app;
+  app.name = kTestAppName;
+  app.package_name = kTestAppPackage;
+  app.activity = kTestAppActivity;
+  app.sticky = false;
+  apps.push_back(app);
+
+  if (multi_app) {
+    app.name = kTestAppName2;
+    app.package_name = kTestAppPackage;
+    app.activity = kTestAppActivity2;
+    app.sticky = false;
+    apps.push_back(app);
+  }
+
+  return mojo::Array<arc::mojom::AppInfoPtr>::From(apps);
 }
 
 ChromeLauncherController* chrome_controller() {
@@ -93,9 +120,7 @@ TestParameter build_test_parameter[] = {
 
 }  // namespace
 
-class ArcAppLauncherBrowserTest
-    : public ExtensionBrowserTest,
-      public testing::WithParamInterface<TestParameter> {
+class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
  public:
   ArcAppLauncherBrowserTest() {}
   ~ArcAppLauncherBrowserTest() override {}
@@ -114,25 +139,37 @@ class ArcAppLauncherBrowserTest
 
   void SetUpOnMainThread() override { arc::ArcAuthService::Get()->EnableArc(); }
 
-  void InstallTestApp() {
-    std::vector<arc::mojom::AppInfo> apps;
-
-    arc::mojom::AppInfo app;
-    app.name = kTestAppName;
-    app.package_name = kTestAppPackage;
-    app.activity = kTestAppActivity;
-    app.sticky = false;
-    apps.push_back(app);
-
-    app_host()->OnAppListRefreshed(
-        mojo::Array<arc::mojom::AppInfoPtr>::From(apps));
+  void InstallTestApps(bool multi_app) {
+    app_host()->OnAppListRefreshed(GetTestAppsList(multi_app));
 
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        app_prefs()->GetApp(GetTestAppId());
+        app_prefs()->GetApp(GetTestApp1Id());
     ASSERT_TRUE(app_info);
     EXPECT_TRUE(app_info->ready);
+    if (multi_app) {
+      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info2 =
+          app_prefs()->GetApp(GetTestApp2Id());
+      ASSERT_TRUE(app_info2);
+      EXPECT_TRUE(app_info2->ready);
+    }
+
+    arc::mojom::ArcPackageInfo package_info;
+    package_info.package_name = kTestAppPackage;
+    package_info.package_version = 1;
+    package_info.last_backup_android_id = 1;
+    package_info.last_backup_time = 1;
+    package_info.sync = false;
+    app_host()->OnPackageAdded(arc::mojom::ArcPackageInfo::From(package_info));
+
     base::RunLoop().RunUntilIdle();
   }
+
+  void SendPackageUpdated(bool multi_app) {
+    app_host()->OnPackageAppListRefreshed(kTestAppPackage,
+                                          GetTestAppsList(multi_app));
+  }
+
+  void SendPackageRemoved() { app_host()->OnPackageRemoved(kTestAppPackage); }
 
   void StartInstance() {
     auth_service()->OnPrimaryUserProfilePrepared(profile());
@@ -159,20 +196,32 @@ class ArcAppLauncherBrowserTest
 
   arc::ArcAuthService* auth_service() { return arc::ArcAuthService::Get(); }
 
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherBrowserTest);
+};
+
+class ArcAppDeferredLauncherBrowserTest
+    : public ArcAppLauncherBrowserTest,
+      public testing::WithParamInterface<TestParameter> {
+ public:
+  ArcAppDeferredLauncherBrowserTest() {}
+  ~ArcAppDeferredLauncherBrowserTest() override {}
+
+ protected:
   bool is_pinned() const { return std::tr1::get<1>(GetParam()); }
 
   TestAction test_action() const { return std::tr1::get<0>(GetParam()); }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcAppDeferredLauncherBrowserTest);
 };
 
 // This tests simulates normal workflow for starting Arc app in deferred mode.
-IN_PROC_BROWSER_TEST_P(ArcAppLauncherBrowserTest, StartAppDeferred) {
+IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   // Install app to remember existing apps.
-  InstallTestApp();
+  InstallTestApps(false);
 
-  const std::string app_id = GetTestAppId();
+  const std::string app_id = GetTestApp1Id();
   if (is_pinned()) {
     shelf_delegate()->PinAppWithID(app_id);
     EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id));
@@ -205,7 +254,7 @@ IN_PROC_BROWSER_TEST_P(ArcAppLauncherBrowserTest, StartAppDeferred) {
     case TEST_ACTION_START:
       // Now simulates that Arc is started and app list is refreshed. This
       // should stop animation and delete icon from the shelf.
-      InstallTestApp();
+      InstallTestApps(false);
       EXPECT_TRUE(chrome_controller()
                       ->GetArcDeferredLauncher()
                       ->GetActiveTime(app_id)
@@ -239,6 +288,38 @@ IN_PROC_BROWSER_TEST_P(ArcAppLauncherBrowserTest, StartAppDeferred) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(ArcAppLauncherBrowserTestInstance,
-                        ArcAppLauncherBrowserTest,
+INSTANTIATE_TEST_CASE_P(ArcAppDeferredLauncherBrowserTestInstance,
+                        ArcAppDeferredLauncherBrowserTest,
                         ::testing::ValuesIn(build_test_parameter));
+
+// This tests validates pin state on package update and remove.
+IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
+  InstallTestApps(true);
+
+  const std::string app_id1 = GetTestApp1Id();
+  const std::string app_id2 = GetTestApp2Id();
+  shelf_delegate()->PinAppWithID(app_id1);
+  shelf_delegate()->PinAppWithID(app_id2);
+  const ash::ShelfID shelf_id1_before =
+      shelf_delegate()->GetShelfIDForAppID(app_id1);
+  EXPECT_TRUE(shelf_id1_before);
+  EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id2));
+
+  // Package contains only one app.
+  SendPackageUpdated(false);
+  // Second pin should gone.
+  EXPECT_EQ(shelf_id1_before, shelf_delegate()->GetShelfIDForAppID(app_id1));
+  EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
+
+  // Package contains two apps.
+  SendPackageUpdated(true);
+  // Second pin should not appear.
+  EXPECT_EQ(shelf_id1_before, shelf_delegate()->GetShelfIDForAppID(app_id1));
+  EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
+
+  // Package removed.
+  SendPackageRemoved();
+  // No pin is expected.
+  EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id1));
+  EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
+}

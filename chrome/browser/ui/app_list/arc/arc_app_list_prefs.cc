@@ -60,7 +60,7 @@ class ScopedArcPrefUpdate : public DictionaryPrefUpdate {
   base::DictionaryValue* Get() override {
     base::DictionaryValue* dict = DictionaryPrefUpdate::Get();
     base::DictionaryValue* dict_item = nullptr;
-    if (!dict->GetDictionary(id_, &dict_item)) {
+    if (!dict->GetDictionaryWithoutPathExpansion(id_, &dict_item)) {
       dict_item = new base::DictionaryValue();
       dict->SetWithoutPathExpansion(id_, dict_item);
     }
@@ -190,7 +190,8 @@ void RemovePackageFromPrefs(PrefService* prefs,
   DCHECK(IsArcEnabled());
   DictionaryPrefUpdate update(prefs, prefs::kArcPackages);
   base::DictionaryValue* packages = update.Get();
-  const bool removed = packages->Remove(package_name, nullptr);
+  const bool removed = packages->RemoveWithoutPathExpansion(package_name,
+                                                            nullptr);
   DCHECK(removed);
 }
 
@@ -500,7 +501,7 @@ bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
 
   const base::DictionaryValue* app = nullptr;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
-  return apps && apps->GetDictionary(app_id, &app);
+  return apps && apps->GetDictionaryWithoutPathExpansion(app_id, &app);
 }
 
 bool ArcAppListPrefs::IsShortcut(const std::string& app_id) const {
@@ -526,7 +527,7 @@ void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id,
 }
 
 void ArcAppListPrefs::DisableAllApps() {
-  std::set<std::string> old_ready_apps;
+  std::unordered_set<std::string> old_ready_apps;
   old_ready_apps.swap(ready_apps_);
   for (auto& app_id : old_ready_apps) {
     FOR_EACH_OBSERVER(Observer, observer_list_,
@@ -620,7 +621,6 @@ void ArcAppListPrefs::AddAppAndShortcut(
   std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
                                 : GetAppId(package_name, activity);
   const bool was_registered = IsRegistered(app_id);
-
   if (was_registered) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_old_info = GetApp(app_id);
     DCHECK(app_old_info);
@@ -645,12 +645,15 @@ void ArcAppListPrefs::AddAppAndShortcut(
   app_dict->SetInteger(kOrientationLock, static_cast<int>(orientation_lock));
 
   // From now, app is available.
-  if (!ready_apps_.count(app_id))
+  const bool was_disabled = ready_apps_.count(app_id) == 0;
+  if (was_disabled)
     ready_apps_.insert(app_id);
 
   if (was_registered) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnAppReadyChanged(app_id, true));
+    if (was_disabled) {
+      FOR_EACH_OBSERVER(Observer, observer_list_,
+                        OnAppReadyChanged(app_id, true));
+    }
   } else {
     AppInfo app_info(name, package_name, activity, intent_uri, icon_resource_id,
                      base::Time(), sticky, notifications_enabled, true,
@@ -744,18 +747,41 @@ void ArcAppListPrefs::OnTaskOrientationLockRequested(
                     OnTaskOrientationLockRequested(task_id, orientation_lock));
 }
 
-void ArcAppListPrefs::OnAppAdded(arc::mojom::AppInfoPtr app) {
-  if ((app->name.get().empty() || app->package_name.get().empty() ||
-       app->activity.get().empty())) {
+void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app_info) {
+  if ((app_info.name.get().empty() || app_info.package_name.get().empty() ||
+       app_info.activity.get().empty())) {
     VLOG(2) << "App Name, package name, and activity cannot be empty.";
     return;
   }
 
-  AddAppAndShortcut(app->name, app->package_name, app->activity,
+  AddAppAndShortcut(app_info.name, app_info.package_name, app_info.activity,
                     std::string() /* intent_uri */,
-                    std::string() /* icon_resource_id */, app->sticky,
-                    app->notifications_enabled, false /* shortcut */,
-                    true /* launchable */, app->orientation_lock);
+                    std::string() /* icon_resource_id */, app_info.sticky,
+                    app_info.notifications_enabled, false /* shortcut */,
+                    true /* launchable */, app_info.orientation_lock);
+}
+
+void ArcAppListPrefs::OnAppAddedDeprecated(arc::mojom::AppInfoPtr app) {
+  AddApp(*app);
+}
+
+void ArcAppListPrefs::OnPackageAppListRefreshed(
+    const mojo::String& package_name,
+    mojo::Array<arc::mojom::AppInfoPtr> apps) {
+  if (package_name.get().empty()) {
+    VLOG(2) << "Package name cannot be empty.";
+    return;
+  }
+
+  std::unordered_set<std::string> apps_to_remove =
+      GetAppsForPackage(package_name);
+  for (const auto& app : apps) {
+    apps_to_remove.erase(GetAppId(app->package_name, app->activity));
+    AddApp(*app);
+  }
+
+  for (const auto& app_id : apps_to_remove)
+    RemoveApp(app_id);
 }
 
 void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
@@ -771,9 +797,10 @@ void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
                     true /* launchable */, arc::mojom::OrientationLock::NONE);
 }
 
-void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
+std::unordered_set<std::string> ArcAppListPrefs::GetAppsForPackage(
+    const std::string& package_name) const {
+  std::unordered_set<std::string> app_set;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
-  std::vector<std::string> apps_to_remove;
   for (base::DictionaryValue::Iterator app_it(*apps); !app_it.IsAtEnd();
        app_it.Advance()) {
     const base::Value* value = &app_it.value();
@@ -792,10 +819,16 @@ void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
     if (package_name != app_package)
       continue;
 
-    apps_to_remove.push_back(app_it.key());
+    app_set.insert(app_it.key());
   }
 
-  for (auto& app_id : apps_to_remove)
+  return app_set;
+}
+
+void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
+  const std::unordered_set<std::string> apps_to_remove =
+      GetAppsForPackage(package_name);
+  for (const auto& app_id : apps_to_remove)
     RemoveApp(app_id);
 
   RemovePackageFromPrefs(prefs_, package_name);
