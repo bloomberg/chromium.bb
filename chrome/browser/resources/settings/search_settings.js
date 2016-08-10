@@ -13,7 +13,7 @@ cr.define('settings', function() {
   var SEARCH_BUBBLE_CSS_CLASS = 'search-bubble';
 
   /**
-   * A CSS attribute indicating that a node shoud be ignored during searching.
+   * A CSS attribute indicating that a node should be ignored during searching.
    * @const {string}
    */
   var SKIP_SEARCH_CSS_ATTRIBUTE = 'no-search';
@@ -129,9 +129,16 @@ cr.define('settings', function() {
         return;
       }
 
-      if (IGNORED_ELEMENTS.has(node.nodeName) ||
-          (node.hasAttribute && node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE))) {
+      if (IGNORED_ELEMENTS.has(node.nodeName))
         return;
+
+      if (node instanceof HTMLElement) {
+        var element = /** @type {HTMLElement} */(node);
+        if (element.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE) ||
+            element.hasAttribute('hidden') ||
+            element.style.display == 'none') {
+          return;
+        }
       }
 
       if (node.nodeType == Node.TEXT_NODE) {
@@ -215,7 +222,7 @@ cr.define('settings', function() {
       }
     }
     if (parent)
-      parent.hidden = false;
+      parent.hiddenBySearch = false;
 
     // Need to add the search bubble after the parent SETTINGS-SECTION has
     // become visible, otherwise |offsetWidth| returns zero.
@@ -336,7 +343,7 @@ cr.define('settings', function() {
       var sections = Polymer.dom(
           this.node.root).querySelectorAll('settings-section');
       for (var i = 0; i < sections.length; i++)
-        sections[i].hidden = !visible;
+        sections[i].hiddenBySearch = !visible;
     },
   };
 

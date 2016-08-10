@@ -33,6 +33,16 @@ var SettingsSectionElement = Polymer({
 
     /** Title for the section header. */
     pageTitle: String,
+
+    /**
+     * A CSS attribute used for temporarily hiding a SETTINGS-SECTION for the
+     * purposes of searching.
+     */
+    hiddenBySearch: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
   },
 
   /**

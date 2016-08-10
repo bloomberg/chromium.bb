@@ -42,6 +42,10 @@
       :host(.expanded.frozen) #card {
         position: relative;
       }
+
+      :host([hidden-by-search]) {
+        display: none;
+      }
     </style>
     <div id="header">
       <div class="title">{{pageTitle}}</div>
