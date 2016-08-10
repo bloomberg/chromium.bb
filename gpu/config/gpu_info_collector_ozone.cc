@@ -8,7 +8,6 @@
 namespace gpu {
 
 std::string CollectDriverVersionNVidia() {
-  NOTIMPLEMENTED();
   return std::string();
 }
 
