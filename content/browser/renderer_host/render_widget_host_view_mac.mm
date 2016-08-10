@@ -914,7 +914,9 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   }
 }
 
-void RenderWidgetHostViewMac::ImeCancelComposition() {
+void RenderWidgetHostViewMac::OnImeCancelComposition(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view) {
   [cocoa_view_ cancelComposition];
 }
 

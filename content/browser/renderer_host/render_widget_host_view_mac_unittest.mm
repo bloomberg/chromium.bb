@@ -1253,4 +1253,31 @@ TEST_F(RenderWidgetHostViewMacTest, EventLatencyOSMouseWheelHistogram) {
   host->ShutdownAndDestroyWidget(true);
 }
 
+// This test creates a test view to mimic a child frame's view and verifies that
+// calling ImeCancelComposition on either the child view or the tab's view will
+// always lead to a call to cancelComposition on the cocoa view.
+TEST_F(RenderWidgetHostViewMacTest, ImeCancelCompositionForAllViews) {
+  TestRenderWidgetHostView* child_view =
+      new TestRenderWidgetHostView(rvh()->GetWidget());
+  // Set the marked test on cocoa view.
+  NSString* text = [[NSString alloc] initWithString:@"sample text"];
+  NSRange selectedRange = NSMakeRange(0, 1);
+  NSRange replacementRange = NSMakeRange(0, 1);
+  // Make Cocoa view assume there is marked text.
+  [rwhv_cocoa_ setMarkedText:text
+               selectedRange:selectedRange
+            replacementRange:replacementRange];
+  EXPECT_TRUE([rwhv_cocoa_ hasMarkedText]);
+  child_view->ImeCancelComposition();
+  EXPECT_FALSE([rwhv_cocoa_ hasMarkedText]);
+
+  // Repeat for the tab's view.
+  [rwhv_cocoa_ setMarkedText:text
+               selectedRange:selectedRange
+            replacementRange:replacementRange];
+  EXPECT_TRUE([rwhv_cocoa_ hasMarkedText]);
+  rwhv_mac_->ImeCancelComposition();
+  EXPECT_FALSE([rwhv_cocoa_ hasMarkedText]);
+}
+
 }  // namespace content

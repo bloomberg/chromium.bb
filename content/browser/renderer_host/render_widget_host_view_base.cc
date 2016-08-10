@@ -445,7 +445,7 @@ void RenderWidgetHostViewBase::TextInputStateChanged(
 
 void RenderWidgetHostViewBase::ImeCancelComposition() {
 // TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
-#if defined(USE_AURA)
+#if !defined(OS_ANDROID)
   if (GetTextInputManager())
     GetTextInputManager()->ImeCancelComposition(this);
 #endif
