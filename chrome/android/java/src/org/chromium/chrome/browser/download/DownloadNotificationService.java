@@ -219,8 +219,9 @@ public class DownloadNotificationService extends Service {
             }
         }
         int notificationId = getNotificationId(downloadGuid);
-        addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(
-                notificationId, isOffTheRecord, canDownloadWhileMetered, downloadGuid, fileName));
+        addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(notificationId,
+                isOffTheRecord, canDownloadWhileMetered, downloadGuid, fileName,
+                DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD));
         if (startTime > 0) builder.setWhen(startTime);
         Intent cancelIntent = buildActionIntent(
                 ACTION_DOWNLOAD_CANCEL, notificationId, downloadGuid, fileName);
@@ -423,8 +424,8 @@ public class DownloadNotificationService extends Service {
         boolean metered = DownloadManagerService.isActiveNetworkMetered(mContext);
         boolean isOffTheRecord =  IntentUtils.safeGetBooleanExtra(
                 intent, EXTRA_DOWNLOAD_IS_OFF_THE_RECORD, false);
-        return new DownloadSharedPreferenceEntry(
-                notificationId, isOffTheRecord, metered, guid, fileName);
+        return new DownloadSharedPreferenceEntry(notificationId, isOffTheRecord, metered, guid,
+                fileName, DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD);
     }
 
     /**

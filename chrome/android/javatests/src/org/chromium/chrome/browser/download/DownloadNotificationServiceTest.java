@@ -140,8 +140,10 @@ public class DownloadNotificationServiceTest extends
         DownloadResumptionScheduler.setDownloadResumptionScheduler(scheduler);
         setupService();
         Set<String> notifications = new HashSet<String>();
-        notifications.add(new DownloadSharedPreferenceEntry(1, false, true,
-                UUID.randomUUID().toString(), "test1").getSharedPreferenceString());
+        notifications.add(
+                new DownloadSharedPreferenceEntry(1, false, true, UUID.randomUUID().toString(),
+                        "test1", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                        .getSharedPreferenceString());
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
@@ -183,10 +185,14 @@ public class DownloadNotificationServiceTest extends
         Context mockContext = new AdvancedMockContext(getSystemContext());
         getService().setContext(mockContext);
         Set<String> notifications = new HashSet<String>();
-        notifications.add(new DownloadSharedPreferenceEntry(1, false, true,
-                UUID.randomUUID().toString(), "test1").getSharedPreferenceString());
-        notifications.add(new DownloadSharedPreferenceEntry(2, false, true,
-                UUID.randomUUID().toString(), "test2").getSharedPreferenceString());
+        notifications.add(
+                new DownloadSharedPreferenceEntry(1, false, true, UUID.randomUUID().toString(),
+                        "test1", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                        .getSharedPreferenceString());
+        notifications.add(
+                new DownloadSharedPreferenceEntry(2, false, true, UUID.randomUUID().toString(),
+                        "test2", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                        .getSharedPreferenceString());
         SharedPreferences sharedPrefs =
                 ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -213,11 +219,13 @@ public class DownloadNotificationServiceTest extends
         getService().setContext(mockContext);
         Set<String> notifications = new HashSet<String>();
         String guid1 = UUID.randomUUID().toString();
-        notifications.add(new DownloadSharedPreferenceEntry(3, false, true, guid1, "success")
-                .getSharedPreferenceString());
+        notifications.add(new DownloadSharedPreferenceEntry(3, false, true, guid1, "success",
+                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                                  .getSharedPreferenceString());
         String guid2 = UUID.randomUUID().toString();
-        notifications.add(new DownloadSharedPreferenceEntry(4, false, true, guid2, "failed")
-                .getSharedPreferenceString());
+        notifications.add(new DownloadSharedPreferenceEntry(4, false, true, guid2, "failed",
+                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                                  .getSharedPreferenceString());
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
@@ -277,11 +285,13 @@ public class DownloadNotificationServiceTest extends
         getService().setContext(mockContext);
         Set<String> notifications = new HashSet<String>();
         String guid1 = UUID.randomUUID().toString();
-        notifications.add(new DownloadSharedPreferenceEntry(3, false, false, guid1, "success")
-                .getSharedPreferenceString());
+        notifications.add(new DownloadSharedPreferenceEntry(3, false, false, guid1, "success",
+                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                                  .getSharedPreferenceString());
         String guid2 = UUID.randomUUID().toString();
-        notifications.add(new DownloadSharedPreferenceEntry(4, false, true, guid2, "failed")
-                .getSharedPreferenceString());
+        notifications.add(new DownloadSharedPreferenceEntry(4, false, true, guid2, "failed",
+                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                                  .getSharedPreferenceString());
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
@@ -322,8 +332,9 @@ public class DownloadNotificationServiceTest extends
         getService().setContext(mockContext);
         Set<String> notifications = new HashSet<String>();
         String uuid = UUID.randomUUID().toString();
-        notifications.add(new DownloadSharedPreferenceEntry(1, true, true, uuid, "test1")
-                .getSharedPreferenceString());
+        notifications.add(new DownloadSharedPreferenceEntry(1, true, true, uuid, "test1",
+                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                                  .getSharedPreferenceString());
         SharedPreferences sharedPrefs =
                 ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -335,31 +346,6 @@ public class DownloadNotificationServiceTest extends
         assertFalse(sharedPrefs.contains(
                 DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS));
         assertEquals(uuid, getService().getFailedDownloadGuid());
-    }
-
-    @SmallTest
-    @Feature({"Download"})
-    public void testParseDownloadNotifications() {
-        String uuid = UUID.randomUUID().toString();
-        String notification =
-                DownloadSharedPreferenceEntry.VERSION + ",1,0,1," + uuid + ",test.pdf";
-        DownloadSharedPreferenceEntry entry =
-                DownloadSharedPreferenceEntry.parseFromString(notification);
-        assertEquals(1, entry.notificationId);
-        assertEquals("test.pdf", entry.fileName);
-        assertFalse(entry.isOffTheRecord);
-        assertEquals(uuid, entry.downloadGuid);
-
-        notification = DownloadSharedPreferenceEntry.VERSION + ",2,1,1," + uuid + ",test,2.pdf";
-        entry = DownloadSharedPreferenceEntry.parseFromString(notification);
-        assertEquals(2, entry.notificationId);
-        assertEquals("test,2.pdf", entry.fileName);
-        assertTrue(entry.isOffTheRecord);
-        assertEquals(uuid, entry.downloadGuid);
-
-        notification = "1,2,1,1," + uuid + ",test,2.pdf";
-        entry = DownloadSharedPreferenceEntry.parseFromString(notification);
-        assertFalse(entry.isOffTheRecord);
     }
 
     @SmallTest
