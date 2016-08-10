@@ -3,15 +3,43 @@
 # found in the LICENSE file.
 
 import("//testing/test.gni")
+import("//build/config/mac/rules.gni")
 
-static_library("mac_installer_base") {
+source_set("mac_installer_base") {
   sources = [
     "Downloader.m",
-    "MainDelegate.m",
+    "NSAlert+ChromeInstallerAdditions.m",
+    "NSError+ChromeInstallerAdditions.m",
     "OmahaCommunication.m",
     "OmahaXMLParser.m",
     "OmahaXMLRequest.m",
     "SystemInfo.m",
+  ]
+}
+
+mac_app_bundle("mac_installer_app") {
+  info_plist = "Info.plist"
+  extra_substitutions = [ "MACOSX_DEPLOYMENT_TARGET=10.9" ]
+  sources = [
+    "AppDelegate.m",
+    "InstallerWindowController.m",
+    "main.m",
+  ]
+
+  deps = [
+    ":mac_installer_base",
+    ":mac_installer_xibs",
+  ]
+
+  libs = [
+    "AppKit.framework",
+    "CoreFoundation.framework",
+  ]
+}
+
+mac_xib_bundle_data("mac_installer_xibs") {
+  sources = [
+    "MainMenu.xib",
   ]
 }
 
@@ -22,7 +50,11 @@ executable("mac_installer") {
   deps = [
     ":mac_installer_base",
   ]
-  libs = [ "Foundation.framework" ]
+
+  libs = [
+    "AppKit.framework",
+    "CoreFoundation.framework",
+  ]
 }
 
 test("mac_installer_unittests") {

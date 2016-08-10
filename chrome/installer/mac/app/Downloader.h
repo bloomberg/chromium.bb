@@ -7,13 +7,16 @@
 
 #import <Foundation/Foundation.h>
 
+@class Downloader;
 @protocol DownloaderDelegate
-- (void)onDownloadSuccess;
-- (void)onDownloadFailureWithError:(NSError*)error;
+- (void)didDownloadData:(double)downloadProgressPercentage;
+- (void)downloader:(Downloader*)download
+    onDownloadSuccess:(NSURL*)diskImagePath;
+- (void)downloader:(Downloader*)download
+    onDownloadFailureWithError:(NSError*)error;
 @end
 
-@interface Downloader
-    : NSObject<NSXMLParserDelegate, NSURLSessionDownloadDelegate>
+@interface Downloader : NSObject<NSURLSessionDownloadDelegate>
 
 @property(nonatomic, assign) id<DownloaderDelegate> delegate;
 

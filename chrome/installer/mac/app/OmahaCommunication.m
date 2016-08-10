@@ -52,7 +52,7 @@ static NSString* const omahaURLPath =
           if (!error) {
             completeURLs = [OmahaXMLParser parseXML:data error:&error];
           }
-          // Here, we deal with errors both from the network error and the
+          // Deals with errors both from the network error and the
           // parsing error, as the user only needs to know there was a problem
           // talking with the Google Update server.
           if (error) {

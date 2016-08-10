@@ -20,7 +20,7 @@
 - (id)init;
 - (id)initWithBody:(NSXMLDocument*)xmlBody;
 
-// We ask the Omaha servers for the most updated version of Chrome by sending a
+// Asks the Omaha servers for the most updated version of Chrome by sending a
 // request using this function.
 - (void)fetchDownloadURLs;
 

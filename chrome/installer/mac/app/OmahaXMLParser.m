@@ -16,10 +16,13 @@
 // parsing work.
 + (NSArray*)parseXML:(NSData*)omahaResponseXML error:(NSError**)error {
   NSXMLParser* parser = [[NSXMLParser alloc] initWithData:omahaResponseXML];
+
   OmahaXMLParser* omahaParser = [[OmahaXMLParser alloc] init];
   [parser setDelegate:omahaParser];
   if (![parser parse]) {
     *error = [parser parserError];
+    // TODO: pass up error object to indicate error occurred so
+    // InstallerWindowController can create custom user error message.
     return nil;
   }
 
@@ -57,8 +60,17 @@
     [chromeIncompleteDownloadURLs_ addObject:extractedURL];
   }
   if ([elementName isEqualToString:@"package"]) {
-    chromeImageFilename_ = [[NSString alloc]
-        initWithFormat:@"%@", [attributeDict objectForKey:@"name"]];
+    chromeImageFilename_ =
+        [[NSString alloc] initWithString:[attributeDict objectForKey:@"name"]];
+  }
+}
+
+// If either component of the URL is empty then the complete URL cannot
+// be generated so both variables are set to nil to flag errors.
+- (void)parserDidEndDocument:(NSXMLParser*)parser {
+  if (!chromeIncompleteDownloadURLs_ || !chromeImageFilename_) {
+    chromeIncompleteDownloadURLs_ = nil;
+    chromeImageFilename_ = nil;
   }
 }
 
