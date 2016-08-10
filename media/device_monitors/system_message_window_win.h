@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_SYSTEM_MESSAGE_WINDOW_WIN_H_
-#define MEDIA_CAPTURE_SYSTEM_MESSAGE_WINDOW_WIN_H_
+#ifndef MEDIA_DEVICE_MONITORS_SYSTEM_MESSAGE_WINDOW_WIN_H_
+#define MEDIA_DEVICE_MONITORS_SYSTEM_MESSAGE_WINDOW_WIN_H_
 
 #include <windows.h>
 
 #include <memory>
 
 #include "base/macros.h"
-#include "media/capture/capture_export.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
-class CAPTURE_EXPORT SystemMessageWindowWin {
+class MEDIA_EXPORT SystemMessageWindowWin {
  public:
   SystemMessageWindowWin();
 
@@ -51,4 +51,4 @@ class CAPTURE_EXPORT SystemMessageWindowWin {
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_SYSTEM_MESSAGE_WINDOW_WIN_H_
+#endif  // MEDIA_DEVICE_MONITORS_SYSTEM_MESSAGE_WINDOW_WIN_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_DEVICE_MONITOR_MAC_H_
-#define MEDIA_CAPTURE_DEVICE_MONITOR_MAC_H_
+#ifndef MEDIA_DEVICE_MONITORS_DEVICE_MONITOR_MAC_H_
+#define MEDIA_DEVICE_MONITORS_DEVICE_MONITOR_MAC_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_checker.h"
-#include "media/capture/capture_export.h"
+#include "media/base/media_export.h"
 
 namespace {
 class DeviceMonitorMacImpl;
@@ -21,7 +21,7 @@ namespace media {
 // Class to track audio/video devices removal or addition via callback to
 // base::SystemMonitor ProcessDevicesChanged(). A single object of this class
 // is created from the browser main process and lives as long as this one.
-class CAPTURE_EXPORT DeviceMonitorMac {
+class MEDIA_EXPORT DeviceMonitorMac {
  public:
   DeviceMonitorMac();
   ~DeviceMonitorMac();
@@ -50,4 +50,4 @@ class CAPTURE_EXPORT DeviceMonitorMac {
 
 }  // namespace content
 
-#endif  // MEDIA_CAPTURE_DEVICE_MONITOR_MAC_H_
+#endif  // MEDIA_DEVICE_MONITORS_DEVICE_MONITOR_MAC_H_

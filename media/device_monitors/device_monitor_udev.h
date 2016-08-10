@@ -5,8 +5,8 @@
 // This class is used to detect device change and notify base::SystemMonitor
 // on Linux.
 
-#ifndef MEDIA_CAPTURE_DEVICE_MONITOR_UDEV_H_
-#define MEDIA_CAPTURE_DEVICE_MONITOR_UDEV_H_
+#ifndef MEDIA_DEVICE_MONITORS_DEVICE_MONITOR_UDEV_H_
+#define MEDIA_DEVICE_MONITORS_DEVICE_MONITOR_UDEV_H_
 
 #include <memory>
 
@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "media/capture/capture_export.h"
+#include "media/base/media_export.h"
 
 extern "C" {
 struct udev_device;
@@ -26,7 +26,7 @@ class UdevLinux;
 
 namespace media {
 
-class CAPTURE_EXPORT DeviceMonitorLinux
+class MEDIA_EXPORT DeviceMonitorLinux
     : public base::MessageLoop::DestructionObserver {
  public:
   explicit DeviceMonitorLinux(
@@ -54,4 +54,4 @@ class CAPTURE_EXPORT DeviceMonitorLinux
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_DEVICE_MONITOR_UDEV_H_
+#endif  // MEDIA_DEVICE_MONITORS_DEVICE_MONITOR_UDEV_H_

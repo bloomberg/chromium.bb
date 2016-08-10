@@ -155,11 +155,11 @@
 #endif
 
 #if defined(OS_WIN)
-#include "media/capture/system_message_window_win.h"
+#include "media/device_monitors/system_message_window_win.h"
 #elif defined(OS_LINUX) && defined(USE_UDEV)
-#include "media/capture/device_monitor_udev.h"
+#include "media/device_monitors/device_monitor_udev.h"
 #elif defined(OS_MACOSX)
-#include "media/capture/device_monitor_mac.h"
+#include "media/device_monitors/device_monitor_mac.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

@@ -22,10 +22,6 @@ component("capture") {
     "content/thread_safe_capture_oracle.h",
     "content/video_capture_oracle.cc",
     "content/video_capture_oracle.h",
-    "device_monitor_mac.h",
-    "device_monitor_mac.mm",
-    "system_message_window_win.cc",
-    "system_message_window_win.h",
     "video/fake_video_capture_device.cc",
     "video/fake_video_capture_device.h",
     "video/fake_video_capture_device_factory.cc",
@@ -115,14 +111,6 @@ component("capture") {
     ]
   }
 
-  if (use_udev) {
-    deps += [ "//device/udev_linux" ]
-    sources += [
-      "device_monitor_udev.cc",
-      "device_monitor_udev.h",
-    ]
-  }
-
   if (is_win) {
     deps += [
       "//media/base",  # For media_switches.
@@ -151,7 +139,6 @@ test("capture_unittests") {
     "content/capture_resolution_chooser_unittest.cc",
     "content/smooth_event_sampler_unittest.cc",
     "content/video_capture_oracle_unittest.cc",
-    "system_message_window_win_unittest.cc",
     "video/fake_video_capture_device_unittest.cc",
     "video/mac/video_capture_device_factory_mac_unittest.mm",
     "video/video_capture_device_unittest.cc",

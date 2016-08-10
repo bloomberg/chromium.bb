@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/device_monitor_mac.h"
+#include "media/device_monitors/device_monitor_mac.h"
 
 #include <set>
 

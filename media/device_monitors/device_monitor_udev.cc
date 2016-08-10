@@ -4,7 +4,7 @@
 
 // libudev is used for monitoring device changes.
 
-#include "media/capture/device_monitor_udev.h"
+#include "media/device_monitors/device_monitor_udev.h"
 
 #include <stddef.h>
 

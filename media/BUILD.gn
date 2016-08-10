@@ -113,6 +113,10 @@ component("media") {
     "cdm/player_tracker_impl.h",
     "cdm/supported_cdm_versions.cc",
     "cdm/supported_cdm_versions.h",
+    "device_monitors/device_monitor_mac.h",
+    "device_monitors/device_monitor_mac.mm",
+    "device_monitors/system_message_window_win.cc",
+    "device_monitors/system_message_window_win.h",
     "filters/audio_clock.cc",
     "filters/audio_clock.h",
     "filters/audio_renderer_algorithm.cc",
@@ -454,6 +458,14 @@ component("media") {
     ]
   }
 
+  if (use_udev) {
+    deps += [ "//device/udev_linux" ]
+    sources += [
+      "device_monitors/device_monitor_udev.cc",
+      "device_monitors/device_monitor_udev.h",
+    ]
+  }
+
   public_deps += [
     ":media_features",
     ":shared_memory_support",
@@ -524,6 +536,7 @@ test("media_unittests") {
     "cdm/simple_cdm_allocator_unittest.cc",
     "cdm/simple_cdm_buffer.cc",
     "cdm/simple_cdm_buffer.h",
+    "device_monitors/system_message_window_win_unittest.cc",
     "filters/audio_clock_unittest.cc",
     "filters/audio_decoder_selector_unittest.cc",
     "filters/audio_renderer_algorithm_unittest.cc",

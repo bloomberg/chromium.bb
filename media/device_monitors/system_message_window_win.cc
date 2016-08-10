@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/system_message_window_win.h"
+#include "media/device_monitors/system_message_window_win.h"
 
 #include <dbt.h>
 #include <stddef.h>

@@ -67,7 +67,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "media/capture/device_monitor_mac.h"
+#include "media/device_monitors/device_monitor_mac.h"
 #endif
 
 namespace content {
