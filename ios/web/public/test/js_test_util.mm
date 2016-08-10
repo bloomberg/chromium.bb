@@ -46,6 +46,22 @@ NSString* EvaluateJavaScriptAsString(CRWJSInjectionManager* manager,
   return [[evaluationResult retain] autorelease];
 }
 
+id ExecuteJavaScript(CRWJSInjectionManager* manager, NSString* script) {
+  __block base::scoped_nsobject<NSString> result;
+  __block bool completed = false;
+  [manager executeJavaScript:script
+           completionHandler:^(id execution_result, NSError* error) {
+             DCHECK(!error);
+             result.reset([execution_result copy]);
+             completed = true;
+           }];
+
+  base::test::ios::WaitUntilCondition(^{
+    return completed;
+  });
+  return [[result retain] autorelease];
+}
+
 NSString* EvaluateJavaScriptAsString(CRWJSInjectionReceiver* receiver,
                                      NSString* script) {
   base::scoped_nsobject<CRWJSInjectionManager> manager(
@@ -53,14 +69,24 @@ NSString* EvaluateJavaScriptAsString(CRWJSInjectionReceiver* receiver,
   return EvaluateJavaScriptAsString(manager, script);
 }
 
+id ExecuteJavaScript(CRWJSInjectionReceiver* receiver, NSString* script) {
+  base::scoped_nsobject<CRWJSInjectionManager> manager(
+      [[CRWJSInjectionManager alloc] initWithReceiver:receiver]);
+  return ExecuteJavaScript(manager, script);
+}
+
 id EvaluateJavaScript(WKWebView* web_view, NSString* script) {
+  return ExecuteJavaScript(web_view, script);
+}
+
+id ExecuteJavaScript(WKWebView* web_view, NSString* script) {
   __block base::scoped_nsobject<id> result;
   __block bool completed = false;
   [web_view evaluateJavaScript:script
-             completionHandler:^(id evaluationResult, NSError* error) {
+             completionHandler:^(id evaluation_result, NSError* error) {
                DCHECK(!error);
+               result.reset([evaluation_result copy]);
                completed = true;
-               result.reset([evaluationResult copy]);
              }];
   base::test::ios::WaitUntilCondition(^{
     return completed;

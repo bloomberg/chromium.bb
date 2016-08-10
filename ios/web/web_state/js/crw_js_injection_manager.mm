@@ -68,6 +68,11 @@
   [_receiver evaluateJavaScript:script stringResultHandler:completionHandler];
 }
 
+- (void)executeJavaScript:(NSString*)script
+        completionHandler:(web::JavaScriptResultBlock)completionHandler {
+  [_receiver executeJavaScript:script completionHandler:completionHandler];
+}
+
 - (NSArray*)directDependencies {
   return @[];
 }
