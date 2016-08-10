@@ -308,7 +308,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(images[0].image == discardable_image);
-  EXPECT_EQ(gfx::Rect(0, 0, 1 << 25, 1 << 25), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 0, 2048, 2048), images[0].image_rect);
 }
 
 TEST_F(DiscardableImageMapTest, PaintDestroyedWhileImageIsDrawn) {
@@ -335,6 +335,127 @@ TEST_F(DiscardableImageMapTest, PaintDestroyedWhileImageIsDrawn) {
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(images[0].image == discardable_image);
+}
+
+TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImage) {
+  gfx::Rect visible_rect(2048, 2048);
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+
+  int dimension = std::numeric_limits<int>::max();
+  sk_sp<SkImage> discardable_image =
+      CreateDiscardableImage(gfx::Size(dimension, dimension));
+  SkPaint paint;
+  content_layer_client.add_draw_image(discardable_image, gfx::Point(42, 42),
+                                      paint);
+
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+
+  DiscardableImageMap image_map;
+  {
+    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
+                                                           visible_rect.size());
+    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
+  }
+  std::vector<PositionDrawImage> images =
+      GetDiscardableImagesInRect(image_map, gfx::Rect(42, 42, 1, 1));
+  EXPECT_EQ(1u, images.size());
+  EXPECT_TRUE(images[0].image == discardable_image);
+  EXPECT_EQ(gfx::Rect(42, 42, 2006, 2006), images[0].image_rect);
+}
+
+TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImageMaxLayer) {
+  // At large values of integer x, x != static_cast<int>(static_cast<float>(x)).
+  // So, make sure the dimension can be converted back and forth for the
+  // purposes of the unittest. Also, at near max int values, Skia seems to skip
+  // some draw calls, so we subtract 64 since we only care about "really large"
+  // values, not necessarily max int values.
+  int dimension = static_cast<int>(
+      static_cast<float>(std::numeric_limits<int>::max() - 64));
+  gfx::Rect visible_rect(dimension, dimension);
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+
+  sk_sp<SkImage> discardable_image =
+      CreateDiscardableImage(gfx::Size(dimension, dimension));
+  SkPaint paint;
+  content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
+                                      paint);
+  content_layer_client.add_draw_image(discardable_image, gfx::Point(10000, 0),
+                                      paint);
+  content_layer_client.add_draw_image(discardable_image,
+                                      gfx::Point(-10000, 500), paint);
+
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+
+  DiscardableImageMap image_map;
+  {
+    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
+                                                           visible_rect.size());
+    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
+  }
+  std::vector<PositionDrawImage> images =
+      GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
+  EXPECT_EQ(1u, images.size());
+  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), images[0].image_rect);
+
+  images = GetDiscardableImagesInRect(image_map, gfx::Rect(10000, 0, 1, 1));
+  EXPECT_EQ(2u, images.size());
+  int expected10k = static_cast<int>(static_cast<float>(dimension - 10000));
+  int expected500 = static_cast<int>(static_cast<float>(dimension - 500));
+  EXPECT_EQ(gfx::Rect(10000, 0, expected10k, dimension), images[1].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), images[0].image_rect);
+
+  images = GetDiscardableImagesInRect(image_map, gfx::Rect(0, 500, 1, 1));
+  EXPECT_EQ(2u, images.size());
+  EXPECT_EQ(gfx::Rect(0, 500, expected10k, expected500), images[1].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), images[0].image_rect);
+}
+
+TEST_F(DiscardableImageMapTest, GetDiscardableImagesRectInBounds) {
+  gfx::Rect visible_rect(1000, 1000);
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+
+  sk_sp<SkImage> discardable_image =
+      CreateDiscardableImage(gfx::Size(100, 100));
+  sk_sp<SkImage> long_discardable_image =
+      CreateDiscardableImage(gfx::Size(10000, 100));
+
+  SkPaint paint;
+  content_layer_client.add_draw_image(discardable_image, gfx::Point(-10, -11),
+                                      paint);
+  content_layer_client.add_draw_image(discardable_image, gfx::Point(950, 951),
+                                      paint);
+  content_layer_client.add_draw_image(long_discardable_image,
+                                      gfx::Point(-100, 500), paint);
+
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+
+  DiscardableImageMap image_map;
+  {
+    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
+                                                           visible_rect.size());
+    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
+  }
+  std::vector<PositionDrawImage> images =
+      GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
+  EXPECT_EQ(1u, images.size());
+  EXPECT_EQ(gfx::Rect(0, 0, 90, 89), images[0].image_rect);
+
+  images = GetDiscardableImagesInRect(image_map, gfx::Rect(999, 999, 1, 1));
+  EXPECT_EQ(1u, images.size());
+  EXPECT_EQ(gfx::Rect(950, 951, 50, 49), images[0].image_rect);
+
+  images = GetDiscardableImagesInRect(image_map, gfx::Rect(0, 500, 1, 1));
+  EXPECT_EQ(1u, images.size());
+  EXPECT_EQ(gfx::Rect(0, 500, 1000, 100), images[0].image_rect);
 }
 
 }  // namespace cc
