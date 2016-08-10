@@ -1756,7 +1756,6 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
  protected:
   void SetUp() override {
     CALayerOverlayTest::SetUp();
-    EnableRenderPassDrawQuadForTesting();
     pass_ = CreateRenderPass();
     quad_ = pass_->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     render_pass_id_.layer_id = 3;
