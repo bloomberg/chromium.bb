@@ -12,15 +12,81 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 
 # ====== Oilpan-only failures until here ======
 
-# Run these tests with under virtual/scalefactor... only.
-crbug.com/567837 fast/hidpi/static [ Skip ]
+# ====== Paint team owned tests from here ======
+# The paint team tracks and triages its test failures, and keeping them colocated
+# makes tracking much easier.
+# Covered directories are:
+#  compositing subdirectories but not compositing itself or compositing/animations
+#  fast/images, css3/images,
+#  fast/repaint
+#  paint
+#  svg
+#  fast/svg
+# Some additional bugs that are caused by painting problems are also within this section.
 
-# TODO(yosin): We should convert following tests to use asynchronous spell checker.scroll-in
-crbug.com/563265 editing/spelling/context-menu-suggestions.html [ Skip ]
-crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]
-crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
-crbug.com/563265 editing/spelling/spelling-unified-emulation.html [ Skip ]
+# Failures due to SPV2, that don't also fail without SPV2. DO NOT REBASELINE.
+# SPv2 paint properties are still being implemented.
+#
+# These tests should not be rebaselined automatically, as our goal is to exactly match
+# existing tests. We have skipped the entire spv2 directory and are adding [ Pass ] lines
+# as we go. Please remove [ Pass ] lines instead of rebaselining these tests.
+crbug.com/537409 virtual/spv2/ [ Skip ]
+crbug.com/537409 virtual/spv2/paint/subpixel [ Pass ]
+crbug.com/537409 virtual/spv2/fast/clip [ Pass ]
+crbug.com/537409 virtual/spv2/fast/overflow [ Pass ]
+crbug.com/563667 virtual/spv2/fast/block/basic/001.html [ Pass ]
+crbug.com/563667 virtual/spv2/fast/block/positioning/static-distance-with-positioned-ancestor.html [ Pass ]
+crbug.com/563667 virtual/spv2/fast/block/float/clamped-right-float.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/basic/018.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/basic/adding-near-anonymous-block.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/basic/text-indent-rtl.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/basic/white-space-pre-wraps.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/float/001.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/float/independent-align-positioning.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/float/intruding-painted-twice.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/float/shrink-to-fit-width.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/float/table-relayout.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/float/vertical-move-relayout.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/001.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/005.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/012.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/015.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/016.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/019.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/020.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/056.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/059.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/001.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/005.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/012.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/015.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/016.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/019.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/020.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/positioning/height-change.html [ Pass ]
+crbug.com/580355 virtual/spv2/fast/block/positioning/relayout-on-position-change.html [ Pass ]
+crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-3d.html [ Pass ]
+crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-simple.html [ Pass ]
+crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-alpha.html [ Pass ]
+crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-no-alpha.html [ Pass ]
+crbug.com/596780 virtual/spv2/compositing/framesets/composited-frame-alignment.html [ Pass ]
+crbug.com/596780 virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
+crbug.com/596780 virtual/spv2/compositing/squashing/incorrect-clip-after-remove-compositing.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/fill-update.svg [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/getscreenctm-in-mixed-content.xhtml [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/non-scaling-stroke-markers.svg [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/object-current-scale.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-width-height.xhtml [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-width.xhtml [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-left.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-top.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/css/max-height.html [ Pass ]
+crbug.com/600618 virtual/spv2/svg/css/max-width.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning [ Pass ]
+crbug.com/619427 [ Linux ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
+crbug.com/510908 virtual/spv2/svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ Failure ]
 crbug.com/524134 virtual/spv2/paint/invalidation/invalidate-after-composited-scroll.html [ Failure ]
 crbug.com/524134 virtual/spv2/fast/repaint/focus-ring-on-continuation-move.html [ Failure ]
 crbug.com/524236 virtual/spv2/compositing/overflow/updating-scrolling-content.html [ Failure ]
@@ -36,11 +102,208 @@ crbug.com/524236 virtual/spv2/compositing/repaint/should-not-repaint-composited-
 crbug.com/524236 virtual/spv2/compositing/repaint/should-not-repaint-composited-transform.html [ Failure ]
 crbug.com/524236 virtual/spv2/fast/repaint/clip-path-constant-repaint.html [ Failure ]
 crbug.com/524236 crbug.com/619103 virtual/spv2/fast/repaint/relative-positioned-movement-repaint.html [ Failure Crash Timeout ]
-crbug.com/510908 virtual/spv2/svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ Failure ]
+
+# PaintArtifactCompositor doesn't implement effects yet.
+crbug.com/563667 virtual/spv2/fast/overflow/007.html [ Failure ]
+
+# Sub-pixel differences in layout tests for SPv2
+crbug.com/589265 virtual/spv2/fast/clip/nestedTransparencyClip.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/clip/outline-overflowClip.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/block/float/002.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/001.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/003.xml [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/border-radius-clipping.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/childFocusRingClip.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/clip-rects-fixed-ancestor.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/dynamic-hidden.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/float-in-relpositioned.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/hit-test-overflow-controls.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/image-selection-highlight.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/overflow-float-stacking.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/overflow-focus-ring.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/overflow-stacking.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/overflow-text-hit-testing.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/overflow-update-transform.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/overflow-with-local-background-attachment.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/scroll-nested-positioned-layer-in-overflow.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/scrollbar-position-update.html [ Failure ]
+crbug.com/589265 virtual/spv2/compositing/geometry/root-layer-update.html [ Failure ]
+
+# Implement scrollbars in FramePainter for SPv2
+crbug.com/589279 virtual/spv2/fast/overflow/006.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-x.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-y.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/overflow/overflow-x-y.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/overflow/position-fixed-transform-clipping.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/overflow/scrollRevealButton.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/047.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/051.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/055.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/auto/007.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/fixed-positioning-scrollbar-bug.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/relative-overflow-block.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/relative-overflow-replaced-float.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/relative-overflow-replaced.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/vertical-lr/002.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/vertical-rl/002.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/auto/vertical-lr/005.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/auto/vertical-rl/005.html [ Failure ]
+
+# Implement table walk in PaintPropertyTreeBuilder.
+crbug.com/593525 virtual/spv2/fast/overflow/002.html [ Failure ]
+crbug.com/593525 virtual/spv2/fast/overflow/overflow-rtl-vertical.html [ Failure ]
+crbug.com/593525 virtual/spv2/fast/overflow/overflow-rtl.html [ Failure ]
+crbug.com/593525 virtual/spv2/fast/overflow/table-overflow-float.html [ Failure ]
+
+# These failures have been manually verified to be only paint invalidation text differences.
+crbug.com/596780 virtual/spv2/compositing/geometry/bounds-clipped-composited-child.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/geometry/bounds-ignores-hidden-dynamic.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-absolute.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-fixed.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-relative.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/visibility/layer-visible-content.html [ Failure ]
+
+# [SPv2] Handle transform space reversion in PaintArtifactCompositor
+crbug.com/597156 virtual/spv2/fast/clip/010.html [ Crash Failure Timeout ]
+
+# [SPv2] Implement border radius rasterizing / drawing
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-clip.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-combinations.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-composited-parent.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-composited.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-fixed-position.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-transformed.html [ Failure ]
+
+# This test has a paint invalidation failure that needs to be investigated.
+crbug.com/600618 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Failure Crash ]
+
+# SkiaBitLocker should avoid allocating huge offscreen buffer
+crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
+crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
+
+# Multicolumn still fails to fragment in spv2.
+crbug.com/616287 virtual/spv2/fast/block/positioning/offsetLeft-offsetTop-multicolumn.html [ Failure ]
+
+# --- End SPV2 Tests ---
+
+crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
+crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Failure ]
+crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ Failure ]
+
+crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ Failure ]
+
+crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
+
+crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
+
+# Started failing after r162705.
+crbug.com/324370 compositing/video/video-reflection.html [ Failure ]
+
+crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
+crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
+
+crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
+
+# Significant Slimming Paint failure.
+crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
+
+crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ Pass Failure ]
+crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass Failure ]
+crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
+crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Failure ]
+crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
+crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
+crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
+crbug.com/487344 compositing/video/video-controls-layer-creation.html [ Failure ]
+crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
+
+crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
-crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
+
+crbug.com/509025 [ Mac10.10 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
+crbug.com/516364 svg/animations/smil-leak-element-instances.svg [ Failure Pass ]
+crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
+crbug.com/520166 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure Pass ]
+
+crbug.com/520177 [ Android ] fast/images/style-access-during-imageChanged-crash.html [ Crash Failure Pass ]
+crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Failure ]
+crbug.com/582230 fast/repaint/align-items-change.html [ Skip ]
+crbug.com/582230 fast/repaint/align-items-overflow-change.html [ Skip ]
+
+crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
+
+crbug.com/592185 fast/repaint/fixed-right-in-page-scale.html [ Failure Pass ]
+
+crbug.com/600087 virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Timeout ]
+
+crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash Pass ]
+
+crbug.com/603997 compositing/overflow/clear-scroll-parent.html [ Failure ]
+crbug.com/603997 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clear-scroll-parent.html [ Failure ]
+
+crbug.com/619103 fast/repaint/background-resize-width.html [ Failure ]
+crbug.com/619103 fast/repaint/hover-invalidation-table.html [ Failure ]
+crbug.com/619103 fast/repaint/selected-replaced.html [ Failure ]
+crbug.com/619103 paint/invalidation/invalidate-after-composited-scroll-of-window.html [ Failure ]
+crbug.com/619103 paint/invalidation/animated-gif.html [ Pass Failure ]
+crbug.com/619103 paint/invalidation/animated-gif-background.html [ Pass Failure ]
+crbug.com/619103 paint/invalidation/animated-gif-background-offscreen.html [ Pass Failure ]
+crbug.com/619103 [ Win ] svg/text/text-viewbox-rescale.html [ Pass Failure ]
+crbug.com/619103 paint/overflow/interest-rect-change-scroll-down.html [ Failure ]
+crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
+crbug.com/619103 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
+crbug.com/619103 fast/layers/remove-layer-with-nested-stacking.html [ Pass Crash Timeout ]
+crbug.com/619103 compositing/iframes/become-composited-nested-iframes.html [ Pass Crash Timeout ]
+
+crbug.com/622368 [ Linux Win Debug ] fast/repaint/obscured-background-no-repaint.html [ Pass Failure ]
+
+# TODO(fmalita): re-enable
+# crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]
+crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profile-lossy.html [ Failure ]
+crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
+crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
+crbug.com/624233 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Failure ]
+
+crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
+
+crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
+
+crbug.com/630870 svg/animations/use-animate-width-and-height.html [ Skip ]
+
+crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-1.html [ Skip ]
+crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-2.html [ Skip ]
+crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-angle.html [ Skip ]
+
+crbug.com/632000 [ Win ] fast/images/paint-subrect-grid.html [ Pass Failure ]
+
+# Broken on Win10
+crbug.com/632217 [ Win10 ] svg/W3C-SVG-1.1/filters-composite-02-b.svg [ Failure ]
+
+crbug.com/632548 [ Win ] fast/repaint/overflow-scroll-body-appear.html [ Pass Failure ]
+crbug.com/632548 [ Win ] fast/repaint/invalidation-after-opacity-change-subtree.html [ Pass Failure ]
+crbug.com/632548 [ Win ] compositing/overflow/text-match-highlight.html [ Pass Failure ]
+
+crbug.com/636222 [ Mac10.10 ] fast/repaint/fixed-and-absolute-position-scrolled.html [ Failure ]
+
+crbug.com/636271 [ Mac10.10 ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
+
+crbug.com/636311 [ Win10 ] svg/custom/use-clipped-hit.svg [ Pass Failure ]
+
+# ====== Paint team owned tests to here ======
+
+# Run these tests with under virtual/scalefactor... only.
+crbug.com/567837 fast/hidpi/static [ Skip ]
+
+# TODO(yosin): We should convert following tests to use asynchronous spell checker.scroll-in
+crbug.com/563265 editing/spelling/context-menu-suggestions.html [ Skip ]
+crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]
+crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
+crbug.com/563265 editing/spelling/spelling-unified-emulation.html [ Skip ]
 
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
@@ -62,8 +325,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-embed-002.
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-isolate-002.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Failure ]
-crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ Pass Failure ]
-crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass Failure ]
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
@@ -87,11 +348,9 @@ crbug.com/521093 http/tests/loading/pdf-commit-load-callbacks.html [ Failure Pas
 crbug.com/521094 [ Mac ] http/tests/navigation/beacon-cross-origin.https.html [ Crash Failure Pass ]
 crbug.com/521096 imported/wpt/webstorage/event_case_sensitive.html [ Failure Pass ]
 crbug.com/521107 [ Debug ] fast/html/imports/import-custom-element-abort.html [ Crash Pass ]
-crbug.com/520166 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure Pass ]
 crbug.com/520169 [ Win ] fast/dom/Geolocation/timestamp.html [ Failure Pass ]
 crbug.com/520170 [ Win ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/520174 fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
-crbug.com/520177 [ Android ] fast/images/style-access-during-imageChanged-crash.html [ Crash Failure Pass ]
 crbug.com/520180 [ Linux ] fast/text/basic/001.html [ Pass Timeout ]
 crbug.com/520183 http/tests/fouc/scroll-left-while-loading.html [ Pass Timeout ]
 crbug.com/520184 http/tests/history/frameset-repeated-name.html [ Failure Pass ]
@@ -157,8 +416,6 @@ crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failur
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
-crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
-crbug.com/516364 svg/animations/smil-leak-element-instances.svg [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failure ]
@@ -269,8 +526,6 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 
 crbug.com/548904 [ Linux Win ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
 
-crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Failure ]
-
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
@@ -280,156 +535,10 @@ crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
-crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
-crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Failure ]
-crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ Failure ]
-
 crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
 crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
-
-# SPv2 paint properties are still being implemented.
-#
-# These tests should not be rebaselined automatically, as our goal is to exactly match
-# existing tests. We have skipped the entire spv2 directory and are adding [ Pass ] lines
-# as we go. Please remove [ Pass ] lines instead of rebaselining these tests.
-crbug.com/537409 virtual/spv2/ [ Skip ]
-crbug.com/563667 virtual/spv2/fast/block/basic/001.html [ Pass ]
-crbug.com/563667 virtual/spv2/fast/block/positioning/static-distance-with-positioned-ancestor.html [ Pass ]
-crbug.com/563667 virtual/spv2/fast/block/float/clamped-right-float.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/basic/018.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/basic/adding-near-anonymous-block.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/basic/text-indent-rtl.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/basic/white-space-pre-wraps.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/float/001.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/float/independent-align-positioning.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/float/intruding-painted-twice.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/float/shrink-to-fit-width.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/float/table-relayout.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/float/vertical-move-relayout.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/001.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/005.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/012.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/015.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/016.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/019.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/020.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/056.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/059.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/001.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/005.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/012.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/015.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/016.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/019.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/020.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/positioning/height-change.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/positioning/relayout-on-position-change.html [ Pass ]
-crbug.com/596780 virtual/spv2/compositing/framesets/composited-frame-alignment.html [ Pass ]
-crbug.com/596780 virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
-crbug.com/596780 virtual/spv2/compositing/squashing/incorrect-clip-after-remove-compositing.html [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/fill-update.svg [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/getscreenctm-in-mixed-content.xhtml [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/non-scaling-stroke-markers.svg [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/object-current-scale.html [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-width-height.xhtml [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-width.xhtml [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-left.html [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-top.html [ Pass ]
-crbug.com/600618 virtual/spv2/svg/css/max-height.html [ Pass ]
-crbug.com/600618 virtual/spv2/svg/css/max-width.html [ Pass ]
-
-crbug.com/537409 virtual/spv2/paint/subpixel [ Pass ]
-crbug.com/537409 virtual/spv2/fast/clip [ Pass ]
-crbug.com/537409 virtual/spv2/fast/overflow [ Pass ]
-crbug.com/619427 [ Linux ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
-crbug.com/614257 virtual/spv2/fast/block/positioning [ Pass ]
-
-# PaintArtifactCompositor doesn't implement effects yet.
-crbug.com/563667 virtual/spv2/fast/overflow/007.html [ Failure ]
-# Sub-pixel differences in layout tests for SPv2
-crbug.com/589265 virtual/spv2/fast/clip/nestedTransparencyClip.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/clip/outline-overflowClip.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/block/float/002.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/001.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/003.xml [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/border-radius-clipping.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/childFocusRingClip.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/clip-rects-fixed-ancestor.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/dynamic-hidden.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/float-in-relpositioned.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/hit-test-overflow-controls.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/image-selection-highlight.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/overflow-float-stacking.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/overflow-focus-ring.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/overflow-stacking.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/overflow-text-hit-testing.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/overflow-update-transform.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/overflow-with-local-background-attachment.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/scroll-nested-positioned-layer-in-overflow.html [ Failure ]
-crbug.com/589265 virtual/spv2/fast/overflow/scrollbar-position-update.html [ Failure ]
-crbug.com/589265 virtual/spv2/compositing/geometry/root-layer-update.html [ Failure ]
-
-# Multicolumn still fails to fragment in spv2.
-crbug.com/616287 virtual/spv2/fast/block/positioning/offsetLeft-offsetTop-multicolumn.html [ Failure ]
-
-# Implement scrollbars in FramePainter for SPv2
-crbug.com/589279 virtual/spv2/fast/overflow/006.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-x.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-y.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/overflow/overflow-x-y.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/overflow/position-fixed-transform-clipping.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/overflow/scrollRevealButton.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/047.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/051.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/055.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/auto/007.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/fixed-positioning-scrollbar-bug.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/relative-overflow-block.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/relative-overflow-replaced-float.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/relative-overflow-replaced.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/vertical-lr/002.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/vertical-rl/002.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/auto/vertical-lr/005.html [ Failure ]
-crbug.com/589279 virtual/spv2/fast/block/positioning/auto/vertical-rl/005.html [ Failure ]
-# Implement table walk in PaintPropertyTreeBuilder.
-crbug.com/593525 virtual/spv2/fast/overflow/002.html [ Failure ]
-crbug.com/593525 virtual/spv2/fast/overflow/overflow-rtl-vertical.html [ Failure ]
-crbug.com/593525 virtual/spv2/fast/overflow/overflow-rtl.html [ Failure ]
-crbug.com/593525 virtual/spv2/fast/overflow/table-overflow-float.html [ Failure ]
-# [SPv2] Handle transform space reversion in PaintArtifactCompositor
-crbug.com/597156 virtual/spv2/fast/clip/010.html [ Crash Failure Timeout ]
-# [SPv2] Implement border radius rasterizing / drawing
-crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-clip.html [ Failure ]
-crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-combinations.html [ Failure ]
-crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-composited-parent.html [ Failure ]
-crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-composited.html [ Failure ]
-crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-fixed-position.html [ Failure ]
-crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-transformed.html [ Failure ]
-# SkiaBitLocker should avoid allocating huge offscreen buffer
-crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
-crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
-
-crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-3d.html [ Pass ]
-crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-simple.html [ Pass ]
-crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-alpha.html [ Pass ]
-crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-no-alpha.html [ Pass ]
-
-# These failures have been manually verified to be only paint invalidation text differences.
-crbug.com/596780 virtual/spv2/compositing/geometry/bounds-clipped-composited-child.html [ Failure ]
-crbug.com/596780 virtual/spv2/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex.html [ Failure ]
-crbug.com/596780 virtual/spv2/compositing/geometry/bounds-ignores-hidden-dynamic.html [ Failure ]
-crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
-crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-absolute.html [ Failure ]
-crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
-crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-fixed.html [ Failure ]
-crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-relative.html [ Failure ]
-crbug.com/596780 virtual/spv2/compositing/visibility/layer-visible-content.html [ Failure ]
-
-# This test has a paint invalidation failure that needs to be investigated.
-crbug.com/600618 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Failure Crash ]
 
 # In imported/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
@@ -491,9 +600,6 @@ crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-style
 
 crbug.com/517840 imported/wpt/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
 
-crbug.com/603997 compositing/overflow/clear-scroll-parent.html [ Failure ]
-crbug.com/603997 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clear-scroll-parent.html [ Failure ]
-
 crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
@@ -514,8 +620,6 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-inset-003.html [ Failure ]
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
-
-crbug.com/636222 [ Mac10.10 ] fast/repaint/fixed-and-absolute-position-scrolled.html [ Failure ]
 
 crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-available-001.html [ Missing ]
 crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-fixed-001.html [ Missing ]
@@ -705,13 +809,8 @@ crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/su
 
 crbug.com/443379 imported/wpt/gamepad/idlharness.html [ Failure Timeout ]
 
-crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
-crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
-
 crbug.com/381684 [ Mac Win ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
-
-crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
@@ -743,15 +842,7 @@ crbug.com/633016 http/tests/media/media-source/mediasource-errors.html [ Failure
 # benefit to running them again with gpu acceleration enabled.
 crbug.com/555703 [ Linux Mac Win ] virtual/media-gpu-accelerated [ Skip ]
 
-crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
-
-crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
-crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ Failure ]
-
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ Failure ]
-
-# Started failing after r162705.
-crbug.com/324370 compositing/video/video-reflection.html [ Failure ]
 
 crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 
@@ -832,11 +923,6 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-z
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ Failure ]
 
-crbug.com/600087 virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Timeout ]
-
-# Flaky on Win10 and Win7
-crbug.com/624233 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Failure ]
-
 crbug.com/385014 crbug.com/410145 accessibility/canvas-fallback-content-2.html [ Pass Failure Timeout ]
 
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/fixed-background-in-iframe.html [ Skip ]
@@ -851,7 +937,6 @@ crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scrol
 crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Pass Timeout ]
 crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/552556 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
-crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Failure ]
 crbug.com/480769 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass Timeout ]
 
@@ -866,8 +951,6 @@ crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 # Flaky on Win10 and Win7
 crbug.com/619539 [ Win ] http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
 
-crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
-
 # Temporary until we start generating Trusty baselines.
 crbug.com/498021 [ Linux ] fast/text/unicode-fallback-font.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/forms/month/month-appearance-l10n.html [ Failure ]
@@ -879,14 +962,6 @@ crbug.com/498021 [ Linux ] fast/text/selection-multiple-runs.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
-
-# Significant Slimming Paint failure.
-crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
-
-crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
-
-# Broken on Win10
-crbug.com/632217 [ Win10 ] svg/W3C-SVG-1.1/filters-composite-02-b.svg [ Failure ]
 
 # These are the failing tests because Chrome implements the changes proposed to the spec.
 crbug.com/630671 imported/wpt/pointerevents/pointerevent_capture_suppressing_mouse-manual.html [ Skip ]
@@ -1050,12 +1125,8 @@ crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
-crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Failure ]
-crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
 
 crbug.com/582230 fast/css-grid-layout/relayout-align-items-changed.html [ Skip ]
-crbug.com/582230 fast/repaint/align-items-change.html [ Skip ]
-crbug.com/582230 fast/repaint/align-items-overflow-change.html [ Skip ]
 
 # Fails with leak detector.
 crbug.com/622915 [ Linux ] ietestcenter/css3/grid/grid-column-003.htm [ Skip ]
@@ -1093,29 +1164,11 @@ crbug.com/545140 [ Mac10.10 Mac10.11 Retina ] fast/encoding/denormalised-voiced-
 crbug.com/636248 [ Mac ] http/tests/security/img-crossorigin-no-credentials-prompt.html [ Failure Pass ]
 
 crbug.com/509025 [ Mac10.10 ] fast/events/context-no-deselect.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
 
-crbug.com/619103 fast/repaint/background-resize-width.html [ Failure ]
-crbug.com/619103 fast/repaint/hover-invalidation-table.html [ Failure ]
-crbug.com/619103 fast/repaint/selected-replaced.html [ Failure ]
 crbug.com/619103 fast/table/border-collapsing/cached-change-row-border-color.html [ Failure ]
 crbug.com/619103 fast/table/border-collapsing/cached-change-tbody-border-color.html [ Failure ]
-crbug.com/619103 paint/invalidation/invalidate-after-composited-scroll-of-window.html [ Failure ]
-crbug.com/619103 paint/invalidation/animated-gif.html [ Pass Failure ]
-crbug.com/619103 paint/invalidation/animated-gif-background.html [ Pass Failure ]
-crbug.com/619103 paint/invalidation/animated-gif-background-offscreen.html [ Pass Failure ]
-crbug.com/619103 [ Win ] svg/text/text-viewbox-rescale.html [ Pass Failure ]
-crbug.com/619103 paint/overflow/interest-rect-change-scroll-down.html [ Failure ]
-crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
-crbug.com/619103 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
-crbug.com/619103 fast/layers/remove-layer-with-nested-stacking.html [ Pass Crash Timeout ]
-crbug.com/619103 compositing/iframes/become-composited-nested-iframes.html [ Pass Crash Timeout ]
-
-crbug.com/632548 [ Win ] fast/repaint/overflow-scroll-body-appear.html [ Pass Failure ]
-crbug.com/632548 [ Win ] fast/repaint/invalidation-after-opacity-change-subtree.html [ Pass Failure ]
-crbug.com/632548 [ Win ] compositing/overflow/text-match-highlight.html [ Pass Failure ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
@@ -1159,7 +1212,6 @@ crbug.com/591500 [ Win10 ] printing/iframe-print.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/iframe-print.html [ Failure ]
 crbug.com/591500 [ Win10 ] printing/list-item-with-empty-first-line.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/list-item-with-empty-first-line.html [ Failure ]
-crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
 
 crbug.com/618082 [ Win10 ] printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 crbug.com/618082 [ Win10 ] virtual/threaded/printing/thead-repeats-at-top-of-each-page.html [ Failure ]
@@ -1216,8 +1268,6 @@ crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display.html [ Pass Timeout F
 
 crbug.com/571376 http/tests/webfont/font-display-intervention.html [ Pass Failure ]
 
-crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
-
 crbug.com/575766 http/tests/inspector/resource-tree/resource-tree-frame-add.html [ Timeout Pass ]
 crbug.com/581468 http/tests/inspector/resource-tree/resource-tree-non-unique-url.html [ Pass Failure ]
 
@@ -1246,13 +1296,10 @@ crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-window.html [ Failure Pass ]
-crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
 
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
 
 crbug.com/591902 [ Linux Mac10.10 Mac10.11 Retina ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
-
-crbug.com/592185 fast/repaint/fixed-right-in-page-scale.html [ Failure Pass ]
 
 crbug.com/594595 [ Linux ] http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Timeout Pass ]
 
@@ -1261,13 +1308,9 @@ crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [
 crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
-crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
-
 # DocumentWriteEvaluator is still experimental
 crbug.com/599115 http/tests/preload/document-write [ Failure ]
 crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
-
-crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash Pass ]
 
 crbug.com/600261 imported/wpt/mediacapture-streams/GUM-deny.https.html [ Failure ]
 crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Failure ]
@@ -1303,7 +1346,6 @@ crbug.com/624019 [ Mac ] bluetooth/notifications/stop-after-start-succeeds.html 
 crbug.com/624019 [ Mac ] bluetooth/notifications/stop-twice.html [ Skip ]
 crbug.com/624019 [ Mac ] bluetooth/notifications/stop-without-starting.html [ Skip ]
 
-crbug.com/487344 compositing/video/video-controls-layer-creation.html [ Failure ]
 crbug.com/487344 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/487344 fast/layers/video-layer.html [ Failure ]
 crbug.com/487344 http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
@@ -1330,16 +1372,12 @@ crbug.com/606302 [ Linux Mac Win7 ] transforms/3d/point-mapping/3d-point-mapping
 crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ Failure ]
 crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 
-crbug.com/632000 [ Win ] fast/images/paint-subrect-grid.html [ Pass Failure ]
-
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
-
-crbug.com/622368 [ Linux Win Debug ] fast/repaint/obscured-background-no-repaint.html [ Pass Failure ]
 
 crbug.com/622819 imported/wpt/IndexedDB/transaction-lifetime-empty.html [ Skip ]
 
@@ -1353,16 +1391,10 @@ crbug.com/622672 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-interrup
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
 
-# TODO(fmalita): re-enable
-# crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]
-crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profile-lossy.html [ Failure ]
-
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
 crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
-
-crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
@@ -1370,11 +1402,6 @@ crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.
 crbug.com/629711 [ Linux Debug ] fast/workers/shared-worker-exception.html [ Crash Pass ]
 crbug.com/629711 [ Linux Debug ] virtual/sharedarraybuffer/fast/workers/shared-worker-exception.html [ Crash Pass ]
 
-crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-1.html [ Skip ]
-crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-2.html [ Skip ]
-crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-angle.html [ Skip ]
-
-crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
 crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
 
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/subframe-scrollBy.html [ Pass Failure ]
@@ -1384,15 +1411,10 @@ crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-eleme
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-scroll.html [ Pass Failure ]
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/overflow-scroll-scroll.html [ Pass Failure ]
 
-crbug.com/630870 svg/animations/use-animate-width-and-height.html [ Skip ]
 # Flaky on Win7 dbg and Mac10.11 (retina)
 crbug.com/634019 [ Win7 Debug Mac10.11 Retina ] virtual/asyncawait/inspector/sources/debugger-async/async-await/async-callstack-async-await1.html [ Pass Timeout ]
 
 crbug.com/635909 [ Debug ] inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
-
-crbug.com/636271 [ Mac10.10 ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
-
-crbug.com/636311 [ Win10 ] svg/custom/use-clipped-hit.svg [ Pass Failure ]
 
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
 
