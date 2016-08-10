@@ -15,6 +15,8 @@ template <>
 struct ArrayTraits<SkMatrix44> {
   using Element = float;
 
+  static bool IsNull(const SkMatrix44& input) { return input.isIdentity(); }
+
   static size_t GetSize(const SkMatrix44& input) { return 16; }
 
   static float GetAt(const SkMatrix44& input, size_t index) {
@@ -32,6 +34,10 @@ struct StructTraits<gfx::mojom::Transform, gfx::Transform> {
   static bool Read(gfx::mojom::TransformDataView data, gfx::Transform* out) {
     ArrayDataView<float> matrix;
     data.GetMatrixDataView(&matrix);
+    if (matrix.is_null()) {
+      out->MakeIdentity();
+      return true;
+    }
     out->matrix().setColMajorf(matrix.data());
     return true;
   }
