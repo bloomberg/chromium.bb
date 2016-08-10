@@ -4,13 +4,15 @@
 
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
-#include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
+#include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/render_frame_host.h"
@@ -22,14 +24,14 @@
 namespace banners {
 
 AppBannerInfoBarDelegateDesktop::AppBannerInfoBarDelegateDesktop(
-    scoped_refptr<AppBannerDataFetcherDesktop> fetcher,
-    const content::Manifest& web_manifest,
+    base::WeakPtr<AppBannerManager> weak_manager,
     extensions::BookmarkAppHelper* bookmark_app_helper,
+    const content::Manifest& manifest,
     int event_request_id)
     : ConfirmInfoBarDelegate(),
-      fetcher_(fetcher),
-      web_manifest_(web_manifest),
+      weak_manager_(weak_manager),
       bookmark_app_helper_(bookmark_app_helper),
+      manifest_(manifest),
       event_request_id_(event_request_id),
       has_user_interaction_(false) {
 }
@@ -41,17 +43,17 @@ AppBannerInfoBarDelegateDesktop::~AppBannerInfoBarDelegateDesktop() {
 
 // static
 infobars::InfoBar* AppBannerInfoBarDelegateDesktop::Create(
-    scoped_refptr<AppBannerDataFetcherDesktop> fetcher,
     content::WebContents* web_contents,
-    const content::Manifest& web_manifest,
+    base::WeakPtr<AppBannerManager> weak_manager,
     extensions::BookmarkAppHelper* bookmark_app_helper,
+    const content::Manifest& manifest,
     int event_request_id) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(
-          new AppBannerInfoBarDelegateDesktop(
-              fetcher, web_manifest, bookmark_app_helper, event_request_id))));
+          new AppBannerInfoBarDelegateDesktop(weak_manager, bookmark_app_helper,
+                                              manifest, event_request_id))));
 }
 
 infobars::InfoBarDelegate::Type
@@ -89,9 +91,9 @@ bool AppBannerInfoBarDelegateDesktop::Accept() {
   has_user_interaction_ = true;
 
   bookmark_app_helper_->CreateFromAppBanner(
-      base::Bind(&AppBannerDataFetcherDesktop::FinishCreateBookmarkApp,
-                 fetcher_),
-      web_manifest_);
+      base::Bind(&AppBannerManager::DidFinishCreatingBookmarkApp,
+                 weak_manager_),
+      manifest_);
   return true;
 }
 
@@ -107,16 +109,13 @@ void AppBannerInfoBarDelegateDesktop::InfoBarDismissed() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (web_contents) {
-    fetcher_.get()->Cancel();
-
     web_contents->GetMainFrame()->Send(
         new ChromeViewMsg_AppBannerDismissed(
             web_contents->GetMainFrame()->GetRoutingID(),
             event_request_id_));
 
     AppBannerSettingsHelper::RecordBannerDismissEvent(
-        web_contents, web_manifest_.start_url.spec(),
-        AppBannerSettingsHelper::WEB);
+        web_contents, manifest_.start_url.spec(), AppBannerSettingsHelper::WEB);
   }
 }
 

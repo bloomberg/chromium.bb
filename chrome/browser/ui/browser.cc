@@ -36,7 +36,6 @@
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
-#include "chrome/browser/banners/app_banner_manager_emulation.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/character_encoding.h"
@@ -1349,9 +1348,9 @@ std::unique_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
 }
 
 void Browser::RequestAppBannerFromDevTools(content::WebContents* web_contents) {
-  banners::AppBannerManagerEmulation::CreateForWebContents(web_contents);
-  banners::AppBannerManagerEmulation* manager =
-      banners::AppBannerManagerEmulation::FromWebContents(web_contents);
+  banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);
+  banners::AppBannerManagerDesktop* manager =
+      banners::AppBannerManagerDesktop::FromWebContents(web_contents);
   manager->RequestAppBanner(web_contents->GetLastCommittedURL(), true);
 }
 

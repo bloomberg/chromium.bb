@@ -152,10 +152,10 @@ public class AppBannerManager {
         nativeSetEngagementWeights(directEngagement, indirectEngagement);
     }
 
-    /** Returns whether an AppBannerDataFetcher is actively retrieving data. */
+    /** Returns whether the native AppBannerManager is working. */
     @VisibleForTesting
-    public boolean isFetcherActiveForTesting() {
-        return nativeIsFetcherActive(mNativePointer);
+    public boolean isActiveForTesting() {
+        return nativeIsActiveForTesting(mNativePointer);
     }
 
     /** Returns the AppBannerManager object. This is owned by the C++ banner manager. */
@@ -173,5 +173,5 @@ public class AppBannerManager {
     private static native void nativeDisableSecureSchemeCheckForTesting();
     private static native void nativeSetEngagementWeights(double directEngagement,
             double indirectEngagement);
-    private native boolean nativeIsFetcherActive(long nativeAppBannerManagerAndroid);
+    private native boolean nativeIsActiveForTesting(long nativeAppBannerManagerAndroid);
 }

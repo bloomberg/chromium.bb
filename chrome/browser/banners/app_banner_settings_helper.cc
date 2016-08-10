@@ -15,7 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/banners/app_banner_data_fetcher.h"
+#include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -220,7 +220,7 @@ void AppBannerSettingsHelper::RecordBannerInstallEvent(
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents, web_contents->GetURL(), package_name_or_start_url,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-      banners::AppBannerDataFetcher::GetCurrentTime());
+      banners::AppBannerManager::GetCurrentTime());
 
   rappor::SampleDomainAndRegistryFromGURL(
       g_browser_process->rappor_service(),
@@ -238,7 +238,7 @@ void AppBannerSettingsHelper::RecordBannerDismissEvent(
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents, web_contents->GetURL(), package_name_or_start_url,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
-      banners::AppBannerDataFetcher::GetCurrentTime());
+      banners::AppBannerManager::GetCurrentTime());
 
   rappor::SampleDomainAndRegistryFromGURL(
       g_browser_process->rappor_service(),

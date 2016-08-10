@@ -7,8 +7,9 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
+#include "chrome/browser/banners/app_banner_manager.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/common/manifest.h"
 #include "ui/gfx/image/image.h"
@@ -20,33 +21,33 @@ class WebContents;
 
 namespace infobars {
 class InfoBarManager;
-}  // namespace infobars
+}
 
 class AppBannerInfoBar;
 
 namespace banners {
 
-// Manages installation of an app being promoted by a webpage.
+// Manages installation of an app being promoted by a page.
 class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
  public:
   // Delegate for promoting a web app.
   AppBannerInfoBarDelegateAndroid(
-      int event_request_id,
-      scoped_refptr<AppBannerDataFetcherAndroid> data_fetcher,
+      base::WeakPtr<AppBannerManager> weak_manager,
       const base::string16& app_title,
-      const GURL& app_icon_url,
-      SkBitmap* app_icon,
       const GURL& manifest_url,
-      const content::Manifest& manifest);
+      const content::Manifest& manifest,
+      const GURL& icon_url,
+      std::unique_ptr<SkBitmap> icon,
+      int event_request_id);
 
   // Delegate for promoting an Android app.
   AppBannerInfoBarDelegateAndroid(
-      int event_request_id,
       const base::string16& app_title,
-      SkBitmap* app_icon,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
+      std::unique_ptr<SkBitmap> icon,
       const std::string& native_app_package,
-      const std::string& referrer);
+      const std::string& referrer,
+      int event_request_id);
 
   ~AppBannerInfoBarDelegateAndroid() override;
 
@@ -82,19 +83,20 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
 
   // Used to fetch the splash screen icon for webapps.
-  scoped_refptr<AppBannerDataFetcherAndroid> data_fetcher_;
+  base::WeakPtr<AppBannerManager> weak_manager_;
 
   base::string16 app_title_;
-  GURL app_icon_url_;
-  std::unique_ptr<SkBitmap> app_icon_;
-
-  int event_request_id_;
   GURL manifest_url_;
   content::Manifest manifest_;
 
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
+
+  GURL icon_url_;
+  std::unique_ptr<SkBitmap> icon_;
+
   std::string native_app_package_;
   std::string referrer_;
+  int event_request_id_;
   bool has_user_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateAndroid);

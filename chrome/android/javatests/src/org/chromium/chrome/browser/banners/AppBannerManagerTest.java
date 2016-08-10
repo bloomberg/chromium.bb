@@ -225,7 +225,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             public boolean isSatisfied() {
                 AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
                 return mDetailsDelegate.mNumRetrieved == numExpected
-                        && !manager.isFetcherActiveForTesting();
+                        && !manager.isActiveForTesting();
             }
         });
     }
@@ -313,7 +313,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isFetcherActiveForTesting();
+                return !manager.isActiveForTesting();
             }
         });
         waitUntilNoInfoBarsExist();
@@ -325,7 +325,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isFetcherActiveForTesting();
+                return !manager.isActiveForTesting();
             }
         });
         waitUntilAppBannerInfoBarAppears(expectedTitle);
@@ -484,7 +484,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isFetcherActiveForTesting();
+                return !manager.isActiveForTesting();
             }
         });
         waitUntilNoInfoBarsExist();
@@ -501,7 +501,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isFetcherActiveForTesting();
+                return !manager.isActiveForTesting();
             }
         });
         waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE);

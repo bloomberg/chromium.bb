@@ -10,23 +10,43 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace extensions {
+class BookmarkAppHelper;
+}
+
 namespace banners {
 
+// Manages web app banners for desktop platforms.
 class AppBannerManagerDesktop
     : public AppBannerManager,
       public content::WebContentsUserData<AppBannerManagerDesktop> {
-
  public:
   static bool IsEnabled();
 
- protected:
-  AppBannerDataFetcher* CreateAppBannerDataFetcher(
-      base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
-      bool is_debug_mode) override;
-
  private:
-  explicit AppBannerManagerDesktop(content::WebContents* web_contents);
   friend class content::WebContentsUserData<AppBannerManagerDesktop>;
+
+  explicit AppBannerManagerDesktop(content::WebContents* web_contents);
+  ~AppBannerManagerDesktop() override;
+
+  // AppBannerManager overrides.
+  void DidFinishCreatingBookmarkApp(
+      const extensions::Extension* extension,
+      const WebApplicationInfo& web_app_info) override;
+  bool IsWebAppInstalled(content::BrowserContext* browser_context,
+                         const GURL& start_url) override;
+  void ShowBanner() override;
+
+  // content::WebContentsObserver override.
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+
+  // SiteEngagementObserver override.
+  void OnEngagementIncreased(content::WebContents* web_contents,
+                             const GURL& url,
+                             double score) override;
+
+  std::unique_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerManagerDesktop);
 };
