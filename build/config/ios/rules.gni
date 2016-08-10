@@ -480,6 +480,7 @@ template("ios_app_bundle") {
       }
       code_signing_args = [
         "code-sign-bundle",
+        "-t=" + ios_sdk_name,
         "-i=" + ios_code_signing_identity,
         "-e=" + rebase_path(_entitlements_path, root_build_dir),
         "-b=" + rebase_path("$target_out_dir/$_output_name", root_build_dir),
@@ -1174,6 +1175,7 @@ template("ios_framework_bundle") {
       }
       code_signing_args = [
         "code-sign-bundle",
+        "-t=" + ios_sdk_name,
         "-i=" + ios_code_signing_identity,
         "-e=" + rebase_path(_entitlements_path, root_build_dir),
         "-b=" +
@@ -1415,6 +1417,7 @@ template("ios_xctest_test") {
       }
       code_signing_args = [
         "code-sign-bundle",
+        "-t=" + ios_sdk_name,
         "-i=" + ios_code_signing_identity,
         "-e=" + rebase_path(_entitlements_path, root_build_dir),
         "-b=" + rebase_path("$target_out_dir/$_xctest_output", root_build_dir),

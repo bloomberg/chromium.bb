@@ -268,6 +268,9 @@ class CodeSignBundleAction(Action):
     parser.add_argument(
         '--disable-code-signature', action='store_false', dest='sign',
         help='disable code signature')
+    parser.add_argument(
+        '--platform', '-t', required=True,
+        help='platform the signed bundle is targetting')
     parser.set_defaults(sign=True)
 
   @staticmethod
@@ -283,7 +286,7 @@ class CodeSignBundleAction(Action):
     provisioning_profile_required = args.identity != '-'
     provisioning_profile = FindProvisioningProfile(
         bundle.identifier, provisioning_profile_required)
-    if provisioning_profile:
+    if provisioning_profile and args.platform != 'iphonesimulator':
       provisioning_profile.Install(bundle)
 
     # Delete existing code signature.
@@ -306,7 +309,7 @@ class CodeSignBundleAction(Action):
     # Embeds entitlements into the code signature (if code signing identify has
     # been provided).
     codesign_extra_args = []
-    if provisioning_profile:
+    if provisioning_profile and args.platform != 'iphonesimulator':
       temporary_entitlements_file = tempfile.NamedTemporaryFile(suffix='.xcent')
       codesign_extra_args.extend(
           ['--entitlements', temporary_entitlements_file.name])
