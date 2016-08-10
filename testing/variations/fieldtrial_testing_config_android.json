@@ -129,6 +129,14 @@
             }
         }
     ],
+    "DownloadsUi": [
+        {
+            "enable_features": [
+                "DownloadsUi"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "EnableMediaThreadForMediaPlayback": [
         {
             "group_name": "Enabled"

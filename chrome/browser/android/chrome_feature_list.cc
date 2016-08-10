@@ -35,6 +35,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kSimplifiedFullscreenUI,
     &features::kWebPayments,
     &kAllBookmarksFeature,
+    &kDownloadsUiFeature,
     &kAndroidPayIntegrationV1,
     &kImportantSitesInCBD,
     &ntp_snippets::kContentSuggestionsFeature,
@@ -57,6 +58,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
 
 const base::Feature kAllBookmarksFeature{"AllBookmarks",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDownloadsUiFeature{"DownloadsUi",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

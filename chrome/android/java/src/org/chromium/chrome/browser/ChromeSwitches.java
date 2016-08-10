@@ -86,9 +86,6 @@ public abstract class ChromeSwitches {
      */
     public static final String MARKET_URL_FOR_TESTING = "market-url-for-testing";
 
-    /** Enables the download manager UI. */
-    public static final String ENABLE_DOWNLOAD_MANAGER_UI = "enable-download-manager-ui";
-
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////

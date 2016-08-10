@@ -59,7 +59,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.download.DownloadActivity;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -1099,11 +1099,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 getToolbarManager().setUrlBarFocus(true);
             }
         } else if (id == R.id.downloads_menu_id) {
-            if (isTablet()) {
-                currentTab.loadUrl(new LoadUrlParams(UrlConstants.DOWNLOADS_URL));
-            } else {
-                DownloadActivity.launch(this);
-            }
+            DownloadUtils.showDownloadManager(this, currentTab);
         } else if (id == R.id.open_recently_closed_tab) {
             TabModel currentModel = mTabModelSelectorImpl.getCurrentModel();
             if (!currentModel.isIncognito()) currentModel.openMostRecentlyClosedTab();

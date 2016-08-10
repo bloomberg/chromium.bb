@@ -8,10 +8,9 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -107,8 +106,8 @@ public class AppMenuPropertiesDelegate {
                 updateBookmarkMenuItem(bookmarkMenuItem, currentTab);
             }
 
-            menu.findItem(R.id.downloads_menu_id).setVisible(
-                    CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_DOWNLOAD_MANAGER_UI));
+            menu.findItem(R.id.downloads_menu_id)
+                    .setVisible(ChromeFeatureList.isEnabled("DownloadsUi"));
 
             menu.findItem(R.id.update_menu_id).setVisible(
                     UpdateMenuItemHelper.getInstance().shouldShowMenuItem(mActivity));
