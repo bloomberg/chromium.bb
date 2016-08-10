@@ -47,14 +47,15 @@ protected:
     LayoutTableRow* m_row;
 };
 
-TEST_F(LayoutTableRowDeathTest, CanSetRow)
+// TODO(esprehn): Disabled all of these tests because they're flaky: crbug.com/630625
+TEST_F(LayoutTableRowDeathTest, DISABLED_CanSetRow)
 {
     static const unsigned rowIndex = 10;
     m_row->setRowIndex(rowIndex);
     EXPECT_EQ(rowIndex, m_row->rowIndex());
 }
 
-TEST_F(LayoutTableRowDeathTest, CanSetRowToMaxRowIndex)
+TEST_F(LayoutTableRowDeathTest, DISABLED_CanSetRowToMaxRowIndex)
 {
     m_row->setRowIndex(maxRowIndex);
     EXPECT_EQ(maxRowIndex, m_row->rowIndex());
@@ -64,12 +65,12 @@ TEST_F(LayoutTableRowDeathTest, CanSetRowToMaxRowIndex)
 // See: https://bugs.webkit.org/show_bug.cgi?id=74089
 #if !OS(ANDROID)
 
-TEST_F(LayoutTableRowDeathTest, CrashIfRowOverflowOnSetting)
+TEST_F(LayoutTableRowDeathTest, DISABLED_CrashIfRowOverflowOnSetting)
 {
     ASSERT_DEATH(m_row->setRowIndex(maxRowIndex + 1), "");
 }
 
-TEST_F(LayoutTableRowDeathTest, CrashIfSettingUnsetRowIndex)
+TEST_F(LayoutTableRowDeathTest, DISABLED_CrashIfSettingUnsetRowIndex)
 {
     ASSERT_DEATH(m_row->setRowIndex(unsetRowIndex), "");
 }

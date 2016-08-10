@@ -47,14 +47,15 @@ protected:
     LayoutTableCell* m_cell;
 };
 
-TEST_F(LayoutTableCellDeathTest, CanSetColumn)
+// TODO(esprehn): Disabled all of these tests because they're flaky: crbug.com/630625
+TEST_F(LayoutTableCellDeathTest, DISABLED_CanSetColumn)
 {
     static const unsigned columnIndex = 10;
     m_cell->setAbsoluteColumnIndex(columnIndex);
     EXPECT_EQ(columnIndex, m_cell->absoluteColumnIndex());
 }
 
-TEST_F(LayoutTableCellDeathTest, CanSetColumnToMaxColumnIndex)
+TEST_F(LayoutTableCellDeathTest, DISABLED_CanSetColumnToMaxColumnIndex)
 {
     m_cell->setAbsoluteColumnIndex(maxColumnIndex);
     EXPECT_EQ(maxColumnIndex, m_cell->absoluteColumnIndex());
@@ -64,12 +65,12 @@ TEST_F(LayoutTableCellDeathTest, CanSetColumnToMaxColumnIndex)
 // See: https://bugs.webkit.org/show_bug.cgi?id=74089
 #if !OS(ANDROID)
 
-TEST_F(LayoutTableCellDeathTest, CrashIfColumnOverflowOnSetting)
+TEST_F(LayoutTableCellDeathTest, DISABLED_CrashIfColumnOverflowOnSetting)
 {
     ASSERT_DEATH(m_cell->setAbsoluteColumnIndex(maxColumnIndex + 1), "");
 }
 
-TEST_F(LayoutTableCellDeathTest, CrashIfSettingUnsetColumnIndex)
+TEST_F(LayoutTableCellDeathTest, DISABLED_CrashIfSettingUnsetColumnIndex)
 {
     ASSERT_DEATH(m_cell->setAbsoluteColumnIndex(unsetColumnIndex), "");
 }
