@@ -1731,21 +1731,18 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
   def SetFlags(self, flags):
     """Sets flags on this CL/patchset in Rietveld.
-
-    The latest patchset in Rietveld must be the same as latest known locally.
     """
-    if not self.GetPatchset():
-      DieWithError('The patchset needs to match. Send another patchset.')
+    patchset = self.GetPatchset() or self.GetMostRecentPatchset()
     try:
       return self.RpcServer().set_flags(
-          self.GetIssue(), self.GetPatchset(), flags)
+          self.GetIssue(), patchset, flags)
     except urllib2.HTTPError as e:
       if e.code == 404:
         DieWithError('The issue %s doesn\'t exist.' % self.GetIssue())
       if e.code == 403:
         DieWithError(
             ('Access denied to issue %s. Maybe the patchset %s doesn\'t '
-             'match?') % (self.GetIssue(), self.GetPatchset()))
+             'match?') % (self.GetIssue(), patchset))
       raise
 
   def RpcServer(self):
@@ -4725,7 +4722,9 @@ def CMDset_commit(parser, args):
   parser.add_option('-c', '--clear', action='store_true',
                     help='stop CQ run, if any')
   auth.add_auth_options(parser)
+  _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
+  _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
