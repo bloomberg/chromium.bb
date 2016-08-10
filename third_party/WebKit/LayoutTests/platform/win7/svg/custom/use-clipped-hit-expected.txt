@@ -10,17 +10,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [90, 116, 64, 18],
+          "rect": [90, 116, 64, 17],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGText text id='status'",
-          "rect": [90, 116, 64, 18],
+          "rect": [90, 116, 64, 17],
           "reason": "full"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [90, 116, 44, 18],
+          "rect": [90, 116, 44, 17],
           "reason": "layoutObject insertion"
         }
       ]
