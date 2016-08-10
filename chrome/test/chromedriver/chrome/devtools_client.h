@@ -56,6 +56,10 @@ class DevToolsClient {
       const Timeout* timeout,
       std::unique_ptr<base::DictionaryValue>* result) = 0;
 
+  virtual Status SendCommandAndIgnoreResponse(
+      const std::string& method,
+      const base::DictionaryValue& params) = 0;
+
   // Adds a listener. This must only be done when the client is disconnected.
   virtual void AddListener(DevToolsEventListener* listener) = 0;
 

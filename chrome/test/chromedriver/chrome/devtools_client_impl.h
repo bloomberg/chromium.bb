@@ -104,6 +104,9 @@ class DevToolsClientImpl : public DevToolsClient {
       const base::DictionaryValue& params,
       const Timeout* timeout,
       std::unique_ptr<base::DictionaryValue>* result) override;
+  Status SendCommandAndIgnoreResponse(
+      const std::string& method,
+      const base::DictionaryValue& params) override;
   void AddListener(DevToolsEventListener* listener) override;
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
                            const Timeout& timeout) override;
@@ -136,6 +139,7 @@ class DevToolsClientImpl : public DevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params,
       std::unique_ptr<base::DictionaryValue>* result,
+      bool expect_response,
       bool wait_for_response,
       const Timeout* timeout);
   Status ProcessNextMessage(int expected_id, const Timeout& timeout);

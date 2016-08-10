@@ -179,14 +179,14 @@ Status DevToolsClientImpl::SendCommandWithTimeout(
     const base::DictionaryValue& params,
     const Timeout* timeout) {
   std::unique_ptr<base::DictionaryValue> result;
-  return SendCommandInternal(method, params, &result, true, timeout);
+  return SendCommandInternal(method, params, &result, true, true, timeout);
 }
 
 Status DevToolsClientImpl::SendAsyncCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
   std::unique_ptr<base::DictionaryValue> result;
-  return SendCommandInternal(method, params, &result, false, nullptr);
+  return SendCommandInternal(method, params, &result, false, false, nullptr);
 }
 
 Status DevToolsClientImpl::SendCommandAndGetResult(
@@ -203,13 +203,19 @@ Status DevToolsClientImpl::SendCommandAndGetResultWithTimeout(
     std::unique_ptr<base::DictionaryValue>* result) {
   std::unique_ptr<base::DictionaryValue> intermediate_result;
   Status status = SendCommandInternal(
-      method, params, &intermediate_result, true, timeout);
+      method, params, &intermediate_result, true, true, timeout);
   if (status.IsError())
     return status;
   if (!intermediate_result)
     return Status(kUnknownError, "inspector response missing result");
   result->reset(intermediate_result.release());
   return Status(kOk);
+}
+
+Status DevToolsClientImpl::SendCommandAndIgnoreResponse(
+    const std::string& method,
+    const base::DictionaryValue& params) {
+  return SendCommandInternal(method, params, nullptr, true, false, nullptr);
 }
 
 void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
@@ -252,6 +258,7 @@ Status DevToolsClientImpl::SendCommandInternal(
     const std::string& method,
     const base::DictionaryValue& params,
     std::unique_ptr<base::DictionaryValue>* result,
+    bool expect_response,
     bool wait_for_response,
     const Timeout* timeout) {
   if (!socket_->IsConnected())
@@ -270,30 +277,35 @@ Status DevToolsClientImpl::SendCommandInternal(
   if (!socket_->Send(message))
     return Status(kDisconnected, "unable to send message to renderer");
 
-  if (wait_for_response) {
+  if (expect_response) {
     linked_ptr<ResponseInfo> response_info =
         make_linked_ptr(new ResponseInfo(method));
     if (timeout)
       response_info->command_timeout = *timeout;
     response_info_map_[command_id] = response_info;
-    while (response_info->state == kWaiting) {
-      Status status = ProcessNextMessage(
-          command_id, Timeout(base::TimeDelta::FromMinutes(10), timeout));
-      if (status.IsError()) {
-        if (response_info->state == kReceived)
-          response_info_map_.erase(command_id);
-        return status;
+
+    if (wait_for_response) {
+      while (response_info->state == kWaiting) {
+        Status status = ProcessNextMessage(
+            command_id, Timeout(base::TimeDelta::FromMinutes(10), timeout));
+        if (status.IsError()) {
+          if (response_info->state == kReceived)
+            response_info_map_.erase(command_id);
+          return status;
+        }
       }
+      if (response_info->state == kBlocked) {
+        response_info->state = kIgnored;
+        return Status(kUnexpectedAlertOpen);
+      }
+      CHECK_EQ(response_info->state, kReceived);
+      internal::InspectorCommandResponse& response = response_info->response;
+      if (!response.result)
+        return ParseInspectorError(response.error);
+      *result = std::move(response.result);
     }
-    if (response_info->state == kBlocked) {
-      response_info->state = kIgnored;
-      return Status(kUnexpectedAlertOpen);
-    }
-    CHECK_EQ(response_info->state, kReceived);
-    internal::InspectorCommandResponse& response = response_info->response;
-    if (!response.result)
-      return ParseInspectorError(response.error);
-    *result = std::move(response.result);
+  } else {
+    CHECK(!wait_for_response);
   }
   return Status(kOk);
 }

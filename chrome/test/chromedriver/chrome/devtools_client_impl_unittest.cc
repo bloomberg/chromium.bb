@@ -1106,3 +1106,72 @@ TEST_F(DevToolsClientImplTest, ReceivesCommandResponse) {
   ASSERT_EQ("cmd", listener2.msgs_.front());
   ASSERT_EQ("event", listener2.msgs_.back());
 }
+
+namespace {
+
+class MockSyncWebSocket7 : public SyncWebSocket {
+ public:
+  MockSyncWebSocket7() : id_(-1), sent_messages_(0), sent_responses_(0) {}
+  ~MockSyncWebSocket7() override {}
+
+  bool IsConnected() override { return true; }
+
+  bool Connect(const GURL& url) override { return true; }
+
+  bool Send(const std::string& message) override {
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
+    base::DictionaryValue* dict = nullptr;
+    EXPECT_TRUE(value->GetAsDictionary(&dict));
+    if (!dict)
+      return false;
+    EXPECT_TRUE(dict->GetInteger("id", &id_));
+    std::string method;
+    EXPECT_TRUE(dict->GetString("method", &method));
+    EXPECT_STREQ("method", method.c_str());
+    base::DictionaryValue* params = nullptr;
+    EXPECT_TRUE(dict->GetDictionary("params", &params));
+    if (!params)
+      return false;
+    sent_messages_++;
+    return true;
+  }
+
+  SyncWebSocket::StatusCode ReceiveNextMessage(
+      std::string* message,
+      const Timeout& timeout) override {
+    EXPECT_LE(sent_responses_, 1);
+    EXPECT_EQ(sent_messages_, 2);
+    base::DictionaryValue response;
+    if (sent_responses_ == 0)
+      response.SetInteger("id", 1);
+    else
+      response.SetInteger("id", 2);
+    base::DictionaryValue result;
+    result.SetInteger("param", 1);
+    response.Set("result", result.DeepCopy());
+    base::JSONWriter::Write(response, message);
+    sent_responses_++;
+    return SyncWebSocket::kOk;
+  }
+
+  bool HasNextMessage() override { return sent_messages_ > sent_responses_; }
+
+private:
+  int id_;
+  int sent_messages_;
+  int sent_responses_;
+};
+
+} // namespace
+
+TEST_F(DevToolsClientImplTest, SendCommandAndIgnoreResponse) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket7>);
+  DevToolsClientImpl client(factory, "http://url", "id",
+                            base::Bind(&CloserFunc));
+  ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
+  base::DictionaryValue params;
+  params.SetInteger("param", 1);
+  ASSERT_EQ(kOk, client.SendCommandAndIgnoreResponse("method", params).code());
+  ASSERT_EQ(kOk, client.SendCommand("method", params).code());
+}

@@ -61,6 +61,12 @@ Status StubDevToolsClient::SendCommandAndGetResultWithTimeout(
   return SendCommandAndGetResult(method, params, result);
 }
 
+Status StubDevToolsClient::SendCommandAndIgnoreResponse(
+      const std::string& method,
+      const base::DictionaryValue& params) {
+  return SendCommand(method, params);
+}
+
 void StubDevToolsClient::AddListener(DevToolsEventListener* listener) {
   listeners_.push_back(listener);
 }

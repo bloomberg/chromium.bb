@@ -47,6 +47,9 @@ class StubDevToolsClient : public DevToolsClient {
       const base::DictionaryValue& params,
       const Timeout* timeout,
       std::unique_ptr<base::DictionaryValue>* result) override;
+  Status SendCommandAndIgnoreResponse(
+      const std::string& method,
+      const base::DictionaryValue& params) override;
   void AddListener(DevToolsEventListener* listener) override;
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
                            const Timeout& timeout) override;

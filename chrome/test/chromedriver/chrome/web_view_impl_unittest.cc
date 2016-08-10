@@ -65,6 +65,11 @@ class FakeDevToolsClient : public DevToolsClient {
       std::unique_ptr<base::DictionaryValue>* result) override {
     return SendCommandAndGetResult(method, params, result);
   }
+  Status SendCommandAndIgnoreResponse(
+      const std::string& method,
+      const base::DictionaryValue& params) override {
+    return SendCommandAndGetResult(method, params, nullptr);
+  }
   void AddListener(DevToolsEventListener* listener) override {}
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
                            const Timeout& timeout) override {
