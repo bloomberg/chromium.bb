@@ -12,12 +12,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/android/media_codec_bridge.h"
-#include "media/base/audio_decoder.h"
-#include "media/base/audio_decoder_config.h"
+#include "media/base/decode_status.h"
 #include "media/base/media_export.h"
+#include "media/base/subsample_entry.h"
 
 // MediaCodecLoop is based on Android's MediaCodec API.
 // The MediaCodec API is required to play encrypted (as in EME) content on
@@ -197,8 +198,19 @@ class MEDIA_EXPORT MediaCodecLoop {
 
   // We will take ownership of |media_codec|.  We will not destroy it until
   // we are destructed.  |media_codec| may not be null.
-  MediaCodecLoop(Client* client, std::unique_ptr<MediaCodecBridge> media_codec);
+  // |sdk_level| is temporary.  It is used only to decouple MediaCodecLoop from
+  // BuildInfo, until we get BuildInfo into a mockable state.
+  MediaCodecLoop(int sdk_level,
+                 Client* client,
+                 std::unique_ptr<MediaCodecBridge> media_codec,
+                 scoped_refptr<base::SingleThreadTaskRunner> =
+                     scoped_refptr<base::SingleThreadTaskRunner>());
   ~MediaCodecLoop();
+
+  // Optionally set the tick clock used for testing.  It is our caller's
+  // responsibility to maintain ownership of this, since
+  // FakeSingleThreadTaskRunner maintains a raw ptr to it also.
+  void SetTestTickClock(base::TickClock* test_tick_clock);
 
   // Does the MediaCodec processing cycle: enqueues an input buffer, then
   // dequeues output buffers.  This should be called by the client when more
@@ -271,12 +283,11 @@ class MEDIA_EXPORT MediaCodecLoop {
   // Helper method to change the state.
   void SetState(State new_state);
 
+  // Helper method to tell us if MediaCodecBridge::Flush() doesn't work.
+  bool CodecNeedsFlushWorkaround() const;
+
   // A helper function for logging.
   static const char* AsString(State state);
-
-  // Used to post tasks. This class is single threaded and every method should
-  // run on this task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   State state_;
 
@@ -300,6 +311,13 @@ class MEDIA_EXPORT MediaCodecLoop {
   // When processing a pending input buffer, this is the data that was returned
   // to us by the client.  |memory| has been cleared, since the codec has it.
   InputData pending_input_buf_data_;
+
+  // Optional clock for use during testing.  It may be null.  We do not maintain
+  // ownership of it.
+  base::TickClock* test_tick_clock_ = nullptr;
+
+  // BuildInfo::sdk_int(), eventually.
+  const int sdk_int_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaCodecLoop> weak_factory_;

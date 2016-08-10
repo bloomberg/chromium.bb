@@ -13,25 +13,9 @@
 
 #include "base/macros.h"
 #include "media/base/media_export.h"
+#include "media/base/subsample_entry.h"
 
 namespace media {
-
-// The Common Encryption spec provides for subsample encryption, where portions
-// of a sample are set in cleartext. A SubsampleEntry specifies the number of
-// clear and encrypted bytes in each subsample. For decryption, all of the
-// encrypted bytes in a sample should be considered a single logical stream,
-// regardless of how they are divided into subsamples, and the clear bytes
-// should not be considered as part of decryption. This is logically equivalent
-// to concatenating all 'cypher_bytes' portions of subsamples, decrypting that
-// result, and then copying each byte from the decrypted block over the
-// position of the corresponding encrypted byte.
-struct SubsampleEntry {
-  SubsampleEntry() : clear_bytes(0), cypher_bytes(0) {}
-  SubsampleEntry(uint32_t clear_bytes, uint32_t cypher_bytes)
-      : clear_bytes(clear_bytes), cypher_bytes(cypher_bytes) {}
-  uint32_t clear_bytes;
-  uint32_t cypher_bytes;
-};
 
 // Contains all information that a decryptor needs to decrypt a media sample.
 class MEDIA_EXPORT DecryptConfig {

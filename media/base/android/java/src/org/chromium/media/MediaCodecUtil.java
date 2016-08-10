@@ -24,7 +24,7 @@ import java.util.Locale;
 class MediaCodecUtil {
     private static final String TAG = "MediaCodecUtil";
 
-    // Codec direction.  Keep this in sync with media_codec_bridge.h.
+    // Codec direction.  Keep this in sync with media_codec_direction.h.
     static final int MEDIA_CODEC_DECODER = 0;
     static final int MEDIA_CODEC_ENCODER = 1;
 

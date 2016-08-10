@@ -4,29 +4,29 @@
 
 #include "media/base/android/media_codec_loop.h"
 
-#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
-#include "media/base/audio_buffer.h"
-#include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
 
 namespace media {
 
-constexpr base::TimeDelta kDecodePollDelay =
-    base::TimeDelta::FromMilliseconds(10);
-constexpr base::TimeDelta kNoWaitTimeout = base::TimeDelta::FromMicroseconds(0);
-constexpr base::TimeDelta kIdleTimerTimeout = base::TimeDelta::FromSeconds(1);
+// Declaring these as constexpr variables doesn't work in windows -- they
+// always are 0.  The exception is FromMicroseconds, which doesn't do any
+// conversion.  However, declaring these as constexpr functions seesm to work
+// fine everywhere.  We care that this works in windows because our unit tests
+// run on non-android platforms.
+constexpr base::TimeDelta DecodePollDelay() {
+  return base::TimeDelta::FromMilliseconds(10);
+}
 
-static inline bool codec_flush_requires_destruction() {
-  // Return true if and only if Flush() isn't supported / doesn't work.
-  // Prior to JellyBean-MR2, flush() had several bugs (b/8125974, b/8347958) so
-  // we have to completely destroy and recreate the codec there.
-  return base::android::BuildInfo::GetInstance()->sdk_int() < 18;
+constexpr base::TimeDelta NoWaitTimeout() {
+  return base::TimeDelta::FromMicroseconds(0);
+}
+
+constexpr base::TimeDelta IdleTimerTimeout() {
+  return base::TimeDelta::FromSeconds(1);
 }
 
 MediaCodecLoop::InputData::InputData() {}
@@ -43,13 +43,19 @@ MediaCodecLoop::InputData::InputData(const InputData& other)
 
 MediaCodecLoop::InputData::~InputData() {}
 
-MediaCodecLoop::MediaCodecLoop(Client* client,
-                               std::unique_ptr<MediaCodecBridge> media_codec)
+MediaCodecLoop::MediaCodecLoop(
+    int sdk_int,
+    Client* client,
+    std::unique_ptr<MediaCodecBridge> media_codec,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : state_(STATE_READY),
       client_(client),
       media_codec_(std::move(media_codec)),
       pending_input_buf_index_(kInvalidBufferIndex),
+      sdk_int_(sdk_int),
       weak_factory_(this) {
+  if (task_runner)
+    io_timer_.SetTaskRunner(task_runner);
   // TODO(liberato): should this DCHECK?
   if (media_codec_ == nullptr)
     SetState(STATE_ERROR);
@@ -57,6 +63,10 @@ MediaCodecLoop::MediaCodecLoop(Client* client,
 
 MediaCodecLoop::~MediaCodecLoop() {
   io_timer_.Stop();
+}
+
+void MediaCodecLoop::SetTestTickClock(base::TickClock* test_tick_clock) {
+  test_tick_clock_ = test_tick_clock;
 }
 
 void MediaCodecLoop::OnKeyAdded() {
@@ -76,7 +86,7 @@ bool MediaCodecLoop::TryFlush() {
   if (state_ == STATE_ERROR || state_ == STATE_DRAINED)
     return false;
 
-  if (codec_flush_requires_destruction())
+  if (CodecNeedsFlushWorkaround())
     return false;
 
   // Actually try to flush!
@@ -147,7 +157,7 @@ MediaCodecLoop::InputBuffer MediaCodecLoop::DequeueInputBuffer() {
   int input_buf_index = kInvalidBufferIndex;
 
   media::MediaCodecStatus status =
-      media_codec_->DequeueInputBuffer(kNoWaitTimeout, &input_buf_index);
+      media_codec_->DequeueInputBuffer(NoWaitTimeout(), &input_buf_index);
   switch (status) {
     case media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
       break;
@@ -249,8 +259,8 @@ bool MediaCodecLoop::ProcessOneOutputBuffer() {
 
   OutputBuffer out;
   MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
-      kNoWaitTimeout, &out.index, &out.offset, &out.size, &out.pts, &out.is_eos,
-      &out.is_key_frame);
+      NoWaitTimeout(), &out.index, &out.offset, &out.size, &out.pts,
+      &out.is_eos, &out.is_key_frame);
 
   bool did_work = false;
   switch (status) {
@@ -310,17 +320,19 @@ bool MediaCodecLoop::ProcessOneOutputBuffer() {
 void MediaCodecLoop::ManageTimer(bool did_work) {
   bool should_be_running = true;
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  // One might also use DefaultTickClock, but then ownership becomes harder.
+  base::TimeTicks now = (test_tick_clock_ ? test_tick_clock_->NowTicks()
+                                          : base::TimeTicks::Now());
   if (did_work || idle_time_begin_ == base::TimeTicks()) {
     idle_time_begin_ = now;
   } else {
     // Make sure that we have done work recently enough, else stop the timer.
-    if (now - idle_time_begin_ > kIdleTimerTimeout)
+    if (now - idle_time_begin_ > IdleTimerTimeout())
       should_be_running = false;
   }
 
   if (should_be_running && !io_timer_.IsRunning()) {
-    io_timer_.Start(FROM_HERE, kDecodePollDelay, this,
+    io_timer_.Start(FROM_HERE, DecodePollDelay(), this,
                     &MediaCodecLoop::DoPendingWork);
   } else if (!should_be_running && io_timer_.IsRunning()) {
     io_timer_.Stop();
@@ -336,6 +348,15 @@ void MediaCodecLoop::SetState(State new_state) {
 
 MediaCodecBridge* MediaCodecLoop::GetCodec() const {
   return media_codec_.get();
+}
+
+bool MediaCodecLoop::CodecNeedsFlushWorkaround() const {
+  // Return true if and only if Flush() isn't supported / doesn't work.
+  // Prior to JellyBean-MR2, flush() had several bugs (b/8125974, b/8347958) so
+  // we have to completely destroy and recreate the codec there.
+  // TODO(liberato): MediaCodecUtil implements the same function.  We should
+  // call that one, except that it doesn't compile outside of android right now.
+  return sdk_int_ < 18;
 }
 
 // static

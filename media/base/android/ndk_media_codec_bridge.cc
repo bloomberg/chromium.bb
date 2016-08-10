@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/strings/string_util.h"
-#include "media/base/decrypt_config.h"
+#include "media/base/subsample_entry.h"
 
 namespace {
 const char kMediaFormatKeyCropLeft[] = "crop-left";

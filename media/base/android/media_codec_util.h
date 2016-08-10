@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "media/base/android/media_codec_direction.h"
 #include "media/base/media_export.h"
 
 class GURL;
@@ -37,12 +38,6 @@ class MediaCodecBridge;
       return;                                                     \
     }                                                             \
   } while (0)
-
-// Codec direction. Keep this in sync with MediaCodecUtil.java.
-enum MediaCodecDirection {
-  MEDIA_CODEC_DECODER,
-  MEDIA_CODEC_ENCODER,
-};
 
 class MEDIA_EXPORT MediaCodecUtil {
  public:
