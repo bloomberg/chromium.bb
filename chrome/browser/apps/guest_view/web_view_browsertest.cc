@@ -174,7 +174,7 @@ class ContextMenuCallCountObserver {
   bool OnMenuShown(const content::NotificationSource& source,
                    const content::NotificationDetails& details) {
     ++num_times_shown_;
-    auto context_menu = content::Source<RenderViewContextMenu>(source).ptr();
+    auto* context_menu = content::Source<RenderViewContextMenu>(source).ptr();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&RenderViewContextMenuBase::Cancel,
                               base::Unretained(context_menu)));
@@ -2097,7 +2097,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_Basic) {
 static bool ContextMenuNotificationCallback(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  auto context_menu = content::Source<RenderViewContextMenu>(source).ptr();
+  auto* context_menu = content::Source<RenderViewContextMenu>(source).ptr();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RenderViewContextMenuBase::Cancel,
                             base::Unretained(context_menu)));
@@ -2644,7 +2644,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
           download_manager, 2,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
-  for (auto& download : downloads) {
+  for (auto* download : downloads) {
     ASSERT_TRUE(download->CanResume());
     EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
               download->GetLastReason());
@@ -2654,7 +2654,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
   completion_observer->WaitForFinished();
 
   std::set<std::string> cookies;
-  for (auto& download : downloads) {
+  for (auto* download : downloads) {
     ASSERT_EQ(content::DownloadItem::COMPLETE, download->GetState());
     ASSERT_TRUE(base::PathExists(download->GetTargetFilePath()));
     std::string content;
@@ -2758,7 +2758,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
   // try to talk to the old EmbeddedTestServer instance. We need to update the
   // URL to point to the new instance, which should only differ by the port
   // number.
-  for (auto& download : saved_downloads) {
+  for (auto* download : saved_downloads) {
     const std::string port_string =
         base::UintToString(embedded_test_server()->port());
     url::Replacements<char> replacements;
@@ -2785,7 +2785,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
           download_manager, 2,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
-  for (auto& download : downloads) {
+  for (auto* download : downloads) {
     ASSERT_TRUE(download->CanResume());
     ASSERT_TRUE(
         temporary_download_dir.path().IsParent(download->GetTargetFilePath()));
@@ -3181,7 +3181,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestGarbageCollect) {
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestCloseNewWindowCleanup) {
   TestHelper("testCloseNewWindowCleanup", "web_view/shim", NEEDS_TEST_SERVER);
-  auto gvm = GetGuestViewManager();
+  auto* gvm = GetGuestViewManager();
   gvm->WaitForLastGuestDeleted();
   ASSERT_EQ(gvm->num_embedder_processes_destroyed(), 0);
 }
