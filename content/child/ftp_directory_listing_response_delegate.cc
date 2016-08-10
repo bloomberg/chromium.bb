@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/i18n/icu_encoding_detection.h"
+#include "base/i18n/encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -40,7 +40,7 @@ base::string16 ConvertPathToUTF16(const std::string& path) {
   // Try detecting the encoding. The sample is rather small though, so it may
   // fail.
   std::string encoding;
-  if (base::DetectEncoding(path, &encoding) && !encoding.empty()) {
+  if (base::DetectEncoding(path, &encoding) && encoding != "US-ASCII") {
     base::string16 path_utf16;
     if (base::CodepageToUTF16(path, encoding.c_str(),
                               base::OnStringConversionError::SUBSTITUTE,

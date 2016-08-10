@@ -11,7 +11,7 @@
 #include <memory>
 #include <set>
 
-#include "base/i18n/icu_encoding_detection.h"
+#include "base/i18n/encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

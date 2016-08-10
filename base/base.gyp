@@ -276,6 +276,7 @@
       'dependencies': [
         'base',
         'third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../third_party/ced/ced.gyp:ced',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
       ],
@@ -634,6 +635,7 @@
         'third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/ced/ced.gyp:ced',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
       ],

@@ -2,6 +2,7 @@ include_rules = [
   "+jni",
   "+third_party/ashmem",
   "+third_party/apple_apsl",
+  "+third_party/ced",
   "+third_party/lss",
   "+third_party/modp_b64",
   "+third_party/tcmalloc",

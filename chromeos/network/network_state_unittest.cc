@@ -130,10 +130,10 @@ TEST_F(NetworkStateTest, SsidFromName) {
 TEST_F(NetworkStateTest, SsidLatin) {
   EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeWifi));
 
-  std::string wifi_latin1 = "latin-1 \xc0\xcb\xcc\xd6\xfb";
+  std::string wifi_latin1 = "latin-1 \x54\xe9\x6c\xe9\x63\x6f\x6d";  // Télécom
   std::string wifi_latin1_hex =
       base::HexEncode(wifi_latin1.c_str(), wifi_latin1.length());
-  std::string wifi_latin1_result = "latin-1 \u00c0\u00cb\u00cc\u00d6\u00fb";
+  std::string wifi_latin1_result = "latin-1 T\xc3\xa9\x6c\xc3\xa9\x63om";
   EXPECT_TRUE(SetStringProperty(shill::kWifiHexSsid, wifi_latin1_hex));
   EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_latin1_result);

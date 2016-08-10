@@ -4,9 +4,9 @@
   "Type":"WiFi",
   "WiFi":{
     // Hex of the SSID field
-    "HexSSID": "6C6174696E2D3120C0CBCCD6FB",
+    "HexSSID": "6C6174696E2D312054E96CE9636F6D",
     "Passphrase":"some passphrase",
     "Security":"WPA-PSK",
-    "SSID": "latin-1 \u00c0\u00cb\u00cc\u00d6\u00fb"
+    "SSID": "latin-1 T\u00e9l\u00e9com"
   }
 }

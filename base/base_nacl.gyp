@@ -67,6 +67,7 @@
           'dependencies': [
             'allocator/allocator.gyp:allocator_features#target',
             'base.gyp:base_build_date',
+            '../third_party/ced/ced_nacl.gyp:ced_nacl',
             '../third_party/icu/icu_nacl.gyp:icudata_nacl',
             '../third_party/icu/icu_nacl.gyp:icui18n_nacl',
             '../third_party/icu/icu_nacl.gyp:icuuc_nacl',

@@ -66,7 +66,7 @@ target(link_target_type, "child") {
     "//third_party/WebKit/public:blink_headers",
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
-    "//third_party/icu",
+    "//third_party/ced",
     "//ui/base",
     "//ui/events/gestures/blink",
     "//ui/gfx",

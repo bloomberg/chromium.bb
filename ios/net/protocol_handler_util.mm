@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/i18n/icu_encoding_detection.h"
+#include "base/i18n/encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"

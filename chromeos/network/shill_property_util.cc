@@ -8,7 +8,7 @@
 
 #include <set>
 
-#include "base/i18n/icu_encoding_detection.h"
+#include "base/i18n/encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
