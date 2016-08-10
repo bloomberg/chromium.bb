@@ -58,8 +58,8 @@ public:
 
     virtual ~FontDataForRangeSet() { };
 
-    bool contains(UChar32 testChar) const { return m_rangeSet->contains(testChar); }
-    bool isEntireRange() const { return m_rangeSet->isEntireRange(); }
+    bool contains(UChar32 testChar) const { return !m_rangeSet || m_rangeSet->contains(testChar); }
+    bool isEntireRange() const { return !m_rangeSet || m_rangeSet->isEntireRange(); }
     UnicodeRangeSet* ranges() const { return m_rangeSet.get(); }
     bool hasFontData() const { return m_fontData.get(); }
     const SimpleFontData* fontData() const { return m_fontData.get(); }

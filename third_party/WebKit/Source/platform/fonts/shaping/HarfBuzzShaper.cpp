@@ -496,7 +496,7 @@ static inline const SimpleFontData* fontDataAdjustedForOrientation(const SimpleF
     return originalFont;
 }
 
-bool HarfBuzzShaper::collectFallbackHintChars(Vector<UChar32>& hint, bool needsList)
+bool HarfBuzzShaper::collectFallbackHintChars(Vector<UChar32>& hint)
 {
     if (!m_holesQueue.size())
         return false;
@@ -514,8 +514,6 @@ bool HarfBuzzShaper::collectFallbackHintChars(Vector<UChar32>& hint, bool needsL
         while (iterator.consume(hintChar)) {
             hint.append(hintChar);
             numCharsAdded++;
-            if (!needsList)
-                break;
             iterator.advance();
         }
     }
@@ -599,7 +597,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                 // for the shaper and check whether any glyphs were found, or
                 // define a new API on the shaper which will give us coverage
                 // information?
-                if (!collectFallbackHintChars(fallbackCharsHint, fallbackIterator->needsHintList())) {
+                if (!collectFallbackHintChars(fallbackCharsHint)) {
                     // Give up shaping since we cannot retrieve a font fallback
                     // font without a hintlist.
                     m_holesQueue.clear();

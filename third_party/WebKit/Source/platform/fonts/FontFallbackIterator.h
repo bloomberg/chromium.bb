@@ -30,11 +30,6 @@ public:
     static PassRefPtr<FontFallbackIterator> create(const FontDescription&, PassRefPtr<FontFallbackList>,
         FontFallbackPriority);
 
-    // Returns whether a list of all remaining characters to be shaped is
-    // needed.  Needed by the FontfallbackIterator in order to check whether a
-    // font from a segmented range should be loaded.
-    bool needsHintList() const;
-
     bool hasNext() const { return m_fallbackStage != OutOfLuck; };
 
     // Some system fallback APIs (Windows, Android) require a character, or a
@@ -48,6 +43,8 @@ private:
     bool rangeSetContributesForHint(const Vector<UChar32> hintList, const FontDataForRangeSet*);
     bool alreadyLoadingRangeForHintChar(UChar32 hintChar);
     void willUseRange(const AtomicString& family, const FontDataForRangeSet&);
+
+    const PassRefPtr<FontDataForRangeSet> uniqueOrNext(PassRefPtr<FontDataForRangeSet> candidate, const Vector<UChar32>& hintList);
 
     const PassRefPtr<SimpleFontData> fallbackPriorityFont(UChar32 hint);
     const PassRefPtr<SimpleFontData> uniqueSystemFontForHint(UChar32 hint);
@@ -68,6 +65,12 @@ private:
 
     FallbackStage m_fallbackStage;
     HashSet<UChar32> m_previouslyAskedForHint;
+    // FontFallbackIterator is meant for single use by HarfBuzzShaper,
+    // traversing through the fonts for shaping only once. We must not return
+    // duplicate FontDataForRangeSet objects from the next() iteration functions
+    // as returning a duplicate value causes a shaping run that won't return any
+    // results.
+    HashSet<uint32_t> m_uniqueFontDataForRangeSetsReturned;
     Vector<RefPtr<FontDataForRangeSet>> m_trackedLoadingRangeSets;
     FontFallbackPriority m_fontFallbackPriority;
 };

@@ -34,16 +34,6 @@ FontFallbackIterator::FontFallbackIterator(const FontDescription& description,
 {
 }
 
-bool FontFallbackIterator::needsHintList() const
-{
-    if (m_fallbackStage != FontGroupFonts && m_fallbackStage != SegmentedFace) {
-        return false;
-    }
-
-    const FontData* fontData = m_fontFallbackList->fontDataAt(m_fontDescription, m_currentFontDataIndex);
-    return fontData && fontData->isSegmented();
-}
-
 bool FontFallbackIterator::alreadyLoadingRangeForHintChar(UChar32 hintChar)
 {
     for (auto it = m_trackedLoadingRangeSets.begin(); it != m_trackedLoadingRangeSets.end(); ++it) {
@@ -73,6 +63,26 @@ void FontFallbackIterator::willUseRange(const AtomicString& family, const FontDa
     selector->willUseRange(m_fontDescription, family, rangeSet);
 }
 
+const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::uniqueOrNext(
+    PassRefPtr<FontDataForRangeSet> candidate,
+    const Vector<UChar32>& hintList) {
+    SkTypeface* candidateTypeface = candidate->fontData()->platformData().typeface();
+    if (!candidateTypeface)
+        return next(hintList);
+
+    uint32_t candidateId = candidateTypeface->uniqueID();
+    if (m_uniqueFontDataForRangeSetsReturned.contains(candidateId)) {
+        return next(hintList);
+    }
+
+    // We don't want to skip subsetted ranges because HarfBuzzShaper's behavior
+    // depends on the subsetting.
+    if (candidate->isEntireRange())
+        m_uniqueFontDataForRangeSetsReturned.add(candidateId);
+    return candidate;
+}
+
+
 const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(const Vector<UChar32>& hintList)
 {
     if (m_fallbackStage == OutOfLuck)
@@ -84,7 +94,7 @@ const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(const Vector<UC
         m_fallbackStage = SystemFonts;
         RefPtr<FontDataForRangeSet> fallbackPriorityFontRange = adoptRef(new FontDataForRangeSet(fallbackPriorityFont(hintList[0])));
         if (fallbackPriorityFontRange->hasFontData())
-            return fallbackPriorityFontRange.release();
+            return uniqueOrNext(fallbackPriorityFontRange.release(), hintList);
         return next(hintList);
     }
 
@@ -94,7 +104,7 @@ const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(const Vector<UC
         RefPtr<SimpleFontData> systemFont = uniqueSystemFontForHint(hintList[0]);
         if (systemFont) {
             // Fallback fonts are not retained in the FontDataCache.
-            return adoptRef(new FontDataForRangeSet(systemFont));
+            return uniqueOrNext(adoptRef(new FontDataForRangeSet(systemFont)), hintList);
         }
 
         // If we don't have options from the system fallback anymore or had
@@ -106,6 +116,8 @@ const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(const Vector<UC
         m_fallbackStage = OutOfLuck;
         RefPtr<SimpleFontData> lastResort = fontCache->getLastResortFallbackFont(m_fontDescription).get();
         RELEASE_ASSERT(lastResort);
+        // Don't skip the LastResort font in uniqueOrNext() since HarfBuzzShaper
+        // needs to use this one to place missing glyph boxes.
         return adoptRef(new FontDataForRangeSetFromCache(lastResort));
     }
 
@@ -134,7 +146,7 @@ const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(const Vector<UC
             // The fontData object that we have here is tracked in m_fontList of
             // FontFallbackList and gets released in the font cache when the
             // FontFallbackList is destroyed.
-            return adoptRef(new FontDataForRangeSet(nonSegmented));
+            return uniqueOrNext(adoptRef(new FontDataForRangeSet(nonSegmented)), hintList);
         }
         return next(hintList);
     }
@@ -163,7 +175,7 @@ const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(const Vector<UC
         if (const CustomFontData* customFontData = fontData->customFontData())
             customFontData->beginLoadIfNeeded();
         if (!fontData->isLoading())
-            return currentSegmentedFace;
+            return uniqueOrNext(currentSegmentedFace, hintList);
         m_trackedLoadingRangeSets.append(currentSegmentedFace);
     }
 

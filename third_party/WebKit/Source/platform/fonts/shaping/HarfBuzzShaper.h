@@ -200,7 +200,7 @@ private:
         const SimpleFontData* currentFont,
         UScriptCode currentRunScript,
         bool isLastResort);
-    bool collectFallbackHintChars(Vector<UChar32>& hint, bool needsList);
+    bool collectFallbackHintChars(Vector<UChar32>& hint);
 
     void insertRunIntoShapeResult(ShapeResult*, std::unique_ptr<ShapeResult::RunInfo> runToInsert, unsigned startGlyph, unsigned numGlyphs, hb_buffer_t*);
 
