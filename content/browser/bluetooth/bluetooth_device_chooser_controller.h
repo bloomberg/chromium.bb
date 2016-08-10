@@ -83,8 +83,8 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   static void SetTestScanDurationForTesting();
 
  private:
-  // Populates the chooser with the devices that are already in the adapter.
-  void PopulateFoundDevices();
+  // Populates the chooser with the GATT connected devices.
+  void PopulateConnectedDevices();
 
   // Notifies the chooser that discovery is starting and starts a discovery
   // session.

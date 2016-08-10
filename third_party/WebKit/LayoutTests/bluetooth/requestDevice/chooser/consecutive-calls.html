@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
 promise_test(() => {
   function assert_expected_events(events) {
     assert_equals(events.length, 4);
     assert_equals(events[0], 'chooser-opened(file://)');
+    assert_equals(events[1], 'discovering');
     let idsByName = new AddDeviceEventSet();
-    idsByName.assert_add_device_event(events[1]);
+    idsByName.assert_add_device_event(events[2]);
     assert_true(idsByName.has('Heart Rate Device'));
-    assert_equals(events[2], 'discovering');
     assert_equals(events[3], 'discovery-idle');
     return idsByName;
   };

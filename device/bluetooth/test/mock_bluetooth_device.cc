@@ -48,11 +48,13 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       .WillByDefault(testing::Return(paired));
   ON_CALL(*this, IsConnected())
       .WillByDefault(testing::ReturnPointee(&connected_));
+  ON_CALL(*this, IsGattConnected())
+      .WillByDefault(testing::ReturnPointee(&connected_));
   ON_CALL(*this, IsConnectable())
       .WillByDefault(testing::Return(false));
   ON_CALL(*this, IsConnecting())
       .WillByDefault(testing::Return(false));
-  ON_CALL(*this, GetUUIDs()).WillByDefault(testing::Return(uuids_));
+  ON_CALL(*this, GetUUIDs()).WillByDefault(testing::ReturnPointee(&uuids_));
   ON_CALL(*this, ExpectingPinCode())
       .WillByDefault(testing::Return(false));
   ON_CALL(*this, ExpectingPasskey())

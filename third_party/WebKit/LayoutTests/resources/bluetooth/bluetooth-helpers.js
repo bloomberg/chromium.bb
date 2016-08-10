@@ -198,7 +198,7 @@ class AddDeviceEventSet {
   }
   assert_add_device_event(event, description) {
     let match = this._addDeviceRegex.exec(event);
-    assert_true(!!match, event + "isn't an add-device event: " + description);
+    assert_true(!!match, event + " isn't an add-device event: " + description);
     this._idsByName.set(match[1], match[2]);
   }
   has(name) {

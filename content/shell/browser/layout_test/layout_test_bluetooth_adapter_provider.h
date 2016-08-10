@@ -143,6 +143,39 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetSecondDiscoveryFindsHeartRateAdapter();
 
+  // |DeviceEventAdapter|
+  // Inherits from |PoweredAdapter|
+  // Internal Structure:
+  //  - Connected Heart Rate Device
+  //      - IsGattConnected: Returns true.
+  //      - UUIDs:
+  //         - Heart Rate UUID (0x180d)
+  //  - Changing Battery Device
+  //      - IsGattConnected: Returns false.
+  //      - No UUIDs (A Battery UUID (0x180f) is added by
+  //        StartDiscoverySessionWithFilter).
+  //  - Non Connected Tx Power Device
+  //      - IsGattConnected: Returns false.
+  //      - UUIDs:
+  //         - Tx Power (0x1804)
+  //  - Discovery Generic Access Device
+  //      - IsGattConnected: Returns true.
+  //      - No UUIDs (A Generic Access UUID (0x1800) is added by
+  //        StartDiscoverySessionWithFilter).
+  // Mock Functions:
+  //  - StartDiscoverySessionWithFilter: Performs the following steps the first
+  //    time is called:
+  //      1. Post a task to add New Glucose Device (Contains a single
+  //         Glucose UUID (0x1808) and no services).
+  //      2. Adds a Battery UUID to Changing Battery Device and posts a task
+  //         that notifies observers that the device changed.
+  //      3. Adds a Generic Access UUID to Discovery Generic Access Device and
+  //         posts a task to Notify its services have been discovered.
+  //      4. Return a discovery session.
+  //    Successive calls just return a discovery session.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetDeviceEventAdapter();
+
   // |MissingServiceHeartRateAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:
@@ -421,7 +454,11 @@ class LayoutTestBluetoothAdapterProvider {
   //  - GetName:
   //      Returns: device_name.
   //  - IsPaired:
-  //      Returns true.
+  //      Returns false.
+  //  - IsConnected:
+  //      Returns false.
+  //  - IsGattConnected:
+  //      Returns false.
   //  - ConnectGatt:
   //      Calls error callback with
   //      BluetoothDevice::ConnectErrorCode::ERROR_UNSUPPORTED_DEVICE.

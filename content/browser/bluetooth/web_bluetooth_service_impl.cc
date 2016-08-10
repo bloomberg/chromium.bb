@@ -228,8 +228,6 @@ void WebBluetoothServiceImpl::DeviceAdded(device::BluetoothAdapter* adapter,
                                           device::BluetoothDevice* device) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (device_chooser_controller_.get()) {
-    VLOG(1) << "Adding device to device chooser controller: "
-            << device->GetAddress();
     device_chooser_controller_->AddFilteredDevice(*device);
   }
 }
@@ -237,6 +235,11 @@ void WebBluetoothServiceImpl::DeviceAdded(device::BluetoothAdapter* adapter,
 void WebBluetoothServiceImpl::DeviceChanged(device::BluetoothAdapter* adapter,
                                             device::BluetoothDevice* device) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (device_chooser_controller_.get()) {
+    device_chooser_controller_->AddFilteredDevice(*device);
+  }
+
   if (!device->IsGattConnected()) {
     base::Optional<WebBluetoothDeviceId> device_id =
         connected_devices_->CloseConnectionToDeviceWithAddress(
@@ -250,6 +253,10 @@ void WebBluetoothServiceImpl::DeviceChanged(device::BluetoothAdapter* adapter,
 void WebBluetoothServiceImpl::GattServicesDiscovered(
     device::BluetoothAdapter* adapter,
     device::BluetoothDevice* device) {
+  if (device_chooser_controller_.get()) {
+    device_chooser_controller_->AddFilteredDevice(*device);
+  }
+
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string& device_address = device->GetAddress();
   VLOG(1) << "Services discovered for device: " << device_address;

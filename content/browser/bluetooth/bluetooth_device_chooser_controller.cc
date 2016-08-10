@@ -321,7 +321,7 @@ void BluetoothDeviceChooserController::GetDevice(
     return;
   }
 
-  PopulateFoundDevices();
+  PopulateConnectedDevices();
   if (!chooser_.get()) {
     // If the dialog's closing, no need to do any of the rest of this.
     return;
@@ -339,7 +339,6 @@ void BluetoothDeviceChooserController::GetDevice(
 void BluetoothDeviceChooserController::AddFilteredDevice(
     const device::BluetoothDevice& device) {
   if (chooser_.get() && MatchesFilters(device, options_->filters)) {
-    VLOG(1) << "Adding device to chooser: " << device.GetAddress();
     chooser_->AddOrUpdateDevice(
         device.GetAddress(),
         // TODO(https://crbug.com/634366): Update device's name when necessary.
@@ -375,11 +374,11 @@ void BluetoothDeviceChooserController::SetTestScanDurationForTesting() {
   BluetoothDeviceChooserController::use_test_scan_duration_ = true;
 }
 
-void BluetoothDeviceChooserController::PopulateFoundDevices() {
-  VLOG(1) << "Populating " << adapter_->GetDevices().size()
-          << " devices in chooser.";
+void BluetoothDeviceChooserController::PopulateConnectedDevices() {
   for (const device::BluetoothDevice* device : adapter_->GetDevices()) {
-    AddFilteredDevice(*device);
+    if (device->IsGattConnected()) {
+      AddFilteredDevice(*device);
+    }
   }
 }
 
@@ -439,7 +438,7 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
 
   switch (event) {
     case BluetoothChooser::Event::RESCAN:
-      PopulateFoundDevices();
+      PopulateConnectedDevices();
       DCHECK(chooser_);
       StartDeviceDiscovery();
       // No need to close the chooser so we return.

@@ -114,6 +114,8 @@ class MockBluetoothDevice : public BluetoothDevice {
   BluetoothRemoteGattService* GetMockService(
       const std::string& identifier) const;
 
+  void AddUUID(const BluetoothUUID& uuid) { uuids_.push_back(uuid); }
+
   void SetConnected(bool connected) { connected_ = connected; }
 
  private:
