@@ -382,7 +382,8 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 
     if (doesNotInheritTextDecoration(style, element))
         style.clearAppliedTextDecorations();
-
+    else
+        style.restoreParentTextDecorations(parentStyle);
     style.applyTextDecorations();
 
     // Cull out any useless layers and also repeat patterns into additional layers.

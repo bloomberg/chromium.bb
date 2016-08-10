@@ -2161,6 +2161,7 @@ public:
     // Text decoration utility functions.
     void applyTextDecorations();
     void clearAppliedTextDecorations();
+    void restoreParentTextDecorations(const ComputedStyle& parentStyle);
     const Vector<AppliedTextDecoration>& appliedTextDecorations() const;
     TextDecoration textDecorationsInEffect() const;
 

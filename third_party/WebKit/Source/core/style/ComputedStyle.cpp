@@ -1534,6 +1534,13 @@ void ComputedStyle::clearAppliedTextDecorations()
         m_rareInheritedData.access()->appliedTextDecorations = nullptr;
 }
 
+void ComputedStyle::restoreParentTextDecorations(const ComputedStyle& parentStyle)
+{
+    m_inheritedData.m_textUnderline = parentStyle.m_inheritedData.m_textUnderline;
+    if (m_rareInheritedData->appliedTextDecorations != parentStyle.m_rareInheritedData->appliedTextDecorations)
+        m_rareInheritedData.access()->appliedTextDecorations = parentStyle.m_rareInheritedData->appliedTextDecorations;
+}
+
 void ComputedStyle::clearMultiCol()
 {
     m_rareNonInheritedData.access()->m_multiCol = nullptr;
