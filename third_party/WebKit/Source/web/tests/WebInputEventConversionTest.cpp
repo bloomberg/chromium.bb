@@ -1016,7 +1016,7 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
 
 TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
 {
-    const std::string baseURL("http://www.test8.com/");
+    const std::string baseURL("http://www.test9.com/");
     const std::string fileName("fixed_layout.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
