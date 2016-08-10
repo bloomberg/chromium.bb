@@ -22,7 +22,10 @@ DirectManipulationHelper::CreateInstance() {
 
 DirectManipulationHelper::DirectManipulationHelper() {}
 
-DirectManipulationHelper::~DirectManipulationHelper() {}
+DirectManipulationHelper::~DirectManipulationHelper() {
+  if (view_port_outer_)
+    view_port_outer_->Abandon();
+}
 
 void DirectManipulationHelper::Initialize(HWND window) {
   DCHECK(::IsWindow(window));
