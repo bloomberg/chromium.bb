@@ -1842,7 +1842,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 assert false;
                 mContentViewParent.removeAllViews();
             }
-            mContentViewParent = new TabContentViewParent(mThemedApplicationContext);
+            mContentViewParent = new TabContentViewParent(mThemedApplicationContext, this);
             mContentViewParent.addView(cvc.getContainerView(), 0, new FrameLayout.LayoutParams(
                     LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 

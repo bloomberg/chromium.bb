@@ -12,22 +12,53 @@ import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
- * Parent {@link FrameLayout} holding the infobar and content view of a tab.
+ * Parent {@link FrameLayout} holding the infobar and content of a tab. The content could be either
+ * a native page or a content view.
  */
 public class TabContentViewParent extends FrameLayout {
+    private static final int CONTENT_INDEX = 0;
+
     // A wrapper is needed because infobar's translation is controlled by SwipableOverlayView.
     // Setting infobar's translation directly from this class will cause UI flickering.
     private final FrameLayout mInfobarWrapper;
     private final Behavior<?> mBehavior = new SnackbarAwareBehavior();
 
-    public TabContentViewParent(Context context) {
+    private EmptyTabObserver mTabObserver = new EmptyTabObserver() {
+
+        @Override
+        public void onContentChanged(Tab tab) {
+            // If the tab is frozen, both native page and content view are not ready.
+            if (tab.isFrozen()) return;
+            View viewToShow = null;
+            if (tab.getNativePage() != null) {
+                viewToShow = tab.getNativePage().getView();
+                if (isShowing(viewToShow)) return;
+
+            } else {
+                viewToShow = tab.getContentViewCore().getContainerView();
+                if (isShowing(viewToShow)) return;
+            }
+
+            removeCurrentContent();
+            UiUtils.removeViewFromParent(viewToShow);
+            addView(viewToShow, CONTENT_INDEX, new FrameLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+            viewToShow.requestFocus();
+        }
+    };
+
+    public TabContentViewParent(Context context, Tab tab) {
         super(context);
         mInfobarWrapper = new FrameLayout(context);
+        mInfobarWrapper.setFocusable(true);
+        mInfobarWrapper.setFocusableInTouchMode(true);
         addView(mInfobarWrapper,
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        tab.addObserver(mTabObserver);
     }
 
     /**
@@ -48,6 +79,18 @@ public class TabContentViewParent extends FrameLayout {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mInfobarWrapper.setTranslationY(0f);
+    }
+
+    /**
+     * @return Whether the given {@link View} is already in the view hierarchy.
+     */
+    private boolean isShowing(View view) {
+        return view.getParent() == this;
+    }
+
+    private void removeCurrentContent() {
+        // Native page or content view should always be at index 0.
+        if (getChildCount() > 1) removeViewAt(CONTENT_INDEX);
     }
 
     private static class SnackbarAwareBehavior
