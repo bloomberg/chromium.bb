@@ -9,6 +9,6 @@ for more details about the presubmit API built into depot_tools.
 """
 
 def CheckChangeOnUpload(input_api, output_api):
-  results = []
-  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
-  return results
+    results = []
+    results.extend(input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
+    return results
