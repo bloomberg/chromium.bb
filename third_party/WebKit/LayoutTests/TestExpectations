@@ -1390,6 +1390,8 @@ crbug.com/634019 [ Win7 Debug Mac10.11 Retina ] virtual/asyncawait/inspector/sou
 
 crbug.com/635909 [ Debug ] inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
 
+crbug.com/635909 [ Mac10.10 ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
+
 # This test breaks when the feature introduced in the bug is enabled. We keep
 # this tested without the feature by using the virtual test. See
 # virtual/stable/http/tests/navigation/beacon-cross-origin-redirect-blob-expected.txt
