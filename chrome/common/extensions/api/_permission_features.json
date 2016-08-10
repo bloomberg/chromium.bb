@@ -969,7 +969,11 @@
       // Hangouts test extension
       "80B9DC58E5210749F052F5B4DB239C50CF72AEB6",
       // Hangout Services component extension.
-      "DF84F03F9B960409CCDE0D895B9650EBE81C0A8E"
+      "DF84F03F9B960409CCDE0D895B9650EBE81C0A8E",
+      // Media Router dev extension
+      "63ED55E43214C211F82122ED56407FF1A807F2A3",
+      // Media Router release extension
+      "226CF815E39A363090A1E547D53063472B8279FA"
     ]
   },
   "webstorePrivate": {
