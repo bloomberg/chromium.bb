@@ -15,14 +15,12 @@ class TextureMailboxDeleter;
 
 class CC_EXPORT VulkanRenderer : public DirectRenderer {
  public:
-  static std::unique_ptr<VulkanRenderer> Create(
-      RendererClient* client,
-      const RendererSettings* settings,
-      OutputSurface* output_surface,
-      ResourceProvider* resource_provider,
-      TextureMailboxDeleter* texture_mailbox_deleter,
-      int highp_threshold_min);
-
+  VulkanRenderer(RendererClient* client,
+                 const RendererSettings* settings,
+                 OutputSurface* output_surface,
+                 ResourceProvider* resource_provider,
+                 TextureMailboxDeleter* texture_mailbox_deleter,
+                 int highp_threshold_min);
   ~VulkanRenderer() override;
 
   // Implementation of public Renderer functions.
@@ -32,13 +30,6 @@ class CC_EXPORT VulkanRenderer : public DirectRenderer {
   void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) override;
 
  protected:
-  VulkanRenderer(RendererClient* client,
-                 const RendererSettings* settings,
-                 OutputSurface* output_surface,
-                 ResourceProvider* resource_provider,
-                 TextureMailboxDeleter* texture_mailbox_deleter,
-                 int highp_threshold_min);
-
   // Implementations of protected Renderer functions.
   void DidChangeVisibility() override;
 

@@ -88,6 +88,7 @@ void Display::Initialize(DisplayClient* client,
   // The context given to the Display's OutputSurface should already be
   // initialized, so Bind can not fail.
   DCHECK(ok);
+  InitializeRenderer();
 }
 
 void Display::SetSurfaceId(const SurfaceId& id, float device_scale_factor) {
@@ -151,10 +152,7 @@ void Display::SetOutputIsSecure(bool secure) {
 }
 
 void Display::InitializeRenderer() {
-  if (resource_provider_)
-    return;
-
-  std::unique_ptr<ResourceProvider> resource_provider(new ResourceProvider(
+  resource_provider_.reset(new ResourceProvider(
       output_surface_->context_provider(), bitmap_manager_,
       gpu_memory_buffer_manager_, nullptr, settings_.highp_threshold_min,
       settings_.texture_id_allocation_chunk_size,
@@ -164,36 +162,27 @@ void Display::InitializeRenderer() {
 
   if (output_surface_->context_provider()) {
     DCHECK(texture_mailbox_deleter_);
-    std::unique_ptr<GLRenderer> renderer = GLRenderer::Create(
-        this, &settings_, output_surface_.get(), resource_provider.get(),
+    renderer_ = base::MakeUnique<GLRenderer>(
+        this, &settings_, output_surface_.get(), resource_provider_.get(),
         texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
-    if (!renderer)
-      return;
-    renderer_ = std::move(renderer);
   } else if (output_surface_->vulkan_context_provider()) {
 #if defined(ENABLE_VULKAN)
     DCHECK(texture_mailbox_deleter_);
-    std::unique_ptr<VulkanRenderer> renderer = VulkanRenderer::Create(
-        this, &settings_, output_surface_.get(), resource_provider.get(),
+    renderer_ = base::MakeUnique<VulkanRenderer>(
+        this, &settings_, output_surface_.get(), resource_provider_.get(),
         texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
-    if (!renderer)
-      return;
-    renderer_ = std::move(renderer);
 #else
     NOTREACHED();
 #endif
   } else {
-    std::unique_ptr<SoftwareRenderer> renderer = SoftwareRenderer::Create(
-        this, &settings_, output_surface_.get(), resource_provider.get());
-    if (!renderer)
-      return;
+    auto renderer = base::MakeUnique<SoftwareRenderer>(
+        this, &settings_, output_surface_.get(), resource_provider_.get());
     software_renderer_ = renderer.get();
     renderer_ = std::move(renderer);
   }
 
   renderer_->SetEnlargePassTextureAmount(enlarge_texture_amount_);
 
-  resource_provider_ = std::move(resource_provider);
   // TODO(jbauman): Outputting an incomplete quad list doesn't work when using
   // overlays.
   bool output_partial_list = renderer_->Capabilities().using_partial_swap &&
@@ -227,7 +216,6 @@ bool Display::DrawAndSwap() {
     return false;
   }
 
-  InitializeRenderer();
   if (!output_surface_) {
     TRACE_EVENT_INSTANT0("cc", "No output surface", TRACE_EVENT_SCOPE_THREAD);
     return false;

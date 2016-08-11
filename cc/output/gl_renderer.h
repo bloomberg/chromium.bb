@@ -50,14 +50,12 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
  public:
   class ScopedUseGrContext;
 
-  static std::unique_ptr<GLRenderer> Create(
-      RendererClient* client,
-      const RendererSettings* settings,
-      OutputSurface* output_surface,
-      ResourceProvider* resource_provider,
-      TextureMailboxDeleter* texture_mailbox_deleter,
-      int highp_threshold_min);
-
+  GLRenderer(RendererClient* client,
+             const RendererSettings* settings,
+             OutputSurface* output_surface,
+             ResourceProvider* resource_provider,
+             TextureMailboxDeleter* texture_mailbox_deleter,
+             int highp_threshold_min);
   ~GLRenderer() override;
 
   const RendererCapabilitiesImpl& Capabilities() const override;
@@ -74,13 +72,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   virtual bool IsContextLost();
 
  protected:
-  GLRenderer(RendererClient* client,
-             const RendererSettings* settings,
-             OutputSurface* output_surface,
-             ResourceProvider* resource_provider,
-             TextureMailboxDeleter* texture_mailbox_deleter,
-             int highp_threshold_min);
-
   void DidChangeVisibility() override;
 
   bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }

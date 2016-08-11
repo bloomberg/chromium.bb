@@ -2107,9 +2107,9 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   DCHECK(resource_provider_);
 
   DCHECK(output_surface_->capabilities().delegated_rendering);
-  renderer_ =
-      DelegatingRenderer::Create(this, &settings_.renderer_settings,
-                                 output_surface_, resource_provider_.get());
+  renderer_ = base::MakeUnique<DelegatingRenderer>(
+      this, &settings_.renderer_settings, output_surface_,
+      resource_provider_.get());
   renderer_->SetVisible(visible_);
   SetFullRootLayerDamage();
 

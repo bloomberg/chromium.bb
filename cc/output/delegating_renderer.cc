@@ -20,15 +20,6 @@
 
 namespace cc {
 
-std::unique_ptr<DelegatingRenderer> DelegatingRenderer::Create(
-    RendererClient* client,
-    const RendererSettings* settings,
-    OutputSurface* output_surface,
-    ResourceProvider* resource_provider) {
-  return base::WrapUnique(new DelegatingRenderer(
-      client, settings, output_surface, resource_provider));
-}
-
 DelegatingRenderer::DelegatingRenderer(RendererClient* client,
                                        const RendererSettings* settings,
                                        OutputSurface* output_surface,

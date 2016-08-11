@@ -63,8 +63,8 @@ std::unique_ptr<Renderer> CreateRenderer<DelegatingRenderer>(
     const RendererSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
-  return DelegatingRenderer::Create(
-      client, settings, output_surface, resource_provider);
+  return base::MakeUnique<DelegatingRenderer>(client, settings, output_surface,
+                                              resource_provider);
 }
 
 template <>
@@ -73,8 +73,8 @@ std::unique_ptr<Renderer> CreateRenderer<GLRenderer>(
     const RendererSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
-  return GLRenderer::Create(
-      client, settings, output_surface, resource_provider, NULL, 0);
+  return base::MakeUnique<GLRenderer>(client, settings, output_surface,
+                                      resource_provider, nullptr, 0);
 }
 
 template <typename T>

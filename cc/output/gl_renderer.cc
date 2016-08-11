@@ -364,18 +364,6 @@ class GLRenderer::SyncQuery {
   DISALLOW_COPY_AND_ASSIGN(SyncQuery);
 };
 
-std::unique_ptr<GLRenderer> GLRenderer::Create(
-    RendererClient* client,
-    const RendererSettings* settings,
-    OutputSurface* output_surface,
-    ResourceProvider* resource_provider,
-    TextureMailboxDeleter* texture_mailbox_deleter,
-    int highp_threshold_min) {
-  return base::WrapUnique(
-      new GLRenderer(client, settings, output_surface, resource_provider,
-                     texture_mailbox_deleter, highp_threshold_min));
-}
-
 GLRenderer::GLRenderer(RendererClient* client,
                        const RendererSettings* settings,
                        OutputSurface* output_surface,

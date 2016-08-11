@@ -26,13 +26,13 @@ class TileDrawQuad;
 
 class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
-  static std::unique_ptr<SoftwareRenderer> Create(
-      RendererClient* client,
-      const RendererSettings* settings,
-      OutputSurface* output_surface,
-      ResourceProvider* resource_provider);
+  SoftwareRenderer(RendererClient* client,
+                   const RendererSettings* settings,
+                   OutputSurface* output_surface,
+                   ResourceProvider* resource_provider);
 
   ~SoftwareRenderer() override;
+
   const RendererCapabilitiesImpl& Capabilities() const override;
   void Finish() override;
   void SwapBuffers(CompositorFrameMetadata metadata) override;
@@ -51,7 +51,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void PrepareSurfaceForPass(DrawingFrame* frame,
                              SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
-
   void DoDrawQuad(DrawingFrame* frame,
                   const DrawQuad* quad,
                   const gfx::QuadF* draw_region) override;
@@ -63,12 +62,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
       std::unique_ptr<CopyOutputRequest> request) override;
-
-  SoftwareRenderer(RendererClient* client,
-                   const RendererSettings* settings,
-                   OutputSurface* output_surface,
-                   ResourceProvider* resource_provider);
-
   void DidChangeVisibility() override;
 
  private:

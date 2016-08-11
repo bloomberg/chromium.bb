@@ -25,7 +25,7 @@ class SoftwareRenderer;
 class TestGpuMemoryBufferManager;
 class TestSharedBitmapManager;
 
-class PixelTest : public testing::Test, RendererClient {
+class PixelTest : public testing::Test, public RendererClient {
  protected:
   PixelTest();
   ~PixelTest() override;

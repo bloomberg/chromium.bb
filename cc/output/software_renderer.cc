@@ -51,15 +51,6 @@ bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
 
 }  // anonymous namespace
 
-std::unique_ptr<SoftwareRenderer> SoftwareRenderer::Create(
-    RendererClient* client,
-    const RendererSettings* settings,
-    OutputSurface* output_surface,
-    ResourceProvider* resource_provider) {
-  return base::WrapUnique(new SoftwareRenderer(client, settings, output_surface,
-                                               resource_provider));
-}
-
 SoftwareRenderer::SoftwareRenderer(RendererClient* client,
                                    const RendererSettings* settings,
                                    OutputSurface* output_surface,

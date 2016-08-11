@@ -19,11 +19,10 @@ class ResourceProvider;
 
 class CC_EXPORT DelegatingRenderer : public Renderer {
  public:
-  static std::unique_ptr<DelegatingRenderer> Create(
-      RendererClient* client,
-      const RendererSettings* settings,
-      OutputSurface* output_surface,
-      ResourceProvider* resource_provider);
+  DelegatingRenderer(RendererClient* client,
+                     const RendererSettings* settings,
+                     OutputSurface* output_surface,
+                     ResourceProvider* resource_provider);
   ~DelegatingRenderer() override;
 
   const RendererCapabilitiesImpl& Capabilities() const override;
@@ -40,11 +39,6 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   void ReclaimResources(const ReturnedResourceArray&) override;
 
  private:
-  DelegatingRenderer(RendererClient* client,
-                     const RendererSettings* settings,
-                     OutputSurface* output_surface,
-                     ResourceProvider* resource_provider);
-
   void DidChangeVisibility() override;
 
   OutputSurface* output_surface_;

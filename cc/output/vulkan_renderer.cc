@@ -6,18 +6,6 @@
 
 namespace cc {
 
-std::unique_ptr<VulkanRenderer> VulkanRenderer::Create(
-    RendererClient* client,
-    const RendererSettings* settings,
-    OutputSurface* output_surface,
-    ResourceProvider* resource_provider,
-    TextureMailboxDeleter* texture_mailbox_deleter,
-    int highp_threshold_min) {
-  return std::unique_ptr<VulkanRenderer>(
-      new VulkanRenderer(client, settings, output_surface, resource_provider,
-                         texture_mailbox_deleter, highp_threshold_min));
-}
-
 VulkanRenderer::~VulkanRenderer() {}
 
 const RendererCapabilitiesImpl& VulkanRenderer::Capabilities() const {

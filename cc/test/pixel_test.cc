@@ -147,7 +147,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
   texture_mailbox_deleter_ = base::WrapUnique(
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
-  renderer_ = GLRenderer::Create(
+  renderer_ = base::MakeUnique<GLRenderer>(
       this, &settings_.renderer_settings, output_surface_.get(),
       resource_provider_.get(), texture_mailbox_deleter_.get(), 0);
 }
@@ -187,9 +187,9 @@ void PixelTest::SetUpSoftwareRenderer() {
       main_thread_task_runner_.get(), 0, 1, delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.renderer_settings.buffer_to_texture_target_map);
-  std::unique_ptr<SoftwareRenderer> renderer =
-      SoftwareRenderer::Create(this, &settings_.renderer_settings,
-                               output_surface_.get(), resource_provider_.get());
+  auto renderer = base::MakeUnique<SoftwareRenderer>(
+      this, &settings_.renderer_settings, output_surface_.get(),
+      resource_provider_.get());
   software_renderer_ = renderer.get();
   renderer_ = std::move(renderer);
 }

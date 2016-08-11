@@ -42,7 +42,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get());
-    renderer_ = SoftwareRenderer::Create(
+    renderer_ = base::MakeUnique<SoftwareRenderer>(
         this, &settings_, output_surface_.get(), resource_provider());
   }
 
