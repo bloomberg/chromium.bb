@@ -53,6 +53,19 @@ class ContentSettingsPattern {
     DISJOINT_ORDER_PRE = 2,
   };
 
+  // This enum is used to back an UMA histogram, the order of existing values
+  // should not be changed. New values should only append before SCHEME_MAX.
+  // Also keep it consistent with kSchemeNames in content_settings_pattern.cc.
+  enum SchemeType {
+    SCHEME_WILDCARD,
+    SCHEME_OTHER,
+    SCHEME_HTTP,
+    SCHEME_HTTPS,
+    SCHEME_FILE,
+    SCHEME_CHROMEEXTENSION,
+    SCHEME_MAX,
+  };
+
   struct PatternParts {
     PatternParts();
     PatternParts(const PatternParts& other);
@@ -177,6 +190,9 @@ class ContentSettingsPattern {
 
   // Returns a std::string representation of this pattern.
   std::string ToString() const;
+
+  // Returns scheme type of pattern.
+  ContentSettingsPattern::SchemeType GetScheme() const;
 
   // Compares the pattern with a given |other| pattern and returns the
   // |Relation| of the two patterns.

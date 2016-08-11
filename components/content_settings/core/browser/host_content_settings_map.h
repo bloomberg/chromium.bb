@@ -329,8 +329,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   // leave in some code to remove old-format settings for a long time.
   void MigrateKeygenSettings();
 
-  // Collect UMA data about the number of exceptions.
-  void RecordNumberOfExceptions();
+  // Collect UMA data of exceptions.
+  void RecordExceptionMetrics();
 
   // Adds content settings for |content_type| and |resource_identifier|,
   // provided by |provider|, into |settings|. If |incognito| is true, adds only

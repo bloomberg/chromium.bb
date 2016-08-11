@@ -187,7 +187,7 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
 
   MigrateKeygenSettings();
   MigrateDomainScopedSettings(false);
-  RecordNumberOfExceptions();
+  RecordExceptionMetrics();
 }
 
 // static
@@ -600,7 +600,7 @@ base::WeakPtr<HostContentSettingsMap> HostContentSettingsMap::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void HostContentSettingsMap::RecordNumberOfExceptions() {
+void HostContentSettingsMap::RecordExceptionMetrics() {
   for (const content_settings::WebsiteSettingsInfo* info :
        *content_settings::WebsiteSettingsRegistry::GetInstance()) {
     ContentSettingsType content_type = info->type();
@@ -610,6 +610,17 @@ void HostContentSettingsMap::RecordNumberOfExceptions() {
     GetSettingsForOneType(content_type, std::string(), &settings);
     size_t num_exceptions = 0;
     for (const ContentSettingPatternSource& setting_entry : settings) {
+      // Skip default settings.
+      if (setting_entry.primary_pattern == ContentSettingsPattern::Wildcard() &&
+          setting_entry.secondary_pattern ==
+              ContentSettingsPattern::Wildcard()) {
+        continue;
+      }
+
+      UMA_HISTOGRAM_ENUMERATION("ContentSettings.ExceptionScheme",
+                                setting_entry.primary_pattern.GetScheme(),
+                                ContentSettingsPattern::SCHEME_MAX);
+
       if (setting_entry.source == "preference")
         ++num_exceptions;
     }

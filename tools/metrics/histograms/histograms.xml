@@ -6604,6 +6604,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.ExceptionScheme" enum="ContentSettingScheme">
+  <owner>lshang@chromium.org</owner>
+  <summary>
+    Records the schemes of content setting exceptions at browser start. Each
+    exception provides one sample.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.LastSettingParsed" enum="LastSettingParsed">
   <obsolete>
     Deprecated 2015-10-05 in Issue 433475. Histogram was used temorarily for
@@ -71026,6 +71034,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Displayed bubble"/>
   <int value="2" label="Clicked 'Load unsafe scripts'"/>
   <int value="3" label="Clicked 'Learn more'"/>
+</enum>
+
+<enum name="ContentSettingScheme" type="int">
+  <int value="0" label="(wildcard)"/>
+  <int value="1" label="(other)"/>
+  <int value="2" label="http"/>
+  <int value="3" label="https"/>
+  <int value="4" label="file"/>
+  <int value="5" label="chrome-extension"/>
 </enum>
 
 <enum name="ContentType" type="int">
