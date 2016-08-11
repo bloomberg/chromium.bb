@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/switches.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -2044,6 +2045,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_QUICK_UNLOCK_PIN_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kQuickUnlockPin)},
 #endif  // defined(OS_CHROMEOS)
+    {"browser-task-scheduler", IDS_FLAGS_BROWSER_TASK_SCHEDULER_NAME,
+     IDS_FLAGS_BROWSER_TASK_SCHEDULER_DESCRIPTION, kOsAll,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableBrowserTaskScheduler,
+                               switches::kDisableBrowserTaskScheduler)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

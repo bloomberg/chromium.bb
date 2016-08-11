@@ -37,6 +37,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
+#include "base/task_scheduler/switches.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/platform_thread.h"
@@ -395,8 +396,15 @@ size_t WorkerPoolIndexForTraits(const base::TaskTraits& traits) {
 void MaybeInitializeTaskScheduler() {
   static constexpr char kFieldTrialName[] = "BrowserScheduler";
   std::map<std::string, std::string> variation_params;
-  if (!variations::GetVariationParams(kFieldTrialName, &variation_params))
+  if (!variations::GetVariationParams(kFieldTrialName, &variation_params)) {
+    DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserTaskScheduler))
+        << "The Browser Task Scheduler remains disabled with "
+        << switches::kEnableBrowserTaskScheduler
+        << " because there is no available variation param for this build or "
+           " the task scheduler is disabled in chrome://flags.";
     return;
+  }
 
   using ThreadPriority = base::ThreadPriority;
   using IORestriction = base::SchedulerWorkerPoolParams::IORestriction;
