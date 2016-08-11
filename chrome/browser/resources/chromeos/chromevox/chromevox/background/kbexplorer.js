@@ -9,6 +9,9 @@
 
 goog.provide('cvox.KbExplorer');
 
+goog.require('cvox.ChromeVoxKbHandler');
+goog.require('cvox.CommandStore');
+goog.require('cvox.KeyMap');
 goog.require('cvox.KeyUtil');
 
 
@@ -38,6 +41,14 @@ cvox.KbExplorer.init = function() {
     backgroundWindow.removeEventListener(
         'keypress', cvox.KbExplorer.onKeyPress, true);
   };
+  if (localStorage['useNext'] == 'true') {
+    cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromNext();
+    cvox.ChromeVox.modKeyStr = 'Search';
+  } else {
+    cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
+    cvox.ChromeVox.modKeyStr = 'Search+Shift';
+  }
+  cvox.ChromeVoxKbHandler.commandHandler = cvox.KbExplorer.onCommand;
 };
 
 
@@ -54,6 +65,9 @@ cvox.KbExplorer.onKeyDown = function(evt) {
   if (evt.keyCode == 87 && evt.ctrlKey) {
     return true;
   }
+
+  cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt);
+
   evt.preventDefault();
   evt.stopPropagation();
   return false;
@@ -77,4 +91,13 @@ cvox.KbExplorer.onKeyUp = function(evt) {
 cvox.KbExplorer.onKeyPress = function(evt) {
   evt.preventDefault();
   evt.stopPropagation();
+};
+
+/**
+ * Queues up command description.
+ * @param {string} command
+ */
+cvox.KbExplorer.onCommand = function(command) {
+  var commandText = Msgs.getMsg(cvox.CommandStore.messageForCommand(command));
+  chrome.extension.getBackgroundPage()['speak'](commandText);
 };
