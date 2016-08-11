@@ -78396,6 +78396,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1498" label="ChromeLoadTimesConnectionInfo"/>
   <int value="1499" label="ChromeLoadTimesUnknown"/>
   <int value="1500" label="SVGViewElement"/>
+  <int value="1501" label="WebShareShare"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
