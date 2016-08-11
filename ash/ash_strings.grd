@@ -283,6 +283,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the volume slider.">
         Volume
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_VOLUME_MUTE" desc="The accessible text for the volume mute button.">
+        Mute
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME" desc="Label shown in tray for a display whose name is unknown.">
         Unknown Display

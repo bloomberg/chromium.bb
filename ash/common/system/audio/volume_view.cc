@@ -15,6 +15,7 @@
 #include "ash/common/wm_shell.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -26,6 +27,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/painter.h"
 
 namespace {
 const int kVolumeImageWidth = 25;
@@ -54,6 +56,9 @@ class VolumeButton : public views::ToggleImageButton {
       : views::ToggleImageButton(listener),
         audio_delegate_(audio_delegate),
         image_index_(-1) {
+    SetFocusBehavior(FocusBehavior::ALWAYS);
+    SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+        kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
     SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
     image_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_AURA_UBER_TRAY_VOLUME_LEVELS);
@@ -87,6 +92,14 @@ class VolumeButton : public views::ToggleImageButton {
     gfx::Size size = views::ToggleImageButton::GetPreferredSize();
     size.set_height(GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     return size;
+  }
+
+  void GetAccessibleState(ui::AXViewState* state) override {
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    state->name = bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_VOLUME_MUTE);
+    state->role = ui::AX_ROLE_TOGGLE_BUTTON;
+    if (audio_delegate_->IsOutputAudioMuted())
+      state->AddStateFlag(ui::AX_STATE_PRESSED);
   }
 
   // views::CustomButton:
