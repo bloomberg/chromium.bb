@@ -41,8 +41,6 @@ class WmRootWindowControllerMus : public WmRootWindowController {
     return root_window_controller_;
   }
 
-  void NotifyFullscreenStateChange(bool is_fullscreen);
-
   // Screen conversion functions.
   gfx::Point ConvertPointToScreen(const WmWindowMus* source,
                                   const gfx::Point& point) const;

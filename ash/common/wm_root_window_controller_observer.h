@@ -15,7 +15,6 @@ class WmWindow;
 class ASH_EXPORT WmRootWindowControllerObserver {
  public:
   virtual void OnWorkAreaChanged() {}
-  virtual void OnFullscreenStateChanged(bool is_fullscreen) {}
   virtual void OnShelfAlignmentChanged() {}
 
  protected:

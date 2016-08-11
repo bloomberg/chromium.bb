@@ -7,11 +7,12 @@
 #include <string>
 #include <utility>
 
+#include "ash/common/shell_observer.h"
 #include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm_root_window_controller_observer.h"
+#include "ash/common/wm_shell.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/bridge/wm_window_mus_test_api.h"
@@ -48,20 +49,16 @@ class MaximizeDelegateView : public views::WidgetDelegateView {
 };
 */
 
-class FullscreenObserver : public WmRootWindowControllerObserver {
+class FullscreenObserver : public ShellObserver {
  public:
-  explicit FullscreenObserver(WmRootWindowController* root_window_controller)
-      : root_window_controller_(root_window_controller),
-        call_count_(0),
-        is_fullscreen_(false) {
-    root_window_controller_->AddObserver(this);
+  FullscreenObserver() : call_count_(0), is_fullscreen_(false) {
+    WmShell::Get()->AddShellObserver(this);
   }
 
-  ~FullscreenObserver() override {
-    root_window_controller_->RemoveObserver(this);
-  }
+  ~FullscreenObserver() override { WmShell::Get()->RemoveShellObserver(this); }
 
-  void OnFullscreenStateChanged(bool is_fullscreen) override {
+  void OnFullscreenStateChanged(bool is_fullscreen,
+                                WmWindow* root_window) override {
     call_count_++;
     is_fullscreen_ = is_fullscreen;
   }
@@ -71,7 +68,6 @@ class FullscreenObserver : public WmRootWindowControllerObserver {
   bool is_fullscreen() const { return is_fullscreen_; }
 
  private:
-  WmRootWindowController* root_window_controller_;
   int call_count_;
   bool is_fullscreen_;
 
@@ -456,8 +452,7 @@ TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, NotifyFullscreenChanges) {
-  FullscreenObserver observer(
-      WmWindowMus::Get(GetPrimaryRootWindow())->GetRootWindowController());
+  FullscreenObserver observer;
   ui::Window* window1 = CreateTestWindow(gfx::Rect(1, 2, 30, 40));
   ui::Window* window2 = CreateTestWindow(gfx::Rect(1, 2, 30, 40));
   wm::WindowState* window_state1 = WmWindowMus::Get(window1)->GetWindowState();

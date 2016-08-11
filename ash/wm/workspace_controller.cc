@@ -11,7 +11,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -44,14 +43,11 @@ bool IsDockedAreaVisible(const ShelfLayoutManager* shelf) {
 
 }  // namespace
 
-WorkspaceController::WorkspaceController(
-    aura::Window* viewport,
-    std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate)
+WorkspaceController::WorkspaceController(aura::Window* viewport)
     : viewport_(viewport),
       shelf_(NULL),
       event_handler_(new WorkspaceEventHandler),
-      layout_manager_(new WorkspaceLayoutManager(WmWindowAura::Get(viewport),
-                                                 std::move(delegate))) {
+      layout_manager_(new WorkspaceLayoutManager(WmWindowAura::Get(viewport))) {
   SetWindowVisibilityAnimationTransition(viewport_, ::wm::ANIMATE_NONE);
 
   WmWindowAura::Get(viewport_)->SetLayoutManager(

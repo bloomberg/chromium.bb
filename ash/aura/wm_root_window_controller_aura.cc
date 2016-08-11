@@ -135,17 +135,6 @@ void WmRootWindowControllerAura::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void WmRootWindowControllerAura::OnFullscreenStateChanged(
-    bool is_fullscreen,
-    WmWindow* root_window) {
-  if (WmWindowAura::GetAuraWindow(root_window) !=
-      root_window_controller_->GetRootWindow())
-    return;
-
-  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,
-                    OnFullscreenStateChanged(is_fullscreen));
-}
-
 void WmRootWindowControllerAura::OnShelfAlignmentChanged(
     WmWindow* root_window) {
   if (WmWindowAura::GetAuraWindow(root_window) !=

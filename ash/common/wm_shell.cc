@@ -98,6 +98,12 @@ void WmShell::OnMaximizeModeEnded() {
   FOR_EACH_OBSERVER(ShellObserver, shell_observers_, OnMaximizeModeEnded());
 }
 
+void WmShell::NotifyFullscreenStateChanged(bool is_fullscreen,
+                                           WmWindow* root_window) {
+  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
+                    OnFullscreenStateChanged(is_fullscreen, root_window));
+}
+
 void WmShell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
   FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
                     OnPinnedStateChanged(pinned_window));

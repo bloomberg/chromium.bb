@@ -7,7 +7,6 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
-#include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -39,8 +38,7 @@ class VirtualKeyboardAlwaysOnTopControllerTest : public AshTestBase {
 class TestLayoutManager : public WorkspaceLayoutManager {
  public:
   explicit TestLayoutManager(WmWindow* window)
-      : WorkspaceLayoutManager(window, nullptr),
-        keyboard_bounds_changed_(false) {}
+      : WorkspaceLayoutManager(window), keyboard_bounds_changed_(false) {}
 
   ~TestLayoutManager() override {}
 

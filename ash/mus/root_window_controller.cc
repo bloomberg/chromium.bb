@@ -21,7 +21,6 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
-#include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shelf_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
@@ -50,32 +49,6 @@ using ash::mojom::Container;
 
 namespace ash {
 namespace mus {
-namespace {
-
-class WorkspaceLayoutManagerDelegateImpl
-    : public wm::WorkspaceLayoutManagerDelegate {
- public:
-  explicit WorkspaceLayoutManagerDelegateImpl(
-      WmRootWindowControllerMus* root_window_controller)
-      : root_window_controller_(root_window_controller) {}
-  ~WorkspaceLayoutManagerDelegateImpl() override = default;
-
-  // WorkspaceLayoutManagerDelegate:
-  void UpdateShelfVisibility() override { NOTIMPLEMENTED(); }
-  void OnFullscreenStateChanged(bool is_fullscreen) override {
-    // TODO(sky): this should only do something if there is a shelf, see
-    // implementation in ash/shell.cc.
-    NOTIMPLEMENTED();
-    root_window_controller_->NotifyFullscreenStateChange(is_fullscreen);
-  }
-
- private:
-  WmRootWindowControllerMus* root_window_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerDelegateImpl);
-};
-
-}  // namespace
 
 RootWindowController::RootWindowController(WindowManager* window_manager,
                                            ui::Window* root,
@@ -230,11 +203,7 @@ void RootWindowController::CreateLayoutManagers() {
       GetWindowByShellWindowId(kShellWindowId_DefaultContainer);
   // WorkspaceLayoutManager is not a mash::wm::LayoutManager (it's a
   // wm::LayoutManager), so it can't be in |layout_managers_|.
-  std::unique_ptr<WorkspaceLayoutManagerDelegateImpl>
-      workspace_layout_manager_delegate(new WorkspaceLayoutManagerDelegateImpl(
-          wm_root_window_controller_.get()));
-  workspace_layout_manager_ = new WorkspaceLayoutManager(
-      default_container, std::move(workspace_layout_manager_delegate));
+  workspace_layout_manager_ = new WorkspaceLayoutManager(default_container);
   default_container->SetLayoutManager(
       base::WrapUnique(workspace_layout_manager_));
 

@@ -6,7 +6,6 @@
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
-#include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "base/memory/ptr_util.h"
@@ -15,8 +14,9 @@ namespace ash {
 
 AlwaysOnTopController::AlwaysOnTopController(WmWindow* viewport)
     : always_on_top_container_(viewport) {
+  DCHECK_NE(kShellWindowId_DefaultContainer, viewport->GetShellWindowId());
   always_on_top_container_->SetLayoutManager(
-      base::WrapUnique(new WorkspaceLayoutManager(viewport, nullptr)));
+      base::MakeUnique<WorkspaceLayoutManager>(viewport));
   // Container should be empty.
   DCHECK(always_on_top_container_->GetChildren().empty());
   always_on_top_container_->AddObserver(this);

@@ -770,38 +770,12 @@ void DockedWindowLayoutManager::SetChildBounds(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DockedWindowLayoutManager, ash::ShellObserver implementation:
+// DockedWindowLayoutManager, WmRootWindowControllerObserver implementation:
 
 void DockedWindowLayoutManager::OnWorkAreaChanged() {
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::DISPLAY_INSETS_CHANGED);
   MaybeMinimizeChildrenExcept(dragged_window_);
-}
-
-void DockedWindowLayoutManager::OnFullscreenStateChanged(bool is_fullscreen) {
-  // Entering fullscreen mode (including immersive) hides docked windows.
-  in_fullscreen_ = root_window_controller_->GetWorkspaceWindowState() ==
-                   wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
-  {
-    // prevent Relayout from getting called multiple times during this
-    base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
-    // Use a copy of children array because a call to MinimizeDockedWindow or
-    // RestoreDockedWindow can change order.
-    for (WmWindow* window : dock_container_->GetChildren()) {
-      if (IsPopupOrTransient(window))
-        continue;
-      wm::WindowState* window_state = window->GetWindowState();
-      if (in_fullscreen_) {
-        if (window->IsVisible())
-          MinimizeDockedWindow(window_state);
-      } else {
-        if (!window_state->IsMinimized())
-          RestoreDockedWindow(window_state);
-      }
-    }
-  }
-  Relayout();
-  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
 void DockedWindowLayoutManager::OnShelfAlignmentChanged() {
@@ -922,7 +896,34 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
 
 void DockedWindowLayoutManager::OnFullscreenStateChanged(
     bool is_fullscreen,
-    WmWindow* root_window) {}
+    WmWindow* root_window) {
+  if (root_window != dock_container_->GetRootWindow())
+    return;
+
+  // Entering fullscreen mode (including immersive) hides docked windows.
+  in_fullscreen_ = root_window_controller_->GetWorkspaceWindowState() ==
+                   wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+  {
+    // prevent Relayout from getting called multiple times during this
+    base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
+    // Use a copy of children array because a call to MinimizeDockedWindow or
+    // RestoreDockedWindow can change order.
+    for (WmWindow* window : dock_container_->GetChildren()) {
+      if (IsPopupOrTransient(window))
+        continue;
+      wm::WindowState* window_state = window->GetWindowState();
+      if (in_fullscreen_) {
+        if (window->IsVisible())
+          MinimizeDockedWindow(window_state);
+      } else {
+        if (!window_state->IsMinimized())
+          RestoreDockedWindow(window_state);
+      }
+    }
+  }
+  Relayout();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
+}
 
 void DockedWindowLayoutManager::OnOverviewModeStarting() {
   in_overview_ = true;

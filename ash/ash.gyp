@@ -503,7 +503,6 @@
       'common/wm/workspace/workspace_layout_manager.cc',
       'common/wm/workspace/workspace_layout_manager.h',
       'common/wm/workspace/workspace_layout_manager_backdrop_delegate.h',
-      'common/wm/workspace/workspace_layout_manager_delegate.h',
       'common/wm/workspace/workspace_types.h',
       'common/wm/workspace/workspace_window_resizer.cc',
       'common/wm/workspace/workspace_window_resizer.h',

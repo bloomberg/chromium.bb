@@ -22,17 +22,11 @@ class WorkspaceEventHandler;
 class WorkspaceLayoutManager;
 class WorkspaceLayoutManagerBackdropDelegate;
 
-namespace wm {
-class WorkspaceLayoutManagerDelegate;
-}
-
 // WorkspaceController acts as a central place that ties together all the
 // various workspace pieces.
 class ASH_EXPORT WorkspaceController {
  public:
-  WorkspaceController(
-      aura::Window* viewport,
-      std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate);
+  explicit WorkspaceController(aura::Window* viewport);
   virtual ~WorkspaceController();
 
   // Returns the current window state.

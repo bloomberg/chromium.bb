@@ -364,11 +364,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // TODO(jamescook): Move to Shelf.
   void OnShelfAutoHideBehaviorChanged(WmWindow* root_window);
 
-  // Notifies |observers_| when entering or exiting fullscreen mode in
-  // |root_window|.
-  // TODO(hidehiko): Rename this to NotifyFullscreenStateChanged.
-  void NotifyFullscreenStateChange(bool is_fullscreen, WmWindow* root_window);
-
   // Creates a modal background (a partially-opaque fullscreen window)
   // on all displays for |window|.
   void CreateModalBackground(aura::Window* window);

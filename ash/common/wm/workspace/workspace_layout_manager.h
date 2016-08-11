@@ -26,7 +26,6 @@ class WmRootWindowController;
 class WorkspaceLayoutManagerBackdropDelegate;
 
 namespace wm {
-class WorkspaceLayoutManagerDelegate;
 class WMEvent;
 }
 
@@ -40,13 +39,9 @@ class ASH_EXPORT WorkspaceLayoutManager
       public ShellObserver,
       public wm::WindowStateObserver {
  public:
-  WorkspaceLayoutManager(
-      WmWindow* window,
-      std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate);
-
+  // |window| is the container for this layout manager.
+  explicit WorkspaceLayoutManager(WmWindow* window);
   ~WorkspaceLayoutManager() override;
-
-  void DeleteDelegate();
 
   // A delegate which can be set to add a backdrop behind the top most visible
   // window. With the call the ownership of the delegate will be transferred to
@@ -65,7 +60,6 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // WmRootWindowControllerObserver overrides:
   void OnWorkAreaChanged() override;
-  void OnFullscreenStateChanged(bool is_fullscreen) override;
 
   // Overriden from WmWindowObserver:
   void OnWindowTreeChanged(
@@ -91,12 +85,8 @@ class ASH_EXPORT WorkspaceLayoutManager
                                    wm::WindowStateType old_type) override;
 
   // ShellObserver overrides:
-  void OnFullscreenStateChanged(bool is_fullscreen, WmWindow* root) override {
-    // Do nothing. Fullscreen state change is observed by the
-    // WmRootWindowControllerObserver::OnFullscreenStateChanged().
-    // Because the name is conflicting, some compiler warns because this is
-    // hidden. To avoid it, we define it here, with empty body.
-  }
+  void OnFullscreenStateChanged(bool is_fullscreen,
+                                WmWindow* root_window) override;
   void OnPinnedStateChanged(WmWindow* pinned_window) override;
 
  private:
@@ -126,8 +116,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   WmWindow* root_window_;
   WmRootWindowController* root_window_controller_;
   WmShell* shell_;
-
-  std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate_;
 
   // Set of windows we're listening to.
   WindowSet windows_;

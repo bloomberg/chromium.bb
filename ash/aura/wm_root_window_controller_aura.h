@@ -54,8 +54,6 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
   void RemoveObserver(WmRootWindowControllerObserver* observer) override;
 
   // ShellObserver:
-  void OnFullscreenStateChanged(bool is_fullscreen,
-                                WmWindow* root_window) override;
   void OnShelfAlignmentChanged(WmWindow* root_window) override;
 
   // DisplayObserver:

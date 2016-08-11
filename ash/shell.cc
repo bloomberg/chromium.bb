@@ -453,12 +453,6 @@ void Shell::OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {
                     OnShelfAutoHideBehaviorChanged(root_window));
 }
 
-void Shell::NotifyFullscreenStateChange(bool is_fullscreen,
-                                        WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnFullscreenStateChanged(is_fullscreen, root_window));
-}
-
 void Shell::CreateModalBackground(aura::Window* window) {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();

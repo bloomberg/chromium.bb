@@ -30,7 +30,6 @@
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
-#include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
@@ -279,34 +278,6 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyWindowDelegate);
-};
-
-class WorkspaceLayoutManagerDelegateImpl
-    : public wm::WorkspaceLayoutManagerDelegate {
- public:
-  explicit WorkspaceLayoutManagerDelegateImpl(aura::Window* root_window)
-      : root_window_(root_window) {}
-  ~WorkspaceLayoutManagerDelegateImpl() override = default;
-
-  void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
-
-  // WorkspaceLayoutManagerDelegate:
-  void UpdateShelfVisibility() override {
-    if (shelf_)
-      shelf_->UpdateVisibilityState();
-  }
-  void OnFullscreenStateChanged(bool is_fullscreen) override {
-    if (shelf_) {
-      Shell::GetInstance()->NotifyFullscreenStateChange(
-          is_fullscreen, WmWindowAura::Get(root_window_));
-    }
-  }
-
- private:
-  aura::Window* root_window_;
-  ShelfLayoutManager* shelf_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerDelegateImpl);
 };
 
 }  // namespace
@@ -640,10 +611,8 @@ void RootWindowController::CloseChildWindows() {
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
-  // Forget the shelf early so that shelf don't update itself using wrong
-  // display info.
+  // Clear the shelf first, so it doesn't update itself with wrong display info.
   workspace_controller_->SetShelf(nullptr);
-  workspace_controller_->layout_manager()->DeleteDelegate();
   ReparentAllWindows(GetRootWindow(), dst);
 }
 
@@ -842,10 +811,7 @@ void RootWindowController::InitLayoutManagers() {
   lock_modal_container->SetLayoutManager(
       new SystemModalContainerLayoutManager(lock_modal_container));
 
-  WorkspaceLayoutManagerDelegateImpl* workspace_layout_manager_delegate =
-      new WorkspaceLayoutManagerDelegateImpl(root_window);
-  workspace_controller_.reset(new WorkspaceController(
-      default_container, base::WrapUnique(workspace_layout_manager_delegate)));
+  workspace_controller_.reset(new WorkspaceController(default_container));
 
   WmWindow* always_on_top_container =
       WmWindowAura::Get(GetContainer(kShellWindowId_AlwaysOnTopContainer));
@@ -867,9 +833,6 @@ void RootWindowController::InitLayoutManagers() {
       wm_shelf_container, wm_shelf_aura_.get()));
   status_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(
       wm_status_container, wm_shelf_aura_.get()));
-
-  workspace_layout_manager_delegate->set_shelf(
-      shelf_widget_->shelf_layout_manager());
 
   if (!WmShell::Get()
            ->GetSessionStateDelegate()

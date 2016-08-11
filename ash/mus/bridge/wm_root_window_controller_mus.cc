@@ -55,12 +55,6 @@ const WmRootWindowControllerMus* WmRootWindowControllerMus::Get(
   return window->GetRoot()->GetLocalProperty(kWmRootWindowControllerKey);
 }
 
-void WmRootWindowControllerMus::NotifyFullscreenStateChange(
-    bool is_fullscreen) {
-  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,
-                    OnFullscreenStateChanged(is_fullscreen));
-}
-
 gfx::Point WmRootWindowControllerMus::ConvertPointToScreen(
     const WmWindowMus* source,
     const gfx::Point& point) const {

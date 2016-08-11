@@ -138,7 +138,6 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // WmRootWindowControllerObserver:
   void OnWorkAreaChanged() override;
-  void OnFullscreenStateChanged(bool is_fullscreen) override;
   void OnShelfAlignmentChanged() override;
 
   // wm::WindowStateObserver:

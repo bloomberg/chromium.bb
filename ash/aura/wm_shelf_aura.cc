@@ -144,7 +144,8 @@ bool WmShelfAura::IsVisible() const {
 }
 
 void WmShelfAura::UpdateVisibilityState() {
-  shelf_layout_manager_->UpdateVisibilityState();
+  if (shelf_layout_manager_)
+    shelf_layout_manager_->UpdateVisibilityState();
 }
 
 ShelfVisibilityState WmShelfAura::GetVisibilityState() const {

@@ -283,6 +283,9 @@ class ASH_EXPORT WmShell {
   // Called after overview mode has ended.
   virtual void OnOverviewModeEnded() = 0;
 
+  // Notifies observers after toggling fullscreen mode in |root_window|.
+  void NotifyFullscreenStateChanged(bool is_fullscreen, WmWindow* root_window);
+
   // Notifies |observers_| when entering or exiting pinned mode for
   // |pinned_window|. Entering or exiting can be checked by looking at
   // |pinned_window|'s window state.
