@@ -268,6 +268,7 @@ CHROMIUM_EMAIL = '@chromium.org'
 CORP_DOMAIN = 'corp.google.com'
 GOLO_DOMAIN = 'golo.chromium.org'
 CHROME_DOMAIN = 'chrome.' + CORP_DOMAIN
+CHROMEOS_BOT_INTERNAL = 'chromeos-bot.internal'
 
 GOB_HOST = '%s.googlesource.com'
 

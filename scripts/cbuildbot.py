@@ -1136,6 +1136,11 @@ def main(argv):
         and not options.resume and not options.local):
     cros_build_lib.Die('Please use --remote or --local to run trybots')
 
+  elif options.buildbot and not options.debug:
+    if not cros_build_lib.HostIsCIBuilder():
+      # Cannot run --buildbot if both --debug and --remote aren't specified.
+      cros_build_lib.Die('This host isn\'t a continuous-integration builder.')
+
   # Only one config arg is allowed in this mode, which was confirmed earlier.
   bot_id = args[-1]
   build_config = site_config[bot_id]

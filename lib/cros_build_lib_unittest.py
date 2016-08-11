@@ -1642,6 +1642,21 @@ class TestGetHostname(cros_test_lib.MockTestCase):
     """Verify basic behavior"""
     self.assertEqual(cros_build_lib.GetHostDomain(), 'google.com')
 
+  def testHostIsCIBuilder(self):
+    """Test HostIsCIBuilder."""
+    fq_hostname_golo = 'test.golo.chromium.org'
+    fq_hostname_gce_1 = 'test.chromeos-bot.internal'
+    fq_hostname_gce_2 = 'test.chrome.corp.google.com'
+    fq_hostname_invalid = 'test'
+    self.assertTrue(cros_build_lib.HostIsCIBuilder(fq_hostname_golo))
+    self.assertTrue(cros_build_lib.HostIsCIBuilder(fq_hostname_gce_1))
+    self.assertTrue(cros_build_lib.HostIsCIBuilder(fq_hostname_gce_2))
+    self.assertFalse(cros_build_lib.HostIsCIBuilder(fq_hostname_invalid))
+    self.assertFalse(cros_build_lib.HostIsCIBuilder(
+        fq_hostname=fq_hostname_golo, gce_only=True))
+    self.assertFalse(cros_build_lib.HostIsCIBuilder(
+        fq_hostname=fq_hostname_gce_1, golo_only=True))
+
 
 class TestGetChrootVersion(cros_test_lib.MockTestCase):
   """Tests GetChrootVersion functionality."""

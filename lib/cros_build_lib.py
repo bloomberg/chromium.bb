@@ -779,7 +779,8 @@ def HostIsCIBuilder(fq_hostname=None, golo_only=False, gce_only=False):
   if not fq_hostname:
     fq_hostname = GetHostName(fully_qualified=True)
   in_golo = fq_hostname.endswith('.' + constants.GOLO_DOMAIN)
-  in_gce = fq_hostname.endswith('.' + constants.CHROME_DOMAIN)
+  in_gce = (fq_hostname.endswith('.' + constants.CHROME_DOMAIN) or
+            fq_hostname.endswith('.' + constants.CHROMEOS_BOT_INTERNAL))
   if golo_only:
     return in_golo
   elif gce_only:

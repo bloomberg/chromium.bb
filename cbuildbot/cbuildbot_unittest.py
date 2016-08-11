@@ -464,7 +464,7 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
   def testDontInferBuildrootForBuildBotRuns(self):
     """Test that we don't infer buildroot if run with --buildbot option."""
     self.assertRaises(TestArgsparseError, self.assertMain,
-                      ['--buildbot', 'x86-generic-paladin'])
+                      ['--buildbot', '--debug', 'x86-generic-paladin'])
 
   def testInferExternalBuildRoot(self):
     """Test that we default to correct buildroot for external config."""
@@ -498,3 +498,13 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
     self.inchroot_mock.return_value = True
     self.assertRaises(cros_build_lib.DieSystemExit, self.assertMain,
                       ['--local', '-r', self.buildroot, 'x86-generic-paladin'])
+
+  def testBuildBotOnNonCIBuilder(self):
+    """Test BuildBot On Non-CIBuilder
+
+    Buildbot should quite if run in a non-CIBuilder without
+    both debug and remote.
+    """
+    if not cros_build_lib.HostIsCIBuilder():
+      self.assertRaises(cros_build_lib.DieSystemExit, self.assertMain,
+                        ['--buildbot', 'x86-generic-paladin'])
