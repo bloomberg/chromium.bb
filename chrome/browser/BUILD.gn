@@ -219,6 +219,10 @@ split_static_library("browser") {
   sources +=
       rebase_path(gypi_values.chrome_browser_undo_sources, ".", "//chrome")
 
+  if (is_chromeos && use_cras) {
+    defines += [ "USE_CRAS" ]
+  }
+
   if (!is_ios) {
     sources +=
         rebase_path(gypi_values.chrome_browser_non_ios_sources, ".", "//chrome")

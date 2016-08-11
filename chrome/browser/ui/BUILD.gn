@@ -7,6 +7,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
+import("//media/media_options.gni")
 
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("../../chrome_browser_ui.gypi") ],
@@ -146,6 +147,10 @@ split_static_library("ui") {
 
   if (enable_extensions) {
     deps += [ "//extensions/browser" ]
+  }
+
+  if (is_chromeos && use_cras) {
+    defines += [ "USE_CRAS" ]
   }
 
   if (!is_ios) {
