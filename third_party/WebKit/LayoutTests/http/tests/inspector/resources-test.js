@@ -18,22 +18,22 @@ InspectorTest.runAfterCachedResourcesProcessed = function(callback)
 
 InspectorTest.runAfterResourcesAreFinished = function(resourceURLs, callback)
 {
-    var resourceURLsMap = resourceURLs.keySet();
+    var resourceURLsMap = new Set(resourceURLs);
 
     function checkResources()
     {
-        for (url in resourceURLsMap) {
+        for (var url of resourceURLsMap) {
             var resource = InspectorTest.resourceMatchingURL(url);
             if (resource)
-                delete resourceURLsMap[url];
+                resourceURLsMap.delete(url);
         }
-        if (!Object.keys(resourceURLsMap).length) {
+        if (!resourceURLsMap.size) {
             InspectorTest.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, checkResources);
             callback();
         }
     }
     checkResources();
-    if (Object.keys(resourceURLsMap).length)
+    if (resourceURLsMap.size)
         InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, checkResources);
 }
 
