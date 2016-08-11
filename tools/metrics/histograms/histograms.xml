@@ -83283,6 +83283,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-314910380" label="disable-distance-field-text"/>
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
   <int value="-300018686" label="disable-cloud-import"/>
+  <int value="-290672626" label="enable-asm-wasm"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
   <int value="-278347667" label="default-tile-height"/>
   <int value="-277144896" label="enable-viewport-meta"/>

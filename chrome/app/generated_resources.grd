@@ -5840,6 +5840,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_V8_IGNITION_DESCRIPTION" desc="Description for the flag to enable the JavaScript interpreter.">
         Enable V8 to use the experimental Ignition interpreter for JavaScript execution.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ASM_WASM_NAME" desc="Title for the flag to enable Asm.js to WebAssembly.">
+        Experimental Validate Asm.js and convert to WebAssembly when valid.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ASM_WASM_DESCRIPTION" desc="Description for the flag to enable Asm.js to WebAssembly.">
+        Validate Asm.js when "use asm" is present and then convert to WebAssembly.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WASM_NAME" desc="Title for the flag to enable WebAssembly.">
         Experimental WebAssembly
       </message>

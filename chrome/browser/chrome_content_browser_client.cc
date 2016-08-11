@@ -1619,7 +1619,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kEnableNetBenchmarking,
       switches::kEnableNewBookmarkApps,
-      switches::kEnableWasm,
 #if !defined(DISABLE_NACL)
       switches::kForcePNaClSubzero,
 #endif

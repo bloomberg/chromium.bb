@@ -630,6 +630,9 @@ const char kDisableJavaScriptHarmonyShipping[] =
 // Enables experimental Harmony (ECMAScript 6) features.
 const char kJavaScriptHarmony[]             = "javascript-harmony";
 
+// Enables experimental Asm.js to WebAssembly.
+const char kEnableAsmWasm[]                 = "enable-asm-wasm";
+
 // Enables experimental WebAssembly.
 const char kEnableWasm[]                    = "enable-wasm";
 

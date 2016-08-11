@@ -86,6 +86,7 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfHasSwitch(switches::kDisableJavaScriptHarmonyShipping,
                        "--noharmony-shipping");
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
+  SetV8FlagIfHasSwitch(switches::kEnableAsmWasm, "--validate-asm");
   SetV8FlagIfHasSwitch(switches::kEnableWasm, "--expose-wasm");
 
   const base::CommandLine& command_line =
