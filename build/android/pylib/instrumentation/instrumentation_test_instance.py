@@ -516,6 +516,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
         args.strict_mode and
         args.strict_mode != 'off'):
       self._flags.append('--strict-mode=' + args.strict_mode)
+    if hasattr(args, 'regenerate_goldens') and args.regenerate_goldens:
+      self._flags.append('--regenerate-goldens')
 
   def _initializeDriverAttributes(self):
     self._driver_apk = os.path.join(

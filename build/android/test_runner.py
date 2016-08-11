@@ -422,6 +422,11 @@ def AddInstrumentationTestOptions(parser):
                      help='StrictMode command-line flag set on the device, '
                           'death/testing to kill the process, off to stop '
                           'checking, flash to flash only. Default testing.')
+  group.add_argument('--regenerate-goldens', dest='regenerate_goldens',
+                     action='store_true',
+                     help='Causes the render tests to not fail when a check'
+                          'fails or the golden image is missing but to render'
+                          'the view and carry on.')
 
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
