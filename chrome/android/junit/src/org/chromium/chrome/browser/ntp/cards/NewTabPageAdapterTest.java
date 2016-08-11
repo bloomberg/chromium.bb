@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
@@ -62,18 +63,19 @@ public class NewTabPageAdapterTest {
         private final Map<Integer, Integer> mCategoryStatus = new HashMap<>();
         private final Map<Integer, SuggestionsCategoryInfo> mCategoryInfo = new HashMap<>();
 
-        public void setStatusForCategory(int category, @CategoryStatusEnum int status) {
+        public void setStatusForCategory(@CategoryInt int category,
+                @CategoryStatusEnum int status) {
             mCategoryStatus.put(category, status);
             if (mObserver != null) mObserver.onCategoryStatusChanged(category, status);
         }
 
         public void setSuggestionsForCategory(
-                int category, List<SnippetArticleListItem> suggestions) {
+                @CategoryInt int category, List<SnippetArticleListItem> suggestions) {
             mSuggestions.put(category, suggestions);
             if (mObserver != null) mObserver.onNewSuggestions(category);
         }
 
-        public void setInfoForCategory(int category, SuggestionsCategoryInfo info) {
+        public void setInfoForCategory(@CategoryInt int category, SuggestionsCategoryInfo info) {
             mCategoryInfo.put(category, info);
         }
 
@@ -110,7 +112,7 @@ public class NewTabPageAdapterTest {
 
         @CategoryStatusEnum
         @Override
-        public int getCategoryStatus(int category) {
+        public int getCategoryStatus(@CategoryInt int category) {
             return mCategoryStatus.get(category);
         }
 

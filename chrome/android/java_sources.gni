@@ -536,6 +536,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/RecentlyClosedBridge.java",
   "java/src/org/chromium/chrome/browser/ntp/TitleUtil.java",
   "java/src/org/chromium/chrome/browser/ntp/UiConfig.java",
+  "java/src/org/chromium/chrome/browser/ntp/snippets/CategoryInt.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetArticleListItem.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetArticleViewHolder.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetHeaderListItem.java",

@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
@@ -138,7 +139,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     @Override
-    public void onNewSuggestions(int category) {
+    public void onNewSuggestions(@CategoryInt int category) {
         // We never want to refresh the suggestions if we already have some content.
         if (mSections.containsKey(category) && mSections.get(category).hasSuggestions()) return;
 
@@ -164,7 +165,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     @Override
-    public void onCategoryStatusChanged(int category, @CategoryStatusEnum int status) {
+    public void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatusEnum int status) {
         // Observers should not be registered for this state.
         assert status != CategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
 
@@ -268,7 +269,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         SnippetsBridge.fetchSnippets(/*forceRequest=*/true);
     }
 
-    private void setSuggestions(int category, List<SnippetArticleListItem> suggestions,
+    private void setSuggestions(@CategoryInt int category, List<SnippetArticleListItem> suggestions,
             @CategoryStatusEnum int status) {
         if (!mSections.containsKey(category)) {
             SuggestionsCategoryInfo info = mSuggestionsSource.getCategoryInfo(category);
