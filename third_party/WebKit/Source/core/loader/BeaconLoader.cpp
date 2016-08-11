@@ -45,7 +45,7 @@ public:
 
     unsigned long long size() const override
     {
-        return m_data.sizeInBytes();
+        return m_data.charactersSizeInBytes();
     }
 
     bool serialize(ResourceRequest& request, int, int&) const override

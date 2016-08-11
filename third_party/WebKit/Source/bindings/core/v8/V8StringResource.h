@@ -48,7 +48,7 @@ public:
         m_threadId = WTF::currentThread();
 #endif
         ASSERT(!string.isNull());
-        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(string));
+        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(string.charactersSizeInBytes());
     }
 
     explicit WebCoreStringResourceBase(const AtomicString& string)
@@ -59,7 +59,7 @@ public:
         m_threadId = WTF::currentThread();
 #endif
         ASSERT(!string.isNull());
-        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(string));
+        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(string.charactersSizeInBytes());
     }
 
     virtual ~WebCoreStringResourceBase()
@@ -67,10 +67,10 @@ public:
 #if ENABLE(ASSERT)
         ASSERT(m_threadId == WTF::currentThread());
 #endif
-        int reducedExternalMemory = -memoryConsumption(m_plainString);
+        int64_t reducedExternalMemory = m_plainString.charactersSizeInBytes();
         if (m_plainString.impl() != m_atomicString.impl() && !m_atomicString.isNull())
-            reducedExternalMemory -= memoryConsumption(m_atomicString);
-        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(reducedExternalMemory);
+            reducedExternalMemory += m_atomicString.charactersSizeInBytes();
+        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-reducedExternalMemory);
     }
 
     const String& webcoreString() { return m_plainString; }
@@ -84,7 +84,7 @@ public:
             m_atomicString = AtomicString(m_plainString);
             ASSERT(!m_atomicString.isNull());
             if (m_plainString.impl() != m_atomicString.impl())
-                v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(m_atomicString.getString()));
+                v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(m_atomicString.charactersSizeInBytes());
         }
         return m_atomicString;
     }
@@ -100,10 +100,6 @@ protected:
     AtomicString m_atomicString;
 
 private:
-    static int memoryConsumption(const String& string)
-    {
-        return string.length() * (string.is8Bit() ? sizeof(LChar) : sizeof(UChar));
-    }
 #if ENABLE(ASSERT)
     WTF::ThreadIdentifier m_threadId;
 #endif

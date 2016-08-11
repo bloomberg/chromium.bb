@@ -148,6 +148,8 @@ public:
     CString latin1() const { return m_string.latin1(); }
     CString utf8(UTF8ConversionMode mode = LenientUTF8Conversion) const { return m_string.utf8(mode); }
 
+    size_t charactersSizeInBytes() const { return m_string.charactersSizeInBytes(); }
+
 #ifndef NDEBUG
     void show() const;
 #endif

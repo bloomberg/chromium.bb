@@ -39,7 +39,7 @@ public:
     String16(const UChar* characters, size_t size) : m_impl(characters, size) { }
     String16 isolatedCopy() const { return String16(m_impl); }
 
-    unsigned sizeInBytes() const { return m_impl.size() * sizeof(UChar); }
+    size_t charactersSizeInBytes() const { return m_impl.size() * sizeof(UChar); }
     const UChar* characters16() const { return m_impl.c_str(); }
     std::string utf8() const;
     static String16 fromUTF8(const char* stringStart, size_t length);

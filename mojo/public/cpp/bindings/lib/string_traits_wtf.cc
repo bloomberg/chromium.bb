@@ -16,7 +16,7 @@ namespace {
 struct UTF8AdaptorInfo {
   explicit UTF8AdaptorInfo(const WTF::String& input) : utf8_adaptor(input) {
 #if DCHECK_IS_ON()
-    original_size_in_bytes = static_cast<size_t>(input.sizeInBytes());
+    original_size_in_bytes = input.charactersSizeInBytes();
 #endif
   }
 
@@ -34,8 +34,7 @@ UTF8AdaptorInfo* ToAdaptor(const WTF::String& input, void* context) {
   UTF8AdaptorInfo* adaptor = static_cast<UTF8AdaptorInfo*>(context);
 
 #if DCHECK_IS_ON()
-  DCHECK_EQ(adaptor->original_size_in_bytes,
-            static_cast<size_t>(input.sizeInBytes()));
+  DCHECK_EQ(adaptor->original_size_in_bytes, input.charactersSizeInBytes());
 #endif
   return adaptor;
 }

@@ -50,7 +50,7 @@ public:
     bool isEmpty() const { return m_impl.isEmpty(); }
     UChar operator[](unsigned index) const { return m_impl[index]; }
 
-    unsigned sizeInBytes() const { return m_impl.sizeInBytes(); }
+    size_t charactersSizeInBytes() const { return m_impl.charactersSizeInBytes(); }
     const UChar* characters16() const { return m_impl.isEmpty() ? nullptr : m_impl.characters16(); }
 
     static double charactersToDouble(const LChar* characters, size_t length, bool* ok = 0) { return ::charactersToDouble(characters, length, ok); }

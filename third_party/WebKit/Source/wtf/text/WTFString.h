@@ -138,13 +138,6 @@ public:
 
     bool is8Bit() const { return m_impl->is8Bit(); }
 
-    unsigned sizeInBytes() const
-    {
-        if (!m_impl)
-            return 0;
-        return m_impl->length() * (is8Bit() ? sizeof(LChar) : sizeof(UChar));
-    }
-
     CString ascii() const;
     CString latin1() const;
     CString utf8(UTF8ConversionMode = LenientUTF8Conversion) const;
@@ -370,6 +363,8 @@ public:
     bool containsOnlyASCII() const;
     bool containsOnlyLatin1() const;
     bool containsOnlyWhitespace() const { return !m_impl || m_impl->containsOnlyWhitespace(); }
+
+    size_t charactersSizeInBytes() const { return m_impl ? m_impl->charactersSizeInBytes() : 0; }
 
     // Hash table deleted values, which are only constructed and never copied or
     // destroyed.

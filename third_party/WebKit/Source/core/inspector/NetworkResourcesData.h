@@ -98,9 +98,9 @@ public:
 
         bool base64Encoded() const { return m_base64Encoded; }
 
-        unsigned removeContent();
+        size_t removeContent();
         bool isContentEvicted() const { return m_isContentEvicted; }
-        unsigned evictContent();
+        size_t evictContent();
 
         InspectorPageAgent::ResourceType type() const { return m_type; }
         void setType(InspectorPageAgent::ResourceType type) { m_type = type; }

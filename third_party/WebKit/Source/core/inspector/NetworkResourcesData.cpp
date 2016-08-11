@@ -95,14 +95,9 @@ void NetworkResourcesData::ResourceData::setContent(const String& content, bool 
     m_base64Encoded = base64Encoded;
 }
 
-static size_t contentSizeInBytes(const String& content)
+size_t NetworkResourcesData::ResourceData::removeContent()
 {
-    return content.isNull() ? 0 : content.impl()->sizeInBytes();
-}
-
-unsigned NetworkResourcesData::ResourceData::removeContent()
-{
-    unsigned result = 0;
+    size_t result = 0;
     if (hasData()) {
         ASSERT(!hasContent());
         result = m_dataBuffer->size();
@@ -111,13 +106,13 @@ unsigned NetworkResourcesData::ResourceData::removeContent()
 
     if (hasContent()) {
         ASSERT(!hasData());
-        result = contentSizeInBytes(m_content);
+        result = m_content.charactersSizeInBytes();
         m_content = String();
     }
     return result;
 }
 
-unsigned NetworkResourcesData::ResourceData::evictContent()
+size_t NetworkResourcesData::ResourceData::evictContent()
 {
     m_isContentEvicted = true;
     return removeContent();
@@ -170,7 +165,7 @@ size_t NetworkResourcesData::ResourceData::decodeDataToContent()
     bool success = InspectorPageAgent::sharedBufferContent(m_dataBuffer, m_mimeType, m_textEncodingName, &m_content, &m_base64Encoded);
     DCHECK(success);
     m_dataBuffer = nullptr;
-    return contentSizeInBytes(m_content) - dataLength;
+    return m_content.charactersSizeInBytes() - dataLength;
 }
 
 // NetworkResourcesData
@@ -243,7 +238,7 @@ void NetworkResourcesData::setResourceContent(const String& requestId, const Str
     ResourceData* resourceData = resourceDataForRequestId(requestId);
     if (!resourceData)
         return;
-    size_t dataLength = contentSizeInBytes(content);
+    size_t dataLength = content.charactersSizeInBytes();
     if (dataLength > m_maximumSingleResourceContentSize)
         return;
     if (resourceData->isContentEvicted())
@@ -282,7 +277,7 @@ void NetworkResourcesData::maybeDecodeDataToContent(const String& requestId)
     if (!resourceData->hasData())
         return;
     m_contentSize += resourceData->decodeDataToContent();
-    size_t dataLength = contentSizeInBytes(resourceData->content());
+    size_t dataLength = resourceData->content().charactersSizeInBytes();
     if (dataLength > m_maximumSingleResourceContentSize)
         m_contentSize -= resourceData->evictContent();
 }

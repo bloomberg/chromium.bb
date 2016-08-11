@@ -76,7 +76,7 @@ void ScriptResource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebP
     Resource::onMemoryDump(levelOfDetail, memoryDump);
     const String name = getMemoryDumpName() + "/decoded_script";
     auto dump = memoryDump->createMemoryAllocatorDump(name);
-    dump->addScalar("size", "bytes", m_script.getString().sizeInBytes());
+    dump->addScalar("size", "bytes", m_script.charactersSizeInBytes());
     memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
@@ -91,7 +91,7 @@ const String& ScriptResource::script()
         // We lie a it here and claim that script counts as encoded data (even though it's really decoded data).
         // That's because the MemoryCache thinks that it can clear out decoded data by calling destroyDecodedData(),
         // but we can't destroy script in destroyDecodedData because that's our only copy of the data!
-        setEncodedSize(script.sizeInBytes());
+        setEncodedSize(script.charactersSizeInBytes());
         m_script = AtomicString(script);
     }
 

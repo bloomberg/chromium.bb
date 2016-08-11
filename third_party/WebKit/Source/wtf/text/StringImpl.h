@@ -229,7 +229,10 @@ public:
     template <typename CharType>
     ALWAYS_INLINE const CharType * getCharacters() const;
 
-    size_t sizeInBytes() const;
+    size_t charactersSizeInBytes() const
+    {
+        return length() * (is8Bit() ? sizeof(LChar) : sizeof(UChar));
+    }
 
     bool isAtomic() const { return m_isAtomic; }
     void setIsAtomic(bool isAtomic) { m_isAtomic = isAtomic; }

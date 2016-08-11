@@ -1992,14 +1992,6 @@ int codePointCompareIgnoringASCIICase(const StringImpl* string1, const LChar* st
     return codePointCompareIgnoringASCIICase(length1, length2, string1->characters16(), string2);
 }
 
-size_t StringImpl::sizeInBytes() const
-{
-    size_t size = length();
-    if (!is8Bit())
-        size *= 2;
-    return size + sizeof(*this);
-}
-
 UChar32 toUpper(UChar32 c, const AtomicString& localeIdentifier)
 {
     if (!localeIdentifier.isNull()) {

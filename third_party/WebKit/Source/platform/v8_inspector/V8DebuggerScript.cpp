@@ -37,16 +37,17 @@ static String16 calculateHash(const String16& str)
     size_t current = 0;
     const uint32_t* data = nullptr;
     data = reinterpret_cast<const uint32_t*>(str.characters16());
-    for (size_t i = 0; i < str.sizeInBytes() / 4; i += 4) {
+    size_t charactersSizeInBytes = str.charactersSizeInBytes();
+    for (size_t i = 0; i < charactersSizeInBytes / 4; i += 4) {
         uint32_t v = data[i];
         uint64_t xi = v * randomOdd[current] & 0x7FFFFFFF;
         hashes[current] = (hashes[current] + zi[current] * xi) % prime[current];
         zi[current] = (zi[current] * random[current]) % prime[current];
         current = current == hashesSize - 1 ? 0 : current + 1;
     }
-    if (str.sizeInBytes() % 4) {
+    if (charactersSizeInBytes % 4) {
         uint32_t v = 0;
-        for (size_t i = str.sizeInBytes() - str.sizeInBytes() % 4; i < str.sizeInBytes(); ++i) {
+        for (size_t i = charactersSizeInBytes - charactersSizeInBytes % 4; i < charactersSizeInBytes; ++i) {
             v <<= 8;
             v |= reinterpret_cast<const uint8_t*>(data)[i];
         }
