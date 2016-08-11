@@ -311,8 +311,10 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     if (visible_geometry_rect.IsEmpty())
       continue;
 
-    append_quads_data->visible_layer_area +=
-        visible_geometry_rect.width() * visible_geometry_rect.height();
+    int64_t visible_geometry_area =
+        static_cast<int64_t>(visible_geometry_rect.width()) *
+        visible_geometry_rect.height();
+    append_quads_data->visible_layer_area += visible_geometry_area;
 
     bool has_draw_quad = false;
     if (*iter && iter->draw_info().IsReadyToDraw()) {
@@ -376,10 +378,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         append_quads_data->num_missing_tiles++;
         ++missing_tile_count;
       }
-      int64_t checkerboarded_area =
-          visible_geometry_rect.width() * visible_geometry_rect.height();
       append_quads_data->checkerboarded_visible_content_area +=
-          checkerboarded_area;
+          visible_geometry_area;
       // Intersect checkerboard rect with interest rect to generate rect where
       // we checkerboarded and has recording. The area where we don't have
       // recording is not necessarily a Rect, and its area is calculated using
@@ -387,18 +387,18 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
       gfx::Rect visible_rect_has_recording = visible_geometry_rect;
       visible_rect_has_recording.Intersect(scaled_recorded_viewport);
       int64_t checkerboarded_has_recording_area =
-          visible_rect_has_recording.width() *
+          static_cast<int64_t>(visible_rect_has_recording.width()) *
           visible_rect_has_recording.height();
       append_quads_data->checkerboarded_needs_raster_content_area +=
           checkerboarded_has_recording_area;
       append_quads_data->checkerboarded_no_recording_content_area +=
-          checkerboarded_area - checkerboarded_has_recording_area;
+          visible_geometry_area - checkerboarded_has_recording_area;
       continue;
     }
 
     if (iter.resolution() != HIGH_RESOLUTION) {
       append_quads_data->approximated_visible_content_area +=
-          visible_geometry_rect.width() * visible_geometry_rect.height();
+          visible_geometry_area;
     }
 
     // If we have a draw quad, but it's not low resolution, then
