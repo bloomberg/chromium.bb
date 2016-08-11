@@ -811,6 +811,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'no_angle'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['linux', 'amd', 'no_angle'], bug=483282)
+    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
+        ['linux', 'amd'], bug=633022)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
