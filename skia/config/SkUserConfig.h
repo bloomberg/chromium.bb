@@ -209,6 +209,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_GETDEVICE
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_PICTUREINSTALLPIXELREF
+#   define SK_SUPPORT_LEGACY_PICTUREINSTALLPIXELREF
+#endif
+
 #ifndef    SK_SUPPORT_LEGACY_ACCESSBITMAP
 #   define SK_SUPPORT_LEGACY_ACCESSBITMAP
 #endif
