@@ -1687,17 +1687,9 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     // TODO(ianswett): Change the packet number length and other packet creator
     // options by a more explicit API than setting a struct value directly,
     // perhaps via the NetworkChangeVisitor.
-    if (FLAGS_quic_least_unacked_packet_number_length) {
-      packet_generator_.UpdateSequenceNumberLength(
-          sent_packet_manager_->GetLeastUnacked(packet->path_id),
-          sent_packet_manager_->EstimateMaxPacketsInFlight(
-              max_packet_length()));
-    } else {
-      packet_generator_.UpdateSequenceNumberLength(
-          sent_packet_manager_->GetLeastPacketAwaitedByPeer(packet->path_id),
-          sent_packet_manager_->EstimateMaxPacketsInFlight(
-              max_packet_length()));
-    }
+    packet_generator_.UpdateSequenceNumberLength(
+        sent_packet_manager_->GetLeastPacketAwaitedByPeer(packet->path_id),
+        sent_packet_manager_->EstimateMaxPacketsInFlight(max_packet_length()));
   }
 
   bool reset_retransmission_alarm = sent_packet_manager_->OnPacketSent(

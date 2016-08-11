@@ -986,7 +986,6 @@ QuicPacketNumber QuicSentPacketManager::GetLargestSentPacket(QuicPathId) const {
   return unacked_packets_.largest_sent_packet();
 }
 
-// Remove this method when deprecating QUIC_VERSION_33.
 QuicPacketNumber QuicSentPacketManager::GetLeastPacketAwaitedByPeer(
     QuicPathId) const {
   return least_packet_awaited_by_peer_;

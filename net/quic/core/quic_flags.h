@@ -44,7 +44,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_packet_number_queue_intervals;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_sequencer_buffer_retire_block_in_time;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_remove_obsolete_forward_secure;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_close_connection_on_packet_too_large;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_least_unacked_packet_number_length;
 NET_EXPORT_PRIVATE extern bool
     FLAGS_quic_close_stream_after_writing_queued_data;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_frame_gaps_in_buffer;
