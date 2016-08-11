@@ -26,14 +26,6 @@
         right: 8px;
       }
 
-      .button-container {
-        -webkit-margin-start: -4px;
-      }
-
-      .no-upper {
-        text-transform: none;
-      }
-
       .selectable {
         -webkit-user-select: text;
       }
@@ -100,11 +92,8 @@
         </template>
 
         <template is="dom-if" if="[[!allSites]]">
-          <div class="button-container">
-            <paper-button on-tap="onAddSiteTap_"
-                class="primary-button no-upper">
-              $i18n{addSiteLink}
-            </paper-button>
+          <div class="list-item list-button" on-tap="onAddSiteTap_">
+            $i18n{addSiteLink}
           </div>
         </template>
       </div>
