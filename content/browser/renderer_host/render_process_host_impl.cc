@@ -834,7 +834,7 @@ bool RenderProcessHostImpl::Init() {
         g_renderer_main_thread_factory(InProcessChildThreadParams(
             channel_id,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-            std::string(), mojo_child_connection_->service_token())));
+            channel_token_, mojo_child_connection_->service_token())));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
@@ -894,11 +894,11 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     const std::string& channel_id) {
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  IPC::mojom::ChannelBootstrapPtr bootstrap;
-  GetRemoteInterfaces()->GetInterface(&bootstrap);
+  channel_token_ = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle handle =
+      mojo::edk::CreateParentMessagePipe(channel_token_, child_token_);
   std::unique_ptr<IPC::ChannelFactory> channel_factory =
-      IPC::ChannelMojo::CreateServerFactory(
-          bootstrap.PassInterface().PassHandle(), runner);
+      IPC::ChannelMojo::CreateServerFactory(std::move(handle), runner);
 
   // Do NOT expand ifdef or run time condition checks here! Synchronous
   // IPCs from browser process are banned. It is only narrowly allowed
@@ -1433,6 +1433,11 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 #endif
 
   AppendCompositorCommandLineFlags(command_line);
+
+  if (!channel_token_.empty()) {
+    command_line->AppendSwitchASCII(
+        switches::kMojoChannelToken, channel_token_);
+  }
 
   command_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
                                   mojo_child_connection_->service_token());
