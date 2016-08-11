@@ -8,8 +8,8 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 403388
-  "build_rev": "c80c063b314ab9cc6c3c5955c7444c2fa514bcec", # from cr commit position 403309
+  # chrome_rev: 411082
+  "build_rev": "01ebc7132bdd79aef8a0bdda3fa87ec4cd95d550", # from cr commit position 411082
   "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
   "libcxx_static_rev": "fd8f9a82862aa40dab0c5bcdea6e498715284f5a", # from cr commit position 369150
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
@@ -28,7 +28,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': "db6179b29f90d28026b0cb23ef71d56ec31b8bd6",
+  'buildtools_revision': "33a32b8aa2b7274d246fcf85ce8f762cf4291418",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
