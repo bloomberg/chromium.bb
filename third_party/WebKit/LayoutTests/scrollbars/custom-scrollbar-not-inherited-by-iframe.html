@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <style>
 ::-webkit-scrollbar {
     width: 150px;
@@ -17,8 +18,10 @@ iframe {
     </style>
   "></iframe>
 <script>
-onload = function() {
-    var body = document.querySelector("iframe").contentDocument.body;
-    shouldBe("285", String(body.clientWidth));
-};
+async_test(function(t) {
+    onload = t.step_func_done(function() {
+        var body = document.querySelector("iframe").contentDocument.body;
+        assert_equals(285, body.clientWidth);
+    });
+});
 </script>
