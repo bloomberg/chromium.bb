@@ -12,7 +12,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.android_webview.AwViewAndroidDelegate;
 import org.chromium.base.test.util.Feature;
-import org.chromium.ui.base.ViewAndroidDelegate;
+import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 /**
@@ -20,23 +20,65 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
  */
 public class AwContentsAnchorViewTest extends AwTestBase {
 
-    private TestAwContentsClient mContentsClient = new TestAwContentsClient();
+    private FrameLayout mContainerView;
+    private AwViewAndroidDelegate mViewDelegate;
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        mContainerView = new FrameLayout(getActivity());
+        mViewDelegate = new AwViewAndroidDelegate(mContainerView, new RenderCoordinates());
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @UiThreadTest
+    public void testAddAndRemoveAnchorViews() {
+        // Add 2 anchor views
+        View anchorView1 = addAnchorView();
+        View anchorView2 = addAnchorView();
+
+        // Remove anchorView1
+        removeAnchorView(anchorView1);
+
+        // Try to remove anchorView1 again; no-op.
+        removeAnchorView(anchorView1);
+
+        // Remove anchorView2
+        removeAnchorView(anchorView2);
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @UiThreadTest
+    public void testAddAndMoveAnchorView() {
+        // Add anchorView and set layout params
+        View anchorView = addAnchorView();
+        LayoutParams originalLayoutParams = setLayoutParams(anchorView, 0, 0);
+
+        // Move it
+        LayoutParams updatedLayoutParams = setLayoutParams(anchorView, 1, 2);
+        assertFalse(areEqual(originalLayoutParams, updatedLayoutParams));
+
+        // Move it back to the original position
+        updatedLayoutParams = setLayoutParams(anchorView, 0, 0);
+        assertTrue(areEqual(originalLayoutParams, updatedLayoutParams));
+    }
 
     @Feature({"AndroidWebView"})
     @SmallTest
     @UiThreadTest
     public void testMovedAndRemovedAnchorViewIsNotTransferred() throws Throwable {
         // Add, move and remove anchorView
-        AwTestContainerView containerView = createAwTestContainerViewOnMainSync(mContentsClient);
-        View anchorView = addAnchorView(containerView);
-        setLayoutParams(containerView, anchorView, 1, 2);
-        removeAnchorView(containerView, anchorView);
+        View anchorView = addAnchorView();
+        setLayoutParams(anchorView, 1, 2);
+        removeAnchorView(anchorView);
 
         // Replace container view
-        FrameLayout updatedContainerView = updateContainerView(containerView);
+        FrameLayout updatedContainerView = updateContainerView();
 
         // Verify that no anchor view is transferred between containerViews
-        assertFalse(isViewInContainer(containerView, anchorView));
+        assertFalse(isViewInContainer(mContainerView, anchorView));
         assertFalse(isViewInContainer(updatedContainerView, anchorView));
     }
 
@@ -45,14 +87,13 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     @UiThreadTest
     public void testTransferAnchorView() throws Throwable {
         // Add anchor view
-        AwTestContainerView containerView = createAwTestContainerViewOnMainSync(mContentsClient);
-        View anchorView = addAnchorView(containerView);
+        View anchorView = addAnchorView();
         LayoutParams layoutParams = anchorView.getLayoutParams();
 
         // Replace container view
-        FrameLayout updatedContainerView = updateContainerView(containerView);
+        FrameLayout updatedContainerView = updateContainerView();
         verifyAnchorViewCorrectlyTransferred(
-                containerView, anchorView, updatedContainerView, layoutParams);
+                mContainerView, anchorView, updatedContainerView, layoutParams);
     }
 
     @Feature({"AndroidWebView"})
@@ -60,15 +101,14 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     @UiThreadTest
     public void testTransferMovedAnchorView() throws Throwable {
         // Add anchor view and move it
-        AwTestContainerView containerView = createAwTestContainerViewOnMainSync(mContentsClient);
-        View anchorView = addAnchorView(containerView);
-        LayoutParams layoutParams = setLayoutParams(containerView, anchorView, 1, 2);
+        View anchorView = addAnchorView();
+        LayoutParams layoutParams = setLayoutParams(anchorView, 1, 2);
 
         // Replace container view
-        FrameLayout updatedContainerView = updateContainerView(containerView);
+        FrameLayout updatedContainerView = updateContainerView();
 
         verifyAnchorViewCorrectlyTransferred(
-                containerView, anchorView, updatedContainerView, layoutParams);
+                mContainerView, anchorView, updatedContainerView, layoutParams);
     }
 
     @Feature({"AndroidWebView"})
@@ -76,16 +116,15 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     @UiThreadTest
     public void testRemoveTransferedAnchorView() throws Throwable {
         // Add anchor view
-        AwTestContainerView containerView = createAwTestContainerViewOnMainSync(mContentsClient);
-        View anchorView = addAnchorView(containerView);
+        View anchorView = addAnchorView();
 
         // Replace container view
-        FrameLayout updatedContainerView = updateContainerView(containerView);
+        FrameLayout updatedContainerView = updateContainerView();
 
-        verifyAnchorViewCorrectlyTransferred(containerView, anchorView, updatedContainerView);
+        verifyAnchorViewCorrectlyTransferred(mContainerView, anchorView, updatedContainerView);
 
         // Remove transferred anchor view
-        removeAnchorView(containerView, anchorView);
+        removeAnchorView(anchorView);
     }
 
     @Feature({"AndroidWebView"})
@@ -93,18 +132,17 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     @UiThreadTest
     public void testMoveTransferedAnchorView() throws Throwable {
         // Add anchor view
-        AwTestContainerView containerView = createAwTestContainerViewOnMainSync(mContentsClient);
-        View anchorView = addAnchorView(containerView);
+        View anchorView = addAnchorView();
         LayoutParams layoutParams = anchorView.getLayoutParams();
 
         // Replace container view
-        FrameLayout updatedContainerView = updateContainerView(containerView);
+        FrameLayout updatedContainerView = updateContainerView();
 
         verifyAnchorViewCorrectlyTransferred(
-                containerView, anchorView, updatedContainerView, layoutParams);
+                mContainerView, anchorView, updatedContainerView, layoutParams);
 
         // Move transferred anchor view
-        assertFalse(areEqual(layoutParams, setLayoutParams(containerView, anchorView, 1, 2)));
+        assertFalse(areEqual(layoutParams, setLayoutParams(anchorView, 1, 2)));
     }
 
     @Feature({"AndroidWebView"})
@@ -112,50 +150,47 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     @UiThreadTest
     public void testTransferMultipleMovedAnchorViews() throws Throwable {
         // Add and move anchorView1
-        AwTestContainerView containerView = createAwTestContainerViewOnMainSync(mContentsClient);
-        View anchorView1 = addAnchorView(containerView);
-        LayoutParams layoutParams1 = setLayoutParams(containerView, anchorView1, 1, 2);
+        View anchorView1 = addAnchorView();
+        LayoutParams layoutParams1 = setLayoutParams(anchorView1, 1, 2);
 
         // Add and move anchorView2
-        View anchorView2 = addAnchorView(containerView);
-        LayoutParams layoutParams2 = setLayoutParams(containerView, anchorView2, 2, 4);
+        View anchorView2 = addAnchorView();
+        LayoutParams layoutParams2 = setLayoutParams(anchorView2, 2, 4);
 
         // Replace containerView
-        FrameLayout updatedContainerView = updateContainerView(containerView);
+        FrameLayout updatedContainerView = updateContainerView();
 
         // Verify that anchor views are transfered with the same layout params.
-        assertFalse(isViewInContainer(containerView, anchorView1));
-        assertFalse(isViewInContainer(containerView, anchorView2));
+        assertFalse(isViewInContainer(mContainerView, anchorView1));
+        assertFalse(isViewInContainer(mContainerView, anchorView2));
         assertTrue(isViewInContainer(updatedContainerView, anchorView1));
         assertTrue(isViewInContainer(updatedContainerView, anchorView2));
         assertTrue(areEqual(layoutParams1, anchorView1.getLayoutParams()));
         assertTrue(areEqual(layoutParams2, anchorView2.getLayoutParams()));
     }
 
-    private static View addAnchorView(AwTestContainerView containerView) {
-        View anchorView = getViewDelegate(containerView).acquireView();
-        assertTrue(isViewInContainer(containerView, anchorView));
+    private View addAnchorView() {
+        View anchorView = mViewDelegate.acquireView();
+        assertTrue(isViewInContainer(mContainerView, anchorView));
         return anchorView;
     }
 
-    private static void removeAnchorView(AwTestContainerView containerView, View anchorView) {
-        getViewDelegate(containerView).removeView(anchorView);
-        assertFalse(isViewInContainer(containerView, anchorView));
+    private void removeAnchorView(View anchorView) {
+        mViewDelegate.removeView(anchorView);
+        assertFalse(isViewInContainer(mContainerView, anchorView));
     }
 
-    private static LayoutParams setLayoutParams(AwTestContainerView containerView, View anchorView,
-                int coords, int dimension) {
-        ViewAndroidDelegate delegate = getViewDelegate(containerView);
-        float scale = (float) DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
-        delegate.setViewPosition(anchorView, coords, coords, dimension, dimension, scale, 10, 10);
+    private LayoutParams setLayoutParams(View anchorView, int coords, int dimension) {
+        float scale = (float) DeviceDisplayInfo.create(mContainerView.getContext()).getDIPScale();
+        mViewDelegate.setViewPosition(
+                anchorView, coords, coords, dimension, dimension, scale, 10, 10);
         return anchorView.getLayoutParams();
     }
 
-    private FrameLayout updateContainerView(AwTestContainerView oldContainerView) {
+    private FrameLayout updateContainerView() throws InterruptedException {
         FrameLayout containerView  = new FrameLayout(getActivity());
         getActivity().addView(containerView);
-        AwViewAndroidDelegate delegate = (AwViewAndroidDelegate) getViewDelegate(oldContainerView);
-        delegate.updateCurrentContainerView(containerView);
+        mViewDelegate.updateCurrentContainerView(containerView);
         return containerView;
     }
 
@@ -178,9 +213,5 @@ public class AwContentsAnchorViewTest extends AwTestBase {
 
     private static boolean isViewInContainer(FrameLayout containerView, View view) {
         return containerView.indexOfChild(view) != -1;
-    }
-
-    private static ViewAndroidDelegate getViewDelegate(AwTestContainerView containerView) {
-        return containerView.getAwContents().getContentViewCore().getViewAndroidDelegate();
     }
 }

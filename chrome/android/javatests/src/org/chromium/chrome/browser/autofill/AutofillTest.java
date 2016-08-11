@@ -51,10 +51,11 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     public void setUp() throws Exception {
         super.setUp();
 
-        final ChromeActivity activity = getActivity();
         mMockAutofillCallback = new MockAutofillCallback();
+        final ChromeActivity activity = getActivity();
         final ViewAndroidDelegate viewDelegate =
-                activity.getCurrentContentViewCore().getViewAndroidDelegate();
+                ViewAndroidDelegate.createBasicDelegate(
+                        activity.getCurrentContentViewCore().getContainerView());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

@@ -58,7 +58,8 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
         }
     }
 
-    AwViewAndroidDelegate(ViewGroup containerView, RenderCoordinates renderCoordinates) {
+    @VisibleForTesting
+    public AwViewAndroidDelegate(ViewGroup containerView, RenderCoordinates renderCoordinates) {
         mContainerView = containerView;
         mRenderCoordinates = renderCoordinates;
     }

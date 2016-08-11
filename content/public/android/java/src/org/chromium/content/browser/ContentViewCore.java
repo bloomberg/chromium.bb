@@ -544,26 +544,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
     }
 
-    /**
-     * Returns a delegate that can be used to add and remove views from the current
-     * container view. Clients can safely hold to instances of this class as it handles the
-     * replacement of container views transparently.
-     *
-     * NOTE: Use with care, as not all ContentViewCore users setup their container view in the same
-     * way. In particular, the Android WebView has limitations on what implementation details can
-     * be provided via a child view, as they are visible in the API and could introduce
-     * compatibility breaks with existing applications. If in doubt, contact the
-     * android_webview/OWNERS
-     *
-     * @return A ViewAndroidDelegate that can be used to add and remove views.
-     */
-    @VisibleForTesting
-    public ViewAndroidDelegate getViewAndroidDelegate() {
-        // TODO(jinsukkim): Remove this method since it is only used by tests that don't
-        //     necessarily require the delegate.
-        return mViewAndroidDelegate;
-    }
-
     @VisibleForTesting
     public void setImeAdapterForTest(ImeAdapter imeAdapter) {
         mImeAdapter = imeAdapter;
