@@ -574,14 +574,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         [[CustomCircleImageCell alloc] init]);
     [self setCell:cell.get()];
 
-    const int imageSide =
-        switches::IsMaterialDesignUserMenu() ? kMdImageSide : kLargeImageSide;
-    [self setDefaultImage:CreateProfileImage(profileIcon, imageSide,
-                                             profiles::SHAPE_CIRCLE)];
+    [self setDefaultImage:CreateProfileImage(profileIcon, kLargeImageSide,
+                                             profiles::SHAPE_SQUARE)];
     [self setImagePosition:NSImageOnly];
 
     if (editingAllowed) {
-      NSRect bounds = NSMakeRect(0, 0, imageSide, imageSide);
+      NSRect bounds = NSMakeRect(0, 0, kLargeImageSide, kLargeImageSide);
       [self setTarget:self];
       [self setAction:@selector(editPhoto:)];
       changePhotoImage_.reset([[TransparentBackgroundImageView alloc]
@@ -841,6 +839,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
             initWithLeftMarginSpacing:kHorizontalSpacing
                     imageTitleSpacing:imageTitleSpacing]);
     [cell setLineBreakMode:NSLineBreakByTruncatingTail];
+    if (switches::IsMaterialDesignUserMenu())
+      [cell setHighlightsBy:NSNoCellMask];
     [self setCell:cell.get()];
   }
   return self;
@@ -870,7 +870,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (BOOL)canBecomeKeyView {
-  return YES;
+  return [self isEnabled] ? YES : NO;
 }
 
 @end
@@ -2051,51 +2051,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Profile card button that contains the profile icon, name, and username.
   NSRect rect = NSMakeRect(0, yOffset, GetFixedMenuWidth(),
                            kMdImageSide + kVerticalSpacing);
-  NSButton* profileCard = [self hoverButtonWithRect:rect
-                                               text:[[NSString alloc] init]
-                                             action:@selector(editProfile:)];
+  NSButton* profileCard =
+      [self hoverButtonWithRect:rect
+                           text:[[NSString alloc] init]
+                          image:CreateProfileImage(item.icon, kMdImageSide,
+                                                   profiles::SHAPE_CIRCLE)
+                         action:@selector(editProfile:)];
+  [[profileCard cell] setImageDimsWhenDisabled:NO];
   [container addSubview:profileCard];
   if (isGuestSession_)
     [profileCard setEnabled:NO];
-
-  // Profile icon, left-aligned.
-  base::scoped_nsobject<NSImageView> iconView([[NSImageView alloc]
-      initWithFrame:NSMakeRect(xOffset, cardYOffset, kMdImageSide,
-                               kMdImageSide)]);
-  [iconView setImage:CreateProfileImage(item.icon, kMdImageSide,
-                                        profiles::SHAPE_CIRCLE)];
-  [profileCard addSubview:iconView];
-
-  // Profile name, left-aligned to the right of profile icon.
-  xOffset += kMdImageSide + kHorizontalSpacing;
-  CGFloat fontSize = kTextFontSize + 1.0;
-  NSTextField* profileName = BuildLabel(
-      base::SysUTF16ToNSString(
-          profiles::GetAvatarNameForProfile(browser_->profile()->GetPath())),
-      NSZeroPoint, nil);
-  [[profileName cell] setLineBreakMode:NSLineBreakByTruncatingTail];
-  [profileName setFont:[NSFont labelFontOfSize:fontSize]];
-  [profileName
-      setFrame:NSMakeRect(
-                   xOffset,
-                   cardYOffset +
-                       (kMdImageSide - [profileName frame].size.height) / 2,
-                   availableTextWidth, [profileName frame].size.height)];
-  [profileCard addSubview:profileName];
-
-  // Username, left-aligned to the right of profile icon and below the profile
-  // name.
-  if (item.signed_in && !switches::IsEnableAccountConsistency()) {
-    // Adjust the y-position of profile name to leave space for username.
-    cardYOffset += kMdImageSide / 2 - [profileName frame].size.height;
-    [profileName setFrameOrigin:NSMakePoint(xOffset, cardYOffset)];
-
-    NSTextField* username = BuildLabel(
-        ElideEmail(base::UTF16ToUTF8(item.username), availableTextWidth),
-        NSZeroPoint, skia::SkColorToSRGBNSColor(SK_ColorGRAY));
-    [username setFrameOrigin:NSMakePoint(xOffset, NSMaxY([profileName frame]))];
-    [profileCard addSubview:username];
-  }
 
   // Profile badge for supervised account.
   if (browser_->profile()->IsSupervised()) {
@@ -2111,13 +2076,44 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
     NSSize size = [[supervisedIcon image] size];
     [supervisedIcon setFrameSize:size];
-    NSRect profileIconFrame = [iconView frame];
     const int badgeSpacing = 4;
-    [supervisedIcon setFrameOrigin:NSMakePoint(NSMaxX(profileIconFrame) -
+    [supervisedIcon setFrameOrigin:NSMakePoint(xOffset + kMdImageSide -
                                                    size.width + badgeSpacing,
-                                               NSMaxY(profileIconFrame) -
+                                               cardYOffset + kMdImageSide -
                                                    size.height + badgeSpacing)];
     [profileCard addSubview:supervisedIcon];
+  }
+
+  // Profile name, left-aligned to the right of profile icon.
+  xOffset += kMdImageSide + kHorizontalSpacing;
+  CGFloat fontSize = kTextFontSize + 1.0;
+  NSTextField* profileName = BuildLabel(
+      base::SysUTF16ToNSString(
+          profiles::GetAvatarNameForProfile(browser_->profile()->GetPath())),
+      NSZeroPoint, nil);
+  [[profileName cell] setLineBreakMode:NSLineBreakByTruncatingTail];
+  [profileName setFont:[NSFont labelFontOfSize:fontSize]];
+  [profileName sizeToFit];
+  const int profileNameYOffset =
+      cardYOffset +
+      std::floor((kMdImageSide - NSHeight([profileName frame])) / 2);
+  [profileName
+      setFrame:NSMakeRect(xOffset, profileNameYOffset, availableTextWidth,
+                          NSHeight([profileName frame]))];
+  [profileCard addSubview:profileName];
+
+  // Username, left-aligned to the right of profile icon and below the profile
+  // name.
+  if (item.signed_in && !switches::IsEnableAccountConsistency()) {
+    // Adjust the y-position of profile name to leave space for username.
+    cardYOffset += kMdImageSide / 2 - [profileName frame].size.height;
+    [profileName setFrameOrigin:NSMakePoint(xOffset, cardYOffset)];
+
+    NSTextField* username = BuildLabel(
+        ElideEmail(base::UTF16ToUTF8(item.username), availableTextWidth),
+        NSZeroPoint, skia::SkColorToSRGBNSColor(SK_ColorGRAY));
+    [username setFrameOrigin:NSMakePoint(xOffset, NSMaxY([profileName frame]))];
+    [profileCard addSubview:username];
   }
 
   yOffset = NSMaxY([profileCard frame]);

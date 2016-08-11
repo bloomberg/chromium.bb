@@ -28,7 +28,7 @@
 const CGFloat kMenuYOffsetAdjust = 1.0;
 // Offset needed to align the edge of the avatar bubble with the edge of the
 // avatar button.
-const CGFloat kMenuXOffsetAdjust = 2.0;
+const CGFloat kMenuXOffsetAdjust = 1.0;
 
 @interface AvatarBaseController (Private)
 // Shows the avatar bubble.

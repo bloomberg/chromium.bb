@@ -171,6 +171,8 @@ NSImage* GetImageFromResourceID(int resourceId) {
 
     [avatarButton setBezelStyle:NSShadowlessSquareBezelStyle];
     [avatarButton setButtonType:NSMomentaryChangeButton];
+    if (switches::IsMaterialDesignUserMenu())
+      [[avatarButton cell] setHighlightsBy:NSNoCellMask];
     [avatarButton setBordered:YES];
 
     [avatarButton setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
