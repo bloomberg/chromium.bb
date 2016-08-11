@@ -5,14 +5,16 @@
 #ifndef PaintPropertyTreePrinter_h
 #define PaintPropertyTreePrinter_h
 
+#include "core/CoreExport.h"
+
 #ifndef NDEBUG
 namespace blink {
 
 class FrameView;
 
-void showTransformPropertyTree(const FrameView& rootFrame);
-void showClipPropertyTree(const FrameView& rootFrame);
-void showEffectPropertyTree(const FrameView& rootFrame);
+CORE_EXPORT void showTransformPropertyTree(const FrameView& rootFrame);
+CORE_EXPORT void showClipPropertyTree(const FrameView& rootFrame);
+CORE_EXPORT void showEffectPropertyTree(const FrameView& rootFrame);
 
 } // namespace blink
 #endif

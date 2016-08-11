@@ -85,6 +85,7 @@ TEST_F(PaintPropertyTreeBuilderTest, FixedPosition)
     EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100), target1Properties->overflowClip()->clipRect());
     // Likewise, it inherits clip from the viewport, skipping overflow clip of the scroller.
     EXPECT_EQ(frameView->contentClip(), target1Properties->overflowClip()->parent());
+    CHECK_VISUAL_RECT(target1->layoutObject(), frameView->layoutView());
 
     // target2 is a fixed-position element inside a transformed scrolling element.
     // It should be attached under the scrolled box of the transformed element.
@@ -97,8 +98,6 @@ TEST_F(PaintPropertyTreeBuilderTest, FixedPosition)
     EXPECT_EQ(target2Properties->paintOffsetTranslation(), target2Properties->overflowClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100), target2Properties->overflowClip()->clipRect());
     EXPECT_EQ(scrollerProperties->overflowClip(), target2Properties->overflowClip()->parent());
-
-    CHECK_VISUAL_RECT(target1->layoutObject(), frameView->layoutView());
     CHECK_VISUAL_RECT(target2->layoutObject(), frameView->layoutView());
 }
 
@@ -116,6 +115,7 @@ TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)
     EXPECT_EQ(frameView->scrollTranslation(), scrollerProperties->overflowClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(120, 340, 400, 300), scrollerProperties->overflowClip()->clipRect());
     EXPECT_EQ(frameView->contentClip(), scrollerProperties->overflowClip()->parent());
+    CHECK_VISUAL_RECT(scroller->layoutObject(), frameView->layoutView());
 
     // The relative-positioned element should have accumulated box offset (exclude scrolling),
     // and should be affected by ancestor scroll transforms.
@@ -124,8 +124,9 @@ TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)
     EXPECT_EQ(TransformationMatrix().translate(680, 1120), relPosProperties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(scrollerProperties->scrollTranslation(), relPosProperties->paintOffsetTranslation()->parent());
     EXPECT_EQ(relPosProperties->transform(), relPosProperties->overflowClip()->localTransformSpace());
-    EXPECT_EQ(FloatRoundedRect(0, 0, 400, 0), relPosProperties->overflowClip()->clipRect());
+    EXPECT_EQ(FloatRoundedRect(0, 0, 100, 200), relPosProperties->overflowClip()->clipRect());
     EXPECT_EQ(scrollerProperties->overflowClip(), relPosProperties->overflowClip()->parent());
+    CHECK_VISUAL_RECT(relPos->layoutObject(), frameView->layoutView());
 
     // The absolute-positioned element should not be affected by non-positioned scroller at all.
     Element* absPos = document().getElementById("abs-pos");
@@ -133,8 +134,9 @@ TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)
     EXPECT_EQ(TransformationMatrix().translate(123, 456), absPosProperties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(frameView->scrollTranslation(), absPosProperties->paintOffsetTranslation()->parent());
     EXPECT_EQ(absPosProperties->transform(), absPosProperties->overflowClip()->localTransformSpace());
-    EXPECT_EQ(FloatRoundedRect(), absPosProperties->overflowClip()->clipRect());
+    EXPECT_EQ(FloatRoundedRect(0, 0, 300, 400), absPosProperties->overflowClip()->clipRect());
     EXPECT_EQ(frameView->contentClip(), absPosProperties->overflowClip()->parent());
+    CHECK_VISUAL_RECT(absPos->layoutObject(), frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
@@ -158,6 +160,7 @@ TEST_F(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
     LayoutViewItem layoutViewItem = document().layoutViewItem();
     const ObjectPaintProperties* layoutViewProperties = layoutViewItem.objectPaintProperties();
     EXPECT_EQ(nullptr, layoutViewProperties->scrollTranslation());
+    CHECK_VISUAL_RECT(document().body()->layoutObject(), frameView->layoutView());
 }
 
 // TODO(trchen): Settings::rootLayerScrolls cannot be switched after main frame being created.
@@ -183,6 +186,7 @@ TEST_F(PaintPropertyTreeBuilderTest, DISABLED_FrameScrollingRootLayerScrolls)
     const ObjectPaintProperties* layoutViewProperties = layoutViewItem.objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(0, -100), layoutViewProperties->scrollTranslation()->matrix());
     EXPECT_EQ(frameView->scrollTranslation(), layoutViewProperties->scrollTranslation()->parent());
+    CHECK_VISUAL_RECT(document().body()->layoutObject(), frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, Perspective)
@@ -201,6 +205,7 @@ TEST_F(PaintPropertyTreeBuilderTest, Perspective)
     const ObjectPaintProperties* innerProperties = inner->layoutObject()->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(50, 100), innerProperties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(perspectiveProperties->perspective(), innerProperties->paintOffsetTranslation()->parent());
+    CHECK_VISUAL_RECT(inner->layoutObject(), document().view()->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, Transform)
@@ -214,6 +219,7 @@ TEST_F(PaintPropertyTreeBuilderTest, Transform)
     EXPECT_EQ(transformProperties->paintOffsetTranslation(), transformProperties->transform()->parent());
     EXPECT_EQ(TransformationMatrix().translate(50, 100), transformProperties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(document().view()->scrollTranslation(), transformProperties->paintOffsetTranslation()->parent());
+    CHECK_VISUAL_RECT(transform->layoutObject(), document().view()->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, RelativePositionInline)
@@ -224,90 +230,101 @@ TEST_F(PaintPropertyTreeBuilderTest, RelativePositionInline)
     const ObjectPaintProperties* inlineBlockProperties = inlineBlock->layoutObject()->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(135, 490), inlineBlockProperties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(document().view()->scrollTranslation(), inlineBlockProperties->paintOffsetTranslation()->parent());
+    CHECK_VISUAL_RECT(inlineBlock->layoutObject(), document().view()->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, NestedOpacityEffect)
 {
     setBodyInnerHTML(
-        "<div id='nodeWithoutOpacity'>"
-        "  <div id='childWithOpacity' style='opacity: 0.5'>"
-        "    <div id='grandChildWithoutOpacity'>"
-        "      <div id='greatGrandChildWithOpacity' style='opacity: 0.2'/>"
+        "<div id='nodeWithoutOpacity' style='width: 100px; height: 200px'>"
+        "  <div id='childWithOpacity' style='opacity: 0.5; width: 50px; height: 60px;'>"
+        "    <div id='grandChildWithoutOpacity' style='width: 20px; height: 30px'>"
+        "      <div id='greatGrandChildWithOpacity' style='opacity: 0.2; width: 10px; height: 15px'/>"
         "    </div>"
         "  </div>"
         "</div>");
 
-    LayoutObject& nodeWithoutOpacity = *document().getElementById("nodeWithoutOpacity")->layoutObject();
-    const ObjectPaintProperties* nodeWithoutOpacityProperties = nodeWithoutOpacity.objectPaintProperties();
+    LayoutObject* nodeWithoutOpacity = document().getElementById("nodeWithoutOpacity")->layoutObject();
+    const ObjectPaintProperties* nodeWithoutOpacityProperties = nodeWithoutOpacity->objectPaintProperties();
     EXPECT_NE(nullptr, nodeWithoutOpacityProperties);
+    CHECK_VISUAL_RECT(nodeWithoutOpacity, document().view()->layoutView());
 
-    LayoutObject& childWithOpacity = *document().getElementById("childWithOpacity")->layoutObject();
-    const ObjectPaintProperties* childWithOpacityProperties = childWithOpacity.objectPaintProperties();
+    LayoutObject* childWithOpacity = document().getElementById("childWithOpacity")->layoutObject();
+    const ObjectPaintProperties* childWithOpacityProperties = childWithOpacity->objectPaintProperties();
     EXPECT_EQ(0.5f, childWithOpacityProperties->effect()->opacity());
     // childWithOpacity is the root effect node.
     EXPECT_NE(nullptr, childWithOpacityProperties->effect()->parent());
+    CHECK_VISUAL_RECT(childWithOpacity, document().view()->layoutView());
 
-    LayoutObject& grandChildWithoutOpacity = *document().getElementById("grandChildWithoutOpacity")->layoutObject();
-    EXPECT_NE(nullptr, grandChildWithoutOpacity.objectPaintProperties());
+    LayoutObject* grandChildWithoutOpacity = document().getElementById("grandChildWithoutOpacity")->layoutObject();
+    EXPECT_NE(nullptr, grandChildWithoutOpacity->objectPaintProperties());
+    CHECK_VISUAL_RECT(grandChildWithoutOpacity, document().view()->layoutView());
 
-    LayoutObject& greatGrandChildWithOpacity = *document().getElementById("greatGrandChildWithOpacity")->layoutObject();
-    const ObjectPaintProperties* greatGrandChildWithOpacityProperties = greatGrandChildWithOpacity.objectPaintProperties();
+    LayoutObject* greatGrandChildWithOpacity = document().getElementById("greatGrandChildWithOpacity")->layoutObject();
+    const ObjectPaintProperties* greatGrandChildWithOpacityProperties = greatGrandChildWithOpacity->objectPaintProperties();
     EXPECT_EQ(0.2f, greatGrandChildWithOpacityProperties->effect()->opacity());
     EXPECT_EQ(childWithOpacityProperties->effect(), greatGrandChildWithOpacityProperties->effect()->parent());
+    CHECK_VISUAL_RECT(greatGrandChildWithOpacity, document().view()->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes)
 {
     setBodyInnerHTML(
-        "<div id='nodeWithOpacity' style='opacity: 0.6'>"
-        "  <div id='childWithTransform' style='transform: translate3d(10px, 10px, 0px);'>"
-        "    <div id='grandChildWithOpacity' style='opacity: 0.4'/>"
+        "<div id='nodeWithOpacity' style='opacity: 0.6' style='width: 100px; height: 200px'>"
+        "  <div id='childWithTransform' style='transform: translate3d(10px, 10px, 0px); width: 50px; height: 60px;'>"
+        "    <div id='grandChildWithOpacity' style='opacity: 0.4; width: 20px; height: 30px'/>"
         "  </div>"
         "</div>");
 
-    LayoutObject& nodeWithOpacity = *document().getElementById("nodeWithOpacity")->layoutObject();
-    const ObjectPaintProperties* nodeWithOpacityProperties = nodeWithOpacity.objectPaintProperties();
+    LayoutObject* nodeWithOpacity = document().getElementById("nodeWithOpacity")->layoutObject();
+    const ObjectPaintProperties* nodeWithOpacityProperties = nodeWithOpacity->objectPaintProperties();
     EXPECT_EQ(0.6f, nodeWithOpacityProperties->effect()->opacity());
     EXPECT_NE(nullptr, nodeWithOpacityProperties->effect()->parent());
     EXPECT_EQ(nullptr, nodeWithOpacityProperties->transform());
+    CHECK_VISUAL_RECT(nodeWithOpacity, document().view()->layoutView());
 
-    LayoutObject& childWithTransform = *document().getElementById("childWithTransform")->layoutObject();
-    const ObjectPaintProperties* childWithTransformProperties = childWithTransform.objectPaintProperties();
+    LayoutObject* childWithTransform = document().getElementById("childWithTransform")->layoutObject();
+    const ObjectPaintProperties* childWithTransformProperties = childWithTransform->objectPaintProperties();
     EXPECT_EQ(nullptr, childWithTransformProperties->effect());
     EXPECT_EQ(TransformationMatrix().translate(10, 10), childWithTransformProperties->transform()->matrix());
+    CHECK_VISUAL_RECT(childWithTransform, document().view()->layoutView());
 
-    LayoutObject& grandChildWithOpacity = *document().getElementById("grandChildWithOpacity")->layoutObject();
-    const ObjectPaintProperties* grandChildWithOpacityProperties = grandChildWithOpacity.objectPaintProperties();
+    LayoutObject* grandChildWithOpacity = document().getElementById("grandChildWithOpacity")->layoutObject();
+    const ObjectPaintProperties* grandChildWithOpacityProperties = grandChildWithOpacity->objectPaintProperties();
     EXPECT_EQ(0.4f, grandChildWithOpacityProperties->effect()->opacity());
     EXPECT_EQ(nodeWithOpacityProperties->effect(), grandChildWithOpacityProperties->effect()->parent());
     EXPECT_EQ(nullptr, grandChildWithOpacityProperties->transform());
+    CHECK_VISUAL_RECT(grandChildWithOpacity, document().view()->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext)
 {
     setBodyInnerHTML(
-        "<div id='nodeWithOpacity' style='opacity: 0.6'>"
-        "  <div id='childWithStackingContext' style='position:absolute;'>"
-        "    <div id='grandChildWithOpacity' style='opacity: 0.4'/>"
+        "<div id='nodeWithOpacity' style='opacity: 0.6; width: 100px; height: 200px'>"
+        "  <div id='childWithStackingContext' style='position:absolute; width: 50px; height: 60px;'>"
+        "    <div id='grandChildWithOpacity' style='opacity: 0.4; width: 20px; height: 30px'/>"
         "  </div>"
         "</div>");
 
-    LayoutObject& nodeWithOpacity = *document().getElementById("nodeWithOpacity")->layoutObject();
-    const ObjectPaintProperties* nodeWithOpacityProperties = nodeWithOpacity.objectPaintProperties();
+    LayoutObject* nodeWithOpacity = document().getElementById("nodeWithOpacity")->layoutObject();
+    const ObjectPaintProperties* nodeWithOpacityProperties = nodeWithOpacity->objectPaintProperties();
     EXPECT_EQ(0.6f, nodeWithOpacityProperties->effect()->opacity());
     EXPECT_NE(nullptr, nodeWithOpacityProperties->effect()->parent());
     EXPECT_EQ(nullptr, nodeWithOpacityProperties->transform());
+    CHECK_VISUAL_RECT(nodeWithOpacity, document().view()->layoutView());
 
-    LayoutObject& childWithStackingContext = *document().getElementById("childWithStackingContext")->layoutObject();
-    const ObjectPaintProperties* childWithStackingContextProperties = childWithStackingContext.objectPaintProperties();
+    LayoutObject* childWithStackingContext = document().getElementById("childWithStackingContext")->layoutObject();
+    const ObjectPaintProperties* childWithStackingContextProperties = childWithStackingContext->objectPaintProperties();
     EXPECT_EQ(nullptr, childWithStackingContextProperties->effect());
     EXPECT_EQ(nullptr, childWithStackingContextProperties->transform());
+    CHECK_VISUAL_RECT(childWithStackingContext, document().view()->layoutView());
 
-    LayoutObject& grandChildWithOpacity = *document().getElementById("grandChildWithOpacity")->layoutObject();
-    const ObjectPaintProperties* grandChildWithOpacityProperties = grandChildWithOpacity.objectPaintProperties();
+    LayoutObject* grandChildWithOpacity = document().getElementById("grandChildWithOpacity")->layoutObject();
+    const ObjectPaintProperties* grandChildWithOpacityProperties = grandChildWithOpacity->objectPaintProperties();
     EXPECT_EQ(0.4f, grandChildWithOpacityProperties->effect()->opacity());
     EXPECT_EQ(nodeWithOpacityProperties->effect(), grandChildWithOpacityProperties->effect()->parent());
     EXPECT_EQ(nullptr, grandChildWithOpacityProperties->transform());
+    CHECK_VISUAL_RECT(grandChildWithOpacity, document().view()->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, EffectNodesInSVG)
@@ -323,8 +340,8 @@ TEST_F(PaintPropertyTreeBuilderTest, EffectNodesInSVG)
         "  </g>"
         "</svg>");
 
-    LayoutObject& groupWithOpacity = *document().getElementById("groupWithOpacity")->layoutObject();
-    const ObjectPaintProperties* groupWithOpacityProperties = groupWithOpacity.objectPaintProperties();
+    LayoutObject* groupWithOpacity = document().getElementById("groupWithOpacity")->layoutObject();
+    const ObjectPaintProperties* groupWithOpacityProperties = groupWithOpacity->objectPaintProperties();
     EXPECT_EQ(0.6f, groupWithOpacityProperties->effect()->opacity());
     EXPECT_NE(nullptr, groupWithOpacityProperties->effect()->parent());
 
@@ -612,11 +629,12 @@ TEST_F(PaintPropertyTreeBuilderTest, ControlClip)
         "<input id='button' type='button' style='width:345px; height:123px' value='some text'/>");
 
     FrameView* frameView = document().view();
-    LayoutObject& button = *document().getElementById("button")->layoutObject();
-    const ObjectPaintProperties* buttonProperties = button.objectPaintProperties();
+    LayoutObject* button = document().getElementById("button")->layoutObject();
+    const ObjectPaintProperties* buttonProperties = button->objectPaintProperties();
     EXPECT_EQ(frameView->scrollTranslation(), buttonProperties->overflowClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(5, 5, 335, 113), buttonProperties->overflowClip()->clipRect());
     EXPECT_EQ(frameView->contentClip(), buttonProperties->overflowClip()->parent());
+    CHECK_VISUAL_RECT(button, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, BorderRadiusClip)
@@ -640,8 +658,8 @@ TEST_F(PaintPropertyTreeBuilderTest, BorderRadiusClip)
         "<div id='div'></div>");
 
     FrameView* frameView = document().view();
-    LayoutObject& div = *document().getElementById("div")->layoutObject();
-    const ObjectPaintProperties* divProperties = div.objectPaintProperties();
+    LayoutObject* div = document().getElementById("div")->layoutObject();
+    const ObjectPaintProperties* divProperties = div->objectPaintProperties();
     EXPECT_EQ(frameView->scrollTranslation(), divProperties->overflowClip()->localTransformSpace());
     // The overflow clip rect includes only the padding box.
     // padding box = border box(500+60+50, 400+45+55) - border outset(60+50, 45+55) - scrollbars(15, 15)
@@ -662,6 +680,7 @@ TEST_F(PaintPropertyTreeBuilderTest, BorderRadiusClip)
             FloatSize(6, 1)), //  (bottom right) = max((56, 56) - (50, 55), (0, 0))
         borderRadiusClip->clipRect());
     EXPECT_EQ(frameView->contentClip(), borderRadiusClip->parent());
+    CHECK_VISUAL_RECT(div, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes)
@@ -671,17 +690,21 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes)
         "<div id='divWithTransform' style='transform: translate3d(1px, 2px, 3px);'>"
         "  <iframe id='frame'></iframe>"
         "</div>");
-    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 0; }</style><div id='transform' style='transform: translate3d(4px, 5px, 6px);'></div>");
-    document().view()->updateAllLifecyclePhases();
+    Document& frameDocument = setupChildIframe("frame",
+        "<style>body { margin: 0; }</style><div id='transform' style='transform: translate3d(4px, 5px, 6px); width: 100px; height: 200px'></div>");
+    FrameView* frameView = document().view();
+    frameView->updateAllLifecyclePhases();
 
-    LayoutObject& divWithTransform = *document().getElementById("divWithTransform")->layoutObject();
-    const ObjectPaintProperties* divWithTransformProperties = divWithTransform.objectPaintProperties();
+    LayoutObject* divWithTransform = document().getElementById("divWithTransform")->layoutObject();
+    const ObjectPaintProperties* divWithTransformProperties = divWithTransform->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3), divWithTransformProperties->transform()->matrix());
+    CHECK_VISUAL_RECT(divWithTransform, frameView->layoutView());
 
     LayoutObject* innerDivWithTransform = frameDocument.getElementById("transform")->layoutObject();
     const ObjectPaintProperties* innerDivWithTransformProperties = innerDivWithTransform->objectPaintProperties();
     auto* innerDivTransform = innerDivWithTransformProperties->transform();
     EXPECT_EQ(TransformationMatrix().translate3d(4, 5, 6), innerDivTransform->matrix());
+    CHECK_VISUAL_RECT(innerDivWithTransform, frameView->layoutView());
 
     // Ensure that the inner div's transform is correctly rooted in the root frame's transform tree.
     // This asserts that we have the following tree structure:
@@ -704,8 +727,10 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes)
         "<div id='divWithTransform' style='transform: translate3d(1px, 2px, 3px);'>"
         "  <iframe id='frame' style='transform: translate3d(4px, 5px, 6px); border: 42px solid; margin: 7px;'></iframe>"
         "</div>");
-    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 31px; }</style><div id='transform' style='transform: translate3d(7px, 8px, 9px);'></div>");
-    document().view()->updateAllLifecyclePhases();
+    Document& frameDocument = setupChildIframe("frame",
+        "<style>body { margin: 31px; }</style><div id='transform' style='transform: translate3d(7px, 8px, 9px); width: 100px; height: 200px'></div>");
+    FrameView* frameView = document().view();
+    frameView->updateAllLifecyclePhases();
 
     // Assert that we have the following tree structure:
     // ...
@@ -720,6 +745,7 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes)
     LayoutObject* innerDivWithTransform = frameDocument.getElementById("transform")->layoutObject();
     auto* innerDivTransform = innerDivWithTransform->objectPaintProperties()->transform();
     EXPECT_EQ(TransformationMatrix().translate3d(7, 8, 9), innerDivTransform->matrix());
+    CHECK_VISUAL_RECT(innerDivWithTransform, frameView->layoutView());
 
     auto* innerDocumentPaintOffsetTranslation = innerDivTransform->parent();
     EXPECT_EQ(TransformationMatrix().translate3d(31, 31, 0), innerDocumentPaintOffsetTranslation->matrix());
@@ -734,8 +760,9 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes)
     auto* divWithTransformTransform = iframePaintOffsetTranslation->parent();
     EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3), divWithTransformTransform->matrix());
 
-    LayoutObject& divWithTransform = *document().getElementById("divWithTransform")->layoutObject();
-    EXPECT_EQ(divWithTransformTransform, divWithTransform.objectPaintProperties()->transform());
+    LayoutObject* divWithTransform = document().getElementById("divWithTransform")->layoutObject();
+    EXPECT_EQ(divWithTransformTransform, divWithTransform->objectPaintProperties()->transform());
+    CHECK_VISUAL_RECT(divWithTransform, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext)
@@ -746,19 +773,22 @@ TEST_F(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext)
     setBodyInnerHTML(
         "<style>body { margin: 0; }</style>"
         "<div id='scroller' style='overflow:scroll; width:400px; height:300px;'>"
-        "  <div id='child' style='position:relative;'></div>"
+        "  <div id='child' style='position:relative; width:100px; height: 200px;'></div>"
         "  <div style='height:10000px;'></div>"
         "</div>"
     );
+    FrameView* frameView = document().view();
 
-    LayoutObject& scroller = *document().getElementById("scroller")->layoutObject();
-    const ObjectPaintProperties* scrollerProperties = scroller.objectPaintProperties();
-    LayoutObject& child = *document().getElementById("child")->layoutObject();
-    const ObjectPaintProperties* childProperties = child.objectPaintProperties();
+    LayoutObject* scroller = document().getElementById("scroller")->layoutObject();
+    const ObjectPaintProperties* scrollerProperties = scroller->objectPaintProperties();
+    LayoutObject* child = document().getElementById("child")->layoutObject();
+    const ObjectPaintProperties* childProperties = child->objectPaintProperties();
 
     EXPECT_EQ(scrollerProperties->overflowClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
     EXPECT_EQ(scrollerProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
     EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->propertyTreeState.effect);
+    CHECK_VISUAL_RECT(scroller, frameView->layoutView());
+    CHECK_VISUAL_RECT(child, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
@@ -770,20 +800,22 @@ TEST_F(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
     setBodyInnerHTML(
         "<style>body { margin: 0; }</style>"
         "<div id='scroller' style='overflow:scroll; opacity:0.5;'>"
-        "  <div id='child' style='position:absolute; left:0; top:0;'></div>"
+        "  <div id='child' style='position:absolute; left:0; top:0; width: 100px; height: 200px'></div>"
         "  <div style='height:10000px;'></div>"
         "</div>"
     );
 
     FrameView* frameView = document().view();
-    LayoutObject& scroller = *document().getElementById("scroller")->layoutObject();
-    const ObjectPaintProperties* scrollerProperties = scroller.objectPaintProperties();
-    LayoutObject& child = *document().getElementById("child")->layoutObject();
-    const ObjectPaintProperties* childProperties = child.objectPaintProperties();
+    LayoutObject* scroller = document().getElementById("scroller")->layoutObject();
+    const ObjectPaintProperties* scrollerProperties = scroller->objectPaintProperties();
+    LayoutObject* child = document().getElementById("child")->layoutObject();
+    const ObjectPaintProperties* childProperties = child->objectPaintProperties();
 
     EXPECT_EQ(frameView->contentClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
     EXPECT_EQ(frameView->scrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
     EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->propertyTreeState.effect);
+    CHECK_VISUAL_RECT(scroller, frameView->layoutView());
+    CHECK_VISUAL_RECT(child, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TableCellLayoutLocation)
@@ -819,11 +851,12 @@ TEST_F(PaintPropertyTreeBuilderTest, TableCellLayoutLocation)
     );
 
     FrameView* frameView = document().view();
-    LayoutObject& target = *document().getElementById("target")->layoutObject();
-    const ObjectPaintProperties* targetProperties = target.objectPaintProperties();
+    LayoutObject* target = document().getElementById("target")->layoutObject();
+    const ObjectPaintProperties* targetProperties = target->objectPaintProperties();
 
     EXPECT_EQ(LayoutPoint(170, 170), targetProperties->localBorderBoxProperties()->paintOffset);
     EXPECT_EQ(frameView->scrollTranslation(), targetProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    CHECK_VISUAL_RECT(target, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
@@ -844,6 +877,8 @@ TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
         "    position: fixed;"
         "    left: 654px;"
         "    top: 321px;"
+        "    width: 10px;"
+        "    heght: 20px"
         "  }"
         "</style>"
         "<div id='clip'><div id='fixed'></div></div>"
@@ -854,18 +889,22 @@ TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
 
     FrameView* frameView = document().view();
 
-    LayoutObject& clip = *document().getElementById("clip")->layoutObject();
-    const ObjectPaintProperties* clipProperties = clip.objectPaintProperties();
+    LayoutObject* clip = document().getElementById("clip")->layoutObject();
+    const ObjectPaintProperties* clipProperties = clip->objectPaintProperties();
     EXPECT_EQ(frameView->contentClip(), clipProperties->cssClip()->parent());
     EXPECT_EQ(frameView->scrollTranslation(), clipProperties->cssClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)), clipProperties->cssClip()->clipRect());
+    // TODO(chrishtr): GeomeryMapper rports 40x60 size (i.e. including clip), whereas the old code reports 100x100 (unclipped).
+    // Fix.
+    // CHECK_VISUAL_RECT(clip, frameView->layoutView());
 
-    LayoutObject& fixed = *document().getElementById("fixed")->layoutObject();
-    const ObjectPaintProperties* fixedProperties = fixed.objectPaintProperties();
+    LayoutObject* fixed = document().getElementById("fixed")->layoutObject();
+    const ObjectPaintProperties* fixedProperties = fixed->objectPaintProperties();
     EXPECT_EQ(clipProperties->cssClip(), fixedProperties->localBorderBoxProperties()->propertyTreeState.clip);
     EXPECT_EQ(frameView->preTranslation(), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->parent());
     EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->matrix());
     EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(fixed, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared)
@@ -905,26 +944,29 @@ TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared)
 
     FrameView* frameView = document().view();
 
-    LayoutObject& overflow = *document().getElementById("overflow")->layoutObject();
-    const ObjectPaintProperties* overflowProperties = overflow.objectPaintProperties();
+    LayoutObject* overflow = document().getElementById("overflow")->layoutObject();
+    const ObjectPaintProperties* overflowProperties = overflow->objectPaintProperties();
     EXPECT_EQ(frameView->contentClip(), overflowProperties->overflowClip()->parent());
     EXPECT_EQ(frameView->scrollTranslation(), overflowProperties->scrollTranslation()->parent());
+    CHECK_VISUAL_RECT(overflow, frameView->layoutView());
 
-    LayoutObject& clip = *document().getElementById("clip")->layoutObject();
-    const ObjectPaintProperties* clipProperties = clip.objectPaintProperties();
+    LayoutObject* clip = document().getElementById("clip")->layoutObject();
+    const ObjectPaintProperties* clipProperties = clip->objectPaintProperties();
     EXPECT_EQ(overflowProperties->overflowClip(), clipProperties->cssClip()->parent());
     EXPECT_EQ(overflowProperties->scrollTranslation(), clipProperties->cssClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)), clipProperties->cssClip()->clipRect());
     EXPECT_EQ(frameView->contentClip(), clipProperties->cssClipFixedPosition()->parent());
     EXPECT_EQ(overflowProperties->scrollTranslation(), clipProperties->cssClipFixedPosition()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)), clipProperties->cssClipFixedPosition()->clipRect());
+    CHECK_VISUAL_RECT(clip, frameView->layoutView());
 
-    LayoutObject& fixed = *document().getElementById("fixed")->layoutObject();
-    const ObjectPaintProperties* fixedProperties = fixed.objectPaintProperties();
+    LayoutObject* fixed = document().getElementById("fixed")->layoutObject();
+    const ObjectPaintProperties* fixedProperties = fixed->objectPaintProperties();
     EXPECT_EQ(clipProperties->cssClipFixedPosition(), fixedProperties->localBorderBoxProperties()->propertyTreeState.clip);
     EXPECT_EQ(frameView->preTranslation(), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->parent());
     EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->matrix());
     EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(fixed, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, ColumnSpannerUnderRelativePositioned)
@@ -937,8 +979,9 @@ TEST_F(PaintPropertyTreeBuilderTest, ColumnSpannerUnderRelativePositioned)
         "</div>"
     );
 
-    LayoutObject& spanner = *getLayoutObjectByElementId("spanner");
-    EXPECT_EQ(LayoutPoint(55, 44), spanner.objectPaintProperties()->localBorderBoxProperties()->paintOffset);
+    LayoutObject* spanner = getLayoutObjectByElementId("spanner");
+    EXPECT_EQ(LayoutPoint(55, 44), spanner->objectPaintProperties()->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(spanner, document().view()->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, FractionalPaintOffset)
@@ -952,14 +995,19 @@ TEST_F(PaintPropertyTreeBuilderTest, FractionalPaintOffset)
         "  <div id='b' style='width: 40px; height: 40px; left: 0.5px; top: 11.1px;'></div>"
         "</div>"
     );
+    FrameView* frameView = document().view();
 
-    const ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
+    LayoutObject* a = document().getElementById("a")->layoutObject();
+    const ObjectPaintProperties* aProperties = a->objectPaintProperties();
     LayoutPoint aPaintOffset = LayoutPoint(FloatPoint(0.1, 0.3));
     EXPECT_EQ(aPaintOffset, aProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(a, frameView->layoutView());
 
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
     LayoutPoint bPaintOffset = aPaintOffset + LayoutPoint(FloatPoint(0.5, 11.1));
     EXPECT_EQ(bPaintOffset, bProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(a, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping)
@@ -975,19 +1023,25 @@ TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping)
         "  </div>"
         "</div>"
     );
+    FrameView* frameView = document().view();
 
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate3d(0, 0, 0), bProperties->transform()->matrix());
     // The paint offset transform should be snapped from (0.3,0.3) to (0,0).
     EXPECT_EQ(TransformationMatrix().translate(0, 0), bProperties->transform()->parent()->matrix());
     // The residual subpixel adjustment should be (0.3,0.3) - (0,0) = (0.3,0.3).
     LayoutPoint subpixelAccumulation = LayoutPoint(FloatPoint(0.3, 0.3));
     EXPECT_EQ(subpixelAccumulation, bProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 
     // c should be painted starting at subpixelAccumulation + (0.1,0.1) = (0.4,0.4).
+    LayoutObject* c = document().getElementById("c")->layoutObject();
     LayoutPoint cPaintOffset = subpixelAccumulation + LayoutPoint(FloatPoint(0.1, 0.1));
-    const ObjectPaintProperties* cProperties = document().getElementById("c")->layoutObject()->objectPaintProperties();
+    const ObjectPaintProperties* cProperties = c->objectPaintProperties();
     EXPECT_EQ(cPaintOffset, cProperties->localBorderBoxProperties()->paintOffset);
+// TODO(chrishtr): results differ by pixel snapping
+//    CHECK_VISUAL_RECT(c, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingThroughTransform)
@@ -1003,19 +1057,25 @@ TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingThroughTransfor
         "  </div>"
         "</div>"
     );
+    FrameView* frameView = document().view();
 
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate3d(0, 0, 0), bProperties->transform()->matrix());
     // The paint offset transform should be snapped from (0.7,0.7) to (1,1).
     EXPECT_EQ(TransformationMatrix().translate(1, 1), bProperties->transform()->parent()->matrix());
     // The residual subpixel adjustment should be (0.7,0.7) - (1,1) = (-0.3,-0.3).
     LayoutPoint subpixelAccumulation = LayoutPoint(LayoutPoint(FloatPoint(0.7, 0.7)) - LayoutPoint(1, 1));
     EXPECT_EQ(subpixelAccumulation, bProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 
     // c should be painted starting at subpixelAccumulation + (0.7,0.7) = (0.4,0.4).
+    LayoutObject* c = document().getElementById("c")->layoutObject();
     LayoutPoint cPaintOffset = subpixelAccumulation + LayoutPoint(FloatPoint(0.7, 0.7));
-    const ObjectPaintProperties* cProperties = document().getElementById("c")->layoutObject()->objectPaintProperties();
+    const ObjectPaintProperties* cProperties = c->objectPaintProperties();
     EXPECT_EQ(cPaintOffset, cProperties->localBorderBoxProperties()->paintOffset);
+// TODO(chrishtr): results differ by pixel snapping
+//    CHECK_VISUAL_RECT(c, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingThroughMultipleTransforms)
@@ -1033,27 +1093,35 @@ TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingThroughMultiple
         "  </div>"
         "</div>"
     );
+    FrameView* frameView = document().view();
 
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate3d(5, 7, 0), bProperties->transform()->matrix());
     // The paint offset transform should be snapped from (0.7,0.7) to (1,1).
     EXPECT_EQ(TransformationMatrix().translate(1, 1), bProperties->transform()->parent()->matrix());
     // The residual subpixel adjustment should be (0.7,0.7) - (1,1) = (-0.3,-0.3).
     LayoutPoint subpixelAccumulation = LayoutPoint(LayoutPoint(FloatPoint(0.7, 0.7)) - LayoutPoint(1, 1));
     EXPECT_EQ(subpixelAccumulation, bProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 
-    const ObjectPaintProperties* cProperties = document().getElementById("c")->layoutObject()->objectPaintProperties();
+    LayoutObject* c = document().getElementById("c")->layoutObject();
+    const ObjectPaintProperties* cProperties = c->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate3d(11, 13, 0), cProperties->transform()->matrix());
     // The paint offset should be (-0.3,-0.3) but the paint offset transform should still be at
     // (0,0) because it should be snapped.
     EXPECT_EQ(TransformationMatrix().translate(0, 0), cProperties->transform()->parent()->matrix());
     // The residual subpixel adjustment should still be (-0.3,-0.3).
     EXPECT_EQ(subpixelAccumulation, cProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(c, frameView->layoutView());
 
     // d should be painted starting at subpixelAccumulation + (0.7,0.7) = (0.4,0.4).
+    LayoutObject* d = document().getElementById("d")->layoutObject();
     LayoutPoint dPaintOffset = subpixelAccumulation + LayoutPoint(FloatPoint(0.7, 0.7));
-    const ObjectPaintProperties* dProperties = document().getElementById("d")->layoutObject()->objectPaintProperties();
+    const ObjectPaintProperties* dProperties = d->objectPaintProperties();
     EXPECT_EQ(dPaintOffset, dProperties->localBorderBoxProperties()->paintOffset);
+// TODO(chrishtr): results differ by pixel snapping
+//   CHECK_VISUAL_RECT(d, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos)
@@ -1070,23 +1138,31 @@ TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos)
         "  </div>"
         "</div>"
     );
+    FrameView* frameView = document().view();
 
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(0, 0), bProperties->transform()->matrix());
     // The paint offset transform should be snapped from (0.7,0) to (1,0).
     EXPECT_EQ(TransformationMatrix().translate(1, 0), bProperties->transform()->parent()->matrix());
     // The residual subpixel adjustment should be (0.7,0) - (1,0) = (-0.3,0).
     LayoutPoint subpixelAccumulation = LayoutPoint(LayoutPoint(FloatPoint(0.7, 0)) - LayoutPoint(1, 0));
     EXPECT_EQ(subpixelAccumulation, bProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 
-    const ObjectPaintProperties* fixedProperties = document().getElementById("fixed")->layoutObject()->objectPaintProperties();
+    LayoutObject* fixed = document().getElementById("fixed")->layoutObject();
+    const ObjectPaintProperties* fixedProperties = fixed->objectPaintProperties();
     // The residual subpixel adjustment should still be (-0.3,0).
     EXPECT_EQ(subpixelAccumulation, fixedProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_VISUAL_RECT(fixed, frameView->layoutView());
 
     // d should be painted starting at subpixelAccumulation + (0.7,0) = (0.4,0).
+    LayoutObject* d = document().getElementById("d")->layoutObject();
     LayoutPoint dPaintOffset = subpixelAccumulation + LayoutPoint(FloatPoint(0.7, 0));
-    const ObjectPaintProperties* dProperties = document().getElementById("d")->layoutObject()->objectPaintProperties();
+    const ObjectPaintProperties* dProperties = d->objectPaintProperties();
     EXPECT_EQ(dPaintOffset, dProperties->localBorderBoxProperties()->paintOffset);
+// TODO(chrishtr): results differ by pixel snapping
+//    CHECK_VISUAL_RECT(d, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset)
@@ -1112,7 +1188,7 @@ TEST_F(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset)
 
 TEST_F(PaintPropertyTreeBuilderTest, NoRenderingContextByDefault)
 {
-    setBodyInnerHTML("<div style=\"transform: translateZ(0)\"></div>");
+    setBodyInnerHTML("<div style='transform: translateZ(0)'></div>");
 
     const ObjectPaintProperties* properties = document().body()->firstChild()->layoutObject()->objectPaintProperties();
     ASSERT_TRUE(properties->transform());
@@ -1122,54 +1198,68 @@ TEST_F(PaintPropertyTreeBuilderTest, NoRenderingContextByDefault)
 TEST_F(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext)
 {
     setBodyInnerHTML(
-        "<div style=\"transform-style: preserve-3d\">"
-        "  <div id=\"a\" style=\"transform: translateZ(0)\"></div>"
-        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "<div style='transform-style: preserve-3d'>"
+        "  <div id='a' style='transform: translateZ(0); width: 30px; height: 40px'></div>"
+        "  <div id='b' style='transform: translateZ(0); width: 20px; height: 10px'></div>"
         "</div>");
+    FrameView* frameView = document().view();
 
-    const ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* a = document().getElementById("a")->layoutObject();
+    const ObjectPaintProperties* aProperties = a->objectPaintProperties();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
     ASSERT_TRUE(aProperties->transform() && bProperties->transform());
     EXPECT_NE(aProperties->transform(), bProperties->transform());
     EXPECT_TRUE(aProperties->transform()->hasRenderingContext());
     EXPECT_TRUE(bProperties->transform()->hasRenderingContext());
     EXPECT_EQ(aProperties->transform()->renderingContextID(), bProperties->transform()->renderingContextID());
+    CHECK_VISUAL_RECT(a, frameView->layoutView());
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, FlatTransformStyleEndsRenderingContext)
 {
     setBodyInnerHTML(
-        "<div style=\"transform-style: preserve-3d\">"
-        "  <div id=\"a\" style=\"transform: translateZ(0)\">"
-        "    <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "<div style='transform-style: preserve-3d'>"
+        "  <div id='a' style='transform: translateZ(0); width: 30px; height: 40px'>"
+        "    <div id='b' style='transform: translateZ(0); width: 10px; height: 20px'></div>"
         "  </div>"
         "</div>");
+    FrameView* frameView = document().view();
 
-    ASSERT_FALSE(document().getElementById("a")->layoutObject()->styleRef().preserves3D());
-    const ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* a = document().getElementById("a")->layoutObject();
+    const ObjectPaintProperties* aProperties = a->objectPaintProperties();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
+    ASSERT_FALSE(a->styleRef().preserves3D());
+
     ASSERT_TRUE(aProperties->transform() && bProperties->transform());
 
     // #a should participate in a rendering context (due to its parent), but its
     // child #b should not.
     EXPECT_TRUE(aProperties->transform()->hasRenderingContext());
     EXPECT_FALSE(bProperties->transform()->hasRenderingContext());
+    CHECK_VISUAL_RECT(a, frameView->layoutView());
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, NestedRenderingContexts)
 {
     setBodyInnerHTML(
-        "<div style=\"transform-style: preserve-3d\">"
-        "  <div id=\"a\" style=\"transform: translateZ(0)\">"
-        "    <div style=\"transform-style: preserve-3d\">"
-        "      <div id=\"b\" style=\"transform: translateZ(0)\">"
+        "<div style='transform-style: preserve-3d'>"
+        "  <div id='a' style='transform: translateZ(0); width: 50px; height: 60px'>"
+        "    <div style='transform-style: preserve-3d; width: 30px; height: 40px'>"
+        "      <div id='b' style='transform: translateZ(0); width: 10px; height: 20px'>"
         "    </div>"
         "  </div>"
         "</div>");
+    FrameView* frameView = document().view();
 
-    ASSERT_FALSE(document().getElementById("a")->layoutObject()->styleRef().preserves3D());
-    const ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* a = document().getElementById("a")->layoutObject();
+    const ObjectPaintProperties* aProperties = a->objectPaintProperties();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
+    ASSERT_FALSE(a->styleRef().preserves3D());
     ASSERT_TRUE(aProperties->transform() && bProperties->transform());
 
     // #a should participate in a rendering context (due to its parent). Its
@@ -1179,6 +1269,8 @@ TEST_F(PaintPropertyTreeBuilderTest, NestedRenderingContexts)
     EXPECT_TRUE(aProperties->transform()->hasRenderingContext());
     EXPECT_TRUE(bProperties->transform()->hasRenderingContext());
     EXPECT_NE(aProperties->transform()->renderingContextID(), bProperties->transform()->renderingContextID());
+    CHECK_VISUAL_RECT(a, frameView->layoutView());
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 }
 
 // Returns true if the first node has the second as an ancestor.
@@ -1207,37 +1299,47 @@ static bool someNodeFlattensTransform(const TransformPaintPropertyNode* node, co
 TEST_F(PaintPropertyTreeBuilderTest, FlatTransformStylePropagatesToChildren)
 {
     setBodyInnerHTML(
-        "<div id=\"a\" style=\"transform: translateZ(0); transform-style: flat\">"
-        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "<div id='a' style='transform: translateZ(0); transform-style: flat; width: 30px; height: 40px'>"
+        "  <div id='b' style='transform: translateZ(0); width: 10px; height: 10px'></div>"
         "</div>");
+    FrameView* frameView = document().view();
 
-    const auto* aTransform = document().getElementById("a")->layoutObject()->objectPaintProperties()->transform();
+    LayoutObject* a = document().getElementById("a")->layoutObject();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const auto* aTransform = a->objectPaintProperties()->transform();
     ASSERT_TRUE(aTransform);
-    const auto* bTransform = document().getElementById("b")->layoutObject()->objectPaintProperties()->transform();
+    const auto* bTransform = b->objectPaintProperties()->transform();
     ASSERT_TRUE(bTransform);
     ASSERT_TRUE(nodeHasAncestor(bTransform, aTransform));
 
     // Some node must flatten the inherited transform from #a before it reaches
     // #b's transform.
     EXPECT_TRUE(someNodeFlattensTransform(bTransform, aTransform));
+    CHECK_VISUAL_RECT(a, frameView->layoutView());
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, Preserve3DTransformStylePropagatesToChildren)
 {
     setBodyInnerHTML(
-        "<div id=\"a\" style=\"transform: translateZ(0); transform-style: preserve-3d\">"
-        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "<div id='a' style='transform: translateZ(0); transform-style: preserve-3d; width: 30px; height: 40px'>"
+        "  <div id='b' style='transform: translateZ(0); width: 10px; height: 10px'></div>"
         "</div>");
+    FrameView* frameView = document().view();
 
-    const auto* aTransform = document().getElementById("a")->layoutObject()->objectPaintProperties()->transform();
+    LayoutObject* a = document().getElementById("a")->layoutObject();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const auto* aTransform = a->objectPaintProperties()->transform();
     ASSERT_TRUE(aTransform);
-    const auto* bTransform = document().getElementById("b")->layoutObject()->objectPaintProperties()->transform();
+    const auto* bTransform = b->objectPaintProperties()->transform();
     ASSERT_TRUE(bTransform);
     ASSERT_TRUE(nodeHasAncestor(bTransform, aTransform));
 
     // No node may flatten the inherited transform from #a before it reaches
     // #b's transform.
     EXPECT_FALSE(someNodeFlattensTransform(bTransform, aTransform));
+    CHECK_VISUAL_RECT(a, frameView->layoutView());
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, PerspectiveIsNotFlattened)
@@ -1246,18 +1348,23 @@ TEST_F(PaintPropertyTreeBuilderTest, PerspectiveIsNotFlattened)
     // ones that combine with it preserve 3D. Otherwise, the perspective doesn't
     // do anything.
     setBodyInnerHTML(
-        "<div id=\"a\" style=\"perspective: 800px\">"
-        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "<div id='a' style='perspective: 800px; width: 30px; height: 40px'>"
+        "  <div id='b' style='transform: translateZ(0); width: 10px; height: 20px'></div>"
         "</div>");
+    FrameView* frameView = document().view();
 
-    const ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* a = document().getElementById("a")->layoutObject();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* aProperties = a->objectPaintProperties();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
     const TransformPaintPropertyNode* aPerspective = aProperties->perspective();
     ASSERT_TRUE(aPerspective);
     const TransformPaintPropertyNode* bTransform = bProperties->transform();
     ASSERT_TRUE(bTransform);
     ASSERT_TRUE(nodeHasAncestor(bTransform, aPerspective));
     EXPECT_FALSE(someNodeFlattensTransform(bTransform, aPerspective));
+    CHECK_VISUAL_RECT(a, frameView->layoutView());
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, PerspectiveDoesNotEstablishRenderingContext)
@@ -1266,28 +1373,34 @@ TEST_F(PaintPropertyTreeBuilderTest, PerspectiveDoesNotEstablishRenderingContext
     // ones that combine with it preserve 3D. Otherwise, the perspective doesn't
     // do anything.
     setBodyInnerHTML(
-        "<div id=\"a\" style=\"perspective: 800px\">"
-        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "<div id='a' style='perspective: 800px; width: 30px; height: 40px'>"
+        "  <div id='b' style='transform: translateZ(0); width: 10px; height: 20px'></div>"
         "</div>");
+    FrameView* frameView = document().view();
 
-    const ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
-    const ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutObject* a = document().getElementById("a")->layoutObject();
+    LayoutObject* b = document().getElementById("b")->layoutObject();
+    const ObjectPaintProperties* aProperties = a->objectPaintProperties();
+    const ObjectPaintProperties* bProperties = b->objectPaintProperties();
     const TransformPaintPropertyNode* aPerspective = aProperties->perspective();
     ASSERT_TRUE(aPerspective);
     EXPECT_FALSE(aPerspective->hasRenderingContext());
     const TransformPaintPropertyNode* bTransform = bProperties->transform();
     ASSERT_TRUE(bTransform);
     EXPECT_FALSE(bTransform->hasRenderingContext());
+    CHECK_VISUAL_RECT(a, frameView->layoutView());
+    CHECK_VISUAL_RECT(b, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, CachedProperties)
 {
     setBodyInnerHTML(
-        "<div id='a' style='transform: translate(33px, 44px)'>"
-        "  <div id='b' style='transform: translate(55px, 66px)'>"
-        "    <div id='c' style='transform: translate(77px, 88px)'>C<div>"
+        "<div id='a' style='transform: translate(33px, 44px); width: 50px; height: 60px'>"
+        "  <div id='b' style='transform: translate(55px, 66px); width: 30px; height: 40px'>"
+        "    <div id='c' style='transform: translate(77px, 88px); width: 10px; height: 20px'>C<div>"
         "  </div>"
         "</div>");
+    FrameView* frameView = document().view();
 
     Element* a = document().getElementById("a");
     const ObjectPaintProperties* aProperties = a->layoutObject()->objectPaintProperties();
@@ -1303,6 +1416,10 @@ TEST_F(PaintPropertyTreeBuilderTest, CachedProperties)
     const ObjectPaintProperties* cProperties = c->layoutObject()->objectPaintProperties();
     const TransformPaintPropertyNode* cTransformNode = cProperties->transform();
     EXPECT_EQ(TransformationMatrix().translate(77, 88), cTransformNode->matrix());
+
+    CHECK_VISUAL_RECT(a->layoutObject(), frameView->layoutView());
+    CHECK_VISUAL_RECT(b->layoutObject(), frameView->layoutView());
+    CHECK_VISUAL_RECT(c->layoutObject(), frameView->layoutView());
 
     // Change transform of b. B's transform node should be a new node with the new value,
     // and a and c's transform nodes should be unchanged (with c's parent adjusted).
@@ -1321,6 +1438,10 @@ TEST_F(PaintPropertyTreeBuilderTest, CachedProperties)
     EXPECT_EQ(cTransformNode, cProperties->transform());
     EXPECT_EQ(bTransformNode, cTransformNode->parent());
 
+    CHECK_VISUAL_RECT(a->layoutObject(), frameView->layoutView());
+    CHECK_VISUAL_RECT(b->layoutObject(), frameView->layoutView());
+    CHECK_VISUAL_RECT(c->layoutObject(), frameView->layoutView());
+
     // Remove transform from b. B's transform node should be removed from the tree,
     // and a and c's transform nodes should be unchanged (with c's parent adjusted).
     b->setAttribute(HTMLNames::styleAttr, "");
@@ -1335,6 +1456,10 @@ TEST_F(PaintPropertyTreeBuilderTest, CachedProperties)
     EXPECT_EQ(cProperties, c->layoutObject()->objectPaintProperties());
     EXPECT_EQ(cTransformNode, cProperties->transform());
     EXPECT_EQ(aTransformNode, cTransformNode->parent());
+
+    CHECK_VISUAL_RECT(a->layoutObject(), frameView->layoutView());
+    CHECK_VISUAL_RECT(b->layoutObject(), frameView->layoutView());
+    CHECK_VISUAL_RECT(c->layoutObject(), frameView->layoutView());
 
     // Re-add transform to b. B's transform node should be inserted into the tree,
     // and a and c's transform nodes should be unchanged (with c's parent adjusted).
@@ -1352,6 +1477,10 @@ TEST_F(PaintPropertyTreeBuilderTest, CachedProperties)
     EXPECT_EQ(cProperties, c->layoutObject()->objectPaintProperties());
     EXPECT_EQ(cTransformNode, cProperties->transform());
     EXPECT_EQ(bTransformNode, cTransformNode->parent());
+
+    CHECK_VISUAL_RECT(a->layoutObject(), frameView->layoutView());
+    CHECK_VISUAL_RECT(b->layoutObject(), frameView->layoutView());
+    CHECK_VISUAL_RECT(c->layoutObject(), frameView->layoutView());
 }
 
 } // namespace blink
