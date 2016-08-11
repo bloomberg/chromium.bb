@@ -8,29 +8,45 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 
 namespace android {
 class AfterStartupTaskUtilsJNI;
 }
 
-namespace base {
-class TaskRunner;
-}
-namespace tracked_objects {
-class Location;
-};
-
 class AfterStartupTaskUtils {
  public:
+  // A helper TaskRunner which merely forwards to
+  // AfterStartupTaskUtils::PostTask(). Doesn't support tasks with a non-zero
+  // delay.
+  class Runner : public base::TaskRunner {
+   public:
+    explicit Runner(scoped_refptr<base::TaskRunner> destination_runner);
+
+    // Overrides from base::TaskRunner:
+    bool PostDelayedTask(const tracked_objects::Location& from_here,
+                         const base::Closure& task,
+                         base::TimeDelta delay) override;
+    bool RunsTasksOnCurrentThread() const override;
+
+   private:
+    ~Runner() override;
+
+    const scoped_refptr<base::TaskRunner> destination_runner_;
+
+    DISALLOW_COPY_AND_ASSIGN(Runner);
+  };
+
   // Observes startup and when complete runs tasks that have accrued.
   static void StartMonitoringStartup();
 
   // Used to augment the behavior of BrowserThread::PostAfterStartupTask
   // for chrome. Tasks are queued until startup is complete.
   // Note: see browser_thread.h
-  static void PostTask(const tracked_objects::Location& from_here,
-                       const scoped_refptr<base::TaskRunner>& task_runner,
-                       const base::Closure& task);
+  static void PostTask(
+      const tracked_objects::Location& from_here,
+      const scoped_refptr<base::TaskRunner>& destination_runner,
+      const base::Closure& task);
 
   // Returns true if browser startup is complete. Only use this on a one-off
   // basis; If you need to poll this function constantly, use the above
