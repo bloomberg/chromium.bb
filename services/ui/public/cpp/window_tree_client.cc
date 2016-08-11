@@ -387,6 +387,8 @@ void WindowTreeClient::LocalSetCapture(Window* window) {
     FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(lost_capture).observers(),
                       OnWindowLostCapture(lost_capture));
   }
+  FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
+                    OnWindowTreeCaptureChanged(window, lost_capture));
 }
 
 void WindowTreeClient::LocalSetFocus(Window* focused) {
@@ -752,16 +754,18 @@ void WindowTreeClient::OnUnembed(Id window_id) {
   WindowPrivate(window).LocalDestroy();
 }
 
-void WindowTreeClient::OnLostCapture(Id window_id) {
-  Window* window = GetWindowByServerId(window_id);
-  if (!window)
+void WindowTreeClient::OnCaptureChanged(Id new_capture_window_id,
+                                        Id old_capture_window_id) {
+  Window* new_capture_window = GetWindowByServerId(new_capture_window_id);
+  Window* lost_capture_window = GetWindowByServerId(old_capture_window_id);
+  if (!new_capture_window && !lost_capture_window)
     return;
 
-  InFlightCaptureChange reset_change(this, nullptr);
-  if (ApplyServerChangeToExistingInFlightChange(reset_change))
+  InFlightCaptureChange change(this, new_capture_window);
+  if (ApplyServerChangeToExistingInFlightChange(change))
     return;
 
-  LocalSetCapture(nullptr);
+  LocalSetCapture(new_capture_window);
 }
 
 void WindowTreeClient::OnTopLevelCreated(uint32_t change_id,

@@ -230,9 +230,28 @@ bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
       access_policy_->CanSetCapture(window) &&
       (!current_capture_window ||
        access_policy_->CanSetCapture(current_capture_window))) {
+    Operation op(this, window_server_, OperationType::SET_CAPTURE);
     return display_root->window_manager_state()->SetCapture(window, id_);
   }
   return false;
+}
+
+bool WindowTree::ReleaseCapture(const ClientWindowId& client_window_id) {
+  ServerWindow* window = GetWindowByClientId(client_window_id);
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
+  ServerWindow* current_capture_window =
+      display_root ? display_root->window_manager_state()->capture_window()
+                   : nullptr;
+  if (!window || !display_root ||
+      !display_root->window_manager_state()->IsActive() ||
+      (current_capture_window &&
+       !access_policy_->CanSetCapture(current_capture_window)) ||
+      window != current_capture_window) {
+    return false;
+  }
+  Operation op(this, window_server_, OperationType::RELEASE_CAPTURE);
+  return display_root->window_manager_state()->SetCapture(nullptr,
+                                                          kInvalidClientId);
 }
 
 bool WindowTree::NewWindow(
@@ -737,15 +756,27 @@ bool WindowTree::ShouldRouteToWindowManager(const ServerWindow* window) const {
          window->id().client_id;
 }
 
-void WindowTree::ProcessLostCapture(const ServerWindow* old_capture_window,
-                                    bool originated_change) {
-  if ((originated_change &&
-       window_server_->current_operation_type() ==
-           OperationType::RELEASE_CAPTURE) ||
-      !IsWindowKnown(old_capture_window)) {
+void WindowTree::ProcessCaptureChanged(const ServerWindow* new_capture,
+                                       const ServerWindow* old_capture,
+                                       bool originated_change) {
+  ClientWindowId new_capture_window_client_id;
+  ClientWindowId old_capture_window_client_id;
+  const bool new_capture_window_known =
+      IsWindowKnown(new_capture, &new_capture_window_client_id);
+  const bool old_capture_window_known =
+      IsWindowKnown(old_capture, &old_capture_window_client_id);
+  if (!new_capture_window_known && !old_capture_window_known)
+    return;
+
+  if (originated_change && ((window_server_->current_operation_type() ==
+                             OperationType::RELEASE_CAPTURE) ||
+                            (window_server_->current_operation_type() ==
+                             OperationType::SET_CAPTURE))) {
     return;
   }
-  client()->OnLostCapture(WindowIdToTransportId(old_capture_window->id()));
+
+  client()->OnCaptureChanged(new_capture_window_client_id.id,
+                             old_capture_window_client_id.id);
 }
 
 ClientWindowId WindowTree::ClientWindowIdForWindow(
@@ -1161,22 +1192,8 @@ void WindowTree::SetCapture(uint32_t change_id, Id window_id) {
 }
 
 void WindowTree::ReleaseCapture(uint32_t change_id, Id window_id) {
-  ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
-  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
-  ServerWindow* current_capture_window =
-      display_root ? display_root->window_manager_state()->capture_window()
-                   : nullptr;
-  bool success = window && display_root &&
-                 display_root->window_manager_state()->IsActive() &&
-                 (!current_capture_window ||
-                  access_policy_->CanSetCapture(current_capture_window)) &&
-                 window == current_capture_window;
-  if (success) {
-    Operation op(this, window_server_, OperationType::RELEASE_CAPTURE);
-    success = display_root->window_manager_state()->SetCapture(
-        nullptr, kInvalidClientId);
-  }
-  client()->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id,
+                              ReleaseCapture(ClientWindowId(window_id)));
 }
 
 void WindowTree::StartPointerWatcher(bool want_moves,

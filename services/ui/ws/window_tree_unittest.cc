@@ -1104,9 +1104,16 @@ TEST_F(WindowTreeTest, MoveLoopAckOKByWM) {
       ->PerformWindowMove(change_id, embed_window_id2_in_child.id,
                           mojom::MoveLoopSource::MOUSE, gfx::Point(0, 0));
 
+  // There should be three changes, the first two relating to capture changing,
+  // the last for the completion.
+  std::vector<Change>* child_changes =
+      child_binding->client()->tracker()->changes();
+  ASSERT_EQ(3u, child_changes->size());
+  EXPECT_EQ(CHANGE_TYPE_CAPTURE_CHANGED, (*child_changes)[0].type);
+  EXPECT_EQ(CHANGE_TYPE_CAPTURE_CHANGED, (*child_changes)[1].type);
+  child_changes->erase(child_changes->begin(), child_changes->begin() + 2);
   EXPECT_EQ("ChangeCompleted id=7 sucess=true",
-            SingleChangeToDescription(
-                *child_binding->client()->tracker()->changes()));
+            SingleChangeToDescription(*child_changes));
 }
 
 TEST_F(WindowTreeTest, WindowManagerCantMoveLoop) {
@@ -1240,6 +1247,49 @@ TEST_F(WindowTreeTest, SetCanAcceptEvents) {
   WindowTreeTestApi(tree).SetCanAcceptEvents(
       ClientWindowIdForWindow(tree, window).id, false);
   EXPECT_FALSE(window->can_accept_events());
+}
+
+// Verifies wm observers capture changes in client.
+TEST_F(WindowTreeTest, CaptureNotifiesWm) {
+  ServerWindow* window = window_event_targeting_helper_.CreatePrimaryTree(
+      gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 50, 50));
+  TestWindowTreeClient* embed_client = last_window_tree_client();
+  WindowTree* owning_tree =
+      window_server()->GetTreeWithId(window->id().client_id);
+  WindowTree* embed_tree = window_server()->GetTreeWithRoot(window);
+  ASSERT_NE(owning_tree, embed_tree);
+
+  const ClientWindowId embed_child_window_id =
+      BuildClientWindowId(embed_tree, 2);
+  ASSERT_TRUE(
+      embed_tree->NewWindow(embed_child_window_id, ServerWindow::Properties()));
+  EXPECT_TRUE(embed_tree->SetWindowVisibility(embed_child_window_id, true));
+  EXPECT_TRUE(
+      embed_tree->AddWindow(FirstRootId(embed_tree), embed_child_window_id));
+  wm_client()->tracker()->changes()->clear();
+  embed_client->tracker()->changes()->clear();
+  EXPECT_TRUE(embed_tree->SetCapture(embed_child_window_id));
+  ASSERT_TRUE(!wm_client()->tracker()->changes()->empty());
+  EXPECT_EQ("OnCaptureChanged new_window=2,1 old_window=null",
+            ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
+  EXPECT_TRUE(embed_client->tracker()->changes()->empty());
+
+  // Set capture to embed window, and ensure notified as well.
+  wm_client()->tracker()->changes()->clear();
+  EXPECT_TRUE(embed_tree->SetCapture(FirstRootId(embed_tree)));
+  ASSERT_TRUE(!wm_client()->tracker()->changes()->empty());
+  EXPECT_EQ("OnCaptureChanged new_window=1,1 old_window=2,1",
+            ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
+  EXPECT_TRUE(embed_client->tracker()->changes()->empty());
+  wm_client()->tracker()->changes()->clear();
+
+  // Set capture from server and ensure embedded tree notified.
+  EXPECT_TRUE(owning_tree->ReleaseCapture(
+      ClientWindowIdForWindow(owning_tree, FirstRoot(embed_tree))));
+  EXPECT_TRUE(wm_client()->tracker()->changes()->empty());
+  ASSERT_TRUE(!embed_client->tracker()->changes()->empty());
+  EXPECT_EQ("OnCaptureChanged new_window=null old_window=1,1",
+            ChangesToDescription1(*embed_client->tracker()->changes())[0]);
 }
 
 }  // namespace test

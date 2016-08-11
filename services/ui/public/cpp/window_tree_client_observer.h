@@ -15,6 +15,9 @@ class WindowTreeClientObserver {
   virtual void OnWindowTreeFocusChanged(Window* gained_focus,
                                         Window* lost_focus) {}
 
+  virtual void OnWindowTreeCaptureChanged(Window* gained_capture,
+                                          Window* lost_capture) {}
+
   // Called early on in the destructor of WindowTreeClient; before any windows
   // have been destroyed.
   virtual void OnWillDestroyClient(WindowTreeClient* client) {}

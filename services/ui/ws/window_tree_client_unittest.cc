@@ -289,8 +289,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     tracker()->OnEmbeddedAppDisconnected(window_id);
   }
   void OnUnembed(Id window_id) override { tracker()->OnUnembed(window_id); }
-  void OnLostCapture(Id window_id) override {
-    tracker()->OnLostCapture(window_id);
+  void OnCaptureChanged(Id new_capture_window_id,
+                        Id old_capture_window_id) override {
+    tracker()->OnCaptureChanged(new_capture_window_id, old_capture_window_id);
   }
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr data,

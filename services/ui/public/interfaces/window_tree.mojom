@@ -72,8 +72,9 @@ interface WindowTree {
   // allowed if the window is processing an event. When a window gains capture,
   // current input events are canceled. The given window will receive all
   // subsequent input until an alternate window is set via SetCapture, or
-  // ReleaseCapture is called for |window_id|. OnLostCapture is called to notify
-  // of capture ending.
+  // ReleaseCapture is called for |window_id|. OnCaptureChanged() is called to
+  // notify of capture changing (as long as the client did not initiate the
+  // change).
   SetCapture(uint32 change_id, uint32 window_id);
 
   // Releases input event capture for the given |window_id|. This does nothing
@@ -301,8 +302,9 @@ interface WindowTreeClient {
   // previously embedded in. See Embed() for more information.
   OnUnembed(uint32 window);
 
-  // Sent when a window loses capture.
-  OnLostCapture(uint32 window);
+  // Sent when capture changes. This is not sent if the client initiated the
+  // change.
+  OnCaptureChanged(uint32 new_capture, uint32 old_capture);
 
   // Called in response to NewTopLevelWindow() successfully completing.
   // |parent_drawn| is true if the parent of the window is drawn, see

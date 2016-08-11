@@ -21,6 +21,7 @@
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/cpp/window_tracker.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
+#include "services/ui/public/cpp/window_tree_client_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -952,7 +953,7 @@ TEST_F(WindowTreeClientTest, LostCapture) {
   uint32_t change_id2;
   ASSERT_FALSE(setup.window_tree()->GetAndClearChangeId(&change_id2));
 
-  setup.window_tree_client()->OnLostCapture(server_id(root));
+  setup.window_tree_client()->OnCaptureChanged(0, server_id(root));
   EXPECT_FALSE(root->HasCapture());
 }
 
@@ -975,7 +976,7 @@ TEST_F(WindowTreeClientTest, LostCaptureDifferentInFlightChange) {
   uint32_t change_id2;
   ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id2));
 
-  setup.window_tree_client()->OnLostCapture(server_id(root));
+  setup.window_tree_client()->OnCaptureChanged(0, server_id(root));
   EXPECT_FALSE(root->HasCapture());
 
   setup.window_tree_client()->OnChangeCompleted(change_id2, false);
@@ -1011,7 +1012,7 @@ TEST_F(WindowTreeClientTest, TwoWindowsRequestCapture) {
   EXPECT_FALSE(child->HasCapture());
   EXPECT_TRUE(root->HasCapture());
 
-  setup.window_tree_client()->OnLostCapture(server_id(root));
+  setup.window_tree_client()->OnCaptureChanged(0, server_id(root));
   EXPECT_FALSE(root->HasCapture());
 }
 
@@ -1043,6 +1044,88 @@ TEST_F(WindowTreeClientTest, WindowDestroyedWhileTransientChildHasCapture) {
   root->AddChild(child);
   child->SetCapture();
   EXPECT_TRUE(child->HasCapture());
+}
+
+namespace {
+
+class CaptureRecorder : public WindowTreeClientObserver {
+ public:
+  explicit CaptureRecorder(WindowTreeClient* tree_client)
+      : tree_client_(tree_client) {
+    tree_client_->AddObserver(this);
+  }
+
+  ~CaptureRecorder() override { tree_client_->RemoveObserver(this); }
+
+  void reset_capture_captured_count() { capture_changed_count_ = 0; }
+  int capture_changed_count() const { return capture_changed_count_; }
+  int last_gained_capture_window_id() const {
+    return last_gained_capture_window_id_;
+  }
+  int last_lost_capture_window_id() const {
+    return last_lost_capture_window_id_;
+  }
+
+  // WindowTreeClientObserver:
+  void OnWindowTreeCaptureChanged(Window* gained_capture,
+                                  Window* lost_capture) override {
+    capture_changed_count_++;
+    last_gained_capture_window_id_ =
+        gained_capture ? gained_capture->local_id() : 0;
+    last_lost_capture_window_id_ = lost_capture ? lost_capture->local_id() : 0;
+  }
+
+ private:
+  WindowTreeClient* tree_client_;
+  int capture_changed_count_ = 0;
+  int last_gained_capture_window_id_ = 0;
+  int last_lost_capture_window_id_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureRecorder);
+};
+
+}  // namespace
+
+TEST_F(WindowTreeClientTest, OnWindowTreeCaptureChanged) {
+  WindowTreeSetup setup;
+  CaptureRecorder capture_recorder(setup.client());
+  Window* root = setup.GetFirstRoot();
+  Window* child1 = setup.client()->NewWindow();
+  const int child1_id = 1;
+  child1->set_local_id(child1_id);
+  child1->SetVisible(true);
+  root->AddChild(child1);
+  Window* child2 = setup.client()->NewWindow();
+  const int child2_id = 2;
+  child2->set_local_id(child2_id);
+  child2->SetVisible(true);
+  root->AddChild(child2);
+
+  EXPECT_EQ(0, capture_recorder.capture_changed_count());
+  // Give capture to child1 and ensure everyone is notified correctly.
+  child1->SetCapture();
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  setup.window_tree_client()->OnChangeCompleted(change_id, true);
+  EXPECT_EQ(1, capture_recorder.capture_changed_count());
+  EXPECT_EQ(child1_id, capture_recorder.last_gained_capture_window_id());
+  EXPECT_EQ(0, capture_recorder.last_lost_capture_window_id());
+  capture_recorder.reset_capture_captured_count();
+
+  // Deleting a window with capture should notify observers as well.
+  child1->Destroy();
+  child1 = nullptr;
+  EXPECT_EQ(1, capture_recorder.capture_changed_count());
+  EXPECT_EQ(0, capture_recorder.last_gained_capture_window_id());
+  EXPECT_EQ(child1_id, capture_recorder.last_lost_capture_window_id());
+  capture_recorder.reset_capture_captured_count();
+
+  // Changes originating from server should notify observers too.
+  WindowTreeClientPrivate(setup.client()).CallOnCaptureChanged(child2, nullptr);
+  EXPECT_EQ(1, capture_recorder.capture_changed_count());
+  EXPECT_EQ(child2_id, capture_recorder.last_gained_capture_window_id());
+  EXPECT_EQ(0, capture_recorder.last_lost_capture_window_id());
+  capture_recorder.reset_capture_captured_count();
 }
 
 }  // namespace ui

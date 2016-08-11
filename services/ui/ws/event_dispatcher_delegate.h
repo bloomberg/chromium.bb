@@ -41,13 +41,16 @@ class EventDispatcherDelegate {
   // Called when capture should be set on the native display. |window| is the
   // window capture is being set on.
   virtual void SetNativeCapture(ServerWindow* window) = 0;
+
   // Called when the native display is having capture released. There is no
   // longer a ServerWindow holding capture.
   virtual void ReleaseNativeCapture() = 0;
+
   // Called when |window| has lost capture. The native display may still be
   // holding capture. The delegate should not change native display capture.
   // ReleaseNativeCapture() is invoked if appropriate.
-  virtual void OnServerWindowCaptureLost(ServerWindow* window) = 0;
+  virtual void OnCaptureChanged(ServerWindow* new_capture,
+                                ServerWindow* old_capture) = 0;
 
   virtual void OnMouseCursorLocationChanged(const gfx::Point& point) = 0;
 

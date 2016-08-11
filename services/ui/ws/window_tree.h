@@ -155,6 +155,7 @@ class WindowTree : public mojom::WindowTree,
   // These functions are synchronous variants of those defined in the mojom. The
   // WindowTree implementations all call into these. See the mojom for details.
   bool SetCapture(const ClientWindowId& client_window_id);
+  bool ReleaseCapture(const ClientWindowId& client_window_id);
   bool NewWindow(const ClientWindowId& client_window_id,
                  const std::map<std::string, std::vector<uint8_t>>& properties);
   bool AddWindow(const ClientWindowId& parent_id,
@@ -232,8 +233,9 @@ class WindowTree : public mojom::WindowTree,
                             bool originated_change);
   void ProcessFocusChanged(const ServerWindow* old_focused_window,
                            const ServerWindow* new_focused_window);
-  void ProcessLostCapture(const ServerWindow* old_lost_capture,
-                          bool originated_change);
+  void ProcessCaptureChanged(const ServerWindow* new_capture,
+                             const ServerWindow* old_capture,
+                             bool originated_change);
   void ProcessTransientWindowAdded(const ServerWindow* window,
                                    const ServerWindow* transient_window,
                                    bool originated_change);

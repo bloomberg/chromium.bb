@@ -182,7 +182,8 @@ class WindowManagerState : public EventDispatcherDelegate {
   ServerWindow* GetFocusedWindowForEventDispatcher() override;
   void SetNativeCapture(ServerWindow* window) override;
   void ReleaseNativeCapture() override;
-  void OnServerWindowCaptureLost(ServerWindow* window) override;
+  void OnCaptureChanged(ServerWindow* new_capture,
+                        ServerWindow* old_capture) override;
   void OnMouseCursorLocationChanged(const gfx::Point& point) override;
   void DispatchInputEventToWindow(ServerWindow* target,
                                   ClientSpecificId client_id,

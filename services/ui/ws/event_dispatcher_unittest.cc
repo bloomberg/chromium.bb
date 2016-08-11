@@ -120,8 +120,9 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     if (delegate_)
       delegate_->ReleaseCapture();
   }
-  void OnServerWindowCaptureLost(ServerWindow* window) override {
-    lost_capture_window_ = window;
+  void OnCaptureChanged(ServerWindow* new_capture_window,
+                        ServerWindow* old_capture_window) override {
+    lost_capture_window_ = old_capture_window;
   }
   void OnMouseCursorLocationChanged(const gfx::Point& point) override {}
   void DispatchInputEventToWindow(ServerWindow* target,

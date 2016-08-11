@@ -178,7 +178,8 @@ class WindowServer : public ServerWindowDelegate,
       const ServerWindow* window,
       const gfx::Insets& new_client_area,
       const std::vector<gfx::Rect>& new_additional_client_areas);
-  void ProcessLostCapture(const ServerWindow* window);
+  void ProcessCaptureChanged(const ServerWindow* new_capture,
+                             const ServerWindow* old_capture);
   void ProcessWillChangeWindowHierarchy(const ServerWindow* window,
                                         const ServerWindow* new_parent,
                                         const ServerWindow* old_parent);

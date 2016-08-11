@@ -373,9 +373,12 @@ void WindowServer::ProcessClientAreaChanged(
   }
 }
 
-void WindowServer::ProcessLostCapture(const ServerWindow* window) {
-  for (auto& pair : tree_map_)
-    pair.second->ProcessLostCapture(window, IsOperationSource(pair.first));
+void WindowServer::ProcessCaptureChanged(const ServerWindow* new_capture,
+                                         const ServerWindow* old_capture) {
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessCaptureChanged(new_capture, old_capture,
+                                       IsOperationSource(pair.first));
+  }
 }
 
 void WindowServer::ProcessWillChangeWindowHierarchy(

@@ -45,6 +45,8 @@ class WindowTreeClientPrivate {
   // Pretends that |event| has been received from the window server.
   void CallOnWindowInputEvent(Window* window, std::unique_ptr<ui::Event> event);
 
+  void CallOnCaptureChanged(Window* new_capture, Window* old_capture);
+
   // Sets the WindowTree and client id.
   void SetTreeAndClientId(mojom::WindowTree* window_tree,
                           ClientSpecificId client_id);

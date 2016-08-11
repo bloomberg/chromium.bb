@@ -136,7 +136,6 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
   if (capture_window_) {
     // Stop observing old capture window. |pointer_targets_| are cleared on
     // initial setting of a capture window.
-    delegate_->OnServerWindowCaptureLost(capture_window_);
     UnobserveWindow(capture_window_);
   } else {
     // Cancel implicit capture to all other windows.
@@ -166,9 +165,12 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
 
   // Set the capture before changing native capture; otherwise, the callback
   // from native platform might try to set the capture again.
-  bool had_capture_window = capture_window_ != nullptr;
+  const bool had_capture_window = capture_window_ != nullptr;
+  ServerWindow* old_capture_window = capture_window_;
   capture_window_ = window;
   capture_window_client_id_ = client_id;
+
+  delegate_->OnCaptureChanged(capture_window_, old_capture_window);
 
   // Begin tracking the capture window if it is not yet being observed.
   if (window) {
@@ -494,7 +496,7 @@ void EventDispatcher::CancelPointerEventsToTarget(ServerWindow* window) {
     // A window only cares to be informed that it lost capture if it explicitly
     // requested capture. A window can lose capture if another window gains
     // explicit capture.
-    delegate_->OnServerWindowCaptureLost(window);
+    delegate_->OnCaptureChanged(nullptr, window);
     delegate_->ReleaseNativeCapture();
     UpdateCursorProviderByLastKnownLocation();
     return;

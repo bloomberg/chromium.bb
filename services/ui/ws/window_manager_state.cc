@@ -457,9 +457,9 @@ void WindowManagerState::ReleaseNativeCapture() {
   platform_display_with_capture_ = nullptr;
 }
 
-void WindowManagerState::OnServerWindowCaptureLost(ServerWindow* window) {
-  DCHECK(window);
-  window_server()->ProcessLostCapture(window);
+void WindowManagerState::OnCaptureChanged(ServerWindow* new_capture,
+                                          ServerWindow* old_capture) {
+  window_server()->ProcessCaptureChanged(new_capture, old_capture);
 }
 
 void WindowManagerState::OnMouseCursorLocationChanged(const gfx::Point& point) {

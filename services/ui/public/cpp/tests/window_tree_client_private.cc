@@ -5,6 +5,7 @@
 #include "services/ui/public/cpp/tests/window_tree_client_private.h"
 
 #include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_private.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/display/display.h"
 
@@ -55,6 +56,13 @@ void WindowTreeClientPrivate::CallOnWindowInputEvent(
   const uint32_t observer_id = 0u;
   tree_client_impl_->OnWindowInputEvent(event_id, window->server_id(),
                                         std::move(event), observer_id);
+}
+
+void WindowTreeClientPrivate::CallOnCaptureChanged(Window* new_capture,
+                                                   Window* old_capture) {
+  tree_client_impl_->OnCaptureChanged(
+      new_capture ? WindowPrivate(new_capture).server_id() : 0,
+      old_capture ? WindowPrivate(old_capture).server_id() : 0);
 }
 
 void WindowTreeClientPrivate::SetTreeAndClientId(mojom::WindowTree* window_tree,
