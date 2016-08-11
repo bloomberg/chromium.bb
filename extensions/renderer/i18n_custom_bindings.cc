@@ -19,7 +19,7 @@
 #include "extensions/common/message_bundle.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
-#include "third_party/cld_version.h"
+#include "third_party/cld/cld_version.h"
 
 #if BUILDFLAG(CLD_VERSION) == 2
 #include "third_party/cld_2/src/public/compact_lang_det.h"

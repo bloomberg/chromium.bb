@@ -1,6 +1,6 @@
 include_rules = [
   # CLD library.
-  "+third_party/cld_version.h",
+  "+third_party/cld",
   "+third_party/cld_2",
   "+third_party/cld_3",
 ]

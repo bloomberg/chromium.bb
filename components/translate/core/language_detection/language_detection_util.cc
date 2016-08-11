@@ -19,7 +19,7 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
-#include "third_party/cld_version.h"
+#include "third_party/cld/cld_version.h"
 
 #if BUILDFLAG(CLD_VERSION) == 2
 #include "third_party/cld_2/src/public/compact_lang_det.h"

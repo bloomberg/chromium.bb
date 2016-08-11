@@ -18,8 +18,8 @@ static_library("renderer") {
     "//content/public/common",
     "//content/public/renderer",
     "//services/shell/public/cpp",
-    "//third_party:cld",
     "//third_party/WebKit/public:blink",
+    "//third_party/cld",
     "//url",
     "//v8",
   ]

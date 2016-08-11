@@ -314,7 +314,7 @@ if (is_win) {
       "//build/config/sanitizers:deps",
       "//chrome/app:command_ids",
       "//chrome/common:features",
-      "//third_party:cld",
+      "//third_party/cld",
     ]
     if (is_win) {
       output_name = "chrome"
@@ -970,7 +970,7 @@ if (is_win) {
       "//components/crash/content/app",
       "//components/policy",
       "//content/public/app:both",
-      "//third_party:cld",
+      "//third_party/cld",
     ]
 
     if (is_component_build) {
