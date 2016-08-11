@@ -296,12 +296,10 @@ void ChildAccountService::PropagateChildStatusToUser(bool is_child) {
 #if defined(OS_CHROMEOS)
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-  if (user) {
+  if (user)
     user_manager::UserManager::Get()->ChangeUserChildStatus(user, is_child);
-  } else {
-    LOG(WARNING) <<
-        "User instance wasn't found while setting child account flag.";
-  }
+  else if (!chromeos::ProfileHelper::Get()->IsSigninProfile(profile_))
+    LOG(DFATAL) << "User instance not found while setting child account flag.";
 #endif
 }
 
