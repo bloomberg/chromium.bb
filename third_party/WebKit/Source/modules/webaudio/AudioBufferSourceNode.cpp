@@ -173,7 +173,8 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
     // Sanity check destinationFrameOffset, numberOfFrames.
     size_t destinationLength = bus->length();
 
-    bool isLengthGood = destinationLength <= 4096 && numberOfFrames <= 4096;
+    bool isLengthGood = destinationLength <= AudioUtilities::kRenderQuantumFrames
+        && numberOfFrames <= AudioUtilities::kRenderQuantumFrames;
     ASSERT(isLengthGood);
     if (!isLengthGood)
         return false;
