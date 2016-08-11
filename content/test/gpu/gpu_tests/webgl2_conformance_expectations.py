@@ -239,6 +239,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance/programs/gl-bind-attrib-location-test.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('conformance2/glsl3/loops-with-side-effects.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
@@ -251,7 +253,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-
+    self.Fail('deqp/functional/gles3/shaderindexing/varying.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
         ['mac', ('nvidia', 0xfe9)], bug=620067)
