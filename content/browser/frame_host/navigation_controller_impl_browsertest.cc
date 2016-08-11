@@ -5708,4 +5708,64 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0U, root->child_count());
 }
 
+// Test that navigations classified as SAME_PAGE properly update all the
+// members of FrameNavigationEntry. If not, it is possible to get a mismatch
+// between the origin and URL of a document as seen in
+// https://crbug.com/630103.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       EnsureSamePageNavigationUpdatesFrameNavigationEntry) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  // Navigate to a simple page and then perform an in-page navigation.
+  GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL same_page_url(
+      embedded_test_server()->GetURL("a.com", "/title1.html#foo"));
+  EXPECT_TRUE(NavigateToURL(shell(), same_page_url));
+  EXPECT_EQ(2, web_contents->GetController().GetEntryCount());
+
+  // Replace the URL of the current NavigationEntry with one that will cause
+  // a server redirect when loaded.
+  {
+    GURL redirect_dest_url(
+        embedded_test_server()->GetURL("sub.a.com", "/simple_page.html"));
+    TestNavigationObserver observer(web_contents);
+    std::string script = "history.replaceState({}, '', '/server-redirect?" +
+                         redirect_dest_url.spec() + "')";
+    EXPECT_TRUE(ExecuteScript(root, script));
+    observer.Wait();
+  }
+
+  // Simulate the user hitting Enter in the omnibox without changing the URL.
+  {
+    TestNavigationObserver observer(web_contents);
+    web_contents->GetController().LoadURL(web_contents->GetLastCommittedURL(),
+                                          Referrer(), ui::PAGE_TRANSITION_LINK,
+                                          std::string());
+    observer.Wait();
+  }
+
+  // Prior to fixing the issue, the above omnibox navigation (which is
+  // classified as SAME_PAGE) was leaving the FrameNavigationEntry with the
+  // same document sequence number as the previous entry but updates the URL.
+  // Doing a back session history navigation now will cause the browser to
+  // consider it as in-page because of this matching document sequence number
+  // and lead to a mismatch of origin and URL in the renderer process.
+  {
+    TestNavigationObserver observer(web_contents);
+    web_contents->GetController().GoBack();
+    observer.Wait();
+  }
+
+  // Verify the expected origin through JavaScript. It also has the additional
+  // verification of the process also being still alive.
+  std::string origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents, "domAutomationController.send(document.origin)", &origin));
+  EXPECT_EQ(start_url.GetOrigin().spec(), origin + "/");
+}
+
 }  // namespace content

@@ -1174,6 +1174,9 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   // We should only get here for main frame navigations.
   DCHECK(!rfh->GetParent());
 
+  // TODO(creis): Classify location.replace as NEW_PAGE instead of EXISTING_PAGE
+  // in https://crbug.com/596707.
+
   NavigationEntryImpl* entry;
   if (params.intended_as_new_entry) {
     // This was intended as a new entry but the pending entry was lost in the
@@ -1199,37 +1202,23 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   if (entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(entry, params.url);
 
-  // Update the post parameters.
-  FrameNavigationEntry* frame_entry =
-      entry->GetFrameEntry(rfh->frame_tree_node());
-  frame_entry->set_method(params.method);
-  frame_entry->set_post_id(params.post_id);
+  // The site instance will normally be the same except during session restore,
+  // when no site instance will be assigned.
+  DCHECK(entry->site_instance() == nullptr ||
+         entry->site_instance() == rfh->GetSiteInstance());
 
-  // If the document sequence number has changed due to redirects or a
-  // location.replace, then the child FrameNavigationEntries that were there
-  // before no longer apply.  We can leave them around for in-page navigations.
-  if (frame_entry->document_sequence_number() !=
-      params.document_sequence_number)
-    entry->ClearChildren(rfh->frame_tree_node());
-
-  // Update the ISN and DSN in case this was a location.replace, which can cause
-  // them to change.
-  // TODO(creis): Classify location.replace as NEW_PAGE instead of EXISTING_PAGE
-  // in https://crbug.com/596707.
-  frame_entry->set_item_sequence_number(params.item_sequence_number);
-  frame_entry->set_document_sequence_number(params.document_sequence_number);
+  // Update the existing FrameNavigationEntry to ensure all of its members
+  // reflect the parameters coming from the renderer process.
+  entry->AddOrUpdateFrameEntry(
+      rfh->frame_tree_node(), params.item_sequence_number,
+      params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
+      params.url, params.referrer, params.page_state, params.method,
+      params.post_id);
 
   // The redirected to page should not inherit the favicon from the previous
   // page.
   if (ui::PageTransitionIsRedirect(params.transition))
     entry->GetFavicon() = FaviconStatus();
-
-  // The site instance will normally be the same except during session restore,
-  // when no site instance will be assigned.
-  DCHECK(entry->site_instance() == nullptr ||
-         entry->site_instance() == rfh->GetSiteInstance());
-  entry->set_site_instance(
-      static_cast<SiteInstanceImpl*>(rfh->GetSiteInstance()));
 
   // The entry we found in the list might be pending if the user hit
   // back/forward/reload. This load should commit it (since it's already in the
@@ -1270,13 +1259,14 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   if (existing_entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(existing_entry, params.url);
   existing_entry->SetURL(params.url);
-  existing_entry->SetReferrer(params.referrer);
 
-  // The page may have been requested with a different HTTP method.
-  FrameNavigationEntry* frame_entry =
-      existing_entry->GetFrameEntry(rfh->frame_tree_node());
-  frame_entry->set_method(params.method);
-  frame_entry->set_post_id(params.post_id);
+  // Update the existing FrameNavigationEntry to ensure all of its members
+  // reflect the parameters coming from the renderer process.
+  existing_entry->AddOrUpdateFrameEntry(
+      rfh->frame_tree_node(), params.item_sequence_number,
+      params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
+      params.url, params.referrer, params.page_state, params.method,
+      params.post_id);
 
   DiscardNonCommittedEntries();
 }
