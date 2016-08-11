@@ -246,7 +246,6 @@ paper-menu {
 }
 
 .sink-text {
-  -webkit-padding-end: var(--dialog-padding-end);
   flex-flow: row nowrap;
   line-height: normal;
   overflow: hidden;
