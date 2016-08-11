@@ -49,9 +49,6 @@ struct EnrollmentConfig {
     AUTH_MECHANISM_BEST_AVAILABLE,
   };
 
-  // Initializes |mode| to MODE_NONE and |management_domain| to empty string.
-  EnrollmentConfig();
-
   // Whether enrollment should be triggered.
   bool should_enroll() const { return mode != MODE_NONE; }
 
@@ -63,7 +60,7 @@ struct EnrollmentConfig {
   }
 
   // Indicates the enrollment flow variant to trigger during OOBE.
-  Mode mode;
+  Mode mode = MODE_NONE;
 
   // The domain to enroll the device to, if applicable. If this is not set, the
   // device may be enrolled to any domain. Note that for the case where the
@@ -75,7 +72,8 @@ struct EnrollmentConfig {
   std::string management_domain;
 
   // The authentication mechanism to use.
-  AuthMechanism auth_mechanism;
+  // TODO(drcrash): Change to best available once ZTE is everywhere.
+  AuthMechanism auth_mechanism = AUTH_MECHANISM_INTERACTIVE;
 };
 
 }  // namespace policy

@@ -870,7 +870,6 @@
         'browser/chromeos/policy/device_status_collector.h',
         'browser/chromeos/policy/display_rotation_default_handler.cc',
         'browser/chromeos/policy/display_rotation_default_handler.h',
-        'browser/chromeos/policy/enrollment_config.cc',
         'browser/chromeos/policy/enrollment_config.h',
         'browser/chromeos/policy/enrollment_handler_chromeos.cc',
         'browser/chromeos/policy/enrollment_handler_chromeos.h',
