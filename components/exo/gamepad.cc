@@ -16,7 +16,8 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
-#include "device/gamepad/gamepad_platform_data_fetcher.h"
+#include "device/gamepad/gamepad_pad_state_provider.h"
+#include "device/gamepad/gamepad_platform_data_fetcher_linux.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 
@@ -30,7 +31,7 @@ bool GamepadButtonValuesAreEqual(double a, double b) {
 
 std::unique_ptr<device::GamepadDataFetcher> CreateGamepadPlatformDataFetcher() {
   return std::unique_ptr<device::GamepadDataFetcher>(
-      new device::GamepadPlatformDataFetcher());
+      new device::GamepadPlatformDataFetcherLinux());
 }
 
 // Time between gamepad polls in milliseconds.
@@ -45,7 +46,8 @@ constexpr unsigned kPollingTimeIntervalMs = 16;
 // This class is reference counted to allow it to shut down safely on the
 // polling thread even if the Gamepad has been destroyed on the origin thread.
 class Gamepad::ThreadSafeGamepadChangeFetcher
-    : public base::RefCountedThreadSafe<
+    : public device::GamepadPadStateProvider,
+      public base::RefCountedThreadSafe<
           Gamepad::ThreadSafeGamepadChangeFetcher> {
  public:
   using ProcessGamepadChangesCallback =
@@ -74,7 +76,7 @@ class Gamepad::ThreadSafeGamepadChangeFetcher
  private:
   friend class base::RefCountedThreadSafe<ThreadSafeGamepadChangeFetcher>;
 
-  virtual ~ThreadSafeGamepadChangeFetcher() {}
+  ~ThreadSafeGamepadChangeFetcher() override {}
 
   // Enables or disables polling.
   void EnablePollingOnPollingThread(bool enabled) {
@@ -84,6 +86,7 @@ class Gamepad::ThreadSafeGamepadChangeFetcher
     if (is_enabled_) {
       if (!fetcher_) {
         fetcher_ = create_fetcher_callback_.Run();
+        InitializeDataFetcher(fetcher_.get());
         DCHECK(fetcher_);
       }
       SchedulePollOnPollingThread();
@@ -119,7 +122,31 @@ class Gamepad::ThreadSafeGamepadChangeFetcher
     DCHECK(fetcher_);
 
     blink::WebGamepads new_state = state_;
-    fetcher_->GetGamepadData(&new_state, false);
+    fetcher_->GetGamepadData(
+        false /* No hardware changed notification from the system */);
+
+    new_state.length = 0;
+    device::PadState& pad_state = pad_states_.get()[0];
+
+    // After querying the gamepad clear the state if it did not have it's active
+    // state updated but is still listed as being associated with a specific
+    // source. This indicates the gamepad is disconnected.
+    if (!pad_state.active_state &&
+        pad_state.source != device::GAMEPAD_SOURCE_NONE) {
+      ClearPadState(pad_state);
+    }
+
+    MapAndSanitizeGamepadData(&pad_state, &new_state.items[0],
+                              false /* Don't sanitize gamepad data */);
+
+    // If the gamepad was active then increment the length of the WebGamepads
+    // struct to indicate it's valid, then set the pad state to inactive. If the
+    // gamepad is still actively reporting the next call to GetGamepadData will
+    // set the active state to active again.
+    if (pad_state.active_state) {
+      new_state.length++;
+      pad_state.active_state = device::GAMEPAD_INACTIVE;
+    }
 
     if (std::max(new_state.length, state_.length) > 0) {
       if (new_state.items[0].connected != state_.items[0].connected ||

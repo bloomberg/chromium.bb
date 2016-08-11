@@ -5,58 +5,67 @@
 #ifndef DEVICE_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
 #define DEVICE_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
 
-#include <stdint.h>
-
-#include <limits>
-
-#include "build/build_config.h"
+#include "device/gamepad/gamepad_data_fetcher_manager.h"
 #include "device/gamepad/gamepad_export.h"
-#include "device/gamepad/gamepad_standard_mappings.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "device/gamepad/gamepad_pad_state_provider.h"
 
 namespace device {
 
-// Abstract interface for imlementing platform- (and test-) specific behaviro
+// Abstract interface for imlementing platform- (and test-) specific behavior
 // for getting the gamepad data.
 class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
  public:
+  GamepadDataFetcher();
   virtual ~GamepadDataFetcher() {}
-  virtual void GetGamepadData(blink::WebGamepads* pads,
-                              bool devices_changed_hint) = 0;
+  virtual void GetGamepadData(bool devices_changed_hint) = 0;
   virtual void PauseHint(bool paused) {}
 
-#if !defined(OS_ANDROID)
-  struct PadState {
-    // Gamepad data, unmapped.
-    blink::WebGamepad data;
+  virtual GamepadSource source() = 0;
+  GamepadPadStateProvider* provider() { return provider_; }
 
-    // Functions to map from device data to standard layout, if available. May
-    // be null if no mapping is available.
-    GamepadStandardMappingFunction mapper;
+  PadState* GetPadState(int source_id) {
+    if (!provider_)
+      return nullptr;
 
-    // Sanitization masks
-    // axis_mask and button_mask are bitfields that represent the reset state of
-    // each input. If a button or axis has ever reported 0 in the past the
-    // corresponding bit will be set to 1.
-
-    // If we ever increase the max axis count this will need to be updated.
-    static_assert(blink::WebGamepad::axesLengthCap <=
-                      std::numeric_limits<uint32_t>::digits,
-                  "axis_mask is not large enough");
-    uint32_t axis_mask;
-
-    // If we ever increase the max button count this will need to be updated.
-    static_assert(blink::WebGamepad::buttonsLengthCap <=
-                      std::numeric_limits<uint32_t>::digits,
-                  "button_mask is not large enough");
-    uint32_t button_mask;
-  };
-
-  void MapAndSanitizeGamepadData(PadState* pad_state, blink::WebGamepad* pad);
+    return provider_->GetPadState(source(), source_id);
+  }
 
  protected:
-  PadState pad_state_[blink::WebGamepads::itemsLengthCap];
-#endif
+  friend GamepadPadStateProvider;
+
+  // To be called by the GamepadPadStateProvider on the polling thread;
+  void InitializeProvider(GamepadPadStateProvider* provider);
+
+  // This call will happen on the gamepad polling thread. Any initialization
+  // that needs to happen on that thread should be done here, not in the
+  // constructor.
+  virtual void OnAddedToProvider(){};
+
+ private:
+  GamepadPadStateProvider* provider_;
+};
+
+// Factory class for creating a GamepadDataFetcher. Used by the
+// GamepadDataFetcherManager.
+class DEVICE_GAMEPAD_EXPORT GamepadDataFetcherFactory {
+ public:
+  GamepadDataFetcherFactory();
+  virtual ~GamepadDataFetcherFactory() {}
+  virtual std::unique_ptr<GamepadDataFetcher> CreateDataFetcher() = 0;
+  virtual GamepadSource source() = 0;
+};
+
+// Basic factory implementation for GamepadDataFetchers without a complex
+// constructor.
+template <typename DataFetcherType, GamepadSource DataFetcherSource>
+class GamepadDataFetcherFactoryImpl : public GamepadDataFetcherFactory {
+ public:
+  ~GamepadDataFetcherFactoryImpl() override {}
+  std::unique_ptr<GamepadDataFetcher> CreateDataFetcher() override {
+    return std::unique_ptr<GamepadDataFetcher>(new DataFetcherType());
+  }
+  GamepadSource source() override { return DataFetcherSource; }
+  static GamepadSource static_source() { return DataFetcherSource; }
 };
 
 }  // namespace device

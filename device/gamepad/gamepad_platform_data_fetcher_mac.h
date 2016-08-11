@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
-#include "device/gamepad/xbox_data_fetcher_mac.h"
 
 #if defined(__OBJC__)
 @class NSArray;
@@ -26,13 +25,18 @@ class NSArray;
 
 namespace device {
 
-class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
-                                      public XboxDataFetcher::Delegate {
+class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
  public:
+  typedef GamepadDataFetcherFactoryImpl<GamepadPlatformDataFetcherMac,
+                                        GAMEPAD_SOURCE_MAC_HID>
+      Factory;
+
   GamepadPlatformDataFetcherMac();
   ~GamepadPlatformDataFetcherMac() override;
-  void GetGamepadData(blink::WebGamepads* pads,
-                      bool devices_changed_hint) override;
+
+  GamepadSource source() override;
+
+  void GetGamepadData(bool devices_changed_hint) override;
   void PauseHint(bool paused) override;
 
  private:
@@ -54,46 +58,30 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
                                    void* sender,
                                    IOHIDValueRef ref);
 
+  void OnAddedToProvider() override;
+
   size_t GetEmptySlot();
   size_t GetSlotForDevice(IOHIDDeviceRef device);
-  size_t GetSlotForXboxDevice(XboxController* device);
 
   void DeviceAdd(IOHIDDeviceRef device);
   bool CheckCollection(IOHIDElementRef element);
-  bool AddButtonsAndAxes(NSArray* elements, size_t slot);
+  bool AddButtonsAndAxes(NSArray* elements, PadState* state, size_t slot);
   void DeviceRemove(IOHIDDeviceRef device);
   void ValueChanged(IOHIDValueRef value);
-
-  void XboxDeviceAdd(XboxController* device) override;
-  void XboxDeviceRemove(XboxController* device) override;
-  void XboxValueChanged(XboxController* device,
-                        const XboxController::Data& data) override;
 
   void RegisterForNotifications();
   void UnregisterFromNotifications();
 
-  void SanitizeGamepadData(size_t index, blink::WebGamepad* pad);
-
-  std::unique_ptr<XboxDataFetcher> xbox_fetcher_;
-
   // Side-band data that's not passed to the consumer, but we need to maintain
   // to update data_.
   struct AssociatedData {
-    bool is_xbox;
-    union {
-      struct {
-        IOHIDDeviceRef device_ref;
-        IOHIDElementRef button_elements[blink::WebGamepad::buttonsLengthCap];
-        IOHIDElementRef axis_elements[blink::WebGamepad::axesLengthCap];
-        CFIndex axis_minimums[blink::WebGamepad::axesLengthCap];
-        CFIndex axis_maximums[blink::WebGamepad::axesLengthCap];
-        CFIndex axis_report_sizes[blink::WebGamepad::axesLengthCap];
-      } hid;
-      struct {
-        XboxController* device;
-        UInt32 location_id;
-      } xbox;
-    };
+    int location_id;
+    IOHIDDeviceRef device_ref;
+    IOHIDElementRef button_elements[blink::WebGamepad::buttonsLengthCap];
+    IOHIDElementRef axis_elements[blink::WebGamepad::axesLengthCap];
+    CFIndex axis_minimums[blink::WebGamepad::axesLengthCap];
+    CFIndex axis_maximums[blink::WebGamepad::axesLengthCap];
+    CFIndex axis_report_sizes[blink::WebGamepad::axesLengthCap];
   };
   AssociatedData associated_[blink::WebGamepads::itemsLengthCap];
 

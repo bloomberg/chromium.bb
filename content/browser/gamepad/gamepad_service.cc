@@ -178,4 +178,8 @@ void GamepadService::OnUserGesture() {
   }
 }
 
+void GamepadService::SetSanitizationEnabled(bool sanitize) {
+  provider_->SetSanitizationEnabled(sanitize);
+}
+
 }  // namespace content

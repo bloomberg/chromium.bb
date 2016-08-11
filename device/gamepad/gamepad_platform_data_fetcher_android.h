@@ -21,18 +21,25 @@ namespace device {
 
 class GamepadPlatformDataFetcherAndroid : public GamepadDataFetcher {
  public:
+  typedef GamepadDataFetcherFactoryImpl<GamepadPlatformDataFetcherAndroid,
+                                        GAMEPAD_SOURCE_ANDROID>
+      Factory;
+
   GamepadPlatformDataFetcherAndroid();
   ~GamepadPlatformDataFetcherAndroid() override;
 
+  GamepadSource source() override;
+
   void PauseHint(bool paused) override;
 
-  void GetGamepadData(blink::WebGamepads* pads,
-                      bool devices_changed_hint) override;
+  void GetGamepadData(bool devices_changed_hint) override;
 
   // Registers the JNI methods for GamepadsReader.
   static bool RegisterGamepadPlatformDataFetcherAndroid(JNIEnv* env);
 
  private:
+  void OnAddedToProvider() override;
+
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherAndroid);
 };
 

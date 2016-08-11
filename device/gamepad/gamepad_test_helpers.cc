@@ -14,11 +14,21 @@ MockGamepadDataFetcher::MockGamepadDataFetcher(
 
 MockGamepadDataFetcher::~MockGamepadDataFetcher() {}
 
-void MockGamepadDataFetcher::GetGamepadData(blink::WebGamepads* pads,
-                                            bool devices_changed_hint) {
+GamepadSource MockGamepadDataFetcher::source() {
+  return GAMEPAD_SOURCE_TEST;
+}
+
+void MockGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   {
     base::AutoLock lock(lock_);
-    *pads = test_data_;
+
+    for (unsigned int i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+      if (test_data_.items[i].connected) {
+        PadState* pad = GetPadState(i);
+        if (pad)
+          memcpy(&pad->data, &test_data_.items[i], sizeof(blink::WebGamepad));
+      }
+    }
   }
   read_data_.Signal();
 }

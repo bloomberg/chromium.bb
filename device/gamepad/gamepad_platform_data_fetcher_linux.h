@@ -27,14 +27,21 @@ namespace device {
 class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
     : public GamepadDataFetcher {
  public:
+  typedef GamepadDataFetcherFactoryImpl<GamepadPlatformDataFetcherLinux,
+                                        GAMEPAD_SOURCE_LINUX_UDEV>
+      Factory;
+
   GamepadPlatformDataFetcherLinux();
   ~GamepadPlatformDataFetcherLinux() override;
 
+  GamepadSource source() override;
+
   // GamepadDataFetcher implementation.
-  void GetGamepadData(blink::WebGamepads* pads,
-                      bool devices_changed_hint) override;
+  void GetGamepadData(bool devices_changed_hint) override;
 
  private:
+  void OnAddedToProvider() override;
+
   void RefreshDevice(udev_device* dev);
   void EnumerateDevices();
   void ReadDeviceData(size_t index);

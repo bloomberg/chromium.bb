@@ -106,6 +106,8 @@ class CONTENT_EXPORT GamepadService
                                  int index,
                                  const blink::WebGamepad& pad) override;
 
+  void SetSanitizationEnabled(bool sanitize);
+
   struct ConsumerInfo {
     ConsumerInfo(device::GamepadConsumer* consumer)
         : consumer(consumer), did_observe_user_gesture(false) {}

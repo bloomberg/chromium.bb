@@ -7,6 +7,9 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
@@ -80,121 +83,57 @@ const WebUChar* XInputDllFileName() {
 }  // namespace
 
 GamepadPlatformDataFetcherWin::GamepadPlatformDataFetcherWin()
-    : xinput_dll_(base::FilePath(XInputDllFileName())),
-      xinput_available_(GetXInputDllFunctions()) {
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    platform_pad_state_[i].status = DISCONNECTED;
-    pad_state_[i].mapper = NULL;
-    pad_state_[i].axis_mask = 0;
-    pad_state_[i].button_mask = 0;
-  }
-
-  raw_input_fetcher_.reset(new RawInputDataFetcher());
-  raw_input_fetcher_->StartMonitor();
-}
+    : xinput_available_(false) {}
 
 GamepadPlatformDataFetcherWin::~GamepadPlatformDataFetcherWin() {
-  raw_input_fetcher_->StopMonitor();
 }
 
-int GamepadPlatformDataFetcherWin::FirstAvailableGamepadId() const {
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    if (platform_pad_state_[i].status == DISCONNECTED)
-      return i;
-  }
-  return -1;
+GamepadSource GamepadPlatformDataFetcherWin::source() {
+  return Factory::static_source();
 }
 
-bool GamepadPlatformDataFetcherWin::HasXInputGamepad(int index) const {
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    if (platform_pad_state_[i].status == XINPUT_CONNECTED &&
-        platform_pad_state_[i].xinput_index == index)
-      return true;
-  }
-  return false;
-}
-
-bool GamepadPlatformDataFetcherWin::HasRawInputGamepad(
-    const HANDLE handle) const {
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    if (platform_pad_state_[i].status == RAWINPUT_CONNECTED &&
-        platform_pad_state_[i].raw_input_handle == handle)
-      return true;
-  }
-  return false;
+void GamepadPlatformDataFetcherWin::OnAddedToProvider() {
+  xinput_dll_.Reset(
+      base::LoadNativeLibrary(base::FilePath(XInputDllFileName()), nullptr));
+  xinput_available_ = GetXInputDllFunctions();
 }
 
 void GamepadPlatformDataFetcherWin::EnumerateDevices() {
   TRACE_EVENT0("GAMEPAD", "EnumerateDevices");
 
-  // Mark all disconnected pads DISCONNECTED.
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    if (!pad_state_[i].data.connected)
-      platform_pad_state_[i].status = DISCONNECTED;
-  }
-
-  for (size_t i = 0; i < XUSER_MAX_COUNT; ++i) {
-    if (HasXInputGamepad(i))
-      continue;
-    int pad_index = FirstAvailableGamepadId();
-    if (pad_index == -1)
-      return;  // We can't add any more gamepads.
-    WebGamepad& pad = pad_state_[pad_index].data;
-    if (xinput_available_ && GetXInputPadConnectivity(i, &pad)) {
-      platform_pad_state_[pad_index].status = XINPUT_CONNECTED;
-      platform_pad_state_[pad_index].xinput_index = i;
-      pad_state_[pad_index].mapper = NULL;
-      pad_state_[pad_index].axis_mask = 0;
-      pad_state_[pad_index].button_mask = 0;
-    }
-  }
-
-  if (raw_input_fetcher_->Available()) {
-    std::vector<RawGamepadInfo*> raw_inputs =
-        raw_input_fetcher_->EnumerateDevices();
-    for (size_t i = 0; i < raw_inputs.size(); ++i) {
-      RawGamepadInfo* gamepad = raw_inputs[i];
-      if (gamepad->buttons_length == 0 && gamepad->axes_length == 0)
+  if (xinput_available_) {
+    for (size_t i = 0; i < XUSER_MAX_COUNT; ++i) {
+      // Check to see if the xinput device is connected
+      XINPUT_CAPABILITIES caps;
+      DWORD res = xinput_get_capabilities_(i, XINPUT_FLAG_GAMEPAD, &caps);
+      xinuput_connected_[i] = (res == ERROR_SUCCESS);
+      if (!xinuput_connected_[i])
         continue;
-      if (HasRawInputGamepad(gamepad->handle))
-        continue;
-      int pad_index = FirstAvailableGamepadId();
-      if (pad_index == -1)
-        return;
-      WebGamepad& pad = pad_state_[pad_index].data;
-      pad.connected = true;
-      PadState& state = pad_state_[pad_index];
-      PlatformPadState& platform_state = platform_pad_state_[pad_index];
-      platform_state.status = RAWINPUT_CONNECTED;
-      platform_state.raw_input_handle = gamepad->handle;
 
-      std::string vendor = base::StringPrintf("%04x", gamepad->vendor_id);
-      std::string product = base::StringPrintf("%04x", gamepad->product_id);
-      state.mapper = GetGamepadStandardMappingFunction(vendor, product);
-      state.axis_mask = 0;
-      state.button_mask = 0;
+      PadState* state = GetPadState(i);
+      if (!state)
+        continue;  // No slot available for this gamepad.
 
-      swprintf(pad.id, WebGamepad::idLengthCap,
-               L"%ls (%lsVendor: %04x Product: %04x)", gamepad->id,
-               state.mapper ? L"STANDARD GAMEPAD " : L"", gamepad->vendor_id,
-               gamepad->product_id);
+      WebGamepad& pad = state->data;
 
-      if (state.mapper)
+      if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
+        // This is the first time we've seen this device, so do some one-time
+        // initialization
+        pad.connected = true;
+        swprintf(pad.id, WebGamepad::idLengthCap,
+                 L"Xbox 360 Controller (XInput STANDARD %ls)",
+                 GamepadSubTypeName(caps.SubType));
         swprintf(pad.mapping, WebGamepad::mappingLengthCap, L"standard");
-      else
-        pad.mapping[0] = 0;
+      }
     }
   }
 }
 
-void GamepadPlatformDataFetcherWin::GetGamepadData(WebGamepads* pads,
-                                                   bool devices_changed_hint) {
+void GamepadPlatformDataFetcherWin::GetGamepadData(bool devices_changed_hint) {
   TRACE_EVENT0("GAMEPAD", "GetGamepadData");
 
-  if (!xinput_available_ && !raw_input_fetcher_->Available()) {
-    pads->length = 0;
+  if (!xinput_available_)
     return;
-  }
 
   // A note on XInput devices:
   // If we got notification that system devices have been updated, then
@@ -206,69 +145,32 @@ void GamepadPlatformDataFetcherWin::GetGamepadData(WebGamepads* pads,
   if (devices_changed_hint)
     EnumerateDevices();
 
-  pads->length = 0;
-
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    // We rely on device_changed and GetCapabilities to tell us that
-    // something's been connected, but we will mark as disconnected if
-    // Get___PadState returns that we've lost the pad.
-    if (!pad_state_[i].data.connected)
-      continue;
-
-    if (platform_pad_state_[i].status == XINPUT_CONNECTED)
-      GetXInputPadData(i, &pad_state_[i].data);
-    else if (platform_pad_state_[i].status == RAWINPUT_CONNECTED)
-      GetRawInputPadData(i, &pad_state_[i].data);
-
-    MapAndSanitizeGamepadData(&pad_state_[i], &pads->items[i]);
-
-    if (pads->items[i].connected)
-      pads->length++;
+  for (size_t i = 0; i < XUSER_MAX_COUNT; ++i) {
+    if (xinuput_connected_[i])
+      GetXInputPadData(i);
   }
 }
 
-void GamepadPlatformDataFetcherWin::PauseHint(bool pause) {
-  if (pause)
-    raw_input_fetcher_->StopMonitor();
-  else
-    raw_input_fetcher_->StartMonitor();
-}
+void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
+  PadState* pad_state = provider()->GetPadState(GAMEPAD_SOURCE_WIN_XINPUT, i);
+  if (!pad_state)
+    return;
 
-bool GamepadPlatformDataFetcherWin::GetXInputPadConnectivity(
-    int i,
-    WebGamepad* pad) const {
-  DCHECK(pad);
-  TRACE_EVENT1("GAMEPAD", "GetXInputPadConnectivity", "id", i);
-  XINPUT_CAPABILITIES caps;
-  DWORD res = xinput_get_capabilities_(i, XINPUT_FLAG_GAMEPAD, &caps);
-  if (res == ERROR_DEVICE_NOT_CONNECTED) {
-    pad->connected = false;
-    return false;
-  } else {
-    pad->connected = true;
-    swprintf(pad->id, WebGamepad::idLengthCap,
-             L"Xbox 360 Controller (XInput STANDARD %ls)",
-             GamepadSubTypeName(caps.SubType));
-    swprintf(pad->mapping, WebGamepad::mappingLengthCap, L"standard");
-    return true;
-  }
-}
+  WebGamepad& pad = pad_state->data;
 
-void GamepadPlatformDataFetcherWin::GetXInputPadData(int i, WebGamepad* pad) {
   XINPUT_STATE state;
   memset(&state, 0, sizeof(XINPUT_STATE));
   TRACE_EVENT_BEGIN1("GAMEPAD", "XInputGetState", "id", i);
-  DWORD dwResult =
-      xinput_get_state_(platform_pad_state_[i].xinput_index, &state);
+  DWORD dwResult = xinput_get_state_(i, &state);
   TRACE_EVENT_END1("GAMEPAD", "XInputGetState", "id", i);
 
   if (dwResult == ERROR_SUCCESS) {
-    pad->timestamp = state.dwPacketNumber;
-    pad->buttonsLength = 0;
+    pad.timestamp = state.dwPacketNumber;
+    pad.buttonsLength = 0;
     WORD val = state.Gamepad.wButtons;
-#define ADD(b)                                                 \
-  pad->buttons[pad->buttonsLength].pressed = (val & (b)) != 0; \
-  pad->buttons[pad->buttonsLength++].value = ((val & (b)) ? 1.f : 0.f);
+#define ADD(b)                                               \
+  pad.buttons[pad.buttonsLength].pressed = (val & (b)) != 0; \
+  pad.buttons[pad.buttonsLength++].value = ((val & (b)) ? 1.f : 0.f);
     ADD(XINPUT_GAMEPAD_A);
     ADD(XINPUT_GAMEPAD_B);
     ADD(XINPUT_GAMEPAD_X);
@@ -276,14 +178,13 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i, WebGamepad* pad) {
     ADD(XINPUT_GAMEPAD_LEFT_SHOULDER);
     ADD(XINPUT_GAMEPAD_RIGHT_SHOULDER);
 
-    pad->buttons[pad->buttonsLength].pressed =
+    pad.buttons[pad.buttonsLength].pressed =
         state.Gamepad.bLeftTrigger >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-    pad->buttons[pad->buttonsLength++].value =
-        state.Gamepad.bLeftTrigger / 255.f;
+    pad.buttons[pad.buttonsLength++].value = state.Gamepad.bLeftTrigger / 255.f;
 
-    pad->buttons[pad->buttonsLength].pressed =
+    pad.buttons[pad.buttonsLength].pressed =
         state.Gamepad.bRightTrigger >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-    pad->buttons[pad->buttonsLength++].value =
+    pad.buttons[pad.buttonsLength++].value =
         state.Gamepad.bRightTrigger / 255.f;
 
     ADD(XINPUT_GAMEPAD_BACK);
@@ -295,12 +196,12 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i, WebGamepad* pad) {
     ADD(XINPUT_GAMEPAD_DPAD_LEFT);
     ADD(XINPUT_GAMEPAD_DPAD_RIGHT);
 #undef ADD
-    pad->axesLength = 0;
+    pad.axesLength = 0;
 
     float value = 0.0;
 #define ADD(a, factor)                     \
   value = factor * NormalizeXInputAxis(a); \
-  pad->axes[pad->axesLength++] = value;
+  pad.axes[pad.axesLength++] = value;
 
     // XInput are +up/+right, -down/-left, we want -up/-left.
     ADD(state.Gamepad.sThumbLX, 1);
@@ -308,31 +209,7 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i, WebGamepad* pad) {
     ADD(state.Gamepad.sThumbRX, 1);
     ADD(state.Gamepad.sThumbRY, -1);
 #undef ADD
-  } else {
-    pad->connected = false;
   }
-}
-
-void GamepadPlatformDataFetcherWin::GetRawInputPadData(int index,
-                                                       WebGamepad* pad) {
-  RawGamepadInfo* gamepad = raw_input_fetcher_->GetGamepadInfo(
-      platform_pad_state_[index].raw_input_handle);
-  if (!gamepad) {
-    pad->connected = false;
-    return;
-  }
-
-  pad->timestamp = gamepad->report_id;
-  pad->buttonsLength = gamepad->buttons_length;
-  pad->axesLength = gamepad->axes_length;
-
-  for (unsigned int i = 0; i < pad->buttonsLength; i++) {
-    pad->buttons[i].pressed = gamepad->buttons[i];
-    pad->buttons[i].value = gamepad->buttons[i] ? 1.0 : 0.0;
-  }
-
-  for (unsigned int i = 0; i < pad->axesLength; i++)
-    pad->axes[i] = gamepad->axes[i].value;
 }
 
 bool GamepadPlatformDataFetcherWin::GetXInputDllFunctions() {

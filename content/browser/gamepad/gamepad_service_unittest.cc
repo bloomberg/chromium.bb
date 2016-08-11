@@ -97,6 +97,7 @@ void GamepadServiceTest::SetUp() {
   service_ = new GamepadService(
       std::unique_ptr<device::GamepadDataFetcher>(fetcher_));
   connection_listener_.reset((new ConnectionListener));
+  service_->SetSanitizationEnabled(false);
   service_->ConsumerBecameActive(connection_listener_.get());
 }
 

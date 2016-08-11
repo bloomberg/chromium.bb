@@ -17,6 +17,12 @@
 #include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_ioplugininterface.h"
 #include "base/macros.h"
+#include "device/gamepad/gamepad_data_fetcher.h"
+
+struct IOUSBDeviceStruct320;
+struct IOUSBInterfaceStruct300;
+
+namespace device {
 
 class XboxController {
  public:
@@ -101,11 +107,11 @@ class XboxController {
 
   // Handle for the USB device. IOUSBDeviceStruct320 is the latest version of
   // the device API that is supported on Mac OS 10.6.
-  base::mac::ScopedIOPluginInterface<struct IOUSBDeviceStruct320> device_;
+  base::mac::ScopedIOPluginInterface<IOUSBDeviceStruct320> device_;
 
   // Handle for the interface on the device which sends button and analog data.
   // The other interfaces (for the ChatPad and headset) are ignored.
-  base::mac::ScopedIOPluginInterface<struct IOUSBInterfaceStruct300> interface_;
+  base::mac::ScopedIOPluginInterface<IOUSBInterfaceStruct300> interface_;
 
   bool device_is_open_;
   bool interface_is_open_;
@@ -136,18 +142,19 @@ class XboxController {
   DISALLOW_COPY_AND_ASSIGN(XboxController);
 };
 
-class XboxDataFetcher : public XboxController::Delegate {
+class XboxDataFetcher : public GamepadDataFetcher,
+                        public XboxController::Delegate {
  public:
-  class Delegate {
-   public:
-    virtual void XboxDeviceAdd(XboxController* device) = 0;
-    virtual void XboxDeviceRemove(XboxController* device) = 0;
-    virtual void XboxValueChanged(XboxController* device,
-                                  const XboxController::Data& data) = 0;
-  };
+  typedef GamepadDataFetcherFactoryImpl<XboxDataFetcher,
+                                        GAMEPAD_SOURCE_MAC_XBOX>
+      Factory;
 
-  explicit XboxDataFetcher(Delegate* delegate);
-  virtual ~XboxDataFetcher();
+  XboxDataFetcher();
+  ~XboxDataFetcher() override;
+
+  GamepadSource source() override;
+
+  void GetGamepadData(bool devices_changed_hint) override;
 
   bool RegisterForNotifications();
   bool RegisterForDeviceNotifications(
@@ -162,14 +169,13 @@ class XboxDataFetcher : public XboxController::Delegate {
  private:
   static void DeviceAdded(void* context, io_iterator_t iterator);
   static void DeviceRemoved(void* context, io_iterator_t iterator);
+  void OnAddedToProvider() override;
   void AddController(XboxController* controller);
   void RemoveController(XboxController* controller);
   void RemoveControllerByLocationID(uint32_t id);
   void XboxControllerGotData(XboxController* controller,
                              const XboxController::Data& data) override;
   void XboxControllerError(XboxController* controller) override;
-
-  Delegate* delegate_;
 
   std::set<XboxController*> controllers_;
 
@@ -186,5 +192,7 @@ class XboxDataFetcher : public XboxController::Delegate {
 
   DISALLOW_COPY_AND_ASSIGN(XboxDataFetcher);
 };
+
+}  // namespace device
 
 #endif  // DEVICE_GAMEPAD_XBOX_DATA_FETCHER_MAC_H_

@@ -13,11 +13,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
-#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/system_monitor/system_monitor.h"
 #include "device/gamepad/gamepad_export.h"
+#include "device/gamepad/gamepad_pad_state_provider.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
+
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace base {
@@ -37,7 +38,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadConnectionChangeClient {
 };
 
 class DEVICE_GAMEPAD_EXPORT GamepadProvider
-    : public base::SystemMonitor::DevicesChangedObserver {
+    : public GamepadPadStateProvider,
+      public base::SystemMonitor::DevicesChangedObserver {
  public:
   explicit GamepadProvider(
       std::unique_ptr<GamepadSharedBuffer> buffer,
@@ -56,6 +58,9 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   base::SharedMemoryHandle GetSharedMemoryHandleForProcess(
       base::ProcessHandle renderer_process);
 
+  void AddGamepadDataFetcher(GamepadDataFetcher* fetcher);
+  void RemoveGamepadDataFetcher(GamepadDataFetcher* fetcher);
+
   void GetCurrentGamepadData(blink::WebGamepads* data);
 
   // Pause and resume the background polling thread. Can be called from any
@@ -70,12 +75,21 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // base::SystemMonitor::DevicesChangedObserver implementation.
   void OnDevicesChanged(base::SystemMonitor::DeviceType type) override;
 
+  // Add a gamepad data fetcher. Takes ownership of |fetcher|.
+  void AddGamepadDataFetcher(std::unique_ptr<GamepadDataFetcher> fetcher);
+
+  // Remove gamepad data fetchers with the given source.
+  void RemoveSourceGamepadDataFetcher(GamepadSource source);
+
+  void SetSanitizationEnabled(bool sanitize) { sanitize_ = sanitize; }
+
  private:
   void Initialize(std::unique_ptr<GamepadDataFetcher> fetcher);
 
   // Method for setting up the platform-specific data fetcher. Takes ownership
   // of |fetcher|.
-  void DoInitializePollingThread(std::unique_ptr<GamepadDataFetcher> fetcher);
+  void DoAddGamepadDataFetcher(std::unique_ptr<GamepadDataFetcher> fetcher);
+  void DoRemoveSourceGamepadDataFetcher(GamepadSource source);
 
   // Method for sending pause hints to the low-level data fetcher. Runs on
   // polling_thread_.
@@ -131,31 +145,11 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   bool devices_changed_;
 
   bool ever_had_user_gesture_;
-
-  class PadState {
-   public:
-    PadState() { SetDisconnected(); }
-
-    bool Match(const blink::WebGamepad& pad) const;
-    void SetPad(const blink::WebGamepad& pad);
-    void SetDisconnected();
-    void AsWebGamepad(blink::WebGamepad* pad);
-
-    bool connected() const { return connected_; }
-
-   private:
-    bool connected_;
-    unsigned axes_length_;
-    unsigned buttons_length_;
-    blink::WebUChar id_[blink::WebGamepad::idLengthCap];
-    blink::WebUChar mapping_[blink::WebGamepad::mappingLengthCap];
-  };
-
-  // Used to detect connections and disconnections.
-  std::unique_ptr<PadState[]> pad_states_;
+  bool sanitize_;
 
   // Only used on the polling thread.
-  std::unique_ptr<GamepadDataFetcher> data_fetcher_;
+  typedef std::vector<std::unique_ptr<GamepadDataFetcher>> GamepadFetcherVector;
+  GamepadFetcherVector data_fetchers_;
 
   base::Lock shared_memory_lock_;
   std::unique_ptr<GamepadSharedBuffer> gamepad_shared_buffer_;
@@ -164,8 +158,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   std::unique_ptr<base::Thread> polling_thread_;
 
   GamepadConnectionChangeClient* connection_change_client_;
-
-  static GamepadProvider* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadProvider);
 };

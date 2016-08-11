@@ -24,6 +24,8 @@
         'gamepad_consumer.h',
         'gamepad_data_fetcher.cc',
         'gamepad_data_fetcher.h',
+        'gamepad_data_fetcher_manager.cc',
+        'gamepad_data_fetcher_manager.h',
         'gamepad_platform_data_fetcher.h',
         'gamepad_platform_data_fetcher_android.cc',
         'gamepad_platform_data_fetcher_android.h',
@@ -44,22 +46,14 @@
         'gamepad_user_gesture.h',
         'raw_input_data_fetcher_win.cc',
         'raw_input_data_fetcher_win.h',
-        'xbox_data_fetcher_mac.cc',
         'xbox_data_fetcher_mac.h',
+        'xbox_data_fetcher_mac.mm',
       ],
       'conditions': [
         ['OS=="win"', {
           'msvs_disabled_warnings': [4267, ],
         }],
-        ['OS=="linux" and use_udev==1', {
-          'dependencies': [
-            '../udev_linux/udev.gyp:udev_linux',
-          ]
-        }],
         ['OS!="win" and OS!="mac" and OS!="android" and (OS!="linux" or use_udev==0)', {
-          'sources': [
-            'gamepad_platform_data_fetcher.cc',
-          ],
           'sources!': [
             'gamepad_platform_data_fetcher_linux.cc',
           ],

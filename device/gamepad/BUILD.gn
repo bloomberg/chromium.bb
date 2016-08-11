@@ -19,6 +19,10 @@ component("gamepad") {
     "gamepad_consumer.h",
     "gamepad_data_fetcher.cc",
     "gamepad_data_fetcher.h",
+    "gamepad_data_fetcher_manager.cc",
+    "gamepad_data_fetcher_manager.h",
+    "gamepad_pad_state_provider.cc",
+    "gamepad_pad_state_provider.h",
     "gamepad_platform_data_fetcher.h",
     "gamepad_platform_data_fetcher_android.cc",
     "gamepad_platform_data_fetcher_android.h",
@@ -39,8 +43,8 @@ component("gamepad") {
     "gamepad_user_gesture.h",
     "raw_input_data_fetcher_win.cc",
     "raw_input_data_fetcher_win.h",
-    "xbox_data_fetcher_mac.cc",
     "xbox_data_fetcher_mac.h",
+    "xbox_data_fetcher_mac.mm",
   ]
 
   deps = [
@@ -58,7 +62,6 @@ component("gamepad") {
   if (is_linux && use_udev) {
     deps += [ "//device/udev_linux" ]
   } else if (!is_win && !is_mac && !is_android) {
-    sources += [ "gamepad_platform_data_fetcher.cc" ]
     sources -= [ "gamepad_platform_data_fetcher_linux.cc" ]
   }
 

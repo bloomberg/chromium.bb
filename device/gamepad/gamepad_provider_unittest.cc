@@ -81,6 +81,7 @@ TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
   test_data.items[0].axes[1] = .5f;
 
   GamepadProvider* provider = CreateProvider(test_data);
+  provider->SetSanitizationEnabled(false);
   provider->Resume();
 
   base::RunLoop().RunUntilIdle();
@@ -125,6 +126,7 @@ TEST_F(GamepadProviderTest, UserGesture) {
 
   UserGestureListener listener;
   GamepadProvider* provider = CreateProvider(no_button_data);
+  provider->SetSanitizationEnabled(false);
   provider->Resume();
 
   provider->RegisterForUserGesture(listener.GetClosure());
@@ -141,6 +143,88 @@ TEST_F(GamepadProviderTest, UserGesture) {
   // It should have issued our callback.
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(listener.has_user_gesture());
+}
+
+// Crashes. http://crbug.com/106163
+// crbug.com/147549
+#if defined(OS_ANDROID)
+#define MAYBE_Sanitization DISABLED_Sanitization
+#else
+#define MAYBE_Sanitization Sanitization
+#endif
+// Tests that waiting for a user gesture works properly.
+TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
+  WebGamepads active_data;
+  active_data.length = 1;
+  active_data.items[0].connected = true;
+  active_data.items[0].timestamp = 0;
+  active_data.items[0].buttonsLength = 1;
+  active_data.items[0].axesLength = 1;
+  active_data.items[0].buttons[0].value = 1.f;
+  active_data.items[0].buttons[0].pressed = true;
+  active_data.items[0].axes[0] = -1.f;
+
+  WebGamepads zero_data;
+  zero_data.length = 1;
+  zero_data.items[0].connected = true;
+  zero_data.items[0].timestamp = 0;
+  zero_data.items[0].buttonsLength = 1;
+  zero_data.items[0].axesLength = 1;
+  zero_data.items[0].buttons[0].value = 0.f;
+  zero_data.items[0].buttons[0].pressed = false;
+  zero_data.items[0].axes[0] = 0.f;
+
+  UserGestureListener listener;
+  GamepadProvider* provider = CreateProvider(active_data);
+  provider->SetSanitizationEnabled(true);
+  provider->Resume();
+
+  base::RunLoop().RunUntilIdle();
+
+  mock_data_fetcher_->WaitForDataRead();
+
+  // Renderer-side, pull data out of poll buffer.
+  base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
+      base::GetCurrentProcessHandle());
+  std::unique_ptr<base::SharedMemory> shared_memory(
+      new base::SharedMemory(handle, true));
+  EXPECT_TRUE(shared_memory->Map(sizeof(WebGamepads)));
+  void* mem = shared_memory->memory();
+
+  WebGamepads* output = static_cast<WebGamepads*>(mem);
+
+  // Initial data should all be zeroed out due to sanitization, even though the
+  // gamepad reported input
+  EXPECT_EQ(1u, output->length);
+  EXPECT_EQ(1u, output->items[0].buttonsLength);
+  EXPECT_EQ(0.f, output->items[0].buttons[0].value);
+  EXPECT_FALSE(output->items[0].buttons[0].pressed);
+  EXPECT_EQ(1u, output->items[0].axesLength);
+  EXPECT_EQ(0.f, output->items[0].axes[0]);
+
+  // Zero out the inputs
+  mock_data_fetcher_->SetTestData(zero_data);
+  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
+
+  // Should still read zero, which is now an accurate reflection of the data
+  EXPECT_EQ(1u, output->length);
+  EXPECT_EQ(1u, output->items[0].buttonsLength);
+  EXPECT_EQ(0.f, output->items[0].buttons[0].value);
+  EXPECT_FALSE(output->items[0].buttons[0].pressed);
+  EXPECT_EQ(1u, output->items[0].axesLength);
+  EXPECT_EQ(0.f, output->items[0].axes[0]);
+
+  // Re-set the active inputs
+  mock_data_fetcher_->SetTestData(active_data);
+  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
+
+  // Should now accurately reflect the reported data.
+  EXPECT_EQ(1u, output->length);
+  EXPECT_EQ(1u, output->items[0].buttonsLength);
+  EXPECT_EQ(1.f, output->items[0].buttons[0].value);
+  EXPECT_TRUE(output->items[0].buttons[0].pressed);
+  EXPECT_EQ(1u, output->items[0].axesLength);
+  EXPECT_EQ(-1.f, output->items[0].axes[0]);
 }
 
 }  // namespace
