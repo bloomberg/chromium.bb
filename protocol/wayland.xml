@@ -48,7 +48,8 @@
 
 	The callback_data passed in the callback is the event serial.
       </description>
-      <arg name="callback" type="new_id" interface="wl_callback"/>
+      <arg name="callback" type="new_id" interface="wl_callback"
+	   summary="callback object for the sync request"/>
     </request>
 
     <request name="get_registry">
@@ -57,7 +58,8 @@
 	to list and bind the global objects available from the
 	compositor.
       </description>
-      <arg name="registry" type="new_id" interface="wl_registry"/>
+      <arg name="registry" type="new_id" interface="wl_registry"
+	   summary="global registry object"/>
     </request>
 
     <event name="error">
@@ -129,8 +131,8 @@
 	Binds a new, client-created object to the server using the
         specified name as the identifier.
       </description>
-      <arg name="name" type="uint" summary="unique name for the object"/>
-      <arg name="id" type="new_id"/>
+      <arg name="name" type="uint" summary="unique numeric name of the object"/>
+      <arg name="id" type="new_id" summary="bounded object"/>
     </request>
 
     <event name="global">
@@ -187,14 +189,14 @@
       <description summary="create new surface">
 	Ask the compositor to create a new surface.
       </description>
-      <arg name="id" type="new_id" interface="wl_surface"/>
+      <arg name="id" type="new_id" interface="wl_surface" summary="the new surface"/>
     </request>
 
     <request name="create_region">
       <description summary="create new region">
 	Ask the compositor to create a new region.
       </description>
-      <arg name="id" type="new_id" interface="wl_region"/>
+      <arg name="id" type="new_id" interface="wl_region" summary="the new region"/>
     </request>
   </interface>
 
@@ -224,12 +226,12 @@
 	a buffer from it.
       </description>
 
-      <arg name="id" type="new_id" interface="wl_buffer"/>
-      <arg name="offset" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
-      <arg name="stride" type="int"/>
-      <arg name="format" type="uint" enum="wl_shm.format"/>
+      <arg name="id" type="new_id" interface="wl_buffer" summary="buffer to create"/>
+      <arg name="offset" type="int" summary="buffer byte offset within the pool"/>
+      <arg name="width" type="int" summary="buffer width, in pixels"/>
+      <arg name="height" type="int" summary="buffer height, in pixels"/>
+      <arg name="stride" type="int" summary="number of bytes from the beginning of one row to the beginning of the next row"/>
+      <arg name="format" type="uint" enum="wl_shm.format" summary="buffer pixel format"/>
     </request>
 
     <request name="destroy" type="destructor">
@@ -250,7 +252,7 @@
 	used to make the pool bigger.
       </description>
 
-      <arg name="size" type="int"/>
+      <arg name="size" type="int" summary="new size of the pool, in bytes"/>
     </request>
   </interface>
 
@@ -283,68 +285,69 @@
        All renderers should support argb8888 and xrgb8888 but any other
        formats are optional and may not be supported by the particular
        renderer in use.
+
+	The drm format codes match the #defines in drm_fourcc.h.
+	The formats actually supported by the compositor will be
+	reported by the format event.
       </description>
-      <entry name="argb8888" value="0" summary="32-bit ARGB format"/>
-      <entry name="xrgb8888" value="1" summary="32-bit RGB format"/>
-      <!-- The drm format codes match the #defines in drm_fourcc.h.
-           The formats actually supported by the compositor will be
-           reported by the format event. -->
-      <entry name="c8" value="0x20203843"/>
-      <entry name="rgb332" value="0x38424752"/>
-      <entry name="bgr233" value="0x38524742"/>
-      <entry name="xrgb4444" value="0x32315258"/>
-      <entry name="xbgr4444" value="0x32314258"/>
-      <entry name="rgbx4444" value="0x32315852"/>
-      <entry name="bgrx4444" value="0x32315842"/>
-      <entry name="argb4444" value="0x32315241"/>
-      <entry name="abgr4444" value="0x32314241"/>
-      <entry name="rgba4444" value="0x32314152"/>
-      <entry name="bgra4444" value="0x32314142"/>
-      <entry name="xrgb1555" value="0x35315258"/>
-      <entry name="xbgr1555" value="0x35314258"/>
-      <entry name="rgbx5551" value="0x35315852"/>
-      <entry name="bgrx5551" value="0x35315842"/>
-      <entry name="argb1555" value="0x35315241"/>
-      <entry name="abgr1555" value="0x35314241"/>
-      <entry name="rgba5551" value="0x35314152"/>
-      <entry name="bgra5551" value="0x35314142"/>
-      <entry name="rgb565" value="0x36314752"/>
-      <entry name="bgr565" value="0x36314742"/>
-      <entry name="rgb888" value="0x34324752"/>
-      <entry name="bgr888" value="0x34324742"/>
-      <entry name="xbgr8888" value="0x34324258"/>
-      <entry name="rgbx8888" value="0x34325852"/>
-      <entry name="bgrx8888" value="0x34325842"/>
-      <entry name="abgr8888" value="0x34324241"/>
-      <entry name="rgba8888" value="0x34324152"/>
-      <entry name="bgra8888" value="0x34324142"/>
-      <entry name="xrgb2101010" value="0x30335258"/>
-      <entry name="xbgr2101010" value="0x30334258"/>
-      <entry name="rgbx1010102" value="0x30335852"/>
-      <entry name="bgrx1010102" value="0x30335842"/>
-      <entry name="argb2101010" value="0x30335241"/>
-      <entry name="abgr2101010" value="0x30334241"/>
-      <entry name="rgba1010102" value="0x30334152"/>
-      <entry name="bgra1010102" value="0x30334142"/>
-      <entry name="yuyv" value="0x56595559"/>
-      <entry name="yvyu" value="0x55595659"/>
-      <entry name="uyvy" value="0x59565955"/>
-      <entry name="vyuy" value="0x59555956"/>
-      <entry name="ayuv" value="0x56555941"/>
-      <entry name="nv12" value="0x3231564e"/>
-      <entry name="nv21" value="0x3132564e"/>
-      <entry name="nv16" value="0x3631564e"/>
-      <entry name="nv61" value="0x3136564e"/>
-      <entry name="yuv410" value="0x39565559"/>
-      <entry name="yvu410" value="0x39555659"/>
-      <entry name="yuv411" value="0x31315559"/>
-      <entry name="yvu411" value="0x31315659"/>
-      <entry name="yuv420" value="0x32315559"/>
-      <entry name="yvu420" value="0x32315659"/>
-      <entry name="yuv422" value="0x36315559"/>
-      <entry name="yvu422" value="0x36315659"/>
-      <entry name="yuv444" value="0x34325559"/>
-      <entry name="yvu444" value="0x34325659"/>
+      <entry name="argb8888" value="0" summary="32-bit ARGB format, [31:0] A:R:G:B 8:8:8:8 little endian"/>
+      <entry name="xrgb8888" value="1" summary="32-bit RGB format, [31:0] x:R:G:B 8:8:8:8 little endian"/>
+      <entry name="c8" value="0x20203843" summary="8-bit color index format, [7:0] C"/>
+      <entry name="rgb332" value="0x38424752" summary="8-bit RGB format, [7:0] R:G:B 3:3:2"/>
+      <entry name="bgr233" value="0x38524742" summary="8-bit BGR format, [7:0] B:G:R 2:3:3"/>
+      <entry name="xrgb4444" value="0x32315258" summary="16-bit xRGB format, [15:0] x:R:G:B 4:4:4:4 little endian"/>
+      <entry name="xbgr4444" value="0x32314258" summary="16-bit xBGR format, [15:0] x:B:G:R 4:4:4:4 little endian"/>
+      <entry name="rgbx4444" value="0x32315852" summary="16-bit RGBx format, [15:0] R:G:B:x 4:4:4:4 little endian"/>
+      <entry name="bgrx4444" value="0x32315842" summary="16-bit BGRx format, [15:0] B:G:R:x 4:4:4:4 little endian"/>
+      <entry name="argb4444" value="0x32315241" summary="16-bit ARGB format, [15:0] A:R:G:B 4:4:4:4 little endian"/>
+      <entry name="abgr4444" value="0x32314241" summary="16-bit ABGR format, [15:0] A:B:G:R 4:4:4:4 little endian"/>
+      <entry name="rgba4444" value="0x32314152" summary="16-bit RBGA format, [15:0] R:G:B:A 4:4:4:4 little endian"/>
+      <entry name="bgra4444" value="0x32314142" summary="16-bit BGRA format, [15:0] B:G:R:A 4:4:4:4 little endian"/>
+      <entry name="xrgb1555" value="0x35315258" summary="16-bit xRGB format, [15:0] x:R:G:B 1:5:5:5 little endian"/>
+      <entry name="xbgr1555" value="0x35314258" summary="16-bit xBGR 1555 format, [15:0] x:B:G:R 1:5:5:5 little endian"/>
+      <entry name="rgbx5551" value="0x35315852" summary="16-bit RGBx 5551 format, [15:0] R:G:B:x 5:5:5:1 little endian"/>
+      <entry name="bgrx5551" value="0x35315842" summary="16-bit BGRx 5551 format, [15:0] B:G:R:x 5:5:5:1 little endian"/>
+      <entry name="argb1555" value="0x35315241" summary="16-bit ARGB 1555 format, [15:0] A:R:G:B 1:5:5:5 little endian"/>
+      <entry name="abgr1555" value="0x35314241" summary="16-bit ABGR 1555 format, [15:0] A:B:G:R 1:5:5:5 little endian"/>
+      <entry name="rgba5551" value="0x35314152" summary="16-bit RGBA 5551 format, [15:0] R:G:B:A 5:5:5:1 little endian"/>
+      <entry name="bgra5551" value="0x35314142" summary="16-bit BGRA 5551 format, [15:0] B:G:R:A 5:5:5:1 little endian"/>
+      <entry name="rgb565" value="0x36314752" summary="16-bit RGB 565 format, [15:0] R:G:B 5:6:5 little endian"/>
+      <entry name="bgr565" value="0x36314742" summary="16-bit BGR 565 format, [15:0] B:G:R 5:6:5 little endian"/>
+      <entry name="rgb888" value="0x34324752" summary="24-bit RGB format, [23:0] R:G:B little endian"/>
+      <entry name="bgr888" value="0x34324742" summary="24-bit BGR format, [23:0] B:G:R little endian"/>
+      <entry name="xbgr8888" value="0x34324258" summary="32-bit xBGR format, [31:0] x:B:G:R 8:8:8:8 little endian"/>
+      <entry name="rgbx8888" value="0x34325852" summary="32-bit RGBx format, [31:0] R:G:B:x 8:8:8:8 little endian"/>
+      <entry name="bgrx8888" value="0x34325842" summary="32-bit BGRx format, [31:0] B:G:R:x 8:8:8:8 little endian"/>
+      <entry name="abgr8888" value="0x34324241" summary="32-bit ABGR format, [31:0] A:B:G:R 8:8:8:8 little endian"/>
+      <entry name="rgba8888" value="0x34324152" summary="32-bit RGBA format, [31:0] R:G:B:A 8:8:8:8 little endian"/>
+      <entry name="bgra8888" value="0x34324142" summary="32-bit BGRA format, [31:0] B:G:R:A 8:8:8:8 little endian"/>
+      <entry name="xrgb2101010" value="0x30335258" summary="32-bit xRGB format, [31:0] x:R:G:B 2:10:10:10 little endian"/>
+      <entry name="xbgr2101010" value="0x30334258" summary="32-bit xBGR format, [31:0] x:B:G:R 2:10:10:10 little endian"/>
+      <entry name="rgbx1010102" value="0x30335852" summary="32-bit RGBx format, [31:0] R:G:B:x 10:10:10:2 little endian"/>
+      <entry name="bgrx1010102" value="0x30335842" summary="32-bit BGRx format, [31:0] B:G:R:x 10:10:10:2 little endian"/>
+      <entry name="argb2101010" value="0x30335241" summary="32-bit ARGB format, [31:0] A:R:G:B 2:10:10:10 little endian"/>
+      <entry name="abgr2101010" value="0x30334241" summary="32-bit ABGR format, [31:0] A:B:G:R 2:10:10:10 little endian"/>
+      <entry name="rgba1010102" value="0x30334152" summary="32-bit RGBA format, [31:0] R:G:B:A 10:10:10:2 little endian"/>
+      <entry name="bgra1010102" value="0x30334142" summary="32-bit BGRA format, [31:0] B:G:R:A 10:10:10:2 little endian"/>
+      <entry name="yuyv" value="0x56595559" summary="packed YCbCr format, [31:0] Cr0:Y1:Cb0:Y0 8:8:8:8 little endian"/>
+      <entry name="yvyu" value="0x55595659" summary="packed YCbCr format, [31:0] Cb0:Y1:Cr0:Y0 8:8:8:8 little endian"/>
+      <entry name="uyvy" value="0x59565955" summary="packed YCbCr format, [31:0] Y1:Cr0:Y0:Cb0 8:8:8:8 little endian"/>
+      <entry name="vyuy" value="0x59555956" summary="packed YCbCr format, [31:0] Y1:Cb0:Y0:Cr0 8:8:8:8 little endian"/>
+      <entry name="ayuv" value="0x56555941" summary="packed AYCbCr format, [31:0] A:Y:Cb:Cr 8:8:8:8 little endian"/>
+      <entry name="nv12" value="0x3231564e" summary="2 plane YCbCr Cr:Cb format, 2x2 subsampled Cr:Cb plane"/>
+      <entry name="nv21" value="0x3132564e" summary="2 plane YCbCr Cb:Cr format, 2x2 subsampled Cb:Cr plane"/>
+      <entry name="nv16" value="0x3631564e" summary="2 plane YCbCr Cr:Cb format, 2x1 subsampled Cr:Cb plane"/>
+      <entry name="nv61" value="0x3136564e" summary="2 plane YCbCr Cb:Cr format, 2x1 subsampled Cb:Cr plane"/>
+      <entry name="yuv410" value="0x39565559" summary="3 plane YCbCr format, 4x4 subsampled Cb (1) and Cr (2) planes"/>
+      <entry name="yvu410" value="0x39555659" summary="3 plane YCbCr format, 4x4 subsampled Cr (1) and Cb (2) planes"/>
+      <entry name="yuv411" value="0x31315559" summary="3 plane YCbCr format, 4x1 subsampled Cb (1) and Cr (2) planes"/>
+      <entry name="yvu411" value="0x31315659" summary="3 plane YCbCr format, 4x1 subsampled Cr (1) and Cb (2) planes"/>
+      <entry name="yuv420" value="0x32315559" summary="3 plane YCbCr format, 2x2 subsampled Cb (1) and Cr (2) planes"/>
+      <entry name="yvu420" value="0x32315659" summary="3 plane YCbCr format, 2x2 subsampled Cr (1) and Cb (2) planes"/>
+      <entry name="yuv422" value="0x36315559" summary="3 plane YCbCr format, 2x1 subsampled Cb (1) and Cr (2) planes"/>
+      <entry name="yvu422" value="0x36315659" summary="3 plane YCbCr format, 2x1 subsampled Cr (1) and Cb (2) planes"/>
+      <entry name="yuv444" value="0x34325559" summary="3 plane YCbCr format, non-subsampled Cb (1) and Cr (2) planes"/>
+      <entry name="yvu444" value="0x34325659" summary="3 plane YCbCr format, non-subsampled Cr (1) and Cb (2) planes"/>
     </enum>
 
     <request name="create_pool">
@@ -356,9 +359,9 @@
         descriptor, to use as backing memory for the pool.
       </description>
 
-      <arg name="id" type="new_id" interface="wl_shm_pool"/>
-      <arg name="fd" type="fd"/>
-      <arg name="size" type="int"/>
+      <arg name="id" type="new_id" interface="wl_shm_pool" summary="pool to create"/>
+      <arg name="fd" type="fd" summary="file descriptor for the pool"/>
+      <arg name="size" type="int" summary="pool size, in bytes"/>
     </request>
 
     <event name="format">
@@ -446,8 +449,8 @@
 	conjunction with wl_data_source.action for feedback.
       </description>
 
-      <arg name="serial" type="uint"/>
-      <arg name="mime_type" type="string" allow-null="true"/>
+      <arg name="serial" type="uint" summary="serial number of the accept request"/>
+      <arg name="mime_type" type="string" allow-null="true" summary="mime type accepted by the client"/>
     </request>
 
     <request name="receive">
@@ -468,8 +471,8 @@
 	clients may preemptively fetch data or examine it more closely to
 	determine acceptance.
       </description>
-      <arg name="mime_type" type="string"/>
-      <arg name="fd" type="fd"/>
+      <arg name="mime_type" type="string" summary="mime type desired by receiver"/>
+      <arg name="fd" type="fd" summary="file descriptor for data transfer"/>
     </request>
 
     <request name="destroy" type="destructor">
@@ -539,8 +542,8 @@
 	This request can only be made on drag-and-drop offers, a protocol error
 	will be raised otherwise.
       </description>
-      <arg name="dnd_actions" type="uint"/>
-      <arg name="preferred_action" type="uint"/>
+      <arg name="dnd_actions" type="uint" summary="actions supported by the destination client"/>
+      <arg name="preferred_action" type="uint" summary="action preferred by the destination client"/>
     </request>
 
     <event name="source_actions" since="3">
@@ -615,7 +618,7 @@
 	advertised to targets.  Can be called several times to offer
 	multiple types.
       </description>
-      <arg name="mime_type" type="string"/>
+      <arg name="mime_type" type="string" summary="mime type offered by the data source"/>
     </request>
 
     <request name="destroy" type="destructor">
@@ -689,7 +692,7 @@
 	wl_data_device.start_drag. Attempting to use the source other than
 	for drag-and-drop will raise a protocol error.
       </description>
-      <arg name="dnd_actions" type="uint"/>
+      <arg name="dnd_actions" type="uint" summary="actions supported by the data source"/>
     </request>
 
     <event name="dnd_drop_performed" since="3">
@@ -792,10 +795,10 @@
 	as an icon ends, the current and pending input regions become
 	undefined, and the wl_surface is unmapped.
       </description>
-      <arg name="source" type="object" interface="wl_data_source" allow-null="true"/>
-      <arg name="origin" type="object" interface="wl_surface"/>
-      <arg name="icon" type="object" interface="wl_surface" allow-null="true"/>
-      <arg name="serial" type="uint" summary="serial of the implicit grab on the origin"/>
+      <arg name="source" type="object" interface="wl_data_source" allow-null="true" summary="data source for the eventual transfer"/>
+      <arg name="origin" type="object" interface="wl_surface" summary="surface where the drag originates"/>
+      <arg name="icon" type="object" interface="wl_surface" allow-null="true" summary="drag-and-drop icon surface"/>
+      <arg name="serial" type="uint" summary="serial number of the implicit grab on the origin"/>
     </request>
 
     <request name="set_selection">
@@ -805,8 +808,8 @@
 
 	To unset the selection, set the source to NULL.
       </description>
-      <arg name="source" type="object" interface="wl_data_source" allow-null="true"/>
-      <arg name="serial" type="uint" summary="serial of the event that triggered this request"/>
+      <arg name="source" type="object" interface="wl_data_source" allow-null="true" summary="data source for the selection"/>
+      <arg name="serial" type="uint" summary="serial number of the event that triggered this request"/>
     </request>
 
     <event name="data_offer">
@@ -922,15 +925,15 @@
       <description summary="create a new data source">
         Create a new data source.
       </description>
-      <arg name="id" type="new_id" interface="wl_data_source"/>
+      <arg name="id" type="new_id" interface="wl_data_source" summary="data source to create"/>
     </request>
 
     <request name="get_data_device">
       <description summary="create a new data device">
         Create a new data device for a given seat.
       </description>
-      <arg name="id" type="new_id" interface="wl_data_device"/>
-      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="id" type="new_id" interface="wl_data_device" summary="data device to create"/>
+      <arg name="seat" type="object" interface="wl_seat" summary="seat associated with the data device"/>
     </request>
 
     <!-- Version 3 additions -->
@@ -961,10 +964,10 @@
 	or drags initiated with other buttons than BTN_LEFT to specific
 	actions (e.g. "ask").
       </description>
-      <entry name="none" value="0"/>
-      <entry name="copy" value="1"/>
-      <entry name="move" value="2"/>
-      <entry name="ask" value="4"/>
+      <entry name="none" value="0" summary="no action"/>
+      <entry name="copy" value="1" summary="copy action"/>
+      <entry name="move" value="2" summary="move action"/>
+      <entry name="ask" value="4" summary="ask action"/>
     </enum>
   </interface>
 
@@ -989,8 +992,8 @@
 
 	Only one shell surface can be associated with a given surface.
       </description>
-      <arg name="id" type="new_id" interface="wl_shell_surface"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="id" type="new_id" interface="wl_shell_surface" summary="shell surface to create"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="surface to be given the shell surface role"/>
     </request>
   </interface>
 
@@ -1036,15 +1039,15 @@
 	use this information to adapt its behavior, e.g. choose
 	an appropriate cursor image.
       </description>
-      <entry name="none" value="0"/>
-      <entry name="top" value="1"/>
-      <entry name="bottom" value="2"/>
-      <entry name="left" value="4"/>
-      <entry name="top_left" value="5"/>
-      <entry name="bottom_left" value="6"/>
-      <entry name="right" value="8"/>
-      <entry name="top_right" value="9"/>
-      <entry name="bottom_right" value="10"/>
+      <entry name="none" value="0" summary="no edge"/>
+      <entry name="top" value="1" summary="top edge"/>
+      <entry name="bottom" value="2" summary="bottom edge"/>
+      <entry name="left" value="4" summary="left edge"/>
+      <entry name="top_left" value="5" summary="top and left edges"/>
+      <entry name="bottom_left" value="6" summary="bottom and left edges"/>
+      <entry name="right" value="8" summary="right edge"/>
+      <entry name="top_right" value="9" summary="top and right edges"/>
+      <entry name="bottom_right" value="10" summary="bottom and right edges"/>
     </enum>
 
     <request name="resize">
@@ -1087,10 +1090,10 @@
 	The flags argument controls details of the transient behaviour.
       </description>
 
-      <arg name="parent" type="object" interface="wl_surface"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="flags" type="uint" enum="transient"/>
+      <arg name="parent" type="object" interface="wl_surface" summary="parent surface"/>
+      <arg name="x" type="int" summary="surface-local x coordinate"/>
+      <arg name="y" type="int" summary="surface-local y coordinate"/>
+      <arg name="flags" type="uint" enum="transient" summary="transient surface behavior"/>
     </request>
 
     <enum name="fullscreen_method">
@@ -1141,9 +1144,10 @@
 	with the dimensions for the output on which the surface will
 	be made fullscreen.
       </description>
-      <arg name="method" type="uint" enum="fullscreen_method"/>
-      <arg name="framerate" type="uint"/>
-      <arg name="output" type="object" interface="wl_output" allow-null="true"/>
+      <arg name="method" type="uint" enum="fullscreen_method" summary="method for resolving size conflict"/>
+      <arg name="framerate" type="uint" summary="framerate in mHz"/>
+      <arg name="output" type="object" interface="wl_output" allow-null="true"
+	   summary="output on which the surface is to be fullscreen"/>
     </request>
 
     <request name="set_popup">
@@ -1171,10 +1175,10 @@
 
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
       <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
-      <arg name="parent" type="object" interface="wl_surface"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="flags" type="uint" enum="transient"/>
+      <arg name="parent" type="object" interface="wl_surface" summary="parent surface"/>
+      <arg name="x" type="int" summary="surface-local x coordinate"/>
+      <arg name="y" type="int" summary="surface-local y coordinate"/>
+      <arg name="flags" type="uint" enum="transient" summary="transient surface behavior"/>
     </request>
 
     <request name="set_maximized">
@@ -1198,7 +1202,8 @@
 
 	The details depend on the compositor implementation.
       </description>
-      <arg name="output" type="object" interface="wl_output" allow-null="true"/>
+      <arg name="output" type="object" interface="wl_output" allow-null="true"
+	   summary="output on which the surface is to be maximized"/>
     </request>
 
     <request name="set_title">
@@ -1211,7 +1216,7 @@
 
 	The string must be encoded in UTF-8.
       </description>
-      <arg name="title" type="string"/>
+      <arg name="title" type="string" summary="surface title"/>
     </request>
 
     <request name="set_class">
@@ -1223,7 +1228,7 @@
 	file name (or the full path if it is a non-standard location) of
 	the application's .desktop file as the class.
       </description>
-      <arg name="class_" type="string"/>
+      <arg name="class_" type="string" summary="surface class"/>
     </request>
 
     <event name="ping">
@@ -1369,9 +1374,10 @@
 	following wl_surface.commit will remove the surface content.
       </description>
 
-      <arg name="buffer" type="object" interface="wl_buffer" allow-null="true"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
+      <arg name="buffer" type="object" interface="wl_buffer" allow-null="true"
+	   summary="buffer of surface contents"/>
+      <arg name="x" type="int" summary="surface-local x coordinate"/>
+      <arg name="y" type="int" summary="surface-local y coordinate"/>
     </request>
 
     <request name="damage">
@@ -1398,10 +1404,10 @@
 	and is probably the preferred and intuitive way of doing this.
       </description>
 
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+      <arg name="x" type="int" summary="surface-local x coordinate"/>
+      <arg name="y" type="int" summary="surface-local y coordinate"/>
+      <arg name="width" type="int" summary="width of damage rectangle"/>
+      <arg name="height" type="int" summary="height of damage rectangle"/>
     </request>
 
     <request name="frame">
@@ -1440,7 +1446,7 @@
 	milliseconds, with an undefined base.
       </description>
 
-      <arg name="callback" type="new_id" interface="wl_callback"/>
+      <arg name="callback" type="new_id" interface="wl_callback" summary="callback object for the frame request"/>
     </request>
 
     <request name="set_opaque_region">
@@ -1471,7 +1477,8 @@
 	region to be set to empty.
       </description>
 
-      <arg name="region" type="object" interface="wl_region" allow-null="true"/>
+      <arg name="region" type="object" interface="wl_region" allow-null="true"
+	   summary="opaque region of the surface"/>
     </request>
 
     <request name="set_input_region">
@@ -1500,7 +1507,8 @@
 	to infinite.
       </description>
 
-      <arg name="region" type="object" interface="wl_region" allow-null="true"/>
+      <arg name="region" type="object" interface="wl_region" allow-null="true"
+	   summary="input region of the surface"/>
     </request>
 
     <request name="commit">
@@ -1579,7 +1587,8 @@
 	wl_output.transform enum the invalid_transform protocol error
 	is raised.
       </description>
-      <arg name="transform" type="int" enum="wl_output.transform"/>
+      <arg name="transform" type="int" enum="wl_output.transform"
+	   summary="transform for interpreting buffer contents"/>
     </request>
 
     <!-- Version 3 additions -->
@@ -1610,7 +1619,8 @@
 	If scale is not positive the invalid_scale protocol error is
 	raised.
       </description>
-      <arg name="scale" type="int"/>
+      <arg name="scale" type="int"
+	   summary="positive scale for interpreting buffer contents"/>
     </request>
 
     <!-- Version 4 additions -->
@@ -1649,10 +1659,10 @@
 	after receiving the wl_surface.commit.
       </description>
 
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+      <arg name="x" type="int" summary="buffer-local x coordinate"/>
+      <arg name="y" type="int" summary="buffer-local y coordinate"/>
+      <arg name="width" type="int" summary="width of damage rectangle"/>
+      <arg name="height" type="int" summary="height of damage rectangle"/>
     </request>
    </interface>
 
@@ -1714,7 +1724,7 @@
 	It is a protocol violation to issue this request on a seat that has
 	never had the pointer capability.
       </description>
-      <arg name="id" type="new_id" interface="wl_pointer"/>
+      <arg name="id" type="new_id" interface="wl_pointer" summary="seat pointer"/>
     </request>
 
     <request name="get_keyboard">
@@ -1727,7 +1737,7 @@
 	It is a protocol violation to issue this request on a seat that has
 	never had the keyboard capability.
       </description>
-      <arg name="id" type="new_id" interface="wl_keyboard"/>
+      <arg name="id" type="new_id" interface="wl_keyboard" summary="seat keyboard"/>
     </request>
 
     <request name="get_touch">
@@ -1740,7 +1750,7 @@
 	It is a protocol violation to issue this request on a seat that has
 	never had the touch capability.
       </description>
-      <arg name="id" type="new_id" interface="wl_touch"/>
+      <arg name="id" type="new_id" interface="wl_touch" summary="seat touch interface"/>
     </request>
 
     <!-- Version 2 additions -->
@@ -1817,7 +1827,8 @@
       </description>
 
       <arg name="serial" type="uint" summary="serial of the enter event"/>
-      <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
+      <arg name="surface" type="object" interface="wl_surface" allow-null="true"
+	   summary="pointer surface"/>
       <arg name="hotspot_x" type="int" summary="surface-local x coordinate"/>
       <arg name="hotspot_y" type="int" summary="surface-local y coordinate"/>
     </request>
@@ -1891,8 +1902,8 @@
       <description summary="axis types">
 	Describes the axis types of scroll events.
       </description>
-      <entry name="vertical_scroll" value="0"/>
-      <entry name="horizontal_scroll" value="1"/>
+      <entry name="vertical_scroll" value="0" summary="vertical axis"/>
+      <entry name="horizontal_scroll" value="1" summary="horizontal axis"/>
     </enum>
 
     <event name="axis">
@@ -2279,12 +2290,12 @@
 	This enumeration describes how the physical
 	pixels on an output are laid out.
       </description>
-      <entry name="unknown" value="0"/>
-      <entry name="none" value="1"/>
-      <entry name="horizontal_rgb" value="2"/>
-      <entry name="horizontal_bgr" value="3"/>
-      <entry name="vertical_rgb" value="4"/>
-      <entry name="vertical_bgr" value="5"/>
+      <entry name="unknown" value="0" summary="unknown geometry"/>
+      <entry name="none" value="1" summary="no geometry"/>
+      <entry name="horizontal_rgb" value="2" summary="horizontal RGB"/>
+      <entry name="horizontal_bgr" value="3" summary="horizontal BGR"/>
+      <entry name="vertical_rgb" value="4" summary="vertical RGB"/>
+      <entry name="vertical_bgr" value="5" summary="vertical BGR"/>
     </enum>
 
     <enum name="transform">
@@ -2302,14 +2313,14 @@
 	surfaces.
       </description>
 
-      <entry name="normal" value="0"/>
-      <entry name="90" value="1"/>
-      <entry name="180" value="2"/>
-      <entry name="270" value="3"/>
-      <entry name="flipped" value="4"/>
-      <entry name="flipped_90" value="5"/>
-      <entry name="flipped_180" value="6"/>
-      <entry name="flipped_270" value="7"/>
+      <entry name="normal" value="0" summary="no transform"/>
+      <entry name="90" value="1" summary="90 degrees counter-clockwise"/>
+      <entry name="180" value="2" summary="180 degrees counter-clockwise"/>
+      <entry name="270" value="3" summary="270 degrees counter-clockwise"/>
+      <entry name="flipped" value="4" summary="180 degree flip around a vertical axis"/>
+      <entry name="flipped_90" value="5" summary="flip and rotate 90 degrees counter-clockwise"/>
+      <entry name="flipped_180" value="6" summary="flip and rotate 180 degrees counter-clockwise"/>
+      <entry name="flipped_270" value="7" summary="flip and rotate 270 degrees counter-clockwise"/>
     </enum>
 
     <event name="geometry">
@@ -2434,10 +2445,10 @@
 	Add the specified rectangle to the region.
       </description>
 
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+      <arg name="x" type="int" summary="region-local x coordinate"/>
+      <arg name="y" type="int" summary="region-local y coordinate"/>
+      <arg name="width" type="int" summary="rectangle width"/>
+      <arg name="height" type="int" summary="rectangle height"/>
     </request>
 
     <request name="subtract">
@@ -2445,10 +2456,10 @@
 	Subtract the specified rectangle from the region.
       </description>
 
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+      <arg name="x" type="int" summary="region-local x coordinate"/>
+      <arg name="y" type="int" summary="region-local y coordinate"/>
+      <arg name="width" type="int" summary="rectangle width"/>
+      <arg name="height" type="int" summary="rectangle height"/>
     </request>
   </interface>
 
