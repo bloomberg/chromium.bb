@@ -340,6 +340,7 @@ bool DownloadsListTracker::ShouldShow(const DownloadItem& item) const {
       !item.IsTemporary() &&
       !item.GetFileNameToReportUser().empty() &&
       !item.GetTargetFilePath().empty() &&
+      !item.GetURL().is_empty() &&
       DownloadItemModel(const_cast<DownloadItem*>(&item)).ShouldShowInShelf() &&
       DownloadQuery::MatchesQuery(search_terms_, item);
 }
