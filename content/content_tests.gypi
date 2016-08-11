@@ -308,6 +308,7 @@
       'browser/webrtc/webrtc_audio_debug_recordings_browsertest.cc',
       'browser/webrtc/webrtc_browsertest.cc',
       'browser/webrtc/webrtc_capture_from_element_browsertest.cc',
+      'browser/webrtc/webrtc_constraints_browsertest.cc',
       'browser/webrtc/webrtc_content_browsertest_base.cc',
       'browser/webrtc/webrtc_content_browsertest_base.h',
       'browser/webrtc/webrtc_data_browsertest.cc',
