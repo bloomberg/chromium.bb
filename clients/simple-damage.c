@@ -39,7 +39,7 @@
 #include <wayland-client.h>
 #include "shared/os-compatibility.h"
 #include "shared/zalloc.h"
-#include "xdg-shell-unstable-v5-client-protocol.h"
+#include "xdg-shell-unstable-v6-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
 
@@ -51,7 +51,7 @@ struct display {
 	int compositor_version;
 	struct wl_compositor *compositor;
 	struct wp_viewporter *viewporter;
-	struct xdg_shell *shell;
+	struct zxdg_shell_v6 *shell;
 	struct zwp_fullscreen_shell_v1 *fshell;
 	struct wl_shm *shm;
 	uint32_t formats;
@@ -74,10 +74,12 @@ struct window {
 	int width, height, border;
 	struct wl_surface *surface;
 	struct wp_viewport *viewport;
-	struct xdg_surface *xdg_surface;
+	struct zxdg_surface_v6 *xdg_surface;
+	struct zxdg_toplevel_v6 *xdg_toplevel;
 	struct wl_callback *callback;
 	struct buffer buffers[2];
 	struct buffer *prev_buffer;
+	bool wait_for_configure;
 
 	enum window_flags flags;
 	int scale;
@@ -92,6 +94,9 @@ struct window {
 };
 
 static int running = 1;
+
+static void
+redraw(void *data, struct wl_callback *callback, uint32_t time);
 
 static void
 buffer_release(void *data, struct wl_buffer *buffer)
@@ -144,21 +149,39 @@ create_shm_buffer(struct display *display, struct buffer *buffer,
 }
 
 static void
-handle_configure(void *data, struct xdg_surface *surface,
-		 int32_t width, int32_t height, struct wl_array *states,
-		 uint32_t serial)
+xdg_surface_handle_configure(void *data, struct zxdg_surface_v6 *surface,
+			     uint32_t serial)
+{
+	struct window *window = data;
+
+	zxdg_surface_v6_ack_configure(surface, serial);
+
+	if (window->wait_for_configure) {
+		redraw(window, NULL, 0);
+		window->wait_for_configure = false;
+	}
+}
+
+static const struct zxdg_surface_v6_listener xdg_surface_listener = {
+	xdg_surface_handle_configure,
+};
+
+static void
+xdg_toplevel_handle_configure(void *data, struct zxdg_toplevel_v6 *toplevel,
+			      int32_t width, int32_t height,
+			      struct wl_array *states)
 {
 }
 
 static void
-handle_close(void *data, struct xdg_surface *xdg_surface)
+xdg_toplevel_handle_close(void *data, struct zxdg_toplevel_v6 *xdg_toplevel)
 {
 	running = 0;
 }
 
-static const struct xdg_surface_listener xdg_surface_listener = {
-	handle_configure,
-	handle_close,
+static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
+	xdg_toplevel_handle_configure,
+	xdg_toplevel_handle_close,
 };
 
 static float
@@ -296,15 +319,26 @@ create_window(struct display *display, int width, int height,
 
 	if (display->shell) {
 		window->xdg_surface =
-			xdg_shell_get_xdg_surface(display->shell,
-						  window->surface);
+			zxdg_shell_v6_get_xdg_surface(display->shell,
+						      window->surface);
 
 		assert(window->xdg_surface);
 
-		xdg_surface_add_listener(window->xdg_surface,
-					 &xdg_surface_listener, window);
+		zxdg_surface_v6_add_listener(window->xdg_surface,
+					     &xdg_surface_listener, window);
 
-		xdg_surface_set_title(window->xdg_surface, "simple-damage");
+		window->xdg_toplevel =
+			zxdg_surface_v6_get_toplevel(window->xdg_surface);
+
+		assert(window->xdg_toplevel);
+
+		zxdg_toplevel_v6_add_listener(window->xdg_toplevel,
+					      &xdg_toplevel_listener, window);
+
+		zxdg_toplevel_v6_set_title(window->xdg_toplevel, "simple-damage");
+
+		window->wait_for_configure = true;
+		wl_surface_commit(window->surface);
 	} else if (display->fshell) {
 		zwp_fullscreen_shell_v1_present_surface(display->fshell,
 							window->surface,
@@ -335,8 +369,10 @@ destroy_window(struct window *window)
 	if (window->buffers[1].buffer)
 		wl_buffer_destroy(window->buffers[1].buffer);
 
+	if (window->xdg_toplevel)
+		zxdg_toplevel_v6_destroy(window->xdg_toplevel);
 	if (window->xdg_surface)
-		xdg_surface_destroy(window->xdg_surface);
+		zxdg_surface_v6_destroy(window->xdg_surface);
 	if (window->viewport)
 		wp_viewport_destroy(window->viewport);
 	wl_surface_destroy(window->surface);
@@ -675,20 +711,14 @@ struct wl_shm_listener shm_listener = {
 };
 
 static void
-xdg_shell_ping(void *data, struct xdg_shell *shell, uint32_t serial)
+xdg_shell_ping(void *data, struct zxdg_shell_v6*shell, uint32_t serial)
 {
-	xdg_shell_pong(shell, serial);
+	zxdg_shell_v6_pong(shell, serial);
 }
 
-static const struct xdg_shell_listener xdg_shell_listener = {
+static const struct zxdg_shell_v6_listener xdg_shell_listener = {
 	xdg_shell_ping,
 };
-
-#define XDG_VERSION 5 /* The version of xdg-shell that we implement */
-#ifdef static_assert
-static_assert(XDG_VERSION == XDG_SHELL_VERSION_CURRENT,
-	      "Interface version doesn't match implementation version");
-#endif
 
 static void
 registry_handle_global(void *data, struct wl_registry *registry,
@@ -713,11 +743,10 @@ registry_handle_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, "wp_viewporter") == 0) {
 		d->viewporter = wl_registry_bind(registry, id,
 						 &wp_viewporter_interface, 1);
-	} else if (strcmp(interface, "xdg_shell") == 0) {
+	} else if (strcmp(interface, "zxdg_shell_v6") == 0) {
 		d->shell = wl_registry_bind(registry,
-					    id, &xdg_shell_interface, 1);
-		xdg_shell_use_unstable_version(d->shell, XDG_VERSION);
-		xdg_shell_add_listener(d->shell, &xdg_shell_listener, d);
+					    id, &zxdg_shell_v6_interface, 1);
+		zxdg_shell_v6_add_listener(d->shell, &xdg_shell_listener, d);
 	} else if (strcmp(interface, "zwp_fullscreen_shell_v1") == 0) {
 		d->fshell = wl_registry_bind(registry,
 					     id, &zwp_fullscreen_shell_v1_interface, 1);
@@ -780,7 +809,7 @@ destroy_display(struct display *display)
 		wl_shm_destroy(display->shm);
 
 	if (display->shell)
-		xdg_shell_destroy(display->shell);
+		zxdg_shell_v6_destroy(display->shell);
 
 	if (display->fshell)
 		zwp_fullscreen_shell_v1_release(display->fshell);
@@ -913,7 +942,8 @@ main(int argc, char **argv)
 	sigint.sa_flags = SA_RESETHAND;
 	sigaction(SIGINT, &sigint, NULL);
 
-	redraw(window, NULL, 0);
+	if (!window->wait_for_configure)
+		redraw(window, NULL, 0);
 
 	while (running && ret != -1)
 		ret = wl_display_dispatch(display->display);
