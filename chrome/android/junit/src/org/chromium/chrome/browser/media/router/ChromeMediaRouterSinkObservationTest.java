@@ -9,6 +9,9 @@ import static org.junit.Assert.assertTrue;
 
 import android.os.Build;
 
+import org.chromium.base.BaseSwitches;
+import org.chromium.base.CommandLine;
+import org.chromium.base.SysUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.router.cast.MediaSink;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -23,8 +26,7 @@ import java.util.List;
  * Sink observation tests for ChromeMediaRouter.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        shadows = { ChromeMediaRouterTestBase.FakeActivityManager.class })
+@Config(manifest = Config.NONE)
 public class ChromeMediaRouterSinkObservationTest extends ChromeMediaRouterTestBase {
     @Test
     @Feature({"MediaRouter"})
@@ -92,15 +94,19 @@ public class ChromeMediaRouterSinkObservationTest extends ChromeMediaRouterTestB
 
     @Test
     @Feature({"MediaRouter"})
-    public void testNotLowRamDevice() {
-        sIsLowRamDevice = false;
+    public void testNotLowRamDevice() throws Exception {
+        SysUtils.reset();
+        CommandLine.getInstance().appendSwitch(
+                BaseSwitches.DISABLE_LOW_END_DEVICE_MODE);
         assertTrue(mChromeMediaRouter.startObservingMediaSinks(SOURCE_ID1));
     }
 
     @Test
     @Feature({"MediaRouter"})
-    public void testIsLowRamDevice() {
-        sIsLowRamDevice = true;
+    public void testIsLowRamDevice() throws Exception {
+        SysUtils.reset();
+        CommandLine.getInstance().appendSwitch(
+                BaseSwitches.ENABLE_LOW_END_DEVICE_MODE);
         assertEquals(Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2,
                      mChromeMediaRouter.startObservingMediaSinks(SOURCE_ID1));
     }

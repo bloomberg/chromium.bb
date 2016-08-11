@@ -13,10 +13,7 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.os.Bundle;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.After;
@@ -25,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.multidex.ShadowMultiDex;
 import org.robolectric.util.ActivityController;
 
 /**
@@ -130,11 +128,6 @@ public class FirstRunFlowSequencerTest {
     @After
     public void tearDown() {
         mActivityController.pause().stop().destroy();
-
-        // TODO(jbudorick): Remove this once we roll to Robolectric 3.0, which should contain
-        //  https://github.com/robolectric/robolectric/pull/1479
-        ApplicationStatus.onStateChangeForTesting(mActivityController.get(),
-                ActivityState.DESTROYED);
     }
 
     @Test

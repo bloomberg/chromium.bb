@@ -13,15 +13,17 @@ import android.view.KeyEvent;
 import junit.framework.Assert;
 
 import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
-import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.multidex.ShadowMultiDex;
 import org.robolectric.util.ActivityController;
 
 /** Unit tests for {@link BaseChromiumApplication}. */
@@ -52,7 +54,7 @@ public class BaseChromiumApplicationTest {
 
     @Test
     public void testWindowsFocusChanged() throws Exception {
-        BaseChromiumApplication app = (BaseChromiumApplication) Robolectric.application;
+        BaseChromiumApplication app = (BaseChromiumApplication) RuntimeEnvironment.application;
 
         WindowFocusChangedListener mock = mock(WindowFocusChangedListener.class);
         app.registerWindowFocusChangedListener(mock);
@@ -60,7 +62,7 @@ public class BaseChromiumApplicationTest {
         ActivityController<Activity> controller =
                 Robolectric.buildActivity(Activity.class).create().start().visible();
         TrackingShadowActivity shadow =
-                (TrackingShadowActivity) Robolectric.shadowOf(controller.get());
+                (TrackingShadowActivity) Shadows.shadowOf(controller.get());
 
         controller.get().getWindow().getCallback().onWindowFocusChanged(true);
         // Assert that listeners were notified.

@@ -33,8 +33,7 @@ import java.util.List;
  * Robolectric tests for DiscoveryCallback.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        shadows = { ChromeMediaRouterTestBase.FakeActivityManager.class })
+@Config(manifest = Config.NONE)
 public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     protected DiscoveryDelegate mDiscoveryDelegate;
 

@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.RobolectricPackageManager;
 
@@ -111,7 +111,7 @@ public class ManifestUpgradeDetectorTest {
 
     @Before
     public void setUp() {
-        Context context = Robolectric.application;
+        Context context = RuntimeEnvironment.application;
         ContextUtils.initApplicationContextForTests(context);
         mPackageManager = (RobolectricPackageManager) context.getPackageManager();
 

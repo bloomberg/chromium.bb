@@ -119,7 +119,6 @@ junit_binary("webapk_shell_apk_junit_tests") {
   java_files = [ "junit/src/org/chromium/webapk/shell_apk/HostBrowserClassLoaderTest.java" ]
   deps = [
     ":webapk_java",
-    "//base:base_junit_test_support",
     "//chrome/android/webapk/libs/common:common_java",
   ]
 }

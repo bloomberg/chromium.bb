@@ -2393,20 +2393,6 @@ if (is_android) {
     ]
   }
 
-  # TODO(jbudorick): Remove this once we roll to robolectric 3.0 and pull
-  # in the multidex shadow library. crbug.com/522043
-  # GYP: //base.gyp:base_junit_test_support
-  java_library("base_junit_test_support") {
-    testonly = true
-    java_files = [ "test/android/junit/src/org/chromium/base/test/shadows/ShadowMultiDex.java" ]
-    deps = [
-      "//third_party/android_tools:android_support_multidex_java",
-      "//third_party/robolectric:android-all-4.3_r2-robolectric-0",
-      "//third_party/robolectric:robolectric_java",
-    ]
-    srcjar_deps = [ ":base_build_config_gen" ]
-  }
-
   # GYP: //base.gyp:base_junit_tests
   junit_binary("base_junit_tests") {
     java_files = [
@@ -2421,8 +2407,8 @@ if (is_android) {
     deps = [
       ":base_java",
       ":base_java_test_support",
-      ":base_junit_test_support",
     ]
+    srcjar_deps = [ ":base_build_config_gen" ]
   }
 
   # GYP: //base.gyp:base_java_application_state

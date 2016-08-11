@@ -1375,6 +1375,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/offlinepages/ClientIdTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridgeTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageTabObserverTest.java",
+  "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageTestRunner.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtilsTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/ShadowGcmNetworkManager.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/StubBackgroundSchedulerProcessor.java",

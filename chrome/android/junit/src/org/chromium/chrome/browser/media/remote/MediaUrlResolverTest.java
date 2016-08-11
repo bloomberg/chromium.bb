@@ -17,8 +17,8 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowApplication;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -383,7 +383,8 @@ public class MediaUrlResolverTest {
             }
         };
         resolver.execute();
-        Robolectric.runBackgroundTasks();
+        ShadowApplication.runBackgroundTasks();
+
         return delegate;
     }
 

@@ -14,20 +14,20 @@ import org.robolectric.annotation.Config;
 
 /** Unit tests for MinAndroidSdkLevelSkipCheck. */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, reportSdk = 19)
+@Config(manifest = Config.NONE, sdk = 18)
 public class MinAndroidSdkLevelSkipCheckTest {
 
     private static class UnannotatedBaseClass extends TestCase {
         public UnannotatedBaseClass(String name) {
             super(name);
         }
-        @MinAndroidSdkLevel(18) public void min18Method() {}
+        @MinAndroidSdkLevel(17) public void min17Method() {}
         @MinAndroidSdkLevel(20) public void min20Method() {}
     }
 
-    @MinAndroidSdkLevel(18)
-    private static class Min18Class extends UnannotatedBaseClass {
-        public Min18Class(String name) {
+    @MinAndroidSdkLevel(17)
+    private static class Min17Class extends UnannotatedBaseClass {
+        public Min17Class(String name) {
             super(name);
         }
         public void unannotatedMethod() {}
@@ -41,8 +41,8 @@ public class MinAndroidSdkLevelSkipCheckTest {
         public void unannotatedMethod() {}
     }
 
-    private static class ExtendsMin18Class extends Min18Class {
-        public ExtendsMin18Class(String name) {
+    private static class ExtendsMin17Class extends Min17Class {
+        public ExtendsMin17Class(String name) {
             super(name);
         }
         public void unannotatedMethod() {}
@@ -58,7 +58,7 @@ public class MinAndroidSdkLevelSkipCheckTest {
     @Test
     public void testAnnotatedMethodAboveMin() {
         Assert.assertFalse(new MinAndroidSdkLevelSkipCheck().shouldSkip(
-                new UnannotatedBaseClass("min18Method")));
+                new UnannotatedBaseClass("min17Method")));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class MinAndroidSdkLevelSkipCheckTest {
     @Test
     public void testAnnotatedClassAboveMin() {
         Assert.assertFalse(new MinAndroidSdkLevelSkipCheck().shouldSkip(
-                new Min18Class("unannotatedMethod")));
+                new Min17Class("unannotatedMethod")));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class MinAndroidSdkLevelSkipCheckTest {
     @Test
     public void testAnnotatedSuperclassAboveMin() {
         Assert.assertFalse(new MinAndroidSdkLevelSkipCheck().shouldSkip(
-                new ExtendsMin18Class("unannotatedMethod")));
+                new ExtendsMin17Class("unannotatedMethod")));
     }
 
     @Test

@@ -11,13 +11,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-import android.app.ActivityManager;
-
 import org.chromium.base.CommandLine;
 import org.junit.Before;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.ShadowActivityManager;
 import org.robolectric.shadows.ShadowLog;
 
 /**
@@ -56,26 +51,12 @@ public class ChromeMediaRouterTestBase {
     protected static final int TAB_ID2 = 2;
     protected static final int REQUEST_ID1 = 1;
     protected static final int REQUEST_ID2 = 2;
-    protected static boolean sIsLowRamDevice;
     protected ChromeMediaRouter mChromeMediaRouter;
     protected MediaRouteProvider mRouteProvider;
-
-    /**
-     * Robolectric's ShadowActivityManager implementation in order to extend
-     * isLowRamDevice and be able to instrument the tests.
-     */
-    @Implements(ActivityManager.class)
-    public static class FakeActivityManager extends ShadowActivityManager {
-        @Implementation
-        public boolean isLowRamDevice() {
-            return sIsLowRamDevice;
-        }
-    }
 
     @Before
     public void setUp() {
         ShadowLog.stream = System.out;
-        sIsLowRamDevice = false;
         mChromeMediaRouter = spy(new ChromeMediaRouter(0));
         mRouteProvider = mock(MediaRouteProvider.class);
         doReturn(true).when(mRouteProvider).supportsSource(anyString());
