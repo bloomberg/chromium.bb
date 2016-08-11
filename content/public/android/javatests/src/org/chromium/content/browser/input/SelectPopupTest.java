@@ -67,8 +67,6 @@ public class SelectPopupTest extends ContentShellTestBase {
         super.setUp();
         launchContentShellWithUrl(SELECT_URL);
         waitForActiveShellToBeDoneLoading();
-        // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
-        assertWaitForPageScaleFactorMatch(1);
     }
 
     /**

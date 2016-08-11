@@ -121,12 +121,12 @@ public class ContentShellTestBase
                     updateFailureReason("Shell is null.");
                     return false;
                 }
-                if (TextUtils.isEmpty(shell.getContentViewCore().getWebContents().getUrl())) {
-                    updateFailureReason("Shell's URL is empty or null.");
+                if (shell.isLoading()) {
+                    updateFailureReason("Shell is still loading.");
                     return false;
                 }
-                if (!shell.getContentViewCore().getWebContents().isReady()) {
-                    updateFailureReason("Shell's view is not ready.");
+                if (TextUtils.isEmpty(shell.getContentViewCore().getWebContents().getUrl())) {
+                    updateFailureReason("Shell's URL is empty or null.");
                     return false;
                 }
                 return true;

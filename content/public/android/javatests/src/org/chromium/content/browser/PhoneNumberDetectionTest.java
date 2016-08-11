@@ -30,7 +30,6 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     public void testInternationalNumberIntents() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/phone_international.html");
-        assertWaitForPageScaleFactorMatch(1.0f);
 
         // US: +1 650-253-0000.
         String intentUrl = scrollAndTapExpectingIntent("US");
@@ -147,7 +146,6 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     public void testLocalUSNumbers() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/phone_local.html");
-        assertWaitForPageScaleFactorMatch(1.0f);
 
         // US_1: 1-888-433-5788.
         String intentUrl = scrollAndTapExpectingIntent("US_1");
@@ -172,7 +170,6 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     public void testLocalUKNumbers() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/phone_local.html");
-        assertWaitForPageScaleFactorMatch(1.0f);
 
         // GB_1: (0) 20 7323 8299.
         String intentUrl = scrollAndTapExpectingIntent("GB_1");
@@ -197,7 +194,6 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     public void testLocalFRNumbers() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/phone_local.html");
-        assertWaitForPageScaleFactorMatch(1.0f);
 
         // FR_1: 01 40 20 50 50.
         String intentUrl = scrollAndTapExpectingIntent("FR_1");
