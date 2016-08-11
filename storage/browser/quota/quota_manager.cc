@@ -1578,8 +1578,8 @@ void QuotaManager::DidGetEvictionOrigin(const GetOriginCallback& callback,
                                         const GURL& origin) {
   // Make sure the returned origin is (still) not in the origin_in_use_ set
   // and has not been accessed since we posted the task.
-  if (ContainsKey(origins_in_use_, origin) ||
-      ContainsKey(access_notified_origins_, origin)) {
+  if (base::ContainsKey(origins_in_use_, origin) ||
+      base::ContainsKey(access_notified_origins_, origin)) {
     callback.Run(GURL());
   } else {
     callback.Run(origin);

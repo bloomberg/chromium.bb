@@ -754,7 +754,7 @@ CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
 }
 
 CopyOrMoveOperationDelegate::~CopyOrMoveOperationDelegate() {
-  STLDeleteElements(&running_copy_set_);
+  base::STLDeleteElements(&running_copy_set_);
 }
 
 void CopyOrMoveOperationDelegate::Run() {

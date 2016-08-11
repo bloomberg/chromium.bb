@@ -962,7 +962,7 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase(
   for (size_t i = 0; i < type_strings_to_prepopulate.size(); ++i) {
     const std::string type_string = type_strings_to_prepopulate[i];
     // Only handles known types.
-    if (!ContainsKey(known_type_strings_, type_string))
+    if (!base::ContainsKey(known_type_strings_, type_string))
       continue;
     base::File::Error error = base::File::FILE_ERROR_FAILED;
     base::FilePath path = GetDirectoryForOriginAndType(
@@ -1264,8 +1264,8 @@ void ObfuscatedFileUtil::MarkUsed() {
 
 void ObfuscatedFileUtil::DropDatabases() {
   origin_database_.reset();
-  STLDeleteContainerPairSecondPointers(
-      directories_.begin(), directories_.end());
+  base::STLDeleteContainerPairSecondPointers(directories_.begin(),
+                                             directories_.end());
   directories_.clear();
   timer_.reset();
 }

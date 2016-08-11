@@ -161,7 +161,7 @@ bool FileSystemUsageCache::Delete(const base::FilePath& usage_file_path) {
 void FileSystemUsageCache::CloseCacheFiles() {
   TRACE_EVENT0("FileSystem", "UsageCache::CloseCacheFiles");
   DCHECK(CalledOnValidThread());
-  STLDeleteValues(&cache_files_);
+  base::STLDeleteValues(&cache_files_);
   timer_.reset();
 }
 
@@ -300,7 +300,7 @@ bool FileSystemUsageCache::CalledOnValidThread() {
 bool FileSystemUsageCache::HasCacheFileHandle(const base::FilePath& file_path) {
   DCHECK(CalledOnValidThread());
   DCHECK_LE(cache_files_.size(), kMaxHandleCacheSize);
-  return ContainsKey(cache_files_, file_path);
+  return base::ContainsKey(cache_files_, file_path);
 }
 
 }  // namespace storage

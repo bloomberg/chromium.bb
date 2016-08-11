@@ -42,7 +42,7 @@ UsageTracker::UsageTracker(const QuotaClientList& clients,
 }
 
 UsageTracker::~UsageTracker() {
-  STLDeleteValues(&client_tracker_map_);
+  base::STLDeleteValues(&client_tracker_map_);
 }
 
 ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {

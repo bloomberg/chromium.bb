@@ -424,8 +424,8 @@ IsolatedContext::IsolatedContext() {
 }
 
 IsolatedContext::~IsolatedContext() {
-  STLDeleteContainerPairSecondPointers(instance_map_.begin(),
-                                       instance_map_.end());
+  base::STLDeleteContainerPairSecondPointers(instance_map_.begin(),
+                                             instance_map_.end());
 }
 
 FileSystemURL IsolatedContext::CrackFileSystemURL(

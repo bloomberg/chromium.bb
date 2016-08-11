@@ -63,7 +63,7 @@ BlobStorageRegistry::Entry* BlobStorageRegistry::CreateEntry(
     const std::string& uuid,
     const std::string& content_type,
     const std::string& content_disposition) {
-  DCHECK(!ContainsKey(blob_map_, uuid));
+  DCHECK(!base::ContainsKey(blob_map_, uuid));
   std::unique_ptr<Entry> entry(new Entry(1, BlobState::PENDING));
   entry->content_type = content_type;
   entry->content_disposition = content_disposition;
@@ -115,7 +115,7 @@ bool BlobStorageRegistry::DeleteURLMapping(const GURL& blob_url,
 }
 
 bool BlobStorageRegistry::IsURLMapped(const GURL& blob_url) const {
-  return ContainsKey(url_to_uuid_, blob_url);
+  return base::ContainsKey(url_to_uuid_, blob_url);
 }
 
 BlobStorageRegistry::Entry* BlobStorageRegistry::GetEntryFromURL(

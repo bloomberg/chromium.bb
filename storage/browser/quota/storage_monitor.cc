@@ -119,7 +119,7 @@ void StorageObserverList::MaybeDispatchEvent(
 }
 
 void StorageObserverList::ScheduleUpdateForObserver(StorageObserver* observer) {
-  DCHECK(ContainsKey(observers_, observer));
+  DCHECK(base::ContainsKey(observers_, observer));
   observers_[observer].requires_update = true;
 }
 
@@ -247,7 +247,7 @@ StorageTypeObservers::StorageTypeObservers(QuotaManager* quota_manager)
 }
 
 StorageTypeObservers::~StorageTypeObservers() {
-  STLDeleteValues(&host_observers_map_);
+  base::STLDeleteValues(&host_observers_map_);
 }
 
 void StorageTypeObservers::AddObserver(
@@ -323,7 +323,7 @@ StorageMonitor::StorageMonitor(QuotaManager* quota_manager)
 }
 
 StorageMonitor::~StorageMonitor() {
-  STLDeleteValues(&storage_type_observers_map_);
+  base::STLDeleteValues(&storage_type_observers_map_);
 }
 
 void StorageMonitor::AddObserver(

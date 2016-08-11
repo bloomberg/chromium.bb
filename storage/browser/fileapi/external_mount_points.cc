@@ -253,15 +253,15 @@ void ExternalMountPoints::RevokeAllFileSystems() {
     instance_map_.clear();
     path_to_name_map_.clear();
   }
-  STLDeleteContainerPairSecondPointers(instance_map_copy.begin(),
-                                       instance_map_copy.end());
+  base::STLDeleteContainerPairSecondPointers(instance_map_copy.begin(),
+                                             instance_map_copy.end());
 }
 
 ExternalMountPoints::ExternalMountPoints() {}
 
 ExternalMountPoints::~ExternalMountPoints() {
-  STLDeleteContainerPairSecondPointers(instance_map_.begin(),
-                                       instance_map_.end());
+  base::STLDeleteContainerPairSecondPointers(instance_map_.begin(),
+                                             instance_map_.end());
 }
 
 FileSystemURL ExternalMountPoints::CrackFileSystemURL(

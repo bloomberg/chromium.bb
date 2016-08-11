@@ -76,7 +76,7 @@ BlobReader::BlobReader(
 }
 
 BlobReader::~BlobReader() {
-  STLDeleteValues(&index_to_reader_);
+  base::STLDeleteValues(&index_to_reader_);
 }
 
 BlobReader::Status BlobReader::CalculateSize(
