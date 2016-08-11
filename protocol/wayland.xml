@@ -1018,7 +1018,7 @@
 	A client must respond to a ping event with a pong request or
 	the client may be deemed unresponsive.
       </description>
-      <arg name="serial" type="uint" summary="serial of the ping event"/>
+      <arg name="serial" type="uint" summary="serial number of the ping event"/>
     </request>
 
     <request name="move">
@@ -1030,7 +1030,7 @@
 	the surface (e.g. fullscreen or maximized).
       </description>
       <arg name="seat" type="object" interface="wl_seat" summary="seat whose pointer is used"/>
-      <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
+      <arg name="serial" type="uint" summary="serial number of the implicit grab on the pointer"/>
     </request>
 
     <enum name="resize" bitfield="true">
@@ -1060,7 +1060,7 @@
 	the surface (e.g. fullscreen or maximized).
       </description>
       <arg name="seat" type="object" interface="wl_seat" summary="seat whose pointer is used"/>
-      <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
+      <arg name="serial" type="uint" summary="serial number of the implicit grab on the pointer"/>
       <arg name="edges" type="uint" enum="resize" summary="which edge or corner is being dragged"/>
     </request>
 
@@ -1175,7 +1175,7 @@
       </description>
 
       <arg name="seat" type="object" interface="wl_seat" summary="seat whose pointer is used"/>
-      <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
+      <arg name="serial" type="uint" summary="serial number of the implicit grab on the pointer"/>
       <arg name="parent" type="object" interface="wl_surface" summary="parent surface"/>
       <arg name="x" type="int" summary="surface-local x coordinate"/>
       <arg name="y" type="int" summary="surface-local y coordinate"/>
@@ -1827,7 +1827,7 @@
 	undefined, and the wl_surface is unmapped.
       </description>
 
-      <arg name="serial" type="uint" summary="serial of the enter event"/>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"
 	   summary="pointer surface"/>
       <arg name="hotspot_x" type="int" summary="surface-local x coordinate"/>
