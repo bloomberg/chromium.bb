@@ -1060,9 +1060,6 @@ void NavigatorImpl::RecordNavigationMetrics(
     SiteInstance* site_instance) {
   DCHECK(site_instance->HasProcess());
 
-  if (!details.is_in_page)
-    RecordAction(base::UserMetricsAction("FrameLoad"));
-
   if (!details.is_main_frame || !navigation_data_ ||
       navigation_data_->url_job_start_time_.is_null() ||
       navigation_data_->url_ != params.original_request_url) {

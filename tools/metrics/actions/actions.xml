@@ -4155,11 +4155,13 @@ should be able to be added at any place in this file.
 <action name="FrameLoad" not_user_triggered="true">
   <owner>thestig@chromium.org</owner>
   <description>Count of successful frame loads to new pages.</description>
+  <obsolete>No longer tracked.</obsolete>
 </action>
 
 <action name="FrameLoadWithFlash" not_user_triggered="true">
   <owner>thestig@chromium.org</owner>
   <description>Count of frame loads that also load PPAPI Flash.</description>
+  <obsolete>No longer tracked.</obsolete>
 </action>
 
 <action name="Gesture_Overview">
@@ -9843,12 +9845,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NavEntryCommitted" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mpearson@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="NavEntryCommitted.SRP" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mpearson@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
