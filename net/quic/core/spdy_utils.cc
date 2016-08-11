@@ -121,6 +121,12 @@ bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
       return false;
     }
 
+    if (std::any_of(name.begin(), name.end(), base::IsAsciiUpper<char>)) {
+      DVLOG(1) << "Malformed header: Header name " << name
+               << " contains upper-case characters.";
+      return false;
+    }
+
     if (FLAGS_chromium_http2_flag_use_new_spdy_header_block_header_joining) {
       headers->AppendValueOrAddHeader(name, p.second);
     } else {
