@@ -84,11 +84,12 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "buffer_unittest.cc",
-    "display_unittest.cc",
-    "gamepad_unittest.cc",
-    "keyboard_unittest.cc",
-    "pointer_unittest.cc",
+    # Disable tests - they are flaky: crbug.com/630625
+    # "buffer_unittest.cc",
+    # "display_unittest.cc",
+    # "gamepad_unittest.cc",
+    # "keyboard_unittest.cc",
+    # "pointer_unittest.cc",
     "shared_memory_unittest.cc",
     "shell_surface_unittest.cc",
     "sub_surface_unittest.cc",
