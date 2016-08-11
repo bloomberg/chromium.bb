@@ -41,7 +41,9 @@ class WebrtcVideoEncoder : public webrtc::VideoEncoder {
   int32_t SetChannelParameters(uint32_t packet_loss, int64_t rtt) override;
   int32_t SetRates(uint32_t bitrate, uint32_t framerate) override;
 
-  int SendEncodedFrame(std::unique_ptr<VideoPacket> pkt);
+  webrtc::EncodedImageCallback::Result SendEncodedFrame(
+      std::unique_ptr<VideoPacket> packet,
+      base::TimeTicks capture_time);
   void SetKeyFrameRequestCallback(const base::Closure& key_frame_request);
   void SetTargetBitrateCallback(const TargetBitrateCallback& target_bitrate_cb);
 
@@ -74,7 +76,9 @@ class WebrtcVideoEncoderFactory : public cricket::WebRtcVideoEncoderFactory {
   bool EncoderTypeHasInternalSource(webrtc::VideoCodecType type) const override;
   void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) override;
 
-  int SendEncodedFrame(std::unique_ptr<VideoPacket> pkt);
+  webrtc::EncodedImageCallback::Result SendEncodedFrame(
+      std::unique_ptr<VideoPacket> packet,
+      base::TimeTicks capture_time);
 
   void SetKeyFrameRequestCallback(const base::Closure& key_frame_request);
   void SetTargetBitrateCallback(const TargetBitrateCallback& target_bitrate_cb);

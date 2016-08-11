@@ -69,7 +69,13 @@ class WebrtcConnectionToHost : public ConnectionToHost,
 
   void NotifyIfChannelsReady();
 
+  WebrtcVideoRendererAdapter* GetOrCreateVideoAdapter(const std::string& label);
+
   void CloseChannels();
+
+  void OnFrameRendered(uint32_t frame_id,
+                       base::TimeTicks event_timestamp,
+                       base::TimeTicks frame_rendered_time);
 
   void SetState(State state, ErrorCode error);
 

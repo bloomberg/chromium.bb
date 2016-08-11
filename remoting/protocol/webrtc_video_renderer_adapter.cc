@@ -1,4 +1,4 @@
- // Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,12 +15,12 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
+#include "remoting/protocol/client_video_stats_dispatcher.h"
 #include "remoting/protocol/frame_consumer.h"
 #include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/video_renderer.h"
-#include "third_party/libyuv/include/libyuv/convert_argb.h"
+#include "remoting/protocol/webrtc_transport.h"
 #include "third_party/libyuv/include/libyuv/convert_from.h"
-#include "third_party/libyuv/include/libyuv/video_common.h"
 #include "third_party/webrtc/media/base/videoframe.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -28,6 +28,9 @@ namespace remoting {
 namespace protocol {
 
 namespace {
+
+// Maximum number of ClientFrameStats instances to keep.
+const int kMaxQueuedStats = 200;
 
 std::unique_ptr<webrtc::DesktopFrame> ConvertYuvToRgb(
     scoped_refptr<webrtc::VideoFrameBuffer> yuv_frame,
@@ -52,12 +55,27 @@ std::unique_ptr<webrtc::DesktopFrame> ConvertYuvToRgb(
 }  // namespace
 
 WebrtcVideoRendererAdapter::WebrtcVideoRendererAdapter(
-    scoped_refptr<webrtc::MediaStreamInterface> media_stream,
+    const std::string& label,
     VideoRenderer* video_renderer)
-    : media_stream_(std::move(media_stream)),
+    : label_(label),
       video_renderer_(video_renderer),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {
+      weak_factory_(this) {}
+
+WebrtcVideoRendererAdapter::~WebrtcVideoRendererAdapter() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  webrtc::VideoTrackVector video_tracks = media_stream_->GetVideoTracks();
+  DCHECK(!video_tracks.empty());
+  video_tracks[0]->RemoveSink(this);
+}
+
+void WebrtcVideoRendererAdapter::SetMediaStream(
+    scoped_refptr<webrtc::MediaStreamInterface> media_stream) {
+  DCHECK_EQ(media_stream->label(), label());
+
+  media_stream_ = std::move(media_stream);
+
   webrtc::VideoTrackVector video_tracks = media_stream_->GetVideoTracks();
   if (video_tracks.empty()) {
     LOG(ERROR) << "Received media stream with no video tracks.";
@@ -71,12 +89,11 @@ WebrtcVideoRendererAdapter::WebrtcVideoRendererAdapter(
   video_tracks[0]->AddOrUpdateSink(this, rtc::VideoSinkWants());
 }
 
-WebrtcVideoRendererAdapter::~WebrtcVideoRendererAdapter() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  webrtc::VideoTrackVector video_tracks = media_stream_->GetVideoTracks();
-  DCHECK(!video_tracks.empty());
-  video_tracks[0]->RemoveSink(this);
+void WebrtcVideoRendererAdapter::SetVideoStatsChannel(
+    std::unique_ptr<MessagePipe> message_pipe) {
+  // Expect that the host also creates video_stats data channel.
+  video_stats_dispatcher_.reset(new ClientVideoStatsDispatcher(label_, this));
+  video_stats_dispatcher_->Init(std::move(message_pipe), this);
 }
 
 void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
@@ -86,23 +103,71 @@ void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
     LOG(WARNING) << "Received frame with playout delay greater than 0.";
   }
 
-  std::unique_ptr<ClientFrameStats> stats(new ClientFrameStats());
-  // TODO(sergeyu): |time_received| is not reported correctly here because the
-  // frame is already decoded at this point.
-  stats->time_received = base::TimeTicks::Now();
-
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&WebrtcVideoRendererAdapter::HandleFrameOnMainThread,
-                 weak_factory_.GetWeakPtr(), base::Passed(&stats),
+                 weak_factory_.GetWeakPtr(), frame.transport_frame_id(),
+                 base::TimeTicks::Now(),
                  scoped_refptr<webrtc::VideoFrameBuffer>(
                      frame.video_frame_buffer().get())));
 }
 
+void WebrtcVideoRendererAdapter::OnVideoFrameStats(
+    uint32_t frame_id,
+    const HostFrameStats& host_stats) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // Drop all ClientFrameStats for frames before |frame_id|. Stats messages are
+  // expected to be received in the same order as the corresponding video
+  // frames, so we are not going to receive HostFrameStats for the frames before
+  // |frame_id|. This may happen only if for some reason the host doesn't
+  // generate stats message for all video frames.
+  while (!client_stats_queue_.empty() &&
+         client_stats_queue_.front().first != frame_id) {
+    client_stats_queue_.pop_front();
+  }
+
+  // If there are no ClientFrameStats in the queue then queue HostFrameStats
+  // to be processed in FrameRendered().
+  if (client_stats_queue_.empty()) {
+    if (host_stats_queue_.size() > kMaxQueuedStats) {
+      LOG(ERROR) << "video_stats channel is out of sync with the video stream. "
+                    "Performance stats will not be reported.";
+      video_stats_dispatcher_.reset();
+      return;
+    }
+    host_stats_queue_.push_back(std::make_pair(frame_id, host_stats));
+    return;
+  }
+
+  // The correspond frame has been received and now we have both HostFrameStats
+  // and ClientFrameStats. Report the stats to FrameStatsConsumer.
+  DCHECK_EQ(client_stats_queue_.front().first, frame_id);
+  FrameStats frame_stats;
+  frame_stats.client_stats = client_stats_queue_.front().second;
+  client_stats_queue_.pop_front();
+  frame_stats.host_stats = host_stats;
+  video_renderer_->GetFrameStatsConsumer()->OnVideoFrameStats(frame_stats);
+}
+
+void WebrtcVideoRendererAdapter::OnChannelInitialized(
+    ChannelDispatcherBase* channel_dispatcher) {}
+
+void WebrtcVideoRendererAdapter::OnChannelClosed(
+    ChannelDispatcherBase* channel_dispatcher) {
+  LOG(WARNING) << "video_stats channel was closed by the host.";
+}
+
 void WebrtcVideoRendererAdapter::HandleFrameOnMainThread(
-    std::unique_ptr<ClientFrameStats> stats,
+    uint32_t frame_id,
+    base::TimeTicks time_received,
     scoped_refptr<webrtc::VideoFrameBuffer> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  std::unique_ptr<ClientFrameStats> stats(new ClientFrameStats());
+  // TODO(sergeyu): |time_received| is not reported correctly here because the
+  // frame is already decoded at this point.
+  stats->time_received = time_received;
 
   std::unique_ptr<webrtc::DesktopFrame> rgb_frame =
       video_renderer_->GetFrameConsumer()->AllocateFrame(
@@ -114,10 +179,11 @@ void WebrtcVideoRendererAdapter::HandleFrameOnMainThread(
                  base::Passed(&rgb_frame),
                  video_renderer_->GetFrameConsumer()->GetPixelFormat()),
       base::Bind(&WebrtcVideoRendererAdapter::DrawFrame,
-                 weak_factory_.GetWeakPtr(), base::Passed(&stats)));
+                 weak_factory_.GetWeakPtr(), frame_id, base::Passed(&stats)));
 }
 
 void WebrtcVideoRendererAdapter::DrawFrame(
+    uint32_t frame_id,
     std::unique_ptr<ClientFrameStats> stats,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -125,12 +191,52 @@ void WebrtcVideoRendererAdapter::DrawFrame(
   video_renderer_->GetFrameConsumer()->DrawFrame(
       std::move(frame),
       base::Bind(&WebrtcVideoRendererAdapter::FrameRendered,
-                 weak_factory_.GetWeakPtr(), base::Passed(&stats)));
+                 weak_factory_.GetWeakPtr(), frame_id, base::Passed(&stats)));
 }
 
 void WebrtcVideoRendererAdapter::FrameRendered(
-    std::unique_ptr<ClientFrameStats> stats) {
-  // TODO(sergeyu): Report stats here
+    uint32_t frame_id,
+    std::unique_ptr<ClientFrameStats> client_stats) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!video_stats_dispatcher_ || !video_stats_dispatcher_->is_connected())
+    return;
+
+  client_stats->time_rendered = base::TimeTicks::Now();
+
+  // Drop all HostFrameStats for frames before |frame_id|. Stats messages are
+  // expected to be received in the same order as the corresponding video
+  // frames. This may happen only if the host generates HostFrameStats without
+  // the corresponding frame.
+  while (!host_stats_queue_.empty() &&
+         host_stats_queue_.front().first != frame_id) {
+    LOG(WARNING) << "Host sent VideoStats message for a frame that was never "
+                    "received.";
+    host_stats_queue_.pop_front();
+  }
+
+  // If HostFrameStats hasn't been received for |frame_id| then queue
+  // ClientFrameStats to be processed in OnVideoFrameStats().
+  if (host_stats_queue_.empty()) {
+    if (client_stats_queue_.size() > kMaxQueuedStats) {
+      LOG(ERROR) << "video_stats channel is out of sync with the video "
+                    "stream. Performance stats will not be reported.";
+      video_stats_dispatcher_.reset();
+      return;
+    }
+    client_stats_queue_.push_back(std::make_pair(frame_id, *client_stats));
+    return;
+  }
+
+  // The correspond HostFrameStats has been received already and now we have
+  // both HostFrameStats and ClientFrameStats. Report the stats to
+  // FrameStatsConsumer.
+  DCHECK_EQ(host_stats_queue_.front().first, frame_id);
+  FrameStats frame_stats;
+  frame_stats.host_stats = host_stats_queue_.front().second;
+  frame_stats.client_stats = *client_stats;
+  host_stats_queue_.pop_front();
+  video_renderer_->GetFrameStatsConsumer()->OnVideoFrameStats(frame_stats);
 }
 
 }  // namespace protocol

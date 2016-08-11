@@ -16,6 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/codec/video_encoder.h"
+#include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
@@ -29,11 +30,13 @@ class VideoTrackInterface;
 namespace remoting {
 namespace protocol {
 
+class HostVideoStatsDispatcher;
 class WebrtcVideoCapturerAdapter;
 class WebrtcTransport;
 
 class WebrtcVideoStream : public VideoStream,
-                          public webrtc::DesktopCapturer::Callback {
+                          public webrtc::DesktopCapturer::Callback,
+                          public HostVideoStatsDispatcher::EventHandler {
  public:
   WebrtcVideoStream();
   ~WebrtcVideoStream() override;
@@ -52,9 +55,16 @@ class WebrtcVideoStream : public VideoStream,
   void SetObserver(Observer* observer) override;
 
  private:
+  struct FrameTimestamps;
+  struct EncodedFrameWithTimestamps;
+
   // webrtc::DesktopCapturer::Callback interface.
   void OnCaptureResult(webrtc::DesktopCapturer::Result result,
                        std::unique_ptr<webrtc::DesktopFrame> frame) override;
+
+  // HostVideoStatsDispatcher::EventHandler interface.
+  void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
+  void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
 
   // Starts |capture_timer_|.
   void StartCaptureTimer();
@@ -62,14 +72,38 @@ class WebrtcVideoStream : public VideoStream,
   // Called by |capture_timer_|.
   void CaptureNextFrame();
 
-  void OnFrameEncoded(std::unique_ptr<VideoPacket> packet);
+  // Task running on the encoder thread to encode the |frame|.
+  static EncodedFrameWithTimestamps EncodeFrame(
+      VideoEncoder* encoder,
+      std::unique_ptr<webrtc::DesktopFrame> frame,
+      std::unique_ptr<WebrtcVideoStream::FrameTimestamps> timestamps,
+      uint32_t target_bitrate_kbps,
+      bool key_frame_request);
+  void OnFrameEncoded(EncodedFrameWithTimestamps frame);
 
   void SetKeyFrameRequest();
   bool ClearAndGetKeyFrameRequest();
   void SetTargetBitrate(int bitrate);
 
+  // Capturer used to capture the screen.
+  std::unique_ptr<webrtc::DesktopCapturer> capturer_;
+  // Used to send across encoded frames.
+  WebrtcTransport* webrtc_transport_ = nullptr;
+  // Task runner used to run |encoder_|.
+  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
+  // Used to encode captured frames. Always accessed on the encode thread.
+  std::unique_ptr<VideoEncoder> encoder_;
+
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
   scoped_refptr<webrtc::MediaStreamInterface> stream_;
+
+  HostVideoStatsDispatcher video_stats_dispatcher_;
+
+  // Timestamps for the frame to be captured next.
+  std::unique_ptr<FrameTimestamps> next_frame_timestamps_;
+
+  // Timestamps for the frame that's being captured.
+  std::unique_ptr<FrameTimestamps> captured_frame_timestamps_;
 
   bool key_frame_request_ = false;
   uint32_t target_bitrate_kbps_ = 1000; // Initial bitrate.
@@ -86,22 +120,7 @@ class WebrtcVideoStream : public VideoStream,
   webrtc::DesktopVector frame_dpi_;
   Observer* observer_ = nullptr;
 
-  // Main task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-
-  // Task runner used to run |encoder_|.
-  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
-
-  // Capturer used to capture the screen.
-  std::unique_ptr<webrtc::DesktopCapturer> capturer_;
-
-  std::unique_ptr<base::RepeatingTimer> capture_timer_;
-
-  // Used to send across encoded frames.
-  WebrtcTransport* webrtc_transport_ = nullptr;
-
-  // Used to encode captured frames. Always accessed on the encode thread.
-  std::unique_ptr<VideoEncoder> encoder_;
+  base::RepeatingTimer capture_timer_;
 
   base::ThreadChecker thread_checker_;
 

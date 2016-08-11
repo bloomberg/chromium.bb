@@ -90,14 +90,17 @@ int32_t WebrtcVideoEncoder::SetRates(uint32_t bitrate, uint32_t framerate) {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int WebrtcVideoEncoder::SendEncodedFrame(std::unique_ptr<VideoPacket> frame) {
+webrtc::EncodedImageCallback::Result WebrtcVideoEncoder::SendEncodedFrame(
+    std::unique_ptr<VideoPacket> frame,
+    base::TimeTicks capture_time) {
   uint8_t* buffer =
       reinterpret_cast<uint8_t*>(const_cast<char*>(frame->data().data()));
   size_t buffer_size = frame->data().size();
   base::AutoLock lock(lock_);
   if (state_ == kUninitialized) {
     LOG(ERROR) << "encoder interface uninitialized";
-    return -1;
+    return webrtc::EncodedImageCallback::Result(
+        webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED);
   }
 
   webrtc::EncodedImage encoded_image(buffer, buffer_size, buffer_size);
@@ -106,9 +109,9 @@ int WebrtcVideoEncoder::SendEncodedFrame(std::unique_ptr<VideoPacket> frame) {
   encoded_image._completeFrame = true;
   encoded_image._frameType =
       frame->key_frame() ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta;
-  encoded_image.capture_time_ms_ = frame->capture_time_ms();
-  encoded_image._timeStamp =
-      static_cast<uint32_t>(frame->capture_time_ms() * 90);
+  int64_t capture_time_ms = (capture_time - base::TimeTicks()).InMilliseconds();
+  encoded_image.capture_time_ms_ = capture_time_ms;
+  encoded_image._timeStamp = static_cast<uint32_t>(capture_time_ms * 90);
   encoded_image.playout_delay_.min_ms = 0;
   encoded_image.playout_delay_.max_ms = 0;
 
@@ -130,14 +133,8 @@ int WebrtcVideoEncoder::SendEncodedFrame(std::unique_ptr<VideoPacket> frame) {
   header.fragmentationPlType[0] = 0;
   header.fragmentationTimeDiff[0] = 0;
 
-  int result =
-      encoded_callback_->Encoded(encoded_image, &codec_specific_info, &header);
-  if (result < 0) {
-    LOG(ERROR) << "Encoded callback failed: " << result;
-  } else if (result > 0) {
-    VLOG(1) << "Drop request from webrtc";
-  }
-  return result;
+  return encoded_callback_->OnEncodedImage(encoded_image, &codec_specific_info,
+                                           &header);
 }
 
 void WebrtcVideoEncoder::SetKeyFrameRequestCallback(
@@ -204,13 +201,15 @@ void WebrtcVideoEncoderFactory::DestroyVideoEncoder(
   DCHECK(false) << "Asked to remove encoder not owned by factory";
 }
 
-int WebrtcVideoEncoderFactory::SendEncodedFrame(
-    std::unique_ptr<VideoPacket> frame) {
+webrtc::EncodedImageCallback::Result
+WebrtcVideoEncoderFactory::SendEncodedFrame(std::unique_ptr<VideoPacket> frame,
+                                            base::TimeTicks capture_time) {
   if (encoders_.size() != 1) {
     LOG(ERROR) << "Unexpected number of encoders " << encoders_.size();
-    return -1;
+    return webrtc::EncodedImageCallback::Result(
+        webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED);
   }
-  return encoders_.front()->SendEncodedFrame(std::move(frame));
+  return encoders_.front()->SendEncodedFrame(std::move(frame), capture_time);
 }
 
 void WebrtcVideoEncoderFactory::SetKeyFrameRequestCallback(
@@ -238,4 +237,5 @@ void WebrtcVideoEncoderFactory::SetTargetBitrateCallback(
                << encoders_.size();
   }
 }
+
 }  // namespace remoting

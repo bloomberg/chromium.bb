@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/strings/string_util.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "remoting/base/constants.h"
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
@@ -121,21 +123,26 @@ void WebrtcConnectionToHost::OnWebrtcTransportIncomingDataChannel(
     std::unique_ptr<MessagePipe> pipe) {
   if (!control_dispatcher_)
     control_dispatcher_.reset(new ClientControlDispatcher());
+
   if (name == control_dispatcher_->channel_name() &&
       !control_dispatcher_->is_connected()) {
     control_dispatcher_->set_client_stub(client_stub_);
     control_dispatcher_->set_clipboard_stub(clipboard_stub_);
     control_dispatcher_->Init(std::move(pipe), this);
+  } else if (base::StartsWith(name, kVideoStatsChannelNamePrefix,
+                              base::CompareCase::SENSITIVE)) {
+    std::string video_stream_label =
+        name.substr(strlen(kVideoStatsChannelNamePrefix));
+    GetOrCreateVideoAdapter(video_stream_label)
+        ->SetVideoStatsChannel(std::move(pipe));
+  } else {
+    LOG(WARNING) << "Received unknown incoming data channel " << name;
   }
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamAdded(
     scoped_refptr<webrtc::MediaStreamInterface> stream) {
-  if (video_adapter_) {
-    LOG(WARNING)
-        << "Received multiple media streams. Ignoring all except the last one.";
-  }
-  video_adapter_.reset(new WebrtcVideoRendererAdapter(stream, video_renderer_));
+  GetOrCreateVideoAdapter(stream->label())->SetMediaStream(stream);
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamRemoved(
@@ -170,6 +177,19 @@ void WebrtcConnectionToHost::NotifyIfChannelsReady() {
   clipboard_forwarder_.set_clipboard_stub(control_dispatcher_.get());
   event_forwarder_.set_input_stub(event_dispatcher_.get());
   SetState(CONNECTED, OK);
+}
+
+WebrtcVideoRendererAdapter* WebrtcConnectionToHost::GetOrCreateVideoAdapter(
+    const std::string& label) {
+  if (!video_adapter_ || video_adapter_->label() != label) {
+    if (video_adapter_) {
+      LOG(WARNING) << "Received multiple media streams. Ignoring all except "
+                      "the last one.";
+    }
+    video_adapter_.reset(
+        new WebrtcVideoRendererAdapter(label, video_renderer_));
+  }
+  return video_adapter_.get();
 }
 
 void WebrtcConnectionToHost::CloseChannels() {

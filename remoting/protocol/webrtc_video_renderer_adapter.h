@@ -5,10 +5,14 @@
 #ifndef REMOTING_PROTOCOL_WEBRTC_VIDEO_RENDERER_ADAPTER_H_
 #define REMOTING_PROTOCOL_WEBRTC_VIDEO_RENDERER_ADAPTER_H_
 
+#include <list>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/protocol/client_video_stats_dispatcher.h"
+#include "remoting/protocol/video_stats_stub.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/media/base/videosinkinterface.h"
 
@@ -24,32 +28,58 @@ class VideoFrameBuffer;
 namespace remoting {
 namespace protocol {
 
-struct ClientFrameStats;
+class MessagePipe;
 class VideoRenderer;
+class WebrtcTransport;
+struct ClientFrameStats;
+struct HostFrameStats;
 
 class WebrtcVideoRendererAdapter
-    : public rtc::VideoSinkInterface<cricket::VideoFrame> {
+    : public rtc::VideoSinkInterface<cricket::VideoFrame>,
+      public VideoStatsStub,
+      public ClientVideoStatsDispatcher::EventHandler {
  public:
-  WebrtcVideoRendererAdapter(
-      scoped_refptr<webrtc::MediaStreamInterface> media_stream,
-      VideoRenderer* video_renderer);
+  WebrtcVideoRendererAdapter(const std::string& label,
+                             VideoRenderer* video_renderer);
   ~WebrtcVideoRendererAdapter() override;
 
-  std::string label() const { return media_stream_->label(); }
+  std::string label() const { return label_; }
+
+  void SetMediaStream(scoped_refptr<webrtc::MediaStreamInterface> media_stream);
+  void SetVideoStatsChannel(std::unique_ptr<MessagePipe> message_pipe);
 
   // rtc::VideoSinkInterface implementation.
   void OnFrame(const cricket::VideoFrame& frame) override;
 
  private:
-  void HandleFrameOnMainThread(std::unique_ptr<ClientFrameStats> stats,
+  // VideoStatsStub interface.
+  void OnVideoFrameStats(uint32_t frame_id,
+                         const HostFrameStats& frame_stats) override;
+
+  // ClientVideoStatsDispatcher::EventHandler interface.
+  void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
+  void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
+
+  void HandleFrameOnMainThread(uint32_t frame_id,
+                               base::TimeTicks time_received,
                                scoped_refptr<webrtc::VideoFrameBuffer> frame);
-  void DrawFrame(std::unique_ptr<ClientFrameStats> stats,
+  void DrawFrame(uint32_t frame_id,
+                 std::unique_ptr<ClientFrameStats> stats,
                  std::unique_ptr<webrtc::DesktopFrame> frame);
-  void FrameRendered(std::unique_ptr<ClientFrameStats> stats);
+  void FrameRendered(uint32_t frame_id,
+                     std::unique_ptr<ClientFrameStats> stats);
+
+  std::string label_;
 
   scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
   VideoRenderer* video_renderer_;
+
+  std::unique_ptr<ClientVideoStatsDispatcher> video_stats_dispatcher_;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  std::list<std::pair<uint32_t, ClientFrameStats>> client_stats_queue_;
+  std::list<std::pair<uint32_t, HostFrameStats>> host_stats_queue_;
 
   base::WeakPtrFactory<WebrtcVideoRendererAdapter> weak_factory_;
 
