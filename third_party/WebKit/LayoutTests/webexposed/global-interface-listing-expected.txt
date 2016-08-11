@@ -389,7 +389,7 @@ interface BroadcastChannel : EventTarget
     method constructor
     method postMessage
     setter onmessage
-interface Budget
+interface BudgetService
     attribute @@toStringTag
     method constructor
     method getBudget

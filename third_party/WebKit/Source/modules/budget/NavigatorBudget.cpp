@@ -5,7 +5,7 @@
 #include "modules/budget/NavigatorBudget.h"
 
 #include "core/frame/Navigator.h"
-#include "modules/budget/Budget.h"
+#include "modules/budget/BudgetService.h"
 
 namespace blink {
 
@@ -32,15 +32,15 @@ NavigatorBudget& NavigatorBudget::from(Navigator& navigator)
     return *navigatorBudget;
 }
 
-Budget* NavigatorBudget::budget()
+BudgetService* NavigatorBudget::budget()
 {
     if (!m_budget)
-        m_budget = Budget::create();
+        m_budget = BudgetService::create();
     return m_budget.get();
 }
 
 // static
-Budget* NavigatorBudget::budget(Navigator& navigator)
+BudgetService* NavigatorBudget::budget(Navigator& navigator)
 {
     return NavigatorBudget::from(navigator).budget();
 }

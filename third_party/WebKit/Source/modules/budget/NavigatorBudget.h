@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class Budget;
+class BudgetService;
 class Navigator;
 
 // This exposes the budget object on the Navigator partial interface.
@@ -22,8 +22,8 @@ class NavigatorBudget final
 public:
     static NavigatorBudget& from(Navigator&);
 
-    static Budget* budget(Navigator&);
-    Budget* budget();
+    static BudgetService* budget(Navigator&);
+    BudgetService* budget();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -31,7 +31,7 @@ private:
     NavigatorBudget();
     static const char* supplementName();
 
-    Member<Budget> m_budget;
+    Member<BudgetService> m_budget;
 };
 
 } // namespace blink

@@ -9,8 +9,8 @@
     <script>
       promise_test(function() {
         assert_own_property(Navigator.prototype, 'budget');
-        assert_own_property(Budget.prototype, 'getCost');
-        assert_own_property(Budget.prototype, 'getBudget');
+        assert_own_property(BudgetService.prototype, 'getCost');
+        assert_own_property(BudgetService.prototype, 'getBudget');
         assert_equals(navigator.budget, navigator.budget);
 
         navigator.budget.getCost()

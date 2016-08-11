@@ -9,5 +9,5 @@
     RuntimeEnabled=Budget
 ] partial interface Navigator {
     // TODO(harkness): In the spec, this is not a partial interface.
-    readonly attribute Budget budget;
+    readonly attribute BudgetService budget;
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/budget/Budget.h"
+#include "modules/budget/BudgetService.h"
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -12,15 +12,15 @@
 
 namespace blink {
 
-Budget::Budget() {}
+BudgetService::BudgetService() {}
 
-ScriptPromise Budget::getCost(ScriptState* scriptState, const AtomicString& actionType)
+ScriptPromise BudgetService::getCost(ScriptState* scriptState, const AtomicString& actionType)
 {
     // TODO(harkness): Trigger the cost calculation.
     return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "Not yet implemented"));
 }
 
-ScriptPromise Budget::getBudget(ScriptState* scriptState)
+ScriptPromise BudgetService::getBudget(ScriptState* scriptState)
 {
     // TODO(harkness): Trigger the budget calculation.
     return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "Not yet implemented"));
