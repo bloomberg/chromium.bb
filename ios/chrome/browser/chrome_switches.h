@@ -18,6 +18,7 @@ extern const char kDisableIOSPasswordSuggestions[];
 extern const char kDisableLRUSnapshotCache[];
 extern const char kDisableNTPFavicons[];
 extern const char kDisableOfflineAutoReload[];
+extern const char kDisablePaymentRequest[];
 extern const char kDisableTabSwitcher[];
 extern const char kDisableIOSPhysicalWeb[];
 
@@ -31,6 +32,7 @@ extern const char kEnableIOSPasswordGeneration[];
 extern const char kEnableLRUSnapshotCache[];
 extern const char kEnableNTPFavicons[];
 extern const char kEnableOfflineAutoReload[];
+extern const char kEnablePaymentRequest[];
 extern const char kEnableQRScanner[];
 extern const char kEnableReaderModeToolbarIcon[];
 extern const char kEnableTabSwitcher[];

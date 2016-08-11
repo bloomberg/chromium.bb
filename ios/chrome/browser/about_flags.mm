@@ -195,6 +195,15 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnableQRScanner);
   }
 
+  // Populate command line flag for the Payment Request API.
+  NSString* enable_payment_request =
+      [defaults stringForKey:@"EnablePaymentRequest"];
+  if ([enable_payment_request isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnablePaymentRequest);
+  } else if ([enable_payment_request isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisablePaymentRequest);
+  }
+
   // Freeform commandline flags.  These are added last, so that any flags added
   // earlier in this function take precedence.
   if ([defaults boolForKey:@"EnableFreeformCommandLineFlags"]) {

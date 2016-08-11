@@ -162,4 +162,23 @@ bool IsNewClearBrowsingDataUIEnabled() {
   return false;
 }
 
+bool IsPaymentRequestEnabled() {
+  // This call activates the field trial, if needed, so it must come before any
+  // early returns.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("IOSPaymentRequest");
+
+  // Check if the experimental flag is forced on or off.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnablePaymentRequest)) {
+    return true;
+  } else if (command_line->HasSwitch(switches::kDisablePaymentRequest)) {
+    return false;
+  }
+
+  // Check if the Finch experiment is turned on.
+  return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
 }  // namespace experimental_flags

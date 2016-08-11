@@ -40,6 +40,9 @@ const char kDisableLRUSnapshotCache[] = "disable-lru-snapshot-cache";
 // Disable auto-reload of error pages if offline.
 const char kDisableOfflineAutoReload[] = "disable-offline-auto-reload";
 
+// Disable the Payment Request API.
+const char kDisablePaymentRequest[] = "disable-payment-request";
+
 // Disables the tab switcher.
 const char kDisableTabSwitcher[] = "disable-tab-switcher";
 
@@ -76,6 +79,9 @@ const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";
 
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[] = "enable-offline-auto-reload";
+
+// Enable the Payment Request API.
+const char kEnablePaymentRequest[] = "enable-payment-request";
 
 // Enables the QR Code scanner.
 const char kEnableQRScanner[] = "enable-qr-scanner";

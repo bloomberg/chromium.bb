@@ -49,6 +49,9 @@ bool IsQRCodeReaderEnabled();
 // Whether the Clear Browsing Data counters and time selection UI is enabled.
 bool IsNewClearBrowsingDataUIEnabled();
 
+// Whether the Payment Request API is enabled or not.
+bool IsPaymentRequestEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
