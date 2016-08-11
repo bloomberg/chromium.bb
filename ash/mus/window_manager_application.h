@@ -21,6 +21,7 @@
 
 namespace views {
 class AuraInit;
+class SurfaceContextFactory;
 }
 
 namespace ui {
@@ -75,6 +76,7 @@ class WindowManagerApplication
   std::unique_ptr<views::AuraInit> aura_init_;
 
   std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<views::SurfaceContextFactory> compositor_context_factory_;
   std::unique_ptr<WindowManager> window_manager_;
 
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;

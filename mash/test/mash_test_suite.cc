@@ -9,6 +9,8 @@
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace mash {
 namespace test {
@@ -28,6 +30,10 @@ void MashTestSuite::Initialize() {
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   env_ = aura::Env::CreateInstance();
+  gl::GLSurfaceTestSupport::InitializeOneOff();
+  const bool enable_pixel_output = false;
+  env_->set_context_factory(
+      ui::InitializeContextFactoryForTests(enable_pixel_output));
 }
 
 void MashTestSuite::Shutdown() {

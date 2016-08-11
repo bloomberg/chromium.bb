@@ -14,10 +14,6 @@
 #include "ui/compositor/compositor.h"
 #include "ui/views/mus/mus_export.h"
 
-namespace ui {
-class Window;
-}
-
 namespace views {
 
 class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {

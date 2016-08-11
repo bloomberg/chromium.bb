@@ -18,9 +18,11 @@
 #include "services/ui/common/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/aura/env.h"
 #include "ui/events/event.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/mus/aura_init.h"
+#include "ui/views/mus/surface_context_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/power/power_status.h"
@@ -92,10 +94,13 @@ void WindowManagerApplication::InitWindowManager(
 }
 
 void WindowManagerApplication::OnStart(const shell::Identity& identity) {
+  aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak"));
   gpu_service_ = ui::GpuService::Initialize(connector());
+  compositor_context_factory_.reset(new views::SurfaceContextFactory());
+  aura::Env::GetInstance()->set_context_factory(
+      compositor_context_factory_.get());
   window_manager_.reset(new WindowManager(connector()));
 
-  aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak"));
   MaterialDesignController::Initialize();
 
   tracing_.Initialize(connector(), identity.name());

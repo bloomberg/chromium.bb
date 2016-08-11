@@ -34,6 +34,7 @@ class ClipboardMus;
 class NativeWidget;
 class PointerWatcher;
 class ScreenMus;
+class SurfaceContextFactory;
 namespace internal {
 class NativeWidgetDelegate;
 }
@@ -103,6 +104,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   std::unique_ptr<ScreenMus> screen_;
   std::unique_ptr<ui::WindowTreeClient> client_;
   std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<SurfaceContextFactory> compositor_context_factory_;
   // Must be empty on destruction.
   base::ObserverList<PointerWatcher, true> pointer_watchers_;
   bool pointer_watcher_want_moves_;

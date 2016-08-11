@@ -18,10 +18,12 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "ui/aura/env.h"
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/os_exchange_data_provider_mus.h"
 #include "ui/views/mus/screen_mus.h"
+#include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/views_delegate.h"
 
@@ -138,6 +140,9 @@ WindowManagerConnection::WindowManagerConnection(
   lazy_tls_ptr.Pointer()->Set(this);
 
   gpu_service_ = ui::GpuService::Initialize(connector);
+  compositor_context_factory_.reset(new views::SurfaceContextFactory());
+  aura::Env::GetInstance()->set_context_factory(
+      compositor_context_factory_.get());
   client_.reset(new ui::WindowTreeClient(this, nullptr, nullptr));
   client_->ConnectViaWindowTreeFactory(connector_);
 

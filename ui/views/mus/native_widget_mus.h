@@ -51,7 +51,6 @@ class FocusController;
 }
 
 namespace views {
-class SurfaceContextFactory;
 class WidgetDelegate;
 
 // An implementation of NativeWidget that binds to a ui::Window. Because Aura
@@ -274,7 +273,6 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   std::map<std::string, void*> native_window_properties_;
 
   // Aura configuration.
-  std::unique_ptr<SurfaceContextFactory> context_factory_;
   std::unique_ptr<WindowTreeHostMus> window_tree_host_;
   aura::Window* content_;
   std::unique_ptr<wm::FocusController> focus_client_;

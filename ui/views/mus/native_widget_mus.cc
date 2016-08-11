@@ -21,7 +21,6 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window.h"
@@ -34,7 +33,6 @@
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
-#include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/mus/window_manager_constants_converters.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/mus/window_tree_host_mus.h"
@@ -527,19 +525,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
   // TODO(fsamuel): Figure out lifetime of |window_|.
   aura::SetMusWindow(content_, window_);
   window->SetLocalProperty(kNativeWidgetMusKey, this);
-
-  // WindowTreeHost creates the compositor using the ContextFactory from
-  // aura::Env. Install |context_factory_| there so that |context_factory_| is
-  // picked up.
-  ui::ContextFactory* default_context_factory =
-      aura::Env::GetInstance()->context_factory();
-  if (!default_context_factory) {
-    context_factory_.reset(new SurfaceContextFactory);
-    aura::Env::GetInstance()->set_context_factory(context_factory_.get());
-  }
-
   window_tree_host_.reset(new WindowTreeHostMus(this, window_));
-  aura::Env::GetInstance()->set_context_factory(default_context_factory);
 }
 
 NativeWidgetMus::~NativeWidgetMus() {
