@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -95,8 +96,11 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
                 "123"});
     }
 
-    /** Attempt to add an invalid credit card number and cancel payment. */
-    @MediumTest
+    /**
+     * Attempt to add an invalid credit card number and cancel payment.
+     * @MediumTest
+     */
+    @FlakyTest(message = "crbug.com/626289")
     public void testAddInvalidCardNumberAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("123", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
@@ -116,8 +120,11 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
                 new int[] {month, year, billingAddress}, mBillingAddressChangeProcessed);
     }
 
-    /** Attempt to add a credit card with an empty name on card and cancel payment. */
-    @MediumTest
+    /**
+     * Attempt to add a credit card with an empty name on card and cancel payment.
+     * @MediumTest
+     */
+    @FlakyTest(message = "crbug.com/626289")
     public void testAddEmptyNameOnCardAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
