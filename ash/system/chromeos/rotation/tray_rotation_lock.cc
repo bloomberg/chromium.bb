@@ -84,15 +84,13 @@ void RotationLockDefaultView::UpdateImage() {
     const gfx::VectorIconId icon_id =
         rotation_locked ? gfx::VectorIconId::SYSTEM_MENU_ROTATION_LOCK_LOCKED
                         : gfx::VectorIconId::SYSTEM_MENU_ROTATION_LOCK_AUTO;
-    gfx::ImageSkia image_md =
-        CreateVectorIcon(icon_id, kMenuIconSize, kMenuIconColor);
-    SetImage(&image_md);
+    SetImage(gfx::CreateVectorIcon(icon_id, kMenuIconSize, kMenuIconColor));
   } else {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     const int resource_id = rotation_locked
                                 ? IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED_DARK
                                 : IDR_AURA_UBER_TRAY_AUTO_ROTATION_DARK;
-    SetImage(bundle.GetImageNamed(resource_id).ToImageSkia());
+    SetImage(*bundle.GetImageNamed(resource_id).ToImageSkia());
   }
 
   base::string16 label = l10n_util::GetStringUTF16(

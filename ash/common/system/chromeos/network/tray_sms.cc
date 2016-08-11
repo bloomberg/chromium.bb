@@ -62,11 +62,10 @@ class TraySms::SmsDefaultView : public TrayItemMore {
  public:
   explicit SmsDefaultView(TraySms* owner) : TrayItemMore(owner, true) {
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      gfx::ImageSkia image_md = CreateVectorIcon(
-          gfx::VectorIconId::SYSTEM_MENU_SMS, kMenuIconSize, kMenuIconColor);
-      SetImage(&image_md);
+      SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_SMS,
+                                     kMenuIconSize, kMenuIconColor));
     } else {
-      SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      SetImage(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_AURA_UBER_TRAY_SMS));
     }
     Update();

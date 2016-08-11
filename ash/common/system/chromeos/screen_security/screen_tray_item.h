@@ -28,7 +28,7 @@ namespace tray {
 
 class ScreenTrayView : public TrayItemView {
  public:
-  ScreenTrayView(ScreenTrayItem* screen_tray_item, int icon_id);
+  explicit ScreenTrayView(ScreenTrayItem* screen_tray_item);
   ~ScreenTrayView() override;
 
   void Update();
@@ -42,7 +42,6 @@ class ScreenTrayView : public TrayItemView {
 class ScreenStatusView : public views::View, public views::ButtonListener {
  public:
   ScreenStatusView(ScreenTrayItem* screen_tray_item,
-                   int icon_id,
                    const base::string16& label_text,
                    const base::string16& stop_button_text);
   ~ScreenStatusView() override;
@@ -61,7 +60,6 @@ class ScreenStatusView : public views::View, public views::ButtonListener {
   views::ImageView* icon_;
   views::Label* label_;
   TrayPopupLabelButton* stop_button_;
-  int icon_id_;
   base::string16 label_text_;
   base::string16 stop_button_text_;
 

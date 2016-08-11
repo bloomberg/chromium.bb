@@ -4,10 +4,14 @@
 
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -20,13 +24,17 @@ namespace ash {
 namespace tray {
 
 // ScreenTrayView implementations.
-ScreenTrayView::ScreenTrayView(ScreenTrayItem* screen_tray_item, int icon_id)
+ScreenTrayView::ScreenTrayView(ScreenTrayItem* screen_tray_item)
     : TrayItemView(screen_tray_item), screen_tray_item_(screen_tray_item) {
   CreateImageView();
-  image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
-                             .GetImageNamed(icon_id)
-                             .ToImageSkia());
-
+  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+    image_view()->SetImage(gfx::CreateVectorIcon(
+        gfx::VectorIconId::SYSTEM_TRAY_SCREEN_SHARE, kTrayIconColor));
+  } else {
+    image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
+                               .GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE)
+                               .ToImageSkia());
+  }
   Update();
 }
 
@@ -38,14 +46,12 @@ void ScreenTrayView::Update() {
 
 // ScreenStatusView implementations.
 ScreenStatusView::ScreenStatusView(ScreenTrayItem* screen_tray_item,
-                                   int icon_id,
                                    const base::string16& label_text,
                                    const base::string16& stop_button_text)
     : screen_tray_item_(screen_tray_item),
       icon_(NULL),
       label_(NULL),
       stop_button_(NULL),
-      icon_id_(icon_id),
       label_text_(label_text),
       stop_button_text_(stop_button_text) {
   CreateItems();
@@ -82,13 +88,21 @@ void ScreenStatusView::ButtonPressed(views::Button* sender,
 
 void ScreenStatusView::CreateItems() {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                         kTrayPopupPaddingHorizontal, 0,
                                         kTrayPopupPaddingBetweenItems));
+
   icon_ = new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
-  icon_->SetImage(bundle.GetImageNamed(icon_id_).ToImageSkia());
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    icon_->SetImage(gfx::CreateVectorIcon(
+        gfx::VectorIconId::SYSTEM_MENU_SCREEN_SHARE, kMenuIconColor));
+  } else {
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    icon_->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK)
+                        .ToImageSkia());
+  }
   AddChildView(icon_);
+
   label_ = new views::Label;
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->SetMultiLine(true);

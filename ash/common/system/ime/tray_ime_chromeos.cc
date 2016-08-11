@@ -70,7 +70,7 @@ class IMEDefaultView : public TrayItemMore {
   explicit IMEDefaultView(SystemTrayItem* owner, const base::string16& label)
       : TrayItemMore(owner, true) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_IME).ToImageSkia());
+    SetImage(*bundle.GetImageNamed(IDR_AURA_UBER_TRAY_IME).ToImageSkia());
     UpdateLabel(label);
   }
 

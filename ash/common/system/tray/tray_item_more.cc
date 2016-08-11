@@ -60,7 +60,7 @@ void TrayItemMore::SetLabel(const base::string16& label) {
   SchedulePaint();
 }
 
-void TrayItemMore::SetImage(const gfx::ImageSkia* image_skia) {
+void TrayItemMore::SetImage(const gfx::ImageSkia& image_skia) {
   icon_->SetImage(image_skia);
   SchedulePaint();
 }

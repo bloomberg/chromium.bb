@@ -73,7 +73,7 @@ class BluetoothDefaultView : public TrayItemMore {
     if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
       ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
       SetImage(
-          bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToImageSkia());
+          *bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToImageSkia());
     }
     Update();
   }
@@ -87,8 +87,7 @@ class BluetoothDefaultView : public TrayItemMore {
       gfx::VectorIconId icon_id =
           enabled ? gfx::VectorIconId::SYSTEM_MENU_BLUETOOTH
                   : gfx::VectorIconId::SYSTEM_MENU_BLUETOOTH_DISABLED;
-      gfx::ImageSkia image = gfx::CreateVectorIcon(icon_id, kMenuIconColor);
-      SetImage(&image);
+      SetImage(gfx::CreateVectorIcon(icon_id, kMenuIconColor));
     }
 
     if (delegate->GetBluetoothAvailable()) {

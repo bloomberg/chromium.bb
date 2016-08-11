@@ -78,13 +78,11 @@ class DefaultAccessibilityView : public TrayItemMore {
       : TrayItemMore(owner, true) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      gfx::ImageSkia image_md =
-          CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_ACCESSIBILITY,
-                           kMenuIconSize, kMenuIconColor);
-      SetImage(&image_md);
+      SetImage(gfx::CreateVectorIcon(
+          gfx::VectorIconId::SYSTEM_MENU_ACCESSIBILITY, kMenuIconColor));
     } else {
-      SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK)
-                   .ToImageSkia());
+      SetImage(*bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK)
+                    .ToImageSkia());
     }
     base::string16 label =
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY);

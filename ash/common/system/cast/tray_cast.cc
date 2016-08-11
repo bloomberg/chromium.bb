@@ -4,6 +4,7 @@
 
 #include "ash/common/system/cast/tray_cast.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -27,7 +28,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -57,6 +60,14 @@ base::string16 ElideString(const base::string16& text) {
   return elided;
 }
 
+// Returns a vectorized version of the Cast icon. The icon's interior region is
+// filled in if |is_casting| is true.
+gfx::ImageSkia GetCastIconForSystemMenu(bool is_casting) {
+  return gfx::CreateVectorIcon(
+      gfx::VectorIconId::SYSTEM_MENU_CAST,
+      is_casting ? kMenuIconColor : SK_ColorTRANSPARENT);
+}
+
 }  // namespace
 
 namespace tray {
@@ -80,7 +91,11 @@ CastSelectDefaultView::CastSelectDefaultView(SystemTrayItem* owner,
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   // Update the image and label.
-  SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_CAST).ToImageSkia());
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    SetImage(GetCastIconForSystemMenu(false));
+  else
+    SetImage(*rb.GetImageNamed(IDR_AURA_UBER_TRAY_CAST).ToImageSkia());
+
   base::string16 label =
       rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAST_DESKTOP);
   SetLabel(label);
@@ -136,8 +151,12 @@ CastCastView::CastCastView() {
                                         kTrayPopupPaddingHorizontal, 0,
                                         kTrayPopupPaddingBetweenItems));
   icon_ = new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
-  icon_->SetImage(
-      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAST_ENABLED).ToImageSkia());
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    icon_->SetImage(GetCastIconForSystemMenu(true));
+  } else {
+    icon_->SetImage(
+        bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAST_ENABLED).ToImageSkia());
+  }
   AddChildView(icon_);
 
   // The label which describes both what we are casting (ie, the desktop) and
@@ -342,10 +361,14 @@ class CastTrayView : public TrayItemView {
 CastTrayView::CastTrayView(SystemTrayItem* tray_item)
     : TrayItemView(tray_item) {
   CreateImageView();
-
-  image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
-                             .GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE)
-                             .ToImageSkia());
+  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+    image_view()->SetImage(gfx::CreateVectorIcon(
+        gfx::VectorIconId::SYSTEM_TRAY_CAST, kTrayIconColor));
+  } else {
+    image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
+                               .GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE)
+                               .ToImageSkia());
+  }
 }
 
 CastTrayView::~CastTrayView() {}

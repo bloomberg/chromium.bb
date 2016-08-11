@@ -34,13 +34,13 @@ ScreenShareTrayItem::~ScreenShareTrayItem() {
 }
 
 views::View* ScreenShareTrayItem::CreateTrayView(LoginStatus status) {
-  set_tray_view(new tray::ScreenTrayView(this, IDR_AURA_UBER_TRAY_SCREENSHARE));
+  set_tray_view(new tray::ScreenTrayView(this));
   return tray_view();
 }
 
 views::View* ScreenShareTrayItem::CreateDefaultView(LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
-      this, IDR_AURA_UBER_TRAY_SCREENSHARE_DARK,
+      this,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED),
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP)));
   return default_view();

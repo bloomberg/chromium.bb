@@ -38,13 +38,13 @@ ScreenCaptureTrayItem::~ScreenCaptureTrayItem() {
 }
 
 views::View* ScreenCaptureTrayItem::CreateTrayView(LoginStatus status) {
-  set_tray_view(new tray::ScreenTrayView(this, IDR_AURA_UBER_TRAY_SCREENSHARE));
+  set_tray_view(new tray::ScreenTrayView(this));
   return tray_view();
 }
 
 views::View* ScreenCaptureTrayItem::CreateDefaultView(LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
-      this, IDR_AURA_UBER_TRAY_SCREENSHARE_DARK, screen_capture_status_,
+      this, screen_capture_status_,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP)));
   return default_view();
 }

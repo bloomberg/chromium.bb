@@ -65,8 +65,8 @@ void TrayNotificationView::InitView(views::View* contents) {
   icon_ = new views::ImageView;
   if (icon_id_ != 0) {
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      icon_->SetImage(CreateVectorIcon(ResourceIdToVectorIconId(icon_id_),
-                                       kMenuIconSize, kMenuIconColor));
+      icon_->SetImage(gfx::CreateVectorIcon(ResourceIdToVectorIconId(icon_id_),
+                                            kMenuIconColor));
     } else {
       icon_->SetImage(
           ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id_));

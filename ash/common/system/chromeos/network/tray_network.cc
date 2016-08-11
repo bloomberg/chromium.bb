@@ -158,7 +158,7 @@ class NetworkDefaultView : public TrayItemMore,
     else
       ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(
           this);
-    SetImage(&image);
+    SetImage(image);
     SetLabel(label);
     SetAccessibleName(label);
   }
