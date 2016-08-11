@@ -24,7 +24,7 @@
           "shell:user_id"
         ]
       },
-      "mojo:file": {
+      "mojo:user": {
         "interfaces": [
           "leveldb::mojom::LevelDBService",
           "user_service::UserService"

@@ -38,12 +38,12 @@
 #include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/file/file_service.h"
-#include "services/file/public/cpp/constants.h"
-#include "services/file/user_id_map.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/interfaces/service.mojom.h"
+#include "services/user/public/cpp/constants.h"
+#include "services/user/user_id_map.h"
+#include "services/user/user_shell_client.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
@@ -403,8 +403,8 @@ void BrowserContext::Initialize(
   ShellUserIdHolder* holder = static_cast<ShellUserIdHolder*>(
       browser_context->GetUserData(kMojoShellUserId));
   if (holder)
-    file::ForgetShellUserIdUserDirAssociation(holder->user_id());
-  file::AssociateShellUserIdWithUserDir(new_id, path);
+    user_service::ForgetShellUserIdUserDirAssociation(holder->user_id());
+  user_service::AssociateShellUserIdWithUserDir(new_id, path);
   RemoveBrowserContextFromUserIdMap(browser_context);
   g_user_id_to_context.Get()[new_id] = browser_context;
   browser_context->SetUserData(kMojoShellUserId,
@@ -443,10 +443,10 @@ void BrowserContext::Initialize(
             switches::kMojoLocalStorage)) {
       MojoApplicationInfo info;
       info.application_factory =
-          base::Bind(&file::CreateFileService,
+          base::Bind(&user_service::CreateUserService,
                      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
                      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
-      connection->AddEmbeddedService(file::kFileServiceName, info);
+      connection->AddEmbeddedService(user_service::kUserServiceName, info);
     }
   }
 }

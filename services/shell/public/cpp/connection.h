@@ -8,7 +8,6 @@
 #include "base/memory/weak_ptr.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/interface_provider.h"
-#include "services/shell/public/interfaces/connector.mojom.h"
 
 namespace shell {
 

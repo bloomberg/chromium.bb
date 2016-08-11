@@ -278,7 +278,8 @@ shell::mojom::ResolveResultPtr
   const catalog::Entry& package = input.package() ? *input.package() : input;
   result->resolved_name = package.name();
   result->qualifier = input.qualifier();
-  result->capabilities = input.capabilities();
+  result->capabilities =
+      shell::mojom::CapabilitySpec::From(input.capabilities());
   result->package_path = package.path();
   return result;
 }

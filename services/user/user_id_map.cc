@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/file/user_id_map.h"
+#include "services/user/user_id_map.h"
 
 #include <map>
 
 #include "base/lazy_instance.h"
 
-namespace file {
+namespace user_service {
 
 namespace {
 base::LazyInstance<std::map<std::string, base::FilePath>>
@@ -32,4 +32,4 @@ base::FilePath GetUserDirForUserId(const std::string& user_id) {
   return it->second;
 }
 
-}  // namespace file
+}  // namespace user_service

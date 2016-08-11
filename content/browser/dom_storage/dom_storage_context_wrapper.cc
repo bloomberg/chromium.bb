@@ -27,10 +27,10 @@
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "mojo/common/common_type_converters.h"
-#include "services/file/public/cpp/constants.h"
-#include "services/file/public/interfaces/file_system.mojom.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
+#include "services/user/public/cpp/constants.h"
+#include "services/user/public/interfaces/user_service.mojom.h"
 
 namespace content {
 namespace {
@@ -100,7 +100,7 @@ class DOMStorageContextWrapper::MojoState {
 
   void OnUserServiceConnectionComplete() {
     CHECK_EQ(shell::mojom::ConnectResult::SUCCEEDED,
-             file_service_connection_->GetResult());
+             user_service_connection_->GetResult());
   }
 
   void OnUserServiceConnectionError() {
@@ -129,9 +129,9 @@ class DOMStorageContextWrapper::MojoState {
     CONNECTION_FINISHED
   } connection_state_;
 
-  std::unique_ptr<shell::Connection> file_service_connection_;
+  std::unique_ptr<shell::Connection> user_service_connection_;
 
-  file::mojom::FileSystemPtr file_system_;
+  user_service::mojom::UserServicePtr user_service_;
   filesystem::mojom::DirectoryPtr directory_;
 
   leveldb::mojom::LevelDBServicePtr leveldb_service_;
@@ -149,28 +149,28 @@ void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
   // If we don't have a filesystem_connection_, we'll need to establish one.
   if (connection_state_ == NO_CONNECTION) {
     CHECK(connector_);
-    file_service_connection_ =
-        connector_->Connect(file::kFileServiceName);
+    user_service_connection_ =
+        connector_->Connect(user_service::kUserServiceName);
     connection_state_ = CONNECTION_IN_PROGRESS;
-    file_service_connection_->AddConnectionCompletedClosure(
+    user_service_connection_->AddConnectionCompletedClosure(
         base::Bind(&MojoState::OnUserServiceConnectionComplete,
                    weak_ptr_factory_.GetWeakPtr()));
-    file_service_connection_->SetConnectionLostClosure(
+    user_service_connection_->SetConnectionLostClosure(
         base::Bind(&MojoState::OnUserServiceConnectionError,
                    weak_ptr_factory_.GetWeakPtr()));
 
     if (!subdirectory_.empty()) {
       // We were given a subdirectory to write to. Get it and use a disk backed
       // database.
-      file_service_connection_->GetInterface(&file_system_);
-      file_system_->GetSubDirectory(
+      user_service_connection_->GetInterface(&user_service_);
+      user_service_->GetSubDirectory(
           mojo::String::From(subdirectory_.AsUTF8Unsafe()),
           GetProxy(&directory_),
           base::Bind(&MojoState::OnDirectoryOpened,
                      weak_ptr_factory_.GetWeakPtr()));
     } else {
       // We were not given a subdirectory. Use a memory backed database.
-      file_service_connection_->GetInterface(&leveldb_service_);
+      user_service_connection_->GetInterface(&leveldb_service_);
       leveldb_service_->OpenInMemory(
           GetProxy(&database_),
           base::Bind(&MojoState::OnDatabaseOpened,
@@ -200,7 +200,7 @@ void DOMStorageContextWrapper::MojoState::OnDirectoryOpened(
 
   // Now that we have a directory, connect to the LevelDB service and get our
   // database.
-  file_service_connection_->GetInterface(&leveldb_service_);
+  user_service_connection_->GetInterface(&leveldb_service_);
 
   leveldb_service_->Open(
       std::move(directory_), "leveldb", GetProxy(&database_),
@@ -216,10 +216,11 @@ void DOMStorageContextWrapper::MojoState::OnDatabaseOpened(
     leveldb_service_.reset();
   }
 
-  // We no longer need the file service; we've either transferred |directory_|
-  // to the leveldb service, or we got a file error and no more is possible.
+  // We no longer need the user service; we've either transferred
+  // |directory_| to the leveldb service, or we got a file error and no more is
+  // possible.
   directory_.reset();
-  file_system_.reset();
+  user_service_.reset();
 
   // |leveldb_| should be known to either be valid or invalid by now. Run our
   // delayed bindings.

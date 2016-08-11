@@ -63,7 +63,7 @@ class Driver : public shell::Service,
                             shell::mojom::kInheritUserID),
             connector(), &process);
     callback.Run(static_cast<int32_t>(connection->GetResult()),
-                 connection->GetRemoteIdentity());
+                 shell::mojom::Identity::From(connection->GetRemoteIdentity()));
   }
 
   mojo::BindingSet<ClientProcessTest> bindings_;

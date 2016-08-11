@@ -118,9 +118,9 @@ class ProvidedService
 
   // test::mojom::UserIdTest:
   void ConnectToClassAppAsDifferentUser(
-      const shell::Identity& target,
+      mojom::IdentityPtr target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
-    Connector::ConnectParams params(target);
+    Connector::ConnectParams params(target.To<Identity>());
     std::unique_ptr<Connection> connection =
         connector()->Connect(&params);
     {
@@ -131,7 +131,7 @@ class ProvidedService
       loop.Run();
     }
     callback.Run(static_cast<int32_t>(connection->GetResult()),
-                 connection->GetRemoteIdentity());
+                 mojom::Identity::From(connection->GetRemoteIdentity()));
   }
 
   // base::SimpleThread:

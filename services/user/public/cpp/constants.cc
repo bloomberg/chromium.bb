@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/file/public/cpp/constants.h"
+#include "services/user/public/cpp/constants.h"
 
-namespace file {
+namespace user_service {
 
-const char kFileServiceName[] = "mojo:file";
+const char kUserServiceName[] = "mojo:user";
 
-}  // namespace file
+}  // namespace user_service

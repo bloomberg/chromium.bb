@@ -26,7 +26,7 @@ class Target : public shell::Service {
   void OnStart(const shell::Identity& identity) override {
     CreateInstanceTestPtr service;
     connector()->ConnectToInterface("mojo:shell_unittest", &service);
-    service->SetTargetIdentity(identity);
+    service->SetTargetIdentity(shell::mojom::Identity::From(identity));
   }
 
   DISALLOW_COPY_AND_ASSIGN(Target);

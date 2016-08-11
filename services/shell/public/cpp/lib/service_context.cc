@@ -47,9 +47,9 @@ void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceContext, mojom::Service implementation:
 
-void ServiceContext::OnStart(const shell::Identity& identity,
+void ServiceContext::OnStart(mojom::IdentityPtr identity,
                              const OnStartCallback& callback) {
-  identity_ = identity;
+  identity_ = identity.To<Identity>();
   if (!initialize_handler_.is_null())
     initialize_handler_.Run();
 
@@ -63,12 +63,13 @@ void ServiceContext::OnStart(const shell::Identity& identity,
 }
 
 void ServiceContext::OnConnect(
-    const Identity& source,
+    mojom::IdentityPtr source,
     mojom::InterfaceProviderRequest interfaces,
-    const CapabilityRequest& allowed_capabilities) {
-  shell::Identity remote_identity = source;
+    mojom::CapabilityRequestPtr allowed_capabilities) {
+  shell::Identity remote_identity = source.To<Identity>();
   std::unique_ptr<InterfaceRegistry> registry(
-      new InterfaceRegistry(remote_identity, allowed_capabilities));
+      new InterfaceRegistry(remote_identity,
+                            allowed_capabilities.To<CapabilityRequest>()));
   registry->Bind(std::move(interfaces));
 
   if (!service_->OnConnect(remote_identity, registry.get()))

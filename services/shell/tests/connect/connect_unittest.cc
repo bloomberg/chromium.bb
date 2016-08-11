@@ -56,9 +56,9 @@ void ReceiveConnectionResult(mojom::ConnectResult* out_result,
                              Identity* out_target,
                              base::RunLoop* loop,
                              int32_t in_result,
-                             const shell::Identity& in_identity) {
+                             mojom::IdentityPtr in_identity) {
   *out_result = static_cast<mojom::ConnectResult>(in_result);
-  *out_target = in_identity;
+  *out_target = in_identity.To<Identity>();
   loop->Quit();
 }
 
@@ -338,7 +338,7 @@ TEST_F(ConnectTest, ConnectAsDifferentUser_Allowed) {
   {
     base::RunLoop loop;
     user_id_test->ConnectToClassAppAsDifferentUser(
-        target,
+        mojom::Identity::From(target),
         base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
     loop.Run();
   }
@@ -356,7 +356,7 @@ TEST_F(ConnectTest, ConnectAsDifferentUser_Blocked) {
   {
     base::RunLoop loop;
     user_id_test->ConnectToClassAppAsDifferentUser(
-        target,
+        mojom::Identity::From(target),
         base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
     loop.Run();
   }

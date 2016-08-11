@@ -53,8 +53,8 @@ class ShellTestClient
   }
 
   // test::mojom::CreateInstanceTest:
-  void SetTargetIdentity(const shell::Identity& identity) override {
-    target_identity_ = identity;
+  void SetTargetIdentity(shell::mojom::IdentityPtr identity) override {
+    target_identity_ = identity.To<Identity>();
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
@@ -129,17 +129,20 @@ class ShellTest : public test::ServiceTest,
 
   // mojom::ServiceManagerListener:
   void OnInit(mojo::Array<mojom::ServiceInfoPtr> instances) override {
-    for (size_t i = 0; i < instances.size(); ++i)
-      initial_instances_.push_back(InstanceInfo(instances[i]->identity));
+    for (size_t i = 0; i < instances.size(); ++i) {
+      initial_instances_.push_back(
+          InstanceInfo(instances[i]->identity.To<Identity>()));
+    }
 
     DCHECK(wait_for_instances_loop_);
     wait_for_instances_loop_->Quit();
   }
   void OnServiceCreated(mojom::ServiceInfoPtr instance) override {
-    instances_.push_back(InstanceInfo(instance->identity));
+    instances_.push_back(InstanceInfo(instance->identity.To<Identity>()));
   }
-  void OnServiceStarted(const shell::Identity& identity,
+  void OnServiceStarted(shell::mojom::IdentityPtr identity_ptr,
                         uint32_t pid) override {
+    Identity identity = identity_ptr.To<Identity>();
     for (auto& instance : instances_) {
       if (instance.identity == identity) {
         instance.pid = pid;
@@ -147,7 +150,8 @@ class ShellTest : public test::ServiceTest,
       }
     }
   }
-  void OnServiceStopped(const shell::Identity& identity) override {
+  void OnServiceStopped(shell::mojom::IdentityPtr identity_ptr) override {
+    Identity identity = identity_ptr.To<Identity>();
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       auto& instance = *it;
       if (instance.identity == identity) {
