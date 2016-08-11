@@ -15,7 +15,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetLibraryLoader;
 import org.chromium.net.impl.CronetUrlRequestContext;
@@ -329,14 +328,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mTestFramework.mCronetEngine.shutdown();
     }
 
-
-
-    /**
     @SmallTest
     @Feature({"Cronet"})
-    https://crbug.com/596929
-    */
-    @FlakyTest
     public void testShutdown() throws Exception {
         mTestFramework = startCronetTestFramework();
         TestUrlRequestCallback callback = new ShutdownTestUrlRequestCallback();
@@ -465,11 +458,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         }
     }
 
-    /*
     @SmallTest
     @Feature({"Cronet"})
-    */
-    @FlakyTest(message = "https://crbug.com/592444")
     public void testShutdownAfterError() throws Exception {
         mTestFramework = startCronetTestFramework();
         TestUrlRequestCallback callback = new ShutdownTestUrlRequestCallback();
