@@ -62,7 +62,6 @@
 #if defined(USE_AURA)
 #include "content/browser/compositor/mus_browser_compositor_output_surface.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "services/ui/common/gpu_service.h"
 #endif
 
 #if defined(OS_WIN)

@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "services/ui/common/mojo_gpu_memory_buffer_manager.h"
+#include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/cpp/raster_thread_helper.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/compositor/compositor.h"

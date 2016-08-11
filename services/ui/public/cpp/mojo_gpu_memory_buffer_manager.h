@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_COMMON_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
-#define SERVICES_UI_COMMON_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
+#define SERVICES_UI_PUBLIC_CPP_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "services/ui/common/mus_common_export.h"
 
 namespace ui {
 
-class MUS_COMMON_EXPORT MojoGpuMemoryBufferManager
-    : public gpu::GpuMemoryBufferManager {
+class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
   MojoGpuMemoryBufferManager();
   ~MojoGpuMemoryBufferManager() override;
@@ -40,4 +38,4 @@ class MUS_COMMON_EXPORT MojoGpuMemoryBufferManager
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_COMMON_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_

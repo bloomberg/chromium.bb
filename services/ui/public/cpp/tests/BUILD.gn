@@ -22,6 +22,7 @@ static_library("unittest_support") {
     "//base",
     "//services/ui/public/cpp",
     "//services/ui/public/cpp:internal_or_test",
+    "//services/ui/public/interfaces",
     "//testing/gtest",
     "//ui/display",
     "//ui/gfx/geometry/mojo",

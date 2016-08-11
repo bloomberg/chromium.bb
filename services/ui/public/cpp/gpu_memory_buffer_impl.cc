@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/common/gpu_memory_buffer_impl.h"
+#include "services/ui/public/cpp/gpu_memory_buffer_impl.h"
 
 namespace ui {
 

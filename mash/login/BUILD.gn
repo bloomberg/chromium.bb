@@ -24,6 +24,7 @@ service("login") {
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/public/cpp",
+    "//services/ui/public/interfaces",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]

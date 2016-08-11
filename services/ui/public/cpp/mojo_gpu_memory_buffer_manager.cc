@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/common/mojo_gpu_memory_buffer_manager.h"
+#include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
 
 #include "base/logging.h"
-#include "services/ui/common/mojo_gpu_memory_buffer.h"
+#include "services/ui/public/cpp/mojo_gpu_memory_buffer.h"
 
 namespace ui {
 

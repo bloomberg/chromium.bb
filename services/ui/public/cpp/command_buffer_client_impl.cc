@@ -19,8 +19,8 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/ui/common/gpu_type_converters.h"
-#include "services/ui/common/mojo_buffer_backing.h"
-#include "services/ui/common/mojo_gpu_memory_buffer.h"
+#include "services/ui/public/cpp/mojo_buffer_backing.h"
+#include "services/ui/public/cpp/mojo_gpu_memory_buffer.h"
 
 namespace ui {
 

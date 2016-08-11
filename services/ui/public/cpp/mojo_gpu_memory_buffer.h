@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_COMMON_MOJO_GPU_MEMORY_BUFFER_H_
-#define SERVICES_UI_COMMON_MOJO_GPU_MEMORY_BUFFER_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_MOJO_GPU_MEMORY_BUFFER_H_
+#define SERVICES_UI_PUBLIC_CPP_MOJO_GPU_MEMORY_BUFFER_H_
 
 #include <stddef.h>
 
 #include <memory>
 
 #include "base/macros.h"
-#include "services/ui/common/gpu_memory_buffer_impl.h"
-#include "services/ui/common/mus_common_export.h"
+#include "services/ui/public/cpp/gpu_memory_buffer_impl.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace ui {
 
-class MUS_COMMON_EXPORT MojoGpuMemoryBufferImpl
-    : public ui::GpuMemoryBufferImpl {
+class MojoGpuMemoryBufferImpl : public ui::GpuMemoryBufferImpl {
  public:
   MojoGpuMemoryBufferImpl(const gfx::Size& size,
                           gfx::BufferFormat format,
@@ -51,4 +49,4 @@ class MUS_COMMON_EXPORT MojoGpuMemoryBufferImpl
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_COMMON_MOJO_GPU_MEMORY_BUFFER_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_MOJO_GPU_MEMORY_BUFFER_H_

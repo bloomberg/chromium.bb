@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_COMMON_GPU_SERVICE_H_
-#define SERVICES_UI_COMMON_GPU_SERVICE_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_GPU_SERVICE_H_
+#define SERVICES_UI_PUBLIC_CPP_GPU_SERVICE_H_
 
 #include <stdint.h>
 #include <vector>
@@ -15,8 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ui/common/mojo_gpu_memory_buffer_manager.h"
-#include "services/ui/common/mus_common_export.h"
+#include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
 namespace shell {
@@ -25,8 +24,8 @@ class Connector;
 
 namespace ui {
 
-class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory,
-                                     public gpu::GpuChannelEstablishFactory {
+class GpuService : public gpu::GpuChannelHostFactory,
+                   public gpu::GpuChannelEstablishFactory {
  public:
   ~GpuService() override;
 
@@ -82,4 +81,4 @@ class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory,
 
 }  // namespace ui
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_LIB_GPU_SERVICE_CONNECTION_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_GPU_SERVICE_H_

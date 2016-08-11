@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_COMMON_MOJO_BUFFER_BACKING_H_
-#define SERVICES_UI_COMMON_MOJO_BUFFER_BACKING_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_MOJO_BUFFER_BACKING_H_
+#define SERVICES_UI_PUBLIC_CPP_MOJO_BUFFER_BACKING_H_
 
 #include <stddef.h>
 
@@ -12,11 +12,10 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/ui/common/mus_common_export.h"
 
 namespace ui {
 
-class MUS_COMMON_EXPORT MojoBufferBacking : public gpu::BufferBacking {
+class MojoBufferBacking : public gpu::BufferBacking {
  public:
   MojoBufferBacking(mojo::ScopedSharedBufferMapping mapping, size_t size);
   ~MojoBufferBacking() override;
@@ -37,4 +36,4 @@ class MUS_COMMON_EXPORT MojoBufferBacking : public gpu::BufferBacking {
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_COMMON_MOJO_BUFFER_BACKING_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_MOJO_BUFFER_BACKING_H_

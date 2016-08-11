@@ -103,7 +103,7 @@ target(link_target_type, "renderer") {
   if (use_aura) {
     public_deps += [ "//content/renderer/mus" ]
     allow_circular_includes_from += [ "//content/renderer/mus" ]
-    deps += [ "//services/ui/common:mus_common" ]
+    deps += [ "//services/ui/public/cpp" ]
   }
 
   if (use_external_popup_menu) {

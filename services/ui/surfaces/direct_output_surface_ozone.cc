@@ -15,8 +15,6 @@
 #include "components/display_compositor/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/ui/common/gpu_service.h"
-#include "services/ui/common/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/gpu/mus_gpu_memory_buffer_manager.h"
 #include "services/ui/surfaces/surfaces_context_provider.h"
 #include "ui/display/types/display_snapshot.h"

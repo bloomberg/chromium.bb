@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/common/gpu_service.h"
+#include "services/ui/public/cpp/gpu_service.h"
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
@@ -12,8 +12,8 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/ui/common/gpu_type_converters.h"
-#include "services/ui/common/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/common/switches.h"
+#include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
 namespace ui {
@@ -28,7 +28,7 @@ void PostTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
                    base::Bind(callback, std::move(established_channel_host)));
 }
 
-}
+}  // namespace
 
 GpuService::GpuService(shell::Connector* connector)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
