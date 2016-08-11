@@ -175,7 +175,7 @@
       <description summary="done event">
 	Notify the client when the related request is done.
       </description>
-      <arg name="callback_data" type="uint" summary="request-specific data for the wl_callback"/>
+      <arg name="callback_data" type="uint" summary="request-specific data for the callback"/>
     </event>
   </interface>
 
@@ -1029,7 +1029,7 @@
 	The server may ignore move requests depending on the state of
 	the surface (e.g. fullscreen or maximized).
       </description>
-      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
+      <arg name="seat" type="object" interface="wl_seat" summary="seat whose pointer is used"/>
       <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
     </request>
 
@@ -1059,7 +1059,7 @@
 	The server may ignore resize requests depending on the state of
 	the surface (e.g. fullscreen or maximized).
       </description>
-      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
+      <arg name="seat" type="object" interface="wl_seat" summary="seat whose pointer is used"/>
       <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
       <arg name="edges" type="uint" enum="resize" summary="which edge or corner is being dragged"/>
     </request>
@@ -1174,7 +1174,7 @@
 	parent surface, in surface-local coordinates.
       </description>
 
-      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
+      <arg name="seat" type="object" interface="wl_seat" summary="seat whose pointer is used"/>
       <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
       <arg name="parent" type="object" interface="wl_surface" summary="parent surface"/>
       <arg name="x" type="int" summary="surface-local x coordinate"/>
