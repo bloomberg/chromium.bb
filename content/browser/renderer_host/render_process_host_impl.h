@@ -529,8 +529,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::WaitableEvent never_signaled_;
 #endif
 
-  std::string channel_token_;
-
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
