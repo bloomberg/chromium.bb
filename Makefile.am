@@ -521,8 +521,8 @@ demo_clients +=					\
 
 weston_simple_shm_SOURCES = clients/simple-shm.c
 nodist_weston_simple_shm_SOURCES =		\
-	protocol/xdg-shell-unstable-v5-protocol.c		\
-	protocol/xdg-shell-unstable-v5-client-protocol.h	\
+	protocol/xdg-shell-unstable-v6-protocol.c		\
+	protocol/xdg-shell-unstable-v6-client-protocol.h	\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\
