@@ -31,11 +31,9 @@
 
 namespace blink {
 
-template<typename T, typename Observer>
+template<typename Context, typename Observer>
 class LifecycleObserver : public GarbageCollectedMixin {
 public:
-    using Context = T;
-
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_lifecycleContext);
@@ -63,8 +61,8 @@ private:
     WeakMember<Context> m_lifecycleContext;
 };
 
-template<typename T, typename Observer>
-inline void LifecycleObserver<T, Observer>::setContext(Context* context)
+template<typename Context, typename Observer>
+inline void LifecycleObserver<Context, Observer>::setContext(Context* context)
 {
     if (m_lifecycleContext)
         m_lifecycleContext->removeObserver(static_cast<Observer*>(this));
