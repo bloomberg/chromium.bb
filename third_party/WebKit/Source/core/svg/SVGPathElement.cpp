@@ -70,6 +70,11 @@ DEFINE_TRACE(SVGPathElement)
 
 DEFINE_NODE_FACTORY(SVGPathElement)
 
+Path SVGPathElement::attributePath() const
+{
+    return m_path->currentValue()->stylePath()->path();
+}
+
 const StylePath* SVGPathElement::stylePath() const
 {
     if (LayoutObject* layoutObject = this->layoutObject()) {

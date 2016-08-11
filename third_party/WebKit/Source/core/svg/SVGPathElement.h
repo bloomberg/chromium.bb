@@ -37,6 +37,7 @@ public:
     DECLARE_NODE_FACTORY(SVGPathElement);
 
     Path asPath() const override;
+    Path attributePath() const;
 
     float getTotalLength();
     SVGPointTearOff* getPointAtLength(float distance);
