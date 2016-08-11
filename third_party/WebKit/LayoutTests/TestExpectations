@@ -189,10 +189,6 @@ crbug.com/616287 virtual/spv2/fast/block/positioning/offsetLeft-offsetTop-multic
 
 # --- End SPV2 Tests ---
 
-crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ NeedsRebaseline ]
-crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ NeedsRebaseline ]
-crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ NeedsRebaseline ]
-
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ Failure ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
