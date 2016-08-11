@@ -14,14 +14,14 @@ declare_args() {
   # the //build/toolchain/mac/linker_driver.py. Enabling this will result in
   # all shared library, loadable module, and executable targets having a dSYM
   # generated.
-  enable_dsyms = (is_official_build && is_chrome_branded) || using_sanitizer
+  enable_dsyms = is_official_build || using_sanitizer
 
   # Strip symbols from linked targets by default. If this is enabled, the
   # //build/config/mac:strip_all config will be applied to all linked targets.
   # If custom stripping parameters are required, remove that config from a
   # linked target and apply custom -Wcrl,strip flags. See
   # //build/toolchain/mac/linker_driver.py for more information.
-  enable_stripping = is_official_build && is_chrome_branded
+  enable_stripping = is_official_build
 }
 
 # Save unstripped copies of targets with a ".unstripped" suffix. This is
