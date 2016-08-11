@@ -192,6 +192,25 @@ Value RunTemplate(Scope* scope,
   }
 
   scope->AddTemplate(template_name, new Template(scope, function));
+
+  // The template object above created a closure around the variables in the
+  // current scope. The template code will execute in that context when it's
+  // invoked. But this means that any variables defined above that are used
+  // by the template won't get marked used just by defining the template. The
+  // result can be spurious unused variable errors.
+  //
+  // The "right" thing to do would be to walk the syntax tree inside the
+  // template, find all identifier references, and mark those variables used.
+  // This is annoying and error-prone to implement and takes extra time to run
+  // for this narrow use case.
+  //
+  // Templates are most often defined in .gni files which don't get
+  // used-variable checking anyway, and this case is annoying enough that the
+  // incremental value of unused variable checking isn't worth the
+  // alternatives. So all values in scope before this template definition are
+  // exempted from unused variable checking.
+  scope->MarkAllUsed();
+
   return Value();
 }
 
