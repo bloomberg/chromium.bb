@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.ui;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.StrictMode;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContentUriUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
@@ -254,7 +257,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         if (selectedItems.size() == 1) {
             // Set up intent for 1 item.
             intentAction = Intent.ACTION_SEND;
-            shareIntent.putExtra(Intent.EXTRA_STREAM, selectedItems.get(0).getUri());
+            shareIntent.putExtra(Intent.EXTRA_STREAM, getUriForItem(selectedItems.get(0)));
         } else {
             // Set up intent for multiple items.
             intentAction = Intent.ACTION_SEND_MULTIPLE;
@@ -264,7 +267,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             if (intentMimeType != null) intentMimeParts = intentMimeType.split(MIME_TYPE_DELIMITER);
 
             for (DownloadHistoryItemWrapper itemWrapper : mSelectionDelegate.getSelectedItems()) {
-                itemUris.add(itemWrapper.getUri());
+                itemUris.add(getUriForItem(itemWrapper));
 
                 String mimeType = Intent.normalizeMimeType(itemWrapper.getMimeType());
 
@@ -300,6 +303,30 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mActivity.startActivity(Intent.createChooser(shareIntent,
                 mActivity.getString(R.string.share_link_chooser_title)));
+    }
+
+    private Uri getUriForItem(DownloadHistoryItemWrapper itemWrapper) {
+        Uri uri = null;
+
+        // #getContentUriFromFile causes a disk read when it calls into FileProvider#getUriForFile.
+        // Obtaining a content URI is on the critical path for creating a share intent after the
+        // user taps on the share button, so even if we were to run this method on a background
+        // thread we would have to wait. As it depends on user-selected items, we cannot
+        // know/preload which URIs we need until the user presses share.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            // Try to obtain a content:// URI, which is preferred to a file:/// URI so that
+            // receiving apps don't attempt to determine the file's mime type (which often fails).
+            uri = ContentUriUtils.getContentUriFromFile(mActivity.getApplicationContext(),
+                    itemWrapper.getFile());
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Could not create content uri: " + e);
+        }
+        StrictMode.setThreadPolicy(oldPolicy);
+
+        if (uri == null) uri = Uri.fromFile(itemWrapper.getFile());
+
+        return uri;
     }
 
     private void deleteSelectedItems() {

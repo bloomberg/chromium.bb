@@ -39,8 +39,8 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
     /** @return String showing where the download resides. */
     abstract String getFilePath();
 
-    /** @return A URI to where the file resides. */
-    abstract Uri getUri();
+    /** @return The file where the download resides. */
+    abstract File getFile();
 
     /** @return String to display for the file. */
     abstract String getDisplayFileName();
@@ -71,6 +71,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         private static final String MIMETYPE_DOCUMENT = "text";
 
         private final DownloadItem mItem;
+        private File mFile;
 
         DownloadItemWrapper(DownloadItem item) {
             mItem = item;
@@ -97,8 +98,9 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public Uri getUri() {
-            return Uri.fromFile(new File(getFilePath()));
+        public File getFile() {
+            if (mFile == null) mFile = new File(getFilePath());
+            return mFile;
         }
 
         @Override
@@ -132,7 +134,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
             boolean success = false;
 
             String mimeType = mItem.getDownloadInfo().getMimeType();
-            Uri fileUri = Uri.fromFile(new File(getFilePath()));
+            Uri fileUri = Uri.fromFile(getFile());
 
             // Check if any apps can open the file.
             Intent fileIntent = new Intent();
@@ -202,6 +204,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
     /** Wraps a {@link OfflinePageDownloadItem}. */
     static class OfflinePageItemWrapper extends DownloadHistoryItemWrapper {
         private final OfflinePageDownloadItem mItem;
+        private File mFile;
 
         OfflinePageItemWrapper(OfflinePageDownloadItem item) {
             mItem = item;
@@ -228,8 +231,9 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public Uri getUri() {
-            return Uri.fromFile(new File(getFilePath()));
+        public File getFile() {
+            if (mFile == null) mFile = new File(getFilePath());
+            return mFile;
         }
 
         @Override
