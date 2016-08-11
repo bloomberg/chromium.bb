@@ -41,6 +41,21 @@ class LayoutMultiColumnSet;
 
 typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 
+// Layout state for multicol. To be stored when laying out a block child, so that we can roll back
+// to the initial state if we need to re-lay out said block child.
+class MultiColumnLayoutState {
+    friend class LayoutMultiColumnFlowThread;
+
+public:
+    MultiColumnLayoutState() : m_columnSet(nullptr) { }
+
+private:
+    explicit MultiColumnLayoutState(LayoutMultiColumnSet* columnSet) : m_columnSet(columnSet) { }
+    LayoutMultiColumnSet* columnSet() const { return m_columnSet; }
+
+    LayoutMultiColumnSet* m_columnSet;
+};
+
 // LayoutFlowThread is used to collect all the layout objects that participate in a flow thread. It
 // will also help in doing the layout. However, it will not layout directly to screen. Instead,
 // LayoutMultiColumnSet objects will redirect their paint and nodeAtPoint methods to this
@@ -87,6 +102,9 @@ public:
 
     virtual void contentWasLaidOut(LayoutUnit logicalBottomInFlowThreadAfterPagination) = 0;
     virtual bool canSkipLayout(const LayoutBox&) const = 0;
+
+    virtual MultiColumnLayoutState multiColumnLayoutState() const = 0;
+    virtual void restoreMultiColumnLayoutState(const MultiColumnLayoutState&) = 0;
 
     // Find and return the next logical top after |flowThreadOffset| that can fit unbreakable
     // content as tall as |contentLogicalHeight|. |flowThreadOffset| is expected to be at the exact

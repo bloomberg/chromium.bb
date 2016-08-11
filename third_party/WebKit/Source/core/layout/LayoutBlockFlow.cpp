@@ -167,6 +167,18 @@ public:
         , m_previousBreakAfterValue(BreakAuto)
         , m_isAtFirstInFlowChild(true) { }
 
+    // Store multicol layout state before first layout of a block child. The child may contain a
+    // column spanner. If we need to re-lay out the block child because our initial logical top
+    // estimate was wrong, we need to roll back to how things were before laying out the child.
+    void storeMultiColumnLayoutState(const LayoutFlowThread& flowThread)
+    {
+        m_multiColumnLayoutState = flowThread.multiColumnLayoutState();
+    }
+    void rollBackToInitialMultiColumnLayoutState(LayoutFlowThread& flowThread)
+    {
+        flowThread.restoreMultiColumnLayoutState(m_multiColumnLayoutState);
+    }
+
     const MarginInfo& marginInfo() const { return m_marginInfo; }
     MarginInfo& marginInfo() { return m_marginInfo; }
     LayoutUnit& previousFloatLogicalBottom() { return m_previousFloatLogicalBottom; }
@@ -178,6 +190,7 @@ public:
     void clearIsAtFirstInFlowChild() { m_isAtFirstInFlowChild = false; }
 
 private:
+    MultiColumnLayoutState m_multiColumnLayoutState;
     MarginInfo m_marginInfo;
     LayoutUnit m_previousFloatLogicalBottom;
     EBreak m_previousBreakAfterValue;
@@ -624,6 +637,9 @@ void LayoutBlockFlow::markDescendantsWithFloatsForLayoutIfNeeded(LayoutBlockFlow
 
 bool LayoutBlockFlow::positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit newLogicalTop, BlockChildrenLayoutInfo& layoutInfo)
 {
+    if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
+        layoutInfo.rollBackToInitialMultiColumnLayoutState(*flowThread);
+
     if (child.isLayoutBlockFlow()) {
         LayoutUnit& previousFloatLogicalBottom = layoutInfo.previousFloatLogicalBottom();
         LayoutBlockFlow& childBlockFlow = toLayoutBlockFlow(child);
@@ -698,6 +714,9 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
 
     // Cache our old rect so that we can dirty the proper paint invalidation rects if the child moves.
     LayoutRect oldRect = child.frameRect();
+
+    if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
+        layoutInfo.storeMultiColumnLayoutState(*flowThread);
 
     // Use the estimated block position and lay out the child if needed. After child layout, when
     // we have enough information to perform proper margin collapsing, float clearing and

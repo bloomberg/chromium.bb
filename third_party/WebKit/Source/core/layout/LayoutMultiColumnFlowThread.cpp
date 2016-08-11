@@ -1047,4 +1047,14 @@ bool LayoutMultiColumnFlowThread::canSkipLayout(const LayoutBox& root) const
     return true;
 }
 
+MultiColumnLayoutState LayoutMultiColumnFlowThread::multiColumnLayoutState() const
+{
+    return MultiColumnLayoutState(m_lastSetWorkedOn);
+}
+
+void LayoutMultiColumnFlowThread::restoreMultiColumnLayoutState(const MultiColumnLayoutState& state)
+{
+    m_lastSetWorkedOn = state.columnSet();
+}
+
 } // namespace blink
