@@ -23,6 +23,8 @@ namespace {
 using syncer::SyncChange;
 using ArcSyncItem = ArcPackageSyncableService::SyncItem;
 
+constexpr int64_t kNoAndroidID = 0;
+
 std::unique_ptr<ArcSyncItem> CreateSyncItemFromSyncSpecifics(
     const sync_pb::ArcPackageSpecifics& specifics) {
   return base::MakeUnique<ArcSyncItem>(
@@ -266,6 +268,13 @@ void ArcPackageSyncableService::OnPackageInstalled(
 
   // Pending install item. Confirm install.
   if (install_iter != pending_install_items_.end()) {
+    if (install_iter->second->last_backup_android_id == kNoAndroidID &&
+        package_info.last_backup_android_id != kNoAndroidID) {
+      pending_install_items_.erase(install_iter);
+      SendSyncChange(package_info, SyncChange::ACTION_UPDATE);
+      return;
+    }
+
     sync_items_[package_name] = std::move(install_iter->second);
     pending_install_items_.erase(install_iter);
     return;
