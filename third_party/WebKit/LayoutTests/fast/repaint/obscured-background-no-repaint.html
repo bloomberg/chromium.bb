@@ -1,6 +1,5 @@
 <html>
 <head>
-<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style type="text/css">
     #test1 div {
         height: 100px;
@@ -58,22 +57,22 @@
     function finish() {
         var layerTree = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
         var invalidations = JSON.parse(layerTree).objectPaintInvalidations;
-        // Passes if there is no invalidations,
-            // or only invalidations because of background obscuration change.
-            // This is because before the delayed image decoder finishes decoding the image,
-            // we first assume the image is not opaque. If the image is found actually opaque
-            // after decoding, the background obscuration status of covered elements will
-            // change and cause paint invalidation.
+        // Passes if there is no invalidations other than imgForAdvanceImageAnimation,
+        // or only invalidations because of background obscuration change.
+        // This is because before the delayed image decoder finishes decoding the image,
+        // we first assume the image is not opaque. If the image is found actually opaque
+        // after decoding, the background obscuration status of covered elements will
+        // change and cause paint invalidation.
         var invalidatedObjects = {};
-        for (var i = 0; i < invalidations.length; ++i) {
-            var object = invalidations[i].object;
-            // Paint invalidation of target3 and target4 depends on opaqueness of the foreground image (apple.jpg).
-            // Because of delayed image decoding, we may get actual opaqueness of the image after the test is started.
-            // Omit paint invalidations so far if we see 'background obscuration change' for these targets.
-            if ((object.indexOf('target3') != -1 || object.indexOf('target4') != -1) && invalidations[i].reason == 'background obscuration change')
-                delete invalidatedObjects[object];
-            else
+        if (invalidations) {
+            for (var i = 0; i < invalidations.length; ++i) {
+                var object = invalidations[i].object;
+                if (object.indexOf('imgForAdvanceImageAnimation') != -1)
+                    continue;
+                if ((object.indexOf('target3') != -1 || object.indexOf('target4') != -1) && invalidations[i].reason == 'background obscuration change')
+                    continue;
                 invalidatedObjects[object] = true;
+            }
         }
 
         if (Object.keys(invalidatedObjects).length)
@@ -87,10 +86,17 @@
         if (!window.testRunner || !window.internals)
             return;
 
-        runAfterLayoutAndPaint(function() {
+        // Ensure the deferred decoder has decoded resources/apple.jpg.
+        testRunner.capturePixelsAsyncThen(function() {
             internals.startTrackingRepaints(document);
-            // Wait a while to let the animated gif advance frames.
-            setTimeout(finish, 300);
+            internals.advanceImageAnimation(imgForAdvanceImageAnimation);
+            testRunner.layoutAndPaintAsyncThen(function() {
+                internals.advanceImageAnimation(imgForAdvanceImageAnimation);
+                testRunner.layoutAndPaintAsyncThen(function() {
+                    internals.advanceImageAnimation(imgForAdvanceImageAnimation);
+                    testRunner.layoutAndPaintAsyncThen(finish);
+                });
+            });
         });
     }
 
@@ -122,6 +128,7 @@
         </a>
     </div>
 </div>
+<img id="imgForAdvanceImageAnimation" src="resources/animated.gif">
 <pre id="output"></pre>
 </body>
 </html>
