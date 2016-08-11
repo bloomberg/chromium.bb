@@ -35,7 +35,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/error_page/common",
-    "//components/test_runner",
     "//content/public/common",
     "//net",
     "//testing/gtest",

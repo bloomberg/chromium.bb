@@ -35,7 +35,6 @@ source_set("unit_tests") {
     "//components/subresource_filter/content/common",
     "//components/subresource_filter/core/common",
     "//components/subresource_filter/core/common:test_support",
-    "//components/test_runner",
     "//content/public/renderer",
     "//testing/gmock",
     "//testing/gtest",

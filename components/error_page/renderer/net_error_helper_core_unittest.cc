@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/net_error_info.h"
-#include "components/test_runner/test_common.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -171,7 +170,6 @@ class NetErrorHelperCoreTest : public testing::Test,
         error_url_(GURL(content::kUnreachableWebDataURL)),
         tracking_request_count_(0) {
     SetUpCore(false, false, true);
-    test_runner::EnsureBlinkInitialized();
   }
 
   ~NetErrorHelperCoreTest() override {

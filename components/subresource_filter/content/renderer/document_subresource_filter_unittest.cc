@@ -10,7 +10,6 @@
 #include "base/strings/string_piece.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
-#include "components/test_runner/test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -28,7 +27,7 @@ const char kTestFirstURLPathSuffix[] = "alpha";
 
 class DocumentSubresourceFilterTest : public ::testing::Test {
  public:
-  DocumentSubresourceFilterTest() { test_runner::EnsureBlinkInitialized(); }
+  DocumentSubresourceFilterTest() {}
 
  protected:
   void SetUp() override {

@@ -17,7 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/events/platform/platform_event_source.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
@@ -29,7 +28,6 @@ class BookmarkNodeDataTest : public testing::Test {
   BookmarkNodeDataTest() {}
 
   void SetUp() override {
-    event_source_ = ui::PlatformEventSource::CreateDefault();
     model_ = TestBookmarkClient::CreateModel();
     test::WaitForBookmarkModelToLoad(model_.get());
     bool success = profile_dir_.CreateUniqueTempDir();
@@ -38,7 +36,6 @@ class BookmarkNodeDataTest : public testing::Test {
 
   void TearDown() override {
     model_.reset();
-    event_source_.reset();
     bool success = profile_dir_.Delete();
     ASSERT_TRUE(success);
     ui::Clipboard::DestroyClipboardForCurrentThread();
@@ -54,7 +51,6 @@ class BookmarkNodeDataTest : public testing::Test {
  private:
   base::ScopedTempDir profile_dir_;
   std::unique_ptr<BookmarkModel> model_;
-  std::unique_ptr<ui::PlatformEventSource> event_source_;
   base::MessageLoopForUI loop_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNodeDataTest);

@@ -117,11 +117,4 @@ source_set("unit_tests") {
     "//ui/base",
     "//url",
   ]
-
-  if (use_x11) {
-    deps += [
-      "//ui/events/platform/x11",
-      "//ui/gfx/x",
-    ]
-  }
 }

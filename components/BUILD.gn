@@ -250,6 +250,7 @@ test("components_unittests") {
       "//ui/android:ui_java",
       "//ui/base",
       "//ui/gfx",
+      "//v8:v8_external_startup_data_assets",
     ]
 
     if (enable_configuration_policy) {

@@ -14,7 +14,6 @@
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
-#include "components/test_runner/test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
@@ -70,7 +69,7 @@ const char kTestBothURLsPathSuffix[] = "a";
 
 class SubresourceFilterAgentTest : public ::testing::Test {
  public:
-  SubresourceFilterAgentTest() { test_runner::EnsureBlinkInitialized(); }
+  SubresourceFilterAgentTest() {}
 
  protected:
   void SetUp() override {

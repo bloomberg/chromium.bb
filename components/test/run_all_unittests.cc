@@ -21,6 +21,7 @@
 
 #if !defined(OS_IOS)
 #include "content/public/test/test_content_client_initializer.h"
+#include "content/public/test/unittest_test_suite.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #endif
@@ -136,7 +137,11 @@ class ComponentsUnitTestEventListener : public testing::EmptyTestEventListener {
 }  // namespace
 
 int main(int argc, char** argv) {
+#if !defined(OS_IOS)
+  content::UnitTestTestSuite test_suite(new ComponentsTestSuite(argc, argv));
+#else
   ComponentsTestSuite test_suite(argc, argv);
+#endif
 
   // The listener will set up common test environment for all components unit
   // tests.
@@ -146,9 +151,12 @@ int main(int argc, char** argv) {
 
 #if !defined(OS_IOS)
   mojo::edk::Init();
-#endif
-
+  return base::LaunchUnitTests(argc, argv,
+                               base::Bind(&content::UnitTestTestSuite::Run,
+                                          base::Unretained(&test_suite)));
+#else
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&base::TestSuite::Run,
                              base::Unretained(&test_suite)));
+#endif
 }
