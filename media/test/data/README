@@ -195,6 +195,14 @@ bear_320x192_40frames.yuv
   First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 320x192 for
   video_encode_accelerator_unittest.
 
+// VP9 parser test files:
+bear-vp9.ivf
+  - Created using "avconv -i bear-vp9.webm -vcodec copy -an -f ivf bear-vp9.ivf".
+bear-vp9.ivf.context 
+test-25fps.vp9.context
+  - Manually dumped from libvpx with bear-vp9.ivf and test-25fps.vp9. See
+    vp9_parser_unittest.cc for description of their format.
+
 // JPEG test files:
 pixel-1280x720.jpg - Single MJEPG encoded frame of 1280x720, captured on Chromebook Pixel. This image does not have Huffman table.
 peach_pi-1280x720.jpg - Single MJPEG encoded frame of 1280x720, captured on Samsung Chromebook 2(13"). This image has Huffman table.
