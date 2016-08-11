@@ -736,6 +736,7 @@ crbug.com/537080 imported/csswg-test/css-writing-modes-3/vertical-alignment-009.
 crbug.com/621515 inspector/sources/debugger-async/async-await/async-callstack-async-await1.html [ Skip ]
 crbug.com/621515 inspector/sources/debugger-async/async-await/async-callstack-async-await2.html [ Skip ]
 crbug.com/621515 inspector/sources/debugger-async/async-await/async-callstack-async-await3.html [ Skip ]
+crbug.com/636837 [ Win7 Debug ] virtual/asyncawait/inspector/sources/debugger-async/async-await/async-callstack-async-await2.html [ Timeout ]
 
 # These tests pass but images do not match because of position: absolute in vertical flow bug
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/block-flow-direction-vrl-009.xht [ Failure ]
