@@ -41,25 +41,3 @@ bool Identity::operator==(const Identity& other) const {
 }
 
 }  // namespace shell
-
-namespace mojo {
-
-// static
-shell::mojom::IdentityPtr
-TypeConverter<shell::mojom::IdentityPtr, shell::Identity>::Convert(
-    const shell::Identity& input) {
-  shell::mojom::IdentityPtr identity(shell::mojom::Identity::New());
-  identity->name = input.name();
-  identity->user_id = input.user_id();
-  identity->instance = input.instance();
-  return identity;
-}
-
-// static
-shell::Identity
-TypeConverter<shell::Identity, shell::mojom::IdentityPtr>::Convert(
-    const shell::mojom::IdentityPtr& input) {
-  return shell::Identity(input->name, input->user_id, input->instance);
-}
-
-}  // namespace mojo

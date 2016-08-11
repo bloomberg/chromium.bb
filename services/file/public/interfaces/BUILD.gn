@@ -6,12 +6,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "user_service.mojom",
+    "file_system.mojom",
   ]
 
   deps = [
     "//components/filesystem/public/interfaces",
   ]
-
-  use_new_wrapper_types = false
 }

@@ -192,9 +192,8 @@ class ServiceManager::Instance
       request.interfaces.erase("*");
     }
 
-    service_->OnConnect(mojom::Identity::From(params->source()),
-                        params->TakeRemoteInterfaces(),
-                        mojom::CapabilityRequest::From(request));
+    service_->OnConnect(params->source(), params->TakeRemoteInterfaces(),
+                        request);
     return true;
   }
 
@@ -204,7 +203,7 @@ class ServiceManager::Instance
     service_.set_connection_error_handler(
         base::Bind(&Instance::OnServiceLost, base::Unretained(this),
                    service_manager_->GetWeakPtr()));
-    service_->OnStart(mojom::Identity::From(identity_),
+    service_->OnStart(identity_,
                       base::Bind(&Instance::OnInitializeResponse,
                                  base::Unretained(this)));
   }
@@ -233,7 +232,7 @@ class ServiceManager::Instance
   mojom::ServiceInfoPtr CreateServiceInfo() const {
     mojom::ServiceInfoPtr info(mojom::ServiceInfo::New());
     info->id = id_;
-    info->identity = mojom::Identity::From(identity_);
+    info->identity = identity_;
     info->pid = pid_;
     return info;
   }
@@ -253,11 +252,11 @@ class ServiceManager::Instance
 
  private:
   // mojom::Connector implementation:
-  void Connect(mojom::IdentityPtr target_ptr,
+  void Connect(const shell::Identity& in_target,
                mojom::InterfaceProviderRequest remote_interfaces,
                mojom::ClientProcessConnectionPtr client_process_connection,
                const ConnectCallback& callback) override {
-    Identity target = target_ptr.To<Identity>();
+    Identity target = in_target;
     if (target.user_id() == mojom::kInheritUserID)
       target.set_user_id(identity_.user_id());
 
@@ -592,7 +591,7 @@ void ServiceManager::OnInstanceError(Instance* instance) {
   identity_to_instance_.erase(it);
   listeners_.ForAllPtrs(
       [this, identity](mojom::ServiceManagerListener* listener) {
-        listener->OnServiceStopped(mojom::Identity::From(identity));
+        listener->OnServiceStopped(identity);
       });
   delete instance;
   if (!instance_quit_callback_.is_null())
@@ -651,7 +650,7 @@ void ServiceManager::NotifyPIDAvailable(const Identity& identity,
                                         base::ProcessId pid) {
   listeners_.ForAllPtrs(
       [identity, pid](mojom::ServiceManagerListener* listener) {
-        listener->OnServiceStarted(mojom::Identity::From(identity), pid);
+        listener->OnServiceStarted(identity, pid);
       });
 }
 
@@ -748,11 +747,11 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
     return;
 
   Identity source = params->source();
-  // |capabilities_ptr| can be null when there is no manifest, e.g. for URL
+  // |result->capabilities| can be null when there is no manifest, e.g. for URL
   // types not resolvable by the resolver.
   CapabilitySpec capabilities = GetPermissiveCapabilities();
-  if (!result->capabilities.is_null())
-    capabilities = result->capabilities.To<CapabilitySpec>();
+  if (result->capabilities.has_value())
+    capabilities = result->capabilities.value();
 
   // Services that request "all_users" class from the Service Manager are
   // allowed to field connection requests from any user. They also run with a
@@ -788,7 +787,7 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   } else {
     // Otherwise we create a new Service pipe.
     mojom::ServiceRequest request = GetProxy(&service);
-    CHECK(!result->package_path.empty() && !result->capabilities.is_null());
+    CHECK(!result->package_path.empty() && result->capabilities.has_value());
 
     if (target.name() != result->resolved_name) {
       instance->StartWithService(std::move(service));

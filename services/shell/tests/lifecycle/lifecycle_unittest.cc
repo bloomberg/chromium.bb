@@ -71,19 +71,18 @@ class InstanceState : public mojom::ServiceManagerListener {
   // mojom::ServiceManagerListener:
   void OnInit(mojo::Array<mojom::ServiceInfoPtr> instances) override {
     for (const auto& instance : instances) {
-      Instance i(instance->identity.To<Identity>(), instance->pid);
+      Instance i(instance->identity, instance->pid);
       initial_instances_[i.identity.name()] = i;
       instances_[i.identity.name()] = i;
     }
     loop_->Quit();
   }
   void OnServiceCreated(mojom::ServiceInfoPtr instance) override {
-    instances_[instance->identity->name] =
-        Instance(instance->identity.To<Identity>(), instance->pid);
+    instances_[instance->identity.name()] =
+        Instance(instance->identity, instance->pid);
   }
-  void OnServiceStarted(mojom::IdentityPtr identity_ptr,
+  void OnServiceStarted(const shell::Identity& identity,
                         uint32_t pid) override {
-    Identity identity = identity_ptr.To<Identity>();
     for (auto& instance : instances_) {
       if (instance.second.identity == identity) {
         instance.second.pid = pid;
@@ -91,8 +90,7 @@ class InstanceState : public mojom::ServiceManagerListener {
       }
     }
   }
-  void OnServiceStopped(mojom::IdentityPtr identity_ptr) override {
-    Identity identity = identity_ptr.To<Identity>();
+  void OnServiceStopped(const shell::Identity& identity) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if (it->second.identity == identity) {
         instances_.erase(it);

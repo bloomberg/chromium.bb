@@ -65,7 +65,10 @@ void Instance::ResolveMojoName(const mojo::String& mojo_name,
   std::string type = shell::GetNameType(mojo_name);
   if (type != shell::kNameType_Mojo && type != shell::kNameType_Exe) {
     std::unique_ptr<Entry> entry(new Entry(mojo_name));
-    callback.Run(shell::mojom::ResolveResult::From(*entry));
+    shell::mojom::ResolveResultPtr result =
+        shell::mojom::ResolveResult::From(*entry);
+    result->capabilities = base::nullopt;
+    callback.Run(std::move(result));
     return;
   }
 

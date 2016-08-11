@@ -78,8 +78,7 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
                  << "both must be valid.";
     return std::move(connection);
   }
-  connector_->Connect(mojom::Identity::From(params->target()),
-                      std::move(remote_request),
+  connector_->Connect(params->target(), std::move(remote_request),
                       std::move(client_process_connection),
                       connection->GetConnectCallback());
   return std::move(connection);

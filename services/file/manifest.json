@@ -1,8 +1,8 @@
 {
   "manifest_version": 1,
-  "name": "mojo:user",
+  "name": "mojo:file",
   "process-group": "browser",
-  "display_name": "User Service",
+  "display_name": "File Service",
   "capabilities": {
     "required": {
       "*": { "classes": [ "app" ] }

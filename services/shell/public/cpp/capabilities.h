@@ -9,8 +9,6 @@
 #include <set>
 #include <string>
 
-#include "services/shell/public/interfaces/resolver.mojom.h"
-
 namespace shell {
 
 using Class = std::string;
@@ -43,35 +41,5 @@ struct CapabilitySpec {
 };
 
 }  // namespace shell
-
-namespace mojo {
-
-template <>
-struct TypeConverter<shell::mojom::CapabilitySpecPtr, shell::CapabilitySpec> {
-  static shell::mojom::CapabilitySpecPtr Convert(
-      const shell::CapabilitySpec& input);
-};
-
-template <>
-struct TypeConverter<shell::CapabilitySpec, shell::mojom::CapabilitySpecPtr> {
-  static shell::CapabilitySpec Convert(
-      const shell::mojom::CapabilitySpecPtr& input);
-};
-
-template <>
-struct TypeConverter<shell::mojom::CapabilityRequestPtr,
-                     shell::CapabilityRequest> {
-  static shell::mojom::CapabilityRequestPtr Convert(
-      const shell::CapabilityRequest& input);
-};
-
-template <>
-struct TypeConverter<shell::CapabilityRequest,
-                     shell::mojom::CapabilityRequestPtr> {
-  static shell::CapabilityRequest Convert(
-      const shell::mojom::CapabilityRequestPtr& input);
-};
-
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_CAPABILITIES_H_

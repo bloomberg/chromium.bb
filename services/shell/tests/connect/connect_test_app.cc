@@ -169,9 +169,9 @@ class ConnectTestApp : public Service,
 
   // test::mojom::UserIdTest:
   void ConnectToClassAppAsDifferentUser(
-      mojom::IdentityPtr target,
+      const shell::Identity& target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
-    Connector::ConnectParams params(target.To<Identity>());
+    Connector::ConnectParams params(target);
     std::unique_ptr<Connection> connection =
         connector()->Connect(&params);
     {
@@ -182,7 +182,7 @@ class ConnectTestApp : public Service,
       loop.Run();
     }
     callback.Run(static_cast<int32_t>(connection->GetResult()),
-                 mojom::Identity::From(connection->GetRemoteIdentity()));
+                 connection->GetRemoteIdentity());
   }
 
   void OnConnectionBlocked(

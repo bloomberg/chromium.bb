@@ -27,6 +27,7 @@
 #include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/store.h"
+#include "services/file/public/cpp/constants.h"
 #include "services/shell/connect_params.h"
 #include "services/shell/native_runner.h"
 #include "services/shell/public/cpp/connector.h"
@@ -35,7 +36,6 @@
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/host/in_process_native_runner.h"
 #include "services/shell/service_manager.h"
-#include "services/user/public/cpp/constants.h"
 
 namespace content {
 
@@ -236,8 +236,8 @@ MojoShellContext::MojoShellContext() {
                                            IDR_MOJO_CONTENT_UTILITY_MANIFEST);
     manifest_provider->AddManifestResource("mojo:catalog",
                                            IDR_MOJO_CATALOG_MANIFEST);
-    manifest_provider->AddManifestResource(user_service::kUserServiceName,
-                                           IDR_MOJO_PROFILE_MANIFEST);
+    manifest_provider->AddManifestResource(file::kFileServiceName,
+                                           IDR_MOJO_FILE_MANIFEST);
 
     in_process_context_ = new InProcessServiceManagerContext;
     request = in_process_context_->Start(std::move(manifest_provider));
