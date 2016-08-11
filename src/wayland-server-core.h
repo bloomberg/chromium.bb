@@ -180,6 +180,7 @@ wl_client_get_link(struct wl_client *client);
 struct wl_client *
 wl_client_from_link(struct wl_list *link);
 
+/** Iterate over a list of clients. */
 #define wl_client_for_each(client, list)				\
 	for (client = wl_client_from_link((list)->next);	\
 	     wl_client_get_link(client) != (list);			\
