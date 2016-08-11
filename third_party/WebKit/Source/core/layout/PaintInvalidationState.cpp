@@ -12,7 +12,9 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/paint/PaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/PaintPropertyTreeBuilder.h"
 
 namespace blink {
 
@@ -117,8 +119,8 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
         //   descendants if possible; or
         // - Track offset between the two paintInvalidationContainers.
         m_cachedOffsetsEnabled = false;
-        if (m_forcedSubtreeInvalidationFlags & FullInvalidationForStackedContents)
-            m_forcedSubtreeInvalidationFlags |= FullInvalidation;
+        if (m_forcedSubtreeInvalidationFlags & PaintInvalidatorContext::ForcedSubtreeFullInvalidationForStackedContents)
+            m_forcedSubtreeInvalidationFlags |= PaintInvalidatorContext::ForcedSubtreeFullInvalidation;
     }
 
     if (!currentObject.isBoxModelObject() && !currentObject.isSVG())
@@ -148,7 +150,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
             // However, we need to keep the FullInvalidationForStackedContents flag
             // if the current object isn't the paint invalidation container of
             // stacked contents.
-            m_forcedSubtreeInvalidationFlags &= FullInvalidationForStackedContents;
+            m_forcedSubtreeInvalidationFlags &= PaintInvalidatorContext::ForcedSubtreeFullInvalidationForStackedContents;
         } else {
             m_forcedSubtreeInvalidationFlags = 0;
             if (currentObject != m_containerForAbsolutePosition
@@ -252,7 +254,7 @@ void PaintInvalidationState::updateForChildren(PaintInvalidationReason reason)
         m_pendingDelayedPaintInvalidations.append(&m_currentObject);
         break;
     case PaintInvalidationSubtree:
-        m_forcedSubtreeInvalidationFlags |= (FullInvalidation | FullInvalidationForStackedContents);
+        m_forcedSubtreeInvalidationFlags |= (PaintInvalidatorContext::ForcedSubtreeFullInvalidation | PaintInvalidatorContext::ForcedSubtreeFullInvalidationForStackedContents);
         break;
     case PaintInvalidationSVGResourceChange:
         setForceSubtreeInvalidationCheckingWithinContainer();
@@ -511,5 +513,27 @@ void PaintInvalidationState::assertFastPathAndSlowPathRectsEqual(const LayoutRec
 }
 
 #endif // CHECK_FAST_PATH_SLOW_PATH_EQUALITY
+
+static const PaintPropertyTreeBuilderContext& dummyTreeBuilderContext()
+{
+    DEFINE_STATIC_LOCAL(PaintPropertyTreeBuilderContext, dummyContext, ());
+    return dummyContext;
+}
+
+PaintInvalidatorContextAdapter::PaintInvalidatorContextAdapter(const PaintInvalidationState& paintInvalidationState)
+    : PaintInvalidatorContext(dummyTreeBuilderContext())
+    , m_paintInvalidationState(paintInvalidationState)
+{
+    forcedSubtreeInvalidationFlags = paintInvalidationState.m_forcedSubtreeInvalidationFlags;
+    paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
+    paintingLayer = &paintInvalidationState.paintingLayer();
+}
+
+
+void PaintInvalidatorContextAdapter::mapLocalRectToPaintInvalidationBacking(const LayoutObject& object, LayoutRect& rect) const
+{
+    DCHECK(&object == &m_paintInvalidationState.currentObject());
+    m_paintInvalidationState.mapLocalRectToPaintInvalidationBacking(rect);
+}
 
 } // namespace blink

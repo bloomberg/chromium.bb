@@ -68,6 +68,7 @@ class PseudoStyleRequest;
 class TransformState;
 
 struct PaintInfo;
+struct PaintInvalidatorContext;
 
 enum CursorDirective {
     SetCursorBasedOnStyle,
@@ -1307,16 +1308,8 @@ public:
     void adjustPreviousPaintInvalidationForScrollIfNeeded(const DoubleSize& scrollDelta);
 
     // The previous position of the top-left corner of the object in its previous paint backing.
-    const LayoutPoint& previousPositionFromPaintInvalidationBacking() const
-    {
-        ASSERT(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-        return m_previousPositionFromPaintInvalidationBacking;
-    }
-    void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking)
-    {
-        ASSERT(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-        m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking;
-    }
+    const LayoutPoint& previousPositionFromPaintInvalidationBacking() const { return m_previousPositionFromPaintInvalidationBacking; }
+    void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking) { m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking; }
 
     bool paintOffsetChanged(const LayoutPoint& newPaintOffset) const
     {
@@ -1334,7 +1327,7 @@ public:
     void setShouldDoFullPaintInvalidation(PaintInvalidationReason = PaintInvalidationFull);
     void clearShouldDoFullPaintInvalidation() { m_bitfields.setFullPaintInvalidationReason(PaintInvalidationNone); }
 
-    virtual void clearPaintInvalidationFlags(const PaintInvalidationState&);
+    virtual void clearPaintInvalidationFlags();
 
     bool mayNeedPaintInvalidation() const { return m_bitfields.mayNeedPaintInvalidation(); }
     void setMayNeedPaintInvalidation();
@@ -1381,6 +1374,20 @@ public:
 
     void invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationReason) const;
 
+    // New version to replace the above old version.
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const;
+
+    // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
+    // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,
+    // not including children which will be invalidated normally during invalidateTreeIfNeeded() and
+    // parts which are invalidated separately (e.g. scrollbars).
+    // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
+    virtual void invalidateDisplayItemClients(PaintInvalidationReason) const;
+
+    const LayoutRect& previousPaintInvalidationRect() const { return m_previousPaintInvalidationRect; }
+
+    virtual bool hasNonCompositedScrollbars() const { return false; }
+
     // Called before anonymousChild.setStyle(). Override to set custom styles for the child.
     virtual void updateAnonymousChildStyle(const LayoutObject& anonymousChild, ComputedStyle& style) const { }
 
@@ -1388,11 +1395,15 @@ public:
     class MutableForPainting {
     public:
         void setPreviousPaintOffset(const LayoutPoint& paintOffset) { m_layoutObject.setPreviousPaintOffset(paintOffset); }
-        PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState) { return m_layoutObject.invalidatePaintIfNeeded(paintInvalidationState); }
-        void clearPaintInvalidationFlags(const PaintInvalidationState& paintInvalidationState) { m_layoutObject.clearPaintInvalidationFlags(paintInvalidationState); }
-        void setShouldDoDelayedFullPaintInvalidation() { m_layoutObject.setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull); }
+        void clearPaintInvalidationFlags() { m_layoutObject.clearPaintInvalidationFlags(); }
+        void setShouldDoFullPaintInvalidation(PaintInvalidationReason reason) { m_layoutObject.setShouldDoFullPaintInvalidation(reason); }
+        void ensureIsReadyForPaintInvalidation() { m_layoutObject.ensureIsReadyForPaintInvalidation(); }
 
-    private:
+        void setPreviousPaintInvalidationRect(const LayoutRect& r) { m_layoutObject.setPreviousPaintInvalidationRect(r); }
+        void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& p) { m_layoutObject.setPreviousPositionFromPaintInvalidationBacking(p); }
+        void setPreviousBackgroundObscured(bool b) { m_layoutObject.setPreviousBackgroundObscured(b); }
+
+    protected:
         friend class PaintPropertyTreeBuilder;
         // The following two functions can be called from PaintPropertyTreeBuilder only.
         ObjectPaintProperties& ensureObjectPaintProperties() { return m_layoutObject.ensureObjectPaintProperties(); }
@@ -1413,6 +1424,9 @@ public:
 
     bool compositedScrollsWithRespectTo(const LayoutBoxModelObject& paintInvalidationContainer) const;
     IntSize scrollAdjustmentForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer) const;
+
+    bool previousBackgroundObscured() const { return m_bitfields.previousBackgroundObscured(); }
+    void setPreviousBackgroundObscured(bool b) { m_bitfields.setPreviousBackgroundObscured(b); }
 
 protected:
     enum LayoutObjectType {
@@ -1535,31 +1549,18 @@ protected:
 
     void setPreviousPaintInvalidationRect(const LayoutRect& rect) { m_previousPaintInvalidationRect = rect; }
 
-    virtual PaintInvalidationReason getPaintInvalidationReason(const PaintInvalidationState&,
-        const LayoutRect& oldPaintInvalidationRect, const LayoutPoint& oldPositionFromPaintInvalidationBacking,
-        const LayoutRect& newPaintInvalidationRect, const LayoutPoint& newPositionFromPaintInvalidationBacking) const;
-
-    // This function tries to minimize the amount of invalidation
-    // generated by invalidating the "difference" between |oldBounds|
-    // and |newBounds|. This means invalidating the union of the
-    // previous rectangles but not their intersection.
-    //
-    // The use case is when an element only requires a paint
-    // invalidation (which means that its content didn't change)
-    // and its bounds changed but its location didn't.
-    //
-    // If we don't meet the criteria for an incremental paint, the
-    // alternative is a full paint invalidation.
-    virtual void incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking);
-
-    virtual bool hasNonCompositedScrollbars() const { return false; }
-
 #if ENABLE(ASSERT)
     virtual bool paintInvalidationStateIsDirty() const
     {
         return shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
     }
 #endif
+
+    // Called before paint invalidation.
+    virtual void ensureIsReadyForPaintInvalidation()
+    {
+        DCHECK(!needsLayout());
+    }
 
     // This function walks the descendants of |this|, following a
     // layout ordering.
@@ -1577,17 +1578,6 @@ protected:
     // by invalidatePaintOfSubtreesIfNeeded.
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&);
 
-    // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
-    // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,
-    // not including children which will be invalidated normally during invalidateTreeIfNeeded() and
-    // parts which are invalidated separately (e.g. scrollbars).
-    // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
-    virtual void invalidateDisplayItemClients(PaintInvalidationReason) const;
-
-    // Sets painting layer needsRepaint, then calls invalidateDisplayItemClients().
-    // Should use this version when PaintInvalidationState is available.
-    void invalidateDisplayItemClientsWithPaintInvalidationState(const PaintInvalidationState&, PaintInvalidationReason) const;
-
     void setIsBackgroundAttachmentFixedObject(bool);
 
     void clearSelfNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(false); }
@@ -1599,16 +1589,7 @@ protected:
     bool containsInlineWithOutlineAndContinuation() const { return m_bitfields.containsInlineWithOutlineAndContinuation(); }
     void setContainsInlineWithOutlineAndContinuation(bool b) { m_bitfields.setContainsInlineWithOutlineAndContinuation(b); }
 
-    const LayoutRect& previousPaintInvalidationRect() const { return m_previousPaintInvalidationRect; }
-
 private:
-    // This function generates a full invalidation, which
-    // means invalidating both |oldBounds| and |newBounds|.
-    //
-    // This is the default choice when generating an invalidation,
-    // as it is always correct, albeit it may force some extra painting.
-    void fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
-
     // Adjusts a paint invalidation rect in the space of |m_previousPaintInvalidationRect| and |m_previousPositionFromPaintInvalidationBacking|
     // to be in the space of the |paintInvalidationContainer|,
     // if needed. They can be different only if |paintInvalidationContainer| is a composited scroller.
@@ -1634,17 +1615,12 @@ private:
 
     inline void markAncestorsForPaintInvalidation();
 
-    inline void invalidateSelectionIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState&, PaintInvalidationReason);
-
     inline void invalidateContainerPreferredLogicalWidths();
 
     void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer);
 
     // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
     void invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason);
-
-    LayoutRect previousSelectionRectForPaintInvalidation() const;
-    void setPreviousSelectionRectForPaintInvalidation(const LayoutRect&);
 
     LayoutObject* containerForAbsolutePosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterOrReflectionSkipped = nullptr) const;
 

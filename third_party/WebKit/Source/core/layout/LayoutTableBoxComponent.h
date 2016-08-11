@@ -34,9 +34,9 @@ protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-    void clearPaintInvalidationFlags(const PaintInvalidationState& paintInvalidationState) override
+    void clearPaintInvalidationFlags() override
     {
-        LayoutBox::clearPaintInvalidationFlags(paintInvalidationState);
+        LayoutBox::clearPaintInvalidationFlags();
         m_backgroundChangedSinceLastPaintInvalidation = false;
     }
 

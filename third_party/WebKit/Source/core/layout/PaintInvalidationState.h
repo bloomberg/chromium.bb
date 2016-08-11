@@ -6,6 +6,7 @@
 #define PaintInvalidationState_h
 
 #include "core/CoreExport.h"
+#include "core/paint/PaintInvalidator.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/transforms/AffineTransform.h"
@@ -56,13 +57,13 @@ public:
 
     bool hasForcedSubtreeInvalidationFlags() const { return m_forcedSubtreeInvalidationFlags; }
 
-    bool forcedSubtreeInvalidationCheckingWithinContainer() const { return m_forcedSubtreeInvalidationFlags & InvalidationChecking; }
-    void setForceSubtreeInvalidationCheckingWithinContainer() { m_forcedSubtreeInvalidationFlags |= InvalidationChecking; }
+    bool forcedSubtreeInvalidationCheckingWithinContainer() const { return m_forcedSubtreeInvalidationFlags & PaintInvalidatorContext::ForcedSubtreeInvalidationChecking; }
+    void setForceSubtreeInvalidationCheckingWithinContainer() { m_forcedSubtreeInvalidationFlags |= PaintInvalidatorContext::ForcedSubtreeInvalidationChecking; }
 
-    bool forcedSubtreeFullInvalidationWithinContainer() const { return m_forcedSubtreeInvalidationFlags & FullInvalidation; }
+    bool forcedSubtreeFullInvalidationWithinContainer() const { return m_forcedSubtreeInvalidationFlags & PaintInvalidatorContext::ForcedSubtreeFullInvalidation; }
 
-    bool forcedSubtreeInvalidationRectUpdateWithinContainerOnly() const { return m_forcedSubtreeInvalidationFlags == InvalidationRectUpdate; }
-    void setForceSubtreeInvalidationRectUpdateWithinContainer() { m_forcedSubtreeInvalidationFlags |= InvalidationRectUpdate; }
+    bool forcedSubtreeInvalidationRectUpdateWithinContainerOnly() const { return m_forcedSubtreeInvalidationFlags == PaintInvalidatorContext::ForcedSubtreeInvalidationRectUpdate; }
+    void setForceSubtreeInvalidationRectUpdateWithinContainer() { m_forcedSubtreeInvalidationFlags |= PaintInvalidatorContext::ForcedSubtreeInvalidationRectUpdate; }
 
     const LayoutBoxModelObject& paintInvalidationContainer() const { return *m_paintInvalidationContainer; }
 
@@ -78,12 +79,11 @@ public:
 
     PaintLayer& paintingLayer() const;
 
-#if ENABLE(ASSERT)
     const LayoutObject& currentObject() const { return m_currentObject; }
-#endif
 
 private:
     friend class VisualRectMappingTest;
+    friend class PaintInvalidatorContextAdapter;
 
     void mapLocalRectToPaintInvalidationContainer(LayoutRect&) const;
 
@@ -96,12 +96,6 @@ private:
 
     const LayoutObject& m_currentObject;
 
-    enum ForcedSubtreeInvalidationFlag {
-        InvalidationChecking = 1 << 0,
-        InvalidationRectUpdate = 1 << 1,
-        FullInvalidation = 1 << 2,
-        FullInvalidationForStackedContents = 1 << 3,
-    };
     unsigned m_forcedSubtreeInvalidationFlags;
 
     bool m_clipped;
@@ -158,6 +152,15 @@ private:
     void assertFastPathAndSlowPathRectsEqual(const LayoutRect& fastPathRect, const LayoutRect& slowPathRect) const;
     bool m_canCheckFastPathSlowPathEquality;
 #endif
+};
+
+// This is temporary to adapt legacy PaintInvalidationState to PaintInvalidatorContext
+class PaintInvalidatorContextAdapter : public PaintInvalidatorContext {
+public:
+    PaintInvalidatorContextAdapter(const PaintInvalidationState&);
+    void mapLocalRectToPaintInvalidationBacking(const LayoutObject&, LayoutRect&) const override;
+private:
+    const PaintInvalidationState& m_paintInvalidationState;
 };
 
 } // namespace blink

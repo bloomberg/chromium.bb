@@ -300,6 +300,10 @@
       "reason": "location change"
     },
     {
+      "object": "RootInlineBox",
+      "reason": "location change"
+    },
+    {
       "object": "LayoutSVGInlineText #text",
       "reason": "location change"
     },
@@ -336,6 +340,10 @@
       "reason": "location change"
     },
     {
+      "object": "RootInlineBox",
+      "reason": "location change"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "location change"
     },
@@ -349,6 +357,10 @@
     },
     {
       "object": "LayoutSVGText text",
+      "reason": "location change"
+    },
+    {
+      "object": "RootInlineBox",
       "reason": "location change"
     },
     {

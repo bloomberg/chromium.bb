@@ -2076,18 +2076,7 @@ PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(const PaintInva
     if (containsFloats())
         paintInvalidationState.paintingLayer().setNeedsPaintPhaseFloat();
 
-    PaintInvalidationReason reason = LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
-    if (reason == PaintInvalidationNone || reason == PaintInvalidationDelayedFull)
-        return reason;
-
-    RootInlineBox* line = firstRootBox();
-    if (!line || !line->isFirstLineStyle())
-        return reason;
-    // It's the RootInlineBox that paints the ::first-line background. Note that since it may be
-    // expensive to figure out if the first line is affected by any ::first-line selectors at all,
-    // we just invalidate it unconditionally, since that's typically cheaper.
-    invalidateDisplayItemClient(*line, reason);
-    return reason;
+    return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
 }
 
 } // namespace blink

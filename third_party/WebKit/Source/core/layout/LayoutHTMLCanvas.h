@@ -38,7 +38,8 @@ public:
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCanvas || LayoutReplaced::isOfType(type); }
     PaintLayerType layerTypeRequired() const override;
-    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) final;
+
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const final;
 
     void canvasSizeChanged();
 

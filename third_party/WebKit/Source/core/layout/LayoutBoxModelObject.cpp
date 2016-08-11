@@ -379,7 +379,7 @@ static bool hasPercentageTransform(const ComputedStyle& style)
 
 void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    ASSERT(!needsLayout());
+    ensureIsReadyForPaintInvalidation();
 
     PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
     if (!shouldCheckForPaintInvalidation(newPaintInvalidationState))
@@ -391,7 +391,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     LayoutRect previousPaintInvalidationRect = this->previousPaintInvalidationRect();
     LayoutPoint previousPosition = previousPositionFromPaintInvalidationBacking();
     PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
-    clearPaintInvalidationFlags(newPaintInvalidationState);
+    clearPaintInvalidationFlags();
 
     if (previousPosition != previousPositionFromPaintInvalidationBacking())
         newPaintInvalidationState.setForceSubtreeInvalidationCheckingWithinContainer();

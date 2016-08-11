@@ -48,6 +48,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
+#include "core/paint/BlockFlowPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -3779,6 +3780,11 @@ void LayoutBlockFlow::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoi
 
     if (inlineElementContinuation)
         inlineElementContinuation->addOutlineRects(rects, additionalOffset + (inlineElementContinuation->containingBlock()->location() - location()), includeBlockOverflows);
+}
+
+PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(const PaintInvalidatorContext& context) const
+{
+    return BlockFlowPaintInvalidator(*this, context).invalidatePaintIfNeeded();
 }
 
 } // namespace blink

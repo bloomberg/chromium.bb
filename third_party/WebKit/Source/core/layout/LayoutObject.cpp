@@ -69,6 +69,7 @@
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ContentData.h"
@@ -132,9 +133,6 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
 static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject), "LayoutObject should stay small");
 
 bool LayoutObject::s_affectsParentBlock = false;
-
-typedef HashMap<const LayoutObject*, LayoutRect> SelectionPaintInvalidationMap;
-static SelectionPaintInvalidationMap* selectionPaintInvalidationMap = nullptr;
 
 // The pointer to paint properties is implemented as a global hash map temporarily,
 // to avoid memory regression during the transition towards SPv2.
@@ -1108,15 +1106,6 @@ void addJsonObjectForRect(TracedValue* value, const char* name, const T& rect)
     value->endDictionary();
 }
 
-template <typename T>
-void addJsonObjectForPoint(TracedValue* value, const char* name, const T& point)
-{
-    value->beginDictionary(name);
-    value->setDouble("x", point.x());
-    value->setDouble("y", point.y());
-    value->endDictionary();
-}
-
 static std::unique_ptr<TracedValue> jsonObjectForPaintInvalidationInfo(const LayoutRect& rect, const String& invalidationReason)
 {
     std::unique_ptr<TracedValue> value = TracedValue::create();
@@ -1207,12 +1196,6 @@ void LayoutObject::invalidateDisplayItemClients(PaintInvalidationReason reason) 
     invalidateDisplayItemClient(*this, reason);
 }
 
-void LayoutObject::invalidateDisplayItemClientsWithPaintInvalidationState(const PaintInvalidationState& paintInvalidationState, PaintInvalidationReason reason) const
-{
-    paintInvalidationState.paintingLayer().setNeedsRepaint();
-    invalidateDisplayItemClients(reason);
-}
-
 bool LayoutObject::compositedScrollsWithRespectTo(const LayoutBoxModelObject& paintInvalidationContainer) const
 {
     return paintInvalidationContainer.usesCompositedScrolling() && this != &paintInvalidationContainer;
@@ -1253,7 +1236,7 @@ void LayoutObject::invalidatePaintRectangle(const LayoutRect& dirtyRect) const
 
 void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    ASSERT(!needsLayout());
+    ensureIsReadyForPaintInvalidation();
 
     // If we didn't need paint invalidation then our children don't need as well.
     // Skip walking down the tree as everything should be fine below us.
@@ -1266,7 +1249,7 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
         newPaintInvalidationState.setForceSubtreeInvalidationCheckingWithinContainer();
 
     PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
-    clearPaintInvalidationFlags(newPaintInvalidationState);
+    clearPaintInvalidationFlags();
 
     newPaintInvalidationState.updateForChildren(reason);
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
@@ -1283,16 +1266,6 @@ void LayoutObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationStat
     }
 }
 
-static std::unique_ptr<TracedValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutPoint& oldLocation, const LayoutRect& newRect, const LayoutPoint& newLocation)
-{
-    std::unique_ptr<TracedValue> value = TracedValue::create();
-    addJsonObjectForRect(value.get(), "oldRect", oldRect);
-    addJsonObjectForPoint(value.get(), "oldLocation", oldLocation);
-    addJsonObjectForRect(value.get(), "newRect", newRect);
-    addJsonObjectForPoint(value.get(), "newLocation", newLocation);
-    return value;
-}
-
 LayoutRect LayoutObject::selectionRectInViewCoordinates() const
 {
     LayoutRect selectionRect = localSelectionRect();
@@ -1301,54 +1274,9 @@ LayoutRect LayoutObject::selectionRectInViewCoordinates() const
     return selectionRect;
 }
 
-LayoutRect LayoutObject::previousSelectionRectForPaintInvalidation() const
-{
-    if (!selectionPaintInvalidationMap)
-        return LayoutRect();
-
-    return selectionPaintInvalidationMap->get(this);
-}
-
-void LayoutObject::setPreviousSelectionRectForPaintInvalidation(const LayoutRect& selectionRect)
-{
-    if (!selectionPaintInvalidationMap) {
-        if (selectionRect.isEmpty())
-            return;
-        selectionPaintInvalidationMap = new SelectionPaintInvalidationMap();
-    }
-
-    if (selectionRect.isEmpty())
-        selectionPaintInvalidationMap->remove(this);
-    else
-        selectionPaintInvalidationMap->set(this, selectionRect);
-}
-
-inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState& paintInvalidationState, PaintInvalidationReason invalidationReason)
-{
-    // Update selection rect when we are doing full invalidation (in case that the object is moved, composite status changed, etc.)
-    // or shouldInvalidationSelection is set (in case that the selection itself changed).
-    bool fullInvalidation = isFullPaintInvalidationReason(invalidationReason);
-    if (!fullInvalidation && !shouldInvalidateSelection())
-        return;
-
-    LayoutRect oldSelectionRect = previousSelectionRectForPaintInvalidation();
-    LayoutRect newSelectionRect = localSelectionRect();
-    if (!newSelectionRect.isEmpty())
-        paintInvalidationState.mapLocalRectToPaintInvalidationBacking(newSelectionRect);
-
-    newSelectionRect.move(scrollAdjustmentForPaintInvalidation(paintInvalidationContainer));
-
-    setPreviousSelectionRectForPaintInvalidation(newSelectionRect);
-
-    if (!fullInvalidation) {
-        fullyInvalidatePaint(paintInvalidationContainer, PaintInvalidationSelection, oldSelectionRect, newSelectionRect);
-        invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationState, PaintInvalidationSelection);
-    }
-}
-
 PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    ASSERT(&paintInvalidationState.currentObject() == this);
+    DCHECK(&paintInvalidationState.currentObject() == this);
 
     if (styleRef().hasOutline()) {
         PaintLayer& layer = paintInvalidationState.paintingLayer();
@@ -1360,107 +1288,34 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     if (v->document().printing())
         return PaintInvalidationNone; // Don't invalidate paints if we're printing.
 
-    const LayoutBoxModelObject& paintInvalidationContainer = paintInvalidationState.paintInvalidationContainer();
-    ASSERT(paintInvalidationContainer == containerForPaintInvalidation());
+    PaintInvalidatorContextAdapter context(paintInvalidationState);
 
-    const LayoutRect oldBounds = previousPaintInvalidationRect();
-    const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
-    LayoutRect newBounds = paintInvalidationState.computePaintInvalidationRectInBacking();
-    LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : paintInvalidationState.computePositionFromPaintInvalidationBacking();
+    const LayoutBoxModelObject& paintInvalidationContainer = paintInvalidationState.paintInvalidationContainer();
+    DCHECK(paintInvalidationContainer == containerForPaintInvalidation());
+
+    context.oldBounds = previousPaintInvalidationRect();
+    context.oldLocation = previousPositionFromPaintInvalidationBacking();
+    context.newBounds = paintInvalidationState.computePaintInvalidationRectInBacking();
+    context.newLocation = paintInvalidationState.computePositionFromPaintInvalidationBacking();
 
     IntSize adjustment = scrollAdjustmentForPaintInvalidation(paintInvalidationContainer);
-    newLocation.move(adjustment);
-    newBounds.move(adjustment);
+    context.newLocation.move(adjustment);
+    context.newBounds.move(adjustment);
 
-    setPreviousPaintInvalidationRect(newBounds);
-    if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-        setPreviousPositionFromPaintInvalidationBacking(newLocation);
+    setPreviousPaintInvalidationRect(context.newBounds);
+    setPreviousPositionFromPaintInvalidationBacking(context.newLocation);
 
     if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() && paintInvalidationState.forcedSubtreeInvalidationRectUpdateWithinContainerOnly()) {
         // We are done updating the paint invalidation rect. No other paint invalidation work to do for this object.
         return PaintInvalidationNone;
     }
 
-    PaintInvalidationReason invalidationReason = getPaintInvalidationReason(paintInvalidationState, oldBounds, oldLocation, newBounds, newLocation);
-
-    // We need to invalidate the selection before checking for whether we are doing a full invalidation.
-    // This is because we need to update the old rect regardless.
-    invalidateSelectionIfNeeded(paintInvalidationContainer, paintInvalidationState, invalidationReason);
-
-    TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "LayoutObject::invalidatePaintIfNeeded()",
-        "object", this->debugName().ascii(),
-        "info", jsonObjectForOldAndNewRects(oldBounds, oldLocation, newBounds, newLocation));
-
-    bool backgroundObscured = backgroundIsKnownToBeObscured();
-    if (!isFullPaintInvalidationReason(invalidationReason) && backgroundObscured != m_bitfields.previousBackgroundObscured())
-        invalidationReason = PaintInvalidationBackgroundObscurationChange;
-    m_bitfields.setPreviousBackgroundObscured(backgroundObscured);
-
-    if (invalidationReason == PaintInvalidationNone || invalidationReason == PaintInvalidationDelayedFull) {
-        // TODO(trchen): Currently we don't keep track of paint offset of layout objects.
-        // There are corner cases that the display items need to be invalidated for paint offset
-        // mutation, but incurs no pixel difference (i.e. bounds stay the same) so no rect-based
-        // invalidation is issued. See crbug.com/508383 and crbug.com/515977.
-        // This is a workaround to force display items to update paint offset.
-        if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && paintInvalidationState.forcedSubtreeInvalidationCheckingWithinContainer())
-            invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationState, PaintInvalidationLocationChange);
-
-        return invalidationReason;
-    }
-
-    if (invalidationReason == PaintInvalidationIncremental)
-        incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds, newLocation);
-    else
-        fullyInvalidatePaint(paintInvalidationContainer, invalidationReason, oldBounds, newBounds);
-
-    invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationState, invalidationReason);
-    return invalidationReason;
+    return invalidatePaintIfNeeded(context);
 }
 
-PaintInvalidationReason LayoutObject::getPaintInvalidationReason(const PaintInvalidationState& paintInvalidationState,
-    const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationBacking,
-    const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationBacking) const
+PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidatorContext& context) const
 {
-    if (paintInvalidationState.forcedSubtreeFullInvalidationWithinContainer())
-        return PaintInvalidationSubtree;
-
-    if (shouldDoFullPaintInvalidation())
-        return m_bitfields.fullPaintInvalidationReason();
-
-    if (paintedOutputOfObjectHasNoEffect())
-        return PaintInvalidationNone;
-
-    // The outline may change shape because of position change of descendants. For simplicity,
-    // just force full paint invalidation if this object is marked for checking paint invalidation
-    // for any reason.
-    if (styleRef().hasOutline())
-        return PaintInvalidationOutline;
-
-    bool locationChanged = newPositionFromPaintInvalidationBacking != oldPositionFromPaintInvalidationBacking;
-
-    // If the bounds are the same then we know that none of the statements below
-    // can match, so we can early out.
-    if (oldBounds == newBounds)
-        return locationChanged && !oldBounds.isEmpty() ? PaintInvalidationLocationChange : PaintInvalidationNone;
-
-    // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
-    // be caused by some layout property (left / top) or some in-flow layoutObject inserted / removed before us in the tree.
-    if (newBounds.location() != oldBounds.location())
-        return PaintInvalidationBoundsChange;
-
-    // If the size is zero on one of our bounds then we know we're going to have
-    // to do a full invalidation of either old bounds or new bounds. If we fall
-    // into the incremental invalidation we'll issue two invalidations instead
-    // of one.
-    if (oldBounds.isEmpty())
-        return PaintInvalidationBecameVisible;
-    if (newBounds.isEmpty())
-        return PaintInvalidationBecameInvisible;
-
-    if (locationChanged)
-        return PaintInvalidationLocationChange;
-
-    return PaintInvalidationIncremental;
+    return ObjectPaintInvalidator(*this, context).invalidatePaintIfNeeded();
 }
 
 void LayoutObject::adjustInvalidationRectForCompositedScrolling(LayoutRect& rect, const LayoutBoxModelObject& paintInvalidationContainer) const
@@ -1490,44 +1345,6 @@ void LayoutObject::clearPreviousPaintInvalidationRects()
     setPreviousPaintInvalidationRect(LayoutRect());
     // After clearing ("invalidating" the paint invalidation rects, mark this object as needing to re-compute them.
     setShouldDoFullPaintInvalidation();
-}
-
-void LayoutObject::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
-{
-    ASSERT(oldBounds.location() == newBounds.location());
-
-    LayoutUnit deltaRight = newBounds.maxX() - oldBounds.maxX();
-    if (deltaRight > 0) {
-        LayoutRect invalidationRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height());
-        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
-    } else if (deltaRight < 0) {
-        LayoutRect invalidationRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height());
-        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
-    }
-
-    LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
-    if (deltaBottom > 0) {
-        LayoutRect invalidationRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom);
-        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
-    } else if (deltaBottom < 0) {
-        LayoutRect invalidationRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom);
-        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
-    }
-}
-
-void LayoutObject::fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds)
-{
-    // The following logic avoids invalidating twice if one set of bounds contains the other.
-    if (!newBounds.contains(oldBounds)) {
-        LayoutRect invalidationRect = oldBounds;
-        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
-
-        if (oldBounds.contains(newBounds))
-            return;
-    }
-
-    LayoutRect invalidationRect = newBounds;
-    invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
 }
 
 LayoutRect LayoutObject::absoluteClippedOverflowRect() const
@@ -2615,8 +2432,7 @@ void LayoutObject::willBeDestroyed()
 
     setAncestorLineBoxDirty(false);
 
-    if (selectionPaintInvalidationMap)
-        selectionPaintInvalidationMap->remove(this);
+    ObjectPaintInvalidator::objectWillBeDestroyed(*this);
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         objectPaintPropertiesMap().remove(this);
@@ -3437,7 +3253,7 @@ void LayoutObject::setMayNeedPaintInvalidationAnimatgedBackgroundImage()
     setMayNeedPaintInvalidation();
 }
 
-void LayoutObject::clearPaintInvalidationFlags(const PaintInvalidationState& paintInvalidationState)
+void LayoutObject::clearPaintInvalidationFlags()
 {
     // paintInvalidationStateIsDirty should be kept in sync with the
     // booleans that are cleared below.

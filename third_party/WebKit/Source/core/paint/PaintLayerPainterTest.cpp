@@ -490,6 +490,10 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting)
 
 TEST_P(PaintLayerPainterTest, TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgrounds)
 {
+    // TODO(wangxianzhu): Enable this test slimmingPaintInvalidation when its fully functional.
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+        return;
+
     // "position: relative" makes the table and td self-painting layers.
     // The table's layer should be marked needsPaintPhaseDescendantBlockBackground because it
     // will paint collapsed borders in the phase.
@@ -507,6 +511,10 @@ TEST_P(PaintLayerPainterTest, TableCollapsedBorderNeedsPaintPhaseDescendantBlock
 
 TEST_P(PaintLayerPainterTest, TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgroundsDynamic)
 {
+    // TODO(wangxianzhu): Enable this test slimmingPaintInvalidation when its fully functional.
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+        return;
+
     setBodyInnerHTML(
         "<table id='table' style='position: relative'>"
         "  <tr><td style='position: relative; border: 1px solid green'>Cell</td></tr>"

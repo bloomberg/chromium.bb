@@ -402,8 +402,9 @@ protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void simplifiedNormalFlowLayout() override;
     bool recalcChildOverflowAfterStyleChange() override;
+    void ensureIsReadyForPaintInvalidation() override;
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
-    void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState&) override;
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const override;
 
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || LayoutBlock::isOfType(type); }

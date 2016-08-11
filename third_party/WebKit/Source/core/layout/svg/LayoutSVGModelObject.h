@@ -68,7 +68,8 @@ protected:
     void addLayerHitTestRects(LayerHitTestRects&, const PaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const final;
     void willBeDestroyed() override;
 
-    PaintInvalidationReason getPaintInvalidationReason(const PaintInvalidationState&, const LayoutRect&, const LayoutPoint&, const LayoutRect&, const LayoutPoint&) const final;
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const final;
+
 private:
     // LayoutSVGModelObject subclasses should use element() instead.
     void node() const = delete;

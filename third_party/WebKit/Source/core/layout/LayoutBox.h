@@ -63,7 +63,6 @@ public:
         : m_spannerPlaceholder(nullptr)
         , m_overrideLogicalContentHeight(-1)
         , m_overrideLogicalContentWidth(-1)
-        , m_previousBorderBoxSize(LayoutUnit(-1), LayoutUnit(-1))
         , m_percentHeightContainer(nullptr)
         , m_snapContainer(nullptr)
         , m_snapAreas(nullptr)
@@ -76,13 +75,7 @@ public:
     LayoutUnit m_overrideLogicalContentHeight;
     LayoutUnit m_overrideLogicalContentWidth;
 
-    // Set by LayoutBox::savePreviousBoxSizesIfNeeded().
-    LayoutSize m_previousBorderBoxSize;
-    LayoutRect m_previousContentBoxRect;
-    LayoutRect m_previousLayoutOverflowRect;
-
     LayoutUnit m_pageLogicalOffset;
-
     LayoutUnit m_paginationStrut;
 
     LayoutBlock* m_percentHeightContainer;
@@ -966,8 +959,16 @@ public:
 
     bool hitTestClippedOutByRoundedBorder(const HitTestLocation& locationInContainer, const LayoutPoint& borderBoxLocation) const;
 
-    bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&) const;
-    bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
+    static bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&);
+    static bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&);
+
+    bool mustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
+    bool mustInvalidateBackgroundOrBorderPaintOnWidthChange() const;
+
+    // Returns true if the box intersects the viewport visible to the user.
+    bool intersectsVisibleViewport() const;
+
+    bool hasNonCompositedScrollbars() const final;
 
 protected:
     void willBeDestroyed() override;
@@ -999,17 +1000,12 @@ protected:
     void addLayerHitTestRects(LayerHitTestRects&, const PaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
     void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 
-    PaintInvalidationReason getPaintInvalidationReason(const PaintInvalidationState&,
-        const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
-        const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer) const override;
-    void incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer) override;
-
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const override;
     void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState) override;
 
     bool hasStretchedLogicalWidth() const;
 
-    bool hasNonCompositedScrollbars() const final;
     void excludeScrollbars(LayoutRect&, OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const;
 
     LayoutUnit containingBlockLogicalWidthForPositioned(const LayoutBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
@@ -1021,11 +1017,6 @@ protected:
     static void computeLogicalTopPositionedOffset(LayoutUnit& logicalTopPos, const LayoutBox* child, LayoutUnit logicalHeightValue, const LayoutBoxModelObject* containerBlock, LayoutUnit containerLogicalHeight);
 
 private:
-    bool mustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
-    bool mustInvalidateBackgroundOrBorderPaintOnWidthChange() const;
-
-    void invalidatePaintRectClippedByOldAndNewBounds(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);
-
     void updateShapeOutsideInfoAfterStyleChange(const ComputedStyle&, const ComputedStyle* oldStyle);
     void updateGridPositionAfterStyleChange(const ComputedStyle*);
     void updateScrollSnapMappingAfterStyleChange(const ComputedStyle*, const ComputedStyle* oldStyle);
@@ -1078,10 +1069,6 @@ private:
         return *m_rareData.get();
     }
 
-    bool needToSavePreviousBoxSizes();
-    void savePreviousBoxSizesIfNeeded();
-    LayoutSize computePreviousBorderBoxSize(const LayoutSize& previousBoundsSize) const;
-
     bool logicalHeightComputesAsNone(SizeType) const;
 
     bool isBox() const = delete; // This will catch anyone doing an unnecessary check.
@@ -1093,9 +1080,6 @@ private:
         if (!needsLayout())
             setMayNeedPaintInvalidation();
     }
-
-    // Returns true if the box intersects the viewport visible to the user.
-    bool intersectsVisibleViewport() const;
 
     virtual bool isInSelfHitTestingPhase(HitTestAction hitTestAction) const { return hitTestAction == HitTestForeground; }
 

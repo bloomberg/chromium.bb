@@ -30,6 +30,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
+#include "core/paint/HTMLCanvasPaintInvalidator.h"
 #include "core/paint/HTMLCanvasPainter.h"
 
 namespace blink {
@@ -83,16 +84,9 @@ void LayoutHTMLCanvas::canvasSizeChanged()
         setNeedsLayout(LayoutInvalidationReason::SizeChanged);
 }
 
-PaintInvalidationReason LayoutHTMLCanvas::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
+PaintInvalidationReason LayoutHTMLCanvas::invalidatePaintIfNeeded(const PaintInvalidatorContext& context) const
 {
-    PaintInvalidationReason reason = LayoutBox::invalidatePaintIfNeeded(paintInvalidationState);
-    HTMLCanvasElement* element = toHTMLCanvasElement(node());
-    if (element->isDirty()) {
-        element->doDeferredPaintInvalidation();
-        if (reason < PaintInvalidationRectangle)
-            reason = PaintInvalidationRectangle;
-    }
-    return reason;
+    return HTMLCanvasPaintInvalidator(*this, context).invalidatePaintIfNeeded();
 }
 
 CompositingReasons LayoutHTMLCanvas::additionalCompositingReasons() const

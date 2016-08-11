@@ -2813,7 +2813,7 @@ void FrameView::invalidateTreeIfNeededRecursiveInternal()
 
     // Process objects needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
     for (auto& target : pendingDelayedPaintInvalidations)
-        target->getMutableForPainting().setShouldDoDelayedFullPaintInvalidation();
+        target->getMutableForPainting().setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
 }
 
 void FrameView::enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize)

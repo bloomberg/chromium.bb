@@ -343,6 +343,7 @@ protected:
 
     bool paintedOutputOfObjectHasNoEffect() const override;
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const override;
 
     Node* nodeForHitTest() const final;
     bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
