@@ -13264,10 +13264,16 @@ void GLES2DecoderImpl::DoCopyTexSubImage3D(
     return;
   }
 
+  // For 3D textures, we always clear the entire texture. See the code in
+  // TextureManager::ValidateAndDoTexSubImage for TexSubImage3D.
+  if (!texture->IsLevelCleared(target, level)) {
+    texture_manager()->ClearTextureLevel(this, texture_ref, target, level);
+    DCHECK(texture->IsLevelCleared(target, level));
+  }
+
   // TODO(yunchao): Follow-up CLs are necessary. For instance:
   // 1. emulation of unsized formats in core profile
-  // 2. clear the 3d textures if it is uncleared.
-  // 3. out-of-bounds reading, etc.
+  // 2. out-of-bounds reading, etc.
 
   glCopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width,
                       height);

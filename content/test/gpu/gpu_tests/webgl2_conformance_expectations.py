@@ -42,10 +42,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
               'invariant-does-not-leak-across-shaders.html',
               bug=634813)
 
-    self.Fail('conformance2/textures/' +
-              'misc/copy-texture-image-webgl-specific.html',
-              bug=631934)
-
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
     # All platforms with AMD GPU.

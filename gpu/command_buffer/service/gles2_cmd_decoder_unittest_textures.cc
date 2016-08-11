@@ -1368,6 +1368,78 @@ TEST_P(GLES3DecoderTest, CopyTexSubImage3DFeedbackLoopFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, CopyTexSubImage3DClearTheUncleared3DTexture) {
+  const GLenum kTarget = GL_TEXTURE_3D;
+  const GLint kLevel = 0;
+  const GLint kXoffset = 0;
+  const GLint kYoffset = 0;
+  const GLint kZoffset = 0;
+  const GLint kX = 0;
+  const GLint kY = 0;
+  const GLint kInternalFormat = GL_RGB8;
+  const GLsizei kWidth = 2;
+  const GLsizei kHeight = 2;
+  const GLsizei kDepth = 2;
+  const GLenum kFormat = GL_RGB;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const uint32_t kBufferSize = kWidth * kHeight * kDepth * 4;
+
+  DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
+  DoTexImage3D(kTarget, kLevel, kInternalFormat, kWidth, kHeight, kDepth, 0,
+               kFormat, kType, 0, 0);
+  TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(client_texture_id_);
+  ASSERT_TRUE(texture_ref != NULL);
+  Texture* texture = texture_ref->texture();
+
+  EXPECT_FALSE(texture->SafeToRenderFrom());
+  EXPECT_FALSE(texture->IsLevelCleared(kTarget, kLevel));
+
+  // CopyTexSubImage3D will clear the uncleared texture
+  EXPECT_CALL(*gl_, GenBuffersARB(1, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_UNPACK_BUFFER, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BufferData(GL_PIXEL_UNPACK_BUFFER,
+                               kBufferSize, _, GL_STATIC_DRAW))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(kTarget, kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexSubImage3DNoData(kTarget, kLevel,
+                                        kXoffset, kYoffset, kZoffset,
+                                        kWidth, kHeight, kDepth,
+                                        kFormat, kType))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_UNPACK_BUFFER, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DeleteBuffersARB(1, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(kTarget, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_,
+              CopyTexSubImage3D(kTarget, kLevel, kXoffset, kYoffset, kZoffset,
+                                kX, kY, kWidth, kHeight))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  CopyTexSubImage3D cmd;
+  cmd.Init(kTarget, kLevel, kXoffset, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(texture->SafeToRenderFrom());
+  EXPECT_TRUE(texture->IsLevelCleared(kTarget, kLevel));
+}
+
 TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsWithBadImageSize) {
   const uint32_t kBucketId = 123;
   const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
