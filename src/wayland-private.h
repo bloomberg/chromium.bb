@@ -75,7 +75,8 @@ struct wl_map {
 	uint32_t free_list;
 };
 
-typedef void (*wl_iterator_func_t)(void *element, void *data);
+typedef enum wl_iterator_result (*wl_iterator_func_t)(void *element,
+						      void *data);
 
 void
 wl_map_init(struct wl_map *map, uint32_t side);

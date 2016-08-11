@@ -216,6 +216,15 @@ void
 wl_client_add_resource_created_listener(struct wl_client *client,
                                         struct wl_listener *listener);
 
+typedef enum wl_iterator_result (*wl_client_for_each_resource_iterator_func_t)(
+						struct wl_resource *resource,
+						void *user_data);
+
+void
+wl_client_for_each_resource(struct wl_client *client,
+                            wl_client_for_each_resource_iterator_func_t iterator,
+                            void *user_data);
+
 /** \class wl_listener
  *
  * \brief A single listener for Wayland signals

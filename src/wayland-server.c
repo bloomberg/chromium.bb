@@ -565,7 +565,7 @@ wl_resource_post_no_memory(struct wl_resource *resource)
 			       WL_DISPLAY_ERROR_NO_MEMORY, "no memory");
 }
 
-static void
+static enum wl_iterator_result
 destroy_resource(void *element, void *data)
 {
 	struct wl_resource *resource = element;
@@ -580,6 +580,8 @@ destroy_resource(void *element, void *data)
 
 	if (!(flags & WL_MAP_ENTRY_LEGACY))
 		free(resource);
+
+	return WL_ITERATOR_CONTINUE;
 }
 
 WL_EXPORT void
@@ -1602,6 +1604,52 @@ wl_client_add_resource_created_listener(struct wl_client *client,
 					struct wl_listener *listener)
 {
 	wl_signal_add(&client->resource_created_signal, listener);
+}
+
+struct wl_resource_iterator_context {
+	void *user_data;
+	wl_client_for_each_resource_iterator_func_t it;
+};
+
+static enum wl_iterator_result
+resource_iterator_helper(void *res, void *user_data)
+{
+	struct wl_resource_iterator_context *context = user_data;
+	struct wl_resource *resource = res;
+
+	return context->it(resource, context->user_data);
+}
+
+/** Iterate over all the resources of a client
+ *
+ * \param client The client object
+ * \param iterator The iterator function
+ * \param user_data The user data pointer
+ *
+ * The function pointed by \a iterator will be called for each
+ * resource owned by the client. The \a user_data will be passed
+ * as the second argument of the iterator function.
+ * If the \a iterator function returns \a WL_ITERATOR_CONTINUE the iteration
+ * will continue, if it returns \a WL_ITERATOR_STOP it will stop.
+ *
+ * Creating and destroying resources while iterating is safe, but new
+ * resources may or may not be picked up by the iterator.
+ *
+ * \sa wl_iterator_result
+ *
+ * \memberof wl_client
+ */
+WL_EXPORT void
+wl_client_for_each_resource(struct wl_client *client,
+			    wl_client_for_each_resource_iterator_func_t iterator,
+			    void *user_data)
+{
+	struct wl_resource_iterator_context context = {
+		.user_data = user_data,
+		.it = iterator,
+	};
+
+	wl_map_for_each(&client->objects, resource_iterator_helper, &context);
 }
 
 /** \cond */ /* Deprecated functions below. */
