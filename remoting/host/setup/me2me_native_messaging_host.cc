@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringize_macros.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -27,16 +28,12 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/native_messaging/log_message_handler.h"
-#include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/setup/oauth_client.h"
-#include "remoting/host/switches.h"
 #include "remoting/protocol/pairing_registry.h"
 
 #if defined(OS_WIN)
-#include "base/win/scoped_handle.h"
-#include "base/win/win_util.h"
-#include "remoting/host/win/launch_native_messaging_host_process.h"
+#include "remoting/host/win/elevated_native_messaging_host.h"
 #endif  // defined(OS_WIN)
 
 namespace {
@@ -546,75 +543,27 @@ void Me2MeNativeMessagingHost::OnError(const std::string& error_message) {
 }
 
 #if defined(OS_WIN)
-Me2MeNativeMessagingHost::ElevatedChannelEventHandler::
-    ElevatedChannelEventHandler(extensions::NativeMessageHost::Client* client)
-    : client_(client) {}
-
-void Me2MeNativeMessagingHost::ElevatedChannelEventHandler::OnMessage(
-    std::unique_ptr<base::Value> message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Simply pass along the response from the elevated host to the client.
-  std::string message_json;
-  base::JSONWriter::Write(*message, &message_json);
-  client_->PostMessageFromNativeHost(message_json);
-}
-
-void Me2MeNativeMessagingHost::ElevatedChannelEventHandler::OnDisconnect() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  client_->CloseChannel(std::string());
-}
 
 bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
     std::unique_ptr<base::DictionaryValue> message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
-
-  EnsureElevatedHostCreated();
-
-  // elevated_channel_ will be null if user rejects the UAC request.
-  if (elevated_channel_)
-    elevated_channel_->SendMessage(std::move(message));
-
-  return elevated_channel_ != nullptr;
-}
-
-void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
-  DCHECK(task_runner()->BelongsToCurrentThread());
   DCHECK(needs_elevation_);
 
-  if (elevated_channel_)
-    return;
-
-  base::win::ScopedHandle read_handle;
-  base::win::ScopedHandle write_handle;
-  // Get the name of the binary to launch.
-  base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
-  ProcessLaunchResult result = LaunchNativeMessagingHostProcess(
-      binary, parent_window_handle_,
-      /*elevate_process=*/true, &read_handle, &write_handle);
-  if (result != PROCESS_LAUNCH_RESULT_SUCCESS) {
-    return;
+  if (!elevated_host_) {
+    elevated_host_.reset(new ElevatedNativeMessagingHost(
+        base::CommandLine::ForCurrentProcess()->GetProgram(),
+        parent_window_handle_,
+        /*elevate_process=*/true,
+        base::TimeDelta::FromSeconds(kElevatedHostTimeoutSeconds),
+        client_));
   }
 
-  // Set up the native messaging channel to talk to the elevated host.
-  // Note that input for the elevated channel is output for the elevated host.
-  elevated_channel_.reset(new PipeMessagingChannel(
-      base::File(read_handle.Take()), base::File(write_handle.Take())));
+  if (elevated_host_->EnsureElevatedHostCreated()) {
+    elevated_host_->SendMessage(std::move(message));
+    return true;
+  }
 
-  elevated_channel_event_handler_.reset(
-      new Me2MeNativeMessagingHost::ElevatedChannelEventHandler(client_));
-  elevated_channel_->Start(elevated_channel_event_handler_.get());
-
-  elevated_host_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kElevatedHostTimeoutSeconds),
-      this, &Me2MeNativeMessagingHost::DisconnectElevatedHost);
-}
-
-void Me2MeNativeMessagingHost::DisconnectElevatedHost() {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-
-  // This will send an EOF to the elevated host, triggering its shutdown.
-  elevated_channel_.reset();
+  return false;
 }
 
 #else  // defined(OS_WIN)

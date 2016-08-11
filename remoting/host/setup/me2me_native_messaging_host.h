@@ -13,10 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
-#include "extensions/browser/api/messaging/native_messaging_channel.h"
 #include "remoting/host/setup/daemon_controller.h"
 #include "remoting/host/setup/oauth_client.h"
 
@@ -24,6 +22,7 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class SingleThreadTaskRunner;
+class Value;
 }  // namespace base
 
 namespace gaia {
@@ -37,6 +36,7 @@ class PairingRegistry;
 }  // namespace protocol
 
 class ChromotingHostContext;
+class ElevatedNativeMessagingHost;
 class LogMessageHandler;
 
 // Implementation of the me2me native messaging host.
@@ -120,48 +120,15 @@ class Me2MeNativeMessagingHost : public extensions::NativeMessageHost {
 
   void OnError(const std::string& error_message);
 
-  // Returns true if the request was successfully delegated to the elevated
-  // host and false otherwise.
+  // Returns whether the request was successfully sent to the elevated host.
   bool DelegateToElevatedHost(std::unique_ptr<base::DictionaryValue> message);
-
-#if defined(OS_WIN)
-  class ElevatedChannelEventHandler
-      : public extensions::NativeMessagingChannel::EventHandler {
-   public:
-    ElevatedChannelEventHandler(extensions::NativeMessageHost::Client* client);
-
-    // extensions::NativeMessagingChannel::EventHandler implementation.
-    void OnMessage(std::unique_ptr<base::Value> message) override;
-    void OnDisconnect() override;
-
-   private:
-    extensions::NativeMessageHost::Client* client_;
-
-    base::ThreadChecker thread_checker_;
-  };
-
-  // Create and connect to an elevated host process if necessary.
-  // |elevated_channel_| will contain the native messaging channel to the
-  // elevated host if the function succeeds.
-  void EnsureElevatedHostCreated();
-
-  // Disconnect and shut down the elevated host.
-  void DisconnectElevatedHost();
-
-  // Native messaging channel used to communicate with the elevated host.
-  std::unique_ptr<extensions::NativeMessagingChannel> elevated_channel_;
-
-  // Native messaging event handler used to process responses from the elevated
-  // host.
-  std::unique_ptr<ElevatedChannelEventHandler> elevated_channel_event_handler_;
-
-  // Timer to control the lifetime of the elevated host.
-  base::OneShotTimer elevated_host_timer_;
-#endif  // defined(OS_WIN)
 
   bool needs_elevation_;
 
 #if defined(OS_WIN)
+  // Controls the lifetime of the elevated native messaging host process.
+  std::unique_ptr<ElevatedNativeMessagingHost> elevated_host_;
+
   // Handle of the parent window.
   intptr_t parent_window_handle_;
 #endif  // defined(OS_WIN)

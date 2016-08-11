@@ -399,6 +399,8 @@
             ],
           },
           'sources': [
+            'host/win/elevated_native_messaging_host.cc',
+            'host/win/elevated_native_messaging_host.h',
             'host/win/launch_native_messaging_host_process.cc',
             'host/win/launch_native_messaging_host_process.h',
           ],

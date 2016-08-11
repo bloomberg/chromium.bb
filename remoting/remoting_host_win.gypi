@@ -238,6 +238,8 @@
         'host/win/chromoting_module.h',
         'host/win/core.cc',
         'host/win/core_resource.h',
+        'host/win/elevated_native_messaging_host.cc',
+        'host/win/elevated_native_messaging_host.h',
         'host/win/host_service.cc',
         'host/win/host_service.h',
         'host/win/launch_native_messaging_host_process.cc',

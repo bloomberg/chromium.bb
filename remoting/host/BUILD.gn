@@ -366,6 +366,8 @@ source_set("unit_tests") {
   }
   if (is_win) {
     sources += [
+      "win/elevated_native_messaging_host.cc",
+      "win/elevated_native_messaging_host.h",
       "win/launch_native_messaging_host_process.cc",
       "win/launch_native_messaging_host_process.h",
     ]
@@ -597,6 +599,8 @@ if (is_win) {
       "win/chromoting_module.h",
       "win/core.cc",
       "win/core_resource.h",
+      "win/elevated_native_messaging_host.cc",
+      "win/elevated_native_messaging_host.h",
       "win/host_service.cc",
       "win/host_service.h",
       "win/launch_native_messaging_host_process.cc",
