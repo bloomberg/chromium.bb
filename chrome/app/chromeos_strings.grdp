@@ -6857,14 +6857,14 @@ All users must sign out to continue.
   </message>
 
   <!-- Android Apps -->
-  <message name="IDS_OPTIONS_ARC_TITLE" desc="The title of Android Apps section.">
-    Android apps
+  <message name="IDS_OPTIONS_ARC_TITLE" desc="The title of Google Play Store section.">
+    Google Play Store
   </message>
-  <message name="IDS_OPTIONS_ARC_ENABLE" desc="Label for the checkbox that enables Android apps.">
-    Enable Android apps on your Chromebook.
+  <message name="IDS_OPTIONS_ARC_ENABLE" desc="Label for the checkbox that enables Google Play Store apps.">
+    Enable Google Play Store on your Chromebook.
   </message>
   <message name="IDS_OPTIONS_ARC_MANAGE_APPS" desc="Label for launching  Android apps settings.">
-    Manage your Android apps in <ph name="BEGIN_LINK">&lt;a is="action-link" id="android-apps-settings-link" role="link"&gt;</ph>Settings<ph name="END_LINK">&lt;/a&gt;</ph>.
+    Manage your Android <ph name="BEGIN_LINK">&lt;a is="action-link" id="android-apps-settings-link" role="link"&gt;</ph>preferences<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_ARC_NOTIFICATION_TITLE" desc="Title of the first-run notification that enables Android apps.">
     Google Play Store
