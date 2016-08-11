@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
+import android.support.v4.view.ViewCompat;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -764,7 +765,8 @@ public class NewTabPage
     @Override
     public void destroy() {
         assert !mIsDestroyed;
-        assert !getView().isAttachedToWindow() : "Destroy called before removed from window";
+        assert !ViewCompat
+                .isAttachedToWindow(getView()) : "Destroy called before removed from window";
         if (mIsLoaded && !mTab.isHidden()) recordNTPInteractionTime();
 
         if (mFaviconHelper != null) {
