@@ -307,18 +307,22 @@ AutomationNodeImpl.prototype = {
 
   get previousSibling() {
     var parent = this.parent;
+    if (!parent)
+      return undefined;
+    parent = privates(parent).impl;
     var indexInParent = GetIndexInParent(this.treeID, this.id);
-    if (parent && indexInParent > 0)
-      return parent.children[indexInParent - 1];
-    return undefined;
+    return this.rootImpl.get(
+        GetChildIDAtIndex(parent.treeID, parent.id, indexInParent - 1));
   },
 
   get nextSibling() {
     var parent = this.parent;
+    if (!parent)
+      return undefined;
+    parent = privates(parent).impl;
     var indexInParent = GetIndexInParent(this.treeID, this.id);
-    if (parent && indexInParent < parent.children.length)
-      return parent.children[indexInParent + 1];
-    return undefined;
+    return this.rootImpl.get(
+        GetChildIDAtIndex(parent.treeID, parent.id, indexInParent + 1));
   },
 
   doDefault: function() {
