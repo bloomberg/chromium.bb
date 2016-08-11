@@ -94,6 +94,7 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
 
     @Override
     protected void onFinishInflate() {
+        super.onFinishInflate();
         mNumberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
     }
 
