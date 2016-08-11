@@ -577,8 +577,8 @@ if BUILD_SIMPLE_DMABUF_INTEL_CLIENT
 demo_clients += weston-simple-dmabuf-intel
 weston_simple_dmabuf_intel_SOURCES = clients/simple-dmabuf-intel.c
 nodist_weston_simple_dmabuf_intel_SOURCES =		\
-	protocol/xdg-shell-unstable-v5-protocol.c		\
-	protocol/xdg-shell-unstable-v5-client-protocol.h	\
+	protocol/xdg-shell-unstable-v6-protocol.c		\
+	protocol/xdg-shell-unstable-v6-client-protocol.h	\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h \
 	protocol/linux-dmabuf-unstable-v1-protocol.c \
