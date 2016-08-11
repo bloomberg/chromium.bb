@@ -8,15 +8,6 @@
 -keep public class com.google.android.apps.chrome** extends android.app.Fragment
 -keep public class org.chromium** extends android.app.Fragment
 
-# Keep protobuf code used via reflection
-# TODO(tonyg): Removing these -keeps results in new notes, but nothing seems to
-# break. This exclusion costs almost 100k of dex size so consider replacing it
-# with a -dontnote after more testing.
--keep class com.google.protobuf.** {
-  *** newBuilder();
-  *** parseFrom(java.io.InputStream);
-}
-
 # Keep the client interfaces for cacheinvalidation as they are used as
 # argument types for some of our code that we're keeping and proguard warns
 # otherwise.
