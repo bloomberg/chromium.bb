@@ -10,12 +10,9 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#import "ui/events/cocoa/cocoa_event_utils.h"
-#include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#import "ui/events/test/cocoa_test_event_utils.h"
 
 using blink::WebKeyboardEvent;
 using blink::WebInputEvent;
@@ -561,42 +558,4 @@ TEST(WebInputEventBuilderMacTest, DomKeyFlagsChanged) {
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
     EXPECT_EQ(entry.dom_key, web_event.domKey) << entry.mac_key_code;
   }
-}
-
-// Test that a ui::Event and blink::WebInputEvent made from the same NSEvent
-// have the same values for comparable fields.
-TEST(WebInputEventBuilderMacTest, ScrollWheelMatchesUIEvent) {
-  CGFloat delta_x = 123;
-  CGFloat delta_y = 321;
-  NSPoint location = NSMakePoint(11, 22);
-
-  // WebMouseWheelEventBuilder requires a non-nil view to map coordinates. So
-  // create a dummy window, but don't show it. It will be released when closed.
-  NSWindow* window =
-      [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
-                                  styleMask:NSBorderlessWindowMask
-                                    backing:NSBackingStoreBuffered
-                                      defer:NO];
-
-  NSEvent* mac_event = cocoa_test_event_utils::TestScrollEvent(
-      location, window, delta_x, delta_y);
-
-  blink::WebMouseWheelEvent web_event =
-      content::WebMouseWheelEventBuilder::Build(mac_event, [window contentView],
-                                                false, false);
-  ui::MouseWheelEvent ui_event(mac_event);
-
-  EXPECT_EQ(delta_x * ui::kScrollbarPixelsPerCocoaTick, web_event.deltaX);
-  EXPECT_EQ(web_event.deltaX, ui_event.x_offset());
-
-  EXPECT_EQ(delta_y * ui::kScrollbarPixelsPerCocoaTick, web_event.deltaY);
-  EXPECT_EQ(web_event.deltaY, ui_event.y_offset());
-
-  EXPECT_EQ(11, web_event.x);
-  EXPECT_EQ(web_event.x, ui_event.x());
-
-  // Both ui:: and blink:: events use an origin at the top-left.
-  EXPECT_EQ(100 - 22, web_event.y);
-  EXPECT_EQ(web_event.y, ui_event.y());
-  [window close];
 }
