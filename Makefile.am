@@ -565,8 +565,8 @@ if BUILD_SIMPLE_EGL_CLIENTS
 demo_clients += weston-simple-egl
 weston_simple_egl_SOURCES = clients/simple-egl.c
 nodist_weston_simple_egl_SOURCES =		\
-	protocol/xdg-shell-unstable-v5-protocol.c		\
-	protocol/xdg-shell-unstable-v5-client-protocol.h	\
+	protocol/xdg-shell-unstable-v6-protocol.c		\
+	protocol/xdg-shell-unstable-v6-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\
 	protocol/ivi-application-client-protocol.h
 weston_simple_egl_CFLAGS = $(AM_CFLAGS) $(SIMPLE_EGL_CLIENT_CFLAGS)
