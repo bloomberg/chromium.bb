@@ -81,7 +81,7 @@ BUILDERS = {
         "is_try_builder": True,
     },
     "linux_trusty_blink_rel": {
-        "port_name": "linux-precise",
+        "port_name": "linux-trusty",
         "specifiers": ['Trusty', 'Release'],
         "is_try_builder": True,
     },
