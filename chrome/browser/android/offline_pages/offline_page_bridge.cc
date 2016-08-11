@@ -301,16 +301,22 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByOfflineId(
   return ToJavaOfflinePageItem(env, *offline_page);
 }
 
-ScopedJavaLocalRef<jobject> OfflinePageBridge::GetBestPageForOnlineURL(
+void OfflinePageBridge::SelectPageForOnlineUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& online_url) {
-  const OfflinePageItem* offline_page =
-      offline_page_model_->MaybeGetBestPageForOnlineURL(
-          GURL(ConvertJavaStringToUTF8(env, online_url)));
-  if (!offline_page)
-    return ScopedJavaLocalRef<jobject>();
-  return ToJavaOfflinePageItem(env, *offline_page);
+    const JavaParamRef<jstring>& j_online_url,
+    int tab_id,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  DCHECK(j_callback_obj);
+
+  ScopedJavaGlobalRef<jobject> j_callback_ref;
+  j_callback_ref.Reset(env, j_callback_obj);
+
+  OfflinePageUtils::SelectPageForOnlineURL(
+      browser_context_,
+      GURL(ConvertJavaStringToUTF8(env, j_online_url)),
+      tab_id,
+      base::Bind(&SingleOfflinePageItemCallback, j_callback_ref));
 }
 
 void OfflinePageBridge::GetPageByOfflineUrl(

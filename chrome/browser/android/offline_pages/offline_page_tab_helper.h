@@ -32,7 +32,7 @@ class OfflinePageTabHelper :
    public:
     virtual ~Delegate() {}
     virtual bool GetTabId(content::WebContents* web_contents,
-                          std::string* tab_id) const = 0;
+                          int* tab_id) const = 0;
     virtual base::Time Now() const = 0;
   };
 
@@ -94,12 +94,12 @@ class OfflinePageTabHelper :
   // redirect to that offline page, and caching metadata of that page locally.
   // RedirectResult is accumulated along the codepath to reflect the overall
   // result of redirection - and be reported to UMA at the end.
-  void GetPagesForRedirectToOffline(RedirectResult result,
-                                    const GURL& online_url);
-  void SelectBestPageForRedirectToOffline(
+  void GetBestPageForRedirectToOffline(RedirectResult result,
+                                       const GURL& online_url);
+  void SelectPageForOnlineURLDone(
       RedirectResult result,
       const GURL& online_url,
-      const MultipleOfflinePageItemResult& pages);
+      const OfflinePageItem* offline_page);
   void TryRedirectToOffline(RedirectResult result,
                             const GURL& from_url,
                             const OfflinePageItem& offline_page);

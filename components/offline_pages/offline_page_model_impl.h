@@ -101,9 +101,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void GetPagesByOnlineURL(
       const GURL& online_url,
       const MultipleOfflinePageItemCallback& callback) override;
-  void GetBestPageForOnlineURL(
-      const GURL& online_url,
-      const SingleOfflinePageItemCallback callback) override;
   const OfflinePageItem* MaybeGetBestPageForOnlineURL(
       const GURL& online_url) const override;
   void CheckMetadataConsistency() override;
@@ -156,9 +153,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const MultipleOfflinePageItemCallback& callback) const;
   void GetPageByOfflineURLWhenLoadDone(
       const GURL& offline_url,
-      const SingleOfflinePageItemCallback& callback) const;
-  void GetBestPageForOnlineURLWhenLoadDone(
-      const GURL& online_url,
       const SingleOfflinePageItemCallback& callback) const;
   void MarkPageAccessedWhenLoadDone(int64_t offline_id);
   void CheckMetadataConsistencyWhenLoadDone();

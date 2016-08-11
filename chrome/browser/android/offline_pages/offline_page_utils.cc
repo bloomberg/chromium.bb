@@ -14,6 +14,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/android/tab_android.h"
+#include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -73,6 +74,26 @@ void OnGetPageByOfflineURLDone(
   callback.Run(result_url);
 }
 
+void OnGetPagesByOnlineURLDone(
+    int tab_id,
+    const base::Callback<void(const OfflinePageItem*)>& callback,
+    const MultipleOfflinePageItemResult& pages) {
+  const OfflinePageItem* selected_page = nullptr;
+  std::string tab_id_str = base::IntToString(tab_id);
+  for (const auto& offline_page : pages) {
+    if ((offline_page.client_id.name_space == kBookmarkNamespace) ||
+        (offline_page.client_id.name_space == kAsyncNamespace) ||
+        (offline_page.client_id.name_space == kLastNNamespace &&
+         offline_page.client_id.id == tab_id_str)) {
+      if (!selected_page ||
+          offline_page.creation_time > selected_page->creation_time) {
+        selected_page = &offline_page;
+      }
+    }
+  }
+  callback.Run(selected_page);
+}
+
 }  // namespace
 
 // static
@@ -94,6 +115,24 @@ GURL OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
     return GURL();
 
   return offline_page->url;
+}
+
+// static
+void OfflinePageUtils::SelectPageForOnlineURL(
+    content::BrowserContext* browser_context,
+    const GURL& online_url,
+    int tab_id,
+    const base::Callback<void(const OfflinePageItem*)>& callback) {
+  OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(browser_context);
+  if (!offline_page_model) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, nullptr));
+    return;
+  }
+
+  offline_page_model->GetPagesByOnlineURL(
+      online_url, base::Bind(&OnGetPagesByOnlineURLDone, tab_id, callback));
 }
 
 // static

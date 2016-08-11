@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
@@ -65,12 +64,8 @@ class DefaultDelegate : public OfflinePageTabHelper::Delegate {
   DefaultDelegate() {}
   // offline_pages::OfflinePageTabHelper::Delegate implementation:
   bool GetTabId(content::WebContents* web_contents,
-                std::string* tab_id) const override {
-    int temp_tab_id;
-    if (!OfflinePageUtils::GetTabId(web_contents, &temp_tab_id))
-      return false;
-    *tab_id = base::IntToString(temp_tab_id);
-    return true;
+                int* tab_id) const override {
+    return OfflinePageUtils::GetTabId(web_contents, tab_id);
   }
   base::Time Now() const override { return base::Time::Now(); }
 };
@@ -119,14 +114,14 @@ void OfflinePageTabHelper::DidStartNavigation(
   }
 
   if (net::NetworkChangeNotifier::IsOffline()) {
-    GetPagesForRedirectToOffline(
+    GetBestPageForRedirectToOffline(
         RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK, navigated_url);
     return;
   }
 
   content::BrowserContext* context = web_contents()->GetBrowserContext();
   if (ShouldUseOfflineForSlowNetwork(context)) {
-    GetPagesForRedirectToOffline(
+    GetBestPageForRedirectToOffline(
         RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK,
         navigated_url);
     return;
@@ -185,7 +180,7 @@ void OfflinePageTabHelper::DidFinishNavigation(
     return;
   }
 
-  GetPagesForRedirectToOffline(
+  GetBestPageForRedirectToOffline(
       RedirectResult::REDIRECTED_ON_FLAKY_NETWORK, navigated_url);
 }
 
@@ -210,50 +205,33 @@ void OfflinePageTabHelper::RedirectToOnline(
   ReportRedirectResultUMA(RedirectResult::REDIRECTED_ON_CONNECTED_NETWORK);
 }
 
-void OfflinePageTabHelper::GetPagesForRedirectToOffline(
+void OfflinePageTabHelper::GetBestPageForRedirectToOffline(
     RedirectResult result, const GURL& online_url) {
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-  if (!offline_page_model)
-    return;
-
-  offline_page_model->GetPagesByOnlineURL(
-      online_url,
-      base::Bind(&OfflinePageTabHelper::SelectBestPageForRedirectToOffline,
-                 weak_ptr_factory_.GetWeakPtr(), result, online_url));
-}
-
-void OfflinePageTabHelper::SelectBestPageForRedirectToOffline(
-    RedirectResult result,
-    const GURL& online_url,
-    const MultipleOfflinePageItemResult& pages) {
-  DCHECK(result == RedirectResult::REDIRECTED_ON_FLAKY_NETWORK ||
-         result == RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK ||
-         result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK);
-
   // When there is no valid tab android there is nowhere to show the offline
   // page, so we can leave.
-  std::string tab_id;
+  int tab_id;
   if (!delegate_->GetTabId(web_contents(), &tab_id)) {
     ReportRedirectResultUMA(RedirectResult::NO_TAB_ID);
     return;
   }
 
-  const OfflinePageItem* selected_page = nullptr;
-  for (const auto& offline_page : pages) {
-    if ((offline_page.client_id.name_space == kBookmarkNamespace) ||
-        (offline_page.client_id.name_space == kAsyncNamespace) ||
-        (offline_page.client_id.name_space == kLastNNamespace &&
-         offline_page.client_id.id == tab_id)) {
-      if (!selected_page ||
-          offline_page.creation_time > selected_page->creation_time) {
-        selected_page = &offline_page;
-      }
-    }
-  }
+  OfflinePageUtils::SelectPageForOnlineURL(
+      web_contents()->GetBrowserContext(),
+      online_url,
+      tab_id,
+      base::Bind(&OfflinePageTabHelper::SelectPageForOnlineURLDone,
+                 weak_ptr_factory_.GetWeakPtr(), result, online_url));
+}
 
-  if (!selected_page) {
+void OfflinePageTabHelper::SelectPageForOnlineURLDone(
+    RedirectResult result,
+    const GURL& online_url,
+    const OfflinePageItem* offline_page) {
+  DCHECK(result == RedirectResult::REDIRECTED_ON_FLAKY_NETWORK ||
+         result == RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK ||
+         result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK);
+
+  if (!offline_page) {
     switch (result) {
       case RedirectResult::REDIRECTED_ON_FLAKY_NETWORK:
         ReportRedirectResultUMA(
@@ -276,14 +254,14 @@ void OfflinePageTabHelper::SelectBestPageForRedirectToOffline(
   // If the page is being loaded on a slow network, only use the offline page
   // if it was created within the past 7 days.
   if (result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK &&
-      delegate_->Now() - selected_page->creation_time >
+      delegate_->Now() - offline_page->creation_time >
           base::TimeDelta::FromDays(7)) {
     ReportRedirectResultUMA(
         RedirectResult::PAGE_NOT_FRESH_ON_PROHIBITIVELY_SLOW_NETWORK);
     return;
   }
 
-  TryRedirectToOffline(result, online_url, *selected_page);
+  TryRedirectToOffline(result, online_url, *offline_page);
 }
 
 void OfflinePageTabHelper::TryRedirectToOffline(

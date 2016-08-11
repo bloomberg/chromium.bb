@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -45,7 +46,7 @@ const GURL kTestPageUrl("http://test.org/page1");
 const ClientId kTestClientId = ClientId(kBookmarkNamespace, "1234");
 const int64_t kTestFileSize = 876543LL;
 const char kRedirectResultHistogram[] = "OfflinePages.RedirectResult";
-const char kTabId[] = "42";
+const int kTabId = 42;
 
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
@@ -68,14 +69,14 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
 class TestDelegate : public OfflinePageTabHelper::Delegate {
  public:
   TestDelegate(bool has_tab_android,
-               std::string tab_id,
+               int tab_id,
                base::SimpleTestClock* clock)
       : clock_(clock), has_tab_android_(has_tab_android), tab_id_(tab_id) {}
   ~TestDelegate() override {}
 
   // offline_pages::OfflinePageTabHelper::Delegate implementation:
   bool GetTabId(content::WebContents* web_contents,
-                std::string* tab_id) const override {
+                int* tab_id) const override {
     if (has_tab_android_)
       *tab_id = tab_id_;
     return has_tab_android_;
@@ -86,7 +87,7 @@ class TestDelegate : public OfflinePageTabHelper::Delegate {
  private:
   base::SimpleTestClock* clock_;
   bool has_tab_android_;
-  std::string tab_id_;
+  int tab_id_;
 };
 
 }  // namespace
@@ -340,7 +341,7 @@ TEST_F(OfflinePageTabHelperTest, SelectBestPageForCurrentTab) {
       kTestPageUrl, base::FilePath(FILE_PATH_LITERAL("page2.mhtml"))));
 
   // We expect this copy to be used later.
-  ClientId client_id(kLastNNamespace, kTabId);
+  ClientId client_id(kLastNNamespace, base::IntToString(kTabId));
   model->SavePage(
       kTestPageUrl, client_id, std::move(archiver),
       base::Bind(&OfflinePageTabHelperTest::OnSavePageDone, AsWeakPtr()));
@@ -366,7 +367,7 @@ TEST_F(OfflinePageTabHelperTest, SelectBestPageForCurrentTab) {
   EXPECT_EQ(expected_offline_id, item->offline_id);
   EXPECT_EQ(expected_offline_url, item->GetOfflineURL());
   EXPECT_EQ(kLastNNamespace, item->client_id.name_space);
-  EXPECT_EQ(kTabId, item->client_id.id);
+  EXPECT_EQ(base::IntToString(kTabId), item->client_id.id);
 }
 
 TEST_F(OfflinePageTabHelperTest, PageFor2GSlow) {
@@ -421,7 +422,7 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOfflineAsyncLoadedPageOnNoNetwork) {
       base::FilePath(FILE_PATH_LITERAL("AsyncLoadedPage.mhtml"))));
 
   // We expect this Async Loading Namespace copy to be used.
-  ClientId client_id(kAsyncNamespace, kTabId);
+  ClientId client_id(kAsyncNamespace, base::IntToString(kTabId));
   model->SavePage(
       kTestPageUrl, client_id, std::move(archiver),
       base::Bind(&OfflinePageTabHelperTest::OnSavePageDone, AsWeakPtr()));

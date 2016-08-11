@@ -24,6 +24,17 @@ class OfflinePageUtils {
   // Returns true if |url| might point to an offline page.
   static bool MightBeOfflineURL(const GURL& url);
 
+  // Returns via callback an offline page saved for |online_url|, if any. The
+  // page is chosen based on creation date; a more recently created offline
+  // page will be preferred over an older one. The offline page captured from
+  // last visit in the tab will not be considered if its tab id does not match
+  // the provided |tab_id|.
+  static void SelectPageForOnlineURL(
+      content::BrowserContext* browser_context,
+      const GURL& online_url,
+      int tab_id,
+      const base::Callback<void(const OfflinePageItem*)>& callback);
+
   // Gets an online URL of an offline page with |offline_url| if one exists.
   // Deprecated.  Use |GetOnlineURLForOfflineURL|.
   static GURL MaybeGetOnlineURLForOfflineURL(

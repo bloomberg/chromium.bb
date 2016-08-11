@@ -566,20 +566,6 @@ const OfflinePageItem* OfflinePageModelImpl::MaybeGetPageByOfflineURL(
   return nullptr;
 }
 
-void OfflinePageModelImpl::GetBestPageForOnlineURL(
-    const GURL& online_url,
-    const SingleOfflinePageItemCallback callback) {
-  RunWhenLoaded(
-      base::Bind(&OfflinePageModelImpl::GetBestPageForOnlineURLWhenLoadDone,
-                 weak_ptr_factory_.GetWeakPtr(), online_url, callback));
-}
-
-void OfflinePageModelImpl::GetBestPageForOnlineURLWhenLoadDone(
-    const GURL& online_url,
-    const SingleOfflinePageItemCallback& callback) const {
-  callback.Run(MaybeGetBestPageForOnlineURL(online_url));
-}
-
 void OfflinePageModelImpl::GetPagesByOnlineURL(
     const GURL& online_url,
     const MultipleOfflinePageItemCallback& callback) {

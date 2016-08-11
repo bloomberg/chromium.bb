@@ -246,32 +246,17 @@ public class OfflinePageBridge {
         return result;
     }
 
-    /**
-     * Gets the offline pages associated with a provided online URL.  The callback is called when
-     * the results are available.
+     /**
+     * Get the offline page associated with the provided offline URL.
      *
-     * @param onlineURL URL of the page.
-     * @param callback Called with the results.
+     * @param onlineUrl URL of the page.
+     * @param tabId Android tab ID.
+     * @param callback callback to pass back the
+     * matching {@link OfflinePageItem} if found. Will pass back null if not.
      */
-    @VisibleForTesting
-    public void getPagesByOnlineUrl(
-            final String onlineUrl, final Callback<List<OfflinePageItem>> callback) {
-        runWhenLoaded(new Runnable() {
-            @Override
-            public void run() {
-                List<OfflinePageItem> result = new ArrayList<>();
-
-                // TODO(http://crbug.com/589526) This native API returns only one item, but in the
-                // future will return a list.
-                OfflinePageItem item =
-                        nativeGetBestPageForOnlineURL(mNativeOfflinePageBridge, onlineUrl);
-                if (item != null) {
-                    result.add(item);
-                }
-
-                callback.onResult(result);
-            }
-        });
+    public void selectPageForOnlineUrl(String onlineUrl, int tabId,
+            Callback<OfflinePageItem> callback) {
+        nativeSelectPageForOnlineUrl(mNativeOfflinePageBridge, onlineUrl, tabId, callback);
     }
 
     /**
@@ -518,8 +503,9 @@ public class OfflinePageBridge {
 
     @VisibleForTesting
     native OfflinePageItem nativeGetPageByOfflineId(long nativeOfflinePageBridge, long offlineId);
-    private native OfflinePageItem nativeGetBestPageForOnlineURL(
-            long nativeOfflinePageBridge, String onlineURL);
+    private native void nativeSelectPageForOnlineUrl(
+            long nativeOfflinePageBridge, String onlineUrl, int tabId,
+            Callback<OfflinePageItem> callback);
     private native void nativeGetPageByOfflineUrl(
             long nativeOfflinePageBridge, String offlineUrl, Callback<OfflinePageItem> callback);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,

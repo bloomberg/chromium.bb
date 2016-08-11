@@ -165,16 +165,6 @@ class OfflinePageModel : public base::SupportsUserData {
       const GURL& online_url,
       const MultipleOfflinePageItemCallback& callback) = 0;
 
-  // Returns via callback an offline page saved for |online_url|, if any. The
-  // best page is chosen based on creation date; a more recently created offline
-  // page will be preferred over an older one. This API function does not
-  // respect namespaces, as it is used to choose which page is rendered in a
-  // tab. Today all namespaces are treated equally for the purposes of this
-  // selection.
-  virtual void GetBestPageForOnlineURL(
-      const GURL& online_url,
-      const SingleOfflinePageItemCallback callback) = 0;
-
   // Returns an offline page saved for |online_url|. A nullptr is returned if
   // not found.  See |GetBestPageForOnlineURL| for selection criteria.
   virtual const OfflinePageItem* MaybeGetBestPageForOnlineURL(

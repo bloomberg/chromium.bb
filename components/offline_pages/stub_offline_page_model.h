@@ -59,9 +59,6 @@ class StubOfflinePageModel : public OfflinePageModel {
   void GetPagesByOnlineURL(
       const GURL& online_url,
       const MultipleOfflinePageItemCallback& callback) override;
-  void GetBestPageForOnlineURL(
-      const GURL& online_url,
-      const SingleOfflinePageItemCallback callback) override;
   const OfflinePageItem* MaybeGetBestPageForOnlineURL(
       const GURL& online_url) const override;
   void CheckMetadataConsistency() override;
