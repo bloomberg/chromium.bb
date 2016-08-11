@@ -54,7 +54,7 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
   scoped_refptr<DisplayItemList> display_list =
       DisplayItemList::Create(clip, settings);
 
-  display_list->CreateAndAppendItem<DrawingDisplayItem>(
+  display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       clip, recorder.finishRecordingAsPicture());
 
   display_list->Finalize();

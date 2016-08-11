@@ -70,18 +70,63 @@ class CC_EXPORT DisplayItemList
   // approximate_op_count_.
   void RasterIntoCanvas(const DisplayItem& display_item);
 
-  // Because processing happens in this function, all the set up for
-  // this item should be done via the args, which is why the return
-  // type needs to be const, to prevent set-after-processing mistakes.
+  // Because processing happens in these CreateAndAppend functions, all the set
+  // up for the item should be done via the args, which is why the return type
+  // needs to be const, to prevent set-after-processing mistakes.
   template <typename DisplayItemType, typename... Args>
-  const DisplayItemType& CreateAndAppendItem(const gfx::Rect& visual_rect,
-                                             Args&&... args) {
+  const DisplayItemType& CreateAndAppendPairedBeginItem(Args&&... args) {
+    size_t item_index = inputs_.visual_rects.size();
+    inputs_.visual_rects.push_back(gfx::Rect());
+    inputs_.begin_item_indices.push_back(item_index);
+
+    return AllocateAndConstruct<DisplayItemType>(std::forward<Args>(args)...);
+  }
+
+  template <typename DisplayItemType, typename... Args>
+  const DisplayItemType& CreateAndAppendPairedEndItem(Args&&... args) {
+    DCHECK(!inputs_.begin_item_indices.empty());
+    size_t last_begin_index = inputs_.begin_item_indices.back();
+    inputs_.begin_item_indices.pop_back();
+
+    // Note that we are doing two separate things below:
+    //
+    // 1. Appending a new rect to the |visual_rects| list associated with
+    //    the newly-being-added paired end item, with that visual rect
+    //    having same bounds as its paired begin item, referenced via
+    //    |last_begin_index|. The paired begin item may or may not be the
+    //    current last visual rect in |visual_rects|, and its bounds has
+    //    potentially been grown via calls to CreateAndAppendDrawingItem().
+    //
+    // 2. If there is still a containing paired begin item after closing the
+    //    pair ended in this method call, growing that item's visual rect to
+    //    incorporate the bounds of the now-finished pair.
+    //
+    // Thus we're carefully pushing and growing by the visual rect of the
+    // paired begin item we're closing in this method call, which is not
+    // necessarily the same as |visual_rects.back()|, and given that the
+    // |visual_rects| list is mutated in step 1 before step 2, we also can't
+    // shorten the reference via a |const auto| reference. We could make a
+    // copy of the rect before list mutation, but that would incur copy
+    // overhead.
+
+    // Ending bounds match the starting bounds.
+    inputs_.visual_rects.push_back(inputs_.visual_rects[last_begin_index]);
+
+    // The block that ended needs to be included in the bounds of the enclosing
+    // block.
+    GrowCurrentBeginItemVisualRect(inputs_.visual_rects[last_begin_index]);
+
+    return AllocateAndConstruct<DisplayItemType>(std::forward<Args>(args)...);
+  }
+
+  template <typename DisplayItemType, typename... Args>
+  const DisplayItemType& CreateAndAppendDrawingItem(
+      const gfx::Rect& visual_rect,
+      Args&&... args) {
     inputs_.visual_rects.push_back(visual_rect);
-    auto* item = &inputs_.items.AllocateAndConstruct<DisplayItemType>(
-        std::forward<Args>(args)...);
-    approximate_op_count_ += item->ApproximateOpCount();
-    ProcessAppendedItem(item);
-    return *item;
+    GrowCurrentBeginItemVisualRect(visual_rect);
+
+    return AllocateAndConstruct<DisplayItemType>(std::forward<Args>(args)...);
   }
 
   // Called after all items are appended, to process the items and, if
@@ -108,6 +153,8 @@ class CC_EXPORT DisplayItemList
                                   float raster_scale,
                                   std::vector<DrawImage>* images);
 
+  size_t size() const { return inputs_.items.size(); }
+
   gfx::Rect VisualRectForTesting(int index) {
     return inputs_.visual_rects[index];
   }
@@ -126,7 +173,19 @@ class CC_EXPORT DisplayItemList
                   bool retain_individual_display_items);
   ~DisplayItemList();
 
+  // If we're currently within a paired display item block, unions the
+  // given visual rect with the begin display item's visual rect.
+  void GrowCurrentBeginItemVisualRect(const gfx::Rect& visual_rect);
   void ProcessAppendedItem(const DisplayItem* item);
+
+  template <typename DisplayItemType, typename... Args>
+  const DisplayItemType& AllocateAndConstruct(Args&&... args) {
+    auto* item = &inputs_.items.AllocateAndConstruct<DisplayItemType>(
+        std::forward<Args>(args)...);
+    approximate_op_count_ += item->ApproximateOpCount();
+    ProcessAppendedItem(item);
+    return *item;
+  }
 
   sk_sp<SkPicture> picture_;
 
@@ -151,7 +210,7 @@ class CC_EXPORT DisplayItemList
     // |items| . These rects are intentionally kept separate
     // because they are not needed while walking the |items| for raster.
     std::vector<gfx::Rect> visual_rects;
-
+    std::vector<size_t> begin_item_indices;
     const DisplayItemListSettings settings;
     gfx::Rect layer_rect;
     bool is_suitable_for_gpu_rasterization;

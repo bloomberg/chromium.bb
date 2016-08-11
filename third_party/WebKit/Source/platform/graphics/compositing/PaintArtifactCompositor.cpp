@@ -90,7 +90,7 @@ static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem,
         if (!picture)
             return;
         gfx::Rect bounds = gfx::SkIRectToRect(picture->cullRect().roundOut());
-        list->CreateAndAppendItem<cc::DrawingDisplayItem>(bounds, sk_ref_sp(picture));
+        list->CreateAndAppendDrawingItem<cc::DrawingDisplayItem>(bounds, sk_ref_sp(picture));
     }
 }
 
@@ -103,13 +103,13 @@ static scoped_refptr<cc::DisplayItemList> recordPaintChunk(const PaintArtifact& 
     gfx::Transform translation;
     translation.Translate(-combinedBounds.x(), -combinedBounds.y());
     // TODO(jbroman, wkorman): What visual rectangle is wanted here?
-    list->CreateAndAppendItem<cc::TransformDisplayItem>(gfx::Rect(), translation);
+    list->CreateAndAppendPairedBeginItem<cc::TransformDisplayItem>(translation);
 
     const DisplayItemList& displayItems = artifact.getDisplayItemList();
     for (const auto& displayItem : displayItems.itemsInPaintChunk(chunk))
         appendDisplayItemToCcDisplayItemList(displayItem, list.get());
 
-    list->CreateAndAppendItem<cc::EndTransformDisplayItem>(gfx::Rect());
+    list->CreateAndAppendPairedEndItem<cc::EndTransformDisplayItem>();
 
     list->Finalize();
     return list;

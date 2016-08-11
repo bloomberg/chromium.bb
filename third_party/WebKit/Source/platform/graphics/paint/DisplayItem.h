@@ -240,6 +240,8 @@ public:
     void setSkippedCache() { m_skippedCache = true; }
     bool skippedCache() const { return m_skippedCache; }
 
+    // TODO(wkorman): Only DrawingDisplayItem needs the visual rect argument.
+    // Consider refactoring class hierarchy to make this more explicit.
     virtual void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const { }
 
     // See comments of enum Type for usage of the following macros.

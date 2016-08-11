@@ -439,6 +439,7 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
         if (gpuAnalyzer.suitableForGpuRasterization())
             item.analyzeForGpuRasterization(gpuAnalyzer);
 
+        // TODO(wkorman): Only compute and append visual rect for drawings.
         m_newDisplayItemList.appendVisualRect(visualRectForDisplayItem(item, offsetFromLayoutObject));
 
         if (item.isCacheable()) {
@@ -512,6 +513,7 @@ void PaintController::appendDebugDrawingAfterCommit(const DisplayItemClient& dis
     DCHECK(m_newDisplayItemList.isEmpty());
     DrawingDisplayItem& displayItem = m_currentPaintArtifact.getDisplayItemList().allocateAndConstruct<DrawingDisplayItem>(displayItemClient, DisplayItem::DebugDrawing, picture);
     displayItem.setSkippedCache();
+    // TODO(wkorman): Only compute and append visual rect for drawings.
     m_currentPaintArtifact.getDisplayItemList().appendVisualRect(visualRectForDisplayItem(displayItem, offsetFromLayoutObject));
 }
 

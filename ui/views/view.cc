@@ -826,7 +826,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     transform_from_parent.Translate(offset_from_parent.x(),
                                     offset_from_parent.y());
     transform_from_parent.PreconcatTransform(GetTransform());
-    transform_recorder.Transform(transform_from_parent, size());
+    transform_recorder.Transform(transform_from_parent);
   }
 
   // Note that the cache is not aware of the offset of the view

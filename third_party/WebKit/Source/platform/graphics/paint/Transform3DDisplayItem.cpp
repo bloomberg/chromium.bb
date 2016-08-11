@@ -23,7 +23,7 @@ void BeginTransform3DDisplayItem::appendToWebDisplayItemList(const IntRect& visu
     // TODO(jbroman): The compositor will need the transform origin separately.
     TransformationMatrix transform(m_transform);
     transform.applyTransformOrigin(m_transformOrigin);
-    list->appendTransformItem(visualRect, TransformationMatrix::toSkMatrix44(transform));
+    list->appendTransformItem(TransformationMatrix::toSkMatrix44(transform));
 }
 
 #ifndef NDEBUG
@@ -51,7 +51,7 @@ void EndTransform3DDisplayItem::replay(GraphicsContext& context) const
 
 void EndTransform3DDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndTransformItem(visualRect);
+    list->appendEndTransformItem();
 }
 
 } // namespace blink

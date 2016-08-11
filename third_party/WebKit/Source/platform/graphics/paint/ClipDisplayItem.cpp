@@ -32,7 +32,7 @@ void ClipDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebD
     for (size_t i = 0; i < m_roundedRectClips.size(); ++i)
         webRoundedRects[i] = m_roundedRectClips[i];
 
-    list->appendClipItem(visualRect, m_clipRect, webRoundedRects);
+    list->appendClipItem(m_clipRect, webRoundedRects);
 }
 
 void EndClipDisplayItem::replay(GraphicsContext& context) const
@@ -42,7 +42,7 @@ void EndClipDisplayItem::replay(GraphicsContext& context) const
 
 void EndClipDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndClipItem(visualRect);
+    list->appendEndClipItem();
 }
 
 #ifndef NDEBUG

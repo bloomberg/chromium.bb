@@ -19,7 +19,7 @@ void BeginScrollDisplayItem::replay(GraphicsContext& context) const
 void BeginScrollDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
     WebDisplayItemList::ScrollContainerId scrollContainerId = &client();
-    list->appendScrollItem(visualRect, m_currentOffset, scrollContainerId);
+    list->appendScrollItem(m_currentOffset, scrollContainerId);
 }
 
 #ifndef NDEBUG
@@ -37,7 +37,7 @@ void EndScrollDisplayItem::replay(GraphicsContext& context) const
 
 void EndScrollDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndScrollItem(visualRect);
+    list->appendEndScrollItem();
 }
 
 } // namespace blink

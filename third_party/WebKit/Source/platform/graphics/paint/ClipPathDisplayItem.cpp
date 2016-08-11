@@ -20,7 +20,7 @@ void BeginClipPathDisplayItem::replay(GraphicsContext& context) const
 
 void BeginClipPathDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendClipPathItem(visualRect, m_clipPath, SkRegion::kIntersect_Op, true);
+    list->appendClipPathItem(m_clipPath, SkRegion::kIntersect_Op, true);
 }
 
 void BeginClipPathDisplayItem::analyzeForGpuRasterization(SkPictureGpuAnalyzer& analyzer) const
@@ -36,7 +36,7 @@ void EndClipPathDisplayItem::replay(GraphicsContext& context) const
 
 void EndClipPathDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndClipPathItem(visualRect);
+    list->appendEndClipPathItem();
 }
 
 #ifndef NDEBUG

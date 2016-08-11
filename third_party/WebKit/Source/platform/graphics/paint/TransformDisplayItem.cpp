@@ -18,7 +18,7 @@ void BeginTransformDisplayItem::replay(GraphicsContext& context) const
 
 void BeginTransformDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendTransformItem(visualRect, affineTransformToSkMatrix(m_transform));
+    list->appendTransformItem(affineTransformToSkMatrix(m_transform));
 }
 
 #ifndef NDEBUG
@@ -37,7 +37,7 @@ void EndTransformDisplayItem::replay(GraphicsContext& context) const
 
 void EndTransformDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndTransformItem(visualRect);
+    list->appendEndTransformItem();
 }
 
 } // namespace blink

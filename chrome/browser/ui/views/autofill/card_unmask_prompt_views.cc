@@ -507,7 +507,7 @@ CardUnmaskPromptViews::FadeOutView::~FadeOutView() {
 void CardUnmaskPromptViews::FadeOutView::PaintChildren(
     const ui::PaintContext& context) {
   const bool kLcdTextRequiresOpaqueLayer = true;
-  ui::CompositingRecorder recorder(context, size(), alpha_,
+  ui::CompositingRecorder recorder(context, alpha_,
                                    kLcdTextRequiresOpaqueLayer);
   views::View::PaintChildren(context);
 }

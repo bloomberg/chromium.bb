@@ -21,8 +21,8 @@ bool PaintCache::UseCache(const PaintContext& context,
     return false;
   DCHECK(context.list_);
   gfx::Rect bounds_in_layer = context.ToLayerSpaceBounds(size_in_context);
-  context.list_->CreateAndAppendItem<cc::DrawingDisplayItem>(bounds_in_layer,
-                                                             display_item_);
+  context.list_->CreateAndAppendDrawingItem<cc::DrawingDisplayItem>(
+      bounds_in_layer, display_item_);
   return true;
 }
 

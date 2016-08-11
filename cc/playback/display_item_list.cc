@@ -164,6 +164,12 @@ void DisplayItemList::Raster(SkCanvas* canvas,
   }
 }
 
+void DisplayItemList::GrowCurrentBeginItemVisualRect(
+    const gfx::Rect& visual_rect) {
+  if (!inputs_.begin_item_indices.empty())
+    inputs_.visual_rects[inputs_.begin_item_indices.back()].Union(visual_rect);
+}
+
 void DisplayItemList::ProcessAppendedItem(const DisplayItem* item) {
   if (inputs_.settings.use_cached_picture) {
     DCHECK(recorder_);

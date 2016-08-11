@@ -9,11 +9,6 @@
 
 #include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
-#include "ui/gfx/geometry/rect.h"
-
-namespace gfx {
-class Size;
-}
 
 namespace ui {
 class PaintContext;
@@ -33,14 +28,12 @@ class COMPOSITOR_EXPORT CompositingRecorder {
   // only be used in cases where the text is known to be rendered opaquely on an
   // opaque background before compositing.
   CompositingRecorder(const PaintContext& context,
-                      const gfx::Size& size_in_context,
                       uint8_t alpha,
                       bool lcd_text_requires_opaque_layer);
   ~CompositingRecorder();
 
  private:
   const PaintContext& context_;
-  const gfx::Rect bounds_in_layer_;
   bool saved_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositingRecorder);

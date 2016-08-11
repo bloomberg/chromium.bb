@@ -16,7 +16,6 @@ class DisplayItemList;
 
 namespace gfx {
 class Path;
-class Size;
 }
 
 namespace ui {
@@ -41,14 +40,13 @@ class COMPOSITOR_EXPORT ClipRecorder {
     CLIP_PATH,
   };
 
-  void RecordCloser(const gfx::Rect& bounds_in_layer, Closer);
+  void RecordCloser(Closer);
 
   const PaintContext& context_;
   // If someone needs to do more than this many operations with a single
   // ClipRecorder then we'll increase this.
   enum : int { kMaxOpCount = 4 };
   Closer closers_[kMaxOpCount];
-  gfx::Rect bounds_in_layer_[kMaxOpCount];
   int num_closers_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipRecorder);

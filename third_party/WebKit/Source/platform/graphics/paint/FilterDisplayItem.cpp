@@ -20,7 +20,7 @@ void BeginFilterDisplayItem::replay(GraphicsContext& context) const
 
 void BeginFilterDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendFilterItem(visualRect, m_webFilterOperations->asFilterOperations(), m_bounds);
+    list->appendFilterItem(m_webFilterOperations->asFilterOperations(), m_bounds);
 }
 
 bool BeginFilterDisplayItem::drawsContent() const
@@ -47,7 +47,7 @@ void EndFilterDisplayItem::replay(GraphicsContext& context) const
 
 void EndFilterDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndFilterItem(visualRect);
+    list->appendEndFilterItem();
 }
 
 } // namespace blink

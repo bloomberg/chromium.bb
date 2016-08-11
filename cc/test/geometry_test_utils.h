@@ -21,6 +21,15 @@ namespace cc {
     EXPECT_FLOAT_EQ((expected).height(), (actual).height()); \
   } while (false)
 
+#define EXPECT_RECT_EQ(expected, actual)               \
+  do {                                                 \
+    const gfx::Rect& actualRect = actual;              \
+    EXPECT_EQ(expected.x(), actualRect.x());           \
+    EXPECT_EQ(expected.y(), actualRect.y());           \
+    EXPECT_EQ(expected.width(), actualRect.width());   \
+    EXPECT_EQ(expected.height(), actualRect.height()); \
+  } while (false)
+
 #define EXPECT_RECT_NEAR(expected, actual, abs_error)                 \
   do {                                                                \
     EXPECT_NEAR((expected).x(), (actual).x(), (abs_error));           \

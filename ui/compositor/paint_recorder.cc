@@ -42,9 +42,8 @@ PaintRecorder::~PaintRecorder() {
   context_.inside_paint_recorder_ = false;
 #endif
   const auto& item =
-      context_.list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
-          bounds_in_layer_,
-          context_.recorder_->finishRecordingAsPicture());
+      context_.list_->CreateAndAppendDrawingItem<cc::DrawingDisplayItem>(
+          bounds_in_layer_, context_.recorder_->finishRecordingAsPicture());
   if (cache_)
     cache_->SetCache(item);
 }

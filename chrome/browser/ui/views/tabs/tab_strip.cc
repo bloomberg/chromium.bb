@@ -1474,8 +1474,8 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
     // We pass false for |lcd_text_requires_opaque_layer| so that background
     // tab titles will get LCD AA.  These are rendered opaquely on an opaque tab
     // background before the layer is composited, so this is safe.
-    ui::CompositingRecorder opacity_recorder(context, size(),
-                                             GetInactiveAlpha(false), false);
+    ui::CompositingRecorder opacity_recorder(context, GetInactiveAlpha(false),
+                                             false);
 
     PaintClosingTabs(tab_count(), context);
 
@@ -1534,8 +1534,8 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
     // NewTabButton::PaintFill() for why we don't do this for the pressed state.
     // This call doesn't need to set |lcd_text_requires_opaque_layer| to false
     // because no text will be drawn.
-    ui::CompositingRecorder opacity_recorder(context, size(),
-                                             GetInactiveAlpha(true), true);
+    ui::CompositingRecorder opacity_recorder(context, GetInactiveAlpha(true),
+                                             true);
     newtab_button_->Paint(context);
   } else {
     newtab_button_->Paint(context);

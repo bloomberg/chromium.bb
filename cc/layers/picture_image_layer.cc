@@ -83,7 +83,7 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   // transparent images blend correctly.
   canvas->drawImage(image_.get(), 0, 0);
 
-  display_list->CreateAndAppendItem<DrawingDisplayItem>(
+  display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       PaintableRegion(), recorder.finishRecordingAsPicture());
 
   display_list->Finalize();

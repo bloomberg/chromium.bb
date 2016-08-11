@@ -19,7 +19,7 @@ void BeginCompositingDisplayItem::replay(GraphicsContext& context) const
 void BeginCompositingDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
     SkRect bounds = m_bounds;
-    list->appendCompositingItem(visualRect, m_opacity, m_xferMode,
+    list->appendCompositingItem(m_opacity, m_xferMode,
         m_hasBounds ? &bounds : nullptr,
         GraphicsContext::WebCoreColorFilterToSkiaColorFilter(m_colorFilter).get());
 }
@@ -41,7 +41,7 @@ void EndCompositingDisplayItem::replay(GraphicsContext& context) const
 
 void EndCompositingDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndCompositingItem(visualRect);
+    list->appendEndCompositingItem();
 }
 
 } // namespace blink
