@@ -11538,8 +11538,11 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
   GLint y = 0;
   while (y < height) {
     GLint h = y + tile_height > height ? height - y : tile_height;
-    glTexSubImage2D(target, level, xoffset, yoffset + y, width, h, format, type,
-                    zero.get());
+    glTexSubImage2D(
+        target, level, xoffset, yoffset + y, width, h,
+        TextureManager::AdjustTexFormat(feature_info_.get(), format),
+        type,
+        zero.get());
     y += tile_height;
   }
   TextureRef* bound_texture =
@@ -15017,9 +15020,18 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
       source_internal_format == GL_BGRA8_EXT ||
       source_internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
       source_internal_format == GL_RGB_YCBCR_422_CHROMIUM;
-  if (!valid_source_format || !valid_dest_format) {
+  if (!valid_source_format) {
+    std::string msg = "invalid source internal format " +
+        GLES2Util::GetStringEnum(source_internal_format);
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                       "invalid internal format");
+                       msg.c_str());
+    return false;
+  }
+  if (!valid_dest_format) {
+    std::string msg = "invalid dest internal format " +
+        GLES2Util::GetStringEnum(dest_internal_format);
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       msg.c_str());
     return false;
   }
   return true;
