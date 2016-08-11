@@ -7,12 +7,14 @@ package org.chromium.components.sync.test.util;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AuthenticatorDescription;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.sync.signin.AccountManagerDelegate;
 import org.chromium.components.sync.signin.AccountManagerHelper;
@@ -212,6 +214,18 @@ public class MockAccountManager implements AccountManagerDelegate {
                     }
                 }
                 callback.onResult(hasAllFeatures);
+            }
+        });
+    }
+
+    @Override
+    public void updateCredentials(
+            Account account, Activity activity, final Callback<Boolean> callback) {
+        ThreadUtils.assertOnUiThread();
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                callback.onResult(true);
             }
         });
     }

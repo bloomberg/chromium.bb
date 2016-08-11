@@ -7,6 +7,7 @@ package org.chromium.components.sync.signin;
 import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -356,6 +357,14 @@ public class AccountManagerHelper {
     public void checkChildAccount(Account account, Callback<Boolean> callback) {
         String[] features = {FEATURE_IS_CHILD_ACCOUNT_KEY};
         mAccountManager.hasFeatures(account, features, callback);
+    }
+
+    /**
+     * Asks the user to enter a new password for an account, updating the saved credentials for the
+     * account.
+     */
+    public void updateCredentials(Account account, Activity activity, Callback<Boolean> callback) {
+        mAccountManager.updateCredentials(account, activity, callback);
     }
 
     private interface AuthTask<T> {

@@ -6,6 +6,7 @@ package org.chromium.components.sync.signin;
 
 import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
+import android.app.Activity;
 
 import org.chromium.base.Callback;
 
@@ -52,4 +53,14 @@ public interface AccountManagerDelegate {
      * Check whether the {@code account} has all the features listed in {@code features}.
      */
     void hasFeatures(Account account, String[] features, Callback<Boolean> callback);
+
+    /**
+     * Asks the user to enter a new password for an account, updating the saved credentials for the
+     * account.
+     * @param account The {@link Account} for which the update is requested.
+     * @param activity The {@link Activity} context to use for launching a new authenticator-defined
+     * sub-Activity to prompt the user to enter a password.
+     * @param callback The callback to indicate whether update is succeed or not.
+     */
+    void updateCredentials(Account account, Activity activity, Callback<Boolean> callback);
 }

@@ -5,6 +5,11 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <org.chromium.chrome.browser.preferences.SyncErrorCardPreference
+        android:key="sync_error_card"
+        android:icon="@drawable/sync_error"
+        android:title="@string/sync_error_card_title"/>
+
     <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
         android:key="sync_switch"
         android:title="@string/sign_in_sync"

@@ -716,6 +716,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/SeekBarPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/SignInPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/SpinnerPreference.java",
+  "java/src/org/chromium/chrome/browser/preferences/SyncErrorCardPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/SyncPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/SyncedAccountPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/TextAndButtonPreference.java",

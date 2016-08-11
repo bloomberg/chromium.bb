@@ -1302,6 +1302,23 @@ To obtain new licenses, connect to the internet and play your downloaded content
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
 
+      <!-- Hint of sync error solution strings -->
+      <message name="IDS_SYNC_ERROR_CARD_TITLE" desc="Title of the Sync Error Card. [CHAR-LIMIT=80]">
+        Sync isn't working
+      </message>
+      <message name="IDS_HINT_ANDROID_SYNC_DISABLED" desc="Hint message to resolve Android system sync is disabled error. [CHAR-LIMIT=80]">
+        Open Android settings and re-enable Android system sync to start Chrome sync
+      </message>
+      <message name="IDS_HINT_SYNC_AUTH_ERROR" desc="Hint message to resolve sync auth error. [CHAR-LIMIT=80]">
+        Sign in again to start sync
+      </message>
+      <message name="IDS_HINT_PASSPHRASE_REQUIRED" desc="Hint message to resolve passphrase required error. [CHAR-LIMIT=80]">
+        Enter your passphrase to start sync
+      </message>
+      <message name="IDS_HINT_OTHER_SYNC_ERRORS" desc="Hint message to resolve sync errors not listed independently. [CHAR-LIMIT=80]">
+        Try signing in again
+      </message>
+
       <!-- Sync error strings -->
       <message name="IDS_SYNC_ERROR_GENERIC" desc="Sync error string for generic error. [CHAR-LIMIT=80]">
         Sync error

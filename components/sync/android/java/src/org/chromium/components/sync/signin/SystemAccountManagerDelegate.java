@@ -11,8 +11,10 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.SystemClock;
 
 import com.google.android.gms.auth.GoogleAuthException;
@@ -145,5 +147,43 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     protected static void recordElapsedTimeHistogram(String histogramName, long elapsedMs) {
         if (!LibraryLoader.isInitialized()) return;
         RecordHistogram.recordTimesHistogram(histogramName, elapsedMs, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void updateCredentials(
+            Account account, Activity activity, final Callback<Boolean> callback) {
+        ThreadUtils.assertOnUiThread();
+        if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onResult(false);
+                }
+            });
+            return;
+        }
+
+        mAccountManager.updateCredentials(
+                account, "android", null, activity, new AccountManagerCallback<Bundle>() {
+                    @Override
+                    public void run(AccountManagerFuture<Bundle> future) {
+                        assert future.isDone();
+                        Bundle bundle = null;
+                        try {
+                            bundle = future.getResult();
+                        } catch (AuthenticatorException | IOException e) {
+                            Log.e(TAG, "Error while update credentials: ", e);
+                        } catch (OperationCanceledException e) {
+                            Log.w(TAG, "Updating credentials was cancelled.");
+                        }
+                        if (bundle != null
+                                && bundle.getString(AccountManager.KEY_ACCOUNT_NAME) != null
+                                && bundle.getString(AccountManager.KEY_ACCOUNT_TYPE) != null) {
+                            callback.onResult(true);
+                        } else {
+                            callback.onResult(false);
+                        }
+                    }
+                }, null /* handler */);
     }
 }
