@@ -61087,6 +61087,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.ExternalExperiment.GroupCount" units="groups">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Logged on Android whenever an external experiment is registered. The logged
+    value is the number of groups in the experiment. This will not be logged at
+    all if there are no external experiments, but will be logged on group
+    transitions (e.g. when going from 1 to 0 groups).
+  </summary>
+</histogram>
+
 <histogram name="UMA.FieldTrialsEnabledBenchmarking" enum="BooleanUsage">
   <obsolete>
     Deprecated 2012. No longer tracked.

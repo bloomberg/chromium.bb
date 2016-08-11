@@ -144,6 +144,9 @@ static void RegisterExternalExperiment(
                                            &experiment_ids);
   }
 
+  UMA_HISTOGRAM_COUNTS_100("UMA.ExternalExperiment.GroupCount",
+                           experiment_ids.size());
+
   std::vector<uint32_t> group_name_hashes;
   group_name_hashes.reserve(experiment_ids.size());
 
