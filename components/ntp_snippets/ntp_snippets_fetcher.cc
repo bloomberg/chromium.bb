@@ -169,6 +169,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
       request_throttler_(
           pref_service,
           RequestThrottler::RequestType::CONTENT_SUGGESTION_FETCHER),
+      oauth_token_retried_(false),
       weak_ptr_factory_(this) {
   // Parse the variation parameters and set the defaults if missing.
   std::string personalization = variations::GetVariationParamValue(
@@ -232,6 +233,7 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
 
   if (use_authentication && signin_manager_->IsAuthenticated()) {
     // Signed-in: get OAuth token --> fetch snippets.
+    oauth_token_retried_ = false;
     StartTokenRequest();
   } else if (use_authentication && signin_manager_->AuthInProgress()) {
     // Currently signing in: wait for auth to finish (the refresh token) -->
@@ -402,6 +404,7 @@ void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
   params.host_restricts =
       UsesHostRestrictions() ? hosts_ : std::set<std::string>();
   params.count_to_fetch = count_to_fetch_;
+  // TODO(jkrcal, treib): Add unit-tests for authenticated fetches.
   FetchSnippetsImpl(fetch_url_,
                     base::StringPrintf(kAuthorizationRequestHeaderFormat,
                                        oauth_access_token.c_str()),
@@ -436,8 +439,17 @@ void NTPSnippetsFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   oauth_request_.reset();
-  DLOG(ERROR) << "Unable to get token: " << error.ToString()
-              << " - fetching the snippets without authentication.";
+
+  if (!oauth_token_retried_ &&
+      error.state() == GoogleServiceAuthError::State::REQUEST_CANCELED) {
+    // The request (especially on startup) can get reset by loading the refresh
+    // token - do it one more time.
+    oauth_token_retried_ = true;
+    StartTokenRequest();
+    return;
+  }
+
+  DLOG(ERROR) << "Unable to get token: " << error.ToString();
   FetchFinished(
       OptionalSnippets(), FetchResult::OAUTH_TOKEN_ERROR,
       /*extra_message=*/base::StringPrintf(" (%s)", error.ToString().c_str()));
@@ -453,6 +465,7 @@ void NTPSnippetsFetcher::OnRefreshTokenAvailable(
 
   token_service_->RemoveObserver(this);
   waiting_for_refresh_token_ = false;
+  oauth_token_retried_ = false;
   StartTokenRequest();
 }
 

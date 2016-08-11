@@ -230,6 +230,9 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // Request throttler for limiting requests.
   RequestThrottler request_throttler_;
 
+  // When a token request gets canceled, we want to retry once.
+  bool oauth_token_retried_;
+
   base::WeakPtrFactory<NTPSnippetsFetcher> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsFetcher);
