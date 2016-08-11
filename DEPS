@@ -202,7 +202,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + '7260e4d8b8e1e40b17f03fafdf1cd83296900f76',
 
   'src/third_party/flac':
-   Var('chromium_git') + '/chromium/deps/flac.git' + '@' + '812243a85937e06102ba312c6caf8823e243b35b',
+   Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'd0c35f878ec26f969c1631350b1d36fbd88ad8bb',
 
   'src/third_party/flatbuffers/src':
    Var('chromium_git') + '/external/github.com/google/flatbuffers.git' + '@' + 'e92ae5199d52fd59540a800bec7eef46cd778257',
