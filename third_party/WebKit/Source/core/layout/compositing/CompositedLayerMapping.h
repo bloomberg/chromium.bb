@@ -219,6 +219,13 @@ public:
 
     void adjustForCompositedScrolling(const GraphicsLayer*, IntSize& offset) const;
 
+    // Returns true for layers with scrollable overflow which have a background
+    // that can be painted into the composited scrolling contents layer (i.e.
+    // the background can scroll with the content). When the background is also
+    // opaque this allows us to composite the scroller even on low DPI as we can
+    // draw with subpixel anti-aliasing.
+    bool shouldPaintBackgroundOntoScrollingContentsLayer() const;
+
 private:
     IntRect recomputeInterestRect(const GraphicsLayer*) const;
     static bool interestRectChangedEnoughToRepaint(const IntRect& previousInterestRect, const IntRect& newInterestRect, const IntSize& layerSize);
@@ -328,13 +335,6 @@ private:
     // Clear the groupedMapping entry on the layer at the given index, only if that layer does
     // not appear earlier in the set of layers for this object.
     bool invalidateLayerIfNoPrecedingEntry(size_t);
-
-    // Returns true for layers with scrollable overflow which have a background
-    // that can be painted into the composited scrolling contents layer (i.e.
-    // the background can scroll with the content). When the background is also
-    // opaque this allows us to composite the scroller even on low DPI as we can
-    // draw with subpixel anti-aliasing.
-    bool shouldPaintBackgroundOntoScrollingContentsLayer() const;
 
     PaintLayer& m_owningLayer;
 

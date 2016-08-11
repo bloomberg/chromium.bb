@@ -1,0 +1,25 @@
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+function repaintTest() {
+    document.getElementById('scroller').style.background = 'green local';
+}
+onload = runRepaintTest;
+</script>
+<style>
+#scroller {
+    background: red local;
+    overflow: scroll;
+    width: 200px;
+    height: 200px;
+    will-change: transform;
+}
+
+.spacer {
+    height: 300px;
+}
+</style>
+<!-- #scroller has a locally attached background which will be painted into the
+    scrolling contents layer. When the color changes it should repaint. -->
+<div id="scroller">
+    <div class="spacer"></div>
+</div>

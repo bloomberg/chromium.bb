@@ -434,6 +434,12 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
     } else if (object.compositedScrollsWithRespectTo(*this)) {
         layer()->compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(r, invalidationReason, object);
     } else if (usesCompositedScrolling()) {
+        if (layer()->compositedLayerMapping()->shouldPaintBackgroundOntoScrollingContentsLayer()) {
+            // TODO(flackr): Get a correct rect in the context of the scrolling contents layer to update
+            // rather than updating the entire rect.
+            const LayoutRect& scrollingContentsRect = toLayoutBox(this)->layoutOverflowRect();
+            layer()->compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(scrollingContentsRect, invalidationReason, object);
+        }
         layer()->compositedLayerMapping()->setNonScrollingContentsNeedDisplayInRect(r, invalidationReason, object);
     } else {
         // Otherwise invalidate everything.
