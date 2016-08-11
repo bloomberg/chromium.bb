@@ -81,7 +81,7 @@ class ParserTest : public testing::Test {
   }
 
   bool CreateAndLoadSegment(const std::string& filename) {
-    return CreateAndLoadSegment(filename, 2);
+    return CreateAndLoadSegment(filename, 4);
   }
 
   void CompareBlockContents(const Cluster* const cluster,
