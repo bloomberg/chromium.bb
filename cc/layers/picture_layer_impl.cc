@@ -56,6 +56,25 @@ const int kTileRoundUp = 64;
 // width and height should be an even multiple of 4 in size.
 const int kTileMinimalAlignment = 4;
 
+// Intersect rects which may have right() and bottom() that overflow integer
+// boundaries. This code is similar to gfx::Rect::Intersect with the exception
+// that the types are promoted to int64_t when there is a chance of overflow.
+gfx::Rect SafeIntersectRects(const gfx::Rect& one, const gfx::Rect& two) {
+  if (one.IsEmpty() || two.IsEmpty())
+    return gfx::Rect();
+
+  int rx = std::max(one.x(), two.x());
+  int ry = std::max(one.y(), two.y());
+  int64_t rr = std::min(static_cast<int64_t>(one.x()) + one.width(),
+                        static_cast<int64_t>(two.x()) + two.width());
+  int64_t rb = std::min(static_cast<int64_t>(one.y()) + one.height(),
+                        static_cast<int64_t>(two.y()) + two.height());
+  if (rx > rr || ry > rb)
+    return gfx::Rect();
+  return gfx::Rect(rx, ry, static_cast<int>(rr - rx),
+                   static_cast<int>(rb - ry));
+}
+
 }  // namespace
 
 namespace cc {
@@ -515,7 +534,8 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
                                .skewport_extrapolation_limit_in_screen_pixels *
                            MaximumTilingContentsScale();
       padded_bounds.Inset(-padding_amount, -padding_amount);
-      visible_rect_in_content_space.Intersect(padded_bounds);
+      visible_rect_in_content_space =
+          SafeIntersectRects(visible_rect_in_content_space, padded_bounds);
     }
   }
   viewport_rect_for_tile_priority_in_content_space_ =
