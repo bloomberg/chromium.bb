@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.RobolectricPackageManager;
 
@@ -57,8 +57,7 @@ public class WebApkValidatorTest {
 
     @Before
     public void setUp() {
-        mPackageManager = (RobolectricPackageManager) RuntimeEnvironment
-                .application.getPackageManager();
+        mPackageManager = (RobolectricPackageManager) Robolectric.application.getPackageManager();
         WebApkValidator.initWithBrowserHostSignature(EXPECTED_SIGNATURE);
     }
 
@@ -76,8 +75,8 @@ public class WebApkValidatorTest {
             mPackageManager.addPackage(newPackageInfoWithOneSignature(
                     WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
-            assertEquals(WEBAPK_PACKAGE_NAME, WebApkValidator.queryWebApkPackage(
-                    RuntimeEnvironment.application, URL_OF_WEBAPK));
+            assertEquals(WEBAPK_PACKAGE_NAME,
+                    WebApkValidator.queryWebApkPackage(Robolectric.application, URL_OF_WEBAPK));
         } catch (URISyntaxException e) {
             Assert.fail("URI is invalid.");
         }
@@ -96,7 +95,7 @@ public class WebApkValidatorTest {
                     WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
             assertNull(WebApkValidator.queryWebApkPackage(
-                    RuntimeEnvironment.application, URL_OF_WEBAPK));
+                    Robolectric.application, URL_OF_WEBAPK));
         } catch (URISyntaxException e) {
             Assert.fail("URI is invalid.");
         }
@@ -117,7 +116,7 @@ public class WebApkValidatorTest {
                     WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
             assertNull(WebApkValidator.queryWebApkPackage(
-                    RuntimeEnvironment.application, URL_WITHOUT_WEBAPK));
+                    Robolectric.application, URL_WITHOUT_WEBAPK));
         } catch (URISyntaxException e) {
             Assert.fail("URI is invalid.");
         }
@@ -135,7 +134,7 @@ public class WebApkValidatorTest {
                 WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
         assertEquals(WEBAPK_PACKAGE_NAME,
-                WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
+                WebApkValidator.findWebApkPackage(Robolectric.application, infos));
     }
 
     /**
@@ -149,7 +148,7 @@ public class WebApkValidatorTest {
         mPackageManager.addPackage(newPackageInfoWithOneSignature(
                 INVALID_WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
-        assertNull(WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
+        assertNull(WebApkValidator.findWebApkPackage(Robolectric.application, infos));
     }
 
     /**
@@ -166,7 +165,7 @@ public class WebApkValidatorTest {
         mPackageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, signatures));
 
         assertEquals(WEBAPK_PACKAGE_NAME,
-                WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
+                WebApkValidator.findWebApkPackage(Robolectric.application, infos));
     }
 
     /**
@@ -182,7 +181,7 @@ public class WebApkValidatorTest {
                 new Signature[] {new Signature(SIGNATURE_1), new Signature(SIGNATURE_2)};
         mPackageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, signatures));
 
-        assertNull(WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
+        assertNull(WebApkValidator.findWebApkPackage(Robolectric.application, infos));
     }
 
     private static ResolveInfo newResolveInfo(String packageName) {

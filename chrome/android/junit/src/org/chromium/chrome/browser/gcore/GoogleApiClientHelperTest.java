@@ -23,8 +23,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowLooper;
 
 /**
  * Tests for {@link GoogleApiClientHelper}
@@ -52,14 +52,16 @@ public class GoogleApiClientHelperTest {
     @Feature({"GCore"})
     public void connectionAttemptDelayTest() {
         GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
+        ConnectionResult mockResult = mock(ConnectionResult.class);
+        when(mockResult.getErrorCode()).thenReturn(ConnectionResult.SERVICE_UPDATING);
 
-        ShadowLooper.pauseMainLooper();
-        helper.onConnectionFailed(new ConnectionResult(ConnectionResult.SERVICE_UPDATING));
-        verify(mMockClient, times(0)).connect();
-        ShadowLooper.unPauseMainLooper();
+        Robolectric.pauseMainLooper();
+        helper.onConnectionFailed(mockResult);
+        verify(mMockClient, never()).connect();
+        Robolectric.unPauseMainLooper();
 
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        verify(mMockClient, times(1)).connect();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
+        verify(mMockClient).connect();
     }
 
     /** Tests that the connection handler gives up after a number of connection attempts. */
@@ -68,24 +70,28 @@ public class GoogleApiClientHelperTest {
     public void connectionFailureTest() {
         GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
 
-        helper.onConnectionFailed(new ConnectionResult(ConnectionResult.DEVELOPER_ERROR));
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        ConnectionResult mockResult = mock(ConnectionResult.class);
+        when(mockResult.getErrorCode()).thenReturn(ConnectionResult.DEVELOPER_ERROR);
+
+        helper.onConnectionFailed(mockResult);
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
 
         // Should not retry on unrecoverable errors
         verify(mMockClient, never()).connect();
 
         // Connection attempts
+        when(mockResult.getErrorCode()).thenReturn(ConnectionResult.SERVICE_UPDATING);
         for (int i = 0; i < ConnectedTask.RETRY_NUMBER_LIMIT; i++) {
-            helper.onConnectionFailed(new ConnectionResult(ConnectionResult.SERVICE_UPDATING));
-            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            helper.onConnectionFailed(mockResult);
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
         }
 
         // Should have tried to connect every time.
         verify(mMockClient, times(ConnectedTask.RETRY_NUMBER_LIMIT)).connect();
 
         // Try again
-        helper.onConnectionFailed(new ConnectionResult(ConnectionResult.SERVICE_UPDATING));
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        helper.onConnectionFailed(mockResult);
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
 
         // The connection handler should have given up, no new call.
         verify(mMockClient, times(ConnectedTask.RETRY_NUMBER_LIMIT)).connect();
@@ -96,11 +102,13 @@ public class GoogleApiClientHelperTest {
     @Feature({"GCore"})
     public void connectionAttemptsResetTest() {
         GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
+        ConnectionResult mockResult = mock(ConnectionResult.class);
+        when(mockResult.getErrorCode()).thenReturn(ConnectionResult.SERVICE_UPDATING);
 
         // Connection attempts
         for (int i = 0; i < ConnectedTask.RETRY_NUMBER_LIMIT - 1; i++) {
-            helper.onConnectionFailed(new ConnectionResult(ConnectionResult.SERVICE_UPDATING));
-            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            helper.onConnectionFailed(mockResult);
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
         }
 
         // Should have tried to connect every time.
@@ -108,19 +116,19 @@ public class GoogleApiClientHelperTest {
 
         // Connection successful now
         helper.onConnected(null);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
 
         for (int i = 0; i < ConnectedTask.RETRY_NUMBER_LIMIT; i++) {
-            helper.onConnectionFailed(new ConnectionResult(ConnectionResult.SERVICE_UPDATING));
-            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            helper.onConnectionFailed(mockResult);
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
         }
 
         // A success should allow for more connection attempts.
         verify(mMockClient, times(ConnectedTask.RETRY_NUMBER_LIMIT * 2 - 1)).connect();
 
         // This should not result in a connection attempt, the limit is still there.
-        helper.onConnectionFailed(new ConnectionResult(ConnectionResult.SERVICE_UPDATING));
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        helper.onConnectionFailed(mockResult);
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
 
         // The connection handler should have given up, no new call.
         verify(mMockClient, times(ConnectedTask.RETRY_NUMBER_LIMIT * 2 - 1)).connect();
@@ -130,7 +138,7 @@ public class GoogleApiClientHelperTest {
     @Feature({"GCore"})
     public void lifecycleManagementTest() {
         GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         Activity mockActivity = mock(Activity.class);
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.CREATED);
 
@@ -147,8 +155,8 @@ public class GoogleApiClientHelperTest {
 
         // Should be disconnected when we go in the background
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        verify(mMockClient, times(1)).disconnect();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
+        verify(mMockClient).disconnect();
 
         // Should be reconnected when we come in the foreground
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
@@ -169,7 +177,7 @@ public class GoogleApiClientHelperTest {
     @Feature({"GCore"})
     public void lifecycleManagementDelayTest() {
         GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         Activity mockActivity = mock(Activity.class);
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.CREATED);
         helper.setDisconnectionDelay(5000);
@@ -179,12 +187,12 @@ public class GoogleApiClientHelperTest {
 
         // Should not be disconnected when we go in the background
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
-        ShadowLooper.runUiThreadTasks();
-        verify(mMockClient, times(0)).disconnect();
+        Robolectric.runUiThreadTasks();
+        verify(mMockClient, never()).disconnect();
 
         // Should be disconnected when we wait.
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        verify(mMockClient, times(1)).disconnect();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
+        verify(mMockClient).disconnect();
 
         // Should be reconnected when we come in the foreground
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
@@ -192,11 +200,11 @@ public class GoogleApiClientHelperTest {
 
         // Should not disconnect when we became visible during the delay
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
-        ShadowLooper.runUiThreadTasks();
-        verify(mMockClient, times(1)).disconnect();
+        Robolectric.runUiThreadTasks();
+        verify(mMockClient).disconnect();
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        verify(mMockClient, times(1)).disconnect();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
+        verify(mMockClient).disconnect();
     }
 
     @Test
@@ -204,7 +212,7 @@ public class GoogleApiClientHelperTest {
     public void disconnectionCancellingTest() {
         int disconnectionTimeout = 5000;
         GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         Activity mockActivity = mock(Activity.class);
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.CREATED);
         helper.setDisconnectionDelay(disconnectionTimeout);
@@ -214,9 +222,9 @@ public class GoogleApiClientHelperTest {
 
         // We go in the background and come back before the end of the timeout.
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
-        ShadowLooper.idleMainLooper(disconnectionTimeout - 42);
+        Robolectric.idleMainLooper(disconnectionTimeout - 42);
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
 
         // The client should not have been disconnected, which would drop requests otherwise.
         verify(mMockClient, never()).disconnect();
@@ -228,7 +236,7 @@ public class GoogleApiClientHelperTest {
         int disconnectionTimeout = 5000;
         int arbitraryNumberOfSeconds = 42;
         GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         Activity mockActivity = mock(Activity.class);
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.CREATED);
         helper.setDisconnectionDelay(disconnectionTimeout);
@@ -238,15 +246,15 @@ public class GoogleApiClientHelperTest {
 
         // We go in the background and extend the delay
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
-        ShadowLooper.idleMainLooper(disconnectionTimeout - arbitraryNumberOfSeconds);
+        Robolectric.idleMainLooper(disconnectionTimeout - arbitraryNumberOfSeconds);
         helper.willUseConnection();
 
         // The client should not have been disconnected.
-        ShadowLooper.idleMainLooper(disconnectionTimeout - arbitraryNumberOfSeconds);
+        Robolectric.idleMainLooper(disconnectionTimeout - arbitraryNumberOfSeconds);
         verify(mMockClient, never()).disconnect();
 
         // After the full timeout it should still disconnect though
-        ShadowLooper.idleMainLooper(arbitraryNumberOfSeconds);
+        Robolectric.idleMainLooper(arbitraryNumberOfSeconds);
         verify(mMockClient).disconnect();
 
         // The client is now disconnected then
@@ -261,7 +269,7 @@ public class GoogleApiClientHelperTest {
     @Feature({"GCore"})
     public void willUseConnectionForegroundTest() {
         GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         Activity mockActivity = mock(Activity.class);
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.CREATED);
         helper.setDisconnectionDelay(5000);
@@ -271,11 +279,11 @@ public class GoogleApiClientHelperTest {
 
         // We are in the foreground
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
 
         // Disconnections should not be scheduled when in the foreground.
         helper.willUseConnection();
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         verify(mMockClient, never()).disconnect();
     }
 }

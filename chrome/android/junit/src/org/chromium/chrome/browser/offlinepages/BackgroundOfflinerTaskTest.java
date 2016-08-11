@@ -17,7 +17,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
-import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.Task;
 
 import org.chromium.base.ActivityState;
@@ -30,20 +29,20 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBackgroundServiceWaiter;
 import org.chromium.net.ConnectionType;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ShadowExtractor;
 
 /**
  * Unit tests for BackgroundOfflinerTask.
  */
-@RunWith(OfflinePageTestRunner.class)
+@RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         application = BaseChromiumApplication.class,
         shadows = { ShadowGcmNetworkManager.class })
@@ -67,9 +66,6 @@ public class BackgroundOfflinerTaskTest {
             !POWER_CONNECTED, MINIMUM_BATTERY_LEVEL + 5, ConnectionType.CONNECTION_3G);
     private Activity mTestActivity;
 
-    private Context mContext;
-    private ShadowGcmNetworkManager mGcmNetworkManager;
-
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -84,10 +80,7 @@ public class BackgroundOfflinerTaskTest {
         OfflinePageUtils.setInstanceForTesting(mOfflinePageUtils);
         mStubBackgroundSchedulerProcessor = new StubBackgroundSchedulerProcessor();
         RecordHistogram.disableForTests();
-        mContext =  RuntimeEnvironment.application;
-        mGcmNetworkManager = (ShadowGcmNetworkManager) ShadowExtractor.extract(
-                GcmNetworkManager.getInstance(mContext));
-        mGcmNetworkManager.clear();
+        ShadowGcmNetworkManager.clear();
 
         // Run tests as a low-end device.
         CommandLine.init(new String[] {"testcommand", IS_LOW_END_DEVICE_SWITCH});
@@ -127,12 +120,11 @@ public class BackgroundOfflinerTaskTest {
     public void testStartBackgroundRequests() {
         BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
-        assertNull("Nothing scheduled", mGcmNetworkManager.getScheduledTask());
-        assertTrue(task.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter));
+        assertNull("Nothing scheduled", ShadowGcmNetworkManager.getScheduledTask());
+        assertTrue(task.startBackgroundRequests(Robolectric.application, mTaskExtras, waiter));
 
         // Check that the backup task was scheduled.
-        Task gcmTask = mGcmNetworkManager.getScheduledTask();
+        Task gcmTask = ShadowGcmNetworkManager.getScheduledTask();
         assertNotNull("Backup task scheduled", gcmTask);
         assertEquals(mTriggerConditions,
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(gcmTask.getExtras()));
@@ -151,12 +143,11 @@ public class BackgroundOfflinerTaskTest {
                 .thenReturn(deviceConditionsLowBattery);
         BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
-        assertNull("Nothing scheduled", mGcmNetworkManager.getScheduledTask());
-        assertFalse(task.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter));
+        assertNull("Nothing scheduled", ShadowGcmNetworkManager.getScheduledTask());
+        assertFalse(task.startBackgroundRequests(Robolectric.application, mTaskExtras, waiter));
 
         // Check that the backup task was scheduled.
-        Task gcmTask = mGcmNetworkManager.getScheduledTask();
+        Task gcmTask = ShadowGcmNetworkManager.getScheduledTask();
         assertNotNull("Backup task scheduled", gcmTask);
         assertEquals(mTriggerConditions,
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(gcmTask.getExtras()));
@@ -172,8 +163,7 @@ public class BackgroundOfflinerTaskTest {
         BackgroundOfflinerTask task2 =
                 new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter2 = new ChromeBackgroundServiceWaiter(1);
-        assertTrue(task2.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter2));
+        assertTrue(task2.startBackgroundRequests(Robolectric.application, mTaskExtras, waiter2));
     }
 
     @Test
@@ -181,16 +171,15 @@ public class BackgroundOfflinerTaskTest {
     public void testStartBackgroundRequestsForRunningActivityOnLowEndDevice() {
         BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
-        assertNull("Nothing scheduled", mGcmNetworkManager.getScheduledTask());
+        assertNull("Nothing scheduled", ShadowGcmNetworkManager.getScheduledTask());
 
         // Transition the test Activity to a running state.
         ApplicationStatus.onStateChangeForTesting(mTestActivity, ActivityState.STARTED);
 
-        assertFalse(task.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter));
+        assertFalse(task.startBackgroundRequests(Robolectric.application, mTaskExtras, waiter));
 
         // Check that the backup task was scheduled.
-        Task gcmTask = mGcmNetworkManager.getScheduledTask();
+        Task gcmTask = ShadowGcmNetworkManager.getScheduledTask();
         assertNotNull("Backup task scheduled", gcmTask);
         assertEquals(mTriggerConditions,
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(gcmTask.getExtras()));
@@ -203,7 +192,6 @@ public class BackgroundOfflinerTaskTest {
         BackgroundOfflinerTask task2 =
                 new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter2 = new ChromeBackgroundServiceWaiter(1);
-        assertTrue(task2.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter2));
+        assertTrue(task2.startBackgroundRequests(Robolectric.application, mTaskExtras, waiter2));
     }
 }

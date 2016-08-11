@@ -235,6 +235,7 @@ junit_binary("ui_junit_tests") {
   ]
   deps = [
     "//base:base_java",
+    "//base:base_junit_test_support",
     "//ui/android:ui_java",
   ]
 }

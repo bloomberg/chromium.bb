@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.media.router.cast;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.internal.ReflectionHelpers;
 
 /**
  * Utility classes and methods for MediaRouterTests.
@@ -23,11 +23,11 @@ public class TestUtils {
         Class<?>[] paramClasses = new Class[] {
                 MediaRouter.ProviderInfo.class, String.class, String.class};
         Object[] paramValues = new Object[] {null, "", ""};
-        RouteInfo routeInfo = ReflectionHelpers.callConstructor(
+        RouteInfo routeInfo = ReflectionHelpers.callConstructorReflectively(
                 RouteInfo.class,
                 ReflectionHelpers.ClassParameter.fromComponentLists(paramClasses, paramValues));
-        ReflectionHelpers.setField(routeInfo, "mUniqueId", id);
-        ReflectionHelpers.setField(routeInfo, "mName", name);
+        ReflectionHelpers.setFieldReflectively(routeInfo, "mUniqueId", id);
+        ReflectionHelpers.setFieldReflectively(routeInfo, "mName", name);
         return routeInfo;
     }
 }

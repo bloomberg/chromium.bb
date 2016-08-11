@@ -24,7 +24,23 @@ java_prebuilt("android-all-5.0.0_r2-robolectric-1") {
   jar_path = "lib/android-all-5.0.0_r2-robolectric-1.jar"
 }
 
-java_library("robolectric_java") {
+# TODO(mikecase): Remove this target once all tests have been converted to
+# Robolectric 3.0.
+# GYP: //third_party/robolectric/robolectric.gyp:robolectric_jar
+java_prebuilt("robolectric_java") {
+  testonly = true
+  jar_path = "lib/robolectric-2.4-jar-with-dependencies.jar"
+  deps = [
+    ":android-all-4.3_r2-robolectric-0",
+    ":json-20080701",
+    ":tagsoup-1.2",
+  ]
+}
+
+# TODO(mikecase): Rename target to robolectric_java once all tests have been
+# converted to Robolectric 3.0 and the old robolectric_java target has been
+# removed.
+java_library("robolectric_3_java") {
   testonly = true
   deps = [
     ":android-all-5.0.0_r2-robolectric-1",
@@ -578,7 +594,7 @@ template("shadows_core") {
       "robolectric/robolectric-shadows/resources/META-INF/services/org.robolectric.internal.ShadowProvider",
       "robolectric/robolectric-shadows/shadows-core/src/main/resources/META-INF/services/org.robolectric.ShadowsAdapter",
     ]
-    if (host_os == "linux") {
+    if (is_linux) {
       additional_jar_files = [
         rebase_path("../sqlite4java/lib/linux-x86_64/libsqlite4java.so") +
             ":linux-x86_64/libsqlite4java.so",
@@ -586,12 +602,12 @@ template("shadows_core") {
             ":linux-x86/libsqlite4java.so",
       ]
     }
-    if (host_os == "mac") {
+    if (is_mac) {
       additional_jar_files =
           [ rebase_path("../sqlite4java/lib/mac-x86_64/libsqlite4java.jnilib") +
             ":mac-x86_64/libsqlite4java.jnilib" ]
     }
-    if (host_os == "win") {
+    if (is_win) {
       additional_jar_files = [
         rebase_path("../sqlite4java/lib/windows-x86/sqlite4java.dll") +
             ":windows-x86/sqlite4java.dll",

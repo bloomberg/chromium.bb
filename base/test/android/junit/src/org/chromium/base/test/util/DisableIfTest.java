@@ -12,18 +12,18 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.ReflectionHelpers;
 
 /** Unit tests for the DisableIf annotation and its SkipCheck implementation. */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, sdk = 21)
+@Config(manifest = Config.NONE, reportSdk = 19)
 public class DisableIfTest {
 
     @Test
     public void testSdkIsLessThanAndIsLessThan() {
         TestCase sdkIsLessThan = new TestCase("sdkIsLessThan") {
-            @DisableIf.Build(sdk_is_less_than = 22)
+            @DisableIf.Build(sdk_is_less_than = 21)
             public void sdkIsLessThan() {}
         };
         Assert.assertTrue(new DisableIfSkipCheck().shouldSkip(sdkIsLessThan));
@@ -32,7 +32,7 @@ public class DisableIfTest {
     @Test
     public void testSdkIsLessThanButIsEqual() {
         TestCase sdkIsEqual = new TestCase("sdkIsEqual") {
-            @DisableIf.Build(sdk_is_less_than = 21)
+            @DisableIf.Build(sdk_is_less_than = 19)
             public void sdkIsEqual() {}
         };
         Assert.assertFalse(new DisableIfSkipCheck().shouldSkip(sdkIsEqual));
@@ -41,7 +41,7 @@ public class DisableIfTest {
     @Test
     public void testSdkIsLessThanButIsGreaterThan() {
         TestCase sdkIsGreaterThan = new TestCase("sdkIsGreaterThan") {
-            @DisableIf.Build(sdk_is_less_than = 20)
+            @DisableIf.Build(sdk_is_less_than = 16)
             public void sdkIsGreaterThan() {}
         };
         Assert.assertFalse(new DisableIfSkipCheck().shouldSkip(sdkIsGreaterThan));
@@ -50,7 +50,7 @@ public class DisableIfTest {
     @Test
     public void testSdkIsGreaterThanButIsLessThan() {
         TestCase sdkIsLessThan = new TestCase("sdkIsLessThan") {
-            @DisableIf.Build(sdk_is_greater_than = 22)
+            @DisableIf.Build(sdk_is_greater_than = 21)
             public void sdkIsLessThan() {}
         };
         Assert.assertFalse(new DisableIfSkipCheck().shouldSkip(sdkIsLessThan));
@@ -59,7 +59,7 @@ public class DisableIfTest {
     @Test
     public void testSdkIsGreaterThanButIsEqual() {
         TestCase sdkIsEqual = new TestCase("sdkIsEqual") {
-            @DisableIf.Build(sdk_is_greater_than = 21)
+            @DisableIf.Build(sdk_is_greater_than = 19)
             public void sdkIsEqual() {}
         };
         Assert.assertFalse(new DisableIfSkipCheck().shouldSkip(sdkIsEqual));
@@ -68,7 +68,7 @@ public class DisableIfTest {
     @Test
     public void testSdkIsGreaterThanAndIsGreaterThan() {
         TestCase sdkIsGreaterThan = new TestCase("sdkIsGreaterThan") {
-            @DisableIf.Build(sdk_is_greater_than = 20)
+            @DisableIf.Build(sdk_is_greater_than = 16)
             public void sdkIsGreaterThan() {}
         };
         Assert.assertTrue(new DisableIfSkipCheck().shouldSkip(sdkIsGreaterThan));
@@ -80,13 +80,15 @@ public class DisableIfTest {
             @DisableIf.Build(supported_abis_includes = "foo")
             public void supportedAbisCpuAbiMatch() {}
         };
-        String[] originalAbis = Build.SUPPORTED_ABIS;
+        String originalAbi = Build.CPU_ABI;
+        String originalAbi2 = Build.CPU_ABI2;
         try {
-            ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_ABIS",
-                    new String[] {"foo", "bar"});
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", "foo");
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI2", "bar");
             Assert.assertTrue(new DisableIfSkipCheck().shouldSkip(supportedAbisCpuAbiMatch));
         } finally {
-            ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_ABIS", originalAbis);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", originalAbi);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI2", originalAbi2);
         }
     }
 
@@ -96,13 +98,15 @@ public class DisableIfTest {
             @DisableIf.Build(supported_abis_includes = "bar")
             public void supportedAbisCpuAbi2Match() {}
         };
-        String[] originalAbis = Build.SUPPORTED_ABIS;
+        String originalAbi = Build.CPU_ABI;
+        String originalAbi2 = Build.CPU_ABI2;
         try {
-            ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_ABIS",
-                    new String[] {"foo", "bar"});
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", "foo");
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI2", "bar");
             Assert.assertTrue(new DisableIfSkipCheck().shouldSkip(supportedAbisCpuAbi2Match));
         } finally {
-            ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_ABIS", originalAbis);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", originalAbi);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI2", originalAbi2);
         }
     }
 
@@ -112,13 +116,15 @@ public class DisableIfTest {
             @DisableIf.Build(supported_abis_includes = "baz")
             public void supportedAbisNoMatch() {}
         };
-        String[] originalAbis = Build.SUPPORTED_ABIS;
+        String originalAbi = Build.CPU_ABI;
+        String originalAbi2 = Build.CPU_ABI2;
         try {
-            ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_ABIS",
-                    new String[] {"foo", "bar"});
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", "foo");
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI2", "bar");
             Assert.assertFalse(new DisableIfSkipCheck().shouldSkip(supportedAbisNoMatch));
         } finally {
-            ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_ABIS", originalAbis);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", originalAbi);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI2", originalAbi2);
         }
     }
 
@@ -130,10 +136,10 @@ public class DisableIfTest {
         };
         String originalHardware = Build.HARDWARE;
         try {
-            ReflectionHelpers.setStaticField(Build.class, "HARDWARE", "hammerhead");
+            Robolectric.Reflection.setFinalStaticField(Build.class, "HARDWARE", "hammerhead");
             Assert.assertTrue(new DisableIfSkipCheck().shouldSkip(hardwareIsMatches));
         } finally {
-            ReflectionHelpers.setStaticField(Build.class, "HARDWARE", originalHardware);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "HARDWARE", originalHardware);
         }
     }
 
@@ -145,10 +151,10 @@ public class DisableIfTest {
         };
         String originalHardware = Build.HARDWARE;
         try {
-            ReflectionHelpers.setStaticField(Build.class, "HARDWARE", "mako");
+            Robolectric.Reflection.setFinalStaticField(Build.class, "HARDWARE", "mako");
             Assert.assertFalse(new DisableIfSkipCheck().shouldSkip(hardwareIsDoesntMatch));
         } finally {
-            ReflectionHelpers.setStaticField(Build.class, "HARDWARE", originalHardware);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "HARDWARE", originalHardware);
         }
     }
 
@@ -172,22 +178,22 @@ public class DisableIfTest {
         TestCase sampleTestMethod = new DisableIfTestCase("sampleTestMethod");
         String originalHardware = Build.HARDWARE;
         try {
-            ReflectionHelpers.setStaticField(Build.class, "HARDWARE", "hammerhead");
+            Robolectric.Reflection.setFinalStaticField(Build.class, "HARDWARE", "hammerhead");
             Assert.assertTrue(new DisableIfSkipCheck().shouldSkip(sampleTestMethod));
         } finally {
-            ReflectionHelpers.setStaticField(Build.class, "HARDWARE", originalHardware);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "HARDWARE", originalHardware);
         }
     }
 
     @Test
     public void testDisableSuperClass() {
         TestCase sampleTestMethod = new DisableIfTestCase("sampleTestMethod");
-        String[] originalAbis = Build.SUPPORTED_ABIS;
+        String originalAbi = Build.CPU_ABI;
         try {
-            ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_ABIS", new String[] {"foo"});
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", "foo");
             Assert.assertTrue(new DisableIfSkipCheck().shouldSkip(sampleTestMethod));
         } finally {
-            ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_ABIS", originalAbis);
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", originalAbi);
         }
     }
 }

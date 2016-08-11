@@ -6,7 +6,6 @@ package org.chromium.webapk.shell_apk;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -17,8 +16,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.builder.RobolectricPackageManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -42,7 +42,7 @@ public class HostBrowserClassLoaderTest {
     private Context mContext;
     private Context mRemoteContext;
     private AssetManager mRemoteAssetManager;
-    private PackageManager mPackageManager;
+    private RobolectricPackageManager mPackageManager;
 
     /**
      * Stub DexLoader. Used to verify the version of the runtime library dex which is used to build
@@ -52,8 +52,8 @@ public class HostBrowserClassLoaderTest {
 
     @Before
     public void setUp() {
-        mContext = RuntimeEnvironment.application;
-        mPackageManager = RuntimeEnvironment.getPackageManager();
+        mContext = Robolectric.application;
+        mPackageManager = (RobolectricPackageManager) mContext.getPackageManager();
         setRemoteVersionCode(REMOTE_VERSION_CODE);
 
         mRemoteAssetManager = Mockito.mock(AssetManager.class);
@@ -142,7 +142,7 @@ public class HostBrowserClassLoaderTest {
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = REMOTE_PACKAGE_NAME;
         packageInfo.versionCode = versionCode;
-        RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageInfo);
+        mPackageManager.addPackage(packageInfo);
     }
 
     /**

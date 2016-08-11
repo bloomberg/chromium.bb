@@ -44,6 +44,7 @@ import junit.framework.Assert;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.net.HttpNegotiateAuthenticator.GetAccountsCallback;
 import org.chromium.net.HttpNegotiateAuthenticator.RequestData;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -56,13 +57,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowAccountManager;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import java.io.IOException;
 import java.util.List;
@@ -99,7 +98,7 @@ public class HttpNegotiateAuthenticatorTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        ContextUtils.initApplicationContextForTests(Robolectric.application);
     }
 
     @After
@@ -240,13 +239,13 @@ public class HttpNegotiateAuthenticatorTest {
 
         // Verify that the broadcast receiver is registered
         Intent intent = new Intent(AccountManager.LOGIN_ACCOUNTS_CHANGED_ACTION);
-        ShadowApplication shadowApplication = ShadowApplication.getInstance();
+        ShadowApplication shadowApplication = Robolectric.getShadowApplication();
         List<BroadcastReceiver> receivers = shadowApplication.getReceiversForIntent(intent);
         assertThat("There is one registered broadcast receiver", receivers.size(), equalTo(1));
 
         // Send the intent to the receiver.
         BroadcastReceiver receiver = receivers.get(0);
-        receiver.onReceive(ShadowApplication.getInstance().getApplicationContext(), intent);
+        receiver.onReceive(Robolectric.getShadowApplication().getApplicationContext(), intent);
 
         // Verify that the auth token is properly requested from the account manager.
         verify(sMockAccountManager).getAuthToken(

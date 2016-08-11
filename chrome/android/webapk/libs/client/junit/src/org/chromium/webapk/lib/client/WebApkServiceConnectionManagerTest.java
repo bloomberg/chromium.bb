@@ -17,8 +17,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
@@ -45,7 +44,7 @@ public class WebApkServiceConnectionManagerTest {
 
     @Before
     public void setUp() {
-        mShadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+        mShadowApplication = Robolectric.shadowOf(Robolectric.application);
         mConnectionManager = new WebApkServiceConnectionManager();
     }
 
@@ -58,8 +57,8 @@ public class WebApkServiceConnectionManagerTest {
         TestCallback callback1 = new TestCallback();
         TestCallback callback2 = new TestCallback();
 
-        mConnectionManager.connect(RuntimeEnvironment.application, WEB_APK_PACKAGE, callback1);
-        mConnectionManager.connect(RuntimeEnvironment.application, WEB_APK_PACKAGE, callback2);
+        mConnectionManager.connect(Robolectric.application, WEB_APK_PACKAGE, callback1);
+        mConnectionManager.connect(Robolectric.application, WEB_APK_PACKAGE, callback2);
 
         // Only one connection should have been created.
         Assert.assertEquals(WEB_APK_PACKAGE, getNextStartedServicePackage());
@@ -95,7 +94,7 @@ public class WebApkServiceConnectionManagerTest {
             public Context getApplicationContext() {
                 // Need to return real context so that ContextUtils#fetchAppSharedPreferences() does
                 // not crash.
-                return RuntimeEnvironment.application;
+                return Robolectric.application;
             }
 
             // Create pending connection.
@@ -129,14 +128,12 @@ public class WebApkServiceConnectionManagerTest {
      */
     @Test
     public void testDisconnectConnect() throws Exception {
-        mConnectionManager.connect(
-                RuntimeEnvironment.application, WEB_APK_PACKAGE, new TestCallback());
+        mConnectionManager.connect(Robolectric.application, WEB_APK_PACKAGE, new TestCallback());
         Assert.assertEquals(WEB_APK_PACKAGE, getNextStartedServicePackage());
         Assert.assertEquals(null, getNextStartedServicePackage());
 
-        mConnectionManager.disconnect(RuntimeEnvironment.application, WEB_APK_PACKAGE);
-        mConnectionManager.connect(
-                RuntimeEnvironment.application, WEB_APK_PACKAGE, new TestCallback());
+        mConnectionManager.disconnect(Robolectric.application, WEB_APK_PACKAGE);
+        mConnectionManager.connect(Robolectric.application, WEB_APK_PACKAGE, new TestCallback());
         Assert.assertEquals(WEB_APK_PACKAGE, getNextStartedServicePackage());
         Assert.assertEquals(null, getNextStartedServicePackage());
     }

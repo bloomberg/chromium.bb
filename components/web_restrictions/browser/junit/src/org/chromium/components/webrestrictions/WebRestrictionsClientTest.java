@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowContentResolver;
 
@@ -41,7 +41,7 @@ public class WebRestrictionsClientTest {
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        ContextUtils.initApplicationContextForTests(Robolectric.application);
         mTestClient = Mockito.spy(new WebRestrictionsClient());
         Mockito.doNothing().when(mTestClient).nativeNotifyWebRestrictionsChanged(anyLong());
         mProvider = Mockito.mock(ContentProvider.class);
@@ -116,7 +116,7 @@ public class WebRestrictionsClientTest {
     public void testNotifyChange() {
         ShadowContentResolver.registerProvider(TEST_CONTENT_PROVIDER, mProvider);
 
-        ContentResolver resolver = RuntimeEnvironment.application.getContentResolver();
+        ContentResolver resolver = Robolectric.application.getContentResolver();
         resolver.notifyChange(Uri.parse("content://" + TEST_CONTENT_PROVIDER), null);
         verify(mTestClient).nativeNotifyWebRestrictionsChanged(1234L);
     }

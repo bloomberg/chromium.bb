@@ -4,20 +4,18 @@
 
 package org.chromium.components.invalidation;
 
-import static org.junit.Assert.assertEquals;
-
 import android.os.Bundle;
 
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 /**
  * Tests for {@link PendingInvalidation}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(BlockJUnit4ClassRunner.class)
 public class PendingInvalidationTest {
     private static String sObjecId = "ObjectId";
     private static int sObjectSource = 4;

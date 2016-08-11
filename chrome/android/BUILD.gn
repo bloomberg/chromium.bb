@@ -307,6 +307,7 @@ junit_binary("chrome_junit_tests") {
     ":chrome_java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:base_junit_test_support",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/invalidation/impl:java",
     "//components/sync:sync_java_test_support",
@@ -323,7 +324,6 @@ junit_binary("chrome_junit_tests") {
     "//ui/android:ui_java",
     google_play_services_library,
   ]
-  srcjar_deps = [ "//base:base_build_config_gen" ]
 }
 
 # GYP: //chrome/chrome_android.gypi:chrome_version_java

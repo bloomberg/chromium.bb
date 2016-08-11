@@ -23,7 +23,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
@@ -157,7 +156,6 @@ public class ThreadedInputConnectionTest {
 
     @Test
     @Feature({"TextInput"})
-    @Ignore("crbug/632792")
     public void testFailToRequestToRenderer() {
         when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(false);
         // Should not hang here. Return null to indicate failure.
@@ -166,7 +164,6 @@ public class ThreadedInputConnectionTest {
 
     @Test
     @Feature({"TextInput"})
-    @Ignore("crbug/632792")
     public void testRendererCannotUpdateState() {
         when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
         // We found that renderer cannot update state, e.g., due to a crash.

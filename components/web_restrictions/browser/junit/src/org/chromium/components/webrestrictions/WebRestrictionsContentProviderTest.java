@@ -24,7 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowContentResolver;
 
@@ -75,7 +75,7 @@ public class WebRestrictionsContentProviderTest {
         ProviderInfo info = new ProviderInfo();
         info.authority = AUTHORITY;
         mContentProvider.attachInfo(null, info);
-        mContentResolver = RuntimeEnvironment.application.getContentResolver();
+        mContentResolver = Robolectric.application.getContentResolver();
         mUri = new Uri.Builder()
                        .scheme(ContentResolver.SCHEME_CONTENT)
                        .authority(AUTHORITY)

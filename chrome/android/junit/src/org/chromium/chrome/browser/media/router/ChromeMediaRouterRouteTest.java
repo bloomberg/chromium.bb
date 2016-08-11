@@ -18,7 +18,8 @@ import org.robolectric.annotation.Config;
  * Route tests for ChromeMediaRouter.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE,
+        shadows = { ChromeMediaRouterTestBase.FakeActivityManager.class })
 public class ChromeMediaRouterRouteTest extends ChromeMediaRouterTestBase {
     @Test
     @Feature({"MediaRouter"})

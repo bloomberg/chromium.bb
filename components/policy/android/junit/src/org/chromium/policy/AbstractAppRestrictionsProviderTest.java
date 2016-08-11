@@ -26,10 +26,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowLooper;
 
 import java.util.concurrent.Executor;
 
@@ -48,7 +46,7 @@ public class AbstractAppRestrictionsProviderTest {
     private class TestExecutor implements Executor {
         @Override
         public void execute(Runnable command) {
-            Robolectric.getBackgroundThreadScheduler().post(command);
+            Robolectric.getBackgroundScheduler().post(command);
         }
     }
 
@@ -79,9 +77,9 @@ public class AbstractAppRestrictionsProviderTest {
     @Test
     public void testRefresh() {
         // We want to control precisely when background tasks run
-        Robolectric.getBackgroundThreadScheduler().pause();
+        Robolectric.getBackgroundScheduler().pause();
 
-        Context context = RuntimeEnvironment.application;
+        Context context = Robolectric.application;
         ContextUtils.initApplicationContextForTests(context);
 
         // Clear the preferences
@@ -110,12 +108,12 @@ public class AbstractAppRestrictionsProviderTest {
         verify(combinedProvider, never()).onSettingsAvailable(anyInt(), any(Bundle.class));
 
         // Let the Async task run and return its result.
-        Robolectric.getBackgroundThreadScheduler().advanceBy(0);
+        Robolectric.runBackgroundTasks();
         // The AsyncTask should now have got the restrictions.
         verify(provider).getApplicationRestrictions(anyString());
         verify(provider).recordStartTimeHistogram(anyInt());
 
-        ShadowLooper.runUiThreadTasks();
+        Robolectric.runUiThreadTasks();
         // The policies should now have been set.
         verify(combinedProvider).onSettingsAvailable(0, b1);
 
@@ -128,8 +126,8 @@ public class AbstractAppRestrictionsProviderTest {
 
         provider.refresh();
         verify(combinedProvider, times(2)).onSettingsAvailable(0, b1);
-        Robolectric.getBackgroundThreadScheduler().advanceBy(0);
-        ShadowLooper.runUiThreadTasks();
+        Robolectric.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
         verify(combinedProvider).onSettingsAvailable(0, b2);
     }
 
@@ -138,10 +136,10 @@ public class AbstractAppRestrictionsProviderTest {
      */
     @Test
     public void testStartListeningForPolicyChanges() {
-        Context context = RuntimeEnvironment.application;
+        Context context = Robolectric.application;
         AbstractAppRestrictionsProvider provider = spy(new DummyAppRestrictionsProvider(context));
         Intent intent = new Intent("org.chromium.test.policy.Hello");
-        ShadowApplication shadowApplication = ShadowApplication.getInstance();
+        ShadowApplication shadowApplication = Robolectric.getShadowApplication();
 
         // If getRestrictionsChangeIntentAction returns null then we should not start a broadcast
         // receiver.
@@ -160,10 +158,10 @@ public class AbstractAppRestrictionsProviderTest {
      */
     @Test
     public void testStopListening() {
-        Context context = RuntimeEnvironment.application;
+        Context context = Robolectric.application;
         AbstractAppRestrictionsProvider provider = spy(new DummyAppRestrictionsProvider(context));
         Intent intent = new Intent("org.chromium.test.policy.Hello");
-        ShadowApplication shadowApplication = ShadowApplication.getInstance();
+        ShadowApplication shadowApplication = Robolectric.getShadowApplication();
 
         // First try with null result from getRestrictionsChangeIntentAction, only test here is no
         // crash.

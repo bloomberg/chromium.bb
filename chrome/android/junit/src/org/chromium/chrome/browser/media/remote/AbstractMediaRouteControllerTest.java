@@ -32,6 +32,7 @@ import android.support.v7.media.MediaRouter.RouteInfo;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.remote.MediaRouteController.MediaStateListener;
 import org.chromium.chrome.browser.media.remote.MediaRouteController.UiListener;
@@ -43,12 +44,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.multidex.ShadowMultiDex;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.internal.ReflectionHelpers;
 
 /** Tests for {@link AbstractMediaRouteController}. */
 @RunWith(LocalRobolectricTestRunner.class)
@@ -63,7 +63,7 @@ public class AbstractMediaRouteControllerTest {
         // see http://crbug.com/469649
         CommandLine.init(new String[] {});
 
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        ContextUtils.initApplicationContextForTests(Robolectric.application);
 
         ShadowMediaRouter.sMediaRouter = null;
         ShadowMediaRouter.sCallback = null;
@@ -321,9 +321,9 @@ public class AbstractMediaRouteControllerTest {
     private static RouteInfo createRouteInfo(int playbackType) {
         Class<?>[] paramClasses = new Class[] {ProviderInfo.class, String.class, String.class};
         Object[] paramValues = new Object[] {null, "", ""};
-        RouteInfo routeInfo = ReflectionHelpers.callConstructor(RouteInfo.class,
+        RouteInfo routeInfo = ReflectionHelpers.callConstructorReflectively(RouteInfo.class,
                 ReflectionHelpers.ClassParameter.fromComponentLists(paramClasses, paramValues));
-        ReflectionHelpers.setField(routeInfo, "mPlaybackType", playbackType);
+        ReflectionHelpers.setFieldReflectively(routeInfo, "mPlaybackType", playbackType);
         return routeInfo;
     }
 

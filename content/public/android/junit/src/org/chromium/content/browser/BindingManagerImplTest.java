@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowLooper;
 
 import java.util.ArrayList;
 
@@ -279,7 +278,7 @@ public class BindingManagerImplTest {
 
         // Wait until the posted unbinding tasks get executed and verify that the strong binding was
         // removed while the initial binding is not affected.
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         Assert.assertFalse(connection.isStrongBindingBound());
         Assert.assertTrue(connection.isInitialBindingBound());
     }
@@ -316,7 +315,7 @@ public class BindingManagerImplTest {
 
         // Wait until the posted unbinding tasks get executed and verify that the strong binding was
         // removed while the initial binding is not affected, and the moderate binding is bound.
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         Assert.assertFalse(connection.isStrongBindingBound());
         Assert.assertTrue(connection.isInitialBindingBound());
         Assert.assertTrue(connection.isModerateBindingBound());
@@ -373,7 +372,7 @@ public class BindingManagerImplTest {
             // After initial binding is removed, the connection is no longer oom protected.
             manager.setInForeground(connection.getPid(), false);
             manager.determinedVisibility(connection.getPid());
-            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
             Assert.assertFalse(message, manager.isOomProtected(connection.getPid()));
 
             // Add a strong binding, restoring the oom protection.
@@ -430,7 +429,7 @@ public class BindingManagerImplTest {
             manager.setInForeground(thirdConnection.getPid(), false);
 
             // Sanity check: verify that no connection has a strong binding.
-            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
             Assert.assertFalse(message, firstConnection.isStrongBindingBound());
             Assert.assertFalse(message, secondConnection.isStrongBindingBound());
             Assert.assertFalse(message, thirdConnection.isStrongBindingBound());
@@ -446,7 +445,7 @@ public class BindingManagerImplTest {
 
             // Call onBroughtToForeground() and verify that the strong binding was removed.
             manager.onBroughtToForeground();
-            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
             Assert.assertFalse(message, firstConnection.isStrongBindingBound());
             Assert.assertFalse(message, secondConnection.isStrongBindingBound());
             Assert.assertFalse(message, thirdConnection.isStrongBindingBound());
@@ -474,7 +473,7 @@ public class BindingManagerImplTest {
         for (MockChildProcessConnection connection : connections) {
             manager.setInForeground(connection.getPid(), true);
             manager.setInForeground(connection.getPid(), false);
-            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
             Assert.assertTrue(connection.isModerateBindingBound());
         }
 
@@ -484,7 +483,7 @@ public class BindingManagerImplTest {
         manager.addNewConnection(lastInForeground.getPid(), lastInForeground);
         manager.setInForeground(lastInForeground.getPid(), true);
         manager.setInForeground(lastInForeground.getPid(), false);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
 
         // Verify that leaving the application for a short time doesn't clear the moderate bindings.
         manager.onSentToBackground();
@@ -494,7 +493,7 @@ public class BindingManagerImplTest {
         Assert.assertTrue(lastInForeground.isStrongBindingBound());
         Assert.assertFalse(lastInForeground.isModerateBindingBound());
         manager.onBroughtToForeground();
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         for (MockChildProcessConnection connection : connections) {
             Assert.assertTrue(connection.isModerateBindingBound());
         }
@@ -507,7 +506,7 @@ public class BindingManagerImplTest {
         }
         Assert.assertTrue(lastInForeground.isStrongBindingBound());
         Assert.assertFalse(lastInForeground.isModerateBindingBound());
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         for (MockChildProcessConnection connection : connections) {
             Assert.assertFalse(connection.isModerateBindingBound());
         }
@@ -540,7 +539,7 @@ public class BindingManagerImplTest {
         for (MockChildProcessConnection connection : connections) {
             manager.setInForeground(connection.getPid(), true);
             manager.setInForeground(connection.getPid(), false);
-            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
             Assert.assertTrue(connection.isModerateBindingBound());
         }
 
@@ -582,7 +581,7 @@ public class BindingManagerImplTest {
             for (MockChildProcessConnection connection : connections) {
                 manager.setInForeground(connection.getPid(), true);
                 manager.setInForeground(connection.getPid(), false);
-                ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+                Robolectric.runUiThreadTasksIncludingDelayedTasks();
                 Assert.assertTrue(message, connection.isModerateBindingBound());
             }
 
@@ -615,7 +614,7 @@ public class BindingManagerImplTest {
         for (MockChildProcessConnection connection : connections) {
             manager.setInForeground(connection.getPid(), true);
             manager.setInForeground(connection.getPid(), false);
-            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            Robolectric.runUiThreadTasksIncludingDelayedTasks();
             Assert.assertTrue(connection.isModerateBindingBound());
         }
 
@@ -711,7 +710,7 @@ public class BindingManagerImplTest {
         Assert.assertTrue(connection.isModerateBindingBound());
 
         manager.onSentToBackground();
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Robolectric.runUiThreadTasksIncludingDelayedTasks();
         Assert.assertFalse(connection.isModerateBindingBound());
 
         // Bringing Chrome to the foreground should not re-add the moderate bindings.
