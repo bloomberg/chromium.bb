@@ -139,8 +139,7 @@ bool IsIllegalOrigin(content::ResourceContext* resource_context,
   if (!origin.SchemeIs(kExtensionScheme))
     return false;
 
-  // If there is no extension installed for the URL, it couldn't have
-  // committed.
+  // If there is no extension installed for the URL, it couldn't have committed.
   // (If the extension was recently uninstalled, the tab would have closed.)
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
@@ -155,14 +154,12 @@ bool IsIllegalOrigin(content::ResourceContext* resource_context,
   if (extension->is_platform_app() &&
       !process_map.Contains(extension->id(), child_id)) {
     // This is a platform app origin not in the app's own process.  If there
-    // are
-    // no accessible resources, this is illegal.
+    // are no accessible resources, this is illegal.
     if (!extension->GetManifestData(manifest_keys::kWebviewAccessibleResources))
       return true;
 
     // If there are accessible resources, the origin is only legal if the
-    // given
-    // process is a guest of the app.
+    // given process is a guest of the app.
     std::string owner_extension_id;
     int owner_process_id;
     WebViewRendererState::GetInstance()->GetOwnerInfo(
@@ -173,9 +170,8 @@ bool IsIllegalOrigin(content::ResourceContext* resource_context,
   }
 
   // With only the origin and not the full URL, we don't have enough
-  // information
-  // to validate hosted apps or web_accessible_resources in normal extensions.
-  // Assume they're legal.
+  // information to validate hosted apps or web_accessible_resources in normal
+  // extensions. Assume they're legal.
   return false;
 }
 
