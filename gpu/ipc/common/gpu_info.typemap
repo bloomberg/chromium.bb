@@ -8,13 +8,15 @@ traits_headers = [ "//gpu/ipc/common/gpu_info_struct_traits.h" ]
 sources = [
   "//gpu/ipc/common/gpu_info_struct_traits.cc",
 ]
-deps = [
+public_deps = [
   "//gpu/config",
+  "//mojo/common",
   "//ui/gfx/geometry/mojo",
 ]
 type_mappings = [
-  "gpu.mojom.GpuDevice=gpu::GPUInfo::GPUDevice",
   "gpu.mojom.CollectInfoResult=gpu::CollectInfoResult",
+  "gpu.mojom.GpuDevice=gpu::GPUInfo::GPUDevice",
+  "gpu.mojom.GpuInfo=gpu::GPUInfo",
   "gpu.mojom.VideoCodecProfile=gpu::VideoCodecProfile",
   "gpu.mojom.VideoDecodeAcceleratorSupportedProfile=gpu::VideoDecodeAcceleratorSupportedProfile",
   "gpu.mojom.VideoDecodeAcceleratorCapabilities=gpu::VideoDecodeAcceleratorCapabilities",

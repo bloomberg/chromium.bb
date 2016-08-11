@@ -34,6 +34,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(g);
   }
 
+  void EchoGpuInfo(const GPUInfo& g,
+                   const EchoGpuInfoCallback& callback) override {
+    callback.Run(g);
+  }
+
   void EchoMailbox(const Mailbox& m,
                    const EchoMailboxCallback& callback) override {
     callback.Run(m);
@@ -111,6 +116,169 @@ TEST_F(StructTraitsTest, GPUDevice) {
   EXPECT_FALSE(output.active);
   EXPECT_TRUE(vendor_string.compare(output.vendor_string) == 0);
   EXPECT_TRUE(device_string.compare(output.device_string) == 0);
+}
+
+TEST_F(StructTraitsTest, GpuInfo) {
+  const base::TimeDelta initialization_time = base::TimeDelta::Max();
+  const bool optimus = true;
+  const bool amd_switchable = true;
+  const bool lenovo_dcute = true;
+  const base::Version display_link_version("1.2.3.4");
+  const gpu::GPUInfo::GPUDevice gpu;
+  const std::vector<gpu::GPUInfo::GPUDevice> secondary_gpus;
+  const uint64_t adapter_luid = 0x10de;
+  const std::string driver_vendor = "driver_vendor";
+  const std::string driver_version = "driver_version";
+  const std::string driver_date = "driver_date";
+  const std::string pixel_shader_version = "pixel_shader_version";
+  const std::string vertex_shader_version = "vertex_shader_version";
+  const std::string max_msaa_samples = "max_msaa_samples";
+  const std::string machine_model_name = "machine_model_name";
+  const std::string machine_model_version = "machine_model_version";
+  const std::string gl_version = "gl_version";
+  const std::string gl_vendor = "gl_vendor";
+  const std::string gl_renderer = "gl_renderer";
+  const std::string gl_extensions = "gl_extension";
+  const std::string gl_ws_vendor = "gl_ws_vendor";
+  const std::string gl_ws_version = "gl_ws_version";
+  const std::string gl_ws_extensions = "gl_ws_extensions";
+  const uint32_t gl_reset_notification_strategy = 0xbeef;
+  const bool can_lose_context = true;
+  const bool software_rendering = true;
+  const bool direct_rendering = true;
+  const bool sandboxed = true;
+  const int process_crash_count = 0xdead;
+  const bool in_process_gpu = true;
+  const gpu::CollectInfoResult basic_info_state =
+      gpu::CollectInfoResult::kCollectInfoSuccess;
+  const gpu::CollectInfoResult context_info_state =
+      gpu::CollectInfoResult::kCollectInfoSuccess;
+#if defined(OS_WIN)
+  const gpu::CollectInfoResult dx_diagnostics_info_state =
+      gpu::CollectInfoResult::kCollectInfoSuccess;
+  const DxDiagNode dx_diagnostics;
+#endif
+  const gpu::VideoDecodeAcceleratorCapabilities
+      video_decode_accelerator_capabilities;
+  const std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
+      video_encode_accelerator_supported_profiles;
+  const bool jpeg_decode_accelerator_supported = true;
+
+  gpu::GPUInfo input;
+  input.initialization_time = initialization_time;
+  input.optimus = optimus;
+  input.amd_switchable = amd_switchable;
+  input.lenovo_dcute = lenovo_dcute;
+  input.display_link_version = display_link_version;
+  input.gpu = gpu;
+  input.secondary_gpus = secondary_gpus;
+  input.adapter_luid = adapter_luid;
+  input.driver_vendor = driver_vendor;
+  input.driver_version = driver_version;
+  input.driver_date = driver_date;
+  input.pixel_shader_version = pixel_shader_version;
+  input.vertex_shader_version = vertex_shader_version;
+  input.max_msaa_samples = max_msaa_samples;
+  input.machine_model_name = machine_model_name;
+  input.machine_model_version = machine_model_version;
+  input.gl_version = gl_version;
+  input.gl_vendor = gl_vendor;
+  input.gl_renderer = gl_renderer;
+  input.gl_extensions = gl_extensions;
+  input.gl_ws_vendor = gl_ws_vendor;
+  input.gl_ws_version = gl_ws_version;
+  input.gl_ws_extensions = gl_ws_extensions;
+  input.gl_reset_notification_strategy = gl_reset_notification_strategy;
+  input.can_lose_context = can_lose_context;
+  input.software_rendering = software_rendering;
+  input.direct_rendering = direct_rendering;
+  input.sandboxed = sandboxed;
+  input.process_crash_count = process_crash_count;
+  input.in_process_gpu = in_process_gpu;
+  input.basic_info_state = basic_info_state;
+  input.context_info_state = context_info_state;
+#if defined(OS_WIN)
+  input.dx_diagnostics_info_state = dx_diagnostics_info_state;
+  input.dx_diagnostics = dx_diagnostics;
+#endif
+  input.video_decode_accelerator_capabilities =
+      video_decode_accelerator_capabilities;
+  input.video_encode_accelerator_supported_profiles =
+      video_encode_accelerator_supported_profiles;
+  input.jpeg_decode_accelerator_supported = jpeg_decode_accelerator_supported;
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gpu::GPUInfo output;
+  proxy->EchoGpuInfo(input, &output);
+
+  EXPECT_EQ(optimus, output.optimus);
+  EXPECT_EQ(amd_switchable, output.amd_switchable);
+  EXPECT_EQ(lenovo_dcute, output.lenovo_dcute);
+  EXPECT_TRUE(display_link_version.CompareTo(output.display_link_version) == 0);
+  EXPECT_EQ(gpu.vendor_id, output.gpu.vendor_id);
+  EXPECT_EQ(gpu.device_id, output.gpu.device_id);
+  EXPECT_EQ(gpu.active, output.gpu.active);
+  EXPECT_EQ(gpu.vendor_string, output.gpu.vendor_string);
+  EXPECT_EQ(gpu.device_string, output.gpu.device_string);
+  EXPECT_EQ(secondary_gpus.size(), output.secondary_gpus.size());
+  for (size_t i = 0; i < secondary_gpus.size(); ++i) {
+    const gpu::GPUInfo::GPUDevice& expected_gpu = secondary_gpus[i];
+    const gpu::GPUInfo::GPUDevice& actual_gpu = output.secondary_gpus[i];
+    EXPECT_EQ(expected_gpu.vendor_id, actual_gpu.vendor_id);
+    EXPECT_EQ(expected_gpu.device_id, actual_gpu.device_id);
+    EXPECT_EQ(expected_gpu.active, actual_gpu.active);
+    EXPECT_EQ(expected_gpu.vendor_string, actual_gpu.vendor_string);
+    EXPECT_EQ(expected_gpu.device_string, actual_gpu.device_string);
+  }
+  EXPECT_EQ(adapter_luid, output.adapter_luid);
+  EXPECT_EQ(driver_vendor, output.driver_vendor);
+  EXPECT_EQ(driver_version, output.driver_version);
+  EXPECT_EQ(driver_date, output.driver_date);
+  EXPECT_EQ(pixel_shader_version, output.pixel_shader_version);
+  EXPECT_EQ(vertex_shader_version, output.vertex_shader_version);
+  EXPECT_EQ(max_msaa_samples, output.max_msaa_samples);
+  EXPECT_EQ(machine_model_name, output.machine_model_name);
+  EXPECT_EQ(machine_model_version, output.machine_model_version);
+  EXPECT_EQ(gl_version, output.gl_version);
+  EXPECT_EQ(gl_vendor, output.gl_vendor);
+  EXPECT_EQ(gl_renderer, output.gl_renderer);
+  EXPECT_EQ(gl_extensions, output.gl_extensions);
+  EXPECT_EQ(gl_ws_vendor, output.gl_ws_vendor);
+  EXPECT_EQ(gl_ws_version, output.gl_ws_version);
+  EXPECT_EQ(gl_ws_extensions, output.gl_ws_extensions);
+  EXPECT_EQ(gl_reset_notification_strategy,
+            output.gl_reset_notification_strategy);
+  EXPECT_EQ(can_lose_context, output.can_lose_context);
+  EXPECT_EQ(software_rendering, output.software_rendering);
+  EXPECT_EQ(direct_rendering, output.direct_rendering);
+  EXPECT_EQ(sandboxed, output.sandboxed);
+  EXPECT_EQ(process_crash_count, output.process_crash_count);
+  EXPECT_EQ(in_process_gpu, output.in_process_gpu);
+  EXPECT_EQ(basic_info_state, output.basic_info_state);
+  EXPECT_EQ(context_info_state, output.context_info_state);
+#if defined(OS_WIN)
+  EXPECT_EQ(output.dx_diagnostics_info_state, dx_diagnostics_info_state);
+  EXPECT_EQ(dx_diagnostics.values, output.dx_diagnostics.values);
+#endif
+  EXPECT_EQ(output.video_decode_accelerator_capabilities.flags,
+            video_decode_accelerator_capabilities.flags);
+  EXPECT_EQ(
+      video_decode_accelerator_capabilities.supported_profiles.size(),
+      output.video_decode_accelerator_capabilities.supported_profiles.size());
+  for (size_t i = 0;
+       i < video_decode_accelerator_capabilities.supported_profiles.size();
+       ++i) {
+    const gpu::VideoDecodeAcceleratorSupportedProfile& expected =
+        video_decode_accelerator_capabilities.supported_profiles[i];
+    const gpu::VideoDecodeAcceleratorSupportedProfile& actual =
+        output.video_decode_accelerator_capabilities.supported_profiles[i];
+    EXPECT_EQ(expected.encrypted_only, actual.encrypted_only);
+  }
+  EXPECT_EQ(
+      output.video_decode_accelerator_capabilities.supported_profiles.size(),
+      video_decode_accelerator_capabilities.supported_profiles.size());
+  EXPECT_EQ(output.video_encode_accelerator_supported_profiles.size(),
+            video_encode_accelerator_supported_profiles.size());
 }
 
 TEST_F(StructTraitsTest, Mailbox) {

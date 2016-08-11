@@ -4,6 +4,9 @@
 
 #include "gpu/ipc/common/gpu_info_struct_traits.h"
 
+#include "ipc/ipc_message_utils.h"
+#include "mojo/common/common_custom_types_struct_traits.h"
+
 namespace mojo {
 
 // static
@@ -207,6 +210,54 @@ bool StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfile,
   out->max_framerate_denominator = data.max_framerate_denominator();
   return data.ReadProfile(&out->profile) &&
          data.ReadMaxResolution(&out->max_resolution);
+}
+
+bool StructTraits<gpu::mojom::GpuInfo, gpu::GPUInfo>::Read(
+    gpu::mojom::GpuInfoDataView data,
+    gpu::GPUInfo* out) {
+  out->optimus = data.optimus();
+  out->amd_switchable = data.amd_switchable();
+  out->lenovo_dcute = data.lenovo_dcute();
+  out->adapter_luid = data.adapter_luid();
+  out->gl_reset_notification_strategy = data.gl_reset_notification_strategy();
+  out->can_lose_context = data.can_lose_context();
+  out->software_rendering = data.software_rendering();
+  out->direct_rendering = data.direct_rendering();
+  out->sandboxed = data.sandboxed();
+  out->in_process_gpu = data.in_process_gpu();
+  out->process_crash_count = data.process_crash_count();
+  out->jpeg_decode_accelerator_supported =
+      data.jpeg_decode_accelerator_supported();
+
+  return data.ReadInitializationTime(&out->initialization_time) &&
+         data.ReadDisplayLinkVersion(&out->display_link_version) &&
+         data.ReadGpu(&out->gpu) &&
+         data.ReadSecondaryGpus(&out->secondary_gpus) &&
+         data.ReadDriverVendor(&out->driver_vendor) &&
+         data.ReadDriverVersion(&out->driver_version) &&
+         data.ReadDriverDate(&out->driver_date) &&
+         data.ReadPixelShaderVersion(&out->pixel_shader_version) &&
+         data.ReadVertexShaderVersion(&out->vertex_shader_version) &&
+         data.ReadMaxMsaaSamples(&out->max_msaa_samples) &&
+         data.ReadMachineModelName(&out->machine_model_name) &&
+         data.ReadMachineModelVersion(&out->machine_model_version) &&
+         data.ReadGlVersion(&out->gl_version) &&
+         data.ReadGlVendor(&out->gl_vendor) &&
+         data.ReadGlRenderer(&out->gl_renderer) &&
+         data.ReadGlExtensions(&out->gl_extensions) &&
+         data.ReadGlWsVendor(&out->gl_ws_vendor) &&
+         data.ReadGlWsVersion(&out->gl_ws_version) &&
+         data.ReadGlWsExtensions(&out->gl_ws_extensions) &&
+         data.ReadBasicInfoState(&out->basic_info_state) &&
+         data.ReadContextInfoState(&out->context_info_state) &&
+#if defined(OS_WIN)
+         data.ReadDxDiagnosticsInfoState(&out->dx_diagnostics_info_state) &&
+         data.ReadDxDiagnostics(&out->dx_diagnostics) &&
+#endif
+         data.ReadVideoDecodeAcceleratorCapabilities(
+             &out->video_decode_accelerator_capabilities) &&
+         data.ReadVideoEncodeAcceleratorSupportedProfiles(
+             &out->video_encode_accelerator_supported_profiles);
 }
 
 }  // namespace mojo

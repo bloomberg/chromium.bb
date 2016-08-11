@@ -21,6 +21,9 @@ interface TraitsTestService {
   EchoGpuDevice(GpuDevice g) => (GpuDevice pass);
 
   [Sync]
+  EchoGpuInfo(GpuInfo g) => (GpuInfo pass);
+
+  [Sync]
   EchoMailbox(Mailbox m) => (Mailbox pass);
 
   [Sync]

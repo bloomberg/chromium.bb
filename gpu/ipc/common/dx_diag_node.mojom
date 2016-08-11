@@ -4,8 +4,7 @@
 
 module gpu.mojom;
 
-// gpu/config/dx_diag_node.h
-// gpu::DxDiagNode
+// Corresponds to |gpu::DxDiagNode| in file gpu/config/dx_diag_node.h
 struct DxDiagNode {
   map<string, string> values;
   map<string, DxDiagNode> children;
