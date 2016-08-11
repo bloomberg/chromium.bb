@@ -58,6 +58,8 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/precache/android/javatests/src"/>
     <classpathentry kind="src" path="components/safe_json/android/java/src"/>
     <classpathentry kind="src" path="components/service_tab_launcher/android/java/src"/>
+    <classpathentry kind="src" path="components/sync/android/java/src"/>
+    <classpathentry kind="src" path="components/sync/android/javatests/src"/>
     <classpathentry kind="src" path="components/variations/android/java/src"/>
     <classpathentry kind="src" path="components/web_contents_delegate_android/android/java/src"/>
     <classpathentry kind="src" path="content/public/android/java/src"/>
@@ -103,7 +105,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/gif_player/src"/>
     <classpathentry kind="src" path="third_party/jmake/src"/>
     <classpathentry kind="src" path="third_party/junit/src/src/main/java"/>
-    <classpathentry kind="src" path="third_party/mockito/src/cglib-and-asm/src"/>
     <classpathentry kind="src" path="third_party/mockito/src/src"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/src"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/test/java/src"/>
@@ -212,6 +213,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/android/support/v7/appcompat/libs/android-support-v7-appcompat.jar" sourcepath="third_party/android_tools/sdk/sources"/>
     <classpathentry kind="lib" path="third_party/findbugs/lib/findbugs.jar"/>
     <classpathentry kind="lib" path="third_party/junit/src/lib/hamcrest-core-1.1.jar"/>
+    <classpathentry kind="lib" path="third_party/mockito/src/lib/repackaged/cglib-and-asm-1.0.jar" sourcepath="third_party/mockito/src/lib/sources/cglib-and-asm-1.0-sources.jar"/>
     <classpathentry kind="lib" path="third_party/robolectric/lib/robolectric-2.4-jar-with-dependencies.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/cacheinvalidation_proto_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/content_java.jar"/>
