@@ -196,6 +196,14 @@ weston_view_animation_frame(struct weston_animation *base,
 		weston_compositor_schedule_repaint(compositor);
 }
 
+static void
+idle_animation_destroy(void *data)
+{
+	struct weston_view_animation *animation = data;
+
+	weston_view_animation_destroy(animation);
+}
+
 static struct weston_view_animation *
 weston_view_animation_create(struct weston_view *view,
 			     float start, float stop,
@@ -206,6 +214,8 @@ weston_view_animation_create(struct weston_view *view,
 			     void *private)
 {
 	struct weston_view_animation *animation;
+	struct weston_compositor *ec = view->surface->compositor;
+	struct wl_event_loop *loop;
 
 	animation = malloc(sizeof *animation);
 	if (!animation)
@@ -229,8 +239,14 @@ weston_view_animation_create(struct weston_view *view,
 	animation->listener.notify = handle_animation_view_destroy;
 	wl_signal_add(&view->destroy_signal, &animation->listener);
 
-	wl_list_insert(&view->output->animation_list,
-		       &animation->animation.link);
+	if (view->output) {
+		wl_list_insert(&view->output->animation_list,
+			       &animation->animation.link);
+	} else {
+		wl_list_init(&animation->animation.link);
+		loop = wl_display_get_event_loop(ec->wl_display);
+		wl_event_loop_add_idle(loop, idle_animation_destroy, animation);
+	}
 
 	return animation;
 }
