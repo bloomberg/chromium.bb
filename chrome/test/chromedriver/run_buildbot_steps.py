@@ -449,7 +449,7 @@ def main():
   options, _ = parser.parse_args()
 
   bitness = '32'
-  if util.IsLinux() and platform_module.architecture()[0] == '64bit':
+  if util.Is64Bit():
     bitness = '64'
   platform = '%s%s' % (util.GetPlatformName(), bitness)
   if options.android_packages:
