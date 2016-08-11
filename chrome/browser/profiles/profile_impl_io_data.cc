@@ -68,6 +68,10 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/offline_pages/offline_page_request_handler.h"
+#endif  // defined(OS_ANDROID)
+
 namespace {
 
 net::BackendType ChooseCacheBackendType() {
@@ -527,6 +531,15 @@ void ProfileImplIOData::InitializeInternal(
   std::unique_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
+
+  // Install the Offline Page Interceptor.
+#if defined(OS_ANDROID)
+  std::unique_ptr<net::URLRequestInterceptor> offline_page_interceptor =
+      offline_pages::OfflinePageRequestHandler::CreateInterceptor(
+          profile_params->profile);
+  if (offline_page_interceptor)
+    request_interceptors.push_back(std::move(offline_page_interceptor));
+#endif
 
   // The data reduction proxy interceptor should be as close to the network
   // as possible.

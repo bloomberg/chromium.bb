@@ -104,6 +104,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/offline_pages/offline_page_request_handler.h"
 #include "chrome/browser/renderer_host/data_reduction_proxy_resource_throttle_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif
@@ -493,6 +494,13 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     io_data->resource_prefetch_predictor_observer()->OnRequestStarted(
         request, resource_type, info->GetChildID(), info->GetRenderFrameID());
   }
+
+#if defined(OS_ANDROID)
+  if (!io_data->IsOffTheRecord()) {
+    offline_pages::OfflinePageRequestHandler::InitializeHandler(
+        request, resource_type);
+  }
+#endif
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(

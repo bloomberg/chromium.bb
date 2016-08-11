@@ -1625,6 +1625,8 @@
       'browser/android/offline_pages/offline_page_mhtml_archiver.h',
       'browser/android/offline_pages/offline_page_model_factory.cc',
       'browser/android/offline_pages/offline_page_model_factory.h',
+      'browser/android/offline_pages/offline_page_request_handler.cc',
+      'browser/android/offline_pages/offline_page_request_handler.h',
       'browser/android/offline_pages/offline_page_tab_helper.cc',
       'browser/android/offline_pages/offline_page_tab_helper.h',
       'browser/android/offline_pages/offline_page_utils.cc',
