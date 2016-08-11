@@ -177,7 +177,7 @@ class LoadSohuStory(_LoadingStory):
 class LoadWashingtonPostMobileStory(_LoadingStory):
   NAME = 'load:news:washingtonpost'
   URL = 'https://www.washingtonpost.com/pwa'
-  SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS  # http://crbug.com/634112
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   _CLOSE_BUTTON_SELECTOR = '.close'
 
   def _DidLoadDocument(self, action_runner):

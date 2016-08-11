@@ -199,7 +199,7 @@ class WashingtonPostMobileStory(_NewsBrowsingStory):
   URL = 'https://www.washingtonpost.com/pwa'
   IS_SINGLE_PAGE_APP = True
   ITEM_SELECTOR = '.hed > a'
-  SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS  # http://crbug.com/634112
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   _CLOSE_BUTTON_SELECTOR = '.close'
 
   def _DidLoadDocument(self, action_runner):
