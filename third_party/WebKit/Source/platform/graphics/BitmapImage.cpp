@@ -384,10 +384,17 @@ bool BitmapImage::frameHasAlphaAtIndex(size_t index)
     if (m_frames.size() <= index)
         return true;
 
-    if (m_frames[index].m_haveMetadata)
-        return m_frames[index].m_hasAlpha;
+    if (m_frames[index].m_haveMetadata && !m_frames[index].m_hasAlpha)
+        return false;
 
-    return m_source.frameHasAlphaAtIndex(index);
+    // m_hasAlpha may change after m_haveMetadata is set to true, so always ask
+    // ImageSource for the value if the cached value is the default value.
+    bool hasAlpha = m_source.frameHasAlphaAtIndex(index);
+
+    if (m_frames[index].m_haveMetadata)
+        m_frames[index].m_hasAlpha = hasAlpha;
+
+    return hasAlpha;
 }
 
 bool BitmapImage::currentFrameKnownToBeOpaque(MetadataMode metadataMode)

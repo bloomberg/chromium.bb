@@ -1481,10 +1481,30 @@ void LayoutBox::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOf
 void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
 {
     // TODO(chrishtr): support PaintInvalidationDelayedFull for animated border images.
-    if ((style()->borderImage().image() && style()->borderImage().image()->data() == image)
-        || (style()->maskBoxImage().image() && style()->maskBoxImage().image()->data() == image)) {
+    if ((styleRef().borderImage().image() && styleRef().borderImage().image()->data() == image)
+        || (styleRef().maskBoxImage().image() && styleRef().maskBoxImage().image()->data() == image)) {
         setShouldDoFullPaintInvalidation();
-        return;
+    } else {
+        for (const FillLayer* layer = &styleRef().maskLayers(); layer; layer = layer->next()) {
+            if (layer->image() && image == layer->image()->data()) {
+                setShouldDoFullPaintInvalidation();
+                break;
+            }
+        }
+    }
+
+    if (!isDocumentElement() && !backgroundStolenForBeingBody()) {
+        for (const FillLayer* layer = &styleRef().backgroundLayers(); layer; layer = layer->next()) {
+            if (layer->image() && image == layer->image()->data()) {
+                invalidateBackgroundObscurationStatus();
+                bool maybeAnimated = layer->image()->cachedImage() && layer->image()->cachedImage()->getImage() && layer->image()->cachedImage()->getImage()->maybeAnimated();
+                if (maybeAnimated)
+                    setMayNeedPaintInvalidationAnimatgedBackgroundImage();
+                else
+                    setShouldDoFullPaintInvalidation();
+                break;
+            }
+        }
     }
 
     ShapeValue* shapeOutsideValue = style()->shapeOutside();
@@ -1495,9 +1515,6 @@ void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
             markShapeOutsideDependentsForLayout();
         }
     }
-
-    if (!invalidatePaintOfLayerRectsForImage(image, style()->backgroundLayers(), true))
-        invalidatePaintOfLayerRectsForImage(image, style()->maskLayers(), false);
 }
 
 ResourcePriority LayoutBox::computeResourcePriority() const
@@ -1525,27 +1542,7 @@ ResourcePriority LayoutBox::computeResourcePriority() const
     return ResourcePriority(isVisible ? ResourcePriority::Visible : ResourcePriority::NotVisible, screenArea);
 }
 
-bool LayoutBox::invalidatePaintOfLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
-{
-    if (drawingBackground && (isDocumentElement() || backgroundStolenForBeingBody()))
-        return false;
-    for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
-        if (curLayer->image() && image == curLayer->image()->data()) {
-            bool maybeAnimated = curLayer->image()->cachedImage() && curLayer->image()->cachedImage()->getImage() && curLayer->image()->cachedImage()->getImage()->maybeAnimated();
-            if (maybeAnimated && drawingBackground)
-                setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
-            else
-                setShouldDoFullPaintInvalidation();
-
-            if (drawingBackground)
-                invalidateBackgroundObscurationStatus();
-            return true;
-        }
-    }
-    return false;
-}
-
-bool LayoutBox::intersectsVisibleViewport()
+bool LayoutBox::intersectsVisibleViewport() const
 {
     LayoutRect rect = visualOverflowRect();
     LayoutView* layoutView = view();
@@ -1563,18 +1560,6 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidati
         PaintLayer& layer = paintInvalidationState.paintingLayer();
         if (layer.layoutObject() != this)
             layer.setNeedsPaintPhaseDescendantBlockBackgrounds();
-    }
-
-    PaintInvalidationReason fullInvalidationReason = fullPaintInvalidationReason();
-    // If the current paint invalidation reason is PaintInvalidationDelayedFull, then this paint invalidation can delayed if the
-    // LayoutBox in question is not on-screen. The logic to decide whether this is appropriate exists at the site of the original
-    // paint invalidation that chose PaintInvalidationDelayedFull.
-    if (fullInvalidationReason == PaintInvalidationDelayedFull) {
-        if (!intersectsVisibleViewport())
-            return PaintInvalidationDelayedFull;
-
-        // Reset state back to regular full paint invalidation if the object is onscreen.
-        setShouldDoFullPaintInvalidation(PaintInvalidationFull);
     }
 
     PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState);
@@ -3985,8 +3970,20 @@ PaintInvalidationReason LayoutBox::getPaintInvalidationReason(const PaintInvalid
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation) const
 {
     PaintInvalidationReason invalidationReason = LayoutBoxModelObject::getPaintInvalidationReason(paintInvalidationState, oldBounds, oldLocation, newBounds, newLocation);
-    if (isFullPaintInvalidationReason(invalidationReason))
+
+    if (isFullPaintInvalidationReason(invalidationReason) && invalidationReason != PaintInvalidationDelayedFull)
         return invalidationReason;
+
+    if (mayNeedPaintInvalidationAnimatedBackgroundImage() && !backgroundIsKnownToBeObscured())
+        invalidationReason = PaintInvalidationDelayedFull;
+
+    // If the current paint invalidation reason is PaintInvalidationDelayedFull, then this paint invalidation can delayed if the
+    // LayoutBox in question is not on-screen. The logic to decide whether this is appropriate exists at the site of the original
+    // paint invalidation that chose PaintInvalidationDelayedFull.
+    if (invalidationReason == PaintInvalidationDelayedFull) {
+        // Do regular full paint invalidation if the object is onscreen.
+        return intersectsVisibleViewport() ? PaintInvalidationFull : PaintInvalidationDelayedFull;
+    }
 
     if (isLayoutView()) {
         const LayoutView* layoutView = toLayoutView(this);

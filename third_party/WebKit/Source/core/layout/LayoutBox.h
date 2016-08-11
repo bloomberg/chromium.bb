@@ -1035,9 +1035,6 @@ private:
     bool autoWidthShouldFitContent() const;
     LayoutUnit shrinkToFitLogicalWidth(LayoutUnit availableLogicalWidth, LayoutUnit bordersPlusPadding) const;
 
-    // Returns true if we queued up a paint invalidation.
-    bool invalidatePaintOfLayerRectsForImage(WrappedImagePtr, const FillLayer&, bool drawingBackground);
-
     bool stretchesToViewportInQuirksMode() const;
     bool skipContainingBlockForPercentHeightCalculation(const LayoutBox* containingBlock) const;
 
@@ -1098,7 +1095,7 @@ private:
     }
 
     // Returns true if the box intersects the viewport visible to the user.
-    bool intersectsVisibleViewport();
+    bool intersectsVisibleViewport() const;
 
     virtual bool isInSelfHitTestingPhase(HitTestAction hitTestAction) const { return hitTestAction == HitTestForeground; }
 

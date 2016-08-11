@@ -1,13 +1,3 @@
-{
-  "name": "Content Root Layer",
-  "bounds": [785, 672],
-  "children": [
-    {
-      "name": "LayoutView #document",
-      "bounds": [785, 672],
-      "contentsOpaque": true,
-      "drawsContent": true
-    }
-  ]
-}
 
+ 
+ PASS

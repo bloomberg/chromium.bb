@@ -1396,7 +1396,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
         invalidationReason = PaintInvalidationBackgroundObscurationChange;
     m_bitfields.setPreviousBackgroundObscured(backgroundObscured);
 
-    if (invalidationReason == PaintInvalidationNone) {
+    if (invalidationReason == PaintInvalidationNone || invalidationReason == PaintInvalidationDelayedFull) {
         // TODO(trchen): Currently we don't keep track of paint offset of layout objects.
         // There are corner cases that the display items need to be invalidated for paint offset
         // mutation, but incurs no pixel difference (i.e. bounds stay the same) so no rect-based
@@ -3429,6 +3429,14 @@ void LayoutObject::setMayNeedPaintInvalidationSubtree()
     setMayNeedPaintInvalidation();
 }
 
+void LayoutObject::setMayNeedPaintInvalidationAnimatgedBackgroundImage()
+{
+    if (mayNeedPaintInvalidationAnimatedBackgroundImage())
+        return;
+    m_bitfields.setMayNeedPaintInvalidationAnimatedBackgroundImage(true);
+    setMayNeedPaintInvalidation();
+}
+
 void LayoutObject::clearPaintInvalidationFlags(const PaintInvalidationState& paintInvalidationState)
 {
     // paintInvalidationStateIsDirty should be kept in sync with the
@@ -3438,6 +3446,7 @@ void LayoutObject::clearPaintInvalidationFlags(const PaintInvalidationState& pai
     m_bitfields.setChildShouldCheckForPaintInvalidation(false);
     m_bitfields.setMayNeedPaintInvalidation(false);
     m_bitfields.setMayNeedPaintInvalidationSubtree(false);
+    m_bitfields.setMayNeedPaintInvalidationAnimatedBackgroundImage(false);
     m_bitfields.setShouldInvalidateSelection(false);
 }
 

@@ -1342,6 +1342,9 @@ public:
     bool mayNeedPaintInvalidationSubtree() const { return m_bitfields.mayNeedPaintInvalidationSubtree(); }
     void setMayNeedPaintInvalidationSubtree();
 
+    bool mayNeedPaintInvalidationAnimatedBackgroundImage() const { return m_bitfields.mayNeedPaintInvalidationAnimatedBackgroundImage(); }
+    void setMayNeedPaintInvalidationAnimatgedBackgroundImage();
+
     bool shouldInvalidateSelection() const { return m_bitfields.shouldInvalidateSelection(); }
     void setShouldInvalidateSelection();
 
@@ -1735,6 +1738,7 @@ private:
             , m_childShouldCheckForPaintInvalidation(false)
             , m_mayNeedPaintInvalidation(false)
             , m_mayNeedPaintInvalidationSubtree(false)
+            , m_mayNeedPaintInvalidationAnimatedBackgroundImage(false)
             , m_shouldInvalidateSelection(false)
             , m_floating(false)
             , m_isAnonymous(!node)
@@ -1770,7 +1774,7 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 17 in the second.
+        // 32 bits have been used in the first word, and 18 in the second.
 
         // Self needs layout means that this layout object is marked for a full layout.
         // This is the default layout but it is expensive as it recomputes everything.
@@ -1821,6 +1825,7 @@ private:
         ADD_BOOLEAN_BITFIELD(childShouldCheckForPaintInvalidation, ChildShouldCheckForPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidationSubtree, MayNeedPaintInvalidationSubtree);
+        ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidationAnimatedBackgroundImage, MayNeedPaintInvalidationAnimatedBackgroundImage);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection);
 
         // This boolean is the cached value of 'float'

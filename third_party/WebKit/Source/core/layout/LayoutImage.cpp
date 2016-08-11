@@ -216,7 +216,7 @@ bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
 {
     if (!m_imageResource->hasImage() || m_imageResource->errorOccurred())
         return false;
-    if (m_imageResource->cachedImage() && !m_imageResource->cachedImage()->isLoaded())
+    if (!m_imageResource->cachedImage() || !m_imageResource->cachedImage()->isLoaded())
         return false;
     if (!contentBoxRect().contains(localRect))
         return false;
@@ -233,8 +233,6 @@ bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
     // Object-fit may leave parts of the content box empty.
     ObjectFit objectFit = style()->getObjectFit();
     if (objectFit != ObjectFitFill && objectFit != ObjectFitCover)
-        return false;
-    if (!m_imageResource->cachedImage())
         return false;
     // Check for image with alpha.
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(this, *m_imageResource->cachedImage()));
