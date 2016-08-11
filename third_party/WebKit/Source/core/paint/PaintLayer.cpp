@@ -2168,7 +2168,7 @@ bool PaintLayer::overlapBoundsIncludeChildren() const
     return false;
 }
 
-static void expandRectForReflectionAndStackingChildren(const PaintLayer* ancestorLayer, LayoutRect& result)
+static void expandRectForReflectionAndStackingChildren(const PaintLayer* ancestorLayer, LayoutRect& result, PaintLayer::CalculateBoundsOptions options)
 {
     if (ancestorLayer->reflectionInfo() && !ancestorLayer->reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping() && !RuntimeEnabledFeatures::cssBoxReflectFilterEnabled())
         result.unite(ancestorLayer->reflectionInfo()->reflectionLayer()->boundingBoxForCompositing(ancestorLayer));
@@ -2186,19 +2186,19 @@ static void expandRectForReflectionAndStackingChildren(const PaintLayer* ancesto
         // for this Layer. For example, the bounds of squashed Layers
         // will be included in the computation of the appropriate squashing
         // GraphicsLayer.
-        if (node->layer()->compositingState() != NotComposited)
+        if (options != PaintLayer::CalculateBoundsOptions::IncludeTransformsAndCompositedChildLayers && node->layer()->compositingState() != NotComposited)
             continue;
-        result.unite(node->layer()->boundingBoxForCompositing(ancestorLayer));
+        result.unite(node->layer()->boundingBoxForCompositing(ancestorLayer, options));
     }
 }
 
-LayoutRect PaintLayer::physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot) const
+LayoutRect PaintLayer::physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot, CalculateBoundsOptions options) const
 {
     LayoutRect result = physicalBoundingBox(LayoutPoint());
 
     const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-    expandRectForReflectionAndStackingChildren(this, result);
+    expandRectForReflectionAndStackingChildren(this, result, options);
 
     result.moveBy(offsetFromRoot);
     return result;
@@ -2242,9 +2242,9 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
         // children of the parent, that need to be included in reflected composited bounds.
         // Fix this by including composited bounds of stacking children of the reflected Layer.
         if (hasCompositedLayerMapping() && parent() && parent()->reflectionInfo() && parent()->reflectionInfo()->reflectionLayer() == this)
-            expandRectForReflectionAndStackingChildren(parent(), result);
+            expandRectForReflectionAndStackingChildren(parent(), result, options);
         else
-            expandRectForReflectionAndStackingChildren(this, result);
+            expandRectForReflectionAndStackingChildren(this, result, options);
 
         // Only enlarge by the filter outsets if we know the filter is going to be rendered in software.
         // Accelerated filters will handle their own outsets.
@@ -2252,7 +2252,7 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
             result = mapLayoutRectForFilter(result);
     }
 
-    if (transform() && paintsWithTransform(GlobalPaintNormalPhase) && (this != ancestorLayer || options == MaybeIncludeTransformForAncestorLayer))
+    if (transform() && (options == IncludeTransformsAndCompositedChildLayers || ((paintsWithTransform(GlobalPaintNormalPhase) && (this != ancestorLayer || options == MaybeIncludeTransformForAncestorLayer)))))
         result = transform()->mapRect(result);
 
     if (shouldFragmentCompositedBounds(ancestorLayer)) {

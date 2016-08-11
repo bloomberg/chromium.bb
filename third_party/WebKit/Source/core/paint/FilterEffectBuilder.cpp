@@ -122,14 +122,14 @@ Vector<float> sepiaMatrix(double amount)
 
 FloatRect computeReferenceBox(const Element& element, const FloatSize* zoomedReferenceBoxSize, float zoom)
 {
-    FloatSize size;
+    FloatRect box;
     if (zoomedReferenceBoxSize) {
-        size = *zoomedReferenceBoxSize;
+        box = FloatRect(FloatPoint(), *zoomedReferenceBoxSize);
     } else if (element.isConnected() && element.layoutObject() && element.layoutObject()->enclosingLayer()) {
-        size = FloatSize(element.layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint()).size());
+        box = FloatRect(element.layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint(), PaintLayer::CalculateBoundsOptions::IncludeTransformsAndCompositedChildLayers));
     }
-    size.scale(1.0f / zoom);
-    return FloatRect(FloatPoint(), size);
+    box.scale(1.0f / zoom);
+    return box;
 }
 
 } // namespace
