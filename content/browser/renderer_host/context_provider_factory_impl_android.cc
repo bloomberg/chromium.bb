@@ -235,6 +235,11 @@ void ContextProviderFactoryImpl::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
   establish_gpu_channel_timeout_.Stop();
 
+  // This should happen only during shutdown. So early out instead of queuing
+  // more requests with the factory.
+  if (!gpu_channel)
+    return;
+
   // We can queue the Gpu Channel initialization requests multiple times as
   // we get context requests. So we might have already handled any pending
   // requests when this callback runs.

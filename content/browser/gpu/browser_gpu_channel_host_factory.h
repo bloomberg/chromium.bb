@@ -44,6 +44,8 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   static bool CanUseForTesting();
 
   // Overridden from gpu::GpuChannelEstablishFactory:
+  // The factory will return a null GpuChannelHost in the callback during
+  // shutdown.
   void EstablishGpuChannel(
       const gpu::GpuChannelEstablishedCallback& callback) override;
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync() override;
