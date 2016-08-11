@@ -1390,7 +1390,8 @@
 
 	Damage is double-buffered state, see wl_surface.commit.
 
-	The damage rectangle is specified in surface-local coordinates.
+	The damage rectangle is specified in surface-local coordinates,
+	where x and y specify the upper left corner of the damage rectangle.
 
 	The initial value for pending damage is empty: no damage.
 	wl_surface.damage adds pending damage: the new pending damage
@@ -1634,7 +1635,8 @@
 
 	Damage is double-buffered state, see wl_surface.commit.
 
-	The damage rectangle is specified in buffer coordinates.
+	The damage rectangle is specified in buffer coordinates,
+	where x and y specify the upper left corner of the damage rectangle.
 
 	The initial value for pending damage is empty: no damage.
 	wl_surface.damage_buffer adds pending damage: the new pending
