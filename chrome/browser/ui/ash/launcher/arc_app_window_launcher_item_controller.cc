@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
+#include "ui/aura/window.h"
+#include "ui/base/base_window.h"
 
 ArcAppWindowLauncherItemController::ArcAppWindowLauncherItemController(
     const std::string& arc_app_id,
@@ -45,12 +47,14 @@ ChromeLauncherAppMenuItems
 ArcAppWindowLauncherItemController::GetApplicationList(int event_flags) {
   ChromeLauncherAppMenuItems items =
       AppWindowLauncherItemController::GetApplicationList(event_flags);
-  for (size_t i = 0; i < windows().size(); ++i) {
+  size_t i = 0;
+  for (auto it = windows().begin(); it != windows().end(); ++it, ++i) {
     // TODO(khmel): resolve correct icon here.
     gfx::Image image;
+    aura::Window* window = (*it)->GetNativeWindow();
     items.push_back(new ChromeLauncherAppMenuItemV2App(
-        GetTitle(), &image, app_id(), launcher_controller(), i,
-        i == 0 /* has_leading_separator */));
+        (window ? window->title() : GetTitle()), &image, app_id(),
+        launcher_controller(), i, i == 0 /* has_leading_separator */));
   }
   return items;
 }

@@ -134,7 +134,9 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
     return false;
   }
 
-  gfx::NativeWindow GetNativeWindow() const override { return nullptr; }
+  gfx::NativeWindow GetNativeWindow() const override {
+    return widget_ ? widget_->GetNativeWindow() : nullptr;
+  }
 
   gfx::Rect GetRestoredBounds() const override {
     NOTREACHED();
