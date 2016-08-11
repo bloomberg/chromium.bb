@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
@@ -85,6 +86,13 @@ syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
     const base::CommandLine& command_line) {
   return syncer::ModelTypeSet();
 }
+
+// Used to gate syncing preferences, see crbug.com/374865 for more information.
+// Has always been on for desktop/ChromeOS, so default to on. This feature is
+// mainly to give us a kill switch should something go wrong with starting to
+// sync prefs on mobile.
+const base::Feature kSyncPreferencesFeature{"SyncPreferences",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -242,6 +250,12 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     sync_service->RegisterDataTypeController(new PasswordDataTypeController(
         ui_thread_, error_callback, sync_client_,
         sync_client_->GetPasswordStateChangedCallback(), password_store_));
+  }
+
+  if (!disabled_types.Has(syncer::PREFERENCES) &&
+      base::FeatureList::IsEnabled(kSyncPreferencesFeature)) {
+    sync_service->RegisterDataTypeController(new UIDataTypeController(
+        ui_thread_, error_callback, syncer::PREFERENCES, sync_client_));
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {

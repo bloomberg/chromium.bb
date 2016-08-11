@@ -34,6 +34,7 @@ import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -214,8 +215,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         }
 
         Set<Integer> expectedTypes = new HashSet<Integer>(dataTypes.keySet());
-        // TODO(zea): update this once preferences are supported.
-        expectedTypes.remove(ModelType.PREFERENCES);
+        expectedTypes.add(ModelType.PREFERENCES);
         expectedTypes.add(ModelType.PRIORITY_PREFERENCES);
         assertDataTypesAre(expectedTypes);
         togglePreference(dataTypes.get(ModelType.AUTOFILL));
@@ -708,10 +708,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
             public void run() {
                 Set<Integer> actualDataTypes = mProfileSyncService.getPreferredDataTypes();
                 assertTrue(actualDataTypes.containsAll(enabledDataTypes));
-                // There is no Set.containsNone(), sadly.
-                for (Integer disabledDataType : disabledDataTypes) {
-                    assertFalse(actualDataTypes.contains(disabledDataType));
-                }
+                assertTrue(Collections.disjoint(disabledDataTypes, actualDataTypes));
             }
         });
     }

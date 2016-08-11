@@ -530,13 +530,6 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
   }
 #endif
 
-  // Preference sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!disabled_types.Has(syncer::PREFERENCES)) {
-    sync_service->RegisterDataTypeController(new UIDataTypeController(
-        ui_thread, error_callback, syncer::PREFERENCES, this));
-  }
-
 #if defined(ENABLE_THEMES)
   // Theme sync is enabled by default.  Register unless explicitly disabled.
   if (!disabled_types.Has(syncer::THEMES)) {
