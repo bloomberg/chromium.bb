@@ -49,6 +49,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
+#include "components/rappor/rappor_utils.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
@@ -876,4 +877,23 @@ ChromeResourceDispatcherHostDelegate::CreateClientCertStore(
     content::ResourceContext* resource_context) {
   return ProfileIOData::FromResourceContext(resource_context)->
       CreateClientCertStore();
+}
+
+// Record RAPPOR for aborted main frame loads. Separate into a fast and
+// slow bucket because a shocking number of aborts happen under 100ms.
+void ChromeResourceDispatcherHostDelegate::OnAbortedFrameLoad(
+    const GURL& url,
+    base::TimeDelta request_loading_time) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&ChromeResourceDispatcherHostDelegate::OnAbortedFrameLoad,
+                    base::Unretained(this), url, request_loading_time));
+      return;
+  }
+
+  std::string metric_name = (request_loading_time.InMilliseconds() < 100 ?
+      "Net.ErrAborted.Fast" : "Net.ErrAborted.Slow");
+  rappor::SampleDomainAndRegistryFromGURL(
+      g_browser_process->rappor_service(), metric_name, url);
 }

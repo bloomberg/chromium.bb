@@ -85,7 +85,6 @@ specific_include_rules = {
 
     # TODO: These all have to be removed.
     "+content/public/browser/browser_thread.h",  # Only for DCHECK.
-    "+content/public/browser/content_browser_client.h",  # To get NetLog.
     "+content/public/common/resource_devtools_info.h",
   ],
   "power_save_block_resource_throttle\.(cc|h)": [
@@ -150,7 +149,6 @@ specific_include_rules = {
     "+content/common/net/url_request_service_worker_data.h",
     "+content/common/site_isolation_policy.h",
     "+content/public/browser/browser_thread.h",
-    "+content/public/browser/content_browser_client.h",
     "+content/public/browser/plugin_service.h",
     "+content/public/browser/resource_request_details.h",
     "+content/public/browser/stream_handle.h",

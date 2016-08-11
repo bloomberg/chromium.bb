@@ -79,7 +79,6 @@
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -356,17 +355,6 @@ bool IsUsingLoFi(LoFiState lofi_state,
   if (lofi_state == LOFI_UNSPECIFIED && delegate && is_main_frame)
     return delegate->ShouldEnableLoFiMode(request, resource_context);
   return lofi_state == LOFI_ON;
-}
-
-// Record RAPPOR for aborted main frame loads. Separate into a fast and
-// slow bucket because a shocking number of aborts happen under 100ms.
-void RecordAbortRapporOnUI(const GURL& url,
-                           base::TimeDelta request_loading_time) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (request_loading_time.InMilliseconds() < 100)
-    GetContentClient()->browser()->RecordURLMetric("Net.ErrAborted.Fast", url);
-  else
-    GetContentClient()->browser()->RecordURLMetric("Net.ErrAborted.Slow", url);
 }
 
 // The following functions simplify code paths where the UI thread notifies the
@@ -959,10 +947,10 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
               request_loading_time);
         }
 
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            base::Bind(&RecordAbortRapporOnUI, loader->request()->url(),
-                       request_loading_time));
+        if (delegate_) {
+          delegate_->OnAbortedFrameLoad(loader->request()->url(),
+                                        request_loading_time);
+        }
         break;
       case net::ERR_CONNECTION_RESET:
         UMA_HISTOGRAM_LONG_TIMES(

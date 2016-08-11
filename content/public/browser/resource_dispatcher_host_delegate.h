@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
@@ -134,6 +135,12 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // Get platform ClientCertStore. May return nullptr.
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       ResourceContext* resource_context);
+
+  // Notification that a main frame load was aborted. The |request_loading_time|
+  // parameter contains the time between the load request start and abort.
+  // Called on the IO thread.
+  virtual void OnAbortedFrameLoad(const GURL& url,
+                                  base::TimeDelta request_loading_time);
 
  protected:
   virtual ~ResourceDispatcherHostDelegate();
