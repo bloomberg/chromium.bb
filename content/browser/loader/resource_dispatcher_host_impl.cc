@@ -1312,25 +1312,40 @@ void ResourceDispatcherHostImpl::BeginRequest(
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(request_data.headers);
 
-  BeginRequestStatus begin_request_status = CONTINUE;
-  OnHeaderProcessedCallback callback;
-  if (!is_shutdown_) {
-    callback =
-        base::Bind(&ResourceDispatcherHostImpl::ContinuePendingBeginRequest,
-                   base::Unretained(this), request_id, request_data,
-                   sync_result, route_id, headers);
-    begin_request_status =
-        ShouldServiceRequest(process_type, child_id, request_data, headers,
-                             filter_, resource_context, callback);
-  } else {
-    begin_request_status = ABORT;
-  }
-  if (begin_request_status == ABORT) {
+  if (is_shutdown_ ||
+      !ShouldServiceRequest(process_type, child_id, request_data, headers,
+                            filter_, resource_context)) {
     AbortRequestBeforeItStarts(filter_, sync_result, request_id);
     return;
-  } else if (begin_request_status == CONTINUE) {
-    callback.Run(true, 0);
   }
+  // Check if we have a registered interceptor for the headers passed in. If
+  // yes then we need to mark the current request as pending and wait for the
+  // interceptor to invoke the callback with a status code indicating whether
+  // the request needs to be aborted or continued.
+  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();) {
+    HeaderInterceptorMap::iterator index =
+        http_header_interceptor_map_.find(it.name());
+    if (index != http_header_interceptor_map_.end()) {
+      HeaderInterceptorInfo& interceptor_info = index->second;
+
+      bool call_interceptor = true;
+      if (!interceptor_info.starts_with.empty()) {
+        call_interceptor =
+            base::StartsWith(it.value(), interceptor_info.starts_with,
+                             base::CompareCase::INSENSITIVE_ASCII);
+      }
+      if (call_interceptor) {
+        interceptor_info.interceptor.Run(
+            it.name(), it.value(), child_id, resource_context,
+            base::Bind(&ResourceDispatcherHostImpl::ContinuePendingBeginRequest,
+                       base::Unretained(this), request_id, request_data,
+                       sync_result, route_id, headers));
+        return;
+      }
+    }
+  }
+  ContinuePendingBeginRequest(request_id, request_data, sync_result, route_id,
+                              headers, true, 0);
 }
 
 void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
@@ -2602,15 +2617,13 @@ CertStore* ResourceDispatcherHostImpl::GetCertStore() {
                                  : CertStore::GetInstance();
 }
 
-ResourceDispatcherHostImpl::BeginRequestStatus
-ResourceDispatcherHostImpl::ShouldServiceRequest(
+bool ResourceDispatcherHostImpl::ShouldServiceRequest(
     int process_type,
     int child_id,
     const ResourceRequest& request_data,
     const net::HttpRequestHeaders& headers,
     ResourceMessageFilter* filter,
-    ResourceContext* resource_context,
-    OnHeaderProcessedCallback callback) {
+    ResourceContext* resource_context) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
@@ -2618,7 +2631,7 @@ ResourceDispatcherHostImpl::ShouldServiceRequest(
   if (!policy->CanRequestURL(child_id, request_data.url)) {
     VLOG(1) << "Denied unauthorized request for "
             << request_data.url.possibly_invalid_spec();
-    return ABORT;
+    return false;
   }
 
   // Check if the renderer is using an illegal Origin header.  If so, kill it.
@@ -2630,7 +2643,7 @@ ResourceDispatcherHostImpl::ShouldServiceRequest(
     if (!policy->CanCommitURL(child_id, origin)) {
       VLOG(1) << "Killed renderer for illegal origin: " << origin_string;
       bad_message::ReceivedBadMessage(filter, bad_message::RDH_ILLEGAL_ORIGIN);
-      return ABORT;
+      return false;
     }
   }
 
@@ -2644,7 +2657,7 @@ ResourceDispatcherHostImpl::ShouldServiceRequest(
           !policy->CanReadFile(child_id, iter->path())) {
         NOTREACHED() << "Denied unauthorized upload of "
                      << iter->path().value();
-        return ABORT;
+        return false;
       }
       if (iter->type() ==
           ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM) {
@@ -2653,36 +2666,12 @@ ResourceDispatcherHostImpl::ShouldServiceRequest(
         if (!policy->CanReadFileSystemFile(child_id, url)) {
           NOTREACHED() << "Denied unauthorized upload of "
                        << iter->filesystem_url().spec();
-          return ABORT;
+          return false;
         }
       }
     }
   }
-
-  // Check if we have a registered interceptor for the headers passed in. If
-  // yes then we need to mark the current request as pending and wait for the
-  // interceptor to invoke the |callback| with a status code indicating whether
-  // the request needs to be aborted or continued.
-  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();) {
-    HeaderInterceptorMap::iterator index =
-        http_header_interceptor_map_.find(it.name());
-    if (index != http_header_interceptor_map_.end()) {
-      HeaderInterceptorInfo& interceptor_info = index->second;
-
-      bool call_interceptor = true;
-      if (!interceptor_info.starts_with.empty()) {
-        call_interceptor =
-            base::StartsWith(it.value(), interceptor_info.starts_with,
-                             base::CompareCase::INSENSITIVE_ASCII);
-      }
-      if (call_interceptor) {
-        interceptor_info.interceptor.Run(it.name(), it.value(), child_id,
-                                         resource_context, callback);
-        return PENDING;
-      }
-    }
-  }
-  return CONTINUE;
+  return true;
 }
 
 }  // namespace content

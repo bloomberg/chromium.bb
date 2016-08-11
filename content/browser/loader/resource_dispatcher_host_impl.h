@@ -576,27 +576,16 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   CertStore* GetCertStore();
 
-  // This enum holds values which indicate how we want to proceed with a
-  // request that is about to be started.
-  enum BeginRequestStatus {
-    CONTINUE = 0,  // Continue with the request.
-    ABORT = 1,     // Abort.
-    PENDING = 2,   // Wait for the decision to come back.
-    LAST_SERVICE_REQUEST_STATUS = PENDING,
-  };
-
   // Consults the RendererSecurity policy to determine whether the
   // ResourceDispatcherHostImpl should service this request.  A request might
   // be disallowed if the renderer is not authorized to retrieve the request
   // URL or if the renderer is attempting to upload an unauthorized file.
-  BeginRequestStatus ShouldServiceRequest(
-      int process_type,
-      int child_id,
-      const ResourceRequest& request_data,
-      const net::HttpRequestHeaders& headers,
-      ResourceMessageFilter* filter,
-      ResourceContext* resource_context,
-      OnHeaderProcessedCallback callback);
+  bool ShouldServiceRequest(int process_type,
+                            int child_id,
+                            const ResourceRequest& request_data,
+                            const net::HttpRequestHeaders& headers,
+                            ResourceMessageFilter* filter,
+                            ResourceContext* resource_context);
 
   LoaderMap pending_loaders_;
 
