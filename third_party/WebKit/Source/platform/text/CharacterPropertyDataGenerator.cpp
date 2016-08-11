@@ -10,6 +10,7 @@
 #include "CharacterProperty.h"
 #include <cassert>
 #include <cstring>
+#include <memory>
 #include <stdio.h>
 #if !defined(USING_SYSTEM_ICU)
 #define MUTEX_H // Prevent compile failure of utrie2.h on Windows
@@ -73,13 +74,13 @@ static void generate(FILE* fp)
 {
     // Create a value array of all possible code points.
     const UChar32 size = kMaxCodepoint + 1;
-    CharacterProperty* values = new CharacterProperty[size];
-    memset(values, 0, sizeof(CharacterProperty) * size);
+    std::unique_ptr<CharacterProperty[]> values(new CharacterProperty[size]);
+    memset(values.get(), 0, sizeof(CharacterProperty) * size);
 
 #define SET(name) \
-    setRanges(values, name##Ranges, ARRAY_LENGTH(name##Ranges), \
+    setRanges(values.get(), name##Ranges, ARRAY_LENGTH(name##Ranges), \
         CharacterProperty::name); \
-    setValues(values, name##Array, ARRAY_LENGTH(name##Array), \
+    setValues(values.get(), name##Array, ARRAY_LENGTH(name##Array), \
         CharacterProperty::name);
 
     SET(isCJKIdeographOrSymbol);
@@ -111,11 +112,12 @@ static void generate(FILE* fp)
     assert(error == U_ZERO_ERROR);
     int32_t serializedSize = utrie2_serialize(trie, nullptr, 0, &error);
     error = U_ZERO_ERROR;
-    uint8_t* serialized = new uint8_t[serializedSize];
-    serializedSize = utrie2_serialize(trie, serialized, serializedSize, &error);
+    std::unique_ptr<uint8_t[]> serialized(new uint8_t[serializedSize]);
+    serializedSize = utrie2_serialize(
+        trie, serialized.get(), serializedSize, &error);
     assert(error == U_ZERO_ERROR);
 
-    generateUTrieSerialized(fp, serializedSize, serialized);
+    generateUTrieSerialized(fp, serializedSize, serialized.get());
 
     utrie2_close(trie);
 }
