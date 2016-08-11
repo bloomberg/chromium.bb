@@ -1307,6 +1307,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @MediumTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
     public void testAddTab() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
@@ -1424,6 +1425,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * 3.  SaveState                  [ 1s ]             -                 [ 1s ]
      */
     @MediumTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
     public void testSaveStateCommitsUndos() throws InterruptedException {
         TabModelSelector selector = getActivity().getTabModelSelector();
         TabModel model = selector.getModel(false);
