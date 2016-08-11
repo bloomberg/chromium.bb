@@ -15,7 +15,7 @@
 <!--
 
   Below, this indicates that |protocol| is a required attribute of the
-  |request| element; by indicating `NMTOKEN`, we indicate that this attribute
+  |request| element; the presence of `NMTOKEN` indicates that this attribute
   must have a value associated with it that does not contain whitespace. `CDATA`
   would be the more commonly used keyword for content with whitespace.
 -->

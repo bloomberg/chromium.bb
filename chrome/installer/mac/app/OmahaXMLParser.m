@@ -46,7 +46,7 @@
 // attribute that indicates a URL follows. Copies each URL into an array.
 // Note that the URLs in the XML file are incomplete. They need the filename
 // appended to end. The second if statement checks for the tag "package" which
-// contains the filename we need to complete the URLs.
+// contains the filename needed to complete the URLs.
 - (void)parser:(NSXMLParser*)parser
     didStartElement:(NSString*)elementName
        namespaceURI:(NSString*)namespaceURI
