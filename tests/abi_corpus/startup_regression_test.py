@@ -40,7 +40,7 @@ def TestAppStartup(options, crx_path, app_path, profile_path):
       corpus_utils.ChromeAppIdFromPath(app_path), start_path)
   cmd = [options.browser,
       '--disable-web-resources',
-      '--disable-preconnect',
+      '--disable-features=NetworkPrediction',
       '--no-first-run',
       '--no-default-browser-check',
       '--enable-logging',
