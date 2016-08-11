@@ -47,6 +47,13 @@ struct fullscreen_shell {
 	struct wl_listener output_created_listener;
 
 	struct wl_listener seat_created_listener;
+
+	/* List of one surface per client, presented for the NULL output
+	 *
+	 * This is implemented as a list in case someone fixes the shell
+	 * implementation to support more than one client.
+	 */
+	struct wl_list default_surface_list; /* struct fs_client_surface::link */
 };
 
 struct fs_output {
@@ -83,6 +90,57 @@ struct pointer_focus_listener {
 	struct wl_listener seat_caps;
 	struct wl_listener seat_destroyed;
 };
+
+struct fs_client_surface {
+	struct weston_surface *surface;
+	enum zwp_fullscreen_shell_v1_present_method method;
+	struct wl_list link; /* struct fullscreen_shell::default_surface_list */
+	struct wl_listener surface_destroyed;
+};
+
+static void
+remove_default_surface(struct fs_client_surface *surf)
+{
+	wl_list_remove(&surf->surface_destroyed.link);
+	wl_list_remove(&surf->link);
+	free(surf);
+}
+
+static void
+default_surface_destroy_listener(struct wl_listener *listener, void *data)
+{
+	struct fs_client_surface *surf;
+
+	surf = container_of(listener, struct fs_client_surface, surface_destroyed);
+
+	remove_default_surface(surf);
+}
+
+static void
+replace_default_surface(struct fullscreen_shell *shell, struct weston_surface *surface,
+			enum zwp_fullscreen_shell_v1_present_method method)
+{
+	struct fs_client_surface *surf, *prev = NULL;
+
+	if (!wl_list_empty(&shell->default_surface_list))
+		prev = container_of(shell->default_surface_list.prev,
+				    struct fs_client_surface, link);
+
+	surf = zalloc(sizeof *surf);
+	if (!surf)
+		return;
+
+	surf->surface = surface;
+	surf->method = method;
+
+	if (prev)
+		remove_default_surface(prev);
+
+	wl_list_insert(shell->default_surface_list.prev, &surf->link);
+
+	surf->surface_destroyed.notify = default_surface_destroy_listener;
+	wl_signal_add(&surface->destroy_signal, &surf->surface_destroyed);
+}
 
 static void
 pointer_focus_changed(struct wl_listener *listener, void *data)
@@ -246,10 +304,15 @@ pending_surface_destroyed(struct wl_listener *listener, void *data)
 	fsout->pending.surface = NULL;
 }
 
+static void
+configure_presented_surface(struct weston_surface *surface, int32_t sx,
+			    int32_t sy);
+
 static struct fs_output *
 fs_output_create(struct fullscreen_shell *shell, struct weston_output *output)
 {
 	struct fs_output *fsout;
+	struct fs_client_surface *surf;
 
 	fsout = zalloc(sizeof *fsout);
 	if (!fsout)
@@ -272,6 +335,15 @@ fs_output_create(struct fullscreen_shell *shell, struct weston_output *output)
 	weston_layer_entry_insert(&shell->layer.view_list,
 		       &fsout->black_view->layer_link);
 	wl_list_init(&fsout->transform.link);
+
+	if (!wl_list_empty(&shell->default_surface_list)) {
+		surf = container_of(shell->default_surface_list.prev,
+				    struct fs_client_surface, link);
+
+		fs_output_set_surface(fsout, surf->surface, surf->method, 0, 0);
+		configure_presented_surface(surf->surface, 0, 0);
+	}
+
 	return fsout;
 }
 
@@ -698,6 +770,8 @@ fullscreen_shell_present_surface(struct wl_client *client,
 		fsout = fs_output_for_output(output);
 		fs_output_set_surface(fsout, surface, method, 0, 0);
 	} else {
+		replace_default_surface(shell, surface, method);
+
 		wl_list_for_each(fsout, &shell->output_list, link)
 			fs_output_set_surface(fsout, surface, method, 0, 0);
 	}
@@ -832,6 +906,7 @@ module_init(struct weston_compositor *compositor,
 		return -1;
 
 	shell->compositor = compositor;
+	wl_list_init(&shell->default_surface_list);
 
 	shell->client_destroyed.notify = client_destroyed;
 
