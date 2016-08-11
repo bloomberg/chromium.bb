@@ -30,10 +30,6 @@
 #include "ui/gl/gl_wgl_api_implementation.h"
 #include "ui/gl/vsync_provider_win.h"
 
-#if defined(ENABLE_SWIFTSHADER)
-#include "software_renderer.h"
-#endif
-
 namespace gl {
 namespace init {
 
@@ -145,7 +141,13 @@ bool InitializeStaticEGLInternal() {
 
 #if defined(ENABLE_SWIFTSHADER)
   if (using_swift_shader) {
-    SetupSoftwareRenderer(gles_library);
+    // Register key so that SwiftShader doesn't display watermark logo.
+    typedef void (__stdcall *RegisterFunc)(const char* key);
+    RegisterFunc reg = reinterpret_cast<RegisterFunc>(
+      base::GetFunctionPointerFromNativeLibrary(gles_library, "Register"));
+    if (reg) {
+      reg("SS3GCKK6B448CF63");
+    }
   }
 #endif
 
