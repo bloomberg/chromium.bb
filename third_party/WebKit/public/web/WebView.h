@@ -327,7 +327,6 @@ public:
 
     // Set and reset the device color profile.
     virtual void setDeviceColorProfile(const WebVector<char>&) = 0;
-    virtual void resetDeviceColorProfileForTesting() = 0;
 
     // Resize the view at the same time as changing the state of the top
     // controls. If |topControlsShrinkLayout| is true, the embedder shrunk the

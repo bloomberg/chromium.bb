@@ -21,6 +21,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 
 #include "platform/PlatformInstrumentation.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/BitmapImageMetrics.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
@@ -363,6 +364,10 @@ void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData, unsig
 
     m_colorProfile.assign(iccData, iccLength);
     m_hasColorProfile = true;
+
+    // With color correct rendering, we use Skia instead of QCMS to color correct images.
+    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+        return;
 
 #if USE(QCMSLIB)
     m_sourceToOutputDeviceColorTransform.reset();

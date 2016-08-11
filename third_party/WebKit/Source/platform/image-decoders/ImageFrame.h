@@ -31,6 +31,7 @@
 #include "platform/geometry/IntRect.h"
 #include "public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"

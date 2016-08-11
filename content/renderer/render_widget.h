@@ -357,7 +357,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Change the device ICC color profile while running a layout test.
   void SetDeviceColorProfileForTesting(const std::vector<char>& color_profile);
-  void ResetDeviceColorProfileForTesting();
 
   // Called when the Widget has changed size as a result of an auto-resize.
   void DidAutoResize(const gfx::Size& new_size);

@@ -173,8 +173,6 @@ public:
 
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float);
-    void setDeviceColorProfile(const Vector<char>&);
-    void resetDeviceColorProfileForTesting();
 
     static void allVisitedStateChanged(bool invalidateVisitedLinkHashes);
     static void visitedStateChanged(LinkHash visitedHash);

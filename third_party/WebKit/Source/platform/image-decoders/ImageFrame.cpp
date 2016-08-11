@@ -24,6 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "platform/image-decoders/ImageFrame.h"
+
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/image-decoders/ImageDecoder.h"
 
 namespace blink {
@@ -98,11 +101,12 @@ bool ImageFrame::setSizeAndColorProfile(int newWidth, int newHeight, const ICCPr
     // setSizeAndColorProfile() should only be called once, it leaks memory otherwise.
     ASSERT(!width() && !height());
 
-    // TODO(ccameron): Populate the color space parameter of the SkImageInfo
-    // with newIccProfile, under a runtime flag.
+    sk_sp<SkColorSpace> colorSpace;
+    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled() && !newIccProfile.isEmpty())
+        colorSpace = SkColorSpace::NewICC(newIccProfile.data(), newIccProfile.size());
 
     m_bitmap.setInfo(SkImageInfo::MakeN32(newWidth, newHeight,
-        m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType));
+        m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType, colorSpace));
     if (!m_bitmap.tryAllocPixels(m_allocator, 0))
         return false;
 

@@ -537,8 +537,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.main_frame_resizes_are_orientation_changes =
       command_line.HasSwitch(switches::kMainFrameResizesAreOrientationChanges);
 
-  prefs.image_color_profiles_enabled =
-      command_line.HasSwitch(switches::kEnableImageColorProfiles);
+  prefs.color_correct_rendering_enabled =
+      command_line.HasSwitch(switches::kEnableColorCorrectRendering);
 
   prefs.spatial_navigation_enabled = command_line.HasSwitch(
       switches::kEnableSpatialNavigation);

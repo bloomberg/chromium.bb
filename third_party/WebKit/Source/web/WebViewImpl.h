@@ -222,7 +222,6 @@ public:
     void setZoomFactorForDeviceScaleFactor(float) override;
 
     void setDeviceColorProfile(const WebVector<char>&) override;
-    void resetDeviceColorProfileForTesting() override;
 
     void enableAutoResizeMode(
         const WebSize& minSize,

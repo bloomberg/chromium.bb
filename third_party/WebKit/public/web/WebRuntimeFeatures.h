@@ -70,6 +70,7 @@ public:
     BLINK_EXPORT static void enableAccelerated2dCanvas(bool);
     BLINK_EXPORT static void enableAudioOutputDevices(bool);
     BLINK_EXPORT static void enableCanvas2dImageChromium(bool);
+    BLINK_EXPORT static void enableColorCorrectRendering(bool);
     BLINK_EXPORT static void enableCredentialManagerAPI(bool);
     BLINK_EXPORT static void enableDatabase(bool);
     BLINK_EXPORT static void enableDecodeToYUV(bool);
@@ -78,7 +79,6 @@ public:
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
     BLINK_EXPORT static void enableFastMobileScrolling(bool);
     BLINK_EXPORT static void enableFileSystem(bool);
-    BLINK_EXPORT static void enableImageColorProfiles(bool);
     BLINK_EXPORT static void enableInputMultipleFieldsUI(bool);
     BLINK_EXPORT static void enableMediaCapture(bool);
     BLINK_EXPORT static void enableMediaDocumentDownloadButton(bool);

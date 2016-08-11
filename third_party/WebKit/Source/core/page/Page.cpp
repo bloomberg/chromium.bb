@@ -286,16 +286,6 @@ void Page::setDeviceScaleFactor(float scaleFactor)
         deprecatedLocalMainFrame()->deviceScaleFactorChanged();
 }
 
-void Page::setDeviceColorProfile(const Vector<char>& profile)
-{
-    // FIXME: implement.
-}
-
-void Page::resetDeviceColorProfileForTesting()
-{
-    RuntimeEnabledFeatures::setImageColorProfilesEnabled(false);
-}
-
 void Page::allVisitedStateChanged(bool invalidateVisitedLinkHashes)
 {
     for (const Page* page : ordinaryPages()) {

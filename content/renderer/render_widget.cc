@@ -1767,12 +1767,6 @@ void RenderWidget::SetDeviceColorProfileForTesting(
   SetDeviceColorProfile(color_profile);
 }
 
-void RenderWidget::ResetDeviceColorProfileForTesting() {
-  std::vector<char> color_profile;
-  color_profile.push_back('0');
-  SetDeviceColorProfile(color_profile);
-}
-
 void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
   WebRect new_size_in_window(0, 0, new_size.width(), new_size.height());
   convertViewportToWindow(&new_size_in_window);

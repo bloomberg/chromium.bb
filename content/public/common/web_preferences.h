@@ -172,7 +172,7 @@ struct CONTENT_EXPORT WebPreferences {
   int available_hover_types;
   ui::HoverType primary_hover_type;
   bool sync_xhr_in_documents_enabled;
-  bool image_color_profiles_enabled;
+  bool color_correct_rendering_enabled = false;
   bool should_respect_image_orientation;
   int number_of_cpu_cores;
   EditingBehavior editing_behavior;

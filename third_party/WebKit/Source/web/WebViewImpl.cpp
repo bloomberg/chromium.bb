@@ -3326,22 +3326,9 @@ void WebViewImpl::setZoomFactorForDeviceScaleFactor(float zoomFactorForDeviceSca
 
 void WebViewImpl::setDeviceColorProfile(const WebVector<char>& colorProfile)
 {
-    if (!page())
-        return;
-
     Vector<char> deviceProfile;
     deviceProfile.append(colorProfile.data(), colorProfile.size());
     ImageDecoder::setTargetColorProfile(deviceProfile);
-
-    page()->setDeviceColorProfile(deviceProfile);
-}
-
-void WebViewImpl::resetDeviceColorProfileForTesting()
-{
-    if (!page())
-        return;
-
-    page()->resetDeviceColorProfileForTesting();
 }
 
 void WebViewImpl::enableAutoResizeMode(const WebSize& minSize, const WebSize& maxSize)

@@ -1033,8 +1033,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setDeviceSupportsMouse(prefs.device_supports_mouse);
   settings->setEnableTouchAdjustment(prefs.touch_adjustment_enabled);
 
-  WebRuntimeFeatures::enableImageColorProfiles(
-      prefs.image_color_profiles_enabled);
+  WebRuntimeFeatures::enableColorCorrectRendering(
+      prefs.color_correct_rendering_enabled);
   settings->setShouldRespectImageOrientation(
       prefs.should_respect_image_orientation);
 
@@ -2700,14 +2700,8 @@ void RenderViewImpl::SetFocus(bool enable) {
 void RenderViewImpl::RenderWidgetDidSetColorProfile(
     const std::vector<char>& profile) {
   if (webview()) {
-    bool was_reset = (profile.size() == 1 && profile[0] == '0');
-
-    if (was_reset) {
-      webview()->resetDeviceColorProfileForTesting();
-    } else {
-      WebVector<char> colorProfile = profile;
-      webview()->setDeviceColorProfile(colorProfile);
-    }
+    WebVector<char> colorProfile = profile;
+    webview()->setDeviceColorProfile(colorProfile);
   }
 }
 

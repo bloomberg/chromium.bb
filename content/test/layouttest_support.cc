@@ -352,13 +352,6 @@ float GetWindowToViewportScale(RenderView* render_view) {
 }
 
 void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
-  if (name == "reset") {
-    static_cast<RenderViewImpl*>(render_view)
-        ->GetWidget()
-        ->ResetDeviceColorProfileForTesting();
-    return;
-  }
-
   std::vector<char> color_profile;
 
   struct TestColorProfile { // A color spin profile.

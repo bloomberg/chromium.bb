@@ -373,6 +373,9 @@ const char kDisableDisplayList2dCanvas[]    = "disable-display-list-2d-canvas";
 const char kEnableCanvas2dDynamicRenderingModeSwitching[] =
     "enable-canvas-2d-dynamic-rendering-mode-switching";
 
+// Enable color space aware rasterization and compositing.
+const char kEnableColorCorrectRendering[] = "enable-color-correct-rendering";
+
 // Enable experimental canvas features, e.g. canvas 2D context attributes
 const char kEnableExperimentalCanvasFeatures[] =
     "enable-experimental-canvas-features";
@@ -414,9 +417,6 @@ const char kEnableGpuRasterization[]        = "enable-gpu-rasterization";
 // When using CPU rasterizing generate low resolution tiling. Low res
 // tiles may be displayed during fast scrolls especially on slower devices.
 const char kEnableLowResTiling[] = "enable-low-res-tiling";
-
-// Dynamically apply color profiles to web content images.
-const char kEnableImageColorProfiles[]      = "enable-image-color-profiles";
 
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.

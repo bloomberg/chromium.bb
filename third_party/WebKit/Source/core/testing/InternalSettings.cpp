@@ -70,7 +70,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_imagesEnabled(settings->imagesEnabled())
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
     , m_originalLayerSquashingEnabled(settings->layerSquashingEnabled())
-    , m_originalImageColorProfilesEnabled(RuntimeEnabledFeatures::imageColorProfilesEnabled())
     , m_originalImageAnimationPolicy(settings->imageAnimationPolicy())
     , m_originalScrollTopLeftInteropEnabled(RuntimeEnabledFeatures::scrollTopLeftInteropEnabled())
     , m_originalCompositorWorkerEnabled(RuntimeEnabledFeatures::compositorWorkerEnabled())
@@ -94,7 +93,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setImagesEnabled(m_imagesEnabled);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->genericFontFamilySettings().reset();
-    RuntimeEnabledFeatures::setImageColorProfilesEnabled(m_originalImageColorProfilesEnabled);
     settings->setImageAnimationPolicy(m_originalImageAnimationPolicy);
     RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(m_originalScrollTopLeftInteropEnabled);
     RuntimeEnabledFeatures::setCompositorWorkerEnabled(m_originalCompositorWorkerEnabled);
@@ -158,11 +156,6 @@ void InternalSettings::setCSSStickyPositionEnabled(bool enabled)
 void InternalSettings::setExperimentalContentSecurityPolicyFeaturesEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(enabled);
-}
-
-void InternalSettings::setImageColorProfilesEnabled(bool enabled)
-{
-    RuntimeEnabledFeatures::setImageColorProfilesEnabled(enabled);
 }
 
 void InternalSettings::setOverlayScrollbarsEnabled(bool enabled)

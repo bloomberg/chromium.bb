@@ -75,6 +75,11 @@ void WebRuntimeFeatures::enableCanvas2dImageChromium(bool enable)
     RuntimeEnabledFeatures::setCanvas2dImageChromiumEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableColorCorrectRendering(bool enable)
+{
+    RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableCompositedSelectionUpdate(bool enable)
 {
     RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(enable);
@@ -138,11 +143,6 @@ void WebRuntimeFeatures::enableFastMobileScrolling(bool enable)
 void WebRuntimeFeatures::enableFileSystem(bool enable)
 {
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);
-}
-
-void WebRuntimeFeatures::enableImageColorProfiles(bool enable)
-{
-    RuntimeEnabledFeatures::setImageColorProfilesEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableInputMultipleFieldsUI(bool enable)
