@@ -36,6 +36,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Histogram.h"
+#include "platform/TraceEvent.h"
 
 namespace blink {
 
@@ -599,6 +600,17 @@ void UseCounter::unmuteForInspector()
     m_muteCount--;
 }
 
+void UseCounter::recordMeasurement(Feature feature)
+{
+    if (m_muteCount)
+        return;
+
+    if (!m_countBits.hasRecordedMeasurement(feature)) {
+        TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"), "FeatureFirstUsed", "feature", feature);
+    }
+    m_countBits.recordMeasurement(feature);
+}
+
 UseCounter::UseCounter()
     : m_muteCount(0)
 {
@@ -662,8 +674,7 @@ void UseCounter::count(const Frame* frame, Feature feature)
     if (!host)
         return;
 
-    ASSERT(Deprecation::deprecationMessage(feature).isEmpty());
-    host->useCounter().recordMeasurement(feature);
+    host->useCounter().count(feature);
 }
 
 void UseCounter::count(const Document& document, Feature feature)
@@ -751,6 +762,9 @@ void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID feature)
     if (!isUseCounterEnabledForMode(cssParserMode) || m_muteCount)
         return;
 
+    if (!m_CSSFeatureBits.quickGet(feature)) {
+        TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"), "CSSFeatureFirstUsed", "feature", feature);
+    }
     m_CSSFeatureBits.quickSet(feature);
 }
 

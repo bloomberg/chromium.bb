@@ -1323,11 +1323,7 @@ public:
     void muteForInspector();
     void unmuteForInspector();
 
-    void recordMeasurement(Feature feature)
-    {
-        if (!m_muteCount)
-            m_countBits.recordMeasurement(feature);
-    }
+    void recordMeasurement(Feature);
     void updateMeasurements();
 
     bool hasRecordedMeasurement(Feature feature) const { return m_countBits.hasRecordedMeasurement(feature); }
