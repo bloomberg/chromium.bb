@@ -1,55 +1,69 @@
-This package contains tools for working with Chromium development:
+# depot_tools
 
-  chrome-update-create-task.bat
-    Creates a scheduled task to do an automatic local chromium build every day.
+This package contains tools for working with Chromium development. It requires
+python 2.7.
 
-  cpplint.py
-    A copy of our linting tool which enforces Google style. Fetched from
-    http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py
 
-  gcl
-    A tool for uploading and managing code reviews on the Chromium
-    project, using the Rietveld code review tool.  More info at:
-    http://code.google.com/p/rietveld/
+## Tools
 
-  gclient
-    A script for managing a workspace with modular dependencies that
-    are each checked out independently from different repositories.
-    More info at:
-    http://code.google.com/p/gclient/
+The most important tools are:
 
-It updates itself automatically when running `gclient` tool. To disable
-auto update, set the environment variable DEPOT_TOOLS_UPDATE=0
+- `fetch`: A `gclient` wrapper to checkout a project. Use `fetch --help` for
+  more details.
+- `gclient`: A meta-checkout tool. Think
+  [repo](https://source.android.com/source/using-repo.html) or [git
+  submodules](https://git-scm.com/docs/git-submodule), except that it support
+  OS-specific rules, e.g. do not checkout Windows only dependencies when
+  checking out for Android. Use `gclient help` for more details and
+  [README.gclient.md](README.gclient.md).
+- `git cl`: A code review tool to interact with Rietveld or Gerrit. Use `git cl
+  help` for more details and [README.git-cl.md](README.git-cl.md).
+- `roll-dep`: A gclient dependency management tool to submit a _dep roll_,
+  updating a dependency to a newer revision.
 
-To update package manually, run .\update_depot_tools.bat on Windows,
-or ./update_depot_tools on Linux or Mac.
+There are a lot of git utilities included.
 
-Note: on Windows if svn, git and python are not accessible, they will be
-downloaded too.
+
+## Updating
+
+`depot_tools` updates itself automatically when running `gclient` tool. To
+disable auto update, set the environment variable `DEPOT_TOOLS_UPDATE=0`.
+
+To update package manually, run `update_depot_tools.bat` on Windows,
+or `./update_depot_tools` on Linux or Mac.
+
+On Windows only, running `gclient` will install `svn` (not for long), `git`,
+`python`.
 
 
 ## Contributing
 
-The "gclient" wrapper knows how to keep this repository updated to
-the latest versions of these tools as found at:
-
-    https://chromium.googlesource.com/chromium/tools/depot_tools.git
-
 To contribute change for review:
 
     git new-branch <somename>
-    git add <yourchanges>
-    git commit
+    # Hack
+    git add .
+    git commit -a -m "Fixes goat teleporting"
     # find reviewers
     git cl owners
-    git log <yourfiles>
-    # upload
-    git cl upload -r reviewer1@chromium.org,reviewer2 --send-mail
-    # open https://codereview.chromium.org/ and send mail
+    git log -- <yourfiles>
 
-    # if change is approved, flag it to be commited
-    git cl set_commit
-    # if change needs more work
+    # Request a review.
+    git cl upload -r reviewer1@chromium.org,reviewer2@chromium.org --send-mail
+
+    # Edit change description if needed.
+    git cl desc
+
+    # If change is approved, flag it to be commited.
+    git cl set-commit
+
+    # If change needs more work.
     git rebase-update
     ...
-    git cl upload
+    git cl upload -t "Fixes goat teleporter destination to be Australia"
+
+
+### cpplint.py
+
+To update cpplint.py, please submit the change upstream first at
+https://github.com/google/styleguide/tree/gh-pages/cpplint then copy it down.
