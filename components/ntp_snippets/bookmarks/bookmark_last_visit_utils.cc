@@ -64,6 +64,13 @@ base::Time GetLastVisitDateForBookmark(const BookmarkNode* node) {
   return ParseLastVisitDate(last_visit_date_string);
 }
 
+base::Time GetLastVisitDateForBookmarkIfNotDismissed(const BookmarkNode* node) {
+  if (IsDismissedFromNTPForBookmark(node))
+    return base::Time::UnixEpoch();
+
+  return GetLastVisitDateForBookmark(node);
+}
+
 void MarkBookmarksDismissed(BookmarkModel* bookmark_model, const GURL& url) {
   std::vector<const BookmarkNode*> nodes;
   bookmark_model->GetNodesByURL(url, &nodes);
@@ -104,8 +111,8 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
   std::vector<BookmarkModel::URLAndTitle> bookmarks;
   bookmark_model->GetBookmarks(&bookmarks);
 
-  // Remove the bookmark URLs whose bookmarks are all dismissed or whose most
-  // recent visit is older than |min_visit_time|.
+  // Remove the URLs for that no bookmark has a recent visit (more recent than
+  // |min_visit_time|). Recent visits to dismissed bookmarks are not considered.
   bookmarks.erase(
       std::remove_if(bookmarks.begin(), bookmarks.end(),
                      [&bookmark_model, &min_visit_time](
@@ -115,17 +122,15 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
                        bookmark_model->GetNodesByURL(bookmark.url,
                                                      &bookmarks_for_url);
 
-                       // Check if there is a recently visited bookmark and not
-                       // all bookmarks are dismissed.
-                       bool has_recent_visit = false;
-                       bool all_dismissed = true;
+                       // Keep if at least one (non-dismissed) bookmark has been
+                       // recently visited.
                        for (const BookmarkNode* node : bookmarks_for_url) {
-                         if (GetLastVisitDateForBookmark(node) > min_visit_time)
-                           has_recent_visit = true;
-                         if (!IsDismissedFromNTPForBookmark(node))
-                           all_dismissed = false;
+                         if (GetLastVisitDateForBookmarkIfNotDismissed(node) >
+                             min_visit_time)
+                           return false;
                        }
-                       return all_dismissed || !has_recent_visit;
+                       // Otherwise erase this URL.
+                       return true;
                      }),
       bookmarks.end());
 

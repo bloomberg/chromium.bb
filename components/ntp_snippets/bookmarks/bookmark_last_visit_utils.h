@@ -31,6 +31,11 @@ void UpdateBookmarkOnURLVisitedInMainFrame(
 // bookmark is created also counts.
 base::Time GetLastVisitDateForBookmark(const bookmarks::BookmarkNode* node);
 
+// Like GetLastVisitDateForBookmark, but it returns the unix epoch if the
+// bookmark is dismissed from NTP.
+base::Time GetLastVisitDateForBookmarkIfNotDismissed(
+    const bookmarks::BookmarkNode* node);
+
 // Marks all bookmarks with the given URL as dismissed.
 void MarkBookmarksDismissed(bookmarks::BookmarkModel* bookmark_model,
                             const GURL& url);

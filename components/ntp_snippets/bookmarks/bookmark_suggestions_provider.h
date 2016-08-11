@@ -64,7 +64,7 @@ class BookmarkSuggestionsProvider : public ContentSuggestionsProvider,
       const bookmarks::BookmarkNode* parent,
       int old_index,
       const bookmarks::BookmarkNode* node,
-      const std::set<GURL>& no_longer_bookmarked) override {}
+      const std::set<GURL>& no_longer_bookmarked) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* node) override {}
   void BookmarkNodeFaviconChanged(

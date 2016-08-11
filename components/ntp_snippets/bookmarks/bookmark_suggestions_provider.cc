@@ -150,19 +150,34 @@ void BookmarkSuggestionsProvider::OnWillChangeBookmarkMetaInfo(
     BookmarkModel* model,
     const BookmarkNode* node) {
   // Store the last visit date of the node that is about to change.
-  node_to_change_last_visit_date_ = GetLastVisitDateForBookmark(node);
+  node_to_change_last_visit_date_ =
+      GetLastVisitDateForBookmarkIfNotDismissed(node);
 }
 
 void BookmarkSuggestionsProvider::BookmarkMetaInfoChanged(
     BookmarkModel* model,
     const BookmarkNode* node) {
-  base::Time time = GetLastVisitDateForBookmark(node);
+  base::Time time = GetLastVisitDateForBookmarkIfNotDismissed(node);
   if (time == node_to_change_last_visit_date_ ||
       time < end_of_list_last_visit_date_)
     return;
 
   // Last visit date of a node has changed (and is relevant for the list), we
   // should update the suggestions.
+  FetchBookmarks();
+}
+
+void BookmarkSuggestionsProvider::BookmarkNodeRemoved(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* parent,
+      int old_index,
+      const bookmarks::BookmarkNode* node,
+      const std::set<GURL>& no_longer_bookmarked) {
+  if (GetLastVisitDateForBookmarkIfNotDismissed(node) <
+      end_of_list_last_visit_date_)
+    return;
+
+  // Some node from our list got deleted, we should update the suggestions.
   FetchBookmarks();
 }
 
