@@ -148,32 +148,6 @@ TEST_F(AlertCoordinatorTest, ValidateDismissalOnStop) {
   EXPECT_OCMOCK_VERIFY(alertMock);
 }
 
-// Tests the alert coordinator dismissal when the object is destroyed.
-// TODO(crbug.com/631049): This test is failing on Xcode 8 bot.
-TEST_F(AlertCoordinatorTest, DISABLED_ValidateDismissalOnDestroy) {
-  // Setup.
-  UIViewController* viewController = getViewController();
-  AlertCoordinator* alertCoordinator = getAlertCoordinator(viewController);
-
-  startAlertCoordinator();
-
-  ASSERT_TRUE(alertCoordinator.isVisible);
-  ASSERT_NE(nil, viewController.presentedViewController);
-  ASSERT_TRUE([viewController.presentedViewController
-      isKindOfClass:[UIAlertController class]]);
-
-  id alertMock = [OCMockObject
-      partialMockForObject:viewController.presentedViewController];
-  [[alertMock expect] dismissViewControllerAnimated:NO completion:nil];
-
-  // Action.
-  deleteAlertCoordinator();
-
-  // Test.
-  EXPECT_FALSE([alertCoordinator isVisible]);
-  ASSERT_OCMOCK_VERIFY(alertMock);
-}
-
 // Tests that only the expected actions are present on the alert.
 TEST_F(AlertCoordinatorTest, ValidateActions) {
   // Setup.
