@@ -97,6 +97,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Destroys encode session on |encoder_thread_|.
   void DestroyTask();
 
+  // Releases resources encoder holds.
+  void ReleaseEncoderResources();
+
   // Bitstream buffers ready to be used to return encoded output as a FIFO.
   std::deque<std::unique_ptr<BitstreamBufferRef>> bitstream_buffer_queue_;
 
@@ -113,10 +116,8 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   base::win::ScopedComPtr<IMFTransform> encoder_;
   base::win::ScopedComPtr<ICodecAPI> codec_api_;
 
-  DWORD input_stream_count_min_;
-  DWORD input_stream_count_max_;
-  DWORD output_stream_count_min_;
-  DWORD output_stream_count_max_;
+  base::win::ScopedComPtr<IMFMediaType> imf_input_media_type_;
+  base::win::ScopedComPtr<IMFMediaType> imf_output_media_type_;
 
   base::win::ScopedComPtr<IMFSample> input_sample_;
   base::win::ScopedComPtr<IMFSample> output_sample_;
