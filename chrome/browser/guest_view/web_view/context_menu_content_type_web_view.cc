@@ -53,7 +53,7 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
         if (chrome::GetChannel() >= version_info::Channel::DEV) {
           // Hide dev tools items in guests inside WebUI if we are not running
           // canary or tott.
-          auto web_view_guest =
+          auto* web_view_guest =
               extensions::WebViewGuest::FromWebContents(source_web_contents());
           // Note that this check might not be sufficient to hide dev tools
           // items on OS_MACOSX if we start supporting <webview> inside
