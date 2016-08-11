@@ -397,18 +397,6 @@ void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString, std::uniq
     resume(errorString);
 }
 
-void V8DebuggerAgentImpl::getBacktrace(ErrorString* errorString, std::unique_ptr<Array<CallFrame>>* callFrames, Maybe<StackTrace>* asyncStackTrace)
-{
-    if (!assertPaused(errorString))
-        return;
-    JavaScriptCallFrames frames = m_debugger->currentCallFrames();
-    m_pausedCallFrames.swap(frames);
-    *callFrames = currentCallFrames(errorString);
-    if (!*callFrames)
-        return;
-    *asyncStackTrace = currentAsyncStackTrace();
-}
-
 bool V8DebuggerAgentImpl::isCurrentCallStackEmptyOrBlackboxed()
 {
     DCHECK(enabled());

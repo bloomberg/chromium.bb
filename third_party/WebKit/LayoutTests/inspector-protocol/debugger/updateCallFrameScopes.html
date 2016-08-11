@@ -7,38 +7,40 @@ function TestFunction()
 {
     var a = 2;
     debugger;
+    debugger;
 }
 
 function test()
 {
     var newVariableValue = 55;
-    
+
     InspectorTest.sendCommand("Debugger.enable", {});
 
     InspectorTest.eventHandler["Debugger.paused"] = handleDebuggerPaused;
 
     InspectorTest.sendCommand("Runtime.evaluate", { "expression": "setTimeout(TestFunction, 0)" });
-    
+
     function handleDebuggerPaused(messageObject)
     {
         InspectorTest.log("Paused on 'debugger;'");
         InspectorTest.eventHandler["Debugger.paused"] = undefined;
-        
+
         var topFrame = messageObject.params.callFrames[0];
         var topFrameId = topFrame.callFrameId;
         InspectorTest.sendCommand("Debugger.evaluateOnCallFrame", { "callFrameId": topFrameId, "expression": "a = " + newVariableValue }, callbackChangeValue);
     }
-    
+
     function callbackChangeValue(response)
     {
         InspectorTest.log("Variable value changed");
-        InspectorTest.sendCommand("Debugger.getBacktrace", { }, callbackGetBacktrace);
+        InspectorTest.eventHandler["Debugger.paused"] = callbackGetBacktrace;
+        InspectorTest.sendCommand("Debugger.resume", { });
     }
 
     function callbackGetBacktrace(response)
     {
         InspectorTest.log("Stacktrace re-read again");
-        var localScope = response.result.callFrames[0].scopeChain[0];
+        var localScope = response.params.callFrames[0].scopeChain[0];
         InspectorTest.sendCommand("Runtime.getProperties", { "objectId": localScope.object.objectId }, callbackGetProperties);
     }
 
@@ -57,7 +59,7 @@ function test()
             var actualValue = varNamedA.value.value;
             InspectorTest.log("New variable is " + actualValue + ", expected is " + newVariableValue + ", old was: 2");
             InspectorTest.log(actualValue == newVariableValue ? "SUCCESS" : "FAIL");
-        } else { 
+        } else {
             InspectorTest.log("Failed to find variable in scope");
         }
         InspectorTest.completeTest();

@@ -72,16 +72,12 @@ public:
     void removeBreakpoint(ErrorString*, const String16& breakpointId) override;
     void continueToLocation(ErrorString*,
         std::unique_ptr<protocol::Debugger::Location>) override;
-    void getBacktrace(ErrorString*,
-        std::unique_ptr<protocol::Array<protocol::Debugger::CallFrame>>*,
-        Maybe<protocol::Runtime::StackTrace>*) override;
     void searchInContent(ErrorString*,
         const String16& scriptId,
         const String16& query,
         const Maybe<bool>& optionalCaseSensitive,
         const Maybe<bool>& optionalIsRegex,
         std::unique_ptr<protocol::Array<protocol::Debugger::SearchMatch>>*) override;
-    void canSetScriptSource(ErrorString*, bool* result) override { *result = true; }
     void setScriptSource(ErrorString*,
         const String16& inScriptId,
         const String16& inScriptSource,
