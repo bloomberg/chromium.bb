@@ -5,7 +5,7 @@
 import("//build/buildflag_header.gni")
 
 # Specifies which language identification model to use: CLD2 or CLD3.
-cld_version = 3
+cld_version = 2
 
 buildflag_header("cld_version") {
   header = "cld_version.h"
