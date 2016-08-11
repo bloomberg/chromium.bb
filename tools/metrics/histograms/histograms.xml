@@ -102730,6 +102730,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="VideoEncodedQpStats" separator=".">
+  <suffix name="H264"
+      label="Video codec: H264. QP range: 0-51. No spatial layers."/>
   <suffix name="Vp8"
       label="Video codec: VP8. QP range: 0-127. Single stream sent."/>
   <suffix name="Vp8.S0"
