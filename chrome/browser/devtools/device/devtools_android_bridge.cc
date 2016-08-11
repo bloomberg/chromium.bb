@@ -527,10 +527,11 @@ static void NoOp(int, const std::string&) {}
 
 void DevToolsAndroidBridge::RemotePageTarget::Inspect(Profile* profile) const {
   Activate();
-  bool isWorker = remote_type_ == kTargetTypeWorker ||
-                  remote_type_ == kTargetTypeServiceWorker;
+  bool is_worker = remote_type_ == kTargetTypeWorker ||
+                   remote_type_ == kTargetTypeServiceWorker;
+  bool is_v8_only = remote_type_ == kTargetTypeNode;
   DevToolsWindow::OpenExternalFrontend(profile, frontend_url_, GetAgentHost(),
-                                       isWorker);
+                                       is_worker, is_v8_only);
 }
 
 bool DevToolsAndroidBridge::RemotePageTarget::Activate() const {

@@ -26,6 +26,7 @@ class DevToolsTargetImpl : public devtools_discovery::BasicTargetDescriptor {
   static const char kTargetTypeWorker[];
   static const char kTargetTypeWebView[];
   static const char kTargetTypeIFrame[];
+  static const char kTargetTypeNode[];
   static const char kTargetTypeOther[];
   static const char kTargetTypeServiceWorker[];
 

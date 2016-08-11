@@ -34,6 +34,7 @@ const char DevToolsTargetImpl::kTargetTypePage[] = "page";
 const char DevToolsTargetImpl::kTargetTypeWorker[] = "worker";
 const char DevToolsTargetImpl::kTargetTypeWebView[] = "webview";
 const char DevToolsTargetImpl::kTargetTypeIFrame[] = "iframe";
+const char DevToolsTargetImpl::kTargetTypeNode[] = "node";
 const char DevToolsTargetImpl::kTargetTypeOther[] = "other";
 const char DevToolsTargetImpl::kTargetTypeServiceWorker[] = "service_worker";
 
