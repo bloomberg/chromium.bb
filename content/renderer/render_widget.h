@@ -503,7 +503,7 @@ class CONTENT_EXPORT RenderWidget
   // go through OnResize.
   void AutoResizeCompositor();
 
-  virtual void SetDeviceScaleFactor(float device_scale_factor);
+  virtual void OnSetDeviceScaleFactor(float device_scale_factor);
   bool SetDeviceColorProfile(const std::vector<char>& color_profile);
 
   virtual void OnOrientationChange();

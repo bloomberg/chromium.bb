@@ -16,6 +16,9 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/drop_data.h"
+#include "third_party/WebKit/public/platform/WebScreenInfo.h"
+#include "ui/display/screen.h"
+#include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -25,6 +28,24 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace content {
+
+// static
+void WebContentsView::GetDefaultScreenInfo(
+    blink::WebScreenInfo* results) {
+  const display::Display& display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  results->rect = display.bounds();
+  // TODO(husky): Remove any system controls from availableRect.
+  results->availableRect = display.work_area();
+  results->deviceScaleFactor = display.device_scale_factor();
+  results->orientationAngle = display.RotationAsDegree();
+  results->orientationType =
+      RenderWidgetHostViewBase::GetOrientationTypeForMobile(display);
+  gfx::DeviceDisplayInfo info;
+  results->depth = display.color_depth();
+  results->depthPerComponent = display.depth_per_component();
+  results->isMonochrome = (results->depthPerComponent == 0);
+}
 
 WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
@@ -82,6 +103,11 @@ gfx::NativeView WebContentsViewAndroid::GetContentNativeView() const {
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
   return content_view_core_ ? content_view_core_->GetWindowAndroid() : nullptr;
+}
+
+void WebContentsViewAndroid::GetScreenInfo(blink::WebScreenInfo* result) const {
+  // ScreenInfo isn't tied to the widget on Android. Always return the default.
+  WebContentsView::GetDefaultScreenInfo(result);
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {

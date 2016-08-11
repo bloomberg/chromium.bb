@@ -1458,11 +1458,6 @@ bool RenderWidgetHostViewAndroid::HasAcceleratedSurface(
   return false;
 }
 
-void RenderWidgetHostViewAndroid::GetScreenInfo(blink::WebScreenInfo* result) {
-  // ScreenInfo isn't tied to the widget on Android. Always return the default.
-  RenderWidgetHostViewBase::GetDefaultScreenInfo(result);
-}
-
 // TODO(jrg): Find out the implications and answer correctly here,
 // as we are returning the WebView and not root window bounds.
 gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
@@ -1956,24 +1951,6 @@ void RenderWidgetHostViewAndroid::OnStylusSelectTap(base::TimeTicks time,
       blink::WebInputEvent::GestureLongPress,
       (time - base::TimeTicks()).InSecondsF(), x, y);
   SendGestureEvent(long_press);
-}
-
-// static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(
-    blink::WebScreenInfo* results) {
-  const display::Display& display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
-  results->rect = display.bounds();
-  // TODO(husky): Remove any system controls from availableRect.
-  results->availableRect = display.work_area();
-  results->deviceScaleFactor = display.device_scale_factor();
-  results->orientationAngle = display.RotationAsDegree();
-  results->orientationType =
-      RenderWidgetHostViewBase::GetOrientationTypeForMobile(display);
-  gfx::DeviceDisplayInfo info;
-  results->depth = display.color_depth();
-  results->depthPerComponent = display.depth_per_component();
-  results->isMonochrome = (results->depthPerComponent == 0);
 }
 
 void RenderWidgetHostViewAndroid::ComputeEventLatencyOSTouchHistograms(

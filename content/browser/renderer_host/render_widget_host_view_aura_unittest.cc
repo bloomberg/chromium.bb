@@ -165,7 +165,10 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate()
-      : rwh_(nullptr), is_fullscreen_(false), focused_widget_(nullptr) {}
+      : rwh_(nullptr),
+        is_fullscreen_(false),
+        focused_widget_(nullptr),
+        last_device_scale_factor_(0.0) {}
   ~MockRenderWidgetHostDelegate() override {}
   const NativeWebKeyboardEvent* last_event() const { return last_event_.get(); }
   void set_widget_host(RenderWidgetHostImpl* rwh) { rwh_ = rwh; }
@@ -179,6 +182,11 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   }
   void set_focused_widget(RenderWidgetHostImpl* focused_widget) {
     focused_widget_ = focused_widget;
+  }
+
+  double get_last_device_scale_factor() { return last_device_scale_factor_; }
+  void UpdateDeviceScaleFactor(double device_scale_factor) override {
+    last_device_scale_factor_ = device_scale_factor;
   }
 
  protected:
@@ -204,6 +212,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   bool is_fullscreen_;
   TextInputManager text_input_manager_;
   RenderWidgetHostImpl* focused_widget_;
+  double last_device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
@@ -1463,37 +1472,20 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
   EXPECT_EQ("200x200", view_->GetPhysicalBackingSize().ToString());
   // Extra ScreenInfoChanged message for |parent_view_|.
-  EXPECT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ(2.0f, std::get<0>(params).screen_info.deviceScaleFactor);
-    EXPECT_EQ("100x100", std::get<0>(params).new_size.ToString());  // dip size
-    EXPECT_EQ(
-        "200x200",
-        std::get<0>(params).physical_backing_size.ToString());  // backing size
-  }
+  EXPECT_EQ(0u, sink_->message_count());
+  auto view_delegate = static_cast<MockRenderWidgetHostDelegate*>(
+      static_cast<RenderWidgetHostImpl*>(view_->GetRenderWidgetHost())
+          ->delegate());
+  EXPECT_EQ(2.0f, view_delegate->get_last_device_scale_factor());
 
   widget_host_->ResetSizeAndRepaintPendingFlags();
   sink_->ClearMessages();
 
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
   // Extra ScreenInfoChanged message for |parent_view_|.
-  EXPECT_EQ(1u, sink_->message_count());
+  EXPECT_EQ(0u, sink_->message_count());
+  EXPECT_EQ(1.0f, view_delegate->get_last_device_scale_factor());
   EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ(1.0f, std::get<0>(params).screen_info.deviceScaleFactor);
-    EXPECT_EQ("100x100", std::get<0>(params).new_size.ToString());  // dip size
-    EXPECT_EQ(
-        "100x100",
-        std::get<0>(params).physical_backing_size.ToString());  // backing size
-  }
 }
 
 // Checks that InputMsg_CursorVisibilityChange IPC messages are dispatched

@@ -991,6 +991,16 @@ void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
   UpdateZoom(level);
 }
 
+void WebContentsImpl::UpdateDeviceScaleFactor(double device_scale_factor) {
+  SendPageMessage(
+      new PageMsg_SetDeviceScaleFactor(MSG_ROUTING_NONE, device_scale_factor));
+}
+
+void WebContentsImpl::GetScreenInfo(blink::WebScreenInfo* web_screen_info) {
+  if (GetView())
+    GetView()->GetScreenInfo(web_screen_info);
+}
+
 WebUI* WebContentsImpl::CreateSubframeWebUI(const GURL& url,
                                             const std::string& frame_name) {
   DCHECK(!frame_name.empty());

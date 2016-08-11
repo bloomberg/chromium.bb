@@ -117,7 +117,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void LockCompositingSurface() override {}
   void UnlockCompositingSurface() override {}
-  void GetScreenInfo(blink::WebScreenInfo* results) override {}
   gfx::Rect GetBoundsInRootWindow() override;
   bool LockMouse() override;
   void UnlockMouse() override;

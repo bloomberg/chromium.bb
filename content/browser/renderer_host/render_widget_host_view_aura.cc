@@ -57,7 +57,6 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/client/aura_constants.h"
@@ -116,7 +115,6 @@
 using gfx::RectToSkIRect;
 using gfx::SkIRectToRect;
 
-using blink::WebScreenInfo;
 using blink::WebInputEvent;
 using blink::WebGestureEvent;
 using blink::WebTouchEvent;
@@ -168,32 +166,6 @@ bool IsXButtonUpEvent(const ui::MouseEvent* event) {
   }
 #endif
   return false;
-}
-
-void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
-  display::Screen* screen = display::Screen::GetScreen();
-  const display::Display display = window
-                                       ? screen->GetDisplayNearestWindow(window)
-                                       : screen->GetPrimaryDisplay();
-  results->rect = display.bounds();
-  results->availableRect = display.work_area();
-  // TODO(derat|oshima): Don't hardcode this. Get this from display object.
-  results->depth = 24;
-  results->depthPerComponent = 8;
-  results->deviceScaleFactor = display.device_scale_factor();
-
-  // The Display rotation and the WebScreenInfo orientation are not the same
-  // angle. The former is the physical display rotation while the later is the
-  // rotation required by the content to be shown properly on the screen, in
-  // other words, relative to the physical display.
-  results->orientationAngle = display.RotationAsDegree();
-  if (results->orientationAngle == 90)
-    results->orientationAngle = 270;
-  else if (results->orientationAngle == 270)
-    results->orientationAngle = 90;
-
-  results->orientationType =
-      RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
 }
 
 bool IsFractionalScaleFactor(float scale_factor) {
@@ -1119,10 +1091,6 @@ bool RenderWidgetHostViewAura::HasAcceleratedSurface(
   return false;
 }
 
-void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
-  GetScreenInfoForWindow(results, window_->GetRootWindow() ? window_ : NULL);
-}
-
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
   aura::Window* top_level = window_->GetToplevelWindow();
   gfx::Rect bounds(top_level->GetBoundsInScreen());
@@ -1734,11 +1702,13 @@ void RenderWidgetHostViewAura::OnPaint(const ui::PaintContext& context) {
 
 void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
-  // TODO(wjmaclean): can host_ ever be null?
-  if (!host_ || !window_->GetRootWindow())
+  if (!window_->GetRootWindow())
     return;
 
-  UpdateScreenInfo(window_);
+  RenderWidgetHostImpl* host =
+      RenderWidgetHostImpl::From(GetRenderWidgetHost());
+  if (host && host->delegate())
+    host->delegate()->UpdateDeviceScaleFactor(device_scale_factor);
 
   device_scale_factor_ = device_scale_factor;
   const display::Display display =
@@ -3086,14 +3056,6 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
   ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
   clipboard_writer.WriteText(text_selection->text.substr(pos, n));
 #endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewBase, public:
-
-// static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(WebScreenInfo* results) {
-  GetScreenInfoForWindow(results, NULL);
 }
 
 }  // namespace content

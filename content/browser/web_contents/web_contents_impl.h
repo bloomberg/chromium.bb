@@ -595,6 +595,8 @@ class CONTENT_EXPORT WebContentsImpl
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
                              const gfx::Size& new_size) override;
   void ScreenInfoChanged() override;
+  void UpdateDeviceScaleFactor(double device_scale_factor) override;
+  void GetScreenInfo(blink::WebScreenInfo* web_screen_info) override;
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;

@@ -18,6 +18,7 @@
 namespace blink {
 class WebMouseWheelEvent;
 class WebGestureEvent;
+struct WebScreenInfo;
 }
 
 namespace gfx {
@@ -60,6 +61,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // The screen info has changed.
   virtual void ScreenInfoChanged() {}
+
+  // Sets the device scale factor for frames associated with this WebContents.
+  virtual void UpdateDeviceScaleFactor(double device_scale_factor) {}
+
+  // Retrieve screen information.
+  virtual void GetScreenInfo(blink::WebScreenInfo* web_screen_info);
 
   // Callback to give the browser a chance to handle the specified keyboard
   // event before sending it to the renderer.

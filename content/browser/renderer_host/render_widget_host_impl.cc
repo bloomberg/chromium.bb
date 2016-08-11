@@ -591,6 +591,9 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
 
   if (view_) {
     resize_params->new_size = view_->GetRequestedRendererSize();
+    // TODO(wjmaclean): Can we just get rid of physical_backing_size and just
+    // deal with it on the renderer side? It seems to always be
+    // ScaleToCeiledSize(new_size, device_scale_factor) ??
     resize_params->physical_backing_size = view_->GetPhysicalBackingSize();
     resize_params->top_controls_height = view_->GetTopControlsHeight();
     resize_params->top_controls_shrink_blink_size =
@@ -1224,10 +1227,11 @@ void RenderWidgetHostImpl::RemoveInputEventObserver(
 
 void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetWebScreenInfo");
-  if (view_)
-    view_->GetScreenInfo(result);
+  if (delegate_)
+    delegate_->GetScreenInfo(result);
   else
-    RenderWidgetHostViewBase::GetDefaultScreenInfo(result);
+    NOTREACHED();
+
   // TODO(sievers): find a way to make this done another way so the method
   // can be const.
   latency_tracker_.set_device_scale_factor(result->deviceScaleFactor);

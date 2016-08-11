@@ -16,7 +16,6 @@
 namespace blink {
 class WebGestureEvent;
 class WebInputEvent;
-struct WebScreenInfo;
 }
 
 namespace cc {
@@ -94,7 +93,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
 
   gfx::Rect ChildFrameRect();
   float device_scale_factor() const { return device_scale_factor_; }
-  void GetScreenInfo(blink::WebScreenInfo* results);
   void UpdateCursor(const WebCursor& cursor);
   gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point,
                                             const cc::SurfaceId& surface_id);

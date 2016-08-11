@@ -30,6 +30,7 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 
 using blink::WebDragOperation;
@@ -74,7 +75,39 @@ STATIC_ASSERT_ENUM(NSDragOperationEvery, blink::WebDragOperationEvery);
 - (content::WebContentsImpl*)webContents;
 @end
 
+namespace {
+
+blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
+
+  NSScreen* screen = [NSScreen deepestScreen];
+
+  blink::WebScreenInfo results;
+
+  results.deviceScaleFactor = static_cast<int>(display.device_scale_factor());
+  results.depth = NSBitsPerPixelFromDepth([screen depth]);
+  results.depthPerComponent = NSBitsPerSampleFromDepth([screen depth]);
+  results.isMonochrome =
+      [[screen colorSpace] colorSpaceModel] == NSGrayColorSpaceModel;
+  results.rect = display.bounds();
+  results.availableRect = display.work_area();
+  results.orientationAngle = display.RotationAsDegree();
+  results.orientationType =
+      content::RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
+
+  return results;
+}
+
+}  // namespace
+
 namespace content {
+
+// static
+void WebContentsView::GetDefaultScreenInfo(
+    blink::WebScreenInfo* results) {
+  *results = GetWebScreenInfo(NULL);
+}
 
 WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
@@ -115,6 +148,10 @@ gfx::NativeView WebContentsViewMac::GetContentNativeView() const {
 gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
   NSWindow* window = [cocoa_view_.get() window];
   return window ? window : delegate_->GetNativeWindow();
+}
+
+void WebContentsViewMac::GetScreenInfo(blink::WebScreenInfo* results) const {
+  *results = GetWebScreenInfo(GetNativeView());
 }
 
 void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {

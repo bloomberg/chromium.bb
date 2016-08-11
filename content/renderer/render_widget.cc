@@ -1004,7 +1004,12 @@ void RenderWidget::Resize(const ResizeParams& params) {
       screen_info_.orientationType != params.screen_info.orientationType;
 
   screen_info_ = params.screen_info;
-  SetDeviceScaleFactor(screen_info_.deviceScaleFactor);
+
+  if (device_scale_factor_ != screen_info_.deviceScaleFactor) {
+    device_scale_factor_ = screen_info_.deviceScaleFactor;
+    OnDeviceScaleFactorChanged();
+    ScheduleComposite();
+  }
 
   if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
     // A resize ack shouldn't be requested if we have not ACK'd the previous
@@ -1591,15 +1596,16 @@ bool RenderWidget::ShouldHandleImeEvent() {
 #endif
 }
 
-void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
+void RenderWidget::OnSetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)
     return;
 
   device_scale_factor_ = device_scale_factor;
 
   OnDeviceScaleFactorChanged();
-
   ScheduleComposite();
+
+  physical_backing_size_ = gfx::ScaleToCeiledSize(size_, device_scale_factor_);
 }
 
 bool RenderWidget::SetDeviceColorProfile(

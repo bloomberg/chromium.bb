@@ -464,14 +464,6 @@ void RenderWidgetHostViewGuest::UnlockMouse() {
   return platform_view_->UnlockMouse();
 }
 
-void RenderWidgetHostViewGuest::GetScreenInfo(blink::WebScreenInfo* results) {
-  if (!guest_)
-    return;
-  RenderWidgetHostViewBase* embedder_view = GetOwnerRenderWidgetHostView();
-  if (embedder_view)
-    embedder_view->GetScreenInfo(results);
-}
-
 #if defined(OS_MACOSX)
 void RenderWidgetHostViewGuest::SetActive(bool active) {
   platform_view_->SetActive(active);

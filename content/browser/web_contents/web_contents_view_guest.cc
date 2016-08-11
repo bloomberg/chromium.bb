@@ -63,6 +63,14 @@ gfx::NativeWindow WebContentsViewGuest::GetTopLevelNativeWindow() const {
   return guest_->embedder_web_contents()->GetTopLevelNativeWindow();
 }
 
+void WebContentsViewGuest::GetScreenInfo(
+    blink::WebScreenInfo* web_screen_info) const {
+  if (guest_->embedder_web_contents())
+    guest_->embedder_web_contents()->GetView()->GetScreenInfo(web_screen_info);
+  else
+    WebContentsView::GetDefaultScreenInfo(web_screen_info);
+}
+
 void WebContentsViewGuest::OnGuestAttached(WebContentsView* parent_view) {
 #if defined(USE_AURA)
   // In aura, ScreenPositionClient doesn't work properly if we do

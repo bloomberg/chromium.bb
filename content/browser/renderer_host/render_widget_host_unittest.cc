@@ -277,9 +277,6 @@ class TestView : public TestRenderWidgetHostView {
   void ClearMockPhysicalBackingSize() {
     use_fake_physical_backing_size_ = false;
   }
-  void SetScreenInfo(const blink::WebScreenInfo& screen_info) {
-    screen_info_ = screen_info;
-  }
 
   // RenderWidgetHostView override.
   gfx::Rect GetViewBounds() const override { return bounds_; }
@@ -305,9 +302,6 @@ class TestView : public TestRenderWidgetHostView {
       return mock_physical_backing_size_;
     return TestRenderWidgetHostView::GetPhysicalBackingSize();
   }
-  void GetScreenInfo(blink::WebScreenInfo* screen_info) override {
-    *screen_info = screen_info_;
-  }
 #if defined(USE_AURA)
   ~TestView() override {
     // Simulate the mouse exit event dispatched when an aura window is
@@ -332,7 +326,6 @@ class TestView : public TestRenderWidgetHostView {
   bool use_fake_physical_backing_size_;
   gfx::Size mock_physical_backing_size_;
   InputEventAckState ack_result_;
-  blink::WebScreenInfo screen_info_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestView);
@@ -388,6 +381,15 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   bool unresponsive_timer_fired() const { return unresponsive_timer_fired_; }
 
+  void SetScreenInfo(const blink::WebScreenInfo& screen_info) {
+    screen_info_ = screen_info;
+  }
+
+  // RenderWidgetHostDelegate overrides.
+  void GetScreenInfo(blink::WebScreenInfo* web_screen_info) override {
+    *web_screen_info = screen_info_;
+  }
+
  protected:
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override {
@@ -430,6 +432,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   bool handle_wheel_event_called_;
 
   bool unresponsive_timer_fired_;
+
+  blink::WebScreenInfo screen_info_;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -792,7 +796,10 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientationAngle = 0;
   screen_info.orientationType = blink::WebScreenOrientationPortraitPrimary;
 
-  view_->SetScreenInfo(screen_info);
+  auto host_delegate =
+      static_cast<MockRenderWidgetHostDelegate*>(host_->delegate());
+
+  host_delegate->SetScreenInfo(screen_info);
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -801,7 +808,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientationAngle = 180;
   screen_info.orientationType = blink::WebScreenOrientationLandscapePrimary;
 
-  view_->SetScreenInfo(screen_info);
+  host_delegate->SetScreenInfo(screen_info);
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -809,14 +816,14 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
 
   screen_info.deviceScaleFactor = 2.f;
 
-  view_->SetScreenInfo(screen_info);
+  host_delegate->SetScreenInfo(screen_info);
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
   process_->sink().ClearMessages();
 
   // No screen change.
-  view_->SetScreenInfo(screen_info);
+  host_delegate->SetScreenInfo(screen_info);
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));

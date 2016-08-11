@@ -61,6 +61,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/point.h"
@@ -589,13 +590,16 @@ void SitePerProcessBrowserTest::SetUpOnMainThread() {
 
 class SitePerProcessHighDPIBrowserTest : public SitePerProcessBrowserTest {
  public:
+  const double kDeviceScaleFactor = 2.0;
+
   SitePerProcessHighDPIBrowserTest() {}
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
-                                    base::StringPrintf("2"));
+    command_line->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor,
+        base::StringPrintf("%f", kDeviceScaleFactor));
   }
 };
 
@@ -612,6 +616,30 @@ class SitePerProcessIgnoreCertErrorsBrowserTest
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 };
+
+double GetFrameDeviceScaleFactor(const ToRenderFrameHost& adapter) {
+  double device_scale_factor;
+  const char kGetFrameDeviceScaleFactor[] =
+      "window.domAutomationController.send(window.devicePixelRatio);";
+  EXPECT_TRUE(ExecuteScriptAndExtractDouble(adapter, kGetFrameDeviceScaleFactor,
+                                            &device_scale_factor));
+  return device_scale_factor;
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
+                       SubframeLoadsWithCorrectDeviceScaleFactor) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  NavigateToURL(shell(), main_url);
+
+  EXPECT_EQ(SitePerProcessHighDPIBrowserTest::kDeviceScaleFactor,
+            GetFrameDeviceScaleFactor(web_contents()));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(SitePerProcessHighDPIBrowserTest::kDeviceScaleFactor,
+            GetFrameDeviceScaleFactor(child));
+}
 
 // Ensure that navigating subframes in --site-per-process mode works and the
 // correct documents are committed.

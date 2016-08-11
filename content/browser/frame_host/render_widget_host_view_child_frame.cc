@@ -431,13 +431,6 @@ void RenderWidgetHostViewChildFrame::ProcessFrameSwappedCallbacks() {
     callback->Run();
 }
 
-void RenderWidgetHostViewChildFrame::GetScreenInfo(
-    blink::WebScreenInfo* results) {
-  if (!frame_connector_)
-    return;
-  frame_connector_->GetScreenInfo(results);
-}
-
 gfx::Rect RenderWidgetHostViewChildFrame::GetBoundsInRootWindow() {
   gfx::Rect rect;
   if (frame_connector_) {

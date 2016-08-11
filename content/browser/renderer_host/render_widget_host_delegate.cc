@@ -8,6 +8,8 @@
 
 namespace content {
 
+void RenderWidgetHostDelegate::GetScreenInfo(blink::WebScreenInfo*) {}
+
 bool RenderWidgetHostDelegate::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {

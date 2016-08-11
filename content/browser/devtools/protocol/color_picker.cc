@@ -166,7 +166,7 @@ void ColorPicker::UpdateCursor() {
 #endif
 
   blink::WebScreenInfo screen_info;
-  view->GetScreenInfo(&screen_info);
+  host_->GetWebScreenInfo(&screen_info);
   double device_scale_factor = screen_info.deviceScaleFactor;
 
   SkBitmap result;

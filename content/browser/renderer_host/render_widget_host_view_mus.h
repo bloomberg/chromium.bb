@@ -100,7 +100,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMus
   void ClearCompositorFrame() override {}
   bool LockMouse() override;
   void UnlockMouse() override;
-  void GetScreenInfo(blink::WebScreenInfo* results) override;
   gfx::Rect GetBoundsInRootWindow() override;
 
 #if defined(OS_MACOSX)

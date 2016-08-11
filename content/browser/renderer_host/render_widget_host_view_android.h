@@ -136,7 +136,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
-  void GetScreenInfo(blink::WebScreenInfo* results) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                               InputEventAckState ack_result) override;

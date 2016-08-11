@@ -286,11 +286,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       const std::vector<gfx::Rect>& character_bounds);
 
   //----------------------------------------------------------------------------
-  // The following static methods are implemented by each platform.
-
-  static void GetDefaultScreenInfo(blink::WebScreenInfo* results);
-
-  //----------------------------------------------------------------------------
   // The following pure virtual methods are implemented by derived classes.
 
   // Perform all the initialization steps necessary for this object to represent
@@ -370,8 +365,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Compute the orientation type of the display assuming it is a desktop.
   static blink::WebScreenOrientationType GetOrientationTypeForDesktop(
       const display::Display& display);
-
-  virtual void GetScreenInfo(blink::WebScreenInfo* results) = 0;
 
   // Gets the bounds of the window, in screen coordinates.
   virtual gfx::Rect GetBoundsInRootWindow() = 0;

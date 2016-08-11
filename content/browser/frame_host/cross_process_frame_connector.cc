@@ -123,13 +123,6 @@ gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
   return child_frame_rect_;
 }
 
-void CrossProcessFrameConnector::GetScreenInfo(blink::WebScreenInfo* results) {
-  auto* parent_view = GetParentRenderWidgetHostView();
-  if (parent_view) {
-    parent_view->GetScreenInfo(results);
-  }
-}
-
 void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   if (root_view)

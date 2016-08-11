@@ -161,7 +161,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
   void EndFrameSubscription() override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
-  void GetScreenInfo(blink::WebScreenInfo* results) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;

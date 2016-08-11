@@ -317,7 +317,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) override;
 
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
-  void GetScreenInfo(blink::WebScreenInfo* results) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;

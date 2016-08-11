@@ -45,6 +45,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "net/base/filename_util.h"
+#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -623,6 +624,47 @@ gfx::NativeView WebContentsViewAura::GetContentNativeView() const {
 gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
   gfx::NativeWindow window = window_->GetToplevelWindow();
   return window ? window : delegate_->GetNativeWindow();
+}
+
+namespace {
+
+void GetScreenInfoForWindow(blink::WebScreenInfo* results,
+                            aura::Window* window) {
+  display::Screen* screen = display::Screen::GetScreen();
+  const display::Display display = window
+                                       ? screen->GetDisplayNearestWindow(window)
+                                       : screen->GetPrimaryDisplay();
+  results->rect = display.bounds();
+  results->availableRect = display.work_area();
+  // TODO(derat|oshima): Don't hardcode this. Get this from display object.
+  results->depth = 24;
+  results->depthPerComponent = 8;
+  results->deviceScaleFactor = display.device_scale_factor();
+
+  // The Display rotation and the WebScreenInfo orientation are not the same
+  // angle. The former is the physical display rotation while the later is the
+  // rotation required by the content to be shown properly on the screen, in
+  // other words, relative to the physical display.
+  results->orientationAngle = display.RotationAsDegree();
+  if (results->orientationAngle == 90)
+    results->orientationAngle = 270;
+  else if (results->orientationAngle == 270)
+    results->orientationAngle = 90;
+
+  results->orientationType =
+      RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
+}
+
+}  // namespace
+
+// Static.
+void WebContentsView::GetDefaultScreenInfo(blink::WebScreenInfo* results) {
+  GetScreenInfoForWindow(results, NULL);
+}
+
+void WebContentsViewAura::GetScreenInfo(
+    blink::WebScreenInfo* web_screen_info) const {
+  GetScreenInfoForWindow(web_screen_info, window_.get());
 }
 
 void WebContentsViewAura::GetContainerBounds(gfx::Rect *out) const {

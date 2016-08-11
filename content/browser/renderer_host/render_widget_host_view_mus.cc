@@ -22,10 +22,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 
-namespace blink {
-struct WebScreenInfo;
-}
-
 namespace content {
 
 RenderWidgetHostViewMus::RenderWidgetHostViewMus(ui::Window* parent_window,
@@ -251,10 +247,6 @@ bool RenderWidgetHostViewMus::LockMouse() {
 
 void RenderWidgetHostViewMus::UnlockMouse() {
   // TODO(fsamuel): Implement mouse lock in Mus.
-}
-
-void RenderWidgetHostViewMus::GetScreenInfo(blink::WebScreenInfo* results) {
-  // TODO(fsamuel): Populate screen info from Mus.
 }
 
 gfx::Rect RenderWidgetHostViewMus::GetBoundsInRootWindow() {

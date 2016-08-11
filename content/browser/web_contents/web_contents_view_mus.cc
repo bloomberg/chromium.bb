@@ -62,6 +62,11 @@ gfx::NativeWindow WebContentsViewMus::GetTopLevelNativeWindow() const {
   return window ? window : delegate_->GetNativeWindow();
 }
 
+void WebContentsViewMus::GetScreenInfo(
+    blink::WebScreenInfo* web_screen_info) const {
+  // TODO(wjmaclean) Figure out what goes here.
+}
+
 void WebContentsViewMus::GetContainerBounds(gfx::Rect* out) const {
   *out = aura_window_->GetBoundsInScreen();
 }

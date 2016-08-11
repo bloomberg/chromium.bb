@@ -376,28 +376,6 @@ NSWindow* ApparentWindowForView(NSView* view) {
   return enclosing_window;
 }
 
-blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
-
-  NSScreen* screen = [NSScreen deepestScreen];
-
-  blink::WebScreenInfo results;
-
-  results.deviceScaleFactor = static_cast<int>(display.device_scale_factor());
-  results.depth = NSBitsPerPixelFromDepth([screen depth]);
-  results.depthPerComponent = NSBitsPerSampleFromDepth([screen depth]);
-  results.isMonochrome =
-      [[screen colorSpace] colorSpaceModel] == NSGrayColorSpaceModel;
-  results.rect = display.bounds();
-  results.availableRect = display.work_area();
-  results.orientationAngle = display.RotationAsDegree();
-  results.orientationType =
-      content::RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
-
-  return results;
-}
-
 }  // namespace
 
 namespace content {
@@ -466,15 +444,6 @@ void RenderWidgetHostViewMac::AcceleratedWidgetGetVSyncParameters(
 void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted() {
   if (display_link_)
     display_link_->NotifyCurrentTime(base::TimeTicks::Now());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewBase, public:
-
-// static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(
-    blink::WebScreenInfo* results) {
-  *results = GetWebScreenInfo(NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1334,10 +1303,6 @@ void RenderWidgetHostViewMac::ClearCompositorFrame() {
   browser_compositor_->GetDelegatedFrameHost()->ClearDelegatedFrame();
 }
 
-void RenderWidgetHostViewMac::GetScreenInfo(blink::WebScreenInfo* results) {
-  *results = GetWebScreenInfo(GetNativeView());
-}
-
 gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve
@@ -1609,10 +1574,17 @@ void RenderWidgetHostViewMac::OnDisplayRemoved(
 
 void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     const display::Display& display,
-    uint32_t metrics) {
+    uint32_t changed_metrics) {
   display::Screen* screen = display::Screen::GetScreen();
   if (display.id() != screen->GetDisplayNearestWindow(cocoa_view_).id())
     return;
+
+  if (changed_metrics & DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR) {
+    RenderWidgetHostImpl* host =
+        RenderWidgetHostImpl::From(GetRenderWidgetHost());
+    if (host && host->delegate())
+      host->delegate()->UpdateDeviceScaleFactor(display.device_scale_factor());
+  }
 
   UpdateScreenInfo(cocoa_view_);
 }
