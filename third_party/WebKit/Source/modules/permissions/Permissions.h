@@ -37,7 +37,7 @@ private:
     mojom::blink::PermissionService* getService(ExecutionContext*);
     void serviceConnectionError();
     void taskComplete(ScriptPromiseResolver*, mojom::blink::PermissionName, mojom::blink::PermissionStatus);
-    void batchTaskComplete(ScriptPromiseResolver*, Vector<mojom::blink::PermissionName>, Vector<int>, mojo::WTFArray<mojom::blink::PermissionStatus>);
+    void batchTaskComplete(ScriptPromiseResolver*, Vector<mojom::blink::PermissionName>, Vector<int>, const Vector<mojom::blink::PermissionStatus>&);
 
     mojom::blink::PermissionServicePtr m_service;
 };

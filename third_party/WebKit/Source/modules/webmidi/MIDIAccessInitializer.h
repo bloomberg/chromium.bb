@@ -71,7 +71,7 @@ private:
 
     void contextDestroyed() override;
 
-    void onPermissionsUpdated(mojo::WTFArray<mojom::blink::PermissionStatus>);
+    void onPermissionsUpdated(const Vector<mojom::blink::PermissionStatus>&);
     void onPermissionUpdated(mojom::blink::PermissionStatus);
 
     std::unique_ptr<MIDIAccessor> m_accessor;

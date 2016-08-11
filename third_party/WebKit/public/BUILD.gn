@@ -171,8 +171,6 @@ mojom("mojo_bindings") {
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
     "platform/modules/offscreencanvas/offscreen_canvas_surface.mojom",
-    "platform/modules/permissions/permission.mojom",
-    "platform/modules/permissions/permission_status.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
     "platform/modules/wake_lock/wake_lock_service.mojom",
   ]
@@ -203,6 +201,8 @@ mojom("mojo_bindings") {
 # GYP version: WebKit/public/blink.gyp:new_wrapper_types_mojo_bindings
 mojom("new_wrapper_types_mojo_bindings") {
   sources = [
+    "platform/modules/permissions/permission.mojom",
+    "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
   ]
 

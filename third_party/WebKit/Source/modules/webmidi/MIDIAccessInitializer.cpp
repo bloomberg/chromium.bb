@@ -57,7 +57,7 @@ ScriptPromise MIDIAccessInitializer::start()
         permissions[1] = PermissionName::MIDI_SYSEX;
 
     m_permissionService->RequestPermissions(
-        mojo::WTFArray<PermissionName>(std::move(permissions)),
+        permissions,
         getExecutionContext()->getSecurityOrigin()->toString(),
         UserGestureIndicator::processingUserGesture(),
         convertToBaseCallback(WTF::bind(&MIDIAccessInitializer::onPermissionsUpdated, wrapPersistent(this))));
@@ -123,10 +123,10 @@ ExecutionContext* MIDIAccessInitializer::getExecutionContext() const
     return getScriptState()->getExecutionContext();
 }
 
-void MIDIAccessInitializer::onPermissionsUpdated(mojo::WTFArray<PermissionStatus> statusArray)
+void MIDIAccessInitializer::onPermissionsUpdated(const Vector<PermissionStatus>& statusArray)
 {
     bool allowed = true;
-    for (const auto status : statusArray.storage()) {
+    for (const auto status : statusArray) {
         if (status != PermissionStatus::GRANTED) {
             allowed = false;
             break;

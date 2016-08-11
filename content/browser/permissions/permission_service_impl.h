@@ -71,22 +71,23 @@ class PermissionServiceImpl : public blink::mojom::PermissionService {
 
   // blink::mojom::PermissionService.
   void HasPermission(blink::mojom::PermissionName permission,
-                     const mojo::String& origin,
+                     const std::string& origin,
                      const PermissionStatusCallback& callback) override;
   void RequestPermission(blink::mojom::PermissionName permission,
-                         const mojo::String& origin,
+                         const std::string& origin,
                          bool user_gesture,
                          const PermissionStatusCallback& callback) override;
-  void RequestPermissions(mojo::Array<blink::mojom::PermissionName> permissions,
-                          const mojo::String& origin,
-                          bool user_gesture,
-                          const RequestPermissionsCallback& callback) override;
+  void RequestPermissions(
+      const std::vector<blink::mojom::PermissionName>& permissions,
+      const std::string& origin,
+      bool user_gesture,
+      const RequestPermissionsCallback& callback) override;
   void RevokePermission(blink::mojom::PermissionName permission,
-                        const mojo::String& origin,
+                        const std::string& origin,
                         const PermissionStatusCallback& callback) override;
   void GetNextPermissionChange(
       blink::mojom::PermissionName permission,
-      const mojo::String& origin,
+      const std::string& origin,
       blink::mojom::PermissionStatus last_known_status,
       const PermissionStatusCallback& callback) override;
 

@@ -213,9 +213,8 @@ ScriptPromise Permissions::requestAll(ScriptState* scriptState, const Vector<Dic
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    Vector<PermissionName> internalPermissionsCopy(internalPermissions);
-    service->RequestPermissions(std::move(internalPermissions), scriptState->getExecutionContext()->getSecurityOrigin()->toString(), UserGestureIndicator::processingUserGesture(),
-        convertToBaseCallback(WTF::bind(&Permissions::batchTaskComplete, wrapPersistent(this), wrapPersistent(resolver), std::move(internalPermissionsCopy), std::move(callerIndexToInternalIndex))));
+    service->RequestPermissions(internalPermissions, scriptState->getExecutionContext()->getSecurityOrigin()->toString(), UserGestureIndicator::processingUserGesture(),
+        convertToBaseCallback(WTF::bind(&Permissions::batchTaskComplete, wrapPersistent(this), wrapPersistent(resolver), internalPermissions, callerIndexToInternalIndex)));
     return promise;
 }
 
@@ -238,7 +237,7 @@ void Permissions::taskComplete(ScriptPromiseResolver* resolver, PermissionName n
     resolver->resolve(PermissionStatus::take(resolver, result, name));
 }
 
-void Permissions::batchTaskComplete(ScriptPromiseResolver* resolver, Vector<PermissionName> names, Vector<int> callerIndexToInternalIndex, mojo::WTFArray<mojom::blink::PermissionStatus> results)
+void Permissions::batchTaskComplete(ScriptPromiseResolver* resolver, Vector<PermissionName> names, Vector<int> callerIndexToInternalIndex, const Vector<mojom::blink::PermissionStatus>& results)
 {
     if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
