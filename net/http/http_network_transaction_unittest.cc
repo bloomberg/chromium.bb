@@ -11030,6 +11030,98 @@ class CapturingProxyResolverFactory : public ProxyResolverFactory {
   ProxyResolver* resolver_;
 };
 
+// Test that proxy is resolved using the origin url,
+// regardless of the alternative server.
+TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
+  // Configure proxy to bypass www.example.org, which is the origin URL.
+  ProxyConfig proxy_config;
+  proxy_config.proxy_rules().ParseFromString("myproxy:70");
+  proxy_config.proxy_rules().bypass_rules.AddRuleFromString("www.example.org");
+  auto proxy_config_service =
+      base::MakeUnique<ProxyConfigServiceFixed>(proxy_config);
+
+  CapturingProxyResolver capturing_proxy_resolver;
+  auto proxy_resolver_factory = base::MakeUnique<CapturingProxyResolverFactory>(
+      &capturing_proxy_resolver);
+
+  TestNetLog net_log;
+
+  session_deps_.proxy_service = base::MakeUnique<ProxyService>(
+      std::move(proxy_config_service), std::move(proxy_resolver_factory),
+      &net_log);
+
+  session_deps_.net_log = &net_log;
+
+  // Configure alternative service with a hostname that is not bypassed by the
+  // proxy.
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpServerProperties* http_server_properties =
+      session->http_server_properties();
+  url::SchemeHostPort server("https", "www.example.org", 443);
+  HostPortPair alternative("www.example.com", 443);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), alternative);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  http_server_properties->SetAlternativeService(server, alternative_service,
+                                                expiration);
+
+  // Non-alternative job should hang.
+  MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
+  StaticSocketDataProvider hanging_alternate_protocol_socket(nullptr, 0,
+                                                             nullptr, 0);
+  hanging_alternate_protocol_socket.set_connect_data(never_finishing_connect);
+  session_deps_.socket_factory->AddSocketDataProvider(
+      &hanging_alternate_protocol_socket);
+
+  SSLSocketDataProvider ssl_http2(ASYNC, OK);
+  ssl_http2.next_proto = kProtoHTTP2;
+  ssl_http2.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(ssl_http2.cert);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http2);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.org/");
+  request.load_flags = 0;
+
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet("https://www.example.org/", 1, LOWEST));
+
+  MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
+
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame data(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead spdy_reads[] = {
+      CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
+  };
+
+  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
+                                arraysize(spdy_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
+
+  TestCompletionCallback callback;
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans.Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_npn_negotiated);
+
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  // Origin host bypasses proxy, no resolution should have happened.
+  ASSERT_TRUE(capturing_proxy_resolver.resolved().empty());
+}
+
 TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   ProxyConfig proxy_config;
   proxy_config.set_auto_detect(true);

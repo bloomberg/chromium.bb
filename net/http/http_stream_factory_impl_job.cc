@@ -705,28 +705,8 @@ int HttpStreamFactoryImpl::Job::DoResolveProxy() {
     return OK;
   }
 
-  // TODO(rch): remove this code since Alt-Svc seems to prohibit it.
-  GURL url_for_proxy = origin_url_;
-  // For SPDY via Alt-Svc, set |alternative_service_url_| to
-  // https://<alternative host>:<alternative port>/...
-  // so the proxy resolution works with the actual destination, and so
-  // that the correct socket pool is used.
-  if (IsSpdyAlternative()) {
-    // TODO(rch):  Figure out how to make QUIC iteract with PAC
-    // scripts.  By not re-writing the URL, we will query the PAC script
-    // for the proxy to use to reach the original URL via TCP.  But
-    // the alternate request will be going via UDP to a different port.
-    GURL::Replacements replacements;
-    // new_port needs to be in scope here because GURL::Replacements references
-    // the memory contained by it directly.
-    const std::string new_port = base::UintToString(alternative_service_.port);
-    replacements.SetSchemeStr("https");
-    replacements.SetPortStr(new_port);
-    url_for_proxy = url_for_proxy.ReplaceComponents(replacements);
-  }
-
   return session_->proxy_service()->ResolveProxy(
-      url_for_proxy, request_info_.method, &proxy_info_, io_callback_,
+      origin_url_, request_info_.method, &proxy_info_, io_callback_,
       &pac_request_, session_->params().proxy_delegate, net_log_);
 }
 
