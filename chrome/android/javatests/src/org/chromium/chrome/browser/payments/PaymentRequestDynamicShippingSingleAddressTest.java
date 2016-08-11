@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.browser.payments;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
-
 import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -79,9 +77,12 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
         expectResultContains(new String[] {"Request cancelled"});
     }
 
-    /** Add a valid address and complete the transaction. */
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/626289
+    /**
+     * Add a valid address and complete the transaction.
+     * @MediumTest
+     * @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/626289
+     */
+    @FlakyTest(message = "crbug.com/626289")
     public void testAddAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
