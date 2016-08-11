@@ -19,36 +19,46 @@
   margin: 0;
 }
 
-.storage-manager-section:not(:last-child) {
-  margin-bottom: 30px;
-}
-
 .storage-manager-item,
 .storage-manager-subitem {
+  align-items: baseline;
   display: flex;
-  font-size: 125%; /* go to 15px from 12px */
   justify-content: space-between;
-  margin: 14px 0;
 }
 
 .storage-manager-item {
   color: black;
+  margin: 18px 0;
+}
+
+.storage-manager-item .storage-manager-item-label {
+  font-size: 125%; /* go to 15px from 12px */
 }
 
 .storage-manager-subitem {
   -webkit-padding-start: 20px;
+  margin: 14px 0;
 }
 
 .storage-manager-subitem .storage-manager-item-size {
   color: rgba(0, 0, 0, 0.54);
 }
 
+#storage-manager-section-capacity {
+  margin-bottom: 23px;
+}
+
+#storage-manager-section-capacity .storage-manager-item {
+  margin-bottom: 24px;
+  margin-top: 18px;
+}
+
 #storage-manager-section-in-use {
-  margin-bottom: 45px;
+  margin-bottom: 30px;
 }
 
 #storage-manager-section-available {
-  margin-bottom: 30px;
+  margin-bottom: 18px;
 }
 
 .critically-low-space #storage-manager-message-critically-low-space,
