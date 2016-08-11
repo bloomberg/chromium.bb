@@ -38124,6 +38124,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Experimental.ParseDuration.CachePercent.0-50"
+    units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The parse duration of the page load where 0-50% of all subresources (loaded
+    during parsing) were served from the HTTP cache (including 304s).
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Experimental.ParseDuration.CachePercent.51-100"
+    units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The parse duration of the page load where 51-100% of all subresources
+    (loaded during parsing) were served from the HTTP cache (including 304s).
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Experimental.TotalRequests.ParseStop"
     units="requests">
   <owner>csharrison@chromium.org</owner>

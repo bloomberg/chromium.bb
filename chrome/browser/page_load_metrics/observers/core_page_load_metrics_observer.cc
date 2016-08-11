@@ -399,13 +399,24 @@ void CorePageLoadMetricsObserver::OnParseStop(
 
     int total_requests = info.num_cache_requests + info.num_network_requests;
     if (total_requests) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          internal::kHistogramCacheRequestPercentParseStop,
-          (100 * info.num_cache_requests) / total_requests);
+      int percent_cached = (100 * info.num_cache_requests) / total_requests;
+      UMA_HISTOGRAM_PERCENTAGE(internal::kHistogramCacheRequestPercentParseStop,
+                               percent_cached);
       UMA_HISTOGRAM_COUNTS(internal::kHistogramCacheTotalRequestsParseStop,
                            info.num_cache_requests);
       UMA_HISTOGRAM_COUNTS(internal::kHistogramTotalRequestsParseStop,
                            info.num_cache_requests + info.num_network_requests);
+
+      // Separate out parse duration based on cache percent.
+      if (percent_cached <= 50) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.ParseDuration.CachedPercent.0-50",
+            parse_duration);
+      } else {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.ParseDuration.CachedPercent.51-100",
+            parse_duration);
+      }
     }
 
   } else {
