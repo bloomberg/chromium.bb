@@ -4,6 +4,8 @@
 
 #include "core/animation/InterpolationEffect.h"
 
+#include "platform/animation/AnimationUtilities.h"
+
 namespace blink {
 
 void InterpolationEffect::getActiveInterpolations(double fraction, double iterationDuration, Vector<RefPtr<Interpolation>>& result) const

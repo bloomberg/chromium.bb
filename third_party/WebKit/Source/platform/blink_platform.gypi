@@ -175,8 +175,6 @@
       'animation/CompositorTransformKeyframe.h',
       'animation/CompositorTransformOperations.cpp',
       'animation/CompositorTransformOperations.h',
-      'animation/CubicBezierControlPoints.cpp',
-      'animation/CubicBezierControlPoints.h',
       'animation/TimingFunction.cpp',
       'animation/TimingFunction.h',
       'audio/AudioArray.h',

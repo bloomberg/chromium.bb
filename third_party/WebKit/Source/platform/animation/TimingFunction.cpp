@@ -4,8 +4,7 @@
 
 #include "platform/animation/TimingFunction.h"
 
-#include "platform/animation/CubicBezierControlPoints.h"
-#include "wtf/MathExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

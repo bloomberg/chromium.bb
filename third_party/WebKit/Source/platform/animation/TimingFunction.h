@@ -26,14 +26,11 @@
 #define TimingFunction_h
 
 #include "cc/animation/timing_function.h"
-#include "platform/animation/AnimationUtilities.h" // For blend()
-#include "platform/heap/Handle.h"
-#include "platform/heap/Heap.h"
-#include "ui/gfx/geometry/cubic_bezier.h"
+#include "platform/PlatformExport.h"
+#include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
