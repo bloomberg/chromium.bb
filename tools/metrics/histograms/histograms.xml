@@ -90354,6 +90354,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="RICE_DECODING_FAILURE"/>
   <int value="9" label="UNEXPECTED_COMPRESSION_TYPE_ADDITIONS_FAILURE"/>
   <int value="10" label="UNEXPECTED_COMPRESSION_TYPE_REMOVALS_FAILURE"/>
+  <int value="11" label="CHECKSUM_MISMATCH_FAILURE"/>
 </enum>
 
 <enum name="SafeBrowsingV4DecodeResult" type="int">

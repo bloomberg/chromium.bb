@@ -12,6 +12,7 @@
 #include "components/safe_browsing_db/v4_store.h"
 #include "components/safe_browsing_db/v4_store.pb.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "crypto/sha2.h"
 #include "testing/platform_test.h"
 
 namespace safe_browsing {
@@ -122,6 +123,7 @@ TEST_F(V4StoreTest, TestReadFromNoHashPrefixInfoFile) {
 TEST_F(V4StoreTest, TestReadFromNoHashPrefixesFile) {
   ListUpdateResponse list_update_response;
   list_update_response.set_platform_type(LINUX_PLATFORM);
+  list_update_response.set_response_type(ListUpdateResponse::FULL_UPDATE);
   WriteFileFormatProtoToFile(0x600D71FE, 9, &list_update_response);
   EXPECT_EQ(READ_SUCCESS, V4Store(task_runner_, store_path_).ReadFromDisk());
 }
@@ -229,8 +231,21 @@ TEST_F(V4StoreTest, TestMergeUpdatesWithSameSizesInEachMap) {
             V4Store::AddUnlumpedHashes(5, "22222bcdef", &prefix_map_additions));
 
   V4Store store(task_runner_, store_path_);
+  // Proof of checksum validity using python:
+  // >>> import hashlib
+  // >>> m = hashlib.sha256()
+  // >>> m.update("----11112222254321abcdabcdebbbbbcdefefgh")
+  // >>> m.digest()
+  // "\xbc\xb3\xedk\xe3x\xd1(\xa9\xedz7]"
+  // "x\x18\xbdn]\xa5\xa8R\xf7\xab\xcf\xc1\xa3\xa3\xc5Z,\xa6o"
+  std::string expected_checksum = std::string(
+      "\xBC\xB3\xEDk\xE3x\xD1(\xA9\xEDz7]x\x18\xBDn]"
+      "\xA5\xA8R\xF7\xAB\xCF\xC1\xA3\xA3\xC5Z,\xA6o",
+      crypto::kSHA256Length);
   EXPECT_EQ(APPLY_UPDATE_SUCCESS,
-            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr));
+            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr,
+                              expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   EXPECT_EQ(2u, prefix_map.size());
 
@@ -261,8 +276,15 @@ TEST_F(V4StoreTest, TestMergeUpdatesWithDifferentSizesInEachMap) {
             V4Store::AddUnlumpedHashes(5, "22222bcdef", &prefix_map_additions));
 
   V4Store store(task_runner_, store_path_);
+  std::string expected_checksum = std::string(
+      "\xA5\x8B\xCAsD\xC7\xF9\xCE\xD2\xF4\x4="
+      "\xB2\"\x82\x1A\xC1\xB8\x1F\x10\r\v\x9A\x93\xFD\xE1\xB8"
+      "B\x1Eh\xF7\xB4",
+      crypto::kSHA256Length);
   EXPECT_EQ(APPLY_UPDATE_SUCCESS,
-            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr));
+            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr,
+                              expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   EXPECT_EQ(2u, prefix_map.size());
 
@@ -286,8 +308,15 @@ TEST_F(V4StoreTest, TestMergeUpdatesOldMapRunsOutFirst) {
             V4Store::AddUnlumpedHashes(4, "2222", &prefix_map_additions));
 
   V4Store store(task_runner_, store_path_);
+  std::string expected_checksum = std::string(
+      "\x84\x92\xET\xED\xF7\x97"
+      "C\xCE}\xFF"
+      "E\x1\xAB-\b>\xDB\x95\b\xD8H\xD5\x1D\xF9]8x\xA4\xD4\xC2\xFA",
+      crypto::kSHA256Length);
   EXPECT_EQ(APPLY_UPDATE_SUCCESS,
-            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr));
+            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr,
+                              expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   EXPECT_EQ(1u, prefix_map.size());
 
@@ -308,8 +337,15 @@ TEST_F(V4StoreTest, TestMergeUpdatesAdditionsMapRunsOutFirst) {
             V4Store::AddUnlumpedHashes(4, "00001111", &prefix_map_additions));
 
   V4Store store(task_runner_, store_path_);
+  std::string expected_checksum = std::string(
+      "\x84\x92\xET\xED\xF7\x97"
+      "C\xCE}\xFF"
+      "E\x1\xAB-\b>\xDB\x95\b\xD8H\xD5\x1D\xF9]8x\xA4\xD4\xC2\xFA",
+      crypto::kSHA256Length);
   EXPECT_EQ(APPLY_UPDATE_SUCCESS,
-            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr));
+            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr,
+                              expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   EXPECT_EQ(1u, prefix_map.size());
 
@@ -330,8 +366,10 @@ TEST_F(V4StoreTest, TestMergeUpdatesFailsForRepeatedHashPrefix) {
             V4Store::AddUnlumpedHashes(4, "2222", &prefix_map_additions));
 
   V4Store store(task_runner_, store_path_);
+  std::string expected_checksum;
   EXPECT_EQ(ADDITIONS_HAS_EXISTING_PREFIX_FAILURE,
-            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr));
+            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr,
+                              expected_checksum));
 }
 
 TEST_F(V4StoreTest, TestMergeUpdatesFailsWhenRemovalsIndexTooLarge) {
@@ -348,9 +386,10 @@ TEST_F(V4StoreTest, TestMergeUpdatesFailsWhenRemovalsIndexTooLarge) {
   RepeatedField<int32> raw_removals;
   // old_store: ["2222"]
   raw_removals.Add(1);
-  EXPECT_EQ(
-      REMOVALS_INDEX_TOO_LARGE_FAILURE,
-      store.MergeUpdate(prefix_map_old, prefix_map_additions, &raw_removals));
+  std::string expected_checksum;
+  EXPECT_EQ(REMOVALS_INDEX_TOO_LARGE_FAILURE,
+            store.MergeUpdate(prefix_map_old, prefix_map_additions,
+                              &raw_removals, expected_checksum));
 }
 
 TEST_F(V4StoreTest, TestMergeUpdatesRemovesOnlyElement) {
@@ -365,9 +404,16 @@ TEST_F(V4StoreTest, TestMergeUpdatesRemovesOnlyElement) {
   RepeatedField<int32> raw_removals;
   // old_store: ["2222"]
   raw_removals.Add(0);  // Removes "2222"
-  EXPECT_EQ(
-      APPLY_UPDATE_SUCCESS,
-      store.MergeUpdate(prefix_map_old, prefix_map_additions, &raw_removals));
+  std::string expected_checksum = std::string(
+      "\xE6\xB0\x1\x12\x89\x83\xF0/"
+      "\xE7\xD2\xE6\xDC\x16\xB9\x8C+\xA2\xB3\x9E\x89<,\x88"
+      "B3\xA5\xB1"
+      "D\x9E\x9E'\x14",
+      crypto::kSHA256Length);
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            store.MergeUpdate(prefix_map_old, prefix_map_additions,
+                              &raw_removals, expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   // The size is 2 since we reserve space anyway.
   EXPECT_EQ(2u, prefix_map.size());
@@ -387,9 +433,16 @@ TEST_F(V4StoreTest, TestMergeUpdatesRemovesFirstElement) {
   RepeatedField<int32> raw_removals;
   // old_store: ["2222", "4444"]
   raw_removals.Add(0);  // Removes "2222"
-  EXPECT_EQ(
-      APPLY_UPDATE_SUCCESS,
-      store.MergeUpdate(prefix_map_old, prefix_map_additions, &raw_removals));
+  std::string expected_checksum = std::string(
+      "\x9D\xF3\xF2\x82\0\x1E{\xDF\xCD\xC0V\xBE\xD6<\x85"
+      "D7=\xB5v\xAD\b1\xC9\xB3"
+      "A\xAC"
+      "b\xF1lf\xA4",
+      crypto::kSHA256Length);
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            store.MergeUpdate(prefix_map_old, prefix_map_additions,
+                              &raw_removals, expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   // The size is 2 since we reserve space anyway.
   EXPECT_EQ(2u, prefix_map.size());
@@ -409,9 +462,15 @@ TEST_F(V4StoreTest, TestMergeUpdatesRemovesMiddleElement) {
   RepeatedField<int32> raw_removals;
   // old_store: ["2222", "3333", 4444"]
   raw_removals.Add(1);  // Removes "3333"
-  EXPECT_EQ(
-      APPLY_UPDATE_SUCCESS,
-      store.MergeUpdate(prefix_map_old, prefix_map_additions, &raw_removals));
+  std::string expected_checksum = std::string(
+      "\xFA-A\x15{\x17\0>\xAE"
+      "8\xACigR\xD1\x93<\xB2\xC9\xB5\x81\xC0\xFB\xBB\x2\f\xAFpN\xEA"
+      "44",
+      crypto::kSHA256Length);
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            store.MergeUpdate(prefix_map_old, prefix_map_additions,
+                              &raw_removals, expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   // The size is 2 since we reserve space anyway.
   EXPECT_EQ(2u, prefix_map.size());
@@ -431,9 +490,14 @@ TEST_F(V4StoreTest, TestMergeUpdatesRemovesLastElement) {
   RepeatedField<int32> raw_removals;
   // old_store: ["2222", "3333", 4444"]
   raw_removals.Add(2);  // Removes "4444"
-  EXPECT_EQ(
-      APPLY_UPDATE_SUCCESS,
-      store.MergeUpdate(prefix_map_old, prefix_map_additions, &raw_removals));
+  std::string expected_checksum = std::string(
+      "a\xE1\xAD\x96\xFE\xA6"
+      "A\xCA~7W\xF6z\xD8\n\xCA?\x96\x8A\x17U\x5\v\r\x88]\n\xB2JX\xC4S",
+      crypto::kSHA256Length);
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            store.MergeUpdate(prefix_map_old, prefix_map_additions,
+                              &raw_removals, expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   // The size is 2 since we reserve space anyway.
   EXPECT_EQ(2u, prefix_map.size());
@@ -455,9 +519,15 @@ TEST_F(V4StoreTest, TestMergeUpdatesRemovesWhenOldHasDifferentSizes) {
   RepeatedField<int32> raw_removals;
   // old_store: ["2222", "3333", 4444", "aaaaa", "bbbbb"]
   raw_removals.Add(3);  // Removes "aaaaa"
-  EXPECT_EQ(
-      APPLY_UPDATE_SUCCESS,
-      store.MergeUpdate(prefix_map_old, prefix_map_additions, &raw_removals));
+  std::string expected_checksum = std::string(
+      "\xA7OG\x9D\x83.\x9D-f\x8A\xE\x8B\r&\x19"
+      "6\xE3\xF0\xEFTi\xA7\x5\xEA\xF7"
+      "ej,\xA8\x9D\xAD\x91",
+      crypto::kSHA256Length);
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            store.MergeUpdate(prefix_map_old, prefix_map_additions,
+                              &raw_removals, expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   // The size is 2 since we reserve space anyway.
   EXPECT_EQ(2u, prefix_map.size());
@@ -480,9 +550,16 @@ TEST_F(V4StoreTest, TestMergeUpdatesRemovesMultipleAcrossDifferentSizes) {
   // old_store: ["2222", "3333", "33333", "44444", "aaaa", "bbbbb"]
   raw_removals.Add(1);  // Removes "3333"
   raw_removals.Add(3);  // Removes "44444"
-  EXPECT_EQ(
-      APPLY_UPDATE_SUCCESS,
-      store.MergeUpdate(prefix_map_old, prefix_map_additions, &raw_removals));
+  std::string expected_checksum = std::string(
+      "!D\xB7&L\xA7&G0\x85\xB4"
+      "E\xDD\x10\"\x9A\xCA\xF1"
+      "3^\x83w\xBBL\x19n\xAD\xBDM\x9D"
+      "b\x9F",
+      crypto::kSHA256Length);
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            store.MergeUpdate(prefix_map_old, prefix_map_additions,
+                              &raw_removals, expected_checksum));
+
   const HashPrefixMap& prefix_map = store.hash_prefix_map_;
   // The size is 2 since we reserve space anyway.
   EXPECT_EQ(2u, prefix_map.size());
@@ -667,8 +744,14 @@ TEST_F(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds) {
             V4Store::AddUnlumpedHashes(5, "22222bcdef", &prefix_map_additions));
 
   V4Store store(task_runner_, store_path_);
+  std::string expected_checksum = std::string(
+      "\xA5\x8B\xCAsD\xC7\xF9\xCE\xD2\xF4\x4="
+      "\xB2\"\x82\x1A\xC1\xB8\x1F\x10\r\v\x9A\x93\xFD\xE1\xB8"
+      "B\x1Eh\xF7\xB4",
+      crypto::kSHA256Length);
   EXPECT_EQ(APPLY_UPDATE_SUCCESS,
-            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr));
+            store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr,
+                              expected_checksum));
 
   // At this point, the store map looks like this:
   // 4: 1111abcdefgh
@@ -696,6 +779,23 @@ TEST_F(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds) {
 
   // This ensures that the callback was called.
   EXPECT_TRUE(called_back);
+}
+
+TEST_F(V4StoreTest, TestMergeUpdatesFailsChecksum) {
+  // Proof of checksum mismatch using python:
+  // >>> import hashlib
+  // >>> m = hashlib.sha256()
+  // >>> m.update("2222")
+  // >>> m.digest()
+  // "\xed\xee)\xf8\x82T;\x95f
+  // \xb2m\x0e\xe0\xe7\xe9P9\x9b\x1cB"\xf5\xde\x05\xe0d%\xb4\xc9\x95\xe9"
+
+  HashPrefixMap prefix_map_old;
+  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
+            V4Store::AddUnlumpedHashes(4, "2222", &prefix_map_old));
+  EXPECT_EQ(CHECKSUM_MISMATCH_FAILURE,
+            V4Store(task_runner_, store_path_)
+                .MergeUpdate(prefix_map_old, HashPrefixMap(), nullptr, "aawc"));
 }
 
 }  // namespace safe_browsing

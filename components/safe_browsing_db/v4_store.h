@@ -138,6 +138,10 @@ enum ApplyUpdateResult {
   // Compression type other than RAW and RICE for removals.
   UNEXPECTED_COMPRESSION_TYPE_REMOVALS_FAILURE = 10,
 
+  // The state of the store did not match the expected checksum sent by the
+  // server.
+  CHECKSUM_MISMATCH_FAILURE = 11,
+
   // Memory space for histograms is determined by the max.  ALWAYS
   // ADD NEW VALUES BEFORE THIS ONE.
   APPLY_UPDATE_RESULT_MAX
@@ -245,6 +249,7 @@ class V4Store {
                            TestAdditionsWithRiceEncodingFailsWithInvalidInput);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestAdditionsWithRiceEncodingSucceeds);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesFailsChecksum);
   friend class V4StoreTest;
 
   // If |prefix_size| is within expected range, and |raw_hashes| is not invalid,
@@ -290,24 +295,43 @@ class V4Store {
   // Merges the prefix map from the old store (|old_hash_prefix_map|) and the
   // update (additions_map) to populate the prefix map for the current store.
   // The indices in the |raw_removals| list, which may be NULL, are not merged.
+  // The SHA256 checksum of the final list of hash prefixes, in lexographically
+  // sorted order, must match |expected_checksum| (if it's not empty).
   ApplyUpdateResult MergeUpdate(const HashPrefixMap& old_hash_prefix_map,
                                 const HashPrefixMap& additions_map,
                                 const ::google::protobuf::RepeatedField<
-                                    ::google::protobuf::int32>* raw_removals);
+                                    ::google::protobuf::int32>* raw_removals,
+                                const std::string& expected_checksum);
 
-  // Processes the FULL_UPDATE |response| from the server and updates the
-  // V4Store in |new_store| and writes it to disk. If processing the |response|
-  // succeeds, it returns APPLY_UPDATE_SUCCESS.
-  ApplyUpdateResult ProcessFullUpdate(
-      std::unique_ptr<ListUpdateResponse> response,
-      const std::unique_ptr<V4Store>& new_store);
-
-  // Processes the PARTIAL_UPDATE |response| from the server and updates the
-  // V4Store in |new_store|. If processing the |response| succeeds, it returns
+  // Processes the FULL_UPDATE |response| from the server, and writes the
+  // merged V4Store to disk. If processing the |response| succeeds, it returns
   // APPLY_UPDATE_SUCCESS.
-  ApplyUpdateResult ProcessPartialUpdate(
-      std::unique_ptr<ListUpdateResponse> response,
-      const std::unique_ptr<V4Store>& new_store);
+  // This method is only called when we receive a FULL_UPDATE from the server.
+  ApplyUpdateResult ProcessFullUpdateAndWriteToDisk(
+      std::unique_ptr<ListUpdateResponse> response);
+
+  // Processes a FULL_UPDATE |response| and updates the V4Store. If processing
+  // the |response| succeeds, it returns APPLY_UPDATE_SUCCESS.
+  // This method is called when we receive a FULL_UPDATE from the server, and
+  // when we read a store file from disk on startup.
+  ApplyUpdateResult ProcessFullUpdate(
+      const std::unique_ptr<ListUpdateResponse>& response);
+
+  // Merges the hash prefixes in |hash_prefix_map_old| and |response|, updates
+  // the |hash_prefix_map_| and |state_| in the V4Store, and writes the merged
+  // store to disk. If processing succeeds, it returns APPLY_UPDATE_SUCCESS.
+  // This method is only called when we receive a PARTIAL_UPDATE from the
+  // server.
+  ApplyUpdateResult ProcessPartialUpdateAndWriteToDisk(
+      const HashPrefixMap& hash_prefix_map_old,
+      std::unique_ptr<ListUpdateResponse> response);
+
+  // Merges the hash prefixes in |hash_prefix_map_old| and |response|, and
+  // updates the |hash_prefix_map_| and |state_| in the V4Store. If processing
+  // succeeds, it returns APPLY_UPDATE_SUCCESS.
+  ApplyUpdateResult ProcessUpdate(
+      const HashPrefixMap& hash_prefix_map_old,
+      const std::unique_ptr<ListUpdateResponse>& response);
 
   // Reads the state of the store from the file on disk and returns the reason
   // for the failure or reports success.

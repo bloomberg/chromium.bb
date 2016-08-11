@@ -14,7 +14,8 @@ namespace safe_browsing {
 
 namespace {
 
-const unsigned int kMaxBitIndex = 8 * sizeof(uint32_t);
+const int kBitsPerByte = 8;
+const unsigned int kMaxBitIndex = kBitsPerByte * sizeof(uint32_t);
 
 void GetBytesFromUInt32(uint32_t word, char* bytes) {
   const size_t mask = 0xFF;
@@ -264,10 +265,15 @@ void V4RiceDecoder::GetBitsFromCurrentWord(unsigned int num_requested_bits,
 };
 
 std::string V4RiceDecoder::DebugString() const {
+  // Calculates the total number of bits that we have read from the buffer,
+  // excluding those that have been read into current_word_ but not yet
+  // consumed byt GetNextBits().
+  unsigned bits_read = (data_byte_index_ - sizeof(uint32_t)) * kBitsPerByte +
+                       current_word_bit_index_;
   return base::StringPrintf(
-      "current_word_: %x; data_byte_index_; %x, "
+      "bits_read: %x; current_word_: %x; data_byte_index_; %x, "
       "current_word_bit_index_: %x; rice_parameter_: %x",
-      current_word_, data_byte_index_, current_word_bit_index_,
+      bits_read, current_word_, data_byte_index_, current_word_bit_index_,
       rice_parameter_);
 }
 

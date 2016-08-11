@@ -257,6 +257,7 @@ source_set("v4_store") {
     ":v4_protocol_manager_util",
     ":v4_rice",
     "//base",
+    "//crypto",
   ]
 }
 
@@ -304,6 +305,7 @@ source_set("unit_tests") {
     ":v4_update_protocol_manager",
     "//base",
     "//content/test:test_support",
+    "//crypto",
     "//net",
     "//net:test_support",
     "//testing/gtest",

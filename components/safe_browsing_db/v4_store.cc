@@ -8,10 +8,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/safe_browsing_db/v4_rice.h"
 #include "components/safe_browsing_db/v4_store.h"
 #include "components/safe_browsing_db/v4_store.pb.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 
 namespace safe_browsing {
 
@@ -113,28 +116,44 @@ bool V4Store::Reset() {
   return true;
 }
 
-ApplyUpdateResult V4Store::ProcessFullUpdate(
-    std::unique_ptr<ListUpdateResponse> response,
-    const std::unique_ptr<V4Store>& new_store) {
-  HashPrefixMap hash_prefix_map;
-  ApplyUpdateResult apply_update_result =
-      UpdateHashPrefixMapFromAdditions(response->additions(), &hash_prefix_map);
-  if (apply_update_result == APPLY_UPDATE_SUCCESS) {
-    new_store->hash_prefix_map_ = hash_prefix_map;
-    RecordStoreWriteResult(new_store->WriteToDisk(std::move(response)));
+ApplyUpdateResult V4Store::ProcessPartialUpdateAndWriteToDisk(
+    const HashPrefixMap& hash_prefix_map_old,
+    std::unique_ptr<ListUpdateResponse> response) {
+  DCHECK(response->has_response_type());
+  DCHECK_EQ(ListUpdateResponse::PARTIAL_UPDATE, response->response_type());
+
+  ApplyUpdateResult result = ProcessUpdate(hash_prefix_map_old, response);
+  if (result == APPLY_UPDATE_SUCCESS) {
+    // TODO(vakh): Create a ListUpdateResponse containing RICE encoded
+    // hash prefixes and response_type as FULL_UPDATE, and write that to disk.
   }
-  return apply_update_result;
+  return result;
 }
 
-ApplyUpdateResult V4Store::ProcessPartialUpdate(
-    std::unique_ptr<ListUpdateResponse> response,
-    const std::unique_ptr<V4Store>& new_store) {
-  // TODO(vakh):
-  // 1. Done: Merge the old store and the new update in new_store.
-  // 2. Create a ListUpdateResponse containing RICE encoded hash-prefixes and
-  // response_type as FULL_UPDATE, and write that to disk.
-  // 3. Remove this if condition after completing 1. and 2.
+ApplyUpdateResult V4Store::ProcessFullUpdateAndWriteToDisk(
+    std::unique_ptr<ListUpdateResponse> response) {
+  ApplyUpdateResult result = ProcessFullUpdate(response);
+  if (result == APPLY_UPDATE_SUCCESS) {
+    RecordStoreWriteResult(WriteToDisk(std::move(response)));
+  }
+  return result;
+}
 
+ApplyUpdateResult V4Store::ProcessFullUpdate(
+    const std::unique_ptr<ListUpdateResponse>& response) {
+  DCHECK(response->has_response_type());
+  DCHECK_EQ(ListUpdateResponse::FULL_UPDATE, response->response_type());
+  // TODO(vakh): For a full update, we don't need to process the update in
+  // lexographical order to store it, but we do need to do that for calculating
+  // checksum. It might save some CPU cycles to store the full update as-is and
+  // walk the list of hash prefixes in lexographical order only for checksum
+  // calculation.
+  return ProcessUpdate(HashPrefixMap(), response);
+}
+
+ApplyUpdateResult V4Store::ProcessUpdate(
+    const HashPrefixMap& hash_prefix_map_old,
+    const std::unique_ptr<ListUpdateResponse>& response) {
   const RepeatedField<int32>* raw_removals = nullptr;
   RepeatedField<int32> rice_removals;
   size_t removals_size = response->removals_size();
@@ -167,12 +186,23 @@ ApplyUpdateResult V4Store::ProcessPartialUpdate(
   HashPrefixMap hash_prefix_map;
   ApplyUpdateResult apply_update_result =
       UpdateHashPrefixMapFromAdditions(response->additions(), &hash_prefix_map);
-
-  if (apply_update_result == APPLY_UPDATE_SUCCESS) {
-    apply_update_result =
-        new_store->MergeUpdate(hash_prefix_map_, hash_prefix_map, raw_removals);
+  if (apply_update_result != APPLY_UPDATE_SUCCESS) {
+    return apply_update_result;
   }
-  return apply_update_result;
+
+  std::string expected_checksum;
+  if (response->has_checksum() && response->checksum().has_sha256()) {
+    expected_checksum = response->checksum().sha256();
+  }
+
+  apply_update_result = MergeUpdate(hash_prefix_map_old, hash_prefix_map,
+                                    raw_removals, expected_checksum);
+  if (apply_update_result != APPLY_UPDATE_SUCCESS) {
+    return apply_update_result;
+  }
+
+  state_ = response->new_client_state();
+  return APPLY_UPDATE_SUCCESS;
 }
 
 void V4Store::ApplyUpdate(
@@ -181,13 +211,14 @@ void V4Store::ApplyUpdate(
     UpdatedStoreReadyCallback callback) {
   std::unique_ptr<V4Store> new_store(
       new V4Store(this->task_runner_, this->store_path_));
-  new_store->state_ = response->new_client_state();
 
   ApplyUpdateResult apply_update_result;
   if (response->response_type() == ListUpdateResponse::PARTIAL_UPDATE) {
-    apply_update_result = ProcessPartialUpdate(std::move(response), new_store);
+    apply_update_result = new_store->ProcessPartialUpdateAndWriteToDisk(
+        hash_prefix_map_, std::move(response));
   } else if (response->response_type() == ListUpdateResponse::FULL_UPDATE) {
-    apply_update_result = ProcessFullUpdate(std::move(response), new_store);
+    apply_update_result =
+        new_store->ProcessFullUpdateAndWriteToDisk(std::move(response));
   } else {
     apply_update_result = UNEXPECTED_RESPONSE_TYPE_FAILURE;
     NOTREACHED() << "Unexpected response type: " << response->response_type();
@@ -198,6 +229,8 @@ void V4Store::ApplyUpdate(
     callback_task_runner->PostTask(
         FROM_HERE, base::Bind(callback, base::Passed(&new_store)));
   } else {
+    DVLOG(1) << "ApplyUpdate failed: reason: " << apply_update_result
+             << "; store: " << *this;
     // new_store failed updating. Pass a nullptr to the callback.
     callback_task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
   }
@@ -321,10 +354,10 @@ void V4Store::ReserveSpaceInPrefixMap(const HashPrefixMap& other_prefixes_map,
   }
 }
 
-ApplyUpdateResult V4Store::MergeUpdate(
-    const HashPrefixMap& old_prefixes_map,
-    const HashPrefixMap& additions_map,
-    const RepeatedField<int32>* raw_removals) {
+ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
+                                       const HashPrefixMap& additions_map,
+                                       const RepeatedField<int32>* raw_removals,
+                                       const std::string& expected_checksum) {
   DCHECK(hash_prefix_map_.empty());
   hash_prefix_map_.clear();
   ReserveSpaceInPrefixMap(old_prefixes_map, &hash_prefix_map_);
@@ -346,6 +379,10 @@ ApplyUpdateResult V4Store::MergeUpdate(
   // The two constructs to merge are maps: old_prefixes_map, additions_map.
   // At least one of the maps still has elements that need to be merged into the
   // new store.
+
+  bool calculate_checksum = !expected_checksum.empty();
+  std::unique_ptr<crypto::SecureHash> checksum_ctx(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
 
   // Keep track of the number of elements picked from the old map. This is used
   // to determine which elements to drop based on the raw_removals. Note that
@@ -380,6 +417,11 @@ ApplyUpdateResult V4Store::MergeUpdate(
           *removals_iter != total_picked_from_old) {
         // Append the smallest hash to the appropriate list.
         hash_prefix_map_[next_smallest_prefix_size] += next_smallest_prefix_old;
+
+        if (calculate_checksum) {
+          checksum_ctx->Update(string_as_array(&next_smallest_prefix_old),
+                               next_smallest_prefix_size);
+        }
       } else {
         // Element not added to new map. Move the removals iterator forward.
         removals_iter++;
@@ -397,6 +439,11 @@ ApplyUpdateResult V4Store::MergeUpdate(
       hash_prefix_map_[next_smallest_prefix_size] +=
           next_smallest_prefix_additions;
 
+      if (calculate_checksum) {
+        checksum_ctx->Update(string_as_array(&next_smallest_prefix_additions),
+                             next_smallest_prefix_size);
+      }
+
       // Update the iterator map, which means that we have merged one hash
       // prefix of size |next_smallest_prefix_size| from the update.
       additions_iterator_map[next_smallest_prefix_size] +=
@@ -409,9 +456,24 @@ ApplyUpdateResult V4Store::MergeUpdate(
     }
   }
 
-  return (!raw_removals || removals_iter == raw_removals->end())
-             ? APPLY_UPDATE_SUCCESS
-             : REMOVALS_INDEX_TOO_LARGE_FAILURE;
+  if (raw_removals && removals_iter != raw_removals->end()) {
+    return REMOVALS_INDEX_TOO_LARGE_FAILURE;
+  }
+
+  if (calculate_checksum) {
+    std::string checksum(crypto::kSHA256Length, 0);
+    checksum_ctx->Finish(string_as_array(&checksum), checksum.size());
+    if (checksum != expected_checksum) {
+      std::string checksum_base64, expected_checksum_base64;
+      base::Base64Encode(checksum, &checksum_base64);
+      base::Base64Encode(expected_checksum, &expected_checksum_base64);
+      DVLOG(1) << "Checksum failed: calculated: " << checksum_base64
+               << "expected: " << expected_checksum_base64;
+      return CHECKSUM_MISMATCH_FAILURE;
+    }
+  }
+
+  return APPLY_UPDATE_SUCCESS;
 }
 
 StoreReadResult V4Store::ReadFromDisk() {
@@ -450,16 +512,15 @@ StoreReadResult V4Store::ReadFromDisk() {
     return HASH_PREFIX_INFO_MISSING_FAILURE;
   }
 
-  const ListUpdateResponse& response = file_format.list_update_response();
-  ApplyUpdateResult apply_update_result = UpdateHashPrefixMapFromAdditions(
-      response.additions(), &hash_prefix_map_);
+  std::unique_ptr<ListUpdateResponse> response(new ListUpdateResponse);
+  response->Swap(file_format.mutable_list_update_response());
+  ApplyUpdateResult apply_update_result = ProcessFullUpdate(response);
   RecordApplyUpdateResultWhenReadingFromDisk(apply_update_result);
   if (apply_update_result != APPLY_UPDATE_SUCCESS) {
     hash_prefix_map_.clear();
     return HASH_PREFIX_MAP_GENERATION_FAILURE;
   }
 
-  state_ = response.new_client_state();
   return READ_SUCCESS;
 }
 
