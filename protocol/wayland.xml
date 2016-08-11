@@ -173,7 +173,7 @@
 
     <event name="done">
       <description summary="done event">
-       Notify the client when the related request is done.
+	Notify the client when the related request is done.
       </description>
       <arg name="callback_data" type="uint" summary="request-specific data for the wl_callback"/>
     </event>
@@ -281,11 +281,11 @@
 
     <enum name="format">
       <description summary="pixel formats">
-       This describes the memory layout of an individual pixel.
+	This describes the memory layout of an individual pixel.
 
-       All renderers should support argb8888 and xrgb8888 but any other
-       formats are optional and may not be supported by the particular
-       renderer in use.
+	All renderers should support argb8888 and xrgb8888 but any other
+	formats are optional and may not be supported by the particular
+	renderer in use.
 
 	The drm format codes match the #defines in drm_fourcc.h.
 	The formats actually supported by the compositor will be
