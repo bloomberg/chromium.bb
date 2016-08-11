@@ -99,10 +99,6 @@ class FailingSSLClientSocket : public SSLClientSocket {
   // SSLClientSocket implementation:
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
 
-  NextProtoStatus GetNextProto(std::string* proto) const override {
-    return NextProtoStatus::kNextProtoUnsupported;
-  }
-
   ChannelIDService* GetChannelIDService() const override {
     NOTREACHED();
     return nullptr;

@@ -1382,8 +1382,8 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   SSLSocketDataProvider ssl1(ASYNC, OK);
   SSLSocketDataProvider ssl2(ASYNC, OK);
   if (use_spdy) {
-    ssl1.SetNextProto(kProtoHTTP2);
-    ssl2.SetNextProto(kProtoHTTP2);
+    ssl1.next_proto = kProtoHTTP2;
+    ssl2.next_proto = kProtoHTTP2;
   }
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
@@ -4376,7 +4376,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback1;
@@ -4436,7 +4436,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback1;
@@ -4531,7 +4531,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback1;
@@ -4626,7 +4626,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
@@ -4711,10 +4711,10 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  ssl2.SetNextProto(kProtoHTTP2);
+  ssl2.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback1;
@@ -4780,10 +4780,10 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  ssl2.SetNextProto(kProtoHTTP2);
+  ssl2.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback1;
@@ -4882,7 +4882,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
@@ -5004,7 +5004,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
@@ -5106,7 +5106,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback;
@@ -7673,7 +7673,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   SequencedSocketData data(data_reads, arraysize(data_reads), data_writes,
                            arraysize(data_writes));
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
-  proxy_ssl.SetNextProto(kProtoHTTP2);
+  proxy_ssl.next_proto = kProtoHTTP2;
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy_ssl);
@@ -7776,7 +7776,7 @@ TEST_F(HttpNetworkTransactionTest, ErrorResponseToHttpsConnectViaSpdyProxy) {
   SequencedSocketData data(data_reads, arraysize(data_reads), data_writes,
                            arraysize(data_writes));
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
-  proxy_ssl.SetNextProto(kProtoHTTP2);
+  proxy_ssl.next_proto = kProtoHTTP2;
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy_ssl);
@@ -7870,7 +7870,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
   // Negotiate SPDY to the proxy
   SSLSocketDataProvider proxy(ASYNC, OK);
-  proxy.SetNextProto(kProtoHTTP2);
+  proxy.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
   // Vanilla SSL to the server
   SSLSocketDataProvider server(ASYNC, OK);
@@ -7989,7 +7989,7 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
   // Negotiate SPDY to the proxy
   SSLSocketDataProvider proxy(ASYNC, OK);
-  proxy.SetNextProto(kProtoHTTP2);
+  proxy.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
 
   std::unique_ptr<HttpTransaction> trans(
@@ -8099,7 +8099,7 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
   // Negotiate SPDY to the proxy
   SSLSocketDataProvider proxy(ASYNC, OK);
-  proxy.SetNextProto(kProtoHTTP2);
+  proxy.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
 
   std::unique_ptr<HttpTransaction> trans(
@@ -8183,7 +8183,7 @@ TEST_F(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
   // Negotiate SPDY to the proxy
   SSLSocketDataProvider proxy(ASYNC, OK);
-  proxy.SetNextProto(kProtoHTTP2);
+  proxy.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
 
   std::unique_ptr<HttpTransaction> trans(
@@ -10009,7 +10009,7 @@ TEST_F(HttpNetworkTransactionTest,
   first_data.set_connect_data(mock_connect);
   session_deps_.socket_factory->AddSocketDataProvider(&first_data);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
-  ssl_http11.SetNextProto(kProtoHTTP11);
+  ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
   MockRead data_reads[] = {
@@ -10208,7 +10208,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicBroken) {
 
   // Negotiate HTTP/1.1 with alternative.example.org.
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP11);
+  ssl.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   // HTTP/1.1 data for request.
@@ -10268,7 +10268,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
 
   // Negotiate HTTP/1.1 with alternative1.example.org.
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP11);
+  ssl.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   // HTTP/1.1 data for request.
@@ -10344,7 +10344,7 @@ TEST_F(HttpNetworkTransactionTest, MarkBrokenAlternateProtocolAndFallback) {
   first_data.set_connect_data(mock_connect);
   session_deps_.socket_factory->AddSocketDataProvider(&first_data);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
-  ssl_http11.SetNextProto(kProtoHTTP11);
+  ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
   MockRead data_reads[] = {
@@ -10419,7 +10419,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedBlocked) {
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
-  ssl_http11.SetNextProto(kProtoHTTP11);
+  ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -10472,7 +10472,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedPermitted) {
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
-  ssl_http11.SetNextProto(kProtoHTTP11);
+  ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -10575,7 +10575,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed1) {
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
-  ssl_http11.SetNextProto(kProtoHTTP11);
+  ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -10722,11 +10722,11 @@ TEST_F(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&first_transaction);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
-  ssl_http11.SetNextProto(kProtoHTTP11);
+  ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
   SSLSocketDataProvider ssl_http2(ASYNC, OK);
-  ssl_http2.SetNextProto(kProtoHTTP2);
+  ssl_http2.next_proto = kProtoHTTP2;
   ssl_http2.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   ASSERT_TRUE(ssl_http2.cert.get());
@@ -10849,7 +10849,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl_http2(ASYNC, OK);
-  ssl_http2.SetNextProto(kProtoHTTP2);
+  ssl_http2.next_proto = kProtoHTTP2;
   ssl_http2.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   ASSERT_TRUE(ssl_http2.cert);
@@ -11062,11 +11062,11 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&first_transaction);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
-  ssl_http11.SetNextProto(kProtoHTTP11);
+  ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
   SSLSocketDataProvider ssl_http2(ASYNC, OK);
-  ssl_http2.SetNextProto(kProtoHTTP2);
+  ssl_http2.next_proto = kProtoHTTP2;
   ssl_http2.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   ASSERT_TRUE(ssl_http2.cert);
@@ -11160,11 +11160,11 @@ TEST_F(HttpNetworkTransactionTest,
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&first_transaction);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
-  ssl_http11.SetNextProto(kProtoHTTP11);
+  ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
   SSLSocketDataProvider ssl_http2(ASYNC, OK);
-  ssl_http2.SetNextProto(kProtoHTTP2);
+  ssl_http2.next_proto = kProtoHTTP2;
   ssl_http2.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   ASSERT_TRUE(ssl_http2.cert);
@@ -11863,7 +11863,7 @@ TEST_F(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
   };
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP11);
+  ssl.next_proto = kProtoHTTP11;
 
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
@@ -11905,7 +11905,7 @@ TEST_F(HttpNetworkTransactionTest, SpdyPostNPNServerHangup) {
   request.load_flags = 0;
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   SpdySerializedFrame req(
@@ -12338,7 +12338,7 @@ TEST_F(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -12738,7 +12738,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   pool_peer.DisableDomainAuthenticationVerification();
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   SpdySerializedFrame host1_req(
@@ -12827,7 +12827,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   pool_peer.DisableDomainAuthenticationVerification();
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   SpdySerializedFrame host1_req(
@@ -12945,7 +12945,7 @@ TEST_F(HttpNetworkTransactionTest,
   pool_peer.DisableDomainAuthenticationVerification();
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   SpdySerializedFrame host1_req(
@@ -13064,7 +13064,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
                             arraysize(writes2));
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
@@ -13108,7 +13108,7 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
 
   // Negotiate HTTP/1.1 with alternative.
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP11);
+  ssl.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   // No data should be read from the alternative, because HTTP/1.1 is
@@ -13157,7 +13157,7 @@ TEST_F(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
 
   // Negotiate HTTP/1.1 with alternative.
   SSLSocketDataProvider alternative_ssl(ASYNC, OK);
-  alternative_ssl.SetNextProto(kProtoHTTP11);
+  alternative_ssl.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&alternative_ssl);
 
   // No data should be read from the alternative, because HTTP/1.1 is
@@ -13167,7 +13167,7 @@ TEST_F(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
 
   // Negotiate HTTP/1.1 with server.
   SSLSocketDataProvider origin_ssl(ASYNC, OK);
-  origin_ssl.SetNextProto(kProtoHTTP11);
+  origin_ssl.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&origin_ssl);
 
   MockWrite http_writes[] = {
@@ -13263,7 +13263,7 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
 
   // Negotiate HTTP/1.1 with alternative.example.org.
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP11);
+  ssl.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   // HTTP/1.1 data for |request1| and |request2|.
@@ -13433,10 +13433,10 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   TestNetLog log;
   session_deps_.net_log = &log;
   SSLSocketDataProvider ssl1(ASYNC, OK);  // to the proxy
-  ssl1.SetNextProto(kProtoHTTP2);
+  ssl1.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
   SSLSocketDataProvider ssl2(ASYNC, OK);  // to the server
-  ssl2.SetNextProto(kProtoHTTP2);
+  ssl2.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
@@ -13553,7 +13553,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
       NULL));
 
   SSLSocketDataProvider ssl1(ASYNC, OK);  // to the proxy
-  ssl1.SetNextProto(kProtoHTTP2);
+  ssl1.next_proto = kProtoHTTP2;
   // Load a valid cert.  Note, that this does not need to
   // be valid for proxy because the MockSSLClientSocket does
   // not actually verify it.  But SpdySession will use this
@@ -13564,7 +13564,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   SSLSocketDataProvider ssl2(ASYNC, OK);  // to the server
-  ssl2.SetNextProto(kProtoHTTP2);
+  ssl2.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -13637,12 +13637,12 @@ TEST_F(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
                             arraysize(writes2));
 
   SSLSocketDataProvider ssl1(ASYNC, OK);
-  ssl1.SetNextProto(kProtoHTTP2);
+  ssl1.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  ssl2.SetNextProto(kProtoHTTP2);
+  ssl2.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -13687,9 +13687,9 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   SSLSocketDataProvider ssl1(ASYNC, OK);
-  ssl1.SetNextProto(kProtoHTTP2);
+  ssl1.next_proto = kProtoHTTP2;
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  ssl2.SetNextProto(kProtoHTTP2);
+  ssl2.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
@@ -15555,7 +15555,7 @@ TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.token_binding_negotiated = true;
   ssl.token_binding_key_param = TB_PARAM_ECDSAP256;
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));

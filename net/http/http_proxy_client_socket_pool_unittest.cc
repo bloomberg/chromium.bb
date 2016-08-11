@@ -180,7 +180,7 @@ class HttpProxyClientSocketPoolTest
     }
   }
 
-  void InitializeSpdySsl() { ssl_data_->SetNextProto(kProtoHTTP2); }
+  void InitializeSpdySsl() { ssl_data_->next_proto = kProtoHTTP2; }
 
   std::unique_ptr<HttpNetworkSession> CreateNetworkSession() {
     return SpdySessionDependencies::SpdyCreateSession(&session_deps_);

@@ -1442,7 +1442,7 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStream) {
   session_deps.socket_factory->AddSocketDataProvider(&socket_data);
 
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
-  ssl_socket_data.SetNextProto(kProtoHTTP2);
+  ssl_socket_data.next_proto = kProtoHTTP2;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
 
   HostPortPair host_port_pair("www.google.com", 443);
@@ -1488,7 +1488,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
   session_deps.socket_factory->AddSocketDataProvider(&socket_data);
 
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
-  ssl_socket_data.SetNextProto(kProtoHTTP2);
+  ssl_socket_data.next_proto = kProtoHTTP2;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
 
   HostPortPair host_port_pair("www.google.com", 443);
@@ -1846,7 +1846,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImplFailure) {
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
 
   // If HTTP/1 is used, BidirectionalStreamImpl should not be obtained.
-  ssl_socket_data.SetNextProto(kProtoHTTP11);
+  ssl_socket_data.next_proto = kProtoHTTP11;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
 
   HostPortPair host_port_pair("www.google.com", 443);
@@ -1939,7 +1939,7 @@ TEST_F(HttpStreamFactoryTest, DISABLED_RequestWebSocketSpdyHandshakeStream) {
   session_deps.socket_factory->AddSocketDataProvider(&socket_data);
 
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
-  ssl_socket_data.SetNextProto(kProtoHTTP2);
+  ssl_socket_data.next_proto = kProtoHTTP2;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
 
   HostPortPair host_port_pair("www.google.com", 80);
@@ -2011,7 +2011,7 @@ TEST_F(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   session_deps.socket_factory->AddSocketDataProvider(&socket_data2);
 
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
-  ssl_socket_data.SetNextProto(kProtoHTTP2);
+  ssl_socket_data.next_proto = kProtoHTTP2;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
 
   std::unique_ptr<HttpNetworkSession> session(

@@ -354,11 +354,8 @@ struct SSLSocketDataProvider {
   SSLSocketDataProvider(const SSLSocketDataProvider& other);
   ~SSLSocketDataProvider();
 
-  void SetNextProto(NextProto proto);
-
   MockConnect connect;
-  SSLClientSocket::NextProtoStatus next_proto_status;
-  std::string next_proto;
+  NextProto next_proto;
   NextProtoVector next_protos_expected_in_ssl_config;
   bool client_cert_sent;
   SSLCertRequestInfo* cert_request_info;
@@ -571,6 +568,8 @@ class MockClientSocket : public SSLClientSocket {
   const BoundNetLog& NetLog() const override;
   void SetSubresourceSpeculation() override {}
   void SetOmniboxSpeculation() override {}
+  bool WasNpnNegotiated() const override;
+  NextProto GetNegotiatedProtocol() const override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
@@ -583,7 +582,6 @@ class MockClientSocket : public SSLClientSocket {
                            const base::StringPiece& context,
                            unsigned char* out,
                            unsigned int outlen) override;
-  NextProtoStatus GetNextProto(std::string* proto) const override;
   ChannelIDService* GetChannelIDService() const override;
   Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
                                     std::vector<uint8_t>* out) override;
@@ -633,7 +631,6 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   int GetPeerAddress(IPEndPoint* address) const override;
   bool WasEverUsed() const override;
   void EnableTCPFastOpenIfSupported() override;
-  bool WasNpnNegotiated() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override;
@@ -696,14 +693,14 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   bool IsConnectedAndIdle() const override;
   bool WasEverUsed() const override;
   int GetPeerAddress(IPEndPoint* address) const override;
+  bool WasNpnNegotiated() const override;
+  NextProto GetNegotiatedProtocol() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
   Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
                                     std::vector<uint8_t>* out) override;
-  NextProtoStatus GetNextProto(std::string* proto) const override;
-
   // This MockSocket does not implement the manual async IO feature.
   void OnReadComplete(const MockRead& data) override;
   void OnWriteComplete(int rv) override;

@@ -384,7 +384,7 @@ TEST_F(SSLClientSocketPoolTest, DirectWithNPN) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP11);
+  ssl.next_proto = kProtoHTTP11;
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
@@ -412,7 +412,7 @@ TEST_F(SSLClientSocketPoolTest, DirectNoSPDY) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP11);
+  ssl.next_proto = kProtoHTTP11;
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
@@ -438,7 +438,7 @@ TEST_F(SSLClientSocketPoolTest, DirectGotSPDY) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
@@ -461,16 +461,14 @@ TEST_F(SSLClientSocketPoolTest, DirectGotSPDY) {
 
   SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(handle.socket());
   EXPECT_TRUE(ssl_socket->WasNpnNegotiated());
-  std::string proto;
-  ssl_socket->GetNextProto(&proto);
-  EXPECT_EQ(kProtoHTTP2, SSLClientSocket::NextProtoFromString(proto));
+  EXPECT_EQ(kProtoHTTP2, ssl_socket->GetNegotiatedProtocol());
 }
 
 TEST_F(SSLClientSocketPoolTest, DirectGotBonusSPDY) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
@@ -493,9 +491,7 @@ TEST_F(SSLClientSocketPoolTest, DirectGotBonusSPDY) {
 
   SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(handle.socket());
   EXPECT_TRUE(ssl_socket->WasNpnNegotiated());
-  std::string proto;
-  ssl_socket->GetNextProto(&proto);
-  EXPECT_EQ(kProtoHTTP2, SSLClientSocket::NextProtoFromString(proto));
+  EXPECT_EQ(kProtoHTTP2, ssl_socket->GetNegotiatedProtocol());
 }
 
 TEST_F(SSLClientSocketPoolTest, SOCKSFail) {
@@ -845,7 +841,7 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.cert = X509Certificate::CreateFromBytes(
       reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der));
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
@@ -922,7 +918,7 @@ TEST_F(SSLClientSocketPoolTest, IPPoolingClientCert) {
   ssl.cert = X509Certificate::CreateFromBytes(
       reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der));
   ssl.client_cert_sent = true;
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   TestIPPoolingDisabled(&ssl);
 }
 
@@ -930,7 +926,7 @@ TEST_F(SSLClientSocketPoolTest, IPPoolingClientCert) {
 TEST_F(SSLClientSocketPoolTest, IPPoolingChannelID) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.channel_id_sent = true;
-  ssl.SetNextProto(kProtoHTTP2);
+  ssl.next_proto = kProtoHTTP2;
   TestIPPoolingDisabled(&ssl);
 }
 

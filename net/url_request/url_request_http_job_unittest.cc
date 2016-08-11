@@ -348,7 +348,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
                       MockRead("test.html")};
 
   net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
-  ssl_socket_data_provider.SetNextProto(kProtoHTTP11);
+  ssl_socket_data_provider.next_proto = kProtoHTTP11;
   ssl_socket_data_provider.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider);
@@ -409,7 +409,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
   };
 
   net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
-  ssl_socket_data_provider.SetNextProto(kProtoHTTP11);
+  ssl_socket_data_provider.next_proto = kProtoHTTP11;
   ssl_socket_data_provider.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider);
@@ -482,7 +482,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
                       MockRead("test.html")};
 
   net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
-  ssl_socket_data_provider.SetNextProto(kProtoHTTP11);
+  ssl_socket_data_provider.next_proto = kProtoHTTP11;
   ssl_socket_data_provider.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider);
@@ -773,7 +773,7 @@ TEST_F(URLRequestHttpJobWithBrotliSupportTest, NoBrotliAdvertisementOverHttp) {
 
 TEST_F(URLRequestHttpJobWithBrotliSupportTest, BrotliAdvertisement) {
   net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
-  ssl_socket_data_provider.SetNextProto(kProtoHTTP11);
+  ssl_socket_data_provider.next_proto = kProtoHTTP11;
   ssl_socket_data_provider.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider);

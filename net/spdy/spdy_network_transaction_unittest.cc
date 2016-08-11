@@ -222,10 +222,8 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
         SocketDataProvider* data,
         std::unique_ptr<SSLSocketDataProvider> ssl_provider) {
       data_vector_.push_back(data);
-      if (ssl_provider->next_proto_status ==
-          SSLClientSocket::kNextProtoUnsupported) {
-        ssl_provider->SetNextProto(kProtoHTTP2);
-      }
+      if (ssl_provider->next_proto == kProtoUnknown)
+        ssl_provider->next_proto = kProtoHTTP2;
 
       session_deps_->socket_factory->AddSSLSocketDataProvider(
           ssl_provider.get());
@@ -3824,7 +3822,7 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force SPDY.
-  ssl_provider0->SetNextProto(kProtoHTTP2);
+  ssl_provider0->next_proto = kProtoHTTP2;
   helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
 
   // Second socket: falling back to HTTP/1.1.
@@ -3844,7 +3842,7 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   // Expect only HTTP/1.1 protocol in SSLConfig.
   ssl_provider1->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force HTTP/1.1.
-  ssl_provider1->SetNextProto(kProtoHTTP11);
+  ssl_provider1->next_proto = kProtoHTTP11;
   helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
 
   HttpServerProperties* http_server_properties =
@@ -3902,7 +3900,7 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force SPDY.
-  ssl_provider0->SetNextProto(kProtoHTTP2);
+  ssl_provider0->next_proto = kProtoHTTP2;
   helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
 
   // Second socket: retry using HTTP/1.1.
@@ -3932,7 +3930,7 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   // Expect only HTTP/1.1 protocol in SSLConfig.
   ssl_provider1->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force HTTP/1.1.
-  ssl_provider1->SetNextProto(kProtoHTTP11);
+  ssl_provider1->next_proto = kProtoHTTP11;
   helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
 
   // A third socket is needed for the tunnelled connection.

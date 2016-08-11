@@ -345,7 +345,7 @@ class BidirectionalStreamTest : public testing::TestWithParam<bool> {
         host_port_pair_(HostPortPair::FromURL(default_url_)),
         key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED),
         ssl_data_(SSLSocketDataProvider(ASYNC, OK)) {
-    ssl_data_.SetNextProto(kProtoHTTP2);
+    ssl_data_.next_proto = kProtoHTTP2;
     ssl_data_.cert = ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
     net_log_.SetCaptureMode(NetLogCaptureMode::IncludeSocketBytes());
   }

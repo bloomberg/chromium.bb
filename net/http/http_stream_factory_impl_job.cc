@@ -132,14 +132,12 @@ std::unique_ptr<base::Value> NetLogHttpStreamJobCallback(
 // Returns parameters associated with the Proto (with NPN negotiation) of a HTTP
 // stream.
 std::unique_ptr<base::Value> NetLogHttpStreamProtoCallback(
-    const SSLClientSocket::NextProtoStatus status,
-    const std::string* proto,
+    NextProto negotiated_protocol,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-  dict->SetString("next_proto_status",
-                  SSLClientSocket::NextProtoStatusToString(status));
-  dict->SetString("proto", *proto);
+  dict->SetString("proto",
+                  SSLClientSocket::NextProtoToString(negotiated_protocol));
   return std::move(dict);
 }
 
@@ -1009,21 +1007,16 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (ssl_started && (result == OK || IsCertificateError(result))) {
     if (using_quic_ && result == OK) {
       was_npn_negotiated_ = true;
-      protocol_negotiated_ =
-          SSLClientSocket::NextProtoFromString("quic/1+spdy/3");
+      protocol_negotiated_ = kProtoQUIC1SPDY3;
     } else {
       SSLClientSocket* ssl_socket =
           static_cast<SSLClientSocket*>(connection_->socket());
       if (ssl_socket->WasNpnNegotiated()) {
         was_npn_negotiated_ = true;
-        std::string proto;
-        SSLClientSocket::NextProtoStatus status =
-            ssl_socket->GetNextProto(&proto);
-        protocol_negotiated_ = SSLClientSocket::NextProtoFromString(proto);
+        protocol_negotiated_ = ssl_socket->GetNegotiatedProtocol();
         net_log_.AddEvent(
             NetLog::TYPE_HTTP_STREAM_REQUEST_PROTO,
-            base::Bind(&NetLogHttpStreamProtoCallback,
-                       status, &proto));
+            base::Bind(&NetLogHttpStreamProtoCallback, protocol_negotiated_));
         if (protocol_negotiated_ == kProtoHTTP2)
           SwitchToSpdyMode();
       }

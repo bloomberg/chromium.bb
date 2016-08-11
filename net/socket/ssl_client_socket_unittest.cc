@@ -3146,9 +3146,7 @@ TEST_F(SSLClientSocketTest, NPN) {
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
   EXPECT_THAT(rv, IsOk());
 
-  std::string proto;
-  EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, sock_->GetNextProto(&proto));
-  EXPECT_EQ("h2", proto);
+  EXPECT_EQ(kProtoHTTP2, sock_->GetNegotiatedProtocol());
 }
 
 // Server preference should win in ALPN.
@@ -3181,9 +3179,7 @@ TEST_F(SSLClientSocketTest, AlpnClientDisabled) {
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
   EXPECT_THAT(rv, IsOk());
 
-  std::string proto;
-  EXPECT_EQ(SSLClientSocket::kNextProtoUnsupported,
-            sock_->GetNextProto(&proto));
+  EXPECT_EQ(kProtoUnknown, sock_->GetNegotiatedProtocol());
 }
 
 TEST_F(SSLClientSocketTest, NPNServerDisabled) {
@@ -3197,9 +3193,7 @@ TEST_F(SSLClientSocketTest, NPNServerDisabled) {
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
   EXPECT_THAT(rv, IsOk());
 
-  std::string proto;
-  EXPECT_EQ(SSLClientSocket::kNextProtoUnsupported,
-            sock_->GetNextProto(&proto));
+  EXPECT_EQ(kProtoUnknown, sock_->GetNegotiatedProtocol());
 }
 
 namespace {

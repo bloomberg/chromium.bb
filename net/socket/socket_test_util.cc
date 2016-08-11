@@ -282,7 +282,7 @@ void StaticSocketDataProvider::Reset() {
 
 SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
     : connect(mode, result),
-      next_proto_status(SSLClientSocket::kNextProtoUnsupported),
+      next_proto(kProtoUnknown),
       client_cert_sent(false),
       cert_request_info(NULL),
       channel_id_sent(false),
@@ -298,11 +298,6 @@ SSLSocketDataProvider::SSLSocketDataProvider(
     const SSLSocketDataProvider& other) = default;
 
 SSLSocketDataProvider::~SSLSocketDataProvider() {
-}
-
-void SSLSocketDataProvider::SetNextProto(NextProto proto) {
-  next_proto_status = SSLClientSocket::kNextProtoNegotiated;
-  next_proto = SSLClientSocket::NextProtoToString(proto);
 }
 
 SequencedSocketData::SequencedSocketData(MockRead* reads,
@@ -802,6 +797,14 @@ const BoundNetLog& MockClientSocket::NetLog() const {
   return net_log_;
 }
 
+bool MockClientSocket::WasNpnNegotiated() const {
+  return false;
+}
+
+NextProto MockClientSocket::GetNegotiatedProtocol() const {
+  return kProtoUnknown;
+}
+
 void MockClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
 }
@@ -838,12 +841,6 @@ Error MockClientSocket::GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
 crypto::ECPrivateKey* MockClientSocket::GetChannelIDKey() const {
   NOTREACHED();
   return NULL;
-}
-
-SSLClientSocket::NextProtoStatus MockClientSocket::GetNextProto(
-    std::string* proto) const {
-  proto->clear();
-  return SSLClientSocket::kNextProtoUnsupported;
 }
 
 MockClientSocket::~MockClientSocket() {}
@@ -1029,10 +1026,6 @@ void MockTCPClientSocket::EnableTCPFastOpenIfSupported() {
   data_->OnEnableTCPFastOpenIfSupported();
 }
 
-bool MockTCPClientSocket::WasNpnNegotiated() const {
-  return false;
-}
-
 bool MockTCPClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   return false;
 }
@@ -1200,6 +1193,14 @@ int MockSSLClientSocket::GetPeerAddress(IPEndPoint* address) const {
   return transport_->socket()->GetPeerAddress(address);
 }
 
+bool MockSSLClientSocket::WasNpnNegotiated() const {
+  return data_->next_proto != kProtoUnknown;
+}
+
+NextProto MockSSLClientSocket::GetNegotiatedProtocol() const {
+  return data_->next_proto;
+}
+
 bool MockSSLClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->Reset();
   ssl_info->cert = data_->cert;
@@ -1221,12 +1222,6 @@ void MockSSLClientSocket::GetSSLCertRequestInfo(
   } else {
     cert_request_info->Reset();
   }
-}
-
-SSLClientSocket::NextProtoStatus MockSSLClientSocket::GetNextProto(
-    std::string* proto) const {
-  *proto = data_->next_proto;
-  return data_->next_proto_status;
 }
 
 ChannelIDService* MockSSLClientSocket::GetChannelIDService() const {
