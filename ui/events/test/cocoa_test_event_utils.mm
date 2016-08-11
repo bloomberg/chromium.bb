@@ -6,11 +6,48 @@
 
 #include <stdint.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #include "base/time/time.h"
 #include "ui/events/base_event_utils.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 namespace cocoa_test_event_utils {
+
+CGPoint ScreenPointFromWindow(NSPoint window_point, NSWindow* window) {
+  NSRect window_rect = NSMakeRect(window_point.x, window_point.y, 0, 0);
+  NSPoint screen_point = window
+                             ? [window convertRectToScreen:window_rect].origin
+                             : window_rect.origin;
+  CGFloat primary_screen_height =
+      NSHeight([[[NSScreen screens] firstObject] frame]);
+  screen_point.y = primary_screen_height - screen_point.y;
+  return NSPointToCGPoint(screen_point);
+}
+
+NSEvent* AttachWindowToCGEvent(CGEventRef event, NSWindow* window) {
+  // These CGEventFields were made public in the 10.7 SDK, but don't help to
+  // populate the -[NSEvent window] pointer when creating an event with
+  // +[NSEvent eventWithCGEvent:]. Set that separately, using reflection.
+  CGEventSetIntegerValueField(event, kCGMouseEventWindowUnderMousePointer,
+                              [window windowNumber]);
+  CGEventSetIntegerValueField(
+      event, kCGMouseEventWindowUnderMousePointerThatCanHandleThisEvent,
+      [window windowNumber]);
+
+  // CGEventTimestamp is nanoseconds since system startup as a 64-bit integer.
+  // Use EventTimeForNow() so that it can be mocked for tests.
+  CGEventTimestamp timestamp =
+      (ui::EventTimeForNow() - base::TimeTicks()).InMicroseconds() *
+      base::Time::kNanosecondsPerMicrosecond;
+  CGEventSetTimestamp(event, timestamp);
+
+  NSEvent* ns_event = [NSEvent eventWithCGEvent:event];
+  DCHECK_EQ(nil, [ns_event window]);  // Verify assumptions.
+  [ns_event setValue:window forKey:@"_window"];
+  DCHECK_EQ(window, [ns_event window]);
+
+  return ns_event;
+}
 
 NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
                            NSUInteger modifiers) {
@@ -96,6 +133,20 @@ std::pair<NSEvent*, NSEvent*> RightMouseClickInView(NSView* view,
   NSEvent* up = MouseEventAtPointInWindow(mid_point, NSRightMouseUp,
                                           [view window], clickCount);
   return std::make_pair(down, up);
+}
+
+NSEvent* TestScrollEvent(NSPoint location,
+                         NSWindow* window,
+                         CGFloat delta_x,
+                         CGFloat delta_y) {
+  const uint32_t wheel_count = 2;
+  int32_t wheel1 = static_cast<int>(delta_y);
+  int32_t wheel2 = static_cast<int>(delta_x);
+  CGScrollEventUnit units = kCGScrollEventUnitLine;
+  base::ScopedCFTypeRef<CGEventRef> scroll(CGEventCreateScrollWheelEvent(
+      nullptr, units, wheel_count, wheel1, wheel2));
+  CGEventSetLocation(scroll, ScreenPointFromWindow(location, window));
+  return AttachWindowToCGEvent(scroll, window);
 }
 
 NSEvent* KeyEventWithCharacter(unichar c) {

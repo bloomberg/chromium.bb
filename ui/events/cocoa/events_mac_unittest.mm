@@ -37,6 +37,9 @@ class EventsMacTest : public CocoaTest {
     return window_location;
   }
 
+  // TODO(tapted): Move this to cocoa_test_event_utils. It's not a drop-in
+  // replacement because -[NSApp sendEvent:] may route events generated this way
+  // differently.
   NSEvent* TestMouseEvent(CGEventType type,
                           const gfx::Point& window_location,
                           CGEventFlags event_flags) {
@@ -46,53 +49,23 @@ class EventsMacTest : public CocoaTest {
     // just assume "other" means the third/center mouse button, and rely on
     // Quartz ignoring it when the type is not "other".
     CGMouseButton other_button = kCGMouseButtonCenter;
-    base::ScopedCFTypeRef<CGEventRef> mouse(CGEventCreateMouseEvent(
-        nullptr, type, TestWindowPointToScreen(window_location), other_button));
+    CGPoint screen_point = cocoa_test_event_utils::ScreenPointFromWindow(
+        Flip(window_location).ToCGPoint(), test_window());
+    base::ScopedCFTypeRef<CGEventRef> mouse(
+        CGEventCreateMouseEvent(nullptr, type, screen_point, other_button));
     CGEventSetFlags(mouse, event_flags);
-    return EventWithTestWindow(mouse);
+    return cocoa_test_event_utils::AttachWindowToCGEvent(mouse, test_window());
   }
 
+  // Creates a scroll event from a "real" mouse wheel (i.e. not a trackpad).
   NSEvent* TestScrollEvent(const gfx::Point& window_location,
                            int32_t delta_x,
                            int32_t delta_y) {
-    base::ScopedCFTypeRef<CGEventRef> scroll(CGEventCreateScrollWheelEvent(
-        nullptr, kCGScrollEventUnitLine, 2, delta_y, delta_x));
-    CGEventSetLocation(scroll, TestWindowPointToScreen(window_location));
-    return EventWithTestWindow(scroll);
+    return cocoa_test_event_utils::TestScrollEvent(
+        Flip(window_location).ToCGPoint(), test_window(), delta_x, delta_y);
   }
 
  private:
-  CGPoint TestWindowPointToScreen(const gfx::Point& window_location) {
-    // CGEvents are always in global display coordinates. These are like screen
-    // coordinates, but flipped. But first the point needs to be converted out
-    // of window coordinates (which also requires flipping).
-    NSPoint window_point =
-        NSPointFromCGPoint(Flip(window_location).ToCGPoint());
-    NSRect window_rect = NSMakeRect(window_point.x, window_point.y, 0, 0);
-    NSPoint screen_point =
-        [test_window() convertRectToScreen:window_rect].origin;
-    CGFloat primary_screen_height =
-        NSHeight([[[NSScreen screens] firstObject] frame]);
-    screen_point.y = primary_screen_height - screen_point.y;
-    return NSPointToCGPoint(screen_point);
-  }
-
-  NSEvent* EventWithTestWindow(CGEventRef event) {
-    // These CGEventFields were made public in the 10.7 SDK, but don't help to
-    // populate the -[NSEvent window] pointer when creating an event with
-    // +[NSEvent eventWithCGEvent:]. Set that separately, using reflection.
-    CGEventSetIntegerValueField(event, kCGMouseEventWindowUnderMousePointer,
-                                [test_window() windowNumber]);
-    CGEventSetIntegerValueField(
-        event, kCGMouseEventWindowUnderMousePointerThatCanHandleThisEvent,
-        [test_window() windowNumber]);
-    NSEvent* ns_event = [NSEvent eventWithCGEvent:event];
-    EXPECT_EQ(nil, [ns_event window]);  // Verify assumptions.
-    [ns_event setValue:test_window() forKey:@"_window"];
-    EXPECT_EQ(test_window(), [ns_event window]);
-    return ns_event;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(EventsMacTest);
 };
 

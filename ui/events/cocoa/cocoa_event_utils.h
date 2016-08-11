@@ -11,6 +11,9 @@
 
 namespace ui {
 
+// Conversion between wheel delta amounts and number of pixels to scroll.
+constexpr double kScrollbarPixelsPerCocoaTick = 40.0;
+
 // Converts the Cocoa |modifiers| bitsum into a ui::EventFlags bitsum.
 EVENTS_EXPORT int EventFlagsFromModifiers(NSUInteger modifiers);
 
