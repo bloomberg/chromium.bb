@@ -7,56 +7,23 @@
 
 #include "third_party/expat/files/lib/expat.h"
 
-#include <array>
+#include <vector>
 
-static void XMLCALL
-startElement(void* userData, const char* name, const char** atts) {
-  int* depthPtr = static_cast<int*>(userData);
-  (void)atts;
-
-  for (int i = 0; i < *depthPtr; i++)
-    (void)name;
-
-  *depthPtr += 1;
-}
-
-
-static void XMLCALL
-endElement(void* userData, const char* name) {
-  int* depthPtr = static_cast<int*>(userData);
-  (void)name;
-
-  *depthPtr -= 1;
-}
-
-
-std::array<const char*, 7> kEncodings = {{ "UTF-16", "UTF-8", "ISO_8859_1",
-                                           "US_ASCII", "UTF_16BE", "UTF_16LE",
-                                            nullptr }};
-
+std::vector<const char*> kEncodings = {{"UTF-16", "UTF-8", "ISO-8859-1",
+                                        "US-ASCII", "UTF-16BE", "UTF-16LE",
+                                        "INVALIDENCODING"}};
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  for (auto enc : kEncodings) {
-    XML_Parser parser = XML_ParserCreate(enc);
-    if (!parser)
-      return 0;
+  const char* dataPtr = reinterpret_cast<const char*>(data);
 
-    int depth = 0;
-    XML_SetUserData(parser, &depth);
-    XML_SetElementHandler(parser, startElement, endElement);
-
-    const char* dataPtr = reinterpret_cast<const char*>(data);
-
-    // Feed the data with two different values of |isFinal| for better coverage.
-    for (int isFinal = 0; isFinal <= 1; ++isFinal) {
-      if (XML_Parse(parser, dataPtr, size, isFinal) == XML_STATUS_ERROR) {
-        XML_ErrorString(XML_GetErrorCode(parser));
-        XML_GetCurrentLineNumber(parser);
-      }
+  for (int use_ns = 0; use_ns <= 1; ++use_ns) {
+    for (auto enc : kEncodings) {
+      XML_Parser parser =
+          use_ns ? XML_ParserCreateNS(enc, '\n') : XML_ParserCreate(enc);
+      XML_Parse(parser, dataPtr, size, true);
+      XML_ParserFree(parser);
     }
-
-    XML_ParserFree(parser);
   }
 
   return 0;
