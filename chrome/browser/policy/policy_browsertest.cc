@@ -377,10 +377,15 @@ void CheckCanOpenURL(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  base::string16 spec16 = base::UTF8ToUTF16(url.spec());
-  base::string16 title =
-      l10n_util::GetStringFUTF16(IDS_ERRORPAGES_TITLE_BLOCKED, spec16);
-  EXPECT_NE(title, contents->GetTitle());
+
+  base::string16 blocked_page_title;
+  if (url.has_host()) {
+    blocked_page_title = base::UTF8ToUTF16(url.host());
+  } else {
+    // Local file paths show the full URL.
+    blocked_page_title = base::UTF8ToUTF16(url.spec());
+  }
+  EXPECT_NE(blocked_page_title, contents->GetTitle());
 }
 
 // Verifies that access to the given url |spec| is blocked.
@@ -390,10 +395,15 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  base::string16 spec16 = base::UTF8ToUTF16(url.spec());
-  base::string16 title =
-      l10n_util::GetStringFUTF16(IDS_ERRORPAGES_TITLE_BLOCKED, spec16);
-  EXPECT_EQ(title, contents->GetTitle());
+
+  base::string16 blocked_page_title;
+  if (url.has_host()) {
+    blocked_page_title = base::UTF8ToUTF16(url.host());
+  } else {
+    // Local file paths show the full URL.
+    blocked_page_title = base::UTF8ToUTF16(url.spec());
+  }
+  EXPECT_EQ(blocked_page_title, contents->GetTitle());
 
   // Verify that the expected error page is being displayed.
   bool result = false;

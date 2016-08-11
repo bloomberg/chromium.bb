@@ -254,7 +254,6 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-
   MockWebContentsLoadFailObserver observer(web_contents);
   EXPECT_CALL(observer, DidFinishNavigation(IsErrorTooManyRedirects()));
 

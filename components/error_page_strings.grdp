@@ -98,21 +98,6 @@
   <message name="IDS_ERRORPAGES_SUGGESTION_UNSUPPORTED_CIPHER_BODY" desc="The detailed explanation body text displayed for SSL cipher and version errors.">
     The client and server don't support a common SSL protocol version or cipher suite.
   </message>
-  <message name="IDS_ERRORPAGES_TITLE_NOT_AVAILABLE" desc="Title of the error page when we can't connect to a site.">
-    <ph name="SITE">$1<ex>google.com</ex></ph> is not available
-  </message>
-  <message name="IDS_ERRORPAGES_TITLE_ACCESS_DENIED" desc="Title in the error page when a server returns a 403.  Also suitable for similar error codes.">
-    Access to <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> denied.
-  </message>
-  <message name="IDS_ERRORPAGES_TITLE_NOT_FOUND" desc="Title of the error page when the server returns a 404 or 410.">
-    <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> is not found
-  </message>
-  <message name="IDS_ERRORPAGES_TITLE_LOAD_FAILED" desc="Title of the error page when we can't load a page.">
-    <ph name="URL">$1<ex>http://some-unreliable-site.com/</ex></ph> failed to load
-  </message>
-  <message name="IDS_ERRORPAGES_TITLE_BLOCKED" desc="Title in the error page when a request is blocked (e.g. by an extension).">
-    <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> was blocked
-  </message>
   <message name="IDS_ERRORPAGES_HEADING_NOT_AVAILABLE" desc="Heading in the error page when we can't connect to a site.">
     This site can’t be reached
   </message>
