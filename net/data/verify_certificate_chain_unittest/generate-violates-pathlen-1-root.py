@@ -4,7 +4,8 @@
 # found in the LICENSE file.
 
 """Certificate chain with 2 intermediates and one end entity certificate. The
-root certificate has a pathlen:1 restriction so this is an invalid chain."""
+root certificate has a pathlen:1 restriction. Ordinarily this would be an
+invalid chain, however constraints on trust anchors are not validated."""
 
 import common
 
@@ -26,6 +27,6 @@ target = common.create_end_entity_certificate('Target', intermediate2)
 chain = [target, intermediate2, intermediate1]
 trusted = [root]
 time = common.DEFAULT_TIME
-verify_result = False
+verify_result = True
 
 common.write_test_file(__doc__, chain, trusted, time, verify_result)

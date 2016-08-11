@@ -62,12 +62,17 @@ class CastCRLTrustStore {
 
   CastCRLTrustStore() {
     // Initialize the trust store with the root certificate.
-    scoped_refptr<net::ParsedCertificate> root =
+    scoped_refptr<net::ParsedCertificate> cert =
         net::ParsedCertificate::CreateFromCertificateData(
             kCastCRLRootCaDer, sizeof(kCastCRLRootCaDer),
             net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE, {});
-    CHECK(root);
-    store_.AddTrustedCertificate(std::move(root));
+    CHECK(cert);
+    // TODO(crbug.com/635200): Support anchor constraints, and initialize the
+    // anchor using constraints from the self-signed certificate.
+    scoped_refptr<net::TrustAnchor> anchor =
+        net::TrustAnchor::CreateFromCertificateNoConstraints(std::move(cert));
+    CHECK(anchor);
+    store_.AddTrustAnchor(std::move(anchor));
   }
 
   net::TrustStore store_;
@@ -166,8 +171,11 @@ bool VerifyCRL(const Crl& crl,
   }
 
   // Set CRL expiry to the earliest of the cert chain expiry and CRL expiry.
+  // Note that the trust anchor is not part of this loop.
+  // "expiration" of the trust anchor is handled instead by its
+  // presence in the trust store.
   *overall_not_after = not_after;
-  for (const auto& cert : result.paths[result.best_result_index]->path) {
+  for (const auto& cert : result.paths[result.best_result_index]->path.certs) {
     net::der::GeneralizedTime cert_not_after = cert->tbs().validity_not_after;
     if (cert_not_after < *overall_not_after)
       *overall_not_after = cert_not_after;
@@ -191,7 +199,7 @@ class CastCRLImpl : public CastCRL {
               const net::der::GeneralizedTime& overall_not_after);
   ~CastCRLImpl() override;
 
-  bool CheckRevocation(const net::ParsedCertificateList& trusted_chain,
+  bool CheckRevocation(const net::CertPath& trusted_chain,
                        const base::Time& time) const override;
 
  private:
@@ -245,11 +253,12 @@ CastCRLImpl::~CastCRLImpl() {}
 
 // Verifies the revocation status of the certificate chain, at the specified
 // time.
-bool CastCRLImpl::CheckRevocation(
-    const net::ParsedCertificateList& trusted_chain,
-    const base::Time& time) const {
-  if (trusted_chain.empty())
+bool CastCRLImpl::CheckRevocation(const net::CertPath& trusted_chain,
+                                  const base::Time& time) const {
+  if (trusted_chain.IsEmpty())
     return false;
+
+  DCHECK(trusted_chain.trust_anchor);
 
   // Check the validity of the CRL at the specified time.
   net::der::GeneralizedTime verification_time;
@@ -262,12 +271,20 @@ bool CastCRLImpl::CheckRevocation(
     return false;
   }
 
-  // Check revocation.
-  for (size_t i = 0; i < trusted_chain.size(); ++i) {
-    const auto& parsed_cert = trusted_chain[i];
+  // Check revocation. Note that this loop has "+ 1" in order to also loop
+  // over the trust anchor (which is treated specially).
+  for (size_t i = 0; i < trusted_chain.certs.size() + 1; ++i) {
+    // This loop iterates over both certificates AND then the trust
+    // anchor after exhausing the certs.
+    net::der::Input spki_tlv;
+    if (i == trusted_chain.certs.size()) {
+      spki_tlv = trusted_chain.trust_anchor->spki();
+    } else {
+      spki_tlv = trusted_chain.certs[i]->tbs().spki_tlv;
+    }
+
     // Calculate the public key's hash to check for revocation.
-    std::string spki_hash =
-        crypto::SHA256HashString(parsed_cert->tbs().spki_tlv.AsString());
+    std::string spki_hash = crypto::SHA256HashString(spki_tlv.AsString());
     if (revoked_hashes_.find(spki_hash) != revoked_hashes_.end()) {
       VLOG(2) << "Public key is revoked.";
       return false;
@@ -277,7 +294,7 @@ bool CastCRLImpl::CheckRevocation(
     if (i > 0) {
       auto issuer_iter = revoked_serial_numbers_.find(spki_hash);
       if (issuer_iter != revoked_serial_numbers_.end()) {
-        const auto& subordinate = trusted_chain[i - 1];
+        const auto& subordinate = trusted_chain.certs[i - 1];
         uint64_t serial_number;
         // Only Google generated device certificates will be revoked by range.
         // These will always be less than 64 bits in length.

@@ -67,12 +67,16 @@ class CastTrustStore {
   // storage.
   template <size_t N>
   void AddAnchor(const uint8_t (&data)[N]) {
-    scoped_refptr<net::ParsedCertificate> root =
+    scoped_refptr<net::ParsedCertificate> cert =
         net::ParsedCertificate::CreateFromCertificateData(
             data, N, net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE,
             {});
-    CHECK(root);
-    store_.AddTrustedCertificate(std::move(root));
+    CHECK(cert);
+    // TODO(crbug.com/635200): Support anchor constraints, and initialize the
+    // anchor using constraints from the self-signed certificate.
+    scoped_refptr<net::TrustAnchor> anchor =
+        net::TrustAnchor::CreateFromCertificateNoConstraints(std::move(cert));
+    store_.AddTrustAnchor(std::move(anchor));
   }
 
   net::TrustStore store_;

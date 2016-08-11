@@ -4,7 +4,8 @@
 # found in the LICENSE file.
 
 """Certificate chain with 1 intermediate, where the root certificate is expired
-(violates validity.notAfter). Verification is expected to fail."""
+(violates validity.notAfter). Verification is expected to succeed as
+constraints on trust anchors are not enforced.."""
 
 import common
 
@@ -25,8 +26,9 @@ chain = [target, intermediate]
 trusted = [root]
 
 # Both the target and intermediate are valid at this time, however the
-# root is not.
+# root is not. This doesn't matter since the root certificate is
+# just a delivery mechanism for the name + SPKI.
 time = common.MARCH_2_2015_UTC
-verify_result = False
+verify_result = True
 
 common.write_test_file(__doc__, chain, trusted, time, verify_result)

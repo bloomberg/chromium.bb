@@ -49,21 +49,34 @@ net::der::GeneralizedTime ConvertExplodedTime(
   return result;
 }
 
-// Dumps a chain of ParsedCertificate objects to a PEM file.
-bool DumpParsedCertificateChain(
-    const base::FilePath& file_path,
-    const std::vector<scoped_refptr<net::ParsedCertificate>>& chain) {
-  std::vector<std::string> pem_encoded_chain;
-  for (const auto& cert : chain) {
-    std::string der_cert;
-    cert->der_cert().AsStringPiece().CopyToString(&der_cert);
-    std::string pem;
-    if (!net::X509Certificate::GetPEMEncodedFromDER(der_cert, &pem)) {
-      std::cerr << "ERROR: GetPEMEncodedFromDER failed\n";
-      return false;
-    }
-    pem_encoded_chain.push_back(pem);
+bool AddPemEncodedCert(const net::ParsedCertificate* cert,
+                       std::vector<std::string>* pem_encoded_chain) {
+  std::string der_cert;
+  cert->der_cert().AsStringPiece().CopyToString(&der_cert);
+  std::string pem;
+  if (!net::X509Certificate::GetPEMEncodedFromDER(der_cert, &pem)) {
+    std::cerr << "ERROR: GetPEMEncodedFromDER failed\n";
+    return false;
   }
+  pem_encoded_chain->push_back(pem);
+  return true;
+}
+
+// Dumps a chain of ParsedCertificate objects to a PEM file.
+bool DumpParsedCertificateChain(const base::FilePath& file_path,
+                                const net::CertPath& chain) {
+  std::vector<std::string> pem_encoded_chain;
+  for (const auto& cert : chain.certs) {
+    if (!AddPemEncodedCert(cert.get(), &pem_encoded_chain))
+      return false;
+  }
+
+  if (chain.trust_anchor && chain.trust_anchor->cert()) {
+    if (!AddPemEncodedCert(chain.trust_anchor->cert().get(),
+                           &pem_encoded_chain))
+      return false;
+  }
+
   return WriteToFile(file_path, base::JoinString(pem_encoded_chain, ""));
 }
 
@@ -73,15 +86,19 @@ std::string FingerPrintParsedCertificate(const net::ParsedCertificate* cert) {
   return base::HexEncode(hash.data(), hash.size());
 }
 
-// Returns a textual representation of the Subject of |cert|.
-std::string SubjectFromParsedCertificate(const net::ParsedCertificate* cert) {
+std::string SubjectToString(const net::der::Input& subject_tlv) {
   net::RDNSequence subject, issuer;
-  if (!net::ParseName(cert->tbs().subject_tlv, &subject))
+  if (!net::ParseName(subject_tlv, &subject))
     return std::string();
   std::string subject_str;
   if (!net::ConvertToRFC2253(subject, &subject_str))
     return std::string();
   return subject_str;
+}
+
+// Returns a textual representation of the Subject of |cert|.
+std::string SubjectFromParsedCertificate(const net::ParsedCertificate* cert) {
+  return SubjectToString(cert->tbs().subject_tlv);
 }
 
 }  // namespace
@@ -108,8 +125,10 @@ bool VerifyUsingPathBuilder(
                                                           {});
     if (!cert)
       PrintCertError("ERROR: ParsedCertificate failed:", der_cert);
-    else
-      trust_store.AddTrustedCertificate(cert);
+    else {
+      trust_store.AddTrustAnchor(
+          net::TrustAnchor::CreateFromCertificateNoConstraints(cert));
+    }
   }
 
   net::CertIssuerSourceStatic intermediate_cert_issuer_source;
@@ -172,9 +191,20 @@ bool VerifyUsingPathBuilder(
     std::cout << "path " << i << " "
               << net::ErrorToShortString(result.paths[i]->error)
               << ((result.best_result_index == i) ? " (best)" : "") << "\n";
-    for (const auto& cert : result.paths[i]->path) {
+    for (const auto& cert : result.paths[i]->path.certs) {
       std::cout << " " << FingerPrintParsedCertificate(cert.get()) << " "
                 << SubjectFromParsedCertificate(cert.get()) << "\n";
+    }
+
+    const auto& trust_anchor = result.paths[i]->path.trust_anchor;
+    if (trust_anchor) {
+      std::string trust_anchor_cert_fingerprint = "<no cert>";
+      if (trust_anchor->cert()) {
+        trust_anchor_cert_fingerprint =
+            FingerPrintParsedCertificate(trust_anchor->cert().get());
+      }
+      std::cout << " " << trust_anchor_cert_fingerprint << " "
+                << SubjectToString(trust_anchor->normalized_subject()) << "\n";
     }
   }
 

@@ -16,15 +16,15 @@ namespace {
 class PathBuilderDelegate {
  public:
   static void Verify(const ParsedCertificateList& chain,
-                     const ParsedCertificateList& roots,
+                     const TrustAnchors& anchors,
                      const der::GeneralizedTime& time,
                      bool expected_result) {
     SimpleSignaturePolicy signature_policy(1024);
     ASSERT_FALSE(chain.empty());
 
     TrustStore trust_store;
-    for (const auto& root : roots)
-      trust_store.AddTrustedCertificate(root);
+    for (const auto& anchor : anchors)
+      trust_store.AddTrustAnchor(anchor);
 
     CertIssuerSourceStatic intermediate_cert_issuer_source;
     for (size_t i = 1; i < chain.size(); ++i)

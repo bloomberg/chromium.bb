@@ -67,7 +67,10 @@ class PathBuilderPkitsTestDelegate {
     // First entry in the PKITS chain is the trust anchor.
     // TODO(mattm): test with all possible trust anchors in the trust store?
     TrustStore trust_store;
-    trust_store.AddTrustedCertificate(certs[0]);
+
+    scoped_refptr<TrustAnchor> trust_anchor =
+        TrustAnchor::CreateFromCertificateNoConstraints(certs[0]);
+    trust_store.AddTrustAnchor(std::move(trust_anchor));
 
     // TODO(mattm): test with other irrelevant certs in cert_issuer_sources?
     CertIssuerSourceStatic cert_issuer_source;

@@ -20,10 +20,12 @@ std::unique_ptr<net::TrustStore> CreateTrustStoreFromFile(
   const auto trusted_test_roots =
       cast_certificate::testing::ReadCertificateChainFromFile(path);
   for (const auto& trusted_root : trusted_test_roots) {
-    scoped_refptr<net::ParsedCertificate> anchor(
+    scoped_refptr<net::ParsedCertificate> cert(
         net::ParsedCertificate::CreateFromCertificateCopy(trusted_root, {}));
-    EXPECT_TRUE(anchor);
-    trust_store->AddTrustedCertificate(std::move(anchor));
+    EXPECT_TRUE(cert);
+    scoped_refptr<net::TrustAnchor> anchor =
+        net::TrustAnchor::CreateFromCertificateNoConstraints(std::move(cert));
+    trust_store->AddTrustAnchor(std::move(anchor));
   }
   return trust_store;
 }

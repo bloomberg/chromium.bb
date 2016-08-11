@@ -15,6 +15,7 @@
 #include "net/base/net_export.h"
 #include "net/cert/internal/completion_status.h"
 #include "net/cert/internal/parsed_certificate.h"
+#include "net/cert/internal/trust_store.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
 
@@ -26,8 +27,29 @@ struct GeneralizedTime;
 
 class CertPathIter;
 class CertIssuerSource;
-class TrustStore;
 class SignaturePolicy;
+
+// CertPath describes a chain of certificates in the "forward" direction.
+//
+// By convention:
+//   certs[0] is the target certificate
+//   certs[i] was issued by certs[i+1]
+//   certs.back() was issued by trust_anchor
+struct NET_EXPORT CertPath {
+  CertPath();
+  ~CertPath();
+
+  scoped_refptr<TrustAnchor> trust_anchor;
+
+  // Path in the forward direction (path[0] is the target cert).
+  ParsedCertificateList certs;
+
+  // Resets the path to empty path (same as if default constructed).
+  void Clear();
+
+  // Returns true if the path is empty.
+  bool IsEmpty() const;
+};
 
 // Checks whether a certificate is trusted by building candidate paths to trust
 // anchors and verifying those paths according to RFC 5280. Each instance of
@@ -45,14 +67,9 @@ class NET_EXPORT CertPathBuilder {
     // Returns true if this path was successfully verified.
     bool is_success() const { return error == OK; }
 
-    // The candidate path, in forward direction.
-    //   * path[0] is the target certificate.
-    //   * path[i+1] is a candidate issuer of path[i]. The subject matches
-    //   path[i]'s issuer, but nothing else is guaranteed unless is_success() is
-    //   true.
-    //   * path[N-1] will be a trust anchor if is_success() is true, otherwise
-    //   it may or may not be a trust anchor.
-    ParsedCertificateList path;
+    // The (possibly partial) certificate path. In the case of an
+    // error path.trust_anchor may be nullptr.
+    CertPath path;
 
     // A net error code result of attempting to verify this path.
     // TODO(mattm): may want to have an independent result enum, which caller
@@ -145,12 +162,11 @@ class NET_EXPORT CertPathBuilder {
   void HandleGotNextPath();
   CompletionStatus DoGetNextPathComplete();
 
-  void AddResultPath(const ParsedCertificateList& path, bool is_success);
+  void AddResultPath(const CertPath& path, bool is_success);
 
   base::Closure callback_;
 
   std::unique_ptr<CertPathIter> cert_path_iter_;
-  const TrustStore* trust_store_;
   const SignaturePolicy* signature_policy_;
   const der::GeneralizedTime time_;
 
@@ -158,8 +174,9 @@ class NET_EXPORT CertPathBuilder {
   // by |cert_path_iter_| during the STATE_GET_NEXT_PATH step, and thus should
   // only be accessed during the STATE_GET_NEXT_PATH_COMPLETE step.
   // (Will be empty if all paths have been tried, otherwise will be a candidate
-  // path starting with the target cert and ending with a trust anchor.)
-  ParsedCertificateList next_path_;
+  // path starting with the target cert and ending with a
+  // certificate issued by trust anchor.)
+  CertPath next_path_;
   State next_state_;
 
   Result* out_result_;

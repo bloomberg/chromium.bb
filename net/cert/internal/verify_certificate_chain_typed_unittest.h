@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/test_helpers.h"
+#include "net/cert/internal/trust_store.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/der/input.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,13 +22,13 @@ class VerifyCertificateChainTest : public ::testing::Test {
  public:
   void RunTest(const char* file_name) {
     ParsedCertificateList chain;
-    ParsedCertificateList roots;
+    TrustAnchors anchors;
     der::GeneralizedTime time;
     bool expected_result;
 
-    ReadTestFromFile(file_name, &chain, &roots, &time, &expected_result);
+    ReadTestFromFile(file_name, &chain, &anchors, &time, &expected_result);
 
-    TestDelegate::Verify(chain, roots, time, expected_result);
+    TestDelegate::Verify(chain, anchors, time, expected_result);
   }
 
  private:
@@ -54,11 +55,11 @@ class VerifyCertificateChainTest : public ::testing::Test {
   // expected result of verification.
   void ReadTestFromFile(const std::string& file_name,
                         ParsedCertificateList* chain,
-                        ParsedCertificateList* roots,
+                        TrustAnchors* anchors,
                         der::GeneralizedTime* time,
                         bool* verify_result) {
     chain->clear();
-    roots->clear();
+    anchors->clear();
 
     std::string file_data = ReadTestFileToString(file_name);
 
@@ -88,10 +89,14 @@ class VerifyCertificateChainTest : public ::testing::Test {
             block_data.size(),
             net::ParsedCertificate::DataSource::INTERNAL_COPY, {}, chain));
       } else if (block_type == kTrustedCertificateHeader) {
-        ASSERT_TRUE(net::ParsedCertificate::CreateAndAddToVector(
-            reinterpret_cast<const uint8_t*>(block_data.data()),
-            block_data.size(),
-            net::ParsedCertificate::DataSource::INTERNAL_COPY, {}, roots));
+        scoped_refptr<ParsedCertificate> root =
+            net::ParsedCertificate::CreateFromCertificateData(
+                reinterpret_cast<const uint8_t*>(block_data.data()),
+                block_data.size(),
+                net::ParsedCertificate::DataSource::INTERNAL_COPY, {});
+        ASSERT_TRUE(root);
+        anchors->push_back(
+            TrustAnchor::CreateFromCertificateNoConstraints(std::move(root)));
       } else if (block_type == kTimeHeader) {
         ASSERT_FALSE(has_time) << "Duplicate " << kTimeHeader;
         has_time = true;

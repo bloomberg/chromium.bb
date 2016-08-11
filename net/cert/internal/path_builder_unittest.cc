@@ -223,12 +223,26 @@ class PathBuilderMultiRootTest : public ::testing::Test {
   der::GeneralizedTime time_ = {2016, 4, 11, 0, 0, 0};
 };
 
-// If the target cert is a trust anchor, it should verify and should not include
-// anything else in the path.
-TEST_F(PathBuilderMultiRootTest, TargetIsTrustAnchor) {
+void AddTrustedCertificate(scoped_refptr<ParsedCertificate> cert,
+                           TrustStore* trust_store) {
+  ASSERT_TRUE(cert.get());
+  scoped_refptr<TrustAnchor> anchor =
+      TrustAnchor::CreateFromCertificateNoConstraints(std::move(cert));
+  ASSERT_TRUE(anchor.get());
+  trust_store->AddTrustAnchor(std::move(anchor));
+}
+
+// If the target cert is has the same name and key as a trust anchor, however
+// is signed but a different trust anchor. This should successfully build a
+// path, however the trust anchor will be the signer of this cert.
+//
+// (This test is very similar to TestEndEntityHasSameNameAndSpkiAsTrustAnchor
+// but with different data; also in this test the target cert itself is in the
+// trust store).
+TEST_F(PathBuilderMultiRootTest, TargetHasNameAndSpkiOfTrustAnchor) {
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(a_by_b_);
-  trust_store.AddTrustedCertificate(b_by_f_);
+  AddTrustedCertificate(a_by_b_, &trust_store);
+  AddTrustedCertificate(b_by_f_, &trust_store);
 
   CertPathBuilder::Result result;
   CertPathBuilder path_builder(a_by_b_, &trust_store, &signature_policy_, time_,
@@ -237,15 +251,100 @@ TEST_F(PathBuilderMultiRootTest, TargetIsTrustAnchor) {
   EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
 
   EXPECT_EQ(OK, result.error());
-  EXPECT_EQ(1U, result.paths[result.best_result_index]->path.size());
-  EXPECT_EQ(a_by_b_, result.paths[result.best_result_index]->path[0]);
+  const auto& path = result.paths[result.best_result_index]->path;
+  EXPECT_EQ(1U, path.certs.size());
+  EXPECT_EQ(a_by_b_, path.certs[0]);
+  EXPECT_EQ(b_by_f_, path.trust_anchor->cert());
+}
+
+// If the target cert is has the same name and key as a trust anchor, however
+// is NOT itself signed by a trust anchor, it fails. Although the provided SPKI
+// is trusted, the certificate contents cannot be verified.
+TEST_F(PathBuilderMultiRootTest, TargetWithSameNameAsTrustAnchorFails) {
+  TrustStore trust_store;
+  AddTrustedCertificate(a_by_b_, &trust_store);
+
+  CertPathBuilder::Result result;
+  CertPathBuilder path_builder(a_by_b_, &trust_store, &signature_policy_, time_,
+                               &result);
+
+  EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
+
+  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.error());
+}
+
+// Test a failed path building when the trust anchor is provided as a
+// supplemental certificate. Conceptually the following paths can be built:
+//
+//   B(C) <- C(D) <- [Trust anchor D]
+//   B(C) <- C(D) <- D(D) <- [Trust anchor D]
+//
+// The second one is extraneous given the shorter one, however path building
+// will enumerate it if the shorter one failed validation.
+TEST_F(PathBuilderMultiRootTest, SelfSignedTrustAnchorSupplementalCert) {
+  TrustStore trust_store;
+  AddTrustedCertificate(d_by_d_, &trust_store);
+
+  // The (extraneous) trust anchor D(D) is supplied as a certificate, as is the
+  // intermediate needed for path building C(D).
+  CertIssuerSourceStatic sync_certs;
+  sync_certs.AddCert(d_by_d_);
+  sync_certs.AddCert(c_by_d_);
+
+  // C(D) is not valid at this time, so path building will fail.
+  der::GeneralizedTime expired_time = {2016, 1, 1, 0, 0, 0};
+
+  CertPathBuilder::Result result;
+  CertPathBuilder path_builder(b_by_c_, &trust_store, &signature_policy_,
+                               expired_time, &result);
+  path_builder.AddCertIssuerSource(&sync_certs);
+
+  EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
+
+  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.error());
+  ASSERT_EQ(2U, result.paths.size());
+
+  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
+  const auto& path0 = result.paths[0]->path;
+  ASSERT_EQ(2U, path0.certs.size());
+  EXPECT_EQ(b_by_c_, path0.certs[0]);
+  EXPECT_EQ(c_by_d_, path0.certs[1]);
+  EXPECT_EQ(d_by_d_, path0.trust_anchor->cert());
+
+  const auto& path1 = result.paths[1]->path;
+  ASSERT_EQ(3U, path1.certs.size());
+  EXPECT_EQ(b_by_c_, path1.certs[0]);
+  EXPECT_EQ(c_by_d_, path1.certs[1]);
+  EXPECT_EQ(d_by_d_, path1.certs[2]);
+  EXPECT_EQ(d_by_d_, path1.trust_anchor->cert());
+}
+
+// If the target cert is a self-signed cert whose key is a trust anchor, it
+// should verify.
+TEST_F(PathBuilderMultiRootTest, TargetIsSelfSignedTrustAnchor) {
+  TrustStore trust_store;
+  AddTrustedCertificate(e_by_e_, &trust_store);
+  // This is not necessary for the test, just an extra...
+  AddTrustedCertificate(f_by_e_, &trust_store);
+
+  CertPathBuilder::Result result;
+  CertPathBuilder path_builder(e_by_e_, &trust_store, &signature_policy_, time_,
+                               &result);
+
+  EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
+
+  EXPECT_EQ(OK, result.error());
+  const auto& path = result.paths[result.best_result_index]->path;
+  EXPECT_EQ(1U, path.certs.size());
+  EXPECT_EQ(e_by_e_, path.certs[0]);
+  EXPECT_EQ(e_by_e_, path.trust_anchor->cert());
 }
 
 // If the target cert is directly issued by a trust anchor, it should verify
 // without any intermediate certs being provided.
 TEST_F(PathBuilderMultiRootTest, TargetDirectlySignedByTrustAnchor) {
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(b_by_f_);
+  AddTrustedCertificate(b_by_f_, &trust_store);
 
   CertPathBuilder::Result result;
   CertPathBuilder path_builder(a_by_b_, &trust_store, &signature_policy_, time_,
@@ -253,17 +352,18 @@ TEST_F(PathBuilderMultiRootTest, TargetDirectlySignedByTrustAnchor) {
 
   EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
 
-  EXPECT_EQ(OK, result.error());
-  EXPECT_EQ(2U, result.paths[result.best_result_index]->path.size());
-  EXPECT_EQ(a_by_b_, result.paths[result.best_result_index]->path[0]);
-  EXPECT_EQ(b_by_f_, result.paths[result.best_result_index]->path[1]);
+  ASSERT_EQ(OK, result.error());
+  const auto& path = result.paths[result.best_result_index]->path;
+  EXPECT_EQ(1U, path.certs.size());
+  EXPECT_EQ(a_by_b_, path.certs[0]);
+  EXPECT_EQ(b_by_f_, path.trust_anchor->cert());
 }
 
 // Test that async cert queries are not made if the path can be successfully
 // built with synchronously available certs.
 TEST_F(PathBuilderMultiRootTest, TriesSyncFirst) {
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(e_by_e_);
+  AddTrustedCertificate(e_by_e_, &trust_store);
 
   CertIssuerSourceStatic sync_certs;
   sync_certs.AddCert(b_by_f_);
@@ -288,7 +388,7 @@ TEST_F(PathBuilderMultiRootTest, TriesSyncFirst) {
 // Test that async cert queries are not made if no callback is provided.
 TEST_F(PathBuilderMultiRootTest, SychronousOnlyMode) {
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(e_by_e_);
+  AddTrustedCertificate(e_by_e_, &trust_store);
 
   CertIssuerSourceStatic sync_certs;
   sync_certs.AddCert(f_by_e_);
@@ -312,7 +412,7 @@ TEST_F(PathBuilderMultiRootTest, SychronousOnlyMode) {
 // simultaneously.
 TEST_F(PathBuilderMultiRootTest, TestAsyncSimultaneous) {
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(e_by_e_);
+  AddTrustedCertificate(e_by_e_, &trust_store);
 
   CertIssuerSourceStatic sync_certs;
   sync_certs.AddCert(b_by_c_);
@@ -343,8 +443,8 @@ TEST_F(PathBuilderMultiRootTest, TestAsyncSimultaneous) {
 TEST_F(PathBuilderMultiRootTest, TestLongChain) {
   // Both D(D) and C(D) are trusted roots.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(d_by_d_);
-  trust_store.AddTrustedCertificate(c_by_d_);
+  AddTrustedCertificate(d_by_d_, &trust_store);
+  AddTrustedCertificate(c_by_d_, &trust_store);
 
   // Certs B(C), and C(D) are all supplied.
   CertIssuerSourceStatic sync_certs;
@@ -362,7 +462,8 @@ TEST_F(PathBuilderMultiRootTest, TestLongChain) {
 
   // The result path should be A(B) <- B(C) <- C(D)
   // not the longer but also valid A(B) <- B(C) <- C(D) <- D(D)
-  EXPECT_EQ(3U, result.paths[result.best_result_index]->path.size());
+  const auto& path = result.paths[result.best_result_index]->path;
+  EXPECT_EQ(2U, path.certs.size());
 }
 
 // Test that PathBuilder will backtrack and try a different path if the first
@@ -370,7 +471,7 @@ TEST_F(PathBuilderMultiRootTest, TestLongChain) {
 TEST_F(PathBuilderMultiRootTest, TestBacktracking) {
   // Only D(D) is a trusted root.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(d_by_d_);
+  AddTrustedCertificate(d_by_d_, &trust_store);
 
   // Certs B(F) and F(E) are supplied synchronously, thus the path
   // A(B) <- B(F) <- F(E) should be built first, though it won't verify.
@@ -395,11 +496,12 @@ TEST_F(PathBuilderMultiRootTest, TestBacktracking) {
   EXPECT_EQ(OK, result.error());
 
   // The result path should be A(B) <- B(C) <- C(D) <- D(D)
-  ASSERT_EQ(4U, result.paths[result.best_result_index]->path.size());
-  EXPECT_EQ(a_by_b_, result.paths[result.best_result_index]->path[0]);
-  EXPECT_EQ(b_by_c_, result.paths[result.best_result_index]->path[1]);
-  EXPECT_EQ(c_by_d_, result.paths[result.best_result_index]->path[2]);
-  EXPECT_EQ(d_by_d_, result.paths[result.best_result_index]->path[3]);
+  const auto& path = result.paths[result.best_result_index]->path;
+  ASSERT_EQ(3U, path.certs.size());
+  EXPECT_EQ(a_by_b_, path.certs[0]);
+  EXPECT_EQ(b_by_c_, path.certs[1]);
+  EXPECT_EQ(c_by_d_, path.certs[2]);
+  EXPECT_EQ(d_by_d_, path.trust_anchor->cert());
 }
 
 // Test that whichever order CertIssuerSource returns the issuers, the path
@@ -407,7 +509,7 @@ TEST_F(PathBuilderMultiRootTest, TestBacktracking) {
 TEST_F(PathBuilderMultiRootTest, TestCertIssuerOrdering) {
   // Only D(D) is a trusted root.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(d_by_d_);
+  AddTrustedCertificate(d_by_d_, &trust_store);
 
   for (bool reverse_order : {false, true}) {
     SCOPED_TRACE(reverse_order);
@@ -432,11 +534,12 @@ TEST_F(PathBuilderMultiRootTest, TestCertIssuerOrdering) {
     EXPECT_EQ(OK, result.error());
 
     // The result path should be A(B) <- B(C) <- C(D) <- D(D)
-    ASSERT_EQ(4U, result.paths[result.best_result_index]->path.size());
-    EXPECT_EQ(a_by_b_, result.paths[result.best_result_index]->path[0]);
-    EXPECT_EQ(b_by_c_, result.paths[result.best_result_index]->path[1]);
-    EXPECT_EQ(c_by_d_, result.paths[result.best_result_index]->path[2]);
-    EXPECT_EQ(d_by_d_, result.paths[result.best_result_index]->path[3]);
+    const auto& path = result.paths[result.best_result_index]->path;
+    ASSERT_EQ(3U, path.certs.size());
+    EXPECT_EQ(a_by_b_, path.certs[0]);
+    EXPECT_EQ(b_by_c_, path.certs[1]);
+    EXPECT_EQ(c_by_d_, path.certs[2]);
+    EXPECT_EQ(d_by_d_, path.trust_anchor->cert());
   }
 }
 
@@ -498,7 +601,7 @@ class PathBuilderKeyRolloverTest : public ::testing::Test {
 TEST_F(PathBuilderKeyRolloverTest, TestRolloverOnlyOldRootTrusted) {
   // Only oldroot is trusted.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(oldroot_);
+  AddTrustedCertificate(oldroot_, &trust_store);
 
   // Old intermediate cert is not provided, so the pathbuilder will need to go
   // through the rollover cert.
@@ -518,22 +621,24 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverOnlyOldRootTrusted) {
   // Path builder will first attempt: target <- newintermediate <- oldroot
   // but it will fail since newintermediate is signed by newroot.
   ASSERT_EQ(2U, result.paths.size());
+  const auto& path0 = result.paths[0]->path;
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
-  ASSERT_EQ(3U, result.paths[0]->path.size());
-  EXPECT_EQ(target_, result.paths[0]->path[0]);
-  EXPECT_EQ(newintermediate_, result.paths[0]->path[1]);
-  EXPECT_EQ(oldroot_, result.paths[0]->path[2]);
+  ASSERT_EQ(2U, path0.certs.size());
+  EXPECT_EQ(target_, path0.certs[0]);
+  EXPECT_EQ(newintermediate_, path0.certs[1]);
+  EXPECT_EQ(oldroot_, path0.trust_anchor->cert());
 
   // Path builder will next attempt:
   // target <- newintermediate <- newrootrollover <- oldroot
   // which will succeed.
+  const auto& path1 = result.paths[1]->path;
   EXPECT_EQ(1U, result.best_result_index);
   EXPECT_EQ(OK, result.paths[1]->error);
-  ASSERT_EQ(4U, result.paths[1]->path.size());
-  EXPECT_EQ(target_, result.paths[1]->path[0]);
-  EXPECT_EQ(newintermediate_, result.paths[1]->path[1]);
-  EXPECT_EQ(newrootrollover_, result.paths[1]->path[2]);
-  EXPECT_EQ(oldroot_, result.paths[1]->path[3]);
+  ASSERT_EQ(3U, path1.certs.size());
+  EXPECT_EQ(target_, path1.certs[0]);
+  EXPECT_EQ(newintermediate_, path1.certs[1]);
+  EXPECT_EQ(newrootrollover_, path1.certs[2]);
+  EXPECT_EQ(oldroot_, path1.trust_anchor->cert());
 }
 
 // Tests that if both old and new roots are trusted it can build a path through
@@ -543,8 +648,8 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverOnlyOldRootTrusted) {
 TEST_F(PathBuilderKeyRolloverTest, TestRolloverBothRootsTrusted) {
   // Both oldroot and newroot are trusted.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(oldroot_);
-  trust_store.AddTrustedCertificate(newroot_);
+  AddTrustedCertificate(oldroot_, &trust_store);
+  AddTrustedCertificate(newroot_, &trust_store);
 
   // Both old and new intermediates + rollover cert are provided.
   CertIssuerSourceStatic sync_certs;
@@ -566,17 +671,18 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverBothRootsTrusted) {
   // target <- newintermediate <- newroot
   // either will succeed.
   ASSERT_EQ(1U, result.paths.size());
+  const auto& path = result.paths[0]->path;
   EXPECT_EQ(OK, result.paths[0]->error);
-  ASSERT_EQ(3U, result.paths[0]->path.size());
-  EXPECT_EQ(target_, result.paths[0]->path[0]);
-  if (result.paths[0]->path[1] != newintermediate_) {
+  ASSERT_EQ(2U, path.certs.size());
+  EXPECT_EQ(target_, path.certs[0]);
+  if (path.certs[1] != newintermediate_) {
     DVLOG(1) << "USED OLD";
-    EXPECT_EQ(oldintermediate_, result.paths[0]->path[1]);
-    EXPECT_EQ(oldroot_, result.paths[0]->path[2]);
+    EXPECT_EQ(oldintermediate_, path.certs[1]);
+    EXPECT_EQ(oldroot_, path.trust_anchor->cert());
   } else {
     DVLOG(1) << "USED NEW";
-    EXPECT_EQ(newintermediate_, result.paths[0]->path[1]);
-    EXPECT_EQ(newroot_, result.paths[0]->path[2]);
+    EXPECT_EQ(newintermediate_, path.certs[1]);
+    EXPECT_EQ(newroot_, path.trust_anchor->cert());
   }
 }
 
@@ -586,8 +692,8 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverBothRootsTrusted) {
 TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
   // Both newroot and oldroot are trusted.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(newroot_);
-  trust_store.AddTrustedCertificate(oldroot_);
+  AddTrustedCertificate(newroot_, &trust_store);
+  AddTrustedCertificate(oldroot_, &trust_store);
 
   // Only oldintermediate is supplied, so the path with newroot should fail,
   // oldroot should succeed.
@@ -613,27 +719,29 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
     // Path builder may first attempt: target <- oldintermediate <- newroot
     // but it will fail since oldintermediate is signed by oldroot.
     EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
-    ASSERT_EQ(3U, result.paths[0]->path.size());
-    EXPECT_EQ(target_, result.paths[0]->path[0]);
-    EXPECT_EQ(oldintermediate_, result.paths[0]->path[1]);
-    EXPECT_EQ(newroot_, result.paths[0]->path[2]);
+    const auto& path = result.paths[0]->path;
+    ASSERT_EQ(2U, path.certs.size());
+    EXPECT_EQ(target_, path.certs[0]);
+    EXPECT_EQ(oldintermediate_, path.certs[1]);
+    EXPECT_EQ(newroot_, path.trust_anchor->cert());
   }
 
   // Path builder will next attempt:
   // target <- old intermediate <- oldroot
   // which should succeed.
   EXPECT_EQ(OK, result.paths[result.best_result_index]->error);
-  ASSERT_EQ(3U, result.paths[result.best_result_index]->path.size());
-  EXPECT_EQ(target_, result.paths[result.best_result_index]->path[0]);
-  EXPECT_EQ(oldintermediate_, result.paths[result.best_result_index]->path[1]);
-  EXPECT_EQ(oldroot_, result.paths[result.best_result_index]->path[2]);
+  const auto& path = result.paths[result.best_result_index]->path;
+  ASSERT_EQ(2U, path.certs.size());
+  EXPECT_EQ(target_, path.certs[0]);
+  EXPECT_EQ(oldintermediate_, path.certs[1]);
+  EXPECT_EQ(oldroot_, path.trust_anchor->cert());
 }
 
 // Tests that the path builder doesn't build longer than necessary paths.
 TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
   // Only oldroot is trusted.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(oldroot_);
+  AddTrustedCertificate(oldroot_, &trust_store);
 
   // New intermediate and new root are provided synchronously.
   CertIssuerSourceStatic sync_certs;
@@ -659,20 +767,22 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
   // Path builder will first attempt: target <- newintermediate <- oldroot
   // but it will fail since newintermediate is signed by newroot.
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
-  ASSERT_EQ(3U, result.paths[0]->path.size());
-  EXPECT_EQ(target_, result.paths[0]->path[0]);
-  EXPECT_EQ(newintermediate_, result.paths[0]->path[1]);
-  EXPECT_EQ(oldroot_, result.paths[0]->path[2]);
+  const auto& path0 = result.paths[0]->path;
+  ASSERT_EQ(2U, path0.certs.size());
+  EXPECT_EQ(target_, path0.certs[0]);
+  EXPECT_EQ(newintermediate_, path0.certs[1]);
+  EXPECT_EQ(oldroot_, path0.trust_anchor->cert());
 
   // Path builder will next attempt:
   // target <- newintermediate <- newroot <- oldroot
   // but it will fail since newroot is self-signed.
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[1]->error);
-  ASSERT_EQ(4U, result.paths[1]->path.size());
-  EXPECT_EQ(target_, result.paths[1]->path[0]);
-  EXPECT_EQ(newintermediate_, result.paths[1]->path[1]);
-  EXPECT_EQ(newroot_, result.paths[1]->path[2]);
-  EXPECT_EQ(oldroot_, result.paths[1]->path[3]);
+  const auto& path1 = result.paths[1]->path;
+  ASSERT_EQ(3U, path1.certs.size());
+  EXPECT_EQ(target_, path1.certs[0]);
+  EXPECT_EQ(newintermediate_, path1.certs[1]);
+  EXPECT_EQ(newroot_, path1.certs[2]);
+  EXPECT_EQ(oldroot_, path1.trust_anchor->cert());
 
   // Path builder will skip:
   // target <- newintermediate <- newroot <- newrootrollover <- ...
@@ -682,18 +792,22 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
   // target <- newintermediate <- newrootrollover <- oldroot
   EXPECT_EQ(2U, result.best_result_index);
   EXPECT_EQ(OK, result.paths[2]->error);
-  ASSERT_EQ(4U, result.paths[2]->path.size());
-  EXPECT_EQ(target_, result.paths[2]->path[0]);
-  EXPECT_EQ(newintermediate_, result.paths[2]->path[1]);
-  EXPECT_EQ(newrootrollover_, result.paths[2]->path[2]);
-  EXPECT_EQ(oldroot_, result.paths[2]->path[3]);
+  const auto& path2 = result.paths[2]->path;
+  ASSERT_EQ(3U, path2.certs.size());
+  EXPECT_EQ(target_, path2.certs[0]);
+  EXPECT_EQ(newintermediate_, path2.certs[1]);
+  EXPECT_EQ(newrootrollover_, path2.certs[2]);
+  EXPECT_EQ(oldroot_, path2.trust_anchor->cert());
 }
 
-// If the target cert is a trust root, that alone is a valid path.
+// If the target cert is a trust anchor, however is not itself *signed* by a
+// trust anchor, then it is not considered valid (the SPKI and name of the
+// trust anchor matches the SPKI and subject of the targe certificate, but the
+// rest of the certificate cannot be verified).
 TEST_F(PathBuilderKeyRolloverTest, TestEndEntityIsTrustRoot) {
   // Trust newintermediate.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(newintermediate_);
+  AddTrustedCertificate(newintermediate_, &trust_store);
 
   CertPathBuilder::Result result;
   // Newintermediate is also the target cert.
@@ -702,12 +816,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestEndEntityIsTrustRoot) {
 
   EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
 
-  EXPECT_EQ(OK, result.error());
-
-  ASSERT_EQ(1U, result.paths.size());
-  EXPECT_EQ(OK, result.paths[0]->error);
-  ASSERT_EQ(1U, result.paths[0]->path.size());
-  EXPECT_EQ(newintermediate_, result.paths[0]->path[0]);
+  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.error());
 }
 
 // If target has same Name+SAN+SPKI as a necessary intermediate, test if a path
@@ -718,7 +827,7 @@ TEST_F(PathBuilderKeyRolloverTest,
        TestEndEntityHasSameNameAndSpkiAsIntermediate) {
   // Trust oldroot.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(oldroot_);
+  AddTrustedCertificate(oldroot_, &trust_store);
 
   // New root rollover is provided synchronously.
   CertIssuerSourceStatic sync_certs;
@@ -743,7 +852,7 @@ TEST_F(PathBuilderKeyRolloverTest,
        TestEndEntityHasSameNameAndSpkiAsTrustAnchor) {
   // Trust newrootrollover.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(newrootrollover_);
+  AddTrustedCertificate(newrootrollover_, &trust_store);
 
   CertPathBuilder::Result result;
   // Newroot is the target cert.
@@ -761,8 +870,9 @@ TEST_F(PathBuilderKeyRolloverTest,
   // Newroot has same name+SPKI as newrootrollover, thus the path is valid and
   // only contains newroot.
   EXPECT_EQ(OK, best_result->error);
-  ASSERT_EQ(1U, best_result->path.size());
-  EXPECT_EQ(newroot_, best_result->path[0]);
+  ASSERT_EQ(1U, best_result->path.certs.size());
+  EXPECT_EQ(newroot_, best_result->path.certs[0]);
+  EXPECT_EQ(newrootrollover_, best_result->path.trust_anchor->cert());
 }
 
 // Test that PathBuilder will not try the same path twice if multiple
@@ -775,7 +885,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediates) {
 
   // Only newroot is a trusted root.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(newroot_);
+  AddTrustedCertificate(newroot_, &trust_store);
 
   // The oldintermediate is supplied synchronously by |sync_certs1| and
   // another copy of oldintermediate is supplied synchronously by |sync_certs2|.
@@ -807,25 +917,28 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediates) {
   // Path builder will first attempt: target <- oldintermediate <- newroot
   // but it will fail since oldintermediate is signed by oldroot.
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
-  ASSERT_EQ(3U, result.paths[0]->path.size());
-  EXPECT_EQ(target_, result.paths[0]->path[0]);
+  const auto& path0 = result.paths[0]->path;
+
+  ASSERT_EQ(2U, path0.certs.size());
+  EXPECT_EQ(target_, path0.certs[0]);
   // Compare the DER instead of ParsedCertificate pointer, don't care which copy
   // of oldintermediate was used in the path.
-  EXPECT_EQ(oldintermediate_->der_cert(), result.paths[0]->path[1]->der_cert());
-  EXPECT_EQ(newroot_, result.paths[0]->path[2]);
+  EXPECT_EQ(oldintermediate_->der_cert(), path0.certs[1]->der_cert());
+  EXPECT_EQ(newroot_, path0.trust_anchor->cert());
 
   // Path builder will next attempt: target <- newintermediate <- newroot
   // which will succeed.
   EXPECT_EQ(1U, result.best_result_index);
   EXPECT_EQ(OK, result.paths[1]->error);
-  ASSERT_EQ(3U, result.paths[1]->path.size());
-  EXPECT_EQ(target_, result.paths[1]->path[0]);
-  EXPECT_EQ(newintermediate_, result.paths[1]->path[1]);
-  EXPECT_EQ(newroot_, result.paths[1]->path[2]);
+  const auto& path1 = result.paths[1]->path;
+  ASSERT_EQ(2U, path1.certs.size());
+  EXPECT_EQ(target_, path1.certs[0]);
+  EXPECT_EQ(newintermediate_, path1.certs[1]);
+  EXPECT_EQ(newroot_, path1.trust_anchor->cert());
 }
 
-// Test that PathBuilder will not try the same path twice if the same cert is
-// presented via a CertIssuerSources and a TrustAnchor.
+// Test when PathBuilder is given a cert CertIssuerSources that has the same
+// SPKI as a TrustAnchor.
 TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediateAndRoot) {
   // Create a separate copy of newroot.
   scoped_refptr<ParsedCertificate> newroot_dupe(
@@ -834,7 +947,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediateAndRoot) {
 
   // Only newroot is a trusted root.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(newroot_);
+  AddTrustedCertificate(newroot_, &trust_store);
 
   // The oldintermediate and newroot are supplied synchronously by |sync_certs|.
   CertIssuerSourceStatic sync_certs;
@@ -849,17 +962,19 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediateAndRoot) {
   EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
 
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.error());
-  ASSERT_EQ(1U, result.paths.size());
+  ASSERT_EQ(2U, result.paths.size());
+  // TODO(eroman): Is this right?
 
   // Path builder attempt: target <- oldintermediate <- newroot
   // but it will fail since oldintermediate is signed by oldroot.
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
-  ASSERT_EQ(3U, result.paths[0]->path.size());
-  EXPECT_EQ(target_, result.paths[0]->path[0]);
-  EXPECT_EQ(oldintermediate_, result.paths[0]->path[1]);
+  const auto& path = result.paths[0]->path;
+  ASSERT_EQ(2U, path.certs.size());
+  EXPECT_EQ(target_, path.certs[0]);
+  EXPECT_EQ(oldintermediate_, path.certs[1]);
   // Compare the DER instead of ParsedCertificate pointer, don't care which copy
   // of newroot was used in the path.
-  EXPECT_EQ(newroot_->der_cert(), result.paths[0]->path[2]->der_cert());
+  EXPECT_EQ(newroot_->der_cert(), path.trust_anchor->cert()->der_cert());
 }
 
 class MockCertIssuerSourceRequest : public CertIssuerSource::Request {
@@ -902,7 +1017,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleAsyncCallbacksFromSingleSource) {
 
   // Only newroot is a trusted root.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(newroot_);
+  AddTrustedCertificate(newroot_, &trust_store);
 
   CertPathBuilder::Result result;
   CertPathBuilder path_builder(target_, &trust_store, &signature_policy_, time_,
@@ -979,18 +1094,20 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleAsyncCallbacksFromSingleSource) {
   // Path builder first attempts: target <- oldintermediate <- newroot
   // but it will fail since oldintermediate is signed by oldroot.
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
-  ASSERT_EQ(3U, result.paths[0]->path.size());
-  EXPECT_EQ(target_, result.paths[0]->path[0]);
-  EXPECT_EQ(oldintermediate_, result.paths[0]->path[1]);
-  EXPECT_EQ(newroot_, result.paths[0]->path[2]);
+  const auto& path0 = result.paths[0]->path;
+  ASSERT_EQ(2U, path0.certs.size());
+  EXPECT_EQ(target_, path0.certs[0]);
+  EXPECT_EQ(oldintermediate_, path0.certs[1]);
+  EXPECT_EQ(newroot_, path0.trust_anchor->cert());
 
   // After the second batch of async results, path builder will attempt:
   // target <- newintermediate <- newroot which will succeed.
   EXPECT_EQ(OK, result.paths[1]->error);
-  ASSERT_EQ(3U, result.paths[1]->path.size());
-  EXPECT_EQ(target_, result.paths[1]->path[0]);
-  EXPECT_EQ(newintermediate_, result.paths[1]->path[1]);
-  EXPECT_EQ(newroot_, result.paths[1]->path[2]);
+  const auto& path1 = result.paths[1]->path;
+  ASSERT_EQ(2U, path1.certs.size());
+  EXPECT_EQ(target_, path1.certs[0]);
+  EXPECT_EQ(newintermediate_, path1.certs[1]);
+  EXPECT_EQ(newroot_, path1.trust_anchor->cert());
 }
 
 // Test that PathBuilder will not try the same path twice if CertIssuerSources
@@ -1000,7 +1117,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateAsyncIntermediates) {
 
   // Only newroot is a trusted root.
   TrustStore trust_store;
-  trust_store.AddTrustedCertificate(newroot_);
+  AddTrustedCertificate(newroot_, &trust_store);
 
   CertPathBuilder::Result result;
   CertPathBuilder path_builder(target_, &trust_store, &signature_policy_, time_,
@@ -1092,20 +1209,22 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateAsyncIntermediates) {
   // Path builder first attempts: target <- oldintermediate <- newroot
   // but it will fail since oldintermediate is signed by oldroot.
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
-  ASSERT_EQ(3U, result.paths[0]->path.size());
-  EXPECT_EQ(target_, result.paths[0]->path[0]);
-  EXPECT_EQ(oldintermediate_, result.paths[0]->path[1]);
-  EXPECT_EQ(newroot_, result.paths[0]->path[2]);
+  const auto& path0 = result.paths[0]->path;
+  ASSERT_EQ(2U, path0.certs.size());
+  EXPECT_EQ(target_, path0.certs[0]);
+  EXPECT_EQ(oldintermediate_, path0.certs[1]);
+  EXPECT_EQ(newroot_, path0.trust_anchor->cert());
 
   // The second async result does not generate any path.
 
   // After the third batch of async results, path builder will attempt:
   // target <- newintermediate <- newroot which will succeed.
   EXPECT_EQ(OK, result.paths[1]->error);
-  ASSERT_EQ(3U, result.paths[1]->path.size());
-  EXPECT_EQ(target_, result.paths[1]->path[0]);
-  EXPECT_EQ(newintermediate_, result.paths[1]->path[1]);
-  EXPECT_EQ(newroot_, result.paths[1]->path[2]);
+  const auto& path1 = result.paths[1]->path;
+  ASSERT_EQ(2U, path1.certs.size());
+  EXPECT_EQ(target_, path1.certs[0]);
+  EXPECT_EQ(newintermediate_, path1.certs[1]);
+  EXPECT_EQ(newroot_, path1.trust_anchor->cert());
 }
 
 }  // namespace

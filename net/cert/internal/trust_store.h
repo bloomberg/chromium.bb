@@ -19,8 +19,64 @@ namespace der {
 class Input;
 }
 
+// A TrustAnchor represents a trust anchor used during RFC 5280 path validation.
+//
+// At its core, each trust anchor has two parts:
+//  * Name
+//  * Public Key
+//
+// Optionally a trust anchor may contain:
+//  * An associated certificate
+//  * Trust anchor constraints
+//
+// Relationship between ParsedCertificate and TrustAnchor:
+//
+// For convenience trust anchors are often described using a
+// (self-signed) certificate. TrustAnchor facilitates this by allowing
+// construction of a TrustAnchor given a ParsedCertificate, however
+// the concepts are NOT quite the same.
+//
+// Notably when constructed from a certificate, properties/constraints of
+// the underlying certificate like expiration, signature, or basic
+// constraints are NOT processed and validated by path validation.
+// Instead such properties need to be explicitly indicated via "trust
+// anchor constraints".
+//
+// See RFC 5937 and RFC 5280 for more details.
+class NET_EXPORT TrustAnchor : public base::RefCountedThreadSafe<TrustAnchor> {
+ public:
+  // Creates a TrustAnchor given a certificate. The only parts of the
+  // certificate that will be used are the subject and SPKI. Any extensions in
+  // the certificate that might limit its use (like name constraints or policy)
+  // are disregarded during validation. In other words, the resulting trust
+  // anchor has no anchor constraints.
+  static scoped_refptr<TrustAnchor> CreateFromCertificateNoConstraints(
+      scoped_refptr<ParsedCertificate> cert);
+
+  // TODO(crbug.com/635200): Support anchor constraints. For instance
+  // by adding factory method CreateFromCertificateWithConstraints()
+
+  der::Input spki() const;
+  der::Input normalized_subject() const;
+
+  // Returns the optional certificate representing this trust anchor.
+  // In the current implementation it will never return nullptr...
+  // however clients should be prepared to handle this case.
+  const scoped_refptr<ParsedCertificate>& cert() const;
+
+ private:
+  friend class base::RefCountedThreadSafe<TrustAnchor>;
+  explicit TrustAnchor(scoped_refptr<ParsedCertificate>);
+  ~TrustAnchor();
+
+  scoped_refptr<ParsedCertificate> cert_;
+};
+
+using TrustAnchors = std::vector<scoped_refptr<TrustAnchor>>;
+
 // A very simple implementation of a TrustStore, which contains a set of
-// trusted certificates.
+// trust anchors.
+//
 // TODO(mattm): convert this into an interface, provide implementations that
 // interface with OS trust store.
 class NET_EXPORT TrustStore {
@@ -31,21 +87,16 @@ class NET_EXPORT TrustStore {
   // Empties the trust store, resetting it to original state.
   void Clear();
 
-  // Adds a trusted certificate to the store.
-  void AddTrustedCertificate(scoped_refptr<ParsedCertificate> anchor);
+  void AddTrustAnchor(scoped_refptr<TrustAnchor> anchor);
 
   // Returns the trust anchors that match |name| in |*matches|, if any.
   void FindTrustAnchorsByNormalizedName(const der::Input& normalized_name,
-                                        ParsedCertificateList* matches) const;
-
-  // Returns true if |cert| matches a certificate in the TrustStore.
-  bool IsTrustedCertificate(const ParsedCertificate* cert) const
-      WARN_UNUSED_RESULT;
+                                        TrustAnchors* matches) const;
 
  private:
-  // Multimap from normalized subject -> ParsedCertificate.
+  // Multimap from normalized subject -> TrustAnchor.
   std::unordered_multimap<base::StringPiece,
-                          scoped_refptr<ParsedCertificate>,
+                          scoped_refptr<TrustAnchor>,
                           base::StringPieceHash>
       anchors_;
 

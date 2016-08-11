@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/internal/cert_issuer_source.h"
@@ -40,6 +41,26 @@ std::string CertDebugString(const ParsedCertificate* cert) {
   return subject_str + "(" + issuer_str + ")";
 }
 
+// This structure contains either a ParsedCertificate or a TrustAnchor. It is
+// used to describe the result of getting a certificate's issuer, which may
+// either be another certificate, or a trust anchor.
+struct CertificateOrTrustAnchor {
+  CertificateOrTrustAnchor() {}
+
+  explicit CertificateOrTrustAnchor(scoped_refptr<ParsedCertificate> cert)
+      : cert(std::move(cert)) {}
+
+  explicit CertificateOrTrustAnchor(scoped_refptr<TrustAnchor> anchor)
+      : anchor(std::move(anchor)) {}
+
+  bool IsTrustAnchor() const { return anchor.get() != nullptr; }
+  bool IsCertificate() const { return cert.get() != nullptr; }
+  bool IsEmpty() const { return !IsTrustAnchor() && !IsCertificate(); }
+
+  scoped_refptr<ParsedCertificate> cert;
+  scoped_refptr<TrustAnchor> anchor;
+};
+
 // CertIssuersIter iterates through the intermediates from |cert_issuer_sources|
 // which may be issuers of |cert|.
 class CertIssuersIter {
@@ -51,12 +72,12 @@ class CertIssuersIter {
                   const TrustStore& trust_store);
 
   // Gets the next candidate issuer. If an issuer is ready synchronously, SYNC
-  // is returned and the cert is stored in |*out_cert|.  If an issuer is not
+  // is returned and the cert is stored in |*cert|.  If an issuer is not
   // ready, ASYNC is returned and |callback| will be called once |*out_cert| has
   // been set. If |callback| is null, always completes synchronously.
   //
-  // In either case, if all issuers have been exhausted, |*out_cert| is cleared.
-  CompletionStatus GetNextIssuer(scoped_refptr<ParsedCertificate>* out_cert,
+  // In either case, if all issuers have been exhausted, |*out| is cleared.
+  CompletionStatus GetNextIssuer(CertificateOrTrustAnchor* out,
                                  const base::Closure& callback);
 
   // Returns the |cert| for which issuers are being retrieved.
@@ -69,6 +90,11 @@ class CertIssuersIter {
   scoped_refptr<ParsedCertificate> cert_;
   CertIssuerSources* cert_issuer_sources_;
 
+  // The list of trust anchors that match the issuer name for |cert_|.
+  TrustAnchors anchors_;
+  // The index of the next trust anchor in |anchors_| to return.
+  size_t cur_anchor_ = 0;
+
   // The list of issuers for |cert_|. This is added to incrementally (first
   // synchronous results, then possibly multiple times as asynchronous results
   // arrive.) The issuers may be re-sorted each time new issuers are added, but
@@ -78,7 +104,8 @@ class CertIssuersIter {
   // |present_issuers_| will point to data owned by the certs.
   ParsedCertificateList issuers_;
   // The index of the next cert in |issuers_| to return.
-  size_t cur_ = 0;
+  size_t cur_issuer_ = 0;
+
   // Set of DER-encoded values for the certs in |issuers_|. Used to prevent
   // duplicates. This is based on the full DER of the cert to allow different
   // versions of the same certificate to be tried in different candidate paths.
@@ -94,10 +121,10 @@ class CertIssuersIter {
   std::vector<std::unique_ptr<CertIssuerSource::Request>>
       pending_async_requests_;
 
-  // When GetNextIssuer was called and returned asynchronously, |*out_cert_| is
+  // When GetNextIssuer was called and returned asynchronously, |*out_| is
   // where the result will be stored, and |callback_| will be run when the
   // result is ready.
-  scoped_refptr<ParsedCertificate>* out_cert_;
+  CertificateOrTrustAnchor* out_;
   base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CertIssuersIter);
@@ -109,12 +136,7 @@ CertIssuersIter::CertIssuersIter(scoped_refptr<ParsedCertificate> in_cert,
     : cert_(in_cert), cert_issuer_sources_(cert_issuer_sources) {
   DVLOG(1) << "CertIssuersIter(" << CertDebugString(cert()) << ") created";
   trust_store.FindTrustAnchorsByNormalizedName(in_cert->normalized_issuer(),
-                                               &issuers_);
-  // Insert matching roots into |present_issuers_| in case they also are
-  // returned by a CertIssuerSource. It is assumed
-  // FindTrustAnchorsByNormalizedName does not itself return dupes.
-  for (const auto& root : issuers_)
-    present_issuers_.insert(root->der_cert().AsStringPiece());
+                                               &anchors_);
 
   for (auto* cert_issuer_source : *cert_issuer_sources_) {
     ParsedCertificateList new_issuers;
@@ -134,19 +156,29 @@ CertIssuersIter::CertIssuersIter(scoped_refptr<ParsedCertificate> in_cert,
   // is done)
 }
 
-CompletionStatus CertIssuersIter::GetNextIssuer(
-    scoped_refptr<ParsedCertificate>* out_cert,
-    const base::Closure& callback) {
+CompletionStatus CertIssuersIter::GetNextIssuer(CertificateOrTrustAnchor* out,
+                                                const base::Closure& callback) {
   // Should not be called again while already waiting for an async result.
   DCHECK(callback_.is_null());
 
-  if (cur_ < issuers_.size()) {
+  // Return possible trust anchors first.
+  if (cur_anchor_ < anchors_.size()) {
     DVLOG(1) << "CertIssuersIter(" << CertDebugString(cert())
-             << "): returning item " << cur_ << " of " << issuers_.size();
+             << "): returning anchor " << cur_anchor_ << " of "
+             << anchors_.size();
+    // Still have anchors that haven't been returned yet, return one of them.
+    *out = CertificateOrTrustAnchor(anchors_[cur_anchor_++]);
+    return CompletionStatus::SYNC;
+  }
+
+  if (cur_issuer_ < issuers_.size()) {
+    DVLOG(1) << "CertIssuersIter(" << CertDebugString(cert())
+             << "): returning issuer " << cur_issuer_ << " of "
+             << issuers_.size();
     // Still have issuers that haven't been returned yet, return one of them.
     // A reference to the returned issuer is retained, since |present_issuers_|
     // points to data owned by it.
-    *out_cert = issuers_[cur_++];
+    *out = CertificateOrTrustAnchor(issuers_[cur_issuer_++]);
     return CompletionStatus::SYNC;
   }
   if (did_async_query_) {
@@ -154,7 +186,7 @@ CompletionStatus CertIssuersIter::GetNextIssuer(
       DVLOG(1) << "CertIssuersIter(" << CertDebugString(cert())
                << ") Reached the end of all available issuers.";
       // Reached the end of all available issuers.
-      *out_cert = nullptr;
+      *out = CertificateOrTrustAnchor();
       return CompletionStatus::SYNC;
     }
 
@@ -162,7 +194,7 @@ CompletionStatus CertIssuersIter::GetNextIssuer(
              << ") Still waiting for async results from other "
                 "CertIssuerSources.";
     // Still waiting for async results from other CertIssuerSources.
-    out_cert_ = out_cert;
+    out_ = out;
     callback_ = callback;
     return CompletionStatus::ASYNC;
   }
@@ -170,7 +202,7 @@ CompletionStatus CertIssuersIter::GetNextIssuer(
 
   if (callback.is_null()) {
     // Synchronous-only mode, don't try to query async sources.
-    *out_cert = nullptr;
+    *out = CertificateOrTrustAnchor();
     return CompletionStatus::SYNC;
   }
 
@@ -195,14 +227,14 @@ CompletionStatus CertIssuersIter::GetNextIssuer(
     DVLOG(1) << "CertIssuersIter(" << CertDebugString(cert())
              << ") No cert sources have async results.";
     // No cert sources have async results.
-    *out_cert = nullptr;
+    *out = CertificateOrTrustAnchor();
     return CompletionStatus::SYNC;
   }
 
   DVLOG(1) << "CertIssuersIter(" << CertDebugString(cert())
            << ") issued AsyncGetIssuersOf call(s) (n=" << pending_async_results_
            << ")";
-  out_cert_ = out_cert;
+  out_ = out;
   callback_ = callback;
   return CompletionStatus::ASYNC;
 }
@@ -235,16 +267,17 @@ void CertIssuersIter::GotAsyncCerts(CertIssuerSource::Request* request) {
 
   // Notify that more results are available, if necessary.
   if (!callback_.is_null()) {
-    if (cur_ < issuers_.size()) {
+    DCHECK_GE(cur_anchor_, anchors_.size());
+    if (cur_issuer_ < issuers_.size()) {
       DVLOG(1) << "CertIssuersIter(" << CertDebugString(cert())
-               << "): async returning item " << cur_ << " of "
+               << "): async returning item " << cur_issuer_ << " of "
                << issuers_.size();
-      *out_cert_ = std::move(issuers_[cur_++]);
+      *out_ = CertificateOrTrustAnchor(std::move(issuers_[cur_issuer_++]));
       base::ResetAndReturn(&callback_).Run();
     } else if (pending_async_results_ == 0) {
       DVLOG(1) << "CertIssuersIter(" << CertDebugString(cert())
                << "): async returning empty result";
-      *out_cert_ = nullptr;
+      *out_ = CertificateOrTrustAnchor();
       base::ResetAndReturn(&callback_).Run();
     } else {
       DVLOG(1) << "CertIssuersIter(" << CertDebugString(cert())
@@ -328,6 +361,18 @@ class CertIssuerIterPath {
 
 }  // namespace
 
+CertPath::CertPath() = default;
+CertPath::~CertPath() = default;
+
+void CertPath::Clear() {
+  trust_anchor = nullptr;
+  certs.clear();
+}
+
+bool CertPath::IsEmpty() const {
+  return certs.empty();
+}
+
 // CertPathIter generates possible paths from |cert| to a trust anchor in
 // |trust_store|, using intermediates from the |cert_issuer_source| objects if
 // necessary.
@@ -345,8 +390,7 @@ class CertPathIter {
   // returned and the path is stored in |*path|.  If a path is not ready,
   // ASYNC is returned and |callback| will be called once |*path| has been set.
   // In either case, if all paths have been exhausted, |*path| is cleared.
-  CompletionStatus GetNextPath(ParsedCertificateList* path,
-                               const base::Closure& callback);
+  CompletionStatus GetNextPath(CertPath* path, const base::Closure& callback);
 
  private:
   enum State {
@@ -365,9 +409,9 @@ class CertPathIter {
 
   void HandleGotNextIssuer(void);
 
-  // Stores the next candidate issuer certificate, until it is used during the
+  // Stores the next candidate issuer, until it is used during the
   // STATE_GET_NEXT_ISSUER_COMPLETE step.
-  scoped_refptr<ParsedCertificate> next_cert_;
+  CertificateOrTrustAnchor next_issuer_;
   // The current path being explored, made up of CertIssuerIters. Each node
   // keeps track of the state of searching for issuers of that cert, so that
   // when backtracking it can resume the search where it left off.
@@ -375,10 +419,11 @@ class CertPathIter {
   // The CertIssuerSources for retrieving candidate issuers.
   CertIssuerSources cert_issuer_sources_;
   // The TrustStore for checking if a path ends in a trust anchor.
+  // TODO: is this comment correct anymore?
   const TrustStore* trust_store_;
   // The output variable for storing the next candidate path, which the client
   // passes in to GetNextPath. Only used for a single path output.
-  ParsedCertificateList* out_path_;
+  CertPath* out_path_;
   // The callback to be called if an async lookup generated a candidate path.
   base::Closure callback_;
   // Current state of the state machine.
@@ -389,7 +434,7 @@ class CertPathIter {
 
 CertPathIter::CertPathIter(scoped_refptr<ParsedCertificate> cert,
                            const TrustStore* trust_store)
-    : next_cert_(std::move(cert)),
+    : next_issuer_(std::move(cert)),
       trust_store_(trust_store),
       next_state_(STATE_GET_NEXT_ISSUER_COMPLETE) {}
 
@@ -397,10 +442,10 @@ void CertPathIter::AddCertIssuerSource(CertIssuerSource* cert_issuer_source) {
   cert_issuer_sources_.push_back(cert_issuer_source);
 }
 
-CompletionStatus CertPathIter::GetNextPath(ParsedCertificateList* path,
+CompletionStatus CertPathIter::GetNextPath(CertPath* path,
                                            const base::Closure& callback) {
   out_path_ = path;
-  out_path_->clear();
+  out_path_->Clear();
   CompletionStatus rv = DoLoop(!callback.is_null());
   if (rv == CompletionStatus::ASYNC) {
     callback_ = callback;
@@ -446,35 +491,35 @@ CompletionStatus CertPathIter::DoLoop(bool allow_async) {
 CompletionStatus CertPathIter::DoGetNextIssuer(bool allow_async) {
   next_state_ = STATE_GET_NEXT_ISSUER_COMPLETE;
   CompletionStatus rv = cur_path_.back()->GetNextIssuer(
-      &next_cert_, allow_async ? base::Bind(&CertPathIter::HandleGotNextIssuer,
-                                            base::Unretained(this))
-                               : base::Closure());
+      &next_issuer_, allow_async
+                         ? base::Bind(&CertPathIter::HandleGotNextIssuer,
+                                      base::Unretained(this))
+                         : base::Closure());
   return rv;
 }
 
 CompletionStatus CertPathIter::DoGetNextIssuerComplete() {
-  if (next_cert_) {
+  // If the issuer is a trust anchor signal readiness.
+  if (next_issuer_.IsTrustAnchor()) {
+    DVLOG(1) << "CertPathIter got anchor("
+             << CertDebugString(next_issuer_.anchor->cert().get());
+    next_state_ = STATE_RETURN_A_PATH;
+    cur_path_.CopyPath(&out_path_->certs);
+    out_path_->trust_anchor = std::move(next_issuer_.anchor);
+    next_issuer_ = CertificateOrTrustAnchor();
+    return CompletionStatus::SYNC;
+  }
+
+  if (next_issuer_.IsCertificate()) {
     // Skip this cert if it is already in the chain.
-    if (cur_path_.IsPresent(next_cert_.get())) {
+    if (cur_path_.IsPresent(next_issuer_.cert.get())) {
       next_state_ = STATE_GET_NEXT_ISSUER;
-      return CompletionStatus::SYNC;
-    }
-    // If the cert matches a trust root, this is a (possibly) complete path.
-    // Signal readiness. Don't add it to cur_path_, since that would cause an
-    // unnecessary lookup of issuers of the trust root.
-    if (trust_store_->IsTrustedCertificate(next_cert_.get())) {
-      DVLOG(1) << "CertPathIter IsTrustedCertificate("
-               << CertDebugString(next_cert_.get()) << ") = true";
-      next_state_ = STATE_RETURN_A_PATH;
-      cur_path_.CopyPath(out_path_);
-      out_path_->push_back(std::move(next_cert_));
-      next_cert_ = nullptr;
       return CompletionStatus::SYNC;
     }
 
     cur_path_.Append(base::WrapUnique(new CertIssuersIter(
-        std::move(next_cert_), &cert_issuer_sources_, *trust_store_)));
-    next_cert_ = nullptr;
+        std::move(next_issuer_.cert), &cert_issuer_sources_, *trust_store_)));
+    next_issuer_ = CertificateOrTrustAnchor();
     DVLOG(1) << "CertPathIter cur_path_ = " << cur_path_.PathDebugString();
     // Continue descending the tree.
     next_state_ = STATE_GET_NEXT_ISSUER;
@@ -523,7 +568,6 @@ CertPathBuilder::CertPathBuilder(scoped_refptr<ParsedCertificate> cert,
                                  const der::GeneralizedTime& time,
                                  Result* result)
     : cert_path_iter_(new CertPathIter(std::move(cert), trust_store)),
-      trust_store_(trust_store),
       signature_policy_(signature_policy),
       time_(time),
       next_state_(STATE_NONE),
@@ -586,14 +630,16 @@ void CertPathBuilder::HandleGotNextPath() {
 }
 
 CompletionStatus CertPathBuilder::DoGetNextPathComplete() {
-  if (next_path_.empty()) {
+  if (next_path_.IsEmpty()) {
     // No more paths to check, signal completion.
     next_state_ = STATE_NONE;
     return CompletionStatus::SYNC;
   }
 
-  bool verify_result = VerifyCertificateChainAssumingTrustedRoot(
-      next_path_, *trust_store_, signature_policy_, time_);
+  bool verify_result =
+      next_path_.trust_anchor.get() &&
+      VerifyCertificateChain(next_path_.certs, next_path_.trust_anchor.get(),
+                             signature_policy_, time_);
   DVLOG(1) << "CertPathBuilder VerifyCertificateChain result = "
            << verify_result;
   AddResultPath(next_path_, verify_result);
@@ -612,8 +658,7 @@ CompletionStatus CertPathBuilder::DoGetNextPathComplete() {
   return CompletionStatus::SYNC;
 }
 
-void CertPathBuilder::AddResultPath(const ParsedCertificateList& path,
-                                    bool is_success) {
+void CertPathBuilder::AddResultPath(const CertPath& path, bool is_success) {
   std::unique_ptr<ResultPath> result_path(new ResultPath());
   // TODO(mattm): better error reporting.
   result_path->error = is_success ? OK : ERR_CERT_AUTHORITY_INVALID;
