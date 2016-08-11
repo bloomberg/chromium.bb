@@ -1155,6 +1155,14 @@ struct weston_surface {
 
 	/* An list of per seat pointer constraints. */
 	struct wl_list pointer_constraints;
+
+	/*
+	 * Indicates the surface prefers no screenblanking, screensaving,
+	 * or other automatic obscurement to kick in while the surface is
+	 * considered "active" by the shell.
+	 */
+	bool inhibit_idling;
+
 };
 
 struct weston_subsurface {
@@ -1331,6 +1339,8 @@ void
 weston_output_schedule_repaint(struct weston_output *output);
 void
 weston_output_damage(struct weston_output *output);
+uint32_t
+weston_compositor_inhibited_outputs(struct weston_compositor *compositor);
 void
 weston_compositor_schedule_repaint(struct weston_compositor *compositor);
 void
