@@ -835,6 +835,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFooter) {
   RunHtmlTest(FILE_PATH_LITERAL("footer.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+    AccessibilityFooterInsideOtherSection) {
+  RunHtmlTest(FILE_PATH_LITERAL("footer-inside-other-section.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityForm) {
   RunHtmlTest(FILE_PATH_LITERAL("form.html"));
 }
@@ -849,6 +854,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHead) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHeader) {
   RunHtmlTest(FILE_PATH_LITERAL("header.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+    AccessibilityHeaderInsideOtherSection) {
+  RunHtmlTest(FILE_PATH_LITERAL("header-inside-other-section.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHeading) {

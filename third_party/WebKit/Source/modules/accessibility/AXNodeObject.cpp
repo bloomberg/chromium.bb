@@ -494,12 +494,22 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const
     }
 
     // There should only be one banner/contentInfo per page. If header/footer are being used within an article or section
-    // then it should not be exposed as whole page's banner/contentInfo
-    if (getNode()->hasTagName(headerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
+    // then it should not be exposed as whole page's banner/contentInfo but as a group role.
+    if (getNode()->hasTagName(headerTag)) {
+        if (isDescendantOfElementType(articleTag) || isDescendantOfElementType(sectionTag)
+            || (getNode()->parentElement() && getNode()->parentElement()->hasTagName(mainTag))) {
+            return GroupRole;
+        }
         return BannerRole;
+    }
 
-    if (getNode()->hasTagName(footerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
+    if (getNode()->hasTagName(footerTag)) {
+        if (isDescendantOfElementType(articleTag) || isDescendantOfElementType(sectionTag)
+            || (getNode()->parentElement() && getNode()->parentElement()->hasTagName(mainTag))) {
+            return GroupRole;
+        }
         return FooterRole;
+    }
 
     if (getNode()->hasTagName(blockquoteTag))
         return BlockquoteRole;

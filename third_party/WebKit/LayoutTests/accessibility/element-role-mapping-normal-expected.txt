@@ -95,9 +95,10 @@ AXRole: AXWebArea
                 AXRole: AXInlineTextBox "b"
     AXRole: AXMain
         AXRole: AXArticle
-            AXRole: AXHeading "Most important heading here"
-                AXRole: AXStaticText "Most important heading here"
-                    AXRole: AXInlineTextBox "Most important heading here"
+            AXRole: AXGroup
+                AXRole: AXHeading "Most important heading here"
+                    AXRole: AXStaticText "Most important heading here"
+                        AXRole: AXInlineTextBox "Most important heading here"
             AXRole: AXHeading "Google Chrome"
                 AXRole: AXStaticText "Google Chrome"
                     AXRole: AXInlineTextBox "Google Chrome"
@@ -105,9 +106,10 @@ AXRole: AXWebArea
                 AXRole: AXStaticText "Google Chrome is a free, open-source web browser developed by Google, released in 2008."
                     AXRole: AXInlineTextBox "Google Chrome is a free, open-source web browser developed by Google, "
                     AXRole: AXInlineTextBox "released in 2008."
-            AXRole: AXParagraph
-                AXRole: AXStaticText "Footer in article"
-                    AXRole: AXInlineTextBox "Footer in article"
+            AXRole: AXGroup
+                AXRole: AXParagraph
+                    AXRole: AXStaticText "Footer in article"
+                        AXRole: AXInlineTextBox "Footer in article"
     AXRole: AXNavigation
         AXRole: AXLink "HTML"
             AXRole: AXStaticText "HTML"
@@ -139,15 +141,17 @@ element
             AXRole: AXInlineTextBox "
 "
     AXRole: AXRegion
-        AXRole: AXHeading "Most important heading here"
-            AXRole: AXStaticText "Most important heading here"
-                AXRole: AXInlineTextBox "Most important heading here"
+        AXRole: AXGroup
+            AXRole: AXHeading "Most important heading here"
+                AXRole: AXStaticText "Most important heading here"
+                    AXRole: AXInlineTextBox "Most important heading here"
         AXRole: AXParagraph
             AXRole: AXStaticText "Section"
                 AXRole: AXInlineTextBox "Section"
-        AXRole: AXParagraph
-            AXRole: AXStaticText "Footer in section"
-                AXRole: AXInlineTextBox "Footer in section"
+        AXRole: AXGroup
+            AXRole: AXParagraph
+                AXRole: AXStaticText "Footer in section"
+                    AXRole: AXInlineTextBox "Footer in section"
     AXRole: AXContentInfo
         AXRole: AXStaticText "Written by Julie"
             AXRole: AXInlineTextBox "Written by Julie"

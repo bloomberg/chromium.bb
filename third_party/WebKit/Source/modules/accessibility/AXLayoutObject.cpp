@@ -718,10 +718,15 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
         }
         return false;
     }
+
     if (isHeading())
         return false;
 
     if (isLandmarkRelated())
+        return false;
+
+    // Header and footer tags may also be exposed as landmark roles but not always.
+    if (getNode() && (getNode()->hasTagName(headerTag) || getNode()->hasTagName(footerTag)))
         return false;
 
     if (isLink())
