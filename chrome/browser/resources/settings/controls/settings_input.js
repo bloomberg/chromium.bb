@@ -48,11 +48,6 @@ Polymer({
     type: { type: String },
   },
 
-  /** @override */
-  ready: function() {
-    this.$.events.forward(this.$.input, ['change']);
-  },
-
   /**
    * Focuses the 'input' element.
    */

@@ -57,11 +57,6 @@ Polymer({
     'prefValueChanged_(pref.value)'
   ],
 
-  /** @override */
-  ready: function() {
-    this.$.events.forward(this.$.checkbox, ['change']);
-  },
-
   /**
    * Polymer observer for pref.value.
    * @param {*} prefValue

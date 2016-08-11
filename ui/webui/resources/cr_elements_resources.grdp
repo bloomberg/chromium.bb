@@ -7,12 +7,6 @@
   <structure name="IDR_CR_ELEMENTS_CR_DIALOG_JS"
              file="../../webui/resources/cr_elements/cr_dialog/cr_dialog.js"
              type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_CR_EVENTS_HTML"
-             file="../../webui/resources/cr_elements/cr_events/cr_events.html"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_CR_EVENTS_JS"
-             file="../../webui/resources/cr_elements/cr_events/cr_events.js"
-             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_EXPAND_BUTTON_CSS"
              file="../../webui/resources/cr_elements/cr_expand_button/cr_expand_button.css"
              type="chrome_html" />
