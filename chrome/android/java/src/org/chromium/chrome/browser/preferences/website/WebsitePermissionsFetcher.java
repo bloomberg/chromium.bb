@@ -146,7 +146,11 @@ public class WebsitePermissionsFetcher {
     }
 
     private Website findOrCreateSite(WebsiteAddress origin, WebsiteAddress embedder) {
-        Pair<WebsiteAddress, WebsiteAddress> key = Pair.create(origin, embedder);
+        // In Jelly Bean a null value triggers a NullPointerException in Pair.hashCode(). Storing
+        // the origin twice works around it and won't conflict with other entries as this is how the
+        // native code indicates to this class that embedder == origin.  https://crbug.com/636330
+        Pair<WebsiteAddress, WebsiteAddress> key =
+                Pair.create(origin, embedder == null ? origin : embedder);
         Website site = mSites.get(key);
         if (site == null) {
             site = new Website(origin, embedder);
