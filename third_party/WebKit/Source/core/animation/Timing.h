@@ -116,6 +116,8 @@ public:
     double iterationStart;
     double iterationCount;
     double iterationDuration;
+
+    // TODO(crbug.com/630915) Remove playbackRate
     double playbackRate;
     PlaybackDirection direction;
     RefPtr<TimingFunction> timingFunction;

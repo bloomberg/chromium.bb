@@ -121,7 +121,6 @@ void AnimationEffect::getComputedTiming(ComputedTimingProperties& computedTiming
     duration.setUnrestrictedDouble(iterationDuration() * 1000);
     computedTiming.setDuration(duration);
 
-    computedTiming.setPlaybackRate(specifiedTiming().playbackRate);
     computedTiming.setDirection(Timing::playbackDirectionString(specifiedTiming().direction));
     computedTiming.setEasing(specifiedTiming().timingFunction->toString());
 }

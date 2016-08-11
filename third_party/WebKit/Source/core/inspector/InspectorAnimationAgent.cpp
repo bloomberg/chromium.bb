@@ -114,7 +114,6 @@ static std::unique_ptr<protocol::Animation::AnimationEffect> buildObjectForAnima
     std::unique_ptr<protocol::Animation::AnimationEffect> animationObject = protocol::Animation::AnimationEffect::create()
         .setDelay(delay)
         .setEndDelay(computedTiming.endDelay())
-        .setPlaybackRate(computedTiming.playbackRate())
         .setIterationStart(computedTiming.iterationStart())
         .setIterations(computedTiming.iterations())
         .setDuration(duration)

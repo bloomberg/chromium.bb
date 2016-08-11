@@ -130,7 +130,7 @@ bool TimingInput::convert(const KeyframeEffectOptions& timingInput, Timing& timi
     if (!setIterationDuration(timingOutput, timingInput.duration(), exceptionState))
         return false;
 
-    setPlaybackRate(timingOutput, timingInput.playbackRate());
+    setPlaybackRate(timingOutput, 1.0);
     setPlaybackDirection(timingOutput, timingInput.direction());
 
     if (!setTimingFunction(timingOutput, timingInput.easing(), document, exceptionState))

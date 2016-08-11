@@ -155,18 +155,6 @@ TEST(AnimationTimingInputTest, TimingInputIterationDuration)
     EXPECT_FALSE(success);
 }
 
-TEST(AnimationTimingInputTest, TimingInputPlaybackRate)
-{
-    V8TestingScope scope;
-    bool ignoredSuccess;
-    EXPECT_EQ(2.1, applyTimingInputNumber(scope.isolate(), "playbackRate", 2.1, ignoredSuccess).playbackRate);
-    EXPECT_EQ(-1, applyTimingInputNumber(scope.isolate(), "playbackRate", -1, ignoredSuccess).playbackRate);
-    EXPECT_EQ(1, applyTimingInputString(scope.isolate(), "playbackRate", "Infinity", ignoredSuccess).playbackRate);
-    EXPECT_EQ(1, applyTimingInputString(scope.isolate(), "playbackRate", "-Infinity", ignoredSuccess).playbackRate);
-    EXPECT_EQ(1, applyTimingInputString(scope.isolate(), "playbackRate", "NaN", ignoredSuccess).playbackRate);
-    EXPECT_EQ(1, applyTimingInputString(scope.isolate(), "playbackRate", "rubbish", ignoredSuccess).playbackRate);
-}
-
 TEST(AnimationTimingInputTest, TimingInputDirection)
 {
     V8TestingScope scope;

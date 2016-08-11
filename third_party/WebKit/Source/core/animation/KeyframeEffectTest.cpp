@@ -127,7 +127,6 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters)
     setV8ObjectPropertyAsString(scope.isolate(), timingInput, "fill", "backwards");
     setV8ObjectPropertyAsNumber(scope.isolate(), timingInput, "iterationStart", 2);
     setV8ObjectPropertyAsNumber(scope.isolate(), timingInput, "iterations", 10);
-    setV8ObjectPropertyAsNumber(scope.isolate(), timingInput, "playbackRate", 2);
     setV8ObjectPropertyAsString(scope.isolate(), timingInput, "direction", "reverse");
     setV8ObjectPropertyAsString(scope.isolate(), timingInput, "easing", "step-start");
     KeyframeEffectOptions timingInputDictionary;
@@ -141,7 +140,6 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters)
     EXPECT_EQ("backwards", specified->fill());
     EXPECT_EQ(2, specified->iterationStart());
     EXPECT_EQ(10, specified->iterations());
-    EXPECT_EQ(2, specified->playbackRate());
     EXPECT_EQ("reverse", specified->direction());
     EXPECT_EQ("step-start", specified->easing());
 }
