@@ -772,88 +772,43 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
   scoped_refptr<Layer> expected_no_scroll_layer_;
 };
 
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor1_ScrollChild_DirectRenderer) {
+TEST_F(LayerTreeHostScrollTestCaseWithChild, DeviceScaleFactor1_ScrollChild) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor1_ScrollChild_DelegatingRenderer) {
-  device_scale_factor_ = 1.f;
-  scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, true);
-}
-
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor15_ScrollChild_DirectRenderer) {
+TEST_F(LayerTreeHostScrollTestCaseWithChild, DeviceScaleFactor15_ScrollChild) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor15_ScrollChild_DelegatingRenderer) {
-  device_scale_factor_ = 1.5f;
-  scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, true);
-}
-
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor2_ScrollChild_DirectRenderer) {
+TEST_F(LayerTreeHostScrollTestCaseWithChild, DeviceScaleFactor2_ScrollChild) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor2_ScrollChild_DelegatingRenderer) {
-  device_scale_factor_ = 2.f;
-  scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, true);
-}
-
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor1_ScrollRootScrollLayer_DirectRenderer) {
+       DeviceScaleFactor1_ScrollRootScrollLayer) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = false;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor1_ScrollRootScrollLayer_DelegatingRenderer) {
-  device_scale_factor_ = 1.f;
-  scroll_child_layer_ = false;
-  RunTest(CompositorMode::THREADED, true);
-}
-
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor15_ScrollRootScrollLayer_DirectRenderer) {
+       DeviceScaleFactor15_ScrollRootScrollLayer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = false;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor15_ScrollRootScrollLayer_DelegatingRenderer) {
-  device_scale_factor_ = 1.5f;
-  scroll_child_layer_ = false;
-  RunTest(CompositorMode::THREADED, true);
-}
-
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor2_ScrollRootScrollLayer_DirectRenderer) {
+       DeviceScaleFactor2_ScrollRootScrollLayer) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = false;
-  RunTest(CompositorMode::THREADED, false);
-}
-
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor2_ScrollRootScrollLayer_DelegatingRenderer) {
-  device_scale_factor_ = 2.f;
-  scroll_child_layer_ = false;
-  RunTest(CompositorMode::THREADED, true);
+  RunTest(CompositorMode::THREADED);
 }
 
 class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
@@ -1497,12 +1452,12 @@ class LayerTreeHostScrollTestLayerStructureChange
 };
 
 TEST_F(LayerTreeHostScrollTestLayerStructureChange, ScrollDestroyLayer) {
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestLayerStructureChange, ScrollDestroyWholeTree) {
   scroll_destroy_whole_tree_ = true;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {

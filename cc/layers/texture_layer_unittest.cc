@@ -757,9 +757,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
   scoped_refptr<TextureLayer> layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    TextureLayerImplWithMailboxThreadedCallback);
-
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerImplWithMailboxThreadedCallback);
 
 class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
  protected:
@@ -844,8 +842,7 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
   scoped_refptr<TextureLayer> layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    TextureLayerMailboxIsActivatedDuringCommit);
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerMailboxIsActivatedDuringCommit);
 
 class TextureLayerImplWithMailboxTest : public TextureLayerTest {
  protected:
@@ -1383,8 +1380,7 @@ class TextureLayerWithMailboxMainThreadDeleted : public LayerTreeTest {
   scoped_refptr<TextureLayer> layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    TextureLayerWithMailboxMainThreadDeleted);
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerWithMailboxMainThreadDeleted);
 
 class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
  public:
@@ -1457,8 +1453,7 @@ class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
   scoped_refptr<TextureLayer> layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    TextureLayerWithMailboxImplThreadDeleted);
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerWithMailboxImplThreadDeleted);
 
 }  // namespace
 }  // namespace cc

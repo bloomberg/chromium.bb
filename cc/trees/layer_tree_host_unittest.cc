@@ -80,9 +80,9 @@ class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
  public:
   LayerTreeHostTestHasImplThreadTest() : threaded_(false) {}
 
-  void RunTest(CompositorMode mode, bool delegating_renderer) override {
+  void RunTest(CompositorMode mode) override {
     threaded_ = mode == CompositorMode::THREADED;
-    LayerTreeHostTest::RunTest(mode, delegating_renderer);
+    LayerTreeHostTest::RunTest(mode);
   }
 
   void BeginTest() override {
@@ -5662,12 +5662,12 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
 
 TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise, NoReclaim) {
   reclaim_resources_ = false;
-  RunTest(CompositorMode::SINGLE_THREADED, true);
+  RunTest(CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise, Reclaim) {
   reclaim_resources_ = true;
-  RunTest(CompositorMode::SINGLE_THREADED, true);
+  RunTest(CompositorMode::SINGLE_THREADED);
 }
 
 // Make sure page scale and top control deltas are applied to the client even

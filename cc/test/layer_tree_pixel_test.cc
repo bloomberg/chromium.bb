@@ -189,7 +189,7 @@ void LayerTreePixelTest::RunPixelTest(
   content_root_ = content_root;
   readback_target_ = NULL;
   ref_file_ = file_name;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 void LayerTreePixelTest::RunSingleThreadedPixelTest(
@@ -200,7 +200,7 @@ void LayerTreePixelTest::RunSingleThreadedPixelTest(
   content_root_ = content_root;
   readback_target_ = NULL;
   ref_file_ = file_name;
-  RunTest(CompositorMode::SINGLE_THREADED, false);
+  RunTest(CompositorMode::SINGLE_THREADED);
 }
 
 void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
@@ -212,7 +212,7 @@ void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
   content_root_ = content_root;
   readback_target_ = target;
   ref_file_ = file_name;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 void LayerTreePixelTest::SetupTree() {

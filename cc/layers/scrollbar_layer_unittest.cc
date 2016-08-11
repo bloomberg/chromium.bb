@@ -738,9 +738,9 @@ TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbVerticalAdjust) {
             vertical_scrollbar_layer_->ComputeThumbQuadRect());
 }
 
-class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
+class ScrollbarLayerTestWithFixedScrollbarBounds : public LayerTreeTest {
  public:
-  ScrollbarLayerTestMaxTextureSize() {}
+  ScrollbarLayerTestWithFixedScrollbarBounds() {}
 
   void SetScrollbarBounds(const gfx::Size& bounds) { bounds_ = bounds; }
 
@@ -783,22 +783,13 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
   gfx::Size bounds_;
 };
 
-TEST_F(ScrollbarLayerTestMaxTextureSize, DirectRenderer) {
+TEST_F(ScrollbarLayerTestWithFixedScrollbarBounds, MaxTextureSize) {
   std::unique_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   int max_size = 0;
   context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
   SetScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
-  RunTest(CompositorMode::THREADED, false);
-}
-
-TEST_F(ScrollbarLayerTestMaxTextureSize, DelegatingRenderer) {
-  std::unique_ptr<TestWebGraphicsContext3D> context =
-      TestWebGraphicsContext3D::Create();
-  int max_size = 0;
-  context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
-  SetScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
-  RunTest(CompositorMode::THREADED, true);
+  RunTest(CompositorMode::THREADED);
 }
 
 class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {

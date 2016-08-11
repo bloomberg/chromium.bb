@@ -787,7 +787,7 @@ void LayerTreeTest::DispatchNextCommitWaitsForActivation() {
     layer_tree_host_->SetNextCommitWaitsForActivation();
 }
 
-void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
+void LayerTreeTest::RunTest(CompositorMode mode) {
   mode_ = mode;
   if (mode_ == CompositorMode::THREADED || mode_ == CompositorMode::REMOTE) {
     impl_thread_.reset(new base::Thread("Compositor"));
@@ -797,8 +797,6 @@ void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
   gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);
   task_graph_runner_.reset(new TestTaskGraphRunner);
-
-  delegating_renderer_ = delegating_renderer;
 
   // Spend less time waiting for BeginFrame because the output is
   // mocked out.

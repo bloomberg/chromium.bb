@@ -153,43 +153,42 @@ class LayerTreeHostCopyRequestTestMultipleRequests
   scoped_refptr<FakePictureLayer> grand_child;
 };
 
-// Readback can't be done with a delegating renderer.
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunSingleThread) {
   use_gl_renderer_ = true;
-  RunTest(CompositorMode::SINGLE_THREADED, false);
+  RunTest(CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunMultiThread) {
   use_gl_renderer_ = true;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunSingleThread_OutOfOrderCallbacks) {
   use_gl_renderer_ = true;
   out_of_order_callbacks_ = true;
-  RunTest(CompositorMode::SINGLE_THREADED, false);
+  RunTest(CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunMultiThread_OutOfOrderCallbacks) {
   use_gl_renderer_ = true;
   out_of_order_callbacks_ = true;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        SoftwareRenderer_RunSingleThread) {
   use_gl_renderer_ = false;
-  RunTest(CompositorMode::SINGLE_THREADED, false);
+  RunTest(CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        SoftwareRenderer_RunMultiThread) {
   use_gl_renderer_ = false;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 // TODO(crbug.com/564832): Remove this test when the workaround it tests is no
@@ -243,8 +242,7 @@ class LayerTreeHostCopyRequestCompletionCausesCommit
   scoped_refptr<FakePictureLayer> layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostCopyRequestCompletionCausesCommit);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestCompletionCausesCommit);
 
 class LayerTreeHostCopyRequestTestLayerDestroyed
     : public LayerTreeHostCopyRequestTest {
@@ -436,8 +434,7 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
   scoped_refptr<FakePictureLayer> copy_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostCopyRequestTestInHiddenSubtree);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestInHiddenSubtree);
 
 class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     : public LayerTreeHostCopyRequestTest {
@@ -545,8 +542,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
   scoped_refptr<FakePictureLayer> copy_layer_;
 };
 
-// No output to copy for delegated renderers.
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest);
 
 class LayerTreeHostCopyRequestTestClippedOut
@@ -595,8 +591,7 @@ class LayerTreeHostCopyRequestTestClippedOut
   scoped_refptr<FakePictureLayer> copy_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostCopyRequestTestClippedOut);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestClippedOut);
 
 class LayerTreeHostCopyRequestTestScaledLayer
     : public LayerTreeHostCopyRequestTest {
@@ -648,8 +643,7 @@ class LayerTreeHostCopyRequestTestScaledLayer
   scoped_refptr<FakePictureLayer> child_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostCopyRequestTestScaledLayer);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestScaledLayer);
 
 class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
     : public LayerTreeHostCopyRequestTest {
@@ -732,8 +726,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
   scoped_refptr<FakePictureLayer> copy_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostTestAsyncTwoReadbacksWithoutDraw);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestAsyncTwoReadbacksWithoutDraw);
 
 class LayerTreeHostCopyRequestTestDeleteTexture
     : public LayerTreeHostCopyRequestTest {
@@ -844,8 +837,7 @@ class LayerTreeHostCopyRequestTestDeleteTexture
   std::unique_ptr<CopyOutputResult> result_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostCopyRequestTestDeleteTexture);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestDeleteTexture);
 
 class LayerTreeHostCopyRequestTestCountTextures
     : public LayerTreeHostCopyRequestTest {
@@ -976,8 +968,7 @@ class LayerTreeHostCopyRequestTestCreatesTexture
   std::unique_ptr<SingleReleaseCallback> release_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostCopyRequestTestCreatesTexture);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestCreatesTexture);
 
 class LayerTreeHostCopyRequestTestProvideTexture
     : public LayerTreeHostCopyRequestTestCountTextures {
@@ -1033,8 +1024,7 @@ class LayerTreeHostCopyRequestTestProvideTexture
   gpu::SyncToken sync_token_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostCopyRequestTestProvideTexture);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestProvideTexture);
 
 class LayerTreeHostCopyRequestTestDestroyBeforeCopy
     : public LayerTreeHostCopyRequestTest {
@@ -1111,8 +1101,7 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
   scoped_refptr<FakePictureLayer> copy_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostCopyRequestTestDestroyBeforeCopy);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestDestroyBeforeCopy);
 
 class LayerTreeHostCopyRequestTestShutdownBeforeCopy
     : public LayerTreeHostCopyRequestTest {
@@ -1183,8 +1172,7 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
   scoped_refptr<FakePictureLayer> copy_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostCopyRequestTestShutdownBeforeCopy);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestShutdownBeforeCopy);
 
 class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
     : public LayerTreeHostCopyRequestTest {
@@ -1299,7 +1287,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
   bool draw_happened_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest);
 
 }  // namespace

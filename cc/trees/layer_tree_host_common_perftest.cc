@@ -80,7 +80,7 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
 
 class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
  public:
-  void RunCalcDrawProps() { RunTest(CompositorMode::SINGLE_THREADED, false); }
+  void RunCalcDrawProps() { RunTest(CompositorMode::SINGLE_THREADED); }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -128,7 +128,7 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
 class BspTreePerfTest : public CalcDrawPropsTest {
  public:
   BspTreePerfTest() : num_duplicates_(1) {}
-  void RunSortLayers() { RunTest(CompositorMode::SINGLE_THREADED, false); }
+  void RunSortLayers() { RunTest(CompositorMode::SINGLE_THREADED); }
 
   void SetNumberOfDuplicates(int num_duplicates) {
     num_duplicates_ = num_duplicates;
