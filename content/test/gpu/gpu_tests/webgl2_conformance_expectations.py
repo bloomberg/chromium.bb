@@ -397,6 +397,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderoperator/geometric.html',
         ['mac', 'amd'], bug=483282)
 
+    # Mac Pro with AMD GPU
+    self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
+        ['mac', ('amd', 0x679e)], bug=636648)
+
     # Mac Intel
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['mac', 'intel'], bug=483282)
