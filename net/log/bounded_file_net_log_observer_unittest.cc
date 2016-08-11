@@ -18,6 +18,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "net/base/test_completion_callback.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request.h"
@@ -163,11 +164,13 @@ TEST_F(BoundedFileNetLogObserverTest, ObserverDestroyedWithoutStopObserving) {
 }
 
 TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONForNoEvents) {
+  TestClosure closure;
+
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kLargeFileSize, kTotalNumFiles);
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -193,13 +196,16 @@ TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONForNoEvents) {
 // Checks that capture_mode_ defaults correctly when set_capture_mode is not
 // called, and that |capture_mode_| is changed when set_capture_mode is called.
 TEST_F(BoundedFileNetLogObserverTest, SetsCaptureMode) {
+  TestClosure default_closure;
+
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kLargeFileSize, kTotalNumFiles);
   EXPECT_EQ(NetLogCaptureMode::Default(), logger_->capture_mode());
-  logger_->StopObserving(nullptr);
+  logger_->StopObserving(nullptr, default_closure.closure());
 
-  logger_.reset();
+  default_closure.WaitForResult();
 
+  TestClosure new_capture_mode_closure;
   logger_ = std::unique_ptr<BoundedFileNetLogObserver>(
       new BoundedFileNetLogObserver(file_thread_->task_runner()));
 
@@ -208,10 +214,9 @@ TEST_F(BoundedFileNetLogObserverTest, SetsCaptureMode) {
                           kLargeFileSize, kTotalNumFiles);
   EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
             logger_->capture_mode());
-  logger_->StopObserving(nullptr);
+  logger_->StopObserving(nullptr, new_capture_mode_closure.closure());
 
-  logger_.reset();
-  file_thread_.reset();
+  new_capture_mode_closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -219,15 +224,17 @@ TEST_F(BoundedFileNetLogObserverTest, SetsCaptureMode) {
 }
 
 TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONWithOneEvent) {
+  TestClosure closure;
+
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kLargeFileSize, kTotalNumFiles);
 
   // Send dummy event.
   AddEntries(1, kDummyEventSize);
 
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -249,15 +256,16 @@ TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONWithOneEvent) {
 
 TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONWithMultipleEvents) {
   const int kTotalFileSize = 250000;
+  TestClosure closure;
 
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kTotalFileSize, kTotalNumFiles);
 
   AddEntries(2, kDummyEventSize);
 
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -283,14 +291,15 @@ TEST_F(BoundedFileNetLogObserverTest, EqualToOneFile) {
   const int kTotalFileSize = 5000;
   const int kNumEvents = 2;
   const int kEventSize = 250;
+  TestClosure closure;
 
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kTotalFileSize, kTotalNumFiles);
 
   AddEntries(kNumEvents, kEventSize);
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -343,15 +352,16 @@ TEST_F(BoundedFileNetLogObserverTest, OneEventOverOneFile) {
   const int kTotalFileSize = 6000;
   const int kNumEvents = 4;
   const int kEventSize = 200;
+  TestClosure closure;
 
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kTotalFileSize, kTotalNumFiles);
 
   AddEntries(kNumEvents, kEventSize);
 
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -392,15 +402,16 @@ TEST_F(BoundedFileNetLogObserverTest, EqualToTwoFiles) {
   const int kTotalFileSize = 6000;
   const int kNumEvents = 6;
   const int kEventSize = 200;
+  TestClosure closure;
 
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kTotalFileSize, kTotalNumFiles);
 
   AddEntries(kNumEvents, kEventSize);
 
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -456,15 +467,16 @@ TEST_F(BoundedFileNetLogObserverTest, FillAllFilesNoOverwriting) {
   const int kEventSize = 200;
   const int kFileSize = kTotalFileSize / kTotalNumFiles;
   const int kNumEvents = kTotalNumFiles * ((kFileSize - 1) / kEventSize + 1);
+  TestClosure closure;
 
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kTotalFileSize, kTotalNumFiles);
 
   AddEntries(kNumEvents, kEventSize);
 
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -513,15 +525,16 @@ TEST_F(BoundedFileNetLogObserverTest, DropOldEventsFromWriteQueue) {
   const int kNumEvents = 11;
   const int kEventSize = 200;
   const int kFileSize = kTotalFileSize / kTotalNumFiles;
+  TestClosure closure;
 
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kTotalFileSize, kTotalNumFiles);
 
   AddEntries(kNumEvents, kEventSize);
 
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -571,15 +584,16 @@ TEST_F(BoundedFileNetLogObserverTest, OverwriteAllFiles) {
   const int kNumEvents = 60;
   const int kEventSize = 200;
   const int kFileSize = kTotalFileSize / kTotalNumFiles;
+  TestClosure closure;
 
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kTotalFileSize, kTotalNumFiles);
 
   AddEntries(kNumEvents, kEventSize);
 
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -656,15 +670,16 @@ TEST_F(BoundedFileNetLogObserverTest, PartiallyOverwriteFiles) {
   const int kNumEvents = 50;
   const int kEventSize = 200;
   const int kFileSize = kTotalFileSize / kTotalNumFiles;
+  TestClosure closure;
 
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kTotalFileSize, kTotalNumFiles);
 
   AddEntries(kNumEvents, kEventSize);
 
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -716,6 +731,8 @@ TEST_F(BoundedFileNetLogObserverTest, PartiallyOverwriteFiles) {
 }
 
 TEST_F(BoundedFileNetLogObserverTest, CustomConstants) {
+  TestClosure closure;
+
   const char kConstantString[] = "awesome constant";
   std::unique_ptr<base::Value> constants(
       new base::StringValue(kConstantString));
@@ -723,9 +740,9 @@ TEST_F(BoundedFileNetLogObserverTest, CustomConstants) {
   logger_->StartObserving(&net_log_, log_path_, constants.get(), nullptr,
                           kLargeFileSize, kTotalNumFiles);
 
-  logger_->StopObserving(nullptr);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -744,6 +761,8 @@ TEST_F(BoundedFileNetLogObserverTest, CustomConstants) {
 }
 
 TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONWithContext) {
+  TestClosure closure;
+
   logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
                           kLargeFileSize, kTotalNumFiles);
 
@@ -758,9 +777,9 @@ TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONWithContext) {
   context.set_http_network_session_params(std::move(params));
   context.Init();
 
-  logger_->StopObserving(&context);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(&context, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);
@@ -796,11 +815,14 @@ TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONWithContext) {
 
 TEST_F(BoundedFileNetLogObserverTest,
        GeneratesValidJSONWithContextWithActiveRequest) {
+  TestClosure closure;
+
   // Create context, start a request.
   TestURLRequestContext context(true);
   context.set_net_log(&net_log_);
   context.Init();
   TestDelegate delegate;
+  delegate.set_quit_on_complete(false);
 
   // URL doesn't matter.  Requests can't fail synchronously.
   std::unique_ptr<URLRequest> request(
@@ -810,9 +832,9 @@ TEST_F(BoundedFileNetLogObserverTest,
   logger_->StartObserving(&net_log_, log_path_, nullptr, &context,
                           kLargeFileSize, kTotalNumFiles);
 
-  logger_->StopObserving(&context);
-  logger_.reset();
-  file_thread_.reset();
+  logger_->StopObserving(&context, closure.closure());
+
+  closure.WaitForResult();
 
   std::string input;
   AddAllFiles(&input);

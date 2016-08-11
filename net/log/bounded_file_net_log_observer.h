@@ -88,12 +88,15 @@ class NET_EXPORT BoundedFileNetLogObserver : public NetLog::ThreadSafeObserver {
   // NetLog, or the NetLog files will be deleted when the observer is
   // destroyed.
   //
+  // |callback| will be run on whichever thread StopObserving() was called on
+  // once all file writing is complete and the netlog files can be accessed
+  // safely.
+  //
   // |url_request_context| is an optional argument used to add additional
   // network stack state to the log. If the context is non-NULL,
   // StopObserving() must be called on the context's thread.
-  //
-  // TODO (dconnol): Add callback to verify that logging is complete.
-  void StopObserving(URLRequestContext* url_request_context);
+  void StopObserving(URLRequestContext* url_request_context,
+                     const base::Closure& callback);
 
   // NetLog::ThreadSafeObserver
   void OnAddEntry(const NetLog::Entry& entry) override;

@@ -176,6 +176,7 @@ BoundedFileNetLogObserver::~BoundedFileNetLogObserver() {
                    base::Unretained(file_writer_)));
     net_log()->DeprecatedRemoveObserver(this);
   }
+
   task_runner_->DeleteSoon(FROM_HERE, file_writer_);
 }
 
@@ -203,7 +204,9 @@ void BoundedFileNetLogObserver::StartObserving(
   // |file_writer_| may write more events to file than can be contained by the
   // |write_queue_| if they have the same size limit. The maximum size of the
   // |write_queue_| is doubled to allow the |queue_| to hold enough events for
-  // the |file_writer_| to fill all files.
+  // the |file_writer_| to fill all files. As long as all events have sizes <=
+  // the size of an individual event file, the discrepancy between the hard
+  // limit and the soft limit will not cause an issue.
   // TODO(dconnol): Handle the case when the |write_queue_| still doesn't
   // contain enough events to fill all files, because of very large events
   // relative to file size.
@@ -226,18 +229,20 @@ void BoundedFileNetLogObserver::StartObserving(
 }
 
 void BoundedFileNetLogObserver::StopObserving(
-    URLRequestContext* url_request_context) {
+    URLRequestContext* url_request_context,
+    const base::Closure& callback) {
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&BoundedFileNetLogObserver::FileWriter::Flush,
                             base::Unretained(file_writer_), write_queue_));
 
-  task_runner_->PostTask(
+  task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(&BoundedFileNetLogObserver::FileWriter::Stop,
                             base::Unretained(file_writer_),
                             base::Passed(url_request_context
                                              ? GetNetInfo(url_request_context,
                                                           NET_INFO_ALL_SOURCES)
-                                             : nullptr)));
+                                             : nullptr)),
+      callback);
 
   net_log()->DeprecatedRemoveObserver(this);
 }
