@@ -69,8 +69,9 @@ MHTMLArchive::MHTMLArchive()
 
 MHTMLArchive* MHTMLArchive::create(const KURL& url, PassRefPtr<SharedBuffer> data)
 {
-    // For security reasons we only load MHTML pages from local URLs.
-    if (!SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()))
+    // MHTML pages can only be loaded from local URLs and http/https URLs.
+    // The latter is now allowed due to full sandboxing enforcement on MHTML pages.
+    if (!SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()) && !url.protocolIsInHTTPFamily())
         return nullptr;
 
     MHTMLParser parser(data);

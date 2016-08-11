@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
@@ -104,7 +105,7 @@ protected:
 
     void registerMockedURLLoad(const std::string& url, const WebString& fileName)
     {
-        URLTestHelpers::registerMockedURLLoad(toKURL(url), fileName, WebString::fromUTF8("mhtml/"), WebString::fromUTF8("text/html"));
+        URLTestHelpers::registerMockedURLLoad(toKURL(url), fileName, WebString::fromUTF8("mhtml/"), WebString::fromUTF8("multipart/related"));
     }
 
     void loadURLInTopFrame(const WebURL& url)
@@ -243,12 +244,36 @@ TEST_F(MHTMLTest, MHTMLFromScheme)
     KURL fileURL = toKURL("file://foo");
     KURL specialSchemeURL = toKURL("fooscheme://bar");
 
-    // MHTMLArchives can be initialized from any local scheme, but never a remote scheme.
-    EXPECT_EQ(nullptr, MHTMLArchive::create(httpURL, data.get()));
+    // MHTMLArchives can only be initialized from local schemes and http/https schemes.
+    EXPECT_NE(nullptr, MHTMLArchive::create(httpURL, data.get()));
     EXPECT_NE(nullptr, MHTMLArchive::create(fileURL, data.get()));
     EXPECT_EQ(nullptr, MHTMLArchive::create(specialSchemeURL, data.get()));
     SchemeRegistry::registerURLSchemeAsLocal("fooscheme");
     EXPECT_NE(nullptr, MHTMLArchive::create(specialSchemeURL, data.get()));
 }
+
+// Checks that full sandboxing protection has been turned on.
+TEST_F(MHTMLTest, EnforceSandboxFlags)
+{
+    const char kURL[] = "http://www.example.com";
+
+    // Register the mocked frame and load it.
+    registerMockedURLLoad(kURL, WebString::fromUTF8("simple_test.mht"));
+    loadURLInTopFrame(toKURL(kURL));
+    ASSERT_TRUE(page());
+    LocalFrame* frame = toLocalFrame(page()->mainFrame());
+    ASSERT_TRUE(frame);
+    Document* document = frame->document();
+    ASSERT_TRUE(document);
+
+    // Full sandboxing should be turned on.
+    EXPECT_TRUE(document->isSandboxed(SandboxAll));
+
+    // MHTML document should be loaded into unique origin.
+    EXPECT_TRUE(document->getSecurityOrigin()->isUnique());
+    // Script execution should be disabled.
+    EXPECT_FALSE(frame->script().canExecuteScripts(NotAboutToExecuteScript));
+}
+
 
 } // namespace blink
