@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_box.h"
-#include "core/layout/ng/ng_box_iterator.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "wtf/RefPtr.h"
 
@@ -21,10 +20,7 @@ class NGFragment;
 // Lays out the children in sequence.
 class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
  public:
-  // Default constructor.
-  // @param style Style reference of the block that is being laid out.
-  // @param boxIterator Iterator for the block's children.
-  NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>, NGBoxIterator);
+  NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>, NGBox);
 
   // Actual layout implementation. Lays out the children in sequence within the
   // constraints given by the NGConstraintSpace. Returns a fragment with the
@@ -35,7 +31,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
  private:
   RefPtr<const ComputedStyle> m_style;
-  NGBoxIterator m_boxIterator;
+  NGBox m_firstChild;
 };
 
 }  // namespace blink

@@ -15,8 +15,8 @@ namespace blink {
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
-    NGBoxIterator boxIterator)
-    : m_style(style), m_boxIterator(boxIterator) {}
+    NGBox firstChild)
+    : m_style(style), m_firstChild(firstChild) {}
 
 NGFragment* NGBlockLayoutAlgorithm::layout(
     const NGConstraintSpace& constraintSpace) {
@@ -24,8 +24,9 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
       computeInlineSizeForFragment(constraintSpace, *m_style);
 
   HeapVector<Member<const NGFragmentBase>> childFragments;
+
   LayoutUnit contentSize;
-  for (NGBox curr = m_boxIterator.first(); curr; m_boxIterator.next()) {
+  for (NGBox curr = m_firstChild; curr; curr.nextSibling()) {
     NGFragment* fragment = curr.layout(constraintSpace);
     // TODO(layout-ng): Take margins into account
     fragment->setOffset(LayoutUnit(), contentSize);
