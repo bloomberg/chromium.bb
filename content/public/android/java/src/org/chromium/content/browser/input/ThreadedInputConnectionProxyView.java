@@ -13,6 +13,7 @@ import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.UsedByReflection;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * This is a fake View that is only exposed to InputMethodManager.
  */
+@UsedByReflection("ThreadedInputConnectionFactory.java")
 public class ThreadedInputConnectionProxyView extends View {
     private static final String TAG = "cr_Ime";
     private static final boolean DEBUG_LOGS = false;

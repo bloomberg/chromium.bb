@@ -13,6 +13,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.input.Range;
@@ -23,6 +24,7 @@ import java.util.List;
 /**
  * Overrides InputMethodManagerWrapper for testing purposes.
  */
+@UsedByReflection("ThreadedInputConnectionFactory.java")
 public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
     private static final String TAG = "cr_Ime";
 

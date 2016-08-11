@@ -87,6 +87,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         // and we still want to call them for consistency. The setback here is that the only
         // way to distinguish calls from InputMethodManager and from ProxyView is by looking at
         // the call stack.
+        // TODO - avoid using reflection here. See crbug.com/636474
         for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
             String className = ste.getClassName();
             if (className != null
