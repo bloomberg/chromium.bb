@@ -15,6 +15,7 @@ import unittest
 
 from telemetry import benchmark as benchmark_module
 from telemetry.core import discover
+from telemetry import decorators
 from telemetry.internal.browser import browser_finder
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
@@ -133,13 +134,29 @@ def load_tests(loader, standard_tests, pattern):
     # test from the class. We should probably discover all of the tests
     # in a class, and then throw the ones we don't need away instead.
 
+    # TODO(aiolos): remove try after all telemetry-side changes land.
+    try:
+      decorators.IS_UPDATED_DECORATORS
+    except AttributeError:
+      enabled_benchmark_attr = '_enabled_strings'
+      enabled_method_attr = '_enabled_strings'
+      disabled_benchmark_attr = '_disabled_strings'
+      disabled_method_attr = '_disabled_strings'
+    else:
+      disabled_benchmark_attr = decorators.DisabledAttributeName(benchmark)
+      disabled_method_attr = decorators.DisabledAttributeName(method)
+      enabled_benchmark_attr = decorators.EnabledAttributeName(benchmark)
+      enabled_method_attr = decorators.EnabledAttributeName(method)
     # Merge decorators.
-    for attribute in ['_enabled_strings', '_disabled_strings']:
+    def MergeDecorators(method_attribute, benchmark_attribute):
       # Do set union of attributes to eliminate duplicates.
-      merged_attributes = getattr(method, attribute, set()).union(
-          getattr(benchmark, attribute, set()))
+      merged_attributes = getattr(method, method_attribute, set()).union(
+          getattr(benchmark, benchmark_attribute, set()))
       if merged_attributes:
-        setattr(method, attribute, merged_attributes)
+        setattr(method, method_attribute, merged_attributes)
+
+    MergeDecorators(disabled_method_attr, disabled_benchmark_attr)
+    MergeDecorators(enabled_method_attr, enabled_benchmark_attr)
 
     setattr(BenchmarkSmokeTest, benchmark.Name(), method)
 
