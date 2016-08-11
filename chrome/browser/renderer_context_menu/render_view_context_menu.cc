@@ -56,7 +56,6 @@
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -1586,9 +1585,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_PRINT:
-      return prefs->GetBoolean(prefs::kPrintingEnabled) &&
-             (params_.media_type == WebContextMenuData::MediaTypeNone ||
-              params_.media_flags & WebContextMenuData::MediaCanPrint);
+      return IsPrintPreviewEnabled();
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
@@ -2087,6 +2084,16 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
       ui::CLIPBOARD_TYPE_COPY_PASTE);
 }
 
+bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
+  if (params_.media_type != WebContextMenuData::MediaTypeNone &&
+      !(params_.media_flags & WebContextMenuData::MediaCanPrint)) {
+    return false;
+  }
+
+  Browser* browser = GetBrowser();
+  return browser && chrome::CanPrint(browser);
+}
+
 bool RenderViewContextMenu::IsRouteMediaEnabled() const {
   if (!media_router::MediaRouterEnabled(browser_context_))
     return false;
@@ -2448,4 +2455,8 @@ void RenderViewContextMenu::PluginActionAt(
     const WebPluginAction& action) {
   source_web_contents_->GetRenderViewHost()->
       ExecutePluginActionAtLocation(location, action);
+}
+
+Browser* RenderViewContextMenu::GetBrowser() const {
+  return chrome::FindBrowserWithWebContents(embedder_web_contents_);
 }
