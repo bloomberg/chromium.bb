@@ -49,11 +49,6 @@ cr.define('settings_main_page', function() {
       /** @type {?SettingsMainElement} */
       var settingsMain = null;
 
-      // TODO(tommycli): Remove once settings.navigateTo is no longer a stub.
-      settings.navigateTo = function(route) {
-        settingsMain.currentRoute = route;
-      };
-
       setup(function() {
         searchManager = new TestSearchManager();
         settings.setSearchManagerForTesting(searchManager);
@@ -67,13 +62,19 @@ cr.define('settings_main_page', function() {
       teardown(function() { settingsMain.remove(); });
 
       test('no results page shows and hides', function() {
+        Polymer.dom.flush();
         var noSearchResults = settingsMain.$.noSearchResults;
         assertTrue(!!noSearchResults);
         assertTrue(noSearchResults.hidden);
 
+        var toggleContainer = settingsMain.$$('#toggleContainer');
+        assertTrue(!!toggleContainer);
+        assertNotEquals('none', toggleContainer.style.display);
+
         searchManager.setMatchesFound(false);
         return settingsMain.searchContents('Query1').then(function() {
           assertFalse(noSearchResults.hidden);
+          assertEquals('none', toggleContainer.style.display);
 
           searchManager.setMatchesFound(true);
           return settingsMain.searchContents('Query2');
@@ -83,16 +84,42 @@ cr.define('settings_main_page', function() {
       });
 
       // Ensure that when the user clears the search box, the "no results" page
-      // is hidden.
+      // is hidden and the "advanced page toggle" is visible again.
       test('no results page hides on clear', function() {
+        Polymer.dom.flush();
         var noSearchResults = settingsMain.$.noSearchResults;
         assertTrue(!!noSearchResults);
         assertTrue(noSearchResults.hidden);
-        searchManager.setMatchesFound(false);
 
+        var toggleContainer = settingsMain.$$('#toggleContainer');
+        assertTrue(!!toggleContainer);
+        assertNotEquals('none', toggleContainer.style.display);
+
+        searchManager.setMatchesFound(false);
         // Clearing the search box is effectively a search for the empty string.
         return settingsMain.searchContents('').then(function() {
+          Polymer.dom.flush();
           assertTrue(noSearchResults.hidden);
+          assertNotEquals('none', toggleContainer.style.display);
+        });
+      });
+
+      test('advanced page restored after search results cleared', function() {
+        // Simulating searching while the advanced page is collapsed.
+        settingsMain.currentRouteChanged(settings.Route.BASIC);
+        Polymer.dom.flush();
+
+        assertFalse(!!settingsMain.$$('settings-advanced-page'));
+
+        searchManager.setMatchesFound(true);
+        return settingsMain.searchContents('Query1').then(function() {
+          searchManager.setMatchesFound(false);
+          return settingsMain.searchContents('');
+        }).then(function() {
+          Polymer.dom.flush();
+          // Checking that it remains hidden after results are cleared.
+          assertEquals(
+              'none', settingsMain.$$('settings-advanced-page').style.display);
         });
       });
     });

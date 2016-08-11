@@ -64,10 +64,10 @@
     </template>
     <template is="dom-if"
         if="[[showAdvancedSettings_(pageVisibility.advancedSettings)]]">
-      <template is="dom-if"
-          if="[[showAdvancedToggle_(showPages_.basic, inSubpage_)]]">
+      <template is="dom-if" if="[[showAdvancedToggle_(
+          showPages_.basic, inSubpage_, previousShowPages_)]]">
         <div id="toggleSpacer"></div>
-        <div id="toggleContainer" hidden$="[[showNoResultsFound_]]">
+        <div id="toggleContainer">
           <div id="advancedToggle" on-tap="toggleAdvancedPage_">
             <span>$i18n{advancedPageTitle}</span>
             <iron-icon icon="[[arrowState_(showPages_.advanced)]]"></iron-icon>

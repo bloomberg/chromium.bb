@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 /**
+ * @typedef {{about: boolean, basic: boolean, advanced: boolean}}
+ */
+var MainPageVisibility;
+
+/**
  * @fileoverview
  * 'settings-main' displays the selected settings page.
  */
@@ -37,14 +42,24 @@ Polymer({
 
     /**
      * Controls which main pages are displayed via dom-ifs.
-     * @type {!{about: boolean, basic: boolean, advanced: boolean}}
-     * @private
+     * @private {!MainPageVisibility}
      */
     showPages_: {
       type: Object,
       value: function() {
         return {about: false, basic: false, advanced: false};
       },
+    },
+
+    /**
+     * The main pages that were displayed before search was initiated. When
+     * |null| it indicates that currently the page is displaying its normal
+     * contents, instead of displaying search results.
+     * @private {?MainPageVisibility}
+     */
+    previousShowPages_: {
+      type: Object,
+      value: null,
     },
 
     /** @private */
@@ -112,13 +127,12 @@ Polymer({
   },
 
   /**
-   * @param {boolean} showBasicPage
-   * @param {boolean} inSubpage
    * @return {boolean}
    * @private
    */
-  showAdvancedToggle_: function(showBasicPage, inSubpage) {
-    return showBasicPage && !inSubpage;
+  showAdvancedToggle_: function() {
+    var inSearchMode = !!this.previousShowPages_;
+    return this.showPages_.basic && !this.inSubpage_ && !inSearchMode;
   },
 
   /** @protected */
@@ -198,6 +212,12 @@ Polymer({
    * @return {!Promise} A promise indicating that searching finished.
    */
   searchContents: function(query) {
+    if (!this.previousShowPages_) {
+      // Store which pages are shown before search, so that they can be restored
+      // after the user clears the search results.
+      this.previousShowPages_ = this.showPages_;
+    }
+
     this.ensureInDefaultSearchPage_();
     this.toolbarSpinnerActive = true;
 
@@ -223,8 +243,15 @@ Polymer({
           }
 
           this.toolbarSpinnerActive = false;
+          var showingSearchResults = !request.isSame('');
           this.showNoResultsFound_ =
-              !request.isSame('') && !request.didFindMatches();
+              showingSearchResults && !request.didFindMatches();
+
+          if (!showingSearchResults) {
+            // Restore the pages that were shown before search was initiated.
+            this.showPages_ = assert(this.previousShowPages_);
+            this.previousShowPages_ = null;
+          }
         }.bind(this));
       }.bind(this), 0);
     }.bind(this));
