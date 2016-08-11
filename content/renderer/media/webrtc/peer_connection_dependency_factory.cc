@@ -91,6 +91,11 @@ WebRTCIPHandlingPolicy GetWebRTCIPHandlingPolicy(
   return DEFAULT;
 }
 
+bool IsValidPortRange(uint16_t min_port, uint16_t max_port) {
+  DCHECK(min_port <= max_port);
+  return min_port != 0 && max_port != 0;
+}
+
 }  // namespace
 
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
@@ -297,6 +302,8 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 
   // Copy the flag from Preference associated with this WebFrame.
   P2PPortAllocator::Config port_config;
+  uint16_t min_port = 0;
+  uint16_t max_port = 0;
 
   // |media_permission| will be called to check mic/camera permission. If at
   // least one of them is granted, P2PPortAllocator is allowed to gather local
@@ -353,10 +360,17 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
             break;
         }
 
+        min_port =
+            renderer_view_impl->renderer_preferences().webrtc_udp_min_port;
+        max_port =
+            renderer_view_impl->renderer_preferences().webrtc_udp_max_port;
+
         VLOG(3) << "WebRTC routing preferences: "
                 << "policy: " << policy
                 << ", multiple_routes: " << port_config.enable_multiple_routes
-                << ", nonproxied_udp: " << port_config.enable_nonproxied_udp;
+                << ", nonproxied_udp: " << port_config.enable_nonproxied_udp
+                << ", min_udp_port: " << min_port
+                << ", max_udp_port: " << max_port;
       }
     }
     if (port_config.enable_multiple_routes) {
@@ -393,6 +407,8 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   std::unique_ptr<P2PPortAllocator> port_allocator(new P2PPortAllocator(
       p2p_socket_dispatcher_, std::move(network_manager), socket_factory_.get(),
       port_config, requesting_origin));
+  if (IsValidPortRange(min_port, max_port))
+    port_allocator->SetPortRange(min_port, max_port);
 
   return GetPcFactory()
       ->CreatePeerConnection(config, std::move(port_allocator),

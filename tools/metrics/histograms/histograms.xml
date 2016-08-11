@@ -74291,6 +74291,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="337" label="Enable Android Backup Service"/>
   <int value="338"
       label="Enable generated content suggestions on the New Tab page"/>
+  <int value="339" label="Restrict the UDP port range used by WebRTC"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

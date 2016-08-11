@@ -118,6 +118,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
+#include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -278,6 +279,11 @@ const base::FilePath::CharType kAppUnpackedExt[] =
 const base::FilePath::CharType kUnpackedFullscreenAppName[] =
     FILE_PATH_LITERAL("fullscreen_app");
 #endif  // !defined(OS_MACOSX)
+
+#if defined(ENABLE_WEBRTC)
+// Arbitrary port range for testing the WebRTC UDP port policy.
+const char kTestWebRtcUdpPortRange[] = "10000-10100";
+#endif
 
 // Filters requests to the hosts in |urls| and redirects them to the test data
 // dir through URLRequestMockHTTPJobs.
@@ -3740,6 +3746,54 @@ IN_PROC_BROWSER_TEST_F(MediaRouterDisabledPolicyTest, MediaRouterDisabled) {
   EXPECT_FALSE(media_router::MediaRouterEnabled(browser()->profile()));
 }
 #endif  // defined(ENABLE_MEDIA_ROUTER)
+
+#if defined(ENABLE_WEBRTC)
+// Sets the proper policy before the browser is started.
+template <bool enable>
+class WebRtcUdpPortRangePolicyTest : public PolicyTest {
+ public:
+  WebRtcUdpPortRangePolicyTest() = default;
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    if (enable) {
+      policies.Set(
+          key::kWebRtcUdpPortRange, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          POLICY_SOURCE_CLOUD,
+          base::WrapUnique(new base::StringValue(kTestWebRtcUdpPortRange)),
+          nullptr);
+    }
+    provider_.UpdateChromePolicy(policies);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebRtcUdpPortRangePolicyTest<enable>);
+};
+
+using WebRtcUdpPortRangeEnabledPolicyTest = WebRtcUdpPortRangePolicyTest<true>;
+using WebRtcUdpPortRangeDisabledPolicyTest =
+    WebRtcUdpPortRangePolicyTest<false>;
+
+IN_PROC_BROWSER_TEST_F(WebRtcUdpPortRangeEnabledPolicyTest,
+                       WebRtcUdpPortRangeEnabled) {
+  std::string port_range;
+  const PrefService::Preference* pref =
+      user_prefs::UserPrefs::Get(browser()->profile())
+          ->FindPreference(prefs::kWebRTCUDPPortRange);
+  pref->GetValue()->GetAsString(&port_range);
+  EXPECT_EQ(kTestWebRtcUdpPortRange, port_range);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcUdpPortRangeDisabledPolicyTest,
+                       WebRtcUdpPortRangeDisabled) {
+  std::string port_range;
+  const PrefService::Preference* pref =
+      user_prefs::UserPrefs::Get(browser()->profile())
+          ->FindPreference(prefs::kWebRTCUDPPortRange);
+  pref->GetValue()->GetAsString(&port_range);
+  EXPECT_TRUE(port_range.empty());
+}
+#endif  // defined(ENABLE_WEBRTC)
 
 #if !defined(OS_CHROMEOS)
 // Similar to PolicyTest but sets the proper policy before the browser is

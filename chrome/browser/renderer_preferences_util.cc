@@ -4,7 +4,11 @@
 
 #include "chrome/browser/renderer_preferences_util.h"
 
+#include <string>
+
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -27,6 +31,46 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #endif
+
+namespace {
+
+// Parses a string |range| with a port range in the form "<min>-<max>".
+// If |range| is not in the correct format or contains an invalid range, zero
+// is written to |min_port| and |max_port|.
+// TODO(guidou): Consider replacing with remoting/protocol/port_range.cc
+void ParsePortRange(const std::string& range,
+                    uint16_t* min_port,
+                    uint16_t* max_port) {
+  *min_port = 0;
+  *max_port = 0;
+
+  if (range.empty())
+    return;
+
+  size_t separator_index = range.find('-');
+  if (separator_index == std::string::npos)
+    return;
+
+  std::string min_port_string, max_port_string;
+  base::TrimWhitespaceASCII(range.substr(0, separator_index), base::TRIM_ALL,
+                            &min_port_string);
+  base::TrimWhitespaceASCII(range.substr(separator_index + 1), base::TRIM_ALL,
+                            &max_port_string);
+  unsigned min_port_uint, max_port_uint;
+  if (!base::StringToUint(min_port_string, &min_port_uint) ||
+      !base::StringToUint(max_port_string, &max_port_uint)) {
+    return;
+  }
+  if (min_port_uint == 0 || min_port_uint > max_port_uint ||
+      max_port_uint > UINT16_MAX) {
+    return;
+  }
+
+  *min_port = static_cast<uint16_t>(min_port_uint);
+  *max_port = static_cast<uint16_t>(max_port_uint);
+}
+
+}  // namespace
 
 namespace renderer_preferences_util {
 
@@ -55,6 +99,10 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
     prefs->webrtc_ip_handling_policy =
         pref_service->GetString(prefs::kWebRTCIPHandlingPolicy);
   }
+  std::string webrtc_udp_port_range =
+      pref_service->GetString(prefs::kWebRTCUDPPortRange);
+  ParsePortRange(webrtc_udp_port_range, &prefs->webrtc_udp_min_port,
+                 &prefs->webrtc_udp_max_port);
 #endif
 
 #if defined(USE_DEFAULT_RENDER_THEME)

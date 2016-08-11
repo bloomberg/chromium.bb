@@ -102,6 +102,11 @@ struct CONTENT_EXPORT RendererPreferences {
   // in webrtc_ip_handling_policy.h.
   std::string webrtc_ip_handling_policy;
 
+  // This is the range of UDP ports allowed to be used by WebRTC. A value of
+  // zero in both fields means all ports are allowed.
+  uint16_t webrtc_udp_min_port;
+  uint16_t webrtc_udp_max_port;
+
   // The user agent given to WebKit when it requests one and the user agent is
   // being overridden for the current navigation.
   std::string user_agent_override;

@@ -1951,6 +1951,14 @@
     ]
   },
 
+  "WebRtcUdpPortRange": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "WebRtcUdpPortRange": "10000-11999" },
+    "pref_mappings": [
+      { "pref": "webrtc.udp_port_range" }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

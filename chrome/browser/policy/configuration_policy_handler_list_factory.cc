@@ -399,6 +399,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kEnableMediaRouter,
     base::Value::TYPE_BOOLEAN },
 #endif  // defined(ENABLE_MEDIA_ROUTER)
+#if defined(ENABLE_WEBRTC)
+  { key::kWebRtcUdpPortRange,
+    prefs::kWebRTCUDPPortRange,
+    base::Value::TYPE_STRING },
+#endif  // defined(ENABLE_WEBRTC)
 #if !defined(OS_MACOSX)
   { key::kFullscreenAllowed,
     prefs::kFullscreenAllowed,

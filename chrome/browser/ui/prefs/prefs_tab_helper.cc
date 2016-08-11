@@ -349,6 +349,7 @@ class PrefWatcher : public KeyedService {
                                renderer_callback);
     pref_change_registrar_.Add(prefs::kWebRTCIPHandlingPolicy,
                                renderer_callback);
+    pref_change_registrar_.Add(prefs::kWebRTCUDPPortRange, renderer_callback);
 #endif
 
 #if !defined(OS_MACOSX)

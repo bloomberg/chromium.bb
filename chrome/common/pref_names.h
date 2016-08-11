@@ -433,6 +433,7 @@ extern const char kToolbarMigratedComponentActionStatus[];
 extern const char kWebRTCMultipleRoutesEnabled[];
 extern const char kWebRTCNonProxiedUdpEnabled[];
 extern const char kWebRTCIPHandlingPolicy[];
+extern const char kWebRTCUDPPortRange[];
 #endif
 
 extern const char kGLVendorString[];

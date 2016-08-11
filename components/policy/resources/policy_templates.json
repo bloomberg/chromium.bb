@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 338
+#   For your editing convenience: highest ID currently used: 339
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8794,6 +8794,23 @@
       '''If this is set to true or not set, the New Tab page may show content suggestions based on the user's browsing history, interests, or location.
 
       If this is set to false, automatically-generated content suggestions are not shown on the New Tab page.''',
+    },
+    {
+      'name': 'WebRtcUdpPortRange',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.*:54-', 'chrome_os:54-', 'android:54-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': '10000-11999',
+      'id': 339,
+      'caption': '''Restrict the range of local UDP ports used by WebRTC''',
+      'tags': [],
+      'desc': '''If the policy is set, the UDP port range used by WebRTC is restricted to the specified port interval (endpoints included).
+
+      If the policy is not set, or if it is set to the empty string or an invalid port range, WebRTC is allowed to use any available local UDP port.''',
     },
   ],
   'messages': {
