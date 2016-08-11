@@ -31,7 +31,7 @@
 #ifndef ElementAnimation_h
 #define ElementAnimation_h
 
-#include "bindings/core/v8/EffectModelOrDictionarySequenceOrDictionary.h"
+#include "bindings/core/v8/DictionarySequenceOrDictionary.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/ElementAnimations.h"
@@ -50,7 +50,7 @@ class Dictionary;
 class ElementAnimation {
     STATIC_ONLY(ElementAnimation);
 public:
-    static Animation* animate(ExecutionContext* executionContext, Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, double duration, ExceptionState& exceptionState)
+    static Animation* animate(ExecutionContext* executionContext, Element& element, const DictionarySequenceOrDictionary& effectInput, double duration, ExceptionState& exceptionState)
     {
         EffectModel* effect = EffectInput::convert(&element, effectInput, executionContext, exceptionState);
         if (exceptionState.hadException())
@@ -63,7 +63,7 @@ public:
         return animateInternal(element, effect, timing);
     }
 
-    static Animation* animate(ExecutionContext* executionContext, Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& options, ExceptionState& exceptionState)
+    static Animation* animate(ExecutionContext* executionContext, Element& element, const DictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& options, ExceptionState& exceptionState)
     {
         EffectModel* effect = EffectInput::convert(&element, effectInput, executionContext, exceptionState);
         if (exceptionState.hadException())
@@ -78,7 +78,7 @@ public:
         return animation;
     }
 
-    static Animation* animate(ExecutionContext* executionContext, Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
+    static Animation* animate(ExecutionContext* executionContext, Element& element, const DictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
     {
         EffectModel* effect = EffectInput::convert(&element, effectInput, executionContext, exceptionState);
         if (exceptionState.hadException())

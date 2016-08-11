@@ -6,7 +6,6 @@
         # Files for which bindings (.cpp and .h files) will be generated
         'core_idl_files': [
             'animation/KeyframeEffect.idl',
-            'animation/EffectModel.idl',
             'animation/AnimationEffectReadOnly.idl',
             'animation/AnimationEffectTiming.idl',
             'animation/Animation.idl',

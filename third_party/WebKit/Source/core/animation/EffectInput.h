@@ -13,7 +13,7 @@
 namespace blink {
 
 class EffectModel;
-class EffectModelOrDictionarySequenceOrDictionary;
+class DictionarySequenceOrDictionary;
 class Dictionary;
 class Element;
 class ExceptionState;
@@ -23,7 +23,7 @@ class CORE_EXPORT EffectInput {
     STATIC_ONLY(EffectInput);
 public:
     // TODO(alancutter): Replace Element* parameter with Document&.
-    static EffectModel* convert(Element*, const EffectModelOrDictionarySequenceOrDictionary&, ExecutionContext*, ExceptionState&);
+    static EffectModel* convert(Element*, const DictionarySequenceOrDictionary&, ExecutionContext*, ExceptionState&);
 
 private:
     static EffectModel* convertArrayForm(Element&, const Vector<Dictionary>& keyframes, ExceptionState&);

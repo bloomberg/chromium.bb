@@ -5,7 +5,7 @@
 #include "core/animation/KeyframeEffect.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/EffectModelOrDictionarySequenceOrDictionary.h"
+#include "bindings/core/v8/DictionarySequenceOrDictionary.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8KeyframeEffectOptions.h"
 #include "core/animation/AnimationClock.h"
@@ -46,11 +46,11 @@ protected:
     template<typename T>
     static KeyframeEffect* createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, T timingInput, ExceptionState& exceptionState)
     {
-        return KeyframeEffect::create(nullptr, element, EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(keyframeDictionaryVector), timingInput, exceptionState);
+        return KeyframeEffect::create(nullptr, element, DictionarySequenceOrDictionary::fromDictionarySequence(keyframeDictionaryVector), timingInput, exceptionState);
     }
     static KeyframeEffect* createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, ExceptionState& exceptionState)
     {
-        return KeyframeEffect::create(nullptr, element, EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(keyframeDictionaryVector), exceptionState);
+        return KeyframeEffect::create(nullptr, element, DictionarySequenceOrDictionary::fromDictionarySequence(keyframeDictionaryVector), exceptionState);
     }
 };
 

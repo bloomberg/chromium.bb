@@ -31,7 +31,6 @@
 #ifndef EffectModel_h
 #define EffectModel_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/PropertyHandle.h"
@@ -44,8 +43,7 @@ class Interpolation;
 
 // Time independent representation of an Animation's content.
 // Can be sampled for the active pairs of Keyframes (represented by Interpolations) at a given time fraction.
-class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel> {
 public:
     enum CompositeOperation {
         CompositeReplace,

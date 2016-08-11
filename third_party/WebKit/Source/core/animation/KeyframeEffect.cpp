@@ -53,7 +53,7 @@ KeyframeEffect* KeyframeEffect::create(Element* target, EffectModel* model, cons
     return new KeyframeEffect(target, model, timing, priority, eventDelegate);
 }
 
-KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, double duration, ExceptionState& exceptionState)
+KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const DictionarySequenceOrDictionary& effectInput, double duration, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
@@ -64,7 +64,7 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
     return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), timing);
 }
 
-KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
+KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const DictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
@@ -76,7 +76,7 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
     return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), timing);
 }
 
-KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
+KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const DictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)

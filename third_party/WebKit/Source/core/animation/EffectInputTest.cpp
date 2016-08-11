@@ -5,7 +5,7 @@
 #include "core/animation/EffectInput.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/EffectModelOrDictionarySequenceOrDictionary.h"
+#include "bindings/core/v8/DictionarySequenceOrDictionary.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/animation/AnimationTestHelper.h"
 #include "core/animation/KeyframeEffectModel.h"
@@ -42,7 +42,7 @@ TEST(AnimationEffectInputTest, SortedOffsets)
     jsKeyframes.append(Dictionary(keyframe2, scope.isolate(), scope.getExceptionState()));
 
     Element* element = appendElement(scope.document());
-    EffectModel* animationEffect = EffectInput::convert(element, EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
+    EffectModel* animationEffect = EffectInput::convert(element, DictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     const KeyframeEffectModelBase& keyframeEffect = *toKeyframeEffectModelBase(animationEffect);
     EXPECT_EQ(1.0, keyframeEffect.getFrames()[1]->offset());
@@ -64,7 +64,7 @@ TEST(AnimationEffectInputTest, UnsortedOffsets)
     jsKeyframes.append(Dictionary(keyframe2, scope.isolate(), scope.getExceptionState()));
 
     Element* element = appendElement(scope.document());
-    EffectInput::convert(element, EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
+    EffectInput::convert(element, DictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
     EXPECT_TRUE(scope.getExceptionState().hadException());
     EXPECT_EQ(V8TypeError, scope.getExceptionState().code());
 }
@@ -88,7 +88,7 @@ TEST(AnimationEffectInputTest, LooslySorted)
     jsKeyframes.append(Dictionary(keyframe3, scope.isolate(), scope.getExceptionState()));
 
     Element* element = appendElement(scope.document());
-    EffectModel* animationEffect = EffectInput::convert(element, EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
+    EffectModel* animationEffect = EffectInput::convert(element, DictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
     const KeyframeEffectModelBase& keyframeEffect = *toKeyframeEffectModelBase(animationEffect);
     EXPECT_EQ(1, keyframeEffect.getFrames()[2]->offset());
@@ -117,7 +117,7 @@ TEST(AnimationEffectInputTest, OutOfOrderWithNullOffsets)
     jsKeyframes.append(Dictionary(keyframe4, scope.isolate(), scope.getExceptionState()));
 
     Element* element = appendElement(scope.document());
-    EffectInput::convert(element, EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
+    EffectInput::convert(element, DictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
     EXPECT_TRUE(scope.getExceptionState().hadException());
 }
 
@@ -141,7 +141,7 @@ TEST(AnimationEffectInputTest, Invalid)
     jsKeyframes.append(Dictionary(keyframe3, scope.isolate(), scope.getExceptionState()));
 
     Element* element = appendElement(scope.document());
-    EffectInput::convert(element, EffectModelOrDictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
+    EffectInput::convert(element, DictionarySequenceOrDictionary::fromDictionarySequence(jsKeyframes), nullptr, scope.getExceptionState());
     EXPECT_TRUE(scope.getExceptionState().hadException());
     EXPECT_EQ(V8TypeError, scope.getExceptionState().code());
 }

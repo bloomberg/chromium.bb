@@ -31,7 +31,7 @@
 #include "core/animation/EffectInput.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/EffectModelOrDictionarySequenceOrDictionary.h"
+#include "bindings/core/v8/DictionarySequenceOrDictionary.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"
@@ -138,11 +138,8 @@ bool exhaustDictionaryIterator(DictionaryIterator& iterator, ExecutionContext* e
 } // namespace
 
 // Spec: http://w3c.github.io/web-animations/#processing-a-frames-argument
-EffectModel* EffectInput::convert(Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExecutionContext* executionContext, ExceptionState& exceptionState)
+EffectModel* EffectInput::convert(Element* element, const DictionarySequenceOrDictionary& effectInput, ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
-    if (effectInput.isEffectModel())
-        return effectInput.getAsEffectModel();
-
     if (effectInput.isNull() || !element)
         return nullptr;
 
