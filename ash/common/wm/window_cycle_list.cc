@@ -17,6 +17,7 @@
 #include "ash/common/wm_window.h"
 #include "base/command_line.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -230,6 +231,13 @@ class WindowCycleView : public views::WidgetDelegateView {
     DCHECK(!windows.empty());
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetOpacity(0.0);
+    {
+      ui::ScopedLayerAnimationSettings animate_fade(layer()->GetAnimator());
+      animate_fade.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(100));
+      layer()->SetOpacity(1.0);
+    }
 
     set_background(views::Background::CreateSolidBackground(
         SkColorSetA(SK_ColorBLACK, 0xCC)));
@@ -273,7 +281,6 @@ class WindowCycleView : public views::WidgetDelegateView {
 
     AddChildView(highlight_view_);
     AddChildView(mirror_container_);
-    SetTargetWindow(windows.front());
   }
 
   ~WindowCycleView() override {}
@@ -301,8 +308,7 @@ class WindowCycleView : public views::WidgetDelegateView {
   }
 
   void Layout() override {
-    // Possible if the last window is deleted.
-    if (!target_window_)
+    if (!target_window_ || bounds().IsEmpty())
       return;
 
     // The preview list (|mirror_container_|) starts flush to the left of
@@ -402,33 +408,8 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
     window->AddObserver(this);
 
   if (ShouldShowUi()) {
-    cycle_view_ = new WindowCycleView(windows_);
-
-    WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
-    views::Widget* widget = new views::Widget;
-    views::Widget::InitParams params;
-    params.delegate = cycle_view_;
-    params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    params.accept_events = true;
-    // TODO(estade): make sure nothing untoward happens when the lock screen
-    // or a system modal dialog is shown.
-    root_window->GetRootWindowController()
-        ->ConfigureWidgetInitParamsForContainer(
-            widget, kShellWindowId_OverlayContainer, &params);
-    widget->Init(params);
-
-    // TODO(estade): right now this just extends past the edge of the screen if
-    // there are too many windows. Handle this more gracefully. Also, if
-    // the display metrics change, cancel the UI.
-    gfx::Rect widget_rect = widget->GetWorkAreaBoundsInScreen();
-    int widget_height = cycle_view_->GetPreferredSize().height();
-    widget_rect.set_y((widget_rect.height() - widget_height) / 2);
-    widget_rect.set_height(widget_height);
-    widget->SetBounds(widget_rect);
-    widget->Show();
-    cycle_ui_widget_.reset(widget);
+    show_ui_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(150),
+                         this, &WindowCycleList::InitWindowCycleView);
   }
 }
 
@@ -437,12 +418,12 @@ WindowCycleList::~WindowCycleList() {
   for (WmWindow* window : windows_)
     window->RemoveObserver(this);
 
-  if (showing_window_)
+  if (showing_window_) {
     showing_window_->CancelRestore();
-
-  if (cycle_view_ && cycle_view_->target_window()) {
-    cycle_view_->target_window()->Show();
-    cycle_view_->target_window()->GetWindowState()->Activate();
+  } else if (!windows_.empty()) {
+    WmWindow* target_window = windows_[current_index_];
+    target_window->Show();
+    target_window->GetWindowState()->Activate();
   }
 }
 
@@ -468,14 +449,17 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   current_index_ = (current_index_ + windows_.size()) % windows_.size();
   DCHECK(windows_[current_index_]);
 
-  if (cycle_view_) {
-    cycle_view_->SetTargetWindow(windows_[current_index_]);
-    return;
-  }
+  if (ShouldShowUi()) {
+    if (current_index_ > 1)
+      InitWindowCycleView();
 
-  // Make sure the next window is visible.
-  showing_window_.reset(new ScopedShowWindow);
-  showing_window_->Show(windows_[current_index_]);
+    if (cycle_view_)
+      cycle_view_->SetTargetWindow(windows_[current_index_]);
+  } else {
+    // Make sure the next window is visible.
+    showing_window_.reset(new ScopedShowWindow);
+    showing_window_->Show(windows_[current_index_]);
+  }
 }
 
 void WindowCycleList::OnWindowDestroying(WmWindow* window) {
@@ -507,6 +491,40 @@ bool WindowCycleList::ShouldShowUi() {
   return windows_.size() > 1 &&
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kAshEnableWindowCycleUi);
+}
+
+void WindowCycleList::InitWindowCycleView() {
+  if (cycle_view_)
+    return;
+
+  cycle_view_ = new WindowCycleView(windows_);
+  cycle_view_->SetTargetWindow(windows_[current_index_]);
+
+  WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  params.delegate = cycle_view_;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.accept_events = true;
+  params.name = "WindowCycleList (Alt+Tab)";
+  // TODO(estade): make sure nothing untoward happens when the lock screen
+  // or a system modal dialog is shown.
+  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
+      widget, kShellWindowId_OverlayContainer, &params);
+  widget->Init(params);
+
+  // TODO(estade): right now this just extends past the edge of the screen if
+  // there are too many windows. Handle this more gracefully. Also, if
+  // the display metrics change, cancel the UI.
+  gfx::Rect widget_rect = widget->GetWorkAreaBoundsInScreen();
+  int widget_height = cycle_view_->GetPreferredSize().height();
+  widget_rect.set_y((widget_rect.height() - widget_height) / 2);
+  widget_rect.set_height(widget_height);
+  widget->SetBounds(widget_rect);
+  widget->Show();
+  cycle_ui_widget_.reset(widget);
 }
 
 }  // namespace ash

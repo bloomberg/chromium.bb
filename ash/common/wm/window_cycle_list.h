@@ -12,6 +12,7 @@
 #include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 
 namespace views {
 class Label;
@@ -52,6 +53,9 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
   // Returns true if the window list overlay should be shown.
   bool ShouldShowUi();
 
+  // Initializes and shows |cycle_view_|.
+  void InitWindowCycleView();
+
   // List of weak pointers to windows to use while cycling with the keyboard.
   // List is built when the user initiates the gesture (i.e. hits alt-tab the
   // first time) and is emptied when the gesture is complete (i.e. releases the
@@ -71,6 +75,9 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
 
   // The widget that hosts the window cycle UI.
   std::unique_ptr<views::Widget> cycle_ui_widget_;
+
+  // A timer to delay showing the UI. Quick Alt+Tab should not flash a UI.
+  base::OneShotTimer show_ui_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleList);
 };
