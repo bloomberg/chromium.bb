@@ -150,6 +150,7 @@ struct ImageCacheEntryMetadata {
   ImageCacheEntryMetadata(int resource_id,
                           SkColor fill_color,
                           SkColor stroke_color,
+                          bool use_fill_and_stroke_images,
                           ui::ScaleFactor scale_factor,
                           const gfx::Size& size);
 
@@ -160,18 +161,22 @@ struct ImageCacheEntryMetadata {
   int resource_id;     // Only needed by pre-MD
   SkColor fill_color;  // Both colors only needed by MD
   SkColor stroke_color;
+  bool use_fill_and_stroke_images;
   ui::ScaleFactor scale_factor;
   gfx::Size size;
 };
 
-ImageCacheEntryMetadata::ImageCacheEntryMetadata(int resource_id,
-                                                 SkColor fill_color,
-                                                 SkColor stroke_color,
-                                                 ui::ScaleFactor scale_factor,
-                                                 const gfx::Size& size)
+ImageCacheEntryMetadata::ImageCacheEntryMetadata(
+    int resource_id,
+    SkColor fill_color,
+    SkColor stroke_color,
+    bool use_fill_and_stroke_images,
+    ui::ScaleFactor scale_factor,
+    const gfx::Size& size)
     : resource_id(resource_id),
       fill_color(fill_color),
       stroke_color(stroke_color),
+      use_fill_and_stroke_images(use_fill_and_stroke_images),
       scale_factor(scale_factor),
       size(size) {
   DCHECK_NE(ui::SCALE_FACTOR_NONE, scale_factor);
@@ -190,8 +195,9 @@ ImageCacheEntryMetadata::~ImageCacheEntryMetadata() {}
 bool ImageCacheEntryMetadata::operator==(
     const ImageCacheEntryMetadata& rhs) const {
   return resource_id == rhs.resource_id && fill_color == rhs.fill_color &&
-         stroke_color == rhs.stroke_color && scale_factor == rhs.scale_factor &&
-         size == rhs.size;
+         stroke_color == rhs.stroke_color &&
+         use_fill_and_stroke_images == rhs.use_fill_and_stroke_images &&
+         scale_factor == rhs.scale_factor && size == rhs.size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -200,16 +206,19 @@ bool ImageCacheEntryMetadata::operator==(
 // A cached image and the metadata used to generate it.
 struct ImageCacheEntry {
   ImageCacheEntry(const ImageCacheEntryMetadata& metadata,
-                  const gfx::ImageSkia& image);
+                  const gfx::ImageSkia& fill_image,
+                  const gfx::ImageSkia& stroke_image);
   ~ImageCacheEntry();
 
   ImageCacheEntryMetadata metadata;
-  gfx::ImageSkia image;
+  gfx::ImageSkia fill_image;
+  gfx::ImageSkia stroke_image;
 };
 
 ImageCacheEntry::ImageCacheEntry(const ImageCacheEntryMetadata& metadata,
-                                 const gfx::ImageSkia& image)
-    : metadata(metadata), image(image) {}
+                                 const gfx::ImageSkia& fill_image,
+                                 const gfx::ImageSkia& stroke_image)
+    : metadata(metadata), fill_image(fill_image), stroke_image(stroke_image) {}
 
 ImageCacheEntry::~ImageCacheEntry() {}
 
@@ -472,7 +481,8 @@ void PaintTabFill(gfx::Canvas* canvas,
                        tab_insets.top(), rect.width(), rect.height());
 }
 
-void PaintTabBackgroundUsingParams(gfx::Canvas* canvas,
+void PaintTabBackgroundUsingParams(gfx::Canvas* fill_canvas,
+                                   gfx::Canvas* stroke_canvas,
                                    views::GlowHoverController* hc,
                                    const PaintBackgroundParams& params) {
   const gfx::Rect& rect = params.rect;
@@ -486,45 +496,57 @@ void PaintTabBackgroundUsingParams(gfx::Canvas* canvas,
       SkColorSetA(params.toolbar_color, draw_hover ? hc->GetAlpha() : 255);
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    gfx::ScopedCanvas scoped_canvas(canvas);
-    const float scale = canvas->UndoDeviceScaleFactor();
-
-    // Draw the fill.
-    gfx::Path fill = GetFillPath(scale, rect.size());
+    gfx::Path fill;
     SkPaint paint;
     paint.setAntiAlias(true);
+
+    // Draw the fill.
     {
-      gfx::ScopedCanvas clip_scoper(canvas);
-      canvas->ClipPath(fill, true);
-      if (!params.fill_image.isNull()) {
-        gfx::ScopedCanvas scale_scoper(canvas);
-        canvas->sk_canvas()->scale(scale, scale);
-        canvas->TileImageInt(params.fill_image, rect.x(), rect.y(), 0, 0,
-                             rect.width(), rect.height());
-      } else {
-        paint.setColor(params.is_active ? params.toolbar_color
-                                        : params.background_tab_color);
-        canvas->DrawRect(
-            gfx::ScaleToEnclosingRect(gfx::Rect(rect.size()), scale), paint);
-      }
-      if (draw_hover) {
-        hover_location.scale(SkFloatToScalar(scale));
-        DrawHighlight(canvas, hover_location, radius * scale, hover_color);
+      gfx::ScopedCanvas scoped_canvas(fill_canvas);
+      const float scale = fill_canvas->UndoDeviceScaleFactor();
+
+      fill = GetFillPath(scale, rect.size());
+      {
+        gfx::ScopedCanvas clip_scoper(fill_canvas);
+        fill_canvas->ClipPath(fill, true);
+        if (!params.fill_image.isNull()) {
+          gfx::ScopedCanvas scale_scoper(fill_canvas);
+          fill_canvas->sk_canvas()->scale(scale, scale);
+          fill_canvas->TileImageInt(params.fill_image, rect.x(), rect.y(), 0, 0,
+                                    rect.width(), rect.height());
+        } else {
+          paint.setColor(params.is_active ? params.toolbar_color
+                                          : params.background_tab_color);
+          fill_canvas->DrawRect(
+              gfx::ScaleToEnclosingRect(gfx::Rect(rect.size()), scale),
+              paint);
+        }
+        if (draw_hover) {
+          hover_location.scale(SkFloatToScalar(scale));
+          DrawHighlight(fill_canvas, hover_location, radius * scale,
+                        hover_color);
+        }
       }
     }
 
     // Draw the stroke.
-    gfx::Path stroke = GetBorderPath(scale, false, false, rect.size());
-    Op(stroke, fill, kDifference_SkPathOp, &stroke);
-    if (!params.is_active) {
-      // Clip out the bottom line; this will be drawn for us by
-      // TabStrip::PaintChildren().
-      canvas->ClipRect(gfx::RectF(rect.width() * scale,
-                                  rect.height() * scale - 1));
+    {
+      gfx::ScopedCanvas scoped_canvas(stroke_canvas);
+      const float scale = stroke_canvas->UndoDeviceScaleFactor();
+
+      gfx::Path stroke = GetBorderPath(scale, false, false, rect.size());
+      Op(stroke, fill, kDifference_SkPathOp, &stroke);
+      if (!params.is_active) {
+        // Clip out the bottom line; this will be drawn for us by
+        // TabStrip::PaintChildren().
+        stroke_canvas->ClipRect(gfx::RectF(rect.width() * scale,
+                                           rect.height() * scale - 1));
+      }
+      paint.setColor(params.stroke_color);
+      stroke_canvas->DrawPath(stroke, paint);
     }
-    paint.setColor(params.stroke_color);
-    canvas->DrawPath(stroke, paint);
   } else {
+    gfx::Canvas* canvas = stroke_canvas;
     if (draw_hover) {
       // Draw everything to a temporary canvas so we can extract an image for
       // use in masking the hover glow.
@@ -652,35 +674,6 @@ class Tab::TabCloseButton : public views::ImageButton,
   const char* GetClassName() const override { return kTabCloseButtonName; }
 
  private:
-  // Returns the rectangular bounds of parent tab's visible region in the
-  // local coordinate space of |this|.
-  gfx::Rect GetTabBounds() const {
-    gfx::Path tab_mask;
-    tab_->GetHitTestMask(&tab_mask);
-
-    gfx::RectF tab_bounds_f(gfx::SkRectToRectF(tab_mask.getBounds()));
-    views::View::ConvertRectToTarget(tab_, this, &tab_bounds_f);
-    return gfx::ToEnclosingRect(tab_bounds_f);
-  }
-
-  // Returns the rectangular bounds of the tab close button in the local
-  // coordinate space of |this|, not including clipped regions on the top
-  // or bottom of the button. |tab_bounds| is the rectangular bounds of
-  // the parent tab's visible region in the local coordinate space of |this|.
-  gfx::Rect GetTabCloseButtonBounds(const gfx::Rect& tab_bounds) const {
-    gfx::Rect button_bounds(GetContentsBounds());
-    button_bounds.set_x(GetMirroredXForRect(button_bounds));
-
-    int top_overflow = tab_bounds.y() - button_bounds.y();
-    int bottom_overflow = button_bounds.bottom() - tab_bounds.bottom();
-    if (top_overflow > 0)
-      button_bounds.set_y(tab_bounds.y());
-    else if (bottom_overflow > 0)
-      button_bounds.set_height(button_bounds.height() - bottom_overflow);
-
-    return button_bounds;
-  }
-
   // views::MaskedTargeterDelegate:
   View* TargetForRect(View* root, const gfx::Rect& rect) override {
     CHECK_EQ(root, this);
@@ -711,45 +704,10 @@ class Tab::TabCloseButton : public views::ImageButton,
 
   // We need to define this so hit-testing won't include the border region.
   bool GetHitTestMask(gfx::Path* mask) const override {
-    DCHECK(mask);
-    mask->reset();
-
-    // The parent tab may be partially occluded by another tab if we are
-    // in stacked tab mode, which means that the tab close button may also
-    // be partially occluded. Define the hit test mask of the tab close
-    // button to be the intersection of the parent tab's visible bounds
-    // and the bounds of the tab close button.
-    gfx::Rect tab_bounds(GetTabBounds());
-    gfx::Rect button_bounds(GetTabCloseButtonBounds(tab_bounds));
-    gfx::Rect intersection(gfx::IntersectRects(tab_bounds, button_bounds));
-
-    if (!intersection.IsEmpty()) {
-      mask->addRect(RectToSkRect(intersection));
-      return true;
-    }
-
-    return false;
-  }
-
-  bool DoesIntersectRect(const View* target,
-                         const gfx::Rect& rect) const override {
-    CHECK_EQ(target, this);
-
-    // If the request is not made in response to a gesture, use the
-    // default implementation.
-    if (views::UsePointBasedTargeting(rect))
-      return MaskedTargeterDelegate::DoesIntersectRect(target, rect);
-
-    // The hit test request is in response to a gesture. Return false if any
-    // part of the tab close button is hidden from the user.
-    // TODO(tdanderson): Consider always returning the intersection if the
-    //                   non-rectangular shape of the tab can be accounted for.
-    gfx::Rect tab_bounds(GetTabBounds());
-    gfx::Rect button_bounds(GetTabCloseButtonBounds(tab_bounds));
-    if (!tab_bounds.Contains(button_bounds))
-      return false;
-
-    return MaskedTargeterDelegate::DoesIntersectRect(target, rect);
+    gfx::Rect button_bounds(GetContentsBounds());
+    button_bounds.set_x(GetMirroredXForRect(button_bounds));
+    mask->addRect(gfx::RectToSkRect(button_bounds));
+    return true;
   }
 
   Tab* tab_;
@@ -1137,27 +1095,13 @@ void Tab::ShowContextMenuForView(views::View* source,
 // Tab, views::MaskedTargeterDelegate overrides:
 
 bool Tab::GetHitTestMask(gfx::Path* mask) const {
-  const float scale = GetWidget()->GetCompositor()->device_scale_factor();
   // When the window is maximized we don't want to shave off the edges or top
   // shadow of the tab, such that the user can click anywhere along the top
   // edge of the screen to select a tab. Ditto for immersive fullscreen.
   const views::Widget* widget = GetWidget();
-  const bool extend_to_top =
-      widget && (widget->IsMaximized() || widget->IsFullscreen());
-  *mask = GetBorderPath(scale, true, extend_to_top, size());
-
-  // It is possible for a portion of the tab to be occluded if tabs are
-  // stacked, so modify the hit test mask to only include the visible
-  // region of the tab.
-  gfx::Rect clip;
-  controller_->ShouldPaintTab(this, &clip);
-  if (clip.size().GetArea()) {
-    SkRect intersection(mask->getBounds());
-    mask->reset();
-    if (!intersection.intersect(RectToSkRect(clip)))
-       return false;
-    mask->addRect(intersection);
-  }
+  *mask = GetBorderPath(
+      GetWidget()->GetCompositor()->device_scale_factor(), true,
+      widget && (widget->IsMaximized() || widget->IsFullscreen()), size());
   return true;
 }
 
@@ -1178,21 +1122,16 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
   if (width() < GetMinimumInactiveSize().width() && !data().pinned)
     return;
 
-  gfx::Rect clip;
-  if (!controller_->ShouldPaintTab(this, &clip))
+  gfx::Path clip;
+  if (!controller_->ShouldPaintTab(
+          this, base::Bind(&GetBorderPath, canvas->image_scale(), true, false),
+          &clip))
     return;
-  if (!clip.IsEmpty()) {
-    canvas->Save();
-    canvas->ClipRect(clip);
-  }
 
   if (controller_->IsImmersiveStyle())
     PaintImmersiveTab(canvas);
   else
-    PaintTab(canvas);
-
-  if (!clip.IsEmpty())
-    canvas->Restore();
+    PaintTab(canvas, clip);
 }
 
 void Tab::Layout() {
@@ -1481,22 +1420,22 @@ void Tab::DataChanged(const TabRendererData& old) {
     StopPulse();
 }
 
-void Tab::PaintTab(gfx::Canvas* canvas) {
+void Tab::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) {
   const int kActiveTabFillId = IDR_THEME_TOOLBAR;
   const bool has_custom_image =
       GetThemeProvider()->HasCustomImage(kActiveTabFillId);
   const int y_offset = -GetYInsetForActiveTabBackground();
   if (IsActive()) {
-    PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
+    PaintTabBackgroundUsingFillId(canvas, canvas, true, kActiveTabFillId,
                                   has_custom_image, y_offset);
   } else {
-    PaintInactiveTabBackground(canvas);
+    PaintInactiveTabBackground(canvas, clip);
 
     const double throb_value = GetThrobValue();
     if (throb_value > 0) {
       canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
                              GetLocalBounds());
-      PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
+      PaintTabBackgroundUsingFillId(canvas, canvas, true, kActiveTabFillId,
                                     has_custom_image, y_offset);
       canvas->Restore();
     }
@@ -1550,7 +1489,8 @@ void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
   }
 }
 
-void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
+void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas,
+                                     const gfx::Path& clip) {
   bool has_custom_image;
   int fill_id = controller_->GetBackgroundResourceId(&has_custom_image);
 
@@ -1566,31 +1506,58 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // We only cache the image when it's the default image and we're not hovered,
   // to avoid caching a background image that isn't the same for all tabs.
   if (has_custom_image || hover_controller_.ShouldDraw()) {
-    PaintTabBackgroundUsingFillId(canvas, false, fill_id, has_custom_image,
-                                  y_offset);
+    PaintTabBackgroundUsingFillId(canvas, canvas, false, fill_id,
+                                  has_custom_image, y_offset);
     return;
   }
 
+  // For efficiency, we don't use separate fill and stroke images unless we
+  // really need to clip the stroke and not the fill (for stacked tabs).  This
+  // saves memory and avoids an extra image draw at the cost of recalculating
+  // the images when MaySetClip() toggles.
+  const bool use_fill_and_stroke_images =
+      controller_->MaySetClip() &&
+      ui::MaterialDesignController::IsModeMaterial();
+
   const ImageCacheEntryMetadata metadata(
       fill_id, tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB),
-      controller_->GetToolbarTopSeparatorColor(),
+      controller_->GetToolbarTopSeparatorColor(), use_fill_and_stroke_images,
       ui::GetSupportedScaleFactor(canvas->image_scale()), size());
   auto it = std::find_if(
       g_image_cache->begin(), g_image_cache->end(),
       [&metadata](const ImageCacheEntry& e) { return e.metadata == metadata; });
   if (it == g_image_cache->end()) {
     gfx::Canvas tmp_canvas(size(), canvas->image_scale(), false);
-    PaintTabBackgroundUsingFillId(&tmp_canvas, false, fill_id, false, y_offset);
-    g_image_cache->emplace_front(metadata,
-                                 gfx::ImageSkia(tmp_canvas.ExtractImageRep()));
+    if (use_fill_and_stroke_images) {
+      gfx::Canvas tmp_fill_canvas(size(), canvas->image_scale(), false);
+      PaintTabBackgroundUsingFillId(&tmp_fill_canvas, &tmp_canvas, false,
+                                    fill_id, false, y_offset);
+      g_image_cache->emplace_front(
+          metadata, gfx::ImageSkia(tmp_fill_canvas.ExtractImageRep()),
+          gfx::ImageSkia(tmp_canvas.ExtractImageRep()));
+    } else {
+      PaintTabBackgroundUsingFillId(&tmp_canvas, &tmp_canvas, false, fill_id,
+                                    false, y_offset);
+      g_image_cache->emplace_front(
+          metadata, gfx::ImageSkia(),
+          gfx::ImageSkia(tmp_canvas.ExtractImageRep()));
+    }
     if (g_image_cache->size() > kMaxImageCacheSize)
       g_image_cache->pop_back();
     it = g_image_cache->begin();
   }
-  canvas->DrawImageInt(it->image, 0, 0);
+
+  gfx::ScopedCanvas scoped_canvas(
+      use_fill_and_stroke_images ? canvas : nullptr);
+  if (use_fill_and_stroke_images) {
+    canvas->DrawImageInt(it->fill_image, 0, 0);
+    canvas->sk_canvas()->clipPath(clip, SkRegion::kDifference_Op, true);
+  }
+  canvas->DrawImageInt(it->stroke_image, 0, 0);
 }
 
-void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
+void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* fill_canvas,
+                                        gfx::Canvas* stroke_canvas,
                                         bool is_active,
                                         int fill_id,
                                         bool has_custom_image,
@@ -1612,7 +1579,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR),
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
 
-  PaintTabBackgroundUsingParams(canvas, hc, params);
+  PaintTabBackgroundUsingParams(fill_canvas, stroke_canvas, hc, params);
 }
 
 void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(

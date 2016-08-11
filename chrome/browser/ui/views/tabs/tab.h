@@ -231,15 +231,17 @@ class Tab : public gfx::AnimationDelegate,
   // Invoked from SetData after |data_| has been updated to the new data.
   void DataChanged(const TabRendererData& old);
 
-  // Paint with the normal tab style.
-  void PaintTab(gfx::Canvas* canvas);
+  // Paint with the normal tab style.  If |clip| is non-empty, the tab border
+  // should be clipped against it.
+  void PaintTab(gfx::Canvas* canvas, const gfx::Path& clip);
 
   // Paint with the "immersive mode" light-bar style.
   void PaintImmersiveTab(gfx::Canvas* canvas);
 
   // Paint various portions of the Tab.
-  void PaintInactiveTabBackground(gfx::Canvas* canvas);
-  void PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
+  void PaintInactiveTabBackground(gfx::Canvas* canvas, const gfx::Path& clip);
+  void PaintTabBackgroundUsingFillId(gfx::Canvas* fill_canvas,
+                                     gfx::Canvas* stroke_canvas,
                                      bool is_active,
                                      int fill_id,
                                      bool has_custom_image,

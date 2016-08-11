@@ -109,12 +109,6 @@ const int kMouseMoveCountBeforeConsiderReal = 3;
 // Amount of time we delay before resizing after a close from a touch.
 const int kTouchResizeLayoutTimeMS = 2000;
 
-// Amount to adjust the clip by when the tab is stacked before the active index.
-const int kStackedTabLeftClip = 20;
-
-// Amount to adjust the clip by when the tab is stacked after the active index.
-const int kStackedTabRightClip = 20;
-
 #if defined(OS_MACOSX)
 const int kPinnedToNonPinnedOffset = 2;
 #else
@@ -1165,6 +1159,11 @@ bool TabStrip::ShouldHideCloseButtonForInactiveTabs() {
       switches::kDisableHideInactiveStackedTabCloseButtons);
 }
 
+bool TabStrip::MaySetClip() {
+  // Only touch layout needs to restrict the clip.
+  return touch_layout_ || IsStackingDraggedTabs();
+}
+
 void TabStrip::SelectTab(Tab* tab) {
   int model_index = GetModelIndexOfTab(tab);
   if (IsValidModelIndex(model_index))
@@ -1346,9 +1345,11 @@ void TabStrip::OnMouseEventInTab(views::View* source,
   UpdateStackedLayoutFromMouseEvent(source, event);
 }
 
-bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
-  // Only touch layout needs to restrict the clip.
-  if (!touch_layout_ && !IsStackingDraggedTabs())
+bool TabStrip::ShouldPaintTab(
+    const Tab* tab,
+    const base::Callback<gfx::Path(const gfx::Size&)>& border_callback,
+    gfx::Path* clip) {
+  if (!MaySetClip())
     return true;
 
   int index = GetModelIndexOfTab(tab);
@@ -1369,9 +1370,8 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
     if (current_x > next_x)
       return true;  // Can happen during dragging.
 
-    clip->SetRect(
-        0, 0, next_x - current_x + kStackedTabLeftClip,
-        tab_at(index)->height());
+    *clip = border_callback.Run(tab_at(index + 1)->size());
+    clip->offset(SkIntToScalar(next_x - current_x), 0);
   } else if (index > active_index && index > 0) {
     const gfx::Rect& previous_bounds(tab_at(index - 1)->bounds());
     const int previous_x = previous_bounds.x();
@@ -1383,9 +1383,8 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
 
     if (previous_bounds.right() - GetLayoutConstant(TABSTRIP_TAB_OVERLAP) !=
         current_x) {
-      int x = previous_bounds.right() - current_x - kStackedTabRightClip;
-      const gfx::Rect& tab_bounds(tab_at(index)->bounds());
-      clip->SetRect(x, 0, tab_bounds.width() - x, tab_bounds.height());
+      *clip = border_callback.Run(tab_at(index - 1)->size());
+      clip->offset(SkIntToScalar(previous_x - current_x), 0);
     }
   }
   return true;

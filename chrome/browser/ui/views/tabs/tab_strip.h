@@ -210,6 +210,7 @@ class TabStrip : public views::View,
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
   bool ShouldHideCloseButtonForInactiveTabs() override;
+  bool MaySetClip() override;
   void SelectTab(Tab* tab) override;
   void ExtendSelectionTo(Tab* tab) override;
   void ToggleSelected(Tab* tab) override;
@@ -231,7 +232,10 @@ class TabStrip : public views::View,
   Tab* GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) override;
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
-  bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) override;
+  bool ShouldPaintTab(
+      const Tab* tab,
+      const base::Callback<gfx::Path(const gfx::Size&)>& border_callback,
+      gfx::Path* clip) override;
   bool CanPaintThrobberToLayer() const override;
   bool IsImmersiveStyle() const override;
   SkColor GetToolbarTopSeparatorColor() const override;

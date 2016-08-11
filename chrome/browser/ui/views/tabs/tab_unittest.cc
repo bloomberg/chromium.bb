@@ -39,6 +39,7 @@ class FakeTabController : public TabController {
   bool ShouldHideCloseButtonForInactiveTabs() override {
     return false;
   }
+  bool MaySetClip() override { return false; }
   void SelectTab(Tab* tab) override {}
   void ExtendSelectionTo(Tab* tab) override {}
   void ToggleSelected(Tab* tab) override {}
@@ -63,7 +64,12 @@ class FakeTabController : public TabController {
   }
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override {}
-  bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) override { return true; }
+  bool ShouldPaintTab(
+      const Tab* tab,
+      const base::Callback<gfx::Path(const gfx::Size&)>& border_callback,
+      gfx::Path* clip) override {
+    return true;
+  }
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
   }
