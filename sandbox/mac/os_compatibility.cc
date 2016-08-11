@@ -96,7 +96,7 @@ class OSCompatibility_10_7 : public OSCompatibility {
 
   void WriteServiceLookUpReply(IPCMessage message,
                                mach_port_t service_port) override {
-    auto reply = reinterpret_cast<look_up2_reply_10_7*>(message.mach);
+    auto* reply = reinterpret_cast<look_up2_reply_10_7*>(message.mach);
     reply->Head.msgh_size = sizeof(*reply);
     reply->Head.msgh_bits =
         MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_MOVE_SEND_ONCE) |
@@ -108,7 +108,7 @@ class OSCompatibility_10_7 : public OSCompatibility {
   }
 
   bool IsSwapIntegerReadOnly(const IPCMessage message) override {
-    auto request =
+    auto* request =
         reinterpret_cast<const swap_integer_request_10_7*>(message.mach);
     return request->inkey == 0 && request->inval == 0 && request->outkey != 0;
   }

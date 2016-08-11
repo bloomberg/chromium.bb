@@ -393,7 +393,7 @@ void TestWin8ExtensionPointAppInitWrapper(bool is_success_test) {
       ADD_FAILURE();
       all_good = false;
     } else {
-      for (auto module : modules) {
+      for (HMODULE module : modules) {
         wchar_t name[MAX_PATH] = {};
         if (::GetModuleFileNameExW(proc_info.hProcess, module, name,
                                    MAX_PATH) &&
