@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/strings/string16.h"
+#include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 
@@ -24,7 +24,7 @@ struct CONTENT_EXPORT CacheStorageCacheQueryParams {
   bool ignore_search;
   bool ignore_method;
   bool ignore_vary;
-  base::string16 cache_name;
+  base::NullableString16 cache_name;
 };
 
 // The type of a single batch operation in the Cache API.

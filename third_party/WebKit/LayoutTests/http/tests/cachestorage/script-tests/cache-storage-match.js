@@ -133,4 +133,36 @@ promise_test(function(test) {
         });
 }, 'CacheStorageMatch with no caches available but name provided');
 
+cache_test(function(cache) {
+    var transaction = create_unique_transaction();
+
+    return self.caches.delete('')
+      .then(function() {
+          return self.caches.has('');
+        })
+      .then(function(has_cache) {
+          assert_false(has_cache, "The cache should not exist.");
+          return cache.put(transaction.request, transaction.response.clone());
+        })
+      .then(function() {
+          return self.caches.match(transaction.request, {cacheName: ''});
+        })
+      .then(function(response) {
+          assert_equals(response, undefined,
+                        'The response should not be found.');
+          return self.caches.open('');
+        })
+      .then(function(cache) {
+          return cache.put(transaction.request, transaction.response);
+        })
+      .then(function() {
+          return self.caches.match(transaction.request, {cacheName: ''});
+        })
+      .then(function(response) {
+          assert_response_equals(response, transaction.response,
+                                 'The response should be matched.');
+          return self.caches.delete('');
+        });
+}, 'CacheStorageMatch with empty cache name provided');
+
 done();

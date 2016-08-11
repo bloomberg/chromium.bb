@@ -201,7 +201,7 @@ void CacheStorageDispatcherHost::OnCacheStorageMatch(
                                     request.headers, request.referrer,
                                     request.is_reload));
 
-  if (match_params.cache_name.empty()) {
+  if (match_params.cache_name.is_null()) {
     context_->cache_manager()->MatchAllCaches(
         GURL(origin.Serialize()), std::move(scoped_request),
         base::Bind(&CacheStorageDispatcherHost::OnCacheStorageMatchCallback,
@@ -209,7 +209,8 @@ void CacheStorageDispatcherHost::OnCacheStorageMatch(
     return;
   }
   context_->cache_manager()->MatchCache(
-      GURL(origin.Serialize()), base::UTF16ToUTF8(match_params.cache_name),
+      GURL(origin.Serialize()),
+      base::UTF16ToUTF8(match_params.cache_name.string()),
       std::move(scoped_request),
       base::Bind(&CacheStorageDispatcherHost::OnCacheStorageMatchCallback, this,
                  thread_id, request_id));
