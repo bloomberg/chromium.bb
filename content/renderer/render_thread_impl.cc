@@ -644,9 +644,10 @@ void RenderThreadImpl::Init(
   ChildProcess::current()->set_main_thread(this);
 
 #if defined(USE_AURA)
-  if (IsRunningInMash())
+  if (IsRunningInMash()) {
     gpu_service_ =
         ui::GpuService::Initialize(GetMojoShellConnection()->GetConnector());
+  }
 #endif
 
   InitializeWebKit(resource_task_queue);
@@ -1829,7 +1830,7 @@ RenderThreadImpl::CreateCompositorOutputSurface(
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);
-    return connection->CreateOutputSurface();
+    return connection->CreateOutputSurface(gpu_service_.get());
   }
 #endif
 

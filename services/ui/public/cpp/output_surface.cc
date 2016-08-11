@@ -12,8 +12,9 @@
 
 namespace ui {
 
-OutputSurface::OutputSurface(std::unique_ptr<ui::WindowSurface> surface)
-    : cc::OutputSurface(make_scoped_refptr(new ContextProvider()),
+OutputSurface::OutputSurface(GpuService* gpu_service,
+                             std::unique_ptr<ui::WindowSurface> surface)
+    : cc::OutputSurface(make_scoped_refptr(new ContextProvider(gpu_service)),
                         nullptr,
                         nullptr),
       surface_(std::move(surface)) {

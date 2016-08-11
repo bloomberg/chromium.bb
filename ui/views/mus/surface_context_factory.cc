@@ -8,6 +8,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "services/ui/common/gpu_service.h"
 #include "services/ui/public/cpp/output_surface.h"
 #include "services/ui/public/cpp/window.h"
 #include "ui/compositor/reflector.h"
@@ -28,8 +29,8 @@ class FakeReflector : public ui::Reflector {
 
 }  // namespace
 
-SurfaceContextFactory::SurfaceContextFactory()
-    : next_surface_id_namespace_(1u) {}
+SurfaceContextFactory::SurfaceContextFactory(ui::GpuService* gpu_service)
+    : next_surface_id_namespace_(1u), gpu_service_(gpu_service) {}
 
 SurfaceContextFactory::~SurfaceContextFactory() {}
 
@@ -38,8 +39,8 @@ void SurfaceContextFactory::CreateOutputSurface(
   ui::Window* window = compositor->window();
   NativeWidgetMus* native_widget = NativeWidgetMus::GetForWindow(window);
   ui::mojom::SurfaceType surface_type = native_widget->surface_type();
-  std::unique_ptr<cc::OutputSurface> surface(
-      new ui::OutputSurface(window->RequestSurface(surface_type)));
+  std::unique_ptr<cc::OutputSurface> surface(new ui::OutputSurface(
+      gpu_service_, window->RequestSurface(surface_type)));
   compositor->SetOutputSurface(std::move(surface));
 }
 

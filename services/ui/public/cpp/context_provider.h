@@ -21,10 +21,11 @@ class Connector;
 namespace ui {
 
 class GLES2Context;
+class GpuService;
 
 class ContextProvider : public cc::ContextProvider {
  public:
-  ContextProvider();
+  explicit ContextProvider(GpuService* gpu_service);
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
@@ -44,6 +45,7 @@ class ContextProvider : public cc::ContextProvider {
 
  private:
   std::unique_ptr<GLES2Context> context_;
+  GpuService* gpu_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProvider);
 };

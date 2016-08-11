@@ -14,9 +14,12 @@
 
 namespace ui {
 
+class GpuService;
+
 class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
  public:
-  explicit OutputSurface(std::unique_ptr<WindowSurface> surface);
+  OutputSurface(GpuService* gpu_service,
+                std::unique_ptr<WindowSurface> surface);
   ~OutputSurface() override;
 
   // cc::OutputSurface implementation.

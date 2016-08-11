@@ -11,10 +11,11 @@
 
 namespace ui {
 
-ContextProvider::ContextProvider() {}
+ContextProvider::ContextProvider(GpuService* gpu_service)
+    : gpu_service_(gpu_service) {}
 
 bool ContextProvider::BindToCurrentThread() {
-  context_ = GLES2Context::CreateOffscreenContext(std::vector<int32_t>());
+  context_ = GLES2Context::CreateOffscreenContext(gpu_service_);
   return !!context_;
 }
 

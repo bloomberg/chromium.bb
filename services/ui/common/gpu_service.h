@@ -37,7 +37,6 @@ class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory,
   // The GpuService has to be initialized in the main thread before establishing
   // the gpu channel.
   static std::unique_ptr<GpuService> Initialize(shell::Connector* connector);
-  static GpuService* GetInstance();
 
   // gpu::GpuChannelEstablishFactory:
   void EstablishGpuChannel(

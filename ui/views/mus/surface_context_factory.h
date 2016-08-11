@@ -14,11 +14,15 @@
 #include "ui/compositor/compositor.h"
 #include "ui/views/mus/mus_export.h"
 
+namespace ui {
+class GpuService;
+}
+
 namespace views {
 
 class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
  public:
-  SurfaceContextFactory();
+  explicit SurfaceContextFactory(ui::GpuService* gpu_service);
   ~SurfaceContextFactory() override;
 
  private:
@@ -54,6 +58,7 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   uint32_t next_surface_id_namespace_;
   ui::RasterThreadHelper raster_thread_helper_;
   ui::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  ui::GpuService* gpu_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceContextFactory);
 };

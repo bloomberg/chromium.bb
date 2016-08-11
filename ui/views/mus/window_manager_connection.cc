@@ -140,7 +140,8 @@ WindowManagerConnection::WindowManagerConnection(
   lazy_tls_ptr.Pointer()->Set(this);
 
   gpu_service_ = ui::GpuService::Initialize(connector);
-  compositor_context_factory_.reset(new views::SurfaceContextFactory());
+  compositor_context_factory_.reset(
+      new views::SurfaceContextFactory(gpu_service_.get()));
   aura::Env::GetInstance()->set_context_factory(
       compositor_context_factory_.get());
   client_.reset(new ui::WindowTreeClient(this, nullptr, nullptr));

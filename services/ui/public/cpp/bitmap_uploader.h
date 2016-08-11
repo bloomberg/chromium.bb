@@ -20,6 +20,7 @@
 
 namespace ui {
 class GLES2Context;
+class GpuService;
 
 extern const char kBitmapUploaderForAcceleratedWidget[];
 
@@ -27,7 +28,7 @@ extern const char kBitmapUploaderForAcceleratedWidget[];
 // Window.
 class BitmapUploader : public WindowSurfaceClient {
  public:
-  explicit BitmapUploader(Window* window);
+  BitmapUploader(Window* window, GpuService* gpu_service);
   ~BitmapUploader() override;
 
   void Init();
@@ -62,11 +63,12 @@ class BitmapUploader : public WindowSurfaceClient {
       WindowSurface* surface,
       mojo::Array<cc::ReturnedResource> resources) override;
 
-  ui::Window* window_;
-  std::unique_ptr<ui::WindowSurface> surface_;
+  Window* window_;
+  std::unique_ptr<WindowSurface> surface_;
   // This may be null if there is an error contacting mus/initializing. We
   // assume we'll be shutting down soon and do nothing in this case.
-  std::unique_ptr<ui::GLES2Context> gles2_context_;
+  std::unique_ptr<GLES2Context> gles2_context_;
+  GpuService* gpu_service_;
 
   uint32_t color_;
   int width_;

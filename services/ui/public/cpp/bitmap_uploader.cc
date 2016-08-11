@@ -27,8 +27,9 @@ const uint32_t g_transparent_color = 0x00000000;
 const char kBitmapUploaderForAcceleratedWidget[] =
     "__BITMAP_UPLOADER_ACCELERATED_WIDGET__";
 
-BitmapUploader::BitmapUploader(Window* window)
+BitmapUploader::BitmapUploader(Window* window, GpuService* gpu_service)
     : window_(window),
+      gpu_service_(gpu_service),
       color_(g_transparent_color),
       width_(0),
       height_(0),
@@ -43,7 +44,7 @@ void BitmapUploader::Init() {
   surface_->BindToThread();
   surface_->set_client(this);
 
-  gles2_context_ = GLES2Context::CreateOffscreenContext(std::vector<int32_t>());
+  gles2_context_ = GLES2Context::CreateOffscreenContext(gpu_service_);
   // CreateOffscreenContext() may return null.
 }
 

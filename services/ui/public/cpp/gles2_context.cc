@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/ui/common/gpu_service.h"
 #include "services/ui/public/cpp/command_buffer_client_impl.h"
@@ -26,9 +27,9 @@ GLES2Context::GLES2Context() {}
 
 GLES2Context::~GLES2Context() {}
 
-bool GLES2Context::Initialize(const std::vector<int32_t>& attribs) {
+bool GLES2Context::Initialize(GpuService* gpu_service) {
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-      GpuService::GetInstance()->EstablishGpuChannelSync();
+      gpu_service->EstablishGpuChannelSync();
   if (!gpu_channel_host)
     return false;
   gpu::SurfaceHandle surface_handle = gfx::kNullAcceleratedWidget;
@@ -41,8 +42,6 @@ bool GLES2Context::Initialize(const std::vector<int32_t>& attribs) {
   GURL active_url;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
-  if (!attributes.Parse(attribs))
-    return false;
   command_buffer_proxy_impl_ = gpu::CommandBufferProxyImpl::Create(
       std::move(gpu_channel_host), surface_handle, shared_command_buffer,
       stream_id, stream_priority, attributes, active_url,
@@ -79,9 +78,9 @@ bool GLES2Context::Initialize(const std::vector<int32_t>& attribs) {
 
 // static
 std::unique_ptr<GLES2Context> GLES2Context::CreateOffscreenContext(
-    const std::vector<int32_t>& attribs) {
+    GpuService* gpu_service) {
   std::unique_ptr<GLES2Context> gles2_context(new GLES2Context);
-  if (!gles2_context->Initialize(attribs))
+  if (!gles2_context->Initialize(gpu_service))
     gles2_context.reset();
   return gles2_context;
 }
