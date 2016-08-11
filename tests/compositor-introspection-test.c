@@ -78,6 +78,29 @@ check_client_list(struct compositor *compositor)
 	assert(compositor->client == client);
 }
 
+static const char *
+setup_compositor(struct compositor *compositor)
+{
+	const char *socket;
+
+	require_xdg_runtime_dir();
+
+	compositor->display = wl_display_create();
+	socket = wl_display_add_socket_auto(compositor->display);
+
+	compositor->listener.notify = client_created;
+	wl_display_add_client_created_listener(compositor->display, &compositor->listener);
+
+	return socket;
+}
+
+static void
+cleanup_compositor(struct compositor *compositor)
+{
+	wl_client_destroy(compositor->client);
+	wl_display_destroy(compositor->display);
+}
+
 TEST(new_client_connect)
 {
 	const char *socket;
@@ -86,13 +109,7 @@ TEST(new_client_connect)
 		struct wl_display *display;
 	} client;
 
-	require_xdg_runtime_dir();
-
-	compositor.display = wl_display_create();
-	socket = wl_display_add_socket_auto(compositor.display);
-
-	compositor.listener.notify = client_created;
-	wl_display_add_client_created_listener(compositor.display, &compositor.listener);
+	socket = setup_compositor(&compositor);
 
 	client.display = wl_display_connect(socket);
 
@@ -102,8 +119,54 @@ TEST(new_client_connect)
 
 	check_client_list(&compositor);
 
-	wl_display_disconnect(client.display);
 
-	wl_client_destroy(compositor.client);
-	wl_display_destroy(compositor.display);
+
+	wl_display_disconnect(client.display);
+	cleanup_compositor(&compositor);
+}
+
+struct resource_listener {
+	struct wl_listener listener;
+	int count;
+};
+
+static void
+resource_created(struct wl_listener *listener, void *data)
+{
+	struct resource_listener *l;
+	l = wl_container_of(listener, l, listener);
+	l->count++;
+}
+
+TEST(new_resource)
+{
+	const char *socket;
+	struct compositor compositor = { 0 };
+	struct {
+		struct wl_display *display;
+		struct wl_callback *cb;
+	} client;
+	struct resource_listener resource_listener;
+
+	socket = setup_compositor(&compositor);
+	client.display = wl_display_connect(socket);
+	wl_event_loop_dispatch(wl_display_get_event_loop(compositor.display), 100);
+
+	resource_listener.count = 0;
+	resource_listener.listener.notify = resource_created;
+	wl_client_add_resource_created_listener(compositor.client,
+						&resource_listener.listener);
+
+	client.cb = wl_display_sync(client.display);
+	wl_display_flush(client.display);
+	wl_event_loop_dispatch(wl_display_get_event_loop(compositor.display), 100);
+
+	assert(resource_listener.count == 1);
+
+	wl_callback_destroy(client.cb);
+	wl_display_disconnect(client.display);
+	cleanup_compositor(&compositor);
+
+	/* This is defined to be safe also after client destruction */
+	wl_list_remove(&resource_listener.listener.link);
 }

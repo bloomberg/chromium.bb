@@ -212,6 +212,10 @@ wl_client_get_object(struct wl_client *client, uint32_t id);
 void
 wl_client_post_no_memory(struct wl_client *client);
 
+void
+wl_client_add_resource_created_listener(struct wl_client *client,
+                                        struct wl_listener *listener);
+
 /** \class wl_listener
  *
  * \brief A single listener for Wayland signals
