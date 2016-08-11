@@ -14,7 +14,7 @@ AC_INIT([weston],
         [weston],
         [http://wayland.freedesktop.org])
 
-WAYLAND_PREREQ_VERSION="1.10.0"
+WAYLAND_PREREQ_VERSION="1.11.90"
 
 AC_SUBST([WESTON_VERSION_MAJOR], [weston_major_version])
 AC_SUBST([WESTON_VERSION_MINOR], [weston_minor_version])
