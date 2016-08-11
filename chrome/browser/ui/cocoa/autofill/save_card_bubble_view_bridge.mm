@@ -99,11 +99,13 @@ void SaveCardBubbleViewBridge::OnBubbleClosed() {
 }
 
 void SaveCardBubbleViewBridge::Hide() {
-  // SaveCardBubbleViewBridge::OnBubbleClosed won't be able to call
-  // OnBubbleClosed on the bubble controller since we null the reference to it
-  // below. So we need to call it here.
-  controller_->OnBubbleClosed();
-  controller_ = nullptr;
+  if (controller_) {
+    // SaveCardBubbleViewBridge::OnBubbleClosed won't be able to call
+    // OnBubbleClosed on the bubble controller since we null the reference to it
+    // below. So we need to call it here.
+    controller_->OnBubbleClosed();
+    controller_ = nullptr;
+  }
   [view_controller_ close];
 }
 
