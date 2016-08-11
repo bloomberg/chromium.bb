@@ -434,3 +434,13 @@ punctuation \x0093 236
 punctuation \x0094 356
 punctuation \x0096 36
 
+#   Unicode prefers \x2019 for apostrophe instead of \x27
+endword 'd 3-145
+endword 'm 3-134
+endword 're 3-1235-15
+endword 've 3-1236-15
+endword 'll 3-123-123
+endword 's 3-234
+endword 't 3-2345
+
+
