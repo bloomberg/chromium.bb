@@ -308,11 +308,6 @@ bool AsyncResourceHandler::OnRequestRedirected(
   *defer = did_defer_ = true;
   OnDefer();
 
-  if (rdh_->delegate()) {
-    rdh_->delegate()->OnRequestRedirected(
-        redirect_info.new_url, request(), info->GetContext(), response);
-  }
-
   NetLogObserver::PopulateResponseInfo(request(), response);
   response->head.encoded_data_length = request()->GetTotalReceivedBytes();
   reported_transfer_size_ = 0;

@@ -277,8 +277,6 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
     return;
   }
 
-  delegate_->DidReceiveRedirect(this, redirect_info.new_url);
-
   if (delegate_->HandleExternalProtocol(this, redirect_info.new_url)) {
     // The request is complete so we can remove it.
     CancelAndIgnore();
@@ -287,6 +285,7 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
   PopulateResourceResponse(info, request_.get(), cert_store_, response.get());
+  delegate_->DidReceiveRedirect(this, redirect_info.new_url, response.get());
   if (!handler_->OnRequestRedirected(redirect_info, response.get(), defer)) {
     Cancel();
   } else if (*defer) {

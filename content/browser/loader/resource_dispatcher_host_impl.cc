@@ -822,9 +822,15 @@ void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
   }
 }
 
-void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
-                                                    const GURL& new_url) {
+void ResourceDispatcherHostImpl::DidReceiveRedirect(
+    ResourceLoader* loader,
+    const GURL& new_url,
+    ResourceResponse* response) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
+  if (delegate_) {
+    delegate_->OnRequestRedirected(
+        new_url, loader->request(), info->GetContext(), response);
+  }
 
   int render_process_id, render_frame_host;
   if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_host))

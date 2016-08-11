@@ -218,7 +218,8 @@ class AsyncResourceHandlerTest : public ::testing::Test,
   }
   void DidStartRequest(ResourceLoader* loader) override {}
   void DidReceiveRedirect(ResourceLoader* loader,
-                          const GURL& new_url) override {}
+                          const GURL& new_url,
+                          ResourceResponse* response) override {}
   void DidReceiveResponse(ResourceLoader* loader) override {}
   void DidFinishLoading(ResourceLoader* loader) override {
     loader_.reset();

@@ -351,7 +351,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       net::AuthChallengeInfo* auth_info) override;
   bool HandleExternalProtocol(ResourceLoader* loader, const GURL& url) override;
   void DidStartRequest(ResourceLoader* loader) override;
-  void DidReceiveRedirect(ResourceLoader* loader, const GURL& new_url) override;
+  void DidReceiveRedirect(ResourceLoader* loader, const GURL& new_url,
+                          ResourceResponse* response) override;
   void DidReceiveResponse(ResourceLoader* loader) override;
   void DidFinishLoading(ResourceLoader* loader) override;
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(

@@ -29,7 +29,6 @@
 -ChromeMainTest.SecondLaunchFromIncognitoWithNormalUrl
 -ChromeRenderProcessHostTest.DevToolsOnSelfInOwnProcess
 -ChromeRenderProcessHostTest.DevToolsOnSelfInOwnProcessPPT
--ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeaderForRedirect
 -ChromeSecurityStateModelClientTest.AddedTab
 -ChromeSecurityStateModelClientTest.HttpsPage
 -ChromeSecurityStateModelClientTest.MixedContent
@@ -153,7 +152,6 @@
 -ProcessesApiTest.Processes
 -PushMessaging*
 -RedirectTest.ClientServerServer
--RedirectTest.Server
 -ReferrerPolicyTest.HttpLeftClickRedirectToHTTPOriginWhenCrossOrigin
 -ReferrerPolicyTest.HttpsMiddleClickOrigin
 -ReferrerPolicyTest.HttpsMiddleClickRedirect
