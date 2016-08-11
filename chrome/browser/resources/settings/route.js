@@ -358,8 +358,10 @@ cr.define('settings', function() {
         url += '?' + queryString;
     }
 
+    // History serializes the state, so we don't push the actual route object.
+    var previousRoutePath = currentRoute_.path;
     setCurrentRoute(route, params);
-    window.history.pushState(undefined, '', url);
+    window.history.pushState(previousRoutePath, '', url);
   };
 
   window.addEventListener('popstate', function(event) {

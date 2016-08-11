@@ -558,24 +558,14 @@ CrSettingsSubpageTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://md-settings/settings_page/settings_subpage.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'settings_subpage_test.js',
+  ]),
 };
 
 TEST_F('CrSettingsSubpageTest', 'SettingsSubpage', function() {
-  suite('SettingsSubpage', function() {
-    test('can navigate to parent', function() {
-      PolymerTest.clearBody();
-
-      settings.navigateTo(settings.Route.SYNC);
-      assertEquals(settings.Route.SYNC, settings.getCurrentRoute());
-
-      var subpage = document.createElement('settings-subpage');
-      document.body.appendChild(subpage);
-
-      MockInteractions.tap(subpage.$$('paper-icon-button'));
-      assertEquals(settings.Route.PEOPLE, settings.getCurrentRoute());
-    });
-  });
-
+  settings_subpage.registerTests();
   mocha.run();
 });
 

@@ -43,7 +43,15 @@ Polymer({
 
   /** @private */
   onTapBack_: function() {
-    settings.navigateTo(assert(settings.getCurrentRoute().parent));
+    var previousRoute =
+        window.history.state &&
+        assert(settings.getRouteForPath(
+            /** @type {string} */ (window.history.state)));
+
+    if (previousRoute && previousRoute.contains(settings.getCurrentRoute()))
+      window.history.back();
+    else
+      settings.navigateTo(assert(settings.getCurrentRoute().parent));
   },
 
   /** @private */
