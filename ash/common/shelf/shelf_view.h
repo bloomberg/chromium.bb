@@ -122,6 +122,11 @@ class ASH_EXPORT ShelfView : public views::View,
   // coordinate system.
   gfx::Rect GetVisibleItemsBoundsInScreen();
 
+  // InkDropButtonListener:
+  void ButtonPressed(views::Button* sender,
+                     const ui::Event& event,
+                     views::InkDrop* ink_drop) override;
+
   // Overridden from FocusTraversable:
   views::FocusSearch* GetFocusSearch() override;
   FocusTraversable* GetFocusTraversableParent() override;
@@ -291,11 +296,6 @@ class ASH_EXPORT ShelfView : public views::View,
   void ShelfItemMoved(int start_index, int target_index) override;
   void OnSetShelfItemDelegate(ShelfID id,
                               ShelfItemDelegate* item_delegate) override;
-
-  // Overridden from InkDropButtonListener:
-  void ButtonPressed(views::Button* sender,
-                     const ui::Event& event,
-                     views::InkDrop* ink_drop) override;
 
   // Show a list of all running items for this shelf |item|; it only shows a
   // menu if there are multiple running items. |source| specifies the view

@@ -8,6 +8,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/ink_drop_button_listener.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "grit/ash_resources.h"
@@ -26,13 +27,13 @@
 
 namespace ash {
 
-OverflowButton::OverflowButton(InkDropButtonListener* listener,
-                               WmShelf* wm_shelf)
+OverflowButton::OverflowButton(ShelfView* shelf_view, WmShelf* wm_shelf)
     : CustomButton(nullptr),
       bottom_image_(nullptr),
-      listener_(listener),
+      shelf_view_(shelf_view),
       wm_shelf_(wm_shelf),
       background_alpha_(0) {
+  DCHECK(shelf_view_);
   if (MaterialDesignController::IsShelfMaterial()) {
     bottom_image_md_ =
         CreateVectorIcon(gfx::VectorIconId::SHELF_OVERFLOW, kShelfIconColor);
@@ -65,8 +66,7 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
 
 void OverflowButton::NotifyClick(const ui::Event& event) {
   CustomButton::NotifyClick(event);
-  if (listener_)
-    listener_->ButtonPressed(this, event, ink_drop());
+  shelf_view_->ButtonPressed(this, event, ink_drop());
 }
 
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,
@@ -78,7 +78,7 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
     canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius,
                           background_paint);
 
-    if (wm_shelf_->IsShowingOverflowBubble()) {
+    if (shelf_view_->IsShowingOverflowBubble()) {
       SkPaint highlight_paint;
       highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
       highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
@@ -123,7 +123,7 @@ void OverflowButton::PaintForeground(gfx::Canvas* canvas,
 }
 
 int OverflowButton::NonMaterialBackgroundImageId() {
-  if (wm_shelf_->IsShowingOverflowBubble())
+  if (shelf_view_->IsShowingOverflowBubble())
     return IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
   else if (wm_shelf_->IsDimmed())
     return IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK;

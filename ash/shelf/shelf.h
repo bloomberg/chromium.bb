@@ -102,6 +102,7 @@ class ASH_EXPORT Shelf {
   // Returns true if the shelf is showing a context menu.
   bool IsShowingMenu() const;
 
+  // TODO(jamescook): Migrate this to ShelfWidget.
   bool IsShowingOverflowBubble() const;
 
   void SetVisible(bool visible) const;

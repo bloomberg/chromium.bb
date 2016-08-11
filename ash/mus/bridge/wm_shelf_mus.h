@@ -35,7 +35,6 @@ class WmShelfMus : public WmShelf {
   ShelfBackgroundType GetBackgroundType() const override;
   WmDimmerView* CreateDimmerView(bool disable_animations_for_test) override;
   bool IsDimmed() const override;
-  bool IsShowingOverflowBubble() const override;
   void SchedulePaint() override;
   bool IsVisible() const override;
   void UpdateVisibilityState() override;

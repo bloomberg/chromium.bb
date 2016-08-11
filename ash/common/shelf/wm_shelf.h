@@ -64,11 +64,6 @@ class ASH_EXPORT WmShelf {
   // require shelf dimming. http://crbug.com/614453
   virtual bool IsDimmed() const = 0;
 
-  // Whether the shelf item overflow bubble is visible.
-  // TODO(jamescook): Eliminate when ShelfView moves to //ash/common.
-  // http://crbug.com/615155
-  virtual bool IsShowingOverflowBubble() const = 0;
-
   // Schedules a repaint for all shelf buttons.
   // TODO(jamescook): Eliminate when ShelfView moves to //ash/common.
   // http://crbug.com/615155

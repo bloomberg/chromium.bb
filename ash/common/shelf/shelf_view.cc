@@ -553,6 +553,82 @@ gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
   return gfx::Rect(origin, preferred_size);
 }
 
+void ShelfView::ButtonPressed(views::Button* sender,
+                              const ui::Event& event,
+                              views::InkDrop* ink_drop) {
+  if (sender == overflow_button_) {
+    ToggleOverflowBubble();
+    shelf_button_pressed_metric_tracker_.ButtonPressed(
+        event, sender, ShelfItemDelegate::kNoAction);
+    return;
+  }
+
+  // None of the checks in ShouldEventActivateButton() affects overflow button.
+  // So, it is safe to be checked after handling overflow button.
+  if (!ShouldEventActivateButton(sender, event))
+    return;
+
+  // Record the index for the last pressed shelf item.
+  last_pressed_index_ = view_model_->GetIndexOfView(sender);
+  DCHECK_LT(-1, last_pressed_index_);
+
+  // Place new windows on the same display as the button.
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(sender->GetWidget());
+  scoped_root_window_for_new_windows_.reset(
+      new ScopedRootWindowForNewWindows(window->GetRootWindow()));
+
+  // Slow down activation animations if shift key is pressed.
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
+  if (event.IsShiftDown()) {
+    slowing_animations.reset(new ui::ScopedAnimationDurationScaleMode(
+        ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+  }
+
+  // Collect usage statistics before we decide what to do with the click.
+  switch (model_->items()[last_pressed_index_].type) {
+    case TYPE_APP_SHORTCUT:
+    case TYPE_WINDOWED_APP:
+    case TYPE_PLATFORM_APP:
+    case TYPE_BROWSER_SHORTCUT:
+      WmShell::Get()->RecordUserMetricsAction(UMA_LAUNCHER_CLICK_ON_APP);
+      break;
+
+    case TYPE_APP_LIST:
+      WmShell::Get()->RecordUserMetricsAction(
+          UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
+      break;
+
+    case TYPE_APP_PANEL:
+    case TYPE_DIALOG:
+    case TYPE_IME_MENU:
+      break;
+
+    case TYPE_UNDEFINED:
+      NOTREACHED() << "ShelfItemType must be set.";
+      break;
+  }
+
+  ShelfItemDelegate::PerformedAction performed_action =
+      model_->GetShelfItemDelegate(model_->items()[last_pressed_index_].id)
+          ->ItemSelected(event);
+
+  shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
+                                                     performed_action);
+
+  // For the app list menu no TRIGGERED ink drop effect is needed and it
+  // handles its own ACTIVATED/DEACTIVATED states.
+  if (performed_action == ShelfItemDelegate::kNewWindowCreated ||
+      (performed_action != ShelfItemDelegate::kAppListMenuShown &&
+       !ShowListMenuForView(model_->items()[last_pressed_index_], sender, event,
+                            ink_drop))) {
+    ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
+  }
+  // Allow the menu to clear |scoped_root_window_for_new_windows_| during
+  // OnMenuClosed.
+  if (!IsShowingMenu())
+    scoped_root_window_for_new_windows_.reset();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfView, FocusTraversable implementation:
 
@@ -1683,82 +1759,6 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
 
 void ShelfView::OnSetShelfItemDelegate(ShelfID id,
                                        ShelfItemDelegate* item_delegate) {}
-
-void ShelfView::ButtonPressed(views::Button* sender,
-                              const ui::Event& event,
-                              views::InkDrop* ink_drop) {
-  if (sender == overflow_button_) {
-    ToggleOverflowBubble();
-    shelf_button_pressed_metric_tracker_.ButtonPressed(
-        event, sender, ShelfItemDelegate::kNoAction);
-    return;
-  }
-
-  // None of the checks in ShouldEventActivateButton() affects overflow button.
-  // So, it is safe to be checked after handling overflow button.
-  if (!ShouldEventActivateButton(sender, event))
-    return;
-
-  // Record the index for the last pressed shelf item.
-  last_pressed_index_ = view_model_->GetIndexOfView(sender);
-  DCHECK_LT(-1, last_pressed_index_);
-
-  // Place new windows on the same display as the button.
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(sender->GetWidget());
-  scoped_root_window_for_new_windows_.reset(
-      new ScopedRootWindowForNewWindows(window->GetRootWindow()));
-
-  // Slow down activation animations if shift key is pressed.
-  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
-  if (event.IsShiftDown()) {
-    slowing_animations.reset(new ui::ScopedAnimationDurationScaleMode(
-        ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
-  }
-
-  // Collect usage statistics before we decide what to do with the click.
-  switch (model_->items()[last_pressed_index_].type) {
-    case TYPE_APP_SHORTCUT:
-    case TYPE_WINDOWED_APP:
-    case TYPE_PLATFORM_APP:
-    case TYPE_BROWSER_SHORTCUT:
-      WmShell::Get()->RecordUserMetricsAction(UMA_LAUNCHER_CLICK_ON_APP);
-      break;
-
-    case TYPE_APP_LIST:
-      WmShell::Get()->RecordUserMetricsAction(
-          UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-      break;
-
-    case TYPE_APP_PANEL:
-    case TYPE_DIALOG:
-    case TYPE_IME_MENU:
-      break;
-
-    case TYPE_UNDEFINED:
-      NOTREACHED() << "ShelfItemType must be set.";
-      break;
-  }
-
-  ShelfItemDelegate::PerformedAction performed_action =
-      model_->GetShelfItemDelegate(model_->items()[last_pressed_index_].id)
-          ->ItemSelected(event);
-
-  shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
-                                                     performed_action);
-
-  // For the app list menu no TRIGGERED ink drop effect is needed and it
-  // handles its own ACTIVATED/DEACTIVATED states.
-  if (performed_action == ShelfItemDelegate::kNewWindowCreated ||
-      (performed_action != ShelfItemDelegate::kAppListMenuShown &&
-       !ShowListMenuForView(model_->items()[last_pressed_index_], sender, event,
-                            ink_drop))) {
-    ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
-  }
-  // Allow the menu to clear |scoped_root_window_for_new_windows_| during
-  // OnMenuClosed.
-  if (!IsShowingMenu())
-    scoped_root_window_for_new_windows_.reset();
-}
 
 bool ShelfView::ShowListMenuForView(const ShelfItem& item,
                                     views::View* source,
