@@ -11,6 +11,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/color_lut_cache.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer_draw_cache.h"
 #include "cc/output/program_binding.h"
@@ -426,7 +427,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   const VideoYUVProgram* GetVideoYUVProgram(TexCoordPrecision precision,
                                             SamplerType sampler,
                                             bool use_alpha_texture,
-                                            bool use_nv12);
+                                            bool use_nv12,
+                                            bool use_color_lut);
   const VideoStreamTextureProgram* GetVideoStreamTextureProgram(
       TexCoordPrecision precision);
 
@@ -492,7 +494,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                                [LAST_MASK_VALUE + 1];
 
   VideoYUVProgram video_yuv_program_[LAST_TEX_COORD_PRECISION + 1]
-                                    [LAST_SAMPLER_TYPE + 1][2][2];
+                                    [LAST_SAMPLER_TYPE + 1][2][2][2];
   VideoStreamTextureProgram
       video_stream_texture_program_[LAST_TEX_COORD_PRECISION + 1];
 
@@ -550,6 +552,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool force_drawing_frame_framebuffer_unflipped_ = false;
 
   BoundGeometry bound_geometry_;
+  ColorLUTCache color_lut_cache_;
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };
 

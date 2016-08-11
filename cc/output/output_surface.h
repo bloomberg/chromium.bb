@@ -19,6 +19,7 @@
 #include "cc/output/vulkan_context_provider.h"
 #include "cc/resources/returned_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
+#include "ui/gfx/color_space.h"
 
 namespace ui {
 class LatencyInfo;
@@ -128,6 +129,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
                        bool alpha);
   gfx::Size SurfaceSize() const { return surface_size_; }
   float device_scale_factor() const { return device_scale_factor_; }
+  const gfx::ColorSpace& color_space() const { return color_space_; }
 
   // If supported, this causes a ReclaimResources for all resources that are
   // currently in use.
@@ -195,6 +197,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   gfx::Size surface_size_;
   float device_scale_factor_ = -1;
   bool has_alpha_ = true;
+  gfx::ColorSpace color_space_;
   base::ThreadChecker client_thread_checker_;
 
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect);

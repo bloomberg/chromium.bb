@@ -64,4 +64,28 @@ bool ColorSpace::operator==(const ColorSpace& other) const {
          matrix_ == other.matrix_ && range_ == other.range_;
 }
 
+bool ColorSpace::operator<(const ColorSpace& other) const {
+  if (primaries_ < other.primaries_)
+    return true;
+  if (primaries_ > other.primaries_)
+    return false;
+  if (transfer_ < other.transfer_)
+    return true;
+  if (transfer_ > other.transfer_)
+    return false;
+  if (matrix_ < other.matrix_)
+    return true;
+  if (matrix_ > other.matrix_)
+    return false;
+  if (range_ < other.range_)
+    return true;
+  if (range_ > other.range_)
+    return true;
+
+  // TODO(hubbe): For "CUSTOM" primaries or tranfer functions, compare their
+  // coefficients here
+
+  return false;
+}
+
 }  // namespace gfx

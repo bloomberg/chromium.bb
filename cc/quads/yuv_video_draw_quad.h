@@ -11,6 +11,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/quads/draw_quad.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -53,6 +54,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               unsigned v_plane_resource_id,
               unsigned a_plane_resource_id,
               ColorSpace color_space,
+              const gfx::ColorSpace& video_color_space,
               float offset,
               float multiplier,
               uint32_t bits_per_channel);
@@ -74,6 +76,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               unsigned v_plane_resource_id,
               unsigned a_plane_resource_id,
               ColorSpace color_space,
+              const gfx::ColorSpace& video_color_space,
               float offset,
               float multiplier,
               uint32_t bits_per_channel);
@@ -86,6 +89,8 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   float resource_offset = 0.0f;
   float resource_multiplier = 1.0f;
   uint32_t bits_per_channel = 8;
+  // TODO(hubbe): Move to ResourceProvider::ScopedSamplerGL.
+  gfx::ColorSpace video_color_space;
 
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 

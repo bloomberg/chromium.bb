@@ -88,6 +88,7 @@ MEDIA_EXPORT extern const base::Feature kFlashJoinsMediaSession;
 MEDIA_EXPORT extern const base::Feature kNewAudioRenderingMixingStrategy;
 MEDIA_EXPORT extern const base::Feature kResumeBackgroundVideo;
 MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
+MEDIA_EXPORT extern const base::Feature kVideoColorManagement;
 
 }  // namespace media
 

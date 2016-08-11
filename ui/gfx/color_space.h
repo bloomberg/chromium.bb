@@ -123,6 +123,7 @@ class GFX_EXPORT ColorSpace {
   static ColorSpace CreateREC709();
 
   bool operator==(const ColorSpace& other) const;
+  bool operator<(const ColorSpace& other) const;
 
  private:
   PrimaryID primaries_;

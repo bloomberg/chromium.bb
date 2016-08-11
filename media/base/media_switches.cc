@@ -167,5 +167,8 @@ const base::Feature kResumeBackgroundVideo {
 // Use shared block-based buffering for media.
 const base::Feature kUseNewMediaCache{"use-new-media-cache",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+// Correct video colors based on output display?
+const base::Feature kVideoColorManagement{"video-color-management",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace media

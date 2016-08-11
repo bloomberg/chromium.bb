@@ -203,6 +203,8 @@ component("cc") {
     "output/buffer_to_texture_target_map.h",
     "output/ca_layer_overlay.cc",
     "output/ca_layer_overlay.h",
+    "output/color_lut_cache.cc",
+    "output/color_lut_cache.h",
     "output/compositor_frame.cc",
     "output/compositor_frame.h",
     "output/compositor_frame_metadata.cc",

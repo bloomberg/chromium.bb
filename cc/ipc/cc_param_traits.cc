@@ -885,6 +885,7 @@ void ParamTraits<cc::YUVVideoDrawQuad>::GetSize(base::PickleSizer* s,
   GetParamSize(s, p.ya_tex_size);
   GetParamSize(s, p.uv_tex_size);
   GetParamSize(s, p.color_space);
+  GetParamSize(s, p.video_color_space);
   GetParamSize(s, p.resource_offset);
   GetParamSize(s, p.resource_multiplier);
   GetParamSize(s, p.bits_per_channel);
@@ -898,6 +899,7 @@ void ParamTraits<cc::YUVVideoDrawQuad>::Write(base::Pickle* m,
   WriteParam(m, p.ya_tex_size);
   WriteParam(m, p.uv_tex_size);
   WriteParam(m, p.color_space);
+  WriteParam(m, p.video_color_space);
   WriteParam(m, p.resource_offset);
   WriteParam(m, p.resource_multiplier);
   WriteParam(m, p.bits_per_channel);
@@ -912,6 +914,7 @@ bool ParamTraits<cc::YUVVideoDrawQuad>::Read(const base::Pickle* m,
          ReadParam(m, iter, &p->ya_tex_size) &&
          ReadParam(m, iter, &p->uv_tex_size) &&
          ReadParam(m, iter, &p->color_space) &&
+         ReadParam(m, iter, &p->video_color_space) &&
          ReadParam(m, iter, &p->resource_offset) &&
          ReadParam(m, iter, &p->resource_multiplier) &&
          ReadParam(m, iter, &p->bits_per_channel) &&
@@ -933,6 +936,8 @@ void ParamTraits<cc::YUVVideoDrawQuad>::Log(const param_type& p,
   LogParam(p.uv_tex_size, l);
   l->append(", ");
   LogParam(p.color_space, l);
+  l->append(", ");
+  LogParam(p.video_color_space, l);
   l->append(", ");
   LogParam(p.resource_offset, l);
   l->append(", ");

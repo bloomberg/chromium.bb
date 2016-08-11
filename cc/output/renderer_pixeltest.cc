@@ -206,6 +206,8 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
     color_space = YUVVideoDrawQuad::JPEG;
   }
 
+  gfx::ColorSpace video_color_space = video_frame->ColorSpace();
+
   const gfx::Rect opaque_rect(0, 0, 0, 0);
 
   if (with_alpha) {
@@ -278,7 +280,8 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
                    ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
                    uv_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space, 0.0f, 1.0f, bits_per_channel);
+                   color_space, video_color_space, 0.0f, 1.0f,
+                   bits_per_channel);
 }
 
 // Upshift video frame to 10 bit.
@@ -483,6 +486,7 @@ void CreateTestYUVVideoDrawQuad_Solid(
 
 void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
                                      media::ColorSpace video_frame_color_space,
+                                     const gfx::ColorSpace& video_color_space,
                                      const gfx::RectF& tex_coord_rect,
                                      uint8_t y,
                                      uint8_t u,
@@ -532,7 +536,7 @@ void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
   yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
                    ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
                    uv_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space, 0.0f, 1.0f, 8);
+                   color_space, video_color_space, 0.0f, 1.0f, 8);
 }
 
 typedef ::testing::Types<GLRenderer,
@@ -1231,8 +1235,9 @@ TEST_F(VideoGLRendererPixelTest, SimpleNV12JRect) {
 
   // YUV of (149,43,21) should be green (0,255,0) in RGB.
   CreateTestYUVVideoDrawQuad_NV12(
-      shared_state, media::COLOR_SPACE_JPEG, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
-      149, 43, 21, pass.get(), rect, rect, resource_provider_.get());
+      shared_state, media::COLOR_SPACE_JPEG, gfx::ColorSpace::CreateJpeg(),
+      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 149, 43, 21, pass.get(), rect, rect,
+      resource_provider_.get());
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));

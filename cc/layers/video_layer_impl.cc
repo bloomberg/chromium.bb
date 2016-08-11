@@ -19,6 +19,7 @@
 #include "cc/trees/occlusion.h"
 #include "cc/trees/task_runner_provider.h"
 #include "media/base/video_frame.h"
+#include "ui/gfx/color_space.h"
 
 #if defined(VIDEO_HOLE)
 #include "cc/quads/solid_color_draw_quad.h"
@@ -284,8 +285,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
           frame_resources_.size() > 2 ? frame_resources_[2].id
                                       : frame_resources_[1].id,
           frame_resources_.size() > 3 ? frame_resources_[3].id : 0, color_space,
-          frame_resource_offset_, frame_resource_multiplier_,
-          frame_bits_per_channel_);
+          frame_->ColorSpace(), frame_resource_offset_,
+          frame_resource_multiplier_, frame_bits_per_channel_);
       ValidateQuadResources(yuv_video_quad);
       break;
     }

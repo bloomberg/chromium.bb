@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -48,6 +49,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "media/base/media_switches.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -57,6 +59,7 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -386,7 +389,8 @@ GLRenderer::GLRenderer(RendererClient* client,
       use_sync_query_(false),
       gl_composited_texture_quad_border_(
           settings->gl_composited_texture_quad_border),
-      bound_geometry_(NO_BINDING) {
+      bound_geometry_(NO_BINDING),
+      color_lut_cache_(gl_) {
   DCHECK(gl_);
   DCHECK(context_support_);
 
@@ -2198,7 +2202,8 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   bool use_alpha_plane = quad->a_plane_resource_id() != 0;
   bool use_nv12 = quad->v_plane_resource_id() == quad->u_plane_resource_id();
-
+  bool use_color_lut =
+      base::FeatureList::IsEnabled(media::kVideoColorManagement);
   DCHECK(!(use_nv12 && use_alpha_plane));
 
   ResourceProvider::ScopedSamplerGL y_plane_lock(
@@ -2237,11 +2242,14 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   int v_texture_location = -1;
   int uv_texture_location = -1;
   int a_texture_location = -1;
+  int lut_texture_location = -1;
   int yuv_matrix_location = -1;
   int yuv_adj_location = -1;
   int alpha_location = -1;
+  int resource_multiplier_location = -1;
+  int resource_offset_location = -1;
   const VideoYUVProgram* program = GetVideoYUVProgram(
-      tex_coord_precision, sampler, use_alpha_plane, use_nv12);
+      tex_coord_precision, sampler, use_alpha_plane, use_nv12, use_color_lut);
   DCHECK(program && (program->initialized() || IsContextLost()));
   SetUseProgram(program->program());
   matrix_location = program->vertex_shader().matrix_location();
@@ -2254,11 +2262,16 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   v_texture_location = program->fragment_shader().v_texture_location();
   uv_texture_location = program->fragment_shader().uv_texture_location();
   a_texture_location = program->fragment_shader().a_texture_location();
+  lut_texture_location = program->fragment_shader().lut_texture_location();
   yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
   yuv_adj_location = program->fragment_shader().yuv_adj_location();
   ya_clamp_rect_location = program->fragment_shader().ya_clamp_rect_location();
   uv_clamp_rect_location = program->fragment_shader().uv_clamp_rect_location();
   alpha_location = program->fragment_shader().alpha_location();
+  resource_multiplier_location =
+      program->fragment_shader().resource_multiplier_location();
+  resource_offset_location =
+      program->fragment_shader().resource_offset_location();
 
   gfx::SizeF ya_tex_scale(1.0f, 1.0f);
   gfx::SizeF uv_tex_scale(1.0f, 1.0f);
@@ -2383,13 +2396,35 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
         quad->resource_offset;
   }
 
+  if (lut_texture_location != -1) {
+    unsigned int lut_texture = color_lut_cache_.GetLUT(
+        quad->video_color_space, output_surface_->color_space(), 32);
+    gl_->ActiveTexture(GL_TEXTURE5);
+    gl_->BindTexture(GL_TEXTURE_2D, lut_texture);
+    gl_->Uniform1i(lut_texture_location, 5);
+    gl_->ActiveTexture(GL_TEXTURE0);
+  }
+
+  if (resource_multiplier_location != -1) {
+    gl_->Uniform1f(resource_multiplier_location, quad->resource_multiplier);
+  }
+
+  if (resource_offset_location != -1) {
+    gl_->Uniform1f(resource_offset_location, quad->resource_offset);
+  }
+
   // The transform and vertex data are used to figure out the extents that the
   // un-antialiased quad should have and which vertex this is and the float
   // quad passed in via uniform is the actual geometry that gets used to draw
   // it. This is why this centered rect is used and not the original quad_rect.
   auto tile_rect = gfx::RectF(quad->rect);
-  gl_->UniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb_multiplied);
-  gl_->Uniform3fv(yuv_adj_location, 1, yuv_adjust_with_offset);
+  if (yuv_matrix_location != -1) {
+    gl_->UniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb_multiplied);
+  }
+
+  if (yuv_adj_location) {
+    gl_->Uniform3fv(yuv_adj_location, 1, yuv_adjust_with_offset);
+  }
 
   SetShaderOpacity(quad->shared_quad_state->opacity, alpha_location);
   if (!clip_region) {
@@ -2941,6 +2976,7 @@ void GLRenderer::DidReceiveTextureInUseResponses(
       swapped_and_acked_overlay_resources_.erase(response.texture);
     }
   }
+  color_lut_cache_.Swap();
 }
 
 void GLRenderer::EnforceMemoryPolicy() {
@@ -3632,16 +3668,19 @@ const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
     TexCoordPrecision precision,
     SamplerType sampler,
     bool use_alpha_plane,
-    bool use_nv12) {
+    bool use_nv12,
+    bool use_color_lut) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
   DCHECK_GE(sampler, 0);
   DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
   VideoYUVProgram* program =
-      &video_yuv_program_[precision][sampler][use_alpha_plane][use_nv12];
+      &video_yuv_program_[precision][sampler][use_alpha_plane][use_nv12]
+                         [use_color_lut];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::videoYUVProgram::initialize");
-    program->mutable_fragment_shader()->SetFeatures(use_alpha_plane, use_nv12);
+    program->mutable_fragment_shader()->SetFeatures(use_alpha_plane, use_nv12,
+                                                    use_color_lut);
     program->Initialize(output_surface_->context_provider(), precision,
                         sampler);
   }
@@ -3685,7 +3724,9 @@ void GLRenderer::CleanupSharedObjects() {
 
       for (int k = 0; k < 2; k++) {
         for (int l = 0; l < 2; l++) {
-          video_yuv_program_[i][j][k][l].Cleanup(gl_);
+          for (int m = 0; m < 2; m++) {
+            video_yuv_program_[i][j][k][l][m].Cleanup(gl_);
+          }
         }
       }
     }

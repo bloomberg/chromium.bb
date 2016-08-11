@@ -185,8 +185,10 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
         renderer()->GetTileProgramSwizzleAA(precision, sampler));
     for (int j = 0; j < 2; j++) {
       for (int k = 0; k < 2; k++) {
-        EXPECT_PROGRAM_VALID(
-            renderer()->GetVideoYUVProgram(precision, sampler, j, k));
+        for (int l = 0; l < 2; l++) {
+          EXPECT_PROGRAM_VALID(
+              renderer()->GetVideoYUVProgram(precision, sampler, j, k, l));
+        }
       }
     }
   }

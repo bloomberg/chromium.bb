@@ -263,6 +263,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   SkScalar arbitrary_sigma = SkFloatToScalar(2.0f);
   YUVVideoDrawQuad::ColorSpace arbitrary_color_space =
       YUVVideoDrawQuad::REC_601;
+  gfx::ColorSpace arbitrary_video_color_space = gfx::ColorSpace::CreateREC601();
 
   RenderPassId child_id(30, 5);
   RenderPassId root_id(10, 14);
@@ -390,7 +391,8 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       arbitrary_rect1_inside_rect1, arbitrary_bool1, arbitrary_rectf1,
       arbitrary_rectf2, arbitrary_size1, arbitrary_size2, arbitrary_resourceid1,
       arbitrary_resourceid2, arbitrary_resourceid3, arbitrary_resourceid4,
-      arbitrary_color_space, arbitrary_float1, arbitrary_float2, arbitrary_int);
+      arbitrary_color_space, arbitrary_video_color_space, arbitrary_float1,
+      arbitrary_float2, arbitrary_int);
   pass_cmp->CopyFromAndAppendDrawQuad(yuvvideo_in,
                                       yuvvideo_in->shared_quad_state);
 

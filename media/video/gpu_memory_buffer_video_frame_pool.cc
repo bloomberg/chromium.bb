@@ -605,6 +605,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     return;
   }
 
+  frame->set_color_space(video_frame->ColorSpace());
+
   bool allow_overlay = false;
   switch (output_format_) {
     case PIXEL_FORMAT_I420:

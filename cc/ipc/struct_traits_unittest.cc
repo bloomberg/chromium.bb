@@ -878,6 +878,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   const uint32_t v_plane_resource_id = 2468;
   const uint32_t a_plane_resource_id = 7890;
   const YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
+  const gfx::ColorSpace video_color_space = gfx::ColorSpace::CreateJpeg();
   const float resource_offset = 1337.5f;
   const float resource_multiplier = 1234.6f;
   const uint32_t bits_per_channel = 13;
@@ -888,8 +889,8 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,
                ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size, uv_tex_size,
                y_plane_resource_id, u_plane_resource_id, v_plane_resource_id,
-               a_plane_resource_id, color_space, resource_offset,
-               resource_multiplier, bits_per_channel);
+               a_plane_resource_id, color_space, video_color_space,
+               resource_offset, resource_multiplier, bits_per_channel);
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   std::unique_ptr<RenderPass> output;
