@@ -74,10 +74,10 @@
 }
 
 - (void)fillPredictionData:(NSString*)dataString {
-  [self deferredEvaluate:
-            [NSString
-                stringWithFormat:@"__gCrWeb.autofill.fillPredictionData(%@);",
-                                 dataString]];
+  NSString* script =
+      [NSString stringWithFormat:@"__gCrWeb.autofill.fillPredictionData(%@);",
+                                 dataString];
+  [self executeJavaScript:script completionHandler:nil];
 }
 
 @end

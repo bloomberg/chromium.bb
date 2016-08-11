@@ -98,9 +98,8 @@ NSString* JSONEscape(NSString* str) {
 }
 
 - (void)closeKeyboard {
-  // Deferred execution used because of a risk of crwebinvoke:// triggered
-  // immediately by the loss of focus.
-  [self deferredEvaluate:@"document.activeElement.blur()"];
+  [self executeJavaScript:@"document.activeElement.blur()"
+        completionHandler:nil];
 }
 
 @end

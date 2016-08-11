@@ -36,13 +36,6 @@
 // missing. It also injects the dependencies' JavaScript if they are missing.
 - (void)inject;
 
-// Evaluates the provided JavaScript expression, slightly deferred. Designed for
-// scripts where the chance of crwebinvoke:// being triggered indirectly is
-// high, and that aren't required to return a value.
-// DEPRECATED. TODO(crbug.com/595761): Remove this API which was created for
-// UIWebView.
-- (void)deferredEvaluate:(NSString*)script;
-
 // Evaluate the provided JavaScript asynchronously calling completionHandler
 // after execution. The |completionHandler| can be nil.
 // DEPRECATED. TODO(crbug.com/595761): Remove this API.

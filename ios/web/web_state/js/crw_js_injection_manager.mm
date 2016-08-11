@@ -57,12 +57,6 @@
   _injectObject.reset();
 }
 
-- (void)deferredEvaluate:(NSString*)script {
-  NSString* deferredScript = [NSString
-      stringWithFormat:@"window.setTimeout(function() {%@}, 0)", script];
-  [self evaluate:deferredScript stringResultHandler:nil];
-}
-
 - (void)evaluate:(NSString*)script
     stringResultHandler:(web::JavaScriptCompletion)completionHandler {
   [_receiver evaluateJavaScript:script stringResultHandler:completionHandler];
