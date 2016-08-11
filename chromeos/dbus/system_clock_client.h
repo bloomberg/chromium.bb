@@ -21,17 +21,15 @@ class CHROMEOS_EXPORT SystemClockClient : public DBusClient {
   class Observer {
    public:
     // Called when the status is updated.
-    virtual void SystemClockUpdated();
+    virtual void SystemClockUpdated() {}
 
-    // Called when the system clock has become settable or unsettable, e.g.,
+    // Called when the system clock has become settable or unsettable, e.g.
     // when the clock syncs with or goes out of sync with the network.
-    virtual void SystemClockCanSetTimeChanged(bool can_set_time);
+    virtual void SystemClockCanSetTimeChanged(bool can_set_time) {}
 
    protected:
     virtual ~Observer() {}
   };
-
-  ~SystemClockClient() override;
 
   // Adds the given observer.
   virtual void AddObserver(Observer* observer) = 0;

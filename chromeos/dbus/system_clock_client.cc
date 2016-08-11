@@ -23,7 +23,7 @@ class SystemClockClientImpl : public SystemClockClient {
   SystemClockClientImpl()
       : can_set_time_(false),
         can_set_time_initialized_(false),
-        system_clock_proxy_(NULL),
+        system_clock_proxy_(nullptr),
         weak_ptr_factory_(this) {}
 
   ~SystemClockClientImpl() override {}
@@ -58,11 +58,6 @@ class SystemClockClientImpl : public SystemClockClient {
     system_clock_proxy_ = bus->GetObjectProxy(
         system_clock::kSystemClockServiceName,
         dbus::ObjectPath(system_clock::kSystemClockServicePath));
-
-    // Check whether the system clock can be set.
-    GetCanSet();
-
-    // Monitor the D-Bus signal for TimeUpdated changes.
     system_clock_proxy_->ConnectToSignal(
         system_clock::kSystemClockInterface,
         system_clock::kSystemClockUpdated,
@@ -70,9 +65,21 @@ class SystemClockClientImpl : public SystemClockClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&SystemClockClientImpl::TimeUpdatedConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+    system_clock_proxy_->WaitForServiceToBeAvailable(
+        base::Bind(&SystemClockClientImpl::ServiceInitiallyAvailable,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
+  // Called once when the service initially becomes available (or immediately if
+  // it's already available).
+  void ServiceInitiallyAvailable(bool service_is_available) {
+    if (service_is_available)
+      GetCanSet();
+    else
+      LOG(ERROR) << "Failed to wait for D-Bus service availability";
+  }
+
   // Called when a TimeUpdated signal is received.
   void TimeUpdatedReceived(dbus::Signal* signal) {
     VLOG(1) << "TimeUpdated signal received: " << signal->ToString();
@@ -122,8 +129,7 @@ class SystemClockClientImpl : public SystemClockClient {
                                  system_clock::kSystemClockCanSet);
     dbus::MessageWriter writer(&method_call);
     system_clock_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SystemClockClientImpl::OnGetCanSet,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -140,22 +146,11 @@ class SystemClockClientImpl : public SystemClockClient {
   DISALLOW_COPY_AND_ASSIGN(SystemClockClientImpl);
 };
 
-void SystemClockClient::Observer::SystemClockUpdated() {
-}
-
-void SystemClockClient::Observer::SystemClockCanSetTimeChanged(
-    bool can_set_time) {
-}
-
-SystemClockClient::SystemClockClient() {
-}
-
-SystemClockClient::~SystemClockClient() {
-}
-
 // static
 SystemClockClient* SystemClockClient::Create() {
   return new SystemClockClientImpl();
 }
+
+SystemClockClient::SystemClockClient() {}
 
 }  // namespace chromeos
