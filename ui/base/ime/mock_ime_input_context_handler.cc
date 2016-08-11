@@ -1,22 +1,20 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
+#include "ui/base/ime/mock_ime_input_context_handler.h"
 
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method.h"
 
-namespace chromeos {
+namespace ui {
 
 MockIMEInputContextHandler::MockIMEInputContextHandler()
     : commit_text_call_count_(0),
       update_preedit_text_call_count_(0),
-      delete_surrounding_text_call_count_(0) {
-}
+      delete_surrounding_text_call_count_(0) {}
 
-MockIMEInputContextHandler::~MockIMEInputContextHandler() {
-}
+MockIMEInputContextHandler::~MockIMEInputContextHandler() {}
 
 void MockIMEInputContextHandler::CommitText(const std::string& text) {
   ++commit_text_call_count_;
@@ -24,7 +22,7 @@ void MockIMEInputContextHandler::CommitText(const std::string& text) {
 }
 
 void MockIMEInputContextHandler::UpdateCompositionText(
-    const ui::CompositionText& text,
+    const CompositionText& text,
     uint32_t cursor_pos,
     bool visible) {
   ++update_preedit_text_call_count_;
@@ -47,9 +45,9 @@ void MockIMEInputContextHandler::Reset() {
   last_commit_text_.clear();
 }
 
-void MockIMEInputContextHandler::SendKeyEvent(ui::KeyEvent* event) {}
+void MockIMEInputContextHandler::SendKeyEvent(KeyEvent* event) {}
 
-ui::InputMethod* MockIMEInputContextHandler::GetInputMethod() {
+InputMethod* MockIMEInputContextHandler::GetInputMethod() {
   return nullptr;
 }
-}  // namespace chromeos
+}  // namespace ui

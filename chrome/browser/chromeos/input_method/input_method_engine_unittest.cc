@@ -19,9 +19,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
-#include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
+#include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -131,7 +131,7 @@ class InputMethodEngineTest : public testing::Test {
     layouts_.push_back("us");
     InitInputMethod();
     ui::IMEBridge::Initialize();
-    mock_ime_input_context_handler_.reset(new MockIMEInputContextHandler());
+    mock_ime_input_context_handler_.reset(new ui::MockIMEInputContextHandler());
     ui::IMEBridge::Get()->SetInputContextHandler(
         mock_ime_input_context_handler_.get());
   }
@@ -166,7 +166,8 @@ class InputMethodEngineTest : public testing::Test {
   GURL options_page_;
   GURL input_view_;
 
-  std::unique_ptr<MockIMEInputContextHandler> mock_ime_input_context_handler_;
+  std::unique_ptr<ui::MockIMEInputContextHandler>
+      mock_ime_input_context_handler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodEngineTest);

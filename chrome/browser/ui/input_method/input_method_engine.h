@@ -41,7 +41,6 @@ class InputMethodEngine : public InputMethodEngineBase,
   void HideImeWindow(int window_id);
   void CloseImeWindows();
 
- private:
   // input_method::InputMethodEngineBase:
   void FocusOut() override;
   void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
@@ -52,6 +51,7 @@ class InputMethodEngine : public InputMethodEngineBase,
                                 const std::string& text) override;
   bool SendKeyEvent(ui::KeyEvent* ui_event, const std::string& code) override;
 
+ private:
   // ui::ImeWindowObserver:
   void OnWindowDestroyed(ui::ImeWindow* ime_window) override;
 

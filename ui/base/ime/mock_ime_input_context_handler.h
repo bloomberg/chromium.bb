@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
-#define UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
+#ifndef UI_BASE_IME_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
+#define UI_BASE_IME_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 
 #include <stdint.h>
 
@@ -13,15 +13,12 @@
 
 namespace ui {
 class InputMethod;
-}  // ui
-
-namespace chromeos {
 
 class UI_BASE_IME_EXPORT MockIMEInputContextHandler
-    : public ui::IMEInputContextHandlerInterface {
+    : public IMEInputContextHandlerInterface {
  public:
   struct UpdateCompositionTextArg {
-    ui::CompositionText composition_text;
+    CompositionText composition_text;
     uint32_t cursor_pos;
     bool is_visible;
   };
@@ -35,12 +32,12 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
   virtual ~MockIMEInputContextHandler();
 
   void CommitText(const std::string& text) override;
-  void UpdateCompositionText(const ui::CompositionText& text,
+  void UpdateCompositionText(const CompositionText& text,
                              uint32_t cursor_pos,
                              bool visible) override;
   void DeleteSurroundingText(int32_t offset, uint32_t length) override;
-  void SendKeyEvent(ui::KeyEvent* event) override;
-  ui::InputMethod* GetInputMethod() override;
+  void SendKeyEvent(KeyEvent* event) override;
+  InputMethod* GetInputMethod() override;
 
   int commit_text_call_count() const { return commit_text_call_count_; }
 
@@ -52,9 +49,7 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
     return delete_surrounding_text_call_count_;
   }
 
-  const std::string& last_commit_text() const {
-    return last_commit_text_;
-  };
+  const std::string& last_commit_text() const { return last_commit_text_; };
 
   const UpdateCompositionTextArg& last_update_composition_arg() const {
     return last_update_composition_arg_;
@@ -75,7 +70,6 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
   UpdateCompositionTextArg last_update_composition_arg_;
   DeleteSurroundingTextArg last_delete_surrounding_text_arg_;
 };
+}  // ui
 
-}  // namespace chromeos
-
-#endif  // UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
+#endif  // UI_BASE_IME_MOCK_IME_INPUT_CONTEXT_HANDLER_H_

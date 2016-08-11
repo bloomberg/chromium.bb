@@ -1168,6 +1168,7 @@
       'browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs',
     ],
     'chrome_unit_tests_desktop_linux_sources': [
+      'browser/ui/input_method/input_method_engine_unittest.cc',
       'browser/password_manager/native_backend_kwallet_x_unittest.cc',
       'browser/shell_integration_linux_unittest.cc',
     ],
@@ -1410,6 +1411,7 @@
     ],
     'chrome_unit_tests_win_sources': [
       'app/chrome_dll.rc',
+      'browser/ui/input_method/input_method_engine_unittest.cc',
       'test/data/resource.rc',
     ],
     'chrome_unit_tests_win_mac_sources': [
