@@ -2145,10 +2145,21 @@ void RenderFrameHostManager::CommitPending() {
   // routing id in the RenderViewHost associated with the old RenderFrameHost
   // to MSG_ROUTING_NONE.
   if (is_main_frame) {
-    render_frame_host_->render_view_host()->set_main_frame_routing_id(
-        render_frame_host_->routing_id());
-    render_frame_host_->render_view_host()->set_is_active(true);
-    render_frame_host_->render_view_host()->set_is_swapped_out(false);
+    RenderViewHostImpl* rvh = render_frame_host_->render_view_host();
+    rvh->set_main_frame_routing_id(render_frame_host_->routing_id());
+
+    // If the RenderViewHost is transitioning from swapped out to active state,
+    // it was reused, so dispatch a RenderViewReady event.  For example, this
+    // is necessary to hide the sad tab if one is currently displayed.  See
+    // https://crbug.com/591984.
+    //
+    // TODO(alexmos):  Remove this and move RenderViewReady consumers to use
+    // the main frame's RenderFrameCreated instead.
+    if (!rvh->is_active())
+      rvh->PostRenderViewReady();
+
+    rvh->set_is_active(true);
+    rvh->set_is_swapped_out(false);
     old_render_frame_host->render_view_host()->set_main_frame_routing_id(
         MSG_ROUTING_NONE);
   }

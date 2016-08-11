@@ -2768,7 +2768,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, CtrlClickSubframeLink) {
 
 // Ensure that we don't update the wrong NavigationEntry's title after an
 // ignored commit during a cross-process navigation.
-// See https://crbug.con/577449.
+// See https://crbug.com/577449.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        UnloadPushStateOnCrossProcessNavigation) {
   StartEmbeddedServer();
@@ -2833,6 +2833,48 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       root, "window.history.pushState({}, '', 'https://chromium.org');"));
   EXPECT_EQ(2, web_contents->GetController().GetEntryCount());
   EXPECT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
+}
+
+// Ensure that navigating back from a sad tab to an existing process works
+// correctly. See https://crbug.com/591984.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       NavigateBackToExistingProcessFromSadTab) {
+  StartEmbeddedServer();
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  // Open a popup and navigate it to b.com.
+  Shell* popup = OpenPopup(
+      shell(), embedded_test_server()->GetURL("a.com", "/title2.html"), "foo");
+  EXPECT_TRUE(NavigateToURL(
+      popup, embedded_test_server()->GetURL("b.com", "/title3.html")));
+
+  // Kill the b.com process.
+  RenderProcessHost* b_process =
+      popup->web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      b_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  b_process->Shutdown(0, false);
+  crash_observer.Wait();
+
+  // The popup should now be showing the sad tab.  Main tab should not be.
+  EXPECT_NE(base::TERMINATION_STATUS_STILL_RUNNING,
+            popup->web_contents()->GetCrashedStatus());
+  EXPECT_EQ(base::TERMINATION_STATUS_STILL_RUNNING,
+            shell()->web_contents()->GetCrashedStatus());
+
+  // Go back in the popup from b.com to a.com/title2.html.
+  TestNavigationObserver back_observer(popup->web_contents());
+  popup->web_contents()->GetController().GoBack();
+  back_observer.Wait();
+
+  // In the bug, after the back navigation the popup was still showing
+  // the sad tab.  Ensure this is not the case.
+  EXPECT_EQ(base::TERMINATION_STATUS_STILL_RUNNING,
+            popup->web_contents()->GetCrashedStatus());
+  EXPECT_TRUE(popup->web_contents()->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_EQ(popup->web_contents()->GetMainFrame()->GetSiteInstance(),
+            shell()->web_contents()->GetMainFrame()->GetSiteInstance());
 }
 
 }  // namespace content
