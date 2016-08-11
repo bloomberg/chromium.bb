@@ -61,11 +61,6 @@ base::Time GetLastVisitDateForBookmark(const BookmarkNode* node) {
 
   std::string last_visit_date_string;
   node->GetMetaInfo(kBookmarkLastVisitDateKey, &last_visit_date_string);
-
-  // Use creation date if no last visit info present.
-  if (last_visit_date_string.empty())
-    return node->date_added();
-
   return ParseLastVisitDate(last_visit_date_string);
 }
 

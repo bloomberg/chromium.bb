@@ -27,8 +27,8 @@ void UpdateBookmarkOnURLVisitedInMainFrame(
     bookmarks::BookmarkModel* bookmark_model,
     const GURL& url);
 
-// Gets the last visit date for a given bookmark |node|. If the bookmark lacks
-// this info, it returns it creation date.
+// Gets the last visit date for a given bookmark |node|. The visit when the
+// bookmark is created also counts.
 base::Time GetLastVisitDateForBookmark(const bookmarks::BookmarkNode* node);
 
 // Marks all bookmarks with the given URL as dismissed.
