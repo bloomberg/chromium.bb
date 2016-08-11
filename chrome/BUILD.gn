@@ -282,9 +282,6 @@ if (is_win) {
   # This target is a forwarding target to compile the necessary DLLs used
   # by Chrome.
   group("chrome_dll") {
-    # TODO(GYP) support incremental_chrome_dll on Windows for faster links in
-    # developer component builds. When that's supported, this target will need
-    # to become more complicated.
     data_deps = [
       ":main_dll",
     ]
@@ -353,10 +350,13 @@ if (is_win) {
         "/DELAYLOAD:wsock32.dll",
       ]
 
-      # This is a large module that can't do incremental linking in some cases.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
+      if (!is_component_build) {
+        # This is a large module that can't do incremental linking in some
+        # cases.
+        configs -= [ "//build/config/win:default_incremental_linking" ]
+        configs +=
+            [ "//build/config/win:default_large_module_incremental_linking" ]
+      }
     }
 
     if (use_aura) {
