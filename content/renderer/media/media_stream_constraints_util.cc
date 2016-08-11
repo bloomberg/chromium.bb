@@ -41,10 +41,18 @@ bool ScanConstraintsForMaxValue(const blink::WebMediaConstraints& constraints,
     *value = the_field.max();
     return true;
   }
+  if (the_field.hasExact()) {
+    *value = the_field.exact();
+    return true;
+  }
   for (const auto& advanced_constraint : constraints.advanced()) {
     const auto& the_field = advanced_constraint.*picker;
     if (the_field.hasMax()) {
       *value = the_field.max();
+      return true;
+    }
+    if (the_field.hasExact()) {
+      *value = the_field.exact();
       return true;
     }
   }
@@ -60,10 +68,18 @@ bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
     *value = the_field.min();
     return true;
   }
+  if (the_field.hasExact()) {
+    *value = the_field.exact();
+    return true;
+  }
   for (const auto& advanced_constraint : constraints.advanced()) {
     const auto& the_field = advanced_constraint.*picker;
     if (the_field.hasMin()) {
       *value = the_field.min();
+      return true;
+    }
+    if (the_field.hasExact()) {
+      *value = the_field.exact();
       return true;
     }
   }

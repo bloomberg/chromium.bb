@@ -33,19 +33,28 @@ bool HasMandatoryConstraints(const blink::WebMediaConstraints& constraints) {
 // Retrieve the desired max width and height from |constraints|. If not set,
 // the |desired_width| and |desired_height| are set to
 // std::numeric_limits<int>::max();
-// If either max width or height is set as a mandatory constraint, the optional
-// constraints are not checked.
+// If either max or exact width or height is set as a mandatory constraint,
+// the advanced constraints are not checked.
 void GetDesiredMaxWidthAndHeight(const blink::WebMediaConstraints& constraints,
                                  int* desired_width, int* desired_height) {
   *desired_width = std::numeric_limits<int>::max();
   *desired_height = std::numeric_limits<int>::max();
 
   const auto& basic_constraints = constraints.basic();
-  if (basic_constraints.width.hasMax() || basic_constraints.height.hasMax()) {
+
+  if (basic_constraints.width.hasMax() || basic_constraints.height.hasMax() ||
+      basic_constraints.width.hasExact() ||
+      basic_constraints.height.hasExact()) {
     if (basic_constraints.width.hasMax())
       *desired_width = basic_constraints.width.max();
     if (basic_constraints.height.hasMax())
       *desired_height = basic_constraints.height.max();
+    // Exact constraints override max constraints if both are specified.
+    // Specifying both in the same structure is meaningless.
+    if (basic_constraints.width.hasExact())
+      *desired_width = basic_constraints.width.exact();
+    if (basic_constraints.height.hasExact())
+      *desired_height = basic_constraints.height.exact();
     return;
   }
 
@@ -54,6 +63,10 @@ void GetDesiredMaxWidthAndHeight(const blink::WebMediaConstraints& constraints,
       *desired_width = constraint_set.width.max();
     if (constraint_set.height.hasMax())
       *desired_height = constraint_set.height.max();
+    if (constraint_set.width.hasExact())
+      *desired_width = constraint_set.width.exact();
+    if (constraint_set.height.hasExact())
+      *desired_height = constraint_set.height.exact();
   }
 }
 
@@ -111,11 +124,15 @@ bool UpdateFormatForConstraints(
   // max width/height just has to be > 0 (we can crop anything too large).
   if ((constraints.width.hasMin() &&
        constraints.width.min() > format->frame_size.width()) ||
-      (constraints.width.hasMax() && constraints.width.max() <= 0)) {
+      (constraints.width.hasMax() && constraints.width.max() <= 0) ||
+      (constraints.width.hasExact() &&
+       constraints.width.exact() > format->frame_size.width())) {
     *failing_constraint_name = constraints.width.name();
   } else if ((constraints.height.hasMin() &&
               constraints.height.min() > format->frame_size.height()) ||
-             (constraints.height.hasMax() && constraints.height.max() <= 0)) {
+             (constraints.height.hasMax() && constraints.height.max() <= 0) ||
+             (constraints.height.hasExact() &&
+              constraints.height.exact() > format->frame_size.height())) {
     *failing_constraint_name = constraints.height.name();
   } else if (!constraints.frameRate.matches(format->frame_rate)) {
     if (constraints.frameRate.hasMax()) {
@@ -149,6 +166,10 @@ void FilterFormatsByConstraints(
     // Delete it otherwise.
     if (!UpdateFormatForConstraints(constraints, &(*format_it),
                                     failing_constraint_name)) {
+      DVLOG(2) << "Format filter: Discarding format "
+               << format_it->frame_size.width() << "x"
+               << format_it->frame_size.height() << "@"
+               << format_it->frame_rate;
       format_it = formats->erase(format_it);
     } else {
       ++format_it;

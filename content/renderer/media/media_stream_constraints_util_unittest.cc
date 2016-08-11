@@ -89,6 +89,14 @@ TEST_F(MediaStreamConstraintsUtilTest, IntConstraints) {
   EXPECT_TRUE(GetConstraintValueAsInteger(
       constraints, &blink::WebMediaTrackConstraintSet::width, &value));
   EXPECT_EQ(test_value, value);
+
+  // An exact value should also be reflected as min and max.
+  EXPECT_TRUE(GetConstraintMaxAsInteger(
+      constraints, &blink::WebMediaTrackConstraintSet::width, &value));
+  EXPECT_EQ(test_value, value);
+  EXPECT_TRUE(GetConstraintMinAsInteger(
+      constraints, &blink::WebMediaTrackConstraintSet::width, &value));
+  EXPECT_EQ(test_value, value);
 }
 
 }  // namespace content
