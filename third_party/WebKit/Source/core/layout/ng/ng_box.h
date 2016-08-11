@@ -5,6 +5,7 @@
 #ifndef NGBox_h
 #define NGBox_h
 
+#include "core/layout/ng/ng_box_iterator.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
@@ -21,14 +22,11 @@ class CORE_EXPORT NGBox final {
   explicit NGBox(const LayoutObject* layoutObject)
       : m_layoutObject(layoutObject) {}
 
+  NGBoxIterator iterator() { return NGBoxIterator(m_layoutObject); }
   operator bool() const { return m_layoutObject; }
 
   NGFragment* layout(const NGConstraintSpace&);
   const ComputedStyle* style() const;
-
-  // TODO(layout-ng): Returning a children iterator would be better here.
-  const NGBox firstChild() const;
-  const NGBox nextSibling() const;
 
  private:
   const LayoutObject* m_layoutObject;

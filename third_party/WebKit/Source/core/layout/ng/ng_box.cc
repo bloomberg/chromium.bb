@@ -10,20 +10,12 @@
 namespace blink {
 
 NGFragment* NGBox::layout(const NGConstraintSpace& constraintSpace) {
-  NGBlockLayoutAlgorithm algorithm(style(), firstChild());
+  NGBlockLayoutAlgorithm algorithm(style(), iterator());
   return algorithm.layout(constraintSpace);
 }
 
 const ComputedStyle* NGBox::style() const {
   return m_layoutObject->style();
-}
-
-const NGBox NGBox::firstChild() const {
-  return NGBox(m_layoutObject->slowFirstChild());
-}
-
-const NGBox NGBox::nextSibling() const {
-  return NGBox(m_layoutObject->nextSibling());
 }
 
 }  // namespace blink
