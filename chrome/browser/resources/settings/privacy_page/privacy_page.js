@@ -10,7 +10,12 @@
 Polymer({
   is: 'settings-privacy-page',
 
-  behaviors: [settings.RouteObserverBehavior],
+  behaviors: [
+    settings.RouteObserverBehavior,
+<if expr="_google_chrome and not chromeos">
+    WebUIListenerBehavior,
+</if>
+  ],
 
   properties: {
     /**
@@ -21,18 +26,34 @@ Polymer({
       notify: true,
     },
 
-    /** @private */
-    showClearBrowsingDataDialog_: Boolean,
-
     /**
      * Dictionary defining page visibility.
      * @type {!PrivacyPageVisibility}
      */
     pageVisibility: Object,
+
+<if expr="_google_chrome and not chromeos">
+    /** @type {MetricsReporting} */
+    metricsReporting_: Object,
+</if>
+
+    /** @private */
+    showClearBrowsingDataDialog_: {
+      computed: 'computeShowClearBrowsingDataDialog_(currentRoute)',
+      type: Boolean,
+    },
   },
 
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
+
+<if expr="_google_chrome and not chromeos">
+    var boundSetMetricsReporting = this.setMetricsReporting_.bind(this);
+    this.addWebUIListener('metrics-reporting-change', boundSetMetricsReporting);
+
+    var browserProxy = settings.PrivacyPageBrowserProxyImpl.getInstance();
+    browserProxy.getMetricsReporting().then(boundSetMetricsReporting);
+</if>
   },
 
   /** @protected */
@@ -66,4 +87,21 @@ Polymer({
   onDialogClosed_: function() {
     settings.navigateTo(settings.Route.PRIVACY);
   },
+
+<if expr="_google_chrome and not chromeos">
+  /** @private */
+  onMetricsReportingCheckboxTap_: function() {
+    var browserProxy = settings.PrivacyPageBrowserProxyImpl.getInstance();
+    var enabled = this.$.metricsReportingCheckbox.checked;
+    browserProxy.setMetricsReportingEnabled(enabled);
+  },
+
+  /**
+   * @param {!MetricsReporting} metricsReporting
+   * @private
+   */
+  setMetricsReporting_: function(metricsReporting) {
+    this.metricsReporting_ = metricsReporting;
+  },
+</if>
 });

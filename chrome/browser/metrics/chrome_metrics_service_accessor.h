@@ -62,6 +62,10 @@ class SRTFetcher;
 class SRTGlobalError;
 }
 
+namespace settings {
+class MetricsReportingHandler;
+}
+
 namespace speech {
 class ChromeSpeechRecognitionManagerDelegate;
 }
@@ -94,6 +98,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class options::BrowserOptionsHandler;
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class safe_browsing::IncidentReportingService;
+  friend class settings::MetricsReportingHandler;
   friend class speech::ChromeSpeechRecognitionManagerDelegate;
   friend class StackSamplingConfiguration;
   friend class system_logs::ChromeInternalLogSource;

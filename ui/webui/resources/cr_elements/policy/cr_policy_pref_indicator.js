@@ -24,7 +24,7 @@ Polymer({
      * not correspond to a pref (Chrome OS only). Only used when pref is null.
      * Initialized to '' so that computed functions will get called if this is
      * never set. TODO(stevenjb/michaelpg): Create a separate indicator for
-     * non-pref (i.e. explicitly set) indicators (see languyage_detail_page).
+     * non-pref (i.e. explicitly set) indicators (see language_detail_page).
      */
     controllingUser: {type: String, value: ''},
 

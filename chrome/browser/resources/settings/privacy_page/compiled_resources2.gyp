@@ -14,6 +14,7 @@
     {
       'target_name': 'privacy_page',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '../compiled_resources2.gyp:route',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         '../settings_ui/compiled_resources2.gyp:settings_ui_types',

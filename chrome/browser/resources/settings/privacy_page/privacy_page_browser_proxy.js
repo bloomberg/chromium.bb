@@ -4,13 +4,26 @@
 
 /** @fileoverview Handles interprocess communcation for the privacy page. */
 
+/** @typedef {{enabled: boolean, managed: boolean}} */
+var MetricsReporting;
+
 cr.define('settings', function() {
   /** @interface */
   function PrivacyPageBrowserProxy() {}
 
   PrivacyPageBrowserProxy.prototype = {
+<if expr="_google_chrome and not chromeos">
+    /** @return {!Promise<!MetricsReporting>} */
+    getMetricsReporting: assertNotReached,
+
+    /** @param {boolean} enabled */
+    setMetricsReportingEnabled: assertNotReached,
+</if>
+
+<if expr="is_win or is_macosx">
     /** Invokes the native certificate manager (used by win and mac). */
     showManageSSLCertificates: function() {},
+</if>
   };
 
   /**
@@ -21,10 +34,24 @@ cr.define('settings', function() {
   cr.addSingletonGetter(PrivacyPageBrowserProxyImpl);
 
   PrivacyPageBrowserProxyImpl.prototype = {
+<if expr="_google_chrome and not chromeos">
+    /** @override */
+    getMetricsReporting: function() {
+      return cr.sendWithPromise('getMetricsReporting');
+    },
+
+    /** @override */
+    setMetricsReportingEnabled: function(enabled) {
+      chrome.send('setMetricsReportingEnabled', [enabled]);
+    },
+</if>
+
+<if expr="is_win or is_macosx">
     /** @override */
     showManageSSLCertificates: function() {
       chrome.send('showManageSSLCertificates');
     },
+</if>
   };
 
   return {

@@ -1,4 +1,6 @@
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_vars_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -18,13 +20,31 @@
 <if expr="use_nss_certs">
 <link rel="import" href="/certificate_manager_page/certificate_manager_page.html">
 </if>
-<if expr="is_win or is_macosx">
 <link rel="import" href="/privacy_page/privacy_page_browser_proxy.html">
-</if>
 
 <dom-module id="settings-privacy-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      /* TODO(dbeam): this is similar to a 1 line checkbox. Worth somehow
+       * combining? */
+      #metricsReporting {
+        align-items: center;
+        display: flex;
+        min-height: var(--settings-row-min-height);
+      }
+
+      #metricsReportingCheckbox {
+        display: inline-block;
+      }
+
+      #metricsReporting paper-tooltip {
+        --paper-tooltip: var(--cr-policy-tooltip);
+      }
+
+      #indicator {
+        -webkit-margin-start: var(--checkbox-spacing);
+      }
+    </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
           on-close="onDialogClosed_">
@@ -63,13 +83,29 @@
               label="$i18n{spellingPref}">
           </settings-checkbox>
 <if expr="chromeos">
-        <settings-checkbox
+          <settings-checkbox
               pref="{{prefs.cros.metrics.reportingEnabled}}"
               label="$i18n{enableLogging}">
           </settings-checkbox>
-</if>
-          <!-- TODO(jlklein): Add non-chromeos metrics box. -->
-</if>
+</if><!-- chromeos -->
+<if expr="not chromeos">
+          <div id="metricsReporting">
+            <paper-checkbox id="metricsReportingCheckbox"
+                on-tap="onMetricsReportingCheckboxTap_"
+                checked="[[metricsReporting_.enabled]]"
+                disabled="[[metricsReporting_.managed]]">
+              $i18n{enableLogging}
+            </paper-checkbox>
+            <template is="dom-if" if="[[metricsReporting_.managed]]" restamp>
+              <iron-icon id="indicator" tabindex=0 icon="cr:domain"></iron-icon>
+              <paper-tooltip for="indicator" position="top"
+                  fit-to-visible-bounds>
+                $i18n{controlledSettingPolicy}
+              </paper-tooltip>
+            </template>
+          </div>
+</if><!-- not chromeos -->
+</if><!-- _google_chrome -->
           <settings-checkbox pref="{{prefs.enable_do_not_track}}"
               label="$i18n{doNotTrack}">
           </settings-checkbox>

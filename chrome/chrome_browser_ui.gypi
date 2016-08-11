@@ -2073,6 +2073,8 @@
       'browser/ui/webui/settings/font_handler.h',
       'browser/ui/webui/settings/languages_handler.cc',
       'browser/ui/webui/settings/languages_handler.h',
+      'browser/ui/webui/settings/metrics_reporting_handler.cc',
+      'browser/ui/webui/settings/metrics_reporting_handler.h',
       'browser/ui/webui/settings/md_settings_localized_strings_provider.cc',
       'browser/ui/webui/settings/md_settings_localized_strings_provider.h',
       'browser/ui/webui/settings/md_settings_ui.cc',

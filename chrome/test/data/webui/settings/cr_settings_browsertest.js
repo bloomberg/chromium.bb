@@ -792,3 +792,25 @@ CrControlledRadioButtonTest.prototype = {
 TEST_F('CrControlledRadioButtonTest', 'All', function() {
   mocha.run();
 });
+
+GEN('#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)');
+
+function CrSettingsMetricsReportingTest() {}
+
+CrSettingsMetricsReportingTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'metrics_reporting_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsMetricsReportingTest', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif');

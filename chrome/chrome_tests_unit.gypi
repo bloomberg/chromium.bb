@@ -1592,6 +1592,7 @@
       'browser/ui/webui/options/password_manager_handler_unittest.cc',
       'browser/ui/webui/options/pepper_flash_content_settings_utils_unittest.cc',
       'browser/ui/webui/options/sync_setup_handler_unittest.cc',
+      'browser/ui/webui/settings/metrics_reporting_handler_unittest.cc',
       'browser/ui/webui/settings/people_handler_unittest.cc',
       'browser/ui/webui/settings/profile_info_handler_unittest.cc',
       'browser/ui/webui/settings/reset_settings_handler_unittest.cc',
