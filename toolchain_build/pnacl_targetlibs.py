@@ -496,7 +496,7 @@ def TargetLibs(bias_arch, is_canonical):
                            T('libs_support')],
           'commands' :
               [command.SkipForIncrementalCommand(
-                  ['cmake', '-G', 'Unix Makefiles',
+                  [pnacl_commands.PrebuiltCmake(), '-G', 'Unix Makefiles',
                    '-DCMAKE_C_COMPILER_WORKS=1',
                    '-DCMAKE_CXX_COMPILER_WORKS=1',
                    '-DCMAKE_INSTALL_PREFIX=',

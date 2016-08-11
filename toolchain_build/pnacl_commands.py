@@ -12,9 +12,11 @@ import shutil
 import stat
 import subprocess
 import sys
+import tarfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.file_tools
+import pynacl.platform
 import pynacl.repo_tools
 
 
@@ -31,6 +33,46 @@ DRIVER_UTILS = [name + '.py' for name in
                     ('artools', 'driver_env', 'driver_log', 'driver_temps',
                      'driver_tools', 'elftools', 'filetype', 'ldtools',
                      'loader', 'nativeld', 'pathtools', 'shelltools')]
+
+# The archive itself contains the 'cmake343' directory.
+PREBUILT_CMAKE_DIR = os.path.join(NACL_DIR, 'cmake343')
+PREBUILT_CMAKE_ARCHIVE = 'cmake343_%s.tgz'
+PREBUILT_CMAKE_URL = ('https://commondatastorage.googleapis.com/' +
+                      'chromium-browser-clang/tools/')
+PREBUILT_CMAKE_BIN = os.path.join(PREBUILT_CMAKE_DIR, 'bin', 'cmake')
+
+
+def PrebuiltCmake():
+  if (pynacl.platform.IsLinux() and not pynacl.platform.IsLinux64() or
+      pynacl.platform.IsWindows()):
+    # Prebuilt CMake does not work on linux32, and there is none for Windows.
+    return 'cmake'
+  return PREBUILT_CMAKE_BIN
+
+
+def InstallPrebuiltCMake():
+  if os.path.isdir(PREBUILT_CMAKE_DIR):
+    print 'Prebuilt CMake directory already exists'
+    if not os.path.isfile(PREBUILT_CMAKE_BIN):
+      raise Exception('Prebuilt CMake dir %s exists but does not contain CMake'%
+                      PREBUILT_CMAKE_DIR)
+  else:
+    assert not pynacl.platform.IsWindows()
+    platform = 'Darwin' if pynacl.platform.IsMac() else 'Linux'
+    filename = PREBUILT_CMAKE_ARCHIVE % platform
+    url = PREBUILT_CMAKE_URL + filename
+    os.mkdir(PREBUILT_CMAKE_DIR)
+    download_target = os.path.join(PREBUILT_CMAKE_DIR, filename)
+    pynacl.http_download.HttpDownload(url, download_target)
+
+    print 'Downloaded %s' % url
+    # The tar file itself includes the 'cmake343' directory, so set the
+    # extract path to WORK_DIR to get the right path
+    with open(download_target) as f:
+      tarfile.open(mode='r:gz', fileobj=f).extractall(path=NACL_DIR)
+    assert os.path.isfile(PREBUILT_CMAKE_BIN)
+    print 'Extracted CMake to %s' % PREBUILT_CMAKE_DIR
+
 
 def InstallDriverScripts(logger, subst, srcdir, dstdir, host_windows=False,
                          host_64bit=False, extra_config=[]):

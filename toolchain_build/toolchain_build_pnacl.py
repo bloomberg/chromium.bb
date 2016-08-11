@@ -19,8 +19,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tarfile
-import tempfile
 import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -98,13 +96,6 @@ CHROME_CLANG_DIR = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                                 'llvm-build', 'Release+Asserts', 'bin')
 CHROME_CLANG = os.path.join(CHROME_CLANG_DIR, 'clang')
 CHROME_CLANGXX = os.path.join(CHROME_CLANG_DIR, 'clang++')
-
-# The archive itself contains the 'cmake343' directory.
-PREBUILT_CMAKE_DIR = os.path.join(NACL_DIR, 'cmake343')
-PREBUILT_CMAKE_ARCHIVE = 'cmake343_%s.tgz'
-PREBUILT_CMAKE_URL = ('https://commondatastorage.googleapis.com/' +
-                      'chromium-browser-clang/tools/')
-PREBUILT_CMAKE_BIN = os.path.join(PREBUILT_CMAKE_DIR, 'bin', 'cmake')
 
 try:
   # goma documentation recommends using (10 * cpu count)
@@ -707,7 +698,7 @@ def HostLibs(host, options):
             'inputs': libcxx_inputs,
             'commands': [
                 command.SkipForIncrementalCommand([
-                     PREBUILT_CMAKE_BIN, '-G', 'Unix Makefiles'] +
+                     pnacl_commands.PrebuiltCmake(), '-G', 'Unix Makefiles'] +
                      libcxx_host_arch_flags +
                      ['-DLIBCXX_CXX_ABI=libcxxabi',
                       '-DLIBCXX_LIBCXXABI_INCLUDE_PATHS=' + command.path.join(
@@ -885,7 +876,7 @@ def HostTools(host, options):
           'type': 'build',
           'commands': [
               command.SkipForIncrementalCommand([
-                  PREBUILT_CMAKE_BIN, '-G', 'Ninja'] +
+                  pnacl_commands.PrebuiltCmake(), '-G', 'Ninja'] +
                   llvm_host_arch_flags + asan_flags +
                   [
                   '-DBUILD_SHARED_LIBS=ON',
@@ -1224,30 +1215,6 @@ def InstallMinGWHostCompiler():
   os.environ['MINGW'] = MINGW_PATH
 
 
-def InstallPrebuiltCMake():
-  if os.path.isdir(PREBUILT_CMAKE_DIR):
-    print 'Prebuilt CMake directory already exists'
-    if not os.path.isfile(PREBUILT_CMAKE_BIN):
-      raise Exception('Prebuilt CMake dir %s exists but does not contain CMake'%
-                      PREBUILT_CMAKE_DIR)
-  else:
-    assert not pynacl.platform.IsWindows()
-    platform = 'Darwin' if pynacl.platform.IsMac() else 'Linux'
-    filename = PREBUILT_CMAKE_ARCHIVE % platform
-    url = PREBUILT_CMAKE_URL + filename
-    os.mkdir(PREBUILT_CMAKE_DIR)
-    download_target = os.path.join(PREBUILT_CMAKE_DIR, filename)
-    pynacl.http_download.HttpDownload(url, download_target)
-
-    print 'Downloaded %s' % url
-    # The tar file itself includes the 'cmake343' directory, so set the
-    # extract path to WORK_DIR to get the right path
-    with open(download_target) as f:
-      tarfile.open(mode='r:gz', fileobj=f).extractall(path=NACL_DIR)
-    assert os.path.isfile(PREBUILT_CMAKE_BIN)
-    print 'Extracted CMake to %s' % PREBUILT_CMAKE_DIR
-
-
 def GetUploadPackageTargets():
   """Package Targets describes all the archived package targets.
 
@@ -1417,7 +1384,7 @@ def main():
   if pynacl.platform.IsWindows():
     InstallMinGWHostCompiler()
   else:
-    InstallPrebuiltCMake()
+    pnacl_commands.InstallPrebuiltCMake()
 
   packages.update(HostToolsSources(GetGitSyncCmdsCallback(rev)))
   if args.testsuite_sync:
