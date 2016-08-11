@@ -14,7 +14,7 @@ function test()
     InspectorTest.waitForServiceWorker(step1);
     InspectorTest.registerServiceWorker(scriptURL, scope);
 
-    var objectEventListenersPane = WebInspector.panels.sources.sidebarPanes.objectEventListeners;
+    var objectEventListenersPane = self.runtime.sharedInstance(WebInspector.ObjectEventListenersSidebarPane);
 
     function isDedicatedWorker()
     {
@@ -33,7 +33,7 @@ function test()
         InspectorTest.selectThread(executionContext.target());
         InspectorTest.addResult("Context is dedicated worker: " + isDedicatedWorker());
         InspectorTest.addResult("Dumping listeners");
-        objectEventListenersPane.revealView().then(() => {
+        WebInspector.viewManager.showView("sources.globalListeners").then(() => {
             objectEventListenersPane.update();
             InspectorTest.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, step3);
         });

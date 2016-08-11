@@ -65,7 +65,7 @@ function onVideoPlay()
 
 function test()
 {
-    var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+    var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
     var testFunctions = [
         function testClickBreakpoint(next)
         {

@@ -82,7 +82,7 @@ function test()
     function setUpEventBreakpoints()
     {
         testRunner.logToStderr("setUpEventBreakpoints");
-        var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+        var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
         InspectorTest.addResult("Set up Event breakpoints.");
         pane._setBreakpoint("listener:click");
         InspectorTest.deprecatedRunAfterPendingDispatches(didSetUp);
@@ -136,7 +136,7 @@ function test()
     function completeTest()
     {
         testRunner.logToStderr("completeTest");
-        var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+        var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
         pane._removeBreakpoint("listener:click");
         InspectorTest.completeDebuggerTest();
     }

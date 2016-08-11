@@ -22,7 +22,7 @@ function test()
 
     function start()
     {
-        var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+        var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
         pane._setBreakpoint("listener:click");
         InspectorTest.waitUntilPaused(paused);
         InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");

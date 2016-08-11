@@ -25,7 +25,7 @@ function test()
 
     function step1()
     {
-        xhrPane = WebInspector.panels.sources.sidebarPanes.xhrBreakpoints;
+        xhrPane = self.runtime.sharedInstance(WebInspector.XHRBreakpointsSidebarPane);
         xhrPane._setBreakpoint("foo", true);
         InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
     }

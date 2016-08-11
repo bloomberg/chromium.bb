@@ -11,7 +11,7 @@ function sendRequest(url)
 
 function test()
 {
-    var pane = WebInspector.panels.sources.sidebarPanes.xhrBreakpoints;
+    var pane = self.runtime.sharedInstance(WebInspector.XHRBreakpointsSidebarPane);
     InspectorTest.runDebuggerTestSuite([
         function testFetchBreakpoint(next)
         {

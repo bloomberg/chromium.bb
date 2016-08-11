@@ -93,7 +93,7 @@ function test()
 
         function testXHRBreakpoint(next)
         {
-            var pane = WebInspector.panels.sources.sidebarPanes.xhrBreakpoints;
+            var pane = self.runtime.sharedInstance(WebInspector.XHRBreakpointsSidebarPane);
             pane._setBreakpoint("foo", true);
             InspectorTest.evaluateInPageWithTimeout("sendXHR('/foo?a=b')");
             InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
@@ -101,7 +101,7 @@ function test()
 
         function testEventListenerBreakpoint(next)
         {
-            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(false)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -112,7 +112,7 @@ function test()
 
         function testSteppingThroughEventListenerBreakpoint(next)
         {
-            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -127,7 +127,7 @@ function test()
 
         function testSteppingOutOnEventListenerBreakpoint(next)
         {
-            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -140,7 +140,7 @@ function test()
 
         function testSteppingOutOnEventListenerBreakpointAllBlackboxed(next)
         {
-            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(false)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -151,7 +151,7 @@ function test()
 
         function testSteppingOutOnEventListenerBreakpointAllBlackboxedButOne(next)
         {
-            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(true)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -164,8 +164,8 @@ function test()
 
         function tearDown(next)
         {
-            WebInspector.panels.sources.sidebarPanes.xhrBreakpoints._removeBreakpoint("foo");
-            WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints._removeBreakpoint("listener:click");
+            self.runtime.sharedInstance(WebInspector.XHRBreakpointsSidebarPane)._removeBreakpoint("foo");
+            self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane)._removeBreakpoint("listener:click");
             next();
         }
     ]);
