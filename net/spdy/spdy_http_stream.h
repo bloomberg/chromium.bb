@@ -96,6 +96,10 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   void OnClose(int status) override;
 
  private:
+  // Helper function used to initialize private members and to set delegate on
+  // stream when stream is created.
+  void InitializeStreamHelper();
+
   // Helper function used for resetting stream from inside the stream.
   void ResetStreamInternal();
 

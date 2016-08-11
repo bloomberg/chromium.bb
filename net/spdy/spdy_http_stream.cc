@@ -79,9 +79,7 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
     // |stream_| may be NULL even if OK was returned.
     if (stream_.get()) {
       DCHECK_EQ(stream_->type(), SPDY_PUSH_STREAM);
-      stream_->SetDelegate(this);
-      stream_->GetSSLInfo(&ssl_info_, &was_npn_negotiated_,
-                          &protocol_negotiated_);
+      InitializeStreamHelper();
       return OK;
     }
   }
@@ -94,9 +92,7 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
 
   if (rv == OK) {
     stream_ = stream_request_.ReleaseStream();
-    stream_->SetDelegate(this);
-    stream_->GetSSLInfo(&ssl_info_, &was_npn_negotiated_,
-                        &protocol_negotiated_);
+    InitializeStreamHelper();
   }
 
   return rv;
@@ -426,9 +422,7 @@ void SpdyHttpStream::OnStreamCreated(
     int rv) {
   if (rv == OK) {
     stream_ = stream_request_.ReleaseStream();
-    stream_->SetDelegate(this);
-    stream_->GetSSLInfo(&ssl_info_, &was_npn_negotiated_,
-                        &protocol_negotiated_);
+    InitializeStreamHelper();
   }
   callback.Run(rv);
 }
@@ -450,6 +444,13 @@ void SpdyHttpStream::ReadAndSendRequestBodyData() {
 
   if (rv != ERR_IO_PENDING)
     OnRequestBodyReadCompleted(rv);
+}
+
+void SpdyHttpStream::InitializeStreamHelper() {
+  stream_->SetDelegate(this);
+  stream_->GetSSLInfo(&ssl_info_);
+  was_npn_negotiated_ = stream_->WasNpnNegotiated();
+  protocol_negotiated_ = stream_->GetNegotiatedProtocol();
 }
 
 void SpdyHttpStream::ResetStreamInternal() {
