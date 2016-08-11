@@ -615,8 +615,13 @@ class ReportStage(generic_stages.BuilderStage,
 
     # Gather information about this build from CIDB.
     stages = db.GetBuildStages(build_id)
+    # Many stages are started in parallel after the build finishes. Stages are
+    # sorted by start_time first bceause it shows that progression most
+    # clearly. Sort by finish_time secondarily to display those paralllel
+    # stages cleanly.
     epoch = datetime.datetime.fromtimestamp(0)
-    stages.sort(key=lambda stage: stage['start_time'] or epoch)
+    stages.sort(key=lambda stage: (stage['start_time'] or epoch,
+                                   stage['finish_time'] or epoch))
     rows = ((s['name'], s['start_time'], s['finish_time']) for s in stages)
 
     # Prepare html head.
@@ -659,8 +664,12 @@ class ReportStage(generic_stages.BuilderStage,
     statuses = db.GetSlaveStatuses(build_id)
     if statuses is None or len(statuses) == 0:
       return None
+    # Slaves may be started at slightly different times, but what matters most
+    # is which slave is the bottleneck - namely, which slave finishes last.
+    # Therefore, sort primarily by finish_time.
     epoch = datetime.datetime.fromtimestamp(0)
-    statuses.sort(key=lambda stage: stage['start_time'] or epoch)
+    statuses.sort(key=lambda stage: (stage['finish_time'] or epoch,
+                                     stage['start_time'] or epoch))
     rows = (('%s - %s' % (s['build_config'], s['build_number']),
              s['start_time'], s['finish_time']) for s in statuses)
 
