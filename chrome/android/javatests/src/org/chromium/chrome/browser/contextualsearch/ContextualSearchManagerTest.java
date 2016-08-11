@@ -76,7 +76,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests the Contextual Search Manager using instrumentation tests.
  */
-@CommandLineFlags.Add(ContextualSearchFieldTrial.SUPPRESSION_TAPS + "=1000")
+
 public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEST_PAGE =
@@ -90,6 +90,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private static final String NORMAL_PRIORITY_SEARCH_ENDPOINT = "/search?";
     private static final String LOW_PRIORITY_SEARCH_ENDPOINT = "/s?";
     private static final String CONTEXTUAL_SEARCH_PREFETCH_PARAM = "&pf=c";
+    // The number of ms to delay startup for all tests.
+    private static final int ACTIVITY_STARTUP_DELAY_MS = 1000;
 
     private ActivityMonitor mActivityMonitor;
     private ContextualSearchFakeServer mFakeServer;
@@ -222,6 +224,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Override
     public void startMainActivity() throws InterruptedException {
         startMainActivityWithURL(mTestServer.getURL(TEST_PAGE));
+        // There's a problem with immediate startup that causes flakes due to the page not being
+        // ready, so specify a startup-delay of 1000 for legacy behavior.  See crbug.com/635661.
+        // TODO(donnd): find a better way to wait for page-ready, or at least reduce the delay!
+        Thread.sleep(ACTIVITY_STARTUP_DELAY_MS);
     }
 
     //============================================================================================
