@@ -15,6 +15,7 @@ Polymer({
       type: Boolean,
       observer: 'menuOpenChanged_',
       value: false,
+      notify: true,
     },
 
     /**

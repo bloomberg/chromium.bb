@@ -28,7 +28,7 @@ Polymer({
   },
 
   listeners: {
-    'infinite-list.scroll': 'notifyListScroll_',
+    'scroll': 'notifyListScroll_',
     'remove-bookmark-stars': 'removeBookmarkStars_',
   },
 
@@ -38,6 +38,8 @@ Polymer({
     // resize events to fire before the list is attached and can be measured.
     // Adding another resize here ensures it will get sized correctly.
     /** @type {IronListElement} */(this.$['infinite-list']).notifyResize();
+    this.$['infinite-list'].scrollTarget = this;
+    this.$['scroll-threshold'].scrollTarget = this;
   },
 
   /**

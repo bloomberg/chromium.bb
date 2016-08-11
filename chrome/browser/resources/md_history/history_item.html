@@ -20,10 +20,7 @@
       }
 
       :host(:not([embedded])) #main-container {
-        background: #fff;
-        border-color: var(--card-border-color);
-        border-style: solid;
-        border-width: 0 1px;
+        position: relative;
       }
 
       :host(:not([embedded])) #sizing-container {
@@ -34,14 +31,7 @@
         margin-top: var(--first-card-padding-top);
       }
 
-      :host([is-card-start]) #main-container {
-        border-radius: 2px 2px 0 0;
-        border-top-width: 1px;
-      }
-
       :host([is-card-end]) #main-container {
-        border-bottom-width: 2px;
-        border-radius: 0 0 2px 2px;
         margin-bottom: var(--card-padding-between);
       }
 
@@ -126,10 +116,34 @@
         -webkit-margin-start: 77px;
         height: 15px;
       }
+
+      #background {
+        background: #fff;
+        bottom: -1px;  /* Prevents shadow artifacts when zoomed */
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: -1;
+      }
+
+      :host([embedded]) #background {
+        display: none;
+      }
+
+      :host([is-card-start]) #background {
+        border-radius: 2px 2px 0 0;
+      }
+
+      :host([is-card-end]) #background {
+        border-radius: 0 0 2px 2px;
+        bottom: 0;
+      }
     </style>
 
     <div id="sizing-container">
       <div id="main-container">
+        <div id="background"></div>
         <div id="date-accessed" class="card-title">
           [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
         </div>

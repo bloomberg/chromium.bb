@@ -185,8 +185,8 @@ cr.define('md_history.history_list_test', function() {
 
           MockInteractions.tap(items[2].$['menu-button']);
           assertTrue(sharedMenu.menuOpen);
-          element.$['infinite-list'].scrollTop = 100;
-          return flush();
+          element.$['infinite-list'].scrollToIndex(20);
+          return waitForEvent(sharedMenu, 'menu-open-changed');
         }).then(function() {
           assertFalse(sharedMenu.menuOpen);
         });

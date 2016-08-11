@@ -11,10 +11,11 @@
     <style include="shared-style">
       :host {
         display: block;
+        overflow: overlay;
       }
 
       #infinite-list {
-        height: 100%;
+        @apply(--card-container-filter);
       }
 
       history-item {
