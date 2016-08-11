@@ -4187,6 +4187,7 @@ interface OffscreenCanvas
     setter width
 interface OffscreenCanvasRenderingContext2D
     attribute @@toStringTag
+    getter canvas
     getter fillStyle
     getter filter
     getter imageSmoothingEnabled
@@ -4196,7 +4197,6 @@ interface OffscreenCanvasRenderingContext2D
     getter lineJoin
     getter lineWidth
     getter miterLimit
-    getter offscreenCanvas
     getter shadowBlur
     getter shadowColor
     getter shadowOffsetX

@@ -72,6 +72,7 @@ class EXTShaderTextureLOD;
 class EXTsRGB;
 class EXTTextureFilterAnisotropic;
 class ExceptionState;
+class HTMLCanvasElementOrOffscreenCanvas;
 class HTMLImageElement;
 class HTMLVideoElement;
 class ImageBitmap;
@@ -412,6 +413,8 @@ public:
 
     void setFilterQuality(SkFilterQuality) override;
     bool isWebGL2OrHigher() { return version() >= 2; }
+
+    void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
 
 protected:
     friend class EXTDisjointTimerQuery;

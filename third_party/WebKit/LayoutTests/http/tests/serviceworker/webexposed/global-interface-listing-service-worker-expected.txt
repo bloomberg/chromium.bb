@@ -478,6 +478,7 @@ interface OffscreenCanvas
     setter height
     setter width
 interface OffscreenCanvasRenderingContext2D
+    getter canvas
     getter fillStyle
     getter imageSmoothingEnabled
     getter imageSmoothingQuality
@@ -486,7 +487,6 @@ interface OffscreenCanvasRenderingContext2D
     getter lineJoin
     getter lineWidth
     getter miterLimit
-    getter offscreenCanvas
     getter shadowBlur
     getter shadowColor
     getter shadowOffsetX

@@ -9,7 +9,7 @@
     RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface OffscreenCanvasRenderingContext2D {
     // back-reference to the canvas
-    [ImplementedAs=getOffscreenCanvas] readonly attribute OffscreenCanvas offscreenCanvas;
+    [ImplementedAs=getOffscreenCanvas] readonly attribute OffscreenCanvas canvas;
 
     // colors and styles
     attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)

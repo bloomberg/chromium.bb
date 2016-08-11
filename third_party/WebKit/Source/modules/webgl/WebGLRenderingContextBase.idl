@@ -47,7 +47,7 @@ typedef unrestricted float GLclampf;
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface WebGLRenderingContextBase {
 
-    readonly attribute HTMLCanvasElement canvas;
+    [ImplementedAs=getHTMLOrOffscreenCanvas] readonly attribute (HTMLCanvasElement or OffscreenCanvas) canvas;
 
     /* ClearBufferMask */
     const GLenum DEPTH_BUFFER_BIT               = 0x00000100;

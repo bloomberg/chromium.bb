@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingMacros.h"
+#include "bindings/modules/v8/HTMLCanvasElementOrOffscreenCanvas.h"
 #include "bindings/modules/v8/WebGLAny.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
@@ -6499,6 +6500,14 @@ void WebGLRenderingContextBase::restoreUnpackParameters()
 {
     if (m_unpackAlignment != 1)
         contextGL()->PixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
+}
+
+void WebGLRenderingContextBase::getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas& result) const
+{
+    if (canvas())
+        result.setHTMLCanvasElement(canvas());
+    else
+        result.setOffscreenCanvas(getOffscreenCanvas());
 }
 
 } // namespace blink

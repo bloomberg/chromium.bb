@@ -121,6 +121,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/DoubleOrConstrainDoubleRange.h",
   "$bindings_modules_v8_output_dir/FormDataOrURLSearchParams.cpp",
   "$bindings_modules_v8_output_dir/FormDataOrURLSearchParams.h",
+  "$bindings_modules_v8_output_dir/HTMLCanvasElementOrOffscreenCanvas.cpp",
+  "$bindings_modules_v8_output_dir/HTMLCanvasElementOrOffscreenCanvas.h",
   "$bindings_modules_v8_output_dir/HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap.cpp",
   "$bindings_modules_v8_output_dir/HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap.h",
   "$bindings_modules_v8_output_dir/LongOrConstrainLongRange.cpp",

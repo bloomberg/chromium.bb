@@ -491,6 +491,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter width
 [Worker] interface OffscreenCanvasRenderingContext2D
 [Worker]     attribute @@toStringTag
+[Worker]     getter canvas
 [Worker]     getter fillStyle
 [Worker]     getter imageSmoothingEnabled
 [Worker]     getter imageSmoothingQuality
@@ -499,7 +500,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter lineJoin
 [Worker]     getter lineWidth
 [Worker]     getter miterLimit
-[Worker]     getter offscreenCanvas
 [Worker]     getter shadowBlur
 [Worker]     getter shadowColor
 [Worker]     getter shadowOffsetX
