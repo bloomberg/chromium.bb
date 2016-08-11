@@ -93,12 +93,14 @@ class ScopedShowWindow : public WmWindowObserver {
 
 // This view represents a single WmWindow by displaying a title and a thumbnail
 // of the window's contents.
-class WindowPreviewView : public views::View {
+class WindowPreviewView : public views::View, public WmWindowObserver {
  public:
   explicit WindowPreviewView(WmWindow* window)
       : window_title_(new views::Label),
         preview_background_(new views::View),
-        mirror_view_(window->CreateViewWithRecreatedLayers().release()) {
+        mirror_view_(window->CreateViewWithRecreatedLayers().release()),
+        window_observer_(this) {
+    window_observer_.Add(window);
     window_title_->SetText(window->GetTitle());
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     window_title_->SetEnabledColor(SK_ColorWHITE);
@@ -162,6 +164,15 @@ class WindowPreviewView : public views::View {
     state->name = window_title_->text();
   }
 
+  // WmWindowObserver:
+  void OnWindowDestroying(WmWindow* window) override {
+    window_observer_.Remove(window);
+  }
+
+  void OnWindowTitleChanged(WmWindow* window) override {
+    window_title_->SetText(window->GetTitle());
+  }
+
  private:
   // The maximum width of a window preview.
   static const int kMaxPreviewWidth = 512;
@@ -217,6 +228,8 @@ class WindowPreviewView : public views::View {
   views::View* preview_background_;
   // The view that actually renders a thumbnail version of the window.
   views::View* mirror_view_;
+
+  ScopedObserver<WmWindow, WmWindowObserver> window_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPreviewView);
 };
