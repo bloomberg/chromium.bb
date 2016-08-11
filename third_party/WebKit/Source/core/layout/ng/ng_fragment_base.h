@@ -6,6 +6,7 @@
 #define NGFragmentBase_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_constraint_space.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -15,16 +16,6 @@ namespace blink {
 class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
  public:
   enum NGFragmentType { FragmentBox = 0, FragmentText = 1 };
-
-  // TODO(eae): We might want to re-use WritingMode and Direction from style.
-  enum NGWritingMode {
-    HorizontalTopBottom = 0,
-    VerticalRightLeft = 1,
-    VerticalLeftRight = 2,
-    SidewaysRightLeft = 3,
-    SidewaysLeftRight = 4
-  };
-  enum NGDirection { LeftToRight = 0, RightToLeft = 1 };
 
   NGFragmentType type() const { return static_cast<NGFragmentType>(m_type); }
   NGWritingMode writingMode() const {

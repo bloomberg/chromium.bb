@@ -40,6 +40,16 @@ enum NGExclusionFlowType {
   ExcludeInlineBoth
 };
 
+enum NGWritingMode {
+  HorizontalTopBottom = 0,
+  VerticalRightLeft = 1,
+  VerticalLeftRight = 2,
+  SidewaysRightLeft = 3,
+  SidewaysLeftRight = 4
+};
+
+enum NGDirection { LeftToRight = 0, RightToLeft = 1 };
+
 class NGExclusion {
  public:
   NGExclusion();
@@ -128,25 +138,6 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
   const NGConstraintSpace* m_constraintSpace;
   unsigned m_clear;
   NGExclusionFlowType m_avoid;
-};
-
-class CORE_EXPORT NGDerivedConstraintSpace final : NGConstraintSpace {
- public:
-  ~NGDerivedConstraintSpace();
-
-  LayoutUnit inlineOffset() const;
-  LayoutUnit blockOffset() const;
-  LayoutUnit inlineSize() const;
-  LayoutUnit blockSize() const;
-
- private:
-  NGDerivedConstraintSpace();
-
-  LayoutUnit m_inlineOffset;
-  LayoutUnit m_blockOffset;
-  LayoutUnit m_inlineSize;
-  LayoutUnit m_blockSize;
-  NGConstraintSpace* m_original;
 };
 
 }  // namespace blink
