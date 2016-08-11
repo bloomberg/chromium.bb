@@ -136,8 +136,8 @@ public:
     void enterFullScreenForElement(Element*) override;
     void exitFullScreenForElement(Element*) override;
 
-    void clearCompositedSelection() override;
-    void updateCompositedSelection(const CompositedSelection&) override;
+    void clearCompositedSelection(LocalFrame*) override;
+    void updateCompositedSelection(LocalFrame*, const CompositedSelection&) override;
 
     // ChromeClient methods:
     void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) override;

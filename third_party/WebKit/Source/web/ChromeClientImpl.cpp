@@ -825,14 +825,28 @@ void ChromeClientImpl::exitFullScreenForElement(Element* element)
     m_webView->exitFullScreenForElement(element);
 }
 
-void ChromeClientImpl::clearCompositedSelection()
+void ChromeClientImpl::clearCompositedSelection(LocalFrame* frame)
 {
-    m_webView->clearCompositedSelection();
+    LocalFrame* localRoot = frame->localFrameRoot();
+    auto client = WebLocalFrameImpl::fromFrame(localRoot)->frameWidget()->client();
+    if (!client)
+        return;
+
+    auto layerTreeView = client->layerTreeView();
+    if (layerTreeView)
+        layerTreeView->clearSelection();
 }
 
-void ChromeClientImpl::updateCompositedSelection(const CompositedSelection& selection)
+void ChromeClientImpl::updateCompositedSelection(LocalFrame* frame, const CompositedSelection& selection)
 {
-    m_webView->updateCompositedSelection(WebSelection(selection));
+    LocalFrame* localRoot = frame->localFrameRoot();
+    WebWidgetClient* client = WebLocalFrameImpl::fromFrame(localRoot)->frameWidget()->client();
+    if (!client)
+        return;
+
+    WebLayerTreeView* layerTreeView = client->layerTreeView();
+    if (layerTreeView)
+        layerTreeView->registerSelection(WebSelection(selection));
 }
 
 bool ChromeClientImpl::hasOpenedPopup() const

@@ -1718,12 +1718,23 @@ void FrameView::updateCompositedSelectionIfNeeded()
     CompositedSelection selection;
     LocalFrame* focusedFrame = page->focusController().focusedFrame();
     LocalFrame* localFrame = (focusedFrame && (focusedFrame->localFrameRoot() == m_frame->localFrameRoot())) ? focusedFrame : nullptr;
-    if (!localFrame || !computeCompositedSelection(*localFrame, selection)) {
-        page->chromeClient().clearCompositedSelection();
-        return;
-    }
 
-    page->chromeClient().updateCompositedSelection(selection);
+    if (localFrame && computeCompositedSelection(*localFrame, selection)) {
+        page->chromeClient().updateCompositedSelection(localFrame, selection);
+    } else {
+        if (!localFrame) {
+            // Clearing the mainframe when there is no focused frame (and hence
+            // no localFrame) is legacy behaviour, and implemented here to
+            // satisfy ParameterizedWebFrameTest.CompositedSelectionBoundsCleared's
+            // first check that the composited selection has been cleared even
+            // though no frame has focus yet. If this is not desired, then the
+            // expectation needs to be removed from the test.
+            localFrame = m_frame->localFrameRoot();
+        }
+
+        if (localFrame)
+            page->chromeClient().clearCompositedSelection(localFrame);
+    }
 }
 
 HostWindow* FrameView::getHostWindow() const

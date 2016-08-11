@@ -211,8 +211,8 @@ public:
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }
 
-    virtual void clearCompositedSelection() { }
-    virtual void updateCompositedSelection(const CompositedSelection&) { }
+    virtual void clearCompositedSelection(LocalFrame*) { }
+    virtual void updateCompositedSelection(LocalFrame*, const CompositedSelection&) { }
 
     virtual void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) = 0;
     virtual WebEventListenerProperties eventListenerProperties(WebEventListenerClass) const = 0;

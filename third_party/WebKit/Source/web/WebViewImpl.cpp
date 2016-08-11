@@ -2112,18 +2112,6 @@ void WebViewImpl::exitFullScreenForElement(Element* element)
     m_fullscreenController->exitFullScreenForElement(element);
 }
 
-void WebViewImpl::clearCompositedSelection()
-{
-    if (m_layerTreeView)
-        m_layerTreeView->clearSelection();
-}
-
-void WebViewImpl::updateCompositedSelection(const WebSelection& selection)
-{
-    if (m_layerTreeView)
-        m_layerTreeView->registerSelection(selection);
-}
-
 bool WebViewImpl::hasHorizontalScrollbar()
 {
     return mainFrameImpl()->frameView()->horizontalScrollbar();

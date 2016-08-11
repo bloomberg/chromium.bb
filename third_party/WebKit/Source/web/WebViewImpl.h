@@ -467,9 +467,6 @@ public:
     void enterFullScreenForElement(Element*);
     void exitFullScreenForElement(Element*);
 
-    void clearCompositedSelection();
-    void updateCompositedSelection(const WebSelection&);
-
     // Exposed for the purpose of overriding device metrics.
     void sendResizeEventAndRepaint();
 
