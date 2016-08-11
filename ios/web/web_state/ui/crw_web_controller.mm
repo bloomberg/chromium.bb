@@ -2318,6 +2318,27 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _webStateImpl->GetRequestTracker()->SetCacheModeFromUIThread(
       net::RequestTracker::CACHE_NORMAL);
 
+  // Rather than creating a new WKBackForwardListItem when loading WebUI pages,
+  // WKWebView will cache the WebUI HTML in the previous WKBackForwardListItem
+  // since it's loaded via |-loadHTML:forURL:| instead of an NSURLRequest.  As a
+  // result, the WebUI's HTML and URL will be loaded when navigating to that
+  // WKBackForwardListItem, causing a mismatch between the visible content and
+  // the visible URL (WebUI page will be visible, but URL will be the previous
+  // page's URL).  To prevent this potential URL spoofing vulnerability, reset
+  // the previous NavigationItem's WKBackForwardListItem to force loading via
+  // NSURLRequest.
+  if (_webUIManager) {
+    web::NavigationItem* lastNavigationItem =
+        self.sessionController.previousEntry.navigationItem;
+    if (lastNavigationItem) {
+      web::WKBackForwardListItemHolder* holder =
+          web::WKBackForwardListItemHolder::FromNavigationItem(
+              lastNavigationItem);
+      DCHECK(holder);
+      holder->set_back_forward_list_item(nil);
+    }
+  }
+
   [self restoreStateFromHistory];
   _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
   _webStateImpl->SetIsLoading(false);
