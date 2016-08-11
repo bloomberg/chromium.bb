@@ -201,11 +201,12 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   TestOverflowedToolbarAction(browser(), ui_controls::LEFT);
 
-  // The extension should have been activated.
-  listener.WaitUntilSatisfied();
-
-  // And the app menu should no longer be showing.
+  base::RunLoop().RunUntilIdle();
+  // The app menu should no longer be showing.
   EXPECT_FALSE(app_menu_button->IsMenuShowing());
+
+  // And the extension should have been activated.
+  listener.WaitUntilSatisfied();
 }
 
 #if defined(USE_OZONE)
@@ -379,11 +380,16 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // The key down event targets the toolbar action in the app menu.
   ui_controls::SendKeyPress(native_window, ui::VKEY_DOWN, false, false, false,
                             false);
-  ui_controls::SendKeyPress(native_window, ui::VKEY_RETURN, false, false, false,
-                            false);
+  // The triggering of the action and subsequent widget destruction occurs on
+  // the message loop. Wait for this all to complete.
+  base::RunLoop loop;
+  ui_controls::SendKeyPressNotifyWhenDone(native_window, ui::VKEY_RETURN, false,
+                                          false, false, false,
+                                          loop.QuitClosure());
+  loop.Run();
 
-  // The extension should have been activated.
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-  // And the menu should be closed
+  // The menu should be closed.
   EXPECT_FALSE(app_menu_button->IsMenuShowing());
+  // And the extension should have been activated.
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
