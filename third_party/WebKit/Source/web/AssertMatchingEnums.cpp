@@ -37,6 +37,9 @@
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/markers/DocumentMarker.h"
+#if OS(MACOSX)
+#include "core/events/WheelEvent.h"
+#endif
 #include "core/fileapi/FileError.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameTypes.h"
@@ -505,6 +508,24 @@ STATIC_ASSERT_ENUM(WebMouseEvent::ButtonNone, NoButton);
 STATIC_ASSERT_ENUM(WebMouseEvent::ButtonLeft, LeftButton);
 STATIC_ASSERT_ENUM(WebMouseEvent::ButtonMiddle, MiddleButton);
 STATIC_ASSERT_ENUM(WebMouseEvent::ButtonRight, RightButton);
+
+#if OS(MACOSX)
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseNone, PlatformWheelEventPhaseNone);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseBegan, PlatformWheelEventPhaseBegan);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseStationary, PlatformWheelEventPhaseStationary);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseChanged, PlatformWheelEventPhaseChanged);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseEnded, PlatformWheelEventPhaseEnded);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseCancelled, PlatformWheelEventPhaseCancelled);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseMayBegin, PlatformWheelEventPhaseMayBegin);
+
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseNone, WheelEventPhaseNone);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseBegan, WheelEventPhaseBegan);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseStationary, WheelEventPhaseStationary);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseChanged, WheelEventPhaseChanged);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseEnded, WheelEventPhaseEnded);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseCancelled, WheelEventPhaseCancelled);
+STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseMayBegin, WheelEventPhaseMayBegin);
+#endif
 
 STATIC_ASSERT_ENUM(WebScrollbar::Horizontal, HorizontalScrollbar);
 STATIC_ASSERT_ENUM(WebScrollbar::Vertical, VerticalScrollbar);

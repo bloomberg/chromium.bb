@@ -69,8 +69,6 @@ public:
 #if OS(MACOSX)
         , m_phase(PlatformWheelEventPhaseNone)
         , m_momentumPhase(PlatformWheelEventPhaseNone)
-        , m_canRubberbandLeft(true)
-        , m_canRubberbandRight(true)
 #endif
     {
     }
@@ -95,8 +93,6 @@ public:
 #if OS(MACOSX)
     PlatformWheelEventPhase phase() const { return m_phase; }
     PlatformWheelEventPhase momentumPhase() const { return m_momentumPhase; }
-    bool canRubberbandLeft() const { return m_canRubberbandLeft; }
-    bool canRubberbandRight() const { return m_canRubberbandRight; }
 #endif
 
 protected:
@@ -114,8 +110,6 @@ protected:
 #if OS(MACOSX)
     PlatformWheelEventPhase m_phase;
     PlatformWheelEventPhase m_momentumPhase;
-    bool m_canRubberbandLeft;
-    bool m_canRubberbandRight;
 #endif
 };
 

@@ -82,14 +82,6 @@ using content::RenderViewHost;
   [historySwiper_ touchesEndedWithEvent:event];
 }
 
-- (BOOL)canRubberbandLeft:(NSView*)view {
-  return [historySwiper_ canRubberbandLeft:view];
-}
-
-- (BOOL)canRubberbandRight:(NSView*)view {
-  return [historySwiper_ canRubberbandRight:view];
-}
-
 // HistorySwiperDelegate methods
 
 - (BOOL)shouldAllowHistorySwiping {

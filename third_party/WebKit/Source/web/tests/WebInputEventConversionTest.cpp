@@ -909,7 +909,11 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
         WheelEvent* event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
             WheelEvent::kDomDeltaPage, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
             PlatformEvent::CtrlKey, 0, 0, -1 /* null plugin id */,
-            true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, true /*cancelable*/);
+            true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, true /*cancelable*/
+#if OS(MACOSX)
+            , WheelEventPhaseBegan, WheelEventPhaseChanged
+#endif
+            );
         WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutViewItem(), *event);
         EXPECT_EQ(1, webMouseWheel.wheelTicksX);
         EXPECT_EQ(3, webMouseWheel.wheelTicksY);
@@ -924,12 +928,20 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
         EXPECT_EQ(WebInputEvent::RailsModeHorizontal, webMouseWheel.railsMode);
         EXPECT_TRUE(webMouseWheel.hasPreciseScrollingDeltas);
         EXPECT_EQ(WebInputEvent::Blocking, webMouseWheel.dispatchType);
+#if OS(MACOSX)
+        EXPECT_EQ(WebMouseWheelEvent::PhaseBegan, webMouseWheel.phase);
+        EXPECT_EQ(WebMouseWheelEvent::PhaseChanged, webMouseWheel.momentumPhase);
+#endif
     }
 
     {
         WheelEvent* event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
             WheelEvent::kDomDeltaPage, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
-            PlatformEvent::CtrlKey, 0, 0, -1 /* null plugin id */, true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, false);
+            PlatformEvent::CtrlKey, 0, 0, -1 /* null plugin id */, true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, false
+#if OS(MACOSX)
+            , WheelEventPhaseNone, WheelEventPhaseNone
+#endif
+        );
         WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutViewItem(), *event);
         EXPECT_EQ(WebInputEvent::EventNonBlocking, webMouseWheel.dispatchType);
     }
@@ -960,6 +972,8 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         webMouseWheelEvent.modifiers = WebInputEvent::ControlKey;
         webMouseWheelEvent.hasPreciseScrollingDeltas = true;
         webMouseWheelEvent.railsMode = WebInputEvent::RailsModeHorizontal;
+        webMouseWheelEvent.phase = WebMouseWheelEvent::PhaseBegan;
+        webMouseWheelEvent.momentumPhase = WebMouseWheelEvent::PhaseChanged;
 
         PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
         EXPECT_EQ(0, platformWheelBuilder.position().x());
@@ -969,6 +983,10 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_EQ(PlatformEvent::CtrlKey, platformWheelBuilder.getModifiers());
         EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_EQ(platformWheelBuilder.getRailsMode(), PlatformEvent::RailsModeHorizontal);
+#if OS(MACOSX)
+        EXPECT_EQ(PlatformWheelEventPhaseBegan, platformWheelBuilder.phase());
+        EXPECT_EQ(PlatformWheelEventPhaseChanged, platformWheelBuilder.momentumPhase());
+#endif
     }
 
     {
@@ -981,6 +999,8 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         webMouseWheelEvent.modifiers = WebInputEvent::ShiftKey;
         webMouseWheelEvent.hasPreciseScrollingDeltas = false;
         webMouseWheelEvent.railsMode = WebInputEvent::RailsModeFree;
+        webMouseWheelEvent.phase = WebMouseWheelEvent::PhaseNone;
+        webMouseWheelEvent.momentumPhase = WebMouseWheelEvent::PhaseNone;
 
         PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
         EXPECT_EQ(5, platformWheelBuilder.position().x());
@@ -990,6 +1010,10 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_EQ(PlatformEvent::ShiftKey, platformWheelBuilder.getModifiers());
         EXPECT_FALSE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_EQ(platformWheelBuilder.getRailsMode(), PlatformEvent::RailsModeFree);
+#if OS(MACOSX)
+        EXPECT_EQ(PlatformWheelEventPhaseNone, platformWheelBuilder.phase());
+        EXPECT_EQ(PlatformWheelEventPhaseNone, platformWheelBuilder.momentumPhase());
+#endif
     }
 
     {
@@ -1002,6 +1026,8 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         webMouseWheelEvent.modifiers = WebInputEvent::AltKey;
         webMouseWheelEvent.hasPreciseScrollingDeltas = true;
         webMouseWheelEvent.railsMode = WebInputEvent::RailsModeVertical;
+        webMouseWheelEvent.phase = WebMouseWheelEvent::PhaseNone;
+        webMouseWheelEvent.momentumPhase = WebMouseWheelEvent::PhaseNone;
 
         PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
         EXPECT_EQ(5, platformWheelBuilder.position().x());
@@ -1011,6 +1037,10 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_EQ(PlatformEvent::AltKey, platformWheelBuilder.getModifiers());
         EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_EQ(platformWheelBuilder.getRailsMode(), PlatformEvent::RailsModeVertical);
+#if OS(MACOSX)
+        EXPECT_EQ(PlatformWheelEventPhaseNone, platformWheelBuilder.phase());
+        EXPECT_EQ(PlatformWheelEventPhaseNone, platformWheelBuilder.momentumPhase());
+#endif
     }
 }
 

@@ -142,46 +142,6 @@ BOOL forceMagicMouse = NO;
   }
 }
 
-- (BOOL)canRubberbandLeft:(NSView*)view {
-  Browser* browser = chrome::FindBrowserWithWindow([view window]);
-  // If history swiping isn't possible, allow rubberbanding.
-  if (!browser)
-    return true;
-
-  // TODO(erikchen): Update this comment after determining whether this
-  // NULL-check fixes the crash.
-  // This NULL check likely prevents a crash. http://crbug.com/418761
-  if (!browser->tab_strip_model()->GetActiveWebContents())
-    return true;
-
-  if (!chrome::CanGoBack(browser))
-    return true;
-  // History swiping is possible. By default, disallow rubberbanding.  If the
-  // user has both started, and then cancelled history swiping for this
-  // gesture, allow rubberbanding.
-  return receivingTouches_ && recognitionState_ == history_swiper::kCancelled;
-}
-
-- (BOOL)canRubberbandRight:(NSView*)view {
-  Browser* browser = chrome::FindBrowserWithWindow([view window]);
-  // If history swiping isn't possible, allow rubberbanding.
-  if (!browser)
-    return true;
-
-  // TODO(erikchen): Update this comment after determining whether this
-  // NULL-check fixes the crash.
-  // This NULL check likely prevents a crash. http://crbug.com/418761
-  if (!browser->tab_strip_model()->GetActiveWebContents())
-    return true;
-
-  if (!chrome::CanGoForward(browser))
-    return true;
-  // History swiping is possible. By default, disallow rubberbanding.  If the
-  // user has both started, and then cancelled history swiping for this
-  // gesture, allow rubberbanding.
-  return receivingTouches_ && recognitionState_ == history_swiper::kCancelled;
-}
-
 - (void)beginGestureWithEvent:(NSEvent*)event {
   inGesture_ = YES;
 

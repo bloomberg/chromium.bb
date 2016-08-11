@@ -420,23 +420,6 @@ public:
     Phase phase;
     Phase momentumPhase;
 
-    // Rubberbanding is an OSX visual effect. When a user scrolls the content
-    // area with a track pad, and the content area is already at its limit in
-    // the direction being scrolled, the entire content area is allowed to
-    // scroll slightly off screen, revealing a grey background. When the user
-    // lets go, the content area snaps back into place. Blink is responsible
-    // for this rubberbanding effect, but the embedder may wish to disable
-    // rubber banding in the left or right direction, if the scroll should have
-    // an alternate effect. The common case is that a scroll in the left or
-    // right directions causes a back or forwards navigation, respectively.
-    //
-    // These flags prevent rubber banding from starting in a given direction,
-    // but have no effect on an ongoing rubber banding. A rubber banding that
-    // started in the vertical direction is allowed to continue in the right
-    // direction, even if canRubberbandRight is 0.
-    bool canRubberbandLeft;
-    bool canRubberbandRight;
-
     bool scrollByPage;
     bool hasPreciseScrollingDeltas;
 
@@ -457,8 +440,6 @@ public:
         , resendingPluginId(-1)
         , phase(PhaseNone)
         , momentumPhase(PhaseNone)
-        , canRubberbandLeft(true)
-        , canRubberbandRight(true)
         , scrollByPage(false)
         , hasPreciseScrollingDeltas(false)
         , railsMode(RailsModeFree)

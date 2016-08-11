@@ -52,11 +52,10 @@ void ApppendEventDetails(const WebMouseWheelEvent& event, std::string* result) {
       result,
       "{\n Delta: (%f, %f)\n WheelTicks: (%f, %f)\n Accel: (%f, %f)\n"
       " ScrollByPage: %d\n HasPreciseScrollingDeltas: %d\n"
-      " Phase: (%d, %d)\n CanRubberband: (%d, %d)\n}",
+      " Phase: (%d, %d)",
       event.deltaX, event.deltaY, event.wheelTicksX, event.wheelTicksY,
       event.accelerationRatioX, event.accelerationRatioY, event.scrollByPage,
-      event.hasPreciseScrollingDeltas, event.phase, event.momentumPhase,
-      event.canRubberbandLeft, event.canRubberbandRight);
+      event.hasPreciseScrollingDeltas, event.phase, event.momentumPhase);
 }
 
 void ApppendEventDetails(const WebGestureEvent& event, std::string* result) {

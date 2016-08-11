@@ -419,9 +419,7 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
 
 blink::WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
     NSEvent* event,
-    NSView* view,
-    bool can_rubberband_left,
-    bool can_rubberband_right) {
+    NSView* view) {
   blink::WebMouseWheelEvent result;
 
   result.type = blink::WebInputEvent::MouseWheel;
@@ -430,9 +428,6 @@ blink::WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   result.modifiers = ModifiersFromEvent(event);
 
   SetWebEventLocationFromEventInView(&result, event, view);
-
-  result.canRubberbandLeft = can_rubberband_left;
-  result.canRubberbandRight = can_rubberband_right;
 
   // Of Mice and Men
   // ---------------

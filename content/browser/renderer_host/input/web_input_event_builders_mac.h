@@ -26,9 +26,7 @@ class CONTENT_EXPORT WebMouseEventBuilder {
 class CONTENT_EXPORT WebMouseWheelEventBuilder {
  public:
   static blink::WebMouseWheelEvent Build(NSEvent* event,
-                                         NSView* view,
-                                         bool can_rubberband_left,
-                                         bool can_rubberband_right);
+                                         NSView* view);
 };
 
 class CONTENT_EXPORT WebGestureEventBuilder {

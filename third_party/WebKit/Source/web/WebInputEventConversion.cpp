@@ -236,8 +236,6 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 #if OS(MACOSX)
     m_phase = static_cast<PlatformWheelEventPhase>(e.phase);
     m_momentumPhase = static_cast<PlatformWheelEventPhase>(e.momentumPhase);
-    m_canRubberbandLeft = e.canRubberbandLeft;
-    m_canRubberbandRight = e.canRubberbandRight;
 #endif
 }
 
@@ -641,6 +639,10 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
     railsMode = static_cast<RailsMode>(event.getRailsMode());
     hasPreciseScrollingDeltas = event.hasPreciseScrollingDeltas();
     dispatchType = event.cancelable() ? WebInputEvent::Blocking : WebInputEvent::EventNonBlocking;
+#if OS(MACOSX)
+    phase = static_cast<Phase>(event.phase());
+    momentumPhase = static_cast<Phase>(event.momentumPhase());
+#endif
 }
 
 WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)

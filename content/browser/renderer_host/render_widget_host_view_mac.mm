@@ -2177,11 +2177,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   if (renderWidgetHostView_->render_widget_host_) {
     // History-swiping is not possible if the logic reaches this point.
-    // Allow rubber-banding in both directions.
-    bool canRubberbandLeft = true;
-    bool canRubberbandRight = true;
     WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(
-        event, self, canRubberbandLeft, canRubberbandRight);
+        event, self);
     webEvent.railsMode = mouseWheelFilter_.UpdateRailsMode(webEvent);
     ui::LatencyInfo latency_info;
     latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
@@ -2352,10 +2349,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   // This is responsible for content scrolling!
   if (renderWidgetHostView_->render_widget_host_) {
-    BOOL canRubberbandLeft = [responderDelegate_ canRubberbandLeft:self];
-    BOOL canRubberbandRight = [responderDelegate_ canRubberbandRight:self];
-    WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(
-        event, self, canRubberbandLeft, canRubberbandRight);
+    WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(event, self);
     webEvent.railsMode = mouseWheelFilter_.UpdateRailsMode(webEvent);
     if (renderWidgetHostView_->ShouldRouteEvent(webEvent)) {
       renderWidgetHostView_->render_widget_host_->delegate()

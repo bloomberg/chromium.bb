@@ -198,12 +198,6 @@ enum RecognitionState {
 - (void)beginGestureWithEvent:(NSEvent*)event;
 - (void)endGestureWithEvent:(NSEvent*)event;
 
-// These methods control whether a given view is allowed to rubberband in the
-// given direction. This is inversely related to whether the view is allowed to
-// 2-finger history swipe in the given direction.
-- (BOOL)canRubberbandLeft:(NSView*)view;
-- (BOOL)canRubberbandRight:(NSView*)view;
-
 // Designated initializer.
 - (id)initWithDelegate:(id<HistorySwiperDelegate>)delegate;
 
