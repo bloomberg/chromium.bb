@@ -376,9 +376,7 @@ void V8DebuggerAgentImpl::removeBreakpoint(const String16& breakpointId)
     m_breakpointIdToDebuggerBreakpointIds.erase(breakpointId);
 }
 
-void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString,
-    std::unique_ptr<protocol::Debugger::Location> location,
-    const protocol::Maybe<bool>& interstateLocationOpt)
+void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString, std::unique_ptr<protocol::Debugger::Location> location)
 {
     if (!checkEnabled(errorString))
         return;
@@ -395,7 +393,7 @@ void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString,
         return;
 
     ScriptBreakpoint breakpoint(lineNumber, columnNumber, "");
-    m_continueToLocationBreakpointId = m_debugger->setBreakpoint(scriptId, breakpoint, &lineNumber, &columnNumber, interstateLocationOpt.fromMaybe(false));
+    m_continueToLocationBreakpointId = m_debugger->setBreakpoint(scriptId, breakpoint, &lineNumber, &columnNumber);
     resume(errorString);
 }
 
@@ -502,7 +500,7 @@ std::unique_ptr<protocol::Debugger::Location> V8DebuggerAgentImpl::resolveBreakp
 
     int actualLineNumber;
     int actualColumnNumber;
-    String16 debuggerBreakpointId = m_debugger->setBreakpoint(scriptId, breakpoint, &actualLineNumber, &actualColumnNumber, false);
+    String16 debuggerBreakpointId = m_debugger->setBreakpoint(scriptId, breakpoint, &actualLineNumber, &actualColumnNumber);
     if (debuggerBreakpointId.isEmpty())
         return nullptr;
 

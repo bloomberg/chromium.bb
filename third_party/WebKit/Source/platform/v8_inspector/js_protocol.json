@@ -530,8 +530,7 @@
             {
                 "name": "continueToLocation",
                 "parameters": [
-                    { "name": "location", "$ref": "Location", "description": "Location to continue to." },
-                    { "name": "interstatementLocation", "type": "boolean", "optional": true, "experimental": true, "description": "Allows breakpoints at the intemediate positions inside statements." }
+                    { "name": "location", "$ref": "Location", "description": "Location to continue to." }
                 ],
                 "description": "Continues execution until specific location is reached."
             },

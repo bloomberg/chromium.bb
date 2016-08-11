@@ -229,9 +229,7 @@ DebuggerScript._formatScript = function(script)
  */
 DebuggerScript.setBreakpoint = function(execState, info)
 {
-    var positionAlignment = info.interstatementLocation ? Debug.BreakPositionAlignment.BreakPosition : Debug.BreakPositionAlignment.Statement;
-    var breakId = Debug.setScriptBreakPointById(info.sourceID, info.lineNumber, info.columnNumber, info.condition, undefined, positionAlignment);
-
+    var breakId = Debug.setScriptBreakPointById(info.sourceID, info.lineNumber, info.columnNumber, info.condition, undefined, Debug.BreakPositionAlignment.Statement);
     var locations = Debug.findBreakPointActualLocations(breakId);
     if (!locations.length)
         return undefined;

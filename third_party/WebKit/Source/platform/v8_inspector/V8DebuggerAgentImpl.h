@@ -71,8 +71,7 @@ public:
         std::unique_ptr<protocol::Debugger::Location>* actualLocation) override;
     void removeBreakpoint(ErrorString*, const String16& breakpointId) override;
     void continueToLocation(ErrorString*,
-        std::unique_ptr<protocol::Debugger::Location>,
-        const Maybe<bool>& interstateLocationOpt) override;
+        std::unique_ptr<protocol::Debugger::Location>) override;
     void getBacktrace(ErrorString*,
         std::unique_ptr<protocol::Array<protocol::Debugger::CallFrame>>*,
         Maybe<protocol::Runtime::StackTrace>*) override;

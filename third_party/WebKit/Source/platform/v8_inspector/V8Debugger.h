@@ -36,7 +36,7 @@ public:
 
     bool enabled() const;
 
-    String16 setBreakpoint(const String16& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
+    String16 setBreakpoint(const String16& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber);
     void removeBreakpoint(const String16& breakpointId);
     void setBreakpointsActivated(bool);
     bool breakpointsActivated() const { return m_breakpointsActivated; }
