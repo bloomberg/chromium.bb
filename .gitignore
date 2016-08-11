@@ -310,6 +310,7 @@ vs-chromium-project.txt
 /third_party/bison
 /third_party/boringssl/src
 /third_party/bouncycastle/lib/*.jar
+/third_party/byte_buddy/lib/*.jar
 /third_party/cacheinvalidation/cacheinvalidation_unittests_run.xml
 /third_party/cardboard-java/src
 /third_party/catapult

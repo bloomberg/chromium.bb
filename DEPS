@@ -630,6 +630,16 @@ hooks = [
     ],
   },
   {
+    'name': 'byte_buddy',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/update_deps/update_third_party_deps.py',
+               'download',
+               '-b', 'chromium-byte-buddy',
+               '-l', 'third_party/byte_buddy'
+    ],
+  },
+  {
     'name': 'espresso',
     'pattern': '.',
     'action': ['python',
