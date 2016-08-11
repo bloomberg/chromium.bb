@@ -54,6 +54,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
@@ -468,6 +469,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       set_focus_on_mouse_down_or_key_event_(false),
       device_scale_factor_(0.0f),
       disable_input_event_router_for_testing_(false),
+      last_active_widget_process_id_(ChildProcessHost::kInvalidUniqueID),
+      last_active_widget_routing_id_(MSG_ROUTING_NONE),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
     host_->SetView(this);
@@ -2994,24 +2997,30 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
     GetInputMethod()->OnTextInputTypeChanged(this);
 
   const TextInputState* state = text_input_manager_->GetTextInputState();
-
   if (state && state->show_ime_if_needed &&
       state->type != ui::TEXT_INPUT_TYPE_NONE) {
     GetInputMethod()->ShowImeIfNeeded();
-
     // Start monitoring the composition information if the focused node is
     // editable.
-    host_->Send(new InputMsg_RequestCompositionUpdate(
-        host_->GetRoutingID(),
-        false /* immediate request */,
+    RenderWidgetHostImpl* last_active_widget =
+        text_input_manager_->GetActiveWidget();
+    last_active_widget_routing_id_ = last_active_widget->GetRoutingID();
+    last_active_widget_process_id_ = last_active_widget->GetProcess()->GetID();
+    last_active_widget->Send(new InputMsg_RequestCompositionUpdate(
+        last_active_widget->GetRoutingID(), false /* immediate request */,
         true /* monitor request */));
   } else {
     // Stop monitoring the composition information if the focused node is not
     // editable.
-    host_->Send(new InputMsg_RequestCompositionUpdate(
-        host_->GetRoutingID(),
-        false /* immediate request */,
-        false /* monitor request */));
+    RenderWidgetHostImpl* last_active_widget = RenderWidgetHostImpl::FromID(
+        last_active_widget_process_id_, last_active_widget_routing_id_);
+    if (last_active_widget) {
+      last_active_widget->Send(new InputMsg_RequestCompositionUpdate(
+          last_active_widget->GetRoutingID(), false /* immediate request */,
+          false /* monitor request */));
+    }
+    last_active_widget_routing_id_ = MSG_ROUTING_NONE;
+    last_active_widget_process_id_ = ChildProcessHost::kInvalidUniqueID;
   }
 }
 

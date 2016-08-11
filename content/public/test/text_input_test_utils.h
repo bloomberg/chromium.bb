@@ -49,15 +49,11 @@ size_t GetRegisteredViewsCountFromTextInputManager(WebContents* web_contents);
 // given WebContents.
 RenderWidgetHostView* GetActiveViewFromWebContents(WebContents* web_contents);
 
-// This method will send an InputMsg_ImeSetComposition IPC with the provided
-// parameters to the |render_widget_host|.
-void SetCompositionForRenderWidgetHost(
-    RenderWidgetHost* render_widget_host,
-    const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& underlines,
-    const gfx::Range& replacement_range,
-    int selection_start,
-    int selection_end);
+// This method will send a request for an immediate update on composition range
+// from TextInputManager's active widget corresponding to the |web_contents|.
+// This function will return false if the request is not successfully sent;
+// either due to missing TextInputManager or lack of an active widget.
+bool RequestCompositionInfoFromActiveWidget(WebContents* web_contents);
 
 // This class provides the necessary API for accessing the state of and also
 // observing the TextInputManager for WebContents.

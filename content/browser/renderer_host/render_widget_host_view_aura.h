@@ -687,6 +687,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // RenderWidgetHostInputEventRouter.
   bool disable_input_event_router_for_testing_;
 
+  // The routing and process IDs for the last RenderWidgetHost which had a
+  // TextInputState of non-NONE.
+  int32_t last_active_widget_process_id_;
+  int32_t last_active_widget_routing_id_;
+
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);

@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -244,23 +245,15 @@ bool GetTextInputTypeForView(WebContents* web_contents,
   return true;
 }
 
-void SetCompositionForRenderWidgetHost(
-    RenderWidgetHost* render_widget_host,
-    const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& underlines,
-    const gfx::Range& replacement_range,
-    int selection_start,
-    int selection_end) {
-  std::vector<blink::WebCompositionUnderline> web_underlines;
-  for (auto underline : underlines) {
-    web_underlines.emplace_back(blink::WebCompositionUnderline(
-        underline.start_offset, underline.end_offset, underline.color,
-        underline.thick, underline.background_color));
-  }
+bool RequestCompositionInfoFromActiveWidget(WebContents* web_contents) {
+  TextInputManager* manager =
+      static_cast<WebContentsImpl*>(web_contents)->GetTextInputManager();
+  if (!manager || !manager->GetActiveWidget())
+    return false;
 
-  static_cast<RenderWidgetHostImpl*>(render_widget_host)
-      ->ImeSetComposition(text, web_underlines, replacement_range,
-                          selection_start, selection_end);
+  manager->GetActiveWidget()->Send(new InputMsg_RequestCompositionUpdate(
+      manager->GetActiveWidget()->GetRoutingID(), true, true));
+  return true;
 }
 
 size_t GetRegisteredViewsCountFromTextInputManager(WebContents* web_contents) {
