@@ -98,7 +98,7 @@
 	When the client receives this event, it will know that it can
 	safely reuse the object ID.
       </description>
-      <arg name="id" type="uint" summary="deleted object id"/>
+      <arg name="id" type="uint" summary="deleted object ID"/>
     </event>
   </interface>
 
