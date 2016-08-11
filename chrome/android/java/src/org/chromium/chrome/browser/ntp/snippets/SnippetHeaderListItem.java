@@ -16,12 +16,16 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
  */
 public class SnippetHeaderListItem implements NewTabPageListItem {
     /** Whether the header should be shown. */
-    private boolean mVisible = false;
+    private final boolean mVisible;
 
     /** The header text to be shown. */
     private final String mHeaderText;
 
     public SnippetHeaderListItem(String headerText) {
+        // TODO(mvanouwerkerk): Configure mVisible in the constructor when we have a global status
+        // section without a visible header.
+        mVisible = true;
+
         this.mHeaderText = headerText;
     }
 
@@ -43,10 +47,6 @@ public class SnippetHeaderListItem implements NewTabPageListItem {
 
     public boolean isVisible() {
         return mVisible;
-    }
-
-    public void setVisible(boolean visible) {
-        mVisible = visible;
     }
 
     public String getHeaderText() {

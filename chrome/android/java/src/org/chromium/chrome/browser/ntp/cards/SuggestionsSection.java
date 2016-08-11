@@ -49,10 +49,6 @@ public class SuggestionsSection implements ItemGroup {
 
     public void dismissSuggestion(SnippetArticleListItem suggestion) {
         mSuggestions.remove(suggestion);
-
-        if (mSuggestions.isEmpty()) {
-            mHeader.setVisible(false);
-        }
     }
 
     public boolean hasSuggestions() {
@@ -62,8 +58,6 @@ public class SuggestionsSection implements ItemGroup {
     public void setSuggestions(List<SnippetArticleListItem> suggestions,
             @CategoryStatusEnum int status, NewTabPageAdapter adapter) {
         copyThumbnails(suggestions);
-
-        mHeader.setVisible(!suggestions.isEmpty());
 
         mStatus = StatusListItem.create(status, adapter);
         mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
