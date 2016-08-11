@@ -21,9 +21,9 @@ namespace wm {
 
 class ForwardingLayerDelegate;
 
-// A view that mirrors a single window. Layers are lifted from the underlying
-// window (which gets new ones in their place). New paint calls, if any, are
-// forwarded to the underlying window.
+// A view that mirrors the client area of a single window. Layers are lifted
+// from the underlying window (which gets new ones in their place). New paint
+// calls, if any, are forwarded to the underlying window.
 class WindowMirrorView : public views::View, public ::wm::LayerDelegateFactory {
  public:
   explicit WindowMirrorView(WmWindowAura* window);
@@ -44,6 +44,10 @@ class WindowMirrorView : public views::View, public ::wm::LayerDelegateFactory {
   // Gets the root of the layer tree that was lifted from |target_| (and is now
   // a child of |this->layer()|).
   ui::Layer* GetMirrorLayer();
+
+  // Calculates the bounds of the client area of the Window in the widget
+  // coordinate space.
+  gfx::Rect GetClientAreaBounds() const;
 
   // The original window that is being represented by |this|.
   WmWindowAura* target_;

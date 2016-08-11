@@ -36,7 +36,7 @@ WindowMirrorView::WindowMirrorView(WmWindowAura* window) : target_(window) {
 WindowMirrorView::~WindowMirrorView() {}
 
 gfx::Size WindowMirrorView::GetPreferredSize() const {
-  return target_->GetBounds().size();
+  return GetClientAreaBounds().size();
 }
 
 void WindowMirrorView::Layout() {
@@ -47,14 +47,17 @@ void WindowMirrorView::Layout() {
   // Position at 0, 0.
   GetMirrorLayer()->SetBounds(gfx::Rect(GetMirrorLayer()->bounds().size()));
 
+  gfx::Transform transform;
+  gfx::Rect client_area_bounds = GetClientAreaBounds();
   // Scale down if necessary.
-  gfx::Transform mirror_transform;
   if (size() != target_->GetBounds().size()) {
     const float scale =
-        width() / static_cast<float>(target_->GetBounds().width());
-    mirror_transform.Scale(scale, scale);
+        width() / static_cast<float>(client_area_bounds.width());
+    transform.Scale(scale, scale);
   }
-  GetMirrorLayer()->SetTransform(mirror_transform);
+  // Reposition such that the client area is the only part visible.
+  transform.Translate(-client_area_bounds.x(), -client_area_bounds.y());
+  GetMirrorLayer()->SetTransform(transform);
 }
 
 bool WindowMirrorView::GetNeedsNotificationWhenVisibleBoundsChange() const {
@@ -83,6 +86,8 @@ void WindowMirrorView::InitLayerOwner() {
 
   GetMirrorLayer()->parent()->Remove(GetMirrorLayer());
   layer()->Add(GetMirrorLayer());
+  // This causes us to clip the non-client areas of the window.
+  layer()->SetMasksToBounds(true);
 
   // Some extra work is needed when the target window is minimized.
   if (target_->GetWindowState()->IsMinimized()) {
@@ -96,6 +101,11 @@ void WindowMirrorView::InitLayerOwner() {
 
 ui::Layer* WindowMirrorView::GetMirrorLayer() {
   return layer_owner_->root();
+}
+
+gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
+  views::View* client_view = target_->GetInternalWidget()->client_view();
+  return client_view->ConvertRectToWidget(client_view->GetLocalBounds());
 }
 
 }  // namespace wm
