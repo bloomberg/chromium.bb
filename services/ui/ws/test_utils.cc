@@ -27,8 +27,12 @@ namespace {
 // Empty implementation of PlatformDisplay.
 class TestPlatformDisplay : public PlatformDisplay {
  public:
-  explicit TestPlatformDisplay(int64_t id, int32_t* cursor_id_storage)
-      : id_(id), cursor_id_storage_(cursor_id_storage) {
+  explicit TestPlatformDisplay(int64_t id,
+                               bool is_primary,
+                               int32_t* cursor_id_storage)
+      : id_(id),
+        is_primary_(is_primary),
+        cursor_id_storage_(cursor_id_storage) {
     display_metrics_.bounds = gfx::Rect(0, 0, 400, 300);
     display_metrics_.device_scale_factor = 1.f;
   }
@@ -61,11 +65,13 @@ class TestPlatformDisplay : public PlatformDisplay {
   void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) override {}
   gfx::Rect GetBounds() const override { return display_metrics_.bounds; }
+  bool IsPrimaryDisplay() const override { return is_primary_; }
 
  private:
   ViewportMetrics display_metrics_;
 
   int64_t id_;
+  bool is_primary_;
   int32_t* cursor_id_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
@@ -104,14 +110,19 @@ void WindowManagerWindowTreeFactorySetTestApi::Add(const UserId& user_id) {
 
 // TestPlatformDisplayFactory  -------------------------------------------------
 
+const int64_t TestPlatformDisplayFactory::kFirstDisplayId = 1;
+
 TestPlatformDisplayFactory::TestPlatformDisplayFactory(
     int32_t* cursor_id_storage)
-    : cursor_id_storage_(cursor_id_storage) {}
+    : cursor_id_storage_(cursor_id_storage),
+      next_display_id_(kFirstDisplayId) {}
 
 TestPlatformDisplayFactory::~TestPlatformDisplayFactory() {}
 
 PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay() {
-  return new TestPlatformDisplay(next_display_id_++, cursor_id_storage_);
+  bool is_primary = (next_display_id_ == kFirstDisplayId);
+  return new TestPlatformDisplay(next_display_id_++, is_primary,
+                                 cursor_id_storage_);
 }
 
 // TestFrameGeneratorDelegate -------------------------------------------------

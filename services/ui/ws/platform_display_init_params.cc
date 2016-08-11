@@ -4,6 +4,7 @@
 
 #include "services/ui/ws/platform_display_init_params.h"
 
+#include "services/ui/display/platform_screen.h"
 #include "services/ui/surfaces/surfaces_state.h"
 
 namespace ui {

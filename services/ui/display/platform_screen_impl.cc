@@ -13,9 +13,11 @@
 namespace display {
 namespace {
 
+const int64_t kDisplayId = 1;
+
 void FixedSizeScreenConfiguration(
     const PlatformScreen::ConfiguredDisplayCallback& callback) {
-  callback.Run(1, gfx::Rect(1024, 768));
+  callback.Run(kDisplayId, gfx::Rect(1024, 768));
 }
 
 }  // namespace
@@ -35,6 +37,10 @@ void PlatformScreenImpl::ConfigurePhysicalDisplay(
     const PlatformScreen::ConfiguredDisplayCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FixedSizeScreenConfiguration, callback));
+}
+
+int64_t PlatformScreenImpl::GetPrimaryDisplayId() const {
+  return kDisplayId;
 }
 
 }  // namespace display

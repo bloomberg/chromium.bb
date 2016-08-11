@@ -24,6 +24,7 @@ class PlatformScreenImpl : public PlatformScreen {
   void Init() override;
   void ConfigurePhysicalDisplay(
       const PlatformScreen::ConfiguredDisplayCallback& callback) override;
+  int64_t GetPrimaryDisplayId() const override;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformScreenImpl);
 };

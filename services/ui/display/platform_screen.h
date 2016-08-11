@@ -36,6 +36,8 @@ class PlatformScreen {
   // its id and bounds for it via |callback|.
   virtual void ConfigurePhysicalDisplay(
       const ConfiguredDisplayCallback& callback) = 0;
+
+  virtual int64_t GetPrimaryDisplayId() const = 0;
 };
 
 }  // namespace display

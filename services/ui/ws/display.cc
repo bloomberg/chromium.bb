@@ -88,9 +88,8 @@ mojom::WsDisplayPtr Display::ToWsDisplay() const {
   mojom::WsDisplayPtr display_ptr = mojom::WsDisplay::New();
 
   display_ptr->display = ToDisplay();
+  display_ptr->is_primary = platform_display_->IsPrimaryDisplay();
 
-  // TODO(sky): make this real.
-  display_ptr->is_primary = true;
   // TODO(sky): make this real.
   display_ptr->frame_decoration_values = mojom::FrameDecorationValues::New();
   return display_ptr;
@@ -99,9 +98,7 @@ mojom::WsDisplayPtr Display::ToWsDisplay() const {
 display::Display Display::ToDisplay() const {
   display::Display display(GetId());
 
-  // TODO(sky): Display should know its origin.
-  display.set_bounds(gfx::Rect(0, 0, root_->bounds().size().width(),
-                               root_->bounds().size().height()));
+  display.set_bounds(platform_display_->GetBounds());
   // TODO(sky): window manager needs an API to set the work area.
   display.set_work_area(display.bounds());
   display.set_device_scale_factor(platform_display_->GetDeviceScaleFactor());
@@ -134,7 +131,7 @@ display::Display::Rotation Display::GetRotation() const {
 }
 
 gfx::Size Display::GetSize() const {
-  return root_->bounds().size();
+  return platform_display_->GetBounds().size();
 }
 
 ServerWindow* Display::GetRootWithId(const WindowId& id) {
@@ -321,9 +318,8 @@ void Display::OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
     InitWindowManagerDisplayRootsIfNecessary();
   } else {
     root_->SetBounds(new_metrics.bounds);
-    const gfx::Rect wm_bounds(root_->bounds().size());
     for (auto& pair : window_manager_display_root_map_)
-      pair.second->root()->SetBounds(wm_bounds);
+      pair.second->root()->SetBounds(new_metrics.bounds);
   }
   display_manager()->OnDisplayUpdate(this);
 }

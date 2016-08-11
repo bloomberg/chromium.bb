@@ -237,6 +237,8 @@ class TestDisplayBinding : public DisplayBinding {
 // Factory that dispenses TestPlatformDisplays.
 class TestPlatformDisplayFactory : public PlatformDisplayFactory {
  public:
+  static const int64_t kFirstDisplayId;
+
   explicit TestPlatformDisplayFactory(int32_t* cursor_id_storage);
   ~TestPlatformDisplayFactory();
 
@@ -245,7 +247,7 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
 
  private:
   int32_t* cursor_id_storage_;
-  int64_t next_display_id_ = 1;
+  int64_t next_display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplayFactory);
 };

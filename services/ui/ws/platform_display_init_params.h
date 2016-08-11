@@ -10,6 +10,10 @@
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace display {
+class PlatformScreen;
+}
+
 namespace shell {
 class Connector;
 }
@@ -30,6 +34,7 @@ struct PlatformDisplayInitParams {
 
   gfx::Rect display_bounds;
   int64_t display_id;
+  display::PlatformScreen* platform_screen = nullptr;
 };
 
 }  // namespace ws

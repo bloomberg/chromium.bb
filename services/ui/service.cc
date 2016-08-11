@@ -357,6 +357,7 @@ void Service::Create(const shell::Identity& remote_identity,
 void Service::OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds) {
   platform_display_init_params_.display_bounds = bounds;
   platform_display_init_params_.display_id = id;
+  platform_display_init_params_.platform_screen = platform_screen_.get();
 
   // Display manages its own lifetime.
   ws::Display* host_impl =

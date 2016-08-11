@@ -7,12 +7,14 @@
 
 #include <stdint.h>
 
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "services/ui/display/platform_screen.h"
 #include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/display.h"
 
 namespace display {
 
@@ -30,6 +32,7 @@ class PlatformScreenImplOzone : public PlatformScreen,
                          // initialized.
   void ConfigurePhysicalDisplay(
       const ConfiguredDisplayCallback& callback) override;
+  int64_t GetPrimaryDisplayId() const override;
 
   // ui::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
@@ -40,7 +43,12 @@ class PlatformScreenImplOzone : public PlatformScreen,
 
   ui::DisplayConfigurator display_configurator_;
 
-  // Callback to called when new displays are configured.
+  // TODO(kylechar): These values can/should be replaced by DisplayLayout.
+  int64_t primary_display_id_ = display::Display::kInvalidDisplayID;
+  std::set<uint64_t> displays_;
+  gfx::Point next_display_origin_;
+
+  // Callback for when new displays are configured.
   ConfiguredDisplayCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformScreenImplOzone);

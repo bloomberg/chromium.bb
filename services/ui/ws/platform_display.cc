@@ -55,12 +55,12 @@ PlatformDisplay* PlatformDisplay::Create(
 DefaultPlatformDisplay::DefaultPlatformDisplay(
     const PlatformDisplayInitParams& init_params)
     : id_(init_params.display_id),
+      platform_screen_(init_params.platform_screen),
 #if !defined(OS_ANDROID)
       cursor_loader_(ui::CursorLoader::Create()),
 #endif
       frame_generator_(new FrameGenerator(this, init_params.surfaces_state)) {
   metrics_.bounds = init_params.display_bounds;
-  // TODO(rjkroege): Preserve the display_id when Ozone platform can use it.
 }
 
 void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
@@ -168,23 +168,36 @@ gfx::Rect DefaultPlatformDisplay::GetBounds() const {
   return metrics_.bounds;
 }
 
+bool DefaultPlatformDisplay::IsPrimaryDisplay() const {
+  return platform_screen_->GetPrimaryDisplayId() == id_;
+}
+
 void DefaultPlatformDisplay::UpdateMetrics(const gfx::Rect& bounds,
                                            float device_scale_factor) {
   if (display::Display::HasForceDeviceScaleFactor())
     device_scale_factor = display::Display::GetForcedDeviceScaleFactor();
-  if (metrics_.bounds == bounds &&
+
+  // We don't care about the origin of the platform window, as that may not be
+  // related to the origin of the display in our screen space.
+  if (metrics_.bounds.size() == bounds.size() &&
       metrics_.device_scale_factor == device_scale_factor)
     return;
 
+  // TODO(kylechar): If the window size is updated then we may need to update
+  // the origin for any other windows.
   ViewportMetrics old_metrics = metrics_;
-  metrics_.bounds = bounds;
+  metrics_.bounds.set_size(bounds.size());
   metrics_.device_scale_factor = device_scale_factor;
   delegate_->OnViewportMetricsChanged(old_metrics, metrics_);
 }
 
+void DefaultPlatformDisplay::UpdateEventRootLocation(ui::LocatedEvent* event) {
+  gfx::Point location = event->location();
+  location.Offset(metrics_.bounds.x(), metrics_.bounds.y());
+  event->set_root_location(location);
+}
+
 void DefaultPlatformDisplay::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  // TODO(kylechar): We should keep track of the actual top left of the window
-  // and also the internal top left of the window (eg. first window is at 0,0).
   UpdateMetrics(new_bounds, metrics_.device_scale_factor);
 }
 
@@ -193,6 +206,9 @@ void DefaultPlatformDisplay::OnDamageRect(const gfx::Rect& damaged_region) {
 }
 
 void DefaultPlatformDisplay::DispatchEvent(ui::Event* event) {
+  if (event->IsLocatedEvent())
+    UpdateEventRootLocation(event->AsLocatedEvent());
+
   if (event->IsScrollEvent()) {
     // TODO(moshayedi): crbug.com/602859. Dispatch scroll events as
     // they are once we have proper support for scroll events.

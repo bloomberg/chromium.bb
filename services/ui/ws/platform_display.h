@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "services/ui/display/platform_screen.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -89,6 +90,8 @@ class PlatformDisplay {
 
   virtual gfx::Rect GetBounds() const = 0;
 
+  virtual bool IsPrimaryDisplay() const = 0;
+
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(PlatformDisplayFactory* factory) {
@@ -127,9 +130,16 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) override;
   gfx::Rect GetBounds() const override;
+  bool IsPrimaryDisplay() const override;
 
  private:
   void UpdateMetrics(const gfx::Rect& bounds, float device_scale_factor);
+
+  // Update the root_location of located events to be relative to the origin
+  // of this display. For example, if the origin of this display is (1800, 0)
+  // and the location of the event is (100, 200) then the root_location will be
+  // updated to be (1900, 200).
+  void UpdateEventRootLocation(ui::LocatedEvent* event);
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;
@@ -151,6 +161,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   const ViewportMetrics& GetViewportMetrics() override;
 
   int64_t id_;
+  display::PlatformScreen* platform_screen_;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<ui::CursorLoader> cursor_loader_;
