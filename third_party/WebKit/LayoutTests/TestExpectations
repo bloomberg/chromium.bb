@@ -193,8 +193,6 @@ crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ Failure
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
-crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
-
 # Started failing after r162705.
 crbug.com/324370 compositing/video/video-reflection.html [ Failure ]
 
@@ -287,6 +285,8 @@ crbug.com/636222 [ Mac10.10 ] fast/repaint/fixed-and-absolute-position-scrolled.
 crbug.com/636271 [ Mac10.10 ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
 
 crbug.com/636311 [ Win10 ] svg/custom/use-clipped-hit.svg [ Pass Failure ]
+
+crbug.com/637069 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
 
 # ====== Paint team owned tests to here ======
 
