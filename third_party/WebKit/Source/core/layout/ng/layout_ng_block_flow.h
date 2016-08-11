@@ -15,6 +15,8 @@ class LayoutNGBlockFlow final : public LayoutBlockFlow {
   explicit LayoutNGBlockFlow(Element*);
   ~LayoutNGBlockFlow() override = default;
 
+  void layoutBlock(bool relayoutChildren) override;
+
  private:
   bool isOfType(LayoutObjectType) const override;
 };

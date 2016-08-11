@@ -5,33 +5,32 @@
 #ifndef NGBox_h
 #define NGBox_h
 
+#include "core/layout/ng/ng_box_iterator.h"
+#include "core/layout/LayoutBox.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class ComputedStyle;
-class LayoutObject;
+class LayoutBox;
 class NGConstraintSpace;
 class NGFragment;
 
 // Represents a node to be laid out.
 class CORE_EXPORT NGBox final {
  public:
-  explicit NGBox(const LayoutObject* layoutObject)
-      : m_layoutObject(layoutObject) {}
+  explicit NGBox(LayoutObject* layoutObject)
+      : m_layoutBox(toLayoutBox(layoutObject)) {}
 
-  operator bool() const { return m_layoutObject; }
+  NGBoxIterator iterator() { return NGBoxIterator(m_layoutBox); }
+  operator bool() const { return m_layoutBox; }
 
   NGFragment* layout(const NGConstraintSpace&);
   const ComputedStyle* style() const;
 
-  // TODO(layout-ng): Returning a children iterator would be better here.
-  const NGBox firstChild() const;
-  const NGBox nextSibling() const;
-
  private:
-  const LayoutObject* m_layoutObject;
+  LayoutBox* m_layoutBox;
 };
 
 }  // namespace blink

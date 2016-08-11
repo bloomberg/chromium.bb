@@ -6,24 +6,22 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
+#include "core/layout/ng/ng_fragment.h"
+#include "core/layout/LayoutBox.h"
 
 namespace blink {
 
 NGFragment* NGBox::layout(const NGConstraintSpace& constraintSpace) {
-  NGBlockLayoutAlgorithm algorithm(style(), firstChild());
-  return algorithm.layout(constraintSpace);
+  NGBlockLayoutAlgorithm algorithm(style(), iterator());
+  m_layoutBox->clearNeedsLayout();
+  NGFragment* fragment = algorithm.layout(constraintSpace);
+  m_layoutBox->setLogicalWidth(fragment->inlineSize());
+  m_layoutBox->setLogicalHeight(fragment->blockSize());
+  return fragment;
 }
 
 const ComputedStyle* NGBox::style() const {
-  return m_layoutObject->style();
-}
-
-const NGBox NGBox::firstChild() const {
-  return NGBox(m_layoutObject->slowFirstChild());
-}
-
-const NGBox NGBox::nextSibling() const {
-  return NGBox(m_layoutObject->nextSibling());
+  return m_layoutBox->style();
 }
 
 }  // namespace blink
