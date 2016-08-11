@@ -20,21 +20,25 @@ static_library("arc") {
   ]
 
   deps = [
-    "//ash:ash",
+    "//ash",
     "//base",
     "//components/arc:arc_base",
     "//components/arc:arc_bindings",
     "//components/arc:arc_bitmap",
-    "//components/exo:exo",
+    "//components/exo",
     "//components/signin/core/account_id",
     "//skia",
-    "//ui/aura:aura",
+    "//ui/aura",
     "//ui/base",
+    "//ui/compositor",
+    "//ui/display",
+    "//ui/events",
     "//ui/gfx",
     "//ui/message_center",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",
+    "//ui/wm",
   ]
 }
 

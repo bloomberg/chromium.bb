@@ -35,13 +35,22 @@ class ArcCustomNotificationView : public views::NativeViewHost,
   ~ArcCustomNotificationView() override;
 
  private:
+  class EventForwarder;
+  class SlideHelper;
+
   void CreateFloatingCloseButton();
+  void SetSurface(exo::NotificationSurface* surface);
   void UpdatePreferredSize();
+  void UpdateCloseButtonVisiblity();
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void Layout() override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -57,8 +66,19 @@ class ArcCustomNotificationView : public views::NativeViewHost,
   void OnItemPinnedChanged() override;
   void OnItemNotificationSurfaceRemoved() override;
 
-  ArcCustomNotificationItem* item_;
-  exo::NotificationSurface* surface_;
+  ArcCustomNotificationItem* item_ = nullptr;
+  exo::NotificationSurface* surface_ = nullptr;
+
+  // A pre-target event handler to forward events on the surface to this view.
+  // Using a pre-target event handler instead of a target handler on the surface
+  // window because it has descendant aura::Window and the events on them need
+  // to be handled as well.
+  // TODO(xiyuan): Revisit after exo::Surface no longer has an aura::Window.
+  std::unique_ptr<EventForwarder> event_forwarder_;
+
+  // A helper to observe slide transform/animation and use surface layer copy
+  // when a slide is in progress and restore the surface when it finishes.
+  std::unique_ptr<SlideHelper> slide_helper_;
 
   // A close button on top of NotificationSurface. Needed because the
   // aura::Window of NotificationSurface is added after hosting widget's
