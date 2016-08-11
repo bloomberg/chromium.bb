@@ -142,6 +142,20 @@ void DocumentLoadTiming::addRedirect(const KURL& redirectingUrl, const KURL& red
     m_hasCrossOriginRedirect |= !redirectedSecurityOrigin->canRequest(redirectingUrl);
 }
 
+void DocumentLoadTiming::setRedirectStart(double redirectStart)
+{
+    m_redirectStart = redirectStart;
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "redirectStart", m_redirectStart, "frame", frame());
+    notifyDocumentTimingChanged();
+}
+
+void DocumentLoadTiming::setRedirectEnd(double redirectEnd)
+{
+    m_redirectEnd = redirectEnd;
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "redirectEnd", m_redirectEnd, "frame", frame());
+    notifyDocumentTimingChanged();
+}
+
 void DocumentLoadTiming::markUnloadEventStart()
 {
     m_unloadEventStart = monotonicallyIncreasingTime();
@@ -158,7 +172,12 @@ void DocumentLoadTiming::markUnloadEventEnd()
 
 void DocumentLoadTiming::markFetchStart()
 {
-    m_fetchStart = monotonicallyIncreasingTime();
+    setFetchStart(monotonicallyIncreasingTime());
+}
+
+void DocumentLoadTiming::setFetchStart(double fetchStart)
+{
+    m_fetchStart = fetchStart;
     TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "fetchStart", m_fetchStart, "frame", frame());
     notifyDocumentTimingChanged();
 }
@@ -181,13 +200,6 @@ void DocumentLoadTiming::markLoadEventEnd()
 {
     m_loadEventEnd = monotonicallyIncreasingTime();
     TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "loadEventEnd", m_loadEventEnd, "frame", frame());
-    notifyDocumentTimingChanged();
-}
-
-void DocumentLoadTiming::setRedirectStart(double redirectStart)
-{
-    m_redirectStart = redirectStart;
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "redirectStart", m_redirectStart, "frame", frame());
     notifyDocumentTimingChanged();
 }
 

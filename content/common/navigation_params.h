@@ -203,6 +203,16 @@ struct CONTENT_EXPORT StartNavigationParams {
   int transferred_request_request_id;
 };
 
+// PlzNavigate
+// Timings collected in the browser during navigation for the
+// Navigation Timing API. Sent to Blink in RequestNavigationParams when
+// the navigation is ready to be committed.
+struct CONTENT_EXPORT NavigationTiming {
+  base::TimeTicks redirect_start;
+  base::TimeTicks redirect_end;
+  base::TimeTicks fetch_start;
+};
+
 // Used by FrameMsg_Navigate. Holds the parameters needed by the renderer to
 // start a browser-initiated navigation besides those in CommonNavigationParams.
 // PlzNavigate: sent to the renderer to make it issue a stream request for a
@@ -303,6 +313,10 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // PlzNavigate
   // Whether a ServiceWorkerProviderHost should be created for the window.
   bool should_create_service_worker;
+
+  // PlzNavigate
+  // Timing of navigation events.
+  NavigationTiming navigation_timing;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for

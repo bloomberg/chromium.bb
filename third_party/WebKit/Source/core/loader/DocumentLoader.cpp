@@ -648,8 +648,13 @@ void DocumentLoader::startLoadingMainResource()
         return;
 
     ASSERT(timing().navigationStart());
-    ASSERT(!timing().fetchStart());
-    timing().markFetchStart();
+
+    // PlzNavigate:
+    // The fetch has already started in the browser. Don't mark it again.
+    if (!m_frame->settings()->browserSideNavigationEnabled()) {
+        DCHECK(!timing().fetchStart());
+        timing().markFetchStart();
+    }
 
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
         (DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, CheckContentSecurityPolicy, DocumentContext));

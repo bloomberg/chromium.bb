@@ -75,6 +75,15 @@ void WebDataSourceImpl::appendRedirect(const WebURL& url)
     DocumentLoader::appendRedirect(url);
 }
 
+void WebDataSourceImpl::updateNavigationTimings(double redirectStartTime, double redirectEndTime, double fetchStartTime, const WebVector<WebURL>& redirectChain)
+{
+    for (size_t i = 0; i + 1 < redirectChain.size(); ++i)
+        timing().addRedirect(redirectChain[i], redirectChain[i + 1]);
+    timing().setRedirectStart(redirectStartTime);
+    timing().setRedirectEnd(redirectEndTime);
+    timing().setFetchStart(fetchStartTime);
+}
+
 void WebDataSourceImpl::redirectChain(WebVector<WebURL>& result) const
 {
     result.assign(m_redirectChain);

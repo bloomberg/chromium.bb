@@ -68,6 +68,7 @@ public:
     void setAntialiasedClips2dCanvasEnabled(bool) override;
     void setAutoplayExperimentMode(const WebString&) override;
     void setAutoZoomFocusedNodeToLegibleScale(bool) override;
+    void setBrowserSideNavigationEnabled(bool) override;
     void setCaretBrowsingEnabled(bool) override;
     void setClobberUserAgentInitialScaleQuirk(bool) override;
     void setCookieEnabled(bool) override;

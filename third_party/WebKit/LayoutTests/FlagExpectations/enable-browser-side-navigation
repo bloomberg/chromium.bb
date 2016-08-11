@@ -64,11 +64,6 @@
 
 # https://crbug.com/576272: PlzNavigate: Navigation Timing API support
   http/tests/misc/timer-vs-loading.html [ Crash ]
-  http/tests/misc/webtiming-cross-origin-and-back.html [ Failure ]
-  http/tests/misc/webtiming-one-redirect.php [ Failure ]
-  http/tests/misc/webtiming-two-redirects.php [ Failure ]
-  http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_attributes_order.html [ Failure ]
-  http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_server_redirect.html [ Failure ]
   http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Timeout ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain.html [ Timeout ]

@@ -831,6 +831,10 @@ bool UseMojoCdm() {
 }
 #endif  // defined(ENABLE_MOJO_CDM)
 
+double ConvertToBlinkTime(const base::TimeTicks& time_ticks) {
+  return (time_ticks - base::TimeTicks()).InSecondsF();
+}
+
 }  // namespace
 
 struct RenderFrameImpl::PendingFileChooser {
@@ -3135,12 +3139,29 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
       document_state->navigation_state());
 
   // Set the navigation start time in blink.
-  base::TimeTicks navigation_start =
-      navigation_state->common_params().navigation_start;
   datasource->setNavigationStartTime(
-      (navigation_start - base::TimeTicks()).InSecondsF());
-  // TODO(clamy) We need to provide additional timing values for the Navigation
-  // Timing API to work with browser-side navigations.
+      ConvertToBlinkTime(navigation_state->common_params().navigation_start));
+
+  if (IsBrowserSideNavigationEnabled()) {
+    // Set timing of several events that happened during navigation.
+    // They will be used in blink for the Navigation Timing API.
+    double redirect_start = ConvertToBlinkTime(
+        navigation_state->request_params().navigation_timing.redirect_start);
+    double redirect_end = ConvertToBlinkTime(
+        navigation_state->request_params().navigation_timing.redirect_end);
+    double fetch_start = ConvertToBlinkTime(
+        navigation_state->request_params().navigation_timing.fetch_start);
+    std::vector<GURL> redirectChain =
+        navigation_state->request_params().redirects;
+    redirectChain.push_back(navigation_state->common_params().url);
+
+    datasource->updateNavigationTimings(redirect_start, redirect_end,
+                                        fetch_start, redirectChain);
+
+    // TODO(clamy) We need to provide additional timing values for the
+    // Navigation Timing API to work with browser-side navigations.
+    // UnloadEventStart and UnloadEventEnd are still missing.
+  }
 
   // Create the serviceworker's per-document network observing object if it
   // does not exist (When navigation happens within a page, the provider already

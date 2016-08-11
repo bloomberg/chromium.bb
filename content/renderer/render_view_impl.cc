@@ -54,6 +54,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -725,6 +726,9 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   if (switches::IsTouchDragDropEnabled())
     webview()->settings()->setTouchDragDropEnabled(true);
+
+  webview()->settings()->setBrowserSideNavigationEnabled(
+      IsBrowserSideNavigationEnabled());
 
   WebSettings::SelectionStrategyType selection_strategy =
       WebSettings::SelectionStrategyType::Character;

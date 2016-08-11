@@ -153,6 +153,11 @@ void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(bool autoZoomFocusedN
     m_autoZoomFocusedNodeToLegibleScale = autoZoomFocusedNodeToLegibleScale;
 }
 
+void WebSettingsImpl::setBrowserSideNavigationEnabled(bool enabled)
+{
+    m_settings->setBrowserSideNavigationEnabled(enabled);
+}
+
 void WebSettingsImpl::setTextAutosizingEnabled(bool enabled)
 {
     m_devToolsEmulator->setTextAutosizingEnabled(enabled);

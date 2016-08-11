@@ -47,12 +47,21 @@ public:
 
     void markNavigationStart();
     void setNavigationStart(double);
+
     void addRedirect(const KURL& redirectingUrl, const KURL& redirectedUrl);
+    void setRedirectStart(double);
+    void setRedirectEnd(double);
+    void setRedirectCount(short value) { m_redirectCount = value; }
+    void setHasCrossOriginRedirect(bool value) { m_hasCrossOriginRedirect = value; }
 
     void markUnloadEventStart();
     void markUnloadEventEnd();
+
     void markFetchStart();
+    void setFetchStart(double);
+
     void setResponseEnd(double);
+
     void markLoadEventStart();
     void markLoadEventEnd();
 
@@ -76,7 +85,6 @@ public:
     DECLARE_TRACE();
 
 private:
-    void setRedirectStart(double);
     void markRedirectEnd();
     void notifyDocumentTimingChanged();
     void ensureReferenceTimesSet();

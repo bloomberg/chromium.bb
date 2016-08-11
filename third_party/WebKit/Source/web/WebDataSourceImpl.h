@@ -65,6 +65,7 @@ public:
     ExtraData* getExtraData() const override;
     void setExtraData(ExtraData*) override;
     void setNavigationStartTime(double) override;
+    void updateNavigationTimings(double redirectStartTime, double redirectEndTime, double fetchStartTime, const WebVector<WebURL>& redirectChain) override;
     void setSubresourceFilter(WebDocumentSubresourceFilter*) override;
 
     static WebNavigationType toWebNavigationType(NavigationType);

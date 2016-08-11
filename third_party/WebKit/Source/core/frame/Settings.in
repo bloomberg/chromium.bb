@@ -417,3 +417,5 @@ parseHTMLOnMainThreadSyncTokenize initial=false
 # Variant of the ParseHTMLOnMainThread experiment. This is designed to coalesce
 # TokenizedChunks when the experiment is running in threaded mode.
 parseHTMLOnMainThreadCoalesceChunks initial=false
+
+browserSideNavigationEnabled initial=false
