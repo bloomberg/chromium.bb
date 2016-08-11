@@ -253,6 +253,9 @@ def main(argv):
       help='Whether this library requires running on the Android platform.')
   parser.add_option('--bypass-platform-checks', action='store_true',
       help='Bypass checks for support/require Android platform.')
+  parser.add_option('--extra-classpath-jars',
+      help='GYP-list of .jar files to include on the classpath when compiling, '
+           'but not to include in the final binary.')
 
   # android library options
   parser.add_option('--dex-path', help='Path to target\'s dex output.')
@@ -521,6 +524,11 @@ def main(argv):
     javac_classpath = [c['jar_path'] for c in direct_library_deps]
     java_full_classpath = [c['jar_path'] for c in all_library_deps]
 
+    if options.extra_classpath_jars:
+      extra_jars = build_utils.ParseGypList(options.extra_classpath_jars)
+      deps_info['extra_classpath_jars'] = extra_jars
+      javac_classpath += extra_jars
+
   # The java code for an instrumentation test apk is assembled differently for
   # ProGuard vs. non-ProGuard.
   #
@@ -572,6 +580,10 @@ def main(argv):
     config['proguard'] = {}
     proguard_config = config['proguard']
     proguard_config['input_paths'] = [options.jar_path] + java_full_classpath
+    extra_jars = set()
+    for c in all_library_deps:
+      extra_jars.update(c.get('extra_classpath_jars', ()))
+    proguard_config['lib_paths'] = list(extra_jars)
 
   # Dependencies for the final dex file of an apk or a 'deps_dex'.
   if options.type in ['android_apk', 'deps_dex']:

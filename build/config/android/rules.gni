@@ -1854,6 +1854,7 @@ if (enable_java_templates) {
         args = [
           "--proguard-configs=$_rebased_proguard_configs",
           "--input-paths=@FileArg($_rebased_build_config:proguard:input_paths)",
+          "--classpath=@FileArg($_rebased_build_config:proguard:lib_paths)",
         ]
         if (defined(invoker.apk_under_test)) {
           deps += [
@@ -2686,6 +2687,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "deps",
+                                 "input_jars_paths",
                                  "requires_android",
                                  "jar_excluded_patterns",
                                ])

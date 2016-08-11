@@ -337,6 +337,11 @@ template("write_build_config") {
           rebase_path(invoker.bundled_srcjars, root_build_dir)
       args += [ "--bundled-srcjars=$_rebased_bundled_srcjars" ]
     }
+    if (defined(invoker.input_jars_paths)) {
+      _rebased_input_jars_paths =
+          rebase_path(invoker.input_jars_paths, root_build_dir)
+      args += [ "--extra-classpath-jars=$_rebased_input_jars_paths" ]
+    }
     if (current_toolchain != default_toolchain) {
       # This has to be a built-time error rather than a GN assert because many
       # packages have a mix of java and non-java targets. For example, the
@@ -735,11 +740,9 @@ if (enable_java_templates) {
         _proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
       }
       _output_jar_path = invoker.output_jar_path
-      _input_jars_paths = []
-      if (defined(invoker.input_jars_paths)) {
-        _input_jars_paths += invoker.input_jars_paths
-      }
-      inputs = _input_jars_paths + [ _proguard_jar_path ]
+      inputs = [
+        _proguard_jar_path,
+      ]
       if (defined(invoker.alternative_android_sdk_jar)) {
         inputs += [ invoker.alternative_android_sdk_jar ]
         _rebased_android_sdk_jar =
@@ -770,9 +773,6 @@ if (enable_java_templates) {
         "--classpath",
         _rebased_android_sdk_jar,
       ]
-      foreach(c, _input_jars_paths) {
-        args += [ "--classpath=" + rebase_path(c, root_build_dir) ]
-      }
       if (proguard_verbose) {
         args += [ "--verbose" ]
       }
@@ -1001,12 +1001,7 @@ if (enable_java_templates) {
 
   template("process_java_prebuilt") {
     set_sources_assignment_filter([])
-    forward_variables_from(invoker,
-                           [
-                             "testonly",
-                             "input_jars_paths",
-                           ])
-    assert(!defined(input_jars_paths) || input_jars_paths != [] || true)  # Mark as used
+    forward_variables_from(invoker, [ "testonly" ])
 
     assert(invoker.build_config != "")
     _build_config = invoker.build_config
@@ -1763,6 +1758,7 @@ if (enable_java_templates) {
 
     write_build_config(_build_config_target_name) {
       type = "java_prebuilt"
+      forward_variables_from(invoker, [ "input_jars_paths" ])
       supports_android = _supports_android
       requires_android =
           defined(invoker.requires_android) && invoker.requires_android
@@ -1782,9 +1778,7 @@ if (enable_java_templates) {
                              [
                                "jar_excluded_patterns",
                                "strip_resource_classes",
-                               "input_jars_paths",
                              ])
-      assert(!defined(input_jars_paths) || input_jars_paths != [] || true)  # Mark as used
 
       visibility = [
         ":$_ijar_target_name",
@@ -1886,11 +1880,6 @@ if (enable_java_templates) {
     assert(defined(invoker.jar_path))
 
     _build_config = invoker.build_config
-
-    _input_jars_paths = []
-    if (defined(invoker.input_jars_paths)) {
-      _input_jars_paths += invoker.input_jars_paths
-    }
 
     _chromium_code = false
     if (defined(invoker.chromium_code)) {
@@ -2037,9 +2026,6 @@ if (enable_java_templates) {
         _rebased_android_sdk_ijar =
             rebase_path(_android_sdk_ijar, root_build_dir)
         args += [ "--bootclasspath=$_rebased_android_sdk_ijar" ]
-      }
-      foreach(c, _input_jars_paths) {
-        args += [ "--classpath=" + c ]
       }
       foreach(e, _manifest_entries) {
         args += [ "--manifest-entry=" + e ]
@@ -2232,6 +2218,7 @@ if (enable_java_templates) {
       build_config_target_name = "${_template_name}__build_config"
 
       write_build_config(build_config_target_name) {
+        forward_variables_from(invoker, [ "input_jars_paths" ])
         if (defined(invoker.is_java_binary) && invoker.is_java_binary) {
           type = "java_binary"
         } else {
@@ -2289,7 +2276,6 @@ if (enable_java_templates) {
                                "dist_jar_path",
                                "enable_errorprone",
                                "enable_incremental_javac_override",
-                               "input_jars_paths",
                                "jar_excluded_patterns",
                                "manifest_entries",
                                "processors_javac",
