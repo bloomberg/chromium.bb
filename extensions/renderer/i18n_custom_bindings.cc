@@ -292,7 +292,7 @@ void I18NCustomBindings::DetectTextLanguage(
   chrome_lang_id::NNetLanguageIdentifier nnet_lang_id(/*min_num_bytes=*/0,
                                                       /*max_num_bytes=*/512);
   const std::vector<chrome_lang_id::NNetLanguageIdentifier::Result>
-      lang_results = nnet_lang_id.FindTopNMostLikelyLangs(text, kCldNumLangs);
+      lang_results = nnet_lang_id.FindTopNMostFreqLangs(text, kCldNumLangs);
   LanguageDetectionResult result;
 
   // Populate LanguageDetectionResult with prediction reliability, languages,

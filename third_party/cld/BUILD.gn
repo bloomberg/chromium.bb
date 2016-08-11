@@ -19,8 +19,7 @@ group("cld") {
   if (cld_version == 2) {
     public_deps += [ "//third_party/cld_2" ]
   } else if (cld_version == 3) {
-    # TODO(abakalov): Rename to //third_party/cld_3/src/src:cld_3
-    public_deps += [ "//third_party/cld_3/src/src:nnet_language_identifier" ]
+    public_deps += [ "//third_party/cld_3/src/src:cld_3" ]
   } else {
     assert(false, "CLD version should be 2 or 3")
   }

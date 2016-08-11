@@ -178,7 +178,7 @@ std::string DetermineTextLanguage(const base::string16& text,
   // Make a prediction.
   chrome_lang_id::NNetLanguageIdentifier lang_id;
   const chrome_lang_id::NNetLanguageIdentifier::Result lang_id_result =
-      lang_id.FindTopNMostLikelyLangs(utf8_text, /*num_langs=*/1).at(0);
+      lang_id.FindTopNMostFreqLangs(utf8_text, /*num_langs=*/1).at(0);
   const bool prediction_reliable = lang_id_result.is_reliable;
   const std::string& predicted_language = lang_id_result.language;
 
