@@ -2511,7 +2511,7 @@
       </description>
 
       <arg name="id" type="new_id" interface="wl_subsurface"
-           summary="the new subsurface object ID"/>
+           summary="the new sub-surface object ID"/>
       <arg name="surface" type="object" interface="wl_surface"
            summary="the surface to be turned into a sub-surface"/>
       <arg name="parent" type="object" interface="wl_surface"
