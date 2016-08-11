@@ -102,7 +102,6 @@ GlobalCacheStorage status=stable
 IDBObserver status=experimental
 ImageCapture status=experimental
 ImageOrientation status=test
-ImageRenderingPixelated status=stable
 IndexedDBExperimental status=experimental
 InertTopControls status=experimental
 InputEvent status=experimental
