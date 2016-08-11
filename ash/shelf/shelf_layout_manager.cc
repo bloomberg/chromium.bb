@@ -8,6 +8,7 @@
 #include <cmath>
 #include <vector>
 
+#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -28,6 +29,7 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -36,6 +38,8 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/events/event_handler.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
@@ -205,14 +209,18 @@ gfx::Size ShelfLayoutManager::GetPreferredSize() {
   return target_bounds.shelf_bounds_in_root.size();
 }
 
-void ShelfLayoutManager::LayoutShelf() {
+void ShelfLayoutManager::LayoutShelfAndUpdateBounds(bool change_work_area) {
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
-  UpdateBoundsAndOpacity(target_bounds, false, NULL);
+  UpdateBoundsAndOpacity(target_bounds, false, change_work_area, NULL);
 
   // Update insets in ShelfWindowTargeter when shelf bounds change.
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     WillChangeVisibilityState(visibility_state()));
+}
+
+void ShelfLayoutManager::LayoutShelf() {
+  LayoutShelfAndUpdateBounds(true);
 }
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
@@ -417,9 +425,15 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   bool keyboard_is_about_to_hide = false;
   if (new_bounds.IsEmpty() && !keyboard_bounds_.IsEmpty())
     keyboard_is_about_to_hide = true;
+  // If new window behavior flag enabled and in non-sticky mode, do not change
+  // the work area.
+  bool change_work_area =
+      (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kAshUseNewVKWindowBehavior) ||
+       keyboard::KeyboardController::GetInstance()->get_lock_keyboard());
 
   keyboard_bounds_ = new_bounds;
-  OnWindowResized();
+  LayoutShelfAndUpdateBounds(change_work_area);
 
   // On login screen if keyboard has been just hidden, update bounds just once
   // but ignore target_bounds.work_area_insets since shelf overlaps with login
@@ -532,9 +546,9 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
-  UpdateBoundsAndOpacity(target_bounds, true, delay_background_change
-                                                  ? update_shelf_observer_
-                                                  : NULL);
+  UpdateBoundsAndOpacity(
+      target_bounds, true /* animate */, true /* change_work_area */,
+      delay_background_change ? update_shelf_observer_ : NULL);
 
   // The delegate must be notified after |state_| is updated so that it can
   // query the new target bounds.
@@ -558,6 +572,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 void ShelfLayoutManager::UpdateBoundsAndOpacity(
     const TargetBounds& target_bounds,
     bool animate,
+    bool change_work_area,
     ui::ImplicitAnimationObserver* observer) {
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
   {
@@ -614,7 +629,8 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // For crbug.com/622431, when the shelf alignment is BOTTOM_LOCKED, we
     // don't set display work area, as it is not real user-set alignment.
     if (!state_.is_screen_locked &&
-        shelf_widget_->GetAlignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+        shelf_widget_->GetAlignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED &&
+        change_work_area) {
       gfx::Insets insets;
       // If user session is blocked (login to new user session or add user to
       // the existing session - multi-profile) then give 100% of work area only
@@ -1014,7 +1030,8 @@ void ShelfLayoutManager::SessionStateChanged(
   }
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
-  UpdateBoundsAndOpacity(target_bounds, true, NULL);
+  UpdateBoundsAndOpacity(target_bounds, true /* animate */,
+                         true /* change_work_area */, NULL);
   UpdateVisibilityState();
 }
 

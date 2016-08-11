@@ -44,6 +44,9 @@
 #include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_ui.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -1934,6 +1937,112 @@ TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
   gfx::Rect status_area_bounds(status_area_widget->GetWindowBoundsInScreen());
   EXPECT_TRUE(gfx::Rect(0, 0, 500, 400).Contains(status_area_bounds));
   EXPECT_EQ(gfx::Point(500, 400), status_area_bounds.bottom_right());
+}
+
+class ShelfLayoutManagerKeyboardTest : public test::AshTestBase {
+ public:
+  ShelfLayoutManagerKeyboardTest() {}
+  ~ShelfLayoutManagerKeyboardTest() override {}
+
+  // test::AshTestBase:
+  void SetUp() override {
+    test::AshTestBase::SetUp();
+    UpdateDisplay("800x600");
+    keyboard::SetAccessibilityKeyboardEnabled(true);
+  }
+
+  void InitKeyboardBounds() {
+    gfx::Rect work_area(
+        display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+    keyboard_bounds_.SetRect(work_area.x(),
+                             work_area.y() + work_area.height() / 2,
+                             work_area.width(), work_area.height() / 2);
+  }
+
+  void EnableNewVKMode() {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (!command_line->HasSwitch(switches::kAshUseNewVKWindowBehavior)) {
+      command_line->AppendSwitch(switches::kAshUseNewVKWindowBehavior);
+    }
+  }
+
+  const gfx::Rect& keyboard_bounds() const { return keyboard_bounds_; }
+
+ private:
+  gfx::Rect keyboard_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerKeyboardTest);
+};
+
+TEST_F(ShelfLayoutManagerKeyboardTest, ShelfChangeWorkAreaInNonStickyMode) {
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  keyboard::SetAccessibilityKeyboardEnabled(true);
+  InitKeyboardBounds();
+  Shell::GetInstance()->CreateKeyboard();
+  keyboard::KeyboardController* kb_controller =
+      keyboard::KeyboardController::GetInstance();
+  gfx::Rect orig_work_area(
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
+  // Open keyboard in non-sticky mode.
+  kb_controller->ShowKeyboard(false);
+  layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
+
+  // Work area should be changed.
+  EXPECT_NE(orig_work_area,
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
+  kb_controller->HideKeyboard(
+      keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  layout_manager->OnKeyboardBoundsChanging(gfx::Rect());
+  EXPECT_EQ(orig_work_area,
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
+  // Open keyboard in sticky mode.
+  kb_controller->ShowKeyboard(true);
+  layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
+
+  // Work area should be changed.
+  EXPECT_NE(orig_work_area,
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+}
+
+// When kAshUseNewVKWindowBehavior flag enabled, do not change accessibility
+// keyboard work area in non-sticky mode.
+TEST_F(ShelfLayoutManagerKeyboardTest,
+       ShelfIgnoreWorkAreaChangeInNonStickyMode) {
+  // Append flag to ignore work area change in non-sticky mode.
+  EnableNewVKMode();
+
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  InitKeyboardBounds();
+  Shell::GetInstance()->CreateKeyboard();
+  keyboard::KeyboardController* kb_controller =
+      keyboard::KeyboardController::GetInstance();
+  gfx::Rect orig_work_area(
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
+  // Open keyboard in non-sticky mode.
+  kb_controller->ShowKeyboard(false);
+  layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
+
+  // Work area should not be changed.
+  EXPECT_EQ(orig_work_area,
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
+  kb_controller->HideKeyboard(
+      keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  layout_manager->OnKeyboardBoundsChanging(gfx::Rect());
+  EXPECT_EQ(orig_work_area,
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
+  // Open keyboard in sticky mode.
+  kb_controller->ShowKeyboard(true);
+  layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
+
+  // Work area should be changed.
+  EXPECT_NE(orig_work_area,
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 }
 
 }  // namespace ash
