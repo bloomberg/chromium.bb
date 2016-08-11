@@ -126,6 +126,8 @@ net/quic/core/crypto/common_cert_set_1a.inc
 net/quic/core/crypto/common_cert_set_1b.inc
 net/quic/core/crypto/common_cert_set_2a.inc
 net/quic/core/crypto/common_cert_set_2b.inc
+net/quic/core/crypto/common_cert_set_3a.inc
+net/quic/core/crypto/common_cert_set_3b.inc
 # String '(c)' used in certificates organization names
 net/test/test_certificate_data.h
 # Copyright The Chromium Authors and Netscape Communications Corporation; BSD
