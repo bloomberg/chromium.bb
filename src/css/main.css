@@ -363,6 +363,11 @@ body.mirror canvas {
   border: 2px solid rgb(66, 129, 244);
 }
 
+#effects li:not([selected]) {
+  /* Hide focus on the unselected effect during scrolling. (crbug.com/611666) */
+  outline: none;
+}
+
 #effects li div.preview-canvas-padder {
   -webkit-box-align: center;
   -webkit-box-pack: center;
