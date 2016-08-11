@@ -254,14 +254,14 @@ class DualBrowserStorySet(story_module.StorySet):
     for query, url in zip(SEARCH_QUERIES, URL_LIST):
       # Stories that run on the android-webview browser.
       self.AddStory(SinglePage(
-          name='google_%s' % re.sub('\W+', '_', query.lower()),
+          name='google_%s' % re.sub(r'\W+', '_', query.lower()),
           url=GOOGLE_SEARCH + urllib.urlencode({'q': query}),
           browser_type='android-webview',
           phase='on_webview'))
 
       # Stories that run on the browser selected by command line options.
       self.AddStory(SinglePage(
-          name=re.sub('\W+', '_', url),
+          name=re.sub(r'\W+', '_', url),
           url=url,
           browser_type='default',
           phase='on_chrome'))

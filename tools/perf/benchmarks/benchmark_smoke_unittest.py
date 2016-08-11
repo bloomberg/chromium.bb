@@ -98,6 +98,14 @@ _BLACK_LIST_TEST_MODULES = {
 }
 
 
+def MergeDecorators(method, method_attribute, benchmark, benchmark_attribute):
+  # Do set union of attributes to eliminate duplicates.
+  merged_attributes = getattr(method, method_attribute, set()).union(
+      getattr(benchmark, benchmark_attribute, set()))
+  if merged_attributes:
+    setattr(method, method_attribute, merged_attributes)
+
+
 def load_tests(loader, standard_tests, pattern):
   del loader, standard_tests, pattern  # unused
   suite = progress_reporter.TestSuite()
@@ -147,16 +155,11 @@ def load_tests(loader, standard_tests, pattern):
       disabled_method_attr = decorators.DisabledAttributeName(method)
       enabled_benchmark_attr = decorators.EnabledAttributeName(benchmark)
       enabled_method_attr = decorators.EnabledAttributeName(method)
-    # Merge decorators.
-    def MergeDecorators(method_attribute, benchmark_attribute):
-      # Do set union of attributes to eliminate duplicates.
-      merged_attributes = getattr(method, method_attribute, set()).union(
-          getattr(benchmark, benchmark_attribute, set()))
-      if merged_attributes:
-        setattr(method, method_attribute, merged_attributes)
 
-    MergeDecorators(disabled_method_attr, disabled_benchmark_attr)
-    MergeDecorators(enabled_method_attr, enabled_benchmark_attr)
+    MergeDecorators(method, disabled_method_attr, benchmark,
+                    disabled_benchmark_attr)
+    MergeDecorators(method, enabled_method_attr, benchmark,
+                    enabled_benchmark_attr)
 
     setattr(BenchmarkSmokeTest, benchmark.Name(), method)
 

@@ -23,7 +23,7 @@ class TestGetBenchmarkNamesForFile(unittest.TestCase):
         ['test_benchmark_1', 'test_benchmark_2', 'test_benchmark_subclass_1',
          'test_benchmark_subclass_2'])
 
-  def testListSimpleBenchmarksDefinedInOneFile(self):
+  def testListSimpleBenchmarksDefinedInOneFileComplex(self):
     self.assertEquals(
         benchmark_finders.GetBenchmarkNamesForFile(
             self.top_level_dir,

@@ -77,7 +77,7 @@ class MemoryTop10Mobile(story.StorySet):
       # We name pages so their foreground/background counterparts are easy
       # to identify. For example 'http://google.com' becomes
       # 'http_google_com' and 'after_http_google_com' respectively.
-      name = re.sub('\W+', '_', url)
+      name = re.sub(r'\W+', '_', url)
       self.AddStory(ForegroundPage(self, name, url))
       self.AddStory(BackgroundPage(self, 'after_' + name))
 
