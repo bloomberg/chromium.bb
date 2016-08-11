@@ -32,7 +32,6 @@ class ImplicitAnimationObserver;
 namespace ash {
 
 class PanelLayoutManagerTest;
-class ShelfBezelEventFilter;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTest;
 class ShelfWidget;
@@ -134,7 +133,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Overridden from ShellObserver:
   void OnLockStateChanged(bool locked) override;
-  void OnShelfAlignmentChanged(WmWindow* root_window) override;
   void OnShelfAutoHideBehaviorChanged(WmWindow* root_window) override;
   void OnPinnedStateChanged(WmWindow* pinned_window) override;
 
@@ -323,9 +321,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Whether the mouse was over the shelf when the auto hide timer started.
   // False when neither the auto hide timer nor the timer task are running.
   bool mouse_over_shelf_when_auto_hide_timer_started_;
-
-  // EventFilter used to detect when user issues a gesture on a bezel sensor.
-  std::unique_ptr<ShelfBezelEventFilter> bezel_event_filter_;
 
   base::ObserverList<ShelfLayoutManagerObserver> observers_;
 

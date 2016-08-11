@@ -15,11 +15,11 @@
 namespace aura {
 class Window;
 }
+
 namespace ui {
 class Layer;
 class LayerTreeOwner;
 }
-namespace views {}
 
 // This is only for animations specific to Ash. For window animations shared
 // with desktop Chrome, see ui/views/corewm/window_animations.h.

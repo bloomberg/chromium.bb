@@ -15,6 +15,7 @@
 namespace ash {
 
 class Shelf;
+class ShelfBezelEventHandler;
 class ShelfLayoutManager;
 
 // Aura implementation of WmShelf.
@@ -85,7 +86,12 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   base::ObserverList<WmShelfObserver> observers_;
 
   // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
+  // TODO(mash): Facilitate simliar functionality in mash: crbug.com/631216
   std::unique_ptr<AutoHideEventHandler> auto_hide_event_handler_;
+
+  // Forwards touch gestures on a bezel sensor to the shelf.
+  // TODO(mash): Facilitate simliar functionality in mash: crbug.com/636647
+  std::unique_ptr<ShelfBezelEventHandler> bezel_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShelfAura);
 };

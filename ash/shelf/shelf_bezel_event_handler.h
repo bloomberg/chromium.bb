@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_BEZEL_EVENT_FILTER_H_
-#define ASH_SHELF_SHELF_BEZEL_EVENT_FILTER_H_
+#ifndef ASH_SHELF_SHELF_BEZEL_EVENT_HANDLER_H_
+#define ASH_SHELF_SHELF_BEZEL_EVENT_HANDLER_H_
 
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
@@ -14,14 +14,13 @@ class Rect;
 }
 
 namespace ash {
-class ShelfLayoutManager;
+class WmShelf;
 
-// Detects and forwards touch gestures that occur on a bezel sensor to the
-// shelf.
-class ShelfBezelEventFilter : public ui::EventHandler {
+// Forwards touch gestures on a bezel sensor to the shelf.
+class ShelfBezelEventHandler : public ui::EventHandler {
  public:
-  explicit ShelfBezelEventFilter(ShelfLayoutManager* shelf_layout_manager);
-  ~ShelfBezelEventFilter() override;
+  explicit ShelfBezelEventHandler(WmShelf* shelf);
+  ~ShelfBezelEventHandler() override;
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -29,12 +28,12 @@ class ShelfBezelEventFilter : public ui::EventHandler {
  private:
   bool IsShelfOnBezel(const gfx::Rect& screen, const gfx::Point& point) const;
 
-  ShelfLayoutManager* shelf_layout_manager_;
+  WmShelf* shelf_;
   bool in_touch_drag_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfBezelEventFilter);
+  DISALLOW_COPY_AND_ASSIGN(ShelfBezelEventHandler);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_BEZEL_EVENT_FILTER_H_
+#endif  // ASH_SHELF_SHELF_BEZEL_EVENT_HANDLER_H_

@@ -25,10 +25,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_bezel_event_filter.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/shell.h"
-#include "ash/wm/window_animations.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
@@ -48,6 +45,9 @@ namespace {
 
 // Delay before showing the shelf. This is after the mouse stops moving.
 const int kAutoHideDelayMS = 200;
+
+// Duration of the animation to show or hide the shelf.
+const int kAnimationDurationMS = 200;
 
 // To avoid hiding the shelf when the mouse transitions from a message bubble
 // into the shelf, the hit test area is enlarged by this amount of pixels to
@@ -147,7 +147,6 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
       workspace_controller_(NULL),
       window_overlaps_shelf_(false),
       mouse_over_shelf_when_auto_hide_timer_started_(false),
-      bezel_event_filter_(new ShelfBezelEventFilter(this)),
       gesture_drag_status_(GESTURE_DRAG_NONE),
       gesture_drag_amount_(0.f),
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
@@ -175,10 +174,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 
 void ShelfLayoutManager::PrepareForShutdown() {
   in_shutdown_ = true;
-  // Clear all event filters, otherwise sometimes those filters may catch
-  // synthesized mouse event and cause crashes during the shutdown.
-  set_workspace_controller(NULL);
-  bezel_event_filter_.reset();
+  set_workspace_controller(nullptr);
   // Stop observing changes to avoid updating a partially destructed shelf.
   WmShell::Get()->RemoveActivationObserver(this);
 }
@@ -402,11 +398,6 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   UpdateShelfVisibilityAfterLoginUIChange();
 }
 
-void ShelfLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
-  if (Shell::GetInstance()->in_mus())
-    LayoutShelf();
-}
-
 void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {
   UpdateVisibilityState();
 }
@@ -576,7 +567,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
         GetLayer(shelf_widget_->status_area_widget())->GetAnimator());
     if (animate) {
       int duration = duration_override_in_ms_ ? duration_override_in_ms_
-                                              : kCrossFadeDurationMS;
+                                              : kAnimationDurationMS;
       shelf_animation_setter.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(duration));
       shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
@@ -596,12 +587,9 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       status_animation_setter.AddObserver(observer);
 
     GetLayer(shelf_widget_)->SetOpacity(target_bounds.opacity);
-    // mash::wm::ShelfLayout manages window bounds when running in mash.
-    if (!Shell::GetInstance()->in_mus()) {
-      WmWindow* window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
-      shelf_widget_->SetBounds(window->GetParent()->ConvertRectToScreen(
-          target_bounds.shelf_bounds_in_root));
-    }
+    WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+    shelf_widget_->SetBounds(shelf_window->GetParent()->ConvertRectToScreen(
+        target_bounds.shelf_bounds_in_root));
 
     GetLayer(shelf_widget_->status_area_widget())
         ->SetOpacity(target_bounds.status_opacity);
@@ -618,13 +606,11 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // this can be simplified.
     gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
     status_bounds.Offset(target_bounds.shelf_bounds_in_root.OffsetFromOrigin());
-    // mash::wm::ShelfLayout manages window bounds when running mash.
-    if (!Shell::GetInstance()->in_mus()) {
-      WmWindow* window = WmLookup::Get()->GetWindowForWidget(
-          shelf_widget_->status_area_widget());
-      shelf_widget_->status_area_widget()->SetBounds(
-          window->GetParent()->ConvertRectToScreen(status_bounds));
-    }
+    WmWindow* status_window = WmLookup::Get()->GetWindowForWidget(
+        shelf_widget_->status_area_widget());
+    shelf_widget_->status_area_widget()->SetBounds(
+        status_window->GetParent()->ConvertRectToScreen(status_bounds));
+
     // For crbug.com/622431, when the shelf alignment is BOTTOM_LOCKED, we
     // don't set display work area, as it is not real user-set alignment.
     if (!state_.is_screen_locked &&
@@ -635,8 +621,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       // if keyboard is not shown.
       if (!state_.is_adding_user_screen || !keyboard_bounds_.IsEmpty())
         insets = target_bounds.work_area_insets;
-      WmWindow* window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
-      WmShell::Get()->SetDisplayWorkAreaInsets(window, insets);
+      WmShell::Get()->SetDisplayWorkAreaInsets(shelf_window, insets);
     }
   }
 
@@ -907,25 +892,22 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
        shelf_widget_->status_area_widget()->IsActive()))
     return SHELF_AUTO_HIDE_SHOWN;
 
-  // TODO(jamescook): Track visible windows on mash via ShelfDelegate.
-  if (!Shell::GetInstance()->in_mus()) {
-    const std::vector<WmWindow*> windows =
-        WmShell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+  const std::vector<WmWindow*> windows =
+      WmShell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
 
-    // Process the window list and check if there are any visible windows.
-    bool visible_window = false;
-    for (size_t i = 0; i < windows.size(); ++i) {
-      if (windows[i] && windows[i]->IsVisible() &&
-          !windows[i]->GetWindowState()->IsMinimized() &&
-          windows[i]->GetDisplayNearestWindow().id() == shelf_display_id) {
-        visible_window = true;
-        break;
-      }
+  // Process the window list and check if there are any visible windows.
+  bool visible_window = false;
+  for (size_t i = 0; i < windows.size(); ++i) {
+    if (windows[i] && windows[i]->IsVisible() &&
+        !windows[i]->GetWindowState()->IsMinimized() &&
+        windows[i]->GetDisplayNearestWindow().id() == shelf_display_id) {
+      visible_window = true;
+      break;
     }
-    // If there are no visible windows do not hide the shelf.
-    if (!visible_window)
-      return SHELF_AUTO_HIDE_SHOWN;
   }
+  // If there are no visible windows do not hide the shelf.
+  if (!visible_window)
+    return SHELF_AUTO_HIDE_SHOWN;
 
   if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS)
     return gesture_drag_auto_hide_state_;

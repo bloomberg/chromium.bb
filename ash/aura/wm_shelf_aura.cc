@@ -9,6 +9,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/shelf/dimmer_view.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ui/views/widget/widget.h"
@@ -55,6 +56,7 @@ void WmShelfAura::SetShelfLayoutManager(
   DCHECK(!shelf_layout_manager_);
   shelf_layout_manager_ = shelf_layout_manager;
   shelf_layout_manager_->AddObserver(this);
+  bezel_event_handler_.reset(new ShelfBezelEventHandler(this));
 }
 
 void WmShelfAura::SetShelf(Shelf* shelf) {
@@ -80,7 +82,9 @@ Shelf* WmShelfAura::GetShelf(WmShelf* shelf) {
 void WmShelfAura::ResetShelfLayoutManager() {
   if (!shelf_layout_manager_)
     return;
+  // Clear event handlers that might otherwise forward events during shutdown.
   auto_hide_event_handler_.reset();
+  bezel_event_handler_.reset();
   shelf_layout_manager_->RemoveObserver(this);
   shelf_layout_manager_ = nullptr;
 }
