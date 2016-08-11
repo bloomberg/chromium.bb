@@ -17,16 +17,16 @@ enum class LengthResolveType { MinSize, MaxSize, ContentSize };
 
 // Convert an inline-axis length to a layout unit using the given constraint
 // space.
-CORE_EXPORT LayoutUnit resolveInlineLength(LengthResolveType,
+CORE_EXPORT LayoutUnit resolveInlineLength(const NGConstraintSpace&,
                                            const Length&,
-                                           const NGConstraintSpace&);
+                                           LengthResolveType);
 
 // Convert a block-axis length to a layout unit using the given constraint
-// space.
-CORE_EXPORT LayoutUnit resolveBlockLength(LengthResolveType,
+// space and content size.
+CORE_EXPORT LayoutUnit resolveBlockLength(const NGConstraintSpace&,
                                           const Length&,
-                                          const NGConstraintSpace&,
-                                          LayoutUnit contentContribution);
+                                          LayoutUnit contentSize,
+                                          LengthResolveType);
 
 // Resolves the given length to a layout unit, constraining it by the min
 // logical width and max logical width properties from the ComputedStyle
@@ -37,10 +37,9 @@ CORE_EXPORT LayoutUnit computeInlineSizeForFragment(const NGConstraintSpace&,
 // Resolves the given length to a layout unit, constraining it by the min
 // logical height and max logical height properties from the ComputedStyle
 // object.
-CORE_EXPORT LayoutUnit
-computeBlockSizeForFragment(const NGConstraintSpace&,
-                            const ComputedStyle& style,
-                            LayoutUnit contentContribution);
+CORE_EXPORT LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace&,
+                                                   const ComputedStyle& style,
+                                                   LayoutUnit contentSize);
 
 }  // namespace blink
 

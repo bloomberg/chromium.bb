@@ -4222,6 +4222,7 @@
             'layout/VisualRectMappingTest.cpp',
             'layout/compositing/CompositedLayerMappingTest.cpp',
             'layout/ng/ng_block_layout_algorithm_test.cc',
+            'layout/ng/ng_length_utils_test.cc',
             'layout/shapes/BoxShapeTest.cpp',
             'layout/svg/LayoutSVGRootTest.cpp',
             'loader/DocumentLoadTimingTest.cpp',

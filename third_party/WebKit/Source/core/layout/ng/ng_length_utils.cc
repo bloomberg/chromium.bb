@@ -15,69 +15,88 @@ namespace blink {
 // - positioned and/or replaced calculations
 // - Handle margins for fill-available and width: auto
 
-LayoutUnit resolveInlineLength(LengthResolveType type,
+LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
                                const Length& length,
-                               const NGConstraintSpace& constraintSpace) {
+                               LengthResolveType type) {
+  // TODO(layout-ng): Handle min/max/fit-content
   DCHECK(!length.isMaxSizeNone());
+
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
-  // TODO(layout-ng): Handle min/max/fit-content
+
   return valueForLength(length, constraintSpace.inlineContainerSize());
 }
 
-LayoutUnit resolveBlockLength(LengthResolveType type,
+LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
                               const Length& length,
-                              const NGConstraintSpace& constraintSpace,
-                              LayoutUnit contentContribution) {
+                              LayoutUnit contentSize,
+                              LengthResolveType type) {
   DCHECK(!length.isMaxSizeNone());
+
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
+
   if (length.isAuto())
-    return contentContribution;
+    return contentSize;
+
   if (length.isMinContent() || length.isMaxContent() || length.isFitContent())
-    return contentContribution;
+    return contentSize;
+
   return valueForLength(length, constraintSpace.blockContainerSize());
 }
 
 LayoutUnit computeInlineSizeForFragment(
     const NGConstraintSpace& constraintSpace,
     const ComputedStyle& style) {
-  LayoutUnit extent = resolveInlineLength(
-      LengthResolveType::ContentSize, style.logicalWidth(), constraintSpace);
+  if (constraintSpace.fixedInlineSize())
+    return constraintSpace.inlineContainerSize();
+
+  LayoutUnit extent = resolveInlineLength(constraintSpace, style.logicalWidth(),
+                                          LengthResolveType::ContentSize);
+
   Length maxLength = style.logicalMaxWidth();
   if (!maxLength.isMaxSizeNone()) {
-    LayoutUnit max = resolveInlineLength(LengthResolveType::MaxSize, maxLength,
-                                         constraintSpace);
+    LayoutUnit max = resolveInlineLength(constraintSpace, maxLength,
+                                         LengthResolveType::MaxSize);
     extent = std::min(extent, max);
   }
-  LayoutUnit min = resolveInlineLength(
-      LengthResolveType::MinSize, style.logicalMinWidth(), constraintSpace);
+
+  LayoutUnit min = resolveInlineLength(constraintSpace, style.logicalMinWidth(),
+                                       LengthResolveType::MinSize);
   extent = std::max(extent, min);
+
   if (style.boxSizing() == BoxSizingContentBox) {
     // TODO(layout-ng): Compute border/padding size and add it
   }
+
   return extent;
 }
 
 LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
                                        const ComputedStyle& style,
-                                       LayoutUnit contentContribution) {
+                                       LayoutUnit contentSize) {
+  if (constraintSpace.fixedBlockSize())
+    return constraintSpace.blockContainerSize();
+
   LayoutUnit extent =
-      resolveBlockLength(LengthResolveType::ContentSize, style.logicalHeight(),
-                         constraintSpace, contentContribution);
+      resolveBlockLength(constraintSpace, style.logicalHeight(), contentSize,
+                         LengthResolveType::ContentSize);
   Length maxLength = style.logicalMaxHeight();
+
   if (!maxLength.isMaxSizeNone()) {
-    LayoutUnit max = resolveBlockLength(LengthResolveType::MaxSize, maxLength,
-                                        constraintSpace, contentContribution);
+    LayoutUnit max = resolveBlockLength(constraintSpace, maxLength, contentSize,
+                                        LengthResolveType::MaxSize);
     extent = std::min(extent, max);
   }
-  LayoutUnit min =
-      resolveBlockLength(LengthResolveType::MinSize, style.logicalMinHeight(),
-                         constraintSpace, contentContribution);
+
+  LayoutUnit min = resolveBlockLength(constraintSpace, style.logicalMinHeight(),
+                                      contentSize, LengthResolveType::MinSize);
   extent = std::max(extent, min);
+
   if (style.boxSizing() == BoxSizingContentBox) {
     // TODO(layout-ng): Compute border/padding size and add it
   }
+
   return extent;
 }
 
