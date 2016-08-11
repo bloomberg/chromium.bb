@@ -32,3 +32,11 @@
 .language-selection-entry:last-of-type {
   border-bottom: 1px solid lightgrey;
 }
+
+oobe-a11y-option {
+  border-top: 1px solid lightgrey;
+}
+
+oobe-a11y-option:last-of-type {
+  border-bottom: 1px solid lightgrey;
+}

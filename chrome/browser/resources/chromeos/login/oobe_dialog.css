@@ -30,6 +30,7 @@
 }
 
 .footer-container {
+  overflow-y: auto;
   padding: 24px 40px 34px;
 }
 

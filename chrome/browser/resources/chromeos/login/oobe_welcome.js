@@ -51,6 +51,14 @@ Polymer({
     },
 
     /**
+     * Flag that shows Accessibility Options screen.
+     */
+    accessibilityOptionsScreenShown: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Flag that shows Network Selection screen.
      */
     networkSelectionScreenShown: {
@@ -65,6 +73,14 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Accessibility options status.
+     * @type {!OobeTypes.A11yStatuses}
+     */
+    a11yStatus: {
+      type: Object,
+    },
   },
 
   /**
@@ -74,6 +90,7 @@ Polymer({
     this.welcomeScreenShown = false;
     this.networkSelectionScreenShown = false;
     this.languageSelectionScreenShown = false;
+    this.accessibilityOptionsScreenShown = false;
   },
 
   /**
@@ -146,6 +163,16 @@ Polymer({
   onWelcomeSelectLanguageButtonClicked_: function() {
     this.hideAllScreens_();
     this.languageSelectionScreenShown = true;
+  },
+
+  /**
+   * Handle "Accessibility" button for "Welcome" screen.
+   *
+   * @private
+   */
+  onWelcomeAccessibilityButtonClicked_: function() {
+    this.hideAllScreens_();
+    this.accessibilityOptionsScreenShown = true;
   },
 
   /**
@@ -279,5 +306,30 @@ Polymer({
   closeLanguageSection_: function() {
     this.hideAllScreens_();
     this.welcomeScreenShown = true;
+  },
+
+  /** ******************** Accessibility section ******************* */
+
+  /**
+   * Handle "OK" button for "Accessibility Options" screen.
+   *
+   * @private
+   */
+  closeAccessibilitySection_: function() {
+    this.hideAllScreens_();
+    this.welcomeScreenShown = true;
+  },
+
+  /**
+   * Handle all accessibility buttons.
+   * Note that each <oobe-a11y-option> has chromeMessage attribute
+   * containing Chromium callback name.
+   *
+   * @private
+   * @param {!Event} event
+   */
+  onA11yOptionChanged_: function(event) {
+    chrome.send(
+        event.currentTarget.chromeMessage, [event.currentTarget.checked]);
   },
 });

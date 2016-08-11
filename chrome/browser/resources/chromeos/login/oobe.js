@@ -287,6 +287,8 @@ cr.define('cr.ui.Oobe', function() {
       $('screen-magnifier').checked = data.screenMagnifierEnabled;
       $('large-cursor').checked = data.largeCursorEnabled;
       $('virtual-keyboard').checked = data.virtualKeyboardEnabled;
+
+      $('oobe-welcome-md').a11yStatus = data;
     },
 
     /**

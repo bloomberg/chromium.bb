@@ -31,3 +31,14 @@ OobeTypes.LanguageDsc;
  */
 OobeTypes.IMEDsc;
 
+/**
+ * A set of flags of accessibility options for ChromeOS OOBE.
+ * @typedef {{
+ *   highContrastEnabled: Boolean,
+ *   spokenFeedbackEnabled: Boolean,
+ *   screenMagnifierEnabled: Boolean,
+ *   largeCursorEnabled: Boolean,
+ *   virtualKeyboardEnabled: Boolean,
+ * }}
+ */
+OobeTypes.A11yStatuses;

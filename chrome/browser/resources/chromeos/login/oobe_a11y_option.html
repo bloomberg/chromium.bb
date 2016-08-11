@@ -1,0 +1,22 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+
+<dom-module name="oobe-a11y-option">
+  <template>
+    <div class="layout horizontal">
+      <div id="labelContainer" class="flex layout vertical">
+        <div id="titleContainer">
+          <content select=".title"></content>
+        </div>
+        <div class="display-value" hidden="[[!checked]]">
+          <content select=".checked-value"></content>
+        </div>
+        <div class="display-value" hidden="[[checked]]">
+          <content select=".unchecked-value"></content>
+        </div>
+      </div>
+      <paper-toggle-button checked="{{checked}}"></paper-toggle-button>
+    </div>
+  </template>
+</dom-module>

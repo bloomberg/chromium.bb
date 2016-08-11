@@ -166,6 +166,8 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   // MD-OOBE
   builder->Add("oobeOKButtonText", IDS_OOBE_OK_BUTTON_TEXT);
   builder->Add("languageSectionTitle", IDS_LANGUAGE_SECTION_TITLE);
+  builder->Add("accessibilitySectionTitle", IDS_ACCESSIBILITY_SECTION_TITLE);
+  builder->Add("accessibilitySectionHint", IDS_ACCESSIBILITY_SECTION_HINT);
   builder->Add("networkSectionTitle", IDS_NETWORK_SECTION_TITLE);
   builder->Add("networkSectionHint", IDS_NETWORK_SECTION_HINT);
 
@@ -174,6 +176,18 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("proxySettingsMenuName", IDS_PROXY_SETTINGS_MENU_NAME);
   builder->Add("addWiFiNetworkMenuName", IDS_ADD_WI_FI_NETWORK_MENU_NAME);
   builder->Add("addMobileNetworkMenuName", IDS_ADD_MOBILE_NETWORK_MENU_NAME);
+
+  builder->Add("highContrastOptionOff", IDS_HIGH_CONTRAST_OPTION_OFF);
+  builder->Add("highContrastOptionOn", IDS_HIGH_CONTRAST_OPTION_ON);
+  builder->Add("largeCursorOptionOff", IDS_LARGE_CURSOR_OPTION_OFF);
+  builder->Add("largeCursorOptionOn", IDS_LARGE_CURSOR_OPTION_ON);
+  builder->Add("screenMagnifierOptionOff", IDS_SCREEN_MAGNIFIER_OPTION_OFF);
+  builder->Add("screenMagnifierOptionOn", IDS_SCREEN_MAGNIFIER_OPTION_ON);
+  builder->Add("spokenFeedbackOptionOff", IDS_SPOKEN_FEEDBACK_OPTION_OFF);
+  builder->Add("spokenFeedbackOptionOn", IDS_SPOKEN_FEEDBACK_OPTION_ON);
+  builder->Add("virtualKeyboardOptionOff", IDS_VIRTUAL_KEYBOARD_OPTION_OFF);
+  builder->Add("virtualKeyboardOptionOn", IDS_VIRTUAL_KEYBOARD_OPTION_ON);
+
 }
 
 void NetworkScreenHandler::GetAdditionalParameters(

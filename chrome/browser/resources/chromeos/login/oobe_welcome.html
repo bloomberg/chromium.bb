@@ -38,7 +38,8 @@
             </iron-icon>
             <div id="currentLanguage">[[currentLanguage]]</div>
           </div>
-          <div class="buttonbox layout vertical">
+          <div class="buttonbox layout vertical"
+              on-tap="onWelcomeAccessibilityButtonClicked_">
             <iron-icon icon="icons:accessibility"
                 class="bottom-button self-center">
             </iron-icon>
@@ -80,6 +81,69 @@
       <div class="bottom-buttons layout horizontal">
         <oobe-text-button inverse on-tap="closeLanguageSection_"
           i18n-content="oobeOKButtonText">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+    <oobe-dialog class="fit" hidden="[[!accessibilityOptionsScreenShown]]"
+        has-buttons>
+      <iron-icon icon="icons:accessibility" class="oobe-icon"></iron-icon>
+      <div class="header flex layout vertical end-justified start">
+        <h1 class="welcome-message" i18n-content="accessibilitySectionTitle">
+        </h1>
+        <h1 class="welcome-message-hint"
+            i18n-content="accessibilitySectionHint">
+        </h1>
+      </div>
+      <div class="footer layout vertical">
+        <oobe-a11y-option checked="[[a11yStatus.spokenFeedbackEnabled]]"
+            on-change="onA11yOptionChanged_"
+            chrome-message="enableSpokenFeedback">
+          <span class="title" i18n-content="spokenFeedbackOption"></span>
+          <span class="checked-value" i18n-content="spokenFeedbackOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="spokenFeedbackOptionOff">
+          </span>
+        </oobe-a11y-option>
+        <oobe-a11y-option checked="[[a11yStatus.largeCursorEnabled]]"
+            on-change="onA11yOptionChanged_"
+            chrome-message="enableLargeCursor">
+          <span class="title" i18n-content="largeCursorOption"></span>
+          <span class="checked-value" i18n-content="largeCursorOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="largeCursorOptionOff">
+          </span>
+        </oobe-a11y-option>
+        <oobe-a11y-option checked="[[a11yStatus.highContrastEnabled]]"
+            on-change="onA11yOptionChanged_"
+            chrome-message="enableHighContrast">
+          <span class="title" i18n-content="highContrastOption"></span>
+          <span class="checked-value" i18n-content="highContrastOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="highContrastOptionOff">
+          </span>
+        </oobe-a11y-option>
+        <oobe-a11y-option checked="[[a11yStatus.screenMagnifierEnabled]]"
+            on-change="onA11yOptionChanged_"
+            chrome-message="enableScreenMagnifier">
+          <span class="title" i18n-content="screenMagnifierOption"></span>
+          <span class="checked-value" i18n-content="screenMagnifierOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="screenMagnifierOptionOff">
+          </span>
+        </oobe-a11y-option>
+        <oobe-a11y-option checked="[[a11yStatus.virtualKeyboardEnabled]]"
+            on-change="onA11yOptionChanged_"
+            chrome-message="enableVirtualKeyboard">
+          <span class="title" i18n-content="virtualKeyboardOption"></span>
+          <span class="checked-value" i18n-content="virtualKeyboardOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="virtualKeyboardOptionOff">
+          </span>
+        </oobe-a11y-option>
+      </div>
+      <div class="bottom-buttons layout horizontal">
+        <oobe-text-button inverse on-tap="closeAccessibilitySection_"
+            i18n-content="oobeOKButtonText">
         </oobe-text-button>
       </div>
     </oobe-dialog>
