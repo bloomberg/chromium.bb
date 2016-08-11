@@ -111,7 +111,7 @@ public:
         return gCurrentTimeSecs;
     }
 
-    base::SingleThreadTaskRunner* toSingleThreadTaskRunner() override
+    base::SingleThreadTaskRunner* taskRunner() override
     {
         ASSERT_NOT_REACHED();
         return nullptr;

@@ -68,26 +68,12 @@ WebThread* TestingPlatformSupport::currentThread()
     return m_oldPlatform ? m_oldPlatform->currentThread() : nullptr;
 }
 
-class WrappedBaseClosure : public WebTaskRunner::Task {
-public:
-    explicit WrappedBaseClosure(const base::Closure& task) : m_task(task) { }
-
-    void run() override
-    {
-        m_task.Run();
-    }
-
-private:
-    base::Closure m_task;
-};
-
-class TestingPlatformMockWebTaskRunner : public WebTaskRunner, public base::SingleThreadTaskRunner {
+class TestingPlatformMockWebTaskRunner : public WebTaskRunner {
     WTF_MAKE_NONCOPYABLE(TestingPlatformMockWebTaskRunner);
 public:
     explicit TestingPlatformMockWebTaskRunner(Deque<std::unique_ptr<WebTaskRunner::Task>>* tasks) : m_tasks(tasks) { }
     ~TestingPlatformMockWebTaskRunner() override { }
 
-    // WebTaskRunner implementation:
     void postTask(const WebTraceLocation&, Task* task) override
     {
         m_tasks->append(wrapUnique(task));
@@ -121,29 +107,10 @@ public:
         return 0.0;
     }
 
-    base::SingleThreadTaskRunner* toSingleThreadTaskRunner() override
-    {
-        return this;
-    }
-
-    // base::SingleThreadTaskRunner implementaion:
-    bool RunsTasksOnCurrentThread() const override
+    base::SingleThreadTaskRunner* taskRunner() override
     {
         NOTREACHED();
-        return true;
-    }
-
-    bool PostDelayedTask(const tracked_objects::Location&, const base::Closure& task, base::TimeDelta delay) override
-    {
-        CHECK(delay.is_zero());
-        m_tasks->append(wrapUnique(new WrappedBaseClosure(task)));
-        return true;
-    }
-
-    bool PostNonNestableDelayedTask(const tracked_objects::Location&, const base::Closure& task, base::TimeDelta delay) override
-    {
-        NOTREACHED();
-        return false;
+        return nullptr;
     }
 
 private:
@@ -153,8 +120,7 @@ private:
 // TestingPlatformMockScheduler definition:
 
 TestingPlatformMockScheduler::TestingPlatformMockScheduler()
-    : m_mockWebTaskRunner(wrapUnique(new TestingPlatformMockWebTaskRunner(&m_tasks)))
-    , m_taskObserver(nullptr) { }
+    : m_mockWebTaskRunner(wrapUnique(new TestingPlatformMockWebTaskRunner(&m_tasks))) { }
 
 TestingPlatformMockScheduler::~TestingPlatformMockScheduler() { }
 
@@ -177,25 +143,8 @@ void TestingPlatformMockScheduler::runSingleTask()
 
 void TestingPlatformMockScheduler::runAllTasks()
 {
-    while (!m_tasks.isEmpty()) {
-        if (m_taskObserver)
-            m_taskObserver->willProcessTask();
+    while (!m_tasks.isEmpty())
         m_tasks.takeFirst()->run();
-        if (m_taskObserver)
-            m_taskObserver->didProcessTask();
-    }
-}
-
-void TestingPlatformMockScheduler::addTaskObserver(WebThread::TaskObserver* taskObserver)
-{
-    CHECK(!m_taskObserver);
-    m_taskObserver = taskObserver;
-}
-
-void TestingPlatformMockScheduler::removeTaskObserver(WebThread::TaskObserver* taskObserver)
-{
-    CHECK_EQ(m_taskObserver, taskObserver);
-    m_taskObserver = 0;
 }
 
 class TestingPlatformMockWebThread : public WebThread {
@@ -218,16 +167,6 @@ public:
     WebScheduler* scheduler() const override
     {
         return m_mockWebScheduler.get();
-    }
-
-    void addTaskObserver(TaskObserver* taskObserver) override
-    {
-        m_mockWebScheduler->addTaskObserver(taskObserver);
-    }
-
-    void removeTaskObserver(TaskObserver* taskObserver) override
-    {
-        m_mockWebScheduler->removeTaskObserver(taskObserver);
     }
 
     TestingPlatformMockScheduler* mockWebScheduler()
