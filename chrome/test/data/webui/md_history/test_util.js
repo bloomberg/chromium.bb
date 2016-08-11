@@ -75,3 +75,37 @@ function createHistoryInfo(searchTerm) {
     term: searchTerm || ''
   };
 }
+
+/**
+ * @param {Element} element
+ * @param {string} selector
+ * @return {Element}
+ */
+function polymerSelectAll(element, selector) {
+  return Polymer.dom(element.root).querySelectorAll(selector);
+}
+
+/**
+ * Returns a promise which is resolved when |eventName| is fired on |element|
+ * and |predicate| is true.
+ * @param {HTMLElement} element
+ * @param {string} eventName
+ * @param {function(Event): boolean} predicate
+ * @return {Promise}
+ */
+function waitForEvent(element, eventName, predicate) {
+  if (!predicate)
+    predicate = function() { return true; };
+
+  return new Promise(function(resolve) {
+    var listener = function(e) {
+      if (!predicate(e))
+        return;
+
+      resolve();
+      element.removeEventListener(eventName, listener);
+    }
+
+    element.addEventListener(eventName, listener);
+  });
+}

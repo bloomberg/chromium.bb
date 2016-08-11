@@ -16,10 +16,10 @@ var HistoryDomain;
  */
 var HistoryGroup;
 
-// TODO(calamity): Support selection by refactoring selection out of
-// history-list and into history-app.
 Polymer({
   is: 'history-grouped-list',
+
+  behaviors: [HistoryListBehavior],
 
   properties: {
     // An array of history entries in reverse chronological order.
@@ -156,21 +156,36 @@ Polymer({
         visits, itemIndex, this.searchedTerm);
   },
 
-  hasResults_: function(historyDataLength) {
-    return historyDataLength > 0;
+  /**
+   * @param {number} groupIndex
+   * @param {number} domainIndex
+   * @param {number} itemIndex
+   * @return {string}
+   * @private
+   */
+  pathForItem_: function(groupIndex, domainIndex, itemIndex) {
+    return [
+      'groupedHistoryData_', groupIndex, 'domains', domainIndex, 'visits',
+      itemIndex
+    ].join('.');
   },
 
+  /**
+   * @param {HistoryDomain} domain
+   * @return {string}
+   * @private
+   */
   getWebsiteIconStyle_: function(domain) {
     return 'background-image: ' +
         cr.icon.getFaviconImageSet(domain.visits[0].url);
   },
 
+  /**
+   * @param {boolean} expanded
+   * @return {string}
+   * @private
+   */
   getDropdownIcon_: function(expanded) {
     return expanded ? 'cr:expand-less' : 'cr:expand-more';
-  },
-
-  noResultsMessage_: function(searchedTerm) {
-    var messageId = searchedTerm !== '' ? 'noSearchResults' : 'noResults';
-    return loadTimeData.getString(messageId);
   },
 });

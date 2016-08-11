@@ -6,6 +6,8 @@ Polymer({
   is: 'history-toolbar',
   properties: {
     // Number of history items currently selected.
+    // TODO(calamity): bind this to
+    // listContainer.selectedItem.selectedPaths.length.
     count: {
       type: Number,
       value: 0,

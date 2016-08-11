@@ -87,8 +87,7 @@ Polymer({
   },
 
   unselectAllItems: function(count) {
-    /** @type {HistoryListElement} */ (this.$['infinite-list'])
-        .unselectAllItems(count);
+    this.getSelectedList_().unselectAllItems(count);
   },
 
   /**
@@ -141,7 +140,7 @@ Polymer({
 
   /** @private */
   onDialogConfirmTap_: function() {
-    this.$['infinite-list'].deleteSelected();
+    this.getSelectedList_().deleteSelected();
     this.$.dialog.close();
   },
 
@@ -183,12 +182,20 @@ Polymer({
     md_history.BrowserService.getInstance()
         .deleteItems([menu.itemData])
         .then(function(items) {
-          this.$['infinite-list'].removeDeletedHistory_(items);
+          this.getSelectedList_().removeItemsByPath(items[0].path);
           // This unselect-all is to reset the toolbar when deleting a selected
           // item. TODO(tsergeant): Make this automatic based on observing list
           // modifications.
           this.fire('unselect-all');
         }.bind(this));
     menu.closeMenu();
+  },
+
+  /**
+   * @return {HTMLElement}
+   * @private
+   */
+  getSelectedList_: function() {
+    return this.$.content.selectedItem;
   },
 });

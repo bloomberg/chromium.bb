@@ -34,8 +34,7 @@ cr.define('md_history.history_list_test', function() {
       test('cancelling selection of multiple items', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         return flush().then(function() {
-          var items =
-              Polymer.dom(element.root).querySelectorAll('history-item');
+          var items = polymerSelectAll(element, 'history-item');
 
           MockInteractions.tap(items[2].$.checkbox);
           MockInteractions.tap(items[3].$.checkbox);
@@ -65,8 +64,7 @@ cr.define('md_history.history_list_test', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
 
         return flush().then(function() {
-          var items =
-              Polymer.dom(element.root).querySelectorAll('history-item');
+          var items = polymerSelectAll(element, 'history-item');
           assertTrue(items[0].isCardStart);
           assertTrue(items[0].isCardEnd);
           assertFalse(items[1].isCardEnd);
@@ -83,7 +81,7 @@ cr.define('md_history.history_list_test', function() {
 
         return flush().then(function() {
           var items =
-              Polymer.dom(element.root).querySelectorAll('history-item');
+              polymerSelectAll(element, 'history-item');
           assertTrue(items[3].isCardStart);
           assertTrue(items[5].isCardEnd);
 
@@ -100,14 +98,13 @@ cr.define('md_history.history_list_test', function() {
         app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
         return flush().then(function() {
 
-          element.removeDeletedHistory_([
-            element.historyData_[2], element.historyData_[5],
-            element.historyData_[7]
+          element.removeItemsByPath([
+            'historyData_.2', 'historyData_.5', 'historyData_.7'
           ]);
 
           return flush();
         }).then(function() {
-          items = Polymer.dom(element.root).querySelectorAll('history-item');
+          items = polymerSelectAll(element, 'history-item');
 
           assertEquals(element.historyData_.length, 5);
           assertEquals(element.historyData_[0].dateRelativeDay,
@@ -184,7 +181,7 @@ cr.define('md_history.history_list_test', function() {
           app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
 
         return flush().then(function() {
-          items = Polymer.dom(element.root).querySelectorAll('history-item');
+          items = polymerSelectAll(element, 'history-item');
 
           MockInteractions.tap(items[2].$['menu-button']);
           assertTrue(sharedMenu.menuOpen);
@@ -216,16 +213,25 @@ cr.define('md_history.history_list_test', function() {
         var listContainer = app.$.history;
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
+        app.historyResult(createHistoryInfo(), [
+          createHistoryEntry('2015-01-01', 'http://example.com'),
+          createHistoryEntry('2015-01-01', 'http://example.com'),
+          createHistoryEntry('2015-01-01', 'http://example.com')
+        ]);
         flush().then(function() {
-          items = Polymer.dom(element.root).querySelectorAll('history-item');
+          items = polymerSelectAll(element, 'history-item');
 
           MockInteractions.tap(items[2].$.checkbox);
           MockInteractions.tap(items[5].$.checkbox);
           MockInteractions.tap(items[7].$.checkbox);
+          MockInteractions.tap(items[8].$.checkbox);
+          MockInteractions.tap(items[9].$.checkbox);
+          MockInteractions.tap(items[10].$.checkbox);
 
           registerMessageCallback('removeVisits', this, function() {
             flush().then(function() {
               deleteComplete();
+              return flush();
             }).then(function() {
               assertEquals(element.historyData_.length, 5);
               assertEquals(element.historyData_[0].dateRelativeDay,
@@ -235,6 +241,15 @@ cr.define('md_history.history_list_test', function() {
               assertEquals(element.historyData_[4].dateRelativeDay,
                            '2016-03-11');
               assertFalse(listContainer.$.dialog.open);
+
+              // Ensure the UI is correctly updated.
+              items = polymerSelectAll(element, 'history-item');
+              assertEquals('https://www.google.com', items[0].item.title);
+              assertEquals('https://www.example.com', items[1].item.title);
+              assertEquals('https://en.wikipedia.org', items[2].item.title);
+              assertEquals('https://en.wikipedia.org', items[3].item.title);
+              assertEquals('https://www.google.com', items[4].item.title);
+
               done();
             });
           });
@@ -252,7 +267,7 @@ cr.define('md_history.history_list_test', function() {
         var listContainer = app.$.history;
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         flush().then(function() {
-          items = Polymer.dom(element.root).querySelectorAll('history-item');
+          items = polymerSelectAll(element, 'history-item');
 
           // Dialog should not appear when there is no item selected.
           MockInteractions.pressAndReleaseKeyOn(

@@ -131,6 +131,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddResourcePath("history_list.html",
                           IDR_MD_HISTORY_HISTORY_LIST_HTML);
   source->AddResourcePath("history_list.js", IDR_MD_HISTORY_HISTORY_LIST_JS);
+  source->AddResourcePath("history_list_behavior.html",
+                          IDR_MD_HISTORY_HISTORY_LIST_BEHAVIOR_HTML);
+  source->AddResourcePath("history_list_behavior.js",
+                          IDR_MD_HISTORY_HISTORY_LIST_BEHAVIOR_JS);
   source->AddResourcePath("history_toolbar.html",
                           IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML);
   source->AddResourcePath("history_toolbar.js",

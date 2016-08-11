@@ -9,14 +9,17 @@ cr.define('md_history.history_grouped_list_test', function() {
       var toolbar;
       var groupedList;
       var sidebar;
+      var listContainer;
 
       var SIMPLE_RESULTS;
       var PER_DAY_RESULTS;
       var PER_MONTH_RESULTS;
+
       suiteSetup(function() {
         app = $('history-app');
         app.grouped_ = true;
 
+        listContainer = app.$['history'];
         toolbar = app.$['toolbar'];
         sidebar = app.$['content-side-bar'];
 
@@ -135,18 +138,119 @@ cr.define('md_history.history_grouped_list_test', function() {
       test('items rendered when expanded', function() {
         app.set('queryState_.range', HistoryRange.WEEK);
         app.historyResult(createHistoryInfo(), SIMPLE_RESULTS);
-        var getItems = function() {
-          return Polymer.dom(groupedList.root)
-              .querySelectorAll('history-item');
-        };
 
         return flush().then(function() {
-          assertEquals(0, getItems().length);
+          assertEquals(
+              0, polymerSelectAll(groupedList, 'history-item').length);
           MockInteractions.tap(groupedList.$$('.domain-heading'));
           return flush();
         }).then(function() {
-          assertEquals(2, getItems().length);
+          assertEquals(
+              2, polymerSelectAll(groupedList, 'history-item').length);
         });
+      });
+
+      test('items deletion in week view', function(done) {
+        var results = [
+          createHistoryEntry('2016-03-13', 'https://en.wikipedia.org/a'),
+          createHistoryEntry('2016-03-13', 'https://en.wikipedia.org/b'),
+          createHistoryEntry('2016-03-13', 'https://en.wikipedia.org/c'),
+          createHistoryEntry('2016-03-13', 'https://en.wikipedia.org/d'),
+          createHistoryEntry('2016-03-13', 'https://www.youtube.com/a'),
+          createHistoryEntry('2016-03-13', 'https://www.youtube.com/b'),
+          createHistoryEntry('2016-03-11', 'https://en.wikipedia.org'),
+          createHistoryEntry('2016-03-10', 'https://www.youtube.com')
+        ];
+        app.set('queryState_.range', HistoryRange.WEEK);
+        app.historyResult(createHistoryInfo(), results);
+
+        waitForEvent(groupedList, 'dom-change', function() {
+          return polymerSelectAll(
+              groupedList, '.dropdown-indicator').length == 4;
+        }).then(function() {
+          polymerSelectAll(groupedList, '.dropdown-indicator').
+              forEach(MockInteractions.tap);
+
+          return flush();
+        }).then(function() {
+          var items = polymerSelectAll(groupedList, 'history-item');
+
+          MockInteractions.tap(items[0].$.checkbox);
+          MockInteractions.tap(items[2].$.checkbox);
+          MockInteractions.tap(items[4].$.checkbox);
+          MockInteractions.tap(items[5].$.checkbox);
+          MockInteractions.tap(items[6].$.checkbox);
+          MockInteractions.tap(items[7].$.checkbox);
+
+          // Select and deselect item 1.
+          MockInteractions.tap(items[1].$.checkbox);
+          MockInteractions.tap(items[1].$.checkbox);
+
+          registerMessageCallback('removeVisits', this, function() {
+            flush().then(function() {
+              deleteComplete();
+              return waitForEvent(groupedList, 'dom-change', function() {
+                return polymerSelectAll(
+                    groupedList, '.dropdown-indicator').length == 1;
+              });
+            }).then(function() {
+              items = polymerSelectAll(groupedList, 'history-item');
+              assertEquals(2, items.length);
+              assertEquals('https://en.wikipedia.org/b', items[0].item.title);
+              assertEquals('https://en.wikipedia.org/d', items[1].item.title);
+              assertEquals(
+                  1, polymerSelectAll(groupedList, '.domain-heading')
+                         .length);
+
+              assertEquals(
+                  1, polymerSelectAll(groupedList,
+                                             '.group-container').length);
+
+              assertFalse(listContainer.$.dialog.open);
+              done();
+            });
+          });
+
+          MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+
+          // Confirmation dialog should appear.
+          assertTrue(listContainer.$.dialog.open);
+
+          MockInteractions.tap(listContainer.$$('.action-button'));
+        });
+      });
+
+      test('build removal tree', function() {
+        var paths = [
+          'a.0.b.1',
+          'a.0.b.3',
+          'a.2.b.3',
+        ];
+
+        var expected = {
+          currentPath: 'a',
+          leaf: false,
+          indexes: [0, 2],
+          children: [
+            {
+              currentPath: 'a.0.b',
+              leaf: true,
+              indexes: [1, 3],
+              children: [],
+            },
+            null,
+            {
+              currentPath: 'a.2.b',
+              leaf: true,
+              indexes: [3],
+              children: [],
+            },
+          ],
+        };
+
+        assertEquals(
+            JSON.stringify(expected),
+            JSON.stringify(groupedList.buildRemovalTree_(paths)));
       });
 
       teardown(function() {

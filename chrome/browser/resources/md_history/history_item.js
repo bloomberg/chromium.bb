@@ -28,7 +28,10 @@ cr.define('md_history', function() {
 
       hasTimeGap: {type: Boolean},
 
-      numberOfItems: {type: Number}
+      numberOfItems: {type: Number},
+
+      // The path of this history item inside its parent.
+      path: String,
     },
 
     /**
@@ -37,7 +40,9 @@ cr.define('md_history', function() {
      * @private
      */
     onCheckboxSelected_: function() {
+      // TODO(calamity): Fire this event whenever |selected| changes.
       this.fire('history-checkbox-select', {
+        element: this,
         countAddition: this.$.checkbox.checked ? 1 : -1
       });
     },

@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-scroll-threshold/iron-scroll-threshold.html">
-<link rel="import" href="chrome://history/browser_service.html">
 <link rel="import" href="chrome://history/constants.html">
 <link rel="import" href="chrome://history/history_item.html">
+<link rel="import" href="chrome://history/history_list_behavior.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-list">
@@ -23,7 +23,7 @@
     </style>
     <div id="no-results" class="centered-message"
         hidden$="[[hasResults(historyData_.length)]]">
-      {{noResultsMessage_(searchedTerm, querying)}}
+      {{noResultsMessage(searchedTerm, querying)}}
     </div>
     <iron-list items="{{historyData_}}" as="item" id="infinite-list"
         hidden$="[[!hasResults(historyData_.length)]]">
@@ -35,7 +35,8 @@
             is-card-end="[[isCardEnd_(item, index, historyData_.length)]]"
             has-time-gap="[[needsTimeGap_(item, index, historyData_.length)]]"
             search-term="[[searchedTerm]]"
-            number-of-items="[[historyData_.length]]">
+            number-of-items="[[historyData_.length]]"
+            path="[[pathForItem_(index)]]">
         </history-item>
       </template>
     </iron-list>

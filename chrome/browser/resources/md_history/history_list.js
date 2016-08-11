@@ -5,6 +5,8 @@
 Polymer({
   is: 'history-list',
 
+  behaviors: [HistoryListBehavior],
+
   properties: {
     // The search term for the current query. Set when the query returns.
     searchedTerm: {
@@ -93,75 +95,6 @@ Polymer({
   },
 
   /**
-   * Cycle through each entry in historyData_ and set all items to be
-   * unselected.
-   * @param {number} overallItemCount The number of checkboxes selected.
-   */
-  unselectAllItems: function(overallItemCount) {
-    if (this.historyData_ === undefined)
-      return;
-
-    for (var i = 0; i < this.historyData_.length; i++) {
-      if (this.historyData_[i].selected) {
-        this.set('historyData_.' + i + '.selected', false);
-        overallItemCount--;
-        if (overallItemCount == 0)
-          break;
-      }
-    }
-  },
-
-  /**
-   * Remove the given |items| from the list. Expected to be called after the
-   * items are removed from the backend.
-   * @param {!Array<!HistoryEntry>} removalList
-   * @private
-   */
-  removeDeletedHistory_: function(removalList) {
-    // This set is only for speed. Note that set inclusion for objects is by
-    // reference, so this relies on the HistoryEntry objects never being copied.
-    var deletedItems = new Set(removalList);
-    var splices = [];
-
-    for (var i = this.historyData_.length - 1; i >= 0; i--) {
-      var item = this.historyData_[i];
-      if (deletedItems.has(item)) {
-        // Removes the selected item from historyData_. Use unshift so
-        // |splices| ends up in index order.
-        splices.unshift({
-          index: i,
-          removed: [item],
-          addedCount: 0,
-          object: this.historyData_,
-          type: 'splice'
-        });
-        this.historyData_.splice(i, 1);
-      }
-    }
-    // notifySplices gives better performance than individually splicing as it
-    // batches all of the updates together.
-    this.notifySplices('historyData_', splices);
-  },
-
-  /**
-   * Performs a request to the backend to delete all selected items. If
-   * successful, removes them from the view. Does not prompt the user before
-   * deleting -- see <history-list-container> for a version of this method which
-   * does prompt.
-   */
-  deleteSelected: function() {
-    var toBeRemoved = this.historyData_.filter(function(item) {
-      return item.selected;
-    });
-    md_history.BrowserService.getInstance()
-        .deleteItems(toBeRemoved)
-        .then(function(items) {
-          this.removeDeletedHistory_(items);
-          this.fire('unselect-all');
-        }.bind(this));
-  },
-
-  /**
    * Called when the page is scrolled to near the bottom of the list.
    * @private
    */
@@ -184,17 +117,6 @@ Polymer({
   needsTimeGap_: function(item, index, length) {
     return md_history.HistoryItem.needsTimeGap(
         this.historyData_, index, this.searchedTerm);
-  },
-
-  hasResults: function(historyDataLength) {
-    return historyDataLength > 0;
-  },
-
-  noResultsMessage_: function(searchedTerm, isLoading) {
-    if (isLoading)
-      return '';
-    var messageId = searchedTerm !== '' ? 'noSearchResults' : 'noResults';
-    return loadTimeData.getString(messageId);
   },
 
   /**
@@ -243,5 +165,14 @@ Polymer({
    */
   notifyListScroll_: function() {
     this.fire('history-list-scrolled');
+  },
+
+  /**
+   * @param {number} index
+   * @return {string}
+   * @private
+   */
+  pathForItem_: function(index) {
+    return 'historyData_.' + index;
   },
 });

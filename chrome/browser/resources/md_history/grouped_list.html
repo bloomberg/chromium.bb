@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://history/constants.html">
 <link rel="import" href="chrome://history/history_item.html">
+<link rel="import" href="chrome://history/history_list_behavior.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-grouped-list">
@@ -66,11 +67,11 @@
       }
     </style>
     <div id="no-results" class="centered-message"
-        hidden$="[[hasResults_(groupedHistoryData_.length)]]">
-      [[noResultsMessage_(searchedTerm, querying)]]
+        hidden$="[[hasResults(groupedHistoryData_.length)]]">
+      [[noResultsMessage(searchedTerm, querying)]]
     </div>
     <div id="main-container"
-        hidden$="[[!hasResults_(groupedHistoryData_.length)]]">
+        hidden$="[[!hasResults(groupedHistoryData_.length)]]">
       <template is="dom-repeat" items="[[groupedHistoryData_]]" as="group"
           initial-count="1" index-as="groupIndex">
         <div class="group-container">
@@ -101,6 +102,8 @@
                             groupIndex, domainIndex, itemIndex)]]"
                         search-term="[[searchedTerm]]"
                         number-of-items="[[historyData.length]]"
+                        path="[[pathForItem_(
+                            groupIndex, domainIndex, itemIndex)]]"
                         embedded>
                     </history-item>
                   </template>
