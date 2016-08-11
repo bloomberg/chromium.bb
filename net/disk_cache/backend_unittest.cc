@@ -119,6 +119,7 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendTrimInvalidEntry2();
   void BackendEnumerations();
   void BackendEnumerations2();
+  void BackendDoomMidEnumeration();
   void BackendInvalidEntryEnumeration();
   void BackendFixEnumerators();
   void BackendDoomRecent();
@@ -1419,11 +1420,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionEnumerations2) {
   BackendEnumerations2();
 }
 
-TEST_F(DiskCacheBackendTest, MemoryOnlyEnumerations2) {
-  SetMemoryOnlyMode();
-  BackendEnumerations2();
-}
-
 TEST_F(DiskCacheBackendTest, AppCacheEnumerations2) {
   SetCacheType(net::APP_CACHE);
   BackendEnumerations2();
@@ -1432,6 +1428,70 @@ TEST_F(DiskCacheBackendTest, AppCacheEnumerations2) {
 TEST_F(DiskCacheBackendTest, ShaderCacheEnumerations2) {
   SetCacheType(net::SHADER_CACHE);
   BackendEnumerations2();
+}
+
+void DiskCacheBackendTest::BackendDoomMidEnumeration() {
+  InitCache();
+
+  const int kNumEntries = 100;
+  std::set<std::string> keys;
+  for (int i = 0; i < kNumEntries; i++) {
+    std::string key = GenerateKey(true);
+    keys.insert(key);
+    disk_cache::Entry* entry;
+    ASSERT_THAT(CreateEntry(key, &entry), IsOk());
+    entry->Close();
+  }
+
+  disk_cache::Entry* entry;
+  std::unique_ptr<TestIterator> iter = CreateIterator();
+  int count = 0;
+  while (iter->OpenNextEntry(&entry) == net::OK) {
+    if (count == 0) {
+      // Delete a random entry from the cache while in the midst of iteration.
+      auto key_to_doom = keys.begin();
+      while (*key_to_doom == entry->GetKey())
+        key_to_doom++;
+      ASSERT_THAT(DoomEntry(*key_to_doom), IsOk());
+      ASSERT_EQ(1u, keys.erase(*key_to_doom));
+    }
+    ASSERT_NE(nullptr, entry);
+    EXPECT_EQ(1u, keys.erase(entry->GetKey()));
+    entry->Close();
+    count++;
+  };
+
+  EXPECT_EQ(kNumEntries - 1, cache_->GetEntryCount());
+  EXPECT_EQ(0u, keys.size());
+}
+
+TEST_F(DiskCacheBackendTest, DoomEnumerations) {
+  BackendDoomMidEnumeration();
+}
+
+TEST_F(DiskCacheBackendTest, NewEvictionDoomEnumerations) {
+  SetNewEviction();
+  BackendDoomMidEnumeration();
+}
+
+TEST_F(DiskCacheBackendTest, MemoryOnlyDoomEnumerations) {
+  SetMemoryOnlyMode();
+  BackendDoomMidEnumeration();
+}
+
+TEST_F(DiskCacheBackendTest, ShaderCacheDoomEnumerations) {
+  SetCacheType(net::SHADER_CACHE);
+  BackendDoomMidEnumeration();
+}
+
+TEST_F(DiskCacheBackendTest, AppCacheDoomEnumerations) {
+  SetCacheType(net::APP_CACHE);
+  BackendDoomMidEnumeration();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleDoomEnumerations) {
+  SetSimpleCacheMode();
+  BackendDoomMidEnumeration();
 }
 
 // Verify that ReadData calls do not update the LRU cache

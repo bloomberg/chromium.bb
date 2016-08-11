@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/cache_util.h"
@@ -208,38 +209,48 @@ int MemBackendImpl::CalculateSizeOfAllEntries(
 class MemBackendImpl::MemIterator final : public Backend::Iterator {
  public:
   explicit MemIterator(base::WeakPtr<MemBackendImpl> backend)
-      : backend_(backend), current_(nullptr) {}
+      : backend_(backend) {}
 
   int OpenNextEntry(Entry** next_entry,
                     const CompletionCallback& callback) override {
     if (!backend_)
       return net::ERR_FAILED;
 
-    // Iterate using |lru_list_|, from most recently used to least recently
-    // used, for compatibility with the unit tests that assume this behaviour.
-    // Consider the last element if we are beginning an iteration, otherwise
-    // progressively move earlier in the LRU list.
-    current_ = current_ ? current_->previous() : backend_->lru_list_.tail();
-
-    // We should never return a child entry so iterate until we hit a parent
-    // entry.
-    while (current_ != backend_->lru_list_.end() &&
-           current_->value()->type() != MemEntryImpl::PARENT_ENTRY) {
-      current_ = current_->previous();
-    }
-    if (current_ == backend_->lru_list_.end()) {
-      *next_entry = nullptr;
-      return net::ERR_FAILED;
+    if (!backend_keys_) {
+      backend_keys_ = base::MakeUnique<Strings>(backend_->entries_.size());
+      for (const auto& iter : backend_->entries_)
+        backend_keys_->push_back(iter.first);
+      current_ = backend_keys_->begin();
+    } else {
+      current_++;
     }
 
-    current_->value()->Open();
-    *next_entry = current_->value();
-    return net::OK;
+    while (true) {
+      if (current_ == backend_keys_->end()) {
+        *next_entry = nullptr;
+        backend_keys_.reset();
+        return net::ERR_FAILED;
+      }
+
+      const auto& entry_iter = backend_->entries_.find(*current_);
+      if (entry_iter == backend_->entries_.end()) {
+        // The key is no longer in the cache, move on to the next key.
+        current_++;
+        continue;
+      }
+
+      entry_iter->second->Open();
+      *next_entry = entry_iter->second;
+      return net::OK;
+    }
   }
 
  private:
+  using Strings = std::vector<std::string>;
+
   base::WeakPtr<MemBackendImpl> backend_;
-  base::LinkNode<MemEntryImpl>* current_;
+  std::unique_ptr<Strings> backend_keys_;
+  Strings::iterator current_;
 };
 
 std::unique_ptr<Backend::Iterator> MemBackendImpl::CreateIterator() {
