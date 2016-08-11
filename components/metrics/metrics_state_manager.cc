@@ -257,7 +257,11 @@ MetricsStateManager::LoadClientInfoAndMaybeMigrate() {
 
   // The GUID retrieved (and possibly fixed above) should be valid unless
   // retrieval failed.
-  DCHECK(!client_info || base::IsValidGUID(client_info->client_id));
+  // DCHECK(!client_info || base::IsValidGUID(client_info->client_id));
+  // Temporary hack for http://crbug.com/635255.
+  // TODO(asvitkine): address this the right way.
+  if (client_info && !base::IsValidGUID(client_info->client_id))
+    return nullptr;
 
   return client_info;
 }
