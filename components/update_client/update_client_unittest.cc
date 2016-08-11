@@ -235,7 +235,9 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
+      EXPECT_TRUE(enabled_component_updates);
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(update_check_callback, 0, UpdateResponse::Results(), 0));
@@ -342,6 +344,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       /*
       Fake the following response:
@@ -528,6 +531,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       /*
       Fake the following response:
@@ -776,6 +780,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       /*
       Fake the following response:
@@ -1027,6 +1032,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       static int num_call = 0;
       ++num_call;
@@ -1319,6 +1325,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       /*
       Fake the following response:
@@ -1503,6 +1510,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       static int num_call = 0;
       ++num_call;
@@ -1793,6 +1801,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
@@ -1893,6 +1902,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       /*
       Fake the following response:
@@ -2080,6 +2090,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
@@ -2174,6 +2185,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       return false;
     }
@@ -2220,6 +2232,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       return false;
     }
@@ -2318,6 +2331,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       static int num_call = 0;
       ++num_call;
@@ -2482,6 +2496,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
     bool CheckForUpdates(
         const std::vector<CrxUpdateItem*>& items_to_check,
         const std::string& additional_attributes,
+        bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
       /*
       Fake the following response:
@@ -2518,6 +2533,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
         </app>
       </response>
       */
+
+      // UpdateClient reads the state of |enabled_component_updates| from the
+      // configurator instance, persists its value in the corresponding
+      // update context, and propagates it down to each of the update actions,
+      // and further down to the UpdateChecker instance.
+      EXPECT_FALSE(enabled_component_updates);
+
       UpdateResponse::Result::Manifest::Package package1;
       package1.name = "jebgalgnebhfojomionfpkfelancnnkf.crx";
       package1.hash_sha256 =

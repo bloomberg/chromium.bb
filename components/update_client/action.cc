@@ -128,7 +128,7 @@ void ActionImpl::UpdateCrx() {
   item->update_begin = base::TimeTicks::Now();
 
   if (item->component.supports_group_policy_enable_component_updates &&
-      !update_context_->config->EnabledComponentUpdates()) {
+      !update_context_->enabled_component_updates) {
     item->error_category =
         static_cast<int>(Action::ErrorCategory::kServiceError);
     item->error_code =

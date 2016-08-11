@@ -30,7 +30,7 @@ TestConfigurator::TestConfigurator(
       initial_time_(0),
       ondemand_time_(0),
       enabled_cup_signing_(false),
-      enabled_component_updates_(false),
+      enabled_component_updates_(true),
       context_(new net::TestURLRequestContextGetter(network_task_runner)) {}
 
 TestConfigurator::~TestConfigurator() {

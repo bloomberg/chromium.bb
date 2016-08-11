@@ -91,6 +91,7 @@ void ActionUpdateCheck::Run(UpdateContext* update_context, Callback callback) {
 
   update_checker_->CheckForUpdates(
       update_context_->update_items, extra_request_parameters_,
+      update_context_->enabled_component_updates,
       base::Bind(&ActionUpdateCheck::UpdateCheckComplete,
                  base::Unretained(this)));
 }

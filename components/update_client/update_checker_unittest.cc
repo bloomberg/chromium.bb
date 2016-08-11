@@ -175,7 +175,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   items_to_check.push_back(&item);
 
   update_checker_->CheckForUpdates(
-      items_to_check, "extra=\"params\"",
+      items_to_check, "extra=\"params\"", true,
       base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                  base::Unretained(this)));
 
@@ -226,8 +226,9 @@ TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
   items_to_check.push_back(&item);
 
   update_checker_->CheckForUpdates(
-      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                     base::Unretained(this)));
+      items_to_check, "", true,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
 
   RunThreads();
 
@@ -253,8 +254,9 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
   items_to_check.push_back(&item);
 
   update_checker_->CheckForUpdates(
-      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                     base::Unretained(this)));
+      items_to_check, "", true,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
 
   RunThreads();
 
@@ -280,8 +282,9 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   items_to_check.push_back(&item);
 
   update_checker_->CheckForUpdates(
-      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                     base::Unretained(this)));
+      items_to_check, "", true,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
   RunThreads();
 
   EXPECT_EQ(1, post_interceptor_->GetHitCount())
@@ -306,7 +309,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
   items_to_check.push_back(&item);
 
   update_checker_->CheckForUpdates(
-      items_to_check, "extra=\"params\"",
+      items_to_check, "extra=\"params\"", true,
       base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                  base::Unretained(this)));
 
@@ -332,8 +335,9 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
   items_to_check.push_back(&item);
 
   update_checker_->CheckForUpdates(
-      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                     base::Unretained(this)));
+      items_to_check, "", true,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
 
   RunThreads();
 
@@ -370,8 +374,9 @@ TEST_F(UpdateCheckerTest, UpdateCheckRequiresEncryptionError) {
   items_to_check.push_back(&item);
 
   update_checker_->CheckForUpdates(
-      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                     base::Unretained(this)));
+      items_to_check, "", true,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
   RunThreads();
 
   EXPECT_EQ(-1, error_);
@@ -394,13 +399,13 @@ TEST_F(UpdateCheckerTest, UpdateCheckDateLastRollCall) {
 
   // Do two update-checks.
   update_checker_->CheckForUpdates(
-      items_to_check, "extra=\"params\"",
+      items_to_check, "extra=\"params\"", true,
       base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                  base::Unretained(this)));
   RunThreads();
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_checker_->CheckForUpdates(
-      items_to_check, "extra=\"params\"",
+      items_to_check, "extra=\"params\"", true,
       base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                  base::Unretained(this)));
   RunThreads();
@@ -430,12 +435,12 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   // Expects the group policy to be ignored and the update check to not
   // include the "updatedisabled" attribute.
   EXPECT_FALSE(item.component.supports_group_policy_enable_component_updates);
-  config_->SetEnabledComponentUpdates(false);
   std::vector<CrxUpdateItem*> items_to_check;
   items_to_check.push_back(&item);
   update_checker_->CheckForUpdates(
-      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                     base::Unretained(this)));
+      items_to_check, "", false,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
   RunThreads();
   EXPECT_NE(
       string::npos,
@@ -448,11 +453,11 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   //  * the component updates are disabled.
   // Expects the update check to include the "updatedisabled" attribute.
   item.component.supports_group_policy_enable_component_updates = true;
-  config_->SetEnabledComponentUpdates(false);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_checker_->CheckForUpdates(
-      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                     base::Unretained(this)));
+      items_to_check, "", false,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
   RunThreads();
   EXPECT_NE(
       string::npos,
@@ -465,11 +470,11 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   //  * the component updates are enabled.
   // Expects the update check to not include the "updatedisabled" attribute.
   item.component.supports_group_policy_enable_component_updates = false;
-  config_->SetEnabledComponentUpdates(true);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_checker_->CheckForUpdates(
-      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                     base::Unretained(this)));
+      items_to_check, "", true,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
   RunThreads();
   EXPECT_NE(
       string::npos,
@@ -482,11 +487,11 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   //  * the component updates are enabled.
   // Expects the update check to not include the "updatedisabled" attribute.
   item.component.supports_group_policy_enable_component_updates = true;
-  config_->SetEnabledComponentUpdates(true);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_checker_->CheckForUpdates(
-      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                     base::Unretained(this)));
+      items_to_check, "", true,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
   RunThreads();
   EXPECT_NE(
       string::npos,

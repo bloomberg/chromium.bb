@@ -42,6 +42,7 @@ class UpdateChecker {
   virtual bool CheckForUpdates(
       const std::vector<CrxUpdateItem*>& items_to_check,
       const std::string& additional_attributes,
+      bool enabled_component_updates,
       const UpdateCheckCallback& update_check_callback) = 0;
 
   static std::unique_ptr<UpdateChecker> Create(

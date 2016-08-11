@@ -114,6 +114,9 @@ struct UpdateContext {
   // True if this update has been initiated by the user.
   bool is_foreground;
 
+  // True if the component updates are enabled in this context.
+  const bool enabled_component_updates;
+
   // Contains the ids of all CRXs in this context.
   const std::vector<std::string> ids;
 

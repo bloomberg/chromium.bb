@@ -31,6 +31,7 @@ UpdateContext::UpdateContext(
     PingManager* ping_manager)
     : config(config),
       is_foreground(is_foreground),
+      enabled_component_updates(config->EnabledComponentUpdates()),
       ids(ids),
       crx_data_callback(crx_data_callback),
       notify_observers_callback(notify_observers_callback),
