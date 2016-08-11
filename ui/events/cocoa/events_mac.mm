@@ -140,8 +140,7 @@ PointerDetails GetMousePointerDetailsFromNative(
 }
 
 gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& event) {
-  if ([event respondsToSelector:@selector(hasPreciseScrollingDeltas)] &&
-      [event hasPreciseScrollingDeltas]) {
+  if ([event hasPreciseScrollingDeltas]) {
     // Handle continuous scrolling devices such as a Magic Mouse or a trackpad.
     // -scrollingDelta{X|Y} have float return types but they return values that
     // are already rounded to integers.
@@ -153,10 +152,11 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& event) {
     // values when scrolling up or to the left. Scrolling quickly results in a
     // higher delta per click, up to about 15.0. (Quartz documentation suggests
     // +/-10).
-    // Multiply by 1000 to vaguely approximate WHEEL_DELTA on Windows (120).
-    const CGFloat kWheelDeltaMultiplier = 1000;
-    return gfx::Vector2d(kWheelDeltaMultiplier * [event deltaX],
-                         kWheelDeltaMultiplier * [event deltaY]);
+    // Use the same multiplier as content::WebMouseWheelEventBuilder. Note this
+    // differs from the value returned by CGEventSourceGetPixelsPerLine(), which
+    // is typically 10.
+    return gfx::Vector2d(kScrollbarPixelsPerCocoaTick * [event deltaX],
+                         kScrollbarPixelsPerCocoaTick * [event deltaY]);
   }
 }
 

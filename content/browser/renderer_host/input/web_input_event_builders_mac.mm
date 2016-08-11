@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
@@ -542,20 +543,17 @@ blink::WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   // the point delta data instead, since we cannot distinguish trackpad data
   // from data from any other continuous device.
 
-  // Conversion between wheel delta amounts and number of pixels to scroll.
-  static const double kScrollbarPixelsPerCocoaTick = 40.0;
-
   if (CGEventGetIntegerValueField(cg_event, kCGScrollWheelEventIsContinuous)) {
     result.deltaX = CGEventGetIntegerValueField(
         cg_event, kCGScrollWheelEventPointDeltaAxis2);
     result.deltaY = CGEventGetIntegerValueField(
         cg_event, kCGScrollWheelEventPointDeltaAxis1);
-    result.wheelTicksX = result.deltaX / kScrollbarPixelsPerCocoaTick;
-    result.wheelTicksY = result.deltaY / kScrollbarPixelsPerCocoaTick;
+    result.wheelTicksX = result.deltaX / ui::kScrollbarPixelsPerCocoaTick;
+    result.wheelTicksY = result.deltaY / ui::kScrollbarPixelsPerCocoaTick;
     result.hasPreciseScrollingDeltas = true;
   } else {
-    result.deltaX = [event deltaX] * kScrollbarPixelsPerCocoaTick;
-    result.deltaY = [event deltaY] * kScrollbarPixelsPerCocoaTick;
+    result.deltaX = [event deltaX] * ui::kScrollbarPixelsPerCocoaTick;
+    result.deltaY = [event deltaY] * ui::kScrollbarPixelsPerCocoaTick;
     result.wheelTicksY =
         CGEventGetIntegerValueField(cg_event, kCGScrollWheelEventDeltaAxis1);
     result.wheelTicksX =
