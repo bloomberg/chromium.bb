@@ -391,18 +391,13 @@ BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattService(
   return nullptr;
 }
 
-void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(
-    BluetoothDevice::ConnectErrorCode error_code) {
+void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral() {
   SetGattServicesDiscoveryComplete(false);
   // Removing all services at once to ensure that calling GetGattService on
   // removed service in GattServiceRemoved returns null.
   GattServiceMap gatt_services_swapped;
   gatt_services_swapped.swap(gatt_services_);
   gatt_services_swapped.clear();
-  if (create_gatt_connection_error_callbacks_.empty()) {
-    // TODO(http://crbug.com/585897): Need to pass the error.
-    DidDisconnectGatt();
-  } else {
-    DidFailToConnectGatt(error_code);
-  }
+  DCHECK(create_gatt_connection_error_callbacks_.empty());
+  DidDisconnectGatt();
 }
