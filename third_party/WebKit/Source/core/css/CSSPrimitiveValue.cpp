@@ -558,7 +558,7 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::lengthUnitTypeToUnitType(LengthUn
     return CSSPrimitiveValue::UnitType::Unknown;
 }
 
-static String formatNumber(double number, const char* suffix, unsigned suffixLength)
+static String formatNumber(double number, const StringView& suffix)
 {
 #if OS(WIN) && _MSC_VER < 1900
     unsigned oldFormat = _set_output_format(_TWO_DIGIT_EXPONENT);
@@ -567,19 +567,8 @@ static String formatNumber(double number, const char* suffix, unsigned suffixLen
 #if OS(WIN) && _MSC_VER < 1900
     _set_output_format(oldFormat);
 #endif
-    result.append(suffix, suffixLength);
+    result.append(suffix);
     return result;
-}
-
-template <unsigned characterCount>
-ALWAYS_INLINE static String formatNumber(double number, const char (&characters)[characterCount])
-{
-    return formatNumber(number, characters, characterCount - 1);
-}
-
-static String formatNumber(double number, const char* characters)
-{
-    return formatNumber(number, characters, strlen(characters));
 }
 
 const char* CSSPrimitiveValue::unitTypeToString(UnitType type)

@@ -89,13 +89,16 @@ public:
     {
         // Non-zero |systemCode| is appended to the |message|. If the |message|
         // is empty, we'll report "Rejected with system code (systemCode)".
-        String errorString = message;
+        StringBuilder result;
+        result.append(message);
         if (systemCode != 0) {
-            if (errorString.isEmpty())
-                errorString.append("Rejected with system code");
-            errorString.append(" (" + String::number(systemCode) + ")");
+            if (result.isEmpty())
+                result.append("Rejected with system code");
+            result.append(" (");
+            result.appendNumber(systemCode);
+            result.append(')');
         }
-        (*m_failureCallback)(WebCdmExceptionToExceptionCode(code), errorString);
+        (*m_failureCallback)(WebCdmExceptionToExceptionCode(code), result.toString());
     }
 
 private:

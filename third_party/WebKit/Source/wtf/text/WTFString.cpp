@@ -76,12 +76,12 @@ String::String(const char* characters)
 {
 }
 
-void String::append(const String& string)
+void String::append(const StringView& string)
 {
     if (string.isEmpty())
         return;
     if (!m_impl) {
-        m_impl = string.m_impl;
+        m_impl = string.toString().releaseImpl();
         return;
     }
 
@@ -90,7 +90,7 @@ void String::append(const String& string)
     // case where exactly one String is pointing at this StringImpl, but even
     // then it's going to require a call into the allocator every single time.
 
-    if (m_impl->is8Bit() && string.m_impl->is8Bit()) {
+    if (m_impl->is8Bit() && string.is8Bit()) {
         LChar* data;
         RELEASE_ASSERT(string.length() <= std::numeric_limits<unsigned>::max() - m_impl->length());
         RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + string.length(), data);
@@ -109,10 +109,10 @@ void String::append(const String& string)
     else
         StringImpl::copyChars(data, m_impl->characters16(), m_impl->length());
 
-    if (string.impl()->is8Bit())
-        StringImpl::copyChars(data + m_impl->length(), string.impl()->characters8(), string.impl()->length());
+    if (string.is8Bit())
+        StringImpl::copyChars(data + m_impl->length(), string.characters8(), string.length());
     else
-        StringImpl::copyChars(data + m_impl->length(), string.impl()->characters16(), string.impl()->length());
+        StringImpl::copyChars(data + m_impl->length(), string.characters16(), string.length());
 
     m_impl = newImpl.release();
 }
@@ -161,82 +161,6 @@ int codePointCompareIgnoringASCIICase(const String& a, const char* b)
     return codePointCompareIgnoringASCIICase(a.impl(), reinterpret_cast<const LChar*>(b));
 }
 
-void String::insert(const String& string, unsigned position)
-{
-    if (string.isEmpty()) {
-        if (string.isNull())
-            return;
-        if (isNull())
-            m_impl = string.impl();
-        return;
-    }
-
-    if (string.is8Bit())
-        insert(string.impl()->characters8(), string.length(), position);
-    else
-        insert(string.impl()->characters16(), string.length(), position);
-}
-
-void String::append(const LChar* charactersToAppend, unsigned lengthToAppend)
-{
-    if (!m_impl) {
-        if (!charactersToAppend)
-            return;
-        m_impl = StringImpl::create(charactersToAppend, lengthToAppend);
-        return;
-    }
-
-    if (!lengthToAppend)
-        return;
-
-    ASSERT(charactersToAppend);
-
-    unsigned strLength = m_impl->length();
-
-    if (m_impl->is8Bit()) {
-        RELEASE_ASSERT(lengthToAppend <= std::numeric_limits<unsigned>::max() - strLength);
-        LChar* data;
-        RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(strLength + lengthToAppend, data);
-        StringImpl::copyChars(data, m_impl->characters8(), strLength);
-        StringImpl::copyChars(data + strLength, charactersToAppend, lengthToAppend);
-        m_impl = newImpl.release();
-        return;
-    }
-
-    RELEASE_ASSERT(lengthToAppend <= std::numeric_limits<unsigned>::max() - strLength);
-    UChar* data;
-    RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(length() + lengthToAppend, data);
-    StringImpl::copyChars(data, m_impl->characters16(), strLength);
-    StringImpl::copyChars(data + strLength, charactersToAppend, lengthToAppend);
-    m_impl = newImpl.release();
-}
-
-void String::append(const UChar* charactersToAppend, unsigned lengthToAppend)
-{
-    if (!m_impl) {
-        if (!charactersToAppend)
-            return;
-        m_impl = StringImpl::create(charactersToAppend, lengthToAppend);
-        return;
-    }
-
-    if (!lengthToAppend)
-        return;
-
-    unsigned strLength = m_impl->length();
-
-    ASSERT(charactersToAppend);
-    RELEASE_ASSERT(lengthToAppend <= std::numeric_limits<unsigned>::max() - strLength);
-    UChar* data;
-    RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(strLength + lengthToAppend, data);
-    if (m_impl->is8Bit())
-        StringImpl::copyChars(data, characters8(), strLength);
-    else
-        StringImpl::copyChars(data, characters16(), strLength);
-    StringImpl::copyChars(data + strLength, charactersToAppend, lengthToAppend);
-    m_impl = newImpl.release();
-}
-
 template<typename CharType>
 PassRefPtr<StringImpl> insertInternal(PassRefPtr<StringImpl> impl, const CharType* charactersToInsert, unsigned lengthToInsert, unsigned position)
 {
@@ -263,24 +187,29 @@ PassRefPtr<StringImpl> insertInternal(PassRefPtr<StringImpl> impl, const CharTyp
     return newImpl.release();
 }
 
-void String::insert(const UChar* charactersToInsert, unsigned lengthToInsert, unsigned position)
+void String::insert(const StringView& string, unsigned position)
 {
-    if (position >= length()) {
-        append(charactersToInsert, lengthToInsert);
+    if (string.isEmpty()) {
+        if (string.isNull())
+            return;
+        if (isNull())
+            m_impl = string.toString().releaseImpl();
         return;
     }
-    ASSERT(m_impl);
-    m_impl = insertInternal(m_impl.release(), charactersToInsert, lengthToInsert, position);
-}
 
-void String::insert(const LChar* charactersToInsert, unsigned lengthToInsert, unsigned position)
-{
     if (position >= length()) {
-        append(charactersToInsert, lengthToInsert);
+        if (string.is8Bit())
+            append(string);
+        else
+            append(string);
         return;
     }
-    ASSERT(m_impl);
-    m_impl = insertInternal(m_impl.release(), charactersToInsert, lengthToInsert, position);
+
+    DCHECK(m_impl);
+    if (string.is8Bit())
+        m_impl = insertInternal(m_impl.release(), string.characters8(), string.length(), position);
+    else
+        m_impl = insertInternal(m_impl.release(), string.characters16(), string.length(), position);
 }
 
 UChar32 String::characterStartingAt(unsigned i) const

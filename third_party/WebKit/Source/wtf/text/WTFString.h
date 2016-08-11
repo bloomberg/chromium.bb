@@ -220,16 +220,11 @@ public:
     bool endsWith(UChar character) const
         { return m_impl ? m_impl->endsWith(character) : false; }
 
-    void append(const String&);
+    void append(const StringView&);
     void append(LChar);
     void append(char c) { append(static_cast<LChar>(c)); }
     void append(UChar);
-    void append(const LChar*, unsigned length);
-    void append(const char* charactersToAppend, unsigned length) { append(reinterpret_cast<const LChar*>(charactersToAppend), length); }
-    void append(const UChar*, unsigned length);
-    void insert(const String&, unsigned pos);
-    void insert(const LChar*, unsigned length, unsigned pos);
-    void insert(const UChar*, unsigned length, unsigned pos);
+    void insert(const StringView&, unsigned pos);
 
     String& replace(UChar a, UChar b)
     {

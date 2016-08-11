@@ -514,28 +514,33 @@ private:
     Member<WebGLRenderingContextBase> m_context;
 };
 
-static void formatWebGLStatusString(const String& glInfo, const String& infostring, String& statusMessage)
+static void formatWebGLStatusString(const StringView& glInfo, const StringView& infoString, StringBuilder& builder)
 {
-    if (!infostring.isEmpty())
-        statusMessage.append(", " + glInfo + " = " + infostring);
+    if (infoString.isEmpty())
+        return;
+    builder.append(", ");
+    builder.append(glInfo);
+    builder.append(" = ");
+    builder.append(infoString);
 }
 
 static String extractWebGLContextCreationError(const Platform::GraphicsInfo& info)
 {
-    String statusMessage("Could not create a WebGL context");
-    formatWebGLStatusString("VENDOR", info.vendorId ? String::format("0x%04x", info.vendorId).utf8().data() : "0xffff", statusMessage);
-    formatWebGLStatusString("DEVICE", info.deviceId ? String::format("0x%04x", info.deviceId).utf8().data() : "0xffff", statusMessage);
-    formatWebGLStatusString("GL_VENDOR", info.vendorInfo.utf8().data(), statusMessage);
-    formatWebGLStatusString("GL_RENDERER", info.rendererInfo.utf8().data(), statusMessage);
-    formatWebGLStatusString("GL_VERSION", info.driverVersion.utf8().data(), statusMessage);
-    formatWebGLStatusString("Sandboxed", info.sandboxed ? "yes" : "no", statusMessage);
-    formatWebGLStatusString("Optimus", info.optimus ? "yes" : "no", statusMessage);
-    formatWebGLStatusString("AMD switchable", info.amdSwitchable ? "yes" : "no", statusMessage);
-    formatWebGLStatusString("Reset notification strategy", String::format("0x%04x", info.resetNotificationStrategy).utf8().data(), statusMessage);
-    formatWebGLStatusString("GPU process crash count", String::number(info.processCrashCount).utf8().data(), statusMessage);
-    formatWebGLStatusString("ErrorMessage", info.errorMessage.utf8().data(), statusMessage);
-    statusMessage.append('.');
-    return statusMessage;
+    StringBuilder builder;
+    builder.append("Could not create a WebGL context");
+    formatWebGLStatusString("VENDOR", info.vendorId ? String::format("0x%04x", info.vendorId) : "0xffff", builder);
+    formatWebGLStatusString("DEVICE", info.deviceId ? String::format("0x%04x", info.deviceId) : "0xffff", builder);
+    formatWebGLStatusString("GL_VENDOR", info.vendorInfo, builder);
+    formatWebGLStatusString("GL_RENDERER", info.rendererInfo, builder);
+    formatWebGLStatusString("GL_VERSION", info.driverVersion, builder);
+    formatWebGLStatusString("Sandboxed", info.sandboxed ? "yes" : "no", builder);
+    formatWebGLStatusString("Optimus", info.optimus ? "yes" : "no", builder);
+    formatWebGLStatusString("AMD switchable", info.amdSwitchable ? "yes" : "no", builder);
+    formatWebGLStatusString("Reset notification strategy", String::format("0x%04x", info.resetNotificationStrategy).utf8().data(), builder);
+    formatWebGLStatusString("GPU process crash count", String::number(info.processCrashCount), builder);
+    formatWebGLStatusString("ErrorMessage", info.errorMessage.utf8().data(), builder);
+    builder.append('.');
+    return builder.toString();
 }
 
 struct ContextProviderCreationInfo {

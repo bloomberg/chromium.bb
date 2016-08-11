@@ -135,6 +135,9 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
     DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowCredentialsHeaderName, (new AtomicString("access-control-allow-credentials")));
     DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowSuboriginHeaderName, (new AtomicString("access-control-allow-suborigin")));
 
+    // TODO(esprehn): This code is using String::append extremely inefficiently
+    // causing tons of copies. It should pass around a StringBuilder instead.
+
     int statusCode = response.httpStatusCode();
 
     if (!statusCode) {
@@ -172,8 +175,11 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
         if (allowOriginHeaderValue.isNull()) {
             errorDescription = buildAccessControlFailureMessage("No 'Access-Control-Allow-Origin' header is present on the requested resource.", securityOrigin);
 
-            if (isInterestingStatusCode(statusCode))
-                errorDescription.append(" The response had HTTP status code " + String::number(statusCode) + ".");
+            if (isInterestingStatusCode(statusCode)) {
+                errorDescription.append(" The response had HTTP status code ");
+                errorDescription.append(String::number(statusCode));
+                errorDescription.append('.');
+            }
 
             if (context == WebURLRequest::RequestContextFetch)
                 errorDescription.append(" If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.");

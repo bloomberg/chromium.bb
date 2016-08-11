@@ -301,9 +301,11 @@ std::unique_ptr<JSONObject> objectForSkShader(const SkShader& shader)
 
 String stringForSkColor(const SkColor& color)
 {
-    String colorString = "#";
-    appendUnsignedAsHex(color, colorString);
-    return colorString;
+    // #AARRGGBB.
+    Vector<LChar, 9> result;
+    result.append('#');
+    appendUnsignedAsHex(color, result);
+    return String(result.data(), result.size());
 }
 
 void appendFlagToString(String* flagsString, bool isSet, const String& name)

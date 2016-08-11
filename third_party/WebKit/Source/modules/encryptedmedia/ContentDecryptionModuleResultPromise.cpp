@@ -71,13 +71,16 @@ void ContentDecryptionModuleResultPromise::completeWithError(WebContentDecryptio
     // Non-zero |systemCode| is appended to the |errorMessage|. If the
     // |errorMessage| is empty, we'll report "Rejected with system code
     // (systemCode)".
-    String errorString = errorMessage;
+    StringBuilder result;
+    result.append(errorMessage);
     if (systemCode != 0) {
-        if (errorString.isEmpty())
-            errorString.append("Rejected with system code");
-        errorString.append(" (" + String::number(systemCode) + ")");
+        if (result.isEmpty())
+            result.append("Rejected with system code");
+        result.append(" (");
+        result.appendNumber(systemCode);
+        result.append(')');
     }
-    reject(WebCdmExceptionToExceptionCode(exceptionCode), errorString);
+    reject(WebCdmExceptionToExceptionCode(exceptionCode), result.toString());
 }
 
 ScriptPromise ContentDecryptionModuleResultPromise::promise()
