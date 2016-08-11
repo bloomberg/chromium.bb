@@ -624,40 +624,6 @@ void PasswordAutofillAgent::PasswordValueGatekeeper::ShowValue(
     element->setValue(element->suggestedValue(), true);
 }
 
-bool PasswordAutofillAgent::TextFieldDidEndEditing(
-    const blink::WebInputElement& element) {
-  WebInputToPasswordInfoMap::const_iterator iter =
-      web_input_to_password_info_.find(element);
-  if (iter == web_input_to_password_info_.end())
-    return false;
-
-  const PasswordInfo& password_info = iter->second;
-  // Don't let autofill overwrite an explicit change made by the user.
-  if (password_info.password_was_edited_last)
-    return false;
-
-  const PasswordFormFillData& fill_data = password_info.fill_data;
-
-  // If wait_for_username is false, we should have filled when the text changed.
-  if (!fill_data.wait_for_username)
-    return false;
-
-  blink::WebInputElement password = password_info.password_field;
-  if (!IsElementEditable(password))
-    return false;
-
-  blink::WebInputElement username = element;  // We need a non-const.
-
-  // Do not set selection when ending an editing session, otherwise it can
-  // mess with focus.
-  FillUserNameAndPassword(&username, &password, fill_data, true, false,
-                          &field_value_and_properties_map_,
-                          base::Bind(&PasswordValueGatekeeper::RegisterElement,
-                                     base::Unretained(&gatekeeper_)),
-                          nullptr);
-  return true;
-}
-
 bool PasswordAutofillAgent::TextDidChangeInTextField(
     const blink::WebInputElement& element) {
   // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
@@ -668,9 +634,6 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
       web_input_to_password_info_.find(element);
   if (iter != web_input_to_password_info_.end()) {
     iter->second.password_was_edited_last = false;
-    // If wait_for_username is true we will fill when the username loses focus.
-    if (iter->second.fill_data.wait_for_username)
-      return false;
   }
 
   // Show the popup with the list of available usernames.

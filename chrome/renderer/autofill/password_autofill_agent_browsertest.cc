@@ -363,11 +363,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password_element_.setAutofilled(false);
   }
 
-  void SimulateDidEndEditing(WebFrame* input_frame, WebInputElement& input) {
-    static_cast<blink::WebAutofillClient*>(autofill_agent_)
-        ->textFieldDidEndEditing(input);
-  }
-
   void SimulateSuggestionChoice(WebInputElement& username_input) {
     base::string16 username(base::ASCIIToUTF16(kAliceUsername));
     base::string16 password(base::ASCIIToUTF16(kAlicePassword));
@@ -755,8 +750,8 @@ TEST_F(PasswordAutofillAgentTest, PasswordNotClearedOnEdit) {
   CheckTextFieldsDOMState("alicia", false, kAlicePassword, true);
 }
 
-// Tests that we only autocomplete on focus lost and with a full username match
-// when |wait_for_username| is true.
+// Tests that lost focus does not trigger filling when |wait_for_username| is
+// true.
 TEST_F(PasswordAutofillAgentTest, WaitUsername) {
   // Simulate the browser sending back the login info.
   fill_data_.wait_for_username = true;
@@ -765,32 +760,12 @@ TEST_F(PasswordAutofillAgentTest, WaitUsername) {
   // No auto-fill should have taken place.
   CheckTextFieldsState(std::string(), false, std::string(), false);
 
+  SimulateUsernameChange(kAliceUsername);
+  // Change focus in between to make sure blur events don't trigger filling.
+  SetFocused(password_element_);
+  SetFocused(username_element_);
   // No autocomplete should happen when text is entered in the username.
-  SimulateUsernameChange("a");
-  CheckTextFieldsState("a", false, std::string(), false);
-  SimulateUsernameChange("al");
-  CheckTextFieldsState("al", false, std::string(), false);
-  SimulateUsernameChange(kAliceUsername);
   CheckTextFieldsState(kAliceUsername, false, std::string(), false);
-
-  // Autocomplete should happen only when the username textfield is blurred with
-  // a full match.
-  SimulateUsernameChange("a");
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)
-      ->textFieldDidEndEditing(username_element_);
-  CheckTextFieldsState("a", false, std::string(), false);
-  SimulateUsernameChange("al");
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)
-      ->textFieldDidEndEditing(username_element_);
-  CheckTextFieldsState("al", false, std::string(), false);
-  SimulateUsernameChange("alices");
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)
-      ->textFieldDidEndEditing(username_element_);
-  CheckTextFieldsState("alices", false, std::string(), false);
-  SimulateUsernameChange(kAliceUsername);
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)
-      ->textFieldDidEndEditing(username_element_);
-  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
 }
 
 TEST_F(PasswordAutofillAgentTest, IsWebNodeVisibleTest) {
@@ -1468,18 +1443,13 @@ TEST_F(PasswordAutofillAgentTest,
 }
 
 // The user first accepts a suggestion, but then overwrites the password. This
-// test checks that the overwritten password is not reverted back if the user
-// triggers autofill through focusing (but not changing) the username again.
+// test checks that the overwritten password is not reverted back.
 TEST_F(PasswordAutofillAgentTest,
        NoopEditingDoesNotOverwriteManuallyEditedPassword) {
-  // Simulate having credentials which needed to wait until the user starts
-  // typing the username to be filled (e.g., PSL-matched credentials). Those are
-  // the ones which can be filled as a result of TextFieldDidEndEditing.
   fill_data_.wait_for_username = true;
-  SimulateOnFillPasswordForm(fill_data_);
-  // Simulate that the user typed their name to make the autofill work.
   SimulateUsernameChange(kAliceUsername);
-  SimulateDidEndEditing(GetMainFrame(), username_element_);
+  SimulateOnFillPasswordForm(fill_data_);
+  SimulateSuggestionChoice(username_element_);
   const std::string old_username(username_element_.value().utf8());
   const std::string old_password(password_element_.value().utf8());
   const std::string new_password(old_password + "modify");
@@ -1487,9 +1457,9 @@ TEST_F(PasswordAutofillAgentTest,
   // The user changes the password.
   SimulatePasswordChange(new_password);
 
-  // The user switches back into the username field, but leaves that without
-  // changes.
-  SimulateDidEndEditing(GetMainFrame(), username_element_);
+  // Change focus in between to make sure blur events don't trigger filling.
+  SetFocused(password_element_);
+  SetFocused(username_element_);
 
   // The password should have stayed as the user changed it.
   CheckTextFieldsDOMState(old_username, true, new_password, false);

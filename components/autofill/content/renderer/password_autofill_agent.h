@@ -42,7 +42,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // WebFrameClient editor related calls forwarded by AutofillAgent.
   // If they return true, it indicates the event was consumed and should not
   // be used for any other autofill activity.
-  bool TextFieldDidEndEditing(const blink::WebInputElement& element);
   bool TextDidChangeInTextField(const blink::WebInputElement& element);
 
   // Function that should be called whenever the value of |element| changes due

@@ -331,7 +331,6 @@ void AutofillAgent::FormControlElementClicked(
 }
 
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
-  password_autofill_agent_->TextFieldDidEndEditing(element);
   GetAutofillDriver()->DidEndTextFieldEditing();
 }
 
