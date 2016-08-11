@@ -43,6 +43,24 @@ class StreamNameTestCase(unittest.TestCase):
         raised = True
       self.assertFalse(raised, "Stream name '%s' raised ValueError" % (name,))
 
+  def testNormalize(self):
+    for name, normalized in (
+        ('', 'PFX'),
+        ('_invalid_start_char', 'PFX_invalid_start_char'),
+        ('valid_stream_name.1:2-3', 'valid_stream_name.1:2-3'),
+        ('some stream (with stuff)', 'some_stream__with_stuff_'),
+        ('_invalid/st!ream/name entry', 'PFX_invalid/st_ream/name_entry'),
+        ('     ', 'PFX_____'),
+    ):
+      self.assertEqual(streamname.normalize(name, prefix='PFX'), normalized)
+
+    # Assert that an empty stream name with no prefix will raise a ValueError.
+    self.assertRaises(ValueError, streamname.normalize, '')
+
+    # Assert that a stream name with an invalid starting character and no prefix
+    # will raise a ValueError.
+    self.assertRaises(ValueError, streamname.normalize, '_invalid_start_char')
+
 
 if __name__ == '__main__':
   unittest.main()
