@@ -8,6 +8,7 @@ import android.content.pm.ActivityInfo;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -701,10 +702,11 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
     /**
      * Test that the draw positions for tabs match expectations at various scroll positions
      * when using the ScrollingStripStacker.
+     * @LargeTest
+     * @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+     * @Feature({"TabStrip"})
      */
-    @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
-    @Feature({"TabStrip"})
+    @DisabledTest (message = "crbug.com/632843")
     public void testScrollingStripStackerTabOffsets()
             throws InterruptedException, ExecutionException {
         // Switch to the ScrollingStripStacker.
