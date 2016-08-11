@@ -542,7 +542,6 @@ void PropertyTreeManager::buildEffectNodesRecursively(const EffectPaintPropertyN
     cc::EffectNode& effectNode = *effectTree().Node(effectTree().Insert(cc::EffectNode(), compositorIdForCurrentEffectNode()));
     effectNode.owner_id = dummyLayer->id();
     effectNode.clip_id = dummyClip.id;
-    effectNode.has_render_surface = true;
     effectNode.opacity = nextEffect->opacity();
     m_effectStack.append(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
 
