@@ -1162,6 +1162,7 @@ static struct curveType *curve_from_gamma(float gamma)
 	curve = malloc(sizeof(struct curveType) + sizeof(uInt16Number)*num_entries);
 	if (!curve)
 		return NULL;
+	curve->type = CURVE_TYPE;
 	curve->count = num_entries;
 	curve->data[0] = float_to_u8Fixed8Number(gamma);
 	return curve;

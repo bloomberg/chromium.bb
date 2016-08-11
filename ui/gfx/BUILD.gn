@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -741,4 +742,14 @@ if (is_android) {
     ]
     jni_package = "gfx"
   }
+}
+
+fuzzer_test("color_transform_fuzztest") {
+  sources = [
+    "color_transform_fuzzer.cc",
+  ]
+  deps = [
+    ":gfx",
+  ]
+  libfuzzer_options = [ "max_len=1024" ]
 }

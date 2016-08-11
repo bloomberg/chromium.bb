@@ -159,6 +159,8 @@ The following changes have been made since qcms was imported:
    - https://bugs.chromium.org/p/chromium/issues/detail?id=600338
  - Add API to output parametric gamma curve data
    - https://bugs.chromium.org/p/chromium/issues/detail?id=615667
+ - Fix an unitialized read in gamma curve data.
+   - https://bugs.chromium.org/p/chromium/issues/detail?id=635042
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src

@@ -15,6 +15,8 @@
 #include <CoreGraphics/CGColorSpace.h>
 #endif
 
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
+
 namespace gfx {
 
 // Used to represent a full ICC profile, usually retrieved from a monitor. It
@@ -69,6 +71,7 @@ class GFX_EXPORT ICCProfile {
   uint64_t id_ = 0;
 
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, BT709toSRGBICC);
+  friend int ::LLVMFuzzerTestOneInput(const uint8_t*, size_t);
   friend class ColorSpace;
   friend struct IPC::ParamTraits<gfx::ICCProfile>;
 };
