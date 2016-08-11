@@ -14,7 +14,7 @@
 
 namespace syncer_v2 {
 
-// Map of client tag to EntityMetadata proto.
+// Map of storage keys to EntityMetadata proto.
 typedef std::map<std::string, sync_pb::EntityMetadata> EntityMetadataMap;
 
 // Container used to pass sync metadata from services to their processor.
@@ -28,8 +28,8 @@ class SYNC_EXPORT MetadataBatch {
   // protos from the map for performance reasons.
   EntityMetadataMap&& TakeAllMetadata();
 
-  // Add |metadata| for |client_tag| to the batch.
-  void AddMetadata(const std::string& client_tag,
+  // Add |metadata| for |storage_key| to the batch.
+  void AddMetadata(const std::string& storage_key,
                    const sync_pb::EntityMetadata& metadata);
 
   // Get the DataTypeState for this batch.

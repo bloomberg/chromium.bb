@@ -40,11 +40,11 @@ class SYNC_EXPORT MetadataChangeList {
   // Please note that the update might contain a deleted entry if
   // metadata.is_deleted() is true (as opposed to clearing the entry from the
   // storage completely by calling the Clear method).
-  virtual void UpdateMetadata(const std::string& client_tag,
+  virtual void UpdateMetadata(const std::string& storage_key,
                               const sync_pb::EntityMetadata& metadata) = 0;
 
   // Requests metadata entry to be cleared from the storage.
-  virtual void ClearMetadata(const std::string& client_tag) = 0;
+  virtual void ClearMetadata(const std::string& storage_key) = 0;
 };
 
 }  // namespace syncer_v2

@@ -10,18 +10,18 @@ DataBatchImpl::DataBatchImpl() {}
 
 DataBatchImpl::~DataBatchImpl() {}
 
-void DataBatchImpl::Put(const std::string& client_tag,
+void DataBatchImpl::Put(const std::string& storage_key,
                         std::unique_ptr<EntityData> specifics) {
-  tag_data_pairs_.push_back(TagAndData(client_tag, std::move(specifics)));
+  key_data_pairs_.push_back(KeyAndData(storage_key, std::move(specifics)));
 }
 
 bool DataBatchImpl::HasNext() const {
-  return tag_data_pairs_.size() > read_index_;
+  return key_data_pairs_.size() > read_index_;
 }
 
-TagAndData DataBatchImpl::Next() {
+KeyAndData DataBatchImpl::Next() {
   DCHECK(HasNext());
-  return std::move(tag_data_pairs_[read_index_++]);
+  return std::move(key_data_pairs_[read_index_++]);
 }
 
 }  // namespace syncer_v2

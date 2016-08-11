@@ -15,7 +15,7 @@
 
 namespace syncer_v2 {
 
-typedef std::pair<std::string, std::unique_ptr<EntityData>> TagAndData;
+typedef std::pair<std::string, std::unique_ptr<EntityData>> KeyAndData;
 
 // Interface used by the processor to read data requested from the service.
 class SYNC_EXPORT DataBatch {
@@ -29,7 +29,7 @@ class SYNC_EXPORT DataBatch {
   // Returns a pair of storage tag and owned entity data object. Invoking this
   // method will remove the pair from the batch, and should not be called if
   // HasNext() returns false.
-  virtual TagAndData Next() = 0;
+  virtual KeyAndData Next() = 0;
 };
 
 }  // namespace syncer_v2

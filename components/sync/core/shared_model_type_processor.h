@@ -53,10 +53,10 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   bool IsConnected() const;
 
   // ModelTypeChangeProcessor implementation.
-  void Put(const std::string& client_tag,
+  void Put(const std::string& storage_key,
            std::unique_ptr<EntityData> entity_data,
            MetadataChangeList* metadata_change_list) override;
-  void Delete(const std::string& client_tag,
+  void Delete(const std::string& storage_key,
               MetadataChangeList* metadata_change_list) override;
   void OnMetadataLoaded(syncer::SyncError error,
                         std::unique_ptr<MetadataBatch> batch) override;
@@ -121,15 +121,23 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // Computes the client tag hash for the given client |tag|.
   std::string GetHashForTag(const std::string& tag);
 
-  // Gets the entity for the given tag, or null if there isn't one.
-  ProcessorEntityTracker* GetEntityForTag(const std::string& tag);
+  // Looks up the client tag hash for the given |storage_key|, and regenerates
+  // with |data| if the lookup finds nothing. Does not update the storage key to
+  // client tag hash mapping.
+  std::string GetClientTagHash(const std::string& storage_key,
+                               const EntityData& data);
+
+  // Gets the entity for the given storage key, or null if there isn't one.
+  ProcessorEntityTracker* GetEntityForStorageKey(
+      const std::string& storage_key);
 
   // Gets the entity for the given tag hash, or null if there isn't one.
   ProcessorEntityTracker* GetEntityForTagHash(const std::string& tag_hash);
 
-  // Create an entity in the entity map for |tag| and return a pointer to it.
-  // Requires that no entity for |tag| already exists in the map.
-  ProcessorEntityTracker* CreateEntity(const std::string& tag,
+  // Create an entity in the entity map for |storage_key| and return a pointer
+  // to it.
+  // Requires that no entity for |storage_key| already exists in the map.
+  ProcessorEntityTracker* CreateEntity(const std::string& storage_key,
                                        const EntityData& data);
 
   // Version of the above that generates a tag for |data|.
@@ -158,8 +166,16 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // useful in tests.
   std::unique_ptr<CommitQueue> worker_;
 
-  // The set of sync entities known to this object.
+  // A map of client tag hash to sync entities known to this processor. This
+  // should contain entries and metadata for most everything, although the
+  // entities may not always contain model type data/specifics.
   EntityMap entities_;
+
+  // The service wants to communicate entirly via storage keys that is free to
+  // define and can understand more easily. All of the sync machinery wants to
+  // use client tag hash. This mapping allows us to convert from storage key to
+  // client tag hash. The other direction can use |entities_|.
+  std::map<std::string, std::string> storage_key_to_tag_hash_;
 
   // ModelTypeService linked to this processor.
   // The service owns this processor instance so the pointer should never

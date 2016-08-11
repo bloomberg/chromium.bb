@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_API_FAKE_MODEL_TYPE_SERVICE_H_
 #define COMPONENTS_SYNC_API_FAKE_MODEL_TYPE_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "components/sync/api/model_type_service.h"
@@ -27,9 +28,10 @@ class FakeModelTypeService : public ModelTypeService {
   syncer::SyncError ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
-  void GetData(ClientTagList client_tags, DataCallback callback) override;
+  void GetData(StorageKeyList storage_keys, DataCallback callback) override;
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const EntityData& entity_data) override;
+  std::string GetStorageKey(const EntityData& entity_data) override;
   void OnChangeProcessorSet() override;
 
   bool HasChangeProcessor() const;

@@ -17,21 +17,25 @@ class SYNC_EXPORT EntityChange {
  public:
   enum ChangeType { ACTION_ADD, ACTION_UPDATE, ACTION_DELETE };
 
-  static EntityChange CreateAdd(std::string client_tag, EntityDataPtr data);
-  static EntityChange CreateUpdate(std::string client_tag, EntityDataPtr data);
-  static EntityChange CreateDelete(std::string client_tag);
+  static EntityChange CreateAdd(const std::string& storage_key,
+                                EntityDataPtr data);
+  static EntityChange CreateUpdate(const std::string& storage_key,
+                                   EntityDataPtr data);
+  static EntityChange CreateDelete(const std::string& storage_key);
 
   EntityChange(const EntityChange& other);
   virtual ~EntityChange();
 
-  std::string client_tag() const { return client_tag_; }
+  std::string storage_key() const { return storage_key_; }
   ChangeType type() const { return type_; }
   const EntityData& data() const { return data_.value(); }
 
  private:
-  EntityChange(std::string client_tag, ChangeType type, EntityDataPtr data);
+  EntityChange(const std::string& storage_key,
+               ChangeType type,
+               EntityDataPtr data);
 
-  std::string client_tag_;
+  std::string storage_key_;
   ChangeType type_;
   EntityDataPtr data_;
 };

@@ -38,12 +38,12 @@ class SYNC_EXPORT ModelTypeChangeProcessor : public syncer::SyncErrorFactory {
   // does not need to be fully set, but it should at least have specifics and
   // non-unique name. The processor will fill in the rest if the service does
   // not have a reason to care.
-  virtual void Put(const std::string& client_tag,
+  virtual void Put(const std::string& storage_key,
                    std::unique_ptr<EntityData> entity_data,
                    MetadataChangeList* metadata_change_list) = 0;
 
   // Inform the processor of a deleted entity.
-  virtual void Delete(const std::string& client_tag,
+  virtual void Delete(const std::string& storage_key,
                       MetadataChangeList* metadata_change_list) = 0;
 
   // Accept the initial sync metadata loaded by the service. This should be

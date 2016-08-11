@@ -18,6 +18,7 @@
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/engine_impl/commit_queue.h"
 #include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
 
@@ -38,47 +39,50 @@ class MockModelTypeWorker : public CommitQueue {
   // Getters to inspect the requests sent to this object.
   size_t GetNumPendingCommits() const;
   CommitRequestDataList GetNthPendingCommit(size_t n) const;
-  bool HasPendingCommitForTag(const std::string& tag) const;
-  CommitRequestData GetLatestPendingCommitForTag(const std::string& tag) const;
+  bool HasPendingCommitForHash(const std::string& tag_hash) const;
+  CommitRequestData GetLatestPendingCommitForHash(
+      const std::string& tag_hash) const;
 
   // Expect that the |n|th commit request list has one commit request for |tag|
   // with |value| set.
   void ExpectNthPendingCommit(size_t n,
-                              const std::string& tag,
-                              const std::string& value);
+                              const std::string& tag_hash,
+                              const sync_pb::EntitySpecifics& specifics);
 
-  // For each tag in |tags|, expect a corresponding request list of length one.
-  void ExpectPendingCommits(const std::vector<std::string>& tags);
+  // For each hash in |tag_hashes|, expect a corresponding request list of
+  // length one.
+  void ExpectPendingCommits(const std::vector<std::string>& tag_hashes);
 
   // Trigger an update from the server containing a single entity. See
   // GenerateUpdateData for parameter descriptions. |version_offset| defaults to
   // 1 and |ekn| defaults to the current encryption key name the worker has.
-  void UpdateFromServer(const std::string& tag, const std::string& value);
-  void UpdateFromServer(const std::string& tag,
-                        const std::string& value,
+  void UpdateFromServer(const std::string& tag_hash,
+                        const sync_pb::EntitySpecifics& specifics);
+  void UpdateFromServer(const std::string& tag_hash,
+                        const sync_pb::EntitySpecifics& specifics,
                         int64_t version_offset);
-  void UpdateFromServer(const std::string& tag,
-                        const std::string& value,
+  void UpdateFromServer(const std::string& tag_hash,
+                        const sync_pb::EntitySpecifics& specifics,
                         int64_t version_offset,
                         const std::string& ekn);
 
   // Returns an UpdateResponseData representing an update received from
-  // the server. Updates server state accordingly. |tag| is used to generate the
-  // tag hash and the specifics along with |value|.
+  // the server. Updates server state accordingly.
   //
   // The |version_offset| field can be used to emulate stale data (ie. versions
   // going backwards), reflections and redeliveries (ie. several instances of
   // the same version) or new updates.
   //
   // |ekn| is the encryption key name this item will fake having.
-  UpdateResponseData GenerateUpdateData(const std::string& tag,
-                                        const std::string& value,
-                                        int64_t version_offset,
-                                        const std::string& ekn);
+  UpdateResponseData GenerateUpdateData(
+      const std::string& tag_hash,
+      const sync_pb::EntitySpecifics& specifics,
+      int64_t version_offset,
+      const std::string& ekn);
 
-  // Triggers a server-side deletion of the entity with |tag|; updates server
-  // state accordingly.
-  void TombstoneFromServer(const std::string& tag);
+  // Triggers a server-side deletion of the entity with |tag_hash|; updates
+  // server state accordingly.
+  void TombstoneFromServer(const std::string& tag_hash);
 
   // Pops one pending commit from the front of the queue and send a commit
   // response to the processor for it.
@@ -111,7 +115,7 @@ class MockModelTypeWorker : public CommitQueue {
   // A record of past commits requests.
   std::deque<CommitRequestDataList> pending_commits_;
 
-  // Map of versions by client tag.
+  // Map of versions by client tag hash.
   // This is an essential part of the mocked server state.
   std::map<const std::string, int64_t> server_versions_;
 

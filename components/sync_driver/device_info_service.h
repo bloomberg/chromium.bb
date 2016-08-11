@@ -62,9 +62,10 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   syncer::SyncError ApplySyncChanges(
       std::unique_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
       syncer_v2::EntityChangeList entity_changes) override;
-  void GetData(ClientTagList client_tags, DataCallback callback) override;
+  void GetData(StorageKeyList storage_keys, DataCallback callback) override;
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const syncer_v2::EntityData& entity_data) override;
+  std::string GetStorageKey(const syncer_v2::EntityData& entity_data) override;
   void OnChangeProcessorSet() override;
 
   // DeviceInfoTracker implementation.

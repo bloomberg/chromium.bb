@@ -34,7 +34,7 @@ class SYNC_EXPORT ModelTypeService {
  public:
   typedef base::Callback<void(syncer::SyncError, std::unique_ptr<DataBatch>)>
       DataCallback;
-  typedef std::vector<std::string> ClientTagList;
+  typedef std::vector<std::string> StorageKeyList;
   typedef base::Callback<std::unique_ptr<ModelTypeChangeProcessor>(
       syncer::ModelType type,
       ModelTypeService* service)>
@@ -75,14 +75,28 @@ class SYNC_EXPORT ModelTypeService {
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) = 0;
 
-  // Asynchronously retrieve the corresponding sync data for |client_tags|.
-  virtual void GetData(ClientTagList client_tags, DataCallback callback) = 0;
+  // Asynchronously retrieve the corresponding sync data for |storage_keys|.
+  virtual void GetData(StorageKeyList storage_keys, DataCallback callback) = 0;
 
   // Asynchronously retrieve all of the local sync data.
   virtual void GetAllData(DataCallback callback) = 0;
 
-  // Get or generate a client tag for |entity_data|.
+  // Get or generate a client tag for |entity_data|. This must be the same tag
+  // that was/would have been generated in the SyncableService/Directory world
+  // for backward compatibility with pre-USS clients. The only time this
+  // theoretically needs to be called is on the creation of local data, however
+  // it is also used to verify the hash of remote data. If a data type was never
+  // launched pre-USS, then method does not need to be different from
+  // GetStorageKey().
   virtual std::string GetClientTag(const EntityData& entity_data) = 0;
+
+  // Get or generate a storage key for |entity_data|. This will only ever be
+  // called once when first encountering a remote entity. Local changes will
+  // provide their storage keys directly to Put instead of using this method.
+  // Theoretically this function doesn't need to be stable across multiple calls
+  // on the same or different clients, but to keep things simple, it probably
+  // should be.
+  virtual std::string GetStorageKey(const EntityData& entity_data) = 0;
 
   // Overridable notification for when the processor is set. This is typically
   // when the service should start loading metadata and then subsequently giving

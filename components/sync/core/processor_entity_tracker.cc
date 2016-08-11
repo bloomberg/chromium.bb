@@ -26,7 +26,7 @@ void HashSpecifics(const sync_pb::EntitySpecifics& specifics,
 }  // namespace
 
 std::unique_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
-    const std::string& client_tag,
+    const std::string& storage_key,
     const std::string& client_tag_hash,
     const std::string& id,
     base::Time creation_time) {
@@ -41,20 +41,20 @@ std::unique_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
   metadata.set_creation_time(syncer::TimeToProtoTime(creation_time));
 
   return std::unique_ptr<ProcessorEntityTracker>(
-      new ProcessorEntityTracker(client_tag, &metadata));
+      new ProcessorEntityTracker(storage_key, &metadata));
 }
 
 std::unique_ptr<ProcessorEntityTracker>
-ProcessorEntityTracker::CreateFromMetadata(const std::string& client_tag,
+ProcessorEntityTracker::CreateFromMetadata(const std::string& storage_key,
                                            sync_pb::EntityMetadata* metadata) {
   return std::unique_ptr<ProcessorEntityTracker>(
-      new ProcessorEntityTracker(client_tag, metadata));
+      new ProcessorEntityTracker(storage_key, metadata));
 }
 
 ProcessorEntityTracker::ProcessorEntityTracker(
-    const std::string& client_tag,
+    const std::string& storage_key,
     sync_pb::EntityMetadata* metadata)
-    : client_tag_(client_tag),
+    : storage_key_(storage_key),
       commit_requested_sequence_number_(metadata->acked_sequence_number()) {
   DCHECK(metadata->has_client_tag_hash());
   DCHECK(metadata->has_creation_time());

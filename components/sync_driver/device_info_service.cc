@@ -102,7 +102,7 @@ SyncError DeviceInfoService::MergeSyncData(
   for (const auto& kv : entity_data_map) {
     const DeviceInfoSpecifics& specifics =
         kv.second.value().specifics.device_info();
-    DCHECK_EQ(kv.first, DeviceInfoUtil::SpecificsToTag(specifics));
+    DCHECK_EQ(kv.first, specifics.cache_guid());
     if (specifics.cache_guid() == local_guid) {
       // Don't Put local data if it's the same as the remote copy.
       if (local_info->Equals(*CopyToModel(specifics))) {
@@ -123,8 +123,7 @@ SyncError DeviceInfoService::MergeSyncData(
   }
 
   for (const std::string& guid : local_guids_to_put) {
-    change_processor()->Put(DeviceInfoUtil::SpecificsToTag(*all_data_[guid]),
-                            CopyToEntityData(*all_data_[guid]),
+    change_processor()->Put(guid, CopyToEntityData(*all_data_[guid]),
                             metadata_change_list.get());
   }
 
@@ -142,8 +141,7 @@ SyncError DeviceInfoService::ApplySyncChanges(
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   bool has_changes = false;
   for (EntityChange& change : entity_changes) {
-    const std::string guid =
-        DeviceInfoUtil::TagToCacheGuid(change.client_tag());
+    const std::string guid = change.storage_key();
     // Each device is the authoritative source for itself, ignore any remote
     // changes that have our local cache guid.
     if (guid == local_device_info_provider_->GetLocalDeviceInfo()->guid()) {
@@ -167,16 +165,16 @@ SyncError DeviceInfoService::ApplySyncChanges(
   return SyncError();
 }
 
-void DeviceInfoService::GetData(ClientTagList client_tags,
+void DeviceInfoService::GetData(StorageKeyList storage_keys,
                                 DataCallback callback) {
   DCHECK(has_metadata_loaded_);
 
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
-  for (const auto& tag : client_tags) {
-    const auto& iter = all_data_.find(DeviceInfoUtil::TagToCacheGuid(tag));
+  for (const auto& key : storage_keys) {
+    const auto& iter = all_data_.find(key);
     if (iter != all_data_.end()) {
-      DCHECK_EQ(tag, DeviceInfoUtil::SpecificsToTag(*iter->second));
-      batch->Put(tag, CopyToEntityData(*iter->second));
+      DCHECK_EQ(key, iter->second->cache_guid());
+      batch->Put(key, CopyToEntityData(*iter->second));
     }
   }
 
@@ -188,8 +186,7 @@ void DeviceInfoService::GetAllData(DataCallback callback) {
 
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& kv : all_data_) {
-    batch->Put(DeviceInfoUtil::SpecificsToTag(*kv.second),
-               CopyToEntityData(*kv.second));
+    batch->Put(kv.first, CopyToEntityData(*kv.second));
   }
 
   callback.Run(SyncError(), std::move(batch));
@@ -198,6 +195,12 @@ void DeviceInfoService::GetAllData(DataCallback callback) {
 std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_device_info());
   return DeviceInfoUtil::SpecificsToTag(entity_data.specifics.device_info());
+}
+
+std::string DeviceInfoService::GetStorageKey(
+    const syncer_v2::EntityData& entity_data) {
+  DCHECK(entity_data.specifics.has_device_info());
+  return entity_data.specifics.device_info().cache_guid();
 }
 
 void DeviceInfoService::OnChangeProcessorSet() {
@@ -476,8 +479,7 @@ void DeviceInfoService::SendLocalData() {
 
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
-  change_processor()->Put(DeviceInfoUtil::SpecificsToTag(*specifics),
-                          CopyToEntityData(*specifics),
+  change_processor()->Put(specifics->cache_guid(), CopyToEntityData(*specifics),
                           metadata_change_list.get());
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();

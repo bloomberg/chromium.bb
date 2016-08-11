@@ -28,7 +28,7 @@ class SYNC_EXPORT ProcessorEntityTracker {
  public:
   // Construct an instance representing a new locally-created item.
   static std::unique_ptr<ProcessorEntityTracker> CreateNew(
-      const std::string& client_tag,
+      const std::string& storage_key,
       const std::string& client_tag_hash,
       const std::string& id,
       base::Time creation_time);
@@ -36,12 +36,12 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // Construct an instance representing an item loaded from storage on init.
   // This method swaps out the contents of |metadata|.
   static std::unique_ptr<ProcessorEntityTracker> CreateFromMetadata(
-      const std::string& client_tag,
+      const std::string& storage_key,
       sync_pb::EntityMetadata* metadata);
 
   ~ProcessorEntityTracker();
 
-  const std::string& client_tag() const { return client_tag_; }
+  const std::string& storage_key() const { return storage_key_; }
   const sync_pb::EntityMetadata& metadata() const { return metadata_; }
   const EntityDataPtr& commit_data() const { return commit_data_; }
 
@@ -126,7 +126,7 @@ class SYNC_EXPORT ProcessorEntityTracker {
   friend class ProcessorEntityTrackerTest;
 
   // The constructor swaps the data from the passed metadata.
-  ProcessorEntityTracker(const std::string& client_tag,
+  ProcessorEntityTracker(const std::string& storage_key,
                          sync_pb::EntityMetadata* metadata);
 
   // Check whether |specifics| matches the stored specifics_hash.
@@ -135,8 +135,8 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // Update hash string for EntitySpecifics in the metadata.
   void UpdateSpecificsHash(const sync_pb::EntitySpecifics& specifics);
 
-  // Client tag. Should always be available.
-  std::string client_tag_;
+  // Storage key. Should always be available.
+  const std::string storage_key_;
 
   // Serializable Sync metadata.
   sync_pb::EntityMetadata metadata_;

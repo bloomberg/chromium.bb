@@ -137,8 +137,10 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
       std::unique_ptr<ProcessorEntityTracker> entity =
           ProcessorEntityTracker::CreateFromMetadata(it->first, &it->second);
       if (entity->RequiresCommitData()) {
-        entities_to_commit.push_back(entity->client_tag());
+        entities_to_commit.push_back(entity->storage_key());
       }
+      storage_key_to_tag_hash_[entity->storage_key()] =
+          entity->metadata().client_tag_hash();
       entities_[entity->metadata().client_tag_hash()] = std::move(entity);
     }
     data_type_state_ = batch->GetDataTypeState();
@@ -193,7 +195,7 @@ void SharedModelTypeProcessor::DisableSync() {
   std::unique_ptr<MetadataChangeList> change_list =
       service_->CreateMetadataChangeList();
   for (auto it = entities_.begin(); it != entities_.end(); ++it) {
-    change_list->ClearMetadata(it->second->client_tag());
+    change_list->ClearMetadata(it->second->storage_key());
   }
   change_list->ClearDataTypeState();
   // Nothing to do if this fails, so just ignore the error it might return.
@@ -234,7 +236,7 @@ void SharedModelTypeProcessor::DisconnectSync() {
   }
 }
 
-void SharedModelTypeProcessor::Put(const std::string& tag,
+void SharedModelTypeProcessor::Put(const std::string& storage_key,
                                    std::unique_ptr<EntityData> data,
                                    MetadataChangeList* metadata_change_list) {
   DCHECK(IsAllowingChanges());
@@ -249,7 +251,7 @@ void SharedModelTypeProcessor::Put(const std::string& tag,
   }
 
   // Fill in some data.
-  data->client_tag_hash = GetHashForTag(tag);
+  data->client_tag_hash = GetClientTagHash(storage_key, *data);
   if (data->modification_time.is_null()) {
     data->modification_time = base::Time::Now();
   }
@@ -261,20 +263,20 @@ void SharedModelTypeProcessor::Put(const std::string& tag,
     if (data->creation_time.is_null()) {
       data->creation_time = data->modification_time;
     }
-    entity = CreateEntity(tag, *data);
+    entity = CreateEntity(storage_key, *data);
   } else if (entity->MatchesData(*data)) {
     // Ignore changes that don't actually change anything.
     return;
   }
 
   entity->MakeLocalChange(std::move(data));
-  metadata_change_list->UpdateMetadata(tag, entity->metadata());
+  metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
 
   FlushPendingCommitRequests();
 }
 
 void SharedModelTypeProcessor::Delete(
-    const std::string& tag,
+    const std::string& storage_key,
     MetadataChangeList* metadata_change_list) {
   DCHECK(IsAllowingChanges());
 
@@ -283,18 +285,18 @@ void SharedModelTypeProcessor::Delete(
     return;
   }
 
-  ProcessorEntityTracker* entity = GetEntityForTag(tag);
+  ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     // That's unusual, but not necessarily a bad thing.
     // Missing is as good as deleted as far as the model is concerned.
     DLOG(WARNING) << "Attempted to delete missing item."
-                  << " client tag: " << tag;
+                  << " storage key: " << storage_key;
     return;
   }
 
   entity->Delete();
 
-  metadata_change_list->UpdateMetadata(tag, entity->metadata());
+  metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
   FlushPendingCommitRequests();
 }
 
@@ -344,10 +346,10 @@ void SharedModelTypeProcessor::OnCommitCompleted(
     entity->ReceiveCommitResponse(data);
 
     if (entity->CanClearMetadata()) {
-      change_list->ClearMetadata(entity->client_tag());
+      change_list->ClearMetadata(entity->storage_key());
       entities_.erase(entity->metadata().client_tag_hash());
     } else {
-      change_list->UpdateMetadata(entity->client_tag(), entity->metadata());
+      change_list->UpdateMetadata(entity->storage_key(), entity->metadata());
     }
   }
 
@@ -390,15 +392,15 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     }
 
     if (entity->CanClearMetadata()) {
-      metadata_changes->ClearMetadata(entity->client_tag());
+      metadata_changes->ClearMetadata(entity->storage_key());
       entities_.erase(entity->metadata().client_tag_hash());
     } else {
-      metadata_changes->UpdateMetadata(entity->client_tag(),
+      metadata_changes->UpdateMetadata(entity->storage_key(),
                                        entity->metadata());
     }
 
     if (got_new_encryption_requirements) {
-      already_updated.insert(entity->client_tag());
+      already_updated.insert(entity->storage_key());
     }
   }
 
@@ -433,7 +435,7 @@ ProcessorEntityTracker* SharedModelTypeProcessor::ProcessUpdate(
 
     entity = CreateEntity(data);
     entity_changes->push_back(
-        EntityChange::CreateAdd(entity->client_tag(), update.entity));
+        EntityChange::CreateAdd(entity->storage_key(), update.entity));
     entity->RecordAcceptedUpdate(update);
   } else if (entity->UpdateIsReflection(update.response_version)) {
     // Seen this update before; just ignore it.
@@ -448,12 +450,13 @@ ProcessorEntityTracker* SharedModelTypeProcessor::ProcessUpdate(
     // can never be deleted at this point because it would have either been
     // acked (the add case) or pending (the conflict case).
     DCHECK(!entity->metadata().is_deleted());
-    entity_changes->push_back(EntityChange::CreateDelete(entity->client_tag()));
+    entity_changes->push_back(
+        EntityChange::CreateDelete(entity->storage_key()));
     entity->RecordAcceptedUpdate(update);
   } else if (!entity->MatchesData(data)) {
     // Specifics have changed, so update the service.
     entity_changes->push_back(
-        EntityChange::CreateUpdate(entity->client_tag(), update.entity));
+        EntityChange::CreateUpdate(entity->storage_key(), update.entity));
     entity->RecordAcceptedUpdate(update);
   } else {
     // No data change; still record that the update was received.
@@ -529,7 +532,7 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
       entity->RecordForcedUpdate(update);
       // Update client data to match server.
       changes->push_back(
-          EntityChange::CreateUpdate(entity->client_tag(), update.entity));
+          EntityChange::CreateUpdate(entity->storage_key(), update.entity));
       break;
     case ConflictResolution::USE_NEW:
       // Record that we received the update.
@@ -537,7 +540,7 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
       // Make a new pending commit to update the server.
       entity->MakeLocalChange(std::move(new_data));
       // Update the client with the new entity.
-      changes->push_back(EntityChange::CreateUpdate(entity->client_tag(),
+      changes->push_back(EntityChange::CreateUpdate(entity->storage_key(),
                                                     entity->commit_data()));
       break;
     case ConflictResolution::TYPE_SIZE:
@@ -552,18 +555,18 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
 void SharedModelTypeProcessor::RecommitAllForEncryption(
     std::unordered_set<std::string> already_updated,
     MetadataChangeList* metadata_changes) {
-  ModelTypeService::ClientTagList entities_needing_data;
+  ModelTypeService::StorageKeyList entities_needing_data;
 
   for (auto it = entities_.begin(); it != entities_.end(); ++it) {
     ProcessorEntityTracker* entity = it->second.get();
-    if (already_updated.find(entity->client_tag()) != already_updated.end()) {
+    if (already_updated.find(entity->storage_key()) != already_updated.end()) {
       continue;
     }
     entity->IncrementSequenceNumber();
     if (entity->RequiresCommitData()) {
-      entities_needing_data.push_back(entity->client_tag());
+      entities_needing_data.push_back(entity->storage_key());
     }
-    metadata_changes->UpdateMetadata(entity->client_tag(), entity->metadata());
+    metadata_changes->UpdateMetadata(entity->storage_key(), entity->metadata());
   }
 
   if (!entities_needing_data.empty()) {
@@ -592,10 +595,10 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
 
   for (const UpdateResponseData& update : updates) {
     ProcessorEntityTracker* entity = CreateEntity(update.entity.value());
-    const std::string& tag = entity->client_tag();
+    const std::string& storage_key = entity->storage_key();
     entity->RecordAcceptedUpdate(update);
-    metadata_changes->UpdateMetadata(tag, entity->metadata());
-    data_map[tag] = update.entity;
+    metadata_changes->UpdateMetadata(storage_key, entity->metadata());
+    data_map[storage_key] = update.entity;
   }
 
   // Let the service handle associating and merging the data.
@@ -642,8 +645,8 @@ void SharedModelTypeProcessor::OnDataLoadedForReEncryption(
 void SharedModelTypeProcessor::ConsumeDataBatch(
     std::unique_ptr<DataBatch> data_batch) {
   while (data_batch->HasNext()) {
-    TagAndData data = data_batch->Next();
-    ProcessorEntityTracker* entity = GetEntityForTag(data.first);
+    KeyAndData data = data_batch->Next();
+    ProcessorEntityTracker* entity = GetEntityForStorageKey(data.first);
     // If the entity wasn't deleted or updated with new commit.
     if (entity != nullptr && entity->RequiresCommitData()) {
       entity->CacheCommitData(data.second.get());
@@ -655,9 +658,21 @@ std::string SharedModelTypeProcessor::GetHashForTag(const std::string& tag) {
   return syncer::syncable::GenerateSyncableHash(type_, tag);
 }
 
-ProcessorEntityTracker* SharedModelTypeProcessor::GetEntityForTag(
-    const std::string& tag) {
-  return GetEntityForTagHash(GetHashForTag(tag));
+std::string SharedModelTypeProcessor::GetClientTagHash(
+    const std::string& storage_key,
+    const EntityData& data) {
+  auto iter = storage_key_to_tag_hash_.find(storage_key);
+  return iter == storage_key_to_tag_hash_.end()
+             ? GetHashForTag(service_->GetClientTag(data))
+             : iter->second;
+}
+
+ProcessorEntityTracker* SharedModelTypeProcessor::GetEntityForStorageKey(
+    const std::string& storage_key) {
+  auto iter = storage_key_to_tag_hash_.find(storage_key);
+  return iter == storage_key_to_tag_hash_.end()
+             ? nullptr
+             : GetEntityForTagHash(iter->second);
 }
 
 ProcessorEntityTracker* SharedModelTypeProcessor::GetEntityForTagHash(
@@ -667,24 +682,25 @@ ProcessorEntityTracker* SharedModelTypeProcessor::GetEntityForTagHash(
 }
 
 ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
-    const std::string& tag,
+    const std::string& storage_key,
     const EntityData& data) {
   DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
+  DCHECK(storage_key_to_tag_hash_.find(storage_key) ==
+         storage_key_to_tag_hash_.end());
   std::unique_ptr<ProcessorEntityTracker> entity =
-      ProcessorEntityTracker::CreateNew(tag, data.client_tag_hash, data.id,
-                                        data.creation_time);
+      ProcessorEntityTracker::CreateNew(storage_key, data.client_tag_hash,
+                                        data.id, data.creation_time);
   ProcessorEntityTracker* entity_ptr = entity.get();
   entities_[data.client_tag_hash] = std::move(entity);
+  storage_key_to_tag_hash_[storage_key] = data.client_tag_hash;
   return entity_ptr;
 }
 
 ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
     const EntityData& data) {
-  // Let the service define |client_tag| based on the entity data.
-  const std::string tag = service_->GetClientTag(data);
-  // This constraint may be relaxed in the future.
-  DCHECK_EQ(data.client_tag_hash, GetHashForTag(tag));
-  return CreateEntity(tag, data);
+  // Verify the tag hash matches, may be relaxed in the future.
+  DCHECK_EQ(data.client_tag_hash, GetHashForTag(service_->GetClientTag(data)));
+  return CreateEntity(service_->GetStorageKey(data), data);
 }
 
 }  // namespace syncer_v2

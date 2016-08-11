@@ -38,12 +38,16 @@ syncer::SyncError FakeModelTypeService::ApplySyncChanges(
   return syncer::SyncError();
 }
 
-void FakeModelTypeService::GetData(ClientTagList client_tags,
+void FakeModelTypeService::GetData(StorageKeyList storage_keys,
                                    DataCallback callback) {}
 
 void FakeModelTypeService::GetAllData(DataCallback callback) {}
 
 std::string FakeModelTypeService::GetClientTag(const EntityData& entity_data) {
+  return std::string();
+}
+
+std::string FakeModelTypeService::GetStorageKey(const EntityData& entity_data) {
   return std::string();
 }
 

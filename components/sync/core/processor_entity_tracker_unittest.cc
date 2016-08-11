@@ -22,40 +22,40 @@ namespace syncer_v2 {
 
 namespace {
 
-const std::string kTag = "tag";
-const std::string kId = "id";
-const std::string kValue1 = "value1";
-const std::string kValue2 = "value2";
-const std::string kValue3 = "value3";
+const char kKey[] = "key";
+const char kHash[] = "hash";
+const char kId[] = "id";
+const char kName[] = "name";
+const char kValue1[] = "value1";
+const char kValue2[] = "value2";
+const char kValue3[] = "value3";
 
-std::string GenerateTagHash(const std::string& tag) {
-  return syncer::syncable::GenerateSyncableHash(syncer::PREFERENCES, tag);
-}
-
-sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
+sync_pb::EntitySpecifics GenerateSpecifics(const std::string& name,
                                            const std::string& value) {
   sync_pb::EntitySpecifics specifics;
-  specifics.mutable_preference()->set_name(tag);
+  specifics.mutable_preference()->set_name(name);
   specifics.mutable_preference()->set_value(value);
   return specifics;
 }
 
-std::unique_ptr<EntityData> GenerateEntityData(const std::string& tag,
+std::unique_ptr<EntityData> GenerateEntityData(const std::string& hash,
+                                               const std::string& name,
                                                const std::string& value) {
   std::unique_ptr<EntityData> entity_data(new EntityData());
-  entity_data->client_tag_hash = GenerateTagHash(tag);
-  entity_data->specifics = GenerateSpecifics(tag, value);
-  entity_data->non_unique_name = tag;
+  entity_data->client_tag_hash = hash;
+  entity_data->specifics = GenerateSpecifics(name, value);
+  entity_data->non_unique_name = name;
   return entity_data;
 }
 
 UpdateResponseData GenerateUpdate(const ProcessorEntityTracker& entity,
+                                  const std::string& hash,
                                   const std::string& id,
+                                  const std::string& name,
                                   const std::string& value,
                                   const base::Time& mtime,
                                   int64_t version) {
-  std::unique_ptr<EntityData> data =
-      GenerateEntityData(entity.client_tag(), value);
+  std::unique_ptr<EntityData> data = GenerateEntityData(hash, name, value);
   data->id = id;
   data->modification_time = mtime;
   UpdateResponseData update;
@@ -65,12 +65,14 @@ UpdateResponseData GenerateUpdate(const ProcessorEntityTracker& entity,
 }
 
 UpdateResponseData GenerateTombstone(const ProcessorEntityTracker& entity,
+                                     const std::string& hash,
                                      const std::string& id,
+                                     const std::string& name,
                                      const base::Time& mtime,
                                      int64_t version) {
   std::unique_ptr<EntityData> data = base::WrapUnique(new EntityData());
-  data->client_tag_hash = GenerateTagHash(entity.client_tag());
-  data->non_unique_name = entity.client_tag();
+  data->client_tag_hash = hash;
+  data->non_unique_name = name;
   data->id = id;
   data->modification_time = mtime;
   UpdateResponseData update;
@@ -80,9 +82,10 @@ UpdateResponseData GenerateTombstone(const ProcessorEntityTracker& entity,
 }
 
 CommitResponseData GenerateAckData(const CommitRequestData& request,
+                                   const std::string id,
                                    int64_t version) {
   CommitResponseData response;
-  response.id = kId;
+  response.id = id;
   response.client_tag_hash = request.entity->client_tag_hash;
   response.sequence_number = request.sequence_number;
   response.response_version = version;
@@ -104,22 +107,20 @@ CommitResponseData GenerateAckData(const CommitRequestData& request,
 class ProcessorEntityTrackerTest : public ::testing::Test {
  public:
   ProcessorEntityTrackerTest()
-      : tag_hash_(GenerateTagHash(kTag)),
-        ctime_(base::Time::Now() - base::TimeDelta::FromSeconds(1)){};
+      : ctime_(base::Time::Now() - base::TimeDelta::FromSeconds(1)) {}
 
   std::unique_ptr<ProcessorEntityTracker> CreateNew() {
-    return ProcessorEntityTracker::CreateNew(kTag, tag_hash_, "", ctime_);
+    return ProcessorEntityTracker::CreateNew(kKey, kHash, "", ctime_);
   }
 
   std::unique_ptr<ProcessorEntityTracker> CreateSynced() {
     std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
     entity->RecordAcceptedUpdate(
-        GenerateUpdate(*entity, kId, kValue1, ctime_, 1));
+        GenerateUpdate(*entity, kHash, kId, kName, kValue1, ctime_, 1));
     DCHECK(!entity->IsUnsynced());
     return entity;
   }
 
-  const std::string tag_hash_;
   const base::Time ctime_;
 };
 
@@ -127,8 +128,8 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
 TEST_F(ProcessorEntityTrackerTest, DefaultTracker) {
   std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
 
-  EXPECT_EQ(kTag, entity->client_tag());
-  EXPECT_EQ(tag_hash_, entity->metadata().client_tag_hash());
+  EXPECT_EQ(kKey, entity->storage_key());
+  EXPECT_EQ(kHash, entity->metadata().client_tag_hash());
   EXPECT_EQ("", entity->metadata().server_id());
   EXPECT_FALSE(entity->metadata().is_deleted());
   EXPECT_EQ(0, entity->metadata().sequence_number());
@@ -151,7 +152,7 @@ TEST_F(ProcessorEntityTrackerTest, DefaultTracker) {
 // Test creating and commiting a new local item.
 TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
   std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
-  entity->MakeLocalChange(GenerateEntityData(kTag, kValue1));
+  entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue1));
 
   EXPECT_EQ("", entity->metadata().server_id());
   EXPECT_FALSE(entity->metadata().is_deleted());
@@ -187,8 +188,8 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
 
   const EntityData& data = request.entity.value();
   EXPECT_EQ("", data.id);
-  EXPECT_EQ(tag_hash_, data.client_tag_hash);
-  EXPECT_EQ(kTag, data.non_unique_name);
+  EXPECT_EQ(kHash, data.client_tag_hash);
+  EXPECT_EQ(kName, data.non_unique_name);
   EXPECT_EQ(kValue1, data.specifics.preference().value());
   EXPECT_EQ(syncer::TimeToProtoTime(ctime_),
             syncer::TimeToProtoTime(data.creation_time));
@@ -200,7 +201,7 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
   EXPECT_EQ(entity->metadata().specifics_hash(), request.specifics_hash);
 
   // Ack the commit.
-  entity->ReceiveCommitResponse(GenerateAckData(request, 1));
+  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 1));
 
   EXPECT_EQ(kId, entity->metadata().server_id());
   EXPECT_FALSE(entity->metadata().is_deleted());
@@ -227,7 +228,7 @@ TEST_F(ProcessorEntityTrackerTest, NewServerItem) {
 
   const base::Time mtime = base::Time::Now();
   entity->RecordAcceptedUpdate(
-      GenerateUpdate(*entity, kId, kValue1, mtime, 10));
+      GenerateUpdate(*entity, kHash, kId, kName, kValue1, mtime, 10));
 
   EXPECT_EQ(kId, entity->metadata().server_id());
   EXPECT_FALSE(entity->metadata().is_deleted());
@@ -254,7 +255,8 @@ TEST_F(ProcessorEntityTrackerTest, NewServerTombstone) {
   std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
 
   const base::Time mtime = base::Time::Now();
-  entity->RecordAcceptedUpdate(GenerateTombstone(*entity, kId, mtime, 1));
+  entity->RecordAcceptedUpdate(
+      GenerateTombstone(*entity, kHash, kId, kName, mtime, 1));
 
   EXPECT_EQ(kId, entity->metadata().server_id());
   EXPECT_TRUE(entity->metadata().is_deleted());
@@ -281,7 +283,8 @@ TEST_F(ProcessorEntityTrackerTest, ServerTombstone) {
   std::unique_ptr<ProcessorEntityTracker> entity = CreateSynced();
   // A deletion update one version later.
   const base::Time mtime = base::Time::Now();
-  entity->RecordAcceptedUpdate(GenerateTombstone(*entity, kId, mtime, 2));
+  entity->RecordAcceptedUpdate(
+      GenerateTombstone(*entity, kHash, kId, kName, mtime, 2));
 
   EXPECT_TRUE(entity->metadata().is_deleted());
   EXPECT_EQ(0, entity->metadata().sequence_number());
@@ -308,7 +311,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChange) {
   const std::string specifics_hash_v0 = entity->metadata().specifics_hash();
 
   // Make a local change with different specifics.
-  entity->MakeLocalChange(GenerateEntityData(kTag, kValue2));
+  entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue2));
 
   const int64_t mtime_v1 = entity->metadata().modification_time();
   const std::string specifics_hash_v1 = entity->metadata().specifics_hash();
@@ -335,7 +338,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChange) {
   EXPECT_FALSE(entity->RequiresCommitRequest());
 
   // Ack the commit.
-  entity->ReceiveCommitResponse(GenerateAckData(request, 2));
+  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 2));
 
   EXPECT_EQ(1, entity->metadata().sequence_number());
   EXPECT_EQ(1, entity->metadata().acked_sequence_number());
@@ -389,7 +392,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
 
   const EntityData& data = request.entity.value();
   EXPECT_EQ(kId, data.id);
-  EXPECT_EQ(tag_hash_, data.client_tag_hash);
+  EXPECT_EQ(kHash, data.client_tag_hash);
   EXPECT_EQ("", data.non_unique_name);
   EXPECT_EQ(syncer::TimeToProtoTime(ctime_),
             syncer::TimeToProtoTime(data.creation_time));
@@ -401,7 +404,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
   EXPECT_EQ(entity->metadata().specifics_hash(), request.specifics_hash);
 
   // Ack the deletion.
-  entity->ReceiveCommitResponse(GenerateAckData(request, 2));
+  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 2));
 
   EXPECT_TRUE(entity->metadata().is_deleted());
   EXPECT_EQ(1, entity->metadata().sequence_number());
@@ -426,7 +429,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
   const std::string specifics_hash_v0 = entity->metadata().specifics_hash();
 
   // Make the first change.
-  entity->MakeLocalChange(GenerateEntityData(kTag, kValue2));
+  entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue2));
   const std::string specifics_hash_v1 = entity->metadata().specifics_hash();
 
   EXPECT_EQ(1, entity->metadata().sequence_number());
@@ -439,7 +442,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
   entity->InitializeCommitRequestData(&request_v1);
 
   // Make the second change.
-  entity->MakeLocalChange(GenerateEntityData(kTag, kValue3));
+  entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue3));
   const std::string specifics_hash_v2 = entity->metadata().specifics_hash();
 
   EXPECT_EQ(2, entity->metadata().sequence_number());
@@ -458,7 +461,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
   EXPECT_TRUE(entity->HasCommitData());
 
   // Ack the first commit.
-  entity->ReceiveCommitResponse(GenerateAckData(request_v1, 2));
+  entity->ReceiveCommitResponse(GenerateAckData(request_v1, kId, 2));
 
   EXPECT_EQ(2, entity->metadata().sequence_number());
   EXPECT_EQ(1, entity->metadata().acked_sequence_number());
@@ -467,7 +470,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
   EXPECT_EQ(specifics_hash_v1, entity->metadata().base_specifics_hash());
 
   // Ack the second commit.
-  entity->ReceiveCommitResponse(GenerateAckData(request_v2, 3));
+  entity->ReceiveCommitResponse(GenerateAckData(request_v2, kId, 3));
 
   EXPECT_EQ(2, entity->metadata().sequence_number());
   EXPECT_EQ(2, entity->metadata().acked_sequence_number());

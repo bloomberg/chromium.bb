@@ -44,7 +44,7 @@ using syncer_v2::ModelTypeChangeProcessor;
 using syncer_v2::ModelTypeService;
 using syncer_v2::ModelTypeStore;
 using syncer_v2::ModelTypeStoreTestUtil;
-using syncer_v2::TagAndData;
+using syncer_v2::KeyAndData;
 using sync_driver::DeviceInfo;
 using sync_driver::DeviceInfoTracker;
 using sync_driver::LocalDeviceInfoProviderMock;
@@ -52,7 +52,7 @@ using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
 
-using ClientTagList = ModelTypeService::ClientTagList;
+using StorageKeyList = ModelTypeService::StorageKeyList;
 using RecordList = ModelTypeStore::RecordList;
 using Result = ModelTypeStore::Result;
 using StartCallback = ModelTypeChangeProcessor::StartCallback;
@@ -96,7 +96,7 @@ void AssertExpectedFromDataBatch(
     std::unique_ptr<DataBatch> batch) {
   ASSERT_FALSE(error.IsSet());
   while (batch->HasNext()) {
-    const TagAndData& pair = batch->Next();
+    const KeyAndData& pair = batch->Next();
     std::map<std::string, DeviceInfoSpecifics>::iterator iter =
         expected.find(pair.first);
     ASSERT_NE(iter, expected.end());
@@ -124,6 +124,17 @@ std::string CacheGuidToTag(const std::string& guid) {
   return "DeviceInfo_" + guid;
 }
 
+// Helper method to reduce duplicated code between tests. Wraps the given
+// specifics object in an EntityData and EntityChange of type ACTION_ADD, and
+// pushes them onto the given change list. The corresponding guid of the data
+// is returned, which happens to be the storage key.
+std::string PushBackEntityChangeAdd(const DeviceInfoSpecifics& specifics,
+                                    EntityChangeList* changes) {
+  EntityDataPtr ptr = SpecificsToEntity(specifics);
+  changes->push_back(EntityChange::CreateAdd(specifics.cache_guid(), ptr));
+  return specifics.cache_guid();
+}
+
 // Instead of actually processing anything, simply accumulates all instructions
 // in members that can then be accessed. TODO(skym): If this ends up being
 // useful for other model type unittests it should be moved out to a shared
@@ -134,15 +145,15 @@ class RecordingModelTypeChangeProcessor
   RecordingModelTypeChangeProcessor() {}
   ~RecordingModelTypeChangeProcessor() override {}
 
-  void Put(const std::string& client_tag,
+  void Put(const std::string& storage_key,
            std::unique_ptr<EntityData> entity_data,
            MetadataChangeList* metadata_changes) override {
-    put_map_.insert(std::make_pair(client_tag, std::move(entity_data)));
+    put_map_.insert(std::make_pair(storage_key, std::move(entity_data)));
   }
 
-  void Delete(const std::string& client_tag,
+  void Delete(const std::string& storage_key,
               MetadataChangeList* metadata_changes) override {
-    delete_set_.insert(client_tag);
+    delete_set_.insert(storage_key);
   }
 
   void OnMetadataLoaded(syncer::SyncError error,
@@ -251,19 +262,6 @@ class DeviceInfoServiceTest : public testing::Test,
     DeviceInfoSpecifics specifics(GenerateTestSpecifics());
     specifics.set_cache_guid(guid);
     return specifics;
-  }
-
-  // Helper method to reduce duplicated code between tests. Wraps the given
-  // specifics object in an EntityData and EntityChange of type ACTION_ADD, and
-  // pushes them onto the given change list. The corresponding client tag the
-  // service determines is returned. Instance method because we need access to
-  // service to generate the tag.
-  std::string PushBackEntityChangeAdd(const DeviceInfoSpecifics& specifics,
-                                      EntityChangeList* changes) {
-    EntityDataPtr ptr = SpecificsToEntity(specifics);
-    const std::string tag = service()->GetClientTag(ptr.value());
-    changes->push_back(EntityChange::CreateAdd(tag, ptr));
-    return tag;
   }
 
   // Allows access to the store before that will ultimately be used to
@@ -487,21 +485,21 @@ TEST_F(DeviceInfoServiceTest, GetData) {
   InitializeAndPump();
 
   std::map<std::string, DeviceInfoSpecifics> expected;
-  expected[CacheGuidToTag(specifics1.cache_guid())] = specifics1;
-  expected[CacheGuidToTag(specifics3.cache_guid())] = specifics3;
-  ClientTagList client_tags;
-  client_tags.push_back(CacheGuidToTag(specifics1.cache_guid()));
-  client_tags.push_back(CacheGuidToTag(specifics3.cache_guid()));
-  service()->GetData(client_tags,
+  expected[specifics1.cache_guid()] = specifics1;
+  expected[specifics3.cache_guid()] = specifics3;
+  StorageKeyList storage_keys;
+  storage_keys.push_back(specifics1.cache_guid());
+  storage_keys.push_back(specifics3.cache_guid());
+  service()->GetData(storage_keys,
                      base::Bind(&AssertExpectedFromDataBatch, expected));
 }
 
 TEST_F(DeviceInfoServiceTest, GetDataMissing) {
   InitializeAndPump();
   std::map<std::string, DeviceInfoSpecifics> expected;
-  ClientTagList client_tags;
-  client_tags.push_back(CacheGuidToTag("tag1"));
-  service()->GetData(client_tags,
+  StorageKeyList storage_keys;
+  storage_keys.push_back("does_not_exist");
+  service()->GetData(storage_keys,
                      base::Bind(&AssertExpectedFromDataBatch, expected));
 }
 
@@ -509,8 +507,8 @@ TEST_F(DeviceInfoServiceTest, GetAllData) {
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   DeviceInfoSpecifics specifics1(GenerateTestSpecifics());
   DeviceInfoSpecifics specifics2(GenerateTestSpecifics());
-  const std::string& tag1 = CacheGuidToTag(specifics1.cache_guid());
-  const std::string& tag2 = CacheGuidToTag(specifics2.cache_guid());
+  const std::string& guid1 = specifics1.cache_guid();
+  const std::string& guid2 = specifics2.cache_guid();
   store()->WriteData(batch.get(), specifics1.cache_guid(),
                      specifics1.SerializeAsString());
   store()->WriteData(batch.get(), specifics2.cache_guid(),
@@ -521,12 +519,12 @@ TEST_F(DeviceInfoServiceTest, GetAllData) {
   InitializeAndPump();
 
   std::map<std::string, DeviceInfoSpecifics> expected;
-  expected[tag1] = specifics1;
-  expected[tag2] = specifics2;
-  ClientTagList client_tags;
-  client_tags.push_back(tag1);
-  client_tags.push_back(tag2);
-  service()->GetData(client_tags,
+  expected[guid1] = specifics1;
+  expected[guid2] = specifics2;
+  StorageKeyList storage_keys;
+  storage_keys.push_back(guid1);
+  storage_keys.push_back(guid2);
+  service()->GetData(storage_keys,
                      base::Bind(&AssertExpectedFromDataBatch, expected));
 }
 
@@ -543,7 +541,7 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesInMemory) {
 
   DeviceInfoSpecifics specifics = GenerateTestSpecifics();
   EntityChangeList add_changes;
-  const std::string tag = PushBackEntityChangeAdd(specifics, &add_changes);
+  PushBackEntityChangeAdd(specifics, &add_changes);
   SyncError error = service()->ApplySyncChanges(
       service()->CreateMetadataChangeList(), add_changes);
 
@@ -555,7 +553,7 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesInMemory) {
   EXPECT_EQ(1, change_count());
 
   EntityChangeList delete_changes;
-  delete_changes.push_back(EntityChange::CreateDelete(tag));
+  delete_changes.push_back(EntityChange::CreateDelete(specifics.cache_guid()));
   error = service()->ApplySyncChanges(service()->CreateMetadataChangeList(),
                                       delete_changes);
 
@@ -569,7 +567,7 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesStore) {
 
   DeviceInfoSpecifics specifics = GenerateTestSpecifics();
   EntityChangeList data_changes;
-  const std::string tag = PushBackEntityChangeAdd(specifics, &data_changes);
+  PushBackEntityChangeAdd(specifics, &data_changes);
   DataTypeState state;
   state.set_encryption_key_name("ekn");
   std::unique_ptr<MetadataChangeList> metadata_changes(
@@ -602,7 +600,7 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesWithLocalGuid) {
   DeviceInfoSpecifics specifics =
       GenerateTestSpecifics(local_device()->GetLocalDeviceInfo()->guid());
   EntityChangeList change_list;
-  const std::string tag = PushBackEntityChangeAdd(specifics, &change_list);
+  PushBackEntityChangeAdd(specifics, &change_list);
 
   // Should have a single change from reconciliation.
   EXPECT_TRUE(
@@ -625,7 +623,7 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesWithLocalGuid) {
   EXPECT_EQ(1, change_count());
 
   change_list.clear();
-  change_list.push_back(EntityChange::CreateDelete(tag));
+  change_list.push_back(EntityChange::CreateDelete(specifics.cache_guid()));
   EXPECT_FALSE(
       service()
           ->ApplySyncChanges(service()->CreateMetadataChangeList(), change_list)
@@ -637,7 +635,7 @@ TEST_F(DeviceInfoServiceTest, ApplyDeleteNonexistent) {
   InitializeAndPumpAndStart();
   EXPECT_EQ(1, change_count());
   EntityChangeList delete_changes;
-  delete_changes.push_back(EntityChange::CreateDelete(CacheGuidToTag("tag")));
+  delete_changes.push_back(EntityChange::CreateDelete("guid"));
   const SyncError error = service()->ApplySyncChanges(
       service()->CreateMetadataChangeList(), delete_changes);
   EXPECT_FALSE(error.IsSet());
@@ -656,10 +654,15 @@ TEST_F(DeviceInfoServiceTest, MergeEmpty) {
 }
 
 TEST_F(DeviceInfoServiceTest, MergeWithData) {
-  const DeviceInfoSpecifics unique_local(GenerateTestSpecifics("unique_local"));
-  const DeviceInfoSpecifics conflict_local(GenerateTestSpecifics("conflict"));
-  DeviceInfoSpecifics conflict_remote(GenerateTestSpecifics("conflict"));
-  DeviceInfoSpecifics unique_remote(GenerateTestSpecifics("unique_remote"));
+  const std::string conflict_guid = "conflict_guid";
+  const DeviceInfoSpecifics unique_local(
+      GenerateTestSpecifics("unique_local_guid"));
+  const DeviceInfoSpecifics conflict_local(
+      GenerateTestSpecifics(conflict_guid));
+  const DeviceInfoSpecifics conflict_remote(
+      GenerateTestSpecifics(conflict_guid));
+  const DeviceInfoSpecifics unique_remote(
+      GenerateTestSpecifics("unique_remote_guid"));
 
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   store()->WriteData(batch.get(), unique_local.cache_guid(),
@@ -673,10 +676,9 @@ TEST_F(DeviceInfoServiceTest, MergeWithData) {
   EXPECT_EQ(1, change_count());
 
   EntityDataMap remote_input;
-  remote_input[CacheGuidToTag(conflict_remote.cache_guid())] =
+  remote_input[conflict_remote.cache_guid()] =
       SpecificsToEntity(conflict_remote);
-  remote_input[CacheGuidToTag(unique_remote.cache_guid())] =
-      SpecificsToEntity(unique_remote);
+  remote_input[unique_remote.cache_guid()] = SpecificsToEntity(unique_remote);
 
   DataTypeState state;
   state.set_encryption_key_name("ekn");
@@ -691,14 +693,16 @@ TEST_F(DeviceInfoServiceTest, MergeWithData) {
 
   // The remote should beat the local in conflict.
   EXPECT_EQ(4u, service()->GetAllDeviceInfo().size());
-  AssertEqual(unique_local, *service()->GetDeviceInfo("unique_local").get());
-  AssertEqual(unique_remote, *service()->GetDeviceInfo("unique_remote").get());
-  AssertEqual(conflict_remote, *service()->GetDeviceInfo("conflict").get());
+  AssertEqual(unique_local,
+              *service()->GetDeviceInfo(unique_local.cache_guid()).get());
+  AssertEqual(unique_remote,
+              *service()->GetDeviceInfo(unique_remote.cache_guid()).get());
+  AssertEqual(conflict_remote, *service()->GetDeviceInfo(conflict_guid).get());
 
   // Service should have told the processor about the existance of unique_local.
   EXPECT_TRUE(processor()->delete_set().empty());
   EXPECT_EQ(2u, processor()->put_map().size());
-  const auto& it = processor()->put_map().find(CacheGuidToTag("unique_local"));
+  const auto& it = processor()->put_map().find(unique_local.cache_guid());
   ASSERT_NE(processor()->put_map().end(), it);
   AssertEqual(unique_local, it->second->specifics.device_info());
 
@@ -722,7 +726,7 @@ TEST_F(DeviceInfoServiceTest, MergeLocalGuid) {
   InitializeAndPumpAndStart();
 
   EntityDataMap remote_input;
-  remote_input[CacheGuidToTag(guid)] = SpecificsToEntity(*specifics);
+  remote_input[guid] = SpecificsToEntity(*specifics);
 
   const SyncError error = service()->MergeSyncData(
       service()->CreateMetadataChangeList(), remote_input);
