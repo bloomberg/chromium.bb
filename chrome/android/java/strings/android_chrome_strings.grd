@@ -380,9 +380,6 @@ CHAR-LIMIT guidelines:
       </message>
 
       <!-- Homepage preferences -->
-      <message name="IDS_HOMEPAGE_DEFAULT_TITLE" desc="Label for checkbox to use the default homepage">
-        Default
-      </message>
       <message name="IDS_OPTIONS_HOMEPAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL that opens when they tap on the home page button in the omnibox.">
         Edit home page
       </message>
@@ -424,16 +421,10 @@ CHAR-LIMIT guidelines:
       <message name="IDS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
         Touch to Search
       </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_ACTION_BAR" desc="Message shown on the action bar, to invite the user to tap to search for a term.">
-        Search for “<ph name="SEARCH_TERM">%1$s<ex>Eiffel Tower</ex></ph>”
-      </message>
       <message name="IDS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for Contextual Search preference">
         Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results, and other details.
 
 To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.
-      </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_LEARN_MORE_URL" desc="URL for learning more about Contextual Search preference" translateable="false">
-        https://support.google.com/chrome/answer/95440#android
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_SHORT_DESCRIPTION" desc="A promo message shown to users who have Touch to Search enabled to explain the new behavior and provide an option to opt out">
         Touch to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
@@ -517,12 +508,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY" desc="A summary for the 'Cookies and site data' option in the 'Clear Browsing Data' screen, explaining that deleting cookies and site data will sign the user out of most websites.">
         This will sign you out of most websites.
       </message>
-      <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_2" desc="A summary for the 'Cookies and site data' option in the 'Clear Browsing Data' screen, explaining that deleting cookies and site data will reset user's preferences on most websites.">
-        Saved preferences on sites might get deleted
-      </message>
-      <message name="IDS_CLEAR_COOKIES_NO_SIGN_OUT_SUMMARY" desc="Text at the bottom of the Clear Browsing Data dialog informing that clearing cookies wouldn't sign the user out of Google Accounts. Dialog also contains a link which opens the Account Management screen.">
-        You won’t be signed out of your <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Accounts<ph name="END_LINK">&lt;/link&gt;</ph>
-      </message>
       <message name="IDS_CLEAR_PASSWORDS_TITLE" desc="Title for Clear Passwords in Clear Browsing Data preference">
         Saved passwords
       </message>
@@ -537,9 +522,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_PROGRESS_MESSAGE" desc='Message on the progress dialog used when waiting for "clear browsing data" to complete.'>
         Please wait…
-      </message>
-      <message name="IDS_CAN_NOT_CLEAR_BROWSING_HISTORY_TOAST" desc="Message on the toast explaining that child account users can not clear their browsing history.">
-        Browsing history can’t be cleared with accounts for kids
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_TITLE" desc="Label of the dropdown that selects the time period for which browsing data will be deleted. This sentence can be followed by any option, such as 'Clear data from the past day' or 'Clear data from the past hour'.">
         Clear data from the
@@ -1002,9 +984,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_ANDROID_MASTER_SYNC_DISABLED" desc="Message to show when Android master sync flag is disabled">
         Android system sync disabled
       </message>
-      <message name="IDS_SYNC_IS_ENABLED" desc="Message to show when Chrome sync is enabled">
-        Sync is on
-      </message>
       <message name="IDS_SYNC_IS_DISABLED" desc="Message to show when Chrome sync is disabled">
         Sync is off
       </message>
@@ -1013,20 +992,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_SYNC_SETUP_PROGRESS" desc="Message indicating that sync setup is in progress">
         Setup in progress…
-      </message>
-      <message name="IDS_SYNC_ACCOUNT_HEADER" desc="Header for indicating to the user which account is being used for syncing">
-        Sync account
-      </message>
-
-      <!-- Confirm Sync account change dialog. -->
-      <message name="IDS_CONFIRM_ACCOUNT_CHANGE_DIALOG_TITLE" desc="Confirm Account change dialog title. This Dialog warns the user that signing in to sync will merge all their browsing data with the new sync email account. This dialog is displayed when user signs out of sync and tries to sign in again with a different account. Dialog also contains a link which opens a new dialog to clear sync data. [CHAR-LIMIT=40].">
-        Confirm Google Account
-      </message>
-      <message name="IDS_CONFIRM_ACCOUNT_CHANGE_DIALOG_MESSAGE" desc="Message to display for google account change confirmation dialog.">
-        <ph name="ACCOUNT_EMAIL_LAST">%1$s<ex>user@example.com</ex></ph> was signed in. Signing in with <ph name="ACCOUNT_EMAIL_NEW">%2$s<ex>user@example.com</ex></ph> will merge synced data like bookmarks between accounts. To keep information separate, clear browsing data in <ph name="BEGIN_LINK">&lt;link&gt;</ph>settings<ph name="END_LINK">&lt;/link&gt;</ph>.
-      </message>
-      <message name="IDS_CONFIRM_ACCOUNT_CHANGE_DIALOG_SIGNIN" desc="The string used in the dialog for the button that means user has confirmed to sign in as a different user and merge information.  [CHAR-LIMIT=24]">
-        Sign in
       </message>
 
       <!-- Legal information preferences -->
@@ -1069,15 +1034,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Sign-in strings -->
-      <message name="IDS_ADD_ACCOUNT_TITLE" desc="Title for add Google account dialog [CHAR-LIMIT=40]">
-        Add a Google Account
-      </message>
-      <message name="IDS_ADD_ACCOUNT_MESSAGE" desc="Message to display for add Google account dialog">
-        You have not yet set up a Google Account on this device
-      </message>
-      <message name="IDS_ADD_ACCOUNT_CONTINUE" desc="Continue button for add Google account dialog [CHAR-LIMIT=20]">
-        Continue
-      </message>
       <message name="IDS_SIGNOUT_TITLE" desc="Title for sign out of Chrome dialog [CHAR-LIMIT=40]">
         Sign out of Chrome?
       </message>
@@ -1335,19 +1291,8 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_ERROR_SERVICE_UNAVAILABLE" desc="Sync error string for service unavailable. [CHAR-LIMIT=80]">
         The service is not available; try again later.
       </message>
-      <message name="IDS_POLICY_DIALOG_TITLE" desc="Title to show on a dialog during sign-in, indicating that the account used has policy management enabled.">
-        Confirm sign-in
-      </message>
-      <message name="IDS_POLICY_DIALOG_MESSAGE" desc="Message to show on a dialog during sign-in, indicating that the account used has policy management enabled.">
-        This account is managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>.
-
-You are signing in with a managed account and giving its administrator control over your Chrome profile. Your Chrome data will become permanently tied to this account. Disconnecting from this account will delete the local Chrome data.
-      </message>
       <message name="IDS_POLICY_DIALOG_PROCEED" desc="Label on the button to accept the policy dialog during sign-in. [CHAR-LIMIT=20]">
         Accept and sign in
-      </message>
-      <message name="IDS_POLICY_DIALOG_CANCEL" desc="Label on the button to reject the policy dialog during sign-in. [CHAR-LIMIT=20]">
-        Cancel
       </message>
       <message name="IDS_WIPING_PROFILE_DATA_TITLE" desc="Title for the progress dialog shown while profile data is being wiped after signing out of an enterprise account">
         Clearing account data
@@ -1629,17 +1574,8 @@ You are signing in with a managed account and giving its administrator control o
       </message>
 
       <!-- WebsiteSettingsPopup (PageInfo dialog) -->
-      <message name="IDS_PAGE_INFO_COPY_URL_BUTTON" desc="Text in the button that copies the URL to the clipboard.">
-        Copy URL
-      </message>
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">
         Site Settings
-      </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_ALLOW" desc="The label used in the permissions dropdowns in the Page Info dialog on mobile for the option that grants a permission.">
-        Allow
-      </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_BLOCK" desc="The label used in the permissions dropdowns in the Page Info dialog on mobile for the option that denies a permission.">
-        Block
       </message>
       <message name="IDS_PAGE_INFO_PERMISSION_ALLOWED" desc="The label used in the Page Info dialog to describe an allowed permission. Eg: Location - Allowed">
         Allowed
@@ -1868,12 +1804,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_FRE_SKIP_TEXT" desc="Text for second page skip button">
         No thanks
       </message>
-      <message name="IDS_FRE_DONE" desc="Button to dismiss the sign-in screen once the user is done">
-        Done
-      </message>
-      <message name="IDS_FRE_SETTINGS" desc="Button that opens Chrome settings">
-        Settings
-      </message>
       <message name="IDS_FRE_TOS_AND_PRIVACY" desc="Message explaining that use of Chrome is governed by Chrome's terms of service and privacy notice.">
         By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Terms of Service<ph name="END_LINK1">&lt;/LINK1&gt;</ph> and <ph name="BEGIN_LINK2">&lt;LINK2&gt;</ph>Privacy Notice<ph name="END_LINK2">&lt;/LINK2&gt;</ph>.
       </message>
@@ -1891,9 +1821,6 @@ You are signing in with a managed account and giving its administrator control o
       </message>
 
       <!-- Account Signin Strings -->
-      <message name="IDS_SIGNIN_SET_UP_CHROME" desc="Header text shown when the user is first setting up Chrome">
-        Set up Chrome
-      </message>
       <message name="IDS_CHOOSE_ACCOUNT_SIGN_IN" desc="Sign in button for choose google account dialog [CHAR-LIMIT=20]">
         Sign in
       </message>
@@ -1915,9 +1842,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_SIGNIN_OPEN_SETTINGS_ACCOUNTS" desc="Text for button to open Accounts page in device's Settings app">
         Open settings
       </message>
-      <message name="IDS_MAKE_CHROME_YOURS" desc="Title for the signin promo that prompts the user to sign in to Chrome to have a personalized experirence. [CHAR-LIMIT=24]">
-        Make Chrome yours
-      </message>
       <message name="IDS_SIGNIN_HI_NAME" desc="Title welcoming the user by their name after they have signed in.">
         Hi, <ph name="FULL_NAME">%1$s<ex>John Smith</ex></ph>
       </message>
@@ -1936,43 +1860,12 @@ You are signing in with a managed account and giving its administrator control o
         Warning
       </message>
 
-      <message name="IDS_CAST_NOTIFICATION_STOPPED" desc="AtHome notification text when stopped. [CHAR LIMIT=40]">
-        Stopped
-      </message>
-      <message name="IDS_CAST_NOTIFICATION_FINISHED" desc="AtHome notification text when finished. [CHAR LIMIT=40]">
-        Finished
-      </message>
-      <message name="IDS_CAST_NOTIFICATION_PAUSED" desc="AtHome notification text when paused. [CHAR LIMIT=40]">
-        Paused
-      </message>
-
       <!-- Messages for remote media playback (casting) -->
-      <message name="IDS_CAST_NOTIFICATION_LOADING" desc="AtHome notification text when loading a video. [CHAR LIMIT=40]">
-        Loading video
-      </message>
-      <message name="IDS_CAST_NOTIFICATION_PLAYING" desc="AtHome notification text when playing a video. [CHAR LIMIT=40]">
-        Playing video
-      </message>
-      <message name="IDS_CAST_NOTIFICATION_LOADING_FOR_VIDEO" desc="AtHome notification text when loading a given video. [CHAR LIMIT=40]">
-        Loading “<ph name="VIDEO_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
-      </message>
-      <message name="IDS_CAST_NOTIFICATION_PLAYING_FOR_VIDEO" desc="AtHome notification text when playing a given video. [CHAR LIMIT=40]">
-        Playing “<ph name="VIDEO_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
-      </message>
-      <message name="IDS_CAST_NOTIFICATION_PAUSED_FOR_VIDEO" desc="AtHome notification text when paused in a given video. [CHAR LIMIT=40]">
-        Paused “<ph name="VIDEO_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
-      </message>
-      <message name="IDS_CAST_NOTIFICATION_FINISHED_FOR_VIDEO" desc="AtHome notification text when finished playing a given video. [CHAR LIMIT=40]">
-        Finished “<ph name="VIDEO_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
-      </message>
       <message name="IDS_CAST_CASTING_VIDEO" desc="AtHome text to tell user which screen casting is happening. [CHAR LIMIT=40]">
         Casting to <ph name="SCREEN_NAME">%1$s<ex>Living Room TV</ex></ph>
       </message>
       <message name="IDS_CAST_ERROR_PLAYING_VIDEO" desc="The message shown to the user when playing a video to the Chromecast fails.">
         Cannot play video on <ph name="SCREEN_NAME">%1$s<ex>Living Room TV</ex></ph>.
-      </message>
-      <message name="IDS_CAST_PERMISSION_ERROR_PLAYING_VIDEO" desc="The message shown to the user when trying to play a video that the domain does not let us cast.">
-        Unable to cast video due to site restrictions
       </message>
       <message name="IDS_ACCESSIBILITY_PLAY" desc="Content description for the play button that starts playing the media.">
         Play
@@ -1987,12 +1880,6 @@ You are signing in with a managed account and giving its administrator control o
       <!-- New Tab Page strings -->
       <message name="IDS_NTP_BOOKMARKS" desc="Text for bookmarks button [CHAR-LIMIT=20]">
         Bookmarks
-      </message>
-      <message name="IDS_NTP_INTERESTS" desc="Text for a button to display interests. Interests are topics that we think the user is interested in (eg. sports teams, hobbies, places). [CHAR-LIMIT=20]">
-        Interests
-      </message>
-      <message name="IDS_NTP_NO_INTERESTS_TOAST" desc="Toast notification displayed when interests retrieval fails">
-        Could not retrieve interests.
       </message>
       <message name="IDS_RECENT_TABS" desc="Text for button to show 'Recent tabs', i.e. recently closed tabs and tabs that are open on other devices [CHAR-LIMIT=20]">
         Recent tabs
@@ -2054,35 +1941,11 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_REMOVE_ALL" desc="Context menu option to clear the list of recently closed tabs">
         Remove all
       </message>
-      <message name="IDS_SNIPPETS_HEADER" desc="Header for a group of content snippets">
-        Articles for you
-      </message>
       <message name="IDS_NTP_STATUS_CARD_TITLE_EMPTY" desc="Title of the card explaining the status of the ntp suggested content, when we don't have anything to show.">
         All Read
       </message>
       <message name="IDS_NTP_STATUS_CARD_BODY_EMPTY" desc="Body of the card explaining the status of the ntp suggested content, when we don't have anything to show.">
         More cards will appear when the time is right.
-      </message>
-      <message name="IDS_NTP_STATUS_CARD_BODY_SIGNED_OUT" desc="Body of the card explaining the status of the ntp suggested content, when sync is disabled.">
-        To get personalized content suggested by Google, sign in to Chrome.
-      </message>
-      <message name="IDS_NTP_STATUS_CARD_GENERIC_TITLE" desc="Title of the card explaining what action the user can take to get suggested content on the NTP.">
-        Get suggested content
-      </message>
-      <message name="IDS_NTP_STATUS_CARD_BODY_SYNC" desc="Body of the card explaining the status of the ntp suggested content, when sync is disabled.">
-        To get personalized content suggested by Google, turn on sync.
-      </message>
-      <message name="IDS_NTP_STATUS_CARD_ACTION_SYNC" desc="Label of the action button for the card explaining the status of the ntp suggested content, when sync is disabled.">
-        Turn on sync
-      </message>
-      <message name="IDS_NTP_STATUS_CARD_BODY_HISTORY_SYNC" desc="Body of the card explaining the status of the ntp suggested content, when history sync is disabled.">
-        To get personalized content suggested by Google, turn on history sync.
-      </message>
-      <message name="IDS_NTP_STATUS_CARD_ACTION_HISTORY_SYNC" desc="Label of the action button for the card explaining the status of the ntp suggested content, when history sync is disabled.">
-        Turn on history sync
-      </message>
-      <message name="IDS_NTP_STATUS_CARD_BODY_PASSPHRASE" desc="Body of the card explaining the status of the ntp suggested content, when passphrase encryption is enabled.">
-        Personalized content suggestions are currently disabled, because your synced data is protected with a custom passphrase.
       </message>
 
       <!-- Toolbar button strings -->
@@ -2377,9 +2240,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_NTP_TOOLBAR_BTN_BOOKMARKS" desc="Content description for the bookmarks tab of the new tab page.">
         Bookmarks
       </message>
-      <message name="IDS_ACCESSIBILITY_NTP_TOOLBAR_BTN_INTERESTS" desc="Content description for the interests section of the new tab page.">
-        Interests
-      </message>
       <message name="IDS_ACCESSIBILITY_NTP_TOOLBAR_BTN_RECENT_TABS" desc="Content description for the recent tabs section of the new tab page.">
         Recent tabs
       </message>
@@ -2388,15 +2248,6 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_ACCESSIBILITY_BOOKMARK_MORE_INFO" desc="Content description for the button that shows option menu for a bookmark.">
         Options
-      </message>
-      <message name="IDS_ACCESSIBILITY_BOOKMARK_DETAIL_CLOSE_BTN" desc="Content description for the close button that allows users to close the edit bookmark dialog.">
-        Close dialog
-      </message>
-      <message name="IDS_ACCESSIBILITY_BOOKMARK_DETAIL_DELETE_BTN" desc="Content description for the delete button that allows users to delete the current bookmark.">
-        Delete bookmark
-      </message>
-      <message name="IDS_ACCESSIBILITY_BOOKMARK_DETAIL_SAVE_BTN" desc="Content description for the save button that allows users to save the edited bookmark.">
-        Save bookmark
       </message>
       <message name="IDS_ACCESSIBILITY_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected items in a selectable list view.">
         Cancel selection
@@ -2527,9 +2378,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       </message>
       <message name="IDS_STORAGE_MANAGEMENT_ALL_STORAGE_DESCRIPTION" desc="Text used to describe all storage space used by Chrome.">
         Total data used by Chrome, including accounts, bookmarks, and saved settings
-      </message>
-      <message name="IDS_STORAGE_MANAGEMENT_TOTAL_SIZE_LABEL" desc="The total amount of storage space used (followed by a number of megabytes). [CHAR LIMIT=25]">
-        Total Storage
       </message>
       <message name="IDS_STORAGE_MANAGEMENT_CLEAR_ALL_DATA_BUTTON" desc="Text on the button to clear all Chrome data. [CHAR LIMIT=30]">
         Clear All Data
@@ -2667,12 +2515,6 @@ You can control the Physical Web in Chrome Settings.
       </message>
       <message name="IDS_PAYMENTS_LOADING_MESSAGE" desc="The text that informs the user that payment information is being loaded up.">
         Loading
-      </message>
-      <message name="IDS_PAYMENTS_PROCESSING_MESSAGE" desc="The text that informs the user that the payment is being verified and charged.">
-        Processing
-      </message>
-      <message name="IDS_PAYMENTS_SUCCESS_MESSAGE" desc="The text that informs the user that the payment has been verified and charged.">
-        Payment processed
       </message>
       <message name="IDS_PAYMENTS_ERROR_MESSAGE" desc="The text that informs the user that there is error in verifying and charging the payment.">
         There was an error processing your order.  Please check your account and try again.

@@ -145,6 +145,7 @@ java_strings_grd("chrome_strings_grd") {
 android_library("chrome_java") {
   deps = [
     ":chrome_public_apk_manifest",
+    ":chrome_public_apk_template_resources",
     "//base:base_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
@@ -549,9 +550,7 @@ chrome_public_apk_tmpl_shared("chrome_public_apk") {
   apk_name = "ChromePublic"
   shared_libraries = [ ":chrome" ]
 
-  deps = [
-    ":chrome_public_apk_template_resources",
-  ]
+  deps = []
 }
 
 chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
