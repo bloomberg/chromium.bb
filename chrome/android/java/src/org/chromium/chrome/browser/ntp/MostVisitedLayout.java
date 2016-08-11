@@ -22,6 +22,7 @@ public class MostVisitedLayout extends FrameLayout {
     private static final int MAX_COLUMNS = 4;
 
     private int mVerticalSpacing;
+    private int mExtraVerticalSpacing;
     private int mMinHorizontalSpacing;
     private int mMaxHorizontalSpacing;
     private int mMaxWidth;
@@ -49,6 +50,14 @@ public class MostVisitedLayout extends FrameLayout {
      */
     public void setMaxRows(int rows) {
         mMaxRows = rows;
+    }
+
+    /**
+     * Sets the extra vertical spacing that must be used. It will be distributed evenly above each
+     * row.
+     */
+    public void setExtraVerticalSpacing(int spacing) {
+        mExtraVerticalSpacing = spacing;
     }
 
     @Override
@@ -90,7 +99,8 @@ public class MostVisitedLayout extends FrameLayout {
         // Limit the number of rows to mMaxRows.
         int visibleChildCount = Math.min(childCount, mMaxRows * numColumns);
 
-        // Arrange the children in a grid.
+        // Arrange the visible children in a grid.
+        int numRows = (visibleChildCount + numColumns - 1) / numColumns;
         int paddingTop = getPaddingTop();
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
         for (int i = 0; i < visibleChildCount; i++) {
@@ -98,21 +108,22 @@ public class MostVisitedLayout extends FrameLayout {
             child.setVisibility(View.VISIBLE);
             int row = i / numColumns;
             int column = i % numColumns;
-            int childTop = row * (childHeight + mVerticalSpacing);
+            int verticalOffset = Math.round(mExtraVerticalSpacing * ((float) (row + 1) / numRows));
+            int childTop = row * (childHeight + mVerticalSpacing) + verticalOffset;
             int childStart = gridStart + Math.round(column * (childWidth + horizontalSpacing));
             MarginLayoutParams layoutParams = (MarginLayoutParams) child.getLayoutParams();
             layoutParams.setMargins(isRtl ? 0 : childStart, childTop, isRtl ? childStart : 0, 0);
             child.setLayoutParams(layoutParams);
         }
 
-        // Hide the last row if it's incomplete.
+        // Hide any extra children in case there are more than needed for the maximum number of
+        // rows.
         for (int i = visibleChildCount; i < childCount; i++) {
             getChildAt(i).setVisibility(View.GONE);
         }
 
-        int numRows = (visibleChildCount + numColumns - 1) / numColumns;
         int totalHeight = paddingTop + getPaddingBottom() + numRows * childHeight
-                + (numRows - 1) * mVerticalSpacing;
+                + (numRows - 1) * mVerticalSpacing + mExtraVerticalSpacing;
 
         setMeasuredDimension(totalWidth, resolveSize(totalHeight, heightMeasureSpec));
     }

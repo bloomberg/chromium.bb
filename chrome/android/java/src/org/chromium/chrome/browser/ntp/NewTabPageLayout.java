@@ -111,6 +111,10 @@ public class NewTabPageLayout extends LinearLayout {
         // Remove the scroll spacer from the layout so the weighted children can be measured
         // correctly.
         mScrollCompensationSpacer.setVisibility(View.GONE);
+
+        // Remove the extra spacing before measuring because it might not be needed anymore.
+        mMostVisitedLayout.setExtraVerticalSpacing(0);
+
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (getMeasuredHeight() > mParentViewportHeight) {
@@ -136,6 +140,17 @@ public class NewTabPageLayout extends LinearLayout {
                             topOfMostVisited - belowTheFoldHeight;
 
                     mScrollCompensationSpacer.setVisibility(View.INVISIBLE);
+                    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+                }
+            }
+            if (mCardsUiEnabled && mMostVisitedLayout.getChildCount() > 0) {
+                // If the tiles do not go below the fold by much, it is not clear that the page is
+                // scrollable. Add some extra space if needed.
+                int currentBleed = getMeasuredHeight() - mParentViewportHeight;
+                int minimumBleed =
+                        (int) (mMostVisitedLayout.getChildAt(0).getMeasuredHeight() * 0.7);
+                if (currentBleed < minimumBleed) {
+                    mMostVisitedLayout.setExtraVerticalSpacing(minimumBleed - currentBleed);
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 }
             }
