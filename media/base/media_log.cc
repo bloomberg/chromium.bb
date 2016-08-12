@@ -101,6 +101,8 @@ std::string MediaLog::PipelineStatusToString(PipelineStatus status) {
       return "pipeline: initialization failed";
     case PIPELINE_ERROR_COULD_NOT_RENDER:
       return "pipeline: could not render";
+    case PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED:
+      return "pipeline: external renderer failed";
     case PIPELINE_ERROR_READ:
       return "pipeline: read error";
     case PIPELINE_ERROR_INVALID_STATE:

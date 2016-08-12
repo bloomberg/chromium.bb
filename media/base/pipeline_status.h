@@ -27,6 +27,7 @@ enum PipelineStatus {
   PIPELINE_ERROR_READ = 9,
   // Deprecated: PIPELINE_ERROR_OPERATION_PENDING = 10,
   PIPELINE_ERROR_INVALID_STATE = 11,
+  PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED = 21,
 
   // Demuxer related errors.
   DEMUXER_ERROR_COULD_NOT_OPEN = 12,
@@ -46,7 +47,7 @@ enum PipelineStatus {
   AUDIO_RENDERER_ERROR_SPLICE_FAILED = 20,
 
   // Must be equal to the largest value ever logged.
-  PIPELINE_STATUS_MAX = AUDIO_RENDERER_ERROR_SPLICE_FAILED,
+  PIPELINE_STATUS_MAX = PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED,
 };
 
 typedef base::Callback<void(PipelineStatus)> PipelineStatusCB;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_ANDROID_MEDIA_URL_DEMUXER_H_
-#define MEDIA_BASE_ANDROID_MEDIA_URL_DEMUXER_H_
+#ifndef MEDIA_BASE_MEDIA_URL_DEMUXER_H_
+#define MEDIA_BASE_MEDIA_URL_DEMUXER_H_
 
 #include <stddef.h>
 
@@ -26,7 +26,7 @@ namespace media {
 // If Pipeline where to be refactored to use a DemuxerStreamProvider instead of
 // a Demuxer, MediaUrlDemuxer should be refactored to inherit directly from
 // DemuxerStreamProvider.
-class MediaUrlDemuxer : public Demuxer {
+class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
  public:
   MediaUrlDemuxer(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -65,4 +65,4 @@ class MediaUrlDemuxer : public Demuxer {
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_ANDROID_MEDIA_URL_DEMUXER_H_
+#endif  // MEDIA_BASE_MEDIA_URL_DEMUXER_H_

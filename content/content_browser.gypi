@@ -994,6 +994,8 @@
       'browser/media/android/browser_media_session_manager.h',
       'browser/media/android/browser_surface_view_manager.cc',
       'browser/media/android/browser_surface_view_manager.h',
+      'browser/media/android/media_player_renderer.h',
+      'browser/media/android/media_player_renderer.cc',
       'browser/media/android/media_resource_getter_impl.cc',
       'browser/media/android/media_resource_getter_impl.h',
       'browser/media/android/media_throttler.cc',

@@ -55,6 +55,21 @@ void MojoRenderer::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
   demuxer_stream_provider_ = demuxer_stream_provider;
   init_cb_ = init_cb;
 
+  switch (demuxer_stream_provider_->GetType()) {
+    case DemuxerStreamProvider::Type::STREAM:
+      InitializeRendererFromStreams(client);
+      break;
+    case DemuxerStreamProvider::Type::URL:
+      InitializeRendererFromUrl(client);
+      break;
+  }
+}
+
+void MojoRenderer::InitializeRendererFromStreams(
+    media::RendererClient* client) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   // Create audio and video mojom::DemuxerStream and bind its lifetime to
   // the pipe.
   DemuxerStream* const audio =
@@ -93,7 +108,22 @@ void MojoRenderer::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
   // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
       binding_.CreateInterfacePtrAndBind(), std::move(audio_stream),
-      std::move(video_stream),
+      std::move(video_stream), base::nullopt,
+      base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
+}
+
+void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  BindRemoteRendererIfNeeded();
+
+  // Using base::Unretained(this) is safe because |this| owns
+  // |remote_renderer_|, and the callback won't be dispatched if
+  // |remote_renderer_| is destroyed.
+  remote_renderer_->Initialize(
+      binding_.CreateInterfacePtrAndBind(), mojom::DemuxerStreamPtr(),
+      mojom::DemuxerStreamPtr(), demuxer_stream_provider_->GetUrl(),
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 
@@ -182,6 +212,11 @@ bool MojoRenderer::HasAudio() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(remote_renderer_.is_bound());
 
+  if (demuxer_stream_provider_->GetType() == DemuxerStreamProvider::Type::URL) {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   return !!demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
 }
 
@@ -189,6 +224,11 @@ bool MojoRenderer::HasVideo() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(remote_renderer_.is_bound());
+
+  if (demuxer_stream_provider_->GetType() == DemuxerStreamProvider::Type::URL) {
+    NOTIMPLEMENTED();
+    return false;
+  }
 
   return !!demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
 }

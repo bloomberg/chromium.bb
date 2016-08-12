@@ -7,13 +7,15 @@ module media.mojom;
 import "media/mojo/interfaces/demuxer_stream.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "url/mojo/url.mojom";
 
 interface Renderer {
   // Initializes the Renderer with one or both of an audio and video stream,
   // executing the callback with whether the initialization succeeded.
   Initialize(RendererClient client,
              DemuxerStream? audio,
-             DemuxerStream? video) => (bool success);
+             DemuxerStream? video,
+             url.mojom.Url? url) => (bool success);
 
   // Discards any buffered data, executing callback when completed.
   // NOTE: If an error occurs, RendererClient::OnError() can be called

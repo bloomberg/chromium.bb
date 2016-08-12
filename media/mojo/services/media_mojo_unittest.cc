@@ -116,7 +116,7 @@ class MediaServiceTest : public shell::test::ServiceTest {
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     renderer_->Initialize(renderer_client_binding_.CreateInterfacePtrAndBind(),
-                          nullptr, std::move(video_stream_proxy),
+                          nullptr, std::move(video_stream_proxy), base::nullopt,
                           base::Bind(&MediaServiceTest::OnRendererInitialized,
                                      base::Unretained(this)));
   }

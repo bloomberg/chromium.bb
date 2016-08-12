@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "media/base/media_keys.h"
+#include "media/base/media_url_demuxer.h"
 #include "media/base/renderer.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
@@ -33,20 +34,33 @@ MojoRendererService::MojoRendererService(
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
-MojoRendererService::~MojoRendererService() {
-}
+MojoRendererService::~MojoRendererService() {}
 
 void MojoRendererService::Initialize(mojom::RendererClientPtr client,
                                      mojom::DemuxerStreamPtr audio,
                                      mojom::DemuxerStreamPtr video,
+                                     const base::Optional<GURL>& url,
                                      const InitializeCallback& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   client_ = std::move(client);
   state_ = STATE_INITIALIZING;
-  stream_provider_.reset(new DemuxerStreamProviderShim(
-      std::move(audio), std::move(video),
-      base::Bind(&MojoRendererService::OnStreamReady, weak_this_, callback)));
+
+  if (url == base::nullopt) {
+    stream_provider_.reset(new DemuxerStreamProviderShim(
+        std::move(audio), std::move(video),
+        base::Bind(&MojoRendererService::OnStreamReady, weak_this_, callback)));
+    return;
+  }
+
+  DCHECK(!audio);
+  DCHECK(!video);
+  DCHECK(!url.value().is_empty());
+  stream_provider_.reset(new MediaUrlDemuxer(nullptr, url.value()));
+  renderer_->Initialize(
+      stream_provider_.get(), this,
+      base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,
+                 callback));
 }
 
 void MojoRendererService::Flush(const FlushCallback& callback) {
