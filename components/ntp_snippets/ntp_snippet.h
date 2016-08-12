@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPET_H_
 #define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPET_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/ntp_snippets/category.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -32,8 +34,11 @@ struct SnippetSource {
 };
 
 class NTPSnippet {
+  struct CompareCategoriesByID;
+
  public:
   using PtrVector = std::vector<std::unique_ptr<NTPSnippet>>;
+  using CategoryMap = std::map<Category, PtrVector, CompareCategoriesByID>;
 
   // Creates a new snippet with the given |id|.
   // Public for testing only - create snippets using the Create* methods below.
@@ -130,6 +135,10 @@ class NTPSnippet {
   static std::string TimeToJsonString(const base::Time& time);
 
  private:
+  struct CompareCategoriesByID {
+    bool operator()(const Category& left, const Category& right) const;
+  };
+
   void FindBestSource();
 
   std::string id_;

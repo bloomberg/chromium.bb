@@ -180,7 +180,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
             suggestions_service, g_browser_process->GetApplicationLocale(),
             scheduler, base::MakeUnique<NTPSnippetsFetcher>(
                            signin_manager, token_service, request_context,
-                           profile->GetPrefs(),
+                           profile->GetPrefs(), service->category_factory(),
                            base::Bind(&safe_json::SafeJsonParser::Parse),
                            is_stable_channel),
             base::MakeUnique<ImageFetcherImpl>(

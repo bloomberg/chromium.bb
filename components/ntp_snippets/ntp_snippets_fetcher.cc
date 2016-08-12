@@ -20,6 +20,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -152,6 +153,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
     OAuth2TokenService* token_service,
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
     PrefService* pref_service,
+    CategoryFactory* category_factory,
     const ParseJSONCallback& parse_json_callback,
     bool is_stable_channel)
     : OAuth2TokenService::Consumer("ntp_snippets"),
@@ -159,6 +161,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
       token_service_(token_service),
       waiting_for_refresh_token_(false),
       url_request_context_getter_(url_request_context_getter),
+      category_factory_(category_factory),
       parse_json_callback_(parse_json_callback),
       fetch_url_(GetFetchEndpoint()),
       fetch_api_(UsesChromeContentSuggestionsAPI(fetch_url_)
@@ -507,7 +510,7 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
-                                        NTPSnippet::PtrVector* snippets) {
+                                        NTPSnippet::CategoryMap* snippets) {
   const base::DictionaryValue* top_dict = nullptr;
   if (!parsed.GetAsDictionary(&top_dict)) {
     return false;
@@ -515,10 +518,13 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
 
   switch (fetch_api_) {
     case CHROME_READER_API: {
+      Category category =
+          category_factory_->FromKnownCategory(KnownCategories::ARTICLES);
+      NTPSnippet::PtrVector* articles = &(*snippets)[category];
       const base::ListValue* recos = nullptr;
       return top_dict->GetList("recos", &recos) &&
              AddSnippetsFromListValue(/* content_suggestions_api = */ false,
-                                      *recos, snippets);
+                                      *recos, articles);
     }
 
     case CHROME_CONTENT_SUGGESTIONS_API: {
@@ -527,15 +533,20 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
         return false;
       }
 
-      // Merge all categories together, for now.
-      // TODO(sfiera): preserve categories from server.
       for (const auto& v : *categories) {
-        const base::DictionaryValue* category = nullptr;
+        int category_id = -1;
+        const base::DictionaryValue* category_value = nullptr;
         const base::ListValue* suggestions = nullptr;
-        if (!(v->GetAsDictionary(&category) &&
-              category->GetList("suggestions", &suggestions) &&
-              AddSnippetsFromListValue(/* content_suggestions_api = */ true,
-                                       *suggestions, snippets))) {
+        if (!(v->GetAsDictionary(&category_value) &&
+              category_value->GetInteger("id", &category_id) &&
+              (category_id > 0) &&
+              category_value->GetList("suggestions", &suggestions))) {
+          return false;
+        }
+        Category category = category_factory_->FromRemoteCategory(category_id);
+        NTPSnippet::PtrVector* articles = &(*snippets)[category];
+        if (!AddSnippetsFromListValue(
+                /* content_suggestions_api = */ true, *suggestions, articles)) {
           return false;
         }
       }
@@ -547,7 +558,7 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
 }
 
 void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
-  NTPSnippet::PtrVector snippets;
+  NTPSnippet::CategoryMap snippets;
   if (JsonToSnippets(*parsed, &snippets)) {
     FetchFinished(OptionalSnippets(std::move(snippets)), FetchResult::SUCCESS,
                   /*extra_message=*/std::string());

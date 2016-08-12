@@ -260,6 +260,12 @@ std::string NTPSnippet::TimeToJsonString(const base::Time& time) {
   return base::Int64ToString((time - base::Time::UnixEpoch()).InSeconds());
 }
 
+bool NTPSnippet::CompareCategoriesByID::operator()(
+    const Category& left,
+    const Category& right) const {
+  return left.id() < right.id();
+}
+
 void NTPSnippet::FindBestSource() {
   // The same article can be hosted by multiple sources, e.g. nytimes.com,
   // cnn.com, etc. We need to parse the list of sources for this article and

@@ -472,13 +472,14 @@ void NTPSnippetsService::OnFetchFinished(
   DCHECK(category_status_ == CategoryStatus::AVAILABLE ||
          category_status_ == CategoryStatus::AVAILABLE_LOADING);
 
-  if (snippets) {
+  // TODO(sfiera): support more than just the provided_category_ ARTICLES.
+  if (snippets && (snippets->find(provided_category_) != snippets->end())) {
     // Sparse histogram used because the number of snippets is small (bound by
     // kMaxSnippetCount).
     DCHECK_LE(snippets->size(), static_cast<size_t>(kMaxSnippetCount));
     UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticlesFetched",
-                                snippets->size());
-    MergeSnippets(std::move(*snippets));
+                                (*snippets)[provided_category_].size());
+    MergeSnippets(std::move((*snippets)[provided_category_]));
   }
 
   ClearExpiredSnippets();

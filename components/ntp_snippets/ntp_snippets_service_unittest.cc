@@ -318,7 +318,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
         base::MakeUnique<NTPSnippetsFetcher>(
             fake_signin_manager(), fake_token_service_.get(),
             std::move(request_context_getter), pref_service(),
-            base::Bind(&ParseJson),
+            &category_factory_, base::Bind(&ParseJson),
             /*is_stable_channel=*/true);
 
     fake_signin_manager()->SignIn("foo@bar.com");

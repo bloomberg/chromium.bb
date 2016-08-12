@@ -47,7 +47,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   using ParseJSONCallback = base::Callback<
       void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
 
-  using OptionalSnippets = base::Optional<NTPSnippet::PtrVector>;
+  using OptionalSnippets = base::Optional<NTPSnippet::CategoryMap>;
   // |snippets| contains parsed snippets if a fetch succeeded. If problems
   // occur, |snippets| contains no value (no actual vector in base::Optional).
   // Error details can be retrieved using last_status().
@@ -80,6 +80,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       OAuth2TokenService* oauth2_token_service,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       PrefService* pref_service,
+      CategoryFactory* category_factory,
       const ParseJSONCallback& parse_json_callback,
       bool is_stable_channel);
   ~NTPSnippetsFetcher() override;
@@ -175,7 +176,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   bool JsonToSnippets(const base::Value& parsed,
-                      NTPSnippet::PtrVector* snippets);
+                      NTPSnippet::CategoryMap* snippets);
   void OnJsonParsed(std::unique_ptr<base::Value> parsed);
   void OnJsonError(const std::string& error);
   void FetchFinished(OptionalSnippets snippets,
@@ -191,6 +192,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
+  CategoryFactory* const category_factory_;
   const ParseJSONCallback parse_json_callback_;
   base::TimeTicks fetch_start_time_;
   std::string last_status_;
