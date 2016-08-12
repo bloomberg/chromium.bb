@@ -55,10 +55,9 @@ class SecurityOrigin;
 class ThreadableLoaderClient;
 
 class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, private RawResourceClient {
-    USING_FAST_MALLOC(DocumentThreadableLoader);
     public:
         static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        static std::unique_ptr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        static DocumentThreadableLoader* create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         ~DocumentThreadableLoader() override;
 
         void start(const ResourceRequest&) override;
@@ -68,6 +67,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // |this| may be dead after calling this method in async mode.
         void cancel() override;
         void setDefersLoading(bool);
+
+        DECLARE_TRACE();
 
     private:
         enum BlockingBehavior {
@@ -169,14 +170,14 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
                 m_resource->addClient(this);
             }
         }
-        Persistent<RawResource> m_resource;
+        Member<RawResource> m_resource;
         // End of ResourceOwner re-implementation, see above.
 
         SecurityOrigin* getSecurityOrigin() const;
         Document& document() const;
 
         ThreadableLoaderClient* m_client;
-        WeakPersistent<Document> m_document;
+        Member<Document> m_document;
 
         const ThreadableLoaderOptions m_options;
         // Some items may be overridden by m_forceDoNotAllowStoredCredentials

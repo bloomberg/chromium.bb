@@ -76,7 +76,7 @@ public:
             m_updater->update(createUnexpectedErrorDataConsumerHandle());
         if (m_loader) {
             m_loader->cancel();
-            m_loader.reset();
+            m_loader = nullptr;
         }
     }
 
@@ -103,7 +103,7 @@ public:
     }
 
 private:
-    std::unique_ptr<ThreadableLoader> createLoader(ExecutionContext* executionContext, ThreadableLoaderClient* client) const
+    ThreadableLoader* createLoader(ExecutionContext* executionContext, ThreadableLoaderClient* client) const
     {
         ThreadableLoaderOptions options;
         options.preflightPolicy = ConsiderPreflight;
@@ -134,14 +134,14 @@ private:
 
     void didFinishLoading(unsigned long, double) override
     {
-        m_loader.reset();
+        m_loader = nullptr;
     }
 
     void didFail(const ResourceError&) override
     {
         if (!m_receivedResponse)
             m_updater->update(createUnexpectedErrorDataConsumerHandle());
-        m_loader.reset();
+        m_loader = nullptr;
     }
 
     void didFailRedirectCheck() override
@@ -154,14 +154,14 @@ private:
 
     RefPtr<BlobDataHandle> m_blobDataHandle;
     Persistent<FetchBlobDataConsumerHandle::LoaderFactory> m_loaderFactory;
-    std::unique_ptr<ThreadableLoader> m_loader;
+    Persistent<ThreadableLoader> m_loader;
 
     bool m_receivedResponse;
 };
 
 class DefaultLoaderFactory final : public FetchBlobDataConsumerHandle::LoaderFactory {
 public:
-    std::unique_ptr<ThreadableLoader> create(
+    ThreadableLoader* create(
         ExecutionContext& executionContext,
         ThreadableLoaderClient* client,
         const ThreadableLoaderOptions& options,

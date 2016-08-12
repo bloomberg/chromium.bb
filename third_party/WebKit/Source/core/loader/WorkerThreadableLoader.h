@@ -34,14 +34,12 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/loader/ThreadableLoaderClientWrapper.h"
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
@@ -56,24 +54,27 @@ class ResourceResponse;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
 struct CrossThreadResourceRequestData;
+struct CrossThreadResourceTimingInfoData;
 
 // TODO(yhirano): Draw a diagram to illustrate the class relationship.
 // TODO(yhirano): Rename inner classes so that readers can see in which thread
 // they are living easily.
 class WorkerThreadableLoader final : public ThreadableLoader {
-    USING_FAST_MALLOC(WorkerThreadableLoader);
 public:
     static void loadResourceSynchronously(WorkerGlobalScope&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-    static std::unique_ptr<WorkerThreadableLoader> create(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+    static WorkerThreadableLoader* create(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
     {
-        return wrapUnique(new WorkerThreadableLoader(workerGlobalScope, client, options, resourceLoaderOptions, LoadAsynchronously));
+        return new WorkerThreadableLoader(workerGlobalScope, client, options, resourceLoaderOptions, LoadAsynchronously);
     }
 
     ~WorkerThreadableLoader() override;
 
+    // ThreadableLoader functions
     void start(const ResourceRequest&) override;
     void overrideTimeout(unsigned long timeout) override;
     void cancel() override;
+
+    DECLARE_TRACE();
 
 private:
     enum BlockingBehavior {
@@ -96,47 +97,15 @@ private:
     class WaitableEventWithTasks;
     class SyncTaskForwarder;
 
-    class Peer;
-    // A Bridge instance lives in the worker thread and requests the associated
-    // Peer (which lives in the main thread) to process loading tasks.
-    class Bridge final : public GarbageCollectedFinalized<Bridge> {
-    public:
-        Bridge(ThreadableLoaderClientWrapper*, PassRefPtr<WorkerLoaderProxy>, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, BlockingBehavior);
-        ~Bridge();
-
-        void start(const ResourceRequest&, const WorkerGlobalScope&);
-        void overrideTimeout(unsigned long timeoutMilliseconds);
-        void cancel();
-        void destroy();
-
-        void didStart(Peer*);
-
-        // This getter function is thread safe.
-        ThreadableLoaderClientWrapper* clientWrapper() { return m_clientWrapper.get(); }
-
-        DECLARE_VIRTUAL_TRACE();
-
-    private:
-        void cancelPeer();
-
-        const Member<ThreadableLoaderClientWrapper> m_clientWrapper;
-        const RefPtr<WorkerLoaderProxy> m_loaderProxy;
-        const ThreadableLoaderOptions m_threadableLoaderOptions;
-        const ResourceLoaderOptions m_resourceLoaderOptions;
-        const BlockingBehavior m_blockingBehavior;
-
-        // |*m_peer| lives in the main thread.
-        CrossThreadPersistent<Peer> m_peer;
-    };
-
-    // A Peer instance lives in the main thread. It is a ThreadableLoaderClient
-    // for a DocumentThreadableLoader and forward notifications to the
-    // ThreadableLoaderClientWrapper which lives in the worker thread.
+    // An instance of this class lives in the main thread. It is a
+    // ThreadableLoaderClient for a DocumentThreadableLoader and forward
+    // notifications to the associated WorkerThreadableLoader living in the
+    // worker thread.
     class Peer final : public GarbageCollectedFinalized<Peer>, public ThreadableLoaderClient, public WorkerThreadLifecycleObserver {
         USING_GARBAGE_COLLECTED_MIXIN(Peer);
     public:
         static void createAndStart(
-            Bridge*,
+            WorkerThreadableLoader*,
             PassRefPtr<WorkerLoaderProxy>,
             WorkerThreadLifecycleContext*,
             std::unique_ptr<CrossThreadResourceRequestData>,
@@ -169,17 +138,36 @@ private:
         void start(Document&, std::unique_ptr<CrossThreadResourceRequestData>, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
         Member<TaskForwarder> m_forwarder;
-        std::unique_ptr<ThreadableLoader> m_mainThreadLoader;
+        Member<ThreadableLoader> m_mainThreadLoader;
 
-        // |*m_clientWrapper| lives in the worker thread.
-        CrossThreadWeakPersistent<ThreadableLoaderClientWrapper> m_clientWrapper;
+        // |*m_workerLoader| lives in the worker thread.
+        CrossThreadWeakPersistent<WorkerThreadableLoader> m_workerLoader;
     };
 
     WorkerThreadableLoader(WorkerGlobalScope&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, BlockingBehavior);
+    void didStart(Peer*);
 
-    Persistent<WorkerGlobalScope> m_workerGlobalScope;
-    const Persistent<ThreadableLoaderClientWrapper> m_workerClientWrapper;
-    const Persistent<Bridge> m_bridge;
+    void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
+    void didReceiveResponse(unsigned long identifier, std::unique_ptr<CrossThreadResourceResponseData>, std::unique_ptr<WebDataConsumerHandle>);
+    void didReceiveData(std::unique_ptr<Vector<char>> data);
+    void didReceiveCachedMetadata(std::unique_ptr<Vector<char>> data);
+    void didFinishLoading(unsigned long identifier, double finishTime);
+    void didFail(const ResourceError&);
+    void didFailAccessControlCheck(const ResourceError&);
+    void didFailRedirectCheck();
+    void didDownloadData(int dataLength);
+    void didReceiveResourceTiming(std::unique_ptr<CrossThreadResourceTimingInfoData>);
+
+    Member<WorkerGlobalScope> m_workerGlobalScope;
+    RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
+    ThreadableLoaderClient* m_client;
+
+    ThreadableLoaderOptions m_threadableLoaderOptions;
+    ResourceLoaderOptions m_resourceLoaderOptions;
+    BlockingBehavior m_blockingBehavior;
+
+    // |*m_peer| lives in the main thread.
+    CrossThreadPersistent<Peer> m_peer;
 };
 
 } // namespace blink

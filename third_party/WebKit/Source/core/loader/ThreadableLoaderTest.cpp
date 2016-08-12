@@ -157,7 +157,7 @@ private:
 
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
     Checkpoint m_checkpoint;
-    std::unique_ptr<DocumentThreadableLoader> m_loader;
+    Persistent<DocumentThreadableLoader> m_loader;
 };
 
 class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper, public WorkerLoaderProxyProvider {
@@ -213,7 +213,7 @@ public:
     {
         ASSERT(m_workerThread);
         ASSERT(m_workerThread->isCurrentThread());
-        m_loader.reset();
+        m_loader = nullptr;
     }
 
     Checkpoint& checkpoint() override
@@ -336,7 +336,7 @@ private:
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
     Checkpoint m_checkpoint;
     // |m_loader| must be touched only from the worker thread only.
-    std::unique_ptr<ThreadableLoader> m_loader;
+    CrossThreadPersistent<ThreadableLoader> m_loader;
 };
 
 class ThreadableLoaderTest : public ::testing::TestWithParam<ThreadableLoaderToTest> {

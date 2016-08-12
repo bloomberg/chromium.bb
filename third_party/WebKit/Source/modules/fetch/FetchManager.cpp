@@ -169,7 +169,7 @@ private:
     Member<FetchManager> m_fetchManager;
     Member<ScriptPromiseResolver> m_resolver;
     Member<FetchRequestData> m_request;
-    std::unique_ptr<ThreadableLoader> m_loader;
+    Member<ThreadableLoader> m_loader;
     bool m_failed;
     bool m_finished;
     int m_responseHttpStatusCode;
@@ -204,6 +204,7 @@ DEFINE_TRACE(FetchManager::Loader)
     visitor->trace(m_fetchManager);
     visitor->trace(m_resolver);
     visitor->trace(m_request);
+    visitor->trace(m_loader);
     visitor->trace(m_integrityVerifier);
     visitor->trace(m_executionContext);
 }
@@ -524,7 +525,7 @@ void FetchManager::Loader::dispose()
     m_fetchManager = nullptr;
     if (m_loader) {
         m_loader->cancel();
-        m_loader.reset();
+        m_loader = nullptr;
     }
     m_executionContext = nullptr;
 }
