@@ -312,6 +312,7 @@ void BluetoothDeviceChooserController::GetDevice(
   if (!chooser_.get()) {
     PostErrorCallback(
         blink::mojom::WebBluetoothError::WEB_BLUETOOTH_NOT_SUPPORTED);
+    return;
   }
 
   if (!chooser_->CanAskForScanningPermission()) {
