@@ -163,6 +163,9 @@
     ],
     "MaterialDesignUserManager": [
         {
+            "enable_features": [
+                "MaterialDesignUserManager"
+            ],
             "group_name": "Enabled"
         }
     ],
