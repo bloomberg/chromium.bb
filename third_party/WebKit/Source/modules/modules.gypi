@@ -1808,6 +1808,8 @@
       'webdatabase/SQLTransactionState.h',
       'webdatabase/SQLTransactionStateMachine.cpp',
       'webdatabase/SQLTransactionStateMachine.h',
+      'webdatabase/StorageLog.h',
+      'webdatabase/sqlite/SQLLog.h',
       'webdatabase/sqlite/SQLValue.cpp',
       'webdatabase/sqlite/SQLiteAuthorizer.cpp',
       'webdatabase/sqlite/SQLiteDatabase.cpp',

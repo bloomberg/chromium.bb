@@ -31,7 +31,7 @@
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseThread.h"
-#include "platform/Logging.h"
+#include "modules/webdatabase/StorageLog.h"
 
 namespace blink {
 
@@ -65,9 +65,9 @@ void DatabaseTask::run()
 #endif
         return;
     }
-
-    WTF_LOG(StorageAPI, "Performing %s %p\n", debugTaskName(), this);
-
+#if DCHECK_IS_ON()
+    STORAGE_DVLOG(1) << "Performing " << debugTaskName() << " " << this;
+#endif
     m_database->resetAuthorizer();
     doPerformTask();
 
@@ -100,7 +100,7 @@ void Database::DatabaseOpenTask::doPerformTask()
         m_errorMessage = errorMessage.isolatedCopy();
 }
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
 const char* Database::DatabaseOpenTask::debugTaskName() const
 {
     return "DatabaseOpenTask";
@@ -120,7 +120,7 @@ void Database::DatabaseCloseTask::doPerformTask()
     database()->close();
 }
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
 const char* Database::DatabaseCloseTask::debugTaskName() const
 {
     return "DatabaseCloseTask";
@@ -158,7 +158,7 @@ void Database::DatabaseTransactionTask::taskCancelled()
     m_transaction->notifyDatabaseThreadIsShuttingDown();
 }
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
 const char* Database::DatabaseTransactionTask::debugTaskName() const
 {
     return "DatabaseTransactionTask";
@@ -180,7 +180,7 @@ void Database::DatabaseTableNamesTask::doPerformTask()
     m_tableNames = database()->performGetTableNames();
 }
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
 const char* Database::DatabaseTableNamesTask::debugTaskName() const
 {
     return "DatabaseTableNamesTask";

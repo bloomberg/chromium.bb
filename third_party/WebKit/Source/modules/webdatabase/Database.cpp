@@ -46,9 +46,9 @@
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
+#include "modules/webdatabase/StorageLog.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
-#include "platform/Logging.h"
 #include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
@@ -333,7 +333,7 @@ void Database::scheduleTransaction()
 
     if (transaction && getDatabaseContext()->databaseThreadAvailable()) {
         std::unique_ptr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
-        WTF_LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for transaction %p\n", task.get(), task->transaction());
+        STORAGE_DVLOG(1) << "Scheduling DatabaseTransactionTask " << task.get() << " for transaction " << task->transaction();
         m_transactionInProgress = true;
         getDatabaseContext()->databaseThread()->scheduleTask(std::move(task));
     } else {
@@ -347,7 +347,7 @@ void Database::scheduleTransactionStep(SQLTransactionBackend* transaction)
         return;
 
     std::unique_ptr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
-    WTF_LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for the transaction step\n", task.get());
+    STORAGE_DVLOG(1) << "Scheduling DatabaseTransactionTask " << task.get() << " for the transaction step";
     getDatabaseContext()->databaseThread()->scheduleTask(std::move(task));
 }
 
@@ -445,7 +445,7 @@ bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase, Database
         if (entry != guidToVersionMap().end()) {
             // Map null string to empty string (see updateGuidVersionMap()).
             currentVersion = entry->value.isNull() ? emptyString() : entry->value.isolatedCopy();
-            WTF_LOG(StorageAPI, "Current cached version for guid %i is %s", m_guid, currentVersion.ascii().data());
+            STORAGE_DVLOG(1) << "Current cached version for guid " << m_guid << " is " << currentVersion;
 
             // Note: In multi-process browsers the cached value may be
             // inaccurate, but we cannot read the actual version from the
@@ -463,7 +463,7 @@ bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase, Database
             }
             m_sqliteDatabase.setBusyTimeout(maxSqliteBusyWaitTime);
         } else {
-            WTF_LOG(StorageAPI, "No cached version for guid %i", m_guid);
+            STORAGE_DVLOG(1) << "No cached version for guid " << m_guid;
 
             SQLiteTransaction transaction(m_sqliteDatabase);
             transaction.begin();
@@ -494,9 +494,9 @@ bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase, Database
             }
 
             if (currentVersion.length()) {
-                WTF_LOG(StorageAPI, "Retrieved current version %s from database %s", currentVersion.ascii().data(), databaseDebugName().ascii().data());
+                STORAGE_DVLOG(1) << "Retrieved current version " << currentVersion << " from database " << databaseDebugName();
             } else if (!m_new || shouldSetVersionInNewDatabase) {
-                WTF_LOG(StorageAPI, "Setting version %s in database %s that was just created", m_expectedVersion.ascii().data(), databaseDebugName().ascii().data());
+                STORAGE_DVLOG(1) << "Setting version " << m_expectedVersion << " in database " << databaseDebugName() << " that was just created";
                 if (!setVersionInDatabase(m_expectedVersion, false)) {
                     reportOpenDatabaseResult(5, InvalidStateError, m_sqliteDatabase.lastError(), WTF::monotonicallyIncreasingTime() - callStartTime);
                     errorMessage = formatErrorMessage("unable to open database, failed to write current version", m_sqliteDatabase.lastError(), m_sqliteDatabase.lastErrorMsg());
@@ -512,7 +512,7 @@ bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase, Database
     }
 
     if (currentVersion.isNull()) {
-        WTF_LOG(StorageAPI, "Database %s does not have its version set", databaseDebugName().ascii().data());
+        STORAGE_DVLOG(1) << "Database " << databaseDebugName() << " does not have its version set";
         currentVersion = "";
     }
 

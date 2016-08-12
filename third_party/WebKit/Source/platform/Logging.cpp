@@ -33,8 +33,6 @@ namespace blink {
 
 WTFLogChannel LogNetwork =            { WTFLogChannelOff };
 WTFLogChannel LogResourceLoading =    { WTFLogChannelOff };
-WTFLogChannel LogSQLDatabase =        { WTFLogChannelOff };
-WTFLogChannel LogStorageAPI =         { WTFLogChannelOff };
 
 WTFLogChannel* getChannelFromName(const String& channelName)
 {
@@ -46,12 +44,6 @@ WTFLogChannel* getChannelFromName(const String& channelName)
 
     if (equalIgnoringCase(channelName, String("ResourceLoading")))
         return &LogResourceLoading;
-
-    if (equalIgnoringCase(channelName, String("SQLDatabase")))
-        return &LogSQLDatabase;
-
-    if (equalIgnoringCase(channelName, String("StorageAPI")))
-        return &LogStorageAPI;
 
     return 0;
 }

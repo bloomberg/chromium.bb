@@ -38,9 +38,9 @@
 #include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
+#include "modules/webdatabase/StorageLog.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
-#include "platform/Logging.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include <memory>
@@ -485,8 +485,9 @@ void SQLTransactionBackend::computeNextStateAndCleanupIfNeeded()
             || m_nextState == SQLTransactionState::PostflightAndCommit
             || m_nextState == SQLTransactionState::CleanupAndTerminate
             || m_nextState == SQLTransactionState::CleanupAfterTransactionErrorCallback);
-
-        WTF_LOG(StorageAPI, "State %s\n", nameForSQLTransactionState(m_nextState));
+#if DCHECK_IS_ON()
+        STORAGE_DVLOG(1) << "State " << nameForSQLTransactionState(m_nextState);
+#endif
         return;
     }
 
@@ -496,7 +497,7 @@ void SQLTransactionBackend::computeNextStateAndCleanupIfNeeded()
     m_nextState = SQLTransactionState::End;
 
     // If the database was stopped, don't do anything and cancel queued work
-    WTF_LOG(StorageAPI, "Database was stopped or interrupted - cancelling work for this transaction");
+    STORAGE_DVLOG(1) << "Database was stopped or interrupted - cancelling work for this transaction";
 
     // The current SQLite transaction should be stopped, as well
     if (m_sqliteTransaction) {
@@ -556,7 +557,7 @@ SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight()
     ASSERT(!m_database->sqliteDatabase().transactionInProgress());
     ASSERT(m_lockAcquired);
 
-    WTF_LOG(StorageAPI, "Opening and preflighting transaction %p", this);
+    STORAGE_DVLOG(1) << "Opening and preflighting transaction " << this;
 
     // Set the maximum usage for this transaction if this transactions is not read-only
     if (!m_readOnly)
@@ -763,7 +764,7 @@ SQLTransactionState SQLTransactionBackend::cleanupAndTerminate()
     ASSERT(m_lockAcquired);
 
     // Spec 4.3.2.9: End transaction steps. There is no next step.
-    WTF_LOG(StorageAPI, "Transaction %p is complete\n", this);
+    STORAGE_DVLOG(1) << "Transaction " << this << " is complete";
     ASSERT(!m_database->sqliteDatabase().transactionInProgress());
 
     // Phase 5 cleanup. See comment on the SQLTransaction life-cycle above.
@@ -787,7 +788,7 @@ SQLTransactionState SQLTransactionBackend::cleanupAfterTransactionErrorCallback(
 {
     ASSERT(m_lockAcquired);
 
-    WTF_LOG(StorageAPI, "Transaction %p is complete with an error\n", this);
+    STORAGE_DVLOG(1) << "Transaction " << this << " is complete with an error";
     m_database->disableAuthorizer();
     if (m_sqliteTransaction) {
         // Spec 4.3.2.10: Rollback the transaction.
@@ -808,7 +809,9 @@ SQLTransactionState SQLTransactionBackend::cleanupAfterTransactionErrorCallback(
 // modify is m_requestedState which is meant for this purpose.
 void SQLTransactionBackend::requestTransitToState(SQLTransactionState nextState)
 {
-    WTF_LOG(StorageAPI, "Scheduling %s for transaction %p\n", nameForSQLTransactionState(nextState), this);
+#if DCHECK_IS_ON()
+    STORAGE_DVLOG(1) << "Scheduling " << nameForSQLTransactionState(nextState) << " for transaction " << this;
+#endif
     m_requestedState = nextState;
     ASSERT(m_requestedState != SQLTransactionState::End);
     m_database->scheduleTransactionStep(this);

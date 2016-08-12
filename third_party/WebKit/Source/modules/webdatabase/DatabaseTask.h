@@ -65,7 +65,7 @@ private:
     CrossThreadPersistent<Database> m_database;
     TaskSynchronizer* m_synchronizer;
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     virtual const char* debugTaskName() const = 0;
     bool m_complete;
 #endif
@@ -82,7 +82,7 @@ private:
     DatabaseOpenTask(Database*, bool setVersionInNewDatabase, TaskSynchronizer*, DatabaseError&, String& errorMessage, bool& success);
 
     void doPerformTask() override;
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     const char* debugTaskName() const override;
 #endif
 
@@ -103,7 +103,7 @@ private:
     DatabaseCloseTask(Database*, TaskSynchronizer*);
 
     void doPerformTask() override;
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     const char* debugTaskName() const override;
 #endif
 };
@@ -125,7 +125,7 @@ private:
 
     void doPerformTask() override;
     void taskCancelled() override;
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     const char* debugTaskName() const override;
 #endif
 
@@ -143,7 +143,7 @@ private:
     DatabaseTableNamesTask(Database*, TaskSynchronizer*, Vector<String>& names);
 
     void doPerformTask() override;
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     const char* debugTaskName() const override;
 #endif
 

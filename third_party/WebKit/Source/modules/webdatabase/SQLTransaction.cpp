@@ -43,7 +43,7 @@
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionClient.h" // FIXME: Should be used in the backend only.
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
-#include "platform/Logging.h"
+#include "modules/webdatabase/StorageLog.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
@@ -133,7 +133,9 @@ SQLTransaction::StateFunction SQLTransaction::stateFunctionFor(SQLTransactionSta
 // modify is m_requestedState which is meant for this purpose.
 void SQLTransaction::requestTransitToState(SQLTransactionState nextState)
 {
-    WTF_LOG(StorageAPI, "Scheduling %s for transaction %p\n", nameForSQLTransactionState(nextState), this);
+#if DCHECK_IS_ON()
+    STORAGE_DVLOG(1) << "Scheduling " << nameForSQLTransactionState(nextState) << " for transaction " << this;
+#endif
     m_requestedState = nextState;
     m_database->scheduleTransactionCallback(this);
 }
@@ -321,8 +323,9 @@ bool SQLTransaction::computeNextStateAndCleanupIfNeeded()
             || m_nextState == SQLTransactionState::DeliverStatementCallback
             || m_nextState == SQLTransactionState::DeliverQuotaIncreaseCallback
             || m_nextState == SQLTransactionState::DeliverSuccessCallback);
-
-        WTF_LOG(StorageAPI, "Callback %s\n", nameForSQLTransactionState(m_nextState));
+#if DCHECK_IS_ON()
+        STORAGE_DVLOG(1) << "Callback " << nameForSQLTransactionState(m_nextState);
+#endif
         return false;
     }
 

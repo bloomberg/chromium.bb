@@ -25,8 +25,8 @@
 
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 
+#include "modules/webdatabase/sqlite/SQLLog.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
-#include "platform/Logging.h"
 #include "platform/heap/SafePoint.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "wtf/Assertions.h"
@@ -110,7 +110,7 @@ int SQLiteStatement::prepare()
     {
         SafePointScope scope(BlinkGC::HeapPointersOnStack);
 
-        WTF_LOG(SQLDatabase, "SQL - prepare - %s", query.data());
+        SQL_DVLOG(1) << "SQL - prepare - " << query.data();
 
         // Pass the length of the string including the null character to sqlite3_prepare_v2;
         // this lets SQLite avoid an extra string copy.
@@ -121,7 +121,7 @@ int SQLiteStatement::prepare()
     m_statement = *statement;
 
     if (error != SQLITE_OK)
-        WTF_LOG(SQLDatabase, "sqlite3_prepare16 failed (%i)\n%s\n%s", error, query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
+        SQL_DVLOG(1) << "sqlite3_prepare16 failed (" << error << ")\n" << query.data() << "\n" << sqlite3_errmsg(m_database.sqlite3Handle());
     else if (*tail && **tail)
         error = SQLITE_ERROR;
 
@@ -143,11 +143,11 @@ int SQLiteStatement::step()
     // in order to compute properly the lastChanges() return value.
     m_database.updateLastChangesCount();
 
-    WTF_LOG(SQLDatabase, "SQL - step - %s", m_query.ascii().data());
+    SQL_DVLOG(1) << "SQL - step - " << m_query;
     int error = sqlite3_step(m_statement);
     if (error != SQLITE_DONE && error != SQLITE_ROW) {
-        WTF_LOG(SQLDatabase, "sqlite3_step failed (%i)\nQuery - %s\nError - %s",
-            error, m_query.ascii().data(), sqlite3_errmsg(m_database.sqlite3Handle()));
+        SQL_DVLOG(1) << "sqlite3_step failed (" << error << " )\nQuery - "
+            << m_query << "\nError - " << sqlite3_errmsg(m_database.sqlite3Handle());
     }
 
     return restrictError(error);
@@ -160,7 +160,7 @@ int SQLiteStatement::finalize()
 #endif
     if (!m_statement)
         return SQLITE_OK;
-    WTF_LOG(SQLDatabase, "SQL - finalize - %s", m_query.ascii().data());
+    SQL_DVLOG(1) << "SQL - finalize - " << m_query;
     int result = sqlite3_finalize(m_statement);
     m_statement = 0;
     return restrictError(result);

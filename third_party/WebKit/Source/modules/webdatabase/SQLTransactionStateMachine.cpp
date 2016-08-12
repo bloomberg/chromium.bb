@@ -25,12 +25,11 @@
 
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
 
-#include "platform/Logging.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
 const char* nameForSQLTransactionState(SQLTransactionState state)
 {
     switch (state) {

@@ -37,7 +37,7 @@
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/DatabaseTracker.h"
-#include "platform/Logging.h"
+#include "modules/webdatabase/StorageLog.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/PtrUtil.h"
@@ -146,8 +146,7 @@ void DatabaseManager::throwExceptionForDatabaseError(DatabaseError error, const 
 
 static void logOpenDatabaseError(ExecutionContext* context, const String& name)
 {
-    WTF_LOG(StorageAPI, "Database %s for origin %s not allowed to be established", name.ascii().data(),
-        context->getSecurityOrigin()->toString().ascii().data());
+    STORAGE_DVLOG(1) << "Database " << name << " for origin " << context->getSecurityOrigin()->toString() << " not allowed to be established";
 }
 
 Database* DatabaseManager::openDatabaseInternal(ExecutionContext* context,
@@ -196,7 +195,7 @@ Database* DatabaseManager::openDatabase(ExecutionContext* context,
     DatabaseClient::from(context)->didOpenDatabase(database, context->getSecurityOrigin()->host(), name, expectedVersion);
 
     if (database->isNew() && creationCallback) {
-        WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database);
+        STORAGE_DVLOG(1) << "Scheduling DatabaseCreationCallbackTask for database " << database;
         database->getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&databaseCallbackHandleEvent, wrapPersistent(creationCallback), wrapPersistent(database)), "openDatabase");
     }
 

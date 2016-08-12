@@ -26,7 +26,7 @@
 
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 
-#include "platform/Logging.h"
+#include "modules/webdatabase/sqlite/SQLLog.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
@@ -191,7 +191,7 @@ void SQLiteDatabase::setBusyTimeout(int ms)
     if (m_db)
         sqlite3_busy_timeout(m_db, ms);
     else
-        WTF_LOG(SQLDatabase, "BusyTimeout set on non-open database");
+        SQL_DVLOG(1) << "BusyTimeout set on non-open database";
 }
 
 bool SQLiteDatabase::executeCommand(const String& sql)
@@ -214,7 +214,7 @@ bool SQLiteDatabase::tableExists(const String& tablename)
 int SQLiteDatabase::runVacuumCommand()
 {
     if (!executeCommand("VACUUM;"))
-        WTF_LOG(SQLDatabase, "Unable to vacuum database - %s", lastErrorMsg());
+        SQL_DVLOG(1) << "Unable to vacuum database -" << lastErrorMsg();
     return lastError();
 }
 
@@ -224,7 +224,7 @@ int SQLiteDatabase::runIncrementalVacuumCommand()
     enableAuthorizer(false);
 
     if (!executeCommand("PRAGMA incremental_vacuum"))
-        WTF_LOG(SQLDatabase, "Unable to run incremental vacuum - %s", lastErrorMsg());
+        SQL_DVLOG(1) << "Unable to run incremental vacuum - " << lastErrorMsg();
 
     enableAuthorizer(true);
     return lastError();

@@ -32,8 +32,8 @@
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
+#include "modules/webdatabase/StorageLog.h"
 #include "platform/CrossThreadFunctional.h"
-#include "platform/Logging.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
@@ -83,7 +83,7 @@ void DatabaseThread::terminate()
         ASSERT(!m_terminationRequested);
         m_terminationRequested = true;
         m_cleanupSync = &sync;
-        WTF_LOG(StorageAPI, "DatabaseThread %p was asked to terminate\n", this);
+        STORAGE_DVLOG(1) << "DatabaseThread " << this << " was asked to terminate";
         m_thread->postTask(BLINK_FROM_HERE, crossThreadBind(&DatabaseThread::cleanupDatabaseThread, wrapCrossThreadPersistent(this)));
     }
     sync.waitForTaskCompletion();
@@ -97,7 +97,7 @@ void DatabaseThread::cleanupDatabaseThread()
 {
     DCHECK(isDatabaseThread());
 
-    WTF_LOG(StorageAPI, "Cleaning up DatabaseThread %p", this);
+    STORAGE_DVLOG(1) << "Cleaning up DatabaseThread " <<  this;
 
     // Clean up the list of all pending transactions on this database thread
     m_transactionCoordinator->shutdown();

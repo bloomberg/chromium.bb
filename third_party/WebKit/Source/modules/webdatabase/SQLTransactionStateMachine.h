@@ -59,7 +59,7 @@ protected:
 #endif
 };
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
 extern const char* nameForSQLTransactionState(SQLTransactionState);
 #endif
 
