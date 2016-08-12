@@ -9,13 +9,18 @@
 #include "base/win/registry.h"
 
 uint32_t OpenClientStateKey(bool system_level,
-                            const wchar_t* app_guid,
+                            App app,
                             base::win::RegKey* key) {
 #if defined(GOOGLE_CHROME_BUILD)
+  constexpr wchar_t kChromeAppGuid[] =
+      L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+  constexpr wchar_t kBinariesAppGuid[] =
+      L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
   base::string16 path(base::StringPrintf(
-      L"Software\\Google\\Update\\ClientState\\%ls", app_guid));
+      L"Software\\Google\\Update\\ClientState\\%ls",
+      (app == App::CHROME_BINARIES ? kBinariesAppGuid : kChromeAppGuid)));
 #else
-  base::string16 path(app_guid == kBinariesAppGuid
+  base::string16 path(app == App::CHROME_BINARIES
                           ? L"Software\\Chromium Binaries"
                           : L"Software\\Chromium");
 #endif
@@ -26,7 +31,7 @@ uint32_t OpenClientStateKey(bool system_level,
 
 void WriteResultInfo(bool system_level, const ResultInfo& result_info) {
   base::win::RegKey key;
-  uint32_t result = OpenClientStateKey(system_level, kChromeAppGuid, &key);
+  uint32_t result = OpenClientStateKey(system_level, App::CHROME_BROWSER, &key);
   if (result != ERROR_SUCCESS)
     return;
   key.WriteValue(kInstallerResult,

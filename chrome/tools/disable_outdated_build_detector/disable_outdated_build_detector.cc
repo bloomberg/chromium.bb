@@ -29,7 +29,7 @@ bool IsSystemLevel(const base::CommandLine& command_line) {
 bool IsChromeMultiInstall(bool system_level) {
   base::win::RegKey key;
 
-  LONG result = OpenClientStateKey(system_level, kChromeAppGuid, &key);
+  LONG result = OpenClientStateKey(system_level, App::CHROME_BROWSER, &key);
   if (result != ERROR_SUCCESS)
     return false;
   base::string16 uninstall_arguments;
@@ -41,15 +41,13 @@ bool IsChromeMultiInstall(bool system_level) {
   return command_line.HasSwitch(switches::kMultiInstall);
 }
 
-// Disables the outdated build detector for |app_guid|. On failures, |detail|
-// will be populated with a Windows error code corresponding to the failure
-// mode. Returns the exit code for the operation.
-ExitCode DisableForApp(bool system_level,
-                       const wchar_t* app_guid,
-                       uint32_t* detail) {
+// Disables the outdated build detector for |app|. On failures, |detail| will be
+// populated with a Windows error code corresponding to the failure mode.
+// Returns the exit code for the operation.
+ExitCode DisableForApp(bool system_level, App app, uint32_t* detail) {
   base::win::RegKey key;
 
-  *detail = OpenClientStateKey(system_level, app_guid, &key);
+  *detail = OpenClientStateKey(system_level, app, &key);
   if (*detail == ERROR_FILE_NOT_FOUND)
     return ExitCode::NO_CHROME;
   if (*detail != ERROR_SUCCESS)
@@ -78,14 +76,14 @@ ExitCode DisableForApp(bool system_level,
 // for the operation.
 ExitCode DisableOutdatedBuildDetectorImpl(bool system_level, uint32_t* detail) {
   // Update Chrome's brand code.
-  ExitCode exit_code = DisableForApp(system_level, kChromeAppGuid, detail);
+  ExitCode exit_code = DisableForApp(system_level, App::CHROME_BROWSER, detail);
 
   // If that succeeded and Chrome is multi-install, make a best-effort attempt
   // to update the binaries' brand code.
   if (exit_code == ExitCode::CHROME_BRAND_UPDATED &&
       IsChromeMultiInstall(system_level)) {
     ExitCode secondary_code =
-        DisableForApp(system_level, kBinariesAppGuid, detail);
+        DisableForApp(system_level, App::CHROME_BINARIES, detail);
     if (secondary_code == ExitCode::CHROME_BRAND_UPDATED)
       exit_code = ExitCode::BOTH_BRANDS_UPDATED;
   }

@@ -22,12 +22,16 @@ struct ResultInfo {
   uint32_t installer_extra_code1;
 };
 
+// An identifier of an app's registration with Google Update.
+enum class App {
+  CHROME_BROWSER,
+  CHROME_BINARIES,
+};
+
 // Opens the Google Update ClientState key in the registry for the app
-// identified by |app_guid| at |system_level|. Returns ERROR_SUCCESS or another
+// identified by |app| at |system_level|. Returns ERROR_SUCCESS or another
 // Windows error value.
-uint32_t OpenClientStateKey(bool system_level,
-                            const wchar_t* app_guid,
-                            base::win::RegKey* key);
+uint32_t OpenClientStateKey(bool system_level, App app, base::win::RegKey* key);
 
 // Writes the data in |result_info| into Chrome's ClientState key.
 void WriteResultInfo(bool system_level, const ResultInfo& result_info);

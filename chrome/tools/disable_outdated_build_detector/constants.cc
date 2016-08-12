@@ -20,15 +20,6 @@ const char kGoogleUpdateIsMachine[] = "GoogleUpdateIsMachine";
 
 }  // namespace env
 
-// App GUIDs for Google Chrome and the Google Chrome binaries.
-#if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kChromeAppGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
-const wchar_t kBinariesAppGuid[] = L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
-#else
-const wchar_t kChromeAppGuid[] = L"";
-const wchar_t kBinariesAppGuid[] = L"";
-#endif
-
 // The new brand to which organic installs will be switched.
 const wchar_t kAOHY[] = L"AOHY";
 

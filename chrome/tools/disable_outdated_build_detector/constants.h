@@ -20,9 +20,6 @@ extern const char kGoogleUpdateIsMachine[];
 
 }  // namespace env
 
-extern const wchar_t kChromeAppGuid[];
-extern const wchar_t kBinariesAppGuid[];
-
 extern const wchar_t kAOHY[];
 extern const wchar_t kBrand[];
 extern const wchar_t kInstallerResult[];
