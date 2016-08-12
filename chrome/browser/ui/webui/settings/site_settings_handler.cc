@@ -4,20 +4,105 @@
 
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
+#include "base/macros.h"
+#include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/quota/quota_status_code.h"
 #include "ui/base/text/bytes_formatting.h"
 
+
 namespace settings {
+
+namespace {
+
+const char kAppName[] = "appName";
+const char kAppId[] = "appId";
+
+// Return an appropriate API Permission ID for the given string name.
+extensions::APIPermission::APIPermission::ID APIPermissionFromGroupName(
+    std::string type) {
+  // Once there are more than two groups to consider, this should be changed to
+  // something better than if's.
+
+  if (site_settings::ContentSettingsTypeFromGroupName(type) ==
+      CONTENT_SETTINGS_TYPE_GEOLOCATION)
+    return extensions::APIPermission::APIPermission::kGeolocation;
+
+  if (site_settings::ContentSettingsTypeFromGroupName(type) ==
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+    return extensions::APIPermission::APIPermission::kNotifications;
+
+  return extensions::APIPermission::APIPermission::kInvalid;
+}
+
+// Add an "Allow"-entry to the list of |exceptions| for a |url_pattern| from
+// the web extent of a hosted |app|.
+void AddExceptionForHostedApp(const std::string& url_pattern,
+    const extensions::Extension& app, base::ListValue* exceptions) {
+  std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue());
+
+  std::string setting_string =
+      content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW);
+  DCHECK(!setting_string.empty());
+
+  exception->SetString(site_settings::kSetting, setting_string);
+  exception->SetString(site_settings::kOrigin, url_pattern);
+  exception->SetString(site_settings::kEmbeddingOrigin, url_pattern);
+  exception->SetString(site_settings::kSource, "HostedApp");
+  exception->SetString(kAppName, app.name());
+  exception->SetString(kAppId, app.id());
+  exceptions->Append(std::move(exception));
+}
+
+// Asks the |profile| for hosted apps which have the |permission| set, and
+// adds their web extent and launch URL to the |exceptions| list.
+void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
+    extensions::APIPermission::APIPermission::ID permission,
+    base::ListValue* exceptions) {
+  const extensions::ExtensionSet& extensions =
+      extensions::ExtensionRegistry::Get(context)->enabled_extensions();
+  for (extensions::ExtensionSet::const_iterator extension = extensions.begin();
+       extension != extensions.end(); ++extension) {
+    if (!(*extension)->is_hosted_app() ||
+        !(*extension)->permissions_data()->HasAPIPermission(permission))
+      continue;
+
+    extensions::URLPatternSet web_extent = (*extension)->web_extent();
+    // Add patterns from web extent.
+    for (extensions::URLPatternSet::const_iterator pattern = web_extent.begin();
+         pattern != web_extent.end(); ++pattern) {
+      std::string url_pattern = pattern->GetAsString();
+      AddExceptionForHostedApp(url_pattern, *extension->get(), exceptions);
+    }
+    // Retrieve the launch URL.
+    GURL launch_url =
+        extensions::AppLaunchInfo::GetLaunchWebURL(extension->get());
+    // Skip adding the launch URL if it is part of the web extent.
+    if (web_extent.MatchesURL(launch_url))
+      continue;
+    AddExceptionForHostedApp(launch_url.spec(), *extension->get(), exceptions);
+  }
+}
+
+}  // namespace
+
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
     : profile_(profile), observer_(this) {
@@ -226,6 +311,10 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   std::unique_ptr<base::ListValue> exceptions(new base::ListValue);
+
+  AddExceptionsGrantedByHostedApps(profile_, APIPermissionFromGroupName(type),
+      exceptions.get());
+
   site_settings::GetExceptionsFromHostContentSettingsMap(
       map, content_type, web_ui(), exceptions.get());
   ResolveJavascriptCallback(*callback_id, *exceptions.get());

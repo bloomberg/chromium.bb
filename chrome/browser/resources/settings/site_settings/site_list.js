@@ -302,8 +302,12 @@ Polymer({
       return null;
     // TODO(finnur): Hmm, it would probably be better to ensure scheme on the
     //     JS/C++ boundary.
-    return new URL(
-        this.ensureUrlHasScheme(originOrPattern.replace('[*.]', '')));
+    // TODO(dschuyler): I agree. This filtering should be done in one go, rather
+    // that during the sort. The URL generation should be wrapped in a try/catch
+    // as well.
+    originOrPattern = originOrPattern.replace('*://', '');
+    originOrPattern = originOrPattern.replace('[*.]', '');
+    return new URL(this.ensureUrlHasScheme(originOrPattern));
   },
 
   /**
