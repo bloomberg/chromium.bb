@@ -70,7 +70,8 @@ CategoryInfo OfflinePageSuggestionsProvider::GetCategoryInfo(
     Category category) {
   // TODO(pke): Use the proper string once it's agreed on.
   return CategoryInfo(base::ASCIIToUTF16("Offline pages"),
-                      ContentSuggestionsCardLayout::MINIMAL_CARD);
+                      ContentSuggestionsCardLayout::MINIMAL_CARD,
+                      /* has_more_button */ false);
 }
 
 void OfflinePageSuggestionsProvider::DismissSuggestion(

@@ -100,6 +100,7 @@ public class SnippetsBridge implements SuggestionsSource {
 
     @Override
     public void fetchSuggestionImage(SnippetArticleListItem suggestion, Callback<Bitmap> callback) {
+        assert mNativeSnippetsBridge != 0;
         nativeFetchSuggestionImage(mNativeSnippetsBridge, suggestion.mId, callback);
     }
 
@@ -149,8 +150,8 @@ public class SnippetsBridge implements SuggestionsSource {
 
     @CalledByNative
     private static SuggestionsCategoryInfo createSuggestionsCategoryInfo(
-            String title, int cardLayout) {
-        return new SuggestionsCategoryInfo(title, cardLayout);
+            String title, int cardLayout, boolean hasMoreButton) {
+        return new SuggestionsCategoryInfo(title, cardLayout, hasMoreButton);
     }
 
     @CalledByNative
@@ -179,7 +180,7 @@ public class SnippetsBridge implements SuggestionsSource {
     private native void nativeFetchSuggestionImage(
             long nativeNTPSnippetsBridge, String suggestionId, Callback<Bitmap> callback);
     private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String suggestionId);
-    private static native void nativeGetURLVisited(
+    private native void nativeGetURLVisited(
             long nativeNTPSnippetsBridge, Callback<Boolean> callback, String url);
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
 }

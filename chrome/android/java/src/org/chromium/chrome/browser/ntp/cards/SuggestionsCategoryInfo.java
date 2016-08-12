@@ -22,17 +22,30 @@ public class SuggestionsCategoryInfo {
     @ContentSuggestionsCardLayoutEnum
     private final int mCardLayout;
 
-    public SuggestionsCategoryInfo(String title, @ContentSuggestionsCardLayoutEnum int cardLayout) {
-        this.mTitle = title;
-        this.mCardLayout = cardLayout;
+    /**
+     * Whether the category supports a "More" button. The button either triggers
+     * a fixed action (like opening a native page) or, if there is no such fixed
+     * action, it queries the provider for more suggestions.
+     */
+    private final boolean mHasMoreButton;
+
+    public SuggestionsCategoryInfo(
+            String title, @ContentSuggestionsCardLayoutEnum int cardLayout, boolean hasMoreButton) {
+        mTitle = title;
+        mCardLayout = cardLayout;
+        mHasMoreButton = hasMoreButton;
     }
 
     public String getTitle() {
-        return this.mTitle;
+        return mTitle;
     }
 
     @ContentSuggestionsCardLayoutEnum
     public int getCardLayout() {
-        return this.mCardLayout;
+        return mCardLayout;
+    }
+
+    public boolean hasMoreButton() {
+        return mHasMoreButton;
     }
 }

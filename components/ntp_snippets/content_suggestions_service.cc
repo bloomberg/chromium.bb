@@ -183,18 +183,19 @@ void ContentSuggestionsService::OnNewSuggestions(
     ContentSuggestionsProvider* provider,
     Category category,
     std::vector<ContentSuggestion> new_suggestions) {
-  if (RegisterCategoryIfRequired(provider, category)) {
+  if (RegisterCategoryIfRequired(provider, category))
     NotifyCategoryStatusChanged(category);
-  }
+
+  if (!IsCategoryStatusAvailable(provider->GetCategoryStatus(category)))
+    return;
 
   for (const ContentSuggestion& suggestion :
        suggestions_by_category_[category]) {
     id_category_map_.erase(suggestion.id());
   }
 
-  for (const ContentSuggestion& suggestion : new_suggestions) {
+  for (const ContentSuggestion& suggestion : new_suggestions)
     id_category_map_.insert(std::make_pair(suggestion.id(), category));
-  }
 
   suggestions_by_category_[category] = std::move(new_suggestions);
 

@@ -46,7 +46,8 @@ public interface SuggestionsSource {
 
     /**
      * Gets the current content suggestions for a category, in the order in which they should be
-     * displayed.
+     * displayed. If the status of the category is not one of the available statuses, this will
+     * return an empty list.
      */
     List<SnippetArticleListItem> getSuggestionsForCategory(int category);
 

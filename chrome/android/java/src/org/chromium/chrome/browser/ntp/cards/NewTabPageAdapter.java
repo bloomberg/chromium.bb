@@ -273,7 +273,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             @CategoryStatusEnum int status) {
         if (!mSections.containsKey(category)) {
             SuggestionsCategoryInfo info = mSuggestionsSource.getCategoryInfo(category);
-            mSections.put(category, new SuggestionsSection(suggestions, status, info, this));
+            mSections.put(
+                    category, new SuggestionsSection(category, suggestions, status, info, this));
         } else {
             mSections.get(category).setSuggestions(suggestions, status, this);
         }

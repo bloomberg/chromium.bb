@@ -75,7 +75,7 @@ class MockProvider : public ContentSuggestionsProvider {
 
   CategoryInfo GetCategoryInfo(Category category) {
     return CategoryInfo(base::ASCIIToUTF16("Section title"),
-                        ContentSuggestionsCardLayout::FULL_CARD);
+                        ContentSuggestionsCardLayout::FULL_CARD, true);
   }
 
   void FireSuggestionsChanged(Category category, std::vector<int> numbers) {

@@ -284,7 +284,7 @@ CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
 CategoryInfo NTPSnippetsService::GetCategoryInfo(Category category) {
   return CategoryInfo(
       l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER),
-      ContentSuggestionsCardLayout::FULL_CARD);
+      ContentSuggestionsCardLayout::FULL_CARD, /* has_more_button */ false);
 }
 
 void NTPSnippetsService::DismissSuggestion(const std::string& suggestion_id) {

@@ -24,7 +24,8 @@ enum class ContentSuggestionsCardLayout {
 class CategoryInfo {
  public:
   CategoryInfo(const base::string16& title,
-               ContentSuggestionsCardLayout card_layout);
+               ContentSuggestionsCardLayout card_layout,
+               bool has_more_button);
   CategoryInfo(CategoryInfo&&) = default;
   CategoryInfo& operator=(CategoryInfo&&) = default;
 
@@ -36,9 +37,15 @@ class CategoryInfo {
   // Layout of the cards to be used to display suggestions in this category.
   ContentSuggestionsCardLayout card_layout() const { return card_layout_; }
 
+  // Whether the category supports a "More" button. The button either triggers
+  // a fixed action (like opening a native page) or, if there is no such fixed
+  // action, it queries the provider for more suggestions.
+  bool has_more_button() const { return has_more_button_; }
+
  private:
   base::string16 title_;
   ContentSuggestionsCardLayout card_layout_;
+  bool has_more_button_;
 
   DISALLOW_COPY_AND_ASSIGN(CategoryInfo);
 };

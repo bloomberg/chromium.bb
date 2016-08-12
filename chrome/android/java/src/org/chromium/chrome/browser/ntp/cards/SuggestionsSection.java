@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
@@ -24,12 +25,14 @@ public class SuggestionsSection implements ItemGroup {
     private final ProgressListItem mProgressIndicator = new ProgressListItem();
     private final ActionListItem mMoreButton;
 
-    public SuggestionsSection(List<SnippetArticleListItem> suggestions,
+    public SuggestionsSection(int category, List<SnippetArticleListItem> suggestions,
             @CategoryStatusEnum int status, SuggestionsCategoryInfo info,
             NewTabPageAdapter adapter) {
         mInfo = info;
         mHeader = new SnippetHeaderListItem(mInfo.getTitle());
-        mMoreButton = null; // TODO(pke): Read from info => ? new ActionListItem() : null;
+        // TODO(pke): Replace the condition with "info.hasMoreButton()" once all other categories
+        // are supported by the C++ backend, too.
+        mMoreButton = (category == KnownCategories.BOOKMARKS) ? new ActionListItem(category) : null;
         setSuggestions(suggestions, status, adapter);
     }
 
