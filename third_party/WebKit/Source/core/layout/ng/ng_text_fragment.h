@@ -2,24 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGText_h
-#define NGText_h
+#ifndef NGTextFragment_h
+#define NGTextFragment_h
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_fragment_base.h"
+#include "core/layout/ng/ng_layout_input_text.h"
 #include "platform/LayoutUnit.h"
+#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class CORE_EXPORT NGText final : public NGFragmentBase {
+class CORE_EXPORT NGTextFragment final : public NGFragmentBase {
  public:
-  NGText(LayoutUnit inlineSize,
-         LayoutUnit blockSize,
-         LayoutUnit inlineOverflow,
-         LayoutUnit blockOverflow,
-         NGWritingMode writingMode,
-         NGDirection direction)
+  NGTextFragment(LayoutUnit inlineSize,
+                 LayoutUnit blockSize,
+                 LayoutUnit inlineOverflow,
+                 LayoutUnit blockOverflow,
+                 NGWritingMode writingMode,
+                 NGDirection direction)
       : NGFragmentBase(inlineSize,
                        blockSize,
                        inlineOverflow,
@@ -28,13 +30,19 @@ class CORE_EXPORT NGText final : public NGFragmentBase {
                        direction,
                        FragmentText) {}
 
-  const String text() const { return String(); }
+  String text() const;
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    visitor->trace(text_list_);
     NGFragmentBase::traceAfterDispatch(visitor);
   }
+
+ private:
+  Member<NGLayoutInputText> text_list_;
+  unsigned start_offset_;
+  unsigned end_offset_;
 };
 
 }  // namespace blink
 
-#endif  // NGText_h
+#endif  // NGTextFragment_h

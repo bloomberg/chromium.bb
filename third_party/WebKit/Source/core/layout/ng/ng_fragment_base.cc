@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/ng/ng_fragment.h"
-#include "core/layout/ng/ng_text.h"
+#include "core/layout/ng/ng_text_fragment.h"
 
 namespace blink {
 
@@ -35,7 +35,7 @@ void NGFragmentBase::setOffset(LayoutUnit inlineOffset,
 
 DEFINE_TRACE(NGFragmentBase) {
   if (type() == FragmentText)
-    static_cast<NGText*>(this)->traceAfterDispatch(visitor);
+    static_cast<NGTextFragment*>(this)->traceAfterDispatch(visitor);
   else
     static_cast<NGFragment*>(this)->traceAfterDispatch(visitor);
 }
