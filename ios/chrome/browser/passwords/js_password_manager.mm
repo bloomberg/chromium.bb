@@ -96,7 +96,6 @@ NSString* JSONEscape(NSString* JSONString) {
 - (void)evaluateExtraScript:(NSString*)script
           completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
-  [self injectDependenciesIfMissing];
   NSString* JS = [[self injectionContent] stringByAppendingString:script];
   [self evaluate:JS
       stringResultHandler:^(NSString* result, NSError*) {

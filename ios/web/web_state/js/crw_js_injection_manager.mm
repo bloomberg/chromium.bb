@@ -48,7 +48,6 @@
 - (void)inject {
   if ([self hasBeenInjected])
     return;
-  [self injectDependenciesIfMissing];
   [_receiver injectScript:[self injectionContent] forClass:[self class]];
   DCHECK([self hasBeenInjected]);
 }
@@ -65,25 +64,6 @@
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(web::JavaScriptResultBlock)completionHandler {
   [_receiver executeJavaScript:script completionHandler:completionHandler];
-}
-
-- (NSArray*)directDependencies {
-  return @[];
-}
-
-- (NSArray*)allDependencies {
-  NSMutableArray* allDendencies = [NSMutableArray array];
-  for (Class dependencyClass in [self directDependencies]) {
-    CRWJSInjectionManager* dependency =
-        [_receiver instanceOfClass:dependencyClass];
-    NSArray* list = [dependency allDependencies];
-    for (CRWJSInjectionManager* manager in list) {
-      if (![allDendencies containsObject:manager])
-        [allDendencies addObject:manager];
-    }
-  }
-  [allDendencies addObject:self];
-  return allDendencies;
 }
 
 #pragma mark -
@@ -106,14 +86,6 @@
 
 - (NSString*)staticInjectionContent {
   return web::GetPageScript([self scriptPath]);
-}
-
-- (void)injectDependenciesIfMissing {
-  for (Class dependencyClass in [self directDependencies]) {
-    CRWJSInjectionManager* dependency =
-        [_receiver instanceOfClass:dependencyClass];
-    [dependency inject];
-  }
 }
 
 @end

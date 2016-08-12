@@ -65,9 +65,6 @@
     manager = newManager;
   }
   DCHECK(manager);
-  for (Class depedencyClass in [manager directDependencies]) {
-    [self instanceOfClass:depedencyClass];
-  }
   return manager;
 }
 

@@ -18,17 +18,6 @@
 // Designated initializer. Initializes the object with the |receiver|.
 - (id)initWithReceiver:(CRWJSInjectionReceiver*)receiver;
 
-// The array of |CRWJSInjectionManager| this class depends on. Default to be
-// empty array. Note circular dependency is not allowed, which will cause stack
-// overflow in dependency related computation such as -allDependencies.
-- (NSArray*)directDependencies;
-
-// Returns a list of all the CRWJSInjectionManagers required by this manager,
-// that is, this manager and the managers it directly or indirectly depends on.
-// The list is ordered in such a way that any CRWJSInjectionManager in the list
-// only depends on those appear before it in the list.
-- (NSArray*)allDependencies;
-
 // Returns whether JavaScript has already been injected into the receiver.
 - (BOOL)hasBeenInjected;
 
@@ -75,9 +64,6 @@
 // The return value from this method will be cached; if dynamic script content
 // is necessary, override injectionContent instead.
 - (NSString*)staticInjectionContent;
-
-// Injects dependencies if they are missing.
-- (void)injectDependenciesIfMissing;
 
 @end
 
