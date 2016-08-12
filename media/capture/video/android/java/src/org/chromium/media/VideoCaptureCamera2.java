@@ -88,7 +88,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 // time a downloaded image is ready. Since |handler| is null, we'll work on the
                 // current Thread Looper.
                 mPreviewSession.setRepeatingRequest(mPreviewRequest, null, null);
-            } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
+            } catch (CameraAccessException | SecurityException | IllegalStateException
+                    | IllegalArgumentException ex) {
                 Log.e(TAG, "setRepeatingRequest: ", ex);
                 return;
             }
@@ -218,6 +219,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
             if (createPreviewObjects()) return;
 
             nativeOnError(mNativeVideoCaptureDeviceAndroid, "Error restarting preview");
+        }
+    };
+
+    // Inner Runnable to restart capture, must be run on |mContext| looper.
+    private final Runnable mRestartCapture = new Runnable() {
+        @Override
+        public void run() {
+            mPreviewSession.close(); // Asynchronously kill the CaptureSession.
+            createPreviewObjects();
         }
     };
 
@@ -591,13 +601,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         Log.d(TAG, "zoom level " + normalizedZoom + ", rectangle: " + mCropRect.toString());
 
         final Handler mainHandler = new Handler(mContext.getMainLooper());
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mPreviewSession.close(); // Asynchronously kill the CaptureSession.
-                createPreviewObjects();
-            }
-        });
+        mainHandler.removeCallbacks(mRestartCapture);
+        mainHandler.post(mRestartCapture);
     }
 
     @Override
