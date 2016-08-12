@@ -105,6 +105,29 @@ libweston_@LIBWESTON_MAJOR@_la_SOURCES =			\
 	shared/platform.h				\
 	libweston/weston-egl-ext.h
 
+lib_LTLIBRARIES += libweston-desktop-@LIBWESTON_MAJOR@.la
+libweston_desktop_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
+libweston_desktop_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
+libweston_desktop_@LIBWESTON_MAJOR@_la_LIBADD = libweston-@LIBWESTON_MAJOR@.la $(COMPOSITOR_LIBS)
+libweston_desktop_@LIBWESTON_MAJOR@_la_LDFLAGS = -version-info $(LT_VERSION_INFO)
+
+libweston_desktop_@LIBWESTON_MAJOR@_la_SOURCES =	\
+	libweston-desktop/client.c			\
+	libweston-desktop/internal.h			\
+	libweston-desktop/libweston-desktop.c		\
+	libweston-desktop/libweston-desktop.h		\
+	libweston-desktop/seat.c			\
+	libweston-desktop/surface.c			\
+	libweston-desktop/wl-shell.c			\
+	libweston-desktop/xdg-shell-v5.c		\
+	libweston-desktop/xwayland.c
+
+nodist_libweston_desktop_@LIBWESTON_MAJOR@_la_SOURCES =		\
+	protocol/xdg-shell-unstable-v5-protocol.c		\
+	protocol/xdg-shell-unstable-v5-server-protocol.h
+
+libweston-desktop-@LIBWESTON_MAJOR@.la libweston-desktop/libweston_desktop_@LIBWESTON_MAJOR@_la-xdg-shell-v5.lo: protocol/xdg-shell-unstable-v5-server-protocol.h
+
 if SYSTEMD_NOTIFY_SUPPORT
 module_LTLIBRARIES += systemd-notify.la
 systemd_notify_la_LDFLAGS = -module -avoid-version
@@ -230,7 +253,10 @@ endif
 endif # BUILD_WESTON_LAUNCH
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = compositor/weston.pc libweston/libweston-${LIBWESTON_MAJOR}.pc
+pkgconfig_DATA = \
+	libweston/libweston-${LIBWESTON_MAJOR}.pc \
+	libweston-desktop/libweston-desktop-${LIBWESTON_MAJOR}.pc \
+	compositor/weston.pc
 
 wayland_sessiondir = $(datadir)/wayland-sessions
 dist_wayland_session_DATA = compositor/weston.desktop
@@ -250,6 +276,9 @@ libwestoninclude_HEADERS =			\
 	shared/matrix.h				\
 	shared/config-parser.h			\
 	shared/zalloc.h
+
+libwestoninclude_HEADERS +=			\
+	libweston-desktop/libweston-desktop.h
 
 westonincludedir = $(includedir)/weston
 westoninclude_HEADERS = compositor/weston.h

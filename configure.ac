@@ -646,6 +646,7 @@ AC_CONFIG_FILES([Makefile libweston/version.h compositor/weston.pc])
 # AC_CONFIG_FILES needs the full name when running autoconf, so we need to use
 # libweston_abi_version here, and outside [] because of m4 quoting rules
 AC_CONFIG_FILES([libweston/libweston-]libweston_major_version[.pc:libweston/libweston.pc.in])
+AC_CONFIG_FILES([libweston-desktop/libweston-desktop-]libweston_major_version[.pc:libweston-desktop/libweston-desktop.pc.in])
 
 AM_CONDITIONAL([HAVE_GIT_REPO], [test -f $srcdir/.git/logs/HEAD])
 

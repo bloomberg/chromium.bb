@@ -46,6 +46,19 @@ extern "C" {
 #include "zalloc.h"
 #include "timeline-object.h"
 
+struct weston_geometry {
+	int32_t x, y;
+	int32_t width, height;
+};
+
+struct weston_position {
+	int32_t x, y;
+};
+
+struct weston_size {
+	int32_t width, height;
+};
+
 struct weston_transform {
 	struct weston_matrix matrix;
 	struct wl_list link;
@@ -1546,6 +1559,9 @@ weston_surface_set_label_func(struct weston_surface *surface,
 void
 weston_surface_get_content_size(struct weston_surface *surface,
 				int *width, int *height);
+
+struct weston_geometry
+weston_surface_get_bounding_box(struct weston_surface *surface);
 
 int
 weston_surface_copy_content(struct weston_surface *surface,

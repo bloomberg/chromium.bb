@@ -3382,6 +3382,43 @@ weston_surface_get_content_size(struct weston_surface *surface,
 	rer->surface_get_content_size(surface, width, height);
 }
 
+/** Get the bounding box of a surface and its subsurfaces
+ *
+ * \param surface The surface to query.
+ * \return The bounding box relative to the surface origin.
+ *
+ */
+WL_EXPORT struct weston_geometry
+weston_surface_get_bounding_box(struct weston_surface *surface)
+{
+	pixman_region32_t region;
+	pixman_box32_t *box;
+	struct weston_subsurface *subsurface;
+
+	pixman_region32_init_rect(&region,
+				  0, 0,
+				  surface->width, surface->height);
+
+	wl_list_for_each(subsurface, &surface->subsurface_list, parent_link)
+		pixman_region32_union_rect(&region, &region,
+					   subsurface->position.x,
+					   subsurface->position.y,
+					   subsurface->surface->width,
+					   subsurface->surface->height);
+
+	box = pixman_region32_extents(&region);
+	struct weston_geometry geometry = {
+		.x = box->x1,
+		.y = box->y1,
+		.width = box->x2 - box->x1,
+		.height = box->y2 - box->y1,
+	};
+
+	pixman_region32_fini(&region);
+
+	return geometry;
+}
+
 /** Copy surface contents to system memory.
  *
  * \param surface The surface to copy from.
