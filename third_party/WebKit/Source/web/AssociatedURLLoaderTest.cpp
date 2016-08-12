@@ -200,7 +200,7 @@ public:
     {
         WebURLRequest request;
         request.setURL(toKURL("http://www.test.com/success.html"));
-        if (equalIgnoringCase(WebString::fromUTF8(headerField), "referer"))
+        if (equalIgnoringASCIICase(WebString::fromUTF8(headerField), "referer"))
             request.setHTTPReferrer(WebString::fromUTF8(headerValue), WebReferrerPolicyDefault);
         else
             request.setHTTPHeaderField(WebString::fromUTF8(headerField), WebString::fromUTF8(headerValue));

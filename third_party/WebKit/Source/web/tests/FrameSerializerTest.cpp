@@ -140,7 +140,7 @@ protected:
         for (size_t i = 0; i < m_resources.size(); ++i) {
             const SerializedResource& resource = m_resources[i];
             if (resource.url == url && !resource.data->isEmpty()
-                && (mime.isNull() || equalIgnoringCase(resource.mimeType, mime)))
+                && (mime.isNull() || equalIgnoringASCIICase(resource.mimeType, mime)))
                 return &resource;
         }
         return nullptr;

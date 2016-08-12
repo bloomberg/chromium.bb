@@ -238,7 +238,7 @@ bool WebAXObject::isAriaReadOnly() const
     if (isDetached())
         return false;
 
-    return equalIgnoringCase(m_private->getAttribute(HTMLNames::aria_readonlyAttr), "true");
+    return equalIgnoringASCIICase(m_private->getAttribute(HTMLNames::aria_readonlyAttr), "true");
 }
 
 WebString WebAXObject::ariaAutoComplete() const

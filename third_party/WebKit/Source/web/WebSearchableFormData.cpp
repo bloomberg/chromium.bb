@@ -230,7 +230,7 @@ WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const W
 
     // Only consider forms that GET data.
     // Allow HTTPS only when an input element is provided.
-    if (equalIgnoringCase(formElement->getAttribute(methodAttr), "post")
+    if (equalIgnoringASCIICase(formElement->getAttribute(methodAttr), "post")
         || (!isHTTPFormSubmit(*formElement) && !inputElement))
         return;
 

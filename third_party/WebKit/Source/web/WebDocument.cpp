@@ -307,7 +307,7 @@ bool WebDocument::manifestUseCredentials() const
     HTMLLinkElement* linkElement = document->linkManifest();
     if (!linkElement)
         return false;
-    return equalIgnoringCase(linkElement->fastGetAttribute(HTMLNames::crossoriginAttr), "use-credentials");
+    return equalIgnoringASCIICase(linkElement->fastGetAttribute(HTMLNames::crossoriginAttr), "use-credentials");
 }
 
 WebDistillabilityFeatures WebDocument::distillabilityFeatures()

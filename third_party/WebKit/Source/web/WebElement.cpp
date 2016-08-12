@@ -72,7 +72,7 @@ bool WebElement::isEditable() const
             return true;
     }
 
-    return equalIgnoringCase(element->getAttribute(roleAttr), "textbox");
+    return equalIgnoringASCIICase(element->getAttribute(roleAttr), "textbox");
 }
 
 WebString WebElement::tagName() const
