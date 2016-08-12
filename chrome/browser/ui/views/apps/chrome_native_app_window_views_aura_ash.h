@@ -15,7 +15,12 @@ namespace ash {
 class ImmersiveFullscreenController;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 namespace views {
+class MenuModelAdapter;
 class MenuRunner;
 }
 
@@ -65,6 +70,9 @@ class ChromeNativeAppWindowViewsAuraAsh : public ChromeNativeAppWindowViewsAura,
   FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
                            ResizeInsetsWithinBounds);
 
+  // Callback for MenuModelAdapter
+  void OnMenuClosed();
+
   // Used to put non-frameless windows into immersive fullscreen on ChromeOS. In
   // immersive fullscreen, the window header (title bar and window controls)
   // slides onscreen as an overlay when the mouse is hovered at the top of the
@@ -73,6 +81,8 @@ class ChromeNativeAppWindowViewsAuraAsh : public ChromeNativeAppWindowViewsAura,
       immersive_fullscreen_controller_;
 
   // Used to show the system menu.
+  std::unique_ptr<ui::MenuModel> menu_model_;
+  std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViewsAuraAsh);
