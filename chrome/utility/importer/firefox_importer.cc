@@ -333,7 +333,7 @@ void FirefoxImporter::ImportBookmarks() {
     }
   }
 
-  STLDeleteElements(&list);
+  base::STLDeleteElements(&list);
 
   // Write into profile.
   if (!bookmarks.empty() && !cancelled()) {

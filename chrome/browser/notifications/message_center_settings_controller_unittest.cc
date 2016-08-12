@@ -293,7 +293,7 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
   EXPECT_EQ(kBarId, notifiers[0]->notifier_id.id);
   EXPECT_EQ(kFooId, notifiers[1]->notifier_id.id);
 
-  STLDeleteElements(&notifiers);
+  base::STLDeleteElements(&notifiers);
 }
 
 TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {

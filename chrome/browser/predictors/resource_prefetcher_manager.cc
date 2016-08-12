@@ -46,8 +46,8 @@ void ResourcePrefetcherManager::ShutdownOnUIThread() {
 
 void ResourcePrefetcherManager::ShutdownOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  STLDeleteContainerPairSecondPointers(prefetcher_map_.begin(),
-                                       prefetcher_map_.end());
+  base::STLDeleteContainerPairSecondPointers(prefetcher_map_.begin(),
+                                             prefetcher_map_.end());
 }
 
 void ResourcePrefetcherManager::MaybeAddPrefetch(
@@ -59,7 +59,7 @@ void ResourcePrefetcherManager::MaybeAddPrefetch(
   // Don't add a duplicate prefetch for the same host or URL.
   std::string key = key_type == PREFETCH_KEY_TYPE_HOST ?
       navigation_id.main_frame_url.host() : navigation_id.main_frame_url.spec();
-  if (ContainsKey(prefetcher_map_, key))
+  if (base::ContainsKey(prefetcher_map_, key))
     return;
 
   ResourcePrefetcher* prefetcher = new ResourcePrefetcher(

@@ -34,7 +34,7 @@ void MockBrowsingDataServiceWorkerHelper::StartFetching(
 void MockBrowsingDataServiceWorkerHelper::DeleteServiceWorkers(
     const GURL& origin) {
   ASSERT_FALSE(callback_.is_null());
-  ASSERT_TRUE(ContainsKey(origins_, origin));
+  ASSERT_TRUE(base::ContainsKey(origins_, origin));
   origins_[origin] = false;
 }
 

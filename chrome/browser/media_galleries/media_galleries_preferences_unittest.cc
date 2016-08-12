@@ -211,8 +211,8 @@ class MediaGalleriesPreferencesTest : public testing::Test {
       VerifyGalleryInfo(it->second, it->first);
       if (it->second.type != MediaGalleryPrefInfo::kAutoDetected &&
           it->second.type != MediaGalleryPrefInfo::kBlackListed) {
-        if (!ContainsKey(expected_galleries_for_all, it->first) &&
-            !ContainsKey(expected_galleries_for_regular, it->first)) {
+        if (!base::ContainsKey(expected_galleries_for_all, it->first) &&
+            !base::ContainsKey(expected_galleries_for_regular, it->first)) {
           EXPECT_FALSE(gallery_prefs_->NonAutoGalleryHasPermission(it->first));
         } else {
           EXPECT_TRUE(gallery_prefs_->NonAutoGalleryHasPermission(it->first));

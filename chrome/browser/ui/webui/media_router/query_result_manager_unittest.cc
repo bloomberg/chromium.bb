@@ -103,7 +103,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
 
   cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
-  EXPECT_TRUE(ContainsKey(cast_modes, MediaCastMode::DEFAULT));
+  EXPECT_TRUE(base::ContainsKey(cast_modes, MediaCastMode::DEFAULT));
   actual_source = query_result_manager_.GetSourceForCastMode(
       MediaCastMode::DEFAULT);
   EXPECT_TRUE(source.Equals(actual_source));
@@ -118,7 +118,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
 
   cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
-  EXPECT_TRUE(ContainsKey(cast_modes, MediaCastMode::DEFAULT));
+  EXPECT_TRUE(base::ContainsKey(cast_modes, MediaCastMode::DEFAULT));
   actual_source = query_result_manager_.GetSourceForCastMode(
       MediaCastMode::DEFAULT);
   EXPECT_TRUE(another_source.Equals(actual_source));

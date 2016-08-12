@@ -416,7 +416,7 @@ void InspectUI::StopListeningNotifications() {
   if (target_handlers_.empty())
     return;
 
-  STLDeleteValues(&target_handlers_);
+  base::STLDeleteValues(&target_handlers_);
 
   port_status_serializer_.reset();
 

@@ -489,7 +489,7 @@ void PortForwardingController::OnPrefsChange() {
         it != registry_.end(); ++it) {
       registry_copy.push_back(it->second);
     }
-    STLDeleteElements(&registry_copy);
+    base::STLDeleteElements(&registry_copy);
   }
 }
 

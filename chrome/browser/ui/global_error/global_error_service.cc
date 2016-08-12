@@ -19,7 +19,7 @@ GlobalErrorService::GlobalErrorService(Profile* profile) : profile_(profile) {
 }
 
 GlobalErrorService::~GlobalErrorService() {
-  STLDeleteElements(&errors_);
+  base::STLDeleteElements(&errors_);
 }
 
 void GlobalErrorService::AddGlobalError(GlobalError* error) {

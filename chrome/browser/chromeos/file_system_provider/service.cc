@@ -82,7 +82,7 @@ Service::~Service() {
   }
 
   DCHECK_EQ(0u, file_system_map_.size());
-  STLDeleteValues(&file_system_map_);
+  base::STLDeleteValues(&file_system_map_);
 }
 
 // static

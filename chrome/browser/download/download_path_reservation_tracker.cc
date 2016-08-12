@@ -289,7 +289,7 @@ void UpdateReservation(ReservationKey key, const base::FilePath& new_path) {
 void RevokeReservation(ReservationKey key) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(g_reservation_map != NULL);
-  DCHECK(ContainsKey(*g_reservation_map, key));
+  DCHECK(base::ContainsKey(*g_reservation_map, key));
   g_reservation_map->erase(key);
   if (g_reservation_map->size() == 0) {
     // No more reservations. Delete map.

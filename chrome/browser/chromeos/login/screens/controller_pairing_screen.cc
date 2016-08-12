@@ -153,7 +153,7 @@ void ControllerPairingScreen::DiscoveredDevicesListChanged() {
       kContextKeyPage,
       devices.empty() ? kPageDevicesDiscovery : kPageDeviceSelect);
   std::string selected_device = context_.GetString(kContextKeySelectedDevice);
-  if (!ContainsValue(devices, selected_device))
+  if (!base::ContainsValue(devices, selected_device))
     selected_device.clear();
   if (devices.empty()) {
     device_preselected_ = false;

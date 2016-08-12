@@ -334,7 +334,7 @@ void SafeBrowsingService::Initialize() {
 void SafeBrowsingService::ShutDown() {
   // Deletes the PrefChangeRegistrars, whose dtors also unregister |this| as an
   // observer of the preferences.
-  STLDeleteValues(&prefs_map_);
+  base::STLDeleteValues(&prefs_map_);
 
   // Remove Profile creation/destruction observers.
   prefs_registrar_.RemoveAll();

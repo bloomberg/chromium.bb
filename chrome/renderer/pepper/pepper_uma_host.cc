@@ -120,12 +120,12 @@ bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {
   }
 
   if (IsPluginWhitelisted() &&
-      ContainsKey(allowed_histogram_prefixes_, HashPrefix(histogram))) {
+      base::ContainsKey(allowed_histogram_prefixes_, HashPrefix(histogram))) {
     return true;
   }
 
-  if (ContainsKey(allowed_plugin_base_names_,
-                  plugin_base_name_.MaybeAsASCII())) {
+  if (base::ContainsKey(allowed_plugin_base_names_,
+                        plugin_base_name_.MaybeAsASCII())) {
     return true;
   }
 

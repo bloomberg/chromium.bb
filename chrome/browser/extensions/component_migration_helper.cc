@@ -130,7 +130,7 @@ void ComponentMigrationHelper::OnExtensionReady(
       GetActionIdForExtensionId(extension_id);
   if (component_action_id.empty())
     return;
-  if (ContainsKey(enabled_actions_, component_action_id)) {
+  if (base::ContainsKey(enabled_actions_, component_action_id)) {
     UnloadExtension(extension_id);
     SetComponentActionPref(component_action_id, true);
 

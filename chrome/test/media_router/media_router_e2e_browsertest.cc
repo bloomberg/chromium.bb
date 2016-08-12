@@ -117,7 +117,7 @@ void MediaRouterE2EBrowserTest::StopMediaRoute() {
 }
 
 bool MediaRouterE2EBrowserTest::IsSinkDiscovered() const {
-  return ContainsKey(observer_->sink_map, receiver());
+  return base::ContainsKey(observer_->sink_map, receiver());
 }
 
 bool MediaRouterE2EBrowserTest::IsRouteCreated() const {

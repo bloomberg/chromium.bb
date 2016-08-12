@@ -336,8 +336,7 @@ void ToolbarActionsModel::AddItem(const ToolbarItem& item, bool is_component) {
   DCHECK(actions_initialized_);
 
   // See if we have a last known good position for this extension.
-  bool is_new_extension =
-      !ContainsValue(last_known_positions_, item.id);
+  bool is_new_extension = !base::ContainsValue(last_known_positions_, item.id);
 
   // New extensions go at the right (end) of the visible extensions. Other
   // extensions go at their previous position.
@@ -620,7 +619,7 @@ void ToolbarActionsModel::Populate() {
 }
 
 bool ToolbarActionsModel::HasItem(const ToolbarItem& item) const {
-  return ContainsValue(toolbar_items_, item);
+  return base::ContainsValue(toolbar_items_, item);
 }
 
 bool ToolbarActionsModel::HasComponentAction(
@@ -743,7 +742,7 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
   std::vector<std::string> pref_positions = extension_prefs_->GetToolbarOrder();
   size_t pref_position_size = pref_positions.size();
   for (size_t i = 0; i < last_known_positions_.size(); ++i) {
-    if (!ContainsValue(pref_positions, last_known_positions_[i])) {
+    if (!base::ContainsValue(pref_positions, last_known_positions_[i])) {
       pref_positions.push_back(last_known_positions_[i]);
     }
   }

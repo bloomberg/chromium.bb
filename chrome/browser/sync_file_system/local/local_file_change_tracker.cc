@@ -94,8 +94,10 @@ LocalFileChangeTracker::~LocalFileChangeTracker() {
 
 void LocalFileChangeTracker::OnStartUpdate(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  if (ContainsKey(changes_, url) || ContainsKey(demoted_changes_, url))
+  if (base::ContainsKey(changes_, url) ||
+      base::ContainsKey(demoted_changes_, url)) {
     return;
+  }
   // TODO(nhiroki): propagate the error code (see http://crbug.com/152127).
   MarkDirtyOnDatabase(url);
 }
@@ -178,7 +180,7 @@ void LocalFileChangeTracker::ClearChangesForURL(const FileSystemURL& url) {
 void LocalFileChangeTracker::CreateFreshMirrorForURL(
     const storage::FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!ContainsKey(mirror_changes_, url));
+  DCHECK(!base::ContainsKey(mirror_changes_, url));
   mirror_changes_[url] = ChangeInfo();
 }
 
@@ -190,10 +192,12 @@ void LocalFileChangeTracker::RemoveMirrorAndCommitChangesForURL(
     return;
   mirror_changes_.erase(found);
 
-  if (ContainsKey(changes_, url) || ContainsKey(demoted_changes_, url))
+  if (base::ContainsKey(changes_, url) ||
+      base::ContainsKey(demoted_changes_, url)) {
     MarkDirtyOnDatabase(url);
-  else
+  } else {
     ClearDirtyOnDatabase(url);
+  }
   UpdateNumChanges();
 }
 
@@ -206,11 +210,11 @@ void LocalFileChangeTracker::ResetToMirrorAndCommitChangesForURL(
     return;
   }
   const ChangeInfo& info = found->second;
-  if (ContainsKey(demoted_changes_, url)) {
-    DCHECK(!ContainsKey(changes_, url));
+  if (base::ContainsKey(demoted_changes_, url)) {
+    DCHECK(!base::ContainsKey(changes_, url));
     demoted_changes_[url] = info;
   } else {
-    DCHECK(!ContainsKey(demoted_changes_, url));
+    DCHECK(!base::ContainsKey(demoted_changes_, url));
     change_seqs_[info.change_seq] = url;
     changes_[url] = info;
   }
@@ -224,7 +228,7 @@ void LocalFileChangeTracker::DemoteChangesForURL(
   FileChangeMap::iterator found = changes_.find(url);
   if (found == changes_.end())
     return;
-  DCHECK(!ContainsKey(demoted_changes_, url));
+  DCHECK(!base::ContainsKey(demoted_changes_, url));
   change_seqs_.erase(found->second.change_seq);
   demoted_changes_.insert(*found);
   changes_.erase(found);
@@ -241,8 +245,8 @@ void LocalFileChangeTracker::PromoteDemotedChangesForURL(
 
   FileChangeList::List change_list = iter->second.change_list.list();
   // Make sure that this URL is in no queues.
-  DCHECK(!ContainsKey(change_seqs_, iter->second.change_seq));
-  DCHECK(!ContainsKey(changes_, url));
+  DCHECK(!base::ContainsKey(change_seqs_, iter->second.change_seq));
+  DCHECK(!base::ContainsKey(changes_, url));
 
   change_seqs_[iter->second.change_seq] = url;
   changes_.insert(*iter);
@@ -417,13 +421,13 @@ void LocalFileChangeTracker::RecordChange(
     const FileSystemURL& url, const FileChange& change) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   int change_seq = current_change_seq_number_++;
-  if (ContainsKey(demoted_changes_, url)) {
+  if (base::ContainsKey(demoted_changes_, url)) {
     RecordChangeToChangeMaps(url, change, change_seq,
                              &demoted_changes_, nullptr);
   } else {
     RecordChangeToChangeMaps(url, change, change_seq, &changes_, &change_seqs_);
   }
-  if (ContainsKey(mirror_changes_, url)) {
+  if (base::ContainsKey(mirror_changes_, url)) {
     RecordChangeToChangeMaps(url, change, change_seq, &mirror_changes_,
                              nullptr);
   }

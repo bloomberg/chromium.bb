@@ -42,9 +42,7 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
         pref_names::kExtensionManagement);
   }
 
-  void TearDown() override {
-    STLDeleteElements(&perm_list_);
-  }
+  void TearDown() override { base::STLDeleteElements(&perm_list_); }
 
   // Get API permissions name for |id|, we cannot use arbitrary strings since
   // they will be ignored by ExtensionManagementService.

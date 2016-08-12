@@ -233,7 +233,8 @@ MessageService::MessageService(BrowserContext* context)
 MessageService::~MessageService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  STLDeleteContainerPairSecondPointers(channels_.begin(), channels_.end());
+  base::STLDeleteContainerPairSecondPointers(channels_.begin(),
+                                             channels_.end());
   channels_.clear();
 }
 
@@ -772,8 +773,9 @@ void MessageService::EnqueuePendingMessage(int source_port_id,
         PendingMessage(source_port_id, message));
     // A channel should only be holding pending messages because it is in one
     // of these states.
-    DCHECK(!ContainsKey(pending_tls_channel_id_channels_, channel_id));
-    DCHECK(!ContainsKey(pending_lazy_background_page_channels_, channel_id));
+    DCHECK(!base::ContainsKey(pending_tls_channel_id_channels_, channel_id));
+    DCHECK(
+        !base::ContainsKey(pending_lazy_background_page_channels_, channel_id));
     return;
   }
   PendingChannelMap::iterator pending_for_tls_channel_id =
@@ -783,7 +785,8 @@ void MessageService::EnqueuePendingMessage(int source_port_id,
         PendingMessage(source_port_id, message));
     // A channel should only be holding pending messages because it is in one
     // of these states.
-    DCHECK(!ContainsKey(pending_lazy_background_page_channels_, channel_id));
+    DCHECK(
+        !base::ContainsKey(pending_lazy_background_page_channels_, channel_id));
     return;
   }
   EnqueuePendingMessageForLazyBackgroundLoad(source_port_id,

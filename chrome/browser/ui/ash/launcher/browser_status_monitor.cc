@@ -122,8 +122,8 @@ BrowserStatusMonitor::~BrowserStatusMonitor() {
 
   browser_tab_strip_tracker_.StopObservingAndSendOnBrowserRemoved();
 
-  STLDeleteContainerPairSecondPointers(webcontents_to_observer_map_.begin(),
-                                       webcontents_to_observer_map_.end());
+  base::STLDeleteContainerPairSecondPointers(
+      webcontents_to_observer_map_.begin(), webcontents_to_observer_map_.end());
 }
 
 void BrowserStatusMonitor::UpdateAppItemState(

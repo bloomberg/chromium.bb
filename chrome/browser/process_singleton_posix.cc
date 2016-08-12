@@ -559,7 +559,7 @@ class ProcessSingleton::LinuxWatcher
 
   ~LinuxWatcher() override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    STLDeleteElements(&readers_);
+    base::STLDeleteElements(&readers_);
 
     base::MessageLoopForIO* ml = base::MessageLoopForIO::current();
     ml->RemoveDestructionObserver(this);

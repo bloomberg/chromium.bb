@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTestCoverageTest, AllPoliciesHaveATestCase) {
   PolicyTestCases policy_test_cases;
   for (Schema::Iterator it = chrome_schema.GetPropertiesIterator();
        !it.IsAtEnd(); it.Advance()) {
-    EXPECT_TRUE(ContainsKey(policy_test_cases.map(), it.key()))
+    EXPECT_TRUE(base::ContainsKey(policy_test_cases.map(), it.key()))
         << "Missing policy test case for: " << it.key();
   }
 }

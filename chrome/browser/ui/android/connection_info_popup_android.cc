@@ -195,8 +195,8 @@ void ConnectionInfoPopupAndroid::SetCookieInfo(
 void ConnectionInfoPopupAndroid::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
     const ChosenObjectInfoList& chosen_object_info_list) {
-  STLDeleteContainerPointers(chosen_object_info_list.begin(),
-                             chosen_object_info_list.end());
+  base::STLDeleteContainerPointers(chosen_object_info_list.begin(),
+                                   chosen_object_info_list.end());
 
   NOTIMPLEMENTED();
 }

@@ -469,7 +469,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
 
 void DownloadRequestLimiter::Remove(TabDownloadState* state,
                                     content::WebContents* contents) {
-  DCHECK(ContainsKey(state_map_, contents));
+  DCHECK(base::ContainsKey(state_map_, contents));
   state_map_.erase(contents);
   delete state;
 }

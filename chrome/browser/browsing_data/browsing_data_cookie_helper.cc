@@ -109,8 +109,8 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
 }
 
 void CannedBrowsingDataCookieHelper::Reset() {
-  STLDeleteContainerPairSecondPointers(origin_cookie_set_map_.begin(),
-                                       origin_cookie_set_map_.end());
+  base::STLDeleteContainerPairSecondPointers(origin_cookie_set_map_.begin(),
+                                             origin_cookie_set_map_.end());
   origin_cookie_set_map_.clear();
 }
 

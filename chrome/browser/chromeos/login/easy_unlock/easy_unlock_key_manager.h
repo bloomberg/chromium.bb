@@ -110,8 +110,8 @@ class EasyUnlockKeyManager {
   ReadOperationQueue read_operation_queue_;
 
   // Scopes the raw operation pointers to the lifetime of this object.
-  STLElementDeleter<WriteOperationQueue> write_queue_deleter_;
-  STLElementDeleter<ReadOperationQueue> read_queue_deleter_;
+  base::STLElementDeleter<WriteOperationQueue> write_queue_deleter_;
+  base::STLElementDeleter<ReadOperationQueue> read_queue_deleter_;
 
   // Stores the current operation in progress. At most one of these variables
   // can be non-null at any time.

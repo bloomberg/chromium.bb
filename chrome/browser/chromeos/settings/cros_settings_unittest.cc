@@ -40,7 +40,7 @@ class CrosSettingsTest : public testing::Test {
 
   void TearDown() override {
     ASSERT_TRUE(expected_props_.empty());
-    STLDeleteValues(&expected_props_);
+    base::STLDeleteValues(&expected_props_);
   }
 
   void FetchPref(const std::string& pref) {

@@ -52,7 +52,7 @@ ContentSettingsStore::ContentSettingsStore() {
 }
 
 ContentSettingsStore::~ContentSettingsStore() {
-  STLDeleteValues(&entries_);
+  base::STLDeleteValues(&entries_);
 }
 
 std::unique_ptr<RuleIterator> ContentSettingsStore::GetRuleIterator(

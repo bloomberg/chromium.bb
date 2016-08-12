@@ -201,7 +201,7 @@ const base::FilePath& ITunesDataProvider::auto_add_path() const {
 bool ITunesDataProvider::KnownArtist(const ArtistName& artist) const {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(valid());
-  return ContainsKey(library_, artist);
+  return base::ContainsKey(library_, artist);
 }
 
 bool ITunesDataProvider::KnownAlbum(const ArtistName& artist,
@@ -211,7 +211,7 @@ bool ITunesDataProvider::KnownAlbum(const ArtistName& artist,
   Library::const_iterator library_it = library_.find(artist);
   if (library_it == library_.end())
     return false;
-  return ContainsKey(library_it->second, album);
+  return base::ContainsKey(library_it->second, album);
 }
 
 base::FilePath ITunesDataProvider::GetTrackLocation(

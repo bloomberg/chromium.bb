@@ -49,7 +49,7 @@ RequestManager::~RequestManager() {
   }
 
   DCHECK_EQ(0u, requests_.size());
-  STLDeleteValues(&requests_);
+  base::STLDeleteValues(&requests_);
 }
 
 int RequestManager::CreateRequest(RequestType type,

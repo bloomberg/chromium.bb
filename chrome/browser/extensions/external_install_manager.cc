@@ -78,7 +78,7 @@ ExternalInstallManager::~ExternalInstallManager() {
 void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
                                                      bool is_new_profile) {
   // Error already exists or has been previously shown.
-  if (ContainsKey(errors_, extension->id()) ||
+  if (base::ContainsKey(errors_, extension->id()) ||
       shown_ids_.count(extension->id()) > 0)
     return;
 
@@ -115,7 +115,7 @@ void ExternalInstallManager::UpdateExternalExtensionAlert() {
   const ExtensionSet& disabled_extensions =
       ExtensionRegistry::Get(browser_context_)->disabled_extensions();
   for (const scoped_refptr<const Extension>& extension : disabled_extensions) {
-    if (ContainsKey(errors_, extension->id()) ||
+    if (base::ContainsKey(errors_, extension->id()) ||
         shown_ids_.count(extension->id()) > 0)
       continue;
 
@@ -232,7 +232,7 @@ void ExternalInstallManager::Observe(
   // not sent out if the extension is disabled (which it is here).
   const std::string& extension_id =
       content::Details<const Extension>(details).ptr()->id();
-  if (ContainsKey(errors_, extension_id))
+  if (base::ContainsKey(errors_, extension_id))
     RemoveExternalInstallError(extension_id);
 }
 

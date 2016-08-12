@@ -2176,7 +2176,7 @@ void BrowserOptionsHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                             const policy::PolicyMap& current) {
   std::set<std::string> different_keys;
   current.GetDifferingKeys(previous, &different_keys);
-  if (ContainsKey(different_keys, policy::key::kMetricsReportingEnabled))
+  if (base::ContainsKey(different_keys, policy::key::kMetricsReportingEnabled))
     SetupMetricsReportingCheckbox();
 }
 

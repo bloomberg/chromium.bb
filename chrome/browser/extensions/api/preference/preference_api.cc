@@ -300,8 +300,8 @@ class PrefMapping {
   }
 
   ~PrefMapping() {
-    STLDeleteContainerPairSecondPointers(transformers_.begin(),
-                                         transformers_.end());
+    base::STLDeleteContainerPairSecondPointers(transformers_.begin(),
+                                               transformers_.end());
   }
 
   void RegisterPrefTransformer(const std::string& browser_pref,

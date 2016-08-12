@@ -313,7 +313,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
 
     // Views not in |view_list| must either be nil or not parented.
     for (size_t i = 0; i < VIEW_ID_COUNT; ++i) {
-      if (!ContainsValue(view_list, i)) {
+      if (!base::ContainsValue(view_list, i)) {
         NSView* view = GetViewWithID(static_cast<ViewID>(i));
         EXPECT_TRUE(!view || ![view superview]);
       }

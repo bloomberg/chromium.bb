@@ -225,7 +225,7 @@ CloudExternalDataManagerBaseTest::ConstructFetchCallback(int id) {
 }
 
 void CloudExternalDataManagerBaseTest::ResetCallbackData() {
-  STLDeleteValues(&callback_data_);
+  base::STLDeleteValues(&callback_data_);
 }
 
 void CloudExternalDataManagerBaseTest::OnFetchDone(

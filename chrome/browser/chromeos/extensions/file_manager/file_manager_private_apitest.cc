@@ -172,7 +172,7 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
     DCHECK(!disk_mount_manager_mock_);
     DCHECK(!testing_profile_);
     DCHECK(!event_router_);
-    STLDeleteValues(&volumes_);
+    base::STLDeleteValues(&volumes_);
   }
 
   void SetUpOnMainThread() override {

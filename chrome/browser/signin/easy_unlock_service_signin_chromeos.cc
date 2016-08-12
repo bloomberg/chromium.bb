@@ -284,7 +284,8 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
   chromeos::LoginState::Get()->RemoveObserver(this);
-  STLDeleteContainerPairSecondPointers(user_data_.begin(), user_data_.end());
+  base::STLDeleteContainerPairSecondPointers(user_data_.begin(),
+                                             user_data_.end());
   user_data_.clear();
 }
 

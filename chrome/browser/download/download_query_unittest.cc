@@ -59,7 +59,7 @@ class DownloadQueryTest : public testing::Test {
 
   ~DownloadQueryTest() override {}
 
-  void TearDown() override { STLDeleteElements(&mocks_); }
+  void TearDown() override { base::STLDeleteElements(&mocks_); }
 
   void CreateMocks(int count) {
     for (int i = 0; i < count; ++i) {

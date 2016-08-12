@@ -168,7 +168,7 @@ class ExtensionAction {
     if (const bool* tab_is_visible = FindOrNull(&is_visible_, tab_id))
       return *tab_is_visible;
 
-    if (ContainsKey(declarative_show_count_, tab_id))
+    if (base::ContainsKey(declarative_show_count_, tab_id))
       return true;
 
     if (const bool* default_is_visible =

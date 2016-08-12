@@ -112,14 +112,14 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
       user_specified_settings_to_display;
 
   for (const auto& permission : permission_info_list) {
-    if (ContainsValue(permissions_to_display, permission.type) &&
+    if (base::ContainsValue(permissions_to_display, permission.type) &&
         permission.setting != CONTENT_SETTING_DEFAULT) {
       user_specified_settings_to_display[permission.type] = permission.setting;
     }
   }
 
   for (const auto& permission : permissions_to_display) {
-    if (ContainsKey(user_specified_settings_to_display, permission)) {
+    if (base::ContainsKey(user_specified_settings_to_display, permission)) {
       base::string16 setting_title =
           WebsiteSettingsUI::PermissionTypeToUIString(permission);
 

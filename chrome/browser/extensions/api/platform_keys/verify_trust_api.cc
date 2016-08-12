@@ -176,7 +176,7 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
     return;
   }
 
-  if (!ContainsKey(extension_to_verifier_, extension_id)) {
+  if (!base::ContainsKey(extension_to_verifier_, extension_id)) {
     extension_to_verifier_[extension_id] =
         make_linked_ptr(net::CertVerifier::CreateDefault().release());
   }

@@ -132,7 +132,7 @@ MenuItem::MenuItem(const Id& id,
       contexts_(contexts) {}
 
 MenuItem::~MenuItem() {
-  STLDeleteElements(&children_);
+  base::STLDeleteElements(&children_);
 }
 
 MenuItem* MenuItem::ReleaseChild(const Id& child_id,
@@ -166,7 +166,7 @@ std::set<MenuItem::Id> MenuItem::RemoveAllDescendants() {
     std::set<Id> removed = child->RemoveAllDescendants();
     result.insert(removed.begin(), removed.end());
   }
-  STLDeleteElements(&children_);
+  base::STLDeleteElements(&children_);
   return result;
 }
 
@@ -318,7 +318,7 @@ MenuManager::MenuManager(content::BrowserContext* context, StateStore* store)
 MenuManager::~MenuManager() {
   MenuItemMap::iterator i;
   for (i = context_items_.begin(); i != context_items_.end(); ++i) {
-    STLDeleteElements(&(i->second));
+    base::STLDeleteElements(&(i->second));
   }
 }
 
@@ -349,12 +349,12 @@ bool MenuManager::AddContextItem(const Extension* extension, MenuItem* item) {
   const MenuItem::ExtensionKey& key = item->id().extension_key;
 
   // The item must have a non-empty key, and not have already been added.
-  if (key.empty() || ContainsKey(items_by_id_, item->id()))
+  if (key.empty() || base::ContainsKey(items_by_id_, item->id()))
     return false;
 
   DCHECK_EQ(extension->id(), key.extension_id);
 
-  bool first_item = !ContainsKey(context_items_, key);
+  bool first_item = !base::ContainsKey(context_items_, key);
   context_items_[key].push_back(item);
   items_by_id_[item->id()] = item;
 
@@ -378,7 +378,7 @@ bool MenuManager::AddChildItem(const MenuItem::Id& parent_id,
   if (!parent || parent->type() != MenuItem::NORMAL ||
       parent->incognito() != child->incognito() ||
       parent->extension_id() != child->extension_id() ||
-      ContainsKey(items_by_id_, child->id()))
+      base::ContainsKey(items_by_id_, child->id()))
     return false;
   parent->AddChild(child);
   items_by_id_[child->id()] = child;
@@ -460,7 +460,7 @@ bool MenuManager::ChangeParent(const MenuItem::Id& child_id,
 }
 
 bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
-  if (!ContainsKey(items_by_id_, id))
+  if (!base::ContainsKey(items_by_id_, id))
     return false;
 
   MenuItem* menu_item = GetItemById(id);
@@ -544,7 +544,7 @@ void MenuManager::RemoveAllContextItems(
       items_by_id_.erase(*j);
     }
   }
-  STLDeleteElements(&context_items_for_key);
+  base::STLDeleteElements(&context_items_for_key);
   context_items_.erase(extension_key);
   icon_manager_.RemoveIcon(extension_id);
 }
@@ -780,7 +780,7 @@ void MenuManager::SanitizeRadioList(const MenuItem::List& item_list) {
 }
 
 bool MenuManager::ItemUpdated(const MenuItem::Id& id) {
-  if (!ContainsKey(items_by_id_, id))
+  if (!base::ContainsKey(items_by_id_, id))
     return false;
 
   MenuItem* menu_item = GetItemById(id);
@@ -868,7 +868,7 @@ void MenuManager::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UnloadedExtensionInfo::Reason reason) {
   MenuItem::ExtensionKey extension_key(extension->id());
-  if (ContainsKey(context_items_, extension_key)) {
+  if (base::ContainsKey(context_items_, extension_key)) {
     RemoveAllContextItems(extension_key);
   }
 }

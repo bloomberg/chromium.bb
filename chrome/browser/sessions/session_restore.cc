@@ -245,7 +245,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   }
 
   ~SessionRestoreImpl() override {
-    STLDeleteElements(&windows_);
+    base::STLDeleteElements(&windows_);
 
     active_session_restorers->erase(this);
     if (active_session_restorers->empty()) {

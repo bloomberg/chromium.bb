@@ -48,7 +48,7 @@ IntranetRedirectDetector::IntranetRedirectDetector()
 
 IntranetRedirectDetector::~IntranetRedirectDetector() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  STLDeleteElements(&fetchers_);
+  base::STLDeleteElements(&fetchers_);
 }
 
 // static
@@ -68,7 +68,7 @@ void IntranetRedirectDetector::FinishSleep() {
   in_sleep_ = false;
 
   // If another fetch operation is still running, cancel it.
-  STLDeleteElements(&fetchers_);
+  base::STLDeleteElements(&fetchers_);
   resulting_origins_.clear();
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();

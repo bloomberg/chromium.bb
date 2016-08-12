@@ -773,7 +773,7 @@ void LocalSafeBrowsingDatabaseManager::DoStopOnIOThread() {
     if (check->client)
       check->OnSafeBrowsingResult();
   }
-  STLDeleteElements(&checks_);
+  base::STLDeleteElements(&checks_);
 
   gethash_requests_.clear();
 }

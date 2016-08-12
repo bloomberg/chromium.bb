@@ -27,13 +27,13 @@ void MockBrowsingDataChannelIDHelper::StartFetching(
 void MockBrowsingDataChannelIDHelper::DeleteChannelID(
     const std::string& server_id) {
   ASSERT_FALSE(callback_.is_null());
-  ASSERT_TRUE(ContainsKey(channel_ids_, server_id));
+  ASSERT_TRUE(base::ContainsKey(channel_ids_, server_id));
   channel_ids_[server_id] = false;
 }
 
 void MockBrowsingDataChannelIDHelper::AddChannelIDSample(
     const std::string& server_id) {
-  ASSERT_FALSE(ContainsKey(channel_ids_, server_id));
+  ASSERT_FALSE(base::ContainsKey(channel_ids_, server_id));
   std::unique_ptr<crypto::ECPrivateKey> key(crypto::ECPrivateKey::Create());
   channel_id_list_.push_back(
       net::ChannelIDStore::ChannelID(server_id, base::Time(), std::move(key)));

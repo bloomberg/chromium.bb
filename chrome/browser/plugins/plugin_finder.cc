@@ -247,9 +247,9 @@ base::DictionaryValue* PluginFinder::LoadBuiltInPluginList() {
 
 PluginFinder::~PluginFinder() {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  STLDeleteValues(&installers_);
+  base::STLDeleteValues(&installers_);
 #endif
-  STLDeleteValues(&identifier_plugin_);
+  base::STLDeleteValues(&identifier_plugin_);
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -310,7 +310,7 @@ void PluginFinder::ReinitializePlugins(
 
   version_ = version;
 
-  STLDeleteValues(&identifier_plugin_);
+  base::STLDeleteValues(&identifier_plugin_);
 
   for (base::DictionaryValue::Iterator plugin_it(*plugin_list);
       !plugin_it.IsAtEnd(); plugin_it.Advance()) {

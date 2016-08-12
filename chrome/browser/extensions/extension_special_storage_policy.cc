@@ -304,7 +304,7 @@ void ExtensionSpecialStoragePolicy::NotifyCleared() {
 ExtensionSpecialStoragePolicy::SpecialCollection::SpecialCollection() {}
 
 ExtensionSpecialStoragePolicy::SpecialCollection::~SpecialCollection() {
-  STLDeleteValues(&cached_results_);
+  base::STLDeleteValues(&cached_results_);
 }
 
 bool ExtensionSpecialStoragePolicy::SpecialCollection::Contains(
@@ -363,5 +363,5 @@ void ExtensionSpecialStoragePolicy::SpecialCollection::Clear() {
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::ClearCache() {
-  STLDeleteValues(&cached_results_);
+  base::STLDeleteValues(&cached_results_);
 }

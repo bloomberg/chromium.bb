@@ -44,7 +44,7 @@ ScopedWindowMap::ScopedWindowMap(SessionWindowMap* windows) {
 }
 
 ScopedWindowMap::~ScopedWindowMap() {
-  STLDeleteContainerPairSecondPointers(windows_.begin(), windows_.end());
+  base::STLDeleteContainerPairSecondPointers(windows_.begin(), windows_.end());
 }
 
 SessionWindowMap* ScopedWindowMap::GetMutable() {
@@ -56,7 +56,7 @@ const SessionWindowMap* ScopedWindowMap::Get() const {
 }
 
 void ScopedWindowMap::Reset(SessionWindowMap* windows) {
-  STLDeleteContainerPairSecondPointers(windows_.begin(), windows_.end());
+  base::STLDeleteContainerPairSecondPointers(windows_.begin(), windows_.end());
   windows_.clear();
   std::swap(*windows, windows_);
 }

@@ -880,7 +880,8 @@ std::unique_ptr<base::ListValue> MediaRouterWebUIMessageHandler::RoutesToValue(
       media_router_ui_->GetRouteProviderExtensionId();
 
   for (const MediaRoute& route : routes) {
-    bool can_join = ContainsValue(joinable_route_ids, route.media_route_id());
+    bool can_join =
+        base::ContainsValue(joinable_route_ids, route.media_route_id());
     int current_cast_mode = CurrentCastModeForRouteId(route.media_route_id(),
                                                       current_cast_modes);
     std::unique_ptr<base::DictionaryValue> route_val(RouteToValue(

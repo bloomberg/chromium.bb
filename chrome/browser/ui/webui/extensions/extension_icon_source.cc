@@ -147,7 +147,7 @@ void ExtensionIconSource::StartDataRequest(
 
 ExtensionIconSource::~ExtensionIconSource() {
   // Clean up all the temporary data we're holding for requests.
-  STLDeleteValues(&request_map_);
+  base::STLDeleteValues(&request_map_);
 }
 
 const SkBitmap* ExtensionIconSource::GetDefaultAppImage() {

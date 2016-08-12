@@ -238,7 +238,7 @@ void ResourcePrefetchPredictorTablesTest::TestResourceRowsAreEqual(
   for (ResourceRows::const_iterator rhs_it = rhs.begin();
        rhs_it != rhs.end(); ++rhs_it) {
     const GURL& resource = rhs_it->resource_url;
-    EXPECT_FALSE(ContainsKey(resources_seen, resource));
+    EXPECT_FALSE(base::ContainsKey(resources_seen, resource));
 
     for (ResourceRows::const_iterator lhs_it = lhs.begin();
          lhs_it != lhs.end(); ++lhs_it) {
@@ -247,7 +247,7 @@ void ResourcePrefetchPredictorTablesTest::TestResourceRowsAreEqual(
         break;
       }
     }
-    EXPECT_TRUE(ContainsKey(resources_seen, resource));
+    EXPECT_TRUE(base::ContainsKey(resources_seen, resource));
   }
   EXPECT_EQ(lhs.size(), resources_seen.size());
 }

@@ -88,7 +88,7 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
   void TearDown() override {
     [controller_ close];
     chrome::testing::NSRunLoopRunAllPending();
-    STLDeleteElements(&requests_);
+    base::STLDeleteElements(&requests_);
     CocoaProfileTest::TearDown();
   }
 

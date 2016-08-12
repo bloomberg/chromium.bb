@@ -62,7 +62,7 @@ bool TestBlacklistStateFetcher::HandleFetcher(int fetcher_id) {
   std::string id = request.id();
 
   ClientCRXListInfoResponse response;
-  if (ContainsKey(verdicts_, id))
+  if (base::ContainsKey(verdicts_, id))
     response.set_verdict(verdicts_[id]);
   else
     response.set_verdict(ClientCRXListInfoResponse::NOT_IN_BLACKLIST);

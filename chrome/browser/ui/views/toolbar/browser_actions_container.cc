@@ -183,7 +183,7 @@ void BrowserActionsContainer::RemoveViewForAction(
 }
 
 void BrowserActionsContainer::RemoveAllViews() {
-  STLDeleteElements(&toolbar_action_views_);
+  base::STLDeleteElements(&toolbar_action_views_);
 }
 
 void BrowserActionsContainer::Redraw(bool order_changed) {

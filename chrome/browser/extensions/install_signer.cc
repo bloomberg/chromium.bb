@@ -99,7 +99,7 @@ bool HashWithMachineId(const std::string& salt, std::string* result) {
   hash->Update(salt.data(), salt.size());
 
   std::string result_bytes(crypto::kSHA256Length, 0);
-  hash->Finish(string_as_array(&result_bytes), result_bytes.size());
+  hash->Finish(base::string_as_array(&result_bytes), result_bytes.size());
 
   base::Base64Encode(result_bytes, result);
   return true;
@@ -356,7 +356,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
 
   salt_ = std::string(kSaltBytes, 0);
   DCHECK_EQ(kSaltBytes, salt_.size());
-  crypto::RandBytes(string_as_array(&salt_), salt_.size());
+  crypto::RandBytes(base::string_as_array(&salt_), salt_.size());
 
   std::string hash_base64;
   if (!HashWithMachineId(salt_, &hash_base64)) {

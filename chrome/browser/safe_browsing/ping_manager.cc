@@ -75,8 +75,8 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
 
 SafeBrowsingPingManager::~SafeBrowsingPingManager() {
   // Delete in-progress safebrowsing reports (hits and details).
-  STLDeleteContainerPointers(safebrowsing_reports_.begin(),
-                             safebrowsing_reports_.end());
+  base::STLDeleteContainerPointers(safebrowsing_reports_.begin(),
+                                   safebrowsing_reports_.end());
 }
 
 // net::URLFetcherDelegate implementation ----------------------------------

@@ -191,7 +191,7 @@ class DownloadHistoryTest : public testing::Test {
         history_(NULL),
         manager_observer_(NULL),
         download_created_index_(0) {}
-  ~DownloadHistoryTest() override { STLDeleteElements(&items_); }
+  ~DownloadHistoryTest() override { base::STLDeleteElements(&items_); }
 
  protected:
   void TearDown() override { download_history_.reset(); }

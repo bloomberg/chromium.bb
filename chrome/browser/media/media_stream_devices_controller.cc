@@ -115,7 +115,7 @@ class MediaPermissionRequestLogger : content::WebContentsObserver {
                          bool is_secure) {
     RequestMap::key_type key =
         std::make_pair(render_process_id, render_frame_id);
-    if (!ContainsKey(GetRequestMap(), key)) {
+    if (!base::ContainsKey(GetRequestMap(), key)) {
       UMA_HISTOGRAM_BOOLEAN("Pepper.SecureOrigin.MediaStreamRequest",
                             is_secure);
       GetRequestMap()[key] =

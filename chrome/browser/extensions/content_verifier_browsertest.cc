@@ -30,7 +30,7 @@ class UnloadObserver : public ExtensionRegistryObserver {
   ~UnloadObserver() override {}
 
   void WaitForUnload(const ExtensionId& id) {
-    if (ContainsKey(observed_, id))
+    if (base::ContainsKey(observed_, id))
       return;
 
     ASSERT_TRUE(loop_runner_.get() == NULL);
@@ -362,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   // The content scripts might fail verification the first time since the
   // one-time processing might not be finished yet - if that's the case then
   // we want to wait until that work is done.
-  if (!ContainsKey(verifier_observer.completed_fetches(), id))
+  if (!base::ContainsKey(verifier_observer.completed_fetches(), id))
     verifier_observer.WaitForFetchComplete(id);
 
   // Now disable/re-enable the extension to cause the content scripts to be
@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, ContentScripts) {
   ASSERT_EQ(extension->id(), id);
 
   // Wait for the content verification code to finish processing the hashes.
-  if (!ContainsKey(verifier_observer.completed_fetches(), id))
+  if (!base::ContainsKey(verifier_observer.completed_fetches(), id))
     verifier_observer.WaitForFetchComplete(id);
 
   // Now disable the extension, since content scripts are read at enable time,

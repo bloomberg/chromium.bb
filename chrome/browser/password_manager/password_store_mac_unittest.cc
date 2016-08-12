@@ -512,8 +512,8 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainSearch) {
         internal_keychain_helpers::ExtractPasswordsMergeableWithForm(
             *keychain_, item_form_pairs, *query_form);
     EXPECT_EQ(test_data[i].expected_merge_matches, matching_items.size());
-    STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
-                                         item_form_pairs.end());
+    base::STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
+                                               item_form_pairs.end());
     for (std::vector<SecKeychainItemRef>::iterator i = keychain_items.begin();
          i != keychain_items.end(); ++i) {
       keychain_->Free(*i);

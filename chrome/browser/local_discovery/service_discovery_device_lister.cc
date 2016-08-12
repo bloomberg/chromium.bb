@@ -65,7 +65,7 @@ void ServiceDiscoveryDeviceLister::OnServiceUpdated(
   }
 
   // If there is already a resolver working on this service, don't add one.
-  if (ContainsKey(resolvers_, service_name)) {
+  if (base::ContainsKey(resolvers_, service_name)) {
     VLOG(1) << "Resolver already exists, service_name: " << service_name;
     return;
   }

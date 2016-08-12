@@ -171,7 +171,7 @@ void PushFrontIMIfNotExists(const std::string& input_method,
   if (input_method.empty())
     return;
 
-  if (!ContainsValue(*input_methods, input_method))
+  if (!base::ContainsValue(*input_methods, input_method))
     input_methods->insert(input_methods->begin(), input_method);
 }
 

@@ -56,7 +56,7 @@ DownloadStatusUpdater::DownloadStatusUpdater() {
 }
 
 DownloadStatusUpdater::~DownloadStatusUpdater() {
-  STLDeleteElements(&notifiers_);
+  base::STLDeleteElements(&notifiers_);
 }
 
 bool DownloadStatusUpdater::GetProgress(float* progress,

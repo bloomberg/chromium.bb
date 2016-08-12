@@ -25,7 +25,8 @@ CommandUpdater::CommandUpdater(CommandUpdaterDelegate* delegate)
 }
 
 CommandUpdater::~CommandUpdater() {
-  STLDeleteContainerPairSecondPointers(commands_.begin(), commands_.end());
+  base::STLDeleteContainerPairSecondPointers(commands_.begin(),
+                                             commands_.end());
 }
 
 bool CommandUpdater::SupportsCommand(int id) const {

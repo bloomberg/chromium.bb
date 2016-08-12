@@ -591,7 +591,7 @@ void ExtensionUpdater::NotifyStarted() {
 }
 
 void ExtensionUpdater::NotifyIfFinished(int request_id) {
-  DCHECK(ContainsKey(requests_in_progress_, request_id));
+  DCHECK(base::ContainsKey(requests_in_progress_, request_id));
   const InProgressCheck& request = requests_in_progress_[request_id];
   if (request.in_progress_ids_.empty()) {
     VLOG(2) << "Finished update check " << request_id;

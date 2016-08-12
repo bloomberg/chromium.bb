@@ -182,7 +182,7 @@ void ProcessPowerCollector::UpdateProcessInMap(
     const content::RenderProcessHost* rph,
     const GURL& origin) {
   base::ProcessHandle handle = rph->GetHandle();
-  if (!ContainsKey(metrics_map_, handle)) {
+  if (!base::ContainsKey(metrics_map_, handle)) {
     metrics_map_[handle] = base::MakeUnique<PerProcessData>(
 #if defined(OS_MACOSX)
         base::ProcessMetrics::CreateProcessMetrics(handle, nullptr),

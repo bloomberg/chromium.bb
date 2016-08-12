@@ -629,8 +629,8 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
   // In addition, if a permission is set to the default setting, WebsiteSettings
   // removes it from |permission_info_list|, but the button should remain.
   if (permissions_content_) {
-    STLDeleteContainerPointers(chosen_object_info_list.begin(),
-                               chosen_object_info_list.end());
+    base::STLDeleteContainerPointers(chosen_object_info_list.begin(),
+                                     chosen_object_info_list.end());
     return;
   }
 

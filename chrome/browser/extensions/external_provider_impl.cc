@@ -247,7 +247,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
         if (supported_locales->GetString(j, &current_locale) &&
             l10n_util::IsValidLocaleSyntax(current_locale)) {
           current_locale = l10n_util::NormalizeLocale(current_locale);
-          if (ContainsValue(browser_locales, current_locale)) {
+          if (base::ContainsValue(browser_locales, current_locale)) {
             locale_supported = true;
             break;
           }

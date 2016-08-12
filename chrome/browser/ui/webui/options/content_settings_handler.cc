@@ -722,7 +722,7 @@ void ContentSettingsHandler::OnContentSettingChanged(
     UpdateAllExceptionsViewsFromModel();
     UpdateAllChooserExceptionsViewsFromModel();
   } else {
-    if (ContainsKey(GetExceptionsInfoMap(), details.type()))
+    if (base::ContainsKey(GetExceptionsInfoMap(), details.type()))
       UpdateExceptionsViewFromModel(details.type());
   }
 }

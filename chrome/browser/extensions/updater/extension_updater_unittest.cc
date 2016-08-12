@@ -507,7 +507,7 @@ class ServiceForDownloadTests : public MockService {
     extension_id_ = file.extension_id;
     install_path_ = file.path;
 
-    if (ContainsKey(fake_crx_installers_, extension_id_)) {
+    if (base::ContainsKey(fake_crx_installers_, extension_id_)) {
       *out_crx_installer = fake_crx_installers_[extension_id_];
       return true;
     }
@@ -594,7 +594,8 @@ static std::map<std::string, ParamsMap> GetPingDataFromURL(
     base::SplitStringIntoKeyValuePairs(unescaped, '=', '&', &extension_params);
     std::multimap<std::string, std::string> param_map;
     param_map.insert(extension_params.begin(), extension_params.end());
-    if (ContainsKey(param_map, "id") && ContainsKey(param_map, "ping")) {
+    if (base::ContainsKey(param_map, "id") &&
+        base::ContainsKey(param_map, "ping")) {
       std::string id = param_map.find("id")->second;
       result[id] = ParamsMap();
 
@@ -607,7 +608,7 @@ static std::map<std::string, ParamsMap> GetPingDataFromURL(
       base::StringPairs ping_params;
       base::SplitStringIntoKeyValuePairs(ping, '=', '&', &ping_params);
       for (const auto& ping_param : ping_params) {
-        if (!ContainsKey(result[id], ping_param.first))
+        if (!base::ContainsKey(result[id], ping_param.first))
           result[id][ping_param.first] = std::set<std::string>();
         result[id][ping_param.first].insert(ping_param.second);
       }
@@ -1708,7 +1709,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::map<std::string, ParamsMap> url1_ping_data =
         GetPingDataFromURL(url1_fetch_url);
     ParamsMap url1_params = ParamsMap();
-    if (!url1_ping_data.empty() && ContainsKey(url1_ping_data, id))
+    if (!url1_ping_data.empty() && base::ContainsKey(url1_ping_data, id))
       url1_params = url1_ping_data[id];
 
     // First make sure the non-google query had no ping parameter.
@@ -1717,14 +1718,14 @@ class ExtensionUpdaterTest : public testing::Test {
     // Now make sure the google query had the correct ping parameter.
     bool did_rollcall = false;
     if (rollcall_ping_days != 0) {
-      ASSERT_TRUE(ContainsKey(url1_params, "r"));
+      ASSERT_TRUE(base::ContainsKey(url1_params, "r"));
       ASSERT_EQ(1u, url1_params["r"].size());
       EXPECT_EQ(base::IntToString(rollcall_ping_days),
                 *url1_params["r"].begin());
       did_rollcall = true;
     }
     if (active_bit && active_ping_days != 0 && did_rollcall) {
-      ASSERT_TRUE(ContainsKey(url1_params, "a"));
+      ASSERT_TRUE(base::ContainsKey(url1_params, "a"));
       ASSERT_EQ(1u, url1_params["a"].size());
       EXPECT_EQ(base::IntToString(active_ping_days),
                 *url1_params["a"].begin());
@@ -1843,14 +1844,14 @@ class ExtensionUpdaterTest : public testing::Test {
     // Make sure that all the enabled extensions have "e=1" in their ping
     // parameter.
     for (const auto& ext : enabled_extensions) {
-      ASSERT_TRUE(ContainsKey(all_pings, ext->id()));
+      ASSERT_TRUE(base::ContainsKey(all_pings, ext->id()));
       ParamsMap& ping = all_pings[ext->id()];
-      EXPECT_FALSE(ContainsKey(ping, "dr"));
-      ASSERT_TRUE(ContainsKey(ping, "e")) << url;
+      EXPECT_FALSE(base::ContainsKey(ping, "dr"));
+      ASSERT_TRUE(base::ContainsKey(ping, "e")) << url;
       std::set<std::string> e = ping["e"];
       ASSERT_EQ(1u, e.size()) << url;
       EXPECT_EQ(std::string("1"), *e.begin()) << url;
-      EXPECT_FALSE(ContainsKey(ping, "dr"));
+      EXPECT_FALSE(base::ContainsKey(ping, "dr"));
     }
 
     // Make sure that all the disable extensions have the appropriate
@@ -1860,18 +1861,18 @@ class ExtensionUpdaterTest : public testing::Test {
     for (size_t i = 0; i < disabled.size(); i++) {
       scoped_refptr<const Extension>& ext = disabled_extensions[i];
       int disable_reasons = disabled[i];
-      ASSERT_TRUE(ContainsKey(all_pings, ext->id())) << url;
+      ASSERT_TRUE(base::ContainsKey(all_pings, ext->id())) << url;
       ParamsMap& ping = all_pings[ext->id()];
 
-      ASSERT_TRUE(ContainsKey(ping, "e")) << url;
+      ASSERT_TRUE(base::ContainsKey(ping, "e")) << url;
       std::set<std::string> e = ping["e"];
       ASSERT_EQ(1u, e.size()) << url;
       EXPECT_EQ(std::string("0"), *e.begin()) << url;
 
       if (disable_reasons == 0) {
-        EXPECT_FALSE(ContainsKey(ping, "dr"));
+        EXPECT_FALSE(base::ContainsKey(ping, "dr"));
       } else {
-        ASSERT_TRUE(ContainsKey(ping, "dr"));
+        ASSERT_TRUE(base::ContainsKey(ping, "dr"));
         int found_reasons = 0;
         for (const auto& reason_string : ping["dr"]) {
           int reason = 0;

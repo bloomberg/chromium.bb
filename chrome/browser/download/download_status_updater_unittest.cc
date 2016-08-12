@@ -65,7 +65,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
     managers_.clear();
     for (std::vector<Items>::iterator it = manager_items_.begin();
          it != manager_items_.end(); ++it)
-      STLDeleteContainerPointers(it->begin(), it->end());
+      base::STLDeleteContainerPointers(it->begin(), it->end());
 
     base::RunLoop().RunUntilIdle();  // Allow DownloadManager destruction.
   }

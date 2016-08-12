@@ -108,11 +108,11 @@ ClientSideDetectionService::ClientSideDetectionService(
 
 ClientSideDetectionService::~ClientSideDetectionService() {
   weak_factory_.InvalidateWeakPtrs();
-  STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
-                                 client_phishing_reports_.end());
+  base::STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
+                                       client_phishing_reports_.end());
   client_phishing_reports_.clear();
-  STLDeleteContainerPairPointers(client_malware_reports_.begin(),
-                                 client_malware_reports_.end());
+  base::STLDeleteContainerPairPointers(client_malware_reports_.begin(),
+                                       client_malware_reports_.end());
   client_malware_reports_.clear();
 }
 
@@ -149,8 +149,8 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
       if (!info->callback.is_null())
         info->callback.Run(info->phishing_url, false);
     }
-    STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
-                                   client_phishing_reports_.end());
+    base::STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
+                                         client_phishing_reports_.end());
     client_phishing_reports_.clear();
     for (std::map<const net::URLFetcher*, ClientMalwareReportInfo*>::iterator it
              = client_malware_reports_.begin();
@@ -159,8 +159,8 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
       if (!info->callback.is_null())
         info->callback.Run(info->original_url, info->original_url, false);
     }
-    STLDeleteContainerPairPointers(client_malware_reports_.begin(),
-                                   client_malware_reports_.end());
+    base::STLDeleteContainerPairPointers(client_malware_reports_.begin(),
+                                         client_malware_reports_.end());
     client_malware_reports_.clear();
     cache_.clear();
   }

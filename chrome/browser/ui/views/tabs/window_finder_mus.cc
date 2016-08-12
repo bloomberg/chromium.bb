@@ -27,7 +27,7 @@ gfx::NativeWindow WindowFinderMus::GetLocalProcessWindowAtPoint(
       aura::Window* content_window = widget->GetNativeWindow();
 
       // If we were instructed to ignore this window, ignore it.
-      if (ContainsKey(ignore, content_window))
+      if (base::ContainsKey(ignore, content_window))
         continue;
 
       return content_window;

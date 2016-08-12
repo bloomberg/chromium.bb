@@ -93,7 +93,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleTestAuthRequest(
                         base::CompareCase::SENSITIVE))
     return std::unique_ptr<net::test_server::HttpResponse>();
 
-  if (ContainsKey(request.headers, "Authorization")) {
+  if (base::ContainsKey(request.headers, "Authorization")) {
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);

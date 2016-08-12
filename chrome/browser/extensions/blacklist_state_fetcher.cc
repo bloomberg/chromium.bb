@@ -28,7 +28,7 @@ BlacklistStateFetcher::BlacklistStateFetcher()
 
 BlacklistStateFetcher::~BlacklistStateFetcher() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  STLDeleteContainerPairFirstPointers(requests_.begin(), requests_.end());
+  base::STLDeleteContainerPairFirstPointers(requests_.begin(), requests_.end());
   requests_.clear();
 }
 
@@ -46,7 +46,7 @@ void BlacklistStateFetcher::Request(const std::string& id,
     }
   }
 
-  bool request_already_sent = ContainsKey(callbacks_, id);
+  bool request_already_sent = base::ContainsKey(callbacks_, id);
   callbacks_.insert(std::make_pair(id, callback));
   if (request_already_sent)
     return;

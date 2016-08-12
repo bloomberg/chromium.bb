@@ -84,7 +84,7 @@ void MockPermissionPromptFactory::UpdateResponseType() {
 }
 
 void MockPermissionPromptFactory::ShowView(MockPermissionPrompt* prompt) {
-  if (ContainsValue(prompts_, prompt))
+  if (base::ContainsValue(prompts_, prompt))
     return;
   prompts_.push_back(prompt);
 

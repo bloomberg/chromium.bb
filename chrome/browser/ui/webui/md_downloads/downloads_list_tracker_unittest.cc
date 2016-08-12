@@ -98,7 +98,7 @@ class DownloadsListTrackerTest : public testing::Test {
   ~DownloadsListTrackerTest() override {
     for (auto* mock_item : mock_items_)
       testing::Mock::VerifyAndClear(mock_item);
-    STLDeleteElements(&mock_items_);
+    base::STLDeleteElements(&mock_items_);
   }
 
   // testing::Test:

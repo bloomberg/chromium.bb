@@ -1168,7 +1168,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     accountIdToRemove_ = SigninManagerFactory::GetForProfile(
         browser_->profile())->GetAuthenticatedAccountId();
   } else {
-    DCHECK(ContainsKey(currentProfileAccounts_, tag));
+    DCHECK(base::ContainsKey(currentProfileAccounts_, tag));
     accountIdToRemove_ = currentProfileAccounts_[tag];
   }
 

@@ -86,7 +86,7 @@ void AppWindowRegistryUtil::CloseAllAppWindows() {
     AppWindowList window_list_copy(registry->app_windows());
     for (auto* window : window_list_copy) {
       // Ensure window is still valid.
-      if (ContainsValue(registry->app_windows(), window))
+      if (base::ContainsValue(registry->app_windows(), window))
         window->GetBaseWindow()->Close();
     }
   }

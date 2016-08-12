@@ -57,8 +57,8 @@ ResourcePrefetcher::ResourcePrefetcher(
 
 ResourcePrefetcher::~ResourcePrefetcher() {
   // Delete any pending net::URLRequests.
-  STLDeleteContainerPairFirstPointers(inflight_requests_.begin(),
-                                      inflight_requests_.end());
+  base::STLDeleteContainerPairFirstPointers(inflight_requests_.begin(),
+                                            inflight_requests_.end());
 }
 
 void ResourcePrefetcher::Start() {

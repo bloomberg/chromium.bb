@@ -891,7 +891,7 @@ void LocationBarView::DeletePageActionViews() {
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i)
     RemoveChildView(*i);
-  STLDeleteElements(&page_action_views_);
+  base::STLDeleteElements(&page_action_views_);
 }
 
 bool LocationBarView::RefreshPageActionViews() {

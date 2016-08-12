@@ -117,7 +117,7 @@ class BlockingLoginTest
   void TearDownOnMainThread() override {
     RunUntilIdle();
     EXPECT_TRUE(responses_.empty());
-    STLDeleteElements(&responses_);
+    base::STLDeleteElements(&responses_);
     OobeBaseTest::TearDownOnMainThread();
   }
 

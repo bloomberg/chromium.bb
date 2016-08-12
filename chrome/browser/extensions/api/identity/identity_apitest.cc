@@ -1570,8 +1570,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesDefault) {
 
   const ExtensionTokenKey* token_key = func->GetExtensionTokenKeyForTest();
   EXPECT_EQ(2ul, token_key->scopes.size());
-  EXPECT_TRUE(ContainsKey(token_key->scopes, "scope1"));
-  EXPECT_TRUE(ContainsKey(token_key->scopes, "scope2"));
+  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "scope1"));
+  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "scope2"));
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmpty) {
@@ -1599,7 +1599,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmail) {
 
   const ExtensionTokenKey* token_key = func->GetExtensionTokenKeyForTest();
   EXPECT_EQ(1ul, token_key->scopes.size());
-  EXPECT_TRUE(ContainsKey(token_key->scopes, "email"));
+  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "email"));
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
@@ -1616,9 +1616,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
 
   const ExtensionTokenKey* token_key = func->GetExtensionTokenKeyForTest();
   EXPECT_EQ(3ul, token_key->scopes.size());
-  EXPECT_TRUE(ContainsKey(token_key->scopes, "email"));
-  EXPECT_TRUE(ContainsKey(token_key->scopes, "foo"));
-  EXPECT_TRUE(ContainsKey(token_key->scopes, "bar"));
+  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "email"));
+  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "foo"));
+  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "bar"));
 }
 
 

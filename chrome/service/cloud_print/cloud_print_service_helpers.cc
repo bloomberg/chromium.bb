@@ -82,7 +82,7 @@ std::string GetPostDataForPrinterInfo(
 }
 
 bool IsDryRunJob(const std::vector<std::string>& tags) {
-  return ContainsValue(tags, kCloudPrintServiceTagDryRunFlag);
+  return base::ContainsValue(tags, kCloudPrintServiceTagDryRunFlag);
 }
 
 std::string GetCloudPrintAuthHeaderFromStore() {

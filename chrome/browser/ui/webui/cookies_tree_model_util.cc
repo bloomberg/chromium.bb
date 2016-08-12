@@ -201,18 +201,18 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       const storage::FileSystemType kTemp = storage::kFileSystemTypeTemporary;
 
       dict->SetString(kKeyOrigin, file_system_info.origin.spec());
-      dict->SetString(kKeyPersistent,
-                      ContainsKey(file_system_info.usage_map, kPerm) ?
-                          base::UTF16ToUTF8(ui::FormatBytes(
-                              file_system_info.usage_map.find(kPerm)->second)) :
-                          l10n_util::GetStringUTF8(
-                              IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
-      dict->SetString(kKeyTemporary,
-                      ContainsKey(file_system_info.usage_map, kTemp) ?
-                          base::UTF16ToUTF8(ui::FormatBytes(
-                              file_system_info.usage_map.find(kTemp)->second)) :
-                          l10n_util::GetStringUTF8(
-                              IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
+      dict->SetString(
+          kKeyPersistent,
+          base::ContainsKey(file_system_info.usage_map, kPerm)
+              ? base::UTF16ToUTF8(ui::FormatBytes(
+                    file_system_info.usage_map.find(kPerm)->second))
+              : l10n_util::GetStringUTF8(IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
+      dict->SetString(
+          kKeyTemporary,
+          base::ContainsKey(file_system_info.usage_map, kTemp)
+              ? base::UTF16ToUTF8(ui::FormatBytes(
+                    file_system_info.usage_map.find(kTemp)->second))
+              : l10n_util::GetStringUTF8(IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA: {

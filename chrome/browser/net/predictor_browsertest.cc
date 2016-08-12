@@ -402,8 +402,8 @@ class CrossSitePredictorObserver
 
   bool HasHostBeenLookedUpLocked(const GURL& url) {
     lock_.AssertAcquired();
-    return ContainsKey(successful_dns_lookups_, url) ||
-           ContainsKey(unsuccessful_dns_lookups_, url);
+    return base::ContainsKey(successful_dns_lookups_, url) ||
+           base::ContainsKey(unsuccessful_dns_lookups_, url);
   }
 
   bool HasHostBeenLookedUp(const GURL& url) {
@@ -434,7 +434,7 @@ class CrossSitePredictorObserver
     base::AutoLock lock(lock_);
     EXPECT_TRUE(HasHostBeenLookedUpLocked(url)) << "Expected to have looked up "
                                                 << url.spec();
-    return ContainsKey(successful_dns_lookups_, url);
+    return base::ContainsKey(successful_dns_lookups_, url);
   }
 
   void set_task_runner(
@@ -726,7 +726,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void ExpectUrlRequestedFromPredictor(const GURL& url) {
-    EXPECT_TRUE(ContainsKey(predictor()->results_, url));
+    EXPECT_TRUE(base::ContainsKey(predictor()->results_, url));
   }
 
   void DiscardAllResultsOnUIThread() {

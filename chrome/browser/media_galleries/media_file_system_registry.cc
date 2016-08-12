@@ -91,7 +91,7 @@ class RPHReferenceManager {
   virtual ~RPHReferenceManager();
 
   // Remove all references, but don't call |no_references_callback|.
-  void Reset() { STLDeleteValues(&observer_map_); }
+  void Reset() { base::STLDeleteValues(&observer_map_); }
 
   // Returns true if there are no references;
   bool empty() const { return observer_map_.empty(); }
@@ -161,7 +161,7 @@ void RPHReferenceManager::ReferenceFromWebContents(
     content::WebContents* contents) {
   RenderProcessHost* rph = contents->GetRenderProcessHost();
   RPHObserver* state = NULL;
-  if (!ContainsKey(observer_map_, rph)) {
+  if (!base::ContainsKey(observer_map_, rph)) {
     state = new RPHObserver(this, rph);
     observer_map_[rph] = state;
   } else {
@@ -198,14 +198,14 @@ RPHReferenceManager::RPHObserver::RPHObserver(
 }
 
 RPHReferenceManager::RPHObserver::~RPHObserver() {
-  STLDeleteValues(&observed_web_contentses_);
+  base::STLDeleteValues(&observed_web_contentses_);
   if (host_)
     host_->RemoveObserver(this);
 }
 
 void RPHReferenceManager::RPHObserver::AddWebContentsObserver(
     WebContents* web_contents) {
-  if (ContainsKey(observed_web_contentses_, web_contents))
+  if (base::ContainsKey(observed_web_contentses_, web_contents))
     return;
 
   RPHWebContentsObserver* observer =
@@ -391,7 +391,7 @@ class ExtensionGalleriesHost
       const MediaGalleryPrefInfo& gallery_info =
           galleries_info.find(pref_id)->second;
       const std::string& device_id = gallery_info.device_id;
-      if (!ContainsKey(*attached_devices, device_id))
+      if (!base::ContainsKey(*attached_devices, device_id))
         continue;
 
       PrefIdFsInfoMap::const_iterator existing_info =
@@ -446,7 +446,7 @@ class ExtensionGalleriesHost
       base::FilePath path = gallery.AbsolutePath();
       const std::string& device_id = gallery.device_id;
 
-      if (ContainsKey(pref_id_map_, gallery.pref_id)) {
+      if (base::ContainsKey(pref_id_map_, gallery.pref_id)) {
         result = base::File::FILE_OK;
       } else if (MediaStorageUtil::CanCreateFileSystem(device_id, path) &&
                  file_system_context_->RegisterFileSystem(device_id, fs_name,
@@ -561,7 +561,7 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
       preferences->GalleriesForExtension(*extension);
 
   if (gallery == preferences->known_galleries().end() ||
-      !ContainsKey(permitted_galleries, pref_id)) {
+      !base::ContainsKey(permitted_galleries, pref_id)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(callback, base::File::FILE_ERROR_NOT_FOUND));
@@ -581,9 +581,9 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
 MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
     Profile* profile) {
   // Create an empty ExtensionHostMap for this profile on first initialization.
-  if (!ContainsKey(extension_hosts_map_, profile)) {
+  if (!base::ContainsKey(extension_hosts_map_, profile)) {
     extension_hosts_map_[profile] = ExtensionHostMap();
-    DCHECK(!ContainsKey(profile_subscription_map_, profile));
+    DCHECK(!base::ContainsKey(profile_subscription_map_, profile));
     profile_subscription_map_[profile] =
         ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
             base::Bind(&MediaFileSystemRegistry::OnProfileShutdown,
@@ -809,7 +809,7 @@ void MediaFileSystemRegistry::OnGalleryRemoved(
         extension_registry->enabled_extensions().GetByID(it->first));
   }
   for (size_t i = 0; i < extensions.size(); ++i) {
-    if (!ContainsKey(extension_hosts_map_, profile))
+    if (!base::ContainsKey(extension_hosts_map_, profile))
       break;
     ExtensionHostMap::const_iterator gallery_host_it =
         extension_host_map.find(extensions[i]->id());

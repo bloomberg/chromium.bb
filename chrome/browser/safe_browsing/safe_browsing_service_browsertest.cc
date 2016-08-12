@@ -297,8 +297,8 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
         continue;
 
       std::vector<int> list_ids_for_url = badurls_it->second.list_ids;
-      if (ContainsValue(list_ids_for_url, list_id0) ||
-          ContainsValue(list_ids_for_url, list_id1)) {
+      if (base::ContainsValue(list_ids_for_url, list_id0) ||
+          base::ContainsValue(list_ids_for_url, list_id1)) {
         prefix_hits->insert(prefix_hits->end(),
                             badurls_it->second.prefix_hits.begin(),
                             badurls_it->second.prefix_hits.end());

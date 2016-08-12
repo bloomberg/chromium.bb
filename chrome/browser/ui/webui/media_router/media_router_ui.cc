@@ -149,7 +149,7 @@ void MediaRouterUI::UIMediaRoutesObserver::OnRoutesUpdated(
         }
       }
 #endif
-      if (ContainsValue(joinable_route_ids, route.media_route_id())) {
+      if (base::ContainsValue(joinable_route_ids, route.media_route_id())) {
         joinable_route_ids_for_display.push_back(route.media_route_id());
       }
 
@@ -207,7 +207,7 @@ MediaRouterUI::~MediaRouterUI() {
   if (create_session_request_) {
     bool presentation_sinks_available = std::any_of(
         sinks_.begin(), sinks_.end(), [](const MediaSinkWithCastModes& sink) {
-          return ContainsValue(sink.cast_modes, MediaCastMode::DEFAULT);
+          return base::ContainsValue(sink.cast_modes, MediaCastMode::DEFAULT);
         });
     if (presentation_sinks_available) {
       create_session_request_->InvokeErrorCallback(content::PresentationError(

@@ -34,18 +34,18 @@ bool FindOriginInDescriptorSet(const device::WebUsbAllowedOrigins* set,
 
   if (!set)
     return false;
-  if (ContainsValue(set->origins, origin))
+  if (base::ContainsValue(set->origins, origin))
     return true;
   for (const auto& configuration : set->configurations) {
     if (configuration_value &&
         *configuration_value != configuration.configuration_value)
       continue;
-    if (ContainsValue(configuration.origins, origin))
+    if (base::ContainsValue(configuration.origins, origin))
       return true;
     for (const auto& function : configuration.functions) {
       if (first_interface && *first_interface != function.first_interface)
         continue;
-      if (ContainsValue(function.origins, origin))
+      if (base::ContainsValue(function.origins, origin))
         return true;
     }
   }

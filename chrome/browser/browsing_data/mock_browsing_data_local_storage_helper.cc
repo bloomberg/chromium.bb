@@ -27,7 +27,7 @@ void MockBrowsingDataLocalStorageHelper::StartFetching(
 void MockBrowsingDataLocalStorageHelper::DeleteOrigin(
     const GURL& origin) {
   ASSERT_FALSE(callback_.is_null());
-  ASSERT_TRUE(ContainsKey(origins_, origin));
+  ASSERT_TRUE(base::ContainsKey(origins_, origin));
   last_deleted_origin_ = origin;
   origins_[origin] = false;
 }

@@ -263,7 +263,8 @@ AppListSyncableService::~AppListSyncableService() {
   model_observer_.reset();
   model_pref_updater_.reset();
 
-  STLDeleteContainerPairSecondPointers(sync_items_.begin(), sync_items_.end());
+  base::STLDeleteContainerPairSecondPointers(sync_items_.begin(),
+                                             sync_items_.end());
 }
 
 void AppListSyncableService::BuildModel() {
@@ -622,7 +623,7 @@ void AppListSyncableService::PruneEmptySyncFolders() {
     SyncItem* sync_item = (iter++)->second;
     if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
       continue;
-    if (!ContainsKey(parent_ids, sync_item->item_id))
+    if (!base::ContainsKey(parent_ids, sync_item->item_id))
       DeleteSyncItem(sync_item);
   }
 }
@@ -945,7 +946,7 @@ AppListSyncableService::SyncItem*
 AppListSyncableService::CreateSyncItem(
     const std::string& item_id,
     sync_pb::AppListSpecifics::AppListItemType item_type) {
-  DCHECK(!ContainsKey(sync_items_, item_id));
+  DCHECK(!base::ContainsKey(sync_items_, item_id));
   SyncItem* sync_item = new SyncItem(item_id, item_type);
   sync_items_[item_id] = sync_item;
   return sync_item;

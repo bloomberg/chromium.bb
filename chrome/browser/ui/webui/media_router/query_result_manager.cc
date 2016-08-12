@@ -131,7 +131,7 @@ void QueryResultManager::UpdateWithSinksQueryResult(
   // (1) Iterate through current sink set, remove cast mode from those that
   // do not appear in latest result.
   for (auto it = all_sinks_.begin(); it != all_sinks_.end(); /*no-op*/) {
-    if (!ContainsKey(result_sink_ids, it->first)) {
+    if (!base::ContainsKey(result_sink_ids, it->first)) {
       it->second.cast_modes.erase(cast_mode);
     }
     if (!IsValid(it->second)) {

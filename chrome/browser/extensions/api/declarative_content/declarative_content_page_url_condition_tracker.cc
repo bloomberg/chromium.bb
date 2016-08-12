@@ -194,7 +194,7 @@ void DeclarativeContentPageUrlConditionTracker::OnWebContentsNavigation(
     content::WebContents* contents,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
+  DCHECK(base::ContainsKey(per_web_contents_tracker_, contents));
   per_web_contents_tracker_[contents]->UpdateMatchesForCurrentUrl(true);
 }
 
@@ -208,8 +208,8 @@ bool DeclarativeContentPageUrlConditionTracker::EvaluatePredicate(
   DCHECK(loc != per_web_contents_tracker_.end());
   const std::set<url_matcher::URLMatcherConditionSet::ID>&
       web_contents_id_matches = loc->second->matches();
-  return ContainsKey(web_contents_id_matches,
-                     typed_predicate->url_matcher_condition_set()->id());
+  return base::ContainsKey(web_contents_id_matches,
+                           typed_predicate->url_matcher_condition_set()->id());
 }
 
 bool DeclarativeContentPageUrlConditionTracker::IsEmpty() const {
@@ -218,7 +218,7 @@ bool DeclarativeContentPageUrlConditionTracker::IsEmpty() const {
 
 void DeclarativeContentPageUrlConditionTracker::DeletePerWebContentsTracker(
     content::WebContents* contents) {
-  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
+  DCHECK(base::ContainsKey(per_web_contents_tracker_, contents));
   per_web_contents_tracker_.erase(contents);
 }
 

@@ -90,7 +90,7 @@ std::string ReadFileAsString(base::File file) {
     return result;
 
   result.resize(file_info.size);
-  int bytes_read = file.Read(0, string_as_array(&result), file_info.size);
+  int bytes_read = file.Read(0, base::string_as_array(&result), file_info.size);
   if (bytes_read != file_info.size)
     result.clear();
 
@@ -154,7 +154,7 @@ bool XmlDictReader::SkipToNext() {
 }
 
 bool XmlDictReader::Found(const std::string& key) const {
-  return ContainsKey(found_, key);
+  return base::ContainsKey(found_, key);
 }
 
 }  // namespace iapps

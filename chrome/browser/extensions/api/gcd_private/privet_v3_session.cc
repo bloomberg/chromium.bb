@@ -356,8 +356,8 @@ void PrivetV3Session::OnPairingConfirmDone(
   }
 
   std::string auth_code(hmac.DigestLength(), ' ');
-  if (!hmac.Sign(session_id_,
-                 reinterpret_cast<unsigned char*>(string_as_array(&auth_code)),
+  if (!hmac.Sign(session_id_, reinterpret_cast<unsigned char*>(
+                                  base::string_as_array(&auth_code)),
                  auth_code.size())) {
     LOG(FATAL) << "Signing failed";
     return callback.Run(Result::STATUS_SESSIONERROR);

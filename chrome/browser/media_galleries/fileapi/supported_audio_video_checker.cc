@@ -40,7 +40,7 @@ class SupportedAudioVideoExtensions {
   };
 
   bool HasSupportedAudioVideoExtension(const base::FilePath& file) {
-    return ContainsKey(audio_video_extensions_, file.Extension());
+    return base::ContainsKey(audio_video_extensions_, file.Extension());
   }
 
  private:

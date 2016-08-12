@@ -129,7 +129,7 @@ void AutocompleteActionPredictor::RegisterTransitionalMatches(
   }
 
   for (const auto& i : result) {
-    if (!ContainsValue(match_it->urls, i.destination_url))
+    if (!base::ContainsValue(match_it->urls, i.destination_url))
       match_it->urls.push_back(i.destination_url);
   }
 }

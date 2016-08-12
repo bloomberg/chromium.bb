@@ -304,7 +304,7 @@ void Blacklist::OnBlacklistStateReceived(const std::string& id,
     for (std::vector<std::string>::const_iterator ids_it = ids.begin();
          ids_it != ids.end();
          ++ids_it) {
-      if (!ContainsKey(blacklist_state_cache_, *ids_it)) {
+      if (!base::ContainsKey(blacklist_state_cache_, *ids_it)) {
         have_all_in_cache = false;
         break;
       }

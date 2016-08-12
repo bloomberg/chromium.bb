@@ -288,8 +288,10 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   for (std::set<const WebRequestRule*>::const_iterator it = matches.begin();
        it != matches.end(); ++it)
     matches_ids.insert((*it)->id());
-  EXPECT_TRUE(ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId1)));
-  EXPECT_TRUE(ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId2)));
+  EXPECT_TRUE(
+      base::ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId1)));
+  EXPECT_TRUE(
+      base::ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId2)));
 
   GURL foobar_url("http://www.foobar.com");
   std::unique_ptr<net::URLRequest> foobar_request(

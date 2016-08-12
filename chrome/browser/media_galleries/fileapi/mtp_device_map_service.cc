@@ -33,7 +33,7 @@ void MTPDeviceMapService::RegisterMTPFileSystem(
   DCHECK(!filesystem_id.empty());
 
   const AsyncDelegateKey key = GetAsyncDelegateKey(device_location, read_only);
-  if (!ContainsKey(mtp_device_usage_map_, key)) {
+  if (!base::ContainsKey(mtp_device_usage_map_, key)) {
     // Note that this initializes the delegate asynchronously, but since
     // the delegate will only be used from the IO thread, it is guaranteed
     // to be created before use of it expects it to be there.
@@ -82,7 +82,7 @@ void MTPDeviceMapService::AddAsyncDelegate(
   DCHECK(!device_location.empty());
 
   const AsyncDelegateKey key = GetAsyncDelegateKey(device_location, read_only);
-  if (ContainsKey(async_delegate_map_, key))
+  if (base::ContainsKey(async_delegate_map_, key))
     return;
   async_delegate_map_[key] = delegate;
 }

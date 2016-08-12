@@ -169,7 +169,7 @@ void CloudExternalDataPolicyObserver::Observe(
   }
 
   const std::string& user_id = user->email();
-  if (ContainsKey(logged_in_user_observers_, user_id)) {
+  if (base::ContainsKey(logged_in_user_observers_, user_id)) {
     NOTREACHED();
     return;
   }
@@ -184,7 +184,7 @@ void CloudExternalDataPolicyObserver::Observe(
 
 void CloudExternalDataPolicyObserver::OnPolicyUpdated(
     const std::string& user_id) {
-  if (ContainsKey(logged_in_user_observers_, user_id)) {
+  if (base::ContainsKey(logged_in_user_observers_, user_id)) {
     // When a device-local account is logged in, a policy change triggers both
     // OnPolicyUpdated() and PolicyServiceObserver::OnPolicyUpdated(). Ignore
     // the former so that the policy change is handled only once.
@@ -253,7 +253,7 @@ void CloudExternalDataPolicyObserver::RetrieveDeviceLocalAccounts() {
   for (DeviceLocalAccountEntryMap::iterator it =
            device_local_account_entries_.begin();
        it != device_local_account_entries_.end(); ) {
-    if (!ContainsKey(device_local_accounts, it->first)) {
+    if (!base::ContainsKey(device_local_accounts, it->first)) {
       const std::string user_id = it->first;
       device_local_account_entries_.erase(it++);
       // When a device-local account whose external data reference was set is

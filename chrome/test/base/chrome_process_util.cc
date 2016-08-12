@@ -43,7 +43,7 @@ class ChildProcessFilter : public base::ProcessFilter {
       : parent_pids_(parent_pids.begin(), parent_pids.end()) {}
 
   bool Includes(const base::ProcessEntry& entry) const override {
-    return ContainsKey(parent_pids_, entry.parent_pid());
+    return base::ContainsKey(parent_pids_, entry.parent_pid());
   }
 
  private:

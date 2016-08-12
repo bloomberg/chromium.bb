@@ -306,7 +306,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 }
 
 - (void)dealloc {
-  STLDeleteValues(&mediaMenus_);
+  base::STLDeleteValues(&mediaMenus_);
   [super dealloc];
 }
 

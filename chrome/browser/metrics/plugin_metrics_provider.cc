@@ -334,7 +334,7 @@ PluginMetricsProvider::ChildProcessStats&
 PluginMetricsProvider::GetChildProcessStats(
     const content::ChildProcessData& data) {
   const base::string16& child_name = data.name;
-  if (!ContainsKey(child_process_stats_buffer_, child_name)) {
+  if (!base::ContainsKey(child_process_stats_buffer_, child_name)) {
     child_process_stats_buffer_[child_name] =
         ChildProcessStats(data.process_type);
   }

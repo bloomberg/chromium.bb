@@ -179,8 +179,8 @@ MediaGalleriesPermissionController::GetSectionEntries(size_t index) const {
   for (GalleryPermissionsMap::const_iterator iter = known_galleries_.begin();
        iter != known_galleries_.end(); ++iter) {
     MediaGalleryPrefId pref_id = GetPrefId(iter->first);
-    if (!ContainsKey(forgotten_galleries_, iter->first) &&
-        existing == ContainsKey(pref_permitted_galleries_, pref_id)) {
+    if (!base::ContainsKey(forgotten_galleries_, iter->first) &&
+        existing == base::ContainsKey(pref_permitted_galleries_, pref_id)) {
       result.push_back(iter->second);
     }
   }
@@ -246,7 +246,7 @@ void MediaGalleriesPermissionController::DidForgetEntry(
     GalleryDialogId gallery_id) {
   media_galleries::UsageCount(media_galleries::DIALOG_FORGET_GALLERY);
   if (!new_galleries_.erase(gallery_id)) {
-    DCHECK(ContainsKey(known_galleries_, gallery_id));
+    DCHECK(base::ContainsKey(known_galleries_, gallery_id));
     forgotten_galleries_.insert(gallery_id);
   }
   dialog_->UpdateGalleries();
@@ -399,7 +399,7 @@ void MediaGalleriesPermissionController::InitializePermissions() {
        iter != pref_permitted_galleries_.end();
        ++iter) {
     GalleryDialogId gallery_id = GetDialogId(*iter);
-    DCHECK(ContainsKey(known_galleries_, gallery_id));
+    DCHECK(base::ContainsKey(known_galleries_, gallery_id));
     known_galleries_[gallery_id].selected = true;
   }
 
@@ -417,7 +417,7 @@ void MediaGalleriesPermissionController::SavePermissions() {
   for (GalleryPermissionsMap::const_iterator iter = known_galleries_.begin();
        iter != known_galleries_.end(); ++iter) {
     MediaGalleryPrefId pref_id = GetPrefId(iter->first);
-    if (ContainsKey(forgotten_galleries_, iter->first)) {
+    if (base::ContainsKey(forgotten_galleries_, iter->first)) {
       preferences_->ForgetGalleryById(pref_id);
     } else {
       bool changed = preferences_->SetGalleryPermissionForExtension(

@@ -75,17 +75,17 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
       callback.info_collection()->infos_by_origin;
 
   ASSERT_EQ(2u, collection.size());
-  EXPECT_TRUE(ContainsKey(collection, manifest1.GetOrigin()));
+  EXPECT_TRUE(base::ContainsKey(collection, manifest1.GetOrigin()));
   ASSERT_EQ(1u, collection[manifest1.GetOrigin()].size());
   EXPECT_EQ(manifest1, collection[manifest1.GetOrigin()].at(0).manifest_url);
 
-  EXPECT_TRUE(ContainsKey(collection, manifest2.GetOrigin()));
+  EXPECT_TRUE(base::ContainsKey(collection, manifest2.GetOrigin()));
   EXPECT_EQ(2u, collection[manifest2.GetOrigin()].size());
   std::set<GURL> manifest_results;
   manifest_results.insert(collection[manifest2.GetOrigin()].at(0).manifest_url);
   manifest_results.insert(collection[manifest2.GetOrigin()].at(1).manifest_url);
-  EXPECT_TRUE(ContainsKey(manifest_results, manifest2));
-  EXPECT_TRUE(ContainsKey(manifest_results, manifest3));
+  EXPECT_TRUE(base::ContainsKey(manifest_results, manifest2));
+  EXPECT_TRUE(base::ContainsKey(manifest_results, manifest3));
 }
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, Unique) {
@@ -105,7 +105,7 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Unique) {
       callback.info_collection()->infos_by_origin;
 
   ASSERT_EQ(1u, collection.size());
-  EXPECT_TRUE(ContainsKey(collection, manifest.GetOrigin()));
+  EXPECT_TRUE(base::ContainsKey(collection, manifest.GetOrigin()));
   ASSERT_EQ(1u, collection[manifest.GetOrigin()].size());
   EXPECT_EQ(manifest, collection[manifest.GetOrigin()].at(0).manifest_url);
 }
@@ -139,7 +139,8 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Delete) {
   EXPECT_EQ(3u, helper->GetAppCacheCount());
   helper->DeleteAppCacheGroup(manifest2);
   EXPECT_EQ(2u, helper->GetAppCacheCount());
-  EXPECT_FALSE(ContainsKey(helper->GetOriginAppCacheInfoMap(), manifest2));
+  EXPECT_FALSE(
+      base::ContainsKey(helper->GetOriginAppCacheInfoMap(), manifest2));
 }
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, IgnoreExtensionsAndDevTools) {

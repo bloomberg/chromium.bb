@@ -234,7 +234,7 @@ void DeclarativeContentCssConditionTracker::OnWebContentsNavigation(
     content::WebContents* contents,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
+  DCHECK(base::ContainsKey(per_web_contents_tracker_, contents));
   per_web_contents_tracker_[contents]->OnWebContentsNavigation(details, params);
 }
 
@@ -250,7 +250,7 @@ bool DeclarativeContentCssConditionTracker::EvaluatePredicate(
       loc->second->matching_css_selectors();
   for (const std::string& predicate_css_selector :
            typed_predicate->css_selectors()) {
-    if (!ContainsKey(matching_css_selectors, predicate_css_selector))
+    if (!base::ContainsKey(matching_css_selectors, predicate_css_selector))
       return false;
   }
 
@@ -304,7 +304,7 @@ InstructRenderProcessIfManagingBrowserContext(
 
 void DeclarativeContentCssConditionTracker::DeletePerWebContentsTracker(
     content::WebContents* contents) {
-  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
+  DCHECK(base::ContainsKey(per_web_contents_tracker_, contents));
   per_web_contents_tracker_.erase(contents);
 }
 

@@ -531,8 +531,9 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
   appShimMenuController_.reset();
 
-  STLDeleteContainerPairSecondPointers(profileBookmarkMenuBridgeMap_.begin(),
-                                       profileBookmarkMenuBridgeMap_.end());
+  base::STLDeleteContainerPairSecondPointers(
+      profileBookmarkMenuBridgeMap_.begin(),
+      profileBookmarkMenuBridgeMap_.end());
 }
 
 - (void)didEndMainMessageLoop {

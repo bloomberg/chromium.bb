@@ -147,8 +147,8 @@ void BackgroundApplicationListModel::Application::RequestIcon(
 }
 
 BackgroundApplicationListModel::~BackgroundApplicationListModel() {
-  STLDeleteContainerPairSecondPointers(applications_.begin(),
-                                       applications_.end());
+  base::STLDeleteContainerPairSecondPointers(applications_.begin(),
+                                             applications_.end());
 }
 
 BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)

@@ -95,12 +95,10 @@ class DownloadsEventsListener : public content::NotificationObserver {
     registrar_.Remove(this,
                       extensions::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
                       content::NotificationService::AllSources());
-    STLDeleteElements(&events_);
+    base::STLDeleteElements(&events_);
   }
 
-  void ClearEvents() {
-    STLDeleteElements(&events_);
-  }
+  void ClearEvents() { base::STLDeleteElements(&events_); }
 
   class Event {
    public:

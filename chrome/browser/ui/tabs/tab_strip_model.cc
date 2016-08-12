@@ -245,7 +245,7 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
 }
 
 TabStripModel::~TabStripModel() {
-  STLDeleteElements(&contents_data_);
+  base::STLDeleteElements(&contents_data_);
   order_controller_.reset();
 }
 

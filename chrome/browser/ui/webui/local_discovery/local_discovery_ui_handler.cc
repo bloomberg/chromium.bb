@@ -79,13 +79,13 @@ void ReadDevicesList(const CloudPrintPrinterList::DeviceList& devices,
                      const std::set<std::string>& local_ids,
                      base::ListValue* devices_list) {
   for (const auto& i : devices) {
-    if (ContainsKey(local_ids, i.id)) {
+    if (base::ContainsKey(local_ids, i.id)) {
       devices_list->Append(CreateDeviceInfo(i));
     }
   }
 
   for (const auto& i : devices) {
-    if (!ContainsKey(local_ids, i.id)) {
+    if (!base::ContainsKey(local_ids, i.id)) {
       devices_list->Append(CreateDeviceInfo(i));
     }
   }
@@ -277,7 +277,8 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     const GURL& url) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "local_discovery.onRegistrationConfirmedOnPrinter");
-  if (!ContainsKey(device_descriptions_, current_http_client_->GetName())) {
+  if (!base::ContainsKey(device_descriptions_,
+                         current_http_client_->GetName())) {
     SendRegisterError();
     return;
   }

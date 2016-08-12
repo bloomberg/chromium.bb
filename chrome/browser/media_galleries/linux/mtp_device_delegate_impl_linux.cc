@@ -426,7 +426,7 @@ MTPDeviceDelegateImplLinux::MTPFileNode::MTPFileNode(
       file_id_to_node_map_(file_id_to_node_map) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(file_id_to_node_map_);
-  DCHECK(!ContainsKey(*file_id_to_node_map_, file_id_));
+  DCHECK(!base::ContainsKey(*file_id_to_node_map_, file_id_));
   (*file_id_to_node_map_)[file_id_] = this;
 }
 
@@ -461,7 +461,7 @@ void MTPDeviceDelegateImplLinux::MTPFileNode::ClearNonexistentChildren(
   std::set<std::string> children_to_erase;
   for (ChildNodes::const_iterator it = children_.begin();
        it != children_.end(); ++it) {
-    if (ContainsKey(children_to_keep, it->first))
+    if (base::ContainsKey(children_to_keep, it->first))
       continue;
     children_to_erase.insert(it->first);
   }

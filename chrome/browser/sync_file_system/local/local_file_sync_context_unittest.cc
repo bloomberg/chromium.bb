@@ -410,7 +410,7 @@ TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
   FileSystemURLSet urls;
   file_system.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_TRUE(ContainsKey(urls, kURL));
+  EXPECT_TRUE(base::ContainsKey(urls, kURL));
 
   // Finishing the test.
   sync_context_->ShutdownOnUIThread();
@@ -452,7 +452,7 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   FileSystemURLSet urls;
   file_system1.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_TRUE(ContainsKey(urls, kURL1));
+  EXPECT_TRUE(base::ContainsKey(urls, kURL1));
 
   // file_system1's tracker must have no change.
   urls.clear();
@@ -466,13 +466,13 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   urls.clear();
   file_system1.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_TRUE(ContainsKey(urls, kURL1));
+  EXPECT_TRUE(base::ContainsKey(urls, kURL1));
 
   // file_system2's tracker now must have the change for kURL2.
   urls.clear();
   file_system2.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_TRUE(ContainsKey(urls, kURL2));
+  EXPECT_TRUE(base::ContainsKey(urls, kURL2));
 
   SyncFileMetadata metadata;
   FileChangeList changes;
@@ -632,9 +632,9 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   FileSystemURLSet urls;
   file_system.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(3U, urls.size());
-  ASSERT_TRUE(ContainsKey(urls, kFile));
-  ASSERT_TRUE(ContainsKey(urls, kDir));
-  ASSERT_TRUE(ContainsKey(urls, kChild));
+  ASSERT_TRUE(base::ContainsKey(urls, kFile));
+  ASSERT_TRUE(base::ContainsKey(urls, kDir));
+  ASSERT_TRUE(base::ContainsKey(urls, kChild));
   for (FileSystemURLSet::iterator iter = urls.begin();
        iter != urls.end(); ++iter) {
     file_system.ClearChangeForURLInTracker(*iter);
@@ -794,7 +794,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   FileSystemURLSet urls;
   file_system.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_TRUE(ContainsKey(urls, kFile1));
+  EXPECT_TRUE(base::ContainsKey(urls, kFile1));
   file_system.ClearChangeForURLInTracker(*urls.begin());
 
   // Prepare temporary files which represent the remote file data.

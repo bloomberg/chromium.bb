@@ -46,7 +46,7 @@ class MockEnvironment : public base::Environment {
   }
 
   bool GetVar(base::StringPiece variable_name, std::string* result) override {
-    if (ContainsKey(variables_, variable_name.as_string())) {
+    if (base::ContainsKey(variables_, variable_name.as_string())) {
       *result = variables_[variable_name.as_string()];
       return true;
     }

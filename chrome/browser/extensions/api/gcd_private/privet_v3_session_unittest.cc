@@ -232,8 +232,9 @@ TEST_F(PrivetV3SessionTest, Pairing) {
             const std::string& key = spake.GetUnverifiedKey();
             EXPECT_TRUE(hmac.Init(key));
             std::string signature(hmac.DigestLength(), ' ');
-            EXPECT_TRUE(hmac.Sign(fingerprint, reinterpret_cast<unsigned char*>(
-                                                   string_as_array(&signature)),
+            EXPECT_TRUE(hmac.Sign(fingerprint,
+                                  reinterpret_cast<unsigned char*>(
+                                      base::string_as_array(&signature)),
                                   signature.size()));
 
             std::string signature_base64;

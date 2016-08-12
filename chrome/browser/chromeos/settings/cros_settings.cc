@@ -83,8 +83,8 @@ CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service) {
 }
 
 CrosSettings::~CrosSettings() {
-  STLDeleteElements(&providers_);
-  STLDeleteValues(&settings_observers_);
+  base::STLDeleteElements(&providers_);
+  base::STLDeleteValues(&settings_observers_);
 }
 
 bool CrosSettings::IsCrosSettings(const std::string& path) {

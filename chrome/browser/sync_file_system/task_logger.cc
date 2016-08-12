@@ -53,7 +53,7 @@ void TaskLogger::RecordLog(std::unique_ptr<TaskLog> log) {
 }
 
 void TaskLogger::ClearLog() {
-  STLDeleteContainerPointers(log_history_.begin(), log_history_.end());
+  base::STLDeleteContainerPointers(log_history_.begin(), log_history_.end());
   log_history_.clear();
 }
 

@@ -78,8 +78,8 @@ MessageCenterNotificationManager::~MessageCenterNotificationManager() {
   message_center_->SetNotifierSettingsProvider(NULL);
   message_center_->RemoveObserver(this);
 
-  STLDeleteContainerPairSecondPointers(profile_notifications_.begin(),
-                                       profile_notifications_.end());
+  base::STLDeleteContainerPairSecondPointers(profile_notifications_.begin(),
+                                             profile_notifications_.end());
   profile_notifications_.clear();
 }
 

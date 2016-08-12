@@ -547,7 +547,7 @@ void MergePasswordForms(ScopedVector<autofill::PasswordForm>* keychain_forms,
   ScopedVector<autofill::PasswordForm> unused_keychain_forms;
   unused_keychain_forms.reserve(keychain_forms->size());
   for (auto*& keychain_form : *keychain_forms) {
-    if (!ContainsKey(used_keychain_forms, keychain_form)) {
+    if (!base::ContainsKey(used_keychain_forms, keychain_form)) {
       unused_keychain_forms.push_back(keychain_form);
       keychain_form = nullptr;
     }
@@ -611,8 +611,8 @@ void GetPasswordsForForms(const AppleKeychain& keychain,
       });
   database_forms->swap(unused_db_forms);
 
-  STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
-                                       item_form_pairs.end());
+  base::STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
+                                             item_form_pairs.end());
   for (SecKeychainItemRef item : keychain_items) {
     keychain.Free(item);
   }
@@ -1029,8 +1029,8 @@ PasswordStoreMac::MigrationResult PasswordStoreMac::ImportFromKeychain() {
       }
     }
   }
-  STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
-                                       item_form_pairs.end());
+  base::STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
+                                             item_form_pairs.end());
   for (SecKeychainItemRef item : keychain_items)
     keychain_->Free(item);
 

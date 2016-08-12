@@ -28,7 +28,7 @@ void MockBrowsingDataDatabaseHelper::DeleteDatabase(
     const std::string& name) {
   ASSERT_FALSE(callback_.is_null());
   std::string key = origin + ":" + name;
-  ASSERT_TRUE(ContainsKey(databases_, key));
+  ASSERT_TRUE(base::ContainsKey(databases_, key));
   last_deleted_origin_ = origin;
   last_deleted_db_ = name;
   databases_[key] = false;

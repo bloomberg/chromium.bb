@@ -35,7 +35,7 @@ FakeDiskMountManager::FakeDiskMountManager() {
 }
 
 FakeDiskMountManager::~FakeDiskMountManager() {
-  STLDeleteValues(&disks_);
+  base::STLDeleteValues(&disks_);
 }
 
 void FakeDiskMountManager::AddObserver(Observer* observer) {

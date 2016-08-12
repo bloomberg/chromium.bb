@@ -242,10 +242,10 @@ void IncognitoConnectability::OnInteractiveResponse(
       break;
   }
 
-  DCHECK(ContainsKey(pending_origins_, make_pair(extension_id, origin)));
+  DCHECK(base::ContainsKey(pending_origins_, make_pair(extension_id, origin)));
   PendingOrigin& pending_origin =
       pending_origins_[make_pair(extension_id, origin)];
-  DCHECK(ContainsKey(pending_origin, infobar_manager));
+  DCHECK(base::ContainsKey(pending_origin, infobar_manager));
 
   std::vector<base::Callback<void(bool)>> callbacks;
   if (response == ScopedAlertTracker::INTERACTIVE) {

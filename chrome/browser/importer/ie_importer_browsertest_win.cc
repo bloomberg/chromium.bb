@@ -322,7 +322,7 @@ class TestObserver : public ProfileWriter,
     // TODO(jcampan): bug 1169230: we should test keyword importing for IE.
     // In order to do that we'll probably need to mock the Windows registry.
     NOTREACHED();
-    STLDeleteContainerPointers(template_url.begin(), template_url.end());
+    base::STLDeleteContainerPointers(template_url.begin(), template_url.end());
   }
 
   void AddFavicons(const favicon_base::FaviconUsageDataList& usage) override {

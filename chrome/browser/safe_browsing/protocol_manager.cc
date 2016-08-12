@@ -193,8 +193,8 @@ bool SafeBrowsingProtocolManager::IsUpdateScheduled() const {
 
 SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
   // Delete in-progress SafeBrowsing requests.
-  STLDeleteContainerPairFirstPointers(hash_requests_.begin(),
-                                      hash_requests_.end());
+  base::STLDeleteContainerPairFirstPointers(hash_requests_.begin(),
+                                            hash_requests_.end());
   hash_requests_.clear();
 }
 

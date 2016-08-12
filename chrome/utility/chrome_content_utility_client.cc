@@ -152,8 +152,10 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
 
 bool ChromeContentUtilityClient::OnMessageReceived(
     const IPC::Message& message) {
-  if (filter_messages_ && !ContainsKey(message_id_whitelist_, message.type()))
+  if (filter_messages_ &&
+      !base::ContainsKey(message_id_whitelist_, message.type())) {
     return false;
+  }
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeContentUtilityClient, message)

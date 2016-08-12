@@ -312,7 +312,7 @@ PluginObserver::PluginObserver(content::WebContents* web_contents)
 
 PluginObserver::~PluginObserver() {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  STLDeleteValues(&plugin_placeholders_);
+  base::STLDeleteValues(&plugin_placeholders_);
 #endif
 }
 

@@ -393,7 +393,7 @@ IncidentReportingService::~IncidentReportingService() {
   CancelDownloadCollection();
   CancelAllReportUploads();
 
-  STLDeleteValues(&profiles_);
+  base::STLDeleteValues(&profiles_);
 }
 
 std::unique_ptr<IncidentReceiver>

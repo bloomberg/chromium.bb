@@ -52,7 +52,8 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
   // Returns the available draft page count.
   int GetAvailableDraftPageCount() {
     int page_data_map_size = page_data_map_.size();
-    if (ContainsKey(page_data_map_, printing::COMPLETE_PREVIEW_DOCUMENT_INDEX))
+    if (base::ContainsKey(page_data_map_,
+                          printing::COMPLETE_PREVIEW_DOCUMENT_INDEX))
       page_data_map_size--;
     return page_data_map_size;
   }
@@ -105,7 +106,7 @@ void PrintPreviewDataService::SetDataEntry(
     int32_t preview_ui_id,
     int index,
     scoped_refptr<base::RefCountedBytes> data_bytes) {
-  if (!ContainsKey(data_store_map_, preview_ui_id)) {
+  if (!base::ContainsKey(data_store_map_, preview_ui_id)) {
     data_store_map_[preview_ui_id] =
         make_scoped_refptr(new PrintPreviewDataStore());
   }

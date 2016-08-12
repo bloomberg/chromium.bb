@@ -397,7 +397,7 @@ void EventRouter::Shutdown() {
   DLOG_IF(WARNING, !file_watchers_.empty())
       << "Not all file watchers are "
       << "removed. This can happen when Files.app is open during shutdown.";
-  STLDeleteValues(&file_watchers_);
+  base::STLDeleteValues(&file_watchers_);
   if (!profile_) {
     NOTREACHED();
     return;

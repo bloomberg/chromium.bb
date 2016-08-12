@@ -817,7 +817,7 @@ net::URLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
     content::URLRequestInterceptorScopedVector request_interceptors) const {
   DCHECK(initialized_);
   net::URLRequestContext* context = NULL;
-  if (ContainsKey(app_request_context_map_, partition_descriptor)) {
+  if (base::ContainsKey(app_request_context_map_, partition_descriptor)) {
     context = app_request_context_map_[partition_descriptor];
   } else {
     context = AcquireIsolatedAppRequestContext(
@@ -835,7 +835,8 @@ net::URLRequestContext* ProfileIOData::GetIsolatedMediaRequestContext(
     const StoragePartitionDescriptor& partition_descriptor) const {
   DCHECK(initialized_);
   net::URLRequestContext* context = NULL;
-  if (ContainsKey(isolated_media_request_context_map_, partition_descriptor)) {
+  if (base::ContainsKey(isolated_media_request_context_map_,
+                        partition_descriptor)) {
     context = isolated_media_request_context_map_[partition_descriptor];
   } else {
     context = AcquireIsolatedMediaRequestContext(app_context,

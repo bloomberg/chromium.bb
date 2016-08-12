@@ -158,7 +158,7 @@ const DeviceMetrics* DevToolsHttpClient::device_metrics() {
 }
 
 bool DevToolsHttpClient::IsBrowserWindow(const WebViewInfo& view) const {
-  return ContainsKey(*window_types_, view.type) ||
+  return base::ContainsKey(*window_types_, view.type) ||
          (view.type == WebViewInfo::kOther &&
           (base::StartsWith(view.url, "chrome-extension://",
                             base::CompareCase::SENSITIVE) ||

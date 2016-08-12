@@ -50,8 +50,8 @@ SpellingServiceClient::SpellingServiceClient() {
 }
 
 SpellingServiceClient::~SpellingServiceClient() {
-  STLDeleteContainerPairPointers(spellcheck_fetchers_.begin(),
-                                 spellcheck_fetchers_.end());
+  base::STLDeleteContainerPairPointers(spellcheck_fetchers_.begin(),
+                                       spellcheck_fetchers_.end());
 }
 
 bool SpellingServiceClient::RequestTextCheck(

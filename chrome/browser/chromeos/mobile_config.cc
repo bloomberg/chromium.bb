@@ -194,7 +194,7 @@ void MobileConfig::Carrier::InitFromDictionary(
 }
 
 void MobileConfig::Carrier::RemoveDeals() {
-  STLDeleteValues(&deals_);
+  base::STLDeleteValues(&deals_);
 }
 
 // MobileConfig::LocaleConfig implementation. ----------------------------------
@@ -317,7 +317,7 @@ MobileConfig::MobileConfig(const std::string& config,
 }
 
 MobileConfig::~MobileConfig() {
-  STLDeleteValues(&carriers_);
+  base::STLDeleteValues(&carriers_);
 }
 
 void MobileConfig::LoadConfig() {

@@ -382,11 +382,11 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
 
   EXPECT_EQ(2u, params_.origins_to_force_quic_on.size());
   EXPECT_TRUE(
-      ContainsKey(params_.origins_to_force_quic_on,
-                  net::HostPortPair::FromString("www.example.com:443")));
+      base::ContainsKey(params_.origins_to_force_quic_on,
+                        net::HostPortPair::FromString("www.example.com:443")));
   EXPECT_TRUE(
-      ContainsKey(params_.origins_to_force_quic_on,
-                  net::HostPortPair::FromString("www.example.org:443")));
+      base::ContainsKey(params_.origins_to_force_quic_on,
+                        net::HostPortPair::FromString("www.example.org:443")));
 }
 
 TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
@@ -398,7 +398,7 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
 
   EXPECT_EQ(1u, params_.origins_to_force_quic_on.size());
   EXPECT_TRUE(
-      ContainsKey(params_.origins_to_force_quic_on, net::HostPortPair()));
+      base::ContainsKey(params_.origins_to_force_quic_on, net::HostPortPair()));
 }
 
 TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
@@ -410,8 +410,10 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
   ConfigureParamsFromFieldTrialsAndCommandLine();
 
   EXPECT_EQ(2u, params_.quic_host_whitelist.size());
-  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.org"));
-  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.com"));
+  EXPECT_TRUE(
+      base::ContainsKey(params_.quic_host_whitelist, "www.example.org"));
+  EXPECT_TRUE(
+      base::ContainsKey(params_.quic_host_whitelist, "www.example.com"));
 }
 
 TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,

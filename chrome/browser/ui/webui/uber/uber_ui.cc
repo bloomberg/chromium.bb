@@ -72,7 +72,7 @@ bool HasExtensionType(content::BrowserContext* browser_context,
        iter != extension_set.end(); ++iter) {
     const extensions::URLOverrides::URLOverrideMap& map =
         extensions::URLOverrides::GetChromeURLOverrides(iter->get());
-    if (ContainsKey(map, extension_type))
+    if (base::ContainsKey(map, extension_type))
       return true;
   }
 
@@ -175,7 +175,7 @@ UberUI::UberUI(content::WebUI* web_ui)
 }
 
 UberUI::~UberUI() {
-  STLDeleteValues(&sub_uis_);
+  base::STLDeleteValues(&sub_uis_);
 }
 
 void UberUI::RegisterSubpage(const std::string& page_url,
@@ -185,7 +185,7 @@ void UberUI::RegisterSubpage(const std::string& page_url,
 }
 
 content::WebUI* UberUI::GetSubpage(const std::string& page_url) {
-  if (!ContainsKey(sub_uis_, page_url))
+  if (!base::ContainsKey(sub_uis_, page_url))
     return NULL;
   return sub_uis_[page_url];
 }

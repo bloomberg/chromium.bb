@@ -61,7 +61,7 @@ BackgroundPrintingManager::~BackgroundPrintingManager() {
   // preview WebContents trying to print). In such a case it will fail to print,
   // but we should at least clean up the observers.
   // TODO(thestig): Handle this case better.
-  STLDeleteValues(&printing_contents_map_);
+  base::STLDeleteValues(&printing_contents_map_);
 }
 
 void BackgroundPrintingManager::OwnPrintPreviewDialog(
@@ -131,7 +131,7 @@ std::set<content::WebContents*> BackgroundPrintingManager::CurrentContentSet() {
 
 bool BackgroundPrintingManager::HasPrintPreviewDialog(
     WebContents* preview_dialog) {
-  return ContainsKey(printing_contents_map_, preview_dialog);
+  return base::ContainsKey(printing_contents_map_, preview_dialog);
 }
 
 }  // namespace printing

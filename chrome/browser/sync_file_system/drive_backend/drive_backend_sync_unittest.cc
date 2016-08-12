@@ -232,7 +232,7 @@ class DriveBackendSyncTest : public testing::Test,
 
   SyncStatusCode RegisterApp(const std::string& app_id) {
     GURL origin = extensions::Extension::GetBaseURLFromExtensionId(app_id);
-    if (!ContainsKey(file_systems_, app_id)) {
+    if (!base::ContainsKey(file_systems_, app_id)) {
       CannedSyncableFileSystem* file_system = new CannedSyncableFileSystem(
           origin, in_memory_env_.get(),
           io_task_runner_.get(), file_task_runner_.get());
@@ -266,7 +266,7 @@ class DriveBackendSyncTest : public testing::Test,
 
   void AddLocalFolder(const std::string& app_id,
                       const base::FilePath::StringType& path) {
-    ASSERT_TRUE(ContainsKey(file_systems_, app_id));
+    ASSERT_TRUE(base::ContainsKey(file_systems_, app_id));
     EXPECT_EQ(base::File::FILE_OK,
               file_systems_[app_id]->CreateDirectory(
                   CreateURL(app_id, path)));
@@ -276,7 +276,7 @@ class DriveBackendSyncTest : public testing::Test,
                             const base::FilePath::StringType& path,
                             const std::string& content) {
     storage::FileSystemURL url(CreateURL(app_id, path));
-    ASSERT_TRUE(ContainsKey(file_systems_, app_id));
+    ASSERT_TRUE(base::ContainsKey(file_systems_, app_id));
     EXPECT_EQ(base::File::FILE_OK, file_systems_[app_id]->CreateFile(url));
     int64_t bytes_written = file_systems_[app_id]->WriteString(url, content);
     EXPECT_EQ(static_cast<int64_t>(content.size()), bytes_written);
@@ -286,7 +286,7 @@ class DriveBackendSyncTest : public testing::Test,
   void UpdateLocalFile(const std::string& app_id,
                        const base::FilePath::StringType& path,
                        const std::string& content) {
-    ASSERT_TRUE(ContainsKey(file_systems_, app_id));
+    ASSERT_TRUE(base::ContainsKey(file_systems_, app_id));
     int64_t bytes_written =
         file_systems_[app_id]->WriteString(CreateURL(app_id, path), content);
     EXPECT_EQ(static_cast<int64_t>(content.size()), bytes_written);
@@ -295,7 +295,7 @@ class DriveBackendSyncTest : public testing::Test,
 
   void RemoveLocal(const std::string& app_id,
                    const base::FilePath::StringType& path) {
-    ASSERT_TRUE(ContainsKey(file_systems_, app_id));
+    ASSERT_TRUE(base::ContainsKey(file_systems_, app_id));
     EXPECT_EQ(base::File::FILE_OK,
               file_systems_[app_id]->Remove(
                   CreateURL(app_id, path),
@@ -424,7 +424,7 @@ class DriveBackendSyncTest : public testing::Test,
          itr != remote_entries.end();
          ++itr) {
       const google_apis::FileResource& remote_entry = **itr;
-      EXPECT_FALSE(ContainsKey(app_root_by_title, remote_entry.title()));
+      EXPECT_FALSE(base::ContainsKey(app_root_by_title, remote_entry.title()));
       app_root_by_title[remote_entry.title()] = *itr;
     }
 
@@ -434,7 +434,7 @@ class DriveBackendSyncTest : public testing::Test,
       const std::string& app_id = itr->first;
       SCOPED_TRACE(testing::Message() << "Verifying app: " << app_id);
       CannedSyncableFileSystem* file_system = itr->second;
-      ASSERT_TRUE(ContainsKey(app_root_by_title, app_id));
+      ASSERT_TRUE(base::ContainsKey(app_root_by_title, app_id));
       VerifyConsistencyForFolder(
           app_id, base::FilePath(),
           app_root_by_title[app_id]->file_id(),
@@ -456,7 +456,8 @@ class DriveBackendSyncTest : public testing::Test,
         remote_entry_by_title;
     for (size_t i = 0; i < remote_entries.size(); ++i) {
       google_apis::FileResource* remote_entry = remote_entries[i];
-      EXPECT_FALSE(ContainsKey(remote_entry_by_title, remote_entry->title()))
+      EXPECT_FALSE(
+          base::ContainsKey(remote_entry_by_title, remote_entry->title()))
           << "title: " << remote_entry->title();
       remote_entry_by_title[remote_entry->title()] = remote_entry;
     }
@@ -475,7 +476,7 @@ class DriveBackendSyncTest : public testing::Test,
           storage::VirtualPath::BaseName(entry_url.path()).AsUTF8Unsafe();
       SCOPED_TRACE(testing::Message() << "Verifying entry: " << title);
 
-      ASSERT_TRUE(ContainsKey(remote_entry_by_title, title));
+      ASSERT_TRUE(base::ContainsKey(remote_entry_by_title, title));
       const google_apis::FileResource& remote_entry =
           *remote_entry_by_title[title];
       if (local_entry.is_directory) {
@@ -512,7 +513,7 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
   size_t CountLocalFile(const std::string& app_id) {
-    if (!ContainsKey(file_systems_, app_id))
+    if (!base::ContainsKey(file_systems_, app_id))
       return 0;
 
     CannedSyncableFileSystem* file_system = file_systems_[app_id];
@@ -544,7 +545,7 @@ class DriveBackendSyncTest : public testing::Test,
     SCOPED_TRACE(testing::Message() << "Verifying local file: "
                                     << "app_id = " << app_id
                                     << ", path = " << path);
-    ASSERT_TRUE(ContainsKey(file_systems_, app_id));
+    ASSERT_TRUE(base::ContainsKey(file_systems_, app_id));
     EXPECT_EQ(base::File::FILE_OK,
               file_systems_[app_id]->VerifyFile(
                   CreateURL(app_id, path), content));
@@ -555,7 +556,7 @@ class DriveBackendSyncTest : public testing::Test,
     SCOPED_TRACE(testing::Message() << "Verifying local file: "
                                     << "app_id = " << app_id
                                     << ", path = " << path);
-    ASSERT_TRUE(ContainsKey(file_systems_, app_id));
+    ASSERT_TRUE(base::ContainsKey(file_systems_, app_id));
     EXPECT_EQ(base::File::FILE_OK,
               file_systems_[app_id]->DirectoryExists(CreateURL(app_id, path)));
   }

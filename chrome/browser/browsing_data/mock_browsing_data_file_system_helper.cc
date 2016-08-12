@@ -27,7 +27,7 @@ void MockBrowsingDataFileSystemHelper::DeleteFileSystemOrigin(
     const GURL& origin) {
   ASSERT_FALSE(callback_.is_null());
   std::string key = origin.spec();
-  ASSERT_TRUE(ContainsKey(file_systems_, key));
+  ASSERT_TRUE(base::ContainsKey(file_systems_, key));
   last_deleted_origin_ = origin;
   file_systems_[key] = false;
 }

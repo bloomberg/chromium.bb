@@ -188,7 +188,7 @@ void ChromeContentVerifierDelegate::VerifyFailed(
     UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionBecameDisabled", true);
     UMA_HISTOGRAM_ENUMERATION("Extensions.CorruptExtensionDisabledReason",
                               reason, ContentVerifyJob::FAILURE_REASON_MAX);
-  } else if (!ContainsKey(would_be_disabled_ids_, extension_id)) {
+  } else if (!base::ContainsKey(would_be_disabled_ids_, extension_id)) {
     UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionWouldBeDisabled", true);
     would_be_disabled_ids_.insert(extension_id);
   }
@@ -196,7 +196,7 @@ void ChromeContentVerifierDelegate::VerifyFailed(
 
 void ChromeContentVerifierDelegate::LogFailureForPolicyForceInstall(
     const std::string& extension_id) {
-  if (!ContainsKey(corrupt_policy_extensions_, extension_id)) {
+  if (!base::ContainsKey(corrupt_policy_extensions_, extension_id)) {
     corrupt_policy_extensions_.insert(extension_id);
     UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptPolicyExtensionWouldBeDisabled",
                           true);

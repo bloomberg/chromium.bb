@@ -31,7 +31,7 @@ void MockBrowsingDataCookieHelper::DeleteCookie(
     const net::CanonicalCookie& cookie) {
   ASSERT_FALSE(callback_.is_null());
   std::string key = cookie.Name() + "=" + cookie.Value();
-  ASSERT_TRUE(ContainsKey(cookies_, key));
+  ASSERT_TRUE(base::ContainsKey(cookies_, key));
   cookies_[key] = false;
 }
 
