@@ -154,15 +154,6 @@ void SpellCheckerClientImpl::cancelAllPendingRequests()
     m_webView->spellCheckClient()->cancelAllPendingRequests();
 }
 
-void SpellCheckerClientImpl::checkGrammarOfString(const String& text, WTF::Vector<GrammarDetail>& details, int* badGrammarLocation, int* badGrammarLength)
-{
-    if (badGrammarLocation)
-        *badGrammarLocation = -1;
-    if (badGrammarLength)
-        *badGrammarLength = 0;
-    return;
-}
-
 void SpellCheckerClientImpl::updateSpellingUIWithMisspelledWord(const String& misspelledWord)
 {
     if (m_webView->spellCheckClient())

@@ -48,8 +48,6 @@ public:
     bool isContinuousSpellCheckingEnabled() override;
     void toggleContinuousSpellChecking() override;
     void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) override;
-    void checkGrammarOfString(const String&, Vector<GrammarDetail>&,
-        int* badGrammarLocation, int* badGrammarLength) override;
     void updateSpellingUIWithMisspelledWord(const String&) override;
     void showSpellingUI(bool show) override;
     bool spellingUIIsShowing() override;

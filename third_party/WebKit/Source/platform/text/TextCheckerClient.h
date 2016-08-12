@@ -42,7 +42,6 @@ public:
     virtual ~TextCheckerClient() { }
 
     virtual void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) = 0;
-    virtual void checkGrammarOfString(const String&, Vector<GrammarDetail>&, int* badGrammarLocation, int* badGrammarLength) = 0;
     virtual void requestCheckingOfString(TextCheckingRequest*) = 0;
     virtual void cancelAllPendingRequests() = 0;
 };
