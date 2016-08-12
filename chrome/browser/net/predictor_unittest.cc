@@ -145,13 +145,13 @@ static bool GetDataFromSerialization(const GURL& motivation,
 }
 
 TEST_F(PredictorTest, StartupShutdownTest) {
-  Predictor testing_master(true, true);
+  Predictor testing_master(true);
   testing_master.Shutdown();
 }
 
 // Make sure nil referral lists really have no entries, and no latency listed.
 TEST_F(PredictorTest, ReferrerSerializationNilTest) {
-  Predictor predictor(true, true);
+  Predictor predictor(true);
 
   std::unique_ptr<base::ListValue> referral_list(new base::ListValue);
   predictor.SerializeReferrers(referral_list.get());
@@ -167,7 +167,7 @@ TEST_F(PredictorTest, ReferrerSerializationNilTest) {
 // deserialized into the database, and can be extracted back out via
 // serialization without being changed.
 TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
-  Predictor predictor(true, true);
+  Predictor predictor(true);
   const GURL motivation_url("http://www.google.com:91");
   const GURL subresource_url("http://icons.google.com:90");
   const double kUseRate = 23.4;
@@ -191,7 +191,7 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
 
 // Test that the referrers are sorted in MRU order in the HTML UI.
 TEST_F(PredictorTest, GetHtmlReferrerLists) {
-  SimplePredictor predictor(true, true);
+  SimplePredictor predictor(true);
 
   predictor.LearnFromNavigation(GURL("http://www.source_b.test"),
                                 GURL("http://www.target_b.test"));
@@ -220,7 +220,7 @@ TEST_F(PredictorTest, GetHtmlReferrerLists) {
 // Expect the exact same HTML when the predictor's referrers are serialized and
 // deserialized (implies ordering remains the same).
 TEST_F(PredictorTest, SerializeAndDeserialize) {
-  SimplePredictor predictor(true, true);
+  SimplePredictor predictor(true);
 
   for (int i = 0; i < Predictor::kMaxReferrers * 2; ++i) {
     predictor.LearnFromNavigation(
@@ -244,7 +244,7 @@ TEST_F(PredictorTest, SerializeAndDeserialize) {
 
 // Filling the MRU cache should evict entries that were used less recently.
 TEST_F(PredictorTest, FillMRUCache) {
-  SimplePredictor predictor(true, true);
+  SimplePredictor predictor(true);
 
   for (int i = 0; i < Predictor::kMaxReferrers * 2; ++i) {
     predictor.LearnFromNavigation(
@@ -376,7 +376,7 @@ TEST_F(PredictorTest, CanonicalizeUrl) {
 }
 
 TEST_F(PredictorTest, DiscardPredictorResults) {
-  SimplePredictor predictor(true, true);
+  SimplePredictor predictor(true);
   base::ListValue referral_list;
   predictor.SerializeReferrers(&referral_list);
   EXPECT_EQ(1U, referral_list.GetSize());
@@ -420,7 +420,7 @@ TEST_F(PredictorTest, HSTSRedirect) {
   net::TransportSecurityState state;
   state.AddHSTS(kHttpUrl.host(), expiry, false);
 
-  Predictor predictor(true, true);
+  Predictor predictor(true);
   TestPredictorObserver observer;
   predictor.SetObserver(&observer);
   predictor.SetTransportSecurityState(&state);
@@ -446,7 +446,7 @@ TEST_F(PredictorTest, HSTSRedirectSubresources) {
   net::TransportSecurityState state;
   state.AddHSTS(kHttpUrl.host(), expiry, false);
 
-  SimplePredictor predictor(true, true);
+  SimplePredictor predictor(true);
   TestPredictorObserver observer;
   predictor.SetObserver(&observer);
   predictor.SetTransportSecurityState(&state);
@@ -474,7 +474,7 @@ TEST_F(PredictorTest, HSTSRedirectLearnedSubresource) {
   net::TransportSecurityState state;
   state.AddHSTS(kHttpUrl.host(), expiry, false);
 
-  SimplePredictor predictor(true, true);
+  SimplePredictor predictor(true);
   TestPredictorObserver observer;
   predictor.SetObserver(&observer);
   predictor.SetTransportSecurityState(&state);
@@ -495,7 +495,7 @@ TEST_F(PredictorTest, NoProxyService) {
   // Don't actually try to resolve names.
   Predictor::set_max_parallel_resolves(0);
 
-  Predictor testing_master(true, true);
+  Predictor testing_master(true);
 
   GURL goog("http://www.google.com:80");
   testing_master.Resolve(goog, UrlInfo::OMNIBOX_MOTIVATED);
@@ -508,7 +508,7 @@ TEST_F(PredictorTest, ProxyDefinitelyEnabled) {
   // Don't actually try to resolve names.
   Predictor::set_max_parallel_resolves(0);
 
-  Predictor testing_master(true, true);
+  Predictor testing_master(true);
 
   net::ProxyConfig config;
   config.proxy_rules().ParseFromString("http=socks://localhost:12345");
@@ -529,7 +529,7 @@ TEST_F(PredictorTest, ProxyDefinitelyNotEnabled) {
   // Don't actually try to resolve names.
   Predictor::set_max_parallel_resolves(0);
 
-  Predictor testing_master(true, true);
+  Predictor testing_master(true);
   net::ProxyConfig config = net::ProxyConfig::CreateDirect();
   std::unique_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateFixed(config));
@@ -548,7 +548,7 @@ TEST_F(PredictorTest, ProxyMaybeEnabled) {
   // Don't actually try to resolve names.
   Predictor::set_max_parallel_resolves(0);
 
-  Predictor testing_master(true, true);
+  Predictor testing_master(true);
   net::ProxyConfig config = net::ProxyConfig::CreateFromCustomPacURL(GURL(
       "http://foopy/proxy.pac"));
   std::unique_ptr<net::ProxyService> proxy_service(

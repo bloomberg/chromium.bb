@@ -270,9 +270,6 @@ const char kDisablePermissionsBlacklist[]   = "disable-permissions-blacklist";
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
-// Disable speculative TCP/IP preconnection.
-const char kDisablePreconnect[]             = "disable-preconnect";
-
 // Disables print preview (For testing, and for users who don't like us. :[ )
 const char kDisablePrintPreview[]           = "disable-print-preview";
 
@@ -325,9 +322,6 @@ const char kDiskCacheDir[]                  = "disk-cache-dir";
 const char kDiskCacheSize[]                 = "disk-cache-size";
 
 const char kDnsLogDetails[]                 = "dns-log-details";
-
-// Disables prefetching of DNS information.
-const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 
 // Requests that a running browser process dump its collected histograms to a
 // given file. The file is overwritten if it exists.

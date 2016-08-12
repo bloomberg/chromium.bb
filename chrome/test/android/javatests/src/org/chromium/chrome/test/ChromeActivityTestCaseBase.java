@@ -93,7 +93,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // Preconnect causes issues with the single-threaded Java test server.
-        ChromeSwitches.DISABLE_PRECONNECT})
+        "--disable-features=NetworkPrediction"})
 public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         extends BaseActivityInstrumentationTestCase<T> {
 

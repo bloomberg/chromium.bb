@@ -124,17 +124,14 @@ class Predictor {
   // The maximum size of the MRU cache of referrers.
   static const int kMaxReferrers;
 
-  // |max_concurrent| specifies how many concurrent (parallel) prefetches will
-  // be performed. Host lookups will be issued through |host_resolver|.
-  explicit Predictor(bool preconnect_enabled, bool predictor_enabled);
+  explicit Predictor(bool predictor_enabled);
 
   virtual ~Predictor();
 
   // This function is used to create a predictor. For testing, we can create
   // a version which does a simpler shutdown.
-  static Predictor* CreatePredictor(bool preconnect_enabled,
-                                    bool predictor_enabled,
-                                    bool simple_shutdown);
+  // TODO(636128): This method should return a unique_ptr.
+  static Predictor* CreatePredictor(bool simple_shutdown);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -299,15 +296,11 @@ class Predictor {
     return profile_io_data_;
   }
 
-  bool predictor_enabled() const {
-    return predictor_enabled_;
-  }
+  bool PredictorEnabled() const;
 
-  bool PreconnectEnabled() const;
-
-  // Used only for testing. Overrides command line flag to disable preconnect,
-  // which is added in the browser test fixture.
-  void SetPreconnectEnabledForTest(bool preconnect_enabled);
+  // Used only for testing. Overrides command line flag to disable the
+  // predictor, which is added in the browser test fixture.
+  void SetPredictorEnabledForTest(bool predictor_enabled);
 
   net::URLRequestContextGetter* url_request_context_getter_for_test() {
     return url_request_context_getter_.get();
@@ -466,7 +459,9 @@ class Predictor {
 
   // Status of speculative DNS resolution and speculative TCP/IP connection
   // feature. This is false if and only if disabled by a command line switch.
-  const bool predictor_enabled_;
+  // Protected by |preconnect_enabled_lock_|, which is used by tests to bypass
+  // the command line flags.
+  bool predictor_enabled_;
 
   // This is set by InitNetworkPredictor and used for calling
   // CanPrefetchAndPrerenderUI and CanPreresolveAndPreconnectUI.
@@ -510,12 +505,6 @@ class Predictor {
   // The ProxyService, used to determine whether preresolve is useful.
   net::ProxyService* proxy_service_;
 
-  // Are we currently using preconnection, rather than just DNS resolution, for
-  // subresources and omni-box search URLs. This is false if and only if
-  // disabled by a command line switch. Protected by |preconnect_enabled_lock_|,
-  // which is used by tests to bypass the command line flags.
-  bool preconnect_enabled_;
-
   // Most recent suggestion from Omnibox provided via AnticipateOmniboxUrl().
   std::string last_omnibox_host_;
 
@@ -552,8 +541,8 @@ class Predictor {
   // thread.
   std::unique_ptr<base::WeakPtrFactory<Predictor>> ui_weak_factory_;
 
-  // Protects |preconnect_enabled_|.
-  mutable base::Lock preconnect_enabled_lock_;
+  // Protects |predictor_enabled_|.
+  mutable base::Lock predictor_enabled_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(Predictor);
 };
@@ -561,8 +550,8 @@ class Predictor {
 // This version of the predictor is used for testing.
 class SimplePredictor : public Predictor {
  public:
-  explicit SimplePredictor(bool preconnect_enabled, bool predictor_enabled)
-      : Predictor(preconnect_enabled, predictor_enabled) {}
+  explicit SimplePredictor(bool predictor_enabled)
+      : Predictor(predictor_enabled) {}
   ~SimplePredictor() override {}
   void InitNetworkPredictor(PrefService* user_prefs,
                             IOThread* io_thread,

@@ -417,13 +417,8 @@ ProfileImpl::ProfileImpl(
   set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
   set_is_system_profile(path == ProfileManager::GetSystemProfilePath());
 
-  // Determine if prefetch is enabled for this profile.
-  // If not profile_manager is present, it means we are in a unittest.
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
+  // If profile_manager is not present, it means we are in a unittest.
   predictor_ = chrome_browser_net::Predictor::CreatePredictor(
-      !command_line->HasSwitch(switches::kDisablePreconnect),
-      !command_line->HasSwitch(switches::kDnsPrefetchDisable),
       g_browser_process->profile_manager() == NULL);
 
   // If we are creating the profile synchronously, then we should load the

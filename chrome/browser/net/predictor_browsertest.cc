@@ -532,7 +532,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
         base::Bind(&RedirectForPathHandler, "/",
                    cross_site_test_server()->GetURL("/title1.html")));
 
-    predictor()->SetPreconnectEnabledForTest(true);
+    predictor()->SetPredictorEnabledForTest(true);
     InstallPredictorObserver(embedded_test_server()->base_url(),
                              cross_site_test_server()->base_url());
     observer()->set_task_runner(task_runner_);
@@ -1371,9 +1371,14 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCyclePreresolve) {
   PrepareFrameSubresources(referring_url_);
   observer()->WaitUntilHostLookedUp(target_url_);
 
-  // Verify that both urls were requested by the predictor. Note that the
-  // startup URL may be requested before the observer attaches itself.
-  ExpectUrlRequestedFromPredictor(startup_url_);
+  // Since the predictor is only enabled after startup, just ensure that
+  // |startup_url_| is persisted in the prefs.
+  std::string startup_list;
+  GetListFromPrefsAsString(prefs::kDnsPrefetchingStartupList,
+                           &startup_list);
+  EXPECT_THAT(startup_list, HasSubstr(startup_url_.host()));
+
+  // Verify that the |target_url_| is requested by the predictor.
   EXPECT_FALSE(observer()->HostFound(target_url_));
 }
 

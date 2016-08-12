@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,7 +27,8 @@ namespace test_launcher_utils {
 void PrepareBrowserCommandLineForTests(base::CommandLine* command_line) {
   // Turn off preconnects because they break the brittle python webserver;
   // see http://crbug.com/60035.
-  command_line->AppendSwitch(switches::kDisablePreconnect);
+  command_line->AppendSwitchASCII(switches::kDisableFeatures,
+                                  "NetworkPrediction");
 
   // Don't show the first run ui.
   command_line->AppendSwitch(switches::kNoFirstRun);
