@@ -818,8 +818,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-vrl-006.xht [ Failure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-vlr-007.xht [ Failure ]
 
-crbug.com/529938 [ Linux ] fast/forms/select-popup/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
-
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ Failure ]
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ Failure ]
 
