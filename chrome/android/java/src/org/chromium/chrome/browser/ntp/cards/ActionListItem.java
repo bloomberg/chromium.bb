@@ -35,22 +35,24 @@ class ActionListItem implements NewTabPageListItem {
         public ViewHolder(NewTabPageRecyclerView recyclerView, final NewTabPageManager manager,
                 UiConfig uiConfig) {
             super(R.layout.new_tab_page_action_card, recyclerView, uiConfig);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int category = mActionListItem.mCategory;
-                    if (category == KnownCategories.BOOKMARKS) {
-                        manager.navigateToBookmarks();
-                    } else if (category == KnownCategories.DOWNLOADS) {
-                        manager.navigateToDownloadManager();
-                    } else {
-                        // TODO(pke): This should redirect to the C++ backend. Once it does,
-                        // change the condition in the SuggestionsSection constructor.
-                        Log.wtf(TAG, "More action called on a dynamically added section: %d",
-                                category);
-                    }
-                }
-            });
+            itemView.findViewById(R.id.action_button)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            int category = mActionListItem.mCategory;
+                            if (category == KnownCategories.BOOKMARKS) {
+                                manager.navigateToBookmarks();
+                            } else if (category == KnownCategories.DOWNLOADS) {
+                                manager.navigateToDownloadManager();
+                            } else {
+                                // TODO(pke): This should redirect to the C++ backend. Once it does,
+                                // change the condition in the SuggestionsSection constructor.
+                                Log.wtf(TAG,
+                                        "More action called on a dynamically added section: %d",
+                                        category);
+                            }
+                        }
+                    });
         }
 
         @Override

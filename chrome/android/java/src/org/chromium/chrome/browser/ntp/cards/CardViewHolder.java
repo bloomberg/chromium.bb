@@ -11,6 +11,7 @@ import android.animation.ObjectAnimator;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -110,7 +111,11 @@ public class CardViewHolder extends NewTabPageViewHolder {
         });
 
         mUiConfig = uiConfig;
-        mDisplayStyleObserverAdapter = MarginResizer.createWithViewAdapter(itemView, mUiConfig);
+
+        // Configure the resizer to use negative margins on regular display to balance out the
+        // lateral shadow of the card 9-patch and avoid a rounded corner effect.
+        mDisplayStyleObserverAdapter =
+                MarginResizer.createWithViewAdapter(itemView, mUiConfig, -mCards9PatchAdjustment);
     }
 
     /**
@@ -131,17 +136,30 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
     @Override
     public void updateLayoutParams() {
-        RecyclerView.LayoutParams params = getParams();
-
         // Each card has the full elevation effect so we will remove bottom margin to overlay and
         // hide the bottom shadow of the previous card to give the effect of a divider instead of a
         // shadow.
-        if (mRecyclerView.getAdapter().getItemViewType(getAdapterPosition() + 1)
-                == NewTabPageListItem.VIEW_TYPE_SNIPPET) {
-            params.bottomMargin = -mCards9PatchAdjustment;
-        } else {
-            params.bottomMargin = 0;
+        // Notes:
+        //  - An alternative way to check that 2 cards are coming one after the other would be to
+        //    check the item's ViewType, but we decided against for now to avoid having to maintain
+        //    a separate listing of all the view types that are cards. Their ViewHolders are all
+        //    CardViewHolder so it's a robust way to do the check.
+        //  - The drawback of using ViewHolders is that they are not instantiated yet for all the
+        //    items in the list. At a given moment, the below code will not properly adjust the
+        //    margin of cards for which the next card ViewHolder has not yet been created and added
+        //    to the RecyclerView. It doesn't matter still because a layout pass will be requested
+        //    when that ViewHolder is added, calling this method again and fixing the margins
+        //    before they enter the view.
+        ViewHolder previousViewHolder =
+                mRecyclerView.findViewHolderForAdapterPosition(getAdapterPosition() - 1);
+        if (previousViewHolder instanceof CardViewHolder) {
+            ((CardViewHolder) previousViewHolder).getParams().bottomMargin =
+                    -mCards9PatchAdjustment;
         }
+
+        // Reset the margin to 0 here. If it should take the 9-patch adjustment into account, the
+        // next card will set the value, since the method is called on the cards in layout order.
+        getParams().bottomMargin = 0;
     }
 
     /**
