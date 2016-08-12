@@ -174,7 +174,11 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // represented by |service_name_|.
   virtual void SetNameOwnerChangedCallback(NameOwnerChangedCallback callback);
 
-  // Runs the callback as soon as the service becomes available.
+  // Registers |callback| to run when the service becomes available. If the
+  // service is already available, or if connecting to the name-owner-changed
+  // signal fails, |callback| will be run once asynchronously. Otherwise,
+  // |callback| will be run once in the future after the service becomes
+  // available.
   virtual void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback);
 
