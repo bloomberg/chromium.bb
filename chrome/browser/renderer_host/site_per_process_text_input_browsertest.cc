@@ -565,6 +565,43 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   reset_state_observer.Wait();
 }
 
+// This test creates a page with multiple child frames and adds an <input> to
+// each frame. Then, sequentially, each <input> is focused by sending a tab key.
+// Then, after |TextInputState.type| for a view is changed to text, the test
+// sends a set composition IPC to the active widget and waits until the widget
+// updates its composition range.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       TrackCompositionRangeForAllFrames) {
+  CreateIframePage("a(b,c(a,b),d)");
+  std::vector<content::RenderFrameHost*> frames{
+      GetFrame(IndexVector{}),     GetFrame(IndexVector{0}),
+      GetFrame(IndexVector{1}),    GetFrame(IndexVector{1, 0}),
+      GetFrame(IndexVector{1, 1}), GetFrame(IndexVector{2})};
+  std::vector<content::RenderWidgetHostView*> views;
+  for (auto* frame : frames)
+    views.push_back(frame->GetView());
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", "text", true);
+
+  content::WebContents* web_contents = active_contents();
+
+  auto send_tab_set_composition_wait_for_bounds_change = [&web_contents](
+      content::RenderWidgetHostView* view) {
+    ViewTextInputTypeObserver type_observer(web_contents, view,
+                                            ui::TEXT_INPUT_TYPE_TEXT);
+    SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                     ui::VKEY_TAB, false, false, false, false);
+    type_observer.Wait();
+
+    ViewCompositionRangeChangedObserver range_observer(web_contents, view);
+    EXPECT_TRUE(content::RequestCompositionInfoFromActiveWidget(web_contents));
+    range_observer.Wait();
+  };
+
+  for (auto* view : views)
+    send_tab_set_composition_wait_for_bounds_change(view);
+}
+
 // TODO(ekaramad): Enable the following tests on other platforms when the
 // corresponding feature is implemented (http://crbug.com/578168).
 #if defined(USE_AURA)
@@ -604,42 +641,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   for (auto* view : views)
     send_tab_insert_text_wait_for_bounds_change(view);
-}
-
-// This test creates a page with multiple child frames and adds an <input> to
-// each frame. Then, sequentially, each <input> is focused by sending a tab key.
-// Then, after |TextInputState.type| for a view is changed to text, the test
-// sends a set composition IPC to the active widget and waits until the widget
-// updates its composition range.
-IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       TrackCompositionRangeForAllFrames) {
-  CreateIframePage("a(b,c(a,b),d)");
-  std::vector<content::RenderFrameHost*> frames{
-      GetFrame(IndexVector{}),     GetFrame(IndexVector{0}),
-      GetFrame(IndexVector{1}),    GetFrame(IndexVector{1, 0}),
-      GetFrame(IndexVector{1, 1}), GetFrame(IndexVector{2})};
-  std::vector<content::RenderWidgetHostView*> views;
-  for (auto* frame : frames)
-    views.push_back(frame->GetView());
-  for (size_t i = 0; i < frames.size(); ++i)
-    AddInputFieldToFrame(frames[i], "text", "text", true);
-
-  content::WebContents* web_contents = active_contents();
-
-  auto send_tab_set_composition_wait_for_bounds_change = [&web_contents](
-      content::RenderWidgetHostView* view) {
-    ViewTextInputTypeObserver type_observer(web_contents, view,
-                                            ui::TEXT_INPUT_TYPE_TEXT);
-    SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
-                     ui::VKEY_TAB, false, false, false, false);
-    type_observer.Wait();
-    ViewCompositionRangeChangedObserver range_observer(web_contents, view);
-    EXPECT_TRUE(content::RequestCompositionInfoFromActiveWidget(web_contents));
-    range_observer.Wait();
-  };
-
-  for (auto* view : views)
-    send_tab_set_composition_wait_for_bounds_change(view);
 }
 
 // This test creates a page with multiple child frames and adds an <input> to

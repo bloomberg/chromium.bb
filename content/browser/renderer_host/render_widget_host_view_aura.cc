@@ -1490,11 +1490,12 @@ bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(
   if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
     return false;
 
-  const std::vector<gfx::Rect>* composition_character_bounds =
-      text_input_manager_->GetCompositionCharacterBounds();
-  if (index >= composition_character_bounds->size())
+  const TextInputManager::CompositionRangeInfo* composition_range_info =
+      text_input_manager_->GetCompositionRangeInfo();
+
+  if (index >= composition_range_info->character_bounds.size())
     return false;
-  *rect = ConvertRectToScreen(composition_character_bounds->at(index));
+  *rect = ConvertRectToScreen(composition_range_info->character_bounds[index]);
   return true;
 }
 

@@ -79,6 +79,16 @@ class CONTENT_EXPORT TextInputManager {
     base::string16 text;
   };
 
+  // Composition range information.
+  struct CompositionRangeInfo {
+    CompositionRangeInfo();
+    CompositionRangeInfo(const CompositionRangeInfo& other);
+    ~CompositionRangeInfo();
+
+    std::vector<gfx::Rect> character_bounds;
+    gfx::Range range;
+  };
+
   TextInputManager();
   ~TextInputManager();
 
@@ -100,8 +110,11 @@ class CONTENT_EXPORT TextInputManager {
   // Returns the rect between selection bounds.
   gfx::Rect GetSelectionBoundsRect() const;
 
-  // Returns a vector of rects representing the character bounds.
-  const std::vector<gfx::Rect>* GetCompositionCharacterBounds() const;
+  // Returns the composition range and character bounds information for the
+  // |view|. If |view| == nullptr, it will assume |active_view_| and return its
+  // state. If |active_view_| == nullptr, this method will return nullptr.
+  const TextInputManager::CompositionRangeInfo* GetCompositionRangeInfo(
+      RenderWidgetHostViewBase* view = nullptr) const;
 
   // The following method returns the text selection state for the given |view|.
   // If |view| == nullptr, it will assume |active_view_| and return its state.
@@ -178,15 +191,6 @@ class CONTENT_EXPORT TextInputManager {
     gfx::SelectionBound anchor;
     // The end of the selection region (caret position).
     gfx::SelectionBound focus;
-  };
-
-  // Ccomposition range information.
-  struct CompositionRangeInfo {
-    CompositionRangeInfo();
-    CompositionRangeInfo(const CompositionRangeInfo& other);
-    ~CompositionRangeInfo();
-
-    std::vector<gfx::Rect> character_bounds;
   };
 
   // This class is used to create maps which hold specific IME state for a

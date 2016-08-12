@@ -70,11 +70,13 @@ gfx::Rect TextInputManager::GetSelectionBoundsRect() const {
       selection_region_map_.at(active_view_).focus);
 }
 
-const std::vector<gfx::Rect>* TextInputManager::GetCompositionCharacterBounds()
-    const {
-  return !!active_view_
-             ? &composition_range_info_map_.at(active_view_).character_bounds
-             : nullptr;
+const TextInputManager::CompositionRangeInfo*
+TextInputManager::GetCompositionRangeInfo(
+    RenderWidgetHostViewBase* view) const {
+  DCHECK(!view || IsRegistered(view));
+  if (!view)
+    view = active_view_;
+  return active_view_ ? &composition_range_info_map_.at(active_view_) : nullptr;
 }
 
 const TextInputManager::TextSelection* TextInputManager::GetTextSelection(
@@ -197,6 +199,9 @@ void TextInputManager::SelectionBoundsChanged(
 #endif
 }
 
+// TODO(ekaramad): We use |range| only on Mac OS; but we still track its value
+// here for other platforms. See if there is a nice way around this with minimal
+// #ifdefs for platform specific code (https://crbug.com/602427).
 void TextInputManager::ImeCompositionRangeChanged(
     RenderWidgetHostViewBase* view,
     const gfx::Range& range,
@@ -210,6 +215,9 @@ void TextInputManager::ImeCompositionRangeChanged(
     composition_range_info_map_[view].character_bounds.emplace_back(gfx::Rect(
         view->TransformPointToRootCoordSpace(rect.origin()), rect.size()));
   }
+
+  composition_range_info_map_[view].range.set_start(range.start());
+  composition_range_info_map_[view].range.set_end(range.end());
 
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnImeCompositionRangeChanged(this, view));

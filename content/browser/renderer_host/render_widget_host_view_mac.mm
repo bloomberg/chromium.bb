@@ -899,14 +899,16 @@ void RenderWidgetHostViewMac::OnImeCancelComposition(
   [cocoa_view_ cancelComposition];
 }
 
-void RenderWidgetHostViewMac::ImeCompositionRangeChanged(
-    const gfx::Range& range,
-    const std::vector<gfx::Rect>& character_bounds) {
+void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view) {
+  const TextInputManager::CompositionRangeInfo* info =
+      GetTextInputManager()->GetCompositionRangeInfo();
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
-  [cocoa_view_ setMarkedRange:range.ToNSRange()];
-  composition_range_ = range;
-  composition_bounds_ = character_bounds;
+  [cocoa_view_ setMarkedRange:info->range.ToNSRange()];
+  composition_range_ = info->range;
+  composition_bounds_ = info->character_bounds;
 }
 
 void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
