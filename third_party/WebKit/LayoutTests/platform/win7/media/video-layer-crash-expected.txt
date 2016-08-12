@@ -4,16 +4,16 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 367x18
-          text run at (0,0) width 367: "Test dynamic removal of transformed and reflected video"
+        LayoutText {#text} at (0,0) size 368x17
+          text run at (0,0) width 368: "Test dynamic removal of transformed and reflected video"
       LayoutBlockFlow (anonymous) at (0,34) size 784x338
-        LayoutText {#text} at (0,0) size 4x18
+        LayoutText {#text} at (0,0) size 4x17
           text run at (0,0) width 4: " "
         LayoutBR {BR} at (4,14) size 0x0
-        LayoutText {#text} at (0,160) size 4x18
+        LayoutText {#text} at (0,160) size 4x17
           text run at (0,160) width 4: " "
         LayoutBR {BR} at (210,174) size 0x0
-        LayoutText {#text} at (0,320) size 4x18
+        LayoutText {#text} at (0,320) size 4x17
           text run at (0,320) width 4: " "
         LayoutBR {BR} at (210,334) size 0x0
 layer at (12,60) size 206x156
