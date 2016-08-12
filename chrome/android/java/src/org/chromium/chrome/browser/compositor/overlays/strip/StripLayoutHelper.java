@@ -54,6 +54,7 @@ import java.util.List;
  * The stacking and visual behavior is driven by setting a {@link StripStacker}.
  */
 public class StripLayoutHelper {
+
     // Drag Constants
     private static final int REORDER_SCROLL_NONE = 0;
     private static final int REORDER_SCROLL_LEFT = 1;
@@ -147,6 +148,7 @@ public class StripLayoutHelper {
     // Whether the CascadingStripStacker should be used.
     private boolean mShouldCascadeTabs;
     private boolean mIsFirstLayoutPass;
+    private boolean mAnimationsDisabledForTesting;
 
     // Tab menu item IDs
     public static final int ID_CLOSE_ALL_TABS = 0;
@@ -559,7 +561,8 @@ public class StripLayoutHelper {
                 // If the ScrollingStripStacker is being used and the new tab button is visible, go
                 // directly to the new scroll offset rather than animating. Animating the scroll
                 // causes the new tab button to disappear for a frame.
-                boolean shouldAnimate = !mNewTabButton.isVisible();
+                boolean shouldAnimate = !mNewTabButton.isVisible()
+                        && !mAnimationsDisabledForTesting;
                 setScrollForScrollingTabStacker(delta, shouldAnimate, time);
             } else if (delta != 0.f) {
                 mScroller.startScroll(mScrollOffset, 0, (int) delta, 0, time, EXPAND_DURATION_MS);
@@ -1109,7 +1112,7 @@ public class StripLayoutHelper {
             // 5.a. Cancel any outstanding tab width animations.
             cancelAnimation(mStripTabs[i], StripLayoutTab.Property.WIDTH);
 
-            if (animate) {
+            if (animate && !mAnimationsDisabledForTesting) {
                 startAnimation(buildTabResizeAnimation(tab, mCachedTabWidth), false);
             } else {
                 mStripTabs[i].setWidth(mCachedTabWidth);
@@ -1436,7 +1439,7 @@ public class StripLayoutHelper {
         if (index < newIndex) newIndex--;
 
         // 5. Animate if necessary.
-        if (animate) {
+        if (animate && !mAnimationsDisabledForTesting) {
             final float flipWidth = mCachedTabWidth - mTabOverlapWidth;
             final int direction = oldIndex <= newIndex ? 1 : -1;
             final float animationLength =
@@ -1630,7 +1633,7 @@ public class StripLayoutHelper {
     private void setScrollForScrollingTabStacker(float delta, boolean shouldAnimate, long time) {
         if (delta == 0.f) return;
 
-        if (shouldAnimate) {
+        if (shouldAnimate && !mAnimationsDisabledForTesting) {
             mScroller.startScroll(mScrollOffset, 0, (int) delta, 0, time, EXPAND_DURATION_MS);
         } else {
             mScrollOffset += delta;
@@ -1731,6 +1734,14 @@ public class StripLayoutHelper {
     @VisibleForTesting
     float getTabOverlapWidth() {
         return mTabOverlapWidth;
+    }
+
+    /**
+     * Disables animations for testing purposes.
+     */
+    @VisibleForTesting
+    public void disableAnimationsForTesting() {
+        mAnimationsDisabledForTesting = true;
     }
 
     private void setAccessibilityDescription(StripLayoutTab stripTab, Tab tab) {
