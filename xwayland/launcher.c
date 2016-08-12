@@ -341,6 +341,7 @@ const struct weston_xwayland_api api = {
 	weston_xwayland_xserver_loaded,
 	weston_xwayland_xserver_exited,
 };
+extern const struct weston_xwayland_surface_api surface_api;
 
 WL_EXPORT int
 module_init(struct weston_compositor *compositor,
@@ -357,10 +358,26 @@ module_init(struct weston_compositor *compositor,
 	wxs->wl_display = display;
 	wxs->compositor = compositor;
 
+	if (weston_xwayland_get_api(compositor) != NULL ||
+	    weston_xwayland_surface_get_api(compositor) != NULL) {
+		weston_log("The xwayland module APIs are already loaded.\n");
+		free(wxs);
+		return -1;
+	}
+
 	ret = weston_plugin_api_register(compositor, WESTON_XWAYLAND_API_NAME,
 					 &api, sizeof(api));
 	if (ret < 0) {
 		weston_log("Failed to register the xwayland module API.\n");
+		free(wxs);
+		return -1;
+	}
+
+	ret = weston_plugin_api_register(compositor,
+					 WESTON_XWAYLAND_SURFACE_API_NAME,
+					 &surface_api, sizeof(surface_api));
+	if (ret < 0) {
+		weston_log("Failed to register the xwayland surface API.\n");
 		free(wxs);
 		return -1;
 	}

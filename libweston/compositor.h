@@ -778,10 +778,15 @@ struct weston_backend {
 	void (*restore)(struct weston_compositor *compositor);
 };
 
+struct weston_desktop_xwayland;
+struct weston_desktop_xwayland_interface;
+
 struct weston_compositor {
 	struct wl_signal destroy_signal;
 
 	struct wl_display *wl_display;
+	struct weston_desktop_xwayland *xwayland;
+	const struct weston_desktop_xwayland_interface *xwayland_interface;
 	struct weston_shell_interface shell_interface;
 
 	/* surface signals */

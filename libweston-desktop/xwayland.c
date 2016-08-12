@@ -35,6 +35,7 @@
 
 #include "libweston-desktop.h"
 #include "internal.h"
+#include "xwayland/xwayland-internal-interface.h"
 
 enum weston_desktop_xwayland_surface_state {
 	NONE,
@@ -51,13 +52,13 @@ struct weston_desktop_xwayland {
 	struct weston_layer layer;
 };
 
-struct shell_surface {
+struct weston_desktop_xwayland_surface {
 	struct weston_desktop_xwayland *xwayland;
 	struct weston_desktop *desktop;
 	struct weston_desktop_surface *surface;
 	struct wl_listener resource_destroy_listener;
 	struct weston_view *view;
-	const struct weston_shell_client *client;
+	const struct weston_xwayland_client_interface *client_interface;
 	struct weston_geometry next_geometry;
 	bool has_next_geometry;
 	bool added;
@@ -65,7 +66,7 @@ struct shell_surface {
 };
 
 static void
-weston_desktop_xwayland_surface_change_state(struct shell_surface *surface,
+weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surface *surface,
 					     enum weston_desktop_xwayland_surface_state state,
 					     struct weston_desktop_surface *parent,
 					     int32_t x, int32_t y)
@@ -114,7 +115,7 @@ weston_desktop_xwayland_surface_committed(struct weston_desktop_surface *dsurfac
 					  void *user_data, bool new_buffer,
 					  int32_t sx, int32_t sy)
 {
-	struct shell_surface *surface = user_data;
+	struct weston_desktop_xwayland_surface *surface = user_data;
 
 	if (surface->has_next_geometry) {
 		surface->has_next_geometry = false;
@@ -129,20 +130,21 @@ weston_desktop_xwayland_surface_committed(struct weston_desktop_surface *dsurfac
 
 static void
 weston_desktop_xwayland_surface_set_size(struct weston_desktop_surface *dsurface,
-					  void *user_data,
-					  int32_t width, int32_t height)
+					 void *user_data,
+					 int32_t width, int32_t height)
 {
-	struct shell_surface *surface = user_data;
+	struct weston_desktop_xwayland_surface *surface = user_data;
+	struct weston_surface *wsurface =
+		weston_desktop_surface_get_surface(surface->surface);
 
-	surface->client->send_configure(weston_desktop_surface_get_surface(surface->surface),
-				       width, height);
+	surface->client_interface->send_configure(wsurface, width, height);
 }
 
 static void
 weston_desktop_xwayland_surface_destroy(struct weston_desktop_surface *dsurface,
 					void *user_data)
 {
-	struct shell_surface *surface = user_data;
+	struct weston_desktop_xwayland_surface *surface = user_data;
 
 	wl_list_remove(&surface->resource_destroy_listener.link);
 
@@ -158,18 +160,18 @@ weston_desktop_xwayland_surface_destroy(struct weston_desktop_surface *dsurface,
 
 static bool
 weston_desktop_xwayland_surface_get_maximized(struct weston_desktop_surface *dsurface,
-					       void *user_data)
+					      void *user_data)
 {
-	struct shell_surface *surface = user_data;
+	struct weston_desktop_xwayland_surface *surface = user_data;
 
 	return surface->state == MAXIMIZED;
 }
 
 static bool
 weston_desktop_xwayland_surface_get_fullscreen(struct weston_desktop_surface *dsurface,
-					        void *user_data)
+					       void *user_data)
 {
-	struct shell_surface *surface = user_data;
+	struct weston_desktop_xwayland_surface *surface = user_data;
 
 	return surface->state == FULLSCREEN;
 }
@@ -188,27 +190,26 @@ static void
 weston_destop_xwayland_resource_destroyed(struct wl_listener *listener,
 					  void *data)
 {
-	struct shell_surface *surface =
+	struct weston_desktop_xwayland_surface *surface =
 		wl_container_of(listener, surface, resource_destroy_listener);
 
 	weston_desktop_surface_destroy(surface->surface);
 }
 
-static struct shell_surface *
-create_shell_surface(void *shell,
-		     struct weston_surface *wsurface,
-		     const struct weston_shell_client *client)
+static struct weston_desktop_xwayland_surface *
+create_surface(struct weston_desktop_xwayland *xwayland,
+	       struct weston_surface *wsurface,
+	       const struct weston_xwayland_client_interface *client_interface)
 {
-	struct weston_desktop_xwayland *xwayland = shell;
-	struct shell_surface *surface;
+	struct weston_desktop_xwayland_surface *surface;
 
-	surface = zalloc(sizeof(struct shell_surface));
+	surface = zalloc(sizeof(struct weston_desktop_xwayland_surface));
 	if (surface == NULL)
 		return NULL;
 
 	surface->xwayland = xwayland;
 	surface->desktop = xwayland->desktop;
-	surface->client = client;
+	surface->client_interface = client_interface;
 
 	surface->surface =
 		weston_desktop_surface_create(surface->desktop,
@@ -229,15 +230,15 @@ create_shell_surface(void *shell,
 }
 
 static void
-set_toplevel(struct shell_surface *surface)
+set_toplevel(struct weston_desktop_xwayland_surface *surface)
 {
 	weston_desktop_xwayland_surface_change_state(surface, TOPLEVEL, NULL,
 						     0, 0);
 }
 
 static void
-set_transient(struct shell_surface *surface,
-	      struct weston_surface *wparent, int x, int y, uint32_t flags)
+set_parent(struct weston_desktop_xwayland_surface *surface,
+	   struct weston_surface *wparent)
 {
 	struct weston_desktop_surface *parent;
 
@@ -245,20 +246,26 @@ set_transient(struct shell_surface *surface,
 		return;
 
 	parent = weston_surface_get_desktop_surface(wparent);
-	if (flags & WL_SHELL_SURFACE_TRANSIENT_INACTIVE) {
-		weston_desktop_xwayland_surface_change_state(surface, TRANSIENT,
-							     parent, x, y);
-	} else {
-		weston_desktop_xwayland_surface_change_state(surface, TOPLEVEL,
-							     NULL, 0, 0);
-		weston_desktop_api_set_parent(surface->desktop,
-					      surface->surface, parent);
-	}
+	weston_desktop_api_set_parent(surface->desktop, surface->surface, parent);
 }
 
 static void
-set_fullscreen(struct shell_surface *surface, uint32_t method,
-	       uint32_t framerate, struct weston_output *output)
+set_transient(struct weston_desktop_xwayland_surface *surface,
+	      struct weston_surface *wparent, int x, int y)
+{
+	struct weston_desktop_surface *parent;
+
+	if (!weston_surface_is_desktop_surface(wparent))
+		return;
+
+	parent = weston_surface_get_desktop_surface(wparent);
+	weston_desktop_xwayland_surface_change_state(surface, TRANSIENT, parent,
+						     x, y);
+}
+
+static void
+set_fullscreen(struct weston_desktop_xwayland_surface *surface,
+	       struct weston_output *output)
 {
 	weston_desktop_xwayland_surface_change_state(surface, FULLSCREEN, NULL,
 						     0, 0);
@@ -267,15 +274,14 @@ set_fullscreen(struct shell_surface *surface, uint32_t method,
 }
 
 static void
-set_xwayland(struct shell_surface *surface, int x, int y,
-	     uint32_t flags)
+set_xwayland(struct weston_desktop_xwayland_surface *surface, int x, int y)
 {
 	weston_desktop_xwayland_surface_change_state(surface, XWAYLAND, NULL,
 						     x, y);
 }
 
 static int
-move(struct shell_surface *surface,
+move(struct weston_desktop_xwayland_surface *surface,
      struct weston_pointer *pointer)
 {
 	if (surface->state == TOPLEVEL ||
@@ -287,7 +293,7 @@ move(struct shell_surface *surface,
 }
 
 static int
-resize(struct shell_surface *surface,
+resize(struct weston_desktop_xwayland_surface *surface,
        struct weston_pointer *pointer, uint32_t edges)
 {
 	if (surface->state == TOPLEVEL ||
@@ -300,13 +306,13 @@ resize(struct shell_surface *surface,
 }
 
 static void
-set_title(struct shell_surface *surface, const char *title)
+set_title(struct weston_desktop_xwayland_surface *surface, const char *title)
 {
 	weston_desktop_surface_set_title(surface->surface, title);
 }
 
 static void
-set_window_geometry(struct shell_surface *surface,
+set_window_geometry(struct weston_desktop_xwayland_surface *surface,
 		    int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	surface->has_next_geometry = true;
@@ -317,7 +323,7 @@ set_window_geometry(struct shell_surface *surface,
 }
 
 static void
-set_maximized(struct shell_surface *surface)
+set_maximized(struct weston_desktop_xwayland_surface *surface)
 {
 	weston_desktop_xwayland_surface_change_state(surface, MAXIMIZED, NULL,
 						     0, 0);
@@ -326,9 +332,25 @@ set_maximized(struct shell_surface *surface)
 }
 
 static void
-set_pid(struct shell_surface *surface, pid_t pid)
+set_pid(struct weston_desktop_xwayland_surface *surface, pid_t pid)
 {
+	weston_desktop_surface_set_pid(surface->surface, pid);
 }
+
+static const struct weston_desktop_xwayland_interface weston_desktop_xwayland_interface = {
+	.create_surface = create_surface,
+	.set_toplevel = set_toplevel,
+	.set_parent = set_parent,
+	.set_transient = set_transient,
+	.set_fullscreen = set_fullscreen,
+	.set_xwayland = set_xwayland,
+	.move = move,
+	.resize = resize,
+	.set_title = set_title,
+	.set_window_geometry = set_window_geometry,
+	.set_maximized = set_maximized,
+	.set_pid = set_pid,
+};
 
 void
 weston_desktop_xwayland_init(struct weston_desktop *desktop)
@@ -345,16 +367,6 @@ weston_desktop_xwayland_init(struct weston_desktop *desktop)
 
 	weston_layer_init(&xwayland->layer, &compositor->cursor_layer.link);
 
-	compositor->shell_interface.shell = xwayland;
-	compositor->shell_interface.create_shell_surface = create_shell_surface;
-	compositor->shell_interface.set_toplevel = set_toplevel;
-	compositor->shell_interface.set_transient = set_transient;
-	compositor->shell_interface.set_fullscreen = set_fullscreen;
-	compositor->shell_interface.set_xwayland = set_xwayland;
-	compositor->shell_interface.move = move;
-	compositor->shell_interface.resize = resize;
-	compositor->shell_interface.set_title = set_title;
-	compositor->shell_interface.set_window_geometry = set_window_geometry;
-	compositor->shell_interface.set_maximized = set_maximized;
-	compositor->shell_interface.set_pid = set_pid;
+	compositor->xwayland = xwayland;
+	compositor->xwayland_interface = &weston_desktop_xwayland_interface;
 }

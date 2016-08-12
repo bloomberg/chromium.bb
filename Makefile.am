@@ -1028,6 +1028,7 @@ xwayland_la_CFLAGS =				\
 	$(CAIRO_CFLAGS)
 xwayland_la_SOURCES =				\
 	xwayland/xwayland.h			\
+	xwayland/xwayland-internal-interface.h	\
 	xwayland/window-manager.c		\
 	xwayland/selection.c			\
 	xwayland/dnd.c				\

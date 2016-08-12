@@ -38,6 +38,7 @@ struct weston_compositor;
 struct weston_xwayland;
 
 #define WESTON_XWAYLAND_API_NAME "weston_xwayland_v1"
+#define WESTON_XWAYLAND_SURFACE_API_NAME "weston_xwayland_surface_v1"
 
 typedef pid_t
 (*weston_xwayland_spawn_xserver_func_t)(
@@ -125,6 +126,47 @@ weston_xwayland_get_api(struct weston_compositor *compositor)
 				    sizeof(struct weston_xwayland_api));
 	/* The cast is necessary to use this function in C++ code */
 	return (const struct weston_xwayland_api *)api;
+}
+
+/** The libweston Xwayland surface API
+ *
+ * This API allows control of the Xwayland libweston module surfaces.
+ * The module must be loaded at runtime with \a weston_compositor_load_xwayland,
+ * after which the API can be retrieved by using
+ * \a weston_xwayland_surface_get_api.
+ */
+struct weston_xwayland_surface_api {
+	/** Check if the surface is an Xwayland surface
+	 *
+	 * \param surface The surface.
+	 */
+	bool
+	(*is_xwayland_surface)(struct weston_surface *surface);
+	/** Notify the Xwayland surface that its position changed.
+	 *
+	 * \param surface The Xwayland surface.
+	 * \param x The x-axis position.
+	 * \param y The y-axis position.
+	 */
+	void
+	(*send_position)(struct weston_surface *surface, int32_t x, int32_t y);
+};
+
+/** Retrieve the API object for the libweston Xwayland surface.
+ *
+ * The module must have been previously loaded by calling
+ * \a weston_compositor_load_xwayland.
+ *
+ * \param compositor The compositor instance.
+ */
+static inline const struct weston_xwayland_surface_api *
+weston_xwayland_surface_get_api(struct weston_compositor *compositor)
+{
+	const void *api;
+	api = weston_plugin_api_get(compositor, WESTON_XWAYLAND_SURFACE_API_NAME,
+				    sizeof(struct weston_xwayland_surface_api));
+	/* The cast is necessary to use this function in C++ code */
+	return (const struct weston_xwayland_surface_api *)api;
 }
 
 #ifdef  __cplusplus

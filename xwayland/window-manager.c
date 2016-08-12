@@ -39,6 +39,7 @@
 #include <linux/input.h>
 
 #include "xwayland.h"
+#include "xwayland-internal-interface.h"
 
 #include "cairo-util.h"
 #include "compositor.h"
@@ -132,7 +133,7 @@ struct weston_wm_window {
 	cairo_surface_t *cairo_surface;
 	uint32_t surface_id;
 	struct weston_surface *surface;
-	struct shell_surface *shsurf;
+	struct weston_desktop_xwayland_surface *shsurf;
 	struct wl_listener surface_destroy_listener;
 	struct wl_event_source *repaint_source;
 	struct wl_event_source *configure_source;
@@ -395,8 +396,8 @@ static void
 weston_wm_window_read_properties(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
-	struct weston_shell_interface *shell_interface =
-		&wm->server->compositor->shell_interface;
+	const struct weston_desktop_xwayland_interface *xwayland_interface =
+		wm->server->compositor->xwayland_interface;
 
 #define F(field) offsetof(struct weston_wm_window, field)
 	const struct {
@@ -540,11 +541,11 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 	}
 
 	if (window->shsurf && window->name)
-		shell_interface->set_title(window->shsurf, window->name);
+		xwayland_interface->set_title(window->shsurf, window->name);
 	if (window->frame && window->name)
 		frame_set_title(window->frame, window->name);
 	if (window->shsurf && window->pid > 0)
-		shell_interface->set_pid(window->shsurf, window->pid);
+		xwayland_interface->set_pid(window->shsurf, window->pid);
 }
 
 static void
@@ -1043,8 +1044,8 @@ weston_wm_window_draw_decoration(void *data)
 	cairo_t *cr;
 	int x, y, width, height;
 	int32_t input_x, input_y, input_w, input_h;
-	struct weston_shell_interface *shell_interface =
-		&wm->server->compositor->shell_interface;
+	const struct weston_desktop_xwayland_interface *xwayland_interface =
+		wm->server->compositor->xwayland_interface;
 	uint32_t flags = 0;
 	struct weston_view *view;
 
@@ -1106,8 +1107,8 @@ weston_wm_window_draw_decoration(void *data)
 		pixman_region32_init_rect(&window->surface->pending.input,
 					  input_x, input_y, input_w, input_h);
 
-		shell_interface->set_window_geometry(window->shsurf,
-						     input_x, input_y, input_w, input_h);
+		xwayland_interface->set_window_geometry(window->shsurf,
+							input_x, input_y, input_w, input_h);
 	}
 }
 
@@ -1352,8 +1353,8 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 	struct weston_seat *seat = weston_wm_pick_seat_for_window(window);
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 	int detail;
-	struct weston_shell_interface *shell_interface =
-		&wm->server->compositor->shell_interface;
+	const struct weston_desktop_xwayland_interface *xwayland_interface =
+		wm->server->compositor->xwayland_interface;
 
 	if (!pointer || pointer->button_count != 1
 	    || !pointer->focus
@@ -1363,7 +1364,7 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 	detail = client_message->data.data32[2];
 	switch (detail) {
 	case _NET_WM_MOVERESIZE_MOVE:
-		shell_interface->move(window->shsurf, pointer);
+		xwayland_interface->move(window->shsurf, pointer);
 		break;
 	case _NET_WM_MOVERESIZE_SIZE_TOPLEFT:
 	case _NET_WM_MOVERESIZE_SIZE_TOP:
@@ -1373,7 +1374,7 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 	case _NET_WM_MOVERESIZE_SIZE_BOTTOM:
 	case _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT:
 	case _NET_WM_MOVERESIZE_SIZE_LEFT:
-		shell_interface->resize(window->shsurf, pointer, map[detail]);
+		xwayland_interface->resize(window->shsurf, pointer, map[detail]);
 		break;
 	case _NET_WM_MOVERESIZE_CANCEL:
 		break;
@@ -1415,10 +1416,10 @@ weston_wm_window_configure(void *data);
 static void
 weston_wm_window_set_toplevel(struct weston_wm_window *window)
 {
-	struct weston_shell_interface *shell_interface =
-		&window->wm->server->compositor->shell_interface;
+	const struct weston_desktop_xwayland_interface *xwayland_interface =
+		window->wm->server->compositor->xwayland_interface;
 
-	shell_interface->set_toplevel(window->shsurf);
+	xwayland_interface->set_toplevel(window->shsurf);
 	window->width = window->saved_width;
 	window->height = window->saved_height;
 	if (window->frame)
@@ -1439,8 +1440,8 @@ weston_wm_window_handle_state(struct weston_wm_window *window,
 			      xcb_client_message_event_t *client_message)
 {
 	struct weston_wm *wm = window->wm;
-	struct weston_shell_interface *shell_interface =
-		&wm->server->compositor->shell_interface;
+	const struct weston_desktop_xwayland_interface *xwayland_interface =
+		wm->server->compositor->xwayland_interface;
 	uint32_t action, property;
 	int maximized = weston_wm_window_is_maximized(window);
 
@@ -1455,9 +1456,8 @@ weston_wm_window_handle_state(struct weston_wm_window *window,
 			window->saved_height = window->height;
 
 			if (window->shsurf)
-				shell_interface->set_fullscreen(window->shsurf,
-								WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-								0, NULL);
+				xwayland_interface->set_fullscreen(window->shsurf,
+								   NULL);
 		} else {
 			if (window->shsurf)
 				weston_wm_window_set_toplevel(window);
@@ -1476,7 +1476,7 @@ weston_wm_window_handle_state(struct weston_wm_window *window,
 				window->saved_height = window->height;
 
 				if (window->shsurf)
-					shell_interface->set_maximized(window->shsurf);
+					xwayland_interface->set_maximized(window->shsurf);
 			} else if (window->shsurf) {
 				weston_wm_window_set_toplevel(window);
 			}
@@ -1753,8 +1753,8 @@ static void
 weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_button_press_event_t *button = (xcb_button_press_event_t *) event;
-	struct weston_shell_interface *shell_interface =
-		&wm->server->compositor->shell_interface;
+	const struct weston_desktop_xwayland_interface *xwayland_interface =
+		wm->server->compositor->xwayland_interface;
 	struct weston_seat *seat;
 	struct weston_pointer *pointer;
 	struct weston_wm_window *window;
@@ -1794,13 +1794,13 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	if (frame_status(window->frame) & FRAME_STATUS_MOVE) {
 		if (pointer)
-			shell_interface->move(window->shsurf, pointer);
+			xwayland_interface->move(window->shsurf, pointer);
 		frame_status_clear(window->frame, FRAME_STATUS_MOVE);
 	}
 
 	if (frame_status(window->frame) & FRAME_STATUS_RESIZE) {
 		if (pointer)
-			shell_interface->resize(window->shsurf, pointer, location);
+			xwayland_interface->resize(window->shsurf, pointer, location);
 		frame_status_clear(window->frame, FRAME_STATUS_RESIZE);
 	}
 
@@ -1815,7 +1815,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 		if (weston_wm_window_is_maximized(window)) {
 			window->saved_width = window->width;
 			window->saved_height = window->height;
-			shell_interface->set_maximized(window->shsurf);
+			xwayland_interface->set_maximized(window->shsurf);
 		} else {
 			weston_wm_window_set_toplevel(window);
 		}
@@ -2333,6 +2333,12 @@ get_wm_window(struct weston_surface *surface)
 	return NULL;
 }
 
+static bool
+is_wm_window(struct weston_surface *surface)
+{
+	return get_wm_window(surface) != NULL;
+}
+
 static void
 weston_wm_window_configure(void *data)
 {
@@ -2431,9 +2437,8 @@ send_position(struct weston_surface *surface, int32_t x, int32_t y)
 	}
 }
 
-static const struct weston_shell_client shell_client = {
+static const struct weston_xwayland_client_interface shell_client = {
 	send_configure,
-	send_position
 };
 
 static int
@@ -2500,11 +2505,12 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 			  struct weston_surface *surface)
 {
 	struct weston_wm *wm = window->wm;
-	struct weston_shell_interface *shell_interface =
-		&wm->server->compositor->shell_interface;
+	struct weston_desktop_xwayland *xwayland =
+		wm->server->compositor->xwayland;
+	const struct weston_desktop_xwayland_interface *xwayland_interface =
+		wm->server->compositor->xwayland_interface;
 	struct weston_output *output;
 	struct weston_wm_window *parent;
-	int flags = 0;
 
 	weston_wm_window_read_properties(window);
 
@@ -2521,7 +2527,7 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 
 	weston_wm_window_schedule_repaint(window);
 
-	if (!shell_interface->create_shell_surface)
+	if (!xwayland_interface)
 		return;
 
 	if (window->surface->committed) {
@@ -2532,50 +2538,52 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 	}
 
 	window->shsurf =
-		shell_interface->create_shell_surface(shell_interface->shell,
-						      window->surface,
-						      &shell_client);
+		xwayland_interface->create_surface(xwayland,
+						   window->surface,
+						   &shell_client);
 
 	if (window->name)
-		shell_interface->set_title(window->shsurf, window->name);
+		xwayland_interface->set_title(window->shsurf, window->name);
 	if (window->pid > 0)
-		shell_interface->set_pid(window->shsurf, window->pid);
+		xwayland_interface->set_pid(window->shsurf, window->pid);
 
 	if (window->fullscreen) {
 		window->saved_width = window->width;
 		window->saved_height = window->height;
-		shell_interface->set_fullscreen(window->shsurf,
-						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-						0, NULL);
+		xwayland_interface->set_fullscreen(window->shsurf, NULL);
 		return;
 	} else if (legacy_fullscreen(wm, window, &output)) {
 		window->fullscreen = 1;
-		shell_interface->set_fullscreen(window->shsurf,
-						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-						0, output);
+		xwayland_interface->set_fullscreen(window->shsurf, output);
 	} else if (window->override_redirect) {
-		shell_interface->set_xwayland(window->shsurf,
-					      window->x,
-					      window->y,
-					      WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
+		xwayland_interface->set_xwayland(window->shsurf,
+						 window->x, window->y);
 	} else if (window->transient_for && window->transient_for->surface) {
 		parent = window->transient_for;
-		if (weston_wm_window_type_inactive(window))
-			flags = WL_SHELL_SURFACE_TRANSIENT_INACTIVE;
-		shell_interface->set_transient(window->shsurf,
-					       parent->surface,
-					       window->x - parent->x,
-					       window->y - parent->y, flags);
+		if (weston_wm_window_type_inactive(window)) {
+			xwayland_interface->set_transient(window->shsurf,
+							  parent->surface,
+							  window->x - parent->x,
+							  window->y - parent->y);
+		} else {
+			xwayland_interface->set_toplevel(window->shsurf);
+			xwayland_interface->set_parent(window->shsurf,
+						       parent->surface);
+		}
 	} else if (weston_wm_window_is_maximized(window)) {
-		shell_interface->set_maximized(window->shsurf);
+		xwayland_interface->set_maximized(window->shsurf);
 	} else {
 		if (weston_wm_window_type_inactive(window)) {
-			shell_interface->set_xwayland(window->shsurf,
-							window->x,
-							window->y,
-							WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
+			xwayland_interface->set_xwayland(window->shsurf,
+							 window->x,
+							 window->y);
 		} else {
-			shell_interface->set_toplevel(window->shsurf);
+			xwayland_interface->set_toplevel(window->shsurf);
 		}
 	}
 }
+
+const struct weston_xwayland_surface_api surface_api = {
+	is_wm_window,
+	send_position,
+};
