@@ -363,8 +363,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
                     .find(GetEffectiveConnectionTypeAlgorithm(variation_params))
                     ->second),
       tick_clock_(new base::DefaultTickClock()),
-      effective_connection_type_recomputation_interval_(
-          base::TimeDelta::FromSeconds(15)),
       last_connection_change_(tick_clock_->NowTicks()),
       current_network_id_(nqe::internal::NetworkID(
           NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
@@ -374,6 +372,10 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       effective_connection_type_at_last_main_frame_(
           EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       external_estimate_provider_(std::move(external_estimates_provider)),
+      effective_connection_type_recomputation_interval_(
+          base::TimeDelta::FromSeconds(15)),
+      rtt_observations_size_at_last_ect_computation_(0),
+      throughput_observations_size_at_last_ect_computation_(0),
       effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       min_signal_strength_since_connection_change_(INT32_MAX),
       max_signal_strength_since_connection_change_(INT32_MIN),
@@ -1615,14 +1617,21 @@ void NetworkQualityEstimator::MaybeRecomputeEffectiveConnectionType() {
   // last computed or a connection change event was observed since the last
   // computation. Strict inequalities are used to ensure that effective
   // connection type is recomputed on connection change events even if the clock
-  // has not updated. Recompute the effective connection type if the effective
-  // connection type was previously unavailable. This is because the RTT
-  // observations are voluminous, so it may now be possible to compute the
-  // effective connection type.
+  // has not updated.
   if (now - last_effective_connection_type_computation_ <
           effective_connection_type_recomputation_interval_ &&
       last_connection_change_ < last_effective_connection_type_computation_ &&
-      effective_connection_type_ != EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+      // Recompute the effective connection type if the previously computed
+      // effective connection type was unknown.
+      effective_connection_type_ != EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
+      // Recompute the effective connection type if the number of samples
+      // available now are more than twice in count than the number of
+      // samples that were available when the effective connection type was
+      // last computed.
+      rtt_observations_size_at_last_ect_computation_ * 2 >=
+          rtt_observations_.Size() &&
+      throughput_observations_size_at_last_ect_computation_ * 2 >=
+          downstream_throughput_kbps_observations_.Size()) {
     return;
   }
 
@@ -1632,6 +1641,10 @@ void NetworkQualityEstimator::MaybeRecomputeEffectiveConnectionType() {
 
   if (past_type != effective_connection_type_)
     NotifyObserversOfEffectiveConnectionTypeChanged();
+
+  rtt_observations_size_at_last_ect_computation_ = rtt_observations_.Size();
+  throughput_observations_size_at_last_ect_computation_ =
+      downstream_throughput_kbps_observations_.Size();
 }
 
 void NetworkQualityEstimator::
