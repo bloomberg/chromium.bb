@@ -358,15 +358,6 @@ Value RunToolchain(Scope* scope,
                    BlockNode* block,
                    Err* err);
 
-extern const char kToolchainArgs[];
-extern const char kToolchainArgs_HelpShort[];
-extern const char kToolchainArgs_Help[];
-Value RunToolchainArgs(Scope* scope,
-                       const FunctionCallNode* function,
-                       const std::vector<Value>& args,
-                       BlockNode* block,
-                       Err* err);
-
 extern const char kWriteFile[];
 extern const char kWriteFile_HelpShort[];
 extern const char kWriteFile_Help[];

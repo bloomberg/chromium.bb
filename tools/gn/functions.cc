@@ -1014,7 +1014,6 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(Template, false)
     INSERT_FUNCTION(Tool, false)
     INSERT_FUNCTION(Toolchain, false)
-    INSERT_FUNCTION(ToolchainArgs, false)
     INSERT_FUNCTION(WriteFile, false)
 
     #undef INSERT_FUNCTION

@@ -1052,46 +1052,4 @@ Value RunTool(Scope* scope,
   return Value();
 }
 
-extern const char kToolchainArgs[] = "toolchain_args";
-extern const char kToolchainArgs_HelpShort[] =
-    "toolchain_args: Set build arguments for toolchain build setup.";
-extern const char kToolchainArgs_Help[] =
-    "toolchain_args: Set build arguments for toolchain build setup.\n"
-    "\n"
-    "  DEPRECATED. Instead use:\n"
-    "    toolchain_args = { ... }\n"
-    "\n"
-    "  See \"gn help toolchain\" for documentation.\n";
-
-Value RunToolchainArgs(Scope* scope,
-                       const FunctionCallNode* function,
-                       const std::vector<Value>& args,
-                       BlockNode* block,
-                       Err* err) {
-  // This is a backwards-compatible shim that converts the old form of:
-  //   toolchain_args() {
-  //     foo = bar
-  //   }
-  // to the new form:
-  //   toolchain_args = {
-  //     foo = bar
-  //   }
-  // It will be deleted when all users of toolchain_args as a function are
-  // deleted.
-  if (!args.empty()) {
-    *err = Err(function->function(), "This function takes no arguments.");
-    return Value();
-  }
-
-  std::unique_ptr<Scope> block_scope(new Scope(scope));
-  block->Execute(block_scope.get(), err);
-  if (err->has_error())
-    return Value();
-
-  block_scope->DetachFromContaining();
-  scope->SetValue("toolchain_args", Value(function, std::move(block_scope)),
-                  function);
-  return Value();
-}
-
 }  // namespace functions
