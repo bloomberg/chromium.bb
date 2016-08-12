@@ -86,7 +86,6 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
           << max_playout_delay_.InMilliseconds() << "animated latency "
           << animated_playout_delay_.InMilliseconds();
   SetTargetPlayoutDelay(animated_playout_delay_);
-  send_target_playout_delay_ = false;
 
   CastTransportRtpConfig transport_config;
   transport_config.ssrc = config.sender_ssrc;
