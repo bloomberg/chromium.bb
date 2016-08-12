@@ -4,16 +4,13 @@
 
 import("//build/config/android/rules.gni")
 
-android_library("application") {
+android_library("shell_java") {
   java_files = [
-    "src/org/chromium/mojo/application/ApplicationConnection.java",
-    "src/org/chromium/mojo/application/ApplicationDelegate.java",
-    "src/org/chromium/mojo/application/ApplicationImpl.java",
-    "src/org/chromium/mojo/application/ApplicationRunner.java",
-    "src/org/chromium/mojo/application/ServiceFactoryBinder.java",
-    "src/org/chromium/mojo/application/ShellHelper.java",
+    "src/org/chromium/services/shell/InterfaceFactory.java",
+    "src/org/chromium/services/shell/InterfaceRegistry.java",
   ]
   deps = [
+    "//base:base_java",
     "//mojo/public/java:bindings",
     "//mojo/public/java:system",
     "//services/shell/public/interfaces:interfaces_java",
