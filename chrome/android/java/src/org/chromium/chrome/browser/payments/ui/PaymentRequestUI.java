@@ -603,9 +603,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mShippingAddressSectionInformation.setSelectedItem(option);
             result = mClient.onSectionOptionSelected(
                     TYPE_SHIPPING_ADDRESSES, option, mUpdateSectionsCallback);
-        } else if (section == mShippingOptionSection) {
+        } else if (section == mShippingOptionSection
+                && mShippingOptionsSectionInformation.getSelectedItem() != option) {
             mShippingOptionsSectionInformation.setSelectedItem(option);
-            result = mClient.onSectionOptionSelected(TYPE_SHIPPING_OPTIONS, option, null);
+            result = mClient.onSectionOptionSelected(
+                    TYPE_SHIPPING_OPTIONS, option, mUpdateSectionsCallback);
         } else if (section == mContactDetailsSection) {
             mContactDetailsSectionInformation.setSelectedItem(option);
             result = mClient.onSectionOptionSelected(TYPE_CONTACT_DETAILS, option, null);

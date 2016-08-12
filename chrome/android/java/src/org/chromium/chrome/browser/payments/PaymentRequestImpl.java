@@ -708,6 +708,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // This may update the line items.
             mUiShippingOptions.setSelectedItem(option);
             mClient.onShippingOptionChange(option.getIdentifier());
+            mPaymentInformationCallback = callback;
+            return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             assert option instanceof AutofillContact;
             AutofillContact contact = (AutofillContact) option;
