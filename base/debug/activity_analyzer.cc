@@ -119,7 +119,7 @@ void GlobalActivityAnalyzer::PrepareAllAnalyzers() {
 
     // Add this analyzer to the map of known ones, indexed by a unique thread
     // identifier.
-    DCHECK(!ContainsKey(analyzers_, analyzer->GetThreadKey()));
+    DCHECK(!base::ContainsKey(analyzers_, analyzer->GetThreadKey()));
     analyzer->allocator_reference_ = ref;
     analyzers_[analyzer->GetThreadKey()] = std::move(analyzer);
   }
