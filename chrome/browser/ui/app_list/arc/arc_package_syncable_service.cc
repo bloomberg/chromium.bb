@@ -7,6 +7,7 @@
 #include <unordered_set>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -15,6 +16,7 @@
 #include "components/sync/api/sync_data.h"
 #include "components/sync/api/sync_merge_result.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync_driver/sync_service.h"
 
 namespace arc {
 
@@ -167,6 +169,7 @@ void ArcPackageSyncableService::StopSyncing(syncer::ModelType type) {
 
   sync_processor_.reset();
   sync_error_handler_.reset();
+  flare_.Reset();
 
   sync_items_.clear();
   pending_install_items_.clear();
@@ -217,6 +220,12 @@ syncer::SyncError ArcPackageSyncableService::ProcessSyncChanges(
 bool ArcPackageSyncableService::SyncStarted() {
   if (sync_processor_.get())
     return true;
+
+  sync_driver::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
+  if (sync_service)
+    sync_service->ReenableDatatype(syncer::ARC_PACKAGE);
+
   if (flare_.is_null()) {
     VLOG(2) << this << ": SyncStarted: Flare.";
     flare_ = sync_start_util::GetFlareForSyncableService(profile_->GetPath());

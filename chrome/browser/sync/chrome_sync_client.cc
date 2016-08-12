@@ -31,6 +31,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
+#include "chrome/browser/ui/app_list/arc/arc_package_sync_data_type_controller.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -603,8 +604,8 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
         ui_thread, error_callback, syncer::WIFI_CREDENTIALS, this));
   }
   // TODO (lgcheng@) Add switch for this.
-  sync_service->RegisterDataTypeController(new UIDataTypeController(
-      ui_thread, error_callback, syncer::ARC_PACKAGE, this));
+  sync_service->RegisterDataTypeController(new ArcPackageSyncDataTypeController(
+      syncer::ARC_PACKAGE, error_callback, this, profile_));
 #endif
 }
 

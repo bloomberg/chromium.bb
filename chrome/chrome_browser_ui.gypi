@@ -775,6 +775,8 @@
       'browser/ui/app_list/arc/arc_package_syncable_service.h',
       'browser/ui/app_list/arc/arc_package_syncable_service_factory.cc',
       'browser/ui/app_list/arc/arc_package_syncable_service_factory.h',
+      'browser/ui/app_list/arc/arc_package_sync_data_type_controller.cc',
+      'browser/ui/app_list/arc/arc_package_sync_data_type_controller.h',
       'browser/ui/app_list/search/arc_app_result.cc',
       'browser/ui/app_list/search/arc_app_result.h',
       'browser/ui/ash/launcher/arc_app_deferred_launcher_controller.cc',
