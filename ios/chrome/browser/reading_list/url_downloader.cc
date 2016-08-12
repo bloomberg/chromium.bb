@@ -55,7 +55,9 @@ void URLDownloader::OfflineURLExists(const GURL& url,
 
 void URLDownloader::RemoveOfflineURL(const GURL& url) {
   // Remove all download tasks for this url as it would be pointless work.
-  std::remove(tasks_.begin(), tasks_.end(), std::make_pair(DOWNLOAD, url));
+  tasks_.erase(
+      std::remove(tasks_.begin(), tasks_.end(), std::make_pair(DOWNLOAD, url)),
+      tasks_.end());
   tasks_.push_back(std::make_pair(DELETE, url));
   HandleNextTask();
 }
@@ -112,6 +114,7 @@ void URLDownloader::DownloadURL(GURL url, bool offlineURLExists) {
     DownloadCompletionHandler(url, false);
     return;
   }
+
   distiller_.reset(new dom_distiller::DistillerViewer(
       distiller_service_, pref_service_, url,
       base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this))));
@@ -120,7 +123,8 @@ void URLDownloader::DownloadURL(GURL url, bool offlineURLExists) {
 void URLDownloader::DistillerCallback(
     const GURL& pageURL,
     const std::string& html,
-    const std::vector<dom_distiller::DistillerViewer::ImageInfo>& images) {
+    const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
+        images) {
   std::vector<dom_distiller::DistillerViewer::ImageInfo> imagesBlock = images;
   std::string blockHTML = html;
   task_tracker_.PostTaskAndReplyWithResult(
@@ -134,7 +138,7 @@ void URLDownloader::DistillerCallback(
 
 bool URLDownloader::SaveDistilledHTML(
     const GURL& url,
-    std::vector<dom_distiller::DistillerViewer::ImageInfo> images,
+    std::vector<dom_distiller::DistillerViewerInterface::ImageInfo> images,
     std::string html) {
   if (CreateOfflineURLDirectory(url)) {
     return SaveHTMLForURL(SaveAndReplaceImagesInHTML(url, html, images), url);
@@ -179,7 +183,8 @@ std::string URLDownloader::SaveImage(const GURL& url,
 std::string URLDownloader::SaveAndReplaceImagesInHTML(
     const GURL& url,
     const std::string& html,
-    const std::vector<dom_distiller::DistillerViewer::ImageInfo>& images) {
+    const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
+        images) {
   std::string mutableHTML = html;
   for (size_t i = 0; i < images.size(); i++) {
     const std::string& localImagePath =

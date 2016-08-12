@@ -18,10 +18,10 @@ namespace dom_distiller {
 
 class DistilledPagePrefs;
 
-// A very simple and naive implementation of the dom_distiller
-// ViewRequestDelegate: From an URL it builds an HTML string and notifies when
-// finished.
-class DistillerViewer : public DomDistillerRequestViewBase {
+// An interface for a dom_distiller ViewRequestDelegate that distills a URL and
+// calls the given callback with the distilled HTML string and the images it
+// contains.
+class DistillerViewerInterface : public DomDistillerRequestViewBase {
  public:
   typedef struct {
     // The url of the image.
@@ -34,6 +34,22 @@ class DistillerViewer : public DomDistillerRequestViewBase {
                               const std::vector<ImageInfo>& images)>
       DistillationFinishedCallback;
 
+  DistillerViewerInterface(dom_distiller::DomDistillerService* distillerService,
+                           PrefService* prefs)
+      : DomDistillerRequestViewBase(new DistilledPagePrefs(prefs)) {}
+  ~DistillerViewerInterface() override {}
+
+  void OnArticleReady(
+      const dom_distiller::DistilledArticleProto* article_proto) override = 0;
+
+  void SendJavaScript(const std::string& buffer) override = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(DistillerViewerInterface);
+};
+
+// A very simple and naive implementation of the DistillerViewer.
+class DistillerViewer : public DistillerViewerInterface {
+ public:
   DistillerViewer(dom_distiller::DomDistillerService* distillerService,
                   PrefService* prefs,
                   const GURL& url,

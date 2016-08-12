@@ -22,7 +22,7 @@ DistillerViewer::DistillerViewer(
     PrefService* prefs,
     const GURL& url,
     const DistillationFinishedCallback& callback)
-    : DomDistillerRequestViewBase(new DistilledPagePrefs(prefs)),
+    : DistillerViewerInterface(distillerService, prefs),
       url_(url),
       callback_(callback) {
   DCHECK(distillerService);
@@ -34,8 +34,7 @@ DistillerViewer::DistillerViewer(
   TakeViewerHandle(std::move(viewer_handle));
 }
 
-DistillerViewer::~DistillerViewer() {
-}
+DistillerViewer::~DistillerViewer() {}
 
 void DistillerViewer::OnArticleReady(
     const dom_distiller::DistilledArticleProto* article_proto) {

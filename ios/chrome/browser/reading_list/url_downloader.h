@@ -28,6 +28,8 @@ class DomDistillerService;
 // hashing to create unique file names. When a deletion is requested, all
 // previous downloads for that URL are cancelled as they would be deleted.
 class URLDownloader {
+  friend class MockURLDownloader;
+
  public:
   // A completion callback that takes a GURL and a bool indicating
   // success and returns void.
@@ -82,21 +84,23 @@ class URLDownloader {
   std::string SaveAndReplaceImagesInHTML(
       const GURL& url,
       const std::string& html,
-      const std::vector<dom_distiller::DistillerViewer::ImageInfo>& images);
+      const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
+          images);
   // Saves |html| to disk in the correct location for |url|; returns success.
   bool SaveHTMLForURL(std::string html, const GURL& url);
   // Downloads |url|, depending on |offlineURLExists| state.
-  void DownloadURL(GURL url, bool offlineURLExists);
+  virtual void DownloadURL(GURL url, bool offlineURLExists);
   // Saves distilled html to disk, including saving images and main file.
   bool SaveDistilledHTML(
       const GURL& url,
-      std::vector<dom_distiller::DistillerViewer::ImageInfo> images,
+      std::vector<dom_distiller::DistillerViewerInterface::ImageInfo> images,
       std::string html);
   // Callback for distillation completion.
   void DistillerCallback(
       const GURL& pageURL,
       const std::string& html,
-      const std::vector<dom_distiller::DistillerViewer::ImageInfo>& images);
+      const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
+          images);
 
   dom_distiller::DomDistillerService* distiller_service_;
   PrefService* pref_service_;
@@ -105,7 +109,7 @@ class URLDownloader {
   std::deque<Task> tasks_;
   bool working_;
   base::FilePath base_directory_;
-  std::unique_ptr<dom_distiller::DistillerViewer> distiller_;
+  std::unique_ptr<dom_distiller::DistillerViewerInterface> distiller_;
   base::CancelableTaskTracker task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(URLDownloader);
