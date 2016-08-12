@@ -3752,8 +3752,8 @@ int av1_active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step) {
 // In most cases this is the "real" edge unless there are formatting
 // bars embedded in the stream.
 int av1_active_edge_sb(const AV1_COMP *cpi, int mi_row, int mi_col) {
-  return av1_active_h_edge(cpi, mi_row, MI_BLOCK_SIZE) ||
-         av1_active_v_edge(cpi, mi_col, MI_BLOCK_SIZE);
+  return av1_active_h_edge(cpi, mi_row, MAX_MIB_SIZE) ||
+         av1_active_v_edge(cpi, mi_col, MAX_MIB_SIZE);
 }
 
 #if CONFIG_MOTION_VAR

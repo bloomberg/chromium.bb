@@ -33,8 +33,8 @@ int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
   int skip = 1;
   maxc = cm->mi_cols - mi_col;
   maxr = cm->mi_rows - mi_row;
-  if (maxr > MI_BLOCK_SIZE) maxr = MI_BLOCK_SIZE;
-  if (maxc > MI_BLOCK_SIZE) maxc = MI_BLOCK_SIZE;
+  if (maxr > MAX_MIB_SIZE) maxr = MAX_MIB_SIZE;
+  if (maxc > MAX_MIB_SIZE) maxc = MAX_MIB_SIZE;
   for (r = 0; r < maxr; r++) {
     for (c = 0; c < maxc; c++) {
       skip = skip &&
@@ -58,8 +58,8 @@ void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int dec[3];
   int pli;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
-  nvsb = (cm->mi_rows + MI_BLOCK_SIZE - 1) / MI_BLOCK_SIZE;
-  nhsb = (cm->mi_cols + MI_BLOCK_SIZE - 1) / MI_BLOCK_SIZE;
+  nvsb = (cm->mi_rows + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
+  nhsb = (cm->mi_cols + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   bskip = aom_malloc(sizeof(*bskip) * cm->mi_rows * cm->mi_cols);
   av1_setup_dst_planes(xd->plane, frame, 0, 0);
   for (pli = 0; pli < 3; pli++) {
@@ -96,16 +96,16 @@ void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     for (sbc = 0; sbc < nhsb; sbc++) {
       int level;
       int nhb, nvb;
-      nhb = AOMMIN(MI_BLOCK_SIZE, cm->mi_cols - MI_BLOCK_SIZE * sbc);
-      nvb = AOMMIN(MI_BLOCK_SIZE, cm->mi_rows - MI_BLOCK_SIZE * sbr);
+      nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
+      nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
       for (pli = 0; pli < 3; pli++) {
-        int16_t dst[MI_BLOCK_SIZE * MI_BLOCK_SIZE * 8 * 8];
+        int16_t dst[MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8];
         int threshold;
 #if DERING_REFINEMENT
         level = compute_level_from_index(
             global_level,
-            cm->mi_grid_visible[MI_BLOCK_SIZE * sbr * cm->mi_stride +
-                                MI_BLOCK_SIZE * sbc]
+            cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
+                                MAX_MIB_SIZE * sbc]
                 ->mbmi.dering_gain);
 #else
           level = global_level;
@@ -113,31 +113,30 @@ void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         /* FIXME: This is a temporary hack that uses more conservative
            deringing for chroma. */
         if (pli) level = (level * 5 + 4) >> 3;
-        if (sb_all_skip(cm, sbr * MI_BLOCK_SIZE, sbc * MI_BLOCK_SIZE)) continue;
+        if (sb_all_skip(cm, sbr * MAX_MIB_SIZE, sbc * MAX_MIB_SIZE)) continue;
         threshold = level << coeff_shift;
-        od_dering(
-            &OD_DERING_VTBL_C, dst, MI_BLOCK_SIZE * bsize[pli],
-            &src[pli][sbr * stride * bsize[pli] * MI_BLOCK_SIZE +
-                      sbc * bsize[pli] * MI_BLOCK_SIZE],
-            stride, nhb, nvb, sbc, sbr, nhsb, nvsb, dec[pli], dir, pli,
-            &bskip[MI_BLOCK_SIZE * sbr * cm->mi_cols + MI_BLOCK_SIZE * sbc],
-            cm->mi_cols, threshold, OD_DERING_NO_CHECK_OVERLAP, coeff_shift);
+        od_dering(&OD_DERING_VTBL_C, dst, MAX_MIB_SIZE * bsize[pli],
+                  &src[pli][sbr * stride * bsize[pli] * MAX_MIB_SIZE +
+                            sbc * bsize[pli] * MAX_MIB_SIZE],
+                  stride, nhb, nvb, sbc, sbr, nhsb, nvsb, dec[pli], dir, pli,
+                  &bskip[MAX_MIB_SIZE * sbr * cm->mi_cols + MAX_MIB_SIZE * sbc],
+                  cm->mi_cols, threshold, OD_DERING_NO_CHECK_OVERLAP,
+                  coeff_shift);
         for (r = 0; r < bsize[pli] * nvb; ++r) {
           for (c = 0; c < bsize[pli] * nhb; ++c) {
 #if CONFIG_AOM_HIGHBITDEPTH
             if (cm->use_highbitdepth) {
               CONVERT_TO_SHORTPTR(xd->plane[pli].dst.buf)
               [xd->plane[pli].dst.stride *
-                   (bsize[pli] * MI_BLOCK_SIZE * sbr + r) +
-               sbc * bsize[pli] * MI_BLOCK_SIZE + c] =
-                  dst[r * MI_BLOCK_SIZE * bsize[pli] + c];
+                   (bsize[pli] * MAX_MIB_SIZE * sbr + r) +
+               sbc * bsize[pli] * MAX_MIB_SIZE + c] =
+                  dst[r * MAX_MIB_SIZE * bsize[pli] + c];
             } else {
 #endif
-              xd->plane[pli]
-                  .dst.buf[xd->plane[pli].dst.stride *
-                               (bsize[pli] * MI_BLOCK_SIZE * sbr + r) +
-                           sbc * bsize[pli] * MI_BLOCK_SIZE + c] =
-                  dst[r * MI_BLOCK_SIZE * bsize[pli] + c];
+              xd->plane[pli].dst.buf[xd->plane[pli].dst.stride *
+                                         (bsize[pli] * MAX_MIB_SIZE * sbr + r) +
+                                     sbc * bsize[pli] * MAX_MIB_SIZE + c] =
+                  dst[r * MAX_MIB_SIZE * bsize[pli] + c];
 #if CONFIG_AOM_HIGHBITDEPTH
             }
 #endif

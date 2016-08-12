@@ -17,8 +17,8 @@
 #define MAX_TILE_WIDTH_B64 64
 
 static int get_tile_offset(int idx, int mis, int log2) {
-  const int sb_cols = mi_cols_aligned_to_sb(mis) >> MI_BLOCK_SIZE_LOG2;
-  const int offset = ((idx * sb_cols) >> log2) << MI_BLOCK_SIZE_LOG2;
+  const int sb_cols = mi_cols_aligned_to_sb(mis) >> MAX_MIB_SIZE_LOG2;
+  const int offset = ((idx * sb_cols) >> log2) << MAX_MIB_SIZE_LOG2;
   return AOMMIN(offset, mis);
 }
 
@@ -51,7 +51,7 @@ static int get_max_log2_tile_cols(const int sb64_cols) {
 
 void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
                          int *max_log2_tile_cols) {
-  const int sb64_cols = mi_cols_aligned_to_sb(mi_cols) >> MI_BLOCK_SIZE_LOG2;
+  const int sb64_cols = mi_cols_aligned_to_sb(mi_cols) >> MAX_MIB_SIZE_LOG2;
   *min_log2_tile_cols = get_min_log2_tile_cols(sb64_cols);
   *max_log2_tile_cols = get_max_log2_tile_cols(sb64_cols);
   assert(*min_log2_tile_cols <= *max_log2_tile_cols);

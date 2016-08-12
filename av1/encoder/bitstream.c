@@ -926,10 +926,10 @@ static void write_modes(AV1_COMP *cpi, const TileInfo *const tile,
   int mi_row, mi_col;
 
   for (mi_row = tile->mi_row_start; mi_row < tile->mi_row_end;
-       mi_row += MI_BLOCK_SIZE) {
+       mi_row += MAX_MIB_SIZE) {
     av1_zero(xd->left_seg_context);
     for (mi_col = tile->mi_col_start; mi_col < tile->mi_col_end;
-         mi_col += MI_BLOCK_SIZE)
+         mi_col += MAX_MIB_SIZE)
       write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, BLOCK_64X64);
   }
 }

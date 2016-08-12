@@ -854,11 +854,11 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
   const int shift_16_uv[] = { 0, 1, 4, 5 };
   int i;
   const int max_rows =
-      (mi_row + MI_BLOCK_SIZE > cm->mi_rows ? cm->mi_rows - mi_row
-                                            : MI_BLOCK_SIZE);
+      (mi_row + MAX_MIB_SIZE > cm->mi_rows ? cm->mi_rows - mi_row
+                                           : MAX_MIB_SIZE);
   const int max_cols =
-      (mi_col + MI_BLOCK_SIZE > cm->mi_cols ? cm->mi_cols - mi_col
-                                            : MI_BLOCK_SIZE);
+      (mi_col + MAX_MIB_SIZE > cm->mi_cols ? cm->mi_cols - mi_col
+                                           : MAX_MIB_SIZE);
 
   av1_zero(*lfm);
   assert(mip[0] != NULL);
@@ -982,7 +982,7 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
   lfm->above_uv[TX_4X4] &= ~above_border_uv;
 
   // We do some special edge handling.
-  if (mi_row + MI_BLOCK_SIZE > cm->mi_rows) {
+  if (mi_row + MAX_MIB_SIZE > cm->mi_rows) {
     const uint64_t rows = cm->mi_rows - mi_row;
 
     // Each pixel inside the border gets a 1,
@@ -1015,7 +1015,7 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
     }
   }
 
-  if (mi_col + MI_BLOCK_SIZE > cm->mi_cols) {
+  if (mi_col + MAX_MIB_SIZE > cm->mi_cols) {
     const uint64_t columns = cm->mi_cols - mi_col;
 
     // Each pixel inside the border gets a 1, the multiply copies the border
@@ -1165,21 +1165,21 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
   const int row_step_stride = cm->mi_stride * row_step;
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
-  unsigned int mask_16x16[MI_BLOCK_SIZE] = { 0 };
-  unsigned int mask_8x8[MI_BLOCK_SIZE] = { 0 };
-  unsigned int mask_4x4[MI_BLOCK_SIZE] = { 0 };
-  unsigned int mask_4x4_int[MI_BLOCK_SIZE] = { 0 };
-  uint8_t lfl[MI_BLOCK_SIZE * MI_BLOCK_SIZE];
+  unsigned int mask_16x16[MAX_MIB_SIZE] = { 0 };
+  unsigned int mask_8x8[MAX_MIB_SIZE] = { 0 };
+  unsigned int mask_4x4[MAX_MIB_SIZE] = { 0 };
+  unsigned int mask_4x4_int[MAX_MIB_SIZE] = { 0 };
+  uint8_t lfl[MAX_MIB_SIZE * MAX_MIB_SIZE];
   int r, c;
 
-  for (r = 0; r < MI_BLOCK_SIZE && mi_row + r < cm->mi_rows; r += row_step) {
+  for (r = 0; r < MAX_MIB_SIZE && mi_row + r < cm->mi_rows; r += row_step) {
     unsigned int mask_16x16_c = 0;
     unsigned int mask_8x8_c = 0;
     unsigned int mask_4x4_c = 0;
     unsigned int border_mask;
 
     // Determine the vertical edges that need filtering
-    for (c = 0; c < MI_BLOCK_SIZE && mi_col + c < cm->mi_cols; c += col_step) {
+    for (c = 0; c < MAX_MIB_SIZE && mi_col + c < cm->mi_cols; c += col_step) {
       const MODE_INFO *mi = mi_8x8[c];
       const BLOCK_SIZE sb_type = mi[0].mbmi.sb_type;
       const int skip_this = mi[0].mbmi.skip && is_inter_block(&mi[0].mbmi);
@@ -1289,14 +1289,14 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
   const int row_step = 1 << ss_y;
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
-  unsigned int mask_16x16[MI_BLOCK_SIZE] = { 0 };
-  unsigned int mask_8x8[MI_BLOCK_SIZE] = { 0 };
-  unsigned int mask_4x4[MI_BLOCK_SIZE] = { 0 };
-  unsigned int mask_4x4_int[MI_BLOCK_SIZE] = { 0 };
-  uint8_t lfl[MI_BLOCK_SIZE * MI_BLOCK_SIZE];
+  unsigned int mask_16x16[MAX_MIB_SIZE] = { 0 };
+  unsigned int mask_8x8[MAX_MIB_SIZE] = { 0 };
+  unsigned int mask_4x4[MAX_MIB_SIZE] = { 0 };
+  unsigned int mask_4x4_int[MAX_MIB_SIZE] = { 0 };
+  uint8_t lfl[MAX_MIB_SIZE * MAX_MIB_SIZE];
   int r;
 
-  for (r = 0; r < MI_BLOCK_SIZE && mi_row + r < cm->mi_rows; r += row_step) {
+  for (r = 0; r < MAX_MIB_SIZE && mi_row + r < cm->mi_rows; r += row_step) {
     const int skip_border_4x4_r = ss_y && mi_row + r == cm->mi_rows - 1;
     const unsigned int mask_4x4_int_r = skip_border_4x4_r ? 0 : mask_4x4_int[r];
 
@@ -1350,7 +1350,7 @@ void av1_filter_block_plane_ss00_ver(AV1_COMMON *const cm,
   assert(plane->subsampling_x == 0 && plane->subsampling_y == 0);
 
   // Vertical pass: do 2 rows at one time
-  for (r = 0; r < MI_BLOCK_SIZE && mi_row + r < cm->mi_rows; r += 2) {
+  for (r = 0; r < MAX_MIB_SIZE && mi_row + r < cm->mi_rows; r += 2) {
     unsigned int mask_16x16_l = mask_16x16 & 0xffff;
     unsigned int mask_8x8_l = mask_8x8 & 0xffff;
     unsigned int mask_4x4_l = mask_4x4 & 0xffff;
@@ -1396,7 +1396,7 @@ void av1_filter_block_plane_ss00_hor(AV1_COMMON *const cm,
 
   assert(plane->subsampling_x == 0 && plane->subsampling_y == 0);
 
-  for (r = 0; r < MI_BLOCK_SIZE && mi_row + r < cm->mi_rows; r++) {
+  for (r = 0; r < MAX_MIB_SIZE && mi_row + r < cm->mi_rows; r++) {
     unsigned int mask_16x16_r;
     unsigned int mask_8x8_r;
     unsigned int mask_4x4_r;
@@ -1458,9 +1458,9 @@ void av1_filter_block_plane_ss11_ver(AV1_COMMON *const cm,
   assert(plane->subsampling_x == 1 && plane->subsampling_y == 1);
 
   // Vertical pass: do 2 rows at one time
-  for (r = 0; r < MI_BLOCK_SIZE && mi_row + r < cm->mi_rows; r += 4) {
+  for (r = 0; r < MAX_MIB_SIZE && mi_row + r < cm->mi_rows; r += 4) {
     if (plane->plane_type == 1) {
-      for (c = 0; c < (MI_BLOCK_SIZE >> 1); c++) {
+      for (c = 0; c < (MAX_MIB_SIZE >> 1); c++) {
         lfm->lfl_uv[(r << 1) + c] = lfm->lfl_y[(r << 3) + (c << 1)];
         lfm->lfl_uv[((r + 2) << 1) + c] = lfm->lfl_y[((r + 2) << 3) + (c << 1)];
       }
@@ -1520,7 +1520,7 @@ void av1_filter_block_plane_ss11_hor(AV1_COMMON *const cm,
 
   assert(plane->subsampling_x == 1 && plane->subsampling_y == 1);
 
-  for (r = 0; r < MI_BLOCK_SIZE && mi_row + r < cm->mi_rows; r += 2) {
+  for (r = 0; r < MAX_MIB_SIZE && mi_row + r < cm->mi_rows; r += 2) {
     const int skip_border_4x4_r = mi_row + r == cm->mi_rows - 1;
     const unsigned int mask_4x4_int_r =
         skip_border_4x4_r ? 0 : (mask_4x4_int & 0xf);
@@ -1585,10 +1585,10 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
 
 #if CONFIG_PARALLEL_DEBLOCKING
   // Filter all the vertical edges in the whole frame
-  for (mi_row = start; mi_row < stop; mi_row += MI_BLOCK_SIZE) {
+  for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
 
-    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MI_BLOCK_SIZE) {
+    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       int plane;
 
       av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
@@ -1613,10 +1613,10 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   }
 
   // Filter all the horizontal edges in the whole frame
-  for (mi_row = start; mi_row < stop; mi_row += MI_BLOCK_SIZE) {
+  for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
 
-    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MI_BLOCK_SIZE) {
+    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       int plane;
 
       av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
@@ -1639,10 +1639,10 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
     }
   }
 #else   // CONFIG_PARALLEL_DEBLOCKING
-  for (mi_row = start; mi_row < stop; mi_row += MI_BLOCK_SIZE) {
+  for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
 
-    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MI_BLOCK_SIZE) {
+    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       int plane;
 
       av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);

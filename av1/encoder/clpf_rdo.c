@@ -74,7 +74,7 @@ int av1_clpf_decision(int k, int l, const YV12_BUFFER_CONFIG *rec,
     for (n = 0; n < w; n++) {
       int xpos = (l << fb_size_log2) + n * block_size;
       int ypos = (k << fb_size_log2) + m * block_size;
-      const int bs = MI_BLOCK_SIZE;
+      const int bs = MAX_MIB_SIZE;
       if (!cm->mi_grid_visible[ypos / bs * cm->mi_stride + xpos / bs]
                ->mbmi.skip)
         detect_clpf(rec->y_buffer, org->y_buffer, xpos, ypos, rec->y_crop_width,
@@ -141,8 +141,8 @@ static int clpf_rdo(int y, int x, const YV12_BUFFER_CONFIG *rec,
     for (n = 0; n < w; n++) {
       int xpos = x + n * block_size;
       int ypos = y + m * block_size;
-      if (!cm->mi_grid_visible[ypos / MI_BLOCK_SIZE * cm->mi_stride +
-                               xpos / MI_BLOCK_SIZE]
+      if (!cm->mi_grid_visible[ypos / MAX_MIB_SIZE * cm->mi_stride +
+                               xpos / MAX_MIB_SIZE]
                ->mbmi.skip) {
         detect_multi_clpf(rec->y_buffer, org->y_buffer, xpos, ypos,
                           rec->y_crop_width, rec->y_crop_height, org->y_stride,
@@ -167,7 +167,7 @@ void av1_clpf_test_frame(const YV12_BUFFER_CONFIG *rec,
   int i, j, k, l;
   int64_t best, sums[4][4];
   int width = rec->y_crop_width, height = rec->y_crop_height;
-  const int bs = MI_BLOCK_SIZE;
+  const int bs = MAX_MIB_SIZE;
   int fb_size_log2 = get_msb(MAX_FB_SIZE);
   int num_fb_ver = (height + (1 << fb_size_log2) - bs) >> fb_size_log2;
   int num_fb_hor = (width + (1 << fb_size_log2) - bs) >> fb_size_log2;

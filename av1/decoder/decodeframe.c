@@ -566,7 +566,8 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 static INLINE int dec_partition_plane_context(const MACROBLOCKD *xd, int mi_row,
                                               int mi_col, int bsl) {
   const PARTITION_CONTEXT *above_ctx = xd->above_seg_context + mi_col;
-  const PARTITION_CONTEXT *left_ctx = xd->left_seg_context + (mi_row & MI_MASK);
+  const PARTITION_CONTEXT *left_ctx =
+      xd->left_seg_context + (mi_row & MAX_MIB_MASK);
   int above = (*above_ctx >> bsl) & 1, left = (*left_ctx >> bsl) & 1;
 
   //  assert(bsl >= 0);
@@ -578,7 +579,8 @@ static INLINE void dec_update_partition_context(MACROBLOCKD *xd, int mi_row,
                                                 int mi_col, BLOCK_SIZE subsize,
                                                 int bw) {
   PARTITION_CONTEXT *const above_ctx = xd->above_seg_context + mi_col;
-  PARTITION_CONTEXT *const left_ctx = xd->left_seg_context + (mi_row & MI_MASK);
+  PARTITION_CONTEXT *const left_ctx =
+      xd->left_seg_context + (mi_row & MAX_MIB_MASK);
 
   // update the partition context at the end notes. set partition bits
   // of block sizes larger than the current one to be one, and partition
@@ -1287,7 +1289,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     TileInfo tile;
     av1_tile_set_row(&tile, cm, tile_row);
     for (mi_row = tile.mi_row_start; mi_row < tile.mi_row_end;
-         mi_row += MI_BLOCK_SIZE) {
+         mi_row += MAX_MIB_SIZE) {
       for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
         const int col =
             pbi->inv_tile_order ? tile_cols - tile_col - 1 : tile_col;
@@ -1296,7 +1298,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         av1_zero(tile_data->xd.left_context);
         av1_zero(tile_data->xd.left_seg_context);
         for (mi_col = tile.mi_col_start; mi_col < tile.mi_col_end;
-             mi_col += MI_BLOCK_SIZE) {
+             mi_col += MAX_MIB_SIZE) {
           decode_partition(pbi, &tile_data->xd, mi_row, mi_col,
                            &tile_data->bit_reader, BLOCK_64X64, 4);
         }
@@ -1307,14 +1309,14 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       }
       // Loopfilter one row.
       if (cm->lf.filter_level && !cm->skip_loop_filter) {
-        const int lf_start = mi_row - MI_BLOCK_SIZE;
+        const int lf_start = mi_row - MAX_MIB_SIZE;
         LFWorkerData *const lf_data = (LFWorkerData *)pbi->lf_worker.data1;
 
         // delay the loopfilter by 1 macroblock row.
         if (lf_start < 0) continue;
 
         // decoding has completed: finish up the loop filter in this thread.
-        if (mi_row + MI_BLOCK_SIZE >= cm->mi_rows) continue;
+        if (mi_row + MAX_MIB_SIZE >= cm->mi_rows) continue;
 
         winterface->sync(&pbi->lf_worker);
         lf_data->start = lf_start;
@@ -1329,7 +1331,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       // still be changed by the longest loopfilter of the next superblock
       // row.
       if (cm->frame_parallel_decode)
-        av1_frameworker_broadcast(pbi->cur_buf, mi_row << MI_BLOCK_SIZE_LOG2);
+        av1_frameworker_broadcast(pbi->cur_buf, mi_row << MAX_MIB_SIZE_LOG2);
     }
   }
 
@@ -1368,11 +1370,11 @@ static int tile_worker_hook(TileWorkerData *const tile_data,
   tile_data->xd.error_info = &tile_data->error_info;
 
   for (mi_row = tile->mi_row_start; mi_row < tile->mi_row_end;
-       mi_row += MI_BLOCK_SIZE) {
+       mi_row += MAX_MIB_SIZE) {
     av1_zero(tile_data->xd.left_context);
     av1_zero(tile_data->xd.left_seg_context);
     for (mi_col = tile->mi_col_start; mi_col < tile->mi_col_end;
-         mi_col += MI_BLOCK_SIZE) {
+         mi_col += MAX_MIB_SIZE) {
       decode_partition(tile_data->pbi, &tile_data->xd, mi_row, mi_col,
                        &tile_data->bit_reader, BLOCK_64X64, 4);
     }

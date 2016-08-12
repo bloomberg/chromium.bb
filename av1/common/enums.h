@@ -20,17 +20,22 @@ extern "C" {
 #endif
 
 #undef MAX_SB_SIZE
+
+// Pixels per max superblock size
 #define MAX_SB_SIZE_LOG2 6
 #define MAX_SB_SIZE (1 << MAX_SB_SIZE_LOG2)
 #define MAX_SB_SQUARE (MAX_SB_SIZE * MAX_SB_SIZE)
 
+// Pixels per Mode Info (MI) unit
 #define MI_SIZE_LOG2 3
-#define MI_BLOCK_SIZE_LOG2 (MAX_SB_SIZE_LOG2 - MI_SIZE_LOG2)  // 64 = 2^6
+#define MI_SIZE (1 << MI_SIZE_LOG2)
 
-#define MI_SIZE (1 << MI_SIZE_LOG2)              // pixels per mi-unit
-#define MI_BLOCK_SIZE (1 << MI_BLOCK_SIZE_LOG2)  // mi-units per max block
+// MI-units per max superblock (MI Block - MIB)
+#define MAX_MIB_SIZE_LOG2 (MAX_SB_SIZE_LOG2 - MI_SIZE_LOG2)
+#define MAX_MIB_SIZE (1 << MAX_MIB_SIZE_LOG2)
 
-#define MI_MASK (MI_BLOCK_SIZE - 1)
+// Mask to extract MI offset within max MIB
+#define MAX_MIB_MASK (MAX_MIB_SIZE - 1)
 
 // Bitstream profiles indicated by 2-3 bits in the uncompressed header.
 // 00: Profile 0.  8-bit 4:2:0 only.

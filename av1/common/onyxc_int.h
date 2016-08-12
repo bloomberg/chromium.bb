@@ -399,7 +399,7 @@ static INLINE void ref_cnt_fb(RefCntBuffer *bufs, int *idx, int new_idx) {
 }
 
 static INLINE int mi_cols_aligned_to_sb(int n_mis) {
-  return ALIGN_POWER_OF_TWO(n_mis, MI_BLOCK_SIZE_LOG2);
+  return ALIGN_POWER_OF_TWO(n_mis, MAX_MIB_SIZE_LOG2);
 }
 
 static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
@@ -449,7 +449,7 @@ static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col) {
 
 static INLINE int calc_mi_size(int len) {
   // len is in mi units.
-  return len + MI_BLOCK_SIZE;
+  return len + MAX_MIB_SIZE;
 }
 
 static void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh, int bwl,
@@ -519,7 +519,8 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
                                             int mi_col, BLOCK_SIZE subsize,
                                             BLOCK_SIZE bsize) {
   PARTITION_CONTEXT *const above_ctx = xd->above_seg_context + mi_col;
-  PARTITION_CONTEXT *const left_ctx = xd->left_seg_context + (mi_row & MI_MASK);
+  PARTITION_CONTEXT *const left_ctx =
+      xd->left_seg_context + (mi_row & MAX_MIB_MASK);
 
   // num_4x4_blocks_wide_lookup[bsize] / 2
   const int bs = num_8x8_blocks_wide_lookup[bsize];
@@ -534,7 +535,8 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
 static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
                                           int mi_col, BLOCK_SIZE bsize) {
   const PARTITION_CONTEXT *above_ctx = xd->above_seg_context + mi_col;
-  const PARTITION_CONTEXT *left_ctx = xd->left_seg_context + (mi_row & MI_MASK);
+  const PARTITION_CONTEXT *left_ctx =
+      xd->left_seg_context + (mi_row & MAX_MIB_MASK);
   const int bsl = mi_width_log2_lookup[bsize];
   int above = (*above_ctx >> bsl) & 1, left = (*left_ctx >> bsl) & 1;
 
