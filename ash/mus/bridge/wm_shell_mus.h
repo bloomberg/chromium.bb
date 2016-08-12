@@ -23,6 +23,10 @@ namespace ui {
 class WindowTreeClient;
 }
 
+namespace views {
+class PointerWatcherEventRouter;
+}
+
 namespace ash {
 namespace mus {
 
@@ -37,7 +41,8 @@ class WmWindowMus;
 class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
  public:
   WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
-             WindowManager* window_manager);
+             WindowManager* window_manager,
+             views::PointerWatcherEventRouter* pointer_watcher_event_router);
   ~WmShellMus() override;
 
   static WmShellMus* Get();
@@ -97,7 +102,8 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   void RemoveActivationObserver(WmActivationObserver* observer) override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
-  void AddPointerWatcher(views::PointerWatcher* watcher) override;
+  void AddPointerWatcher(views::PointerWatcher* watcher,
+                         bool wants_moves) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
   bool IsTouchDown() override;
 #if defined(OS_CHROMEOS)
@@ -118,6 +124,8 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   void OnDidDestroyClient(ui::WindowTreeClient* client) override;
 
   WindowManager* window_manager_;
+
+  views::PointerWatcherEventRouter* pointer_watcher_event_router_;
 
   std::vector<WmRootWindowControllerMus*> root_window_controllers_;
 

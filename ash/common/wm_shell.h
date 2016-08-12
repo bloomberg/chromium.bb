@@ -315,7 +315,11 @@ class ASH_EXPORT WmShell {
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
-  virtual void AddPointerWatcher(views::PointerWatcher* watcher) = 0;
+  // If |wants_moves| is true PointerWatcher::OnPointerEventObserved() is
+  // called for pointer move events. Enabling pointer moves may incur a
+  // performance hit and should be avoided if possible.
+  virtual void AddPointerWatcher(views::PointerWatcher* watcher,
+                                 bool wants_moves) = 0;
   virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
 
   // TODO: Move these back to LockStateController when that has been moved.

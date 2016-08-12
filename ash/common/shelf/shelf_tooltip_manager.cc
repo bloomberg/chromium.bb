@@ -120,7 +120,8 @@ ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
       bubble_(nullptr),
       weak_factory_(this) {
   shelf_view_->wm_shelf()->AddObserver(this);
-  WmShell::Get()->AddPointerWatcher(this);
+  const bool wants_moves = false;
+  WmShell::Get()->AddPointerWatcher(this, wants_moves);
 }
 
 ShelfTooltipManager::~ShelfTooltipManager() {

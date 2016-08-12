@@ -414,8 +414,9 @@ void Shell::ShutdownShelf() {
   }
 }
 
-void Shell::AddPointerWatcher(views::PointerWatcher* watcher) {
-  pointer_watcher_delegate_->AddPointerWatcher(watcher);
+void Shell::AddPointerWatcher(views::PointerWatcher* watcher,
+                              bool wants_moves) {
+  pointer_watcher_delegate_->AddPointerWatcher(watcher, wants_moves);
 }
 
 void Shell::RemovePointerWatcher(views::PointerWatcher* watcher) {

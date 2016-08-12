@@ -18,7 +18,8 @@ class ASH_EXPORT PointerWatcherDelegate {
  public:
   virtual ~PointerWatcherDelegate() {}
 
-  virtual void AddPointerWatcher(views::PointerWatcher* watcher) = 0;
+  virtual void AddPointerWatcher(views::PointerWatcher* watcher,
+                                 bool wants_moves) = 0;
   virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
 };
 

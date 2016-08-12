@@ -24,32 +24,43 @@ PointerWatcherDelegateAura::~PointerWatcherDelegateAura() {
 }
 
 void PointerWatcherDelegateAura::AddPointerWatcher(
-    views::PointerWatcher* watcher) {
-  pointer_watchers_.AddObserver(watcher);
+    views::PointerWatcher* watcher,
+    bool wants_moves) {
+  // We only allow a watcher to be added once. That is, we don't consider
+  // the pair of |watcher| and |wants_move| unique, just |watcher|.
+  if (wants_moves) {
+    DCHECK(!non_move_watchers_.HasObserver(watcher));
+    move_watchers_.AddObserver(watcher);
+  } else {
+    DCHECK(!move_watchers_.HasObserver(watcher));
+    non_move_watchers_.AddObserver(watcher);
+  }
 }
 
 void PointerWatcherDelegateAura::RemovePointerWatcher(
     views::PointerWatcher* watcher) {
-  pointer_watchers_.RemoveObserver(watcher);
+  non_move_watchers_.RemoveObserver(watcher);
+  move_watchers_.RemoveObserver(watcher);
 }
 
 void PointerWatcherDelegateAura::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED) {
-    FOR_EACH_OBSERVER(views::PointerWatcher, pointer_watchers_,
+    FOR_EACH_OBSERVER(views::PointerWatcher, non_move_watchers_,
+                      OnMouseCaptureChanged());
+    FOR_EACH_OBSERVER(views::PointerWatcher, move_watchers_,
                       OnMouseCaptureChanged());
     return;
   }
+
   // For compatibility with the mus version, don't send moves.
   if (event->type() != ui::ET_MOUSE_PRESSED &&
       event->type() != ui::ET_MOUSE_RELEASED)
     return;
+
   if (!ui::PointerEvent::CanConvertFrom(*event))
     return;
-  ui::PointerEvent mouse_pointer_event(*event);
-  FOR_EACH_OBSERVER(
-      views::PointerWatcher, pointer_watchers_,
-      OnPointerEventObserved(mouse_pointer_event, GetLocationInScreen(*event),
-                             GetTargetWidget(*event)));
+
+  NotifyWatchers(ui::PointerEvent(*event), *event);
 }
 
 void PointerWatcherDelegateAura::OnTouchEvent(ui::TouchEvent* event) {
@@ -57,11 +68,9 @@ void PointerWatcherDelegateAura::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() != ui::ET_TOUCH_PRESSED &&
       event->type() != ui::ET_TOUCH_RELEASED)
     return;
-  ui::PointerEvent touch_pointer_event(*event);
-  FOR_EACH_OBSERVER(
-      views::PointerWatcher, pointer_watchers_,
-      OnPointerEventObserved(touch_pointer_event, GetLocationInScreen(*event),
-                             GetTargetWidget(*event)));
+
+  DCHECK(ui::PointerEvent::CanConvertFrom(*event));
+  NotifyWatchers(ui::PointerEvent(*event), *event);
 }
 
 gfx::Point PointerWatcherDelegateAura::GetLocationInScreen(
@@ -77,6 +86,22 @@ views::Widget* PointerWatcherDelegateAura::GetTargetWidget(
     const ui::LocatedEvent& event) const {
   aura::Window* window = static_cast<aura::Window*>(event.target());
   return views::Widget::GetTopLevelWidgetForNativeView(window);
+}
+
+void PointerWatcherDelegateAura::NotifyWatchers(
+    const ui::PointerEvent& event,
+    const ui::LocatedEvent& original_event) {
+  const gfx::Point screen_location(GetLocationInScreen(original_event));
+  views::Widget* target_widget = GetTargetWidget(original_event);
+  FOR_EACH_OBSERVER(
+      views::PointerWatcher, move_watchers_,
+      OnPointerEventObserved(event, screen_location, target_widget));
+  if (event.type() != ui::ET_MOUSE_MOVED &&
+      event.type() != ui::ET_TOUCH_MOVED) {
+    FOR_EACH_OBSERVER(
+        views::PointerWatcher, non_move_watchers_,
+        OnPointerEventObserved(event, screen_location, target_widget));
+  }
 }
 
 }  // namespace ash

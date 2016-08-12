@@ -27,6 +27,10 @@ namespace shell {
 class Connector;
 }
 
+namespace views {
+class PointerWatcherEventRouter;
+}
+
 namespace ash {
 namespace mus {
 
@@ -122,6 +126,9 @@ class WindowManager : public ui::WindowManagerDelegate,
   ui::WindowTreeClient* window_tree_client_ = nullptr;
 
   ui::WindowManagerClient* window_manager_client_ = nullptr;
+
+  std::unique_ptr<views::PointerWatcherEventRouter>
+      pointer_watcher_event_router_;
 
   std::unique_ptr<ShadowController> shadow_controller_;
 

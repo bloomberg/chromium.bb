@@ -234,8 +234,9 @@ void WmShellAura::RemoveDisplayObserver(WmDisplayObserver* observer) {
   display_observers_.RemoveObserver(observer);
 }
 
-void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher) {
-  Shell::GetInstance()->AddPointerWatcher(watcher);
+void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher,
+                                    bool wants_moves) {
+  Shell::GetInstance()->AddPointerWatcher(watcher, wants_moves);
 }
 
 void WmShellAura::RemovePointerWatcher(views::PointerWatcher* watcher) {

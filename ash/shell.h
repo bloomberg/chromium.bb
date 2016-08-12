@@ -256,7 +256,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Show shelf view if it was created hidden (before session has started).
   void ShowShelf();
 
-  void AddPointerWatcher(views::PointerWatcher* watcher);
+  void AddPointerWatcher(views::PointerWatcher* watcher, bool wants_moves);
   void RemovePointerWatcher(views::PointerWatcher* watcher);
 
 #if defined(OS_CHROMEOS)

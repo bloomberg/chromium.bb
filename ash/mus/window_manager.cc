@@ -33,6 +33,7 @@
 #include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/mojo/event.mojom.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
 
 namespace ash {
@@ -77,6 +78,9 @@ void WindowManager::Init(ui::WindowTreeClient* window_tree_client) {
   DCHECK(!window_tree_client_);
   window_tree_client_ = window_tree_client;
 
+  pointer_watcher_event_router_.reset(
+      new views::PointerWatcherEventRouter(window_tree_client));
+
   shadow_controller_.reset(new ShadowController(window_tree_client));
 
   // The insets are roughly what is needed by CustomFrameView. The expectation
@@ -95,7 +99,8 @@ void WindowManager::Init(ui::WindowTreeClient* window_tree_client) {
 
   std::unique_ptr<ShellDelegate> shell_delegate(new ShellDelegateMus(
       base::MakeUnique<AppListPresenterStub>(), connector_));
-  shell_.reset(new WmShellMus(std::move(shell_delegate), this));
+  shell_.reset(new WmShellMus(std::move(shell_delegate), this,
+                              pointer_watcher_event_router_.get()));
   shell_->Initialize();
   lookup_.reset(new WmLookupMus);
 }
@@ -216,13 +221,15 @@ void WindowManager::OnDidDestroyClient(ui::WindowTreeClient* client) {
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                     OnWindowTreeClientDestroyed());
 
+  pointer_watcher_event_router_.reset();
+
   window_tree_client_ = nullptr;
   window_manager_client_ = nullptr;
 }
 
 void WindowManager::OnPointerEventObserved(const ui::PointerEvent& event,
                                            ui::Window* target) {
-  // Does not use PointerWatchers.
+  pointer_watcher_event_router_->OnPointerEventObserved(event, target);
 }
 
 void WindowManager::SetWindowManagerClient(ui::WindowManagerClient* client) {

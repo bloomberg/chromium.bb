@@ -35,6 +35,7 @@
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/display/screen.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 
 namespace ash {
 namespace mus {
@@ -102,10 +103,13 @@ class SessionStateDelegateStub : public SessionStateDelegate {
 
 }  // namespace
 
-WmShellMus::WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
-                       WindowManager* window_manager)
+WmShellMus::WmShellMus(
+    std::unique_ptr<ShellDelegate> shell_delegate,
+    WindowManager* window_manager,
+    views::PointerWatcherEventRouter* pointer_watcher_event_router)
     : WmShell(std::move(shell_delegate)),
       window_manager_(window_manager),
+      pointer_watcher_event_router_(pointer_watcher_event_router),
       session_state_delegate_(new SessionStateDelegateStub) {
   window_tree_client()->AddObserver(this);
   WmShell::Set(this);
@@ -357,13 +361,13 @@ void WmShellMus::RemoveDisplayObserver(WmDisplayObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher) {
-  // TODO(jamescook): Move PointerWatcherDelegateMus to //ash/mus and use here.
-  NOTIMPLEMENTED();
+void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher,
+                                   bool wants_moves) {
+  pointer_watcher_event_router_->AddPointerWatcher(watcher, wants_moves);
 }
 
 void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  NOTIMPLEMENTED();
+  pointer_watcher_event_router_->RemovePointerWatcher(watcher);
 }
 
 bool WmShellMus::IsTouchDown() {

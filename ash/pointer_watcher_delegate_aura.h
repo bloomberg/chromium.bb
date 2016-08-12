@@ -14,6 +14,7 @@ class Point;
 
 namespace ui {
 class LocatedEvent;
+class PointerEvent;
 }
 
 namespace views {
@@ -31,7 +32,8 @@ class ASH_EXPORT PointerWatcherDelegateAura : public PointerWatcherDelegate,
   ~PointerWatcherDelegateAura() override;
 
   // PointerWatcherDelegate:
-  void AddPointerWatcher(views::PointerWatcher* watcher) override;
+  void AddPointerWatcher(views::PointerWatcher* watcher,
+                         bool wants_moves) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
 
   // ui::EventHandler:
@@ -42,8 +44,19 @@ class ASH_EXPORT PointerWatcherDelegateAura : public PointerWatcherDelegate,
   gfx::Point GetLocationInScreen(const ui::LocatedEvent& event) const;
   views::Widget* GetTargetWidget(const ui::LocatedEvent& event) const;
 
-  // Must be empty on destruction.
-  base::ObserverList<views::PointerWatcher, true> pointer_watchers_;
+  // Calls OnPointerEventObserved() on the appropriate set of watchers as
+  // determined by the type of event. |original_event| is the original
+  // event supplied to OnMouseEvent()/OnTouchEvent(), |pointer_event| is
+  // |original_event| converted to a PointerEvent.
+  void NotifyWatchers(const ui::PointerEvent& pointer_event,
+                      const ui::LocatedEvent& original_event);
+
+  // The true parameter to ObserverList indicates the list must be empty on
+  // destruction. Two sets of observers are maintained, one for observers not
+  // needing moves |non_move_watchers_| and |move_watchers_| for those
+  // observers wanting moves too.
+  base::ObserverList<views::PointerWatcher, true> non_move_watchers_;
+  base::ObserverList<views::PointerWatcher, true> move_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerWatcherDelegateAura);
 };
