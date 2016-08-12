@@ -3802,6 +3802,10 @@ bool GLRenderer::IsContextLost() {
 }
 
 void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
+  if (overlay_resource_pool_) {
+    overlay_resource_pool_->CheckBusyResources();
+  }
+
   scoped_refptr<CALayerOverlaySharedState> shared_state;
   size_t copied_render_pass_count = 0;
   for (const CALayerOverlay& ca_layer_overlay : frame->ca_layer_overlay_list) {

@@ -66,6 +66,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
                               size_t max_resource_count);
 
   void ReduceResourceUsage();
+
+  // Must be called regularly to move resources from the busy pool to the unused
+  // pool.
   void CheckBusyResources();
 
   size_t memory_usage_bytes() const { return in_use_memory_usage_bytes_; }
