@@ -247,7 +247,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         if (params.isVideo()) {
             menu.findItem(R.id.contextmenu_save_video).setVisible(
-                    UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
+                    params.canSaveMedia() && UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
         } else if (params.isImage() && params.imageWasFetchedLoFi()) {
             DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                     DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_SHOWN);

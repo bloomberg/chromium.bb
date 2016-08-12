@@ -18,6 +18,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "jni/ContextMenuHelper_jni.h"
 #include "jni/ContextMenuParams_jni.h"
+#include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -103,7 +104,8 @@ ContextMenuHelper::CreateJavaContextMenuParams(
           ConvertUTF16ToJavaString(env, params.title_text).obj(),
           image_was_fetched_lo_fi,
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()).obj(),
-          params.referrer_policy);
+          params.referrer_policy,
+          params.media_flags & blink::WebContextMenuData::MediaCanSave);
 
   return jmenu_info;
 }
