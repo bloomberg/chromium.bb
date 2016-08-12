@@ -421,6 +421,7 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
     dispatcher->bytes_available_ = state->bytes_available;
     dispatcher->peer_closed_ = state->flags & kFlagPeerClosed;
     dispatcher->InitializeNoLock();
+    dispatcher->UpdateSignalsStateNoLock();
   }
 
   return dispatcher;
