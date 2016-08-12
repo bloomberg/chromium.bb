@@ -238,6 +238,10 @@ class UrlManager {
         return urlInfos;
     }
 
+    public UrlInfo getUrlInfoByUrl(String url) {
+        return mUrlInfoMap.get(url);
+    }
+
     public Set<String> getNearbyUrls() {
         return mNearbyUrls;
     }

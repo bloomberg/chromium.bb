@@ -9,7 +9,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.AnimationDrawable;
@@ -36,7 +35,9 @@ import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.components.location.LocationUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * This activity displays a list of nearby URLs as stored in the {@link UrlManager}.
@@ -60,8 +61,9 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     private static final int DURATION_SLIDE_UP_MS = 250;
     private static final int DURATION_SLIDE_DOWN_MS = 250;
 
+    private final List<PwsResult> mPwsResults = new ArrayList<>();
+
     private Context mContext;
-    private SharedPreferences mSharedPrefs;
     private NearbyUrlsAdapter mAdapter;
     private PwsClient mPwsClient;
     private ListView mListView;
@@ -212,16 +214,14 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
                     PhysicalWebUma.onForegroundPwsResolution(ListUrlsActivity.this, duration);
                 }
 
-                // filter out duplicate site URLs.
+                // filter out duplicate groups.
                 for (PwsResult pwsResult : pwsResults) {
-                    String siteUrl = pwsResult.siteUrl;
-                    String iconUrl = pwsResult.iconUrl;
-
-                    if (siteUrl != null && !mAdapter.hasSiteUrl(siteUrl)) {
+                    mPwsResults.add(pwsResult);
+                    if (!mAdapter.hasGroupId(pwsResult.groupId)) {
                         mAdapter.add(pwsResult);
 
-                        if (iconUrl != null && !mAdapter.hasIcon(iconUrl)) {
-                            fetchIcon(iconUrl);
+                        if (pwsResult.iconUrl != null && !mAdapter.hasIcon(pwsResult.iconUrl)) {
+                            fetchIcon(pwsResult.iconUrl);
                         }
                     }
                 }
@@ -240,8 +240,22 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         PhysicalWebUma.onUrlSelected(this);
-        PwsResult pwsResult = mAdapter.getItem(position);
-        Intent intent = createNavigateToUrlIntent(pwsResult);
+        PwsResult minPwsResult = mAdapter.getItem(position);
+        String groupId = minPwsResult.groupId;
+
+        // Make sure the PwsResult corresponds to the closest UrlDevice in the group.
+        double minDistance = Double.MAX_VALUE;
+        for (PwsResult pwsResult : mPwsResults) {
+            if (pwsResult.groupId.equals(groupId)) {
+                double distance = UrlManager.getInstance()
+                        .getUrlInfoByUrl(pwsResult.requestUrl).getDistance();
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    minPwsResult = pwsResult;
+                }
+            }
+        }
+        Intent intent = createNavigateToUrlIntent(minPwsResult);
         mContext.startActivity(intent);
     }
 
@@ -289,6 +303,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
                     (AnimationDrawable) mScanningImageView.getDrawable();
             animationDrawable.start();
 
+            mPwsResults.clear();
             resolve(urls, isUserInitiated);
         }
     }
@@ -350,27 +365,24 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private void initSharedPreferences() {
-        mSharedPrefs = ContextUtils.getAppSharedPreferences();
-        int prefsVersion = mSharedPrefs.getInt(PREFS_VERSION_KEY, 0);
-
-        if (prefsVersion == PREFS_VERSION) {
+        if (ContextUtils.getAppSharedPreferences().getInt(PREFS_VERSION_KEY, 0) == PREFS_VERSION) {
             return;
         }
 
         // Stored preferences are old, upgrade to the current version.
-        SharedPreferences.Editor editor = mSharedPrefs.edit();
-        editor.putInt(PREFS_VERSION_KEY, PREFS_VERSION);
-        editor.apply();
+        ContextUtils.getAppSharedPreferences().edit()
+                .putInt(PREFS_VERSION_KEY, PREFS_VERSION)
+                .apply();
     }
 
     private int getBottomBarDisplayCount() {
-        return mSharedPrefs.getInt(PREFS_BOTTOM_BAR_KEY, 0);
+        return ContextUtils.getAppSharedPreferences().getInt(PREFS_BOTTOM_BAR_KEY, 0);
     }
 
     private void setBottomBarDisplayCount(int count) {
-        SharedPreferences.Editor editor = mSharedPrefs.edit();
-        editor.putInt(PREFS_BOTTOM_BAR_KEY, count);
-        editor.apply();
+        ContextUtils.getAppSharedPreferences().edit()
+                .putInt(PREFS_BOTTOM_BAR_KEY, count)
+                .apply();
     }
 
     private static Intent createNavigateToUrlIntent(PwsResult pwsResult) {

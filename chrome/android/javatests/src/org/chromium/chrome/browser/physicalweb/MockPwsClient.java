@@ -41,6 +41,20 @@ class MockPwsClient implements PwsClient {
         mPwsResults.add(pwsResults);
     }
 
+    public void addPwsResult(PwsResult pwsResult) {
+        List<PwsResult> pwsResults = new ArrayList<>();
+        pwsResults.add(pwsResult);
+        addPwsResults(pwsResults);
+    }
+
+    public void addCombinedPwsResults() {
+        List<PwsResult> pwsResults = new ArrayList<>();
+        for (List<PwsResult> subList : mPwsResults) {
+            pwsResults.addAll(subList);
+        }
+        addPwsResults(pwsResults);
+    }
+
     public void addIconBitmap(Bitmap iconBitmap) {
         mIconBitmaps.add(iconBitmap);
     }
