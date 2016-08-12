@@ -131,7 +131,6 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
       std::unique_ptr<proto::CompositorMessage> proto) override;
 
   // Proxy implementation
-  void FinishAllRendering() override;
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
   void SetOutputSurface(OutputSurface* output_surface) override;

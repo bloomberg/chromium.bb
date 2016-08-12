@@ -36,7 +36,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   ~SingleThreadProxy() override;
 
   // Proxy implementation
-  void FinishAllRendering() override;
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
   void SetOutputSurface(OutputSurface* output_surface) override;

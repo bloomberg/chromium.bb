@@ -26,7 +26,6 @@ void StopRenderingRequests() {
   for (aura::Window* window : Shell::GetAllRootWindows()) {
     ui::Compositor* compositor = window->GetHost()->compositor();
     compositor->SetVisible(false);
-    compositor->FinishAllRendering();
   }
 }
 

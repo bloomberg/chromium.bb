@@ -123,8 +123,6 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
   SetClipRect(gfx::Rect(size.width(), size.height()));
 }
 
-void SoftwareRenderer::Finish() {}
-
 void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   DCHECK(!output_surface_->HasExternalStencilTest());
   current_framebuffer_lock_ = nullptr;

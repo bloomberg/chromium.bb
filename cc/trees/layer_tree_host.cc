@@ -673,10 +673,6 @@ void LayerTreeHost::DidLoseOutputSurface() {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::FinishAllRendering() {
-  proxy_->FinishAllRendering();
-}
-
 void LayerTreeHost::SetDeferCommits(bool defer_commits) {
   proxy_->SetDeferCommits(defer_commits);
 }

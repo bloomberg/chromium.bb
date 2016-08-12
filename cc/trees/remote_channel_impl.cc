@@ -150,10 +150,6 @@ void RemoteChannelImpl::HandleProto(
   }
 }
 
-void RemoteChannelImpl::FinishAllRendering() {
-  NOTREACHED() << "Should not be called on the remote client LayerTreeHost";
-}
-
 bool RemoteChannelImpl::IsStarted() const {
   DCHECK(task_runner_provider_->IsMainThread());
   return main().started;

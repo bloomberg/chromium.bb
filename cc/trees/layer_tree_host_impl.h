@@ -398,7 +398,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::string LayerTreeAsJson() const;
 
-  void FinishAllRendering();
   int RequestedMSAASampleCount() const;
 
   virtual bool InitializeRenderer(OutputSurface* output_surface);

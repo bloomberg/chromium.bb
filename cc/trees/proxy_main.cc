@@ -260,17 +260,6 @@ void ProxyMain::BeginMainFrame(
   layer_tree_host_->DidBeginMainFrame();
 }
 
-void ProxyMain::FinishAllRendering() {
-  DCHECK(IsMainThread());
-  DCHECK(!defer_commits_);
-
-  // Make sure all GL drawing is finished on the impl thread.
-  DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
-  CompletionEvent completion;
-  channel_main_->FinishAllRenderingOnImpl(&completion);
-  completion.Wait();
-}
-
 bool ProxyMain::IsStarted() const {
   DCHECK(IsMainThread());
   return started_;

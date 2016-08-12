@@ -102,7 +102,6 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void SetVisibleOnImpl(bool visible) override;
 
   // Blocking calls to ProxyImpl
-  void FinishAllRenderingOnImpl(CompletionEvent* completion) override;
   void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) override;
   void MainFrameWillHappenOnImplForTesting(
       CompletionEvent* completion,

@@ -81,7 +81,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   friend class ProxyMainForTest;
 
   // Proxy implementation.
-  void FinishAllRendering() override;
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
   void SetOutputSurface(OutputSurface* output_surface) override;

@@ -17,7 +17,6 @@ class FakeProxy : public Proxy {
 
   void SetLayerTreeHost(LayerTreeHost* host);
 
-  void FinishAllRendering() override {}
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
   void SetOutputSurface(OutputSurface* output_surface) override {}

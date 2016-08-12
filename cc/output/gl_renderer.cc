@@ -2882,11 +2882,6 @@ void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
-void GLRenderer::Finish() {
-  TRACE_EVENT0("cc", "GLRenderer::Finish");
-  gl_->Finish();
-}
-
 void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   DCHECK(!is_backbuffer_discarded_);
 

@@ -75,9 +75,6 @@ class CC_EXPORT Renderer {
                          const gfx::Rect& device_viewport_rect,
                          const gfx::Rect& device_clip_rect) = 0;
 
-  // Waits for rendering to finish.
-  virtual void Finish() = 0;
-
   // Puts backbuffer onscreen.
   virtual void SwapBuffers(CompositorFrameMetadata metadata) = 0;
   virtual void ReclaimResources(const ReturnedResourceArray& resources) {}

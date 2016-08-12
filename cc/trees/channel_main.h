@@ -41,7 +41,6 @@ class CC_EXPORT ChannelMain {
   virtual void MainThreadHasStoppedFlingingOnImpl() = 0;
   virtual void SetInputThrottledUntilCommitOnImpl(bool is_throttled) = 0;
   virtual void SetDeferCommitsOnImpl(bool defer_commits) = 0;
-  virtual void FinishAllRenderingOnImpl(CompletionEvent* completion) = 0;
   virtual void SetVisibleOnImpl(bool visible) = 0;
   virtual void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) = 0;
   virtual void MainFrameWillHappenOnImplForTesting(

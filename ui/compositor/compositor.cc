@@ -342,12 +342,7 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
   host_->SetNeedsCommit();
 }
 
-void Compositor::FinishAllRendering() {
-  host_->FinishAllRendering();
-}
-
 void Compositor::DisableSwapUntilResize() {
-  host_->FinishAllRendering();
   context_factory_->ResizeDisplay(this, gfx::Size());
 }
 

@@ -1695,11 +1695,6 @@ void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
     it->DidDrawFrame();
 }
 
-void LayerTreeHostImpl::FinishAllRendering() {
-  if (renderer_)
-    renderer_->Finish();
-}
-
 int LayerTreeHostImpl::RequestedMSAASampleCount() const {
   if (settings_.gpu_rasterization_msaa_sample_count == -1) {
     // Use the most up-to-date version of device_scale_factor that we have.

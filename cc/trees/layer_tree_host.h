@@ -170,8 +170,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void LayoutAndUpdateLayers();
   void Composite(base::TimeTicks frame_begin_time);
 
-  void FinishAllRendering();
-
   void SetDeferCommits(bool defer_commits);
 
   int source_frame_number() const { return source_frame_number_; }

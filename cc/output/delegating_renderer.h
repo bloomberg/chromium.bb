@@ -33,8 +33,6 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
                  const gfx::Rect& device_viewport_rect,
                  const gfx::Rect& device_clip_rect) override;
 
-  void Finish() override {}
-
   void SwapBuffers(CompositorFrameMetadata metadata) override;
   void ReclaimResources(const ReturnedResourceArray&) override;
 

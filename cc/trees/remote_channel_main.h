@@ -39,7 +39,6 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
   void MainThreadHasStoppedFlingingOnImpl() override;
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled) override;
   void SetDeferCommitsOnImpl(bool defer_commits) override;
-  void FinishAllRenderingOnImpl(CompletionEvent* completion) override;
   void SetVisibleOnImpl(bool visible) override;
   void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) override;
   void MainFrameWillHappenOnImplForTesting(

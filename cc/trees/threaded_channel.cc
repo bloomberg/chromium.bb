@@ -116,13 +116,6 @@ void ThreadedChannel::SetVisibleOnImpl(bool visible) {
       base::Bind(&ProxyImpl::SetVisibleOnImpl, proxy_impl_weak_ptr_, visible));
 }
 
-void ThreadedChannel::FinishAllRenderingOnImpl(CompletionEvent* completion) {
-  DCHECK(IsMainThread());
-  ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyImpl::FinishAllRenderingOnImpl,
-                            proxy_impl_weak_ptr_, completion));
-}
-
 void ThreadedChannel::ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) {
   DCHECK(IsMainThread());
   ImplThreadTaskRunner()->PostTask(

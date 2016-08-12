@@ -61,9 +61,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   const RendererCapabilitiesImpl& Capabilities() const override;
 
-  // Waits for rendering to finish.
-  void Finish() override;
-
   void SwapBuffers(CompositorFrameMetadata metadata) override;
   void SwapBuffersComplete() override;
 

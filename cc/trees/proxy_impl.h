@@ -44,7 +44,6 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
       CommitEarlyOutReason reason,
       base::TimeTicks main_thread_start_time,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises);
-  void FinishAllRenderingOnImpl(CompletionEvent* completion);
   void SetVisibleOnImpl(bool visible);
   void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion);
   void FinishGLOnImpl(CompletionEvent* completion);

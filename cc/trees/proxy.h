@@ -36,8 +36,6 @@ class CC_EXPORT Proxy {
  public:
   virtual ~Proxy() {}
 
-  virtual void FinishAllRendering() = 0;
-
   virtual bool IsStarted() const = 0;
   virtual bool CommitToActiveTree() const = 0;
 

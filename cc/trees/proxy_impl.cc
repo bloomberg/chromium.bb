@@ -204,13 +204,6 @@ void ProxyImpl::BeginMainFrameAbortedOnImpl(
   scheduler_->BeginMainFrameAborted(reason);
 }
 
-void ProxyImpl::FinishAllRenderingOnImpl(CompletionEvent* completion) {
-  TRACE_EVENT0("cc", "ProxyImpl::FinishAllRenderingOnImplThread");
-  DCHECK(IsImplThread());
-  layer_tree_host_impl_->FinishAllRendering();
-  completion->Signal();
-}
-
 void ProxyImpl::SetVisibleOnImpl(bool visible) {
   TRACE_EVENT1("cc", "ProxyImpl::SetVisibleOnImplThread", "visible", visible);
   DCHECK(IsImplThread());

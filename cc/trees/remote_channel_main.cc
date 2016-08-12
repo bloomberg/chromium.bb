@@ -100,10 +100,6 @@ void RemoteChannelMain::SetDeferCommitsOnImpl(bool defer_commits) {
   SendMessageProto(proto);
 }
 
-void RemoteChannelMain::FinishAllRenderingOnImpl(CompletionEvent* completion) {
-  completion->Signal();
-}
-
 void RemoteChannelMain::SetVisibleOnImpl(bool visible) {
   NOTIMPLEMENTED() << "Visibility is not controlled by the server";
 }
