@@ -49,7 +49,8 @@ class RequestQueueTest : public testing::Test {
   void GetRequestsDone(GetRequestsResult result,
                        const std::vector<SavePageRequest>& requests);
   // Callback for removing request.
-  void RemoveRequestDone(UpdateRequestResult result);
+  void RemoveRequestDone(
+      const RequestQueue::UpdateMultipleRequestResults& results);
 
   void UpdateRequestDone(UpdateRequestResult result);
 
@@ -60,7 +61,10 @@ class RequestQueueTest : public testing::Test {
     return last_added_request_.get();
   }
 
-  UpdateRequestResult last_remove_result() const { return last_remove_result_; }
+  const RequestQueue::UpdateMultipleRequestResults& last_remove_results()
+      const {
+    return last_remove_results_;
+  }
 
   UpdateRequestResult last_update_result() const { return last_update_result_; }
 
@@ -74,8 +78,7 @@ class RequestQueueTest : public testing::Test {
  private:
   AddRequestResult last_add_result_;
   std::unique_ptr<SavePageRequest> last_added_request_;
-
-  UpdateRequestResult last_remove_result_;
+  RequestQueue::UpdateMultipleRequestResults last_remove_results_;
   UpdateRequestResult last_update_result_;
 
   GetRequestsResult last_get_requests_result_;
@@ -88,7 +91,6 @@ class RequestQueueTest : public testing::Test {
 
 RequestQueueTest::RequestQueueTest()
     : last_add_result_(AddRequestResult::STORE_FAILURE),
-      last_remove_result_(UpdateRequestResult::STORE_FAILURE),
       last_update_result_(UpdateRequestResult::STORE_FAILURE),
       last_get_requests_result_(GetRequestsResult::STORE_FAILURE),
       task_runner_(new base::TestSimpleTaskRunner),
@@ -119,8 +121,9 @@ void RequestQueueTest::GetRequestsDone(
   last_requests_ = requests;
 }
 
-void RequestQueueTest::RemoveRequestDone(UpdateRequestResult result) {
-  last_remove_result_ = result;
+void RequestQueueTest::RemoveRequestDone(
+    const RequestQueue::UpdateMultipleRequestResults& results) {
+  last_remove_results_ = results;
 }
 
 void RequestQueueTest::UpdateRequestDone(UpdateRequestResult result) {
@@ -162,11 +165,14 @@ TEST_F(RequestQueueTest, RemoveRequest) {
   PumpLoop();
   ASSERT_EQ(kRequestId, last_added_request()->request_id());
 
-  queue()->RemoveRequest(
-      kRequestId,
+  std::vector<int64_t> remove_requests;
+  remove_requests.push_back(kRequestId);
+  queue()->RemoveRequests(
+      remove_requests,
       base::Bind(&RequestQueueTest::RemoveRequestDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_result());
+  ASSERT_EQ(1ul, last_remove_results().size());
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(0).second);
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
@@ -175,41 +181,40 @@ TEST_F(RequestQueueTest, RemoveRequest) {
   ASSERT_EQ(0ul, last_requests().size());
 }
 
-TEST_F(RequestQueueTest, RemoveRequestByClientId) {
+TEST_F(RequestQueueTest, RemoveSeveralRequests) {
   base::Time creation_time = base::Time::Now();
-  // Put two requests on the queue with different client IDs.
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
                           kUserRequested);
   queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
                                           base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(kRequestId, last_added_request()->request_id());
+
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
                            kUserRequested);
   queue()->AddRequest(request2, base::Bind(&RequestQueueTest::AddRequestDone,
                                            base::Unretained(this)));
   PumpLoop();
+  ASSERT_EQ(kRequestId2, last_added_request()->request_id());
 
-  queue()->GetRequests(
-      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
-  PumpLoop();
-  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
-  ASSERT_EQ(2ul, last_requests().size());
-
-  std::vector<ClientId> client_ids;
-  client_ids.push_back(kClientId);
-
-  // Removing the first client ID should leave only the second on the queue.
-  queue()->RemoveRequestsByClientId(
-      client_ids,
+  std::vector<int64_t> remove_requests;
+  remove_requests.push_back(kRequestId);
+  remove_requests.push_back(kRequestId2);
+  queue()->RemoveRequests(
+      remove_requests,
       base::Bind(&RequestQueueTest::RemoveRequestDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_result());
+  ASSERT_EQ(2ul, last_remove_results().size());
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(0).second);
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(1).second);
+  ASSERT_EQ(kRequestId, last_remove_results().at(0).first);
+  ASSERT_EQ(kRequestId2, last_remove_results().at(1).first);
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
-  ASSERT_EQ(1ul, last_requests().size());
-  ASSERT_EQ(kClientId2, last_requests().front().client_id());
+  ASSERT_EQ(0ul, last_requests().size());
 }
 
 // A longer test populating the request queue with more than one item, properly
@@ -235,11 +240,15 @@ TEST_F(RequestQueueTest, MultipleRequestsAddGetRemove) {
   ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(2ul, last_requests().size());
 
-  queue()->RemoveRequest(
-      request1.request_id(),
+  std::vector<int64_t> remove_requests;
+  remove_requests.push_back(request1.request_id());
+  queue()->RemoveRequests(
+      remove_requests,
       base::Bind(&RequestQueueTest::RemoveRequestDone, base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_result());
+  ASSERT_EQ(1ul, last_remove_results().size());
+  ASSERT_EQ(kRequestId, last_remove_results().at(0).first);
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(0).second);
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));

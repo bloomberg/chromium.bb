@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/request_queue_store_sql.h"
 #include "components/offline_pages/background/save_page_request.h"
@@ -67,13 +68,16 @@ class RequestQueueStoreTestBase : public testing::Test {
   // Callback used for add/update request.
   void AddOrUpdateDone(UpdateStatus result);
   // Callback used for remove requests.
-  void RemoveDone(bool result, int count);
+  void RemoveDone(const RequestQueue::UpdateMultipleRequestResults& results);
   // Callback used for reset.
   void ResetDone(bool result);
 
   LastResult last_result() const { return last_result_; }
   UpdateStatus last_update_status() const { return last_update_status_; }
-  int last_remove_count() const { return last_remove_count_; }
+  const RequestQueue::UpdateMultipleRequestResults& last_remove_results()
+      const {
+    return last_remove_results_;
+  }
   const std::vector<SavePageRequest>& last_requests() const {
     return last_requests_;
   }
@@ -84,7 +88,7 @@ class RequestQueueStoreTestBase : public testing::Test {
  private:
   LastResult last_result_;
   UpdateStatus last_update_status_;
-  int last_remove_count_;
+  RequestQueue::UpdateMultipleRequestResults last_remove_results_;
   std::vector<SavePageRequest> last_requests_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -94,7 +98,6 @@ class RequestQueueStoreTestBase : public testing::Test {
 RequestQueueStoreTestBase::RequestQueueStoreTestBase()
     : last_result_(LastResult::kNone),
       last_update_status_(UpdateStatus::FAILED),
-      last_remove_count_(0),
       task_runner_(new base::TestSimpleTaskRunner),
       task_runner_handle_(task_runner_) {
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
@@ -112,7 +115,7 @@ void RequestQueueStoreTestBase::PumpLoop() {
 void RequestQueueStoreTestBase::ClearResults() {
   last_result_ = LastResult::kNone;
   last_update_status_ = UpdateStatus::FAILED;
-  last_remove_count_ = 0;
+  last_remove_results_.clear();
   last_requests_.clear();
 }
 
@@ -127,9 +130,9 @@ void RequestQueueStoreTestBase::AddOrUpdateDone(UpdateStatus status) {
   last_update_status_ = status;
 }
 
-void RequestQueueStoreTestBase::RemoveDone(bool result, int count) {
-  last_result_ = result ? LastResult::kTrue : LastResult::kFalse;
-  last_remove_count_ = count;
+void RequestQueueStoreTestBase::RemoveDone(
+    const RequestQueue::UpdateMultipleRequestResults& results) {
+  last_remove_results_ = results;
 }
 
 void RequestQueueStoreTestBase::ResetDone(bool result) {
@@ -257,136 +260,56 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
   ASSERT_TRUE(updated_request == this->last_requests()[0]);
 }
 
-TYPED_TEST(RequestQueueStoreTest, RemoveRequest) {
+TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();
-  SavePageRequest original_request(
-      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
-  store->AddOrUpdateRequest(
-      original_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
-                                   base::Unretained(this)));
-  this->PumpLoop();
-  this->ClearResults();
-
-  std::vector<int64_t> request_ids{kRequestId};
-  store->RemoveRequests(request_ids,
-                        base::Bind(&RequestQueueStoreTestBase::RemoveDone,
-                                   base::Unretained(this)));
-  ASSERT_EQ(LastResult::kNone, this->last_result());
-  ASSERT_EQ(0, this->last_remove_count());
-  this->PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, this->last_result());
-  ASSERT_EQ(1, this->last_remove_count());
-  this->ClearResults();
-
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
-  this->PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, this->last_result());
-  ASSERT_TRUE(this->last_requests().empty());
-  this->ClearResults();
-
-  // Try to remove a request that is not in the queue.
-  store->RemoveRequests(request_ids,
-                        base::Bind(&RequestQueueStoreTestBase::RemoveDone,
-                                   base::Unretained(this)));
-  ASSERT_EQ(LastResult::kNone, this->last_result());
-  ASSERT_EQ(0, this->last_remove_count());
-  this->PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, this->last_result());
-  ASSERT_EQ(0, this->last_remove_count());
-}
-
-TYPED_TEST(RequestQueueStoreTest, RemoveRequestByClientId) {
-  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
-  base::Time creation_time = base::Time::Now();
-
-  // Create requests and add them to the queue.
   SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
-                                   kUserRequested);
+                           kUserRequested);
+  store->AddOrUpdateRequest(
+      request1, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+                           base::Unretained(this)));
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
-                                   kUserRequested);
-  store->AddOrUpdateRequest(
-      request1, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
-                           base::Unretained(this)));
+                           kUserRequested);
   store->AddOrUpdateRequest(
       request2, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
                            base::Unretained(this)));
   this->PumpLoop();
   this->ClearResults();
 
-  // Remove a request.
-  std::vector<ClientId> client_ids_to_delete{kClientId};
-  store->RemoveRequestsByClientId(
-      client_ids_to_delete,
-      base::Bind(
-          &RequestQueueStoreTestBase::RemoveDone, base::Unretained(this)));
-  ASSERT_EQ(LastResult::kNone, this->last_result());
-  ASSERT_EQ(0, this->last_remove_count());
+  std::vector<int64_t> request_ids{kRequestId, kRequestId2};
+  store->RemoveRequests(request_ids,
+                        base::Bind(&RequestQueueStoreTestBase::RemoveDone,
+                                   base::Unretained(this)));
+  ASSERT_EQ(0ul, this->last_remove_results().size());
   this->PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, this->last_result());
-  ASSERT_EQ(1, this->last_remove_count());
+  ASSERT_EQ(2ul, this->last_remove_results().size());
+  ASSERT_EQ(RequestQueue::UpdateRequestResult::SUCCESS,
+            this->last_remove_results().at(0).second);
+  ASSERT_EQ(RequestQueue::UpdateRequestResult::SUCCESS,
+            this->last_remove_results().at(1).second);
   this->ClearResults();
 
-  // Check to see what remains in the queue.  Removed request should be gone.
   store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
                                 base::Unretained(this)));
   this->PumpLoop();
   ASSERT_EQ(LastResult::kTrue, this->last_result());
-  // The other request should still be in the queue.
-  ASSERT_EQ(1UL, this->last_requests().size());
-  ASSERT_EQ(kClientId2, this->last_requests().at(0).client_id());
+  ASSERT_TRUE(this->last_requests().empty());
   this->ClearResults();
 
   // Try to remove a request that is not in the queue.
-  store->RemoveRequestsByClientId(
-      client_ids_to_delete,
-      base::Bind(
-          &RequestQueueStoreTestBase::RemoveDone, base::Unretained(this)));
-  this->PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, this->last_result());
-  ASSERT_EQ(0, this->last_remove_count());
-}
-
-TYPED_TEST(RequestQueueStoreTest, RemoveRequestWithSameClientId) {
-  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
-  base::Time creation_time = base::Time::Now();
-
-  // Create requests and add them to the queue.
-  SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
-                                   kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId, creation_time,
-                                   kUserRequested);
-  store->AddOrUpdateRequest(
-      request1, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
-                           base::Unretained(this)));
-  store->AddOrUpdateRequest(
-      request2, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
-                           base::Unretained(this)));
-  this->PumpLoop();
-  this->ClearResults();
-
-  // Remove a request.
-  std::vector<ClientId> client_ids_to_delete{kClientId};
-  store->RemoveRequestsByClientId(
-      client_ids_to_delete,
-      base::Bind(
-          &RequestQueueStoreTestBase::RemoveDone, base::Unretained(this)));
+  store->RemoveRequests(request_ids,
+                        base::Bind(&RequestQueueStoreTestBase::RemoveDone,
+                                   base::Unretained(this)));
   ASSERT_EQ(LastResult::kNone, this->last_result());
-  ASSERT_EQ(0, this->last_remove_count());
   this->PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, this->last_result());
-  ASSERT_EQ(2, this->last_remove_count());
-  this->ClearResults();
-
-  // Check to see what remains in the queue.  Removed request should be gone.
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
-  this->PumpLoop();
-  ASSERT_EQ(LastResult::kTrue, this->last_result());
-  // The other request should still be in the queue.
-  ASSERT_TRUE(this->last_requests().empty());
-  this->ClearResults();
+  ASSERT_EQ(2ul, this->last_remove_results().size());
+  // Since the SQL statement returns true on a delete of an item that isn't
+  // present, SQL is returning SUCCESS, but the memory is returning
+  // REQUEST_DOES_NOT_EXIST, so we just check that the result is not failure.
+  ASSERT_NE(RequestQueue::UpdateRequestResult::STORE_FAILURE,
+            this->last_remove_results().at(0).second);
+  ASSERT_NE(RequestQueue::UpdateRequestResult::STORE_FAILURE,
+            this->last_remove_results().at(1).second);
 }
 
 TYPED_TEST(RequestQueueStoreTest, ResetStore) {

@@ -90,38 +90,26 @@ bool RequestCoordinator::SavePageLater(
                                 weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
-void RequestCoordinator::GetQueuedRequests(
-    const std::string& client_namespace,
-    const QueuedRequestCallback& callback) {
+void RequestCoordinator::GetAllRequests(const GetRequestsCallback& callback) {
   // Get all matching requests from the request queue, send them to our
   // callback.  We bind the namespace and callback to the front of the callback
   // param set.
   queue_->GetRequests(base::Bind(&RequestCoordinator::GetQueuedRequestsCallback,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 client_namespace, callback));
+                                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-// For each request matching the client_namespace, return the ClientId.
 void RequestCoordinator::GetQueuedRequestsCallback(
-    const std::string& client_namespace,
-    const QueuedRequestCallback& callback,
+    const GetRequestsCallback& callback,
     RequestQueue::GetRequestsResult result,
     const std::vector<SavePageRequest>& requests) {
-  std::vector<ClientId> client_ids;
-
-  for (const auto& request : requests) {
-    if (client_namespace == request.client_id().name_space)
-      client_ids.push_back(request.client_id());
-  }
-
-  callback.Run(client_ids);
+  callback.Run(requests);
 }
 
 void RequestCoordinator::RemoveRequests(
-    const std::vector<ClientId>& client_ids) {
-  queue_->RemoveRequestsByClientId(
-      client_ids, base::Bind(&RequestCoordinator::UpdateMultipleRequestCallback,
-                             weak_ptr_factory_.GetWeakPtr()));
+    const std::vector<int64_t>& request_ids) {
+  queue_->RemoveRequests(request_ids,
+                         base::Bind(&RequestCoordinator::RemoveRequestsCallback,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RequestCoordinator::AddRequestResultCallback(
@@ -154,6 +142,13 @@ void RequestCoordinator::UpdateMultipleRequestCallback(
     DVLOG(1) << "Failed to update request attempt details. "
              << static_cast<int>(result);
   }
+}
+
+void RequestCoordinator::RemoveRequestsCallback(
+    const RequestQueue::UpdateMultipleRequestResults& results) {
+  // TODO(petewil): Today the RemoveRequests API does not come with a callback.
+  // Should we add one?  Perhaps the notifications from the observer will be
+  // sufficient.
 }
 
 void RequestCoordinator::StopProcessing() {
@@ -310,10 +305,11 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     // completed. Since we call MarkAttemptCompleted within the if branches,
     // the completed_attempt_count has not yet been updated when we are checking
     // the if condition.
-    queue_->RemoveRequest(
-        request.request_id(),
-        base::Bind(&RequestCoordinator::UpdateRequestCallback,
-                   weak_ptr_factory_.GetWeakPtr(), request.client_id()));
+    std::vector<int64_t> remove_requests;
+    remove_requests.push_back(request.request_id());
+    queue_->RemoveRequests(
+        remove_requests, base::Bind(&RequestCoordinator::RemoveRequestsCallback,
+                                    weak_ptr_factory_.GetWeakPtr()));
   } else {
     // If we failed, but are not over the limit, update the request in the
     // queue.

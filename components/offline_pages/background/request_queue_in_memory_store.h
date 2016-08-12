@@ -30,10 +30,7 @@ class RequestQueueInMemoryStore : public RequestQueueStore {
   // result will be true, but the count of deleted pages will be 0.
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const RemoveCallback& callback) override;
-  // Remove requests by client ID.  In case the |client_ids| is empty, the
-  // result will be true, but the count of deleted pages will be 0.
-  void RemoveRequestsByClientId(const std::vector<ClientId>& client_ids,
-                                const RemoveCallback& callback) override;
+
   void Reset(const ResetCallback& callback) override;
 
  private:

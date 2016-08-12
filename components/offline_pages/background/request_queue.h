@@ -43,6 +43,10 @@ class RequestQueue {
                              // exist.
   };
 
+  // Type for a pair of request_id and result.
+  typedef std::vector<std::pair<int64_t, UpdateRequestResult>>
+      UpdateMultipleRequestResults;
+
   // Callback used for |GetRequests|.
   typedef base::Callback<void(GetRequestsResult,
                               const std::vector<SavePageRequest>&)>
@@ -52,8 +56,12 @@ class RequestQueue {
   typedef base::Callback<void(AddRequestResult, const SavePageRequest& request)>
       AddRequestCallback;
 
-  // Callback used by |UdpateRequest| and |RemoveRequest|.
+  // Callback used by |UdpateRequest|.
   typedef base::Callback<void(UpdateRequestResult)> UpdateRequestCallback;
+
+  // Callback used by |RemoveRequests|.
+  typedef base::Callback<void(const UpdateMultipleRequestResults& results)>
+      RemoveRequestsCallback;
 
   explicit RequestQueue(std::unique_ptr<RequestQueueStore> store);
   ~RequestQueue();
@@ -74,14 +82,11 @@ class RequestQueue {
   void UpdateRequest(const SavePageRequest& request,
                      const UpdateRequestCallback& callback);
 
-  // Removes the request matching the |request_id|. Result is returned through
-  // |callback|.
-  void RemoveRequest(int64_t request_id, const UpdateRequestCallback& callback);
-
-  // Removes the requests matching the |client_ids|. Results are returned
-  // through |callback|.
-  void RemoveRequestsByClientId(const std::vector<ClientId>& client_id,
-                                const UpdateRequestCallback& callback);
+  // Removes the requests matching the |request_ids|. Result is returned through
+  // |callback|.  If a request id cannot be removed, this will still remove the
+  // others.
+  void RemoveRequests(const std::vector<int64_t>& request_ids,
+                      const RemoveRequestsCallback& callback);
 
   void GetForUpdateDone(
       const RequestQueue::UpdateRequestCallback& update_callback,

@@ -162,7 +162,7 @@ class RequestCoordinatorTest
                        const std::vector<SavePageRequest>& requests);
 
   // Callback for getting request statuses.
-  void GetQueuedRequestsDone(const std::vector<ClientId>& client_ids);
+  void GetQueuedRequestsDone(const std::vector<SavePageRequest>& requests);
 
   void SendOfflinerDoneCallback(const SavePageRequest& request,
                                 Offliner::RequestStatus status);
@@ -173,10 +173,6 @@ class RequestCoordinatorTest
 
   const std::vector<SavePageRequest>& last_requests() const {
     return last_requests_;
-  }
-
-  const std::vector<ClientId>& last_client_ids() const {
-    return last_client_ids_;
   }
 
   void EnableOfflinerCallback(bool enable) {
@@ -208,7 +204,6 @@ class RequestCoordinatorTest
  private:
   RequestQueue::GetRequestsResult last_get_requests_result_;
   std::vector<SavePageRequest> last_requests_;
-  std::vector<ClientId> last_client_ids_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<RequestCoordinator> coordinator_;
@@ -253,8 +248,8 @@ void RequestCoordinatorTest::GetRequestsDone(
 }
 
 void RequestCoordinatorTest::GetQueuedRequestsDone(
-    const std::vector<ClientId>& client_ids) {
-  last_client_ids_ = client_ids;
+    const std::vector<SavePageRequest>& requests) {
+  last_requests_ = requests;
   waiter_.Signal();
 }
 
@@ -628,7 +623,7 @@ TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
   EXPECT_EQ(1UL, last_requests().size());
 }
 
-TEST_F(RequestCoordinatorTest, GetQueuedRequests) {
+TEST_F(RequestCoordinatorTest, GetAllRequests) {
   // Add two requests to the queue.
   offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
                                           base::Time::Now(), kUserRequested);
@@ -643,10 +638,8 @@ TEST_F(RequestCoordinatorTest, GetQueuedRequests) {
   PumpLoop();
 
   // Start the async status fetching.
-  coordinator()->GetQueuedRequests(
-      kClientNamespace,
-      base::Bind(&RequestCoordinatorTest::GetQueuedRequestsDone,
-                 base::Unretained(this)));
+  coordinator()->GetAllRequests(base::Bind(
+      &RequestCoordinatorTest::GetQueuedRequestsDone, base::Unretained(this)));
   PumpLoop();
 
   // Wait for async get to finish.
@@ -654,9 +647,9 @@ TEST_F(RequestCoordinatorTest, GetQueuedRequests) {
   PumpLoop();
 
   // Check that the statuses found in the callback match what we expect.
-  EXPECT_EQ(2UL, last_client_ids().size());
-  EXPECT_EQ(kId1, last_client_ids().at(0).id);
-  EXPECT_EQ(kId2, last_client_ids().at(1).id);
+  EXPECT_EQ(2UL, last_requests().size());
+  EXPECT_EQ(kRequestId1, last_requests().at(0).request_id());
+  EXPECT_EQ(kRequestId2, last_requests().at(1).request_id());
 }
 
 }  // namespace offline_pages

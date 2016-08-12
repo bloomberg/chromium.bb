@@ -50,14 +50,10 @@ void UpdateRequestDone(const RequestQueue::UpdateRequestCallback& callback,
 
 
 // Completes the remove request call.
-void RemoveRequestDone(const RequestQueue::UpdateRequestCallback& callback,
-                       bool success,
-                       int deleted_requests_count) {
-  DCHECK_EQ(1, deleted_requests_count);
-  RequestQueue::UpdateRequestResult result =
-      success ? RequestQueue::UpdateRequestResult::SUCCESS
-              : RequestQueue::UpdateRequestResult::STORE_FAILURE;
-  callback.Run(result);
+void RemoveRequestsDone(
+    const RequestQueue::RemoveRequestsCallback& callback,
+    const RequestQueue::UpdateMultipleRequestResults& results) {
+  callback.Run(results);
 }
 
 }  // namespace
@@ -129,17 +125,9 @@ void RequestQueue::GetForUpdateDone(
                              base::Bind(&UpdateRequestDone, update_callback));
 }
 
-void RequestQueue::RemoveRequest(int64_t request_id,
-                                 const UpdateRequestCallback& callback) {
-  std::vector<int64_t> request_ids{request_id};
-  store_->RemoveRequests(request_ids, base::Bind(RemoveRequestDone, callback));
-}
-
-void RequestQueue::RemoveRequestsByClientId(
-    const std::vector<ClientId>& client_ids,
-    const UpdateRequestCallback& callback) {
-  store_->RemoveRequestsByClientId(client_ids,
-                                   base::Bind(RemoveRequestDone, callback));
+void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
+                                  const RemoveRequestsCallback& callback) {
+  store_->RemoveRequests(request_ids, base::Bind(RemoveRequestsDone, callback));
 }
 
 void RequestQueue::PurgeRequests(const PurgeRequestsCallback& callback) {}

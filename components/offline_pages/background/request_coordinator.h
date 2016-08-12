@@ -50,21 +50,19 @@ class RequestCoordinator : public KeyedService {
   bool SavePageLater(
       const GURL& url, const ClientId& client_id, bool user_reqeusted);
 
-  // Remove a list of requests by |client_id|.  This removes requests from the
+  // Remove a list of requests by |request_id|.  This removes requests from the
   // request queue, but does not cancel an in-progress pre-render.
   // TODO(petewil): Add code to cancel an in-progress pre-render.
-  void RemoveRequests(const std::vector<ClientId>& client_ids);
+  void RemoveRequests(const std::vector<int64_t>& request_ids);
 
-  // Callback that receives the response for GetQueuedRequests.  Client must
+  // Callback that receives the response for GetRequests.  Client must
   // copy the result right away, it goes out of scope at the end of the
   // callback.
-  typedef base::Callback<void(const std::vector<ClientId>&)>
-      QueuedRequestCallback;
+  typedef base::Callback<void(const std::vector<SavePageRequest>&)>
+      GetRequestsCallback;
 
-  // For a client namespace, get the ClientId of all requests for that
-  // namespace.
-  void GetQueuedRequests(const std::string& client_namespace,
-                         const QueuedRequestCallback& callback);
+  // Get all save page request items in the callback.
+  void GetAllRequests(const GetRequestsCallback& callback);
 
   // Starts processing of one or more queued save page later requests.
   // Returns whether processing was started and that caller should expect
@@ -112,9 +110,8 @@ class RequestCoordinator : public KeyedService {
 
  private:
   // Receives the results of a get from the request queue, and turns that into
-  // ClientId objects for the caller of GetQueuedRequests.
-  void GetQueuedRequestsCallback(const std::string& client_namespace,
-                                 const QueuedRequestCallback& callback,
+  // SavePageRequest objects for the caller of GetQueuedRequests.
+  void GetQueuedRequestsCallback(const GetRequestsCallback& callback,
                                  RequestQueue::GetRequestsResult result,
                                  const std::vector<SavePageRequest>& requests);
 
@@ -127,6 +124,9 @@ class RequestCoordinator : public KeyedService {
                              RequestQueue::UpdateRequestResult result);
 
   void UpdateMultipleRequestCallback(RequestQueue::UpdateRequestResult result);
+
+  void RemoveRequestsCallback(
+      const RequestQueue::UpdateMultipleRequestResults& results);
 
   // Callback from the request picker when it has chosen our next request.
   void RequestPicked(const SavePageRequest& request);
