@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -80,6 +81,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
     private int mPublisherFaviconSizePx;
 
     private final boolean mUseFaviconService;
+    private final UiConfig mUiConfig;
 
     /**
      * Constructs a SnippetCardItemView item used to display snippets
@@ -127,16 +129,11 @@ public class SnippetArticleViewHolder extends CardViewHolder
             }
         });
 
+        mUiConfig = uiConfig;
         new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
             @Override
             public void onDisplayStyleChanged(@UiConfig.DisplayStyle int newDisplayStyle) {
-                if (newDisplayStyle == UiConfig.DISPLAY_STYLE_NARROW) {
-                    mHeadlineTextView.setMaxLines(4);
-                    mArticleSnippetTextView.setVisibility(View.GONE);
-                } else {
-                    mHeadlineTextView.setMaxLines(2);
-                    mArticleSnippetTextView.setVisibility(View.VISIBLE);
-                }
+                updateLayout();
             }
         });
 
@@ -221,11 +218,44 @@ public class SnippetArticleViewHolder extends CardViewHolder
         }
     }
 
+    /**
+     * Updates the layout taking into account screen dimensions and the type of snippet displayed.
+     */
+    private void updateLayout() {
+        boolean narrow = mUiConfig.getCurrentDisplayStyle() == UiConfig.DISPLAY_STYLE_NARROW;
+        boolean minimal = mArticle.mCardLayout == ContentSuggestionsCardLayout.MINIMAL_CARD;
+
+        // If the screen is narrow, increase the number of lines in the header.
+        mHeadlineTextView.setMaxLines(narrow ? 4 : 2);
+
+        // If the screen is narrow or we are using the minimal layout, hide the article snippet.
+        mArticleSnippetTextView.setVisibility((narrow || minimal) ? View.GONE : View.VISIBLE);
+
+        // If we are using minimal layout, hide the thumbnail.
+        mThumbnailView.setVisibility(minimal ? View.GONE : View.VISIBLE);
+
+        // If we aren't showing the article snippet, reduce the top margin for publisher text.
+        RelativeLayout.LayoutParams params =
+                (RelativeLayout.LayoutParams) mPublisherTextView.getLayoutParams();
+
+        int topMargin = mPublisherTextView.getResources().getDimensionPixelSize(
+                minimal ? R.dimen.snippets_publisher_margin_top_without_article_snippet
+                        : R.dimen.snippets_publisher_margin_top_with_article_snippet);
+
+        params.setMargins(params.leftMargin,
+                          topMargin,
+                          params.rightMargin,
+                          params.bottomMargin);
+
+        mPublisherTextView.setLayoutParams(params);
+    }
+
     @Override
     public void onBindViewHolder(NewTabPageListItem article) {
         super.onBindViewHolder(article);
 
         mArticle = (SnippetArticleListItem) article;
+        updateLayout();
 
         mHeadlineTextView.setText(mArticle.mTitle);
 
@@ -249,12 +279,15 @@ public class SnippetArticleViewHolder extends CardViewHolder
         cancelImageFetch();
 
         // If the article has a thumbnail already, reuse it. Otherwise start a fetch.
-        if (mArticle.getThumbnailBitmap() != null) {
-            mThumbnailView.setImageBitmap(mArticle.getThumbnailBitmap());
-        } else {
-            mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
-            mImageCallback = new FetchImageCallback(this, mArticle);
-            mSuggestionsSource.fetchSuggestionImage(mArticle, mImageCallback);
+        // mThumbnailView's visibility is modified in updateLayout().
+        if (mThumbnailView.getVisibility() == View.VISIBLE) {
+            if (mArticle.getThumbnailBitmap() != null) {
+                mThumbnailView.setImageBitmap(mArticle.getThumbnailBitmap());
+            } else {
+                mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
+                mImageCallback = new FetchImageCallback(this, mArticle);
+                mSuggestionsSource.fetchSuggestionImage(mArticle, mImageCallback);
+            }
         }
 
         // Set the favicon of the publisher.

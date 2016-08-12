@@ -20,7 +20,6 @@ import java.util.List;
  */
 public class SuggestionsSection implements ItemGroup {
     private final List<SnippetArticleListItem> mSuggestions = new ArrayList<>();
-    private final SuggestionsCategoryInfo mInfo;
     private final SnippetHeaderListItem mHeader;
     private StatusListItem mStatus;
     private final ProgressListItem mProgressIndicator = new ProgressListItem();
@@ -29,8 +28,8 @@ public class SuggestionsSection implements ItemGroup {
     public SuggestionsSection(int category, List<SnippetArticleListItem> suggestions,
             @CategoryStatusEnum int status, SuggestionsCategoryInfo info,
             NewTabPageAdapter adapter) {
-        mInfo = info;
-        mHeader = new SnippetHeaderListItem(mInfo.getTitle());
+
+        mHeader = new SnippetHeaderListItem(info.getTitle());
         // TODO(pke): Replace the condition with "info.hasMoreButton()" once all other categories
         // are supported by the C++ backend, too.
         // Right now, we hard-code all the sections that are handled in ActionListItem.

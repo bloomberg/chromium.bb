@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 
 /**
  * Represents the data for an article card on the NTP.
@@ -40,6 +41,10 @@ public class SnippetArticleListItem implements NewTabPageListItem {
     /** The position of this article in the whole list of snippets. */
     public final int mPosition;
 
+    /** The layout that should be used to display the snippet. */
+    @ContentSuggestionsCardLayoutEnum
+    public final int mCardLayout;
+
     /** Bitmap of the thumbnail, fetched lazily, when the RecyclerView wants to show the snippet. */
     private Bitmap mThumbnailBitmap;
 
@@ -53,7 +58,8 @@ public class SnippetArticleListItem implements NewTabPageListItem {
      * Creates a SnippetArticleListItem object that will hold the data.
      */
     public SnippetArticleListItem(String id, String title, String publisher, String previewText,
-            String url, String ampUrl, long timestamp, float score, int position) {
+            String url, String ampUrl, long timestamp, float score, int position,
+            @ContentSuggestionsCardLayoutEnum int cardLayout) {
         mId = id;
         mTitle = title;
         mPublisher = publisher;
@@ -63,6 +69,7 @@ public class SnippetArticleListItem implements NewTabPageListItem {
         mPublishTimestampMilliseconds = timestamp;
         mScore = score;
         mPosition = position;
+        mCardLayout = cardLayout;
     }
 
     @Override

@@ -41,7 +41,7 @@
         android:id="@+id/article_publisher"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/snippets_publisher_margin_top_with_article_snippet"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/article_snippet"
         android:drawablePadding="8dp"

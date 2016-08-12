@@ -84,6 +84,14 @@ public class UiConfig {
         }
     }
 
+    /**
+     * Returns the currently used display style.
+     */
+    @DisplayStyle
+    public int getCurrentDisplayStyle() {
+        return mCurrentDisplayStyle;
+    }
+
     @DisplayStyle
     private int computeDisplayStyleForCurrentConfig() {
         int widthDp = mContext.getResources().getConfiguration().screenWidthDp;

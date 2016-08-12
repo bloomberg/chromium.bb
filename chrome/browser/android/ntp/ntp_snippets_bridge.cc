@@ -148,6 +148,13 @@ ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jint category) {
+  // Get layout for the category.
+  base::Optional<CategoryInfo> info =
+      content_suggestions_service_->GetCategoryInfo(
+          content_suggestions_service_->category_factory()->FromIDValue(
+              category));
+  DCHECK(info);
+
   const std::vector<ContentSuggestion>& suggestions =
       content_suggestions_service_->GetSuggestionsForCategory(
           content_suggestions_service_->category_factory()->FromIDValue(
@@ -162,7 +169,8 @@ ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
         ConvertUTF16ToJavaString(env, suggestion.snippet_text()).obj(),
         ConvertUTF8ToJavaString(env, suggestion.url().spec()).obj(),
         ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()).obj(),
-        suggestion.publish_date().ToJavaTime(), suggestion.score());
+        suggestion.publish_date().ToJavaTime(), suggestion.score(),
+        static_cast<int>(info->card_layout()));
   }
   return result;
 }
