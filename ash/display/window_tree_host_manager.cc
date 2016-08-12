@@ -281,7 +281,7 @@ void WindowTreeHostManager::Shutdown() {
   }
   CHECK(primary_rwc);
 
-  STLDeleteElements(&to_delete);
+  base::STLDeleteElements(&to_delete);
   delete primary_rwc;
 }
 

@@ -355,7 +355,7 @@ void ScreenPinningController::OnDisplayConfigurationChanged() {
       GetSystemModalWindowsExceptPinned(pinned_window_);
   for (WmWindow* system_modal : system_modal_containers) {
     const std::vector<WmWindow*> children = system_modal->GetChildren();
-    if (!children.empty() && ContainsValue(dim_windows_, children[0])) {
+    if (!children.empty() && base::ContainsValue(dim_windows_, children[0])) {
       // The system modal dialog has the dim window.
       continue;
     }

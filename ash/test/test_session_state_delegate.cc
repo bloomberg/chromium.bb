@@ -103,7 +103,7 @@ TestSessionStateDelegate::TestSessionStateDelegate()
 }
 
 TestSessionStateDelegate::~TestSessionStateDelegate() {
-  STLDeleteElements(&user_list_);
+  base::STLDeleteElements(&user_list_);
 }
 
 void TestSessionStateDelegate::AddUser(const AccountId& account_id) {

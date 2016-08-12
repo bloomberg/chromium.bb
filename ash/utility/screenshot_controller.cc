@@ -336,7 +336,7 @@ void ScreenshotController::Cancel() {
   SetSelectedWindow(nullptr);
   screenshot_delegate_ = nullptr;
   display::Screen::GetScreen()->RemoveObserver(this);
-  STLDeleteValues(&layers_);
+  base::STLDeleteValues(&layers_);
   cursor_setter_.reset();
   EnableMouseWarp(true);
 }

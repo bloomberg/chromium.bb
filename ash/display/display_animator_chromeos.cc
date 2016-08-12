@@ -206,8 +206,8 @@ void DisplayAnimatorChromeOS::ClearHidingLayers() {
     timer_->Stop();
     timer_.reset();
   }
-  STLDeleteContainerPairSecondPointers(hiding_layers_.begin(),
-                                       hiding_layers_.end());
+  base::STLDeleteContainerPairSecondPointers(hiding_layers_.begin(),
+                                             hiding_layers_.end());
   hiding_layers_.clear();
 }
 

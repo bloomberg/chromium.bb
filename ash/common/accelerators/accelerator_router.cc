@@ -84,7 +84,7 @@ bool AcceleratorRouter::ShouldProcessAcceleratorNow(
   if (accelerator.IsCmdDown())
     return true;
 
-  if (ContainsValue(WmShell::Get()->GetAllRootWindows(), target))
+  if (base::ContainsValue(WmShell::Get()->GetAllRootWindows(), target))
     return true;
 
   AcceleratorController* accelerator_controller =

@@ -202,7 +202,7 @@ void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
       capture_window->ReleaseCapture();
   }
   DCHECK(window->IsVisible());
-  DCHECK(!ContainsValue(modal_windows_, window));
+  DCHECK(!base::ContainsValue(modal_windows_, window));
 
   modal_windows_.push_back(window);
   Shell::GetInstance()->CreateModalBackground(window);

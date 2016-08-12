@@ -158,7 +158,7 @@ DisplayColorManager::DisplayColorManager(
 
 DisplayColorManager::~DisplayColorManager() {
   configurator_->RemoveObserver(this);
-  STLDeleteValues(&calibration_map_);
+  base::STLDeleteValues(&calibration_map_);
 }
 
 void DisplayColorManager::OnDisplayModeChanged(
