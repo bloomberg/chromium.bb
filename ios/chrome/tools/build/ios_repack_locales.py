@@ -14,9 +14,11 @@ import optparse
 import os
 import sys
 
+# Prepend the grit module from the source tree so it takes precedence over other
+# grit versions that might present in the search path.
 script_dir = os.path.dirname(__file__)
 src_dir = os.path.join(script_dir, os.pardir, os.pardir, os.pardir, os.pardir)
-sys.path.append(os.path.join(src_dir, 'tools', 'grit'))
+sys.path.insert(1, os.path.join(src_dir, 'tools', 'grit'))
 
 from grit.format import data_pack
 

@@ -14,8 +14,10 @@ import optparse
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                             'tools', 'grit'))
+# Prepend the grit module from the source tree so it takes precedence over other
+# grit versions that might present in the search path.
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), '..', '..', '..',
+                                'tools', 'grit'))
 from grit.format import data_pack
 
 # Some build paths defined by gyp.

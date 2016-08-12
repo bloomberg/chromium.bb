@@ -29,7 +29,9 @@ from pylib.constants import host_paths
 
 _GRIT_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT, 'tools', 'grit')
 
-with host_paths.SysPath(_GRIT_PATH):
+# Prepend the grit module from the source tree so it takes precedence over other
+# grit versions that might present in the search path.
+with host_paths.SysPath(_GRIT_PATH, 1):
   from grit.format import data_pack # pylint: disable=import-error
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):

@@ -14,7 +14,9 @@ import os
 import sys
 
 if __name__ == '__main__':
-  sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+  # Prepend the grit module from the source tree so it takes precedence over
+  # other grit versions that might present in the search path.
+  sys.path.insert(1, os.path.join(os.path.dirname(__file__), '../..'))
 
 import grit.format.data_pack
 
