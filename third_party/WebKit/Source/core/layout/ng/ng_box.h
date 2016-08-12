@@ -25,13 +25,16 @@ class CORE_EXPORT NGBox final {
 
   NGBox() : m_layoutBox(nullptr) {}
 
-  NGBoxIterator iterator();
+  // Returns an iterator that will iterate over this box's children, if any.
+  NGBoxIterator childIterator();
   operator bool() const { return m_layoutBox; }
 
   NGFragment* layout(const NGConstraintSpace&);
   const ComputedStyle* style() const;
 
   NGBox nextSibling() const;
+
+  NGBox firstChild() const;
 
  private:
   LayoutBox* m_layoutBox;

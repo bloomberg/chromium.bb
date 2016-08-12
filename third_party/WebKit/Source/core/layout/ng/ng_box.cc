@@ -13,7 +13,7 @@
 namespace blink {
 
 NGFragment* NGBox::layout(const NGConstraintSpace& constraintSpace) {
-  NGBlockLayoutAlgorithm algorithm(style(), iterator());
+  NGBlockLayoutAlgorithm algorithm(style(), childIterator());
   m_layoutBox->clearNeedsLayout();
   NGFragment* fragment = algorithm.layout(constraintSpace);
   m_layoutBox->setLogicalWidth(fragment->inlineSize());
@@ -25,11 +25,15 @@ const ComputedStyle* NGBox::style() const {
   return m_layoutBox->style();
 }
 
-NGBoxIterator NGBox::iterator() {
-  return NGBoxIterator(*this);
+NGBoxIterator NGBox::childIterator() {
+  return NGBoxIterator(firstChild());
 }
 
 NGBox NGBox::nextSibling() const {
-  return m_layoutBox ? NGBox(m_layoutBox->nextSibling()) : NGBox(nullptr);
+  return m_layoutBox ? NGBox(m_layoutBox->nextSibling()) : NGBox();
+}
+
+NGBox NGBox::firstChild() const {
+  return m_layoutBox ? NGBox(m_layoutBox->slowFirstChild()) : NGBox();
 }
 }  // namespace blink
