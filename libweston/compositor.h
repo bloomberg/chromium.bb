@@ -424,6 +424,14 @@ weston_pointer_create(struct weston_seat *seat);
 void
 weston_pointer_destroy(struct weston_pointer *pointer);
 void
+weston_pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
+			   struct weston_pointer_motion_event *event);
+bool
+weston_pointer_has_focus_resource(struct weston_pointer *pointer);
+void
+weston_pointer_send_button(struct weston_pointer *pointer,
+			   uint32_t time, uint32_t button, uint32_t state_w);
+void
 weston_pointer_send_axis(struct weston_pointer *pointer,
 			 uint32_t time,
 			 struct weston_pointer_axis_event *event);
@@ -477,6 +485,18 @@ int
 weston_keyboard_set_locks(struct weston_keyboard *keyboard,
 			  uint32_t mask, uint32_t value);
 
+bool
+weston_keyboard_has_focus_resource(struct weston_keyboard *keyboard);
+void
+weston_keyboard_send_key(struct weston_keyboard *keyboard,
+			 uint32_t time, uint32_t key,
+			 enum wl_keyboard_key_state state);
+void
+weston_keyboard_send_modifiers(struct weston_keyboard *keyboard,
+			       uint32_t serial, uint32_t mods_depressed,
+			       uint32_t mods_latched,
+			       uint32_t mods_locked, uint32_t group);
+
 struct weston_touch *
 weston_touch_create(void);
 void
@@ -489,6 +509,19 @@ weston_touch_start_grab(struct weston_touch *device,
 			struct weston_touch_grab *grab);
 void
 weston_touch_end_grab(struct weston_touch *touch);
+
+bool
+weston_touch_has_focus_resource(struct weston_touch *touch);
+void
+weston_touch_send_down(struct weston_touch *touch, uint32_t time,
+		       int touch_id, wl_fixed_t x, wl_fixed_t y);
+void
+weston_touch_send_up(struct weston_touch *touch, uint32_t time, int touch_id);
+void
+weston_touch_send_motion(struct weston_touch *touch, uint32_t time,
+			 int touch_id, wl_fixed_t x, wl_fixed_t y);
+void
+weston_touch_send_frame(struct weston_touch *touch);
 
 void
 wl_data_device_set_keyboard_focus(struct weston_seat *seat);

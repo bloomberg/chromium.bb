@@ -340,9 +340,9 @@ default_grab_pointer_focus(struct weston_pointer_grab *grab)
 }
 
 static void
-weston_pointer_send_relative_motion(struct weston_pointer *pointer,
-				    uint32_t time,
-				    struct weston_pointer_motion_event *event)
+pointer_send_relative_motion(struct weston_pointer *pointer,
+			     uint32_t time,
+			     struct weston_pointer_motion_event *event)
 {
 	uint64_t time_usec;
 	double dx, dy, dx_unaccel, dy_unaccel;
@@ -379,8 +379,8 @@ weston_pointer_send_relative_motion(struct weston_pointer *pointer,
 }
 
 static void
-weston_pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
-			   wl_fixed_t sx, wl_fixed_t sy)
+pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
+		    wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct wl_list *resource_list;
 	struct wl_resource *resource;
@@ -393,11 +393,10 @@ weston_pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
 		wl_pointer_send_motion(resource, time, sx, sy);
 }
 
-static void
-default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
-			    struct weston_pointer_motion_event *event)
+WL_EXPORT void
+weston_pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
+			   struct weston_pointer_motion_event *event)
 {
-	struct weston_pointer *pointer = grab->pointer;
 	wl_fixed_t x, y;
 	wl_fixed_t old_sx = pointer->sx;
 	wl_fixed_t old_sy = pointer->sy;
@@ -411,50 +410,78 @@ default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 	weston_pointer_move(pointer, event);
 
 	if (old_sx != pointer->sx || old_sy != pointer->sy) {
-		weston_pointer_send_motion(pointer, time,
-					   pointer->sx, pointer->sy);
+		pointer_send_motion(pointer, time,
+				    pointer->sx, pointer->sy);
 	}
 
-	weston_pointer_send_relative_motion(pointer, time, event);
+	pointer_send_relative_motion(pointer, time, event);
 }
 
 static void
+default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
+			    struct weston_pointer_motion_event *event)
+{
+	weston_pointer_send_motion(grab->pointer, time, event);
+}
+
+/** Check if the pointer has focused resources.
+ *
+ * \param pointer The pointer to check for focused resources.
+ * \return Whether or not this pointer has focused resources
+ */
+WL_EXPORT bool
+weston_pointer_has_focus_resource(struct weston_pointer *pointer)
+{
+	if (!pointer->focus_client)
+		return false;
+
+	if (wl_list_empty(&pointer->focus_client->pointer_resources))
+		return false;
+
+	return true;
+}
+
+/** Send wl_pointer.button events to focused resources.
+ *
+ * \param pointer The pointer where the button events originates from.
+ * \param time The timestamp of the event
+ * \param button The button value of the event
+ * \param value The state enum value of the event
+ *
+ * For every resource that is currently in focus, send a wl_pointer.button event
+ * with the passed parameters. The focused resources are the wl_pointer
+ * resources of the client which currently has the surface with pointer focus.
+ */
+WL_EXPORT void
 weston_pointer_send_button(struct weston_pointer *pointer,
-			   uint32_t time, uint32_t button, uint32_t state_w)
+			   uint32_t time, uint32_t button,
+			   enum wl_pointer_button_state state)
 {
 	struct wl_display *display = pointer->seat->compositor->wl_display;
 	struct wl_list *resource_list;
 	struct wl_resource *resource;
 	uint32_t serial;
 
-	if (!pointer->focus_client)
+	if (!weston_pointer_has_focus_resource(pointer))
 		return;
 
 	resource_list = &pointer->focus_client->pointer_resources;
-	if (resource_list && !wl_list_empty(resource_list)) {
-		resource_list = &pointer->focus_client->pointer_resources;
-		serial = wl_display_next_serial(display);
-		wl_resource_for_each(resource, resource_list) {
-			wl_pointer_send_button(resource,
-					       serial,
-					       time,
-					       button,
-					       state_w);
-		}
-	}
+	serial = wl_display_next_serial(display);
+	wl_resource_for_each(resource, resource_list)
+		wl_pointer_send_button(resource, serial, time, button, state);
 }
 
 static void
 default_grab_pointer_button(struct weston_pointer_grab *grab,
-			    uint32_t time, uint32_t button, uint32_t state_w)
+			    uint32_t time, uint32_t button,
+			    enum wl_pointer_button_state state)
 {
 	struct weston_pointer *pointer = grab->pointer;
 	struct weston_compositor *compositor = pointer->seat->compositor;
 	struct weston_view *view;
-	enum wl_pointer_button_state state = state_w;
 	wl_fixed_t sx, sy;
 
-	weston_pointer_send_button(pointer, time, button, state_w);
+	weston_pointer_send_button(pointer, time, button, state);
 
 	if (pointer->button_count == 0 &&
 	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
@@ -485,7 +512,7 @@ weston_pointer_send_axis(struct weston_pointer *pointer,
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
 
-	if (!pointer->focus_client)
+	if (!weston_pointer_has_focus_resource(pointer))
 		return;
 
 	resource_list = &pointer->focus_client->pointer_resources;
@@ -507,13 +534,23 @@ weston_pointer_send_axis(struct weston_pointer *pointer,
 	}
 }
 
+/** Send wl_pointer.axis_source events to focused resources.
+ *
+ * \param pointer The pointer where the axis_source events originates from.
+ * \param source The axis_source enum value of the event
+ *
+ * For every resource that is currently in focus, send a wl_pointer.axis_source
+ * event with the passed parameter. The focused resources are the wl_pointer
+ * resources of the client which currently has the surface with pointer focus.
+ */
 WL_EXPORT void
-weston_pointer_send_axis_source(struct weston_pointer *pointer, uint32_t source)
+weston_pointer_send_axis_source(struct weston_pointer *pointer,
+				enum wl_pointer_axis_source source)
 {
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
 
-	if (!pointer->focus_client)
+	if (!weston_pointer_has_focus_resource(pointer))
 		return;
 
 	resource_list = &pointer->focus_client->pointer_resources;
@@ -534,13 +571,21 @@ pointer_send_frame(struct wl_resource *resource)
 	}
 }
 
+/** Send wl_pointer.frame events to focused resources.
+ *
+ * \param pointer The pointer where the frame events originates from.
+ *
+ * For every resource that is currently in focus, send a wl_pointer.frame event.
+ * The focused resources are the wl_pointer resources of the client which
+ * currently has the surface with pointer focus.
+ */
 WL_EXPORT void
 weston_pointer_send_frame(struct weston_pointer *pointer)
 {
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
 
-	if (!pointer->focus_client)
+	if (!weston_pointer_has_focus_resource(pointer))
 		return;
 
 	resource_list = &pointer->focus_client->pointer_resources;
@@ -558,7 +603,7 @@ default_grab_pointer_axis(struct weston_pointer_grab *grab,
 
 static void
 default_grab_pointer_axis_source(struct weston_pointer_grab *grab,
-				 uint32_t source)
+				 enum wl_pointer_axis_source source)
 {
 	weston_pointer_send_axis_source(grab->pointer, source);
 }
@@ -585,65 +630,125 @@ static const struct weston_pointer_grab_interface
 	default_grab_pointer_cancel,
 };
 
-static void
-default_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
-			int touch_id, wl_fixed_t x, wl_fixed_t y)
+/** Check if the touch has focused resources.
+ *
+ * \param touch The touch to check for focused resources.
+ * \return Whether or not this touch has focused resources
+ */
+WL_EXPORT bool
+weston_touch_has_focus_resource(struct weston_touch *touch)
 {
-	struct weston_touch *touch = grab->touch;
+	if (!touch->focus)
+		return false;
+
+	if (wl_list_empty(&touch->focus_resource_list))
+		return false;
+
+	return true;
+}
+
+/** Send wl_touch.down events to focused resources.
+ *
+ * \param touch The touch where the down events originates from.
+ * \param time The timestamp of the event
+ * \param touch_id The touch_id value of the event
+ * \param x The x value of the event
+ * \param y The y value of the event
+ *
+ * For every resource that is currently in focus, send a wl_touch.down event
+ * with the passed parameters. The focused resources are the wl_touch
+ * resources of the client which currently has the surface with touch focus.
+ */
+WL_EXPORT void
+weston_touch_send_down(struct weston_touch *touch, uint32_t time,
+		       int touch_id, wl_fixed_t x, wl_fixed_t y)
+{
 	struct wl_display *display = touch->seat->compositor->wl_display;
 	uint32_t serial;
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
 	wl_fixed_t sx, sy;
 
-	if (!touch->focus)
+	if (!weston_touch_has_focus_resource(touch))
 		return;
 
 	weston_view_from_global_fixed(touch->focus, x, y, &sx, &sy);
 
 	resource_list = &touch->focus_resource_list;
+	serial = wl_display_next_serial(display);
+	wl_resource_for_each(resource, resource_list)
+			wl_touch_send_down(resource, serial, time,
+					   touch->focus->surface->resource,
+					   touch_id, sx, sy);
+}
 
-	if (!wl_list_empty(resource_list)) {
-		serial = wl_display_next_serial(display);
-		wl_resource_for_each(resource, resource_list)
-				wl_touch_send_down(resource, serial, time,
-						   touch->focus->surface->resource,
-						   touch_id, sx, sy);
-	}
+static void
+default_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
+			int touch_id, wl_fixed_t x, wl_fixed_t y)
+{
+	weston_touch_send_down(grab->touch, time, touch_id, x, y);
+}
+
+/** Send wl_touch.up events to focused resources.
+ *
+ * \param touch The touch where the up events originates from.
+ * \param time The timestamp of the event
+ * \param touch_id The touch_id value of the event
+ *
+ * For every resource that is currently in focus, send a wl_touch.up event
+ * with the passed parameters. The focused resources are the wl_touch
+ * resources of the client which currently has the surface with touch focus.
+ */
+WL_EXPORT void
+weston_touch_send_up(struct weston_touch *touch, uint32_t time, int touch_id)
+{
+	struct wl_display *display = touch->seat->compositor->wl_display;
+	uint32_t serial;
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
+
+	if (!weston_touch_has_focus_resource(touch))
+		return;
+
+	resource_list = &touch->focus_resource_list;
+	serial = wl_display_next_serial(display);
+	wl_resource_for_each(resource, resource_list)
+		wl_touch_send_up(resource, serial, time, touch_id);
 }
 
 static void
 default_grab_touch_up(struct weston_touch_grab *grab,
 		      uint32_t time, int touch_id)
 {
-	struct weston_touch *touch = grab->touch;
-	struct wl_display *display = touch->seat->compositor->wl_display;
-	uint32_t serial;
-	struct wl_resource *resource;
-	struct wl_list *resource_list;
-
-	resource_list = &touch->focus_resource_list;
-
-	if (!wl_list_empty(resource_list)) {
-		serial = wl_display_next_serial(display);
-		wl_resource_for_each(resource, resource_list)
-			wl_touch_send_up(resource, serial, time, touch_id);
-	}
+	weston_touch_send_up(grab->touch, time, touch_id);
 }
 
-static void
-default_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
-			  int touch_id, wl_fixed_t x, wl_fixed_t y)
+/** Send wl_touch.motion events to focused resources.
+ *
+ * \param touch The touch where the motion events originates from.
+ * \param time The timestamp of the event
+ * \param touch_id The touch_id value of the event
+ * \param x The x value of the event
+ * \param y The y value of the event
+ *
+ * For every resource that is currently in focus, send a wl_touch.motion event
+ * with the passed parameters. The focused resources are the wl_touch
+ * resources of the client which currently has the surface with touch focus.
+ */
+WL_EXPORT void
+weston_touch_send_motion(struct weston_touch *touch, uint32_t time,
+			 int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
-	struct weston_touch *touch = grab->touch;
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
 	wl_fixed_t sx, sy;
 
+	if (!weston_touch_has_focus_resource(touch))
+		return;
+
 	weston_view_from_global_fixed(touch->focus, x, y, &sx, &sy);
 
 	resource_list = &touch->focus_resource_list;
-
 	wl_resource_for_each(resource, resource_list) {
 		wl_touch_send_motion(resource, time,
 				     touch_id, sx, sy);
@@ -651,12 +756,37 @@ default_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
 }
 
 static void
-default_grab_touch_frame(struct weston_touch_grab *grab)
+default_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
+			  int touch_id, wl_fixed_t x, wl_fixed_t y)
+{
+	weston_touch_send_motion(grab->touch, time, touch_id, x, y);
+}
+
+
+/** Send wl_touch.frame events to focused resources.
+ *
+ * \param touch The touch where the frame events originates from.
+ *
+ * For every resource that is currently in focus, send a wl_touch.frame event.
+ * The focused resources are the wl_touch resources of the client which
+ * currently has the surface with touch focus.
+ */
+WL_EXPORT void
+weston_touch_send_frame(struct weston_touch *touch)
 {
 	struct wl_resource *resource;
 
-	wl_resource_for_each(resource, &grab->touch->focus_resource_list)
+	if (!weston_touch_has_focus_resource(touch))
+		return;
+
+	wl_resource_for_each(resource, &touch->focus_resource_list)
 		wl_touch_send_frame(resource);
+}
+
+static void
+default_grab_touch_frame(struct weston_touch_grab *grab)
+{
+	weston_touch_send_frame(grab->touch);
 }
 
 static void
@@ -672,26 +802,58 @@ static const struct weston_touch_grab_interface default_touch_grab_interface = {
 	default_grab_touch_cancel,
 };
 
-static void
-default_grab_keyboard_key(struct weston_keyboard_grab *grab,
-			  uint32_t time, uint32_t key, uint32_t state)
+/** Check if the keyboard has focused resources.
+ *
+ * \param keyboard The keyboard to check for focused resources.
+ * \return Whether or not this keyboard has focused resources
+ */
+WL_EXPORT bool
+weston_keyboard_has_focus_resource(struct weston_keyboard *keyboard)
 {
-	struct weston_keyboard *keyboard = grab->keyboard;
+	if (!keyboard->focus)
+		return false;
+
+	if (wl_list_empty(&keyboard->focus_resource_list))
+		return false;
+
+	return true;
+}
+
+/** Send wl_keyboard.key events to focused resources.
+ *
+ * \param keyboard The keyboard where the key events originates from.
+ * \param time The timestamp of the event
+ * \param key The key value of the event
+ * \param state The state enum value of the event
+ *
+ * For every resource that is currently in focus, send a wl_keyboard.key event
+ * with the passed parameters. The focused resources are the wl_keyboard
+ * resources of the client which currently has the surface with keyboard focus.
+ */
+WL_EXPORT void
+weston_keyboard_send_key(struct weston_keyboard *keyboard,
+			 uint32_t time, uint32_t key,
+			 enum wl_keyboard_key_state state)
+{
 	struct wl_resource *resource;
 	struct wl_display *display = keyboard->seat->compositor->wl_display;
 	uint32_t serial;
 	struct wl_list *resource_list;
 
+	if (!weston_keyboard_has_focus_resource(keyboard))
+		return;
+
 	resource_list = &keyboard->focus_resource_list;
-	if (!wl_list_empty(resource_list)) {
-		serial = wl_display_next_serial(display);
-		wl_resource_for_each(resource, resource_list)
-			wl_keyboard_send_key(resource,
-					     serial,
-					     time,
-					     key,
-					     state);
-	}
+	serial = wl_display_next_serial(display);
+	wl_resource_for_each(resource, resource_list)
+		wl_keyboard_send_key(resource, serial, time, key, state);
+};
+
+static void
+default_grab_keyboard_key(struct weston_keyboard_grab *grab,
+			  uint32_t time, uint32_t key, uint32_t state)
+{
+	weston_keyboard_send_key(grab->keyboard, time, key, state);
 }
 
 static void
@@ -760,33 +922,63 @@ find_resource_for_surface(struct wl_list *list, struct weston_surface *surface)
 	return wl_resource_find_for_client(list, wl_resource_get_client(surface->resource));
 }
 
+/** Send wl_keyboard.modifiers events to focused resources and pointer
+ *  focused resources.
+ *
+ * \param keyboard The keyboard where the modifiers events originates from.
+ * \param serial The serial of the event
+ * \param mods_depressed The mods_depressed value of the event
+ * \param mods_latched The mods_latched value of the event
+ * \param mods_locked The mods_locked value of the event
+ * \param group The group value of the event
+ *
+ * For every resource that is currently in focus, send a wl_keyboard.modifiers
+ * event with the passed parameters. The focused resources are the wl_keyboard
+ * resources of the client which currently has the surface with keyboard focus.
+ * This also sends wl_keyboard.modifiers events to the wl_keyboard resources of
+ * the client having pointer focus (if different from the keyboard focus client).
+ */
+WL_EXPORT void
+weston_keyboard_send_modifiers(struct weston_keyboard *keyboard,
+			       uint32_t serial, uint32_t mods_depressed,
+			       uint32_t mods_latched,
+			       uint32_t mods_locked, uint32_t group)
+{
+	struct weston_pointer *pointer =
+		weston_seat_get_pointer(keyboard->seat);
+
+	if (weston_keyboard_has_focus_resource(keyboard)) {
+		struct wl_list *resource_list;
+		struct wl_resource *resource;
+
+		resource_list = &keyboard->focus_resource_list;
+		wl_resource_for_each(resource, resource_list) {
+			wl_keyboard_send_modifiers(resource, serial,
+						   mods_depressed, mods_latched,
+						   mods_locked, group);
+		}
+	}
+
+	if (pointer && pointer->focus && pointer->focus->surface->resource &&
+	    pointer->focus->surface != keyboard->focus) {
+		struct wl_client *pointer_client =
+			wl_resource_get_client(pointer->focus->surface->resource);
+
+		send_modifiers_to_client_in_list(pointer_client,
+						 &keyboard->resource_list,
+						 serial,
+						 keyboard);
+	}
+}
+
 static void
 default_grab_keyboard_modifiers(struct weston_keyboard_grab *grab,
 				uint32_t serial, uint32_t mods_depressed,
 				uint32_t mods_latched,
 				uint32_t mods_locked, uint32_t group)
 {
-	struct weston_keyboard *keyboard = grab->keyboard;
-	struct weston_pointer *pointer =
-		weston_seat_get_pointer(grab->keyboard->seat);
-	struct wl_resource *resource;
-	struct wl_list *resource_list;
-
-	resource_list = &keyboard->focus_resource_list;
-
-	wl_resource_for_each(resource, resource_list) {
-		wl_keyboard_send_modifiers(resource, serial, mods_depressed,
-					   mods_latched, mods_locked, group);
-	}
-	if (pointer && pointer->focus && pointer->focus->surface->resource &&
-	    pointer->focus->surface != keyboard->focus) {
-		struct wl_client *pointer_client =
-			wl_resource_get_client(pointer->focus->surface->resource);
-		send_modifiers_to_client_in_list(pointer_client,
-						 &keyboard->resource_list,
-						 serial,
-						 keyboard);
-	}
+	weston_keyboard_send_modifiers(grab->keyboard, serial, mods_depressed,
+				       mods_latched, mods_locked, group);
 }
 
 static void
@@ -3200,7 +3392,7 @@ locked_pointer_grab_pointer_motion(struct weston_pointer_grab *grab,
 				   uint32_t time,
 				   struct weston_pointer_motion_event *event)
 {
-	weston_pointer_send_relative_motion(grab->pointer, time, event);
+	pointer_send_relative_motion(grab->pointer, time, event);
 }
 
 static void
@@ -4204,11 +4396,11 @@ confined_pointer_grab_pointer_motion(struct weston_pointer_grab *grab,
 				      &pointer->sx, &pointer->sy);
 
 	if (old_sx != pointer->sx || old_sy != pointer->sy) {
-		weston_pointer_send_motion(pointer, time,
-					   pointer->sx, pointer->sy);
+		pointer_send_motion(pointer, time,
+				    pointer->sx, pointer->sy);
 	}
 
-	weston_pointer_send_relative_motion(pointer, time, event);
+	pointer_send_relative_motion(pointer, time, event);
 }
 
 static void
