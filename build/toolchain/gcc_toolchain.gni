@@ -470,28 +470,5 @@ template("clang_toolchain") {
       }
       is_clang = true
     }
-
-    # Backwards-compatible handling for toolchain definitions in the Native
-    # Client repo.
-    #
-    # TODO(brettw) bug 634446 remove this when
-    # //native_client/src/trusted/service_runtime/linux/BUILD.gn is updated to
-    # use the new-style toolchain_args.
-    if (defined(invoker.toolchain_cpu)) {
-      assert(!defined(toolchain_args.current_cpu))
-      toolchain_args.current_cpu = invoker.toolchain_cpu
-    }
-    if (defined(invoker.toolchain_os)) {
-      assert(!defined(toolchain_args.current_os))
-      toolchain_args.current_os = invoker.toolchain_os
-    }
-    if (defined(invoker.use_debug_fission)) {
-      assert(!defined(toolchain_args.use_debug_fission))
-      toolchain_args.use_debug_fission = invoker.use_debug_fission
-    }
-    if (defined(invoker.use_gold)) {
-      assert(!defined(toolchain_args.use_gold))
-      toolchain_args.use_gold = invoker.use_gold
-    }
   }
 }
