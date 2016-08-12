@@ -133,14 +133,14 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
 
   security_style_explanations->ran_insecure_content =
       security_info.mixed_content_status ==
-          SecurityStateModel::RAN_MIXED_CONTENT ||
+          SecurityStateModel::CONTENT_STATUS_RAN ||
       security_info.mixed_content_status ==
-          SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
+          SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN;
   security_style_explanations->displayed_insecure_content =
       security_info.mixed_content_status ==
-          SecurityStateModel::DISPLAYED_MIXED_CONTENT ||
+          SecurityStateModel::CONTENT_STATUS_DISPLAYED ||
       security_info.mixed_content_status ==
-          SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
+          SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN;
 
   if (net::IsCertStatusError(security_info.cert_status)) {
     base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(

@@ -72,19 +72,19 @@ SecurityStateModel::SHA1DeprecationStatus GetSHA1DeprecationStatus(
   return SecurityStateModel::NO_DEPRECATED_SHA1;
 }
 
-SecurityStateModel::MixedContentStatus GetMixedContentStatus(
+SecurityStateModel::ContentStatus GetMixedContentStatus(
     const SecurityStateModel::VisibleSecurityState& visible_security_state) {
   bool ran_insecure_content = visible_security_state.ran_mixed_content;
   bool displayed_insecure_content =
       visible_security_state.displayed_mixed_content;
   if (ran_insecure_content && displayed_insecure_content)
-    return SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
+    return SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN;
   if (ran_insecure_content)
-    return SecurityStateModel::RAN_MIXED_CONTENT;
+    return SecurityStateModel::CONTENT_STATUS_RAN;
   if (displayed_insecure_content)
-    return SecurityStateModel::DISPLAYED_MIXED_CONTENT;
+    return SecurityStateModel::CONTENT_STATUS_DISPLAYED;
 
-  return SecurityStateModel::NO_MIXED_CONTENT;
+  return SecurityStateModel::CONTENT_STATUS_NONE;
 }
 
 SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
@@ -92,7 +92,7 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
     SecurityStateModelClient* client,
     const scoped_refptr<net::X509Certificate>& cert,
     SecurityStateModel::SHA1DeprecationStatus sha1_status,
-    SecurityStateModel::MixedContentStatus mixed_content_status) {
+    SecurityStateModel::ContentStatus mixed_content_status) {
   DCHECK(visible_security_state.connection_info_initialized ||
          visible_security_state.fails_malware_check);
 
@@ -126,9 +126,9 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
           !net::IsCertStatusMinorError(cert_status)) {
         return SecurityStateModel::SECURITY_ERROR;
       }
-      if (mixed_content_status == SecurityStateModel::RAN_MIXED_CONTENT ||
+      if (mixed_content_status == SecurityStateModel::CONTENT_STATUS_RAN ||
           mixed_content_status ==
-              SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT) {
+              SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN) {
         return SecurityStateModel::kRanInsecureContentLevel;
       }
 
@@ -146,10 +146,10 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
         return SecurityStateModel::NONE;
 
       // Active mixed content is handled above.
-      DCHECK_NE(SecurityStateModel::RAN_MIXED_CONTENT, mixed_content_status);
-      DCHECK_NE(SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT,
+      DCHECK_NE(SecurityStateModel::CONTENT_STATUS_RAN, mixed_content_status);
+      DCHECK_NE(SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
                 mixed_content_status);
-      if (mixed_content_status == SecurityStateModel::DISPLAYED_MIXED_CONTENT)
+      if (mixed_content_status == SecurityStateModel::CONTENT_STATUS_DISPLAYED)
         return SecurityStateModel::kDisplayedInsecureContentLevel;
 
       if (net::IsCertStatusError(cert_status)) {
@@ -182,10 +182,10 @@ void SecurityInfoForRequest(
     security_info->fails_malware_check =
         visible_security_state.fails_malware_check;
     if (security_info->fails_malware_check) {
-      security_info->security_level =
-          GetSecurityLevelForRequest(visible_security_state, client, cert,
-                                     SecurityStateModel::UNKNOWN_SHA1,
-                                     SecurityStateModel::UNKNOWN_MIXED_CONTENT);
+      security_info->security_level = GetSecurityLevelForRequest(
+          visible_security_state, client, cert,
+          SecurityStateModel::UNKNOWN_SHA1,
+          SecurityStateModel::CONTENT_STATUS_UNKNOWN);
     }
     return;
   }
@@ -231,7 +231,7 @@ SecurityStateModel::SecurityInfo::SecurityInfo()
     : security_level(SecurityStateModel::NONE),
       fails_malware_check(false),
       sha1_deprecation_status(SecurityStateModel::NO_DEPRECATED_SHA1),
-      mixed_content_status(SecurityStateModel::NO_MIXED_CONTENT),
+      mixed_content_status(SecurityStateModel::CONTENT_STATUS_NONE),
       scheme_is_cryptographic(false),
       cert_status(0),
       cert_id(0),

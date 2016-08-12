@@ -118,7 +118,7 @@ TEST(SecurityStateModelTest, SHA1WarningMixedContent) {
       model.GetSecurityInfo();
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info1.sha1_deprecation_status);
-  EXPECT_EQ(SecurityStateModel::DISPLAYED_MIXED_CONTENT,
+  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_DISPLAYED,
             security_info1.mixed_content_status);
   EXPECT_EQ(SecurityStateModel::NONE, security_info1.security_level);
 
@@ -129,7 +129,7 @@ TEST(SecurityStateModelTest, SHA1WarningMixedContent) {
       model.GetSecurityInfo();
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info2.sha1_deprecation_status);
-  EXPECT_EQ(SecurityStateModel::RAN_MIXED_CONTENT,
+  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_RAN,
             security_info2.mixed_content_status);
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info2.security_level);
 }

@@ -72,17 +72,16 @@ class SecurityStateModel {
     DEPRECATED_SHA1_MAJOR,
   };
 
-  // Describes the type of mixed content (if any) that a site
-  // displayed/ran.
-  enum MixedContentStatus {
-    UNKNOWN_MIXED_CONTENT,
-    NO_MIXED_CONTENT,
-    // The site displayed insecure resources (passive mixed content).
-    DISPLAYED_MIXED_CONTENT,
-    // The site ran insecure code (active mixed content).
-    RAN_MIXED_CONTENT,
-    // The site both ran and displayed insecure resources.
-    RAN_AND_DISPLAYED_MIXED_CONTENT,
+  // The ContentStatus enum is used to describe content on the page that
+  // has significantly different security properties than the main page
+  // load. Content can be passive content that is displayed (such as
+  // images) or active content that is run (such as scripts or iframes).
+  enum ContentStatus {
+    CONTENT_STATUS_UNKNOWN,
+    CONTENT_STATUS_NONE,
+    CONTENT_STATUS_DISPLAYED,
+    CONTENT_STATUS_RAN,
+    CONTENT_STATUS_DISPLAYED_AND_RAN,
   };
 
   // Describes the security status of a page or request. This is the
@@ -94,7 +93,9 @@ class SecurityStateModel {
     // True if the page fails the browser's malware or phishing checks.
     bool fails_malware_check;
     SHA1DeprecationStatus sha1_deprecation_status;
-    MixedContentStatus mixed_content_status;
+    // |mixed_content_status| describes the presence of content that was
+    // loaded over a nonsecure (HTTP) connection.
+    ContentStatus mixed_content_status;
     // The verification statuses of the signed certificate timestamps
     // for the connection.
     std::vector<net::ct::SCTVerifyStatus> sct_verify_statuses;

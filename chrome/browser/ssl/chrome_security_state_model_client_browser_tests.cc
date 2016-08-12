@@ -169,7 +169,7 @@ void CheckSecurityInfoForSecure(
     content::WebContents* contents,
     SecurityStateModel::SecurityLevel expect_security_level,
     SecurityStateModel::SHA1DeprecationStatus expect_sha1_status,
-    SecurityStateModel::MixedContentStatus expect_mixed_content_status,
+    SecurityStateModel::ContentStatus expect_mixed_content_status,
     bool pkp_bypassed,
     bool expect_cert_error) {
   ASSERT_TRUE(contents);
@@ -205,7 +205,7 @@ void CheckSecurityInfoForNonSecure(content::WebContents* contents) {
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
   EXPECT_EQ(SecurityStateModel::NO_DEPRECATED_SHA1,
             security_info.sha1_deprecation_status);
-  EXPECT_EQ(SecurityStateModel::NO_MIXED_CONTENT,
+  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_NONE,
             security_info.mixed_content_status);
   EXPECT_TRUE(security_info.sct_verify_statuses.empty());
   EXPECT_FALSE(security_info.scheme_is_cryptographic);
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpPage) {
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
   EXPECT_EQ(SecurityStateModel::NO_DEPRECATED_SHA1,
             security_info.sha1_deprecation_status);
-  EXPECT_EQ(SecurityStateModel::NO_MIXED_CONTENT,
+  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_NONE,
             security_info.mixed_content_status);
   EXPECT_TRUE(security_info.sct_verify_statuses.empty());
   EXPECT_FALSE(security_info.scheme_is_cryptographic);
@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpsPage) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::NO_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 }
 
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, SHA1Broken) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::NO_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 }
 
@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::NONE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::DISPLAYED_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that displays mixed content dynamically.
@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::NO_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
   // Load the insecure image.
   bool js_result = false;
@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::NONE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::DISPLAYED_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content.
@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::RAN_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_RAN, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs and displays mixed content.
@@ -413,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content in an iframe.
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::RAN_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_RAN, false,
       false /* expect cert status error */);
 }
 
@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::DISPLAYED_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that displays mixed content dynamically.
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::NO_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
   // Load the insecure image.
   bool js_result = false;
@@ -491,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::DISPLAYED_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content.
@@ -504,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::RAN_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_RAN, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs and displays mixed content.
@@ -517,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
       false /* expect cert status error */);
 }
 
@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::NO_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 }
 
@@ -560,7 +560,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::NO_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_NONE, false,
       true /* expect cert status error */);
 
   ProceedThroughInterstitial(
@@ -570,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::NO_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_NONE, false,
       true /* expect cert status error */);
 
   // Navigate to a broken HTTPS page that displays mixed content.
@@ -584,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::DISPLAYED_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
       true /* expect cert status error */);
 }
 
@@ -645,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(PKPModelClientTest, PKPBypass) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::NO_MIXED_CONTENT, true, false);
+      SecurityStateModel::CONTENT_STATUS_NONE, true, false);
 
   const content::SecurityStyleExplanations& explanation =
       observer.latest_explanations();
@@ -732,7 +732,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelLoadingTest, NavigationStateChanges) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::NO_MIXED_CONTENT, false,
+      SecurityStateModel::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 
   // Navigate to a page that doesn't finish loading. Test that the
@@ -764,14 +764,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, AddedTab) {
   EXPECT_TRUE(content::WaitForLoadStop(new_contents));
   CheckSecurityInfoForSecure(new_contents, SecurityStateModel::SECURE,
                              SecurityStateModel::NO_DEPRECATED_SHA1,
-                             SecurityStateModel::NO_MIXED_CONTENT, false,
+                             SecurityStateModel::CONTENT_STATUS_NONE, false,
                              false /* expect cert status error */);
 
   browser()->tab_strip_model()->InsertWebContentsAt(0, new_contents,
                                                     TabStripModel::ADD_NONE);
   CheckSecurityInfoForSecure(new_contents, SecurityStateModel::SECURE,
                              SecurityStateModel::NO_DEPRECATED_SHA1,
-                             SecurityStateModel::NO_MIXED_CONTENT, false,
+                             SecurityStateModel::CONTENT_STATUS_NONE, false,
                              false /* expect cert status error */);
 }
 

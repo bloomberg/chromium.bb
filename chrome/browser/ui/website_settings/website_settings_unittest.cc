@@ -385,7 +385,7 @@ TEST_F(WebsiteSettingsTest, HTTPSPassiveMixedContent) {
   security_info_.cert_status = 0;
   security_info_.security_bits = 81;  // No error if > 80.
   security_info_.mixed_content_status =
-      SecurityStateModel::DISPLAYED_MIXED_CONTENT;
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
@@ -411,7 +411,7 @@ TEST_F(WebsiteSettingsTest, HTTPSActiveMixedContent) {
   security_info_.cert_status = 0;
   security_info_.security_bits = 81;  // No error if > 80.
   security_info_.mixed_content_status =
-      SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
@@ -445,7 +445,7 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
   security_info_.cert_status = net::CERT_STATUS_IS_EV;
   security_info_.security_bits = 81;  // No error if > 80.
   security_info_.mixed_content_status =
-      SecurityStateModel::DISPLAYED_MIXED_CONTENT;
+      SecurityStateModel::CONTENT_STATUS_DISPLAYED;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);

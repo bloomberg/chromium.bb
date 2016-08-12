@@ -560,12 +560,12 @@ void WebsiteSettings::Init(
     }
 
     if (security_info.mixed_content_status !=
-        SecurityStateModel::NO_MIXED_CONTENT) {
+        SecurityStateModel::CONTENT_STATUS_NONE) {
       bool ran_insecure_content =
           (security_info.mixed_content_status ==
-               SecurityStateModel::RAN_MIXED_CONTENT ||
+               SecurityStateModel::CONTENT_STATUS_RAN ||
            security_info.mixed_content_status ==
-               SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT);
+               SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN);
       site_connection_status_ = ran_insecure_content
                                     ? SITE_CONNECTION_STATUS_MIXED_SCRIPT
                                     : SITE_CONNECTION_STATUS_MIXED_CONTENT;
