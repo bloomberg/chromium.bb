@@ -25,6 +25,8 @@ if (default_toolchain == "//build/toolchain/cros:target") {
   compiler = cros_target_cxx
 } else if (current_cpu == "arm" && !is_android) {
   compiler = "arm-linux-gnueabihf-g++"
+} else if (current_cpu == "mipsel" && !is_android) {
+  compiler = "mipsel-linux-gnu-g++"
 }
 
 if (current_toolchain == bootstrap_toolchain) {

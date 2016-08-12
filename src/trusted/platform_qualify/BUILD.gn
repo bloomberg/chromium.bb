@@ -31,6 +31,10 @@ static_library("platform_qual_lib") {
     ]
   }
 
+  if (current_cpu == "mipsel") {
+    sources += ["arch/mips/nacl_qualify_fpu.c"]
+  }
+
   if (current_os == "win") {
     sources += [
       "win/nacl_dep_qualify.c",

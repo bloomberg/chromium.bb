@@ -32,3 +32,7 @@ nacl_bootstrap_toolchain("nacl_bootstrap_x86") {
 nacl_bootstrap_toolchain("nacl_bootstrap_arm") {
   toolchain_cpu = "arm"
 }
+
+nacl_bootstrap_toolchain("nacl_bootstrap_mipsel") {
+  toolchain_cpu = "mipsel"
+}

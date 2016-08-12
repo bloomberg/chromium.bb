@@ -13,7 +13,7 @@ static_library("validators") {
   if (current_cpu == "arm") {
     deps += [ "//native_client/src/trusted/validator_arm:ncvalidate_arm_v2" ]
   }
-  if (current_cpu == "mips") {
+  if (current_cpu == "mipsel") {
     deps += [ "//native_client/src/trusted/validator_mips:ncvalidate_mips" ]
   }
   if (current_cpu == "x86") {
