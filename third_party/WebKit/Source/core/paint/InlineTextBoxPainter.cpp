@@ -777,18 +777,23 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
     unsigned paintStart = underlinePaintStart(underline);
     unsigned paintEnd = underlinePaintEnd(underline);
 
-    // TODO(crbug.com/636060): Handle mixed-flow contexts correctly.
     // start of line to draw
     float start = paintStart == static_cast<unsigned>(m_inlineTextBox.start()) ? 0 :
         m_inlineTextBox.getLineLayoutItem().width(m_inlineTextBox.start(), paintStart - m_inlineTextBox.start(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
     // how much line to draw
-    float width = (paintStart == static_cast<unsigned>(m_inlineTextBox.start()) && paintEnd == static_cast<unsigned>(m_inlineTextBox.end()) + 1) ? m_inlineTextBox.logicalWidth().toFloat() :
-        m_inlineTextBox.getLineLayoutItem().width(paintStart, paintEnd - paintStart, LayoutUnit(m_inlineTextBox.textPos() + start), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
+    float width;
+    bool ltr = m_inlineTextBox.isLeftToRightDirection();
+    bool flowIsLTR = m_inlineTextBox.getLineLayoutItem().style()->isLeftToRightDirection();
+    if (paintStart == static_cast<unsigned>(m_inlineTextBox.start()) && paintEnd == static_cast<unsigned>(m_inlineTextBox.end()) + 1) {
+        width = m_inlineTextBox.logicalWidth().toFloat();
+    } else {
+        width = m_inlineTextBox.getLineLayoutItem().width(ltr == flowIsLTR ? paintStart : paintEnd, ltr == flowIsLTR ? paintEnd - paintStart : m_inlineTextBox.len() - paintEnd, LayoutUnit(m_inlineTextBox.textPos() + start), flowIsLTR ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
+    }
     // In RTL mode, start and width are computed from the right end of the text box:
     // starting at |logicalWidth| - |start| and continuing left by |width| to
     // |logicalWidth| - |start| - |width|. We will draw that line, but
     // backwards: |logicalWidth| - |start| - |width| to |logicalWidth| - |start|.
-    if (!m_inlineTextBox.isLeftToRightDirection())
+    if (!flowIsLTR)
         start = m_inlineTextBox.logicalWidth().toFloat() - width - start;
 
 
