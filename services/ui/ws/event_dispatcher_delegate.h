@@ -66,8 +66,10 @@ class EventDispatcherDelegate {
                                                   bool in_nonclient_area) = 0;
 
   // Returns the window to start searching from at the specified location, or
-  // null if there is a no window containing |location|.
-  virtual ServerWindow* GetRootWindowContaining(const gfx::Point& location) = 0;
+  // null if there is a no window containing |location|. |location| should be in
+  // screen coordinates and if a window is returned then |location| will be
+  // updated to be relative to the origin of the window.
+  virtual ServerWindow* GetRootWindowContaining(gfx::Point* location) = 0;
 
   // Called when event dispatch could not find a target. OnAccelerator may still
   // be called.

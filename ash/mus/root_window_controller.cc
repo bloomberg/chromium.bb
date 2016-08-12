@@ -224,7 +224,9 @@ void RootWindowController::CreateStatusArea() {
   status_area_widget->CreateTrayViews();
   // TODO(jamescook): Remove this when ash::StatusAreaLayoutManager and
   // ash::ShelfLayoutManager are working in mash. http://crbug.com/621112
-  status_area_widget->SetBounds(gfx::Rect(845, 720, 120, 40));
+  gfx::Size display_size = display_.bounds().size();
+  status_area_widget->SetBounds(gfx::Rect(display_size.width() - 179,
+                                          display_size.height() - 48, 120, 40));
   if (WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted())
     status_area_widget->Show();
 }

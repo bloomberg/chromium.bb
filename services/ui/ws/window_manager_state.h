@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -191,7 +192,7 @@ class WindowManagerState : public EventDispatcherDelegate {
                                   Accelerator* accelerator) override;
   ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                           bool in_nonclient_area) override;
-  ServerWindow* GetRootWindowContaining(const gfx::Point& location) override;
+  ServerWindow* GetRootWindowContaining(gfx::Point* location) override;
   void OnEventTargetNotFound(const ui::Event& event) override;
 
   // The single WindowTree this WindowManagerState is associated with.

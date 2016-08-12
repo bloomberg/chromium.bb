@@ -140,7 +140,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
                                           bool in_nonclient_area) override {
     return in_nonclient_area ? kNonclientAreaId : kClientAreaId;
   }
-  ServerWindow* GetRootWindowContaining(const gfx::Point& location) override {
+  ServerWindow* GetRootWindowContaining(gfx::Point* location) override {
     return root_;
   }
   void OnEventTargetNotFound(const ui::Event& event) override {

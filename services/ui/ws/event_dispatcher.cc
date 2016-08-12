@@ -322,7 +322,7 @@ void EventDispatcher::ProcessLocatedEvent(const ui::LocatedEvent& event) {
       event.IsMousePointerEvent() || event.IsMouseWheelEvent();
 
   if (is_mouse_event) {
-    mouse_pointer_last_location_ = event.location();
+    mouse_pointer_last_location_ = event.root_location();
     delegate_->OnMouseCursorLocationChanged(event.root_location());
   }
 
@@ -439,7 +439,7 @@ void EventDispatcher::UpdateTargetForPointer(int32_t pointer_id,
 EventDispatcher::PointerTarget EventDispatcher::PointerTargetForEvent(
     const ui::LocatedEvent& event) {
   PointerTarget pointer_target;
-  gfx::Point location(event.location());
+  gfx::Point location(event.root_location());
   ServerWindow* target_window = FindDeepestVisibleWindowForEvents(&location);
   pointer_target.window =
       modal_window_controller_.GetTargetForWindow(target_window);
@@ -540,7 +540,7 @@ Accelerator* EventDispatcher::FindAccelerator(
 
 ServerWindow* EventDispatcher::FindDeepestVisibleWindowForEvents(
     gfx::Point* location) {
-  ServerWindow* root = delegate_->GetRootWindowContaining(*location);
+  ServerWindow* root = delegate_->GetRootWindowContaining(location);
   if (!root)
     return nullptr;
 

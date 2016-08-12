@@ -4,6 +4,8 @@
 
 #include "services/ui/ws/window_manager_state.h"
 
+#include <utility>
+
 #include "base/memory/weak_ptr.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/ui/common/event_matcher_util.h"
@@ -522,16 +524,36 @@ ClientSpecificId WindowManagerState::GetEventTargetClientId(
 }
 
 ServerWindow* WindowManagerState::GetRootWindowContaining(
-    const gfx::Point& location) {
+    gfx::Point* location) {
   if (display_manager()->displays().empty())
+      return nullptr;
+
+  Display* target_display = nullptr;
+  for (Display* display : display_manager()->displays()) {
+    if (display->platform_display()->GetBounds().Contains(*location)) {
+      target_display = display;
+      break;
+    }
+  }
+
+  // TODO(kylechar): Better handle locations outside the window. Overlapping X11
+  // windows, dragging and touch sensors need to be handled properly.
+  if (!target_display) {
+    DVLOG(1) << "Invalid event location " << location->ToString();
+    target_display = *(display_manager()->displays().begin());
+  }
+
+  WindowManagerDisplayRoot* display_root =
+      target_display->GetWindowManagerDisplayRootForUser(user_id());
+
+  if (!display_root)
     return nullptr;
 
-  // TODO(sky): this isn't right. To correctly implement need bounds of
-  // Display, which we aren't tracking yet. For now, use the first display.
-  Display* display = *(display_manager()->displays().begin());
-  WindowManagerDisplayRoot* display_root =
-      display->GetWindowManagerDisplayRootForUser(user_id());
-  return display_root ? display_root->root() : nullptr;
+  // Translate the location to be relative to the display instead of relative
+  // to the screen space.
+  gfx::Point origin = target_display->platform_display()->GetBounds().origin();
+  *location -= origin.OffsetFromOrigin();
+  return display_root->root();
 }
 
 void WindowManagerState::OnEventTargetNotFound(const ui::Event& event) {
