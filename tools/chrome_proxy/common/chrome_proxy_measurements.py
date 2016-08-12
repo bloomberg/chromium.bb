@@ -50,8 +50,8 @@ def WaitForViaHeader(tab, url="http://check.googlezip.net/test.html"):
     'Waiting for Chrome to start using the DRP...'
     '</body></html>'))
 
-  # Ensure the page has started loading before attempting the DRP check.
-  tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 60)
+  # Ensure the page has finished loading before attempting the DRP check.
+  tab.WaitForJavaScriptExpression('performance.timing.loadEventEnd', 60)
 
   expected_via_header = metrics.CHROME_PROXY_VIA_HEADER
   if ChromeProxyValidation.extra_via_header:

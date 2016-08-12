@@ -239,7 +239,9 @@ class InspectorNetwork(object):
         logging.warning('HTTP Response missing required field: %s', field)
         return
     request_id = params['requestId']
-    assert request_id in self._initiators
+    if request_id not in self._initiators:
+      logging.warning('Dropped a message with no initiator.')
+      return
     initiator = self._initiators[request_id]
     self._http_responses.append(
         InspectorNetworkResponseData(self, params, initiator))
