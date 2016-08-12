@@ -7,6 +7,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/compiler/compiler.gni")
 
 # Please keep features in alphabetical order.
 declare_args() {
@@ -41,6 +42,9 @@ declare_args() {
   # Use vulcanized HTML/CSS/JS resources to speed up WebUI (chrome://)
   # pages. https://github.com/polymer/vulcanize
   use_vulcanize = true
+
+  # Indicates if the build is using PGO.
+  pgo_build = chrome_pgo_phase > 0
 }
 
 chrome_grit_defines = [
