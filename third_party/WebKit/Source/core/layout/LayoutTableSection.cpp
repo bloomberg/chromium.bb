@@ -1135,6 +1135,7 @@ void LayoutTableSection::layoutRows()
 
 int LayoutTableSection::paginationStrutForRow(LayoutTableRow* row, LayoutUnit logicalOffset) const
 {
+    DCHECK(row);
     // Even if the row allows us to break-inside, we will want to put a strut on the row if we have a header
     // group that wants to appear at the top of each page.
     bool tableHeaderForcesStrut = table()->header() ? table()->header()->getPaginationBreakability() != AllowAnyBreaks : false;
