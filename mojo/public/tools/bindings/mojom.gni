@@ -136,6 +136,77 @@ template("mojom") {
     }
   }
 
+  # Generate code that is shared by different variants.
+  if (defined(invoker.sources)) {
+    common_generator_args = [
+      "--use_bundled_pylibs",
+      "generate",
+      "{{source}}",
+      "-d",
+      rebase_path("//", root_build_dir),
+      "-I",
+      rebase_path("//", root_build_dir),
+      "-o",
+      rebase_path(root_gen_dir),
+      "--bytecode_path",
+      rebase_path("$root_gen_dir/mojo/public/tools/bindings"),
+    ]
+
+    if (defined(invoker.import_dirs)) {
+      foreach(import_dir, invoker.import_dirs) {
+        common_generator_args += [
+          "-I",
+          rebase_path(import_dir, root_build_dir),
+        ]
+      }
+    }
+
+    generator_shared_cpp_outputs = [
+      "{{source_gen_dir}}/{{source_name_part}}.mojom-shared-internal.h",
+      "{{source_gen_dir}}/{{source_name_part}}.mojom-shared.cc",
+      "{{source_gen_dir}}/{{source_name_part}}.mojom-shared.h",
+    ]
+    generator_shared_target_name = "${target_name}_shared__generator"
+    action_foreach(generator_shared_target_name) {
+      script = mojom_generator_script
+      inputs = mojom_generator_sources
+      sources = invoker.sources
+      deps = [
+        "//mojo/public/tools/bindings:precompile_templates",
+      ]
+      outputs = generator_shared_cpp_outputs
+      args = common_generator_args
+      args += [
+        "--generate_non_variant_code",
+        "-g",
+        "c++",
+      ]
+    }
+  }
+
+  shared_cpp_sources_suffix = "shared_cpp_sources"
+  shared_cpp_sources_target_name = "${target_name}_${shared_cpp_sources_suffix}"
+  source_set(shared_cpp_sources_target_name) {
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
+    }
+    deps = []
+    if (defined(invoker.sources)) {
+      sources =
+          process_file_template(invoker.sources, generator_shared_cpp_outputs)
+      deps += [ ":$generator_shared_target_name" ]
+    }
+    public_deps = []
+    foreach(d, all_deps) {
+      # Resolve the name, so that a target //mojo/something becomes
+      # //mojo/something:something and we can append shared_cpp_sources_suffix
+      # to get the cpp dependency name.
+      full_name = get_label_info("$d", "label_no_toolchain")
+      public_deps += [ "${full_name}_${shared_cpp_sources_suffix}" ]
+    }
+  }
+
+  # Generate code for variants.
   foreach(bindings_configuration, _bindings_configurations) {
     cpp_only = false
     variant_suffix = ""
@@ -207,28 +278,7 @@ template("mojom") {
         ]
         outputs = generator_cpp_outputs + generator_java_outputs +
                   generator_js_outputs
-        args = [
-          "--use_bundled_pylibs",
-          "generate",
-          "{{source}}",
-          "-d",
-          rebase_path("//", root_build_dir),
-          "-I",
-          rebase_path("//", root_build_dir),
-          "-o",
-          rebase_path(root_gen_dir),
-          "--bytecode_path",
-          rebase_path("$root_gen_dir/mojo/public/tools/bindings"),
-        ]
-
-        if (defined(invoker.import_dirs)) {
-          foreach(import_dir, invoker.import_dirs) {
-            args += [
-              "-I",
-              rebase_path(import_dir, root_build_dir),
-            ]
-          }
-        }
+        args = common_generator_args
 
         if (cpp_only) {
           args += [
@@ -386,6 +436,7 @@ template("mojom") {
         sources = process_file_template(enabled_sources, generator_cpp_outputs)
       }
       deps = [
+        ":$shared_cpp_sources_target_name",
         "//mojo/public/cpp/bindings:struct_traits",
         "//mojo/public/interfaces/bindings:bindings__generator",
       ]

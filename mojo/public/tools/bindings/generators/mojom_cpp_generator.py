@@ -527,19 +527,42 @@ class Generator(generator.Generator):
   def GenerateModuleSource(self):
     return self.GetJinjaExports()
 
+  @UseJinja("module-shared.h.tmpl")
+  def GenerateModuleSharedHeader(self):
+    return self.GetJinjaExports()
+
+  @UseJinja("module-shared-internal.h.tmpl")
+  def GenerateModuleSharedInternalHeader(self):
+    return self.GetJinjaExports()
+
+  @UseJinja("module-shared.cc.tmpl")
+  def GenerateModuleSharedSource(self):
+    return self.GetJinjaExports()
+
   def GenerateFiles(self, args):
-    global _current_typemap
-    _current_typemap = self.typemap
-    global _for_blink
-    _for_blink = self.for_blink
-    global _use_new_wrapper_types
-    _use_new_wrapper_types = self.use_new_wrapper_types
-    global _variant
-    _variant = self.variant
-    suffix = "-%s" % self.variant if self.variant else ""
-    self.Write(self.GenerateModuleHeader(),
-        self.MatchMojomFilePath("%s%s.h" % (self.module.name, suffix)))
-    self.Write(self.GenerateModuleInternalHeader(),
-        self.MatchMojomFilePath("%s%s-internal.h" % (self.module.name, suffix)))
-    self.Write(self.GenerateModuleSource(),
-        self.MatchMojomFilePath("%s%s.cc" % (self.module.name, suffix)))
+    if self.generate_non_variant_code:
+      self.Write(self.GenerateModuleSharedHeader(),
+                 self.MatchMojomFilePath("%s-shared.h" % self.module.name))
+      self.Write(
+          self.GenerateModuleSharedInternalHeader(),
+          self.MatchMojomFilePath("%s-shared-internal.h" % self.module.name))
+      self.Write(self.GenerateModuleSharedSource(),
+                 self.MatchMojomFilePath("%s-shared.cc" % self.module.name))
+    else:
+      global _current_typemap
+      _current_typemap = self.typemap
+      global _for_blink
+      _for_blink = self.for_blink
+      global _use_new_wrapper_types
+      _use_new_wrapper_types = self.use_new_wrapper_types
+      global _variant
+      _variant = self.variant
+      suffix = "-%s" % self.variant if self.variant else ""
+      self.Write(self.GenerateModuleHeader(),
+                 self.MatchMojomFilePath("%s%s.h" % (self.module.name, suffix)))
+      self.Write(self.GenerateModuleInternalHeader(),
+                 self.MatchMojomFilePath("%s%s-internal.h" %
+                                             (self.module.name, suffix)))
+      self.Write(
+          self.GenerateModuleSource(),
+          self.MatchMojomFilePath("%s%s.cc" % (self.module.name, suffix)))

@@ -38,7 +38,8 @@ class Generator(object):
   # files to stdout.
   def __init__(self, module, output_dir=None, typemap=None, variant=None,
                bytecode_path=None, for_blink=False, use_new_wrapper_types=False,
-               export_attribute=None, export_header=None):
+               export_attribute=None, export_header=None,
+               generate_non_variant_code=False):
     self.module = module
     self.output_dir = output_dir
     self.typemap = typemap or {}
@@ -48,6 +49,7 @@ class Generator(object):
     self.use_new_wrapper_types = use_new_wrapper_types
     self.export_attribute = export_attribute
     self.export_header = export_header
+    self.generate_non_variant_code = generate_non_variant_code
 
   def GetStructsFromMethods(self):
     result = []

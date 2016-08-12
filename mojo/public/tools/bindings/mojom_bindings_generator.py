@@ -165,7 +165,8 @@ class MojomProcessor(object):
             for_blink=args.for_blink,
             use_new_wrapper_types=args.use_new_wrapper_types,
             export_attribute=args.export_attribute,
-            export_header=args.export_header)
+            export_header=args.export_header,
+            generate_non_variant_code=args.generate_non_variant_code)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -299,6 +300,9 @@ def main():
       "--export_header", type=str, default="",
       help="Optional header to include in the generated headers to support the "
       "component build.")
+  generate_parser.add_argument(
+      "--generate_non_variant_code", action="store_true",
+      help="Generate code that is shared by different variants.")
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",
