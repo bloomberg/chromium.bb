@@ -56,7 +56,7 @@ Polymer({
   /**
    * Handler for clicking a language on the main page, which selects the
    * language as the prospective UI language on Chrome OS and Windows.
-   * @param {!{model: !{item: !LanguageState}}} e
+   * @param {!Event} e The tap event.
    */
   onLanguageTap_: function(e) {
     // Only change the UI language on platforms that allow it.
@@ -64,8 +64,19 @@ Polymer({
       return;
 
     // Set the prospective UI language. This won't take effect until a restart.
-    if (e.model.item.language.supportsUI)
-      this.languageHelper_.setUILanguage(e.model.item.language.code);
+    var tapEvent = /** @type {!{model: !{item: !LanguageState}}} */(e);
+    if (tapEvent.model.item.language.supportsUI)
+      this.languageHelper_.setUILanguage(tapEvent.model.item.language.code);
+  },
+
+  /**
+   * Stops tap events on the language options menu, its trigger, or its items
+   * from bubbling up to the language itself. Tap events on the language are
+   * handled in onLanguageTap_.
+   * @param {!Event} e The tap event.
+   */
+  stopPropagationHandler_: function(e) {
+    e.stopPropagation();
   },
 
   /**

@@ -79,11 +79,13 @@
 </if>
                 <paper-icon-button id="more-[[item.language.code]]"
                     icon="cr:more-vert" toggles
-                    active="{{item.optionsMenuOpened}}">
+                    active="{{item.optionsMenuOpened}}"
+                    on-tap="stopPropagationHandler_">
                 </paper-icon-button>
                 <iron-dropdown opened="{{item.optionsMenuOpened}}"
                     horizontal-align="right" vertical-align="auto">
-                  <div class="dropdown-content">
+                  <div class="dropdown-content"
+                      on-tap="stopPropagationHandler_">
                     <button class="dropdown-item" role="option"
                         on-tap="onMoveUpTap_"
                         hidden="[[isFirstLanguage_(index,

@@ -54,6 +54,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
 
     var languagesSection;
     var languagesPage;
+    var languageHelper;
     suiteSetup(function() {
       advanced.set('pageVisibility.languages', true);
       Polymer.dom.flush();
@@ -63,7 +64,8 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
       languagesPage = languagesSection.querySelector('settings-languages-page');
       assertTrue(!!languagesPage);
 
-      return LanguageHelperImpl.getInstance().whenReady();
+      languageHelper = LanguageHelperImpl.getInstance();
+      return languageHelper.whenReady();
     }.bind(this));
 
     teardown(function(done) {
@@ -82,6 +84,18 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
               '.list-button:last-of-type');
       MockInteractions.tap(manageLanguagesButton);
       assertTrue(!!languagesPage.$$('settings-manage-languages-page'));
+    });
+
+    test('Should not set UI language', function() {
+      var languagesCollapse = languagesPage.$.languagesCollapse;
+      var languageOptionsDropdownTrigger = languagesCollapse.querySelector(
+          'paper-icon-button');
+      assertTrue(!!languageOptionsDropdownTrigger);
+
+      // This shouldn't get called.
+      languageHelper.setUILanguage = assertNotReached;
+
+      MockInteractions.tap(languageOptionsDropdownTrigger);
     });
 
     test('language detail', function() {
