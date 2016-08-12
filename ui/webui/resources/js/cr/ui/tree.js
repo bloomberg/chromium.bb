@@ -57,6 +57,8 @@ cr.define('cr.ui', function() {
       this.addEventListener('mousedown', this.handleMouseDown);
       this.addEventListener('dblclick', this.handleDblClick);
       this.addEventListener('keydown', this.handleKeyDown);
+
+      this.setAttribute('role', 'group');
     },
 
     /**

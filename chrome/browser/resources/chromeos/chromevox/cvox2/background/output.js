@@ -564,6 +564,10 @@ Output.RULES = {
     treeItem: {
       enter: '$role $expanded $collapsed ' +
           '@describe_index($indexInParent, $parentChildCount) ' +
+          '@describe_depth($hierarchicalLevel)',
+      speak: '$name ' +
+          '$role $expanded $collapsed ' +
+          '@describe_index($indexInParent, $parentChildCount) ' +
           '@describe_depth($hierarchicalLevel)'
     },
     window: {
