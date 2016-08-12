@@ -1545,18 +1545,6 @@ ResourcePriority LayoutBox::computeResourcePriority() const
     return ResourcePriority(isVisible ? ResourcePriority::Visible : ResourcePriority::NotVisible, screenArea);
 }
 
-void LayoutBox::frameRectChanged()
-{
-    if (node() && node()->isElementNode()) {
-        Element& element = toElement(*node());
-        element.setNeedsResizeObserverUpdate();
-    }
-    // The frame rect may change because of layout of other objects.
-    // Should check this object for paint invalidation.
-    if (!needsLayout())
-        setMayNeedPaintInvalidation();
-}
-
 bool LayoutBox::intersectsVisibleViewport() const
 {
     LayoutRect rect = visualOverflowRect();

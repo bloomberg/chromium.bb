@@ -51,8 +51,6 @@ void LayoutSVGPath::updateShapeFromElement()
     processMarkerPositions();
 
     m_strokeBoundingBox = calculateUpdatedStrokeBoundingBox();
-    if (element())
-        element()->setNeedsResizeObserverUpdate();
 }
 
 FloatRect LayoutSVGPath::hitTestStrokeBoundingBox() const

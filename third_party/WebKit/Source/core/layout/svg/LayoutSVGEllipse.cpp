@@ -74,8 +74,6 @@ void LayoutSVGEllipse::updateShapeFromElement()
     m_strokeBoundingBox = m_fillBoundingBox;
     if (style()->svgStyle().hasStroke())
         m_strokeBoundingBox.inflate(strokeWidth() / 2);
-    if (element())
-        element()->setNeedsResizeObserverUpdate();
 }
 
 void LayoutSVGEllipse::calculateRadiiAndCenter()
