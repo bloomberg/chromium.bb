@@ -288,6 +288,15 @@ void UserScript::UnpickleScripts(const base::Pickle& pickle,
   }
 }
 
+UserScriptIDPair::UserScriptIDPair(int id, const HostID& host_id)
+    : id(id), host_id(host_id) {}
+
+UserScriptIDPair::UserScriptIDPair(int id) : id(id), host_id(HostID()) {}
+
+bool operator<(const UserScriptIDPair& a, const UserScriptIDPair& b) {
+  return a.id < b.id;
+}
+
 bool operator<(const UserScript& script1, const UserScript& script2) {
   // The only kind of script that should be compared is the kind that has its
   // IDs initialized to a meaningful value.

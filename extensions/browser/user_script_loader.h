@@ -58,7 +58,7 @@ class UserScriptLoader : public content::NotificationObserver {
   ~UserScriptLoader() override;
 
   // Add |scripts| to the set of scripts managed by this loader.
-  void AddScripts(const std::set<UserScript>& scripts);
+  void AddScripts(const UserScriptList& scripts);
 
   // Add |scripts| to the set of scripts managed by this loader.
   // The fetch of the content of the script starts URL request
@@ -66,12 +66,15 @@ class UserScriptLoader : public content::NotificationObserver {
   // |render_process_id, render_frame_id|.
   // TODO(hanxi): The renderer information doesn't really belong in this base
   // class, but it's not an easy fix.
-  virtual void AddScripts(const std::set<UserScript>& scripts,
+  virtual void AddScripts(const UserScriptList& scripts,
                           int render_process_id,
                           int render_frame_id);
 
-  // Remove |scripts| from the set of scripts managed by this loader.
-  void RemoveScripts(const std::set<UserScript>& scripts);
+  // Removes scripts with ids specified in |scripts| from the set of scripts
+  // managed by this loader.
+  // TODO(lazyboy): Likely we can make |scripts| a std::vector, but
+  // WebViewContentScriptManager makes this non-trivial.
+  void RemoveScripts(const std::set<UserScriptIDPair>& scripts);
 
   // Clears the set of scripts managed by this loader.
   void ClearScripts();
@@ -132,7 +135,7 @@ class UserScriptLoader : public content::NotificationObserver {
 
   bool is_loading() const {
     // Ownership of |user_scripts_| is passed to the file thread when loading.
-    return user_scripts_.get() == NULL;
+    return user_scripts_.get() == nullptr;
   }
 
   // Manages our notification registrations.
@@ -144,10 +147,11 @@ class UserScriptLoader : public content::NotificationObserver {
   // List of scripts from currently-installed extensions we should load.
   std::unique_ptr<UserScriptList> user_scripts_;
 
-  // The mutually-exclusive sets of scripts that were added or removed since the
-  // last script load.
-  std::set<UserScript> added_scripts_;
-  std::set<UserScript> removed_scripts_;
+  // The mutually-exclusive information about sets of scripts that were added or
+  // removed since the last script load. These maps are keyed by script ids.
+  // Note that we only need HostID information for removal.
+  std::map<int, UserScript> added_scripts_map_;
+  std::set<UserScriptIDPair> removed_script_hosts_;
 
   // Indicates whether the the collection of scripts should be cleared before
   // additions and removals on the next script load.

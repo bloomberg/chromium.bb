@@ -34,24 +34,27 @@ void SharedUserScriptMaster::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  loader_.RemoveScripts(GetScriptsMetadata(extension));
+  const UserScriptList& script_list =
+      ContentScriptsInfo::GetContentScripts(extension);
+  std::set<UserScriptIDPair> scripts_to_remove;
+  for (const UserScript& script : script_list)
+    scripts_to_remove.insert(UserScriptIDPair(script.id(), script.host_id()));
+  loader_.RemoveScripts(scripts_to_remove);
 }
 
-const std::set<UserScript> SharedUserScriptMaster::GetScriptsMetadata(
+const std::vector<UserScript> SharedUserScriptMaster::GetScriptsMetadata(
     const Extension* extension) {
   bool incognito_enabled = util::IsIncognitoEnabled(extension->id(), profile_);
   const UserScriptList& script_list =
       ContentScriptsInfo::GetContentScripts(extension);
-  std::set<UserScript> script_set;
-  for (UserScriptList::const_iterator it = script_list.begin();
-       it != script_list.end();
-       ++it) {
-    UserScript script = *it;
-    script.set_incognito_enabled(incognito_enabled);
-    script_set.insert(script);
+  std::vector<UserScript> scripts;
+  scripts.reserve(script_list.size());
+  for (const UserScript& script : script_list) {
+    scripts.push_back(UserScript(script));
+    scripts.back().set_incognito_enabled(incognito_enabled);
   }
 
-  return script_set;
+  return scripts;
 }
 
 }  // namespace extensions

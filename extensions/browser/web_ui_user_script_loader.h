@@ -32,7 +32,7 @@ class WebUIUserScriptLoader : public extensions::UserScriptLoader {
   using UserScriptRenderInfoMap = std::map<int, UserScriptRenderInfo>;
 
   // UserScriptLoader:
-  void AddScripts(const std::set<extensions::UserScript>& scripts,
+  void AddScripts(const extensions::UserScriptList& scripts,
                   int render_process_id,
                   int render_frame_id) override;
   void LoadScripts(std::unique_ptr<extensions::UserScriptList> user_scripts,

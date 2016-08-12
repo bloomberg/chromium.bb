@@ -215,7 +215,7 @@ bool ParseContentScripts(
     const HostID& host_id,
     bool incognito_enabled,
     const GURL& owner_base_url,
-    std::set<UserScript>* result,
+    extensions::UserScriptList* result,
     std::string* error) {
   if (content_script_list.empty())
     return false;
@@ -239,7 +239,7 @@ bool ParseContentScripts(
     script.set_incognito_enabled(incognito_enabled);
     script.set_host_id(host_id);
     script.set_consumer_instance_type(UserScript::WEBVIEW);
-    result->insert(script);
+    result->push_back(script);
   }
   return true;
 }
@@ -500,12 +500,11 @@ WebViewInternalAddContentScriptsFunction::Run() {
 
   GURL owner_base_url(
       render_frame_host()->GetSiteInstance()->GetSiteURL().GetWithEmptyPath());
-  std::set<UserScript> result;
-
   content::WebContents* sender_web_contents = GetSenderWebContents();
   HostID host_id = GenerateHostIDFromEmbedder(extension(), sender_web_contents);
   bool incognito_enabled = browser_context()->IsOffTheRecord();
 
+  UserScriptList result;
   if (!ParseContentScripts(params->content_script_list, extension(), host_id,
                            incognito_enabled, owner_base_url, &result, &error_))
     return RespondNow(Error(error_));

@@ -44,7 +44,7 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data,
                          content::RenderFrameHost* render_frame_host,
                          int view_instance_id,
                          const HostID& host_id,
-                         const std::set<UserScript>& user_scripts);
+                         const UserScriptList& user_scripts);
 
   // Removes all content scripts for the WebView identified by
   // |embedder_process_id| and |view_instance_id|.
@@ -73,7 +73,7 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data,
 
  private:
   using GuestMapKey = std::pair<int, int>;
-  using ContentScriptMap = std::map<std::string, extensions::UserScript>;
+  using ContentScriptMap = std::map<std::string, UserScriptIDPair>;
   using GuestContentScriptMap = std::map<GuestMapKey, ContentScriptMap>;
 
   // UserScriptLoader::Observer implementation:

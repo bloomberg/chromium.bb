@@ -32,26 +32,23 @@ DeclarativeUserScriptMaster::~DeclarativeUserScriptMaster() {
 }
 
 void DeclarativeUserScriptMaster::AddScript(const UserScript& script) {
-  std::set<UserScript> set;
-  set.insert(script);
-  loader_->AddScripts(set);
+  loader_->AddScripts(UserScriptList(1, script));
 }
 
-void DeclarativeUserScriptMaster::AddScripts(
-    const std::set<UserScript>& scripts,
-    int render_process_id,
-    int render_frame_id) {
-  loader_->AddScripts(scripts, render_process_id, render_frame_id);
+void DeclarativeUserScriptMaster::AddScripts(const UserScriptList& scripts,
+                                             int render_process_id,
+                                             int render_view_id) {
+  loader_->AddScripts(scripts, render_process_id, render_view_id);
 }
 
 void DeclarativeUserScriptMaster::RemoveScript(const UserScript& script) {
-  std::set<UserScript> set;
-  set.insert(script);
+  std::set<UserScriptIDPair> set;
+  set.insert(UserScriptIDPair(script.id(), script.host_id()));
   loader_->RemoveScripts(set);
 }
 
 void DeclarativeUserScriptMaster::RemoveScripts(
-    const std::set<UserScript>& scripts) {
+    const std::set<UserScriptIDPair>& scripts) {
   loader_->RemoveScripts(scripts);
 }
 

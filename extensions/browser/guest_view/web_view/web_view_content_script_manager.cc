@@ -46,7 +46,7 @@ void WebViewContentScriptManager::AddContentScripts(
     content::RenderFrameHost* render_frame_host,
     int view_instance_id,
     const HostID& host_id,
-    const std::set<UserScript>& scripts) {
+    const UserScriptList& scripts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DeclarativeUserScriptMaster* master =
@@ -71,22 +71,21 @@ void WebViewContentScriptManager::AddContentScripts(
 
   // Step 2: updates the guest_content_script_map_.
   ContentScriptMap& map = iter->second;
-  std::set<UserScript> scripts_to_delete;
+  std::set<UserScriptIDPair> to_delete;
   for (const UserScript& script : scripts) {
     auto map_iter = map.find(script.name());
     // If a content script has the same name as the new one, remove the old
     // script first, and insert the new one.
     if (map_iter != map.end()) {
-      scripts_to_delete.insert(map_iter->second);
+      to_delete.insert(map_iter->second);
       map.erase(map_iter);
     }
-    map.insert(std::pair<std::string, UserScript>(script.name(), script));
+    map.insert(std::pair<std::string, UserScriptIDPair>(
+        script.name(), UserScriptIDPair(script.id(), script.host_id())));
     ids_to_add.insert(script.id());
   }
-
-  if (!scripts_to_delete.empty()) {
-    master->RemoveScripts(scripts_to_delete);
-  }
+  if (!to_delete.empty())
+    master->RemoveScripts(to_delete);
 
   // Step 3: makes WebViewContentScriptManager become an observer of the
   // |loader| for scripts loaded event.
@@ -156,11 +155,11 @@ void WebViewContentScriptManager::RemoveContentScripts(
 
   // We need to update WebViewRenderState in the IO thread if the guest exists.
   std::set<int> ids_to_delete;
-  std::set<UserScript> scripts_to_delete;
+  std::set<UserScriptIDPair> scripts_to_delete;
 
   // Step 1: removes content scripts from |master| and updates
   // |guest_content_script_map_|.
-  std::map<std::string, UserScript>& map = script_map_iter->second;
+  std::map<std::string, UserScriptIDPair>& map = script_map_iter->second;
   // If the |script_name_list| is empty, all the content scripts added by the
   // guest will be removed; otherwise, removes the scripts in the
   // |script_name_list|.
@@ -168,7 +167,7 @@ void WebViewContentScriptManager::RemoveContentScripts(
     auto it = map.begin();
     while (it != map.end()) {
       scripts_to_delete.insert(it->second);
-      ids_to_delete.insert(it->second.id());
+      ids_to_delete.insert(it->second.id);
       map.erase(it++);
     }
   } else {
@@ -176,9 +175,9 @@ void WebViewContentScriptManager::RemoveContentScripts(
       ContentScriptMap::iterator iter = map.find(name);
       if (iter == map.end())
         continue;
-      const UserScript& script = iter->second;
-      ids_to_delete.insert(script.id());
-      scripts_to_delete.insert(script);
+      const UserScriptIDPair& id_pair = iter->second;
+      ids_to_delete.insert(id_pair.id);
+      scripts_to_delete.insert(id_pair);
       map.erase(iter);
     }
   }
@@ -214,8 +213,8 @@ std::set<int> WebViewContentScriptManager::GetContentScriptIDSet(
   if (iter == guest_content_script_map_.end())
     return ids;
   const ContentScriptMap& map = iter->second;
-  for (const auto& pair : map)
-    ids.insert(pair.second.id());
+  for (const auto& id_pair : map)
+    ids.insert(id_pair.second.id);
 
   return ids;
 }

@@ -317,8 +317,19 @@ class UserScript {
   bool incognito_enabled_;
 };
 
+// Information we need while removing scripts from a UserScriptLoader.
+struct UserScriptIDPair {
+  UserScriptIDPair(int id, const HostID& host_id);
+  UserScriptIDPair(int id);
+
+  int id;
+  HostID host_id;
+};
+
 // For storing UserScripts with unique IDs in sets.
 bool operator<(const UserScript& script1, const UserScript& script2);
+
+bool operator<(const UserScriptIDPair& a, const UserScriptIDPair& b);
 
 typedef std::vector<UserScript> UserScriptList;
 

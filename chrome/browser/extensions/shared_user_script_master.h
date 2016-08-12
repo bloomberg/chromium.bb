@@ -45,7 +45,7 @@ class SharedUserScriptMaster : public ExtensionRegistryObserver {
 
   // Gets an extension's scripts' metadata; i.e., gets a list of UserScript
   // objects that contains script info, but not the contents of the scripts.
-  const std::set<UserScript> GetScriptsMetadata(const Extension* extension);
+  const UserScriptList GetScriptsMetadata(const Extension* extension);
 
   // Script loader that handles loading contents of scripts into shared memory
   // and notifying renderers of scripts in shared memory.

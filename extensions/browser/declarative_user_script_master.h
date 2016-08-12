@@ -21,6 +21,8 @@ namespace extensions {
 class UserScript;
 class UserScriptLoader;
 
+struct UserScriptIDPair;
+
 // Manages declarative user scripts for a single extension. Owns a
 // UserScriptLoader to which file loading and shared memory management
 // operations are delegated, and provides an interface for adding, removing,
@@ -39,7 +41,7 @@ class DeclarativeUserScriptMaster {
   // of the script on WebUI requires to start URL request to the associated
   // render specified by |render_process_id, render_frame_id|.
   // This may not happen right away if a script load is in progress.
-  void AddScripts(const std::set<UserScript>& scripts,
+  void AddScripts(const std::vector<UserScript>& scripts,
                   int render_process_id,
                   int render_frame_id);
 
@@ -49,7 +51,7 @@ class DeclarativeUserScriptMaster {
 
   // Removes a set of scripts from shared memory region. This may not happen
   // right away if a script load is in progress.
-  void RemoveScripts(const std::set<UserScript>& scripts);
+  void RemoveScripts(const std::set<UserScriptIDPair>& scripts);
 
   // Removes all scripts from shared memory region. This may not happen right
   // away if a script load is in progress.

@@ -49,7 +49,7 @@ WebUIUserScriptLoader::~WebUIUserScriptLoader() {
 }
 
 void WebUIUserScriptLoader::AddScripts(
-    const std::set<extensions::UserScript>& scripts,
+    const extensions::UserScriptList& scripts,
     int render_process_id,
     int render_frame_id) {
   UserScriptRenderInfo info(render_process_id, render_frame_id);

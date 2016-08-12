@@ -28,6 +28,18 @@ namespace extensions {
 
 namespace {
 
+#if DCHECK_IS_ON()
+bool AreScriptsUnique(const UserScriptList& scripts) {
+  std::set<int> script_ids;
+  for (const UserScript& script : scripts) {
+    if (script_ids.count(script.id()))
+      return false;
+    script_ids.insert(script.id());
+  }
+  return true;
+}
+#endif  // DCHECK_IS_ON()
+
 // Helper function to parse greasesmonkey headers
 bool GetDeclarationValue(const base::StringPiece& line,
                          const base::StringPiece& prefix,
@@ -161,36 +173,44 @@ UserScriptLoader::~UserScriptLoader() {
   FOR_EACH_OBSERVER(Observer, observers_, OnUserScriptLoaderDestroyed(this));
 }
 
-void UserScriptLoader::AddScripts(const std::set<UserScript>& scripts) {
-  for (std::set<UserScript>::const_iterator it = scripts.begin();
-       it != scripts.end();
-       ++it) {
-    removed_scripts_.erase(*it);
-    added_scripts_.insert(*it);
+void UserScriptLoader::AddScripts(const UserScriptList& scripts) {
+#if DCHECK_IS_ON()
+  // |scripts| with non-unique IDs will work, but that would indicate we are
+  // doing something wrong somewhere, so DCHECK that.
+  DCHECK(AreScriptsUnique(scripts))
+      << "AddScripts() expects scripts with unique IDs.";
+#endif  // DCHECK_IS_ON()
+  for (const UserScript& user_script : scripts) {
+    int id = user_script.id();
+    removed_script_hosts_.erase(UserScriptIDPair(id));
+    if (added_scripts_map_.count(id) == 0)
+      added_scripts_map_[id] = user_script;
   }
   AttemptLoad();
 }
 
-void UserScriptLoader::AddScripts(const std::set<UserScript>& scripts,
+void UserScriptLoader::AddScripts(const UserScriptList& scripts,
                                   int render_process_id,
                                   int render_frame_id) {
   AddScripts(scripts);
 }
 
-void UserScriptLoader::RemoveScripts(const std::set<UserScript>& scripts) {
-  for (std::set<UserScript>::const_iterator it = scripts.begin();
-       it != scripts.end();
-       ++it) {
-    added_scripts_.erase(*it);
-    removed_scripts_.insert(*it);
+void UserScriptLoader::RemoveScripts(
+    const std::set<UserScriptIDPair>& scripts) {
+  for (const UserScriptIDPair& id_pair : scripts) {
+    removed_script_hosts_.insert(UserScriptIDPair(id_pair.id, id_pair.host_id));
+    // TODO(lazyboy): We shouldn't be trying to remove scripts that were never
+    // a) added to |added_scripts_map_| or b) being loaded or has done loading
+    // through |user_scripts_|. This would reduce sending redundant IPC.
+    added_scripts_map_.erase(id_pair.id);
   }
   AttemptLoad();
 }
 
 void UserScriptLoader::ClearScripts() {
   clear_scripts_ = true;
-  added_scripts_.clear();
-  removed_scripts_.clear();
+  added_scripts_map_.clear();
+  removed_script_hosts_.clear();
   AttemptLoad();
 }
 
@@ -215,10 +235,8 @@ bool UserScriptLoader::ScriptsMayHaveChanged() const {
   // (1) A load is in progress (which may result in a non-zero number of
   //     scripts that need to be cleared), or
   // (2) The current set of scripts is non-empty (so they need to be cleared).
-  return (added_scripts_.size() ||
-          removed_scripts_.size() ||
-          (clear_scripts_ &&
-           (is_loading() || user_scripts_->size())));
+  return (added_scripts_map_.size() || removed_script_hosts_.size() ||
+          (clear_scripts_ && (is_loading() || user_scripts_->size())));
 }
 
 void UserScriptLoader::AttemptLoad() {
@@ -241,38 +259,36 @@ void UserScriptLoader::StartLoad() {
   } else {
     for (UserScriptList::iterator it = user_scripts_->begin();
          it != user_scripts_->end();) {
-      if (removed_scripts_.count(*it))
+      UserScriptIDPair id_pair(it->id());
+      if (removed_script_hosts_.count(id_pair) > 0u)
         it = user_scripts_->erase(it);
       else
         ++it;
     }
   }
 
-  user_scripts_->insert(
-      user_scripts_->end(), added_scripts_.begin(), added_scripts_.end());
-
   std::set<int> added_script_ids;
-  for (std::set<UserScript>::const_iterator it = added_scripts_.begin();
-       it != added_scripts_.end();
-       ++it) {
-    added_script_ids.insert(it->id());
-  }
-
-  // Expand |changed_hosts_| for OnScriptsLoaded, which will use it in
-  // its IPC message. This must be done before we clear |added_scripts_| and
-  // |removed_scripts_| below.
-  std::set<UserScript> changed_scripts(added_scripts_);
-  changed_scripts.insert(removed_scripts_.begin(), removed_scripts_.end());
-  for (const UserScript& script : changed_scripts)
+  user_scripts_->reserve(user_scripts_->size() + added_scripts_map_.size());
+  for (const auto& id_and_script : added_scripts_map_) {
+    const UserScript& script = id_and_script.second;
+    added_script_ids.insert(script.id());
+    // Expand |changed_hosts_| for OnScriptsLoaded, which will use it in
+    // its IPC message. This must be done before we clear |added_scripts_map_|
+    // and |removed_script_hosts_| below.
     changed_hosts_.insert(script.host_id());
+    // Put script from |added_scripts_map_| into |user_scripts_|.
+    user_scripts_->push_back(added_scripts_map_[script.id()]);
+  }
+  for (const UserScriptIDPair& id_pair : removed_script_hosts_)
+    changed_hosts_.insert(id_pair.host_id);
 
   LoadScripts(std::move(user_scripts_), changed_hosts_, added_script_ids,
               base::Bind(&UserScriptLoader::OnScriptsLoaded,
                          weak_factory_.GetWeakPtr()));
 
   clear_scripts_ = false;
-  added_scripts_.clear();
-  removed_scripts_.clear();
+  added_scripts_map_.clear();
+  removed_script_hosts_.clear();
   user_scripts_.reset();
 }
 
