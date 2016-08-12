@@ -7,25 +7,25 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
-#include "components/test_runner/test_common.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
+#include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 
 namespace webcrypto {
 
 namespace {
 
 // This mock is used to initialize blink.
-class InitOnce {
+class InitOnce : NON_EXPORTED_BASE(public blink::Platform) {
  public:
   InitOnce() {
-    // EnsureBlinkInitialized() depends on the command line singleton being
-    // initialized.
     base::CommandLine::Init(0, nullptr);
-    test_runner::EnsureBlinkInitialized();
+    blink::Platform::initialize(this);
   }
+  ~InitOnce() override {}
 };
 
 base::LazyInstance<InitOnce>::Leaky g_once = LAZY_INSTANCE_INITIALIZER;

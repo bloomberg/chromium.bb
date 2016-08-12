@@ -110,10 +110,6 @@ source_set("fuzzer_support") {
     "//crypto",
     "//crypto:platform",
     "//third_party/WebKit/public:blink",
-
-    # This contains a helper function for initializing Blink (needed for
-    # PartitionAlloc initialization).
-    "//components/test_runner:test_runner",
   ]
 }
 

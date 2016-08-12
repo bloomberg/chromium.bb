@@ -33,10 +33,6 @@ const char* WebNavigationPolicyToString(
 
 blink::WebString V8StringToWebString(v8::Local<v8::String> v8_str);
 
-// Tests which depend on Blink must call this function on the main thread
-// before creating/calling any Blink objects/APIs.
-TEST_RUNNER_EXPORT void EnsureBlinkInitialized();
-
 }  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_TEST_COMMON_H_

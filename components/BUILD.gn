@@ -201,7 +201,6 @@ test("components_unittests") {
       "//components/spellcheck/renderer:unit_tests",
       "//components/subresource_filter/content/browser:unit_tests",
       "//components/subresource_filter/content/renderer:unit_tests",
-      "//components/test_runner:test_runner",
       "//components/tracing:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/wallpaper:unit_tests",
