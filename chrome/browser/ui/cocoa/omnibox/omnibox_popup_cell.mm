@@ -11,6 +11,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -395,6 +396,11 @@ NSAttributedString* CreateClassifiedAttributedString(
 
 }  // namespace
 
+@interface OmniboxPopupCellData () {
+  base::mac::ObjCPropertyReleaser propertyReleaser_OmniboxPopupCellData_;
+}
+@end
+
 @interface OmniboxPopupCell ()
 - (CGFloat)drawMatchPart:(NSAttributedString*)attributedString
                withFrame:(NSRect)cellFrame
@@ -465,13 +471,10 @@ NSAttributedString* CreateClassifiedAttributedString(
       }
       maxLines_ = 1;
     }
+    propertyReleaser_OmniboxPopupCellData_.Init(self,
+                                                [OmniboxPopupCellData class]);
   }
   return self;
-}
-
-- (void)dealloc {
-  [incognitoImage_ release];
-  [super dealloc];
 }
 
 - (instancetype)copyWithZone:(NSZone*)zone {

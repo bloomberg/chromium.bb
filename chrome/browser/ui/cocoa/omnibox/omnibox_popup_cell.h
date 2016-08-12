@@ -12,45 +12,32 @@
 
 class OmniboxPopupViewMac;
 
-@interface OmniboxPopupCellData : NSObject<NSCopying> {
- @private
-  // Left hand side of the separator (e.g. a hyphen).
-  NSAttributedString* contents_;
-  // Right hand side of the separator (e.g. a hyphen).
-  NSAttributedString* description_;
+@interface OmniboxPopupCellData : NSObject<NSCopying>
 
-  // NOTE: While |prefix_| is used only for postfix suggestions, it still needs
-  // to be a member of the class. This allows the |NSAttributedString| instance
-  // to stay alive between the call to |drawTitle| and the actual paint event
-  // which accesses the |NSAttributedString| instance.
-  NSAttributedString* prefix_;
-
-  // Common icon that shows next to most rows in the list.
-  NSImage* image_;
-  // Uncommon icon that only shows on answer rows (e.g. weather).
-  NSImage* answerImage_;
-
-  // The offset at which the infinite suggestion contents should be displayed.
-  CGFloat contentsOffset_;
-
-  BOOL isContentsRTL_;
-
-  // Is this suggestion an answer or calculator result.
-  bool isAnswer_;
-
-  AutocompleteMatch::Type matchType_;
-
-  int maxLines_;
-}
-
+// Left hand side of the separator (e.g. a hyphen).
 @property(readonly, retain, nonatomic) NSAttributedString* contents;
+
+// Right hand side of the separator (e.g. a hyphen).
 @property(readonly, retain, nonatomic) NSAttributedString* description;
+
+// NOTE: While |prefix_| is used only for postfix suggestions, it still needs
+// to be a member of the class. This allows the |NSAttributedString| instance
+// to stay alive between the call to |drawTitle| and the actual paint event
+// which accesses the |NSAttributedString| instance.
 @property(readonly, retain, nonatomic) NSAttributedString* prefix;
+
+// Common icon that shows next to most rows in the list.
 @property(readonly, retain, nonatomic) NSImage* image;
 @property(retain, nonatomic) NSImage* incognitoImage;
+
+// Uncommon icon that only shows on answer rows (e.g. weather).
 @property(readonly, retain, nonatomic) NSImage* answerImage;
+
+// The offset at which the infinite suggestion contents should be displayed.
 @property(readonly, nonatomic) CGFloat contentsOffset;
 @property(readonly, nonatomic) BOOL isContentsRTL;
+
+// Is this suggestion an answer or calculator result.
 @property(readonly, nonatomic) bool isAnswer;
 @property(readonly, nonatomic) AutocompleteMatch::Type matchType;
 @property(readonly, nonatomic) int maxLines;

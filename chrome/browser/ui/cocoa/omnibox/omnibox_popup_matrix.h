@@ -17,7 +17,7 @@ class AutocompleteResult;
 class OmniboxPopupViewMac;
 
 @interface OmniboxPopupTableController
-    : NSViewController<NSTableViewDelegate, NSTableViewDataSource> {
+    : NSObject<NSTableViewDelegate, NSTableViewDataSource> {
  @private
   base::scoped_nsobject<NSArray> array_;
   NSInteger hoveredIndex_;

@@ -115,11 +115,11 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
     answerImage =
         gfx::Image::CreateFrom1xBitmap(model_->answer_bitmap()).CopyNSImage();
   }
-  [matrix_ setController:[[OmniboxPopupTableController alloc]
+  [matrix_ setController:[[[OmniboxPopupTableController alloc]
                              initWithMatchResults:result
                                         tableView:matrix_
                                         popupView:*this
-                                      answerImage:answerImage]];
+                                      answerImage:answerImage] autorelease]];
   BOOL is_dark_theme = [matrix_ hasDarkTheme];
   [matrix_ setSeparator:[OmniboxPopupCell
                             createSeparatorStringForDarkTheme:is_dark_theme]];
