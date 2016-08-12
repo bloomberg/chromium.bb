@@ -188,8 +188,17 @@ class LocalDeviceEnvironment(environment.Environment):
       try:
         m.Stop()
         m.Close()
+        _, temp_path = tempfile.mkstemp()
+        with open(m.output_file, 'r') as infile:
+          with open(temp_path, 'w') as outfile:
+            for line in infile:
+              outfile.write('Device(%s) %s' % (m.adb.GetDeviceSerial(), line))
+        shutil.move(temp_path, m.output_file)
       except base_error.BaseError:
         logging.exception('Failed to stop logcat monitor for %s',
+                          m.adb.GetDeviceSerial())
+      except IOError:
+        logging.exception('Failed to locate logcat for device %s',
                           m.adb.GetDeviceSerial())
 
     if self._logcat_output_file:

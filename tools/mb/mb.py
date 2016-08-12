@@ -1011,12 +1011,23 @@ class MetaBuildWrapper(object):
     extra_files = []
 
     if android and test_type != "script":
-      cmdline = [
-          self.PathJoin('bin', 'run_%s' % target_name),
-          '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
-          '--target-devices-file', '${SWARMING_BOT_FILE}',
-          '-v',
+      logdog_command = [
+          '--logdog-bin-cmd', './../../bin/logdog_butler',
+          '--project', 'chromium',
+          '--service-account-json',
+          '/creds/service_accounts/service-account-luci-logdog-publisher.json',
+          '--prefix', 'android/swarming/logcats/${SWARMING_TASK_ID}',
+          '--source', '${ISOLATED_OUTDIR}/logcats',
+          '--name', 'unified_logcats',
       ]
+      test_cmdline = [
+          self.PathJoin('bin', 'run_%s' % target_name),
+          '--logcat-output-file', '${ISOLATED_OUTDIR}/logcats',
+          '--target-devices-file', '${SWARMING_BOT_FILE}',
+          '-v'
+      ]
+      cmdline = (['./../../build/android/test_wrapper/logdog_wrapper.py']
+                 + logdog_command + test_cmdline)
     elif use_x11 and test_type == 'windowed_test_launcher':
       extra_files = [
           'xdisplaycheck',
