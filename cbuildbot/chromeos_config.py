@@ -1661,6 +1661,23 @@ def GetConfig():
       site_config.Add('whirlwind-test-ap', _test_ap, boards=['whirlwind']),
   )
 
+  # Create tryjob build configs to help with stress testing.
+  _unittest_stress = site_config.AddTemplate(
+      'unittest-stress',
+      no_vmtest_builder,
+      no_hwtest_builder,
+      build_type=constants.TRYJOB_TYPE,
+      description='Run Unittests repeatedly to look for flake.',
+
+      builder_class_name='test_builders.UnittestStressBuilder',
+
+      # Make this available, so we can stress a previous build.
+      manifest_version=True,
+  )
+
+  # Create our unittest stress build configs (used for tryjobs only)
+  _CreateConfigsForBoards(_unittest_stress, _all_boards, 'unittest-stress')
+
   ### Master paladin (CQ builder).
 
   site_config.Add(
@@ -2771,7 +2788,7 @@ def GetConfig():
       boards=['x86-mario'],
   )
 
-    # Add special builders to help with cbuidlbot development/testing.
+  # Add special builders to help with cbuidlbot development/testing.
   site_config.Add(
       'sync-test-cbuildbot',
       no_hwtest_builder,

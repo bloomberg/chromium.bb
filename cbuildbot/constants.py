@@ -468,6 +468,9 @@ TOOLCHAIN_TYPE = 'toolchain'
 
 BRANCH_UTIL_CONFIG = 'branch-util'
 
+# Generic type of tryjob only build configs.
+TRYJOB_TYPE = 'tryjob'
+
 # Special build type for Chroot builders.  These builds focus on building
 # toolchains and validate that they work.
 CHROOT_BUILDER_TYPE = 'chroot'
@@ -487,6 +490,7 @@ VALID_BUILD_TYPES = (
     PAYLOADS_TYPE,
     TOOLCHAIN_TYPE,
     CONFIG_UPDATER_TYPE,
+    TRYJOB_TYPE,
 )
 
 # The default list of pre-cq configs to use.
