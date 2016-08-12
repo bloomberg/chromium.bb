@@ -682,8 +682,7 @@
                     { "name": "isInternalScript", "type": "boolean", "optional": true, "description": "Determines whether this script is an internal script.", "experimental": true },
                     { "name": "isLiveEdit", "type": "boolean", "optional": true, "description": "True, if this script is generated as a result of the live edit operation.", "experimental": true },
                     { "name": "sourceMapURL", "type": "string", "optional": true, "description": "URL of source map associated with script (if any)." },
-                    { "name": "hasSourceURL", "type": "boolean", "optional": true, "description": "True, if this script has sourceURL.", "experimental": true },
-                    { "name": "deprecatedCommentWasUsed", "type": "boolean", "optional": true, "experimental": true, "description": "True, if '//@ sourceURL' or '//@ sourceMappingURL' was used."}
+                    { "name": "hasSourceURL", "type": "boolean", "optional": true, "description": "True, if this script has sourceURL.", "experimental": true }
                 ],
                 "description": "Fired when virtual machine parses script. This event is also fired for all known and uncollected scripts upon enabling debugger."
             },
@@ -701,8 +700,7 @@
                     { "name": "executionContextAuxData", "type": "object", "optional": true, "description": "Embedder-specific auxiliary data.", "experimental": true },
                     { "name": "isInternalScript", "type": "boolean", "optional": true, "description": "Determines whether this script is an internal script.", "experimental": true },
                     { "name": "sourceMapURL", "type": "string", "optional": true, "description": "URL of source map associated with script (if any)." },
-                    { "name": "hasSourceURL", "type": "boolean", "optional": true, "description": "True, if this script has sourceURL.", "experimental": true },
-                    { "name": "deprecatedCommentWasUsed", "type": "boolean", "optional": true, "experimental": true, "description": "True, if '//@ sourceURL' or '//@ sourceMappingURL' was used."}
+                    { "name": "hasSourceURL", "type": "boolean", "optional": true, "description": "True, if this script has sourceURL.", "experimental": true }
                 ],
                 "description": "Fired when virtual machine fails to parse the script."
             },

@@ -23,8 +23,8 @@ v8::Local<v8::String> toV8StringInternalized(v8::Isolate*, const char*);
 String16 toProtocolString(v8::Local<v8::String>);
 String16 toProtocolStringWithTypeCheck(v8::Local<v8::Value>);
 
-String16 findSourceURL(const String16& content, bool multiline, bool* deprecated = nullptr);
-String16 findSourceMapURL(const String16& content, bool multiline, bool* deprecated = nullptr);
+String16 findSourceURL(const String16& content, bool multiline);
+String16 findSourceMapURL(const String16& content, bool multiline);
 std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> searchInTextByLinesImpl(V8InspectorSession*, const String16& text, const String16& query, bool caseSensitive, bool isRegex);
 
 } //  namespace blink

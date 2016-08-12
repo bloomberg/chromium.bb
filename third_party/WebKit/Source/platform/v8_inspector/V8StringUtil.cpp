@@ -13,12 +13,9 @@ namespace blink {
 
 namespace {
 
-String16 findMagicComment(const String16& content, const String16& name, bool multiline, bool* deprecated)
+String16 findMagicComment(const String16& content, const String16& name, bool multiline)
 {
     DCHECK(name.find("=") == kNotFound);
-    if (deprecated)
-        *deprecated = false;
-
     unsigned length = content.length();
     unsigned nameLength = name.length();
 
@@ -54,9 +51,6 @@ String16 findMagicComment(const String16& content, const String16& name, bool mu
 
         break;
     }
-
-    if (deprecated && content[pos + 2] == '@')
-        *deprecated = true;
 
     DCHECK(equalSignPos);
     DCHECK(!multiline || closingCommentPos);
@@ -197,14 +191,14 @@ std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> searchInTextByLine
     return result;
 }
 
-String16 findSourceURL(const String16& content, bool multiline, bool* deprecated)
+String16 findSourceURL(const String16& content, bool multiline)
 {
-    return findMagicComment(content, "sourceURL", multiline, deprecated);
+    return findMagicComment(content, "sourceURL", multiline);
 }
 
-String16 findSourceMapURL(const String16& content, bool multiline, bool* deprecated)
+String16 findSourceMapURL(const String16& content, bool multiline)
 {
-    return findMagicComment(content, "sourceMappingURL", multiline, deprecated);
+    return findMagicComment(content, "sourceMappingURL", multiline);
 }
 
 std::unique_ptr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context, v8::Local<v8::Value> value, int maxDepth)

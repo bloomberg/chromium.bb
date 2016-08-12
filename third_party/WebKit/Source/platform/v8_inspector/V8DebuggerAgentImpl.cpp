@@ -982,17 +982,10 @@ void V8DebuggerAgentImpl::didParseSource(std::unique_ptr<V8DebuggerScript> scrip
 {
     v8::HandleScope handles(m_isolate);
     String16 scriptSource = toProtocolString(script->source(m_isolate));
-    bool isDeprecatedSourceURL = false;
     if (!success)
-        script->setSourceURL(findSourceURL(scriptSource, false, &isDeprecatedSourceURL));
-    else if (script->hasSourceURL())
-        findSourceURL(scriptSource, false, &isDeprecatedSourceURL);
-
-    bool isDeprecatedSourceMappingURL = false;
+        script->setSourceURL(findSourceURL(scriptSource, false));
     if (!success)
-        script->setSourceMappingURL(findSourceMapURL(scriptSource, false, &isDeprecatedSourceMappingURL));
-    else if (!script->sourceMappingURL().isEmpty())
-        findSourceMapURL(scriptSource, false, &isDeprecatedSourceMappingURL);
+        script->setSourceMappingURL(findSourceMapURL(scriptSource, false));
 
     std::unique_ptr<protocol::DictionaryValue> executionContextAuxData;
     if (!script->executionContextAuxData().isEmpty())
@@ -1002,18 +995,16 @@ void V8DebuggerAgentImpl::didParseSource(std::unique_ptr<V8DebuggerScript> scrip
     bool hasSourceURL = script->hasSourceURL();
     String16 scriptId = script->scriptId();
     String16 scriptURL = script->sourceURL();
-    bool deprecatedCommentWasUsed = isDeprecatedSourceURL || isDeprecatedSourceMappingURL;
 
     const Maybe<String16>& sourceMapURLParam = script->sourceMappingURL();
     const Maybe<protocol::DictionaryValue>& executionContextAuxDataParam(std::move(executionContextAuxData));
     const bool* isInternalScriptParam = isInternalScript ? &isInternalScript : nullptr;
     const bool* isLiveEditParam = isLiveEdit ? &isLiveEdit : nullptr;
     const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
-    const bool* deprecatedCommentWasUsedParam = deprecatedCommentWasUsed ? &deprecatedCommentWasUsed : nullptr;
     if (success)
-        m_frontend.scriptParsed(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), executionContextAuxDataParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam, deprecatedCommentWasUsedParam);
+        m_frontend.scriptParsed(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), executionContextAuxDataParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam);
     else
-        m_frontend.scriptFailedToParse(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), executionContextAuxDataParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam, deprecatedCommentWasUsedParam);
+        m_frontend.scriptFailedToParse(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), executionContextAuxDataParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
 
     m_scripts[scriptId] = std::move(script);
 
