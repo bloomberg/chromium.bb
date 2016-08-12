@@ -91,9 +91,9 @@ notify_pointer_position(struct weston_test *test, struct wl_resource *resource)
 }
 
 static void
-test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+test_surface_committed(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
-	struct weston_test_surface *test_surface = surface->configure_private;
+	struct weston_test_surface *test_surface = surface->committed_private;
 	struct weston_test *test = test_surface->test;
 
 	if (wl_list_empty(&test_surface->view->layer_link.link))
@@ -118,7 +118,7 @@ move_surface(struct wl_client *client, struct wl_resource *resource,
 		wl_resource_get_user_data(surface_resource);
 	struct weston_test_surface *test_surface;
 
-	test_surface = surface->configure_private;
+	test_surface = surface->committed_private;
 	if (!test_surface) {
 		test_surface = malloc(sizeof *test_surface);
 		if (!test_surface) {
@@ -133,8 +133,8 @@ move_surface(struct wl_client *client, struct wl_resource *resource,
 			return;
 		}
 
-		surface->configure_private = test_surface;
-		surface->configure = test_surface_configure;
+		surface->committed_private = test_surface;
+		surface->committed = test_surface_committed;
 	}
 
 	test_surface->surface = surface;

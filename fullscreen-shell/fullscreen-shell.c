@@ -218,7 +218,7 @@ seat_created(struct wl_listener *l, void *data)
 }
 
 static void
-black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+black_surface_committed(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 }
 
@@ -241,8 +241,8 @@ create_black_surface(struct weston_compositor *ec, struct fs_output *fsout,
 		return NULL;
 	}
 
-	surface->configure = black_surface_configure;
-	surface->configure_private = fsout;
+	surface->committed = black_surface_committed;
+	surface->committed_private = fsout;
 	weston_surface_set_color(surface, 0.0f, 0.0f, 0.0f, 1.0f);
 	pixman_region32_fini(&surface->opaque);
 	pixman_region32_init_rect(&surface->opaque, 0, 0, w, h);
@@ -620,10 +620,10 @@ static void
 configure_presented_surface(struct weston_surface *surface, int32_t sx,
 			    int32_t sy)
 {
-	struct fullscreen_shell *shell = surface->configure_private;
+	struct fullscreen_shell *shell = surface->committed_private;
 	struct fs_output *fsout;
 
-	if (surface->configure != configure_presented_surface)
+	if (surface->committed != configure_presented_surface)
 		return;
 
 	wl_list_for_each(fsout, &shell->output_list, link)
@@ -644,8 +644,8 @@ fs_output_apply_pending(struct fs_output *fsout)
 		fsout->view = NULL;
 
 		if (wl_list_empty(&fsout->surface->views)) {
-			fsout->surface->configure = NULL;
-			fsout->surface->configure_private = NULL;
+			fsout->surface->committed = NULL;
+			fsout->surface->committed_private = NULL;
 		}
 
 		fsout->surface = NULL;
@@ -699,9 +699,9 @@ fs_output_set_surface(struct fs_output *fsout, struct weston_surface *surface,
 	fs_output_clear_pending(fsout);
 
 	if (surface) {
-		if (!surface->configure) {
-			surface->configure = configure_presented_surface;
-			surface->configure_private = fsout->shell;
+		if (!surface->committed) {
+			surface->committed = configure_presented_surface;
+			surface->committed_private = fsout->shell;
 		}
 
 		fsout->pending.surface = surface;
@@ -719,8 +719,8 @@ fs_output_set_surface(struct fs_output *fsout, struct weston_surface *surface,
 		fsout->view = NULL;
 
 		if (wl_list_empty(&fsout->surface->views)) {
-			fsout->surface->configure = NULL;
-			fsout->surface->configure_private = NULL;
+			fsout->surface->committed = NULL;
+			fsout->surface->committed_private = NULL;
 		}
 
 		fsout->surface = NULL;

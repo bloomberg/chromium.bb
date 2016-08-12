@@ -2524,7 +2524,7 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 	if (!shell_interface->create_shell_surface)
 		return;
 
-	if (window->surface->configure) {
+	if (window->surface->committed) {
 		weston_log("warning, unexpected in %s: "
 			   "surface's configure hook is already set.\n",
 			   __func__);

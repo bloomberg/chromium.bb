@@ -1147,8 +1147,8 @@ struct weston_surface {
 	 * this surface. The integer params are the sx and sy
 	 * parameters supplied to wl_surface::attach.
 	 */
-	void (*configure)(struct weston_surface *es, int32_t sx, int32_t sy);
-	void *configure_private;
+	void (*committed)(struct weston_surface *es, int32_t sx, int32_t sy);
+	void *committed_private;
 	int (*get_label)(struct weston_surface *surface, char *buf, size_t len);
 
 	/* Parent's list of its sub-surfaces, weston_subsurface:parent_link.

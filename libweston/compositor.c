@@ -2843,8 +2843,8 @@ weston_surface_commit_state(struct weston_surface *surface,
 
 	if (state->newly_attached || state->buffer_viewport.changed) {
 		weston_surface_update_size(surface);
-		if (surface->configure)
-			surface->configure(surface, state->sx, state->sy);
+		if (surface->committed)
+			surface->committed(surface, state->sx, state->sy);
 	}
 
 	state->sx = 0;
@@ -3268,7 +3268,7 @@ subsurface_get_label(struct weston_surface *surface, char *buf, size_t len)
 }
 
 static void
-subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
+subsurface_committed(struct weston_surface *surface, int32_t dx, int32_t dy)
 {
 	struct weston_view *view;
 
@@ -3302,8 +3302,8 @@ subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 static struct weston_subsurface *
 weston_surface_to_subsurface(struct weston_surface *surface)
 {
-	if (surface->configure == subsurface_configure)
-		return surface->configure_private;
+	if (surface->committed == subsurface_committed)
+		return surface->committed_private;
 
 	return NULL;
 }
@@ -3684,8 +3684,8 @@ weston_subsurface_destroy(struct weston_subsurface *sub)
 		weston_surface_state_fini(&sub->cached);
 		weston_buffer_reference(&sub->cached_buffer_ref, NULL);
 
-		sub->surface->configure = NULL;
-		sub->surface->configure_private = NULL;
+		sub->surface->committed = NULL;
+		sub->surface->committed_private = NULL;
 		weston_surface_set_label_func(sub->surface, NULL);
 	} else {
 		/* the dummy weston_subsurface for the parent itself */
@@ -3816,8 +3816,8 @@ subcompositor_get_subsurface(struct wl_client *client,
 		return;
 	}
 
-	surface->configure = subsurface_configure;
-	surface->configure_private = sub;
+	surface->committed = subsurface_committed;
+	surface->committed_private = sub;
 	weston_surface_set_label_func(surface, subsurface_get_label);
 }
 

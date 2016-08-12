@@ -78,17 +78,17 @@ struct ivi_shell_setting
  */
 
 static void
-ivi_shell_surface_configure(struct weston_surface *, int32_t, int32_t);
+ivi_shell_surface_committed(struct weston_surface *, int32_t, int32_t);
 
 static struct ivi_shell_surface *
 get_ivi_shell_surface(struct weston_surface *surface)
 {
 	struct ivi_shell_surface *shsurf;
 
-	if (surface->configure != ivi_shell_surface_configure)
+	if (surface->committed != ivi_shell_surface_committed)
 		return NULL;
 
-	shsurf = surface->configure_private;
+	shsurf = surface->committed_private;
 	assert(shsurf);
 	assert(shsurf->surface == surface);
 
@@ -123,7 +123,7 @@ shell_surface_send_configure(struct weston_surface *surface,
 }
 
 static void
-ivi_shell_surface_configure(struct weston_surface *surface,
+ivi_shell_surface_committed(struct weston_surface *surface,
 			    int32_t sx, int32_t sy)
 {
 	struct ivi_shell_surface *ivisurf = get_ivi_shell_surface(surface);
@@ -166,8 +166,8 @@ layout_surface_cleanup(struct ivi_shell_surface *ivisurf)
 	ivi_layout_surface_destroy(ivisurf->layout_surface);
 	ivisurf->layout_surface = NULL;
 
-	ivisurf->surface->configure = NULL;
-	ivisurf->surface->configure_private = NULL;
+	ivisurf->surface->committed = NULL;
+	ivisurf->surface->committed_private = NULL;
 	weston_surface_set_label_func(ivisurf->surface, NULL);
 	ivisurf->surface = NULL;
 
@@ -298,8 +298,8 @@ application_surface_create(struct wl_client *client,
 
 	ivisurf->surface = weston_surface;
 
-	weston_surface->configure = ivi_shell_surface_configure;
-	weston_surface->configure_private = ivisurf;
+	weston_surface->committed = ivi_shell_surface_committed;
+	weston_surface->committed_private = ivisurf;
 	weston_surface_set_label_func(weston_surface,
 				      ivi_shell_surface_get_label);
 

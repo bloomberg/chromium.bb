@@ -705,15 +705,15 @@ focus_surface_get_label(struct weston_surface *surface, char *buf, size_t len)
 
 /* no-op func for checking focus surface */
 static void
-focus_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+focus_surface_committed(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 }
 
 static struct focus_surface *
 get_focus_surface(struct weston_surface *surface)
 {
-	if (surface->configure == focus_surface_configure)
-		return surface->configure_private;
+	if (surface->committed == focus_surface_committed)
+		return surface->committed_private;
 	else
 		return NULL;
 }
@@ -721,7 +721,7 @@ get_focus_surface(struct weston_surface *surface)
 static bool
 is_focus_surface (struct weston_surface *es)
 {
-	return (es->configure == focus_surface_configure);
+	return (es->committed == focus_surface_committed);
 }
 
 static bool
@@ -748,10 +748,10 @@ create_focus_surface(struct weston_compositor *ec,
 		return NULL;
 	}
 
-	surface->configure = focus_surface_configure;
+	surface->committed = focus_surface_committed;
 	surface->output = output;
 	surface->is_mapped = true;
-	surface->configure_private = fsurf;
+	surface->committed_private = fsurf;
 	weston_surface_set_label_func(surface, focus_surface_get_label);
 
 	fsurf->view = weston_view_create(surface);
@@ -2777,7 +2777,7 @@ shell_surface_get_shell(struct shell_surface *shsurf)
 static int
 black_surface_get_label(struct weston_surface *surface, char *buf, size_t len)
 {
-	struct weston_view *fs_view = surface->configure_private;
+	struct weston_view *fs_view = surface->committed_private;
 	struct weston_surface *fs_surface = fs_view->surface;
 	int n;
 	int rem;
@@ -2803,7 +2803,7 @@ black_surface_get_label(struct weston_surface *surface, char *buf, size_t len)
 }
 
 static void
-black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy);
+black_surface_committed(struct weston_surface *es, int32_t sx, int32_t sy);
 
 static struct weston_view *
 create_black_surface(struct weston_compositor *ec,
@@ -2825,8 +2825,8 @@ create_black_surface(struct weston_compositor *ec,
 		return NULL;
 	}
 
-	surface->configure = black_surface_configure;
-	surface->configure_private = fs_view;
+	surface->committed = black_surface_committed;
+	surface->committed_private = fs_view;
 	weston_surface_set_label_func(surface, black_surface_get_label);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1);
 	pixman_region32_fini(&surface->opaque);
@@ -3591,7 +3591,7 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	 * we can always remove the listener.
 	 */
 	wl_list_remove(&shsurf->surface_destroy_listener.link);
-	shsurf->surface->configure = NULL;
+	shsurf->surface->committed = NULL;
 	weston_surface_set_label_func(shsurf->surface, NULL);
 	free(shsurf->title);
 
@@ -3678,13 +3678,13 @@ handle_resource_destroy(struct wl_listener *listener, void *data)
 }
 
 static void
-shell_surface_configure(struct weston_surface *, int32_t, int32_t);
+shell_surface_committed(struct weston_surface *, int32_t, int32_t);
 
 struct shell_surface *
 get_shell_surface(struct weston_surface *surface)
 {
-	if (surface->configure == shell_surface_configure)
-		return surface->configure_private;
+	if (surface->committed == shell_surface_committed)
+		return surface->committed_private;
 	else
 		return NULL;
 }
@@ -3696,7 +3696,7 @@ create_common_surface(struct shell_client *owner, void *shell,
 {
 	struct shell_surface *shsurf;
 
-	assert(surface->configure == NULL);
+	assert(surface->committed == NULL);
 
 	shsurf = calloc(1, sizeof *shsurf);
 	if (!shsurf) {
@@ -3711,8 +3711,8 @@ create_common_surface(struct shell_client *owner, void *shell,
 		return NULL;
 	}
 
-	surface->configure = shell_surface_configure;
-	surface->configure_private = shsurf;
+	surface->committed = shell_surface_committed;
+	surface->committed_private = shsurf;
 	weston_surface_set_label_func(surface, shell_surface_get_label);
 
 	shsurf->resource_destroy_listener.notify = handle_resource_destroy;
@@ -4366,7 +4366,7 @@ configure_static_view(struct weston_view *ev, struct weston_layer *layer)
 	wl_list_for_each_safe(v, next, &layer->view_list.link, layer_link.link) {
 		if (v->output == ev->output && v != ev) {
 			weston_view_unmap(v);
-			v->surface->configure = NULL;
+			v->surface->committed = NULL;
 			weston_surface_set_label_func(v->surface, NULL);
 		}
 	}
@@ -4403,9 +4403,9 @@ background_get_label(struct weston_surface *surface, char *buf, size_t len)
 }
 
 static void
-background_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+background_committed(struct weston_surface *es, int32_t sx, int32_t sy)
 {
-	struct desktop_shell *shell = es->configure_private;
+	struct desktop_shell *shell = es->committed_private;
 	struct weston_view *view;
 
 	view = container_of(es->views.next, struct weston_view, surface_link);
@@ -4435,7 +4435,7 @@ desktop_shell_set_background(struct wl_client *client,
 	struct shell_output *sh_output;
 	struct weston_view *view, *next;
 
-	if (surface->configure) {
+	if (surface->committed) {
 		wl_resource_post_error(surface_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "surface role already assigned");
@@ -4446,8 +4446,8 @@ desktop_shell_set_background(struct wl_client *client,
 		weston_view_destroy(view);
 	view = weston_view_create(surface);
 
-	surface->configure = background_configure;
-	surface->configure_private = shell;
+	surface->committed = background_committed;
+	surface->committed_private = shell;
 	weston_surface_set_label_func(surface, background_get_label);
 	surface->output = wl_resource_get_user_data(output_resource);
 	view->output = surface->output;
@@ -4471,9 +4471,9 @@ panel_get_label(struct weston_surface *surface, char *buf, size_t len)
 }
 
 static void
-panel_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+panel_committed(struct weston_surface *es, int32_t sx, int32_t sy)
 {
-	struct desktop_shell *shell = es->configure_private;
+	struct desktop_shell *shell = es->committed_private;
 	struct weston_view *view;
 
 	view = container_of(es->views.next, struct weston_view, surface_link);
@@ -4504,7 +4504,7 @@ desktop_shell_set_panel(struct wl_client *client,
 	struct weston_view *view, *next;
 	struct shell_output *sh_output;
 
-	if (surface->configure) {
+	if (surface->committed) {
 		wl_resource_post_error(surface_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "surface role already assigned");
@@ -4515,8 +4515,8 @@ desktop_shell_set_panel(struct wl_client *client,
 		weston_view_destroy(view);
 	view = weston_view_create(surface);
 
-	surface->configure = panel_configure;
-	surface->configure_private = shell;
+	surface->committed = panel_committed;
+	surface->committed_private = shell;
 	weston_surface_set_label_func(surface, panel_get_label);
 	surface->output = wl_resource_get_user_data(output_resource);
 	view->output = surface->output;
@@ -4539,9 +4539,9 @@ lock_surface_get_label(struct weston_surface *surface, char *buf, size_t len)
 }
 
 static void
-lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+lock_surface_committed(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
-	struct desktop_shell *shell = surface->configure_private;
+	struct desktop_shell *shell = surface->committed_private;
 	struct weston_view *view;
 
 	view = container_of(surface->views.next, struct weston_view, surface_link);
@@ -4592,8 +4592,8 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 		      &shell->lock_surface_listener);
 
 	weston_view_create(surface);
-	surface->configure = lock_surface_configure;
-	surface->configure_private = shell;
+	surface->committed = lock_surface_committed;
+	surface->committed_private = shell;
 	weston_surface_set_label_func(surface, lock_surface_get_label);
 }
 
@@ -5210,7 +5210,7 @@ activate(struct desktop_shell *shell, struct weston_view *view,
 
 /* no-op func for checking black surface */
 static void
-black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+black_surface_committed(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 }
 
@@ -5219,9 +5219,9 @@ is_black_surface_view(struct weston_view *view, struct weston_view **fs_view)
 {
 	struct weston_surface *surface = view->surface;
 
-	if (surface->configure == black_surface_configure) {
+	if (surface->committed == black_surface_committed) {
 		if (fs_view)
-			*fs_view = surface->configure_private;
+			*fs_view = surface->committed_private;
 		return true;
 	}
 	return false;
@@ -5779,7 +5779,7 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 }
 
 static void
-shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+shell_surface_committed(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 	struct shell_surface *shsurf = get_shell_surface(es);
 	struct desktop_shell *shell;

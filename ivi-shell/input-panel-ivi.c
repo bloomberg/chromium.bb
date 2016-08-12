@@ -167,9 +167,9 @@ input_panel_get_label(struct weston_surface *surface, char *buf, size_t len)
 }
 
 static void
-input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+input_panel_committed(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
-	struct input_panel_surface *ip_surface = surface->configure_private;
+	struct input_panel_surface *ip_surface = surface->committed_private;
 	struct ivi_shell *shell = ip_surface->shell;
 	struct weston_view *view;
 	float x, y;
@@ -202,7 +202,7 @@ destroy_input_panel_surface(struct input_panel_surface *input_panel_surface)
 	wl_list_remove(&input_panel_surface->surface_destroy_listener.link);
 	wl_list_remove(&input_panel_surface->link);
 
-	input_panel_surface->surface->configure = NULL;
+	input_panel_surface->surface->committed = NULL;
 	weston_surface_set_label_func(input_panel_surface->surface, NULL);
 	weston_view_destroy(input_panel_surface->view);
 
@@ -212,8 +212,8 @@ destroy_input_panel_surface(struct input_panel_surface *input_panel_surface)
 static struct input_panel_surface *
 get_input_panel_surface(struct weston_surface *surface)
 {
-	if (surface->configure == input_panel_configure) {
-		return surface->configure_private;
+	if (surface->committed == input_panel_committed) {
+		return surface->committed_private;
 	} else {
 		return NULL;
 	}
@@ -243,8 +243,8 @@ create_input_panel_surface(struct ivi_shell *shell,
 	if (!input_panel_surface)
 		return NULL;
 
-	surface->configure = input_panel_configure;
-	surface->configure_private = input_panel_surface;
+	surface->committed = input_panel_committed;
+	surface->committed_private = input_panel_surface;
 	weston_surface_set_label_func(surface, input_panel_get_label);
 
 	input_panel_surface->shell = shell;
@@ -329,7 +329,7 @@ input_panel_get_input_panel_surface(struct wl_client *client,
 	if (!ipsurf) {
 		wl_resource_post_error(surface_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "surface->configure already set");
+				       "surface->committed already set");
 		return;
 	}
 

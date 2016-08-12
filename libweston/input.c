@@ -1002,8 +1002,8 @@ pointer_unmap_sprite(struct weston_pointer *pointer)
 		weston_surface_unmap(surface);
 
 	wl_list_remove(&pointer->sprite_destroy_listener.link);
-	surface->configure = NULL;
-	surface->configure_private = NULL;
+	surface->committed = NULL;
+	surface->committed_private = NULL;
 	weston_surface_set_label_func(surface, NULL);
 	weston_view_destroy(pointer->sprite);
 	pointer->sprite = NULL;
@@ -2262,10 +2262,10 @@ pointer_cursor_surface_get_label(struct weston_surface *surface,
 }
 
 static void
-pointer_cursor_surface_configure(struct weston_surface *es,
+pointer_cursor_surface_committed(struct weston_surface *es,
 				 int32_t dx, int32_t dy)
 {
-	struct weston_pointer *pointer = es->configure_private;
+	struct weston_pointer *pointer = es->committed_private;
 	int x, y;
 
 	if (es->width == 0)
@@ -2338,8 +2338,8 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 		wl_signal_add(&surface->destroy_signal,
 			      &pointer->sprite_destroy_listener);
 
-		surface->configure = pointer_cursor_surface_configure;
-		surface->configure_private = pointer;
+		surface->committed = pointer_cursor_surface_committed;
+		surface->committed_private = pointer;
 		weston_surface_set_label_func(surface,
 					    pointer_cursor_surface_get_label);
 		pointer->sprite = weston_view_create(surface);
@@ -2349,7 +2349,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	pointer->hotspot_y = y;
 
 	if (surface->buffer_ref.buffer) {
-		pointer_cursor_surface_configure(surface, 0, 0);
+		pointer_cursor_surface_committed(surface, 0, 0);
 		weston_view_schedule_repaint(pointer->sprite);
 	}
 }
